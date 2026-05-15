@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 
 export function ManageBillingButton({ className, children, label = 'Manage Billing' }) {
   const [loading, setLoading] = useState(false);

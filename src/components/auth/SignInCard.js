@@ -1,22 +1,22 @@
 'use client';
 
-import React, { useState, useEffect } from "react";
-import { Eye, EyeOff, ArrowRight, TrendingUp } from "lucide-react";
-import { motion } from "framer-motion";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import AuthDotMap from "./AuthDotMap";
-import { supabase } from "@/lib/supabase";
+import React, { useState, useEffect } from 'react';
+import { Eye, EyeOff, ArrowRight, TrendingUp } from 'lucide-react';
+import { motion } from 'framer-motion';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import AuthDotMap from './AuthDotMap';
+import { supabase } from '@/lib/supabase-browser';
 
-const SignInCard = ({ variant = "user", redirectTo, oauthErrorMessage }) => {
+const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isHovered, setIsHovered] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const router = useRouter();
-  const destination = redirectTo || "/home";
+  const destination = redirectTo || '/home';
 
   useEffect(() => {
     if (oauthErrorMessage) {
@@ -31,7 +31,7 @@ const SignInCard = ({ variant = "user", redirectTo, oauthErrorMessage }) => {
   const handleSignIn = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setError("");
+    setError('');
 
     try {
       const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -44,29 +44,33 @@ const SignInCard = ({ variant = "user", redirectTo, oauthErrorMessage }) => {
         return;
       }
 
-      if (variant === "partner") {
-        const { data: { user } } = await supabase.auth.getUser();
+      if (variant === 'partner') {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
         let isPartner = !!user?.user_metadata?.partner_role;
         if (!isPartner) {
           const { data: partner } = await supabase
-            .from("partners")
-            .select("id")
-            .eq("user_id", user?.id)
-            .eq("status", "active")
+            .from('partners')
+            .select('id')
+            .eq('user_id', user?.id)
+            .eq('status', 'active')
             .single();
           isPartner = !!partner;
         }
         if (!isPartner) {
           await supabase.auth.signOut();
-          setError("This account is not registered as a partner. Contact partnersupport@ezana.world or apply to become a partner.");
+          setError(
+            'This account is not registered as a partner. Contact partnersupport@ezana.world or apply to become a partner.',
+          );
           return;
         }
-        router.push("/partner-home");
+        router.push('/partner-home');
       } else {
         router.push(destination);
       }
     } catch (err) {
-      setError("An unexpected error occurred. Please try again.");
+      setError('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -122,9 +126,9 @@ const SignInCard = ({ variant = "user", redirectTo, oauthErrorMessage }) => {
                   className="mt-8 space-y-3"
                 >
                   {[
-                    "Real-time congressional trades",
-                    "Hedge fund 13F filings",
-                    "Legendary investor portfolios",
+                    'Real-time congressional trades',
+                    'Hedge fund 13F filings',
+                    'Legendary investor portfolios',
                   ].map((feature, index) => (
                     <div key={index} className="flex items-center gap-2 text-slate-300 text-sm">
                       <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
@@ -185,7 +189,7 @@ const SignInCard = ({ variant = "user", redirectTo, oauthErrorMessage }) => {
                 <div className="relative">
                   <input
                     id="password"
-                    type={isPasswordVisible ? "text" : "password"}
+                    type={isPasswordVisible ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
@@ -215,9 +219,9 @@ const SignInCard = ({ variant = "user", redirectTo, oauthErrorMessage }) => {
                   disabled={isLoading}
                   className={`flex w-full h-11 items-center justify-center relative overflow-hidden rounded-lg font-medium transition-all duration-300 ${
                     isLoading
-                      ? "bg-emerald-700 cursor-not-allowed"
-                      : "bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700"
-                  } text-white ${isHovered ? "shadow-lg shadow-emerald-500/25" : ""}`}
+                      ? 'bg-emerald-700 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700'
+                  } text-white ${isHovered ? 'shadow-lg shadow-emerald-500/25' : ''}`}
                 >
                   <span className="relative z-10 flex items-center justify-center gap-2">
                     {isLoading ? (
@@ -228,8 +232,19 @@ const SignInCard = ({ variant = "user", redirectTo, oauthErrorMessage }) => {
                           viewBox="0 0 24 24"
                           aria-hidden="true"
                         >
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          />
                         </svg>
                         Signing in...
                       </>
@@ -242,11 +257,11 @@ const SignInCard = ({ variant = "user", redirectTo, oauthErrorMessage }) => {
                   </span>
                   {isHovered && !isLoading && (
                     <motion.span
-                      initial={{ left: "-100%" }}
-                      animate={{ left: "100%" }}
-                      transition={{ duration: 1, ease: "easeInOut" }}
+                      initial={{ left: '-100%' }}
+                      animate={{ left: '100%' }}
+                      transition={{ duration: 1, ease: 'easeInOut' }}
                       className="absolute top-0 bottom-0 left-0 w-20 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-                      style={{ filter: "blur(8px)" }}
+                      style={{ filter: 'blur(8px)' }}
                     />
                   )}
                 </button>
@@ -264,9 +279,9 @@ const SignInCard = ({ variant = "user", redirectTo, oauthErrorMessage }) => {
             </form>
 
             <div className="mt-8 text-center text-sm text-slate-300">
-              {variant === "partner" ? (
+              {variant === 'partner' ? (
                 <>
-                  Not a partner but interested in becoming one? Reach out to{" "}
+                  Not a partner but interested in becoming one? Reach out to{' '}
                   <a
                     href="mailto:partnersupport@ezana.world"
                     className="font-medium text-emerald-400 transition-colors hover:text-emerald-300"
@@ -276,7 +291,7 @@ const SignInCard = ({ variant = "user", redirectTo, oauthErrorMessage }) => {
                 </>
               ) : (
                 <>
-                  Don&apos;t have an account?{" "}
+                  Don&apos;t have an account?{' '}
                   <Link
                     href="/auth/signup"
                     className="font-medium text-emerald-400 transition-colors hover:text-emerald-300"
@@ -287,7 +302,7 @@ const SignInCard = ({ variant = "user", redirectTo, oauthErrorMessage }) => {
               )}
             </div>
 
-            {variant === "user" && (
+            {variant === 'user' && (
               <div className="mt-6 border-t border-slate-700 pt-6">
                 <div className="mb-3 flex items-center justify-center gap-2">
                   <div className="h-px flex-1 bg-slate-700" />

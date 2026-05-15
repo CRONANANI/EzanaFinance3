@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 
 export default function AccountLockedPage() {
   const router = useRouter();
@@ -75,8 +75,8 @@ export default function AccountLockedPage() {
           </div>
           <h1 className="acl-title">Account Locked</h1>
           <p className="acl-subtitle">
-            Your browsing session was ended because this account no longer has access. Sign in again to see
-            account-specific details, or contact support.
+            Your browsing session was ended because this account no longer has access. Sign in again
+            to see account-specific details, or contact support.
           </p>
           <div className="acl-actions">
             <a href="mailto:support@ezana.world" className="acl-btn acl-btn-primary">
@@ -88,7 +88,8 @@ export default function AccountLockedPage() {
             </a>
           </div>
           <p className="acl-footer-note">
-            If you believe this is an error, email support and include the address you use to log in.
+            If you believe this is an error, email support and include the address you use to log
+            in.
           </p>
         </div>
       </div>

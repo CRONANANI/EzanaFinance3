@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback, cloneElement } from 'react';
 import { useAuth } from '@/components/AuthProvider';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 import { HomeTerminalSummary } from '@/components/home/HomeTerminalSummary';
 import { usePlaidPortfolioSummary } from '@/hooks/usePlaidPortfolioSummary';
 import { useAlpacaPortfolioSummary } from '@/hooks/useAlpacaPortfolioSummary';
@@ -48,13 +48,23 @@ function HomeTerminalSkeleton() {
         <div className="t-home-skel-grid">
           <div className="t-home-skel-card">
             <div className="t-home-skel-bar t-home-skel-bar--md" style={{ width: '45%' }} />
-            <div className="t-home-skel-bar t-home-skel-bar--xl" style={{ width: '72%', marginTop: '1rem' }} />
-            <div className="t-home-skel-bar t-home-skel-bar--chart" style={{ marginTop: '1.25rem' }} />
+            <div
+              className="t-home-skel-bar t-home-skel-bar--xl"
+              style={{ width: '72%', marginTop: '1rem' }}
+            />
+            <div
+              className="t-home-skel-bar t-home-skel-bar--chart"
+              style={{ marginTop: '1.25rem' }}
+            />
           </div>
           <div className="t-home-skel-card t-home-skel-card--short">
             <div className="t-home-skel-bar t-home-skel-bar--md" style={{ width: '55%' }} />
             {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="t-home-skel-bar t-home-skel-bar--sm" style={{ width: '100%', marginTop: '0.65rem' }} />
+              <div
+                key={i}
+                className="t-home-skel-bar t-home-skel-bar--sm"
+                style={{ width: '100%', marginTop: '0.65rem' }}
+              />
             ))}
           </div>
         </div>
@@ -77,10 +87,16 @@ async function fetchBatchQuotes(symbols) {
 
 export default function HomeTerminalPage() {
   const { user } = useAuth();
-  const { connected: plaidConnected, summary: plaidSummary, isLoading: plaidSummaryLoading } =
-    usePlaidPortfolioSummary();
-  const { connected: alpacaConnected, summary: alpacaSummary, isLoading: alpacaSummaryLoading } =
-    useAlpacaPortfolioSummary();
+  const {
+    connected: plaidConnected,
+    summary: plaidSummary,
+    isLoading: plaidSummaryLoading,
+  } = usePlaidPortfolioSummary();
+  const {
+    connected: alpacaConnected,
+    summary: alpacaSummary,
+    isLoading: alpacaSummaryLoading,
+  } = useAlpacaPortfolioSummary();
   const mock = useMockPortfolio();
   const [time, setTime] = useState('');
   const [holdings, setHoldings] = useState([]);
@@ -114,7 +130,9 @@ export default function HomeTerminalPage() {
     try {
       const { data, error } = await supabase
         .from('plaid_holdings')
-        .select('id, ticker_symbol, quantity, institution_price, institution_value, cost_basis, type')
+        .select(
+          'id, ticker_symbol, quantity, institution_price, institution_value, cost_basis, type',
+        )
         .eq('user_id', user.id)
         .order('institution_value', { ascending: false });
 
@@ -260,20 +278,30 @@ export default function HomeTerminalPage() {
 
     if (alpacaConnected) {
       if (alpacaSummaryLoading) return fallback;
-      if (typeof alpacaSummary?.totalValue === 'number' && Number.isFinite(alpacaSummary.totalValue)) {
+      if (
+        typeof alpacaSummary?.totalValue === 'number' &&
+        Number.isFinite(alpacaSummary.totalValue)
+      ) {
         return alpacaSummary.totalValue;
       }
     }
 
     if (plaidConnected) {
       if (plaidSummaryLoading) return fallback;
-      if (typeof plaidSummary?.totalValue === 'number' && Number.isFinite(plaidSummary.totalValue)) {
+      if (
+        typeof plaidSummary?.totalValue === 'number' &&
+        Number.isFinite(plaidSummary.totalValue)
+      ) {
         return plaidSummary.totalValue;
       }
       return Number.isFinite(portfolioTotal) && portfolioTotal > 0 ? portfolioTotal : fallback;
     }
 
-    if (mock.hasMockPortfolio && typeof mock.totalValue === 'number' && Number.isFinite(mock.totalValue)) {
+    if (
+      mock.hasMockPortfolio &&
+      typeof mock.totalValue === 'number' &&
+      Number.isFinite(mock.totalValue)
+    ) {
       return mock.totalValue;
     }
 
@@ -294,10 +322,18 @@ export default function HomeTerminalPage() {
   const marqueePortfolioValue = portfolioTotalAligned;
 
   const portfolioChange = useMemo(() => {
-    if (alpacaConnected && typeof alpacaSummary?.totalGainLoss === 'number' && Number.isFinite(alpacaSummary.totalGainLoss)) {
+    if (
+      alpacaConnected &&
+      typeof alpacaSummary?.totalGainLoss === 'number' &&
+      Number.isFinite(alpacaSummary.totalGainLoss)
+    ) {
       return alpacaSummary.totalGainLoss;
     }
-    if (mock.hasMockPortfolio && typeof mock.totalPnl === 'number' && Number.isFinite(mock.totalPnl)) {
+    if (
+      mock.hasMockPortfolio &&
+      typeof mock.totalPnl === 'number' &&
+      Number.isFinite(mock.totalPnl)
+    ) {
       return mock.totalPnl;
     }
     if (Array.isArray(enrichedHoldings)) {
@@ -370,7 +406,9 @@ export default function HomeTerminalPage() {
     });
     blocks.push(
       <span key="mkt" className="t-news-item">
-        <span className={isMarketOpen ? 't-green' : 't-red'}>{isMarketOpen ? 'MARKET OPEN' : 'MARKET CLOSED'}</span>{' '}
+        <span className={isMarketOpen ? 't-green' : 't-red'}>
+          {isMarketOpen ? 'MARKET OPEN' : 'MARKET CLOSED'}
+        </span>{' '}
         <span className="t-dim">{time}</span>
       </span>,
     );
@@ -378,7 +416,8 @@ export default function HomeTerminalPage() {
       <span key="flow" className="t-news-item">
         <strong>FLOWS</strong>{' '}
         <span className="t-dim">
-          Equities +$2.1B · IG credit tight 2bps · <span className="t-green">HY</span> issuance light
+          Equities +$2.1B · IG credit tight 2bps · <span className="t-green">HY</span> issuance
+          light
         </span>
       </span>,
     );
@@ -386,14 +425,17 @@ export default function HomeTerminalPage() {
       <span key="cong" className="t-news-item t-news-item--segment">
         <strong>CONGRESS</strong>{' '}
         <span className="t-dim">
-          14 STOCK Act filings (24h) · committees: Energy, Intel, Banking · watch semis &amp; defense
+          14 STOCK Act filings (24h) · committees: Energy, Intel, Banking · watch semis &amp;
+          defense
         </span>
       </span>,
     );
     blocks.push(
       <span key="13f" className="t-news-item t-news-item--segment">
         <strong>13F</strong>{' '}
-        <span className="t-dim">Quarterly window: elevated adds in AI infra · trims in legacy retail</span>
+        <span className="t-dim">
+          Quarterly window: elevated adds in AI infra · trims in legacy retail
+        </span>
       </span>,
     );
     blocks.push(
@@ -405,7 +447,9 @@ export default function HomeTerminalPage() {
     blocks.push(
       <span key="vol" className="t-news-item t-news-item--segment">
         <strong>VOL</strong>{' '}
-        <span className="t-dim">Index complex bid · single-name skew elevated into earnings cluster</span>
+        <span className="t-dim">
+          Index complex bid · single-name skew elevated into earnings cluster
+        </span>
       </span>,
     );
     blocks.push(
@@ -417,13 +461,17 @@ export default function HomeTerminalPage() {
     blocks.push(
       <span key="echo" className="t-news-item t-news-item--segment">
         <strong>EZANA ECHO</strong>{' '}
-        <span className="t-dim">New: disclosure lag vs. price — how to read filing dates vs. trade dates</span>
+        <span className="t-dim">
+          New: disclosure lag vs. price — how to read filing dates vs. trade dates
+        </span>
       </span>,
     );
     blocks.push(
       <span key="alerts" className="t-news-item t-news-item--segment">
         <strong>ALERTS</strong>{' '}
-        <span className="t-dim">Price targets · congressional mentions · watchlist gaps · portfolio risk</span>
+        <span className="t-dim">
+          Price targets · congressional mentions · watchlist gaps · portfolio risk
+        </span>
       </span>,
     );
     if (enrichedHoldings.length > 0) {
@@ -440,7 +488,9 @@ export default function HomeTerminalPage() {
       blocks.push(
         <span key="empty" className="t-news-item">
           <strong style={{ color: '#10b981' }}>Welcome.</strong>{' '}
-          <span style={{ color: '#10b981' }}>Connect your brokerage to see live portfolio data.</span>
+          <span style={{ color: '#10b981' }}>
+            Connect your brokerage to see live portfolio data.
+          </span>
         </span>,
       );
     }

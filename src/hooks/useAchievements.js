@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { useMockPortfolio } from '@/hooks/useMockPortfolio';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 
 /**
  * Unified Achievement shape.
@@ -29,7 +29,12 @@ const TIER_MAP = {
 };
 
 /** Trading achievements derived client-side from mock/live portfolio stats. */
-function buildTradingAchievements({ positionsCount, totalTrades, uniqueSectorsCount, totalReturnPct }) {
+function buildTradingAchievements({
+  positionsCount,
+  totalTrades,
+  uniqueSectorsCount,
+  totalReturnPct,
+}) {
   const defs = [
     {
       id: 'trading-first-trade',
@@ -110,8 +115,14 @@ async function fetchCommunityAchievements(userId) {
   if (!userId) return [];
   try {
     const [{ count: followers }, { count: posts }] = await Promise.all([
-      supabase.from('user_follows').select('*', { count: 'exact', head: true }).eq('followed_id', userId),
-      supabase.from('community_posts').select('*', { count: 'exact', head: true }).eq('user_id', userId),
+      supabase
+        .from('user_follows')
+        .select('*', { count: 'exact', head: true })
+        .eq('followed_id', userId),
+      supabase
+        .from('community_posts')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId),
     ]);
     const followerCount = Number(followers || 0);
     const postCount = Number(posts || 0);
@@ -237,16 +248,19 @@ export function useAchievements({ positions = [], totalReturnPct = 0 } = {}) {
       }
     }
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [user?.id]);
 
   const trading = useMemo(
-    () => buildTradingAchievements({
-      positionsCount,
-      totalTrades,
-      uniqueSectorsCount,
-      totalReturnPct,
-    }),
+    () =>
+      buildTradingAchievements({
+        positionsCount,
+        totalTrades,
+        uniqueSectorsCount,
+        totalReturnPct,
+      }),
     [positionsCount, totalTrades, uniqueSectorsCount, totalReturnPct],
   );
 

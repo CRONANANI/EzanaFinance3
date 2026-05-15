@@ -5,7 +5,7 @@ import { Eye, EyeOff, ArrowRight, GraduationCap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 
 const OrgSignInCard = ({ redirectTo = '/home' }) => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -27,7 +27,7 @@ const OrgSignInCard = ({ redirectTo = '/home' }) => {
         return;
       }
 
-      const { createClient } = await import('@/lib/supabase');
+      const { createClient } = await import('@/lib/supabase-browser');
       const anonClient = createClient();
 
       // Try domain-based org lookup first
@@ -154,7 +154,9 @@ const OrgSignInCard = ({ redirectTo = '/home' }) => {
               required
               className="h-11 w-full rounded-lg border border-white/10 bg-[rgba(255,255,255,0.04)] px-4 text-[#f0f6fc] placeholder-[#6b7280] transition-all focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400"
             />
-            <p className="mt-1 text-xs text-[#a7b1bb]">Use your recognized university email address</p>
+            <p className="mt-1 text-xs text-[#a7b1bb]">
+              Use your recognized university email address
+            </p>
           </div>
 
           <div>
@@ -196,14 +198,20 @@ const OrgSignInCard = ({ redirectTo = '/home' }) => {
         </form>
 
         <div className="mt-6 text-center text-sm">
-          <Link href="/auth/forgot-password" className="font-medium text-indigo-300 hover:text-indigo-200">
+          <Link
+            href="/auth/forgot-password"
+            className="font-medium text-indigo-300 hover:text-indigo-200"
+          >
             Forgot password?
           </Link>
         </div>
 
         <div className="mt-4 text-center text-xs text-[#a7b1bb]">
           Not a member? Contact your university investment council executive team or email{' '}
-          <a href="mailto:orgsupport@ezana.world" className="font-medium text-indigo-300 hover:text-indigo-200">
+          <a
+            href="mailto:orgsupport@ezana.world"
+            className="font-medium text-indigo-300 hover:text-indigo-200"
+          >
             orgsupport@ezana.world
           </a>
         </div>

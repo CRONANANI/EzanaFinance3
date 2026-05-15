@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 import './partner-login.css';
 
 export default function PartnerLoginPage() {
@@ -27,7 +27,9 @@ export default function PartnerLoginPage() {
   }, []);
 
   const validatePartnerStatus = async (userId) => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (user?.user_metadata?.partner_role) return true;
 
     const { data: partner } = await supabase
@@ -58,7 +60,7 @@ export default function PartnerLoginPage() {
       if (!isPartner) {
         await supabase.auth.signOut();
         throw new Error(
-          'This account is not registered as a partner. If you believe this is an error, contact support@ezana.world or apply to become a partner.'
+          'This account is not registered as a partner. If you believe this is an error, contact support@ezana.world or apply to become a partner.',
         );
       }
 
@@ -75,8 +77,17 @@ export default function PartnerLoginPage() {
       <div className="auth-container">
         <div className="auth-card partner-auth-card">
           <div className="auth-logo-wrap">
-            <Image src="/ezana-logo.svg" alt="Ezana Finance" width={93} height={93} className="nav-logo-img" style={{ objectFit: 'contain' }} />
-            <span className="auth-logo-text" style={{ color: '#d4a853' }}>Ezana Finance</span>
+            <Image
+              src="/ezana-logo.svg"
+              alt="Ezana Finance"
+              width={93}
+              height={93}
+              className="nav-logo-img"
+              style={{ objectFit: 'contain' }}
+            />
+            <span className="auth-logo-text" style={{ color: '#d4a853' }}>
+              Ezana Finance
+            </span>
           </div>
 
           <div className="pauth-badge">
@@ -85,7 +96,9 @@ export default function PartnerLoginPage() {
           </div>
 
           <h1 className="auth-title pauth-title">Welcome back, Partner</h1>
-          <p className="auth-subtitle">Sign in to access your Partner Hub, earnings, and content studio</p>
+          <p className="auth-subtitle">
+            Sign in to access your Partner Hub, earnings, and content studio
+          </p>
 
           {error && (
             <div className="auth-error pauth-error">
@@ -122,7 +135,9 @@ export default function PartnerLoginPage() {
                 <input type="checkbox" className="auth-checkbox" />
                 <span>Remember me</span>
               </label>
-              <Link href="/auth/forgot-password" className="auth-link pauth-link">Forgot password?</Link>
+              <Link href="/auth/forgot-password" className="auth-link pauth-link">
+                Forgot password?
+              </Link>
             </div>
 
             <button type="submit" className="auth-btn-primary pauth-btn-primary" disabled={loading}>
@@ -139,11 +154,17 @@ export default function PartnerLoginPage() {
           </form>
 
           <p className="auth-footer-text">
-            Not a partner? <Link href="/auth/signin" className="auth-link pauth-link">Login as regular user</Link>
+            Not a partner?{' '}
+            <Link href="/auth/signin" className="auth-link pauth-link">
+              Login as regular user
+            </Link>
           </p>
 
           <p className="auth-footer-text" style={{ marginTop: '0.5rem' }}>
-            Want to become a partner? <Link href="/auth/partner/apply" className="auth-link pauth-link">Apply here</Link>
+            Want to become a partner?{' '}
+            <Link href="/auth/partner/apply" className="auth-link pauth-link">
+              Apply here
+            </Link>
           </p>
         </div>
       </div>

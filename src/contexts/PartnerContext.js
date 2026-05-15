@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/components/AuthProvider';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 
 const PartnerContext = createContext(null);
 
@@ -64,11 +64,7 @@ export function PartnerProvider({ children }) {
     refreshPartnerStatus: checkPartnerStatus,
   };
 
-  return (
-    <PartnerContext.Provider value={value}>
-      {children}
-    </PartnerContext.Provider>
-  );
+  return <PartnerContext.Provider value={value}>{children}</PartnerContext.Provider>;
 }
 
 export function usePartner() {

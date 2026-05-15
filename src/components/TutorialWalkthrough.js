@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 
 const REGULAR_TUTORIAL_STEPS = [
   {
@@ -12,17 +12,20 @@ const REGULAR_TUTORIAL_STEPS = [
   },
   {
     title: 'Your Home Page',
-    description: 'This is your personalized home page. Pin your favorite cards from across the platform to see them here.',
+    description:
+      'This is your personalized home page. Pin your favorite cards from across the platform to see them here.',
     target: '[data-tutorial="home-grid"]',
   },
   {
     title: 'Navigation',
-    description: 'Use the top menu to explore different sections: Dashboard, Research, Trading, Watchlist, Community, and Learning Center.',
+    description:
+      'Use the top menu to explore different sections: Dashboard, Research, Trading, Watchlist, Community, and Learning Center.',
     target: '[data-tutorial="main-nav"]',
   },
   {
     title: 'Getting Started Checklist',
-    description: 'Complete tasks across the platform to unlock more capabilities. Click this icon to see your progress.',
+    description:
+      'Complete tasks across the platform to unlock more capabilities. Click this icon to see your progress.',
     target: '[data-tutorial="checklist-icon"]',
   },
   {
@@ -33,24 +36,72 @@ const REGULAR_TUTORIAL_STEPS = [
 ];
 
 const EXECUTIVE_TUTORIAL_STEPS = [
-  { title: 'Welcome, Executive', description: 'You have an organization-wide command view. Here is your quick orientation.', target: null },
-  { title: 'Org Home Cards', description: 'Your Home includes organization and team overview cards for quick supervision.', target: '[data-tutorial="home-grid"]' },
-  { title: 'Team Hub', description: 'Open Team Hub to review tasks, events, and discussions across teams.', target: null },
-  { title: 'Community + Team Signal', description: 'Use Community for org announcements and to keep team collaboration active.', target: null },
+  {
+    title: 'Welcome, Executive',
+    description: 'You have an organization-wide command view. Here is your quick orientation.',
+    target: null,
+  },
+  {
+    title: 'Org Home Cards',
+    description: 'Your Home includes organization and team overview cards for quick supervision.',
+    target: '[data-tutorial="home-grid"]',
+  },
+  {
+    title: 'Team Hub',
+    description: 'Open Team Hub to review tasks, events, and discussions across teams.',
+    target: null,
+  },
+  {
+    title: 'Community + Team Signal',
+    description: 'Use Community for org announcements and to keep team collaboration active.',
+    target: null,
+  },
 ];
 
 const PM_TUTORIAL_STEPS = [
-  { title: 'Welcome, Portfolio Manager', description: 'You can manage team-level portfolio workflows and analyst execution.', target: null },
-  { title: 'Team Portfolio Focus', description: 'Your Home highlights team portfolio performance and task operations.', target: '[data-tutorial="home-grid"]' },
-  { title: 'Task Management', description: 'Use Team Hub to assign, monitor, and review analyst tasks.', target: null },
-  { title: 'Learning Assignments', description: 'Guide analyst development through assigned learning content and follow-up.', target: null },
+  {
+    title: 'Welcome, Portfolio Manager',
+    description: 'You can manage team-level portfolio workflows and analyst execution.',
+    target: null,
+  },
+  {
+    title: 'Team Portfolio Focus',
+    description: 'Your Home highlights team portfolio performance and task operations.',
+    target: '[data-tutorial="home-grid"]',
+  },
+  {
+    title: 'Task Management',
+    description: 'Use Team Hub to assign, monitor, and review analyst tasks.',
+    target: null,
+  },
+  {
+    title: 'Learning Assignments',
+    description: 'Guide analyst development through assigned learning content and follow-up.',
+    target: null,
+  },
 ];
 
 const ANALYST_TUTORIAL_STEPS = [
-  { title: 'Welcome, Analyst', description: 'This quick tour shows where to find your team work and learning.', target: null },
-  { title: 'My Tasks + Team View', description: 'Use Home and Team Hub to track your assignments and team priorities.', target: '[data-tutorial="home-grid"]' },
-  { title: 'Discussion + Events', description: 'Stay active in team discussion and monitor upcoming deadlines.', target: null },
-  { title: 'Learning Center', description: 'Complete assigned learning content to level up your investing skillset.', target: null },
+  {
+    title: 'Welcome, Analyst',
+    description: 'This quick tour shows where to find your team work and learning.',
+    target: null,
+  },
+  {
+    title: 'My Tasks + Team View',
+    description: 'Use Home and Team Hub to track your assignments and team priorities.',
+    target: '[data-tutorial="home-grid"]',
+  },
+  {
+    title: 'Discussion + Events',
+    description: 'Stay active in team discussion and monitor upcoming deadlines.',
+    target: null,
+  },
+  {
+    title: 'Learning Center',
+    description: 'Complete assigned learning content to level up your investing skillset.',
+    target: null,
+  },
 ];
 
 function getRoleSteps(role) {
@@ -165,7 +216,9 @@ export function TutorialWalkthrough() {
           textAlign: 'center',
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '6px', marginBottom: '1.5rem' }}>
+        <div
+          style={{ display: 'flex', justifyContent: 'center', gap: '6px', marginBottom: '1.5rem' }}
+        >
           {tutorialSteps.map((_, i) => (
             <div
               key={i}
@@ -181,7 +234,9 @@ export function TutorialWalkthrough() {
         </div>
 
         <h2 style={{ color: '#fff', fontSize: '1.3rem', marginBottom: '0.75rem' }}>{step.title}</h2>
-        <p style={{ color: '#999', fontSize: '0.9rem', lineHeight: '1.6', marginBottom: '2rem' }}>{step.description}</p>
+        <p style={{ color: '#999', fontSize: '0.9rem', lineHeight: '1.6', marginBottom: '2rem' }}>
+          {step.description}
+        </p>
 
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
           <button

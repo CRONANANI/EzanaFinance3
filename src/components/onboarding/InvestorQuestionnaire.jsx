@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 
 const QUESTIONS = [
   {
-    id: 1, category: 'Experience',
+    id: 1,
+    category: 'Experience',
     question: 'How long have you been actively investing?',
     options: [
       { label: "I'm brand new — haven't started yet", value: 'none', score: 0 },
@@ -16,7 +17,9 @@ const QUESTIONS = [
     ],
   },
   {
-    id: 2, category: 'Knowledge', multi: true,
+    id: 2,
+    category: 'Knowledge',
+    multi: true,
     question: 'Which of these have you personally traded or held?',
     options: [
       { label: 'Stocks / ETFs', value: 'stocks', score: 1 },
@@ -28,7 +31,8 @@ const QUESTIONS = [
     ],
   },
   {
-    id: 3, category: 'Risk Tolerance',
+    id: 3,
+    category: 'Risk Tolerance',
     question: 'Your portfolio drops 20% in a single week. What do you do?',
     options: [
       { label: "Sell everything — I can't handle that stress", value: 'very_low', score: 0 },
@@ -38,7 +42,8 @@ const QUESTIONS = [
     ],
   },
   {
-    id: 4, category: 'Goals',
+    id: 4,
+    category: 'Goals',
     question: "What's your primary investment goal?",
     options: [
       { label: "Preserve my capital — don't lose what I have", value: 'preservation', score: 0 },
@@ -49,7 +54,8 @@ const QUESTIONS = [
     ],
   },
   {
-    id: 5, category: 'Knowledge',
+    id: 5,
+    category: 'Knowledge',
     question: "How confident are you reading a company's financial statements?",
     options: [
       { label: "I don't know what those are", value: 'none', score: 0 },
@@ -59,7 +65,8 @@ const QUESTIONS = [
     ],
   },
   {
-    id: 6, category: 'Risk Tolerance',
+    id: 6,
+    category: 'Risk Tolerance',
     question: 'What percentage of your total savings are you comfortable putting into investments?',
     options: [
       { label: 'Less than 10%', value: 'minimal', score: 0 },
@@ -70,7 +77,9 @@ const QUESTIONS = [
     ],
   },
   {
-    id: 7, category: 'Interests', multi: true,
+    id: 7,
+    category: 'Interests',
+    multi: true,
     question: 'Which areas of Ezana Finance interest you most?',
     options: [
       { label: 'Global market news & analysis', value: 'news', score: 0 },
@@ -114,15 +123,29 @@ function computeProfile(answers) {
 }
 
 const PROFILE_CONFIGS = {
-  Beginner: { icon: '🌱', desc: "You're just getting started. We'll surface educational content, low-risk insights, and beginner-friendly analysis." },
-  Intermediate: { icon: '📊', desc: "You have solid foundations. We'll show deeper market analysis, prediction markets, and balanced risk insights." },
-  Advanced: { icon: '🚀', desc: "You know your way around markets. We'll prioritize advanced analytics and sophisticated setups." },
-  Expert: { icon: '⚡', desc: "You're a seasoned investor. We'll give you the full firehose — real-time signals, complex markets, institutional-grade analysis." },
+  Beginner: {
+    icon: '🌱',
+    desc: "You're just getting started. We'll surface educational content, low-risk insights, and beginner-friendly analysis.",
+  },
+  Intermediate: {
+    icon: '📊',
+    desc: "You have solid foundations. We'll show deeper market analysis, prediction markets, and balanced risk insights.",
+  },
+  Advanced: {
+    icon: '🚀',
+    desc: "You know your way around markets. We'll prioritize advanced analytics and sophisticated setups.",
+  },
+  Expert: {
+    icon: '⚡',
+    desc: "You're a seasoned investor. We'll give you the full firehose — real-time signals, complex markets, institutional-grade analysis.",
+  },
 };
 
 export function InvestorQuestionnaire({ userId, onComplete }) {
   const onCompleteRef = useRef(onComplete);
-  useEffect(() => { onCompleteRef.current = onComplete; }, [onComplete]);
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
   const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState({});
   const [multiSelections, setMultiSelections] = useState({});
@@ -130,24 +153,27 @@ export function InvestorQuestionnaire({ userId, onComplete }) {
   const [animating, setAnimating] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const finalizeProfile = useCallback(async (finalAnswers) => {
-    if (!userId) return;
-    const profile = computeProfile(finalAnswers);
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          investor_questionnaire: finalAnswers,
-          investor_questionnaire_completed: true,
-          investor_profile: profile,
-        })
-        .eq('id', userId);
-      if (error) console.error('[InvestorQuestionnaire]', error);
-    } catch (e) {
-      console.error('[InvestorQuestionnaire]', e);
-    }
-    setDone(true);
-  }, [userId]);
+  const finalizeProfile = useCallback(
+    async (finalAnswers) => {
+      if (!userId) return;
+      const profile = computeProfile(finalAnswers);
+      try {
+        const { error } = await supabase
+          .from('profiles')
+          .update({
+            investor_questionnaire: finalAnswers,
+            investor_questionnaire_completed: true,
+            investor_profile: profile,
+          })
+          .eq('id', userId);
+        if (error) console.error('[InvestorQuestionnaire]', error);
+      } catch (e) {
+        console.error('[InvestorQuestionnaire]', e);
+      }
+      setDone(true);
+    },
+    [userId],
+  );
 
   useEffect(() => {
     if (!userId) return;
@@ -191,19 +217,22 @@ export function InvestorQuestionnaire({ userId, onComplete }) {
     };
   }, [userId, finalizeProfile, onComplete]);
 
-  const saveProgress = useCallback(async (updatedAnswers) => {
-    if (!userId) return;
-    setSaving(true);
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ investor_questionnaire: updatedAnswers })
-        .eq('id', userId);
-      if (error) console.error('[InvestorQuestionnaire] save', error);
-    } finally {
-      setSaving(false);
-    }
-  }, [userId]);
+  const saveProgress = useCallback(
+    async (updatedAnswers) => {
+      if (!userId) return;
+      setSaving(true);
+      try {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ investor_questionnaire: updatedAnswers })
+          .eq('id', userId);
+        if (error) console.error('[InvestorQuestionnaire] save', error);
+      } finally {
+        setSaving(false);
+      }
+    },
+    [userId],
+  );
 
   const q = QUESTIONS[currentQ];
   const progress = (currentQ / QUESTIONS.length) * 100;
@@ -285,7 +314,9 @@ export function InvestorQuestionnaire({ userId, onComplete }) {
           <button type="button" className="iq-cta-btn" onClick={() => onCompleteRef.current?.()}>
             Continue to Ezana →
           </button>
-          <p className="iq-footnote">Your profile shapes what you see. Update it anytime in Settings.</p>
+          <p className="iq-footnote">
+            Your profile shapes what you see. Update it anytime in Settings.
+          </p>
         </div>
       </div>
     );

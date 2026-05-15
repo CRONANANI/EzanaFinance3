@@ -7,7 +7,7 @@ import { useOrg } from '@/contexts/OrgContext';
 import { HeroSparkline } from '@/components/dashboard/HeroSparkline';
 import { usePlaidPortfolioSummary } from '@/hooks/usePlaidPortfolioSummary';
 import { usePortfolioValueSeries } from '@/hooks/usePortfolioValueSeries';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 import { useMockPortfolio } from '@/hooks/useMockPortfolio';
 import { useWatchlists } from '@/hooks/useWatchlists';
 import './home-dashboard.css';
@@ -72,17 +72,70 @@ function sectorColor(sectorName) {
 /** TMT team: industry-level breakdown instead of broad sectors */
 const TMT_INDUSTRY_DATA = [
   { name: 'Software', detail: 'SaaS, AI', pct: 32, value: 63584.0, color: '#3b82f6' },
-  { name: 'Hardware', detail: 'Devices, Semiconductors', pct: 38, value: 75506.0, color: '#10b981' },
-  { name: 'Media', detail: 'Streaming, Advertising, Gaming', pct: 19, value: 37753.0, color: '#a78bfa' },
-  { name: 'Telecommunications', detail: '5G, Internet Services', pct: 11, value: 21857.0, color: '#f59e0b' },
+  {
+    name: 'Hardware',
+    detail: 'Devices, Semiconductors',
+    pct: 38,
+    value: 75506.0,
+    color: '#10b981',
+  },
+  {
+    name: 'Media',
+    detail: 'Streaming, Advertising, Gaming',
+    pct: 19,
+    value: 37753.0,
+    color: '#a78bfa',
+  },
+  {
+    name: 'Telecommunications',
+    detail: '5G, Internet Services',
+    pct: 11,
+    value: 21857.0,
+    color: '#f59e0b',
+  },
 ];
 
 const RECENT_TRANSACTIONS = [
-  { company: 'Meta', ticker: 'META', date: '10 Dec 2025', amount: 954.7, positive: true, txId: '#784512372' },
-  { company: 'Uber', ticker: 'UBER', date: '10 Dec 2025', amount: 954.7, positive: false, txId: '#784512371' },
-  { company: 'NVIDIA', ticker: 'NVDA', date: '09 Dec 2025', amount: 954.7, positive: true, txId: '#784512370' },
-  { company: 'Apple', ticker: 'AAPL', date: '08 Dec 2025', amount: 1240.5, positive: true, txId: '#784512369' },
-  { company: 'Microsoft', ticker: 'MSFT', date: '07 Dec 2025', amount: 980.75, positive: true, txId: '#784512368' },
+  {
+    company: 'Meta',
+    ticker: 'META',
+    date: '10 Dec 2025',
+    amount: 954.7,
+    positive: true,
+    txId: '#784512372',
+  },
+  {
+    company: 'Uber',
+    ticker: 'UBER',
+    date: '10 Dec 2025',
+    amount: 954.7,
+    positive: false,
+    txId: '#784512371',
+  },
+  {
+    company: 'NVIDIA',
+    ticker: 'NVDA',
+    date: '09 Dec 2025',
+    amount: 954.7,
+    positive: true,
+    txId: '#784512370',
+  },
+  {
+    company: 'Apple',
+    ticker: 'AAPL',
+    date: '08 Dec 2025',
+    amount: 1240.5,
+    positive: true,
+    txId: '#784512369',
+  },
+  {
+    company: 'Microsoft',
+    ticker: 'MSFT',
+    date: '07 Dec 2025',
+    amount: 980.75,
+    positive: true,
+    txId: '#784512368',
+  },
 ];
 
 function getGreeting() {
@@ -93,7 +146,12 @@ function getGreeting() {
 }
 
 function formatLongDate() {
-  return new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  return new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  });
 }
 
 /**
@@ -204,27 +262,49 @@ function DashboardSkeleton() {
     <div className="db-skeleton-wrap">
       <div className="db-skeleton-greeting">
         <div className="db-skel-bar db-skel-bar--lg" style={{ width: '320px' }} />
-        <div className="db-skel-bar db-skel-bar--sm" style={{ width: '440px', marginTop: '0.5rem' }} />
+        <div
+          className="db-skel-bar db-skel-bar--sm"
+          style={{ width: '440px', marginTop: '0.5rem' }}
+        />
       </div>
 
       <div className="db-skel-card db-skel-card--hero">
         <div className="db-skel-bar db-skel-bar--md" style={{ width: '120px' }} />
-        <div className="db-skel-bar db-skel-bar--xl" style={{ width: '320px', marginTop: '0.65rem' }} />
-        <div className="db-skel-bar db-skel-bar--sm" style={{ width: '180px', marginTop: '0.5rem' }} />
+        <div
+          className="db-skel-bar db-skel-bar--xl"
+          style={{ width: '320px', marginTop: '0.65rem' }}
+        />
+        <div
+          className="db-skel-bar db-skel-bar--sm"
+          style={{ width: '180px', marginTop: '0.5rem' }}
+        />
         <div className="db-skel-bar db-skel-bar--chart" style={{ marginTop: '1.5rem' }} />
       </div>
 
       <div className="db-skel-row" style={{ gridTemplateColumns: '1fr 320px' }}>
         <div className="db-skel-card">
           <div className="db-skel-bar db-skel-bar--md" style={{ width: '120px' }} />
-          <div className="db-skel-bar db-skel-bar--md" style={{ width: '100%', marginTop: '1rem' }} />
-          <div className="db-skel-bar db-skel-bar--md" style={{ width: '90%', marginTop: '0.5rem' }} />
-          <div className="db-skel-bar db-skel-bar--md" style={{ width: '85%', marginTop: '0.5rem' }} />
+          <div
+            className="db-skel-bar db-skel-bar--md"
+            style={{ width: '100%', marginTop: '1rem' }}
+          />
+          <div
+            className="db-skel-bar db-skel-bar--md"
+            style={{ width: '90%', marginTop: '0.5rem' }}
+          />
+          <div
+            className="db-skel-bar db-skel-bar--md"
+            style={{ width: '85%', marginTop: '0.5rem' }}
+          />
         </div>
         <div className="db-skel-card">
           <div className="db-skel-bar db-skel-bar--md" style={{ width: '80px' }} />
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="db-skel-bar db-skel-bar--md" style={{ width: '100%', marginTop: '0.85rem' }} />
+            <div
+              key={i}
+              className="db-skel-bar db-skel-bar--md"
+              style={{ width: '100%', marginTop: '0.85rem' }}
+            />
           ))}
         </div>
       </div>
@@ -233,8 +313,14 @@ function DashboardSkeleton() {
         {[1, 2, 3].map((i) => (
           <div key={i} className="db-skel-card db-skel-card--short">
             <div className="db-skel-bar db-skel-bar--md" style={{ width: '100px' }} />
-            <div className="db-skel-bar db-skel-bar--xl" style={{ width: '60%', marginTop: '1.25rem' }} />
-            <div className="db-skel-bar db-skel-bar--sm" style={{ width: '80%', marginTop: '0.5rem' }} />
+            <div
+              className="db-skel-bar db-skel-bar--xl"
+              style={{ width: '60%', marginTop: '1.25rem' }}
+            />
+            <div
+              className="db-skel-bar db-skel-bar--sm"
+              style={{ width: '80%', marginTop: '0.5rem' }}
+            />
           </div>
         ))}
       </div>
@@ -248,11 +334,18 @@ function DashboardSkeleton() {
 export default function HomeDashboardPage() {
   const { user } = useAuth();
   const { isOrgUser, orgRole, orgData } = useOrg();
-  const { connected: plaidConnected, summary: plaidSummary, isLoading: plaidSummaryLoading } =
-    usePlaidPortfolioSummary();
+  const {
+    connected: plaidConnected,
+    summary: plaidSummary,
+    isLoading: plaidSummaryLoading,
+  } = usePlaidPortfolioSummary();
   const [timeframe, setTimeframe] = useState('1M');
-  const { points: valueSeriesDisplayPoints, dataForCurrentRange, isLoading: valueSeriesLoading, error: valueSeriesError } =
-    usePortfolioValueSeries(timeframe);
+  const {
+    points: valueSeriesDisplayPoints,
+    dataForCurrentRange,
+    isLoading: valueSeriesLoading,
+    error: valueSeriesError,
+  } = usePortfolioValueSeries(timeframe);
   const [liveQuotes, setLiveQuotes] = useState({});
   const [plaidHoldingsPayload, setPlaidHoldingsPayload] = useState(null);
   const [holdingsPage, setHoldingsPage] = useState(0);
@@ -310,7 +403,10 @@ export default function HomeDashboardPage() {
 
   useEffect(() => {
     if (userWatchlists.length > 0) {
-      if (!selectedHomeWatchlistId || !userWatchlists.some((w) => w.id === selectedHomeWatchlistId)) {
+      if (
+        !selectedHomeWatchlistId ||
+        !userWatchlists.some((w) => w.id === selectedHomeWatchlistId)
+      ) {
         setSelectedHomeWatchlistId(userWatchlists[0].id);
       }
     }
@@ -397,7 +493,14 @@ export default function HomeDashboardPage() {
         .sort((a, b) => b.positionValue - a.positionValue);
     }
     return [];
-  }, [useMock, mock.enrichedPositions, useLiveHoldings, plaidHoldingsPayload, timeframe, liveQuotes]);
+  }, [
+    useMock,
+    mock.enrichedPositions,
+    useLiveHoldings,
+    plaidHoldingsPayload,
+    timeframe,
+    liveQuotes,
+  ]);
 
   const holdingsPageCount = Math.max(1, Math.ceil(normalizedHoldings.length / HOLDINGS_PAGE_SIZE));
   const canHoldingsPrev = holdingsPage > 0;
@@ -484,10 +587,11 @@ export default function HomeDashboardPage() {
     };
   }, [plaidHoldingsPayload, useMock, mock.portfolio?.positions, userWatchlists]);
 
-  const userName = user?.user_metadata?.first_name
-    || user?.user_metadata?.full_name?.split(' ')[0]
-    || user?.email?.split('@')[0]
-    || 'Investor';
+  const userName =
+    user?.user_metadata?.first_name ||
+    user?.user_metadata?.full_name?.split(' ')[0] ||
+    user?.email?.split('@')[0] ||
+    'Investor';
 
   const greeting = getGreeting();
 
@@ -587,606 +691,753 @@ export default function HomeDashboardPage() {
         <DashboardSkeleton />
       ) : (
         <>
-      {/* ═══ GREETING ═══ */}
-      <div className="db-greeting-section">
-        <div>
-          <h1 className="db-greeting">
-            {greeting}, {userName}{' '}
-            <span className="db-greeting-waving" aria-hidden>
-              <i className="bi bi-hand-thumbs-up" />
-            </span>
-          </h1>
-          <p className="db-greeting-sub">
-            {useMock ? (
-              mock.totalPnl >= 0 ? (
-                <>
-                  Your mock portfolio is up{' '}
-                  <strong className="db-greeting-highlight">+{mock.totalPnlPct.toFixed(2)}%</strong> since you started — paper trading!
-                </>
-              ) : (
-                <>
-                  Your mock portfolio is down{' '}
-                  <strong className="db-greeting-highlight">{mock.totalPnlPct.toFixed(2)}%</strong> — adjust your strategy!
-                </>
-              )
-            ) : valueWindowFromApi && Math.abs(valueWindowFromApi.changePct) > 1e-6 ? (
-              valueWindowFromApi.changePct >= 0 ? (
-                <>
-                  Over your selected timeframe, portfolio value is up{' '}
-                  <strong className="db-greeting-highlight">+{valueWindowFromApi.changePct.toFixed(2)}%</strong>.
-                </>
-              ) : (
-                <>
-                  Over your selected timeframe, portfolio value is{' '}
-                  <strong className="db-greeting-highlight">{valueWindowFromApi.changePct.toFixed(2)}%</strong>.
-                </>
-              )
-            ) : typeof plaidSummary?.totalGainLossPercent === 'number' && plaidConnected ? (
-              <>
-                Overall vs cost basis:{' '}
-                <strong className="db-greeting-highlight">
-                  {plaidSummary.totalGainLossPercent >= 0 ? '+' : ''}
-                  {plaidSummary.totalGainLossPercent.toFixed(2)}%
-                </strong>
-              </>
-            ) : hasNoData ? (
-              <>Connect a brokerage or try Mock Trading to see personalized portfolio insights.</>
-            ) : (
-              <>Your portfolio summary updates as linked accounts sync.</>
-            )}
-          </p>
-          <p className="db-greeting-date">{formatLongDate()}</p>
-        </div>
-      </div>
-
-      {/* ═══ HERO: Portfolio Value Card ═══ */}
-      <div className="db-hero-card">
-        <div className="db-hero-card-header">
-          <Link href="/trading/mock" className="db-hero-card-title-link">
-            <h3 className="db-hero-card-title">
-              Portfolio Snapshot <i className="bi bi-arrow-up-right db-hero-card-title-icon" />
-            </h3>
-          </Link>
-        </div>
-        <div className="db-hero-body">
-        <div className="db-hero-left">
-          <div className="db-hero-top">
+          {/* ═══ GREETING ═══ */}
+          <div className="db-greeting-section">
             <div>
-              <span className="db-hero-label">Current Value <i className="bi bi-arrow-up-right" /></span>
-              <div className="db-hero-value">
-                {useMock || (plaidConnected && currentValue != null) ? (
-                  `$${Number(currentValue).toLocaleString(undefined, { minimumFractionDigits: 2 })}`
-                ) : (
-                  <span className="db-hero-value-placeholder">Connect a brokerage</span>
-                )}
-              </div>
-              <span className={`db-hero-change ${heroChangeToneClass}`}>
-                {valueWindowFromApi ? (
-                  <>
-                    {`${valueWindowFromApi.changePct >= 0 ? '+' : ''}${valueWindowFromApi.changePct.toFixed(2)}%`}
-                    <span className="db-hero-change-amt">
-                      {`${valueWindowFromApi.changeAbs >= 0 ? '+' : ''}$${valueWindowFromApi.changeAbs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                    </span>
-                    <span className="db-hero-tf-pill" style={{ fontSize: '0.65rem', marginLeft: 6, opacity: 0.75 }}>
-                      {timeframe}
-                    </span>
-                  </>
-                ) : useMock ? (
-                  <>
-                    {`${mock.totalPnlPct >= 0 ? '+' : ''}${mock.totalPnlPct.toFixed(2)}%`}
-                    <span className="db-hero-change-amt">
-                      {`${mock.totalPnl >= 0 ? '+' : '-'}$${Math.abs(mock.totalPnl).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                    </span>
-                  </>
+              <h1 className="db-greeting">
+                {greeting}, {userName}{' '}
+                <span className="db-greeting-waving" aria-hidden>
+                  <i className="bi bi-hand-thumbs-up" />
+                </span>
+              </h1>
+              <p className="db-greeting-sub">
+                {useMock ? (
+                  mock.totalPnl >= 0 ? (
+                    <>
+                      Your mock portfolio is up{' '}
+                      <strong className="db-greeting-highlight">
+                        +{mock.totalPnlPct.toFixed(2)}%
+                      </strong>{' '}
+                      since you started — paper trading!
+                    </>
+                  ) : (
+                    <>
+                      Your mock portfolio is down{' '}
+                      <strong className="db-greeting-highlight">
+                        {mock.totalPnlPct.toFixed(2)}%
+                      </strong>{' '}
+                      — adjust your strategy!
+                    </>
+                  )
+                ) : valueWindowFromApi && Math.abs(valueWindowFromApi.changePct) > 1e-6 ? (
+                  valueWindowFromApi.changePct >= 0 ? (
+                    <>
+                      Over your selected timeframe, portfolio value is up{' '}
+                      <strong className="db-greeting-highlight">
+                        +{valueWindowFromApi.changePct.toFixed(2)}%
+                      </strong>
+                      .
+                    </>
+                  ) : (
+                    <>
+                      Over your selected timeframe, portfolio value is{' '}
+                      <strong className="db-greeting-highlight">
+                        {valueWindowFromApi.changePct.toFixed(2)}%
+                      </strong>
+                      .
+                    </>
+                  )
                 ) : typeof plaidSummary?.totalGainLossPercent === 'number' && plaidConnected ? (
                   <>
-                    {`${plaidSummary.totalGainLossPercent >= 0 ? '+' : ''}${plaidSummary.totalGainLossPercent.toFixed(2)}%`}
-                    <span className="db-hero-change-amt">
-                      {typeof plaidSummary.totalGainLoss === 'number'
-                        ? `${plaidSummary.totalGainLoss >= 0 ? '+' : '-'}$${Math.abs(plaidSummary.totalGainLoss).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                        : ''}
-                    </span>
-                    <span className="db-hero-tf-pill" style={{ fontSize: '0.65rem', marginLeft: 6, opacity: 0.75 }}>
-                      vs cost basis
-                    </span>
+                    Overall vs cost basis:{' '}
+                    <strong className="db-greeting-highlight">
+                      {plaidSummary.totalGainLossPercent >= 0 ? '+' : ''}
+                      {plaidSummary.totalGainLossPercent.toFixed(2)}%
+                    </strong>
                   </>
-                ) : (
-                  <span className="db-hero-change is-muted">
-                    Portfolio performance for this range appears when your account is linked.
-                  </span>
-                )}
-              </span>
-            </div>
-            <div className="db-hero-timeframes">
-              {['1D', '7D', '1M', '3M', '6M', '1Y', 'ALL'].map((tf) => (
-                <button
-                  key={tf}
-                  className={`db-tf-btn ${timeframe === tf ? 'active' : ''}`}
-                  onClick={() => setTimeframe(tf)}
-                >{tf}</button>
-              ))}
-            </div>
-          </div>
-
-          {/* Mini stats row */}
-          <div className="db-hero-stats">
-            <div className="db-hero-stat">
-              <span className="db-hero-stat-label">
-                {useMock ? 'Open Positions' : 'Total Companies'} <i className="bi bi-arrow-up-right" />
-              </span>
-              <span className="db-hero-stat-value">
-                {useMock ? (
-                  mock.enrichedPositions.length
-                ) : plaidConnected && typeof plaidSummary?.positionCount === 'number' ? (
-                  plaidSummary.positionCount
-                ) : normalizedHoldings.length > 0 ? (
-                  normalizedHoldings.length
-                ) : (
-                  <span className="db-hero-stat-muted">Link an account</span>
-                )}
-              </span>
-            </div>
-            <div className="db-hero-stat">
-              <span className="db-hero-stat-label">Cash Balance <i className="bi bi-arrow-up-right" /></span>
-              <span className="db-hero-stat-value">
-                {useMock ? (
+                ) : hasNoData ? (
                   <>
-                    $
-                    {mock.cash.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    Connect a brokerage or try Mock Trading to see personalized portfolio insights.
                   </>
                 ) : (
-                  <span className="db-hero-stat-muted">Held at your institution</span>
+                  <>Your portfolio summary updates as linked accounts sync.</>
                 )}
-              </span>
-            </div>
-            <div className="db-hero-stat">
-              <span className="db-hero-stat-label">
-                {useMock ? 'Total P&L' : 'Total gain / loss'} <i className="bi bi-arrow-up-right" />
-              </span>
-              <span
-                className="db-hero-stat-value"
-                style={useMock ? { color: mock.totalPnl >= 0 ? '#10b981' : '#ef4444' } : {}}
-              >
-                {useMock ? (
-                  `${mock.totalPnl >= 0 ? '+' : ''}$${Math.abs(mock.totalPnl).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                ) : typeof plaidSummary?.totalGainLoss === 'number' && plaidConnected ? (
-                  `${plaidSummary.totalGainLoss >= 0 ? '+' : '-'}$${Math.abs(plaidSummary.totalGainLoss).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                ) : (
-                  <span className="db-hero-stat-muted">No cost basis yet</span>
-                )}
-              </span>
+              </p>
+              <p className="db-greeting-date">{formatLongDate()}</p>
             </div>
           </div>
-        </div>
 
-        {/* Chart area */}
-        <HeroSparkline
-          portfolioValue={currentValue != null ? currentValue : undefined}
-          changePct={useMock ? mock.totalPnlPct : undefined}
-          seriesPoints={sparklinePoints}
-          range={timeframe}
-          isLoading={valueSeriesLoading}
-          loadError={valueSeriesError}
-        />
-        </div>
-      </div>
+          {/* ═══ HERO: Portfolio Value Card ═══ */}
+          <div className="db-hero-card">
+            <div className="db-hero-card-header">
+              <Link href="/trading/mock" className="db-hero-card-title-link">
+                <h3 className="db-hero-card-title">
+                  Portfolio Snapshot <i className="bi bi-arrow-up-right db-hero-card-title-icon" />
+                </h3>
+              </Link>
+            </div>
+            <div className="db-hero-body">
+              <div className="db-hero-left">
+                <div className="db-hero-top">
+                  <div>
+                    <span className="db-hero-label">
+                      Current Value <i className="bi bi-arrow-up-right" />
+                    </span>
+                    <div className="db-hero-value">
+                      {useMock || (plaidConnected && currentValue != null) ? (
+                        `$${Number(currentValue).toLocaleString(undefined, { minimumFractionDigits: 2 })}`
+                      ) : (
+                        <span className="db-hero-value-placeholder">Connect a brokerage</span>
+                      )}
+                    </div>
+                    <span className={`db-hero-change ${heroChangeToneClass}`}>
+                      {valueWindowFromApi ? (
+                        <>
+                          {`${valueWindowFromApi.changePct >= 0 ? '+' : ''}${valueWindowFromApi.changePct.toFixed(2)}%`}
+                          <span className="db-hero-change-amt">
+                            {`${valueWindowFromApi.changeAbs >= 0 ? '+' : ''}$${valueWindowFromApi.changeAbs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                          </span>
+                          <span
+                            className="db-hero-tf-pill"
+                            style={{ fontSize: '0.65rem', marginLeft: 6, opacity: 0.75 }}
+                          >
+                            {timeframe}
+                          </span>
+                        </>
+                      ) : useMock ? (
+                        <>
+                          {`${mock.totalPnlPct >= 0 ? '+' : ''}${mock.totalPnlPct.toFixed(2)}%`}
+                          <span className="db-hero-change-amt">
+                            {`${mock.totalPnl >= 0 ? '+' : '-'}$${Math.abs(mock.totalPnl).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                          </span>
+                        </>
+                      ) : typeof plaidSummary?.totalGainLossPercent === 'number' &&
+                        plaidConnected ? (
+                        <>
+                          {`${plaidSummary.totalGainLossPercent >= 0 ? '+' : ''}${plaidSummary.totalGainLossPercent.toFixed(2)}%`}
+                          <span className="db-hero-change-amt">
+                            {typeof plaidSummary.totalGainLoss === 'number'
+                              ? `${plaidSummary.totalGainLoss >= 0 ? '+' : '-'}$${Math.abs(plaidSummary.totalGainLoss).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                              : ''}
+                          </span>
+                          <span
+                            className="db-hero-tf-pill"
+                            style={{ fontSize: '0.65rem', marginLeft: 6, opacity: 0.75 }}
+                          >
+                            vs cost basis
+                          </span>
+                        </>
+                      ) : (
+                        <span className="db-hero-change is-muted">
+                          Portfolio performance for this range appears when your account is linked.
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                  <div className="db-hero-timeframes">
+                    {['1D', '7D', '1M', '3M', '6M', '1Y', 'ALL'].map((tf) => (
+                      <button
+                        key={tf}
+                        className={`db-tf-btn ${timeframe === tf ? 'active' : ''}`}
+                        onClick={() => setTimeframe(tf)}
+                      >
+                        {tf}
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
-      {/* ═══ ROW 2: Portfolios + Watchlist ═══ */}
-      <div className="db-row-2">
-        {/* My Holdings */}
-        <div className="db-card db-portfolios-card">
-          <div className="db-card-header">
-            <div className="db-holdings-header-left">
-              <button
-                type="button"
-                className="db-holdings-nav-btn"
-                disabled={!canHoldingsPrev}
-                onClick={() => setHoldingsPage((p) => Math.max(0, p - 1))}
-                aria-label="Previous holdings"
-              >
-                <i className="bi bi-chevron-left" style={{ color: '#10b981', fontSize: '1rem', cursor: 'pointer' }} />
-              </button>
-              <h3>My Holdings</h3>
-              <button
-                type="button"
-                className="db-holdings-nav-btn"
-                disabled={!canHoldingsNext}
-                onClick={() => setHoldingsPage((p) => Math.min(holdingsPageCount - 1, p + 1))}
-                aria-label="Next holdings"
-              >
-                <i className="bi bi-chevron-right" style={{ color: '#10b981', fontSize: '1rem', cursor: 'pointer' }} />
-              </button>
-            </div>
-            <div className="db-card-header-right">
-              <div className="db-tf-group-sm">
-                {['1D', '7D', '1M', '3M', '6M', '1Y', 'ALL'].map((tf) => (
-                  <button key={tf} className={`db-tf-btn-sm ${timeframe === tf ? 'active' : ''}`} onClick={() => setTimeframe(tf)}>{tf}</button>
-                ))}
-              </div>
-              <button className="db-icon-btn" title="Export"><i className="bi bi-box-arrow-up-right" /></button>
-            </div>
-          </div>
-          <div className="db-portfolio-grid">
-            {pagedHoldings.length === 0 ? (
-              <p className="db-holdings-empty">No holdings to display. Link an account to see positions here.</p>
-            ) : (
-              pagedHoldings.map((h) => {
-                const ch = Number(h.change);
-                const chSafe = Number.isFinite(ch) ? ch : 0;
-                return (
-                  <Link
-                    key={h.ticker}
-                    href={`/trading/mock?symbol=${encodeURIComponent(h.ticker)}`}
-                    className={`db-holding-card db-holding-card-link ${chSafe >= 0 ? 'db-holding-positive' : 'db-holding-negative'}`}
-                    style={{ borderLeftColor: sectorColor(h.sector) }}
-                  >
-                    <div className="db-holding-top">
-                      <span className="db-holding-dot" style={{ background: sectorColor(h.sector) }} />
-                      <div className="db-holding-info">
-                        <div className="db-holding-title-row">
-                          <span className="db-holding-label">
-                            {h.name} ({h.ticker})
-                          </span>
-                          <span className={`db-holding-per-share ${chSafe >= 0 ? 'positive' : 'negative'}`}>
-                            ${h.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{' '}
-                            per share
-                          </span>
-                        </div>
-                        <span className="db-holding-value">
+                {/* Mini stats row */}
+                <div className="db-hero-stats">
+                  <div className="db-hero-stat">
+                    <span className="db-hero-stat-label">
+                      {useMock ? 'Open Positions' : 'Total Companies'}{' '}
+                      <i className="bi bi-arrow-up-right" />
+                    </span>
+                    <span className="db-hero-stat-value">
+                      {useMock ? (
+                        mock.enrichedPositions.length
+                      ) : plaidConnected && typeof plaidSummary?.positionCount === 'number' ? (
+                        plaidSummary.positionCount
+                      ) : normalizedHoldings.length > 0 ? (
+                        normalizedHoldings.length
+                      ) : (
+                        <span className="db-hero-stat-muted">Link an account</span>
+                      )}
+                    </span>
+                  </div>
+                  <div className="db-hero-stat">
+                    <span className="db-hero-stat-label">
+                      Cash Balance <i className="bi bi-arrow-up-right" />
+                    </span>
+                    <span className="db-hero-stat-value">
+                      {useMock ? (
+                        <>
                           $
-                          {h.positionValue.toLocaleString(undefined, {
+                          {mock.cash.toLocaleString('en-US', {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2,
                           })}
-                        </span>
-                        <span className={`db-holding-change ${chSafe >= 0 ? 'positive' : 'negative'}`}>
-                          {chSafe >= 0 ? '+' : ''}
-                          {chSafe.toFixed(2)}% ({h.changeDollar >= 0 ? '+' : ''}$
-                          {Math.abs(h.changeDollar).toFixed(2)})
-                        </span>
-                        <span className="db-holding-qty">
-                          Quantity: {Number.isFinite(Number(h.qty)) ? Number(h.qty).toFixed(1) : h.qty}
-                        </span>
-                      </div>
-                    </div>
-                    {h.worst && <span className="db-holding-worst-badge">Underperforming</span>}
-                    <span className="db-holding-view-details">View Details</span>
-                  </Link>
-                );
-              })
-            )}
-          </div>
-        </div>
-
-        {/* Watchlist */}
-        <div className="db-card db-watchlist-card">
-          <div className="db-card-header" style={{ alignItems: 'flex-start', gap: '0.5rem', flexWrap: 'wrap' }}>
-            <h3 style={{ margin: 0 }}>Watchlist</h3>
-            {userWatchlists.length > 0 && (
-              <select
-                value={selectedHomeWatchlistId || userWatchlists[0]?.id || ''}
-                onChange={(e) => setSelectedHomeWatchlistId(e.target.value)}
-                style={{
-                  background: 'rgba(16, 185, 129, 0.06)',
-                  border: '1px solid rgba(16, 185, 129, 0.15)',
-                  borderRadius: '6px',
-                  color: 'var(--text-primary, #f0f6fc)',
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  padding: '0.3rem 0.5rem',
-                  cursor: 'pointer',
-                  outline: 'none',
-                }}
-              >
-                {userWatchlists.map((wl) => (
-                  <option key={wl.id} value={wl.id}>{wl.label}</option>
-                ))}
-              </select>
-            )}
-            <button className="db-icon-btn" title="Add" style={{ marginLeft: 'auto' }}><i className="bi bi-plus-lg" /></button>
-          </div>
-          <div className="db-watchlist-list">
-            {watchlistRows.length === 0 ? (
-              <div className="db-watchlist-empty">
-                <i className="bi bi-bookmark" style={{ fontSize: '2rem', color: '#6b7280', marginBottom: '0.5rem' }} />
-                <p style={{ margin: 0, fontSize: '0.875rem', color: '#8b949e' }}>Empty watchlist — add stocks to track</p>
-                <button className="db-icon-btn" style={{ marginTop: '0.75rem' }} title="Add stock"><i className="bi bi-plus-lg" /></button>
-              </div>
-            ) : (
-              watchlistRows.map((w) => {
-                const q = liveQuotes[w.ticker];
-                const px = q?.price ?? w.price;
-                const ch = q != null ? q.changePercent : w.change;
-                return (
-                <div key={w.ticker} className="db-watchlist-item">
-                  <div className="db-watchlist-left">
-                    <div className="db-watchlist-avatar">
-                      <span>{w.ticker[0]}</span>
-                    </div>
-                    <div>
-                      <span className="db-watchlist-ticker">{w.ticker}</span>
-                      <span className="db-watchlist-name">{w.name}</span>
-                    </div>
+                        </>
+                      ) : (
+                        <span className="db-hero-stat-muted">Held at your institution</span>
+                      )}
+                    </span>
                   </div>
-                  <div className="db-watchlist-right">
-                    <span className="db-watchlist-price">${px.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                    <span className={`db-watchlist-change ${ch >= 0 ? 'positive' : 'negative'}`}>
-                      <i className={`bi ${ch >= 0 ? 'bi-caret-up-fill' : 'bi-caret-down-fill'}`} style={{ fontSize: '0.625rem', marginRight: 2 }} />
-                      {ch >= 0 ? '+' : ''}{Number(ch).toFixed(2)}%
+                  <div className="db-hero-stat">
+                    <span className="db-hero-stat-label">
+                      {useMock ? 'Total P&L' : 'Total gain / loss'}{' '}
+                      <i className="bi bi-arrow-up-right" />
+                    </span>
+                    <span
+                      className="db-hero-stat-value"
+                      style={useMock ? { color: mock.totalPnl >= 0 ? '#10b981' : '#ef4444' } : {}}
+                    >
+                      {useMock ? (
+                        `${mock.totalPnl >= 0 ? '+' : ''}$${Math.abs(mock.totalPnl).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                      ) : typeof plaidSummary?.totalGainLoss === 'number' && plaidConnected ? (
+                        `${plaidSummary.totalGainLoss >= 0 ? '+' : '-'}$${Math.abs(plaidSummary.totalGainLoss).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                      ) : (
+                        <span className="db-hero-stat-muted">No cost basis yet</span>
+                      )}
                     </span>
                   </div>
                 </div>
-              );
-              })
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* ═══ ROW 3: Profits + Sectors + Transactions ═══ */}
-      <div className="db-row-3">
-        {/* Total Profits — fixed height; list scrolls (positions by value, largest first) */}
-        <div className="db-card db-profits-card" data-dashboard-card>
-          <div className="db-card-header">
-            <h3>Total Profits</h3>
-            <Link href="/trading" className="db-icon-btn" title="View trading" aria-label="View trading">
-              <i className="bi bi-box-arrow-up-right" />
-            </Link>
-          </div>
-          <div className="db-profits-body">
-            <div className="db-profits-chart-wrap">
-              <div className="db-profits-summary">
-                <div className="db-profits-summary-value">
-                  {(() => {
-                    const total = useMock
-                      ? mock.totalPnl
-                      : typeof plaidSummary?.totalGainLoss === 'number'
-                        ? plaidSummary.totalGainLoss
-                        : null;
-                    if (total === null) return '—';
-                    return `${total >= 0 ? '+' : '-'}$${Math.abs(total).toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
-                  })()}
-                </div>
-                <div className="db-profits-summary-label">
-                  {(() => {
-                    const pct = useMock
-                      ? mock.totalPnlPct
-                      : typeof plaidSummary?.totalGainLossPercent === 'number'
-                        ? plaidSummary.totalGainLossPercent
-                        : null;
-                    if (pct === null) {
-                      return totalProfitsRows.length === 0 ? 'No positions' : 'Total P&L';
-                    }
-                    return `${pct >= 0 ? '+' : ''}${pct.toFixed(2)}% total`;
-                  })()}
-                </div>
               </div>
 
-              {profitPositionWeights.length > 0 &&
-                (() => {
-                  const rows = profitPositionWeights
-                    .map((p) => {
-                      const magnitude =
-                        typeof p.pnl === 'number' ? Math.abs(p.pnl) : p.weightPct || 0;
-                      const isPositive = typeof p.pnl === 'number' ? p.pnl >= 0 : true;
-                      return { ...p, magnitude, isPositive };
-                    })
-                    .filter((r) => r.magnitude > 0)
-                    .sort((a, b) => b.magnitude - a.magnitude)
-                    .slice(0, 6);
-
-                  if (rows.length === 0) return null;
-
-                  const maxMagnitude = rows.reduce((m, r) => Math.max(m, r.magnitude), 0) || 1;
-
-                  return (
-                    <div className="db-profits-bars" role="list" aria-label="Profit by company">
-                      {rows.map((r) => {
-                        const widthPct = (r.magnitude / maxMagnitude) * 100;
-                        const barColor =
-                          typeof r.pnl === 'number'
-                            ? r.isPositive
-                              ? '#10b981'
-                              : '#ef4444'
-                            : r.color || '#6b7280';
-                        const valueLabel =
-                          typeof r.pnl === 'number'
-                            ? `${r.isPositive ? '+' : '-'}$${Math.abs(r.pnl).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
-                            : `${(r.weightPct || 0).toFixed(0)}%`;
-
-                        return (
-                          <div key={r.symbol} role="listitem" className="db-profits-bar-row">
-                            <span className="db-profits-bar-symbol">{r.symbol}</span>
-                            <div className="db-profits-bar-track">
-                              <div
-                                className="db-profits-bar-fill"
-                                style={{ width: `${widthPct}%`, background: barColor }}
-                              />
-                            </div>
-                            <span
-                              className="db-profits-bar-value"
-                              style={{ color: typeof r.pnl === 'number' ? barColor : undefined }}
-                            >
-                              {valueLabel}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  );
-                })()}
-            </div>
-            <div className="db-profits-legend-scroll">
-              {totalProfitsRows.length === 0 ? (
-                <p className="db-profits-empty" style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--db-muted)' }}>
-                  No positions to show. {useMock ? 'Add mock positions' : 'Link an account'} to see P&amp;L by holding.
-                </p>
-              ) : (
-                <ul className="db-profits-position-list">
-                  {profitPositionWeights.map((p) => {
-                    const pnl = p.pnl;
-                    const hasPnl = typeof pnl === 'number';
-                    return (
-                      <li key={p.symbol} className="db-profits-legend-item">
-                        <span className="db-legend-dot" style={{ background: p.color }} />
-                        <span className="db-legend-label">{p.symbol}</span>
-                        <span className="db-legend-amt">
-                          {hasPnl
-                            ? `${pnl >= 0 ? '+' : '-'}$${Math.abs(pnl).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
-                            : typeof p.dayDelta === 'number'
-                              ? `Day ${p.dayDelta >= 0 ? '+' : ''}$${Math.abs(p.dayDelta).toFixed(0)}`
-                              : '—'}
-                        </span>
-                        <span className="db-legend-pct">{p.weightPct.toFixed(0)}%</span>
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Sector / Industry Distribution — pie chart with hover tooltips */}
-        <div className="db-card db-sector-card" data-dashboard-card>
-          <div className="db-card-header">
-            <h3>{isTmtTeamMember ? 'Industry Distribution' : 'Sector Distribution'}</h3>
-            {sectorRows.length > 0 && (
-              <span className="db-sector-total" aria-hidden>
-                {sectorRows.length} {sectorRows.length === 1 ? 'sector' : 'sectors'}
-              </span>
-            )}
-          </div>
-
-          {sectorRows.length === 0 ? (
-            <div className="db-sector-empty">
-              <i
-                className="bi bi-pie-chart"
-                style={{ fontSize: '1.75rem', color: 'rgba(16,185,129,0.25)', marginBottom: '0.5rem' }}
+              {/* Chart area */}
+              <HeroSparkline
+                portfolioValue={currentValue != null ? currentValue : undefined}
+                changePct={useMock ? mock.totalPnlPct : undefined}
+                seriesPoints={sparklinePoints}
+                range={timeframe}
+                isLoading={valueSeriesLoading}
+                loadError={valueSeriesError}
               />
-              <p style={{ color: '#6b7280', fontSize: '0.8125rem', textAlign: 'center', lineHeight: 1.5, margin: 0 }}>
-                No holdings yet.<br />
-                {useMock
-                  ? 'Place a trade in Mock Trading to see your sector breakdown.'
-                  : 'Connect a brokerage account to see your sector breakdown.'}
-              </p>
             </div>
-          ) : (
-            <div className="db-sector-body">
-              <div className="db-sector-pie-area">
-                <SectorPieChart sectors={sectorRows} size={140} />
-              </div>
+          </div>
 
-              <ul className="db-sector-legend">
-                {sectorRows.map((s) => {
-                  const isExpanded = expandedSector === s.name;
-                  const sectorHoldings = holdingsBySector[s.name] || [];
-                  const canExpand = sectorHoldings.length > 0; // TMT aggregate data has no per-position data
-
-                  return (
-                    <li key={s.name} className="db-sector-legend-row">
+          {/* ═══ ROW 2: Portfolios + Watchlist ═══ */}
+          <div className="db-row-2">
+            {/* My Holdings */}
+            <div className="db-card db-portfolios-card">
+              <div className="db-card-header">
+                <div className="db-holdings-header-left">
+                  <button
+                    type="button"
+                    className="db-holdings-nav-btn"
+                    disabled={!canHoldingsPrev}
+                    onClick={() => setHoldingsPage((p) => Math.max(0, p - 1))}
+                    aria-label="Previous holdings"
+                  >
+                    <i
+                      className="bi bi-chevron-left"
+                      style={{ color: '#10b981', fontSize: '1rem', cursor: 'pointer' }}
+                    />
+                  </button>
+                  <h3>My Holdings</h3>
+                  <button
+                    type="button"
+                    className="db-holdings-nav-btn"
+                    disabled={!canHoldingsNext}
+                    onClick={() => setHoldingsPage((p) => Math.min(holdingsPageCount - 1, p + 1))}
+                    aria-label="Next holdings"
+                  >
+                    <i
+                      className="bi bi-chevron-right"
+                      style={{ color: '#10b981', fontSize: '1rem', cursor: 'pointer' }}
+                    />
+                  </button>
+                </div>
+                <div className="db-card-header-right">
+                  <div className="db-tf-group-sm">
+                    {['1D', '7D', '1M', '3M', '6M', '1Y', 'ALL'].map((tf) => (
                       <button
-                        type="button"
-                        className={`db-sector-legend-item db-sector-legend-item-btn ${isExpanded ? 'is-expanded' : ''}`}
-                        onClick={() => {
-                          if (!canExpand) return;
-                          setExpandedSector(isExpanded ? null : s.name);
-                        }}
-                        disabled={!canExpand}
-                        aria-expanded={canExpand ? isExpanded : undefined}
-                        aria-controls={canExpand ? `db-sector-holdings-${s.name.replace(/\s+/g, '-')}` : undefined}
+                        key={tf}
+                        className={`db-tf-btn-sm ${timeframe === tf ? 'active' : ''}`}
+                        onClick={() => setTimeframe(tf)}
                       >
-                        <span className="db-sector-legend-dot" style={{ background: s.color }} aria-hidden />
-                        <span className="db-sector-legend-name">{s.name}</span>
-                        <span className="db-sector-legend-pct">{s.pct}%</span>
-                        {canExpand && (
-                          <i
-                            className={`bi bi-chevron-${isExpanded ? 'up' : 'down'} db-sector-legend-chevron`}
-                            aria-hidden
-                          />
-                        )}
+                        {tf}
                       </button>
-
-                      {isExpanded && canExpand && (
-                        <ul
-                          id={`db-sector-holdings-${s.name.replace(/\s+/g, '-')}`}
-                          className="db-sector-holdings-list"
-                        >
-                          {sectorHoldings.map((h) => (
-                            <li key={h.symbol} className="db-sector-holding-row">
-                              <span className="db-sector-holding-symbol">{h.symbol}</span>
-                              <span className="db-sector-holding-qty">
-                                {h.qty} {h.qty === 1 ? 'share' : 'shares'}
-                              </span>
-                              <span className="db-sector-holding-value">
-                                ${h.posValue.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                    ))}
+                  </div>
+                  <button className="db-icon-btn" title="Export">
+                    <i className="bi bi-box-arrow-up-right" />
+                  </button>
+                </div>
+              </div>
+              <div className="db-portfolio-grid">
+                {pagedHoldings.length === 0 ? (
+                  <p className="db-holdings-empty">
+                    No holdings to display. Link an account to see positions here.
+                  </p>
+                ) : (
+                  pagedHoldings.map((h) => {
+                    const ch = Number(h.change);
+                    const chSafe = Number.isFinite(ch) ? ch : 0;
+                    return (
+                      <Link
+                        key={h.ticker}
+                        href={`/trading/mock?symbol=${encodeURIComponent(h.ticker)}`}
+                        className={`db-holding-card db-holding-card-link ${chSafe >= 0 ? 'db-holding-positive' : 'db-holding-negative'}`}
+                        style={{ borderLeftColor: sectorColor(h.sector) }}
+                      >
+                        <div className="db-holding-top">
+                          <span
+                            className="db-holding-dot"
+                            style={{ background: sectorColor(h.sector) }}
+                          />
+                          <div className="db-holding-info">
+                            <div className="db-holding-title-row">
+                              <span className="db-holding-label">
+                                {h.name} ({h.ticker})
                               </span>
                               <span
-                                className={`db-sector-holding-pnl ${h.pnlPct >= 0 ? 'is-up' : 'is-down'}`}
+                                className={`db-holding-per-share ${chSafe >= 0 ? 'positive' : 'negative'}`}
                               >
-                                {h.pnlPct >= 0 ? '+' : ''}{h.pnlPct.toFixed(2)}%
+                                $
+                                {h.price.toLocaleString(undefined, {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })}{' '}
+                                per share
                               </span>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          )}
-        </div>
-
-        {/* Recent Transactions — fixed height; list scrolls (newest first) */}
-        <div className="db-card db-transactions-card" data-dashboard-card>
-          <div className="db-card-header">
-            <h3>Recent Transactions</h3>
-            <Link href="/trading/dashboard" className="db-icon-btn" title="Trading activity" aria-label="View trading activity">
-              <i className="bi bi-box-arrow-up-right" />
-            </Link>
-          </div>
-          <div className="db-tx-table-header">
-            <span>Companies</span>
-            <span>Amount</span>
-            <span>Transaction ID</span>
-          </div>
-          <div className="db-tx-scroll">
-            <div className="db-tx-list">
-              {displayTransactions.length === 0 ? (
-                <p className="db-profits-empty" style={{ margin: '1rem 0.5rem', fontSize: '0.8125rem', color: 'var(--db-muted)' }}>
-                  {useMock ? 'No mock trades yet.' : 'Linked account activity will appear here.'}
-                </p>
-              ) : (
-                displayTransactions.map((tx) => {
-                  const q = tx.ticker ? liveQuotes[tx.ticker] : null;
-                  const rowKey = tx.id != null ? `tx-${tx.id}` : `tx-${tx.txId}`;
-                  return (
-                    <div key={rowKey} className="db-tx-item">
-                      <div className="db-tx-company">
-                        <div className="db-tx-avatar"><span>{tx.company[0]}</span></div>
-                        <div>
-                          <span className="db-tx-name">{tx.company} ({tx.ticker})</span>
-                          <span className="db-tx-date">{tx.date}</span>
-                          {q && (
-                            <span className="db-tx-date" style={{ display: 'block', color: '#9ca3af' }}>
-                              Last: ${q.price.toFixed(2)}
+                            </div>
+                            <span className="db-holding-value">
+                              $
+                              {h.positionValue.toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
                             </span>
-                          )}
+                            <span
+                              className={`db-holding-change ${chSafe >= 0 ? 'positive' : 'negative'}`}
+                            >
+                              {chSafe >= 0 ? '+' : ''}
+                              {chSafe.toFixed(2)}% ({h.changeDollar >= 0 ? '+' : ''}$
+                              {Math.abs(h.changeDollar).toFixed(2)})
+                            </span>
+                            <span className="db-holding-qty">
+                              Quantity:{' '}
+                              {Number.isFinite(Number(h.qty)) ? Number(h.qty).toFixed(1) : h.qty}
+                            </span>
+                          </div>
+                        </div>
+                        {h.worst && <span className="db-holding-worst-badge">Underperforming</span>}
+                        <span className="db-holding-view-details">View Details</span>
+                      </Link>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+
+            {/* Watchlist */}
+            <div className="db-card db-watchlist-card">
+              <div
+                className="db-card-header"
+                style={{ alignItems: 'flex-start', gap: '0.5rem', flexWrap: 'wrap' }}
+              >
+                <h3 style={{ margin: 0 }}>Watchlist</h3>
+                {userWatchlists.length > 0 && (
+                  <select
+                    value={selectedHomeWatchlistId || userWatchlists[0]?.id || ''}
+                    onChange={(e) => setSelectedHomeWatchlistId(e.target.value)}
+                    style={{
+                      background: 'rgba(16, 185, 129, 0.06)',
+                      border: '1px solid rgba(16, 185, 129, 0.15)',
+                      borderRadius: '6px',
+                      color: 'var(--text-primary, #f0f6fc)',
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      padding: '0.3rem 0.5rem',
+                      cursor: 'pointer',
+                      outline: 'none',
+                    }}
+                  >
+                    {userWatchlists.map((wl) => (
+                      <option key={wl.id} value={wl.id}>
+                        {wl.label}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                <button className="db-icon-btn" title="Add" style={{ marginLeft: 'auto' }}>
+                  <i className="bi bi-plus-lg" />
+                </button>
+              </div>
+              <div className="db-watchlist-list">
+                {watchlistRows.length === 0 ? (
+                  <div className="db-watchlist-empty">
+                    <i
+                      className="bi bi-bookmark"
+                      style={{ fontSize: '2rem', color: '#6b7280', marginBottom: '0.5rem' }}
+                    />
+                    <p style={{ margin: 0, fontSize: '0.875rem', color: '#8b949e' }}>
+                      Empty watchlist — add stocks to track
+                    </p>
+                    <button
+                      className="db-icon-btn"
+                      style={{ marginTop: '0.75rem' }}
+                      title="Add stock"
+                    >
+                      <i className="bi bi-plus-lg" />
+                    </button>
+                  </div>
+                ) : (
+                  watchlistRows.map((w) => {
+                    const q = liveQuotes[w.ticker];
+                    const px = q?.price ?? w.price;
+                    const ch = q != null ? q.changePercent : w.change;
+                    return (
+                      <div key={w.ticker} className="db-watchlist-item">
+                        <div className="db-watchlist-left">
+                          <div className="db-watchlist-avatar">
+                            <span>{w.ticker[0]}</span>
+                          </div>
+                          <div>
+                            <span className="db-watchlist-ticker">{w.ticker}</span>
+                            <span className="db-watchlist-name">{w.name}</span>
+                          </div>
+                        </div>
+                        <div className="db-watchlist-right">
+                          <span className="db-watchlist-price">
+                            $
+                            {px.toLocaleString(undefined, {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
+                          </span>
+                          <span
+                            className={`db-watchlist-change ${ch >= 0 ? 'positive' : 'negative'}`}
+                          >
+                            <i
+                              className={`bi ${ch >= 0 ? 'bi-caret-up-fill' : 'bi-caret-down-fill'}`}
+                              style={{ fontSize: '0.625rem', marginRight: 2 }}
+                            />
+                            {ch >= 0 ? '+' : ''}
+                            {Number(ch).toFixed(2)}%
+                          </span>
                         </div>
                       </div>
-                      <span className={`db-tx-amount ${tx.positive ? 'positive' : 'negative'}`}>
-                        {tx.positive ? '+' : '-'}${tx.amount.toLocaleString()}
-                      </span>
-                      <span className="db-tx-id">{tx.txId}</span>
-                    </div>
-                  );
-                })
-              )}
+                    );
+                  })
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+
+          {/* ═══ ROW 3: Profits + Sectors + Transactions ═══ */}
+          <div className="db-row-3">
+            {/* Total Profits — fixed height; list scrolls (positions by value, largest first) */}
+            <div className="db-card db-profits-card" data-dashboard-card>
+              <div className="db-card-header">
+                <h3>Total Profits</h3>
+                <Link
+                  href="/trading"
+                  className="db-icon-btn"
+                  title="View trading"
+                  aria-label="View trading"
+                >
+                  <i className="bi bi-box-arrow-up-right" />
+                </Link>
+              </div>
+              <div className="db-profits-body">
+                <div className="db-profits-chart-wrap">
+                  <div className="db-profits-summary">
+                    <div className="db-profits-summary-value">
+                      {(() => {
+                        const total = useMock
+                          ? mock.totalPnl
+                          : typeof plaidSummary?.totalGainLoss === 'number'
+                            ? plaidSummary.totalGainLoss
+                            : null;
+                        if (total === null) return '—';
+                        return `${total >= 0 ? '+' : '-'}$${Math.abs(total).toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
+                      })()}
+                    </div>
+                    <div className="db-profits-summary-label">
+                      {(() => {
+                        const pct = useMock
+                          ? mock.totalPnlPct
+                          : typeof plaidSummary?.totalGainLossPercent === 'number'
+                            ? plaidSummary.totalGainLossPercent
+                            : null;
+                        if (pct === null) {
+                          return totalProfitsRows.length === 0 ? 'No positions' : 'Total P&L';
+                        }
+                        return `${pct >= 0 ? '+' : ''}${pct.toFixed(2)}% total`;
+                      })()}
+                    </div>
+                  </div>
+
+                  {profitPositionWeights.length > 0 &&
+                    (() => {
+                      const rows = profitPositionWeights
+                        .map((p) => {
+                          const magnitude =
+                            typeof p.pnl === 'number' ? Math.abs(p.pnl) : p.weightPct || 0;
+                          const isPositive = typeof p.pnl === 'number' ? p.pnl >= 0 : true;
+                          return { ...p, magnitude, isPositive };
+                        })
+                        .filter((r) => r.magnitude > 0)
+                        .sort((a, b) => b.magnitude - a.magnitude)
+                        .slice(0, 6);
+
+                      if (rows.length === 0) return null;
+
+                      const maxMagnitude = rows.reduce((m, r) => Math.max(m, r.magnitude), 0) || 1;
+
+                      return (
+                        <div className="db-profits-bars" role="list" aria-label="Profit by company">
+                          {rows.map((r) => {
+                            const widthPct = (r.magnitude / maxMagnitude) * 100;
+                            const barColor =
+                              typeof r.pnl === 'number'
+                                ? r.isPositive
+                                  ? '#10b981'
+                                  : '#ef4444'
+                                : r.color || '#6b7280';
+                            const valueLabel =
+                              typeof r.pnl === 'number'
+                                ? `${r.isPositive ? '+' : '-'}$${Math.abs(r.pnl).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
+                                : `${(r.weightPct || 0).toFixed(0)}%`;
+
+                            return (
+                              <div key={r.symbol} role="listitem" className="db-profits-bar-row">
+                                <span className="db-profits-bar-symbol">{r.symbol}</span>
+                                <div className="db-profits-bar-track">
+                                  <div
+                                    className="db-profits-bar-fill"
+                                    style={{ width: `${widthPct}%`, background: barColor }}
+                                  />
+                                </div>
+                                <span
+                                  className="db-profits-bar-value"
+                                  style={{
+                                    color: typeof r.pnl === 'number' ? barColor : undefined,
+                                  }}
+                                >
+                                  {valueLabel}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })()}
+                </div>
+                <div className="db-profits-legend-scroll">
+                  {totalProfitsRows.length === 0 ? (
+                    <p
+                      className="db-profits-empty"
+                      style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--db-muted)' }}
+                    >
+                      No positions to show. {useMock ? 'Add mock positions' : 'Link an account'} to
+                      see P&amp;L by holding.
+                    </p>
+                  ) : (
+                    <ul className="db-profits-position-list">
+                      {profitPositionWeights.map((p) => {
+                        const pnl = p.pnl;
+                        const hasPnl = typeof pnl === 'number';
+                        return (
+                          <li key={p.symbol} className="db-profits-legend-item">
+                            <span className="db-legend-dot" style={{ background: p.color }} />
+                            <span className="db-legend-label">{p.symbol}</span>
+                            <span className="db-legend-amt">
+                              {hasPnl
+                                ? `${pnl >= 0 ? '+' : '-'}$${Math.abs(pnl).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
+                                : typeof p.dayDelta === 'number'
+                                  ? `Day ${p.dayDelta >= 0 ? '+' : ''}$${Math.abs(p.dayDelta).toFixed(0)}`
+                                  : '—'}
+                            </span>
+                            <span className="db-legend-pct">{p.weightPct.toFixed(0)}%</span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Sector / Industry Distribution — pie chart with hover tooltips */}
+            <div className="db-card db-sector-card" data-dashboard-card>
+              <div className="db-card-header">
+                <h3>{isTmtTeamMember ? 'Industry Distribution' : 'Sector Distribution'}</h3>
+                {sectorRows.length > 0 && (
+                  <span className="db-sector-total" aria-hidden>
+                    {sectorRows.length} {sectorRows.length === 1 ? 'sector' : 'sectors'}
+                  </span>
+                )}
+              </div>
+
+              {sectorRows.length === 0 ? (
+                <div className="db-sector-empty">
+                  <i
+                    className="bi bi-pie-chart"
+                    style={{
+                      fontSize: '1.75rem',
+                      color: 'rgba(16,185,129,0.25)',
+                      marginBottom: '0.5rem',
+                    }}
+                  />
+                  <p
+                    style={{
+                      color: '#6b7280',
+                      fontSize: '0.8125rem',
+                      textAlign: 'center',
+                      lineHeight: 1.5,
+                      margin: 0,
+                    }}
+                  >
+                    No holdings yet.
+                    <br />
+                    {useMock
+                      ? 'Place a trade in Mock Trading to see your sector breakdown.'
+                      : 'Connect a brokerage account to see your sector breakdown.'}
+                  </p>
+                </div>
+              ) : (
+                <div className="db-sector-body">
+                  <div className="db-sector-pie-area">
+                    <SectorPieChart sectors={sectorRows} size={140} />
+                  </div>
+
+                  <ul className="db-sector-legend">
+                    {sectorRows.map((s) => {
+                      const isExpanded = expandedSector === s.name;
+                      const sectorHoldings = holdingsBySector[s.name] || [];
+                      const canExpand = sectorHoldings.length > 0; // TMT aggregate data has no per-position data
+
+                      return (
+                        <li key={s.name} className="db-sector-legend-row">
+                          <button
+                            type="button"
+                            className={`db-sector-legend-item db-sector-legend-item-btn ${isExpanded ? 'is-expanded' : ''}`}
+                            onClick={() => {
+                              if (!canExpand) return;
+                              setExpandedSector(isExpanded ? null : s.name);
+                            }}
+                            disabled={!canExpand}
+                            aria-expanded={canExpand ? isExpanded : undefined}
+                            aria-controls={
+                              canExpand
+                                ? `db-sector-holdings-${s.name.replace(/\s+/g, '-')}`
+                                : undefined
+                            }
+                          >
+                            <span
+                              className="db-sector-legend-dot"
+                              style={{ background: s.color }}
+                              aria-hidden
+                            />
+                            <span className="db-sector-legend-name">{s.name}</span>
+                            <span className="db-sector-legend-pct">{s.pct}%</span>
+                            {canExpand && (
+                              <i
+                                className={`bi bi-chevron-${isExpanded ? 'up' : 'down'} db-sector-legend-chevron`}
+                                aria-hidden
+                              />
+                            )}
+                          </button>
+
+                          {isExpanded && canExpand && (
+                            <ul
+                              id={`db-sector-holdings-${s.name.replace(/\s+/g, '-')}`}
+                              className="db-sector-holdings-list"
+                            >
+                              {sectorHoldings.map((h) => (
+                                <li key={h.symbol} className="db-sector-holding-row">
+                                  <span className="db-sector-holding-symbol">{h.symbol}</span>
+                                  <span className="db-sector-holding-qty">
+                                    {h.qty} {h.qty === 1 ? 'share' : 'shares'}
+                                  </span>
+                                  <span className="db-sector-holding-value">
+                                    $
+                                    {h.posValue.toLocaleString('en-US', {
+                                      maximumFractionDigits: 0,
+                                    })}
+                                  </span>
+                                  <span
+                                    className={`db-sector-holding-pnl ${h.pnlPct >= 0 ? 'is-up' : 'is-down'}`}
+                                  >
+                                    {h.pnlPct >= 0 ? '+' : ''}
+                                    {h.pnlPct.toFixed(2)}%
+                                  </span>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            {/* Recent Transactions — fixed height; list scrolls (newest first) */}
+            <div className="db-card db-transactions-card" data-dashboard-card>
+              <div className="db-card-header">
+                <h3>Recent Transactions</h3>
+                <Link
+                  href="/trading/dashboard"
+                  className="db-icon-btn"
+                  title="Trading activity"
+                  aria-label="View trading activity"
+                >
+                  <i className="bi bi-box-arrow-up-right" />
+                </Link>
+              </div>
+              <div className="db-tx-table-header">
+                <span>Companies</span>
+                <span>Amount</span>
+                <span>Transaction ID</span>
+              </div>
+              <div className="db-tx-scroll">
+                <div className="db-tx-list">
+                  {displayTransactions.length === 0 ? (
+                    <p
+                      className="db-profits-empty"
+                      style={{
+                        margin: '1rem 0.5rem',
+                        fontSize: '0.8125rem',
+                        color: 'var(--db-muted)',
+                      }}
+                    >
+                      {useMock
+                        ? 'No mock trades yet.'
+                        : 'Linked account activity will appear here.'}
+                    </p>
+                  ) : (
+                    displayTransactions.map((tx) => {
+                      const q = tx.ticker ? liveQuotes[tx.ticker] : null;
+                      const rowKey = tx.id != null ? `tx-${tx.id}` : `tx-${tx.txId}`;
+                      return (
+                        <div key={rowKey} className="db-tx-item">
+                          <div className="db-tx-company">
+                            <div className="db-tx-avatar">
+                              <span>{tx.company[0]}</span>
+                            </div>
+                            <div>
+                              <span className="db-tx-name">
+                                {tx.company} ({tx.ticker})
+                              </span>
+                              <span className="db-tx-date">{tx.date}</span>
+                              {q && (
+                                <span
+                                  className="db-tx-date"
+                                  style={{ display: 'block', color: '#9ca3af' }}
+                                >
+                                  Last: ${q.price.toFixed(2)}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <span className={`db-tx-amount ${tx.positive ? 'positive' : 'negative'}`}>
+                            {tx.positive ? '+' : '-'}${tx.amount.toLocaleString()}
+                          </span>
+                          <span className="db-tx-id">{tx.txId}</span>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
         </>
       )}
     </div>

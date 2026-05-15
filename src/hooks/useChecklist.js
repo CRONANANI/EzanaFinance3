@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 import { TOTAL_TASKS } from '@/config/checklist';
 
 export function useChecklist() {
@@ -10,7 +10,9 @@ export function useChecklist() {
 
   const loadProgress = useCallback(async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) {
         setProgress({});
         return;
@@ -36,7 +38,9 @@ export function useChecklist() {
 
   useEffect(() => {
     loadProgress();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(() => {
       loadProgress();
     });
     return () => subscription.unsubscribe();
@@ -50,7 +54,9 @@ export function useChecklist() {
 
   const completeTask = useCallback(async (taskId) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return;
 
       setProgress((prev) => {

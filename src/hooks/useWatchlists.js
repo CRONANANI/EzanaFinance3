@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/components/AuthProvider';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 
 /**
  * Fetches and mutates the authenticated user's watchlists from the server.
@@ -122,11 +122,15 @@ export function useWatchlists() {
         prev.map((list) => {
           if (list.id !== listId) return list;
           // Skip if already present (idempotent)
-          if (list.stocks.some((s) => s.ticker === optimisticItem.ticker && s.type === optimisticItem.type)) {
+          if (
+            list.stocks.some(
+              (s) => s.ticker === optimisticItem.ticker && s.type === optimisticItem.type,
+            )
+          ) {
             return list;
           }
           return { ...list, stocks: [...list.stocks, optimisticItem] };
-        })
+        }),
       );
 
       try {
@@ -149,11 +153,9 @@ export function useWatchlists() {
             if (list.id !== listId) return list;
             return {
               ...list,
-              stocks: list.stocks.map((s) =>
-                s.id === optimisticItem.id ? data.item : s
-              ),
+              stocks: list.stocks.map((s) => (s.id === optimisticItem.id ? data.item : s)),
             };
-          })
+          }),
         );
         return { ok: true };
       } catch (e) {
@@ -166,13 +168,13 @@ export function useWatchlists() {
               ...list,
               stocks: list.stocks.filter((s) => s.id !== optimisticItem.id),
             };
-          })
+          }),
         );
         setError(e?.message || 'Failed to add item');
         return { ok: false, reason: e?.message };
       }
     },
-    [authedFetch]
+    [authedFetch],
   );
 
   const removeItem = useCallback(
@@ -186,16 +188,14 @@ export function useWatchlists() {
           if (list.id !== listId) return list;
           return {
             ...list,
-            stocks: list.stocks.filter(
-              (s) => !(s.ticker === ticker && s.type === type)
-            ),
+            stocks: list.stocks.filter((s) => !(s.ticker === ticker && s.type === type)),
           };
-        })
+        }),
       );
 
       try {
         const url = `/api/watchlists/${listId}/items?ticker=${encodeURIComponent(
-          ticker
+          ticker,
         )}&type=${encodeURIComponent(type)}`;
         const res = await authedFetch(url, { method: 'DELETE' });
         if (!res.ok) throw await readServerError(res);
@@ -208,7 +208,7 @@ export function useWatchlists() {
         return { ok: false, reason: e?.message };
       }
     },
-    [authedFetch, watchlists]
+    [authedFetch, watchlists],
   );
 
   const createList = useCallback(
@@ -231,7 +231,7 @@ export function useWatchlists() {
         return { ok: false, reason: e?.message, status: e?.status };
       }
     },
-    [authedFetch]
+    [authedFetch],
   );
 
   const renameList = useCallback(
@@ -239,7 +239,7 @@ export function useWatchlists() {
       if (!listId || !label?.trim()) return { ok: false, reason: 'invalid' };
       const prevState = watchlists;
       setWatchlists((prev) =>
-        prev.map((l) => (l.id === listId ? { ...l, label: label.trim() } : l))
+        prev.map((l) => (l.id === listId ? { ...l, label: label.trim() } : l)),
       );
       try {
         const res = await authedFetch(`/api/watchlists/${listId}`, {
@@ -255,7 +255,7 @@ export function useWatchlists() {
         return { ok: false, reason: e?.message };
       }
     },
-    [authedFetch, watchlists]
+    [authedFetch, watchlists],
   );
 
   const deleteList = useCallback(
@@ -276,7 +276,7 @@ export function useWatchlists() {
         return { ok: false, reason: e?.message };
       }
     },
-    [authedFetch, watchlists]
+    [authedFetch, watchlists],
   );
 
   return {

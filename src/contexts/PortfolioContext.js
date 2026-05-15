@@ -20,7 +20,7 @@
 
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/components/AuthProvider';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 
 const PortfolioContext = createContext(null);
 
@@ -40,7 +40,9 @@ export function PortfolioProvider({ children }) {
 
   const getToken = useCallback(async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       return session?.access_token || null;
     } catch {
       return null;
@@ -121,9 +123,7 @@ export function PortfolioProvider({ children }) {
     }
   }, [isAuthenticated, user, fetchPortfolio]);
 
-  const tickers = (portfolio.aggregated || [])
-    .filter((h) => h.ticker)
-    .map((h) => h.ticker);
+  const tickers = (portfolio.aggregated || []).filter((h) => h.ticker).map((h) => h.ticker);
 
   // Build portfolio shape for PortfolioDashboard compatibility
   const topPerformers = [...(portfolio.aggregated || [])]
@@ -158,22 +158,24 @@ export function PortfolioProvider({ children }) {
       totalValue,
       totalCostBasis: totalCost,
       gainLoss: totalValue - totalCost,
-      gainLossPercent: totalCost > 0 ? ((totalValue - totalCost) / totalCost * 100) : 0,
+      gainLossPercent: totalCost > 0 ? ((totalValue - totalCost) / totalCost) * 100 : 0,
     };
   });
 
-  const portfolioForDashboard = portfolio.summary ? {
-    summary: {
-      ...portfolio.summary,
-      totalGainLossPercent: portfolio.summary.totalGainLossPercent,
-      accountCount: portfolio.accounts?.length || 0,
-      holdingsCount: portfolio.holdings?.length || 0,
-    },
-    accounts: accountsWithHoldings,
-    topPerformers,
-    allocation,
-    recentTransactions: [],
-  } : null;
+  const portfolioForDashboard = portfolio.summary
+    ? {
+        summary: {
+          ...portfolio.summary,
+          totalGainLossPercent: portfolio.summary.totalGainLossPercent,
+          accountCount: portfolio.accounts?.length || 0,
+          holdingsCount: portfolio.holdings?.length || 0,
+        },
+        accounts: accountsWithHoldings,
+        topPerformers,
+        allocation,
+        recentTransactions: [],
+      }
+    : null;
 
   const value = {
     ...portfolio,
@@ -186,11 +188,7 @@ export function PortfolioProvider({ children }) {
     getToken,
   };
 
-  return (
-    <PortfolioContext.Provider value={value}>
-      {children}
-    </PortfolioContext.Provider>
-  );
+  return <PortfolioContext.Provider value={value}>{children}</PortfolioContext.Provider>;
 }
 
 export function usePortfolio() {

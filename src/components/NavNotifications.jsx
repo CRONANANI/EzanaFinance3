@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuth } from '@/components/AuthProvider';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 
 /**
  * Normalize a notification row for the bell UI.
@@ -109,18 +109,15 @@ export function NavNotifications() {
     setExpandedId(null);
   }, []);
 
-  const markAsRead = useCallback(
-    async (id) => {
-      setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
-      if (String(id).startsWith('fr-')) return;
-      try {
-        await supabase.from('user_notifications').update({ read: true }).eq('id', id);
-      } catch {
-        /* table missing or RLS */
-      }
-    },
-    [],
-  );
+  const markAsRead = useCallback(async (id) => {
+    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+    if (String(id).startsWith('fr-')) return;
+    try {
+      await supabase.from('user_notifications').update({ read: true }).eq('id', id);
+    } catch {
+      /* table missing or RLS */
+    }
+  }, []);
 
   const markAllRead = useCallback(async () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
@@ -148,10 +145,13 @@ export function NavNotifications() {
     [expandedId],
   );
 
-  const toggleExpand = useCallback((id) => {
-    setExpandedId((prev) => (prev === id ? null : id));
-    markAsRead(id);
-  }, [markAsRead]);
+  const toggleExpand = useCallback(
+    (id) => {
+      setExpandedId((prev) => (prev === id ? null : id));
+      markAsRead(id);
+    },
+    [markAsRead],
+  );
 
   const closePanel = useCallback(() => {
     setIsOpen(false);
@@ -220,8 +220,10 @@ export function NavNotifications() {
     if (!isOpen) return;
     const handler = (e) => {
       if (
-        dropdownRef.current && !dropdownRef.current.contains(e.target) &&
-        bellRef.current && !bellRef.current.contains(e.target)
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target) &&
+        bellRef.current &&
+        !bellRef.current.contains(e.target)
       ) {
         closePanel();
       }
@@ -239,13 +241,17 @@ export function NavNotifications() {
     } else {
       document.body.style.overflow = '';
     }
-    return () => { document.body.style.overflow = ''; };
+    return () => {
+      document.body.style.overflow = '';
+    };
   }, [isOpen]);
 
   /* Close on Escape */
   useEffect(() => {
     if (!isOpen) return;
-    const handler = (e) => { if (e.key === 'Escape') closePanel(); };
+    const handler = (e) => {
+      if (e.key === 'Escape') closePanel();
+    };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
   }, [isOpen, closePanel]);
@@ -320,7 +326,10 @@ export function NavNotifications() {
         <div ref={dropdownRef} className="nn-dropdown">
           <div className="nn-dropdown-header">
             <h3 className="nn-dropdown-title">
-              <i className="bi bi-bell-fill" style={{ color: '#10b981', marginRight: '0.5rem', fontSize: '0.875rem' }} />
+              <i
+                className="bi bi-bell-fill"
+                style={{ color: '#10b981', marginRight: '0.5rem', fontSize: '0.875rem' }}
+              />
               Notifications
             </h3>
             <div className="nn-dropdown-actions">
@@ -337,7 +346,8 @@ export function NavNotifications() {
       )}
 
       {/* ════ MOBILE FULLSCREEN OVERLAY (hidden on desktop via CSS) ════ */}
-      {isOpen && typeof document !== 'undefined' &&
+      {isOpen &&
+        typeof document !== 'undefined' &&
         createPortal(
           <div className="nn-mobile-overlay" onClick={closePanel}>
             <div className="nn-mobile-panel" onClick={(e) => e.stopPropagation()}>
@@ -346,9 +356,7 @@ export function NavNotifications() {
                 <div className="nn-mobile-header-left">
                   <i className="bi bi-bell-fill nn-mobile-header-icon" />
                   <h3>Notifications</h3>
-                  {unreadCount > 0 && (
-                    <span className="nn-mobile-unread-count">{unreadCount}</span>
-                  )}
+                  {unreadCount > 0 && <span className="nn-mobile-unread-count">{unreadCount}</span>}
                 </div>
                 <div className="nn-mobile-header-right">
                   {unreadCount > 0 && (
@@ -371,9 +379,8 @@ export function NavNotifications() {
               <NotifList className="nn-mobile-list" />
             </div>
           </div>,
-          document.body
-        )
-      }
+          document.body,
+        )}
     </>
   );
 }
@@ -400,9 +407,7 @@ function NotificationItem({ notification: n, expanded, onToggle, onDismiss, onFr
             <span className="nn-item-time">{getTimeAgo(n.time)}</span>
           </div>
           <span className="nn-item-title">{n.title}</span>
-          {expanded && (
-            <p className="nn-item-content">{n.content}</p>
-          )}
+          {expanded && <p className="nn-item-content">{n.content}</p>}
           {expanded && n.friendRequestId && onFriendRespond && (
             <div className="nn-friend-actions" onClick={(e) => e.stopPropagation()}>
               <button

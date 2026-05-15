@@ -6,7 +6,7 @@
  */
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 
 function authErrorPath(flow, type) {
   if (type === 'partner') return '/auth/partner-login';
@@ -125,9 +125,12 @@ export default function AuthCallbackClient() {
       }
 
       if (!code) {
-        console.error('[auth/callback] Missing code. Full URL:', typeof window !== 'undefined' ? window.location.href : '');
+        console.error(
+          '[auth/callback] Missing code. Full URL:',
+          typeof window !== 'undefined' ? window.location.href : '',
+        );
         router.replace(
-          `${errBase}?error=${encodeURIComponent('Missing authorization code. Try signing in again.')}`
+          `${errBase}?error=${encodeURIComponent('Missing authorization code. Try signing in again.')}`,
         );
         return;
       }

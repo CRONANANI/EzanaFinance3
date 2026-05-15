@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@/components/AuthProvider';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 
 const CONVO_POLL_MS = 30_000;
 const CHAT_POLL_MS = 8_000;
@@ -174,9 +174,7 @@ export function useMessages() {
           const updated = payload?.new;
           if (!updated) return;
           setMessages((prev) =>
-            prev.map((m) =>
-              m.id === updated.id ? { ...m, read_at: updated.read_at } : m,
-            ),
+            prev.map((m) => (m.id === updated.id ? { ...m, read_at: updated.read_at } : m)),
           );
         },
       )
@@ -192,13 +190,9 @@ export function useMessages() {
     if (!user?.id) return undefined;
     const channel = supabase
       .channel('messages:inbox')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'messages' },
-        () => {
-          loadConversations();
-        },
-      )
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
+        loadConversations();
+      })
       .subscribe();
     return () => {
       supabase.removeChannel(channel);

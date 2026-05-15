@@ -1,14 +1,7 @@
 'use client';
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
-import { supabase } from '@/lib/supabase';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { supabase } from '@/lib/supabase-browser';
 import { DEFAULT_PINNED_CARDS } from '@/config/cardRegistry';
 
 export const PinnedCardsContext = createContext(null);
@@ -93,7 +86,7 @@ export function PinnedCardsProvider({ children }) {
 
   const isCardPinned = useCallback(
     (cardId, section) => pinnedCards[section] === cardId,
-    [pinnedCards]
+    [pinnedCards],
   );
 
   const value = useMemo(
@@ -104,12 +97,10 @@ export function PinnedCardsProvider({ children }) {
       isCardPinned,
       refreshPinnedCards: loadPinnedCards,
     }),
-    [pinnedCards, loading, togglePin, isCardPinned, loadPinnedCards]
+    [pinnedCards, loading, togglePin, isCardPinned, loadPinnedCards],
   );
 
-  return (
-    <PinnedCardsContext.Provider value={value}>{children}</PinnedCardsContext.Provider>
-  );
+  return <PinnedCardsContext.Provider value={value}>{children}</PinnedCardsContext.Provider>;
 }
 
 export function usePinnedCardsContext() {

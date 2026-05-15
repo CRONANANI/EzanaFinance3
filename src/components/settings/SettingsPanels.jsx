@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { usePartner } from '@/contexts/PartnerContext';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 import { ManageBillingButton } from '@/components/ManageBillingButton';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -175,11 +175,26 @@ export function MyDetailsPanel({ onSave, settings, updateSetting }) {
               <i className="bi bi-person-fill" />
             )}
           </div>
-          <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleAvatarChange} className="settings-avatar-input" />
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={handleAvatarChange}
+            className="settings-avatar-input"
+          />
           <div className="settings-avatar-actions">
             <span className="settings-avatar-name">Profile photo</span>
-            <span className="settings-avatar-hint">JPG, PNG, or WebP. Max 2MB. Paste an image URL below to sync across devices.</span>
-            <button type="button" className="settings-btn-secondary" style={{ marginTop: '0.5rem' }} onClick={() => fileInputRef.current?.click()}>Upload</button>
+            <span className="settings-avatar-hint">
+              JPG, PNG, or WebP. Max 2MB. Paste an image URL below to sync across devices.
+            </span>
+            <button
+              type="button"
+              className="settings-btn-secondary"
+              style={{ marginTop: '0.5rem' }}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              Upload
+            </button>
           </div>
         </div>
         <div className="settings-row single">
@@ -219,7 +234,15 @@ export function MyDetailsPanel({ onSave, settings, updateSetting }) {
         <div className="settings-row">
           <div className="settings-field">
             <label className="settings-label">Email</label>
-            <input type="email" className="settings-input" placeholder="john@example.com" value={user?.email || ''} readOnly disabled style={{ opacity: 0.85 }} />
+            <input
+              type="email"
+              className="settings-input"
+              placeholder="john@example.com"
+              value={user?.email || ''}
+              readOnly
+              disabled
+              style={{ opacity: 0.85 }}
+            />
           </div>
           <div className="settings-field">
             <label className="settings-label">Phone</label>
@@ -244,7 +267,11 @@ export function MyDetailsPanel({ onSave, settings, updateSetting }) {
           </div>
           <div className="settings-field">
             <label className="settings-label">Country</label>
-            <select className="settings-input" value={settings?.country || 'United States'} onChange={(e) => updateSetting('country', e.target.value)}>
+            <select
+              className="settings-input"
+              value={settings?.country || 'United States'}
+              onChange={(e) => updateSetting('country', e.target.value)}
+            >
               <option value="United States">United States</option>
               <option value="Canada">Canada</option>
               <option value="United Kingdom">United Kingdom</option>
@@ -264,7 +291,11 @@ export function MyDetailsPanel({ onSave, settings, updateSetting }) {
           </div>
           <div className="settings-field">
             <label className="settings-label">Timezone</label>
-            <select className="settings-input" value={settings?.timezone || 'America/New_York'} onChange={(e) => updateSetting('timezone', e.target.value)}>
+            <select
+              className="settings-input"
+              value={settings?.timezone || 'America/New_York'}
+              onChange={(e) => updateSetting('timezone', e.target.value)}
+            >
               <option value="America/New_York">Eastern (ET)</option>
               <option value="America/Chicago">Central (CT)</option>
               <option value="America/Denver">Mountain (MT)</option>
@@ -279,7 +310,9 @@ export function MyDetailsPanel({ onSave, settings, updateSetting }) {
           </div>
         </div>
         <div className="settings-btn-row">
-          <button type="button" className="settings-btn-primary" onClick={onSave}>Save changes</button>
+          <button type="button" className="settings-btn-primary" onClick={onSave}>
+            Save changes
+          </button>
         </div>
         <div className="settings-danger-zone">
           <h3 className="settings-danger-title">
@@ -321,20 +354,32 @@ export function AppearancePanel({ settings, updateSetting, onSave }) {
         <p className="settings-panel-desc">Choose how Ezana Finance looks on your device.</p>
       </div>
       <div className="settings-section">
-        <h3 className="settings-section-title"><i className="bi bi-brightness-high" /> Theme</h3>
-        <p className="settings-appearance-hint">Switch between dark and light mode. Click Save changes to sync across devices.</p>
+        <h3 className="settings-section-title">
+          <i className="bi bi-brightness-high" /> Theme
+        </h3>
+        <p className="settings-appearance-hint">
+          Switch between dark and light mode. Click Save changes to sync across devices.
+        </p>
         <div className="settings-appearance-row">
           <div>
             <span className="settings-label">Color mode</span>
-            <p className="settings-appearance-sub">Dark reduces glare; light works well in bright rooms.</p>
+            <p className="settings-appearance-sub">
+              Dark reduces glare; light works well in bright rooms.
+            </p>
           </div>
           <ThemeToggle onThemeChange={(next) => updateSetting('theme', next)} />
         </div>
-        <h3 className="settings-section-title settings-section-title--spaced"><i className="bi bi-translate" /> Language &amp; currency</h3>
+        <h3 className="settings-section-title settings-section-title--spaced">
+          <i className="bi bi-translate" /> Language &amp; currency
+        </h3>
         <div className="settings-row">
           <div className="settings-field">
             <label className="settings-label">Language</label>
-            <select className="settings-input" value={settings?.language || 'en'} onChange={(e) => updateSetting('language', e.target.value)}>
+            <select
+              className="settings-input"
+              value={settings?.language || 'en'}
+              onChange={(e) => updateSetting('language', e.target.value)}
+            >
               <option value="en">English</option>
               <option value="es">Español</option>
               <option value="fr">Français</option>
@@ -342,7 +387,11 @@ export function AppearancePanel({ settings, updateSetting, onSave }) {
           </div>
           <div className="settings-field">
             <label className="settings-label">Currency</label>
-            <select className="settings-input" value={settings?.currency || 'USD'} onChange={(e) => updateSetting('currency', e.target.value)}>
+            <select
+              className="settings-input"
+              value={settings?.currency || 'USD'}
+              onChange={(e) => updateSetting('currency', e.target.value)}
+            >
               <option value="USD">USD ($)</option>
               <option value="EUR">EUR (€)</option>
               <option value="GBP">GBP (£)</option>
@@ -353,7 +402,9 @@ export function AppearancePanel({ settings, updateSetting, onSave }) {
           </div>
         </div>
         <div className="settings-btn-row">
-          <button type="button" className="settings-btn-primary" onClick={onSave}>Save changes</button>
+          <button type="button" className="settings-btn-primary" onClick={onSave}>
+            Save changes
+          </button>
         </div>
       </div>
     </div>
@@ -367,7 +418,9 @@ export function ProfilePanel({ onSave, settings, updateSetting, saveSettings, sa
   const { isPartner } = usePartner();
 
   const getToken = useCallback(async () => {
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     return session?.access_token || null;
   }, []);
 
@@ -377,7 +430,9 @@ export function ProfilePanel({ onSave, settings, updateSetting, saveSettings, sa
       try {
         const token = await getToken();
         if (!token) return;
-        const res = await fetch('/api/partner/profile', { headers: { Authorization: `Bearer ${token}` } });
+        const res = await fetch('/api/partner/profile', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         const data = await res.json();
         if (data.profile?.username) {
           setUsername(data.profile.username || '');
@@ -437,19 +492,26 @@ export function ProfilePanel({ onSave, settings, updateSetting, saveSettings, sa
                   type="text"
                   className="settings-input"
                   value={username}
-                  onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                  onChange={(e) =>
+                    setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))
+                  }
                   placeholder="your_username"
                   maxLength={24}
                 />
               </div>
-              <span className="settings-field-hint">3-24 characters. Letters, numbers, underscores only. This appears on your hero card and public profile.</span>
+              <span className="settings-field-hint">
+                3-24 characters. Letters, numbers, underscores only. This appears on your hero card
+                and public profile.
+              </span>
             </div>
           </div>
         )}
         <div className="settings-toggle-row">
           <div className="settings-toggle-info">
             <span className="settings-toggle-label">Public profile</span>
-            <span className="settings-toggle-desc">Allow others to view your profile and activity</span>
+            <span className="settings-toggle-desc">
+              Allow others to view your profile and activity
+            </span>
           </div>
           <button
             type="button"
@@ -485,7 +547,11 @@ export function ProfilePanel({ onSave, settings, updateSetting, saveSettings, sa
         <div className="settings-row">
           <div className="settings-field">
             <label className="settings-label">Investor type</label>
-            <select className="settings-input" value={settings?.investor_type || 'retail'} onChange={(e) => updateSetting('investor_type', e.target.value)}>
+            <select
+              className="settings-input"
+              value={settings?.investor_type || 'retail'}
+              onChange={(e) => updateSetting('investor_type', e.target.value)}
+            >
               <option value="retail">Individual</option>
               <option value="professional">Professional</option>
               <option value="institutional">Institutional</option>
@@ -493,7 +559,11 @@ export function ProfilePanel({ onSave, settings, updateSetting, saveSettings, sa
           </div>
           <div className="settings-field">
             <label className="settings-label">Experience level</label>
-            <select className="settings-input" value={settings?.experience_level || 'intermediate'} onChange={(e) => updateSetting('experience_level', e.target.value)}>
+            <select
+              className="settings-input"
+              value={settings?.experience_level || 'intermediate'}
+              onChange={(e) => updateSetting('experience_level', e.target.value)}
+            >
               <option value="beginner">Beginner</option>
               <option value="intermediate">Intermediate</option>
               <option value="advanced">Advanced</option>
@@ -504,65 +574,132 @@ export function ProfilePanel({ onSave, settings, updateSetting, saveSettings, sa
         <div className="settings-row">
           <div className="settings-field">
             <label className="settings-label">Website</label>
-            <input type="url" className="settings-input" placeholder="https://" value={settings?.website || ''} onChange={(e) => updateSetting('website', e.target.value)} />
+            <input
+              type="url"
+              className="settings-input"
+              placeholder="https://"
+              value={settings?.website || ''}
+              onChange={(e) => updateSetting('website', e.target.value)}
+            />
           </div>
           <div className="settings-field">
             <label className="settings-label">Twitter</label>
-            <input type="text" className="settings-input" placeholder="@username" value={settings?.twitter || ''} onChange={(e) => updateSetting('twitter', e.target.value)} />
+            <input
+              type="text"
+              className="settings-input"
+              placeholder="@username"
+              value={settings?.twitter || ''}
+              onChange={(e) => updateSetting('twitter', e.target.value)}
+            />
           </div>
         </div>
         <div className="settings-row single">
           <div className="settings-field">
             <label className="settings-label">LinkedIn</label>
-            <input type="url" className="settings-input" placeholder="https://linkedin.com/in/..." value={settings?.linkedin || ''} onChange={(e) => updateSetting('linkedin', e.target.value)} />
+            <input
+              type="url"
+              className="settings-input"
+              placeholder="https://linkedin.com/in/..."
+              value={settings?.linkedin || ''}
+              onChange={(e) => updateSetting('linkedin', e.target.value)}
+            />
           </div>
         </div>
-        <h3 className="settings-section-title settings-section-title--spaced"><i className="bi bi-shield-lock" /> Privacy</h3>
+        <h3 className="settings-section-title settings-section-title--spaced">
+          <i className="bi bi-shield-lock" /> Privacy
+        </h3>
         <div className="settings-toggle-row">
           <div className="settings-toggle-info">
             <span className="settings-toggle-label">Show my portfolio publicly</span>
           </div>
-          <button type="button" className={`settings-switch ${settings?.privacy_show_portfolio ? 'on' : ''}`} onClick={() => updateSetting('privacy_show_portfolio', !settings?.privacy_show_portfolio)} aria-label="Toggle portfolio visibility" />
+          <button
+            type="button"
+            className={`settings-switch ${settings?.privacy_show_portfolio ? 'on' : ''}`}
+            onClick={() =>
+              updateSetting('privacy_show_portfolio', !settings?.privacy_show_portfolio)
+            }
+            aria-label="Toggle portfolio visibility"
+          />
         </div>
         <div className="settings-toggle-row">
           <div className="settings-toggle-info">
             <span className="settings-toggle-label">Show my activity in the community feed</span>
           </div>
-          <button type="button" className={`settings-switch ${settings?.privacy_show_activity ? 'on' : ''}`} onClick={() => updateSetting('privacy_show_activity', !settings?.privacy_show_activity)} aria-label="Toggle activity visibility" />
+          <button
+            type="button"
+            className={`settings-switch ${settings?.privacy_show_activity ? 'on' : ''}`}
+            onClick={() => updateSetting('privacy_show_activity', !settings?.privacy_show_activity)}
+            aria-label="Toggle activity visibility"
+          />
         </div>
         <div className="settings-toggle-row">
           <div className="settings-toggle-info">
             <span className="settings-toggle-label">Show me on the leaderboard</span>
           </div>
-          <button type="button" className={`settings-switch ${settings?.privacy_show_on_leaderboard ? 'on' : ''}`} onClick={() => updateSetting('privacy_show_on_leaderboard', !settings?.privacy_show_on_leaderboard)} aria-label="Toggle leaderboard" />
+          <button
+            type="button"
+            className={`settings-switch ${settings?.privacy_show_on_leaderboard ? 'on' : ''}`}
+            onClick={() =>
+              updateSetting('privacy_show_on_leaderboard', !settings?.privacy_show_on_leaderboard)
+            }
+            aria-label="Toggle leaderboard"
+          />
         </div>
         <div className="settings-toggle-row">
           <div className="settings-toggle-info">
             <span className="settings-toggle-label">Show my trades publicly</span>
           </div>
-          <button type="button" className={`settings-switch ${settings?.privacy_show_trades ? 'on' : ''}`} onClick={() => updateSetting('privacy_show_trades', !settings?.privacy_show_trades)} aria-label="Toggle trades visibility" />
+          <button
+            type="button"
+            className={`settings-switch ${settings?.privacy_show_trades ? 'on' : ''}`}
+            onClick={() => updateSetting('privacy_show_trades', !settings?.privacy_show_trades)}
+            aria-label="Toggle trades visibility"
+          />
         </div>
         <div className="settings-toggle-row">
           <div className="settings-toggle-info">
             <span className="settings-toggle-label">Show my holdings</span>
           </div>
-          <button type="button" className={`settings-switch ${settings?.privacy_show_holdings ? 'on' : ''}`} onClick={() => updateSetting('privacy_show_holdings', !settings?.privacy_show_holdings)} aria-label="Toggle holdings visibility" />
+          <button
+            type="button"
+            className={`settings-switch ${settings?.privacy_show_holdings ? 'on' : ''}`}
+            onClick={() => updateSetting('privacy_show_holdings', !settings?.privacy_show_holdings)}
+            aria-label="Toggle holdings visibility"
+          />
         </div>
         <div className="settings-toggle-row">
           <div className="settings-toggle-info">
             <span className="settings-toggle-label">Show my watchlist</span>
           </div>
-          <button type="button" className={`settings-switch ${settings?.privacy_show_watchlist ? 'on' : ''}`} onClick={() => updateSetting('privacy_show_watchlist', !settings?.privacy_show_watchlist)} aria-label="Toggle watchlist visibility" />
+          <button
+            type="button"
+            className={`settings-switch ${settings?.privacy_show_watchlist ? 'on' : ''}`}
+            onClick={() =>
+              updateSetting('privacy_show_watchlist', !settings?.privacy_show_watchlist)
+            }
+            aria-label="Toggle watchlist visibility"
+          />
         </div>
-        <h3 className="settings-section-title settings-section-title--spaced"><i className="bi bi-graph-up" /> Trading defaults</h3>
+        <h3 className="settings-section-title settings-section-title--spaced">
+          <i className="bi bi-graph-up" /> Trading defaults
+        </h3>
         <div className="settings-row">
           <div className="settings-field">
             <label className="settings-label">Default watchlist</label>
-            <input type="text" className="settings-input" value={settings?.default_watchlist || 'main'} onChange={(e) => updateSetting('default_watchlist', e.target.value)} />
+            <input
+              type="text"
+              className="settings-input"
+              value={settings?.default_watchlist || 'main'}
+              onChange={(e) => updateSetting('default_watchlist', e.target.value)}
+            />
           </div>
           <div className="settings-field">
             <label className="settings-label">Chart style</label>
-            <select className="settings-input" value={settings?.chart_style || 'candlestick'} onChange={(e) => updateSetting('chart_style', e.target.value)}>
+            <select
+              className="settings-input"
+              value={settings?.chart_style || 'candlestick'}
+              onChange={(e) => updateSetting('chart_style', e.target.value)}
+            >
               <option value="candlestick">Candlestick</option>
               <option value="line">Line</option>
               <option value="bar">Bar</option>
@@ -573,7 +710,11 @@ export function ProfilePanel({ onSave, settings, updateSetting, saveSettings, sa
         <div className="settings-row single">
           <div className="settings-field">
             <label className="settings-label">Default chart timeframe</label>
-            <select className="settings-input" value={settings?.chart_timeframe || '1D'} onChange={(e) => updateSetting('chart_timeframe', e.target.value)}>
+            <select
+              className="settings-input"
+              value={settings?.chart_timeframe || '1D'}
+              onChange={(e) => updateSetting('chart_timeframe', e.target.value)}
+            >
               <option value="1D">1D</option>
               <option value="5D">5D</option>
               <option value="1M">1M</option>
@@ -583,13 +724,32 @@ export function ProfilePanel({ onSave, settings, updateSetting, saveSettings, sa
           </div>
         </div>
         {error && (
-          <div className="settings-field-error" style={{ marginBottom: '0.75rem' }}>{error}</div>
+          <div className="settings-field-error" style={{ marginBottom: '0.75rem' }}>
+            {error}
+          </div>
         )}
         {success && (
-          <div style={{ padding: '0.5rem 0.75rem', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '8px', color: '#10b981', fontSize: '0.75rem', marginBottom: '0.75rem' }}>{success}</div>
+          <div
+            style={{
+              padding: '0.5rem 0.75rem',
+              background: 'rgba(16,185,129,0.08)',
+              border: '1px solid rgba(16,185,129,0.2)',
+              borderRadius: '8px',
+              color: '#10b981',
+              fontSize: '0.75rem',
+              marginBottom: '0.75rem',
+            }}
+          >
+            {success}
+          </div>
         )}
         <div className="settings-btn-row">
-          <button type="button" className="settings-btn-primary" onClick={handleSaveProfile} disabled={saving}>
+          <button
+            type="button"
+            className="settings-btn-primary"
+            onClick={handleSaveProfile}
+            disabled={saving}
+          >
             {saving ? 'Saving...' : 'Save Profile'}
           </button>
         </div>
@@ -621,7 +781,10 @@ export function PasswordPanel({ onSave, settings, updateSetting }) {
         <p className="settings-panel-desc">Manage your password and security settings.</p>
       </div>
       <div className="settings-section">
-        <h3 className="settings-section-title"><i className="bi bi-key" />Change password</h3>
+        <h3 className="settings-section-title">
+          <i className="bi bi-key" />
+          Change password
+        </h3>
         <div className="settings-row single">
           <div className="settings-field">
             <label className="settings-label">Current password</label>
@@ -631,11 +794,24 @@ export function PasswordPanel({ onSave, settings, updateSetting }) {
         <div className="settings-row">
           <div className="settings-field">
             <label className="settings-label">New password</label>
-            <input type="password" className="settings-input" placeholder="••••••••" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+            <input
+              type="password"
+              className="settings-input"
+              placeholder="••••••••"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
             {newPassword && (
               <div className="settings-password-strength">
                 <div className="settings-strength-bar">
-                  <div className="settings-strength-fill" style={{ width: `${strength.pct}%`, background: strength.pct < 40 ? '#ef4444' : strength.pct < 70 ? '#f59e0b' : '#10b981' }} />
+                  <div
+                    className="settings-strength-fill"
+                    style={{
+                      width: `${strength.pct}%`,
+                      background:
+                        strength.pct < 40 ? '#ef4444' : strength.pct < 70 ? '#f59e0b' : '#10b981',
+                    }}
+                  />
                 </div>
                 <span className="settings-strength-label">{strength.label}</span>
               </div>
@@ -670,22 +846,40 @@ export function PasswordPanel({ onSave, settings, updateSetting }) {
             aria-label="Toggle login alerts"
           />
         </div>
-        <h3 className="settings-section-title"><i className="bi bi-laptop" />Active sessions</h3>
+        <h3 className="settings-section-title">
+          <i className="bi bi-laptop" />
+          Active sessions
+        </h3>
         <table className="settings-table">
           <thead>
-            <tr><th>Device</th><th>Location</th><th>Last active</th><th></th></tr>
+            <tr>
+              <th>Device</th>
+              <th>Location</th>
+              <th>Last active</th>
+              <th></th>
+            </tr>
           </thead>
           <tbody>
             <tr>
               <td>Chrome on Windows</td>
               <td>New York, US</td>
               <td>Just now</td>
-              <td><button type="button" className="settings-btn-danger" style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }}>Revoke</button></td>
+              <td>
+                <button
+                  type="button"
+                  className="settings-btn-danger"
+                  style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }}
+                >
+                  Revoke
+                </button>
+              </td>
             </tr>
           </tbody>
         </table>
         <div className="settings-btn-row">
-          <button type="button" className="settings-btn-primary" onClick={onSave}>Update password</button>
+          <button type="button" className="settings-btn-primary" onClick={onSave}>
+            Update password
+          </button>
         </div>
       </div>
     </div>
@@ -703,20 +897,38 @@ export function FamilyPanel({ onSave }) {
         <div className="settings-info-card">
           <strong>Member slots:</strong> 2 of 5 used
         </div>
-        <h3 className="settings-section-title"><i className="bi bi-people" />Family members</h3>
+        <h3 className="settings-section-title">
+          <i className="bi bi-people" />
+          Family members
+        </h3>
         <table className="settings-table">
           <thead>
-            <tr><th>Email</th><th>Role</th><th></th></tr>
+            <tr>
+              <th>Email</th>
+              <th>Role</th>
+              <th></th>
+            </tr>
           </thead>
           <tbody>
             <tr>
               <td>jane@example.com</td>
               <td>Viewer</td>
-              <td><button type="button" className="settings-btn-danger" style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }}>Remove</button></td>
+              <td>
+                <button
+                  type="button"
+                  className="settings-btn-danger"
+                  style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }}
+                >
+                  Remove
+                </button>
+              </td>
             </tr>
           </tbody>
         </table>
-        <h3 className="settings-section-title"><i className="bi bi-person-plus" />Invite member</h3>
+        <h3 className="settings-section-title">
+          <i className="bi bi-person-plus" />
+          Invite member
+        </h3>
         <div className="settings-row">
           <div className="settings-field">
             <label className="settings-label">Email</label>
@@ -738,7 +950,9 @@ export function FamilyPanel({ onSave }) {
           <button type="button" className="settings-switch on" aria-label="Toggle" />
         </div>
         <div className="settings-btn-row">
-          <button type="button" className="settings-btn-primary" onClick={onSave}>Send invite</button>
+          <button type="button" className="settings-btn-primary" onClick={onSave}>
+            Send invite
+          </button>
         </div>
       </div>
     </div>
@@ -757,7 +971,10 @@ export function PlanPanel({ onSave }) {
           <span className="settings-badge green">Current plan</span>
           <strong style={{ marginLeft: '0.5rem' }}>Pro</strong>
         </div>
-        <h3 className="settings-section-title"><i className="bi bi-pie-chart" />Usage</h3>
+        <h3 className="settings-section-title">
+          <i className="bi bi-pie-chart" />
+          Usage
+        </h3>
         <div className="settings-field">
           <span className="settings-label">API calls this month</span>
           <div className="settings-usage-bar">
@@ -771,29 +988,65 @@ export function PlanPanel({ onSave }) {
         <div className="settings-plan-cards">
           <div className="settings-plan-card">
             <div className="settings-plan-name">Free</div>
-            <div className="settings-plan-price">$0 <span>/month</span></div>
-            <div className="settings-plan-feature"><i className="bi bi-check" />Basic features</div>
-            <div className="settings-plan-feature"><i className="bi bi-check" />1,000 API calls</div>
+            <div className="settings-plan-price">
+              $0 <span>/month</span>
+            </div>
+            <div className="settings-plan-feature">
+              <i className="bi bi-check" />
+              Basic features
+            </div>
+            <div className="settings-plan-feature">
+              <i className="bi bi-check" />
+              1,000 API calls
+            </div>
           </div>
           <div className="settings-plan-card current">
             <div className="settings-plan-name">Pro</div>
-            <div className="settings-plan-price">$19 <span>/month</span></div>
-            <div className="settings-plan-feature"><i className="bi bi-check" />All features</div>
-            <div className="settings-plan-feature"><i className="bi bi-check" />10,000 API calls</div>
+            <div className="settings-plan-price">
+              $19 <span>/month</span>
+            </div>
+            <div className="settings-plan-feature">
+              <i className="bi bi-check" />
+              All features
+            </div>
+            <div className="settings-plan-feature">
+              <i className="bi bi-check" />
+              10,000 API calls
+            </div>
           </div>
           <div className="settings-plan-card">
             <div className="settings-plan-name">Elite</div>
-            <div className="settings-plan-price">$49 <span>/month</span></div>
-            <div className="settings-plan-feature"><i className="bi bi-check" />Priority support</div>
-            <div className="settings-plan-feature"><i className="bi bi-check" />Unlimited API</div>
+            <div className="settings-plan-price">
+              $49 <span>/month</span>
+            </div>
+            <div className="settings-plan-feature">
+              <i className="bi bi-check" />
+              Priority support
+            </div>
+            <div className="settings-plan-feature">
+              <i className="bi bi-check" />
+              Unlimited API
+            </div>
           </div>
         </div>
         <div className="settings-btn-row" style={{ flexWrap: 'wrap', gap: '0.5rem' }}>
-          <Link href="/subscribe" className="settings-btn-primary" style={{ textAlign: 'center', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Link
+            href="/subscribe"
+            className="settings-btn-primary"
+            style={{
+              textAlign: 'center',
+              textDecoration: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
             View plans &amp; checkout
           </Link>
           <ManageBillingButton className="settings-btn-secondary" label="Manage subscription" />
-          <button type="button" className="settings-btn-primary" onClick={onSave}>Save</button>
+          <button type="button" className="settings-btn-primary" onClick={onSave}>
+            Save
+          </button>
         </div>
       </div>
     </div>
@@ -808,15 +1061,26 @@ export function BillingPanel({ onSave }) {
         <p className="settings-panel-desc">Payment methods and billing history.</p>
       </div>
       <div className="settings-section">
-        <h3 className="settings-section-title"><i className="bi bi-credit-card" />Payment method</h3>
+        <h3 className="settings-section-title">
+          <i className="bi bi-credit-card" />
+          Payment method
+        </h3>
         <div className="settings-info-card">
           <strong>•••• •••• •••• 4242</strong> — Expires 12/26
         </div>
-        <div className="settings-btn-row" style={{ flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>
+        <div
+          className="settings-btn-row"
+          style={{ flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}
+        >
           <ManageBillingButton className="settings-btn-primary" label="Update payment method" />
         </div>
-        <button type="button" className="settings-btn-secondary">Add payment method</button>
-        <h3 className="settings-section-title"><i className="bi bi-geo-alt" />Billing address</h3>
+        <button type="button" className="settings-btn-secondary">
+          Add payment method
+        </button>
+        <h3 className="settings-section-title">
+          <i className="bi bi-geo-alt" />
+          Billing address
+        </h3>
         <div className="settings-row single">
           <div className="settings-field">
             <label className="settings-label">Address</label>
@@ -833,18 +1097,35 @@ export function BillingPanel({ onSave }) {
             <input type="text" className="settings-input" placeholder="10001" />
           </div>
         </div>
-        <h3 className="settings-section-title"><i className="bi bi-receipt" />Billing history</h3>
+        <h3 className="settings-section-title">
+          <i className="bi bi-receipt" />
+          Billing history
+        </h3>
         <table className="settings-table">
           <thead>
-            <tr><th>Date</th><th>Description</th><th>Amount</th></tr>
+            <tr>
+              <th>Date</th>
+              <th>Description</th>
+              <th>Amount</th>
+            </tr>
           </thead>
           <tbody>
-            <tr><td>Mar 1, 2025</td><td>Pro subscription</td><td>$19.00</td></tr>
-            <tr><td>Feb 1, 2025</td><td>Pro subscription</td><td>$19.00</td></tr>
+            <tr>
+              <td>Mar 1, 2025</td>
+              <td>Pro subscription</td>
+              <td>$19.00</td>
+            </tr>
+            <tr>
+              <td>Feb 1, 2025</td>
+              <td>Pro subscription</td>
+              <td>$19.00</td>
+            </tr>
           </tbody>
         </table>
         <div className="settings-btn-row">
-          <button type="button" className="settings-btn-primary" onClick={onSave}>Save changes</button>
+          <button type="button" className="settings-btn-primary" onClick={onSave}>
+            Save changes
+          </button>
         </div>
       </div>
     </div>
@@ -859,7 +1140,10 @@ export function EmailPanel({ onSave, settings, updateSetting }) {
         <p className="settings-panel-desc">Email preferences and frequency.</p>
       </div>
       <div className="settings-section">
-        <h3 className="settings-section-title"><i className="bi bi-envelope" />Transactional</h3>
+        <h3 className="settings-section-title">
+          <i className="bi bi-envelope" />
+          Transactional
+        </h3>
         <div className="settings-toggle-row">
           <div className="settings-toggle-info">
             <span className="settings-toggle-label">Order confirmations</span>
@@ -868,7 +1152,12 @@ export function EmailPanel({ onSave, settings, updateSetting }) {
           <button
             type="button"
             className={`settings-switch ${settings?.email_transactional_confirmations ? 'on' : ''}`}
-            onClick={() => updateSetting('email_transactional_confirmations', !settings?.email_transactional_confirmations)}
+            onClick={() =>
+              updateSetting(
+                'email_transactional_confirmations',
+                !settings?.email_transactional_confirmations,
+              )
+            }
             aria-label="Toggle order confirmations"
           />
         </div>
@@ -884,7 +1173,10 @@ export function EmailPanel({ onSave, settings, updateSetting }) {
             aria-label="Toggle security alerts email"
           />
         </div>
-        <h3 className="settings-section-title"><i className="bi bi-megaphone" />Marketing</h3>
+        <h3 className="settings-section-title">
+          <i className="bi bi-megaphone" />
+          Marketing
+        </h3>
         <div className="settings-toggle-row">
           <div className="settings-toggle-info">
             <span className="settings-toggle-label">Newsletter</span>
@@ -912,7 +1204,9 @@ export function EmailPanel({ onSave, settings, updateSetting }) {
           </div>
         </div>
         <div className="settings-btn-row">
-          <button type="button" className="settings-btn-primary" onClick={onSave}>Save changes</button>
+          <button type="button" className="settings-btn-primary" onClick={onSave}>
+            Save changes
+          </button>
         </div>
       </div>
     </div>
@@ -936,7 +1230,7 @@ export function NotificationsPanel({ onSave, settings, updateSetting }) {
       if (!result.success) {
         if (result.error === 'Permission denied by browser') {
           setError(
-            'Your browser blocked notifications. Open the lock icon in the address bar → Site settings → Notifications → Allow, then try again.'
+            'Your browser blocked notifications. Open the lock icon in the address bar → Site settings → Notifications → Allow, then try again.',
           );
         } else {
           setError(result.error || 'Failed to enable notifications');
@@ -950,26 +1244,45 @@ export function NotificationsPanel({ onSave, settings, updateSetting }) {
 
   const emailRows = [
     { key: 'notifications_email_trades', label: 'Trade confirmations', desc: 'Receipts and fills' },
-    { key: 'notifications_email_alerts', label: 'Price alerts', desc: 'When your watchlist triggers fire' },
-    { key: 'notifications_email_community', label: 'Community replies and mentions', desc: 'When someone engages with you' },
-    { key: 'notifications_email_newsletter', label: 'Weekly newsletter', desc: 'Market insights and tips' },
+    {
+      key: 'notifications_email_alerts',
+      label: 'Price alerts',
+      desc: 'When your watchlist triggers fire',
+    },
+    {
+      key: 'notifications_email_community',
+      label: 'Community replies and mentions',
+      desc: 'When someone engages with you',
+    },
+    {
+      key: 'notifications_email_newsletter',
+      label: 'Weekly newsletter',
+      desc: 'Market insights and tips',
+    },
   ];
 
   return (
     <div className="settings-panel">
       <div className="settings-panel-header">
         <h2 className="settings-panel-title">Notifications</h2>
-        <p className="settings-panel-desc">Manage how you hear from Ezana Finance. Desktop push can only be enabled here — we never ask on sign-up or login.</p>
+        <p className="settings-panel-desc">
+          Manage how you hear from Ezana Finance. Desktop push can only be enabled here — we never
+          ask on sign-up or login.
+        </p>
       </div>
 
       <div className="settings-section">
-        <h3 className="settings-section-title"><i className="bi bi-bell" /> Desktop</h3>
+        <h3 className="settings-section-title">
+          <i className="bi bi-bell" /> Desktop
+        </h3>
         <div className="settings-push-card">
           <div className="settings-toggle-row settings-toggle-row--push">
             <div className="settings-toggle-info">
               <span className="settings-toggle-label">Desktop notifications</span>
               <span className="settings-toggle-desc">
-                Receive push notifications in your browser for alerts and updates — even when this site is in the background. The browser will ask for permission only when you turn this on.
+                Receive push notifications in your browser for alerts and updates — even when this
+                site is in the background. The browser will ask for permission only when you turn
+                this on.
               </span>
             </div>
             {!supported ? (
@@ -981,7 +1294,9 @@ export function NotificationsPanel({ onSave, settings, updateSetting }) {
                 onClick={handleDesktopToggle}
                 disabled={loading || toggling}
                 aria-pressed={isSubscribed}
-                aria-label={isSubscribed ? 'Disable desktop notifications' : 'Enable desktop notifications'}
+                aria-label={
+                  isSubscribed ? 'Disable desktop notifications' : 'Enable desktop notifications'
+                }
               />
             )}
           </div>
@@ -1001,7 +1316,9 @@ export function NotificationsPanel({ onSave, settings, updateSetting }) {
           ) : null}
         </div>
 
-        <h3 className="settings-section-title settings-section-title--spaced"><i className="bi bi-envelope" /> Email</h3>
+        <h3 className="settings-section-title settings-section-title--spaced">
+          <i className="bi bi-envelope" /> Email
+        </h3>
         <div className="settings-push-card settings-push-card--muted">
           <p className="settings-toggle-label" style={{ marginBottom: '0.35rem' }}>
             Email notifications
@@ -1010,7 +1327,11 @@ export function NotificationsPanel({ onSave, settings, updateSetting }) {
             Choose which updates you receive by email. Click Save changes to sync.
           </p>
           {emailRows.map(({ key, label, desc }) => (
-            <div key={key} className="settings-toggle-row" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+            <div
+              key={key}
+              className="settings-toggle-row"
+              style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+            >
               <div className="settings-toggle-info">
                 <span className="settings-toggle-label">{label}</span>
                 <span className="settings-toggle-desc">{desc}</span>
@@ -1058,24 +1379,38 @@ export function IntegrationsPanel({ onSave }) {
       <div className="settings-section">
         <div className="settings-integrations-grid">
           {INTEGRATIONS.map((int) => (
-            <div key={int.id} className={`settings-integration-card ${int.status ? 'connected' : ''}`}>
-              <div className="settings-integration-icon" style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
+            <div
+              key={int.id}
+              className={`settings-integration-card ${int.status ? 'connected' : ''}`}
+            >
+              <div
+                className="settings-integration-icon"
+                style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}
+              >
                 <i className={`bi ${int.icon}`} />
               </div>
               <div className="settings-integration-body">
                 <span className="settings-integration-name">{int.name}</span>
-                <span className={`settings-integration-status ${int.status ? 'connected-text' : ''}`}>
+                <span
+                  className={`settings-integration-status ${int.status ? 'connected-text' : ''}`}
+                >
                   {int.status || 'Not connected'}
                 </span>
               </div>
-              <button type="button" className="settings-btn-secondary" style={{ padding: '0.375rem 0.75rem', fontSize: '0.75rem' }}>
+              <button
+                type="button"
+                className="settings-btn-secondary"
+                style={{ padding: '0.375rem 0.75rem', fontSize: '0.75rem' }}
+              >
                 {int.status ? 'Manage' : 'Connect'}
               </button>
             </div>
           ))}
         </div>
         <div className="settings-btn-row">
-          <button type="button" className="settings-btn-primary" onClick={onSave}>Save changes</button>
+          <button type="button" className="settings-btn-primary" onClick={onSave}>
+            Save changes
+          </button>
         </div>
       </div>
     </div>
@@ -1092,14 +1427,27 @@ export function ApiPanel({ onSave }) {
         <p className="settings-panel-desc">API keys, usage, and webhook configuration.</p>
       </div>
       <div className="settings-section">
-        <h3 className="settings-section-title"><i className="bi bi-key" />API key</h3>
+        <h3 className="settings-section-title">
+          <i className="bi bi-key" />
+          API key
+        </h3>
         <div className="settings-api-key">
           <code>{keyVisible ? apiKey : '••••••••••••••••••••••••••••••••••••••••'}</code>
           <div className="settings-api-key-actions">
-            <button type="button" className="settings-api-key-btn" onClick={() => setKeyVisible(!keyVisible)} title={keyVisible ? 'Hide' : 'Show'}>
+            <button
+              type="button"
+              className="settings-api-key-btn"
+              onClick={() => setKeyVisible(!keyVisible)}
+              title={keyVisible ? 'Hide' : 'Show'}
+            >
               <i className={`bi bi-${keyVisible ? 'eye-slash' : 'eye'}`} />
             </button>
-            <button type="button" className="settings-api-key-btn" title="Copy" onClick={() => navigator.clipboard.writeText(apiKey)}>
+            <button
+              type="button"
+              className="settings-api-key-btn"
+              title="Copy"
+              onClick={() => navigator.clipboard.writeText(apiKey)}
+            >
               <i className="bi bi-clipboard" />
             </button>
           </div>
@@ -1114,25 +1462,46 @@ export function ApiPanel({ onSave }) {
             <span>10,000 limit</span>
           </div>
         </div>
-        <h3 className="settings-section-title"><i className="bi bi-link" />Endpoints</h3>
+        <h3 className="settings-section-title">
+          <i className="bi bi-link" />
+          Endpoints
+        </h3>
         <table className="settings-table">
           <thead>
-            <tr><th>Endpoint</th><th>Usage</th></tr>
+            <tr>
+              <th>Endpoint</th>
+              <th>Usage</th>
+            </tr>
           </thead>
           <tbody>
-            <tr><td>GET /api/v1/trades</td><td>1,200</td></tr>
-            <tr><td>GET /api/v1/watchlist</td><td>800</td></tr>
+            <tr>
+              <td>GET /api/v1/trades</td>
+              <td>1,200</td>
+            </tr>
+            <tr>
+              <td>GET /api/v1/watchlist</td>
+              <td>800</td>
+            </tr>
           </tbody>
         </table>
-        <h3 className="settings-section-title"><i className="bi bi-broadcast" />Webhook</h3>
+        <h3 className="settings-section-title">
+          <i className="bi bi-broadcast" />
+          Webhook
+        </h3>
         <div className="settings-row single">
           <div className="settings-field">
             <label className="settings-label">Webhook URL</label>
-            <input type="url" className="settings-input" placeholder="https://your-server.com/webhook" />
+            <input
+              type="url"
+              className="settings-input"
+              placeholder="https://your-server.com/webhook"
+            />
           </div>
         </div>
         <div className="settings-btn-row">
-          <button type="button" className="settings-btn-primary" onClick={onSave}>Save changes</button>
+          <button type="button" className="settings-btn-primary" onClick={onSave}>
+            Save changes
+          </button>
         </div>
       </div>
     </div>
@@ -1187,7 +1556,9 @@ function DeleteAccountModal({ onClose, onDeleted }) {
         </h2>
         <p>This will:</p>
         <ul>
-          <li>Cancel your subscription at the end of the current billing period (no further charges)</li>
+          <li>
+            Cancel your subscription at the end of the current billing period (no further charges)
+          </li>
           <li>Sign you out of all your devices</li>
           <li>Mark your account for permanent deletion when the billing period ends</li>
           <li>Send you an email with a reactivation link in case you change your mind</li>
@@ -1215,7 +1586,12 @@ function DeleteAccountModal({ onClose, onDeleted }) {
         {error && <p className="settings-delete-modal__error">{error}</p>}
 
         <div className="settings-delete-modal__actions">
-          <button type="button" className="settings-btn-secondary" onClick={onClose} disabled={busy}>
+          <button
+            type="button"
+            className="settings-btn-secondary"
+            onClick={onClose}
+            disabled={busy}
+          >
             Cancel
           </button>
           <button

@@ -1,6 +1,6 @@
 'use client';
 
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 
 /**
  * Fetches all countries with their current ranking data.
@@ -23,7 +23,7 @@ export async function fetchEmpireRankings() {
         region,
         is_eurozone
       )
-    `
+    `,
     )
     .order('rank', { ascending: true });
 

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
-import { createClient } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase-browser';
 
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -66,7 +66,9 @@ export default function UserProfileSettingsPage() {
       <div className="py-12 px-4">
         <div className="max-w-md mx-auto text-center">
           <h2 className="text-xl font-semibold mb-4">Sign in to view profile</h2>
-          <Link href="/signin" className="text-primary hover:underline">Sign In</Link>
+          <Link href="/signin" className="text-primary hover:underline">
+            Sign In
+          </Link>
         </div>
       </div>
     );
@@ -87,7 +89,8 @@ export default function UserProfileSettingsPage() {
           <div className="flex items-center gap-4">
             <button
               onClick={handleSave}
-              className="px-6 py-3 bg-primary text-primary-foreground rounded-xl font-medium hover:bg-primary/90 transition-all duration-300 shadow-lg">
+              className="px-6 py-3 bg-primary text-primary-foreground rounded-xl font-medium hover:bg-primary/90 transition-all duration-300 shadow-lg"
+            >
               <i className="bi bi-check-lg mr-2" />
               {saved ? 'Saved!' : 'Save Changes'}
             </button>
@@ -103,12 +106,16 @@ export default function UserProfileSettingsPage() {
                 </div>
                 <div>
                   <h2 className="text-2xl font-light text-foreground">Personal Information</h2>
-                  <p className="text-muted-foreground">Update your personal details and contact information</p>
+                  <p className="text-muted-foreground">
+                    Update your personal details and contact information
+                  </p>
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">First Name</label>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    First Name
+                  </label>
                   <input
                     type="text"
                     value={profile.firstName}
@@ -117,7 +124,9 @@ export default function UserProfileSettingsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">Last Name</label>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Last Name
+                  </label>
                   <input
                     type="text"
                     value={profile.lastName}
@@ -126,7 +135,9 @@ export default function UserProfileSettingsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">Email Address</label>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Email Address
+                  </label>
                   <input
                     type="email"
                     value={profile.email}
@@ -135,7 +146,9 @@ export default function UserProfileSettingsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">Phone Number</label>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Phone Number
+                  </label>
                   <input
                     type="tel"
                     value={profile.phone}
@@ -163,12 +176,15 @@ export default function UserProfileSettingsPage() {
                 </div>
                 <div>
                   <h2 className="text-2xl font-light text-foreground">Account Security</h2>
-                  <p className="text-muted-foreground">Manage your password and security preferences</p>
+                  <p className="text-muted-foreground">
+                    Manage your password and security preferences
+                  </p>
                 </div>
               </div>
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground">
-                  Send a password reset link to your email. You&apos;ll set a new password on the secure page we open from the link.
+                  Send a password reset link to your email. You&apos;ll set a new password on the
+                  secure page we open from the link.
                 </p>
                 <button
                   type="button"
@@ -197,7 +213,9 @@ export default function UserProfileSettingsPage() {
                 </div>
                 <div>
                   <h2 className="text-2xl font-light text-foreground">Notification Preferences</h2>
-                  <p className="text-muted-foreground">Choose how you want to be notified about important updates</p>
+                  <p className="text-muted-foreground">
+                    Choose how you want to be notified about important updates
+                  </p>
                 </div>
               </div>
               <div className="space-y-6">
@@ -214,13 +232,17 @@ export default function UserProfileSettingsPage() {
                       onChange={(e) => setNotifications((n) => ({ ...n, email: e.target.checked }))}
                       className="rounded"
                     />
-                    <label htmlFor="emailNotifications" className="sr-only">Email Notifications</label>
+                    <label htmlFor="emailNotifications" className="sr-only">
+                      Email Notifications
+                    </label>
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-lg font-medium text-foreground">Push Notifications</h3>
-                    <p className="text-sm text-muted-foreground">Get real-time alerts on your device</p>
+                    <p className="text-sm text-muted-foreground">
+                      Get real-time alerts on your device
+                    </p>
                   </div>
                   <div className="flex items-center space-x-2">
                     <input
@@ -230,23 +252,31 @@ export default function UserProfileSettingsPage() {
                       onChange={(e) => setNotifications((n) => ({ ...n, push: e.target.checked }))}
                       className="rounded"
                     />
-                    <label htmlFor="pushNotifications" className="sr-only">Push Notifications</label>
+                    <label htmlFor="pushNotifications" className="sr-only">
+                      Push Notifications
+                    </label>
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-lg font-medium text-foreground">Trading Alerts</h3>
-                    <p className="text-sm text-muted-foreground">Notifications for congressional trading activity</p>
+                    <p className="text-sm text-muted-foreground">
+                      Notifications for congressional trading activity
+                    </p>
                   </div>
                   <div className="flex items-center space-x-2">
                     <input
                       type="checkbox"
                       id="tradingNotifications"
                       checked={notifications.trading}
-                      onChange={(e) => setNotifications((n) => ({ ...n, trading: e.target.checked }))}
+                      onChange={(e) =>
+                        setNotifications((n) => ({ ...n, trading: e.target.checked }))
+                      }
                       className="rounded"
                     />
-                    <label htmlFor="tradingNotifications" className="sr-only">Trading Alerts</label>
+                    <label htmlFor="tradingNotifications" className="sr-only">
+                      Trading Alerts
+                    </label>
                   </div>
                 </div>
               </div>
@@ -258,7 +288,8 @@ export default function UserProfileSettingsPage() {
               <div className="flex flex-col items-center text-center">
                 <div className="w-24 h-24 bg-primary rounded-full flex items-center justify-center mb-4">
                   <span className="text-3xl font-bold text-primary-foreground">
-                    {profile.firstName?.[0]}{profile.lastName?.[0]}
+                    {profile.firstName?.[0]}
+                    {profile.lastName?.[0]}
                   </span>
                 </div>
                 <h3 className="text-xl font-semibold text-foreground">
@@ -276,11 +307,13 @@ export default function UserProfileSettingsPage() {
               <i className="bi bi-shield-lock text-primary text-xl" aria-hidden />
             </div>
             <div className="min-w-0">
-              <h2 className="text-xl font-semibold text-foreground mb-2">Privacy &amp; personal data</h2>
+              <h2 className="text-xl font-semibold text-foreground mb-2">
+                Privacy &amp; personal data
+              </h2>
               <p className="text-muted-foreground text-sm mb-4 leading-relaxed">
-                Submit a request to view, update, or delete personal information we hold about your account
-                (including partner and organization roles). This opens the same Privacy &amp; data section as
-                the main Settings page.
+                Submit a request to view, update, or delete personal information we hold about your
+                account (including partner and organization roles). This opens the same Privacy
+                &amp; data section as the main Settings page.
               </p>
               <Link
                 href="/settings?tab=privacy-data"

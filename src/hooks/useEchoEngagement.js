@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/components/AuthProvider';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 
 async function echoFetch(url, options = {}) {
   const {
@@ -130,24 +130,27 @@ export function useEchoEngagement(articleId, { initialLikeCount } = {}) {
     [user, articleId],
   );
 
-  const deleteComment = useCallback(async (commentId) => {
-    if (!user) return { error: 'auth' };
+  const deleteComment = useCallback(
+    async (commentId) => {
+      if (!user) return { error: 'auth' };
 
-    const prevComments = comments;
-    const prevCount = commentCount;
-    setComments((prev) => prev.filter((c) => c.id !== commentId));
-    setCommentCount((n) => Math.max(0, n - 1));
+      const prevComments = comments;
+      const prevCount = commentCount;
+      setComments((prev) => prev.filter((c) => c.id !== commentId));
+      setCommentCount((n) => Math.max(0, n - 1));
 
-    try {
-      const res = await echoFetch(`/api/echo/comments/${commentId}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error('Failed to delete');
-      return { ok: true };
-    } catch (err) {
-      setComments(prevComments);
-      setCommentCount(prevCount);
-      return { error: err.message };
-    }
-  }, [user, comments, commentCount]);
+      try {
+        const res = await echoFetch(`/api/echo/comments/${commentId}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Failed to delete');
+        return { ok: true };
+      } catch (err) {
+        setComments(prevComments);
+        setCommentCount(prevCount);
+        return { error: err.message };
+      }
+    },
+    [user, comments, commentCount],
+  );
 
   return {
     likeCount,

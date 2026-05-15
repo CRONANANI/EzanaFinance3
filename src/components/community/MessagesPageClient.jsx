@@ -18,7 +18,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useMessages } from '@/hooks/useMessages';
 import { useAuth } from '@/components/AuthProvider';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 import { MessagesHeader } from '@/components/community/messages/MessagesHeader';
 import { ConversationList } from '@/components/community/messages/ConversationList';
 import { MessageThread } from '@/components/community/messages/MessageThread';
@@ -136,10 +136,8 @@ export default function MessagesPageClient() {
     }
   };
 
-  const partnerName =
-    pendingFriend?.name || otherUser?.name || 'Conversation';
-  const partnerAvatarUrl =
-    pendingFriend?.avatar_url || otherUser?.avatar_url || null;
+  const partnerName = pendingFriend?.name || otherUser?.name || 'Conversation';
+  const partnerAvatarUrl = pendingFriend?.avatar_url || otherUser?.avatar_url || null;
 
   const hasActive = Boolean(activeConvoId || pendingFriend);
   const listHiddenOnMobile = hasActive && mobileView === 'thread';
@@ -157,9 +155,7 @@ export default function MessagesPageClient() {
       <div className="m-body">
         <div className="m-grid">
           <aside
-            className={`m-panel m-panel--list${
-              listHiddenOnMobile ? ' is-hidden-mobile' : ''
-            }`}
+            className={`m-panel m-panel--list${listHiddenOnMobile ? ' is-hidden-mobile' : ''}`}
             aria-label="Conversations"
           >
             <ConversationList
@@ -174,9 +170,7 @@ export default function MessagesPageClient() {
           </aside>
 
           <main
-            className={`m-panel m-panel--thread${
-              threadHiddenOnMobile ? ' is-hidden-mobile' : ''
-            }`}
+            className={`m-panel m-panel--thread${threadHiddenOnMobile ? ' is-hidden-mobile' : ''}`}
             aria-label="Conversation"
           >
             {hasActive ? (
@@ -199,9 +193,7 @@ export default function MessagesPageClient() {
                 onTyping={broadcastTyping}
                 canSend={Boolean(pendingFriend?.id || otherUser?.id)}
                 composerPlaceholder={
-                  pendingFriend
-                    ? `Say hi to ${pendingFriend.name}…`
-                    : 'Type message'
+                  pendingFriend ? `Say hi to ${pendingFriend.name}…` : 'Type message'
                 }
                 highlightTerm={activeSearch.query}
                 highlightedMessageIds={

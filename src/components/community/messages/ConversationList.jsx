@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { Search, X, Pencil } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 import { ConversationRow } from './ConversationRow';
 import { OnlineNowStrip } from './OnlineNowStrip';
 
@@ -143,20 +143,14 @@ export function ConversationList({
               ⌘/
             </kbd>
           )}
-          {searching ? (
-            <span className="m-search__spinner" aria-label="Searching" />
-          ) : null}
+          {searching ? <span className="m-search__spinner" aria-label="Searching" /> : null}
         </div>
       </div>
 
       <OnlineNowStrip users={onlineUsers} />
 
       <div className="m-tabs">
-        <div
-          className="m-tabs__group"
-          role="tablist"
-          aria-label="Filter conversations"
-        >
+        <div className="m-tabs__group" role="tablist" aria-label="Filter conversations">
           {TABS.map((t) => (
             <button
               key={t.id}

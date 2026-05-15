@@ -1,24 +1,24 @@
 'use client';
 
-import React, { useState, useEffect } from "react";
-import { TrendingUp } from "lucide-react";
-import { motion } from "framer-motion";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
-import { PasswordStrengthField } from "@/components/ui/password-strength-field";
-import { SpiralPasswordField } from "@/components/ui/spiral-password-field";
+import React, { useState, useEffect } from 'react';
+import { TrendingUp } from 'lucide-react';
+import { motion } from 'framer-motion';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase-browser';
+import { PasswordStrengthField } from '@/components/ui/password-strength-field';
+import { SpiralPasswordField } from '@/components/ui/spiral-password-field';
 
 export default function SignUpPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [userName, setUserName] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [userName, setUserName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -39,21 +39,21 @@ export default function SignUpPage() {
 
   const validatePassword = (pwd) => {
     const errors = [];
-    if (pwd.length < 8) errors.push("at least 8 characters");
-    if (!/[A-Z]/.test(pwd)) errors.push("1 uppercase letter");
-    if (!/[a-z]/.test(pwd)) errors.push("1 lowercase letter");
-    if (!/[0-9]/.test(pwd)) errors.push("1 number");
-    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pwd)) errors.push("1 special character");
+    if (pwd.length < 8) errors.push('at least 8 characters');
+    if (!/[A-Z]/.test(pwd)) errors.push('1 uppercase letter');
+    if (!/[a-z]/.test(pwd)) errors.push('1 lowercase letter');
+    if (!/[0-9]/.test(pwd)) errors.push('1 number');
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pwd)) errors.push('1 special character');
     return errors;
   };
 
   const handleSignUp = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setError("");
+    setError('');
 
     if (!isValidEmail(email)) {
-      setError("Please enter a valid email address");
+      setError('Please enter a valid email address');
       setIsLoading(false);
       return;
     }
@@ -66,7 +66,7 @@ export default function SignUpPage() {
     }
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      setError('Passwords do not match');
       setIsLoading(false);
       return;
     }
@@ -92,13 +92,13 @@ export default function SignUpPage() {
 
       /* With Supabase "Confirm email" off, signUp creates the user and session; we verify via 6-digit code only. */
       if (data.user) {
-        router.push("/auth/verify-email");
+        router.push('/auth/verify-email');
         return;
       }
 
-      setError("Could not create account. Please try again.");
+      setError('Could not create account. Please try again.');
     } catch (err) {
-      setError("An unexpected error occurred. Please try again.");
+      setError('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -173,7 +173,9 @@ export default function SignUpPage() {
               <input
                 type="text"
                 value={userName}
-                onChange={(e) => setUserName(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                onChange={(e) =>
+                  setUserName(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))
+                }
                 placeholder="johndoe"
                 required
                 className="w-full h-11 rounded-lg border border-gray-700 bg-[#161b22] px-4 text-white placeholder-gray-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
@@ -226,13 +228,16 @@ export default function SignUpPage() {
               disabled={isLoading}
               className="w-full h-11 rounded-lg font-medium bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? "Creating account..." : "Create account"}
+              {isLoading ? 'Creating account...' : 'Create account'}
             </button>
           </form>
 
           <div className="mt-8 text-center text-sm text-gray-400">
-            Already have an account?{" "}
-            <Link href="/auth/signin" className="text-emerald-500 hover:text-emerald-400 font-medium">
+            Already have an account?{' '}
+            <Link
+              href="/auth/signin"
+              className="text-emerald-500 hover:text-emerald-400 font-medium"
+            >
               Sign in
             </Link>
           </div>

@@ -3,13 +3,25 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useOrg } from '@/contexts/OrgContext';
 import { getManageableOrgPeers } from '@/lib/orgMockData';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 
 const NOTIFICATION_KEYS = [
-  { key: 'position_flags', label: 'Position flags', desc: 'Red/green flags on portfolio positions' },
+  {
+    key: 'position_flags',
+    label: 'Position flags',
+    desc: 'Red/green flags on portfolio positions',
+  },
   { key: 'team_messages', label: 'Team messages', desc: 'Direct messages from org members' },
-  { key: 'content_shares', label: 'Content shares', desc: 'News, charts, models shared by teammates' },
-  { key: 'earnings_alerts', label: 'Earnings alerts', desc: 'Upcoming earnings for covered tickers' },
+  {
+    key: 'content_shares',
+    label: 'Content shares',
+    desc: 'News, charts, models shared by teammates',
+  },
+  {
+    key: 'earnings_alerts',
+    label: 'Earnings alerts',
+    desc: 'Upcoming earnings for covered tickers',
+  },
   { key: 'market_events', label: 'Market events', desc: 'High-impact economic events' },
   { key: 'task_reminders', label: 'Task reminders', desc: 'Upcoming deadlines and assigned tasks' },
   { key: 'weekly_digest', label: 'Weekly digest', desc: 'Weekly summary email of team activity' },
@@ -32,12 +44,14 @@ export function OrgNotificationManager() {
         .eq('is_active', true);
       if (!cancelled && !error) setOrgPeers(data || []);
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [orgData?.org?.id]);
 
   const manageableMembers = useMemo(
     () => (orgData?.member ? getManageableOrgPeers(orgData.member, orgPeers) : []),
-    [orgData?.member, orgPeers]
+    [orgData?.member, orgPeers],
   );
 
   const canManageOthers =
@@ -55,7 +69,9 @@ export function OrgNotificationManager() {
         if (!cancelled) setPrefs({});
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [selectedMemberId]);
 
   useEffect(() => {
@@ -89,14 +105,19 @@ export function OrgNotificationManager() {
 
   const selectedRow = orgPeers.find((p) => p.id === selectedMemberId);
   const selectedMember =
-    selectedRow ||
-    (selectedMemberId === orgData?.member?.id ? orgData.member : null);
-  const selectedLabel =
-    selectedRow?.display_name || orgData?.member?.display_name || 'Member';
+    selectedRow || (selectedMemberId === orgData?.member?.id ? orgData.member : null);
+  const selectedLabel = selectedRow?.display_name || orgData?.member?.display_name || 'Member';
 
   return (
     <div className="ot-team-card" style={{ marginTop: '1.5rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '1rem',
+        }}
+      >
         <div>
           <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#f0f6fc' }}>
             <i className="bi bi-bell" style={{ marginRight: '0.5rem', color: '#6366f1' }} />
@@ -163,9 +184,9 @@ export function OrgNotificationManager() {
           }}
         >
           <strong style={{ color: '#f59e0b' }}>Managing for {selectedLabel}</strong> (
-          {selectedRow?.sub_role || selectedMember.sub_role || selectedMember.role}).
-          Changes you make here will override their defaults. They can still adjust their own toggles — your overrides
-          take precedence until updated.
+          {selectedRow?.sub_role || selectedMember.sub_role || selectedMember.role}). Changes you
+          make here will override their defaults. They can still adjust their own toggles — your
+          overrides take precedence until updated.
         </div>
       )}
 
@@ -186,7 +207,9 @@ export function OrgNotificationManager() {
               }}
             >
               <div>
-                <div style={{ fontSize: '0.825rem', fontWeight: 600, color: '#f0f6fc' }}>{nk.label}</div>
+                <div style={{ fontSize: '0.825rem', fontWeight: 600, color: '#f0f6fc' }}>
+                  {nk.label}
+                </div>
                 <div style={{ fontSize: '0.65rem', color: '#8b949e' }}>{nk.desc}</div>
               </div>
               <button

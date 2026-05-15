@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { useMockPortfolio } from '@/hooks/useMockPortfolio';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 
 /**
  * Build a synthetic per-day cumulative-return series ending at `endReturnPct`.
@@ -26,9 +26,7 @@ function buildUserSeriesFull(endReturnPct) {
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);
   const yearStart = new Date(Date.UTC(today.getUTCFullYear(), 0, 1));
-  const daysSinceYearStart = Math.round(
-    (today.getTime() - yearStart.getTime()) / 86_400_000,
-  );
+  const daysSinceYearStart = Math.round((today.getTime() - yearStart.getTime()) / 86_400_000);
   const points = Math.max(100, daysSinceYearStart + 1);
 
   const safe = Math.abs(endReturnPct) < 0.001 ? 0 : endReturnPct;
@@ -110,7 +108,9 @@ export function useProfileActivity() {
       }
       setBrokerageLoading(true);
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
         const token = session?.access_token;
         if (!token) {
           if (!cancelled) setBrokerageLoading(false);
@@ -118,8 +118,12 @@ export function useProfileActivity() {
         }
         const authHeaders = { Authorization: `Bearer ${token}` };
         const [plaidRes, alpacaRes] = await Promise.allSettled([
-          fetch('/api/plaid/holdings', { headers: authHeaders }).then((r) => (r.ok ? r.json() : null)),
-          fetch('/api/alpaca/positions', { headers: authHeaders }).then((r) => (r.ok ? r.json() : null)),
+          fetch('/api/plaid/holdings', { headers: authHeaders }).then((r) =>
+            r.ok ? r.json() : null,
+          ),
+          fetch('/api/alpaca/positions', { headers: authHeaders }).then((r) =>
+            r.ok ? r.json() : null,
+          ),
         ]);
         if (cancelled) return;
         setPlaid(plaidRes.status === 'fulfilled' ? plaidRes.value : null);
@@ -129,7 +133,9 @@ export function useProfileActivity() {
       }
     }
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [isAuthenticated, user]);
 
   useEffect(() => {
@@ -144,7 +150,9 @@ export function useProfileActivity() {
       .finally(() => {
         if (!cancelled) setAggregatesLoading(false);
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const source = useMemo(() => {

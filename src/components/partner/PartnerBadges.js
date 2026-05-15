@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 import '@/components/partner/badges.css';
 
 function hexToRgba(hex, alpha) {
@@ -10,7 +10,10 @@ function hexToRgba(hex, alpha) {
   }
   let h = hex.slice(1);
   if (h.length === 3) {
-    h = h.split('').map((c) => c + c).join('');
+    h = h
+      .split('')
+      .map((c) => c + c)
+      .join('');
   }
   const n = parseInt(h, 16);
   if (Number.isNaN(n)) return `rgba(156, 163, 175, ${alpha})`;
@@ -34,7 +37,9 @@ export function PartnerBadges() {
   const [expanded, setExpanded] = useState(false);
 
   const getToken = useCallback(async () => {
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     return session?.access_token || null;
   }, []);
 
@@ -104,30 +109,19 @@ export function PartnerBadges() {
               }}
             >
               <BadgeGlyph icon={badge.badge_icon} color={c} />
-              <span
-                className="partner-badges-rarity-dot"
-                style={{ background: c }}
-              />
+              <span className="partner-badges-rarity-dot" style={{ background: c }} />
             </div>
           );
         })}
       </div>
 
       {hasMore && !expanded && (
-        <p className="partner-badges-hint">
-          Hover to see all
-          {' '}
-          {badges.length}
-          {' '}
-          badges
-        </p>
+        <p className="partner-badges-hint">Hover to see all {badges.length} badges</p>
       )}
 
       {expanded && (
         <div className="partner-badges-popover">
-          <p className="partner-badges-popover-title">
-            {`All Badges (${badges.length})`}
-          </p>
+          <p className="partner-badges-popover-title">{`All Badges (${badges.length})`}</p>
           {badges.map((badge) => {
             const c = badge.tier_color || '#e2e8f0';
             return (

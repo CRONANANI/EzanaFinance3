@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 
 /**
  * AuthorCard — displays an author's profile with subscribe button.
@@ -65,7 +65,9 @@ export function SubscribeButton({ authorId, className = '' }) {
 
     setLoading(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       const token = session?.access_token;
 
       const res = await fetch('/api/echo/subscribe', {
@@ -75,8 +77,10 @@ export function SubscribeButton({ authorId, className = '' }) {
       });
       const data = await res.json();
       setSubscribed(data.subscribed);
-    } catch {}
-    finally { setLoading(false); }
+    } catch {
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -86,10 +90,16 @@ export function SubscribeButton({ authorId, className = '' }) {
         onClick={handleClick}
         disabled={loading}
       >
-        {loading ? '...' : subscribed ? (
-          <><i className="bi bi-check-circle-fill" /> Subscribed</>
+        {loading ? (
+          '...'
+        ) : subscribed ? (
+          <>
+            <i className="bi bi-check-circle-fill" /> Subscribed
+          </>
         ) : (
-          <><i className="bi bi-plus-circle" /> Subscribe</>
+          <>
+            <i className="bi bi-plus-circle" /> Subscribe
+          </>
         )}
       </button>
 
@@ -97,10 +107,17 @@ export function SubscribeButton({ authorId, className = '' }) {
         <div className="echo-auth-modal" onClick={() => setShowAuthPrompt(false)}>
           <div className="echo-auth-modal-content" onClick={(e) => e.stopPropagation()}>
             <h3>Subscribe to this author</h3>
-            <p>Create a free Ezana Finance account to subscribe to authors and get notified when they publish new articles.</p>
+            <p>
+              Create a free Ezana Finance account to subscribe to authors and get notified when they
+              publish new articles.
+            </p>
             <div className="echo-auth-modal-actions">
-              <Link href="/auth/signup" className="echo-btn-primary">Sign Up Free</Link>
-              <Link href="/auth/login" className="echo-btn-secondary">Login</Link>
+              <Link href="/auth/signup" className="echo-btn-primary">
+                Sign Up Free
+              </Link>
+              <Link href="/auth/login" className="echo-btn-secondary">
+                Login
+              </Link>
             </div>
             <button className="echo-auth-modal-close" onClick={() => setShowAuthPrompt(false)}>
               <i className="bi bi-x-lg" />
@@ -129,12 +146,22 @@ export function EchoSearchBar({ onSearch, placeholder = 'Search articles or auth
       <input
         type="text"
         value={query}
-        onChange={(e) => { setQuery(e.target.value); if (!e.target.value) onSearch?.(''); }}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          if (!e.target.value) onSearch?.('');
+        }}
         placeholder={placeholder}
         className="echo-search-input"
       />
       {query && (
-        <button type="button" className="echo-search-clear" onClick={() => { setQuery(''); onSearch?.(''); }}>
+        <button
+          type="button"
+          className="echo-search-clear"
+          onClick={() => {
+            setQuery('');
+            onSearch?.('');
+          }}
+        >
           <i className="bi bi-x" />
         </button>
       )}

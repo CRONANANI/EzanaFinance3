@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useOrg } from '@/contexts/OrgContext';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 
 const ATTACHMENT_ICONS = {
   news_event: 'bi-newspaper',
@@ -42,7 +42,9 @@ export function OrgSendToTeamModal({ onClose, attachment, preSelectedRecipient }
       if (cancelled || qErr) return;
       setPeers((data || []).filter((p) => p.id !== orgData.member.id));
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [orgData?.org?.id, orgData?.member?.id]);
 
   const filteredMembers = useMemo(() => {
@@ -106,8 +108,8 @@ export function OrgSendToTeamModal({ onClose, attachment, preSelectedRecipient }
             </button>
           </div>
           <p style={{ color: '#8b949e', fontSize: '0.825rem' }}>
-            You don&apos;t have the &quot;Send to Team&quot; permission. Ask your portfolio manager or executive to
-            enable it in settings.
+            You don&apos;t have the &quot;Send to Team&quot; permission. Ask your portfolio manager
+            or executive to enable it in settings.
           </p>
         </div>
       </div>
@@ -234,15 +236,23 @@ export function OrgSendToTeamModal({ onClose, attachment, preSelectedRecipient }
                           color: '#6366f1',
                         }}
                       >
-                        {label.split(' ').map((w) => w[0]).join('').slice(0, 2)}
+                        {label
+                          .split(' ')
+                          .map((w) => w[0])
+                          .join('')
+                          .slice(0, 2)}
                       </div>
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#f0f6fc' }}>{label}</div>
+                        <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#f0f6fc' }}>
+                          {label}
+                        </div>
                         <div style={{ fontSize: '0.625rem', color: '#8b949e' }}>
                           {m.sub_role || m.role?.replace('_', ' ')}
                         </div>
                       </div>
-                      {recipientId === m.id && <i className="bi bi-check-circle-fill" style={{ color: '#6366f1' }} />}
+                      {recipientId === m.id && (
+                        <i className="bi bi-check-circle-fill" style={{ color: '#6366f1' }} />
+                      )}
                     </button>
                   );
                 })}
@@ -279,7 +289,12 @@ export function OrgSendToTeamModal({ onClose, attachment, preSelectedRecipient }
               <button type="button" className="ot-btn-secondary" onClick={onClose}>
                 Cancel
               </button>
-              <button type="button" className="ot-btn-primary" onClick={handleSend} disabled={sending || !recipientId}>
+              <button
+                type="button"
+                className="ot-btn-primary"
+                onClick={handleSend}
+                disabled={sending || !recipientId}
+              >
                 {sending ? 'Sending…' : 'Send'}
               </button>
             </div>

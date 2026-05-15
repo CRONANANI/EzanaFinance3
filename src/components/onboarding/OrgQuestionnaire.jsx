@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 
 /* ═══════════════════════════════════════════════════════════
    Question Banks — shared base + role-specific extensions
@@ -64,10 +64,22 @@ const EXEC_QUESTIONS = [
     category: 'Organization Goals',
     question: 'What is your primary goal for this investment council?',
     options: [
-      { label: 'Build real-world portfolio management skills for members', value: 'skill_building', score: 0 },
-      { label: 'Compete in investment competitions and case challenges', value: 'competitions', score: 0 },
+      {
+        label: 'Build real-world portfolio management skills for members',
+        value: 'skill_building',
+        score: 0,
+      },
+      {
+        label: 'Compete in investment competitions and case challenges',
+        value: 'competitions',
+        score: 0,
+      },
       { label: 'Generate alpha in a real or simulated portfolio', value: 'alpha', score: 0 },
-      { label: 'Create a professional network of future finance leaders', value: 'networking', score: 0 },
+      {
+        label: 'Create a professional network of future finance leaders',
+        value: 'networking',
+        score: 0,
+      },
     ],
   },
   {
@@ -76,9 +88,21 @@ const EXEC_QUESTIONS = [
     question: 'How do you prefer to run your team?',
     options: [
       { label: 'Top-down: I set the thesis, PMs execute', value: 'top_down', score: 0 },
-      { label: 'Collaborative: PMs propose, I approve and guide', value: 'collaborative', score: 0 },
-      { label: 'Autonomous: PMs and analysts operate independently, I oversee risk', value: 'autonomous', score: 0 },
-      { label: 'Rotational: everyone cycles through roles to build breadth', value: 'rotational', score: 0 },
+      {
+        label: 'Collaborative: PMs propose, I approve and guide',
+        value: 'collaborative',
+        score: 0,
+      },
+      {
+        label: 'Autonomous: PMs and analysts operate independently, I oversee risk',
+        value: 'autonomous',
+        score: 0,
+      },
+      {
+        label: 'Rotational: everyone cycles through roles to build breadth',
+        value: 'rotational',
+        score: 0,
+      },
     ],
   },
   {
@@ -87,8 +111,16 @@ const EXEC_QUESTIONS = [
     question: 'How do you want to handle risk across the portfolio?',
     options: [
       { label: 'I review and approve every position before it opens', value: 'strict', score: 0 },
-      { label: 'PMs can open positions within pre-set limits, I flag exceptions', value: 'limits', score: 0 },
-      { label: 'PMs have full discretion, I monitor aggregate risk weekly', value: 'aggregate', score: 0 },
+      {
+        label: 'PMs can open positions within pre-set limits, I flag exceptions',
+        value: 'limits',
+        score: 0,
+      },
+      {
+        label: 'PMs have full discretion, I monitor aggregate risk weekly',
+        value: 'aggregate',
+        score: 0,
+      },
       { label: 'I only intervene when drawdowns breach a threshold', value: 'threshold', score: 0 },
     ],
   },
@@ -98,9 +130,21 @@ const EXEC_QUESTIONS = [
     question: 'How do you evaluate your PMs and analysts?',
     options: [
       { label: 'Raw returns — whoever generates the most alpha wins', value: 'returns', score: 0 },
-      { label: 'Risk-adjusted returns (Sharpe, Sortino, information ratio)', value: 'risk_adjusted', score: 0 },
-      { label: 'Process quality — did they follow their thesis and size correctly?', value: 'process', score: 0 },
-      { label: 'Research quality — depth of analysis regardless of outcomes', value: 'research', score: 0 },
+      {
+        label: 'Risk-adjusted returns (Sharpe, Sortino, information ratio)',
+        value: 'risk_adjusted',
+        score: 0,
+      },
+      {
+        label: 'Process quality — did they follow their thesis and size correctly?',
+        value: 'process',
+        score: 0,
+      },
+      {
+        label: 'Research quality — depth of analysis regardless of outcomes',
+        value: 'research',
+        score: 0,
+      },
     ],
   },
   {
@@ -137,10 +181,18 @@ const PM_QUESTIONS = [
     category: 'Team Management',
     question: 'How do you work with your analysts?',
     options: [
-      { label: 'I assign specific tickers and review their write-ups', value: 'assigned', score: 0 },
+      {
+        label: 'I assign specific tickers and review their write-ups',
+        value: 'assigned',
+        score: 0,
+      },
       { label: 'Analysts pitch ideas, I decide which to pursue', value: 'pitch', score: 0 },
       { label: 'We collaborate on every thesis from the start', value: 'collaborative', score: 0 },
-      { label: 'Analysts work independently, I synthesize their output', value: 'independent', score: 0 },
+      {
+        label: 'Analysts work independently, I synthesize their output',
+        value: 'independent',
+        score: 0,
+      },
     ],
   },
   {
@@ -148,9 +200,21 @@ const PM_QUESTIONS = [
     category: 'Development',
     question: 'What matters most when developing your analysts?',
     options: [
-      { label: 'Teaching them to build financial models (DCF, LBO, comps)', value: 'modeling', score: 0 },
-      { label: 'Developing their thesis-writing and presentation skills', value: 'communication', score: 0 },
-      { label: 'Building their market intuition through live trading', value: 'intuition', score: 0 },
+      {
+        label: 'Teaching them to build financial models (DCF, LBO, comps)',
+        value: 'modeling',
+        score: 0,
+      },
+      {
+        label: 'Developing their thesis-writing and presentation skills',
+        value: 'communication',
+        score: 0,
+      },
+      {
+        label: 'Building their market intuition through live trading',
+        value: 'intuition',
+        score: 0,
+      },
       { label: 'Exposing them to multiple sectors and asset classes', value: 'breadth', score: 0 },
     ],
   },
@@ -177,14 +241,19 @@ const ANALYST_EXTRAS = [
     options: [
       { label: "I don't know what those are", value: 'none', score: 0 },
       { label: "I've heard of them but can't interpret them", value: 'aware', score: 1 },
-      { label: 'I can understand the basics (revenue, net income, cash flow)', value: 'basic', score: 2 },
+      {
+        label: 'I can understand the basics (revenue, net income, cash flow)',
+        value: 'basic',
+        score: 2,
+      },
       { label: 'I analyze them regularly before investing', value: 'proficient', score: 3 },
     ],
   },
   {
     id: 'analyst_allocation',
     category: 'Risk Tolerance',
-    question: 'What percentage of a mock portfolio would you put into a single high-conviction position?',
+    question:
+      'What percentage of a mock portfolio would you put into a single high-conviction position?',
     options: [
       { label: 'Under 5% — diversification first', value: 'minimal', score: 0 },
       { label: '5–10% — moderate concentration', value: 'moderate', score: 1 },
@@ -261,11 +330,12 @@ function computeOrgProfile(answers, role) {
     mgmt.team_interests = answers.pm_interests;
   }
 
-  const interestsKey = role === 'executive'
-    ? 'exec_interests'
-    : role === 'portfolio_manager'
-      ? 'pm_interests'
-      : 'analyst_interests';
+  const interestsKey =
+    role === 'executive'
+      ? 'exec_interests'
+      : role === 'portfolio_manager'
+        ? 'pm_interests'
+        : 'analyst_interests';
   const interests = Array.isArray(answers[interestsKey]) ? answers[interestsKey] : [];
 
   let level;
@@ -361,9 +431,9 @@ export function OrgQuestionnaire({ userId, role, onComplete }) {
       delete saved[META_ROLE_KEY];
 
       if (
-        typeof saved === 'object'
-        && Object.keys(saved).length > 0
-        && savedRole === normalizedRole
+        typeof saved === 'object' &&
+        Object.keys(saved).length > 0 &&
+        savedRole === normalizedRole
       ) {
         setAnswers(saved);
         const answeredIds = Object.keys(saved);
@@ -394,7 +464,10 @@ export function OrgQuestionnaire({ userId, role, onComplete }) {
       setSaving(true);
       try {
         const payload = { ...updatedAnswers, [META_ROLE_KEY]: normalizedRole };
-        await supabase.from('profiles').update({ investor_questionnaire: payload }).eq('id', userId);
+        await supabase
+          .from('profiles')
+          .update({ investor_questionnaire: payload })
+          .eq('id', userId);
       } catch {
         /* best-effort */
       } finally {
@@ -425,7 +498,9 @@ export function OrgQuestionnaire({ userId, role, onComplete }) {
         const current = prev[q.id] || [];
         return {
           ...prev,
-          [q.id]: current.includes(value) ? current.filter((v) => v !== value) : [...current, value],
+          [q.id]: current.includes(value)
+            ? current.filter((v) => v !== value)
+            : [...current, value],
         };
       });
     } else {
@@ -478,7 +553,10 @@ export function OrgQuestionnaire({ userId, role, onComplete }) {
             {normalizedRole === 'executive' && profile.management.management_style && (
               <div className="iq-result-stat">
                 <span className="iq-result-label">Management Style</span>
-                <span className="iq-result-value" style={{ fontSize: '0.875rem', textTransform: 'capitalize' }}>
+                <span
+                  className="iq-result-value"
+                  style={{ fontSize: '0.875rem', textTransform: 'capitalize' }}
+                >
                   {String(profile.management.management_style).replace(/_/g, ' ')}
                 </span>
               </div>
@@ -486,14 +564,18 @@ export function OrgQuestionnaire({ userId, role, onComplete }) {
             {normalizedRole === 'portfolio_manager' && profile.management.strategy_approach && (
               <div className="iq-result-stat">
                 <span className="iq-result-label">Strategy Approach</span>
-                <span className="iq-result-value" style={{ fontSize: '0.875rem', textTransform: 'capitalize' }}>
+                <span
+                  className="iq-result-value"
+                  style={{ fontSize: '0.875rem', textTransform: 'capitalize' }}
+                >
                   {profile.management.strategy_approach}
                 </span>
               </div>
             )}
           </div>
           <p className="iq-result-desc">
-            {cfg.desc} Ezana will tailor your {getRoleLabel(normalizedRole).toLowerCase()} experience accordingly.
+            {cfg.desc} Ezana will tailor your {getRoleLabel(normalizedRole).toLowerCase()}{' '}
+            experience accordingly.
           </p>
           <button type="button" className="iq-cta-btn" onClick={() => onCompleteRef.current?.()}>
             Continue to Ezana →

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/components/AuthProvider';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 
 /**
  * Fetches the user's Alpaca brokerage portfolio summary from /api/alpaca/positions.
@@ -80,8 +80,7 @@ export function useAlpacaPortfolioSummary() {
 
       // Treat as connected only when the user actually has a funded account.
       // equity > 0 covers both "has cash but no positions" and "has positions".
-      const hasAccount =
-        normalizedSummary.equity > 0 || normalizedSummary.positionCount > 0;
+      const hasAccount = normalizedSummary.equity > 0 || normalizedSummary.positionCount > 0;
 
       setConnected(hasAccount);
       setSummary(hasAccount ? normalizedSummary : null);

@@ -19,7 +19,7 @@
  */
 
 import { useMemo } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 import { getInitials, extractTickerFromContent } from '@/lib/community-utils';
 import { TICKER_SEARCH_DATA } from '@/lib/tickerSearchData';
 
@@ -93,8 +93,7 @@ export function FeedComposer({
         image_url = composerImage.url;
       }
 
-      const hasPoll =
-        pollQuestion.trim() && pollOptions.filter((o) => o.trim()).length >= 2;
+      const hasPoll = pollQuestion.trim() && pollOptions.filter((o) => o.trim()).length >= 2;
       const hasTicker = tickerEmbedSymbols.length > 0;
       const tickerMatch = composerText.match(/\$([A-Za-z]{1,5})\b/);
 
@@ -115,9 +114,7 @@ export function FeedComposer({
         poll_data: hasPoll
           ? {
               question: pollQuestion.trim(),
-              options: pollOptions
-                .filter((o) => o.trim())
-                .map((o) => ({ label: o.trim() })),
+              options: pollOptions.filter((o) => o.trim()).map((o) => ({ label: o.trim() })),
             }
           : null,
         ticker_embed: hasTicker
@@ -157,10 +154,7 @@ export function FeedComposer({
   };
 
   const avatarInitials = getInitials(
-    userProfile?.full_name ||
-      userProfile?.display_name ||
-      user?.email ||
-      'U',
+    userProfile?.full_name || userProfile?.display_name || user?.email || 'U',
   );
 
   return (
@@ -225,9 +219,7 @@ export function FeedComposer({
                 <button
                   type="button"
                   onClick={() => {
-                    const url = window.prompt(
-                      'Paste an image URL from your platform storage:',
-                    );
+                    const url = window.prompt('Paste an image URL from your platform storage:');
                     if (url && url.startsWith('http')) {
                       setComposerImage({ url, source: 'storage' });
                     }
@@ -235,11 +227,7 @@ export function FeedComposer({
                   }}
                   className="comm-composer-image-menu__row comm-composer-image-menu__row--btn"
                 >
-                  <i
-                    className="bi bi-cloud"
-                    style={{ color: '#6366f1' }}
-                    aria-hidden
-                  />
+                  <i className="bi bi-cloud" style={{ color: '#6366f1' }} aria-hidden />
                   Platform storage
                 </button>
 
@@ -329,10 +317,7 @@ export function FeedComposer({
             className="comm-composer-input"
           />
           {pollOptions.map((opt, i) => (
-            <div
-              key={i}
-              style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}
-            >
+            <div key={i} style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
               <input
                 type="text"
                 placeholder={`Option ${i + 1}`}
@@ -348,9 +333,7 @@ export function FeedComposer({
               {pollOptions.length > 2 && (
                 <button
                   type="button"
-                  onClick={() =>
-                    setPollOptions(pollOptions.filter((_, j) => j !== i))
-                  }
+                  onClick={() => setPollOptions(pollOptions.filter((_, j) => j !== i))}
                   className="comm-composer-poll-remove"
                   aria-label={`Remove option ${i + 1}`}
                 >
@@ -417,9 +400,7 @@ export function FeedComposer({
                       <button
                         type="button"
                         onClick={() =>
-                          setTickerEmbedSymbols((prev) =>
-                            prev.filter((x) => x.symbol !== s.symbol),
-                          )
+                          setTickerEmbedSymbols((prev) => prev.filter((x) => x.symbol !== s.symbol))
                         }
                         aria-label={`Remove ${s.symbol}`}
                         className="comm-composer-ticker-chip-remove"
@@ -428,9 +409,7 @@ export function FeedComposer({
                       </button>
                     </span>
                   ))}
-                  <span className="comm-composer-ticker-count">
-                    {tickerEmbedSymbols.length}/3
-                  </span>
+                  <span className="comm-composer-ticker-count">{tickerEmbedSymbols.length}/3</span>
                 </div>
               )}
               {tickerEmbedSymbols.length > 0 && (
@@ -465,9 +444,7 @@ export function FeedComposer({
               </div>
 
               <div>
-                <p className="comm-composer-ticker-config-label">
-                  Time period (all charts)
-                </p>
+                <p className="comm-composer-ticker-config-label">Time period (all charts)</p>
                 <div className="comm-composer-ticker-period">
                   {['1D', '1W', '1M', '3M', '1Y'].map((p) => (
                     <button
@@ -520,9 +497,7 @@ export function FeedComposer({
         </div>
       )}
 
-      {!user && (
-        <p className="comm-composer-sign-in">Sign in to post.</p>
-      )}
+      {!user && <p className="comm-composer-sign-in">Sign in to post.</p>}
     </div>
   );
 }

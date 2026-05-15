@@ -1,15 +1,8 @@
 'use client';
 
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-  useMemo,
-} from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/components/AuthProvider';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 import { getMemberPermissions } from '@/lib/orgMockData';
 
 const OrgContext = createContext(null);
@@ -36,10 +29,12 @@ export function OrgProvider({ children }) {
     try {
       const { data: member, error } = await supabase
         .from('org_members')
-        .select(`
+        .select(
+          `
           *,
           organizations (*)
-        `)
+        `,
+        )
         .eq('user_id', user.id)
         .eq('is_active', true)
         .limit(1)
@@ -110,12 +105,12 @@ export function OrgProvider({ children }) {
 
   const hasPermission = useCallback(
     (key) => effectivePermissions.includes(key),
-    [effectivePermissions]
+    [effectivePermissions],
   );
 
   const canFlagPositionsBool = useMemo(
     () => effectivePermissions.includes('flag_positions'),
-    [effectivePermissions]
+    [effectivePermissions],
   );
 
   const value = {

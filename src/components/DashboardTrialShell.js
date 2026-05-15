@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 import { getTrialStatus } from '@/lib/trial';
 import { hasActiveSubscription } from '@/lib/subscription';
 import { TrialExpiredGate } from '@/components/TrialExpiredGate';
@@ -16,7 +16,12 @@ function shouldSkipTrialCheck(pathname, isPartner) {
   if (pathname === '/onboarding') return true;
   if (pathname.startsWith('/payment/')) return true;
   if (pathname.startsWith('/auth')) return true;
-  const partnerPrefixes = ['/partner-home', '/partner-dashboard', '/partner-community', '/partner-learning'];
+  const partnerPrefixes = [
+    '/partner-home',
+    '/partner-dashboard',
+    '/partner-community',
+    '/partner-learning',
+  ];
   return partnerPrefixes.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
 
@@ -70,10 +75,10 @@ export function DashboardTrialShell({ children }) {
         if (cancelled) return;
 
         if (
-          orgProfile?.onboarding_completed === true
-          && orgProfile?.investor_questionnaire_completed !== true
-          && (pathname ?? '') !== '/onboarding'
-          && !(pathname ?? '').startsWith('/onboarding')
+          orgProfile?.onboarding_completed === true &&
+          orgProfile?.investor_questionnaire_completed !== true &&
+          (pathname ?? '') !== '/onboarding' &&
+          !(pathname ?? '').startsWith('/onboarding')
         ) {
           router.replace('/onboarding');
           return;
@@ -86,17 +91,19 @@ export function DashboardTrialShell({ children }) {
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('subscription_status, one_time_plan, one_time_plan_purchased_at, current_period_end, onboarding_completed, investor_questionnaire_completed')
+        .select(
+          'subscription_status, one_time_plan, one_time_plan_purchased_at, current_period_end, onboarding_completed, investor_questionnaire_completed',
+        )
         .eq('id', user.id)
         .maybeSingle();
 
       if (cancelled) return;
 
       if (
-        profile?.onboarding_completed === true
-        && profile?.investor_questionnaire_completed !== true
-        && (pathname ?? '') !== '/onboarding'
-        && !(pathname ?? '').startsWith('/onboarding')
+        profile?.onboarding_completed === true &&
+        profile?.investor_questionnaire_completed !== true &&
+        (pathname ?? '') !== '/onboarding' &&
+        !(pathname ?? '').startsWith('/onboarding')
       ) {
         router.replace('/onboarding');
         return;
@@ -129,7 +136,12 @@ export function DashboardTrialShell({ children }) {
     return (
       <div
         className="dashboard-trial-loading"
-        style={{ minHeight: '40vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        style={{
+          minHeight: '40vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
       >
         <div
           className="h-10 w-10 rounded-full border-2 border-emerald-500/30 border-t-emerald-500 animate-spin"

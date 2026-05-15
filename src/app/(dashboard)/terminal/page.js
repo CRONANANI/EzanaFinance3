@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuth } from '@/components/AuthProvider';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 import '../../../../app-legacy/assets/css/theme-variables.css';
 import '../../../../app-legacy/assets/css/theme.css';
 import '../home/terminal.css';
@@ -20,11 +20,31 @@ const INDEX_SYMBOLS = [
 ];
 
 const SUGGESTIONS = [
-  { icon: 'warn', title: 'Review Sector Concentration', desc: 'Check whether any single sector exceeds 35% of total portfolio weight. Consider rebalancing if needed.' },
-  { icon: 'info', title: 'Rebalance Opportunity', desc: 'Positions drifting from target weights may increase tracking error. Review quarterly.' },
-  { icon: 'danger', title: 'Watch Correlated Holdings', desc: 'Highly correlated positions amplify drawdown risk. Consider diversifying across sectors.' },
-  { icon: 'ok', title: 'Diversification Check', desc: 'Maintaining 15+ uncorrelated positions helps reduce idiosyncratic risk.' },
-  { icon: 'warn', title: 'Earnings Season Alert', desc: 'Multiple holdings reporting this quarter. Monitor for volatility around announcement dates.' },
+  {
+    icon: 'warn',
+    title: 'Review Sector Concentration',
+    desc: 'Check whether any single sector exceeds 35% of total portfolio weight. Consider rebalancing if needed.',
+  },
+  {
+    icon: 'info',
+    title: 'Rebalance Opportunity',
+    desc: 'Positions drifting from target weights may increase tracking error. Review quarterly.',
+  },
+  {
+    icon: 'danger',
+    title: 'Watch Correlated Holdings',
+    desc: 'Highly correlated positions amplify drawdown risk. Consider diversifying across sectors.',
+  },
+  {
+    icon: 'ok',
+    title: 'Diversification Check',
+    desc: 'Maintaining 15+ uncorrelated positions helps reduce idiosyncratic risk.',
+  },
+  {
+    icon: 'warn',
+    title: 'Earnings Season Alert',
+    desc: 'Multiple holdings reporting this quarter. Monitor for volatility around announcement dates.',
+  },
 ];
 
 async function fetchBatchQuotes(symbols) {
@@ -46,7 +66,18 @@ function DonutChart({ data }) {
   let cumulative = 0;
   const radius = 42;
   const circumference = 2 * Math.PI * radius;
-  const colors = ['#10b981', '#3b82f6', '#a78bfa', '#fbbf24', '#22d3ee', '#f472b6', '#fb923c', '#34d399', '#818cf8', '#f87171'];
+  const colors = [
+    '#10b981',
+    '#3b82f6',
+    '#a78bfa',
+    '#fbbf24',
+    '#22d3ee',
+    '#f472b6',
+    '#fb923c',
+    '#34d399',
+    '#818cf8',
+    '#f87171',
+  ];
   const topLabel = data[0];
 
   return (
@@ -58,7 +89,9 @@ function DonutChart({ data }) {
         return (
           <circle
             key={i}
-            cx="60" cy="60" r={radius}
+            cx="60"
+            cy="60"
+            r={radius}
             fill="none"
             stroke={colors[i % colors.length]}
             strokeWidth="16"
@@ -68,10 +101,25 @@ function DonutChart({ data }) {
           />
         );
       })}
-      <text x="60" y="56" textAnchor="middle" fill="#f0f6fc" fontSize="14" fontWeight="700" fontFamily="Plus Jakarta Sans, sans-serif">
+      <text
+        x="60"
+        y="56"
+        textAnchor="middle"
+        fill="#f0f6fc"
+        fontSize="14"
+        fontWeight="700"
+        fontFamily="Plus Jakarta Sans, sans-serif"
+      >
         {total > 0 ? ((topLabel.value / total) * 100).toFixed(0) : 0}%
       </text>
-      <text x="60" y="70" textAnchor="middle" fill="#8b949e" fontSize="8" fontFamily="Plus Jakarta Sans, sans-serif">
+      <text
+        x="60"
+        y="70"
+        textAnchor="middle"
+        fill="#8b949e"
+        fontSize="8"
+        fontFamily="Plus Jakarta Sans, sans-serif"
+      >
         {topLabel.label?.toUpperCase() || ''}
       </text>
     </svg>
@@ -80,20 +128,27 @@ function DonutChart({ data }) {
 
 function MiniChart({ color = '#10b981', points }) {
   if (!points || points.length < 2) return null;
-  const h = 100, w = 280;
+  const h = 100,
+    w = 280;
   const max = Math.max(...points);
   const min = Math.min(...points);
   const range = max - min || 1;
   const step = w / (points.length - 1);
 
-  const d = points.map((p, i) => {
-    const x = i * step;
-    const y = h - ((p - min) / range) * (h - 10) - 5;
-    return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
-  }).join(' ');
+  const d = points
+    .map((p, i) => {
+      const x = i * step;
+      const y = h - ((p - min) / range) * (h - 10) - 5;
+      return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
+    })
+    .join(' ');
 
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" style={{ width: '100%', height: '100%' }}>
+    <svg
+      viewBox={`0 0 ${w} ${h}`}
+      preserveAspectRatio="none"
+      style={{ width: '100%', height: '100%' }}
+    >
       <defs>
         <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.3" />
@@ -107,7 +162,11 @@ function MiniChart({ color = '#10b981', points }) {
 }
 
 function LoadingPulse() {
-  return <div className="t-loading-pulse"><span className="t-green">Loading...</span></div>;
+  return (
+    <div className="t-loading-pulse">
+      <span className="t-green">Loading...</span>
+    </div>
+  );
 }
 
 function corrColor(v) {
@@ -128,18 +187,31 @@ export default function HomeTerminalPage() {
   const [marketLoading, setMarketLoading] = useState(true);
 
   useEffect(() => {
-    const tick = () => setTime(new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }));
+    const tick = () =>
+      setTime(
+        new Date().toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false,
+        }),
+      );
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, []);
 
   const fetchPortfolio = useCallback(async () => {
-    if (!user) { setLoading(false); return; }
+    if (!user) {
+      setLoading(false);
+      return;
+    }
     try {
       const { data, error } = await supabase
         .from('plaid_holdings')
-        .select('id, ticker_symbol, quantity, institution_price, institution_value, cost_basis, type')
+        .select(
+          'id, ticker_symbol, quantity, institution_price, institution_value, cost_basis, type',
+        )
         .eq('user_id', user.id)
         .order('institution_value', { ascending: false });
 
@@ -171,8 +243,12 @@ export default function HomeTerminalPage() {
     }
   }, []);
 
-  useEffect(() => { fetchPortfolio(); }, [fetchPortfolio]);
-  useEffect(() => { fetchMarketData(); }, [fetchMarketData]);
+  useEffect(() => {
+    fetchPortfolio();
+  }, [fetchPortfolio]);
+  useEffect(() => {
+    fetchMarketData();
+  }, [fetchMarketData]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -209,11 +285,21 @@ export default function HomeTerminalPage() {
     });
   }, [holdings, quotes]);
 
-  const portfolioTotal = useMemo(() => enrichedHoldings.reduce((s, h) => s + h.value, 0), [enrichedHoldings]);
-  const portfolioCostBasis = useMemo(() => enrichedHoldings.reduce((s, h) => s + h.costBasis, 0), [enrichedHoldings]);
-  const portfolioChange = useMemo(() => enrichedHoldings.reduce((s, h) => s + h.change * h.shares, 0), [enrichedHoldings]);
+  const portfolioTotal = useMemo(
+    () => enrichedHoldings.reduce((s, h) => s + h.value, 0),
+    [enrichedHoldings],
+  );
+  const portfolioCostBasis = useMemo(
+    () => enrichedHoldings.reduce((s, h) => s + h.costBasis, 0),
+    [enrichedHoldings],
+  );
+  const portfolioChange = useMemo(
+    () => enrichedHoldings.reduce((s, h) => s + h.change * h.shares, 0),
+    [enrichedHoldings],
+  );
   const portfolioTotalGain = portfolioTotal - portfolioCostBasis;
-  const portfolioReturnPct = portfolioCostBasis > 0 ? (portfolioTotalGain / portfolioCostBasis) * 100 : 0;
+  const portfolioReturnPct =
+    portfolioCostBasis > 0 ? (portfolioTotalGain / portfolioCostBasis) * 100 : 0;
 
   const allocationData = useMemo(() => {
     const byType = {};
@@ -232,7 +318,10 @@ export default function HomeTerminalPage() {
       .slice(0, 6);
   }, [enrichedHoldings]);
 
-  const corrTickers = useMemo(() => enrichedHoldings.slice(0, 5).map((h) => h.ticker), [enrichedHoldings]);
+  const corrTickers = useMemo(
+    () => enrichedHoldings.slice(0, 5).map((h) => h.ticker),
+    [enrichedHoldings],
+  );
   const corrData = useMemo(() => {
     const n = corrTickers.length;
     if (n === 0) return [];
@@ -255,7 +344,9 @@ export default function HomeTerminalPage() {
     const base = portfolioTotal || 10000;
     const pts = [];
     for (let i = 0; i < 30; i++) {
-      pts.push(base * (0.95 + Math.sin(i * 0.3) * 0.03 + (i / 30) * 0.05 + (Math.random() - 0.5) * 0.01));
+      pts.push(
+        base * (0.95 + Math.sin(i * 0.3) * 0.03 + (i / 30) * 0.05 + (Math.random() - 0.5) * 0.01),
+      );
     }
     return pts;
   }, [portfolioTotal]);
@@ -277,53 +368,73 @@ export default function HomeTerminalPage() {
       <div className="ezana-terminal-bar-strip ezana-terminal-bar-strip--top">
         <div className="dashboard-page-inset ezana-terminal-bar-inner">
           <div className="t-ticker-bar">
-        <div className="t-brand">
-          <div className="t-brand-icon">EF</div>
-          <span>EZANA TERMINAL</span>
-        </div>
-        <div className="t-portfolio-value">
-          <span className="t-pv-label">PORTFOLIO</span>
-          {loading ? (
-            <span className="t-pv-amount t-dim">---</span>
-          ) : (
-            <>
-              <span className="t-pv-amount">
-                ${portfolioTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            <div className="t-brand">
+              <div className="t-brand-icon">EF</div>
+              <span>EZANA TERMINAL</span>
+            </div>
+            <div className="t-portfolio-value">
+              <span className="t-pv-label">PORTFOLIO</span>
+              {loading ? (
+                <span className="t-pv-amount t-dim">---</span>
+              ) : (
+                <>
+                  <span className="t-pv-amount">
+                    $
+                    {portfolioTotal.toLocaleString('en-US', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </span>
+                  <span className={`t-pv-change ${portfolioChange >= 0 ? 't-green' : 't-red'}`}>
+                    {portfolioChange >= 0 ? '+' : ''}
+                    {portfolioChange.toLocaleString('en-US', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </span>
+                </>
+              )}
+            </div>
+            <div className="t-indices-scroll">
+              {INDEX_SYMBOLS.map((idx) => {
+                const q = indexQuotes[idx.symbol];
+                return (
+                  <div key={idx.name} className="t-index-item">
+                    <span className="t-index-name">{idx.name}</span>
+                    {q ? (
+                      <>
+                        <span className="t-index-val">
+                          {q.price.toLocaleString('en-US', {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                        </span>
+                        <span
+                          className={q.changePercent >= 0 ? 't-green' : 't-red'}
+                          style={{ fontSize: 10, fontWeight: 600 }}
+                        >
+                          {q.changePercent >= 0 ? '+' : ''}
+                          {q.changePercent.toFixed(2)}%
+                        </span>
+                      </>
+                    ) : (
+                      <span className="t-dim" style={{ fontSize: 10 }}>
+                        {marketLoading ? '...' : '—'}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <div className="t-market-status">
+              <div className={`t-status-dot ${isMarketOpen ? 'open' : 'closed'}`} />
+              <span style={{ color: isMarketOpen ? '#10b981' : '#ef4444' }}>
+                {isMarketOpen ? 'MARKET OPEN' : 'MARKET CLOSED'}
               </span>
-              <span className={`t-pv-change ${portfolioChange >= 0 ? 't-green' : 't-red'}`}>
-                {portfolioChange >= 0 ? '+' : ''}
-                {portfolioChange.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              <span className="t-dim" style={{ marginLeft: 4 }}>
+                {time}
               </span>
-            </>
-          )}
-        </div>
-        <div className="t-indices-scroll">
-          {INDEX_SYMBOLS.map((idx) => {
-            const q = indexQuotes[idx.symbol];
-            return (
-              <div key={idx.name} className="t-index-item">
-                <span className="t-index-name">{idx.name}</span>
-                {q ? (
-                  <>
-                    <span className="t-index-val">{q.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                    <span className={q.changePercent >= 0 ? 't-green' : 't-red'} style={{ fontSize: 10, fontWeight: 600 }}>
-                      {q.changePercent >= 0 ? '+' : ''}{q.changePercent.toFixed(2)}%
-                    </span>
-                  </>
-                ) : (
-                  <span className="t-dim" style={{ fontSize: 10 }}>{marketLoading ? '...' : '—'}</span>
-                )}
-              </div>
-            );
-          })}
-        </div>
-        <div className="t-market-status">
-          <div className={`t-status-dot ${isMarketOpen ? 'open' : 'closed'}`} />
-          <span style={{ color: isMarketOpen ? '#10b981' : '#ef4444' }}>
-            {isMarketOpen ? 'MARKET OPEN' : 'MARKET CLOSED'}
-          </span>
-          <span className="t-dim" style={{ marginLeft: 4 }}>{time}</span>
-        </div>
+            </div>
           </div>
         </div>
       </div>
@@ -334,17 +445,26 @@ export default function HomeTerminalPage() {
         <div className="t-panel t-holdings">
           <div className="t-panel-header">
             <span className="t-panel-title">Holdings</span>
-            <span className="t-panel-badge" style={{ background: 'rgba(16,185,129,0.15)', color: '#10b981' }}>
+            <span
+              className="t-panel-badge"
+              style={{ background: 'rgba(16,185,129,0.15)', color: '#10b981' }}
+            >
               {enrichedHoldings.length} position{enrichedHoldings.length !== 1 ? 's' : ''}
             </span>
           </div>
           <div className="t-panel-body" style={{ padding: 0 }}>
             {loading ? (
-              <div style={{ padding: '2rem 1rem', textAlign: 'center' }}><LoadingPulse /></div>
+              <div style={{ padding: '2rem 1rem', textAlign: 'center' }}>
+                <LoadingPulse />
+              </div>
             ) : !hasPortfolio ? (
               <div style={{ padding: '2rem 1rem', textAlign: 'center' }}>
-                <p className="t-dim" style={{ fontSize: 11 }}>No holdings found.</p>
-                <p className="t-dim" style={{ fontSize: 10, marginTop: 4 }}>Connect a brokerage via Plaid to see your positions here.</p>
+                <p className="t-dim" style={{ fontSize: 11 }}>
+                  No holdings found.
+                </p>
+                <p className="t-dim" style={{ fontSize: 10, marginTop: 4 }}>
+                  Connect a brokerage via Plaid to see your positions here.
+                </p>
               </div>
             ) : (
               <table className="t-holdings-table">
@@ -364,10 +484,12 @@ export default function HomeTerminalPage() {
                       <td>{h.ticker}</td>
                       <td>{h.price.toFixed(2)}</td>
                       <td className={h.change >= 0 ? 't-green' : 't-red'}>
-                        {h.change >= 0 ? '+' : ''}{h.change.toFixed(2)}
+                        {h.change >= 0 ? '+' : ''}
+                        {h.change.toFixed(2)}
                       </td>
                       <td className={h.pctChange >= 0 ? 't-green' : 't-red'}>
-                        {h.pctChange >= 0 ? '+' : ''}{h.pctChange.toFixed(2)}%
+                        {h.pctChange >= 0 ? '+' : ''}
+                        {h.pctChange.toFixed(2)}%
                       </td>
                       <td className="t-dim">{h.shares}</td>
                       <td>${h.value.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
@@ -383,7 +505,9 @@ export default function HomeTerminalPage() {
         <div className="t-panel">
           <div className="t-panel-header">
             <span className="t-panel-title">Portfolio Performance</span>
-            <span className="t-dim" style={{ fontSize: 10 }}>30D</span>
+            <span className="t-dim" style={{ fontSize: 10 }}>
+              30D
+            </span>
           </div>
           <div className="t-chart-area">
             <MiniChart color="#10b981" points={portfolioChartPoints} />
@@ -391,7 +515,9 @@ export default function HomeTerminalPage() {
           <div className="t-perf-stats">
             <div className="t-perf-stat">
               <div className="t-perf-stat-label">Total Value</div>
-              <div className="t-perf-stat-value">${portfolioTotal > 0 ? (portfolioTotal / 1000).toFixed(1) + 'K' : '0'}</div>
+              <div className="t-perf-stat-value">
+                ${portfolioTotal > 0 ? (portfolioTotal / 1000).toFixed(1) + 'K' : '0'}
+              </div>
             </div>
             <div className="t-perf-stat">
               <div className="t-perf-stat-label">Today</div>
@@ -402,7 +528,8 @@ export default function HomeTerminalPage() {
             <div className="t-perf-stat">
               <div className="t-perf-stat-label">Total Return</div>
               <div className={`t-perf-stat-value ${portfolioReturnPct >= 0 ? 't-green' : 't-red'}`}>
-                {portfolioReturnPct >= 0 ? '+' : ''}{portfolioReturnPct.toFixed(1)}%
+                {portfolioReturnPct >= 0 ? '+' : ''}
+                {portfolioReturnPct.toFixed(1)}%
               </div>
             </div>
             <div className="t-perf-stat">
@@ -419,12 +546,47 @@ export default function HomeTerminalPage() {
           </div>
           <div className="t-panel-body" style={{ padding: 0 }}>
             <div className="t-risk-grid">
-              <RiskMetric label="Total P&L" value={`$${portfolioTotalGain.toLocaleString('en-US', { maximumFractionDigits: 0 })}`} sub="Since inception" positive={portfolioTotalGain >= 0} />
-              <RiskMetric label="Day Change" value={`$${portfolioChange.toFixed(2)}`} sub="Today's P&L" positive={portfolioChange >= 0} />
-              <RiskMetric label="Cost Basis" value={`$${(portfolioCostBasis / 1000).toFixed(1)}K`} sub="Total invested" />
-              <RiskMetric label="Return %" value={`${portfolioReturnPct.toFixed(2)}%`} sub="Total return" positive={portfolioReturnPct >= 0} />
-              <RiskMetric label="Avg Position" value={enrichedHoldings.length > 0 ? `$${(portfolioTotal / enrichedHoldings.length / 1000).toFixed(1)}K` : '$0'} sub="Per holding" />
-              <RiskMetric label="Largest" value={enrichedHoldings.length > 0 ? enrichedHoldings[0].ticker : '—'} sub={enrichedHoldings.length > 0 ? `$${enrichedHoldings[0].value.toLocaleString('en-US', { maximumFractionDigits: 0 })}` : ''} />
+              <RiskMetric
+                label="Total P&L"
+                value={`$${portfolioTotalGain.toLocaleString('en-US', { maximumFractionDigits: 0 })}`}
+                sub="Since inception"
+                positive={portfolioTotalGain >= 0}
+              />
+              <RiskMetric
+                label="Day Change"
+                value={`$${portfolioChange.toFixed(2)}`}
+                sub="Today's P&L"
+                positive={portfolioChange >= 0}
+              />
+              <RiskMetric
+                label="Cost Basis"
+                value={`$${(portfolioCostBasis / 1000).toFixed(1)}K`}
+                sub="Total invested"
+              />
+              <RiskMetric
+                label="Return %"
+                value={`${portfolioReturnPct.toFixed(2)}%`}
+                sub="Total return"
+                positive={portfolioReturnPct >= 0}
+              />
+              <RiskMetric
+                label="Avg Position"
+                value={
+                  enrichedHoldings.length > 0
+                    ? `$${(portfolioTotal / enrichedHoldings.length / 1000).toFixed(1)}K`
+                    : '$0'
+                }
+                sub="Per holding"
+              />
+              <RiskMetric
+                label="Largest"
+                value={enrichedHoldings.length > 0 ? enrichedHoldings[0].ticker : '—'}
+                sub={
+                  enrichedHoldings.length > 0
+                    ? `$${enrichedHoldings[0].value.toLocaleString('en-US', { maximumFractionDigits: 0 })}`
+                    : ''
+                }
+              />
             </div>
           </div>
         </div>
@@ -438,7 +600,9 @@ export default function HomeTerminalPage() {
             {SUGGESTIONS.map((s, i) => (
               <div key={i} className="t-suggestion-card">
                 <div className={`t-sug-icon ${s.icon}`}>
-                  <i className={`bi ${s.icon === 'warn' ? 'bi-exclamation-triangle' : s.icon === 'danger' ? 'bi-shield-exclamation' : s.icon === 'info' ? 'bi-info-circle' : 'bi-check-circle'}`} />
+                  <i
+                    className={`bi ${s.icon === 'warn' ? 'bi-exclamation-triangle' : s.icon === 'danger' ? 'bi-shield-exclamation' : s.icon === 'info' ? 'bi-info-circle' : 'bi-check-circle'}`}
+                  />
                 </div>
                 <div>
                   <div className="t-sug-title">{s.title}</div>
@@ -457,7 +621,8 @@ export default function HomeTerminalPage() {
                     <span className="t-mover-ticker">{m.ticker}</span>
                     <span className="t-mover-price">{m.price.toFixed(2)}</span>
                     <span className={`t-mover-change ${m.pctChange >= 0 ? 't-green' : 't-red'}`}>
-                      {m.pctChange >= 0 ? '+' : ''}{m.pctChange.toFixed(2)}%
+                      {m.pctChange >= 0 ? '+' : ''}
+                      {m.pctChange.toFixed(2)}%
                     </span>
                   </div>
                 ))}
@@ -476,12 +641,26 @@ export default function HomeTerminalPage() {
               <DonutChart data={allocationData} />
               <div className="t-donut-legend">
                 {allocationData.map((d, i) => {
-                  const colors = ['#10b981', '#3b82f6', '#a78bfa', '#fbbf24', '#22d3ee', '#f472b6', '#fb923c'];
-                  const pct = portfolioTotal > 0 ? ((d.value / portfolioTotal) * 100).toFixed(1) : '0';
+                  const colors = [
+                    '#10b981',
+                    '#3b82f6',
+                    '#a78bfa',
+                    '#fbbf24',
+                    '#22d3ee',
+                    '#f472b6',
+                    '#fb923c',
+                  ];
+                  const pct =
+                    portfolioTotal > 0 ? ((d.value / portfolioTotal) * 100).toFixed(1) : '0';
                   return (
                     <div key={d.label} className="t-donut-legend-item">
-                      <div className="t-donut-color" style={{ background: colors[i % colors.length] }} />
-                      <span className="t-dim" style={{ minWidth: 72 }}>{d.label}</span>
+                      <div
+                        className="t-donut-color"
+                        style={{ background: colors[i % colors.length] }}
+                      />
+                      <span className="t-dim" style={{ minWidth: 72 }}>
+                        {d.label}
+                      </span>
                       <span className="t-donut-pct">{pct}%</span>
                     </div>
                   );
@@ -490,7 +669,9 @@ export default function HomeTerminalPage() {
             </div>
           ) : (
             <div style={{ padding: '2rem 1rem', textAlign: 'center' }}>
-              <p className="t-dim" style={{ fontSize: 11 }}>No allocation data.</p>
+              <p className="t-dim" style={{ fontSize: 11 }}>
+                No allocation data.
+              </p>
             </div>
           )}
 
@@ -498,16 +679,25 @@ export default function HomeTerminalPage() {
           <div style={{ borderTop: '1px solid rgba(16,185,129,0.15)' }}>
             <div className="t-panel-header">
               <span className="t-panel-title">Market Overview</span>
-              <span className="t-panel-badge" style={{ background: 'rgba(59,130,246,0.15)', color: '#3b82f6' }}>LIVE</span>
+              <span
+                className="t-panel-badge"
+                style={{ background: 'rgba(59,130,246,0.15)', color: '#3b82f6' }}
+              >
+                LIVE
+              </span>
             </div>
             <div style={{ maxHeight: 160, overflow: 'auto' }}>
               {INDEX_SYMBOLS.map((idx) => {
                 const q = indexQuotes[idx.symbol];
                 return (
                   <div key={idx.symbol} className="t-mover-row">
-                    <span className="t-mover-ticker" style={{ minWidth: 60 }}>{idx.name}</span>
+                    <span className="t-mover-ticker" style={{ minWidth: 60 }}>
+                      {idx.name}
+                    </span>
                     <span className="t-mover-price">{q ? q.price.toFixed(2) : '—'}</span>
-                    <span className={`t-mover-change ${q && q.changePercent >= 0 ? 't-green' : 't-red'}`}>
+                    <span
+                      className={`t-mover-change ${q && q.changePercent >= 0 ? 't-green' : 't-red'}`}
+                    >
                       {q ? `${q.changePercent >= 0 ? '+' : ''}${q.changePercent.toFixed(2)}%` : '—'}
                     </span>
                   </div>
@@ -521,14 +711,24 @@ export default function HomeTerminalPage() {
         <div className="t-panel">
           <div className="t-panel-header">
             <span className="t-panel-title">Correlation Matrix</span>
-            <span className="t-panel-badge" style={{ background: 'rgba(59,130,246,0.15)', color: '#3b82f6' }}>HEAT MAP</span>
+            <span
+              className="t-panel-badge"
+              style={{ background: 'rgba(59,130,246,0.15)', color: '#3b82f6' }}
+            >
+              HEAT MAP
+            </span>
           </div>
           <div className="t-panel-body">
             {corrTickers.length > 0 ? (
-              <div className="t-heatmap-grid" style={{ gridTemplateColumns: `32px repeat(${corrTickers.length}, 1fr)` }}>
+              <div
+                className="t-heatmap-grid"
+                style={{ gridTemplateColumns: `32px repeat(${corrTickers.length}, 1fr)` }}
+              >
                 <div />
                 {corrTickers.map((t) => (
-                  <div key={`h-${t}`} className="t-heatmap-label">{t}</div>
+                  <div key={`h-${t}`} className="t-heatmap-label">
+                    {t}
+                  </div>
                 ))}
                 {corrData.map((row, ri) => (
                   <CorrelationRow key={ri} ticker={corrTickers[ri]} row={row} />
@@ -536,7 +736,9 @@ export default function HomeTerminalPage() {
               </div>
             ) : (
               <div style={{ padding: '2rem 1rem', textAlign: 'center' }}>
-                <p className="t-dim" style={{ fontSize: 11 }}>Add holdings to see correlation data.</p>
+                <p className="t-dim" style={{ fontSize: 11 }}>
+                  Add holdings to see correlation data.
+                </p>
               </div>
             )}
           </div>
@@ -547,27 +749,33 @@ export default function HomeTerminalPage() {
       <div className="ezana-terminal-bar-strip ezana-terminal-bar-strip--bottom">
         <div className="dashboard-page-inset ezana-terminal-bar-inner">
           <div className="t-news-bar">
-        <div className="t-news-label">
-          <i className="bi bi-broadcast" style={{ marginRight: 4 }} /> LIVE
-        </div>
-        <div className="t-news-scroll">
-          <div className="t-news-track">
-            {enrichedHoldings.length > 0 ? (
-              enrichedHoldings.slice(0, 10).flatMap((h, i) => [
-                <span key={`a-${i}`} className="t-news-item">
-                  <strong>{h.ticker}</strong> ${h.price.toFixed(2)} ({h.pctChange >= 0 ? '+' : ''}{h.pctChange.toFixed(2)}%) — {h.shares} shares worth ${h.value.toLocaleString('en-US', { maximumFractionDigits: 0 })}
-                </span>,
-                <span key={`b-${i}`} className="t-news-item">
-                  <strong>{h.ticker}</strong> P&L: {h.totalGain >= 0 ? '+' : ''}${h.totalGain.toLocaleString('en-US', { maximumFractionDigits: 0 })} ({h.costBasis > 0 ? ((h.totalGain / h.costBasis) * 100).toFixed(1) : '0'}%)
-                </span>,
-              ])
-            ) : (
-              <span className="t-news-item">
-                <strong>EZANA</strong> Welcome to Ezana Terminal. Connect your brokerage to see live portfolio data.
-              </span>
-            )}
-          </div>
-        </div>
+            <div className="t-news-label">
+              <i className="bi bi-broadcast" style={{ marginRight: 4 }} /> LIVE
+            </div>
+            <div className="t-news-scroll">
+              <div className="t-news-track">
+                {enrichedHoldings.length > 0 ? (
+                  enrichedHoldings.slice(0, 10).flatMap((h, i) => [
+                    <span key={`a-${i}`} className="t-news-item">
+                      <strong>{h.ticker}</strong> ${h.price.toFixed(2)} (
+                      {h.pctChange >= 0 ? '+' : ''}
+                      {h.pctChange.toFixed(2)}%) — {h.shares} shares worth $
+                      {h.value.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                    </span>,
+                    <span key={`b-${i}`} className="t-news-item">
+                      <strong>{h.ticker}</strong> P&L: {h.totalGain >= 0 ? '+' : ''}$
+                      {h.totalGain.toLocaleString('en-US', { maximumFractionDigits: 0 })} (
+                      {h.costBasis > 0 ? ((h.totalGain / h.costBasis) * 100).toFixed(1) : '0'}%)
+                    </span>,
+                  ])
+                ) : (
+                  <span className="t-news-item">
+                    <strong>EZANA</strong> Welcome to Ezana Terminal. Connect your brokerage to see
+                    live portfolio data.
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -589,7 +797,12 @@ function RiskMetric({ label, value, sub, positive }) {
 function CorrelationRow({ ticker, row }) {
   return (
     <>
-      <div className="t-heatmap-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{ticker}</div>
+      <div
+        className="t-heatmap-label"
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+      >
+        {ticker}
+      </div>
       {row.map((val, ci) => (
         <div key={ci} className="t-heatmap-cell" style={{ background: corrColor(val) }}>
           {val.toFixed(2)}

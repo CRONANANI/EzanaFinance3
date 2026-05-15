@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 
 export default function VerifyEmailPage() {
   const [code, setCode] = useState(['', '', '', '', '', '']);
@@ -155,7 +155,9 @@ export default function VerifyEmailPage() {
           textAlign: 'center',
         }}
       >
-        <h1 style={{ color: '#f0f6fc', fontSize: '1.5rem', marginBottom: '0.5rem' }}>Verify your email</h1>
+        <h1 style={{ color: '#f0f6fc', fontSize: '1.5rem', marginBottom: '0.5rem' }}>
+          Verify your email
+        </h1>
         <p style={{ color: '#a7b1bb', fontSize: '0.9rem', marginBottom: '2rem' }}>
           {maskedEmail
             ? `We sent a 6-digit code to ${maskedEmail}`
@@ -194,7 +196,9 @@ export default function VerifyEmailPage() {
           </div>
         )}
 
-        <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '2rem' }}>
+        <div
+          style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '2rem' }}
+        >
           {code.map((digit, i) => (
             <input
               key={i}

@@ -13,7 +13,7 @@ import {
   ReferenceDot,
   ReferenceLine,
 } from 'recharts';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 import { formatRelativeTime, getInitials, normalizeTickerEmbed } from '@/lib/community-utils';
 import { useAuth } from '@/components/AuthProvider';
 
@@ -102,19 +102,24 @@ export function CommunityFeedPost({
         highlight_price: s.highlight_price,
         data: null,
         loading: true,
-      }))
+      })),
     );
 
     Promise.all(
       tickerNorm.symbols.map(async (s) => {
         try {
           const r = await fetch(
-            `/api/market-data/stock-candles?symbol=${encodeURIComponent(s.symbol)}&range=${encodeURIComponent(period)}`
+            `/api/market-data/stock-candles?symbol=${encodeURIComponent(s.symbol)}&range=${encodeURIComponent(period)}`,
           );
           const d = r.ok ? await r.json() : null;
           const candles = d?.candles;
           if (!Array.isArray(candles) || candles.length === 0) {
-            return { symbol: s.symbol, highlight_price: s.highlight_price, data: [], loading: false };
+            return {
+              symbol: s.symbol,
+              highlight_price: s.highlight_price,
+              data: [],
+              loading: false,
+            };
           }
           const data = candles.map((c) => ({
             t: c.label,
@@ -124,7 +129,7 @@ export function CommunityFeedPost({
         } catch {
           return { symbol: s.symbol, highlight_price: s.highlight_price, data: [], loading: false };
         }
-      })
+      }),
     ).then((rows) => {
       if (!cancelled) setChartSeries(rows);
     });
@@ -151,14 +156,17 @@ export function CommunityFeedPost({
       const ids = [...new Set((rows || []).map((r) => r.user_id))];
       let profMap = {};
       if (ids.length > 0) {
-        const { data: profs } = await supabase.from('profiles').select('id, username, user_settings').in('id', ids);
+        const { data: profs } = await supabase
+          .from('profiles')
+          .select('id, username, user_settings')
+          .in('id', ids);
         profMap = Object.fromEntries((profs || []).map((p) => [p.id, p]));
       }
       setComments(
         (rows || []).map((r) => ({
           ...r,
           author: mapProfileToAuthor(profMap[r.user_id]),
-        }))
+        })),
       );
     } finally {
       setCommentsLoading(false);
@@ -245,9 +253,16 @@ export function CommunityFeedPost({
                   )}
                   {post.isPartner && <span className="comm-post-partner-pill">Partner</span>}
                   {returnStr && (
-                    <span className={`comm-post-return-badge ${retPositive ? 'is-pos' : 'is-neg'}`}>{returnStr}</span>
+                    <span className={`comm-post-return-badge ${retPositive ? 'is-pos' : 'is-neg'}`}>
+                      {returnStr}
+                    </span>
                   )}
-                  <button type="button" className="comm-post-menu-btn" aria-label="Post menu" onClick={(e) => e.stopPropagation()}>
+                  <button
+                    type="button"
+                    className="comm-post-menu-btn"
+                    aria-label="Post menu"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     ···
                   </button>
                 </div>
@@ -306,7 +321,9 @@ export function CommunityFeedPost({
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                 {(pollData.options || []).map((opt) => {
                   const pct =
-                    pollData.total_votes > 0 ? Math.round((opt.votes / pollData.total_votes) * 100) : 0;
+                    pollData.total_votes > 0
+                      ? Math.round((opt.votes / pollData.total_votes) * 100)
+                      : 0;
                   const isMyVote = myVote === opt.id;
                   const hasVoted = myVote !== null;
                   return (
@@ -326,7 +343,9 @@ export function CommunityFeedPost({
                         justifyContent: 'space-between',
                         padding: '0.45rem 0.75rem',
                         borderRadius: '7px',
-                        border: isMyVote ? '1.5px solid #10b981' : '1px solid rgba(16,185,129,0.12)',
+                        border: isMyVote
+                          ? '1.5px solid #10b981'
+                          : '1px solid rgba(16,185,129,0.12)',
                         background: 'rgba(16,185,129,0.03)',
                         cursor: user ? 'pointer' : 'default',
                         textAlign: 'left',
@@ -341,7 +360,9 @@ export function CommunityFeedPost({
                             top: 0,
                             bottom: 0,
                             width: `${pct}%`,
-                            background: isMyVote ? 'rgba(16,185,129,0.15)' : 'rgba(16,185,129,0.06)',
+                            background: isMyVote
+                              ? 'rgba(16,185,129,0.15)'
+                              : 'rgba(16,185,129,0.06)',
                             borderRadius: '7px',
                             transition: 'width 0.4s ease',
                           }}
@@ -463,7 +484,9 @@ export function CommunityFeedPost({
                   );
                 }
 
-                const prices = chartData.map((d) => d.price).filter((v) => v != null && Number.isFinite(v));
+                const prices = chartData
+                  .map((d) => d.price)
+                  .filter((v) => v != null && Number.isFinite(v));
                 if (prices.length === 0) return null;
                 const minP = Math.min(...prices);
                 const maxP = Math.max(...prices);
@@ -495,81 +518,90 @@ export function CommunityFeedPost({
                     >
                       ${row.symbol}
                       {hp != null && (
-                        <span style={{ color: 'var(--text-muted, #6b7280)', fontWeight: 500, marginLeft: '0.35rem' }}>
+                        <span
+                          style={{
+                            color: 'var(--text-muted, #6b7280)',
+                            fontWeight: 500,
+                            marginLeft: '0.35rem',
+                          }}
+                        >
                           ★ ${hp}
                         </span>
                       )}
                     </div>
                     <div className="h-[120px] w-full min-w-0 overflow-hidden sm:h-[140px]">
                       <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={chartData} margin={{ top: 6, right: 8, left: 0, bottom: 0 }}>
-                        <XAxis
-                          dataKey="t"
-                          tick={{ fill: '#6b7280', fontSize: 9 }}
-                          tickLine={false}
-                          axisLine={false}
-                          interval="preserveStartEnd"
-                          minTickGap={16}
-                        />
-                        <YAxis
-                          domain={[minP - pad, maxP + pad]}
-                          tick={{ fill: '#6b7280', fontSize: 9 }}
-                          tickLine={false}
-                          axisLine={false}
-                          width={40}
-                          tickFormatter={(v) =>
-                            `$${v >= 1000 ? `${(v / 1000).toFixed(1)}K` : v.toFixed(0)}`
-                          }
-                        />
-                        <Tooltip
-                          formatter={(v) => [`$${Number(v).toFixed(2)}`, row.symbol]}
-                          contentStyle={{
-                            background: '#161b22',
-                            border: '1px solid rgba(16,185,129,0.15)',
-                            borderRadius: '6px',
-                            fontSize: '0.7rem',
-                          }}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="price"
-                          stroke={stroke}
-                          strokeWidth={1.8}
-                          dot={false}
-                          isAnimationActive={false}
-                        />
-                        {hp != null && (
-                          <ReferenceLine
-                            y={hp}
-                            stroke="#f59e0b"
-                            strokeDasharray="4 3"
-                            strokeWidth={1}
-                            label={{
-                              value: `$${hp}`,
-                              position: 'insideTopRight',
-                              fill: '#f59e0b',
-                              fontSize: 10,
+                        <LineChart
+                          data={chartData}
+                          margin={{ top: 6, right: 8, left: 0, bottom: 0 }}
+                        >
+                          <XAxis
+                            dataKey="t"
+                            tick={{ fill: '#6b7280', fontSize: 9 }}
+                            tickLine={false}
+                            axisLine={false}
+                            interval="preserveStartEnd"
+                            minTickGap={16}
+                          />
+                          <YAxis
+                            domain={[minP - pad, maxP + pad]}
+                            tick={{ fill: '#6b7280', fontSize: 9 }}
+                            tickLine={false}
+                            axisLine={false}
+                            width={40}
+                            tickFormatter={(v) =>
+                              `$${v >= 1000 ? `${(v / 1000).toFixed(1)}K` : v.toFixed(0)}`
+                            }
+                          />
+                          <Tooltip
+                            formatter={(v) => [`$${Number(v).toFixed(2)}`, row.symbol]}
+                            contentStyle={{
+                              background: '#161b22',
+                              border: '1px solid rgba(16,185,129,0.15)',
+                              borderRadius: '6px',
+                              fontSize: '0.7rem',
                             }}
                           />
-                        )}
-                        {hlIdx !== null && chartData[hlIdx]?.price != null && (
-                          <ReferenceDot
-                            x={chartData[hlIdx].t}
-                            y={chartData[hlIdx].price}
-                            r={5}
-                            fill="#f59e0b"
-                            stroke="#fff"
-                            strokeWidth={1.5}
-                            label={{
-                              value: `$${chartData[hlIdx].price.toFixed(2)}`,
-                              position: 'top',
-                              fill: '#f59e0b',
-                              fontSize: 10,
-                            }}
+                          <Line
+                            type="monotone"
+                            dataKey="price"
+                            stroke={stroke}
+                            strokeWidth={1.8}
+                            dot={false}
+                            isAnimationActive={false}
                           />
-                        )}
-                      </LineChart>
-                    </ResponsiveContainer>
+                          {hp != null && (
+                            <ReferenceLine
+                              y={hp}
+                              stroke="#f59e0b"
+                              strokeDasharray="4 3"
+                              strokeWidth={1}
+                              label={{
+                                value: `$${hp}`,
+                                position: 'insideTopRight',
+                                fill: '#f59e0b',
+                                fontSize: 10,
+                              }}
+                            />
+                          )}
+                          {hlIdx !== null && chartData[hlIdx]?.price != null && (
+                            <ReferenceDot
+                              x={chartData[hlIdx].t}
+                              y={chartData[hlIdx].price}
+                              r={5}
+                              fill="#f59e0b"
+                              stroke="#fff"
+                              strokeWidth={1.5}
+                              label={{
+                                value: `$${chartData[hlIdx].price.toFixed(2)}`,
+                                position: 'top',
+                                fill: '#f59e0b',
+                                fontSize: 10,
+                              }}
+                            />
+                          )}
+                        </LineChart>
+                      </ResponsiveContainer>
                     </div>
                   </div>
                 );
@@ -583,14 +615,19 @@ export function CommunityFeedPost({
               {quote ? (
                 <>
                   <span className="comm-ticker-price">${quote.price?.toFixed(2) ?? '—'}</span>
-                  <span className={`comm-ticker-chg ${(quote.changePercent ?? 0) >= 0 ? 'up' : 'dn'}`}>
+                  <span
+                    className={`comm-ticker-chg ${(quote.changePercent ?? 0) >= 0 ? 'up' : 'dn'}`}
+                  >
                     {(quote.changePercent ?? 0) >= 0 ? '▲' : '▼'}{' '}
                     {(quote.changePercent ?? 0) >= 0 ? '+' : ''}
                     {(quote.changePercent ?? 0).toFixed(2)}%
                   </span>
                 </>
               ) : (
-                <span className="comm-ticker-price" style={{ color: 'var(--text-muted, #6b7280)', fontSize: '0.6875rem' }}>
+                <span
+                  className="comm-ticker-price"
+                  style={{ color: 'var(--text-muted, #6b7280)', fontSize: '0.6875rem' }}
+                >
                   Quote unavailable
                 </span>
               )}
@@ -607,9 +644,15 @@ export function CommunityFeedPost({
               onLike(post.id, post.liked_by_me);
             }}
           >
-            <i className={post.liked_by_me ? 'bi bi-heart-fill' : 'bi bi-heart'} aria-hidden /> {post.likes}
+            <i className={post.liked_by_me ? 'bi bi-heart-fill' : 'bi bi-heart'} aria-hidden />{' '}
+            {post.likes}
           </button>
-          <button type="button" className="comm-engage-btn" aria-label="Comments" onClick={toggleComments}>
+          <button
+            type="button"
+            className="comm-engage-btn"
+            aria-label="Comments"
+            onClick={toggleComments}
+          >
             <i className="bi bi-chat-dots" aria-hidden /> {post.comments}
           </button>
           <div className="comm-share-wrap" style={{ position: 'relative' }}>
@@ -644,7 +687,14 @@ export function CommunityFeedPost({
                   boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
                 }}
               >
-                <p style={{ fontSize: '0.6875rem', fontWeight: 700, color: 'var(--home-heading, #111)', margin: '0 0 10px' }}>
+                <p
+                  style={{
+                    fontSize: '0.6875rem',
+                    fontWeight: 700,
+                    color: 'var(--home-heading, #111)',
+                    margin: '0 0 10px',
+                  }}
+                >
                   Share to
                 </p>
                 <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
@@ -673,7 +723,9 @@ export function CommunityFeedPost({
                       }}
                       onClick={() => {
                         // Future: open OAuth-linked share from settings
-                        alert(`Share to ${platform.label} — connect your account in Settings to share.`);
+                        alert(
+                          `Share to ${platform.label} — connect your account in Settings to share.`,
+                        );
                         setShareOpen(false);
                       }}
                     >
@@ -715,7 +767,12 @@ export function CommunityFeedPost({
       </div>
 
       {commentsOpen && (
-        <div className="comm-comment-thread" onClick={(e) => e.stopPropagation()} role="region" aria-label="Comments">
+        <div
+          className="comm-comment-thread"
+          onClick={(e) => e.stopPropagation()}
+          role="region"
+          aria-label="Comments"
+        >
           <div className="comm-comment-thread-head">
             <span>{post.comments} comments</span>
             <button type="button" className="comm-comment-collapse" onClick={toggleComments}>
@@ -732,7 +789,11 @@ export function CommunityFeedPost({
                 <div className="comm-comment-body">
                   <div className="comm-comment-meta">
                     {c.author.id ? (
-                      <Link href={`/profile/${c.author.username || c.author.id}`} className="comm-name-link" onClick={(e) => e.stopPropagation()}>
+                      <Link
+                        href={`/profile/${c.author.username || c.author.id}`}
+                        className="comm-name-link"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         {c.author.name}
                       </Link>
                     ) : (
@@ -758,7 +819,12 @@ export function CommunityFeedPost({
                   }
                 }}
               />
-              <button type="button" className="comm-btn-sm" onClick={submitComment} disabled={postingComment || !commentDraft.trim()}>
+              <button
+                type="button"
+                className="comm-btn-sm"
+                onClick={submitComment}
+                disabled={postingComment || !commentDraft.trim()}
+              >
                 {postingComment ? 'Posting…' : 'Post'}
               </button>
             </div>
@@ -768,4 +834,3 @@ export function CommunityFeedPost({
     </div>
   );
 }
-

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 import { InvestorQuestionnaire } from '@/components/onboarding/InvestorQuestionnaire';
 import { OrgQuestionnaire } from '@/components/onboarding/OrgQuestionnaire';
 import './onboarding.css';
@@ -15,7 +15,9 @@ export default function OnboardingPage() {
 
   useEffect(() => {
     (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) {
         router.replace('/auth/login');
         return;

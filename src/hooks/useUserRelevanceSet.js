@@ -5,7 +5,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { useMockPortfolio } from '@/hooks/useMockPortfolio';
 import { usePortfolio } from '@/hooks/usePortfolio';
 import { useWatchlists } from '@/hooks/useWatchlists';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 
 /**
  * Aggregates every identifier the user cares about across data sources:

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useAuth } from '@/components/AuthProvider';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 
 /** @typedef {'1D'|'7D'|'1M'|'3M'|'6M'|'1Y'|'ALL'} PortfolioRange */
 

@@ -1,15 +1,12 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 import { getDefaultUserSettings } from '@/lib/user-settings-defaults';
 
 function buildMergedSettings(profileUserSettings, user) {
   const defaults = getDefaultUserSettings();
-  const metaName =
-    user?.user_metadata?.full_name ||
-    user?.user_metadata?.name ||
-    '';
+  const metaName = user?.user_metadata?.full_name || user?.user_metadata?.name || '';
   if (profileUserSettings && typeof profileUserSettings === 'object') {
     return {
       ...defaults,

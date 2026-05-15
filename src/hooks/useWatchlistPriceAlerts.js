@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { useWatchlists } from '@/hooks/useWatchlists';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 
 /**
  * Monitor every watchlist whose user has "Notify me on major price moves"

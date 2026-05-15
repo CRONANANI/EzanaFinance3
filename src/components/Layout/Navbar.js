@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { EzanaNavLogo } from '@/components/brand/EzanaNavLogo';
 import { useAuth } from '@/components/AuthProvider';
 import { useOrg } from '@/contexts/OrgContext';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 import { NavNotifications } from '@/components/NavNotifications';
 import { ChecklistProgressIcon } from '@/components/ChecklistProgressIcon';
 import { AnimatedNav } from '@/components/ui/AnimatedNav';
@@ -49,7 +49,13 @@ export function Navbar() {
   };
 
   const userNavItems = [
-    { id: 1, title: 'Dashboard', url: '/home-dashboard', icon: 'bi-speedometer2', isActive: pathname?.includes('home-dashboard') },
+    {
+      id: 1,
+      title: 'Dashboard',
+      url: '/home-dashboard',
+      icon: 'bi-speedometer2',
+      isActive: pathname?.includes('home-dashboard'),
+    },
     {
       id: 2,
       title: 'Research',
@@ -58,15 +64,74 @@ export function Navbar() {
       dropdown: true,
       isActive: isResearchActive,
       items: [
-        { id: 22, title: 'Company & Portfolio Research', description: 'Stock analysis + portfolio modeling', url: '/company-research', icon: 'bi-bar-chart-line' },
-        { id: 23, title: 'Global Market Analysis', description: 'Worldwide sector trends', url: '/market-analysis', icon: 'bi-graph-up-arrow' },
-        { id: 26, title: 'Ezana Echo', description: 'Articles & insights', url: '/ezana-echo', icon: 'bi-newspaper' },
-        { id: 27, title: 'Alternative Markets', description: 'Crypto & commodities', url: '/alternative-markets', icon: 'bi-globe2' },
-        { id: 28, title: 'Centaur Intelligence', description: 'AI research assistant', url: '/centaur-intelligence', icon: 'bi-stars', variant: 'gold' },
-        { id: 29, title: 'Kairos Signal', description: 'Weather & alternative macro data', url: '/kairos-signal', icon: 'bi-cloud-sun-fill', variant: 'gold' },
-        { id: 25, title: 'Betting Markets', description: 'Odds, predictions & EV models', url: '/betting-markets', icon: 'bi-bullseye', variant: 'gold' },
-        { id: 24, title: 'For The Quants', description: 'Quant tools & backtesting', url: '/for-the-quants', icon: 'bi-calculator', variant: 'gold' },
-        { id: 21, title: 'Inside The Capitol', description: 'Congressional trading', url: '/inside-the-capitol', icon: 'bi-building', variant: 'gold' },
+        {
+          id: 22,
+          title: 'Company & Portfolio Research',
+          description: 'Stock analysis + portfolio modeling',
+          url: '/company-research',
+          icon: 'bi-bar-chart-line',
+        },
+        {
+          id: 23,
+          title: 'Global Market Analysis',
+          description: 'Worldwide sector trends',
+          url: '/market-analysis',
+          icon: 'bi-graph-up-arrow',
+        },
+        {
+          id: 26,
+          title: 'Ezana Echo',
+          description: 'Articles & insights',
+          url: '/ezana-echo',
+          icon: 'bi-newspaper',
+        },
+        {
+          id: 27,
+          title: 'Alternative Markets',
+          description: 'Crypto & commodities',
+          url: '/alternative-markets',
+          icon: 'bi-globe2',
+        },
+        {
+          id: 28,
+          title: 'Centaur Intelligence',
+          description: 'AI research assistant',
+          url: '/centaur-intelligence',
+          icon: 'bi-stars',
+          variant: 'gold',
+        },
+        {
+          id: 29,
+          title: 'Kairos Signal',
+          description: 'Weather & alternative macro data',
+          url: '/kairos-signal',
+          icon: 'bi-cloud-sun-fill',
+          variant: 'gold',
+        },
+        {
+          id: 25,
+          title: 'Betting Markets',
+          description: 'Odds, predictions & EV models',
+          url: '/betting-markets',
+          icon: 'bi-bullseye',
+          variant: 'gold',
+        },
+        {
+          id: 24,
+          title: 'For The Quants',
+          description: 'Quant tools & backtesting',
+          url: '/for-the-quants',
+          icon: 'bi-calculator',
+          variant: 'gold',
+        },
+        {
+          id: 21,
+          title: 'Inside The Capitol',
+          description: 'Congressional trading',
+          url: '/inside-the-capitol',
+          icon: 'bi-building',
+          variant: 'gold',
+        },
       ],
     },
     {
@@ -77,14 +142,40 @@ export function Navbar() {
       dropdown: true,
       isActive: isTradingActive,
       items: [
-        { id: 31, title: 'Brokerage Account', description: 'Real-money trading account', url: '/trading', icon: 'bi-bank' },
-        { id: 32, title: 'Mock Portfolio', description: '$100K paper trading account', url: '/trading/mock', icon: 'bi-controller' },
+        {
+          id: 31,
+          title: 'Brokerage Account',
+          description: 'Real-money trading account',
+          url: '/trading',
+          icon: 'bi-bank',
+        },
+        {
+          id: 32,
+          title: 'Mock Portfolio',
+          description: '$100K paper trading account',
+          url: '/trading/mock',
+          icon: 'bi-controller',
+        },
         ...(isOrgUser
-          ? [{ id: 33, title: 'Council Trading', description: 'Org mock portfolios & flags', url: '/org-trading', icon: 'bi-bank2' }]
+          ? [
+              {
+                id: 33,
+                title: 'Council Trading',
+                description: 'Org mock portfolios & flags',
+                url: '/org-trading',
+                icon: 'bi-bank2',
+              },
+            ]
           : []),
       ],
     },
-    { id: 4, title: 'Watchlist', url: '/watchlist', icon: 'bi-bookmark', isActive: pathname?.includes('/watchlist') },
+    {
+      id: 4,
+      title: 'Watchlist',
+      url: '/watchlist',
+      icon: 'bi-bookmark',
+      isActive: pathname?.includes('/watchlist'),
+    },
     ...(isOrgUser
       ? [
           {
@@ -113,7 +204,13 @@ export function Navbar() {
             isActive: pathname?.includes('/community'),
           },
         ]),
-    { id: 6, title: 'Learning Center', url: '/learning-center', icon: 'bi-mortarboard', isActive: pathname?.includes('/learning-center') },
+    {
+      id: 6,
+      title: 'Learning Center',
+      url: '/learning-center',
+      icon: 'bi-mortarboard',
+      isActive: pathname?.includes('/learning-center'),
+    },
   ];
 
   useEffect(() => {
@@ -138,7 +235,11 @@ export function Navbar() {
     return (
       <nav ref={landingNavRef} className="navbar navbar-sticky">
         <div className="nav-container nav-container-centered">
-          <Link href="/" className="logo logo-centered nav-brand nav-home-btn" title="Ezana Finance">
+          <Link
+            href="/"
+            className="logo logo-centered nav-brand nav-home-btn"
+            title="Ezana Finance"
+          >
             <EzanaNavLogo priority={isLanding || isPricing} />
           </Link>
           <button
@@ -154,22 +255,34 @@ export function Navbar() {
           {/* Desktop nav links — hidden on mobile via CSS */}
           <ul className="nav-menu nav-menu-desktop">
             <li className="nav-item">
-              <a href="/#features" className="nav-link">Features</a>
+              <a href="/#features" className="nav-link">
+                Features
+              </a>
             </li>
             <li className="nav-item">
-              <a href="/#resources" className="nav-link">Resources</a>
+              <a href="/#resources" className="nav-link">
+                Resources
+              </a>
             </li>
             <li className="nav-item">
-              <Link href="/pricing" className="nav-link">Pricing</Link>
+              <Link href="/pricing" className="nav-link">
+                Pricing
+              </Link>
             </li>
             <li className="nav-item">
-              <Link href="/ezana-echo" className="nav-link">Ezana Echo</Link>
+              <Link href="/ezana-echo" className="nav-link">
+                Ezana Echo
+              </Link>
             </li>
             <li className="nav-item">
-              <a href="/#faq" className="nav-link">FAQ</a>
+              <a href="/#faq" className="nav-link">
+                FAQ
+              </a>
             </li>
             <li className="nav-item">
-              <Link href="/help-center" className="nav-link">Help Center</Link>
+              <Link href="/help-center" className="nav-link">
+                Help Center
+              </Link>
             </li>
           </ul>
 
@@ -186,10 +299,7 @@ export function Navbar() {
           {/* ═══ MOBILE MENU — completely separate element, only rendered on mobile ═══ */}
           {mobileMenuOpen && (
             <div className="mobile-nav-overlay" onClick={() => setMobileMenuOpen(false)}>
-              <div
-                className="mobile-nav-menu"
-                onClick={(e) => e.stopPropagation()}
-              >
+              <div className="mobile-nav-menu" onClick={(e) => e.stopPropagation()}>
                 {/* Auth buttons at top */}
                 <div className="mobile-nav-auth">
                   <Link

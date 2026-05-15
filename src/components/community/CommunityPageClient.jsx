@@ -17,8 +17,16 @@ import { usePartner } from '@/contexts/PartnerContext';
    smaller). A minimal placeholder prevents the feed from collapsing
    while the chunk streams in. */
 const CommunityFeedPost = dynamic(
-  () => import('@/components/community/CommunityFeedPost').then((m) => ({ default: m.CommunityFeedPost })),
-  { ssr: false, loading: () => <div className="community-feed-post-skeleton" style={{ minHeight: 180 }} aria-hidden /> }
+  () =>
+    import('@/components/community/CommunityFeedPost').then((m) => ({
+      default: m.CommunityFeedPost,
+    })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="community-feed-post-skeleton" style={{ minHeight: 180 }} aria-hidden />
+    ),
+  },
 );
 import { CommunitySocialConnectCard } from '@/components/community/CommunitySocialConnectCard';
 import CopyRequestInbox from '@/components/community/CopyRequestInbox';
@@ -30,7 +38,7 @@ import {
   getInitials,
   normalizeTickerEmbed,
 } from '@/lib/community-utils';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 import { auditContrast } from '@/lib/a11y/audit-contrast';
 
 const DISCUSSION_TONE_TO_CSS = {
@@ -136,7 +144,8 @@ function TrendingTopicsCard({ topics, compact = false }) {
             <h3>Trending Topics</h3>
             {!compact && (
               <p>
-                Showing {startIdx + 1}–{Math.min(startIdx + PAGE_SIZE, topics.length)} of {topics.length}
+                Showing {startIdx + 1}–{Math.min(startIdx + PAGE_SIZE, topics.length)} of{' '}
+                {topics.length}
               </p>
             )}
           </div>
@@ -146,12 +155,16 @@ function TrendingTopicsCard({ topics, compact = false }) {
           type="button"
           className="comm-trending-pager-inline"
           onClick={handlePagerClick}
-          aria-label={isLastPage ? 'Back to top of trending topics' : `Show next ${PAGE_SIZE} topics`}
+          aria-label={
+            isLastPage ? 'Back to top of trending topics' : `Show next ${PAGE_SIZE} topics`
+          }
         >
           <span className="comm-trending-pager-inline__count" aria-hidden>
             {pageIndex + 1} / {totalPages}
           </span>
-          <span className="comm-trending-pager-inline__sep" aria-hidden>·</span>
+          <span className="comm-trending-pager-inline__sep" aria-hidden>
+            ·
+          </span>
           <span className="comm-trending-pager-inline__label">
             {isLastPage ? 'Back to top' : `Next ${PAGE_SIZE}`}
           </span>
@@ -163,7 +176,14 @@ function TrendingTopicsCard({ topics, compact = false }) {
       </div>
 
       {topics.length === 0 ? (
-        <p className="comm-trending-empty" style={{ margin: '0 1.25rem 1.25rem', color: 'var(--db-muted, #8b949e)', fontSize: '0.875rem' }}>
+        <p
+          className="comm-trending-empty"
+          style={{
+            margin: '0 1.25rem 1.25rem',
+            color: 'var(--db-muted, #8b949e)',
+            fontSize: '0.875rem',
+          }}
+        >
           No trending hashtags in the last week yet.
         </p>
       ) : null}
@@ -183,9 +203,7 @@ function TrendingTopicsCard({ topics, compact = false }) {
                   >
                     <i
                       className={
-                        topic.trend === 'up'
-                          ? 'bi bi-arrow-up-right'
-                          : 'bi bi-arrow-down-right'
+                        topic.trend === 'up' ? 'bi bi-arrow-up-right' : 'bi bi-arrow-down-right'
                       }
                       aria-hidden
                     />
@@ -256,7 +274,8 @@ function CommunityKpiModal({ kind, data, onClose }) {
 }
 
 function TopPerformerModalBody({ data }) {
-  if (!data) return <p className="comm-kpi-modal__empty">No top performer data available right now.</p>;
+  if (!data)
+    return <p className="comm-kpi-modal__empty">No top performer data available right now.</p>;
   return (
     <>
       <div className="comm-kpi-modal__hero">
@@ -265,11 +284,11 @@ function TopPerformerModalBody({ data }) {
         </div>
         <div>
           <h2 className="comm-kpi-modal__title">{data.name}</h2>
-          <p className="comm-kpi-modal__subtitle">@{data.username || data.name?.split(' ')[0]?.toLowerCase()}</p>
+          <p className="comm-kpi-modal__subtitle">
+            @{data.username || data.name?.split(' ')[0]?.toLowerCase()}
+          </p>
         </div>
-        <span className="comm-kpi-modal__badge comm-kpi-modal__badge--positive">
-          {data.return}
-        </span>
+        <span className="comm-kpi-modal__badge comm-kpi-modal__badge--positive">{data.return}</span>
       </div>
 
       <div className="comm-kpi-modal__stats">
@@ -290,12 +309,14 @@ function TopPerformerModalBody({ data }) {
       <h3 className="comm-kpi-modal__section-title">Top holdings this month</h3>
       <ul className="comm-kpi-modal__list">
         {/* PLACEHOLDER: wire to real portfolio holdings when API/hook is available */}
-        {(data.holdings || [
-          { ticker: 'NVDA', return: '+12.4%', weight: '24%' },
-          { ticker: 'AAPL', return: '+5.2%', weight: '18%' },
-          { ticker: 'MSFT', return: '+7.8%', weight: '15%' },
-          { ticker: 'META', return: '+9.1%', weight: '12%' },
-        ]).map((h) => (
+        {(
+          data.holdings || [
+            { ticker: 'NVDA', return: '+12.4%', weight: '24%' },
+            { ticker: 'AAPL', return: '+5.2%', weight: '18%' },
+            { ticker: 'MSFT', return: '+7.8%', weight: '15%' },
+            { ticker: 'META', return: '+9.1%', weight: '12%' },
+          ]
+        ).map((h) => (
           <li key={h.ticker} className="comm-kpi-modal__list-item">
             <span className="comm-kpi-modal__list-ticker">{h.ticker}</span>
             <span className="comm-kpi-modal__list-weight">{h.weight} of port.</span>
@@ -343,9 +364,7 @@ function SectorMomentumModalBody({ data }) {
           <li key={s.name} className="comm-kpi-modal__sector-row">
             <div className="comm-kpi-modal__sector-meta">
               <span className="comm-kpi-modal__sector-name">{s.name}</span>
-              <span className="comm-kpi-modal__sector-leaders">
-                {s.leaders.join(' · ')}
-              </span>
+              <span className="comm-kpi-modal__sector-leaders">{s.leaders.join(' · ')}</span>
             </div>
             <span
               className={`comm-kpi-modal__badge comm-kpi-modal__badge--${
@@ -373,14 +392,16 @@ function InvestorsToFollowModalBody({ data }) {
         <div>
           <h2 className="comm-kpi-modal__title">Investors with similar sectors</h2>
           <p className="comm-kpi-modal__subtitle">
-            Sorted by performance — these investors hold positions in sectors that overlap with yours.
+            Sorted by performance — these investors hold positions in sectors that overlap with
+            yours.
           </p>
         </div>
       </div>
 
       {investors.length === 0 ? (
         <p className="comm-kpi-modal__empty">
-          No matching investors found yet. Add a few holdings to your watchlist or portfolio so we can find good matches.
+          No matching investors found yet. Add a few holdings to your watchlist or portfolio so we
+          can find good matches.
         </p>
       ) : (
         <ul className="comm-kpi-modal__investor-list">
@@ -455,10 +476,7 @@ export default function CommunityPageClient() {
 
   const firstName = useMemo(() => {
     const raw =
-      userProfile?.full_name ||
-      userProfile?.display_name ||
-      user?.user_metadata?.full_name ||
-      '';
+      userProfile?.full_name || userProfile?.display_name || user?.user_metadata?.full_name || '';
     const part = String(raw).trim().split(/\s+/)[0];
     return part || 'there';
   }, [userProfile, user]);
@@ -512,9 +530,7 @@ export default function CommunityPageClient() {
           .from('profiles')
           .select('id, is_partner')
           .in('id', userIds);
-        const pmap = Object.fromEntries(
-          (profs || []).map((r) => [r.id, r.is_partner === true]),
-        );
+        const pmap = Object.fromEntries((profs || []).map((r) => [r.id, r.is_partner === true]));
         mapped = mapped.map((m) => ({ ...m, isPartner: pmap[m.userId] || false }));
       }
 
@@ -603,8 +619,7 @@ export default function CommunityPageClient() {
             if (row) {
               next[s] = {
                 price: row.price ?? row.last ?? row.ap ?? 0,
-                changePercent:
-                  row.changePercent ?? row.change_percent ?? row.pct ?? 0,
+                changePercent: row.changePercent ?? row.change_percent ?? row.pct ?? 0,
               };
             }
           }
@@ -663,10 +678,7 @@ export default function CommunityPageClient() {
     }
   }, []);
 
-  const sectorMomentum = useMemo(
-    () => ({ name: 'Technology', return: '+8.2%', trend: 'up' }),
-    [],
-  );
+  const sectorMomentum = useMemo(() => ({ name: 'Technology', return: '+8.2%', trend: 'up' }), []);
 
   const closeKpiModal = useCallback(() => setActiveModal(null), []);
 
@@ -679,9 +691,7 @@ export default function CommunityPageClient() {
       /* PLACEHOLDER sector tags until profile/watchlist overlap API exists */
       investors: suggestedUsers.map((inv, i) => ({
         ...inv,
-        sectors:
-          inv.sectors ??
-          [tags[i % tags.length], tags[(i + 2) % tags.length]],
+        sectors: inv.sectors ?? [tags[i % tags.length], tags[(i + 2) % tags.length]],
       })),
     };
   }, [activeModal, suggestedUsers]);
@@ -729,9 +739,7 @@ export default function CommunityPageClient() {
   const handleSave = async (postId, saved) => {
     if (!user) return;
     const action = saved ? 'unsave' : 'save';
-    setFeedPosts((prev) =>
-      prev.map((p) => (p.id === postId ? { ...p, saved_by_me: !saved } : p)),
-    );
+    setFeedPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, saved_by_me: !saved } : p)));
     try {
       await fetch('/api/community/posts/save', {
         method: 'POST',
@@ -767,8 +775,7 @@ export default function CommunityPageClient() {
     if (t === 'Messages') router.push('/community/messages');
     if (t === 'My Profile') {
       if (!user?.id) return;
-      const handle =
-        userProfile?.username || user?.user_metadata?.username || user.id;
+      const handle = userProfile?.username || user?.user_metadata?.username || user.id;
       router.push(`/profile/${handle}`);
     }
   };
@@ -783,166 +790,165 @@ export default function CommunityPageClient() {
     >
       {/* ═══════════ DESKTOP LAYOUT (≥768px via CSS) ═══════════════════════ */}
       <div className="comm-desktop-shell">
-      <div className="comm-greeting-row">
-        <div className="comm-greeting-section">
-          <h1 className="db-greeting">
-            <span>
-              {getGreeting()}, {firstName}
-            </span>
-            <span className="db-greeting-waving" aria-hidden>👋</span>
-          </h1>
-          <p className="db-greeting-sub">
-            Connect, share, and grow with the investing community
-          </p>
-          <p className="db-greeting-date">{formatDateLine()}</p>
+        <div className="comm-greeting-row">
+          <div className="comm-greeting-section">
+            <h1 className="db-greeting">
+              <span>
+                {getGreeting()}, {firstName}
+              </span>
+              <span className="db-greeting-waving" aria-hidden>
+                👋
+              </span>
+            </h1>
+            <p className="db-greeting-sub">Connect, share, and grow with the investing community</p>
+            <p className="db-greeting-date">{formatDateLine()}</p>
+          </div>
+
+          <div className="comm-page-tabs comm-page-tabs--top" role="tablist">
+            {PAGE_TABS.map((t) => (
+              <button
+                key={t}
+                type="button"
+                role="tab"
+                aria-selected={t === 'Community'}
+                onClick={() => onPageTab(t)}
+                className={`comm-page-tab ${t === 'Community' ? 'is-active' : ''}`}
+              >
+                {t === 'Community' && <i className="bi bi-people" aria-hidden />}
+                {t === 'My Profile' && <i className="bi bi-person-circle" aria-hidden />}
+                {t === 'Messages' && <i className="bi bi-chat-dots" aria-hidden />}
+                {t}
+              </button>
+            ))}
+          </div>
         </div>
 
-        <div className="comm-page-tabs comm-page-tabs--top" role="tablist">
-          {PAGE_TABS.map((t) => (
-            <button
-              key={t}
-              type="button"
-              role="tab"
-              aria-selected={t === 'Community'}
-              onClick={() => onPageTab(t)}
-              className={`comm-page-tab ${t === 'Community' ? 'is-active' : ''}`}
-            >
-              {t === 'Community' && <i className="bi bi-people" aria-hidden />}
-              {t === 'My Profile' && <i className="bi bi-person-circle" aria-hidden />}
-              {t === 'Messages' && <i className="bi bi-chat-dots" aria-hidden />}
-              {t}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <section
-        className="db-card comm-usersearch-card"
-        data-community-card
-        aria-label="Find investors"
-      >
-        <div className="db-card-header has-icon">
-          <div className="comm-card-head-left">
-            <div className="comm-card-icon" aria-hidden>
-              <i className="bi bi-search" />
-            </div>
-            <div className="comm-card-head-meta">
-              <h3>Find investors</h3>
-              <p>
-                Search by name or email to view their profile and trading
-                activity.
-              </p>
+        <section
+          className="db-card comm-usersearch-card"
+          data-community-card
+          aria-label="Find investors"
+        >
+          <div className="db-card-header has-icon">
+            <div className="comm-card-head-left">
+              <div className="comm-card-icon" aria-hidden>
+                <i className="bi bi-search" />
+              </div>
+              <div className="comm-card-head-meta">
+                <h3>Find investors</h3>
+                <p>Search by name or email to view their profile and trading activity.</p>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="comm-usersearch-body">
-          <UserSearch />
-        </div>
-      </section>
+          <div className="comm-usersearch-body">
+            <UserSearch />
+          </div>
+        </section>
 
-      {/* Trending topics: compact card in left column (see comm-3col) */}
+        {/* Trending topics: compact card in left column (see comm-3col) */}
 
-      {/* ═══ KPI strip — community-wide snapshot ═══ */}
-      <section className="comm-kpi-row" aria-label="Community at a glance">
-        <button
-          type="button"
-          className="db-card comm-kpi-card comm-kpi-card--actionable"
-          data-community-card
-          onClick={scrollToFeed}
-          aria-label={
-            newPostCount > 0
-              ? `${newPostCount} new posts in feed — click to scroll to feed`
-              : `${feedPosts.length} posts in feed — click to scroll to feed`
-          }
-        >
-          <div className="comm-kpi-icon" aria-hidden>
-            <i className="bi bi-chat-square-text" />
-          </div>
-          <div className="comm-kpi-body">
-            <span className="comm-kpi-label">
-              {newPostCount > 0 ? 'New posts' : 'Posts in feed'}
-            </span>
-            <span className="comm-kpi-value">
-              {newPostCount > 0 ? `+${newPostCount}` : feedPosts.length}
-            </span>
-            <span className="comm-kpi-sub">
-              {newPostCount > 0 ? 'Tap to scroll to feed' : 'Live from the community'}
-            </span>
-          </div>
-          <i className="bi bi-arrow-down comm-kpi-card__chevron" aria-hidden />
-        </button>
+        {/* ═══ KPI strip — community-wide snapshot ═══ */}
+        <section className="comm-kpi-row" aria-label="Community at a glance">
+          <button
+            type="button"
+            className="db-card comm-kpi-card comm-kpi-card--actionable"
+            data-community-card
+            onClick={scrollToFeed}
+            aria-label={
+              newPostCount > 0
+                ? `${newPostCount} new posts in feed — click to scroll to feed`
+                : `${feedPosts.length} posts in feed — click to scroll to feed`
+            }
+          >
+            <div className="comm-kpi-icon" aria-hidden>
+              <i className="bi bi-chat-square-text" />
+            </div>
+            <div className="comm-kpi-body">
+              <span className="comm-kpi-label">
+                {newPostCount > 0 ? 'New posts' : 'Posts in feed'}
+              </span>
+              <span className="comm-kpi-value">
+                {newPostCount > 0 ? `+${newPostCount}` : feedPosts.length}
+              </span>
+              <span className="comm-kpi-sub">
+                {newPostCount > 0 ? 'Tap to scroll to feed' : 'Live from the community'}
+              </span>
+            </div>
+            <i className="bi bi-arrow-down comm-kpi-card__chevron" aria-hidden />
+          </button>
 
-        <button
-          type="button"
-          className="db-card comm-kpi-card comm-kpi-card--actionable"
-          data-community-card
-          onClick={() => setActiveModal('top-performer')}
-          aria-label="View top performer's portfolio"
-        >
-          <div className="comm-kpi-icon" aria-hidden>
-            <i className="bi bi-graph-up-arrow" />
-          </div>
-          <div className="comm-kpi-body">
-            <span className="comm-kpi-label">Top performer</span>
-            <span className="comm-kpi-value">{topSuggestedReturn || '—'}</span>
-            <span className="comm-kpi-sub positive">
-              {suggestedUsers[0]?.name
-                ? `@${
-                    suggestedUsers[0].username ||
-                    suggestedUsers[0].name.split(' ')[0].toLowerCase()
-                  }`
-                : 'Weekly leader'}
-            </span>
-          </div>
-          <i className="bi bi-chevron-right comm-kpi-card__chevron" aria-hidden />
-        </button>
+          <button
+            type="button"
+            className="db-card comm-kpi-card comm-kpi-card--actionable"
+            data-community-card
+            onClick={() => setActiveModal('top-performer')}
+            aria-label="View top performer's portfolio"
+          >
+            <div className="comm-kpi-icon" aria-hidden>
+              <i className="bi bi-graph-up-arrow" />
+            </div>
+            <div className="comm-kpi-body">
+              <span className="comm-kpi-label">Top performer</span>
+              <span className="comm-kpi-value">{topSuggestedReturn || '—'}</span>
+              <span className="comm-kpi-sub positive">
+                {suggestedUsers[0]?.name
+                  ? `@${
+                      suggestedUsers[0].username ||
+                      suggestedUsers[0].name.split(' ')[0].toLowerCase()
+                    }`
+                  : 'Weekly leader'}
+              </span>
+            </div>
+            <i className="bi bi-chevron-right comm-kpi-card__chevron" aria-hidden />
+          </button>
 
-        <button
-          type="button"
-          className="db-card comm-kpi-card comm-kpi-card--actionable"
-          data-community-card
-          onClick={() => setActiveModal('sector-momentum')}
-          aria-label="View sector momentum breakdown"
-        >
-          <div className="comm-kpi-icon" aria-hidden>
-            <i className="bi bi-bar-chart-line" />
-          </div>
-          <div className="comm-kpi-body">
-            <span className="comm-kpi-label">Sector momentum</span>
-            <span className="comm-kpi-value">{sectorMomentum?.name || '—'}</span>
-            <span className="comm-kpi-sub positive">
-              Leading at {sectorMomentum?.return || '—'} this week
-            </span>
-          </div>
-          <i className="bi bi-chevron-right comm-kpi-card__chevron" aria-hidden />
-        </button>
+          <button
+            type="button"
+            className="db-card comm-kpi-card comm-kpi-card--actionable"
+            data-community-card
+            onClick={() => setActiveModal('sector-momentum')}
+            aria-label="View sector momentum breakdown"
+          >
+            <div className="comm-kpi-icon" aria-hidden>
+              <i className="bi bi-bar-chart-line" />
+            </div>
+            <div className="comm-kpi-body">
+              <span className="comm-kpi-label">Sector momentum</span>
+              <span className="comm-kpi-value">{sectorMomentum?.name || '—'}</span>
+              <span className="comm-kpi-sub positive">
+                Leading at {sectorMomentum?.return || '—'} this week
+              </span>
+            </div>
+            <i className="bi bi-chevron-right comm-kpi-card__chevron" aria-hidden />
+          </button>
 
-        <button
-          type="button"
-          className="db-card comm-kpi-card comm-kpi-card--actionable"
-          data-community-card
-          onClick={() => setActiveModal('investors-to-follow')}
-          aria-label="View suggested investors"
-        >
-          <div className="comm-kpi-icon" aria-hidden>
-            <i className="bi bi-stars" />
-          </div>
-          <div className="comm-kpi-body">
-            <span className="comm-kpi-label">Suggested for you</span>
-            <span className="comm-kpi-value">{suggestedUsers.length} investors</span>
-            <span className="comm-kpi-sub">
-              {suggestedUsers[0]?.name ? `Top: ${suggestedUsers[0].name}` : 'Find new connections'}
-            </span>
-          </div>
-          <i className="bi bi-chevron-right comm-kpi-card__chevron" aria-hidden />
-        </button>
-      </section>
+          <button
+            type="button"
+            className="db-card comm-kpi-card comm-kpi-card--actionable"
+            data-community-card
+            onClick={() => setActiveModal('investors-to-follow')}
+            aria-label="View suggested investors"
+          >
+            <div className="comm-kpi-icon" aria-hidden>
+              <i className="bi bi-stars" />
+            </div>
+            <div className="comm-kpi-body">
+              <span className="comm-kpi-label">Suggested for you</span>
+              <span className="comm-kpi-value">{suggestedUsers.length} investors</span>
+              <span className="comm-kpi-sub">
+                {suggestedUsers[0]?.name
+                  ? `Top: ${suggestedUsers[0].name}`
+                  : 'Find new connections'}
+              </span>
+            </div>
+            <i className="bi bi-chevron-right comm-kpi-card__chevron" aria-hidden />
+          </button>
+        </section>
 
-      {activeModal && (
-        <CommunityKpiModal kind={activeModal} data={kpiModalData} onClose={closeKpiModal} />
-      )}
+        {activeModal && (
+          <CommunityKpiModal kind={activeModal} data={kpiModalData} onClose={closeKpiModal} />
+        )}
 
-      <div className="comm-3col">
+        <div className="comm-3col">
           <div className="comm-col-left">
             <div style={{ maxHeight: 320, overflow: 'hidden' }}>
               <TrendingTopicsCard topics={trendingTopics} compact />
@@ -1190,8 +1196,7 @@ export default function CommunityPageClient() {
               </div>
             </section>
           </div>
-      </div>
-
+        </div>
       </div>
 
       <div className="comm-mobile-shell">
@@ -1325,7 +1330,10 @@ export default function CommunityPageClient() {
                         {getInitials(u.name)}
                       </div>
                       <div className="comm-list-row__body">
-                        <Link href={`/profile/${u.username || u.id}`} className="comm-list-row__name">
+                        <Link
+                          href={`/profile/${u.username || u.id}`}
+                          className="comm-list-row__name"
+                        >
                           {u.name}
                         </Link>
                         <p className="comm-list-row__handle">{u.return}</p>
@@ -1420,7 +1428,11 @@ export default function CommunityPageClient() {
             <i className="bi bi-house" />
             <span>Home</span>
           </button>
-          <button type="button" onClick={() => router.push('/company-research')} className="comm-bottom-icon">
+          <button
+            type="button"
+            onClick={() => router.push('/company-research')}
+            className="comm-bottom-icon"
+          >
             <i className="bi bi-search" />
             <span>Search</span>
           </button>
@@ -1439,7 +1451,11 @@ export default function CommunityPageClient() {
             <i className="bi bi-people-fill" />
             <span>Community</span>
           </button>
-          <button type="button" onClick={() => onPageTab('My Profile')} className="comm-bottom-icon">
+          <button
+            type="button"
+            onClick={() => onPageTab('My Profile')}
+            className="comm-bottom-icon"
+          >
             <i className="bi bi-person" />
             <span>Profile</span>
           </button>

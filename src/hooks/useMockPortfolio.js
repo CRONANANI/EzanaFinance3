@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@/components/AuthProvider';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 
 /**
  * useMockPortfolio — Supabase-backed mock ("paper") portfolio.
@@ -42,14 +42,22 @@ const subscribers = new Set();
 function publish(userId, portfolio) {
   memoryStore.set(userId, { portfolio, updatedAt: Date.now() });
   subscribers.forEach((fn) => {
-    try { fn(userId); } catch { /* ignore */ }
+    try {
+      fn(userId);
+    } catch {
+      /* ignore */
+    }
   });
 }
 
 function clearMemoryFor(userId) {
   memoryStore.delete(userId);
   subscribers.forEach((fn) => {
-    try { fn(userId); } catch { /* ignore */ }
+    try {
+      fn(userId);
+    } catch {
+      /* ignore */
+    }
   });
 }
 
@@ -81,7 +89,9 @@ function purgeLegacyLocalStorage() {
       // eslint-disable-next-line no-console
       console.log(`[useMockPortfolio] purged ${toDelete.length} legacy localStorage key(s)`);
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 }
 
 /* ─────────────────────────────────────────────────────────────────
@@ -89,26 +99,70 @@ function purgeLegacyLocalStorage() {
 ───────────────────────────────────────────────────────────────── */
 
 const TICKER_SECTOR = {
-  AAPL: 'Technology', MSFT: 'Technology', NVDA: 'Technology', GOOGL: 'Technology',
-  META: 'Technology', AMZN: 'Technology', TSLA: 'Technology', AMD: 'Technology',
-  AVGO: 'Technology', QCOM: 'Technology', INTC: 'Technology', CRM: 'Technology',
-  ADBE: 'Technology', ORCL: 'Technology', HPQ: 'Technology', IBM: 'Technology',
-  JNJ: 'Healthcare', PFE: 'Healthcare', UNH: 'Healthcare', ABBV: 'Healthcare',
-  MRK: 'Healthcare', LLY: 'Healthcare', TMO: 'Healthcare',
-  JPM: 'Finance', BAC: 'Finance', GS: 'Finance', MS: 'Finance',
-  V: 'Finance', MA: 'Finance', AXP: 'Finance',
-  LMT: 'Defense', RTX: 'Defense', NOC: 'Defense', BA: 'Defense',
-  XOM: 'Energy', CVX: 'Energy', COP: 'Energy',
-  WMT: 'Consumer', HD: 'Consumer', MCD: 'Consumer', TGT: 'Consumer',
-  SPY: 'ETF', QQQ: 'ETF', IVV: 'ETF', VTI: 'ETF',
-  BTCUSD: 'Crypto', ETHUSD: 'Crypto', SOLUSD: 'Crypto',
-  GCUSD: 'Commodity', SIUSD: 'Commodity', CLUSD: 'Commodity',
+  AAPL: 'Technology',
+  MSFT: 'Technology',
+  NVDA: 'Technology',
+  GOOGL: 'Technology',
+  META: 'Technology',
+  AMZN: 'Technology',
+  TSLA: 'Technology',
+  AMD: 'Technology',
+  AVGO: 'Technology',
+  QCOM: 'Technology',
+  INTC: 'Technology',
+  CRM: 'Technology',
+  ADBE: 'Technology',
+  ORCL: 'Technology',
+  HPQ: 'Technology',
+  IBM: 'Technology',
+  JNJ: 'Healthcare',
+  PFE: 'Healthcare',
+  UNH: 'Healthcare',
+  ABBV: 'Healthcare',
+  MRK: 'Healthcare',
+  LLY: 'Healthcare',
+  TMO: 'Healthcare',
+  JPM: 'Finance',
+  BAC: 'Finance',
+  GS: 'Finance',
+  MS: 'Finance',
+  V: 'Finance',
+  MA: 'Finance',
+  AXP: 'Finance',
+  LMT: 'Defense',
+  RTX: 'Defense',
+  NOC: 'Defense',
+  BA: 'Defense',
+  XOM: 'Energy',
+  CVX: 'Energy',
+  COP: 'Energy',
+  WMT: 'Consumer',
+  HD: 'Consumer',
+  MCD: 'Consumer',
+  TGT: 'Consumer',
+  SPY: 'ETF',
+  QQQ: 'ETF',
+  IVV: 'ETF',
+  VTI: 'ETF',
+  BTCUSD: 'Crypto',
+  ETHUSD: 'Crypto',
+  SOLUSD: 'Crypto',
+  GCUSD: 'Commodity',
+  SIUSD: 'Commodity',
+  CLUSD: 'Commodity',
 };
 
 const SECTOR_COLORS = {
-  Technology: '#3b82f6', Healthcare: '#10b981', Finance: '#a78bfa',
-  Defense: '#f59e0b', Energy: '#f97316', Consumer: '#ec4899',
-  ETF: '#06b6d4', Crypto: '#fbbf24', Commodity: '#84cc16', Other: '#6b7280',
+  Technology: '#3b82f6',
+  Healthcare: '#10b981',
+  Finance: '#a78bfa',
+  Defense: '#f59e0b',
+  Energy: '#f97316',
+  Consumer: '#ec4899',
+  ETF: '#06b6d4',
+  Crypto: '#fbbf24',
+  Commodity: '#84cc16',
+  Other: '#6b7280',
 };
 
 function withMeta(p) {
@@ -122,7 +176,9 @@ function withMeta(p) {
 
 async function getAccessToken() {
   try {
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     return session?.access_token ?? null;
   } catch {
     return null;
@@ -141,7 +197,7 @@ async function apiSave(portfolio) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ portfolio }),
     });
@@ -164,7 +220,7 @@ async function apiLoad() {
   if (!token) return null;
   try {
     const res = await fetch('/api/mock-portfolio', {
-      headers: { 'Authorization': `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}` },
       // Portfolio data is user-specific and changes with every trade —
       // never serve from an HTTP cache.
       cache: 'no-store',
@@ -206,38 +262,49 @@ export function useMockPortfolio() {
     setSyncing(false);
   }, [user?.id]);
 
-  const scheduleSave = useCallback((p) => {
-    pendingRef.current = p;
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      debounceRef.current = null;
-      flushSave();
-    }, DEBOUNCE_MS);
-  }, [flushSave]);
+  const scheduleSave = useCallback(
+    (p) => {
+      pendingRef.current = p;
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => {
+        debounceRef.current = null;
+        flushSave();
+      }, DEBOUNCE_MS);
+    },
+    [flushSave],
+  );
 
-  const setPortfolio = useCallback((update, options = {}) => {
-    const { skipSync = false } = options;
-    setPortfolioState((prev) => {
-      const base = prev ?? { cash: STARTING_CASH, positions: {}, history: [], startingCash: STARTING_CASH };
-      const raw = typeof update === 'function' ? update(base) : update;
-      if (raw == null) {
-        if (user?.id) clearMemoryFor(user.id);
-        return raw;
-      }
-      const next = withMeta(raw);
-      // Publish to the in-memory cache so any other mounted instance
-      // of this hook (e.g. on a different dashboard page) picks up
-      // the change without having to wait for the server round-trip.
-      if (user?.id) publish(user.id, next);
-      if (!skipSync && user?.id) {
-        // Fire-and-forget immediate save, plus a debounced backup in
-        // case the user clicks through a bunch of trades quickly.
-        apiSave(next);
-        scheduleSave(next);
-      }
-      return next;
-    });
-  }, [scheduleSave, user?.id]);
+  const setPortfolio = useCallback(
+    (update, options = {}) => {
+      const { skipSync = false } = options;
+      setPortfolioState((prev) => {
+        const base = prev ?? {
+          cash: STARTING_CASH,
+          positions: {},
+          history: [],
+          startingCash: STARTING_CASH,
+        };
+        const raw = typeof update === 'function' ? update(base) : update;
+        if (raw == null) {
+          if (user?.id) clearMemoryFor(user.id);
+          return raw;
+        }
+        const next = withMeta(raw);
+        // Publish to the in-memory cache so any other mounted instance
+        // of this hook (e.g. on a different dashboard page) picks up
+        // the change without having to wait for the server round-trip.
+        if (user?.id) publish(user.id, next);
+        if (!skipSync && user?.id) {
+          // Fire-and-forget immediate save, plus a debounced backup in
+          // case the user clicks through a bunch of trades quickly.
+          apiSave(next);
+          scheduleSave(next);
+        }
+        return next;
+      });
+    },
+    [scheduleSave, user?.id],
+  );
 
   // Flush any pending debounced save on tab close / hide so the
   // server has the freshest state before the next page load runs.
@@ -247,10 +314,15 @@ export function useMockPortfolio() {
       if (!pendingRef.current) return;
       const p = pendingRef.current;
       pendingRef.current = null;
-      if (debounceRef.current) { clearTimeout(debounceRef.current); debounceRef.current = null; }
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+        debounceRef.current = null;
+      }
       apiSave(p).catch(() => {});
     };
-    const onVis = () => { if (document.visibilityState === 'hidden') flush(); };
+    const onVis = () => {
+      if (document.visibilityState === 'hidden') flush();
+    };
     window.addEventListener('beforeunload', flush);
     document.addEventListener('visibilitychange', onVis);
     return () => {
@@ -260,7 +332,9 @@ export function useMockPortfolio() {
   }, [user?.id]);
 
   useEffect(() => {
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
   }, []);
 
   // Cross-instance sync: when another mounted instance of this hook
@@ -273,7 +347,9 @@ export function useMockPortfolio() {
       setPortfolioState(cached?.portfolio ?? null);
     };
     subscribers.add(fn);
-    return () => { subscribers.delete(fn); };
+    return () => {
+      subscribers.delete(fn);
+    };
   }, [user?.id]);
 
   // Hydration: ALWAYS fetch from the server on mount (per user).
@@ -332,7 +408,9 @@ export function useMockPortfolio() {
       }
     })();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [user?.id]);
 
   const fetchPrices = useCallback(async (positions) => {
@@ -343,7 +421,8 @@ export function useMockPortfolio() {
       const results = await Promise.allSettled(
         symbols.map((sym) =>
           fetch(`/api/fmp/quote?symbol=${encodeURIComponent(sym)}`)
-            .then((r) => (r.ok ? r.json() : null)).catch(() => null),
+            .then((r) => (r.ok ? r.json() : null))
+            .catch(() => null),
         ),
       );
       const quotes = {};
@@ -358,8 +437,11 @@ export function useMockPortfolio() {
         }
       });
       setLiveQuotes(quotes);
-    } catch { /* ignore */ }
-    finally { setQuotesLoading(false); }
+    } catch {
+      /* ignore */
+    } finally {
+      setQuotesLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -375,19 +457,25 @@ export function useMockPortfolio() {
   const history = portfolio?.history ?? [];
   const cash = portfolio?.cash ?? STARTING_CASH;
 
-  const enrichedPositions = Object.values(positions).map((pos) => {
-    const q = liveQuotes[pos.symbol];
-    const currentPrice = q?.price ?? pos.currentPrice ?? pos.avgCost;
-    const posValue = currentPrice * pos.qty;
-    const pnl = (currentPrice - pos.avgCost) * pos.qty;
-    const pnlPct = pos.avgCost ? (currentPrice / pos.avgCost - 1) * 100 : 0;
-    return {
-      ...pos, currentPrice, posValue, pnl, pnlPct,
-      dayChange: q ? (q.change ?? 0) * pos.qty : 0,
-      dayChangePct: q?.changePercent ?? 0,
-      sector: TICKER_SECTOR[pos.symbol] ?? 'Other',
-    };
-  }).sort((a, b) => b.posValue - a.posValue);
+  const enrichedPositions = Object.values(positions)
+    .map((pos) => {
+      const q = liveQuotes[pos.symbol];
+      const currentPrice = q?.price ?? pos.currentPrice ?? pos.avgCost;
+      const posValue = currentPrice * pos.qty;
+      const pnl = (currentPrice - pos.avgCost) * pos.qty;
+      const pnlPct = pos.avgCost ? (currentPrice / pos.avgCost - 1) * 100 : 0;
+      return {
+        ...pos,
+        currentPrice,
+        posValue,
+        pnl,
+        pnlPct,
+        dayChange: q ? (q.change ?? 0) * pos.qty : 0,
+        dayChangePct: q?.changePercent ?? 0,
+        sector: TICKER_SECTOR[pos.symbol] ?? 'Other',
+      };
+    })
+    .sort((a, b) => b.posValue - a.posValue);
 
   const totalPositionValue = enrichedPositions.reduce((s, p) => s + p.posValue, 0);
   const totalValue = cash + totalPositionValue;
@@ -396,10 +484,16 @@ export function useMockPortfolio() {
   const totalPnlPct = effectiveStart > 0 ? (totalValue / effectiveStart - 1) * 100 : 0;
 
   const sectorMap = {};
-  for (const pos of enrichedPositions) sectorMap[pos.sector] = (sectorMap[pos.sector] ?? 0) + pos.posValue;
+  for (const pos of enrichedPositions)
+    sectorMap[pos.sector] = (sectorMap[pos.sector] ?? 0) + pos.posValue;
   const sectorTotal = Object.values(sectorMap).reduce((a, b) => a + b, 0) || 1;
   const sectorData = Object.entries(sectorMap)
-    .map(([name, value]) => ({ name, value, pct: Math.round((value / sectorTotal) * 100), color: SECTOR_COLORS[name] ?? '#6b7280' }))
+    .map(([name, value]) => ({
+      name,
+      value,
+      pct: Math.round((value / sectorTotal) * 100),
+      color: SECTOR_COLORS[name] ?? '#6b7280',
+    }))
     .sort((a, b) => b.value - a.value);
 
   const PROFIT_COLORS = [
@@ -432,7 +526,11 @@ export function useMockPortfolio() {
       id: h.id,
       company: h.symbol,
       ticker: h.symbol,
-      date: new Date(h.ts).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
+      date: new Date(h.ts).toLocaleDateString('en-US', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      }),
       ts: h.ts,
       amount: h.total,
       positive: h.side === 'buy',
@@ -440,11 +538,23 @@ export function useMockPortfolio() {
     }));
 
   return {
-    hasMockPortfolio, portfolio, setPortfolio, syncing,
+    hasMockPortfolio,
+    portfolio,
+    setPortfolio,
+    syncing,
     isLoading,
-    enrichedPositions, cash, totalValue, totalPositionValue,
-    totalPnl, totalPnlPct, sectorData, profitBreakdown,
-    recentTransactions, liveQuotes, quotesLoading, STARTING_CASH,
+    enrichedPositions,
+    cash,
+    totalValue,
+    totalPositionValue,
+    totalPnl,
+    totalPnlPct,
+    sectorData,
+    profitBreakdown,
+    recentTransactions,
+    liveQuotes,
+    quotesLoading,
+    STARTING_CASH,
     effectiveStartingCash: effectiveStart,
   };
 }

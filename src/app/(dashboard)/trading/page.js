@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-browser';
 import '../home-dashboard/home-dashboard.css';
 import './trading.css';
 
@@ -77,7 +77,7 @@ export default function TradingPage() {
   const handleOpenAccount = () => {
     if (!checklistComplete) {
       window.alert(
-        'Please complete all 18 tasks in your Getting Started checklist before opening a brokerage account.'
+        'Please complete all 18 tasks in your Getting Started checklist before opening a brokerage account.',
       );
       return;
     }
@@ -206,8 +206,8 @@ export default function TradingPage() {
           </div>
           <h3 className="trd-feature-h3">Commission-free trading</h3>
           <p className="trd-feature-p">
-            Trade stocks, ETFs, and crypto with zero commissions on every trade of $250 USD or
-            more. No hidden fees, no per-trade charges. Keep more of your returns.
+            Trade stocks, ETFs, and crypto with zero commissions on every trade of $250 USD or more.
+            No hidden fees, no per-trade charges. Keep more of your returns.
           </p>
           <div className="trd-badges">
             <span className="trd-badge trd-badge--green">$0 commission on trades ≥ $250</span>
@@ -235,7 +235,11 @@ export default function TradingPage() {
               <div className={`trd-req-num ${checklistComplete ? 'trd-req-num--done' : ''}`}>
                 {checklistComplete ? '✓' : '1'}
               </div>
-              <span className={checklistComplete ? 'trd-req-label trd-req-label--done' : 'trd-req-label'}>
+              <span
+                className={
+                  checklistComplete ? 'trd-req-label trd-req-label--done' : 'trd-req-label'
+                }
+              >
                 Complete all 18 checklist tasks
               </span>
             </div>
@@ -261,7 +265,9 @@ export default function TradingPage() {
               <div className="trd-req-num">3</div>
               <span className="trd-req-label">Fund your account</span>
             </div>
-            <p className="trd-req-desc">Link your bank account and deposit funds to start trading.</p>
+            <p className="trd-req-desc">
+              Link your bank account and deposit funds to start trading.
+            </p>
           </div>
         </div>
       </section>
@@ -283,10 +289,14 @@ export default function TradingPage() {
 
         <p className="trd-cta-legal">
           Brokerage services provided by Alpaca Securities LLC, member{' '}
-          <a href="https://www.finra.org" target="_blank" rel="noopener noreferrer">FINRA</a>
+          <a href="https://www.finra.org" target="_blank" rel="noopener noreferrer">
+            FINRA
+          </a>
           /
-          <a href="https://www.sipc.org" target="_blank" rel="noopener noreferrer">SIPC</a>.
-          Investments involve risk and are not FDIC insured.
+          <a href="https://www.sipc.org" target="_blank" rel="noopener noreferrer">
+            SIPC
+          </a>
+          . Investments involve risk and are not FDIC insured.
         </p>
 
         {user && (
