@@ -30,7 +30,13 @@ import { KairosEventsCard } from '@/components/kairos/KairosEventsCard';
 /* ── Region config ─────────────────────────────────────────── */
 const REGIONS = [
   { id: 'us-midwest', label: 'U.S. Midwest', lat: 41.5, lon: -89.0, commodity: 'Corn & Soybeans' },
-  { id: 'brazil-south', label: 'Brazil (South)', lat: -23.5, lon: -49.0, commodity: 'Soybeans & Coffee' },
+  {
+    id: 'brazil-south',
+    label: 'Brazil (South)',
+    lat: -23.5,
+    lon: -49.0,
+    commodity: 'Soybeans & Coffee',
+  },
   { id: 'ukraine', label: 'Ukraine', lat: 49.0, lon: 32.0, commodity: 'Wheat' },
   { id: 'gulf', label: 'Gulf of Mexico', lat: 28.0, lon: -90.0, commodity: 'Oil & Natural Gas' },
   { id: 'west-africa', label: 'West Africa', lat: 7.0, lon: -5.0, commodity: 'Cocoa' },
@@ -67,8 +73,8 @@ function KairosCard({ icon, title, children, wide, actions }) {
     <section className={`kairos-card${wide ? ' kairos-card--wide' : ''}`}>
       <div className="kairos-card-header">
         <div className="kairos-card-header-left">
-        <i className={`bi ${icon}`} aria-hidden />
-        {title}
+          <i className={`bi ${icon}`} aria-hidden />
+          {title}
         </div>
         {actions && <div className="kairos-card-actions">{actions}</div>}
       </div>
@@ -155,14 +161,19 @@ function TemperatureAnomalyCard({ weatherData, region }) {
 
   const today = new Date().toISOString().slice(0, 10);
   const todayIdx = chartData.findIndex((d) => d.raw === today);
-  const currentTemp = todayIdx >= 0 ? chartData[todayIdx].avg : chartData[chartData.length - 1]?.avg;
+  const currentTemp =
+    todayIdx >= 0 ? chartData[todayIdx].avg : chartData[chartData.length - 1]?.avg;
   const weekAgo = todayIdx >= 7 ? chartData[todayIdx - 7]?.avg : chartData[0]?.avg;
   const delta = currentTemp != null && weekAgo != null ? currentTemp - weekAgo : null;
 
   return (
     <KairosCard icon="bi-thermometer-half" title="Temperature tracker">
       <div className="kairos-stat-row">
-        <MiniStat label="Current avg" value={currentTemp != null ? `${currentTemp}°` : '—'} unit="C" />
+        <MiniStat
+          label="Current avg"
+          value={currentTemp != null ? `${currentTemp}°` : '—'}
+          unit="C"
+        />
         <MiniStat
           label="7-day Δ"
           value={delta != null ? `${delta > 0 ? '+' : ''}${delta.toFixed(1)}°` : '—'}
@@ -213,7 +224,15 @@ function TemperatureAnomalyCard({ weatherData, region }) {
               dot={false}
               name="Low"
             />
-            <Line type="monotone" dataKey="avg" stroke="#d4af37" strokeWidth={2} dot={false} name="Avg" strokeDasharray="4 2" />
+            <Line
+              type="monotone"
+              dataKey="avg"
+              stroke="#d4af37"
+              strokeWidth={2}
+              dot={false}
+              name="Avg"
+              strokeDasharray="4 2"
+            />
           </ComposedChart>
         </ResponsiveContainer>
       </div>
@@ -273,7 +292,12 @@ function PrecipitationCard({ weatherData, region }) {
               width={32}
             />
             <Tooltip contentStyle={chartTooltipStyle} formatter={(v, name) => [`${v} mm`, name]} />
-            <Bar dataKey="precip" fill="rgba(59,130,246,0.6)" radius={[2, 2, 0, 0]} name="Daily rain" />
+            <Bar
+              dataKey="precip"
+              fill="rgba(59,130,246,0.6)"
+              radius={[2, 2, 0, 0]}
+              name="Daily rain"
+            />
             <Line
               type="monotone"
               dataKey="waterBalance"
@@ -334,7 +358,12 @@ function GrowingDegreeDaysCard({ weatherData }) {
               tickLine={false}
               interval="preserveStartEnd"
             />
-            <YAxis tick={{ fill: '#6b7280', fontSize: 9 }} axisLine={false} tickLine={false} width={40} />
+            <YAxis
+              tick={{ fill: '#6b7280', fontSize: 9 }}
+              axisLine={false}
+              tickLine={false}
+              width={40}
+            />
             <Tooltip contentStyle={chartTooltipStyle} />
             <Area
               type="monotone"
@@ -364,7 +393,9 @@ function WindSolarCard({ weatherData }) {
     }));
   }, [weatherData]);
 
-  const avgWind = chartData.length ? chartData.reduce((s, d) => s + d.wind, 0) / chartData.length : 0;
+  const avgWind = chartData.length
+    ? chartData.reduce((s, d) => s + d.wind, 0) / chartData.length
+    : 0;
   const maxWind = chartData.length ? Math.max(...chartData.map((d) => d.wind)) : 0;
 
   return (
@@ -389,7 +420,13 @@ function WindSolarCard({ weatherData }) {
               tickLine={false}
               interval="preserveStartEnd"
             />
-            <YAxis yAxisId="wind" tick={{ fill: '#6b7280', fontSize: 9 }} axisLine={false} tickLine={false} width={32} />
+            <YAxis
+              yAxisId="wind"
+              tick={{ fill: '#6b7280', fontSize: 9 }}
+              axisLine={false}
+              tickLine={false}
+              width={32}
+            />
             <YAxis
               yAxisId="solar"
               orientation="right"
@@ -425,9 +462,487 @@ function WindSolarCard({ weatherData }) {
   );
 }
 
-/* ── 5. Commodity Sensitivity Radar ────────────────────────── */
+/* ── 5. Commodity Sensitivity Radar (Expandable) ──────────── */
 function CommoditySensitivityCard() {
   const [selected, setSelected] = useState('corn');
+  const [activeDim, setActiveDim] = useState(null); // clicked variable
+
+  /* ── Variable impact explanations per commodity ── */
+  const VARIABLE_IMPACTS = {
+    Temperature: {
+      corn: {
+        score: 95,
+        summary:
+          'Temperature is the dominant factor for corn yields. During pollination (July), temperatures above 95°F cause pollen desiccation and irreversible kernel abortion. The 2012 US drought destroyed 27% of the corn crop when temps exceeded 100°F for 10+ consecutive days across the Corn Belt.',
+        risks: [
+          'Heat stress during pollination (>95°F)',
+          'Cool spring delays planting window',
+          'Night temps affect kernel fill rate',
+        ],
+      },
+      coffee: {
+        score: 80,
+        summary:
+          "Coffee arabica thrives in a narrow 60–70°F band. Sustained temps above 86°F accelerate cherry ripening, reducing bean density and cup quality. Brazil's 2021 frost event wiped out 10% of global arabica production when temps dropped below 28°F in Minas Gerais.",
+        risks: [
+          'Frost damage below 28°F kills branches',
+          'Heat above 86°F reduces cherry quality',
+          'Temperature swings during flowering',
+        ],
+      },
+      natgas: {
+        score: 90,
+        summary:
+          'Natural gas demand is directly driven by heating degree days (winter) and cooling degree days (summer). A 1°F colder-than-normal winter across the US Northeast increases gas demand by ~1.5 Bcf/day. The 2021 Texas freeze spiked spot gas prices from $3 to $400/MMBtu.',
+        risks: [
+          'Polar vortex events spike heating demand',
+          'Summer heatwaves drive AC electricity demand',
+          'Mild winters collapse demand forecasts',
+        ],
+      },
+      wheat: {
+        score: 85,
+        summary:
+          'Wheat is sensitive to temperature extremes at both ends. Winter kill occurs when soil temps drop below 12°F without snow cover. Spring heat above 90°F during grain fill accelerates maturity and shrinks kernel weight, directly reducing yield.',
+        risks: [
+          'Winterkill from exposed crowns',
+          'Heat during grain fill (>90°F)',
+          'Late frost on spring wheat seedlings',
+        ],
+      },
+      oil: {
+        score: 35,
+        summary:
+          'Crude oil has limited direct temperature sensitivity, but extreme cold affects pipeline flow (crude thickens), refinery operations, and offshore platform safety. The primary temperature impact is on demand — cold winters increase heating oil consumption.',
+        risks: [
+          'Pipeline viscosity issues in extreme cold',
+          'Refinery outages from freeze events',
+          'Heating oil demand spikes',
+        ],
+      },
+    },
+    Precipitation: {
+      corn: {
+        score: 90,
+        summary:
+          'Corn requires 20–24 inches of rainfall during the growing season. Drought during the silking stage (July–August) is the single largest yield threat. Conversely, excessive spring rainfall delays planting — every day past May 15 reduces yield potential by ~1 bushel/acre.',
+        risks: [
+          'Drought during silking stage',
+          'Planting delays from wet fields',
+          'Harvest-season rain damages grain quality',
+        ],
+      },
+      coffee: {
+        score: 85,
+        summary:
+          'Coffee needs a distinct dry season for flowering (triggers blossom simultaneously) followed by consistent moisture during cherry development. Irregular rainfall causes uneven ripening, forcing multiple harvest passes and increasing labor costs 30–40%.',
+        risks: [
+          'Irregular rainfall causes uneven ripening',
+          'Drought during cherry development',
+          'Excess rain during drying phase',
+        ],
+      },
+      natgas: {
+        score: 30,
+        summary:
+          'Precipitation has minimal direct impact on gas supply, but severe flooding can disrupt pipeline infrastructure and offshore operations. Hurricane-driven rainfall in the Gulf Coast region historically causes 10–15% production shutdowns.',
+        risks: [
+          'Gulf hurricane flooding',
+          'Pipeline right-of-way flooding',
+          'Hydroelectric competition in wet years',
+        ],
+      },
+      wheat: {
+        score: 88,
+        summary:
+          'Wheat needs 15–20 inches during the growing season, with moisture critical during tillering and heading. Drought in the Black Sea region (Russia, Ukraine) during April–May directly moves global wheat futures — these regions produce 30% of world wheat exports.',
+        risks: [
+          'Black Sea spring drought',
+          'Harvest rain (sprouting/mycotoxins)',
+          'Waterlogging of clay soils',
+        ],
+      },
+      oil: {
+        score: 25,
+        summary:
+          'Precipitation affects oil primarily through logistics — hurricanes and flooding disrupt Gulf Coast refining capacity (45% of US refining), pipeline operations, and port loading. Hurricane Katrina (2005) shut 95% of Gulf production for weeks.',
+        risks: [
+          'Hurricane-forced refinery shutdowns',
+          'Flooding of pipeline infrastructure',
+          'Port disruptions at export terminals',
+        ],
+      },
+    },
+    Solar: {
+      corn: {
+        score: 60,
+        summary:
+          'Solar radiation drives photosynthesis — corn needs 500+ hours of direct sunlight during the growing season. Overcast conditions during grain fill reduce starch accumulation. However, too much direct sun during drought amplifies heat stress on exposed ears.',
+        risks: [
+          'Low light during grain fill',
+          'Solar-amplified heat stress',
+          'Cloud cover reducing photosynthesis',
+        ],
+      },
+      coffee: {
+        score: 55,
+        summary:
+          'Coffee is a shade-loving plant — direct tropical sun can scorch leaves and cherries. Many premium farms use shade-grown techniques. Solar radiation matters most during drying — sun-dried beans (natural process) require 15–20 days of consistent sun.',
+        risks: [
+          'Leaf scorch from direct sun',
+          'Insufficient drying conditions',
+          'UV damage at high altitudes',
+        ],
+      },
+      natgas: {
+        score: 25,
+        summary:
+          'Solar energy competes with natural gas for electricity generation. High solar output in summer reduces gas-fired power demand. The growth of utility-scale solar in ERCOT (Texas) has structurally reduced summer gas demand by ~2 Bcf/day.',
+        risks: [
+          'Solar displacement of gas generation',
+          'Cloud cover spikes gas power demand',
+          'Seasonal solar intermittency',
+        ],
+      },
+      wheat: {
+        score: 65,
+        summary:
+          'Wheat needs adequate solar radiation during heading and grain fill. Cloudy conditions reduce photosynthesis and extend the growing season, increasing exposure to late-season disease. In northern latitudes, shorter day length limits the planting window.',
+        risks: [
+          'Low light during grain fill',
+          'Extended season increases disease risk',
+          'Day length constraints at high latitudes',
+        ],
+      },
+      oil: {
+        score: 10,
+        summary:
+          'Solar has minimal direct impact on crude oil supply, but long-term solar adoption displaces oil in electricity generation and transportation (EV charging). This is a structural demand threat, not a weather event risk.',
+        risks: [
+          'Structural demand displacement',
+          'EV adoption reducing gasoline demand',
+          'Minimal operational impact',
+        ],
+      },
+    },
+    'Frost risk': {
+      corn: {
+        score: 70,
+        summary:
+          'Corn is a tropical grass — it cannot survive frost. A late spring frost (after planting) kills seedlings, forcing replanting at lower yield potential. An early fall frost before maturity traps moisture in kernels, causing storage and quality issues.',
+        risks: [
+          'Late spring frost kills seedlings',
+          'Early fall frost before maturity',
+          'Replanting lowers yield potential',
+        ],
+      },
+      coffee: {
+        score: 95,
+        summary:
+          'Frost is the existential risk for coffee. A single hard frost event in Brazil can destroy 2–3 years of production (trees take 3–5 years to recover). The July 2021 frost in Minas Gerais and São Paulo destroyed 600M+ trees and pushed arabica futures up 75% in two months.',
+        risks: [
+          'Hard frost kills trees (3–5yr recovery)',
+          'Frost pockets at elevation transitions',
+          'La Niña patterns increase frost probability',
+        ],
+      },
+      natgas: {
+        score: 45,
+        summary:
+          "Frost itself doesn't impact gas production, but frost events correlate with cold outbreaks that spike heating demand. The distinction matters — it's the cold temperatures, not the frost, that move gas prices.",
+        risks: [
+          'Early frost signals cold winter onset',
+          'Agricultural demand for frost protection',
+          'Correlated with polar vortex displacement',
+        ],
+      },
+      wheat: {
+        score: 80,
+        summary:
+          'Winter wheat survives cold by going dormant under snow cover. The danger is frost without snow — exposed crowns die below 12°F. Spring frost on wheat that has broken dormancy (greened up) can destroy tillers and reduce head count by 30–50%.',
+        risks: [
+          'Crown kill without snow cover',
+          'Spring frost on greened-up wheat',
+          'Frost heaving of seedlings',
+        ],
+      },
+      oil: {
+        score: 15,
+        summary:
+          'Frost has negligible direct impact on crude oil operations, except in extreme Arctic conditions where surface equipment can freeze. The primary connection is through cold-correlated demand for heating fuels.',
+        risks: [
+          'Arctic equipment failures',
+          'Heating oil demand correlation',
+          'Minimal supply-side impact',
+        ],
+      },
+    },
+    Wind: {
+      corn: {
+        score: 40,
+        summary:
+          "Wind primarily affects corn through derecho events — straight-line windstorms that can flatten millions of acres in hours. The 2020 Iowa derecho destroyed 43% of Iowa's corn crop with 140mph winds. Wind also increases evapotranspiration, worsening drought stress.",
+        risks: [
+          'Derecho events flatten standing corn',
+          'Increased evapotranspiration in drought',
+          'Pollination disruption from sustained wind',
+        ],
+      },
+      coffee: {
+        score: 30,
+        summary:
+          'Wind is a secondary concern for coffee, primarily affecting flowering (wind knocks blossoms off branches) and drying operations. Windbreaks are a standard management practice in most coffee-growing regions.',
+        risks: [
+          'Blossom drop during flowering',
+          'Drying disruption',
+          'Branch breakage in tropical storms',
+        ],
+      },
+      natgas: {
+        score: 75,
+        summary:
+          'Wind directly competes with gas for electricity — when wind generation is high, gas-fired plants ramp down. In ERCOT (Texas), wind provides 25–30% of electricity. Wind also affects offshore operations — high seas shut down Gulf platforms.',
+        risks: [
+          'Wind displacement of gas generation',
+          'Offshore platform shutdowns (>40kt winds)',
+          'Wind intermittency spikes gas backup demand',
+        ],
+      },
+      wheat: {
+        score: 50,
+        summary:
+          'Wind causes lodging (plants blow over) in mature wheat, making harvest difficult and reducing yield. Sustained winds during dry conditions cause soil erosion, particularly in the US Great Plains — echoing the 1930s Dust Bowl dynamics.',
+        risks: [
+          'Lodging of mature wheat',
+          'Soil erosion in dry conditions',
+          'Harvest disruption from high winds',
+        ],
+      },
+      oil: {
+        score: 55,
+        summary:
+          'Wind impacts oil through offshore production — tropical storms and hurricanes force platform evacuations in the Gulf of Mexico. Hurricane season (June–November) historically causes 5–15% Gulf production shutdowns. Wind also affects tanker loading at ports.',
+        risks: [
+          'Hurricane-forced platform evacuations',
+          'Tanker loading delays',
+          'Pipeline stress from thermal cycling',
+        ],
+      },
+    },
+    Logistics: {
+      corn: {
+        score: 35,
+        summary:
+          'Corn logistics are primarily river-based — the Mississippi River system moves 60% of US corn exports. Low water levels (drought) restrict barge loading capacity, adding $0.20–0.50/bushel in transport costs. The 2022 Mississippi drought cut barge capacity 30%.',
+        risks: [
+          'Low Mississippi River levels',
+          'Rail bottlenecks during harvest',
+          'Port congestion at Gulf terminals',
+        ],
+      },
+      coffee: {
+        score: 50,
+        summary:
+          "Coffee logistics are highly weather-sensitive — most Brazilian coffee moves by truck on unpaved rural roads. Harvest-season rain turns roads to mud, delaying transport to dry mills by days. Port congestion at Santos (world's largest coffee port) compounds the problem.",
+        risks: [
+          'Muddy harvest roads delay transport',
+          'Santos port congestion',
+          'Container shipping disruptions',
+        ],
+      },
+      natgas: {
+        score: 85,
+        summary:
+          "Natural gas logistics ARE the market — pipeline capacity, LNG liquefaction, and storage utilization determine regional prices. A pipeline freeze (2021 Texas) or compressor station failure creates localized price spikes of 10–100x. Gas can't be easily rerouted like oil.",
+        risks: [
+          'Pipeline freeze/compressor failures',
+          'LNG export terminal weather delays',
+          'Storage draw rates in extreme cold',
+        ],
+      },
+      wheat: {
+        score: 60,
+        summary:
+          'Wheat logistics depend on Black Sea shipping (30% of world exports). Winter ice in the Sea of Azov, drought on the Danube (barge transport), and storms at export ports (Novorossiysk, Odessa) all disrupt the supply chain.',
+        risks: ['Black Sea port closures', 'Danube River barge restrictions', 'Ice in Sea of Azov'],
+      },
+      oil: {
+        score: 95,
+        summary:
+          'Logistics is THE weather variable for oil. Strait of Hormuz (20% of global oil), Suez Canal, Malacca Strait — any disruption at these chokepoints (hurricanes, fog, military conflict amplified by weather) directly reprices crude.',
+        risks: [
+          'Gulf hurricane refinery shutdowns',
+          'Chokepoint disruptions (Hormuz, Suez)',
+          'Arctic shipping route volatility',
+        ],
+      },
+    },
+  };
+
+  /* ── Weather news events (mock — would come from API in production) ── */
+  const WEATHER_NEWS = {
+    Temperature: [
+      {
+        date: '2026-05-14',
+        headline:
+          'Pacific Northwest heatwave forecast for June — NOAA warns of 100°F+ temps across Oregon and Washington',
+        region: 'US West Coast',
+        severity: 'high',
+      },
+      {
+        date: '2026-05-12',
+        headline:
+          'India heatwave death toll rises as temperatures exceed 122°F in Rajasthan — rice planting delays expected',
+        region: 'South Asia',
+        severity: 'critical',
+      },
+      {
+        date: '2026-05-10',
+        headline:
+          'Southern Brazil cold snap forecasted for late May — coffee growing regions on frost watch',
+        region: 'Brazil',
+        severity: 'high',
+      },
+      {
+        date: '2026-05-08',
+        headline:
+          'EU Mediterranean basin projected to see hottest summer on record — drought risk elevated',
+        region: 'Europe',
+        severity: 'medium',
+      },
+    ],
+    Precipitation: [
+      {
+        date: '2026-05-13',
+        headline:
+          'Corn Belt rainfall deficit widens — Iowa and Illinois at 60% of normal May precipitation',
+        region: 'US Midwest',
+        severity: 'high',
+      },
+      {
+        date: '2026-05-11',
+        headline:
+          'Monsoon onset forecast 10 days early for central India — potential flooding in Gujarat',
+        region: 'South Asia',
+        severity: 'medium',
+      },
+      {
+        date: '2026-05-09',
+        headline:
+          'La Niña watch issued by NOAA — dry pattern expected across US Southern Plains through August',
+        region: 'Global',
+        severity: 'high',
+      },
+      {
+        date: '2026-05-07',
+        headline:
+          'Black Sea region drought deepening — Ukraine winter wheat crop rated 35% poor/very poor',
+        region: 'Eastern Europe',
+        severity: 'critical',
+      },
+    ],
+    Solar: [
+      {
+        date: '2026-05-12',
+        headline:
+          'Extended cloud cover across Northern Europe reduces solar generation — gas backup demand rises',
+        region: 'Europe',
+        severity: 'low',
+      },
+      {
+        date: '2026-05-09',
+        headline: 'Australian solar output hits record — displaces coal and gas in NEM grid',
+        region: 'Australia',
+        severity: 'low',
+      },
+      {
+        date: '2026-05-06',
+        headline:
+          'ERCOT forecasts record solar generation for Texas summer 2026 — gas demand outlook lowered',
+        region: 'US South',
+        severity: 'medium',
+      },
+    ],
+    'Frost risk': [
+      {
+        date: '2026-05-14',
+        headline:
+          'Late frost warning for Argentina Pampas — soybean harvest 80% complete but unharvested fields at risk',
+        region: 'South America',
+        severity: 'high',
+      },
+      {
+        date: '2026-05-10',
+        headline:
+          'Southern Brazil coffee regions see frost probability rise to 35% for June — GFS and ECMWF models agree',
+        region: 'Brazil',
+        severity: 'critical',
+      },
+      {
+        date: '2026-05-07',
+        headline: 'Montana spring wheat hit by May frost — 200K acres replanting',
+        region: 'US Northern Plains',
+        severity: 'medium',
+      },
+    ],
+    Wind: [
+      {
+        date: '2026-05-13',
+        headline:
+          'NOAA issues above-average hurricane season forecast — 18-22 named storms expected',
+        region: 'Atlantic Basin',
+        severity: 'high',
+      },
+      {
+        date: '2026-05-11',
+        headline: 'Gulf of Mexico platform evacuations as Tropical Depression 2 forms early',
+        region: 'US Gulf Coast',
+        severity: 'high',
+      },
+      {
+        date: '2026-05-08',
+        headline:
+          'Derecho risk elevated across Corn Belt through late June — atmospheric pattern favors MCS formation',
+        region: 'US Midwest',
+        severity: 'medium',
+      },
+    ],
+    Logistics: [
+      {
+        date: '2026-05-14',
+        headline:
+          'Mississippi River levels forecast to drop below critical thresholds by mid-June — barge restrictions likely',
+        region: 'US Interior',
+        severity: 'high',
+      },
+      {
+        date: '2026-05-12',
+        headline: 'Santos port closure due to storm — 15 coffee vessels delayed, basis widens',
+        region: 'Brazil',
+        severity: 'medium',
+      },
+      {
+        date: '2026-05-09',
+        headline:
+          'Panama Canal transit restrictions tightened again — drought reduces daily crossings to 24 from 36 normal',
+        region: 'Central America',
+        severity: 'critical',
+      },
+      {
+        date: '2026-05-06',
+        headline: 'Black Sea grain corridor talks stall — shipping insurance premiums rise 40%',
+        region: 'Eastern Europe',
+        severity: 'high',
+      },
+    ],
+  };
+
+  const SEVERITY_COLORS = {
+    critical: '#ef4444',
+    high: '#f59e0b',
+    medium: '#3b82f6',
+    low: '#6b7280',
+  };
 
   const profiles = {
     corn: {
@@ -487,10 +1002,14 @@ function CommoditySensitivityCard() {
     },
   };
 
+  const currentImpact = activeDim && VARIABLE_IMPACTS[activeDim]?.[selected];
+  const currentNews = activeDim ? WEATHER_NEWS[activeDim] || [] : [];
+
   return (
     <KairosCard
       icon="bi-bullseye"
       title="Commodity weather sensitivity"
+      wide={!!activeDim}
       actions={
         <div className="kairos-pill-selector">
           {Object.entries(profiles).map(([k, v]) => (
@@ -498,7 +1017,10 @@ function CommoditySensitivityCard() {
               key={k}
               type="button"
               className={`kairos-pill-btn${selected === k ? ' active' : ''}`}
-              onClick={() => setSelected(k)}
+              onClick={() => {
+                setSelected(k);
+                setActiveDim(null);
+              }}
             >
               {v.label}
             </button>
@@ -506,27 +1028,312 @@ function CommoditySensitivityCard() {
         </div>
       }
     >
-      <div className="kairos-chart-wrap kairos-chart-wrap--centered">
-        <ResponsiveContainer width="100%" height={280}>
-          <RadarChart data={profiles[selected].data} cx="50%" cy="50%" outerRadius="70%">
-            <PolarGrid stroke="rgba(212,175,55,0.12)" />
-            <PolarAngleAxis dataKey="dim" tick={{ fill: '#9ca3af', fontSize: 10 }} />
-            <PolarRadiusAxis tick={false} axisLine={false} domain={[0, 100]} />
-            <Radar
-              dataKey="v"
-              stroke="#d4af37"
-              fill="rgba(212,175,55,0.2)"
-              strokeWidth={2}
-              name="Sensitivity"
-              dot={{ r: 3, fill: '#d4af37' }}
-            />
-          </RadarChart>
-        </ResponsiveContainer>
+      <div style={{ display: 'flex', gap: '1rem', flexWrap: activeDim ? 'nowrap' : 'wrap' }}>
+        {/* Radar chart */}
+        <div
+          style={{
+            flex: activeDim ? '0 0 280px' : '1 1 100%',
+            minWidth: 240,
+            transition: 'flex 0.3s ease',
+          }}
+        >
+          <div className="kairos-chart-wrap kairos-chart-wrap--centered">
+            <ResponsiveContainer width="100%" height={activeDim ? 240 : 280}>
+              <RadarChart data={profiles[selected].data} cx="50%" cy="50%" outerRadius="70%">
+                <PolarGrid stroke="rgba(212,175,55,0.12)" />
+                <PolarAngleAxis
+                  dataKey="dim"
+                  tick={({ x, y, payload }) => {
+                    const isActive = activeDim === payload.value;
+                    return (
+                      <text
+                        x={x}
+                        y={y}
+                        textAnchor="middle"
+                        fill={isActive ? '#d4af37' : '#9ca3af'}
+                        fontSize={isActive ? 11 : 10}
+                        fontWeight={isActive ? 700 : 400}
+                        style={{ cursor: 'pointer' }}
+                        onClick={() =>
+                          setActiveDim(activeDim === payload.value ? null : payload.value)
+                        }
+                      >
+                        {payload.value}
+                      </text>
+                    );
+                  }}
+                />
+                <PolarRadiusAxis tick={false} axisLine={false} domain={[0, 100]} />
+                <Radar
+                  dataKey="v"
+                  stroke="#d4af37"
+                  fill="rgba(212,175,55,0.2)"
+                  strokeWidth={2}
+                  name="Sensitivity"
+                  dot={({ cx: dotCx, cy: dotCy, payload: dotPayload }) => {
+                    const isActive = activeDim === dotPayload.dim;
+                    return (
+                      <circle
+                        key={dotPayload.dim}
+                        cx={dotCx}
+                        cy={dotCy}
+                        r={isActive ? 6 : 3}
+                        fill={isActive ? '#d4af37' : '#d4af37'}
+                        stroke={isActive ? '#fff' : 'none'}
+                        strokeWidth={isActive ? 2 : 0}
+                        style={{ cursor: 'pointer', transition: 'r 0.2s' }}
+                        onClick={() =>
+                          setActiveDim(activeDim === dotPayload.dim ? null : dotPayload.dim)
+                        }
+                      />
+                    );
+                  }}
+                />
+              </RadarChart>
+            </ResponsiveContainer>
           </div>
-      <p className="kairos-card-hint">
-        Sensitivity score (0–100) estimates how strongly each weather dimension affects the commodity&apos;s supply and
-        price.
-      </p>
+          {!activeDim && (
+            <p className="kairos-card-hint">
+              Click any variable on the radar to see how it affects {profiles[selected].label} and
+              related weather news.
+            </p>
+          )}
+        </div>
+
+        {/* Expanded panel — only shows when a variable is selected */}
+        {activeDim && currentImpact && (
+          <div style={{ flex: 1, display: 'flex', gap: '0.75rem', minWidth: 0, flexWrap: 'wrap' }}>
+            {/* Left: Weather news chain view */}
+            <div style={{ flex: '1 1 280px', minWidth: 240 }}>
+              <div
+                style={{
+                  fontSize: '0.6rem',
+                  fontWeight: 700,
+                  color: '#d4af37',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  marginBottom: '0.5rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.3rem',
+                }}
+              >
+                <i className="bi bi-newspaper" /> Weather News — {activeDim}
+              </div>
+              <div style={{ position: 'relative', paddingLeft: 16 }}>
+                {/* Chain view vertical line */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: 4,
+                    top: 0,
+                    bottom: 0,
+                    width: 2,
+                    background: 'linear-gradient(180deg, #d4af37, rgba(212,175,55,0.15))',
+                    borderRadius: 1,
+                  }}
+                />
+                {currentNews.map((evt, i) => (
+                  <div
+                    key={i}
+                    style={{ position: 'relative', marginBottom: '0.6rem', paddingLeft: 10 }}
+                  >
+                    {/* Dot */}
+                    <div
+                      style={{
+                        position: 'absolute',
+                        left: -13,
+                        top: 4,
+                        width: 8,
+                        height: 8,
+                        borderRadius: '50%',
+                        background: SEVERITY_COLORS[evt.severity] || '#6b7280',
+                        border: '2px solid #0d1117',
+                      }}
+                    />
+                    {/* Content */}
+                    <div
+                      style={{
+                        background: 'rgba(255,255,255,0.02)',
+                        border: '1px solid rgba(255,255,255,0.05)',
+                        borderRadius: 8,
+                        padding: '0.5rem 0.65rem',
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          marginBottom: '0.2rem',
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontSize: '0.5rem',
+                            color: SEVERITY_COLORS[evt.severity],
+                            fontWeight: 700,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.04em',
+                          }}
+                        >
+                          {evt.severity}
+                        </span>
+                        <span style={{ fontSize: '0.5rem', color: '#6b7280' }}>{evt.region}</span>
+                      </div>
+                      <p
+                        style={{
+                          fontSize: '0.65rem',
+                          color: '#e2e8f0',
+                          lineHeight: 1.45,
+                          margin: 0,
+                        }}
+                      >
+                        {evt.headline}
+                      </p>
+                      <span
+                        style={{
+                          fontSize: '0.475rem',
+                          color: '#6b7280',
+                          marginTop: '0.2rem',
+                          display: 'block',
+                        }}
+                      >
+                        {new Date(evt.date).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                        })}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right: Variable impact explanation */}
+            <div style={{ flex: '1 1 240px', minWidth: 200 }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: '0.5rem',
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: '0.6rem',
+                    fontWeight: 700,
+                    color: '#d4af37',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                  }}
+                >
+                  <i className="bi bi-info-circle" /> {activeDim} × {profiles[selected].label}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveDim(null)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#6b7280',
+                    fontSize: '0.8rem',
+                    cursor: 'pointer',
+                    padding: '0.2rem',
+                  }}
+                >
+                  <i className="bi bi-x-lg" />
+                </button>
+              </div>
+
+              {/* Score badge */}
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.3rem',
+                  padding: '0.25rem 0.6rem',
+                  borderRadius: 6,
+                  background: `rgba(212,175,55,${currentImpact.score > 70 ? '0.15' : '0.06'})`,
+                  border: '1px solid rgba(212,175,55,0.2)',
+                  marginBottom: '0.5rem',
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: '0.85rem',
+                    fontWeight: 800,
+                    color: '#d4af37',
+                    fontVariantNumeric: 'tabular-nums',
+                  }}
+                >
+                  {currentImpact.score}
+                </span>
+                <span style={{ fontSize: '0.5rem', color: '#d4af37', fontWeight: 600 }}>
+                  /100 SENSITIVITY
+                </span>
+              </div>
+
+              {/* Summary */}
+              <p
+                style={{
+                  fontSize: '0.65rem',
+                  color: '#c9d1d9',
+                  lineHeight: 1.65,
+                  margin: '0 0 0.5rem',
+                }}
+              >
+                {currentImpact.summary}
+              </p>
+
+              {/* Key risks */}
+              <div
+                style={{
+                  fontSize: '0.55rem',
+                  fontWeight: 700,
+                  color: '#8b949e',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.04em',
+                  marginBottom: '0.25rem',
+                }}
+              >
+                Key Risks
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                {currentImpact.risks.map((risk, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: '0.35rem',
+                      fontSize: '0.6rem',
+                      color: '#e2e8f0',
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: 5,
+                        height: 5,
+                        borderRadius: '50%',
+                        background: currentImpact.score > 70 ? '#f59e0b' : '#3b82f6',
+                        flexShrink: 0,
+                        marginTop: 4,
+                      }}
+                    />
+                    {risk}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </KairosCard>
   );
 }
@@ -580,7 +1387,8 @@ function CriticalWindowsCard() {
   return (
     <KairosCard icon="bi-calendar-event" title="Critical time windows" wide>
       <p className="kairos-card-hint" style={{ marginBottom: '0.75rem' }}>
-        The same weather event can be noise in one month and market-moving in another. Active windows are highlighted.
+        The same weather event can be noise in one month and market-moving in another. Active
+        windows are highlighted.
       </p>
       <div className="kairos-windows-table">
         <div className="kairos-windows-header">
@@ -620,7 +1428,7 @@ function CriticalWindowsCard() {
         <span>
           <span className="kairos-windows-current-marker" /> Current month
         </span>
-          </div>
+      </div>
     </KairosCard>
   );
 }
@@ -707,12 +1515,18 @@ function WeatherMarketImpactCard({ weatherData, region }) {
   }, [weatherData, region]);
 
   const directionColor = { bullish: '#10b981', bearish: '#ef4444', neutral: '#6b7280' };
-  const magnitudeColor = { Critical: '#ef4444', High: '#f97316', Medium: '#f59e0b', Low: '#10b981' };
+  const magnitudeColor = {
+    Critical: '#ef4444',
+    High: '#f97316',
+    Medium: '#f59e0b',
+    Low: '#10b981',
+  };
 
   return (
     <KairosCard icon="bi-graph-up-arrow" title="Weather → market impact forecast" wide>
       <p className="kairos-card-hint" style={{ marginBottom: '0.75rem' }}>
-        Projected price direction based on current weather conditions for {region.commodity} in {region.label}.
+        Projected price direction based on current weather conditions for {region.commodity} in{' '}
+        {region.label}.
       </p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
         {impacts.map((item, i) => (
@@ -750,7 +1564,13 @@ function WeatherMarketImpactCard({ weatherData, region }) {
                   marginBottom: '0.2rem',
                 }}
               >
-                <span style={{ fontWeight: 700, color: 'var(--home-heading, #111827)', fontSize: '0.875rem' }}>
+                <span
+                  style={{
+                    fontWeight: 700,
+                    color: 'var(--home-heading, #111827)',
+                    fontSize: '0.875rem',
+                  }}
+                >
                   {item.event}
                 </span>
                 <span
@@ -780,8 +1600,17 @@ function WeatherMarketImpactCard({ weatherData, region }) {
                   {item.magnitude} impact
                 </span>
               </div>
-              <p style={{ color: 'var(--home-muted, #9ca3af)', fontSize: '0.75rem', margin: 0 }}>{item.reason}</p>
-              <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.6875rem', margin: '0.2rem 0 0', fontWeight: 600 }}>
+              <p style={{ color: 'var(--home-muted, #9ca3af)', fontSize: '0.75rem', margin: 0 }}>
+                {item.reason}
+              </p>
+              <p
+                style={{
+                  color: 'var(--home-muted, #6b7280)',
+                  fontSize: '0.6875rem',
+                  margin: '0.2rem 0 0',
+                  fontWeight: 600,
+                }}
+              >
                 Affected: {item.commodity}
               </p>
             </div>
@@ -879,11 +1708,19 @@ function BehaviouralSignalsCard() {
         Active seasonal patterns this month:
       </p>
       {activePatterns.length === 0 ? (
-        <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.8125rem', marginBottom: '0.75rem' }}>
+        <p
+          style={{
+            color: 'var(--home-muted, #6b7280)',
+            fontSize: '0.8125rem',
+            marginBottom: '0.75rem',
+          }}
+        >
           No dominant seasonal patterns active this month.
         </p>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem' }}>
+        <div
+          style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem' }}
+        >
           {activePatterns.map((p, i) => (
             <div
               key={i}
@@ -908,8 +1745,21 @@ function BehaviouralSignalsCard() {
                 }}
               />
               <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.15rem' }}>
-                  <span style={{ fontWeight: 700, fontSize: '0.8125rem', color: 'var(--home-heading, #111827)' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    marginBottom: '0.15rem',
+                  }}
+                >
+                  <span
+                    style={{
+                      fontWeight: 700,
+                      fontSize: '0.8125rem',
+                      color: 'var(--home-heading, #111827)',
+                    }}
+                  >
                     {p.signal}
                   </span>
                   <span
@@ -925,10 +1775,35 @@ function BehaviouralSignalsCard() {
                     {p.direction}
                   </span>
                 </div>
-                <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.6875rem', margin: 0 }}>{p.note}</p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.3rem' }}>
-                  <div style={{ flex: 1, height: 3, borderRadius: 2, background: 'rgba(255,255,255,0.08)' }}>
-                    <div style={{ width: `${p.reliability}%`, height: '100%', borderRadius: 2, background: '#d4af37' }} />
+                <p
+                  style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.6875rem', margin: 0 }}
+                >
+                  {p.note}
+                </p>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    marginTop: '0.3rem',
+                  }}
+                >
+                  <div
+                    style={{
+                      flex: 1,
+                      height: 3,
+                      borderRadius: 2,
+                      background: 'rgba(255,255,255,0.08)',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: `${p.reliability}%`,
+                        height: '100%',
+                        borderRadius: 2,
+                        background: '#d4af37',
+                      }}
+                    />
                   </div>
                   <span style={{ fontSize: '0.5625rem', color: '#d4af37', fontWeight: 700 }}>
                     {p.reliability}% historical reliability
@@ -948,15 +1823,38 @@ function BehaviouralSignalsCard() {
           <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
             <div style={{ flex: 1 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-                <span style={{ fontSize: '0.6875rem', fontWeight: 600, color: 'var(--home-heading, #111827)' }}>
+                <span
+                  style={{
+                    fontSize: '0.6875rem',
+                    fontWeight: 600,
+                    color: 'var(--home-heading, #111827)',
+                  }}
+                >
                   {s.label}
                 </span>
-                <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: s.color }}>{s.level}</span>
+                <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: s.color }}>
+                  {s.level}
+                </span>
               </div>
               <div style={{ height: 5, borderRadius: 3, background: 'rgba(255,255,255,0.06)' }}>
-                <div style={{ width: `${s.value}%`, height: '100%', borderRadius: 3, background: s.color }} />
+                <div
+                  style={{
+                    width: `${s.value}%`,
+                    height: '100%',
+                    borderRadius: 3,
+                    background: s.color,
+                  }}
+                />
               </div>
-              <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.6rem', margin: '2px 0 0' }}>{s.note}</p>
+              <p
+                style={{
+                  color: 'var(--home-muted, #6b7280)',
+                  fontSize: '0.6rem',
+                  margin: '2px 0 0',
+                }}
+              >
+                {s.note}
+              </p>
             </div>
           </div>
         ))}
@@ -1027,7 +1925,9 @@ function ForecastOutlookCard({ weatherData, region }) {
         How the upcoming forecast may affect {region.commodity} prices in {region.label}.
       </p>
       {forecastRows.length === 0 ? (
-        <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.8125rem' }}>Insufficient forecast data.</p>
+        <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.8125rem' }}>
+          Insufficient forecast data.
+        </p>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           {forecastRows.map((row) => (
@@ -1044,16 +1944,36 @@ function ForecastOutlookCard({ weatherData, region }) {
               }}
             >
               <div>
-                <p style={{ fontSize: '0.6875rem', fontWeight: 700, color: 'var(--home-muted, #6b7280)', margin: 0 }}>
+                <p
+                  style={{
+                    fontSize: '0.6875rem',
+                    fontWeight: 700,
+                    color: 'var(--home-muted, #6b7280)',
+                    margin: 0,
+                  }}
+                >
                   {row.label}
                 </p>
                 <span style={{ fontSize: '1.25rem' }}>{row.icon}</span>
               </div>
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.15rem' }}>
-                  <span style={{ fontWeight: 700, fontSize: '0.8125rem', color: row.color }}>{row.outlook}</span>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    marginBottom: '0.15rem',
+                  }}
+                >
+                  <span style={{ fontWeight: 700, fontSize: '0.8125rem', color: row.color }}>
+                    {row.outlook}
+                  </span>
                 </div>
-                <p style={{ color: 'var(--home-muted, #9ca3af)', fontSize: '0.6875rem', margin: 0 }}>{row.note}</p>
+                <p
+                  style={{ color: 'var(--home-muted, #9ca3af)', fontSize: '0.6875rem', margin: 0 }}
+                >
+                  {row.note}
+                </p>
                 <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.3rem' }}>
                   <span style={{ fontSize: '0.5625rem', color: 'var(--home-muted, #6b7280)' }}>
                     🌡 {row.avgTemp.toFixed(1)}°C avg
@@ -1088,9 +2008,23 @@ function SignalDashboardCard({ weatherData, region }) {
     const maxWind = Math.max(...recentWind.map((w) => w ?? 0));
 
     const tempSignal =
-      avgTemp > 35 ? 'extreme-heat' : avgTemp > 30 ? 'heat-stress' : avgTemp < 0 ? 'frost-risk' : avgTemp < 5 ? 'cold-stress' : 'normal';
+      avgTemp > 35
+        ? 'extreme-heat'
+        : avgTemp > 30
+          ? 'heat-stress'
+          : avgTemp < 0
+            ? 'frost-risk'
+            : avgTemp < 5
+              ? 'cold-stress'
+              : 'normal';
     const precipSignal =
-      totalPrecip < 5 ? 'drought-risk' : totalPrecip > 100 ? 'flood-risk' : totalPrecip > 60 ? 'wet' : 'normal';
+      totalPrecip < 5
+        ? 'drought-risk'
+        : totalPrecip > 100
+          ? 'flood-risk'
+          : totalPrecip > 60
+            ? 'wet'
+            : 'normal';
     const windSignal = maxWind > 80 ? 'storm' : maxWind > 50 ? 'high-wind' : 'normal';
 
     return [
@@ -1099,14 +2033,22 @@ function SignalDashboardCard({ weatherData, region }) {
         signal: tempSignal,
         detail: `Avg ${avgTemp.toFixed(1)}°C (7d)`,
         severity:
-          tempSignal === 'normal' ? 0 : tempSignal.includes('extreme') || tempSignal === 'frost-risk' ? 3 : 2,
+          tempSignal === 'normal'
+            ? 0
+            : tempSignal.includes('extreme') || tempSignal === 'frost-risk'
+              ? 3
+              : 2,
       },
       {
         dim: 'Precipitation',
         signal: precipSignal,
         detail: `${totalPrecip.toFixed(1)} mm (7d)`,
         severity:
-          precipSignal === 'normal' ? 0 : precipSignal.includes('flood') || precipSignal.includes('drought') ? 3 : 1,
+          precipSignal === 'normal'
+            ? 0
+            : precipSignal.includes('flood') || precipSignal.includes('drought')
+              ? 3
+              : 1,
       },
       {
         dim: 'Wind',
@@ -1123,14 +2065,17 @@ function SignalDashboardCard({ weatherData, region }) {
 
   return (
     <KairosCard icon="bi-shield-check" title="Signal strength — live">
-      <div className="kairos-signal-overall" style={{ borderLeftColor: severityColors[overallSeverity] }}>
+      <div
+        className="kairos-signal-overall"
+        style={{ borderLeftColor: severityColors[overallSeverity] }}
+      >
         <span className="kairos-signal-level" style={{ color: severityColors[overallSeverity] }}>
           {severityLabels[overallSeverity]}
         </span>
         <span className="kairos-signal-region">
           {region.label} — {region.commodity}
         </span>
-            </div>
+      </div>
       <div className="kairos-signal-grid">
         {signals.map((s) => (
           <div key={s.dim} className="kairos-signal-item">
@@ -1195,8 +2140,8 @@ export default function KairosSignalPage() {
           </div>
           <h1>Kairos Signal</h1>
           <p className="kairos-hero-lead">
-            Live weather and environmental data mapped to commodity markets. Track conditions across key production
-            regions and pair physical signals with market context.
+            Live weather and environmental data mapped to commodity markets. Track conditions across
+            key production regions and pair physical signals with market context.
           </p>
         </div>
       </header>
