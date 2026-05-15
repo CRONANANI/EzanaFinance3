@@ -2,7 +2,13 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-const FMP_KEY = process.env.FMP_API_KEY;
+/* Read at request time, not module load, so a key set/rotated after the
+   build is picked up without redeploying. Falls back to the public-prefixed
+   key if only that one is configured. */
+function getFmpKey() {
+  return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+}
+
 const STABLE_BASE = 'https://financialmodelingprep.com/stable';
 
 function parseFmpNumber(v) {
@@ -30,6 +36,7 @@ function pickTradePrice(q) {
  */
 async function fetchOneQuote(symbol) {
   if (!symbol) return null;
+  const FMP_KEY = getFmpKey();
   const url = `${STABLE_BASE}/quote?symbol=${encodeURIComponent(symbol)}&apikey=${encodeURIComponent(FMP_KEY)}`;
   try {
     const res = await fetch(url, { cache: 'no-store' });
@@ -59,11 +66,16 @@ export async function GET(request) {
   if (!single && !many) {
     return NextResponse.json({ error: 'symbol(s) required' }, { status: 400 });
   }
+
+  const FMP_KEY = getFmpKey();
   if (!FMP_KEY) {
     console.error('[fmp/quote] FMP_API_KEY missing');
     return NextResponse.json(
       { error: 'FMP_API_KEY not configured', quotes: [], priceMap: {} },
-      { status: 503 },
+      {
+        status: 503,
+        headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' },
+      },
     );
   }
 

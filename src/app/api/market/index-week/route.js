@@ -2,21 +2,23 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-const FMP_KEY =
-  process.env.FMP_API_KEY ||
-  process.env.NEXT_PUBLIC_FMP_API_KEY;
+/* Read at request time, not module load. See stock-candles for rationale. */
+function getFmpKey() {
+  return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+}
+
 const FMP_BASE = 'https://financialmodelingprep.com/stable';
 
 // Equity indices + volatility, crude, yields — FMP symbols (no DXY: unreliable on FMP)
 const INDICES = {
-  spx:  { symbol: '^GSPC', name: 'S&P 500' },
+  spx: { symbol: '^GSPC', name: 'S&P 500' },
   ixic: { symbol: '^IXIC', name: 'NASDAQ' },
-  rut:  { symbol: '^RUT',  name: 'Russell 2000' },
-  dji:  { symbol: '^DJI',  name: 'Dow Jones' },
-  vix:  { symbol: '^VIX',  name: 'VIX' },
-  wti:  { symbol: 'CLUSD', name: 'WTI Crude' },
+  rut: { symbol: '^RUT', name: 'Russell 2000' },
+  dji: { symbol: '^DJI', name: 'Dow Jones' },
+  vix: { symbol: '^VIX', name: 'VIX' },
+  wti: { symbol: 'CLUSD', name: 'WTI Crude' },
   brent: { symbol: 'BZUSD', name: 'Brent Crude' },
-  tnx:  { symbol: '^TNX',  name: '10Y Treasury' },
+  tnx: { symbol: '^TNX', name: '10Y Treasury' },
 };
 
 const INDEX_KEYS = ['spx', 'ixic', 'rut', 'dji', 'vix', 'wti', 'brent', 'tnx'];
@@ -58,6 +60,7 @@ function weekSlots() {
  * Returns the first item in the array, or null on failure.
  */
 async function fetchQuote(symbol) {
+  const FMP_KEY = getFmpKey();
   const url = `${FMP_BASE}/quote?symbol=${encodeURIComponent(symbol)}&apikey=${encodeURIComponent(FMP_KEY)}`;
   try {
     const res = await fetch(url, { cache: 'no-store' });
@@ -68,7 +71,11 @@ async function fetchQuote(symbol) {
     const data = await res.json();
     const item = Array.isArray(data) ? data[0] : data;
     const price =
-      item?.price != null ? (typeof item.price === 'number' ? item.price : parseFloat(String(item.price))) : NaN;
+      item?.price != null
+        ? typeof item.price === 'number'
+          ? item.price
+          : parseFloat(String(item.price))
+        : NaN;
     if (!item || !Number.isFinite(price)) return null;
     return { ...item, price };
   } catch (err) {
@@ -82,6 +89,7 @@ async function fetchQuote(symbol) {
  * Returns close and open maps for the week window.
  */
 async function fetchWeeklyBars(symbol, slots) {
+  const FMP_KEY = getFmpKey();
   const fromYmd = slots[0].ymd;
   const toYmd = addDays(fromYmd, 13);
   const url = `${FMP_BASE}/historical-price-eod/full?symbol=${encodeURIComponent(symbol)}&from=${fromYmd}&to=${toYmd}&apikey=${encodeURIComponent(FMP_KEY)}`;
@@ -111,14 +119,20 @@ async function fetchWeeklyBars(symbol, slots) {
 }
 
 export async function GET() {
+  const FMP_KEY = getFmpKey();
   if (!FMP_KEY) {
     const emptySlots = weekSlots();
-    return NextResponse.json({
-      ok: false,
-      error: 'no_key',
-      indices: {},
-      slots: emptySlots.map((s) => s.label),
-    });
+    return NextResponse.json(
+      {
+        ok: false,
+        error: 'no_key',
+        indices: {},
+        slots: emptySlots.map((s) => s.label),
+      },
+      {
+        headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' },
+      },
+    );
   }
 
   const slots = weekSlots();
@@ -144,8 +158,14 @@ export async function GET() {
 
     /* Fallback baseline from live quote when historical data isn't available yet
        (common on Monday morning before the historical endpoint publishes) */
-    const quoteOpen = quote?.open != null && Number.isFinite(quote.open) && quote.open > 0 ? quote.open : null;
-    const quotePrevClose = quote?.previousClose != null && Number.isFinite(quote.previousClose) && quote.previousClose > 0 ? quote.previousClose : null;
+    const quoteOpen =
+      quote?.open != null && Number.isFinite(quote.open) && quote.open > 0 ? quote.open : null;
+    const quotePrevClose =
+      quote?.previousClose != null &&
+      Number.isFinite(quote.previousClose) &&
+      quote.previousClose > 0
+        ? quote.previousClose
+        : null;
 
     const baseline =
       mondayOpen != null && mondayOpen > 0

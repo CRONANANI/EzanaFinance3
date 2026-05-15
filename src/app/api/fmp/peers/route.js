@@ -2,7 +2,11 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-const FMP_KEY = process.env.FMP_API_KEY;
+/* Read at request time, not module load. See stock-candles for rationale. */
+function getFmpKey() {
+  return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+}
+
 const BASE = 'https://financialmodelingprep.com/stable/stock-peers';
 
 export async function GET(request) {
@@ -13,8 +17,16 @@ export async function GET(request) {
   if (!symbol) {
     return NextResponse.json({ error: 'symbol required' }, { status: 400 });
   }
+
+  const FMP_KEY = getFmpKey();
   if (!FMP_KEY) {
-    return NextResponse.json({ error: 'FMP_API_KEY not configured', peers: [] }, { status: 503 });
+    return NextResponse.json(
+      { error: 'FMP_API_KEY not configured', peers: [] },
+      {
+        status: 503,
+        headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' },
+      },
+    );
   }
 
   const url = `${BASE}?symbol=${encodeURIComponent(symbol)}&apikey=${encodeURIComponent(FMP_KEY)}`;
@@ -30,8 +42,16 @@ export async function GET(request) {
       } catch {
         /* ignore */
       }
-      console.error(`[fmp/peers] FMP HTTP ${res.status}:`, body.slice(0, 300));
-      return NextResponse.json({ error: `FMP HTTP ${res.status}`, peers: [] }, { status: 200 });
+      console.error(
+        `[fmp/peers] FMP ${res.status} for ${symbol}: key=${FMP_KEY ? FMP_KEY.slice(0, 4) + '***' : 'MISSING'}, body=${body.slice(0, 200)}`,
+      );
+      return NextResponse.json(
+        { error: `FMP HTTP ${res.status}`, peers: [] },
+        {
+          status: 200,
+          headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' },
+        },
+      );
     }
 
     const data = await res.json();
@@ -61,6 +81,12 @@ export async function GET(request) {
     return NextResponse.json({ symbol, peers });
   } catch (err) {
     console.error('[fmp/peers] threw:', err?.message);
-    return NextResponse.json({ error: err?.message || 'unknown error', peers: [] }, { status: 200 });
+    return NextResponse.json(
+      { error: err?.message || 'unknown error', peers: [] },
+      {
+        status: 200,
+        headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' },
+      },
+    );
   }
 }

@@ -2,32 +2,115 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-const FMP_KEY = process.env.FMP_API_KEY;
+/* Read at request time, not module load. See stock-candles for rationale. */
+function getFmpKey() {
+  return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+}
+
 const BASE = 'https://financialmodelingprep.com/stable';
 
 // Active House traders — first names only (FMP house-trades-by-name takes first name)
 // Pulled from the full Congress member list, focused on members with known trading history
 const HOUSE_FIRST_NAMES = [
-  'Nancy', 'Dan', 'Josh', 'Michael', 'Virginia', 'Debbie', 'Ro', 'Patrick',
-  'John', 'Vern', 'Brian', 'Roger', 'Mike', 'Tom', 'Rick', 'Suzan',
-  'Marie', 'Anna', 'Morgan', 'Chip', 'Steve', 'Kevin', 'Lois', 'Scott',
-  'Brad', 'French', 'Ashley', 'David', 'Mark', 'Bill', 'Greg', 'Teresa',
-  'Darrell', 'Ken', 'Julia', 'Eric', 'Donald', 'James', 'Tim', 'Warren',
-  'Mariannette', 'August', 'Pete', 'Lloyd', 'Steny', 'Adam', 'Brad',
-  'Jimmy', 'Jake', 'Victoria', 'Thomas', 'Dean', 'Claudia', 'Nicole',
-  'Darin', 'Raja', 'Suhas', 'Katie', 'Alexandria', 'Pramila', 'Hakeem',
-  'Ilhan', 'Rashida', 'Ayanna', 'Alexandria', 'Jasmine', 'Summer', 'Maxwell',
-  'Sara', 'Sydney', 'Yvette', 'Grace', 'Nydia', 'Adriano', 'Ritchie',
-  'Gregory', 'Jerrold', 'Joseph', 'Paul', 'Richard', 'William', 'Neal',
-  'Jim', 'Seth', 'Earl', 'Sanford', 'Henry', 'Bennie', 'Emanuel',
+  'Nancy',
+  'Dan',
+  'Josh',
+  'Michael',
+  'Virginia',
+  'Debbie',
+  'Ro',
+  'Patrick',
+  'John',
+  'Vern',
+  'Brian',
+  'Roger',
+  'Mike',
+  'Tom',
+  'Rick',
+  'Suzan',
+  'Marie',
+  'Anna',
+  'Morgan',
+  'Chip',
+  'Steve',
+  'Kevin',
+  'Lois',
+  'Scott',
+  'Brad',
+  'French',
+  'Ashley',
+  'David',
+  'Mark',
+  'Bill',
+  'Greg',
+  'Teresa',
+  'Darrell',
+  'Ken',
+  'Julia',
+  'Eric',
+  'Donald',
+  'James',
+  'Tim',
+  'Warren',
+  'Mariannette',
+  'August',
+  'Pete',
+  'Lloyd',
+  'Steny',
+  'Adam',
+  'Brad',
+  'Jimmy',
+  'Jake',
+  'Victoria',
+  'Thomas',
+  'Dean',
+  'Claudia',
+  'Nicole',
+  'Darin',
+  'Raja',
+  'Suhas',
+  'Katie',
+  'Alexandria',
+  'Pramila',
+  'Hakeem',
+  'Ilhan',
+  'Rashida',
+  'Ayanna',
+  'Alexandria',
+  'Jasmine',
+  'Summer',
+  'Maxwell',
+  'Sara',
+  'Sydney',
+  'Yvette',
+  'Grace',
+  'Nydia',
+  'Adriano',
+  'Ritchie',
+  'Gregory',
+  'Jerrold',
+  'Joseph',
+  'Paul',
+  'Richard',
+  'William',
+  'Neal',
+  'Jim',
+  'Seth',
+  'Earl',
+  'Sanford',
+  'Henry',
+  'Bennie',
+  'Emanuel',
 ];
 
 const UNIQUE_HOUSE_NAMES = [...new Set(HOUSE_FIRST_NAMES)];
 
 async function fetchHouseByName(firstName) {
+  const FMP_KEY = getFmpKey();
+  if (!FMP_KEY) return [];
   try {
-    const url = `${BASE}/house-trades-by-name?name=${encodeURIComponent(firstName)}&apikey=${FMP_KEY}`;
-    const res = await fetch(url, { next: { revalidate: 300 } });
+    const url = `${BASE}/house-trades-by-name?name=${encodeURIComponent(firstName)}&apikey=${encodeURIComponent(FMP_KEY)}`;
+    const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) return [];
     const data = await res.json();
     return Array.isArray(data) ? data : [];
@@ -37,9 +120,11 @@ async function fetchHouseByName(firstName) {
 }
 
 async function fetchHouseBySymbol(symbol) {
+  const FMP_KEY = getFmpKey();
+  if (!FMP_KEY) return [];
   try {
-    const url = `${BASE}/house-trades?symbol=${encodeURIComponent(symbol)}&apikey=${FMP_KEY}`;
-    const res = await fetch(url, { next: { revalidate: 300 } });
+    const url = `${BASE}/house-trades?symbol=${encodeURIComponent(symbol)}&apikey=${encodeURIComponent(FMP_KEY)}`;
+    const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) return [];
     const data = await res.json();
     return Array.isArray(data) ? data : [];
@@ -49,8 +134,15 @@ async function fetchHouseBySymbol(symbol) {
 }
 
 export async function GET(request) {
+  const FMP_KEY = getFmpKey();
   if (!FMP_KEY) {
-    return NextResponse.json({ error: 'FMP_API_KEY is not configured' }, { status: 503 });
+    return NextResponse.json(
+      { error: 'FMP_API_KEY is not configured' },
+      {
+        status: 503,
+        headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' },
+      },
+    );
   }
 
   const { searchParams } = new URL(request.url);
@@ -73,9 +165,10 @@ export async function GET(request) {
     const results = await Promise.all(UNIQUE_HOUSE_NAMES.map(fetchHouseByName));
     const merged = results
       .flat()
-      .sort((a, b) =>
-        new Date(b.disclosureDate || b.transactionDate || 0) -
-        new Date(a.disclosureDate || a.transactionDate || 0)
+      .sort(
+        (a, b) =>
+          new Date(b.disclosureDate || b.transactionDate || 0) -
+          new Date(a.disclosureDate || a.transactionDate || 0),
       );
 
     // Deduplicate
@@ -90,6 +183,12 @@ export async function GET(request) {
     return NextResponse.json(deduped);
   } catch (err) {
     console.error('FMP house route error:', err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json(
+      { error: err.message },
+      {
+        status: 500,
+        headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' },
+      },
+    );
   }
 }

@@ -2,7 +2,11 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-const FMP_KEY = process.env.FMP_API_KEY;
+/* Read at request time, not module load. See stock-candles for rationale. */
+function getFmpKey() {
+  return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+}
+
 const BASE = 'https://financialmodelingprep.com/stable';
 
 function fmtMarketCap(n) {
@@ -49,8 +53,15 @@ async function fmpFirstObject(url) {
 }
 
 export async function GET(request) {
+  const FMP_KEY = getFmpKey();
   if (!FMP_KEY) {
-    return NextResponse.json({ error: 'FMP_API_KEY not configured' }, { status: 503 });
+    return NextResponse.json(
+      { error: 'FMP_API_KEY not configured' },
+      {
+        status: 503,
+        headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' },
+      },
+    );
   }
 
   const { searchParams } = new URL(request.url);
@@ -161,7 +172,10 @@ export async function GET(request) {
     console.error('[fmp/stock-stats]', err);
     return NextResponse.json(
       { error: err.message, mcap: '--', pe: '--', divYield: '--', eps: '--', capType: '--' },
-      { status: 200 },
+      {
+        status: 200,
+        headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' },
+      },
     );
   }
 }
