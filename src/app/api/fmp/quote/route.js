@@ -36,24 +36,28 @@ function pickTradePrice(q) {
  */
 async function fetchOneQuote(symbol) {
   if (!symbol) return null;
+  /* Defensive normalization: FMP expects crypto pairs as `BTCUSD`, not
+     `BTC-USD`. The watchlist now stores the dashless form, but other
+     callers may still send the dashed legacy shape. */
+  const normalizedSymbol = symbol.replace(/-/g, '');
   const FMP_KEY = getFmpKey();
-  const url = `${STABLE_BASE}/quote?symbol=${encodeURIComponent(symbol)}&apikey=${encodeURIComponent(FMP_KEY)}`;
+  const url = `${STABLE_BASE}/quote?symbol=${encodeURIComponent(normalizedSymbol)}&apikey=${encodeURIComponent(FMP_KEY)}`;
   try {
     const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) {
-      console.error(`[FMP quote] ${res.status} ${res.statusText} for ${symbol}`);
+      console.error(`[FMP quote] ${res.status} ${res.statusText} for ${normalizedSymbol}`);
       return null;
     }
     const data = await res.json();
     // FMP stable/quote returns an array of 1 element for a valid symbol
     const q = Array.isArray(data) ? data[0] : data;
     if (!q || typeof q !== 'object') {
-      console.warn(`[fmp/quote] ${symbol}: empty response`);
+      console.warn(`[fmp/quote] ${normalizedSymbol}: empty response`);
       return null;
     }
     return q;
   } catch (err) {
-    console.warn(`[fmp/quote] ${symbol}: fetch threw —`, err?.message);
+    console.warn(`[fmp/quote] ${normalizedSymbol}: fetch threw —`, err?.message);
     return null;
   }
 }

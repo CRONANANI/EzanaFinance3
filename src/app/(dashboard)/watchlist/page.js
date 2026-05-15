@@ -35,25 +35,36 @@ import './watchlist.css';
 import '../org-trading/org-trading.css';
 
 const OrgSendToTeamModal = dynamic(
-  () => import('@/components/org/OrgSendToTeamModal').then((m) => ({ default: m.OrgSendToTeamModal })),
-  { ssr: false, loading: () => null }
+  () =>
+    import('@/components/org/OrgSendToTeamModal').then((m) => ({ default: m.OrgSendToTeamModal })),
+  { ssr: false, loading: () => null },
 );
 
-const StockPriceChart = dynamic(
-  () => import('@/components/research/StockPriceChart'),
-  { ssr: false }
-);
+const StockPriceChart = dynamic(() => import('@/components/research/StockPriceChart'), {
+  ssr: false,
+});
 
 /* ── Helpers ── */
-function slugify(s) { return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''); }
+function slugify(s) {
+  return s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
 function fmtPrice(n) {
   if (n == null || !Number.isFinite(Number(n))) return '—';
   if (n >= 1e9) return `$${(n / 1e9).toFixed(1)}B`;
   if (n >= 1e6) return `$${(n / 1e6).toFixed(2)}M`;
   return `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
-function fmtSmall(n) { return n >= 1000 ? n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}) : n.toFixed(2); }
-function fmtChg(n) { return `${n>=0?'+':''}${n.toFixed(2)}`; }
+function fmtSmall(n) {
+  return n >= 1000
+    ? n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    : n.toFixed(2);
+}
+function fmtChg(n) {
+  return `${n >= 0 ? '+' : ''}${n.toFixed(2)}`;
+}
 function fmtPct(n) {
   const x = Number(n);
   if (n == null || Number.isNaN(x)) return '—';
@@ -74,11 +85,11 @@ const RETURN_RANGE_MULT = {
   '1D': 0.012,
   '5D': 0.048,
   '1M': 0.19,
-  'YTD': 1,
+  YTD: 1,
   '6M': 0.64,
   '1Y': 1.05,
   '5Y': 2.75,
-  'MAX': 3.9,
+  MAX: 3.9,
 };
 
 function rangeEndReturnPct(returnYtd, timeRange) {
@@ -105,65 +116,385 @@ function genReturnPctPts(seed, n, endPct) {
 
 /* ── Stocks (quotes loaded via /api/market/batch-quotes) ── */
 const STOCKS = [
-  { id: 'stk-aapl', type: 'stock', name: 'Apple Inc.', ticker: 'AAPL', quoteSymbol: 'AAPL', topAssets: ['iPhone', 'Services', 'Mac', 'Wearables'] },
-  { id: 'stk-msft', type: 'stock', name: 'Microsoft', ticker: 'MSFT', quoteSymbol: 'MSFT', topAssets: ['Azure', 'Office', 'LinkedIn', 'Gaming'] },
-  { id: 'stk-nvda', type: 'stock', name: 'NVIDIA', ticker: 'NVDA', quoteSymbol: 'NVDA', topAssets: ['Data Center', 'Gaming', 'Auto', 'Pro Vis'] },
-  { id: 'stk-googl', type: 'stock', name: 'Alphabet', ticker: 'GOOGL', quoteSymbol: 'GOOGL', topAssets: ['Search', 'YouTube', 'Cloud', 'Android'] },
-  { id: 'stk-amzn', type: 'stock', name: 'Amazon', ticker: 'AMZN', quoteSymbol: 'AMZN', topAssets: ['AWS', 'Retail', 'Prime', 'Ads'] },
-  { id: 'stk-meta', type: 'stock', name: 'Meta', ticker: 'META', quoteSymbol: 'META', topAssets: ['Ads', 'Reality Labs', 'WhatsApp', 'Instagram'] },
-  { id: 'stk-tsla', type: 'stock', name: 'Tesla', ticker: 'TSLA', quoteSymbol: 'TSLA', topAssets: ['EVs', 'Energy', 'Autopilot', 'Robotaxi'] },
-  { id: 'stk-jpm', type: 'stock', name: 'JPMorgan', ticker: 'JPM', quoteSymbol: 'JPM', topAssets: ['IB', 'Consumer', 'Asset Mgmt', 'Treasury'] },
-  { id: 'stk-xom', type: 'stock', name: 'Exxon Mobil', ticker: 'XOM', quoteSymbol: 'XOM', topAssets: ['Upstream', 'Downstream', 'Chemicals', 'LNG'] },
-  { id: 'stk-brk-b', type: 'stock', name: 'Berkshire B', ticker: 'BRK.B', quoteSymbol: 'BRK.B', topAssets: ['Insurance', 'Railway', 'Energy', 'Equity Holdings'] },
+  {
+    id: 'stk-aapl',
+    type: 'stock',
+    name: 'Apple Inc.',
+    ticker: 'AAPL',
+    quoteSymbol: 'AAPL',
+    topAssets: ['iPhone', 'Services', 'Mac', 'Wearables'],
+  },
+  {
+    id: 'stk-msft',
+    type: 'stock',
+    name: 'Microsoft',
+    ticker: 'MSFT',
+    quoteSymbol: 'MSFT',
+    topAssets: ['Azure', 'Office', 'LinkedIn', 'Gaming'],
+  },
+  {
+    id: 'stk-nvda',
+    type: 'stock',
+    name: 'NVIDIA',
+    ticker: 'NVDA',
+    quoteSymbol: 'NVDA',
+    topAssets: ['Data Center', 'Gaming', 'Auto', 'Pro Vis'],
+  },
+  {
+    id: 'stk-googl',
+    type: 'stock',
+    name: 'Alphabet',
+    ticker: 'GOOGL',
+    quoteSymbol: 'GOOGL',
+    topAssets: ['Search', 'YouTube', 'Cloud', 'Android'],
+  },
+  {
+    id: 'stk-amzn',
+    type: 'stock',
+    name: 'Amazon',
+    ticker: 'AMZN',
+    quoteSymbol: 'AMZN',
+    topAssets: ['AWS', 'Retail', 'Prime', 'Ads'],
+  },
+  {
+    id: 'stk-meta',
+    type: 'stock',
+    name: 'Meta',
+    ticker: 'META',
+    quoteSymbol: 'META',
+    topAssets: ['Ads', 'Reality Labs', 'WhatsApp', 'Instagram'],
+  },
+  {
+    id: 'stk-tsla',
+    type: 'stock',
+    name: 'Tesla',
+    ticker: 'TSLA',
+    quoteSymbol: 'TSLA',
+    topAssets: ['EVs', 'Energy', 'Autopilot', 'Robotaxi'],
+  },
+  {
+    id: 'stk-jpm',
+    type: 'stock',
+    name: 'JPMorgan',
+    ticker: 'JPM',
+    quoteSymbol: 'JPM',
+    topAssets: ['IB', 'Consumer', 'Asset Mgmt', 'Treasury'],
+  },
+  {
+    id: 'stk-xom',
+    type: 'stock',
+    name: 'Exxon Mobil',
+    ticker: 'XOM',
+    quoteSymbol: 'XOM',
+    topAssets: ['Upstream', 'Downstream', 'Chemicals', 'LNG'],
+  },
+  {
+    id: 'stk-brk-b',
+    type: 'stock',
+    name: 'Berkshire B',
+    ticker: 'BRK.B',
+    quoteSymbol: 'BRK.B',
+    topAssets: ['Insurance', 'Railway', 'Energy', 'Equity Holdings'],
+  },
 ];
 
 /* ── Bonds (treasuries and bond ETFs) ── */
 const BONDS = [
-  { id: 'bnd-tlt', type: 'bond', name: '20+ Year Treasury', ticker: 'TLT', quoteSymbol: 'TLT', topAssets: ['Long Duration', 'Treasury', 'Rate Sensitive', 'Hedge'] },
-  { id: 'bnd-ief', type: 'bond', name: '7-10 Year Treasury', ticker: 'IEF', quoteSymbol: 'IEF', topAssets: ['Mid Duration', 'Treasury', 'Income', 'Defensive'] },
-  { id: 'bnd-shy', type: 'bond', name: '1-3 Year Treasury', ticker: 'SHY', quoteSymbol: 'SHY', topAssets: ['Short Duration', 'Cash Alt', 'Treasury', 'Stable'] },
-  { id: 'bnd-agg', type: 'bond', name: 'Aggregate Bond', ticker: 'AGG', quoteSymbol: 'AGG', topAssets: ['Diversified', 'Investment Grade', 'Income', 'Core'] },
-  { id: 'bnd-lqd', type: 'bond', name: 'Investment Grade Corp', ticker: 'LQD', quoteSymbol: 'LQD', topAssets: ['Corporate', 'IG Credit', 'Income', 'Spread'] },
-  { id: 'bnd-hyg', type: 'bond', name: 'High Yield Corp', ticker: 'HYG', quoteSymbol: 'HYG', topAssets: ['HY Credit', 'Risk-On', 'Income', 'Spread'] },
-  { id: 'bnd-tip', type: 'bond', name: 'TIPS', ticker: 'TIP', quoteSymbol: 'TIP', topAssets: ['Inflation', 'Treasury', 'Real Yield', 'Defensive'] },
-  { id: 'bnd-emb', type: 'bond', name: 'Emerging Markets', ticker: 'EMB', quoteSymbol: 'EMB', topAssets: ['EM Credit', 'USD-Denom', 'Spread', 'Diversification'] },
+  {
+    id: 'bnd-tlt',
+    type: 'bond',
+    name: '20+ Year Treasury',
+    ticker: 'TLT',
+    quoteSymbol: 'TLT',
+    topAssets: ['Long Duration', 'Treasury', 'Rate Sensitive', 'Hedge'],
+  },
+  {
+    id: 'bnd-ief',
+    type: 'bond',
+    name: '7-10 Year Treasury',
+    ticker: 'IEF',
+    quoteSymbol: 'IEF',
+    topAssets: ['Mid Duration', 'Treasury', 'Income', 'Defensive'],
+  },
+  {
+    id: 'bnd-shy',
+    type: 'bond',
+    name: '1-3 Year Treasury',
+    ticker: 'SHY',
+    quoteSymbol: 'SHY',
+    topAssets: ['Short Duration', 'Cash Alt', 'Treasury', 'Stable'],
+  },
+  {
+    id: 'bnd-agg',
+    type: 'bond',
+    name: 'Aggregate Bond',
+    ticker: 'AGG',
+    quoteSymbol: 'AGG',
+    topAssets: ['Diversified', 'Investment Grade', 'Income', 'Core'],
+  },
+  {
+    id: 'bnd-lqd',
+    type: 'bond',
+    name: 'Investment Grade Corp',
+    ticker: 'LQD',
+    quoteSymbol: 'LQD',
+    topAssets: ['Corporate', 'IG Credit', 'Income', 'Spread'],
+  },
+  {
+    id: 'bnd-hyg',
+    type: 'bond',
+    name: 'High Yield Corp',
+    ticker: 'HYG',
+    quoteSymbol: 'HYG',
+    topAssets: ['HY Credit', 'Risk-On', 'Income', 'Spread'],
+  },
+  {
+    id: 'bnd-tip',
+    type: 'bond',
+    name: 'TIPS',
+    ticker: 'TIP',
+    quoteSymbol: 'TIP',
+    topAssets: ['Inflation', 'Treasury', 'Real Yield', 'Defensive'],
+  },
+  {
+    id: 'bnd-emb',
+    type: 'bond',
+    name: 'Emerging Markets',
+    ticker: 'EMB',
+    quoteSymbol: 'EMB',
+    topAssets: ['EM Credit', 'USD-Denom', 'Spread', 'Diversification'],
+  },
 ];
 
 /* ── Politicians ── */
 const POLITICIANS_LIST = [
-  { id: 'pol-pelosi', type: 'politician', name: 'Nancy Pelosi', returnYtd: 18.4, slug: 'nancy-pelosi', party: 'Democrat', topAssets: ['NVDA', 'AAPL', 'RBLX', 'MSFT'] },
-  { id: 'pol-tuberville', type: 'politician', name: 'Tommy Tuberville', returnYtd: -4.2, slug: 'tommy-tuberville', party: 'Republican', topAssets: ['KMB', 'HPQ', 'CLX', 'PG'] },
-  { id: 'pol-crenshaw', type: 'politician', name: 'Dan Crenshaw', returnYtd: 11.2, slug: 'dan-crenshaw', party: 'Republican', topAssets: ['AAPL', 'MSFT', 'AMZN', 'XOM'] },
-  { id: 'pol-warren', type: 'politician', name: 'Elizabeth Warren', returnYtd: 6.4, slug: 'elizabeth-warren', party: 'Democrat', topAssets: ['Treasury', 'Index Funds', 'BRK.B', 'VTI'] },
-  { id: 'pol-mcconnell', type: 'politician', name: 'Mitch McConnell', returnYtd: 5.1, slug: 'mitch-mcconnell', party: 'Republican', topAssets: ['Treasury', 'Vanguard', 'BRK.B', 'MUNI'] },
-  { id: 'pol-aoc', type: 'politician', name: 'Alexandria Ocasio-Cortez', returnYtd: 0.0, slug: 'alexandria-ocasio-cortez', party: 'Democrat', topAssets: ['No Holdings'] },
-  { id: 'pol-cruz', type: 'politician', name: 'Ted Cruz', returnYtd: 9.7, slug: 'ted-cruz', party: 'Republican', topAssets: ['XOM', 'GS', 'CVX', 'JPM'] },
-  { id: 'pol-schumer', type: 'politician', name: 'Chuck Schumer', returnYtd: 7.8, slug: 'chuck-schumer', party: 'Democrat', topAssets: ['Index Funds', 'Treasury', 'Muni', 'BRK.B'] },
+  {
+    id: 'pol-pelosi',
+    type: 'politician',
+    name: 'Nancy Pelosi',
+    returnYtd: 18.4,
+    slug: 'nancy-pelosi',
+    party: 'Democrat',
+    topAssets: ['NVDA', 'AAPL', 'RBLX', 'MSFT'],
+  },
+  {
+    id: 'pol-tuberville',
+    type: 'politician',
+    name: 'Tommy Tuberville',
+    returnYtd: -4.2,
+    slug: 'tommy-tuberville',
+    party: 'Republican',
+    topAssets: ['KMB', 'HPQ', 'CLX', 'PG'],
+  },
+  {
+    id: 'pol-crenshaw',
+    type: 'politician',
+    name: 'Dan Crenshaw',
+    returnYtd: 11.2,
+    slug: 'dan-crenshaw',
+    party: 'Republican',
+    topAssets: ['AAPL', 'MSFT', 'AMZN', 'XOM'],
+  },
+  {
+    id: 'pol-warren',
+    type: 'politician',
+    name: 'Elizabeth Warren',
+    returnYtd: 6.4,
+    slug: 'elizabeth-warren',
+    party: 'Democrat',
+    topAssets: ['Treasury', 'Index Funds', 'BRK.B', 'VTI'],
+  },
+  {
+    id: 'pol-mcconnell',
+    type: 'politician',
+    name: 'Mitch McConnell',
+    returnYtd: 5.1,
+    slug: 'mitch-mcconnell',
+    party: 'Republican',
+    topAssets: ['Treasury', 'Vanguard', 'BRK.B', 'MUNI'],
+  },
+  {
+    id: 'pol-aoc',
+    type: 'politician',
+    name: 'Alexandria Ocasio-Cortez',
+    returnYtd: 0.0,
+    slug: 'alexandria-ocasio-cortez',
+    party: 'Democrat',
+    topAssets: ['No Holdings'],
+  },
+  {
+    id: 'pol-cruz',
+    type: 'politician',
+    name: 'Ted Cruz',
+    returnYtd: 9.7,
+    slug: 'ted-cruz',
+    party: 'Republican',
+    topAssets: ['XOM', 'GS', 'CVX', 'JPM'],
+  },
+  {
+    id: 'pol-schumer',
+    type: 'politician',
+    name: 'Chuck Schumer',
+    returnYtd: 7.8,
+    slug: 'chuck-schumer',
+    party: 'Democrat',
+    topAssets: ['Index Funds', 'Treasury', 'Muni', 'BRK.B'],
+  },
 ];
 
 /* ── Commodities (no crypto) ── */
 const COMMODITIES_ONLY = [
-  { id: 'cmd-gold', type: 'commodity', name: 'Gold', ticker: 'GC=F', quoteSymbol: 'GC=F', topAssets: ['Mining', 'Central Banks', 'ETFs', 'Jewelry'] },
-  { id: 'cmd-silver', type: 'commodity', name: 'Silver', ticker: 'SI=F', quoteSymbol: 'SI=F', topAssets: ['Industrial', 'Solar', 'ETFs', 'Jewelry'] },
-  { id: 'cmd-platinum', type: 'commodity', name: 'Platinum', ticker: 'PL=F', quoteSymbol: 'PL=F', topAssets: ['Auto', 'Industrial', 'Jewelry', 'Investment'] },
-  { id: 'cmd-palladium', type: 'commodity', name: 'Palladium', ticker: 'PA=F', quoteSymbol: 'PA=F', topAssets: ['Auto Catalysts', 'Electronics', 'Chemical', 'Dental'] },
-  { id: 'cmd-copper', type: 'commodity', name: 'Copper', ticker: 'HG=F', quoteSymbol: 'HG=F', topAssets: ['Construction', 'Electronics', 'Transport', 'Industrial'] },
-  { id: 'cmd-oil', type: 'commodity', name: 'Oil (WTI)', ticker: 'CL=F', quoteSymbol: 'CL=F', topAssets: ['Transport', 'Plastics', 'Heating', 'Chemical'] },
-  { id: 'cmd-natgas', type: 'commodity', name: 'Nat Gas', ticker: 'NG=F', quoteSymbol: 'NG=F', topAssets: ['Heating', 'Power Gen', 'Chemical', 'LNG'] },
-  { id: 'cmd-wheat', type: 'commodity', name: 'Wheat', ticker: 'ZW=F', quoteSymbol: 'ZW=F', topAssets: ['Food', 'Feed', 'Ethanol', 'Export'] },
-  { id: 'cmd-corn', type: 'commodity', name: 'Corn', ticker: 'ZC=F', quoteSymbol: 'ZC=F', topAssets: ['Feed', 'Ethanol', 'Food', 'Export'] },
+  {
+    id: 'cmd-gold',
+    type: 'commodity',
+    name: 'Gold',
+    ticker: 'GC=F',
+    quoteSymbol: 'GC=F',
+    topAssets: ['Mining', 'Central Banks', 'ETFs', 'Jewelry'],
+  },
+  {
+    id: 'cmd-silver',
+    type: 'commodity',
+    name: 'Silver',
+    ticker: 'SI=F',
+    quoteSymbol: 'SI=F',
+    topAssets: ['Industrial', 'Solar', 'ETFs', 'Jewelry'],
+  },
+  {
+    id: 'cmd-platinum',
+    type: 'commodity',
+    name: 'Platinum',
+    ticker: 'PL=F',
+    quoteSymbol: 'PL=F',
+    topAssets: ['Auto', 'Industrial', 'Jewelry', 'Investment'],
+  },
+  {
+    id: 'cmd-palladium',
+    type: 'commodity',
+    name: 'Palladium',
+    ticker: 'PA=F',
+    quoteSymbol: 'PA=F',
+    topAssets: ['Auto Catalysts', 'Electronics', 'Chemical', 'Dental'],
+  },
+  {
+    id: 'cmd-copper',
+    type: 'commodity',
+    name: 'Copper',
+    ticker: 'HG=F',
+    quoteSymbol: 'HG=F',
+    topAssets: ['Construction', 'Electronics', 'Transport', 'Industrial'],
+  },
+  {
+    id: 'cmd-oil',
+    type: 'commodity',
+    name: 'Oil (WTI)',
+    ticker: 'CL=F',
+    quoteSymbol: 'CL=F',
+    topAssets: ['Transport', 'Plastics', 'Heating', 'Chemical'],
+  },
+  {
+    id: 'cmd-natgas',
+    type: 'commodity',
+    name: 'Nat Gas',
+    ticker: 'NG=F',
+    quoteSymbol: 'NG=F',
+    topAssets: ['Heating', 'Power Gen', 'Chemical', 'LNG'],
+  },
+  {
+    id: 'cmd-wheat',
+    type: 'commodity',
+    name: 'Wheat',
+    ticker: 'ZW=F',
+    quoteSymbol: 'ZW=F',
+    topAssets: ['Food', 'Feed', 'Ethanol', 'Export'],
+  },
+  {
+    id: 'cmd-corn',
+    type: 'commodity',
+    name: 'Corn',
+    ticker: 'ZC=F',
+    quoteSymbol: 'ZC=F',
+    topAssets: ['Feed', 'Ethanol', 'Food', 'Export'],
+  },
 ];
 
-/* ── Crypto ── */
+/* ── Crypto ──
+   FMP expects crypto pairs as `BTCUSD` (no dash). `ticker`/`quoteSymbol` are
+   the API-side identifiers; `displayTicker` is the short label shown in the
+   UI so users see "BTC" instead of "BTCUSD". */
 const CRYPTO = [
-  { id: 'cry-btc', type: 'crypto', name: 'Bitcoin', ticker: 'BTC-USD', quoteSymbol: 'BTC-USD', topAssets: ['Store of Value', 'DeFi', 'Mining', 'Payments'] },
-  { id: 'cry-eth', type: 'crypto', name: 'Ethereum', ticker: 'ETH-USD', quoteSymbol: 'ETH-USD', topAssets: ['DeFi', 'NFTs', 'Layer 2', 'Staking'] },
-  { id: 'cry-sol', type: 'crypto', name: 'Solana', ticker: 'SOL-USD', quoteSymbol: 'SOL-USD', topAssets: ['DeFi', 'NFTs', 'Payments', 'Gaming'] },
-  { id: 'cry-bnb', type: 'crypto', name: 'BNB', ticker: 'BNB-USD', quoteSymbol: 'BNB-USD', topAssets: ['Exchange', 'BSC', 'DeFi', 'Staking'] },
-  { id: 'cry-xrp', type: 'crypto', name: 'XRP', ticker: 'XRP-USD', quoteSymbol: 'XRP-USD', topAssets: ['Cross-Border', 'Payments', 'Banking', 'Liquidity'] },
-  { id: 'cry-ada', type: 'crypto', name: 'Cardano', ticker: 'ADA-USD', quoteSymbol: 'ADA-USD', topAssets: ['PoS', 'Smart Contracts', 'Identity', 'DeFi'] },
-  { id: 'cry-dot', type: 'crypto', name: 'Polkadot', ticker: 'DOT-USD', quoteSymbol: 'DOT-USD', topAssets: ['Parachains', 'Interop', 'Governance', 'Staking'] },
-  { id: 'cry-link', type: 'crypto', name: 'Chainlink', ticker: 'LINK-USD', quoteSymbol: 'LINK-USD', topAssets: ['Oracles', 'CCIP', 'DeFi', 'Real World Assets'] },
+  {
+    id: 'cry-btc',
+    type: 'crypto',
+    name: 'Bitcoin',
+    ticker: 'BTCUSD',
+    quoteSymbol: 'BTCUSD',
+    displayTicker: 'BTC',
+    topAssets: ['Store of Value', 'DeFi', 'Mining', 'Payments'],
+  },
+  {
+    id: 'cry-eth',
+    type: 'crypto',
+    name: 'Ethereum',
+    ticker: 'ETHUSD',
+    quoteSymbol: 'ETHUSD',
+    displayTicker: 'ETH',
+    topAssets: ['DeFi', 'NFTs', 'Layer 2', 'Staking'],
+  },
+  {
+    id: 'cry-sol',
+    type: 'crypto',
+    name: 'Solana',
+    ticker: 'SOLUSD',
+    quoteSymbol: 'SOLUSD',
+    displayTicker: 'SOL',
+    topAssets: ['DeFi', 'NFTs', 'Payments', 'Gaming'],
+  },
+  {
+    id: 'cry-bnb',
+    type: 'crypto',
+    name: 'BNB',
+    ticker: 'BNBUSD',
+    quoteSymbol: 'BNBUSD',
+    displayTicker: 'BNB',
+    topAssets: ['Exchange', 'BSC', 'DeFi', 'Staking'],
+  },
+  {
+    id: 'cry-xrp',
+    type: 'crypto',
+    name: 'XRP',
+    ticker: 'XRPUSD',
+    quoteSymbol: 'XRPUSD',
+    displayTicker: 'XRP',
+    topAssets: ['Cross-Border', 'Payments', 'Banking', 'Liquidity'],
+  },
+  {
+    id: 'cry-ada',
+    type: 'crypto',
+    name: 'Cardano',
+    ticker: 'ADAUSD',
+    quoteSymbol: 'ADAUSD',
+    displayTicker: 'ADA',
+    topAssets: ['PoS', 'Smart Contracts', 'Identity', 'DeFi'],
+  },
+  {
+    id: 'cry-dot',
+    type: 'crypto',
+    name: 'Polkadot',
+    ticker: 'DOTUSD',
+    quoteSymbol: 'DOTUSD',
+    displayTicker: 'DOT',
+    topAssets: ['Parachains', 'Interop', 'Governance', 'Staking'],
+  },
+  {
+    id: 'cry-link',
+    type: 'crypto',
+    name: 'Chainlink',
+    ticker: 'LINKUSD',
+    quoteSymbol: 'LINKUSD',
+    displayTicker: 'LINK',
+    topAssets: ['Oracles', 'CCIP', 'DeFi', 'Real World Assets'],
+  },
 ];
 
 /* ── Asset class catalog ── */
@@ -175,13 +506,18 @@ const ASSET_CLASSES = [
   { id: 'Crypto', label: 'Crypto', icon: 'bi-currency-bitcoin', data: CRYPTO },
 ];
 
-const TIME_RANGES = ['1D','5D','1M','YTD','6M','1Y','5Y','MAX'];
+const TIME_RANGES = ['1D', '5D', '1M', 'YTD', '6M', '1Y', '5Y', 'MAX'];
 
 /* ── Chart point generator ── */
 function genPts(seed, n = 100, up = true) {
-  const pts = []; let v = 50;
+  const pts = [];
+  let v = 50;
   for (let i = 0; i < n; i++) {
-    v += Math.sin(i * 0.3 + seed) * 2.5 + (up ? 0.12 : -0.08) + Math.sin(i * 0.7 + seed * 2) * 1.2 + (Math.random() - 0.5) * 0.8;
+    v +=
+      Math.sin(i * 0.3 + seed) * 2.5 +
+      (up ? 0.12 : -0.08) +
+      Math.sin(i * 0.7 + seed * 2) * 1.2 +
+      (Math.random() - 0.5) * 0.8;
     v = Math.max(4, Math.min(96, v));
     pts.push(v);
   }
@@ -191,8 +527,12 @@ function genPts(seed, n = 100, up = true) {
 /* ── Mini sparkline SVG ── */
 function Spark({ seed, up, w = 64, h = 22 }) {
   const pts = useMemo(() => genPts(seed, 24, up), [seed, up]);
-  const d = pts.map((y,i) => `${(i/(pts.length-1))*w},${h-(y/100)*h}`).join(' ');
-  return <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="wl-spark"><polyline points={d} fill="none" stroke={up?'#10b981':'#ef4444'} strokeWidth="1.5"/></svg>;
+  const d = pts.map((y, i) => `${(i / (pts.length - 1)) * w},${h - (y / 100) * h}`).join(' ');
+  return (
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="wl-spark">
+      <polyline points={d} fill="none" stroke={up ? '#10b981' : '#ef4444'} strokeWidth="1.5" />
+    </svg>
+  );
 }
 
 function SparkPortfolio({ seed, returnYtd, w = 64, h = 22 }) {
@@ -200,8 +540,14 @@ function SparkPortfolio({ seed, returnYtd, w = 64, h = 22 }) {
   const minV = Math.min(0, ...pts);
   const maxV = Math.max(...pts, minV + 0.01);
   const up = (returnYtd ?? 0) >= 0;
-  const d = pts.map((v, i) => `${(i / (pts.length - 1)) * w},${h - ((v - minV) / (maxV - minV)) * h}`).join(' ');
-  return <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="wl-spark"><polyline points={d} fill="none" stroke={up ? '#10b981' : '#ef4444'} strokeWidth="1.5" /></svg>;
+  const d = pts
+    .map((v, i) => `${(i / (pts.length - 1)) * w},${h - ((v - minV) / (maxV - minV)) * h}`)
+    .join(' ');
+  return (
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="wl-spark">
+      <polyline points={d} fill="none" stroke={up ? '#10b981' : '#ef4444'} strokeWidth="1.5" />
+    </svg>
+  );
 }
 
 /**
@@ -214,9 +560,7 @@ function WlChartTooltip({ active, payload, isPortfolio }) {
     <div className="wl-chart-tooltip">
       <div className="wl-chart-tooltip-label">{p.label}</div>
       <div className="wl-chart-tooltip-value">
-        {isPortfolio
-          ? `${p.value >= 0 ? '+' : ''}${p.value.toFixed(2)}%`
-          : `${p.value.toFixed(2)}`}
+        {isPortfolio ? `${p.value >= 0 ? '+' : ''}${p.value.toFixed(2)}%` : `${p.value.toFixed(2)}`}
       </div>
     </div>
   );
@@ -266,7 +610,9 @@ function Chart({ item, timeRange }) {
   return (
     <div className="wl-chart-box">
       {isPortfolio && (
-        <div className="wl-chart-y-label" aria-hidden>Return %</div>
+        <div className="wl-chart-y-label" aria-hidden>
+          Return %
+        </div>
       )}
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
@@ -306,15 +652,13 @@ function Chart({ item, timeRange }) {
             }
           />
           <Tooltip
-            content={(tooltipProps) => <WlChartTooltip {...tooltipProps} isPortfolio={isPortfolio} />}
+            content={(tooltipProps) => (
+              <WlChartTooltip {...tooltipProps} isPortfolio={isPortfolio} />
+            )}
             cursor={{ stroke: 'rgba(128,128,128,0.2)', strokeWidth: 1 }}
           />
           {data.length > 0 && startValue != null && Number.isFinite(startValue) && (
-            <ReferenceLine
-              y={startValue}
-              stroke="rgba(128,128,128,0.2)"
-              strokeDasharray="3 4"
-            />
+            <ReferenceLine y={startValue} stroke="rgba(128,128,128,0.2)" strokeDasharray="3 4" />
           )}
           <Area
             type="monotone"
@@ -387,7 +731,10 @@ export default function WatchlistPage() {
   const orgTeamPerf = useMemo(() => {
     if (!isOrgUser) return null;
     if (orgRole === 'executive') return null;
-    return MOCK_TEAM_PERFORMANCE.find((t) => t.team_id === (orgTeamId || 't7')) || MOCK_TEAM_PERFORMANCE[6];
+    return (
+      MOCK_TEAM_PERFORMANCE.find((t) => t.team_id === (orgTeamId || 't7')) ||
+      MOCK_TEAM_PERFORMANCE[6]
+    );
   }, [isOrgUser, orgRole, orgTeamId]);
 
   const activeClassItems = useMemo(() => {
@@ -418,7 +765,7 @@ export default function WatchlistPage() {
       const tickers =
         orgRole === 'executive'
           ? [...new Set(MOCK_TEAM_PERFORMANCE.flatMap((t) => t.top_holdings))].slice(0, 12)
-          : (orgTeamPerf?.top_holdings || ['NVDA', 'AAPL', 'MSFT', 'META']);
+          : orgTeamPerf?.top_holdings || ['NVDA', 'AAPL', 'MSFT', 'META'];
 
       return tickers.map((tk) => ({
         id: `org-${tk}`,
@@ -433,10 +780,7 @@ export default function WatchlistPage() {
     return activeClassItems;
   }, [isOrgUser, orgRole, orgTeamPerf, activeClassItems, assetClass]);
 
-  const ALL_SELECTABLE = useMemo(
-    () => ASSET_CLASSES.flatMap((c) => c.data),
-    [],
-  );
+  const ALL_SELECTABLE = useMemo(() => ASSET_CLASSES.flatMap((c) => c.data), []);
 
   const selected = useMemo(() => {
     if (!ALL_SELECTABLE.length) return null;
@@ -458,18 +802,13 @@ export default function WatchlistPage() {
 
   const watchlistTickerSymbols = useMemo(
     () =>
-      isOrgUser
-        ? []
-        : [...new Set(mockWatchlists.flatMap((w) => w.stocks.map((s) => s.ticker)))],
+      isOrgUser ? [] : [...new Set(mockWatchlists.flatMap((w) => w.stocks.map((s) => s.ticker)))],
     [isOrgUser, mockWatchlists],
   );
 
   useEffect(() => {
     const symbols = [
-      ...new Set([
-        ...stripItems.map((i) => i.quoteSymbol || i.ticker),
-        ...watchlistTickerSymbols,
-      ]),
+      ...new Set([...stripItems.map((i) => i.quoteSymbol || i.ticker), ...watchlistTickerSymbols]),
     ].filter(Boolean);
     let cancelled = false;
     const load = () => {
@@ -508,7 +847,9 @@ export default function WatchlistPage() {
       if (sideTab === 'Stocks') items = items.filter((i) => i.type === 'stock');
       if (search.trim()) {
         const q = search.toLowerCase();
-        items = items.filter((i) => i.name.toLowerCase().includes(q) || i.ticker.toLowerCase().includes(q));
+        items = items.filter(
+          (i) => i.name.toLowerCase().includes(q) || i.ticker.toLowerCase().includes(q),
+        );
       }
       return items;
     }
@@ -525,18 +866,23 @@ export default function WatchlistPage() {
     }));
     if (search.trim()) {
       const q = search.toLowerCase();
-      items = items.filter((i) => i.name.toLowerCase().includes(q) || i.ticker.toLowerCase().includes(q));
+      items = items.filter(
+        (i) => i.name.toLowerCase().includes(q) || i.ticker.toLowerCase().includes(q),
+      );
     }
     return items;
   }, [search, isOrgUser, stripItems, mockWatchlists, selectedWatchlistId, sideTab]);
 
-  const selectAny = useCallback((item) => {
-    setManualSelected(item);
-    if (item?.type === 'stock' && !addedStockRef.current) {
-      addedStockRef.current = true;
-      completeTask('watchlist_1');
-    }
-  }, [completeTask]);
+  const selectAny = useCallback(
+    (item) => {
+      setManualSelected(item);
+      if (item?.type === 'stock' && !addedStockRef.current) {
+        addedStockRef.current = true;
+        completeTask('watchlist_1');
+      }
+    },
+    [completeTask],
+  );
 
   const selectedMerged = useMemo(
     () => (selected ? mergeFinnhubQuote(selected, quoteMap) : null),
@@ -548,8 +894,7 @@ export default function WatchlistPage() {
       ? rangeEndReturnPct(selected.returnYtd, timeRange)
       : null;
 
-  const isUp =
-    portfolioReturn != null ? portfolioReturn >= 0 : (selectedMerged?.change ?? 0) >= 0;
+  const isUp = portfolioReturn != null ? portfolioReturn >= 0 : (selectedMerged?.change ?? 0) >= 0;
 
   useEffect(() => {
     setActiveHolder(null);
@@ -610,9 +955,15 @@ export default function WatchlistPage() {
             aria-haspopup="menu"
             aria-expanded={assetClassMenuOpen}
           >
-            <i className={`bi ${ASSET_CLASSES.find((c) => c.id === assetClass)?.icon || 'bi-grid'}`} aria-hidden />
+            <i
+              className={`bi ${ASSET_CLASSES.find((c) => c.id === assetClass)?.icon || 'bi-grid'}`}
+              aria-hidden
+            />
             <span className="wl-class-btn-label">{assetClass}</span>
-            <i className={`bi ${assetClassMenuOpen ? 'bi-chevron-up' : 'bi-chevron-down'} wl-class-btn-caret`} aria-hidden />
+            <i
+              className={`bi ${assetClassMenuOpen ? 'bi-chevron-up' : 'bi-chevron-down'} wl-class-btn-caret`}
+              aria-hidden
+            />
           </button>
 
           {assetClassMenuOpen && (
@@ -643,9 +994,7 @@ export default function WatchlistPage() {
 
         <div className="wl-top-strip">
           {stripItems.length === 0 ? (
-            <div className="wl-strip-empty">
-              No {assetClass.toLowerCase()} available right now.
-            </div>
+            <div className="wl-strip-empty">No {assetClass.toLowerCase()} available right now.</div>
           ) : (
             stripItems.map((raw) => {
               const item = mergeFinnhubQuote(raw, quoteMap);
@@ -672,9 +1021,10 @@ export default function WatchlistPage() {
                         )}
                         {item.type === 'institution' && <>{item.revenue || '13F'} · Portfolio</>}
                         {item.type === 'index' && <>{item.ticker}</>}
-                        {(item.type === 'stock' || item.type === 'bond' || item.type === 'commodity' || item.type === 'crypto') && (
-                          <>{item.ticker}</>
-                        )}
+                        {(item.type === 'stock' ||
+                          item.type === 'bond' ||
+                          item.type === 'commodity' ||
+                          item.type === 'crypto') && <>{item.displayTicker || item.ticker}</>}
                       </span>
                     </div>
                   </div>
@@ -688,14 +1038,22 @@ export default function WatchlistPage() {
                       ) : (
                         <>
                           <span className="wl-strip-price">{fmtPrice(item.price)}</span>
-                          <span className={`wl-strip-chg ${up ? 'up' : 'dn'}`}>{fmtPct(item.pct)}</span>
+                          <span className={`wl-strip-chg ${up ? 'up' : 'dn'}`}>
+                            {fmtPct(item.pct)}
+                          </span>
                         </>
                       )}
                     </div>
                     {isPF ? (
-                      <SparkPortfolio seed={item.id.charCodeAt(0) + item.id.charCodeAt(item.id.length - 1)} returnYtd={item.returnYtd} />
+                      <SparkPortfolio
+                        seed={item.id.charCodeAt(0) + item.id.charCodeAt(item.id.length - 1)}
+                        returnYtd={item.returnYtd}
+                      />
                     ) : (
-                      <Spark seed={item.id.charCodeAt(0) + item.id.charCodeAt(item.id.length - 1)} up={up} />
+                      <Spark
+                        seed={item.id.charCodeAt(0) + item.id.charCodeAt(item.id.length - 1)}
+                        up={up}
+                      />
                     )}
                   </div>
                   <div className="wl-strip-assets">
@@ -714,19 +1072,20 @@ export default function WatchlistPage() {
 
       {/* ═══ MAIN: Chart + Sidebar ═══ */}
       <div className="wl-main">
-
         {/* ── LEFT: Chart ── */}
         <div className="wl-chart-panel">
           <div className="wl-bc">
             <span className="wl-bc-home">HOME</span>
-            <i className="bi bi-chevron-right"/>
+            <i className="bi bi-chevron-right" />
             <span className="wl-bc-cur">{selected.name}</span>
             {(selected.type === 'politician' || selected.type === 'institution') && (
-              <span className={`wl-bc-tag ${selected.type}`}>{selected.type === 'politician' ? 'PORTFOLIO' : '13F'}</span>
+              <span className={`wl-bc-tag ${selected.type}`}>
+                {selected.type === 'politician' ? 'PORTFOLIO' : '13F'}
+              </span>
             )}
             {selected.type === 'politician' && selected.slug && (
               <Link href={`/inside-the-capitol/${selected.slug}`} className="wl-bc-link">
-                <i className="bi bi-box-arrow-up-right"/> View Profile
+                <i className="bi bi-box-arrow-up-right" /> View Profile
               </Link>
             )}
           </div>
@@ -735,7 +1094,9 @@ export default function WatchlistPage() {
             <div className="wl-price-title-block">
               {selected.type === 'stock' && (
                 <div className="wl-ticker-name-line">
-                  <span className="wl-ticker-strong">{selected.ticker}</span>
+                  <span className="wl-ticker-strong">
+                    {selected.displayTicker || selected.ticker}
+                  </span>
                   <span className="wl-ticker-sep">—</span>
                   <span className="wl-co-full-name">{selected.name}</span>
                 </div>
@@ -743,15 +1104,21 @@ export default function WatchlistPage() {
               {(selected.type === 'politician' || selected.type === 'institution') && (
                 <>
                   <div className="wl-big-price">{fmtPct(portfolioReturn)}</div>
-                  <div className="wl-price-meta">{selected.name} · {timeRange} return (modeled)</div>
+                  <div className="wl-price-meta">
+                    {selected.name} · {timeRange} return (modeled)
+                  </div>
                 </>
               )}
-              {selected.type !== 'stock' && selected.type !== 'politician' && selected.type !== 'institution' && (
-                <>
-                  <div className="wl-big-price">{fmtPrice(selectedMerged.price)}</div>
-                  <div className="wl-price-meta">{selected.name} · {selected.ticker}</div>
-                </>
-              )}
+              {selected.type !== 'stock' &&
+                selected.type !== 'politician' &&
+                selected.type !== 'institution' && (
+                  <>
+                    <div className="wl-big-price">{fmtPrice(selectedMerged.price)}</div>
+                    <div className="wl-price-meta">
+                      {selected.name} · {selected.displayTicker || selected.ticker}
+                    </div>
+                  </>
+                )}
             </div>
             <div className="wl-price-right-cluster">
               {selected.type === 'stock' && (
@@ -763,12 +1130,14 @@ export default function WatchlistPage() {
                   </div>
                 </div>
               )}
-              {selected.type !== 'stock' && selected.type !== 'politician' && selected.type !== 'institution' && (
-                <div className={`wl-big-chg ${isUp ? 'up' : 'dn'}`}>
-                  <i className={`bi ${isUp ? 'bi-arrow-up-right' : 'bi-arrow-down-right'}`} />
-                  {fmtPct(selectedMerged.pct)}
-                </div>
-              )}
+              {selected.type !== 'stock' &&
+                selected.type !== 'politician' &&
+                selected.type !== 'institution' && (
+                  <div className={`wl-big-chg ${isUp ? 'up' : 'dn'}`}>
+                    <i className={`bi ${isUp ? 'bi-arrow-up-right' : 'bi-arrow-down-right'}`} />
+                    {fmtPct(selectedMerged.pct)}
+                  </div>
+                )}
               {(selected.type === 'politician' || selected.type === 'institution') && (
                 <div className="wl-portfolio-hint">Based on disclosed positions</div>
               )}
@@ -811,69 +1180,99 @@ export default function WatchlistPage() {
             </div>
           </div>
 
-          {selected?.type === 'stock' && selected?.ticker ? (
+          {(selected?.type === 'stock' || selected?.type === 'crypto') && selected?.ticker ? (
             <div style={{ width: '100%' }}>
-              <StockPriceChart
-                symbol={selected.ticker}
-                livePrice={selectedMerged?.price ?? null}
-              />
+              <StockPriceChart symbol={selected.ticker} livePrice={selectedMerged?.price ?? null} />
             </div>
           ) : (
             <>
               <div className="wl-tr-row">
-                {TIME_RANGES.map(t => <button key={t} type="button" className={`wl-tr ${timeRange===t?'on':''}`} onClick={()=>setTimeRange(t)}>{t}</button>)}
+                {TIME_RANGES.map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    className={`wl-tr ${timeRange === t ? 'on' : ''}`}
+                    onClick={() => setTimeRange(t)}
+                  >
+                    {t}
+                  </button>
+                ))}
               </div>
-              <Chart item={selectedMerged} timeRange={timeRange}/>
+              <Chart item={selectedMerged} timeRange={timeRange} />
             </>
           )}
 
           <div className="wl-cmp">
             <div className="wl-cmp-hdr">
-              <span/><span>Name</span><span>Value</span><span>Change</span><span>Type</span><span/>
+              <span />
+              <span>Name</span>
+              <span>Value</span>
+              <span>Change</span>
+              <span>Type</span>
+              <span />
             </div>
-            {stripItems.filter((i) => i.id !== selected.id).slice(0, 5).map((raw) => {
-              const item = mergeFinnhubQuote(raw, quoteMap);
-              const isPF = item.type === 'politician' || item.type === 'institution';
-              const up = isPF ? (item.returnYtd ?? 0) >= 0 : (item.change ?? 0) >= 0;
-              return (
-              <button key={item.id} type="button" className="wl-cmp-row" onClick={() => selectAny(raw)}>
-                <TypeIcon item={item}/>
-                <span className="wl-cmp-name">{item.name}</span>
-                <span className="wl-cmp-val">{isPF ? fmtPct(item.returnYtd) : fmtPrice(item.price)}</span>
-                <span className={`wl-cmp-chg ${up ? 'up' : 'dn'}`}>{isPF ? 'YTD' : fmtPct(item.pct)}</span>
-                <span className={`wl-cmp-type ${item.type}`}>
-                  {item.type === 'index'
-                    ? 'Index'
-                    : item.type === 'politician'
-                      ? 'Congress'
-                      : item.type === 'institution'
-                        ? '13F Fund'
-                        : item.type === 'bond'
-                          ? 'Bond'
-                          : item.type === 'commodity'
-                            ? 'Commodity'
-                            : item.type === 'crypto'
-                              ? 'Crypto'
-                              : item.type === 'stock'
-                                ? 'Stock'
-                                : '—'}
-                </span>
-                {isPF ? (
-                  <SparkPortfolio seed={item.id.charCodeAt(0) * 3} returnYtd={item.returnYtd} w={48} h={16} />
-                ) : (
-                  <Spark seed={item.id.charCodeAt(0)*3} up={up} w={48} h={16}/>
-                )}
-              </button>
-              );
-            })}
-              </div>
-            </div>
+            {stripItems
+              .filter((i) => i.id !== selected.id)
+              .slice(0, 5)
+              .map((raw) => {
+                const item = mergeFinnhubQuote(raw, quoteMap);
+                const isPF = item.type === 'politician' || item.type === 'institution';
+                const up = isPF ? (item.returnYtd ?? 0) >= 0 : (item.change ?? 0) >= 0;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className="wl-cmp-row"
+                    onClick={() => selectAny(raw)}
+                  >
+                    <TypeIcon item={item} />
+                    <span className="wl-cmp-name">{item.name}</span>
+                    <span className="wl-cmp-val">
+                      {isPF ? fmtPct(item.returnYtd) : fmtPrice(item.price)}
+                    </span>
+                    <span className={`wl-cmp-chg ${up ? 'up' : 'dn'}`}>
+                      {isPF ? 'YTD' : fmtPct(item.pct)}
+                    </span>
+                    <span className={`wl-cmp-type ${item.type}`}>
+                      {item.type === 'index'
+                        ? 'Index'
+                        : item.type === 'politician'
+                          ? 'Congress'
+                          : item.type === 'institution'
+                            ? '13F Fund'
+                            : item.type === 'bond'
+                              ? 'Bond'
+                              : item.type === 'commodity'
+                                ? 'Commodity'
+                                : item.type === 'crypto'
+                                  ? 'Crypto'
+                                  : item.type === 'stock'
+                                    ? 'Stock'
+                                    : '—'}
+                    </span>
+                    {isPF ? (
+                      <SparkPortfolio
+                        seed={item.id.charCodeAt(0) * 3}
+                        returnYtd={item.returnYtd}
+                        w={48}
+                        h={16}
+                      />
+                    ) : (
+                      <Spark seed={item.id.charCodeAt(0) * 3} up={up} w={48} h={16} />
+                    )}
+                  </button>
+                );
+              })}
+          </div>
+        </div>
 
         {/* ── RIGHT: Sidebar ── */}
         <aside className="wl-side">
           <div className="wl-side-hdr">
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <div
+                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}
+              >
                 <h3>
                   {isOrgUser
                     ? orgRole === 'executive'
@@ -917,10 +1316,14 @@ export default function WatchlistPage() {
                   aria-expanded={wlDropdownOpen}
                 >
                   <span>
-                    {(mockWatchlists.find((w) => w.id === selectedWatchlistId) || mockWatchlists[0])?.label ??
-                      'My Watchlist'}
+                    {(mockWatchlists.find((w) => w.id === selectedWatchlistId) || mockWatchlists[0])
+                      ?.label ?? 'My Watchlist'}
                   </span>
-                  <ChevronDown size={14} className={wlDropdownOpen ? 'wl-wl-chev-open' : ''} style={{ flexShrink: 0, opacity: 0.8 }} />
+                  <ChevronDown
+                    size={14}
+                    className={wlDropdownOpen ? 'wl-wl-chev-open' : ''}
+                    style={{ flexShrink: 0, opacity: 0.8 }}
+                  />
                 </button>
                 {wlDropdownOpen && (
                   <div className="wl-wl-panel" role="listbox">
@@ -940,7 +1343,9 @@ export default function WatchlistPage() {
                         <span>{list.label}</span>
                         <span className="wl-wl-meta">
                           {list.stocks.length} stocks
-                          {selectedWatchlistId === list.id ? <Check size={12} style={{ marginLeft: 6 }} /> : null}
+                          {selectedWatchlistId === list.id ? (
+                            <Check size={12} style={{ marginLeft: 6 }} />
+                          ) : null}
                         </span>
                       </button>
                     ))}
@@ -1004,7 +1409,10 @@ export default function WatchlistPage() {
                       {item.type === 'stock' && <span className="wl-si-tk">{item.ticker}</span>}
                       {item.type === 'politician' && (
                         <span className={`wl-si-av ${item.party?.toLowerCase()}`}>
-                          {item.name.split(' ').map((w) => w[0]).join('')}
+                          {item.name
+                            .split(' ')
+                            .map((w) => w[0])
+                            .join('')}
                         </span>
                       )}
                       {item.type === 'institution' && (
@@ -1022,8 +1430,12 @@ export default function WatchlistPage() {
                       </div>
                     </div>
                     <div className="wl-si-right">
-                      <span className="wl-si-price">{isPF ? fmtPct(item.returnYtd) : fmtPrice(item.price)}</span>
-                      <span className={`wl-si-chg ${up ? 'up' : 'dn'}`}>{isPF ? 'YTD' : fmtPct(item.pct)}</span>
+                      <span className="wl-si-price">
+                        {isPF ? fmtPct(item.returnYtd) : fmtPrice(item.price)}
+                      </span>
+                      <span className={`wl-si-chg ${up ? 'up' : 'dn'}`}>
+                        {isPF ? 'YTD' : fmtPct(item.pct)}
+                      </span>
                     </div>
                   </button>
                   {isOrgUser && hasPermission('send_to_team') && item.type === 'stock' && sym && (
@@ -1046,8 +1458,15 @@ export default function WatchlistPage() {
           </div>
 
           {!isOrgUser && (
-            <button type="button" className="wl-add" data-task-target="watchlist-add-button" onClick={() => { completeTask('watchlist_1'); }}>
-              <i className="bi bi-plus-lg"/> Add to Watchlist
+            <button
+              type="button"
+              className="wl-add"
+              data-task-target="watchlist-add-button"
+              onClick={() => {
+                completeTask('watchlist_1');
+              }}
+            >
+              <i className="bi bi-plus-lg" /> Add to Watchlist
             </button>
           )}
         </aside>

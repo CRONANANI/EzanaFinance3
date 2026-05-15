@@ -86,12 +86,24 @@ export async function GET(request) {
       return NextResponse.json({ error: 'API not configured', candles: [] }, { status: 503 });
     }
 
+    /* Detect a crypto pair (e.g. BTCUSD, ETHUSD). FMP's stable endpoint
+       recognises these without a dash; equities never end in `USD` and
+       indices/futures use `.` or `=F`, so this heuristic is safe. */
+    const isCrypto = /^[A-Z]{2,6}USD$/.test(symbol) && !symbol.includes('.');
+
     const days = RANGE_DAYS[range] ?? 35;
     const toDate = new Date();
     const fromDate = new Date();
     fromDate.setDate(fromDate.getDate() - days);
 
-    const url = `${BASE}/historical-price-eod/full?symbol=${encodeURIComponent(symbol)}&from=${toDateStr(fromDate)}&to=${toDateStr(toDate)}&apikey=${encodeURIComponent(FMP_KEY)}`;
+    /* For crypto on short ranges (1D / 1W) use the 5-minute intraday feed
+       so the chart has more than a few daily candles to draw. Everything
+       else (stocks for all ranges, crypto for ≥1M) uses the daily
+       historical endpoint which accepts both `AAPL` and `BTCUSD`. */
+    const url =
+      isCrypto && (range === '1D' || range === '1W')
+        ? `${BASE}/historical-chart/5min?symbol=${encodeURIComponent(symbol)}&from=${toDateStr(fromDate)}&to=${toDateStr(toDate)}&apikey=${encodeURIComponent(FMP_KEY)}`
+        : `${BASE}/historical-price-eod/full?symbol=${encodeURIComponent(symbol)}&from=${toDateStr(fromDate)}&to=${toDateStr(toDate)}&apikey=${encodeURIComponent(FMP_KEY)}`;
 
     // Long historical ranges: cache for 24hrs (data doesn't change)
     const cacheSeconds = range === '1D' ? 900 : ['3Y', '5Y', 'ALL'].includes(range) ? 86400 : 3600;
@@ -129,26 +141,43 @@ export async function GET(request) {
       );
     }
 
-    const raw = await res.json();
+    const body = await res.json();
 
-    if (!Array.isArray(raw) || raw.length === 0) {
+    /* FMP endpoint shapes diverge: `historical-price-eod/full` may wrap
+       results under a `historical` key while `historical-chart/5min`
+       returns a flat array. Normalize both before the rest of the
+       pipeline runs. */
+    const rawArray = Array.isArray(body)
+      ? body
+      : Array.isArray(body?.historical)
+        ? body.historical
+        : [];
+
+    if (rawArray.length === 0) {
       return NextResponse.json({ candles: [], symbol, range }, { status: 200 });
     }
 
-    const sorted = [...raw].reverse(); // oldest first
+    const sorted = [...rawArray].reverse(); // oldest first
 
-    const candles = sorted.map((bar) => ({
-      t: new Date(bar.date).getTime() / 1000,
-      label: makeLabel(bar.date, range),
-      open: bar.open ?? bar.close,
-      high: bar.high ?? bar.close,
-      low: bar.low ?? bar.close,
-      close: bar.close,
-      price: bar.close,
-      volume: bar.volume ?? 0,
-      change: bar.change ?? 0,
-      changePercent: bar.changePercent ?? 0,
-    }));
+    const candles = sorted.map((bar) => {
+      /* 5-minute candles arrive as "YYYY-MM-DD HH:MM:SS"; the daily feed
+         is just "YYYY-MM-DD". Strip the time portion so `makeLabel` (and
+         its `new Date(dateStr + 'T12:00:00Z')` call) parses cleanly. */
+      const dateOnly =
+        typeof bar.date === 'string' && bar.date.includes(' ') ? bar.date.split(' ')[0] : bar.date;
+      return {
+        t: new Date(bar.date).getTime() / 1000,
+        label: makeLabel(dateOnly, range),
+        open: bar.open ?? bar.close,
+        high: bar.high ?? bar.close,
+        low: bar.low ?? bar.close,
+        close: bar.close,
+        price: bar.close,
+        volume: bar.volume ?? 0,
+        change: bar.change ?? 0,
+        changePercent: bar.changePercent ?? 0,
+      };
+    });
 
     return NextResponse.json(
       { candles, symbol, range },
