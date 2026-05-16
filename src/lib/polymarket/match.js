@@ -8,7 +8,8 @@
  * 4. If no entity-direct matches, backfill with same-topic markets by tag_slug
  * 5. If still nothing, return empty — never show an irrelevant market
  *
- * URL construction uses groupSlug (event-level) + ?tid= (outcome deep-link).
+ * URL construction uses groupSlug only (event-level slug). Markets
+ * without a groupSlug are filtered out so we never emit a 404 link.
  */
 
 const GAMMA_BASE = 'https://gamma-api.polymarket.com';
@@ -18,23 +19,167 @@ const GAMMA_BASE = 'https://gamma-api.polymarket.com';
    ════════════════════════════════════════════════════════════════════ */
 // eslint-disable-next-line no-unused-vars -- vocabulary reference; matching uses KNOWN_ENTITIES only
 const STOP_WORDS = new Set([
-  'the', 'a', 'an', 'and', 'or', 'of', 'to', 'in', 'on', 'for', 'with', 'at', 'by', 'from', 'as',
-  'is', 'are', 'was', 'were', 'be', 'been', 'being', 'it', 'its', 'this', 'that', 'these', 'those',
-  'report', 'reports', 'reported', 'reporting', 'say', 'says', 'said', 'update', 'updates',
-  'news', 'live', 'breaking', 'latest', 'amid', 'over', 'new', 'post', 'posts', 'see',
-  'minutes', 'minute', 'signal', 'signals', 'steady', 'cooling', 'heating', 'watch', 'watching',
-  'still', 'just', 'than', 'into', 'out', 'up', 'down', 'but', 'not', 'has', 'have', 'had',
-  'will', 'can', 'may', 'week', 'month', 'year', 'day', 'days', 'last', 'next',
-  'after', 'before', 'about', 'between', 'during', 'through', 'while', 'since',
-  'could', 'would', 'should', 'also', 'more', 'most', 'much', 'many', 'some', 'other',
-  'what', 'when', 'where', 'which', 'who', 'how', 'why', 'does', 'did', 'doing',
-  'steep', 'price', 'battle', 'reverse', 'fortunes', 'pays', 'sources', 'according',
-  'leaves', 'stance', 'frustrated', 'opportunity', 'investors', 'lead', 'securities',
-  'fraud', 'lawsuit', 'apps', 'coding', 'vibe', 'startups', 'company', 'companies',
-  'stock', 'stocks', 'market', 'markets', 'trade', 'trades', 'trading', 'buy', 'sell',
-  'billion', 'million', 'trillion', 'percent', 'point', 'points', 'high', 'low',
-  'close', 'open', 'opens', 'opening', 'rises', 'rising', 'falls', 'falling',
-  'surges', 'surging', 'drops', 'dropping', 'hits', 'hitting', 'reaches',
+  'the',
+  'a',
+  'an',
+  'and',
+  'or',
+  'of',
+  'to',
+  'in',
+  'on',
+  'for',
+  'with',
+  'at',
+  'by',
+  'from',
+  'as',
+  'is',
+  'are',
+  'was',
+  'were',
+  'be',
+  'been',
+  'being',
+  'it',
+  'its',
+  'this',
+  'that',
+  'these',
+  'those',
+  'report',
+  'reports',
+  'reported',
+  'reporting',
+  'say',
+  'says',
+  'said',
+  'update',
+  'updates',
+  'news',
+  'live',
+  'breaking',
+  'latest',
+  'amid',
+  'over',
+  'new',
+  'post',
+  'posts',
+  'see',
+  'minutes',
+  'minute',
+  'signal',
+  'signals',
+  'steady',
+  'cooling',
+  'heating',
+  'watch',
+  'watching',
+  'still',
+  'just',
+  'than',
+  'into',
+  'out',
+  'up',
+  'down',
+  'but',
+  'not',
+  'has',
+  'have',
+  'had',
+  'will',
+  'can',
+  'may',
+  'week',
+  'month',
+  'year',
+  'day',
+  'days',
+  'last',
+  'next',
+  'after',
+  'before',
+  'about',
+  'between',
+  'during',
+  'through',
+  'while',
+  'since',
+  'could',
+  'would',
+  'should',
+  'also',
+  'more',
+  'most',
+  'much',
+  'many',
+  'some',
+  'other',
+  'what',
+  'when',
+  'where',
+  'which',
+  'who',
+  'how',
+  'why',
+  'does',
+  'did',
+  'doing',
+  'steep',
+  'price',
+  'battle',
+  'reverse',
+  'fortunes',
+  'pays',
+  'sources',
+  'according',
+  'leaves',
+  'stance',
+  'frustrated',
+  'opportunity',
+  'investors',
+  'lead',
+  'securities',
+  'fraud',
+  'lawsuit',
+  'apps',
+  'coding',
+  'vibe',
+  'startups',
+  'company',
+  'companies',
+  'stock',
+  'stocks',
+  'market',
+  'markets',
+  'trade',
+  'trades',
+  'trading',
+  'buy',
+  'sell',
+  'billion',
+  'million',
+  'trillion',
+  'percent',
+  'point',
+  'points',
+  'high',
+  'low',
+  'close',
+  'open',
+  'opens',
+  'opening',
+  'rises',
+  'rising',
+  'falls',
+  'falling',
+  'surges',
+  'surging',
+  'drops',
+  'dropping',
+  'hits',
+  'hitting',
+  'reaches',
 ]);
 
 /* ════════════════════════════════════════════════════════════════════
@@ -143,10 +288,20 @@ const KNOWN_ENTITIES = new Map([
 
 /** Ticker → canonical entity name */
 const TICKER_TO_ENTITY = {
-  aapl: 'apple', nvda: 'nvidia', tsla: 'tesla', msft: 'microsoft',
-  meta: 'meta', goog: 'google', amzn: 'amazon', glw: 'corning',
-  nflx: 'netflix', dis: 'disney', baba: 'alibaba',
-  btc: 'bitcoin', eth: 'ethereum', sol: 'solana',
+  aapl: 'apple',
+  nvda: 'nvidia',
+  tsla: 'tesla',
+  msft: 'microsoft',
+  meta: 'meta',
+  goog: 'google',
+  amzn: 'amazon',
+  glw: 'corning',
+  nflx: 'netflix',
+  dis: 'disney',
+  baba: 'alibaba',
+  btc: 'bitcoin',
+  eth: 'ethereum',
+  sol: 'solana',
 };
 
 /* ════════════════════════════════════════════════════════════════════
@@ -176,7 +331,7 @@ function extractEntities(event) {
   }
 
   /* Check impactedKeywords */
-  for (const kw of (event?.impactedKeywords || [])) {
+  for (const kw of event?.impactedKeywords || []) {
     const lower = String(kw).toLowerCase().trim();
     if (KNOWN_ENTITIES.has(lower)) {
       const info = KNOWN_ENTITIES.get(lower);
@@ -204,10 +359,16 @@ function extractEntities(event) {
   /* Fallback topic from event.topic field (Gamma tag_slug values) */
   if (!topic && event?.topic) {
     const TOPIC_MAP = {
-      Geopolitics: 'international-affairs', Conflict: 'international-affairs',
-      Economy: 'finance', Tech: 'tech', Health: 'science',
-      Politics: 'politics', Crypto: 'crypto', Finance: 'finance',
-      Sports: 'sports', Business: 'finance',
+      Geopolitics: 'international-affairs',
+      Conflict: 'international-affairs',
+      Economy: 'finance',
+      Tech: 'tech',
+      Health: 'science',
+      Politics: 'politics',
+      Crypto: 'crypto',
+      Finance: 'finance',
+      Sports: 'sports',
+      Business: 'finance',
     };
     topic = TOPIC_MAP[event.topic] || null;
   }
@@ -229,14 +390,14 @@ function extractEntities(event) {
 function relevanceScore(market, entityMap) {
   if (entityMap.size === 0) return 0;
 
-  const haystack = [
-    market?.question,
-    market?.title,
-    market?.groupItemTitle,
-    market?.description,
-  ].filter(Boolean).join(' ').toLowerCase();
+  const haystack = [market?.question, market?.title, market?.groupItemTitle, market?.description]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
 
   let score = 0;
+
+  // Entity overlap scoring — weight by entity type.
   for (const [canonical, info] of entityMap) {
     if (canonical.length < 3) continue;
     if (haystack.includes(canonical)) {
@@ -244,6 +405,19 @@ function relevanceScore(market, entityMap) {
       else if (info.type === 'country' || info.type === 'org') score += 2;
       else if (info.type === 'crypto' || info.type === 'product') score += 2;
       else score += 1;
+    }
+  }
+
+  // Hard reject: the Polymarket `crypto` tag (and others) sweeps up
+  // sports/MMA/fight markets sponsored by crypto platforms. If the
+  // market reads like a sports bet but the article entities aren't
+  // sports-tagged, drop the score to 0 so it can't pass the gate.
+  const sportsTerms =
+    /\b(win by|ko\/tko|round \d|fight|bout|match|seed|playoff|championship|ufc|mma|boxing|nfl|nba|nhl|mlb|o\/u \d|spread|moneyline|over\/under)\b/i;
+  if (sportsTerms.test(haystack)) {
+    const hasSportsEntity = [...entityMap.values()].some((e) => e.topic === 'sports');
+    if (!hasSportsEntity) {
+      score = 0;
     }
   }
 
@@ -279,29 +453,50 @@ function normalizeProbability(market) {
           const f = Number(parsed[0]);
           if (Number.isFinite(f) && f > 0 && f < 1) return f;
         }
-      } catch { /* not JSON */ }
+      } catch {
+        /* not JSON */
+      }
     }
   }
   return 0.5;
 }
 
 /**
- * Build a Polymarket URL using the EVENT slug (groupSlug), not the market slug.
- * Appends ?tid= for outcome deep-linking.
+ * Build a working Polymarket URL.
+ *
+ * Polymarket URL structure:
+ *   - Event page: https://polymarket.com/event/{event-slug}
+ *   - There is NO ?tid= parameter — conditionId is a blockchain
+ *     address (CTF contract), not a URL param. Appending it 404s.
+ *
+ * Gamma API returns:
+ *   - groupSlug: the EVENT-level slug (what we want)
+ *   - slug: the MARKET-level slug — usually an individual outcome,
+ *     not a valid URL on its own (often a hex hash)
+ *   - conditionId: CTF contract address (never goes in URL)
+ *   - id: internal DB ID (never goes in URL)
+ *
+ * ONLY groupSlug reliably produces a working URL. If we don't have
+ * one, fall back to the polymarket.com homepage rather than minting
+ * a 404. The accompanying hasValidUrl flag (see formatMarket) lets
+ * the UI hide the external-link affordance for those rows.
  */
 function buildMarketUrl(market) {
-  const eventSlug = market?.groupSlug || market?.group_slug || market?.eventSlug || market?.event_slug;
-  const conditionId = market?.conditionId || market?.condition_id;
-
+  const eventSlug =
+    market?.groupSlug || market?.group_slug || market?.eventSlug || market?.event_slug;
   if (eventSlug) {
-    const base = `https://polymarket.com/event/${eventSlug}`;
-    return conditionId ? `${base}?tid=${conditionId}` : base;
+    return `https://polymarket.com/event/${eventSlug}`;
   }
 
-  const fallback = market?.slug || market?.marketSlug || market?.id;
-  if (fallback) return `https://polymarket.com/event/${fallback}`;
+  // If we only have a market-level slug, accept it ONLY when it
+  // looks like a real event slug (kebab-case words, not a hex hash).
+  const slug = market?.slug || market?.marketSlug;
+  if (slug && slug.includes('-') && !slug.match(/^0x[a-f0-9]+$/i) && slug.length > 10) {
+    return `https://polymarket.com/event/${slug}`;
+  }
 
-  return 'https://polymarket.com/';
+  // Never construct a URL from conditionId or numeric id — both 404.
+  return 'https://polymarket.com';
 }
 
 function openActiveMarket(m) {
@@ -309,11 +504,15 @@ function openActiveMarket(m) {
 }
 
 function formatMarket(m) {
+  const url = buildMarketUrl(m);
   return {
     marketId: String(m?.id ?? m?.conditionId ?? ''),
     marketTitle: String(m?.groupItemTitle ?? m?.question ?? m?.title ?? 'Market'),
     description: typeof m?.description === 'string' ? m.description : '',
-    url: buildMarketUrl(m),
+    url,
+    // Hint for the UI — false when the URL fell back to polymarket.com
+    // homepage so the external-link arrow can be suppressed.
+    hasValidUrl: url !== 'https://polymarket.com',
     yesProbability: normalizeProbability(m),
     volume: Number(m?.volume ?? m?.volumeNum ?? 0),
     volume24hr: Number(m?.volume24hr ?? m?.volume24Hr ?? 0),
@@ -435,7 +634,9 @@ export async function findMatchingMarkets(event, { limit = 6 } = {}) {
         if (!id || seenIds.has(id)) continue;
 
         const score = relevanceScore(m, entities);
-        if (score === 0) continue;
+        // Tightened from `=== 0` to `< 2` so that a single short-string
+        // hit (e.g. "eth" matching inside "whether") doesn't qualify.
+        if (score < 2) continue;
 
         seenIds.add(id);
         entityMatches.push({
@@ -447,30 +648,22 @@ export async function findMatchingMarkets(event, { limit = 6 } = {}) {
       }
     }
 
-    entityMatches.sort((a, b) =>
-      b.score - a.score || b.volume24hr - a.volume24hr || b.volume - a.volume
+    entityMatches.sort(
+      (a, b) => b.score - a.score || b.volume24hr - a.volume24hr || b.volume - a.volume,
     );
     const topEntity = entityMatches.slice(0, TARGET);
 
-    const topicMarkets = [];
-    const remaining = TARGET - topEntity.length;
-
-    if (remaining > 0 && topic) {
-      const fetched = await fetchGammaMarkets('', 30, topic);
-      for (const m of fetched) {
-        if (topicMarkets.length >= remaining) break;
-        if (!openActiveMarket(m)) continue;
-        const id = String(m?.id ?? m?.conditionId ?? '');
-        if (!id || seenIds.has(id)) continue;
-        seenIds.add(id);
-        topicMarkets.push({ m });
-      }
-    }
-
-    const combined = [
-      ...topEntity.map((row) => formatMarket(row.m)),
-      ...topicMarkets.map((row) => formatMarket(row.m)),
-    ].slice(0, TARGET);
+    // No topic backfill: the Polymarket `crypto` / `politics` / etc.
+    // tags include random high-volume markets (sports bets sponsored
+    // by crypto platforms, etc.) that have nothing to do with the
+    // article. Showing fewer relevant markets — or none at all — is
+    // strictly better than padding with junk that erodes user trust.
+    // Rows whose URL would fall back to the homepage are also
+    // filtered out so we never present a dead-end link.
+    const combined = topEntity
+      .map((row) => formatMarket(row.m))
+      .filter((m) => m.hasValidUrl)
+      .slice(0, TARGET);
 
     return {
       markets: combined,

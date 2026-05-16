@@ -35,12 +35,7 @@ export function RelatedMarketsPanel({
           <h3 className="pm-related__title">Related on Polymarket</h3>
         </div>
         {variant === 'modal' && (
-          <button
-            type="button"
-            onClick={onClose}
-            className="pm-related__close"
-            aria-label="Close"
-          >
+          <button type="button" onClick={onClose} className="pm-related__close" aria-label="Close">
             ×
           </button>
         )}
@@ -48,8 +43,8 @@ export function RelatedMarketsPanel({
 
       {variant === 'modal' && (
         <p className="pm-related__subtitle">
-          Live prediction markets matched to this event&apos;s keywords. Odds shown in cents
-          (¢) — the implied probability of the YES outcome.
+          Live prediction markets matched to this event&apos;s keywords. Odds shown in cents (¢) —
+          the implied probability of the YES outcome.
         </p>
       )}
 
@@ -76,8 +71,8 @@ export function RelatedMarketsPanel({
 
       {!isLoading && !error && markets.length === 0 && !noHighConfidence && (
         <div className="pm-related__empty">
-          No related markets found on Polymarket. The keywords from this event didn&apos;t match
-          any active markets right now — that&apos;s normal for niche or breaking news.
+          No related markets found on Polymarket. The keywords from this event didn&apos;t match any
+          active markets right now — that&apos;s normal for niche or breaking news.
         </div>
       )}
 
@@ -112,12 +107,7 @@ function MarketRow({ market }) {
 
   return (
     <li>
-      <a
-        href={market.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="pm-related__row"
-      >
+      <a href={market.url} target="_blank" rel="noopener noreferrer" className="pm-related__row">
         <div className="pm-related__row-icon-cell">
           {market.icon ? (
             <img
@@ -154,10 +144,9 @@ function MarketRow({ market }) {
           </div>
         </div>
 
-        <i
-          className="bi bi-box-arrow-up-right pm-related__row-ext"
-          aria-hidden
-        />
+        {market.hasValidUrl !== false && (
+          <i className="bi bi-box-arrow-up-right pm-related__row-ext" aria-hidden />
+        )}
       </a>
     </li>
   );
