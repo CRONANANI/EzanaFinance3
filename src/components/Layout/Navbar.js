@@ -93,6 +93,14 @@ export function Navbar() {
           icon: 'bi-globe2',
         },
         {
+          id: 30,
+          title: 'Real Estate Marketplace',
+          description: 'Fractional property investments',
+          url: '/real-estate',
+          icon: 'bi-houses',
+          variant: 'gold',
+        },
+        {
           id: 28,
           title: 'Centaur Intelligence',
           description: 'AI research assistant',
