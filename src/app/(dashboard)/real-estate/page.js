@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import './real-estate.css';
 
 // Property types for the filter pill row.
@@ -139,6 +140,7 @@ function formatCurrency(n) {
 }
 
 export default function RealEstateMarketplacePage() {
+  const router = useRouter();
   const [filter, setFilter] = useState('All');
   const [sortBy, setSortBy] = useState('funded');
 
@@ -343,6 +345,7 @@ export default function RealEstateMarketplacePage() {
           type="button"
           className="re-card-btn"
           style={{ fontSize: '0.65rem', padding: '0.4rem 1rem' }}
+          onClick={() => router.push('/real-estate/sponsor-application')}
         >
           Apply as a Sponsor
         </button>
