@@ -6,7 +6,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { WorldMap, scoreToColor } from '@/components/ui/world-map';
 import { useGlobalPowerMap } from '@/hooks/useGlobalPowerMap';
+import { useBillionairesData } from '@/hooks/useBillionairesData';
 import { ShowMeDataButton } from '@/components/market-analysis/ShowMeDataButton';
+import { DataLayerBar } from '@/components/market-analysis/DataLayerBar';
 import { RelatedMarketsPanel } from '@/components/polymarket/RelatedMarketsPanel';
 import { useAuth } from '@/components/AuthProvider';
 import { useOrg } from '@/contexts/OrgContext';
@@ -18,28 +20,33 @@ import { useOrg } from '@/contexts/OrgContext';
    we dynamic-import those to take ~80 KB off the critical bundle. */
 const GlobalPowerMapControl = dynamic(
   () => import('@/components/market-analysis/GlobalPowerMapControl'),
-  { ssr: false, loading: () => null }
+  { ssr: false, loading: () => null },
 );
 const TutorialOverlay = dynamic(
-  () => import('@/components/market-analysis/TutorialOverlay').then((m) => ({ default: m.TutorialOverlay })),
-  { ssr: false, loading: () => null }
+  () =>
+    import('@/components/market-analysis/TutorialOverlay').then((m) => ({
+      default: m.TutorialOverlay,
+    })),
+  { ssr: false, loading: () => null },
 );
 const ISRFeedCard = dynamic(
-  () => import('@/components/market-analysis/ISRFeedCard').then((m) => ({ default: m.ISRFeedCard })),
-  { ssr: false, loading: () => null }
+  () =>
+    import('@/components/market-analysis/ISRFeedCard').then((m) => ({ default: m.ISRFeedCard })),
+  { ssr: false, loading: () => null },
 );
 const ISRArticleModal = dynamic(
-  () => import('@/components/market-analysis/ISRArticleModal').then((m) => ({ default: m.ISRArticleModal })),
-  { ssr: false, loading: () => null }
+  () =>
+    import('@/components/market-analysis/ISRArticleModal').then((m) => ({
+      default: m.ISRArticleModal,
+    })),
+  { ssr: false, loading: () => null },
 );
 const OrgSendToTeamModal = dynamic(
-  () => import('@/components/org/OrgSendToTeamModal').then((m) => ({ default: m.OrgSendToTeamModal })),
-  { ssr: false, loading: () => null }
+  () =>
+    import('@/components/org/OrgSendToTeamModal').then((m) => ({ default: m.OrgSendToTeamModal })),
+  { ssr: false, loading: () => null },
 );
-import {
-  PANEL_ID_TO_CITY_KEY,
-  PANEL_ID_TO_FINHUB_CITY_ID,
-} from '@/config/cityNewsSources';
+import { PANEL_ID_TO_CITY_KEY, PANEL_ID_TO_FINHUB_CITY_ID } from '@/config/cityNewsSources';
 import {
   MARKETS_DATA,
   CENTRAL_BANKS_DATA,
@@ -90,16 +97,40 @@ const LAYER_CONFIG = {
 
 const FINANCIAL_CITIES = [
   { id: 'toronto', name: 'Toronto', country: 'Canada', exchange: 'TSX', timezone: 'EST' },
-  { id: 'new-york', name: 'New York', country: 'United States', exchange: 'NYSE / NASDAQ', timezone: 'EST' },
-  { id: 'boston', name: 'Boston', country: 'United States', exchange: 'Biotech / Education', timezone: 'EST' },
+  {
+    id: 'new-york',
+    name: 'New York',
+    country: 'United States',
+    exchange: 'NYSE / NASDAQ',
+    timezone: 'EST',
+  },
+  {
+    id: 'boston',
+    name: 'Boston',
+    country: 'United States',
+    exchange: 'Biotech / Education',
+    timezone: 'EST',
+  },
   { id: 'sao-paulo', name: 'São Paulo', country: 'Brazil', exchange: 'B3', timezone: 'BRT' },
   { id: 'santiago', name: 'Santiago', country: 'Chile', exchange: 'SSE', timezone: 'CLT' },
   { id: 'lima', name: 'Lima', country: 'Peru', exchange: 'BVL', timezone: 'PET' },
   { id: 'bogota', name: 'Bogotá', country: 'Colombia', exchange: 'BVC', timezone: 'COT' },
   { id: 'medellin', name: 'Medellín', country: 'Colombia', exchange: 'BVC', timezone: 'COT' },
-  { id: 'buenos-aires', name: 'Buenos Aires', country: 'Argentina', exchange: 'BYMA', timezone: 'ART' },
+  {
+    id: 'buenos-aires',
+    name: 'Buenos Aires',
+    country: 'Argentina',
+    exchange: 'BYMA',
+    timezone: 'ART',
+  },
   { id: 'london', name: 'London', country: 'United Kingdom', exchange: 'LSE', timezone: 'GMT' },
-  { id: 'frankfurt', name: 'Frankfurt', country: 'Germany', exchange: 'Deutsche Börse', timezone: 'CET' },
+  {
+    id: 'frankfurt',
+    name: 'Frankfurt',
+    country: 'Germany',
+    exchange: 'Deutsche Börse',
+    timezone: 'CET',
+  },
   { id: 'dubai', name: 'Dubai', country: 'UAE', exchange: 'DFM', timezone: 'GST' },
   { id: 'mumbai', name: 'Mumbai', country: 'India', exchange: 'BSE / NSE', timezone: 'IST' },
   { id: 'singapore', name: 'Singapore', country: 'Singapore', exchange: 'SGX', timezone: 'SGT' },
@@ -109,20 +140,56 @@ const FINANCIAL_CITIES = [
   { id: 'sydney', name: 'Sydney', country: 'Australia', exchange: 'ASX', timezone: 'AEST' },
   { id: 'auckland', name: 'Auckland', country: 'New Zealand', exchange: 'NZX', timezone: 'NZDT' },
   { id: 'melbourne', name: 'Melbourne', country: 'Australia', exchange: 'ASX', timezone: 'AEST' },
-  { id: 'johannesburg', name: 'Johannesburg', country: 'South Africa', exchange: 'JSE', timezone: 'SAST' },
+  {
+    id: 'johannesburg',
+    name: 'Johannesburg',
+    country: 'South Africa',
+    exchange: 'JSE',
+    timezone: 'SAST',
+  },
   { id: 'addis-ababa', name: 'Addis Ababa', country: 'Ethiopia', exchange: 'ESX', timezone: 'EAT' },
   { id: 'lagos', name: 'Lagos', country: 'Nigeria', exchange: 'NGX', timezone: 'WAT' },
   { id: 'nairobi', name: 'Nairobi', country: 'Kenya', exchange: 'NSE', timezone: 'EAT' },
   { id: 'moscow', name: 'Moscow', country: 'Russia', exchange: 'MOEX', timezone: 'MSK' },
   { id: 'paris', name: 'Paris', country: 'France', exchange: 'Euronext', timezone: 'CET' },
   { id: 'tel-aviv', name: 'Tel Aviv', country: 'Israel', exchange: 'TASE', timezone: 'IST' },
-  { id: 'miami', name: 'Miami', country: 'United States', exchange: 'Fintech Hub', timezone: 'EST' },
-  { id: 'san-francisco', name: 'San Francisco', country: 'United States', exchange: 'VC / Tech', timezone: 'PST' },
-  { id: 'chicago', name: 'Chicago', country: 'United States', exchange: 'CME / CBOE', timezone: 'CST' },
+  {
+    id: 'miami',
+    name: 'Miami',
+    country: 'United States',
+    exchange: 'Fintech Hub',
+    timezone: 'EST',
+  },
+  {
+    id: 'san-francisco',
+    name: 'San Francisco',
+    country: 'United States',
+    exchange: 'VC / Tech',
+    timezone: 'PST',
+  },
+  {
+    id: 'chicago',
+    name: 'Chicago',
+    country: 'United States',
+    exchange: 'CME / CBOE',
+    timezone: 'CST',
+  },
   { id: 'seoul', name: 'Seoul', country: 'South Korea', exchange: 'KRX', timezone: 'KST' },
   { id: 'geneva', name: 'Geneva', country: 'Switzerland', exchange: 'SIX', timezone: 'CET' },
-  { id: 'dublin', name: 'Dublin', country: 'Ireland', exchange: 'Euronext Dublin', timezone: 'GMT' },
-  { id: 'stockholm', name: 'Stockholm', country: 'Sweden', exchange: 'Nasdaq Nordic', timezone: 'CET' },
+  {
+    id: 'dublin',
+    name: 'Dublin',
+    country: 'Ireland',
+    exchange: 'Euronext Dublin',
+    timezone: 'GMT',
+  },
+  {
+    id: 'stockholm',
+    name: 'Stockholm',
+    country: 'Sweden',
+    exchange: 'Nasdaq Nordic',
+    timezone: 'CET',
+  },
   { id: 'montreal', name: 'Montreal', country: 'Canada', exchange: 'TMX / MX', timezone: 'EST' },
 ];
 
@@ -144,13 +211,21 @@ function renderTabContent(tabName, category, tabData) {
                 <span className="ma-panel-item-name">{item.name}</span>
               </div>
               <div className="ma-panel-item-data">
-                <span className={`ma-panel-item-change ${item.changeVal >= 0 ? 'positive' : 'negative'}`}>
+                <span
+                  className={`ma-panel-item-change ${item.changeVal >= 0 ? 'positive' : 'negative'}`}
+                >
                   {item.changeVal >= 0 ? '▲' : '▼'} {item.change}
                 </span>
               </div>
             </div>
             <div className="ma-sector-bar">
-              <div className="ma-sector-bar-fill" style={{ width: `${item.bar}%`, backgroundColor: item.changeVal >= 0 ? '#10b981' : '#f87171' }} />
+              <div
+                className="ma-sector-bar-fill"
+                style={{
+                  width: `${item.bar}%`,
+                  backgroundColor: item.changeVal >= 0 ? '#10b981' : '#f87171',
+                }}
+              />
             </div>
           </div>
         ))}
@@ -164,7 +239,16 @@ function renderTabContent(tabName, category, tabData) {
       <div className="ma-panel-list">
         {tabData.groups.map((group, gIdx) => (
           <div key={gIdx}>
-            <div style={{ padding: '0.75rem 1rem 0.5rem', fontSize: '0.625rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <div
+              style={{
+                padding: '0.75rem 1rem 0.5rem',
+                fontSize: '0.625rem',
+                fontWeight: 600,
+                color: '#6b7280',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+              }}
+            >
               {group.title}
             </div>
             {group.items.map((item, iIdx) => (
@@ -176,7 +260,9 @@ function renderTabContent(tabName, category, tabData) {
                   </div>
                   <div className="ma-panel-item-data">
                     <span className="ma-panel-item-price">{item.value}</span>
-                    <span className={`ma-panel-item-change ${item.changeVal >= 0 ? 'positive' : 'negative'}`}>
+                    <span
+                      className={`ma-panel-item-change ${item.changeVal >= 0 ? 'positive' : 'negative'}`}
+                    >
                       {item.changeVal >= 0 ? '▲' : '▼'} {item.change}
                     </span>
                   </div>
@@ -193,12 +279,28 @@ function renderTabContent(tabName, category, tabData) {
   if (displayType === 'pre-market-table' && tabData.groups) {
     return (
       <div className="ma-panel-list">
-        <div style={{ padding: '0.75rem 1rem', fontSize: '0.5625rem', color: '#9ca3af', fontFamily: 'var(--font-mono, monospace)' }}>
+        <div
+          style={{
+            padding: '0.75rem 1rem',
+            fontSize: '0.5625rem',
+            color: '#9ca3af',
+            fontFamily: 'var(--font-mono, monospace)',
+          }}
+        >
           PRE-MARKET SESSION: {tabData.preMarketSession}
         </div>
         {tabData.groups.map((group, gIdx) => (
           <div key={gIdx}>
-            <div style={{ padding: '0.75rem 1rem 0.5rem', fontSize: '0.625rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <div
+              style={{
+                padding: '0.75rem 1rem 0.5rem',
+                fontSize: '0.625rem',
+                fontWeight: 600,
+                color: '#6b7280',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+              }}
+            >
               {group.title}
             </div>
             {group.items.map((item, iIdx) => (
@@ -207,11 +309,17 @@ function renderTabContent(tabName, category, tabData) {
                   <span className="ma-panel-item-dot" />
                   <div className="ma-panel-item-info" style={{ flex: 1 }}>
                     <span className="ma-panel-item-name">{item.name}</span>
-                    {item.note && <span style={{ fontSize: '0.5rem', color: '#9ca3af', marginLeft: '0.5rem' }}>({item.note})</span>}
+                    {item.note && (
+                      <span style={{ fontSize: '0.5rem', color: '#9ca3af', marginLeft: '0.5rem' }}>
+                        ({item.note})
+                      </span>
+                    )}
                   </div>
                   <div className="ma-panel-item-data">
                     <span className="ma-panel-item-price">{item.value}</span>
-                    <span className={`ma-panel-item-change ${item.changeVal >= 0 ? 'positive' : 'negative'}`}>
+                    <span
+                      className={`ma-panel-item-change ${item.changeVal >= 0 ? 'positive' : 'negative'}`}
+                    >
                       {item.changeVal >= 0 ? '▲' : '▼'} {item.change}
                     </span>
                   </div>
@@ -228,40 +336,67 @@ function renderTabContent(tabName, category, tabData) {
   if (displayType === 'rate-decisions-table') {
     return (
       <div className="ma-panel-list">
-        <div style={{ padding: '0.75rem 1rem 0.5rem', fontSize: '0.625rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <div
+          style={{
+            padding: '0.75rem 1rem 0.5rem',
+            fontSize: '0.625rem',
+            fontWeight: 600,
+            color: '#6b7280',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+          }}
+        >
           Upcoming Rate Decisions
         </div>
-        {tabData.upcoming && tabData.upcoming.map((item, idx) => (
-          <div key={`u-${idx}`} className="ma-panel-item">
-            <div className="ma-panel-item-row">
-              <span className="ma-panel-item-dot" />
-              <div className="ma-panel-item-info" style={{ flex: 1 }}>
-                <span className="ma-panel-item-name">{item.bank}</span>
-                <span className="ma-panel-item-region">{item.date} · {item.current}</span>
-              </div>
-              <div className="ma-panel-item-data">
-                <span style={{ fontSize: '0.75rem', color: '#10b981' }}>Expected: {item.expected}</span>
+        {tabData.upcoming &&
+          tabData.upcoming.map((item, idx) => (
+            <div key={`u-${idx}`} className="ma-panel-item">
+              <div className="ma-panel-item-row">
+                <span className="ma-panel-item-dot" />
+                <div className="ma-panel-item-info" style={{ flex: 1 }}>
+                  <span className="ma-panel-item-name">{item.bank}</span>
+                  <span className="ma-panel-item-region">
+                    {item.date} · {item.current}
+                  </span>
+                </div>
+                <div className="ma-panel-item-data">
+                  <span style={{ fontSize: '0.75rem', color: '#10b981' }}>
+                    Expected: {item.expected}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-        <div style={{ padding: '0.75rem 1rem 0.5rem', fontSize: '0.625rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '1rem' }}>
+          ))}
+        <div
+          style={{
+            padding: '0.75rem 1rem 0.5rem',
+            fontSize: '0.625rem',
+            fontWeight: 600,
+            color: '#6b7280',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            marginTop: '1rem',
+          }}
+        >
           Recent Decisions
         </div>
-        {tabData.recent && tabData.recent.map((item, idx) => (
-          <div key={`r-${idx}`} className="ma-panel-item">
-            <div className="ma-panel-item-row">
-              <span className="ma-panel-item-dot" />
-              <div className="ma-panel-item-info" style={{ flex: 1 }}>
-                <span className="ma-panel-item-name">{item.bank}</span>
-                <span className="ma-panel-item-region">{item.date}</span>
-              </div>
-              <div className="ma-panel-item-data">
-                <span style={{ fontSize: '0.75rem' }}>{item.decision} {item.outcome}</span>
+        {tabData.recent &&
+          tabData.recent.map((item, idx) => (
+            <div key={`r-${idx}`} className="ma-panel-item">
+              <div className="ma-panel-item-row">
+                <span className="ma-panel-item-dot" />
+                <div className="ma-panel-item-info" style={{ flex: 1 }}>
+                  <span className="ma-panel-item-name">{item.bank}</span>
+                  <span className="ma-panel-item-region">{item.date}</span>
+                </div>
+                <div className="ma-panel-item-data">
+                  <span style={{ fontSize: '0.75rem' }}>
+                    {item.decision} {item.outcome}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
       </div>
     );
   }
@@ -270,40 +405,65 @@ function renderTabContent(tabName, category, tabData) {
   if (displayType === 'speeches-table') {
     return (
       <div className="ma-panel-list">
-        <div style={{ padding: '0.75rem 1rem 0.5rem', fontSize: '0.625rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <div
+          style={{
+            padding: '0.75rem 1rem 0.5rem',
+            fontSize: '0.625rem',
+            fontWeight: 600,
+            color: '#6b7280',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+          }}
+        >
           Upcoming Speeches
         </div>
-        {tabData.upcoming && tabData.upcoming.map((item, idx) => (
-          <div key={`u-${idx}`} className="ma-panel-item">
-            <div className="ma-panel-item-row">
-              <span className="ma-panel-item-dot" />
-              <div className="ma-panel-item-info" style={{ flex: 1 }}>
-                <span className="ma-panel-item-name">{item.official}</span>
-                <span className="ma-panel-item-region">{item.title} · {item.location}</span>
-              </div>
-              <div className="ma-panel-item-data">
-                <span style={{ fontSize: '0.75rem', color: '#10b981' }}>{item.date}</span>
+        {tabData.upcoming &&
+          tabData.upcoming.map((item, idx) => (
+            <div key={`u-${idx}`} className="ma-panel-item">
+              <div className="ma-panel-item-row">
+                <span className="ma-panel-item-dot" />
+                <div className="ma-panel-item-info" style={{ flex: 1 }}>
+                  <span className="ma-panel-item-name">{item.official}</span>
+                  <span className="ma-panel-item-region">
+                    {item.title} · {item.location}
+                  </span>
+                </div>
+                <div className="ma-panel-item-data">
+                  <span style={{ fontSize: '0.75rem', color: '#10b981' }}>{item.date}</span>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-        <div style={{ padding: '0.75rem 1rem 0.5rem', fontSize: '0.625rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '1rem' }}>
+          ))}
+        <div
+          style={{
+            padding: '0.75rem 1rem 0.5rem',
+            fontSize: '0.625rem',
+            fontWeight: 600,
+            color: '#6b7280',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            marginTop: '1rem',
+          }}
+        >
           Recent Speeches
         </div>
-        {tabData.recent && tabData.recent.map((item, idx) => (
-          <div key={`r-${idx}`} className="ma-panel-item">
-            <div className="ma-panel-item-row">
-              <span className="ma-panel-item-dot" />
-              <div className="ma-panel-item-info" style={{ flex: 1 }}>
-                <span className="ma-panel-item-name">{item.official}</span>
-                <span className="ma-panel-item-region">{item.title} · {item.location}</span>
-              </div>
-              <div className="ma-panel-item-data">
-                <span style={{ fontSize: '0.75rem' }}>{item.date}</span>
+        {tabData.recent &&
+          tabData.recent.map((item, idx) => (
+            <div key={`r-${idx}`} className="ma-panel-item">
+              <div className="ma-panel-item-row">
+                <span className="ma-panel-item-dot" />
+                <div className="ma-panel-item-info" style={{ flex: 1 }}>
+                  <span className="ma-panel-item-name">{item.official}</span>
+                  <span className="ma-panel-item-region">
+                    {item.title} · {item.location}
+                  </span>
+                </div>
+                <div className="ma-panel-item-data">
+                  <span style={{ fontSize: '0.75rem' }}>{item.date}</span>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
       </div>
     );
   }
@@ -322,7 +482,9 @@ function renderTabContent(tabName, category, tabData) {
               </div>
               <div className="ma-panel-item-data">
                 <span className="ma-panel-item-price">{item.value}</span>
-                <span className={`ma-panel-item-change ${item.changeVal >= 0 ? 'positive' : 'negative'}`}>
+                <span
+                  className={`ma-panel-item-change ${item.changeVal >= 0 ? 'positive' : 'negative'}`}
+                >
                   {item.changeVal >= 0 ? '▲' : '▼'} {item.change}
                 </span>
               </div>
@@ -337,22 +499,27 @@ function renderTabContent(tabName, category, tabData) {
   if (displayType === 'currency-list' || (tabData.items && !displayType)) {
     return (
       <div className="ma-panel-list">
-        {tabData.items && tabData.items.map((item, idx) => (
-          <div key={idx} className="ma-panel-item">
-            <div className="ma-panel-item-row">
-              <span className="ma-panel-item-dot" />
-              <div className="ma-panel-item-info" style={{ flex: 1 }}>
-                <span className="ma-panel-item-name">{item.emoji} {item.code} - {item.country}</span>
-              </div>
-              <div className="ma-panel-item-data">
-                <span className="ma-panel-item-price">{item.value}</span>
-                <span className={`ma-panel-item-change ${item.changeVal >= 0 ? 'positive' : 'negative'}`}>
-                  {item.changeVal >= 0 ? '▲' : '▼'} {item.change}
-                </span>
+        {tabData.items &&
+          tabData.items.map((item, idx) => (
+            <div key={idx} className="ma-panel-item">
+              <div className="ma-panel-item-row">
+                <span className="ma-panel-item-dot" />
+                <div className="ma-panel-item-info" style={{ flex: 1 }}>
+                  <span className="ma-panel-item-name">
+                    {item.emoji} {item.code} - {item.country}
+                  </span>
+                </div>
+                <div className="ma-panel-item-data">
+                  <span className="ma-panel-item-price">{item.value}</span>
+                  <span
+                    className={`ma-panel-item-change ${item.changeVal >= 0 ? 'positive' : 'negative'}`}
+                  >
+                    {item.changeVal >= 0 ? '▲' : '▼'} {item.change}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
       </div>
     );
   }
@@ -371,9 +538,13 @@ function renderTabContent(tabName, category, tabData) {
               </div>
               <div className="ma-panel-item-data">
                 {item.price && <span className="ma-panel-item-price">{item.price}</span>}
-                {item.change && <span className={`ma-panel-item-change ${item.changeVal >= 0 ? 'positive' : 'negative'}`}>
-                  {item.changeVal >= 0 ? '▲' : '▼'} {item.change}
-                </span>}
+                {item.change && (
+                  <span
+                    className={`ma-panel-item-change ${item.changeVal >= 0 ? 'positive' : 'negative'}`}
+                  >
+                    {item.changeVal >= 0 ? '▲' : '▼'} {item.change}
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -396,7 +567,11 @@ function CategoryPanel({ category, onClose }) {
 
   if (minimized) {
     return (
-      <div className="ma-panel ma-panel-minimized" style={{ cursor: 'pointer' }} onClick={() => setMinimized(false)}>
+      <div
+        className="ma-panel ma-panel-minimized"
+        style={{ cursor: 'pointer' }}
+        onClick={() => setMinimized(false)}
+      >
         <span className="ma-panel-dot" /> {layerConfig.title}
       </div>
     );
@@ -405,15 +580,26 @@ function CategoryPanel({ category, onClose }) {
   return (
     <div className="ma-panel">
       <div className="ma-panel-header">
-        <span><span className="ma-panel-dot" /> {layerConfig.title}</span>
+        <span>
+          <span className="ma-panel-dot" /> {layerConfig.title}
+        </span>
         <div className="ma-panel-actions">
-          <button type="button" onClick={() => setMinimized(true)} title="Minimize">—</button>
-          <button type="button" onClick={onClose} title="Close">✕</button>
+          <button type="button" onClick={() => setMinimized(true)} title="Minimize">
+            —
+          </button>
+          <button type="button" onClick={onClose} title="Close">
+            ✕
+          </button>
         </div>
       </div>
       <div className="ma-panel-tabs">
         {layerConfig.tabs.map((tab) => (
-          <button key={tab} type="button" className={`ma-panel-tab ${activeTab === tab ? 'active' : ''}`} onClick={() => setActiveTab(tab)}>
+          <button
+            key={tab}
+            type="button"
+            className={`ma-panel-tab ${activeTab === tab ? 'active' : ''}`}
+            onClick={() => setActiveTab(tab)}
+          >
             {tab.toUpperCase()}
           </button>
         ))}
@@ -425,37 +611,99 @@ function CategoryPanel({ category, onClose }) {
 
 function FilterPanel({ onClose }) {
   const [filters, setFilters] = useState({
-    openMarkets: true, closedMarkets: true, americas: true, europe: true,
-    asiaPacific: true, middleEast: true, bullish: true, bearish: true,
+    openMarkets: true,
+    closedMarkets: true,
+    americas: true,
+    europe: true,
+    asiaPacific: true,
+    middleEast: true,
+    bullish: true,
+    bearish: true,
   });
   const toggle = (key) => setFilters((p) => ({ ...p, [key]: !p[key] }));
   return (
     <div className="ma-panel ma-panel-right">
       <div className="ma-panel-header">
-        <span><span className="ma-panel-dot" /> FILTER</span>
-        <div className="ma-panel-actions"><button type="button" onClick={onClose}>✕</button></div>
+        <span>
+          <span className="ma-panel-dot" /> FILTER
+        </span>
+        <div className="ma-panel-actions">
+          <button type="button" onClick={onClose}>
+            ✕
+          </button>
+        </div>
       </div>
       <div className="ma-filter-body">
         <div className="ma-filter-section">
           <h4>MARKET STATUS</h4>
-          <label><input type="checkbox" checked={filters.openMarkets} onChange={() => toggle('openMarkets')} /> Open Markets</label>
-          <label><input type="checkbox" checked={filters.closedMarkets} onChange={() => toggle('closedMarkets')} /> Closed Markets</label>
+          <label>
+            <input
+              type="checkbox"
+              checked={filters.openMarkets}
+              onChange={() => toggle('openMarkets')}
+            />{' '}
+            Open Markets
+          </label>
+          <label>
+            <input
+              type="checkbox"
+              checked={filters.closedMarkets}
+              onChange={() => toggle('closedMarkets')}
+            />{' '}
+            Closed Markets
+          </label>
         </div>
         <div className="ma-filter-section">
           <h4>REGIONS</h4>
-          <label><input type="checkbox" checked={filters.americas} onChange={() => toggle('americas')} /> Americas</label>
-          <label><input type="checkbox" checked={filters.europe} onChange={() => toggle('europe')} /> Europe</label>
-          <label><input type="checkbox" checked={filters.asiaPacific} onChange={() => toggle('asiaPacific')} /> Asia-Pacific</label>
-          <label><input type="checkbox" checked={filters.middleEast} onChange={() => toggle('middleEast')} /> Middle East & Africa</label>
+          <label>
+            <input type="checkbox" checked={filters.americas} onChange={() => toggle('americas')} />{' '}
+            Americas
+          </label>
+          <label>
+            <input type="checkbox" checked={filters.europe} onChange={() => toggle('europe')} />{' '}
+            Europe
+          </label>
+          <label>
+            <input
+              type="checkbox"
+              checked={filters.asiaPacific}
+              onChange={() => toggle('asiaPacific')}
+            />{' '}
+            Asia-Pacific
+          </label>
+          <label>
+            <input
+              type="checkbox"
+              checked={filters.middleEast}
+              onChange={() => toggle('middleEast')}
+            />{' '}
+            Middle East & Africa
+          </label>
         </div>
         <div className="ma-filter-section">
           <h4>SENTIMENT</h4>
-          <label><input type="checkbox" checked={filters.bullish} onChange={() => toggle('bullish')} /> Bullish / Positive</label>
-          <label><input type="checkbox" checked={filters.bearish} onChange={() => toggle('bearish')} /> Bearish / Negative</label>
+          <label>
+            <input type="checkbox" checked={filters.bullish} onChange={() => toggle('bullish')} />{' '}
+            Bullish / Positive
+          </label>
+          <label>
+            <input type="checkbox" checked={filters.bearish} onChange={() => toggle('bearish')} />{' '}
+            Bearish / Negative
+          </label>
         </div>
         <div className="ma-filter-actions">
-          <button type="button" className="ma-filter-reset" onClick={() => setFilters(Object.fromEntries(Object.keys(filters).map((k) => [k, true])))}>RESET ALL</button>
-          <button type="button" className="ma-filter-close" onClick={onClose}>CLOSE</button>
+          <button
+            type="button"
+            className="ma-filter-reset"
+            onClick={() =>
+              setFilters(Object.fromEntries(Object.keys(filters).map((k) => [k, true])))
+            }
+          >
+            RESET ALL
+          </button>
+          <button type="button" className="ma-filter-close" onClick={onClose}>
+            CLOSE
+          </button>
         </div>
       </div>
     </div>
@@ -466,21 +714,41 @@ function SettingsPanel({ onClose }) {
   return (
     <div className="ma-panel ma-panel-right">
       <div className="ma-panel-header">
-        <span><span className="ma-panel-dot" /> SETTINGS</span>
-        <div className="ma-panel-actions"><button type="button" onClick={onClose}>✕</button></div>
+        <span>
+          <span className="ma-panel-dot" /> SETTINGS
+        </span>
+        <div className="ma-panel-actions">
+          <button type="button" onClick={onClose}>
+            ✕
+          </button>
+        </div>
       </div>
       <div className="ma-settings-body">
         <div className="ma-filter-section">
           <h4>TIMEZONE</h4>
-          <select className="ma-settings-select"><option>UTC</option><option>EST</option><option>GMT</option><option>JST</option><option>CET</option></select>
+          <select className="ma-settings-select">
+            <option>UTC</option>
+            <option>EST</option>
+            <option>GMT</option>
+            <option>JST</option>
+            <option>CET</option>
+          </select>
         </div>
         <div className="ma-filter-section">
           <h4>DATE FORMAT</h4>
-          <select className="ma-settings-select"><option>MM/DD/YYYY — US</option><option>DD/MM/YYYY — EU</option><option>YYYY-MM-DD — ISO</option></select>
+          <select className="ma-settings-select">
+            <option>MM/DD/YYYY — US</option>
+            <option>DD/MM/YYYY — EU</option>
+            <option>YYYY-MM-DD — ISO</option>
+          </select>
         </div>
         <div className="ma-filter-section">
           <h4>TICKER SPEED</h4>
-          <select className="ma-settings-select"><option>Slow</option><option>Normal</option><option>Fast</option></select>
+          <select className="ma-settings-select">
+            <option>Slow</option>
+            <option>Normal</option>
+            <option>Fast</option>
+          </select>
         </div>
       </div>
     </div>
@@ -553,9 +821,10 @@ function CityNewsPanel({ panelId, powerCountry, selectedLayers, countryScores, o
   }, [finhubCityId, powerCountry, selectedLayers]);
 
   const timeAgo = (unixOrIso) => {
-    const ms = typeof unixOrIso === 'number'
-      ? Date.now() - unixOrIso * 1000
-      : Date.now() - new Date(unixOrIso).getTime();
+    const ms =
+      typeof unixOrIso === 'number'
+        ? Date.now() - unixOrIso * 1000
+        : Date.now() - new Date(unixOrIso).getTime();
     const mins = Math.floor(ms / 60000);
     if (mins < 60) return `${mins}m ago`;
     const hours = Math.floor(mins / 60);
@@ -574,12 +843,26 @@ function CityNewsPanel({ panelId, powerCountry, selectedLayers, countryScores, o
               {selectedLayers.length} power layer{selectedLayers.length !== 1 ? 's' : ''} selected
             </span>
           </div>
-          <button type="button" className="ma-city-panel-close" onClick={onClose} aria-label="Close"><i className="bi bi-x-lg" /></button>
+          <button
+            type="button"
+            className="ma-city-panel-close"
+            onClick={onClose}
+            aria-label="Close"
+          >
+            <i className="bi bi-x-lg" />
+          </button>
         </div>
 
         <div className="ma-city-panel-body">
           {selectedLayers.length > 0 && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem', marginBottom: '0.75rem' }}>
+            <div
+              style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '0.375rem',
+                marginBottom: '0.75rem',
+              }}
+            >
               {selectedLayers.map((layer) => (
                 <span
                   key={layer}
@@ -600,15 +883,31 @@ function CityNewsPanel({ panelId, powerCountry, selectedLayers, countryScores, o
             </div>
           )}
           {powerScore != null && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                marginBottom: '0.75rem',
+              }}
+            >
               <span style={{ fontSize: '0.65rem', color: '#6b7280' }}>Power score</span>
-              <div style={{ flex: 1, height: '6px', background: '#1f2937', borderRadius: '4px', overflow: 'hidden' }}>
+              <div
+                style={{
+                  flex: 1,
+                  height: '6px',
+                  background: '#1f2937',
+                  borderRadius: '4px',
+                  overflow: 'hidden',
+                }}
+              >
                 <div
                   style={{
                     height: '100%',
                     borderRadius: '4px',
                     width: `${powerScore}%`,
-                    background: powerScore >= 70 ? '#22c55e' : powerScore >= 45 ? '#facc15' : '#ef4444',
+                    background:
+                      powerScore >= 70 ? '#22c55e' : powerScore >= 45 ? '#facc15' : '#ef4444',
                   }}
                 />
               </div>
@@ -632,7 +931,15 @@ function CityNewsPanel({ panelId, powerCountry, selectedLayers, countryScores, o
 
           <div className="ma-city-panel-list">
             {loadingNews ? (
-              <div style={{ padding: '2rem', textAlign: 'center', color: '#4b5563', fontSize: '0.625rem', fontFamily: 'var(--font-mono, monospace)' }}>
+              <div
+                style={{
+                  padding: '2rem',
+                  textAlign: 'center',
+                  color: '#4b5563',
+                  fontSize: '0.625rem',
+                  fontFamily: 'var(--font-mono, monospace)',
+                }}
+              >
                 Fetching latest news…
               </div>
             ) : news.length === 0 ? (
@@ -650,18 +957,25 @@ function CityNewsPanel({ panelId, powerCountry, selectedLayers, countryScores, o
               >
                 {selectedLayers.length > 0 ? (
                   <>
-                    No recent news matching the selected layers for {powerCountry.name}. Try selecting different power layers
-                    or fewer layers to broaden the search.
+                    No recent news matching the selected layers for {powerCountry.name}. Try
+                    selecting different power layers or fewer layers to broaden the search.
                   </>
                 ) : (
                   <>
-                    No recent headlines mentioning {powerCountry.name} in the current news feed (Finnhub and AlphaVantage when configured).
+                    No recent headlines mentioning {powerCountry.name} in the current news feed
+                    (Finnhub and AlphaVantage when configured).
                   </>
                 )}
               </div>
             ) : (
               news.map((item) => (
-                <a key={item.id} href={item.url || '#'} className="ma-city-news-item" target="_blank" rel="noopener noreferrer">
+                <a
+                  key={item.id}
+                  href={item.url || '#'}
+                  className="ma-city-news-item"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <div className="ma-city-news-top">
                     <span className="ma-city-news-badge">{item.category}</span>
                     <span className="ma-city-news-time">{timeAgo(item.time)}</span>
@@ -709,16 +1023,27 @@ function CityNewsPanel({ panelId, powerCountry, selectedLayers, countryScores, o
         <div>
           <h3 className="ma-city-panel-name">{displayName}</h3>
           <span className="ma-city-panel-meta">
-            {displayRegion ? `${displayRegion} · ` : ''}{city.country} · {city.exchange} · {city.timezone}
+            {displayRegion ? `${displayRegion} · ` : ''}
+            {city.country} · {city.exchange} · {city.timezone}
           </span>
         </div>
-        <button type="button" className="ma-city-panel-close" onClick={onClose} aria-label="Close"><i className="bi bi-x-lg" /></button>
+        <button type="button" className="ma-city-panel-close" onClick={onClose} aria-label="Close">
+          <i className="bi bi-x-lg" />
+        </button>
       </div>
 
       <div className="ma-city-panel-body">
         <div className="ma-city-panel-section-label">Regional financial news sources</div>
         {loadingRegional ? (
-          <div style={{ padding: '1rem', textAlign: 'center', color: '#4b5563', fontSize: '0.625rem', fontFamily: 'var(--font-mono, monospace)' }}>
+          <div
+            style={{
+              padding: '1rem',
+              textAlign: 'center',
+              color: '#4b5563',
+              fontSize: '0.625rem',
+              fontFamily: 'var(--font-mono, monospace)',
+            }}
+          >
             Loading sources…
           </div>
         ) : regional?.sources?.length ? (
@@ -731,35 +1056,59 @@ function CityNewsPanel({ panelId, powerCountry, selectedLayers, countryScores, o
                   rel="noopener noreferrer"
                   className="ma-city-source-link"
                 >
-                  {source.name}
-                  {' '}
-                  <span aria-hidden>↗</span>
+                  {source.name} <span aria-hidden>↗</span>
                 </a>
                 <p className="ma-city-source-focus">{source.focus}</p>
               </div>
             ))}
           </div>
         ) : (
-          <div style={{ padding: '0.75rem', color: '#6b7280', fontSize: '0.65rem' }}>No curated sources for this hub.</div>
+          <div style={{ padding: '0.75rem', color: '#6b7280', fontSize: '0.65rem' }}>
+            No curated sources for this hub.
+          </div>
         )}
 
-        <div className="ma-city-panel-section-label ma-city-panel-section-label--mt">Latest headlines</div>
+        <div className="ma-city-panel-section-label ma-city-panel-section-label--mt">
+          Latest headlines
+        </div>
         <div className="ma-city-panel-count">
           {loadingNews ? 'LOADING…' : `${news.length} ARTICLES (AGGREGATED)`}
         </div>
 
         <div className="ma-city-panel-list">
           {loadingNews ? (
-            <div style={{ padding: '2rem', textAlign: 'center', color: '#4b5563', fontSize: '0.625rem', fontFamily: 'var(--font-mono, monospace)' }}>
+            <div
+              style={{
+                padding: '2rem',
+                textAlign: 'center',
+                color: '#4b5563',
+                fontSize: '0.625rem',
+                fontFamily: 'var(--font-mono, monospace)',
+              }}
+            >
               Fetching latest news…
             </div>
           ) : news.length === 0 ? (
-            <div style={{ padding: '1rem', textAlign: 'center', color: '#4b5563', fontSize: '0.625rem', fontFamily: 'var(--font-mono, monospace)' }}>
+            <div
+              style={{
+                padding: '1rem',
+                textAlign: 'center',
+                color: '#4b5563',
+                fontSize: '0.625rem',
+                fontFamily: 'var(--font-mono, monospace)',
+              }}
+            >
               No recent headlines. Open a regional source above for live coverage.
             </div>
           ) : (
             news.map((item) => (
-              <a key={item.id} href={item.url || '#'} className="ma-city-news-item" target="_blank" rel="noopener noreferrer">
+              <a
+                key={item.id}
+                href={item.url || '#'}
+                className="ma-city-news-item"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <div className="ma-city-news-top">
                   <span className="ma-city-news-badge">{item.category}</span>
                   <span className="ma-city-news-time">{timeAgo(item.time)}</span>
@@ -781,7 +1130,10 @@ function EventAnalysisProse({ text }) {
   if (!cleaned) {
     return <p className="sentinel-report-section-body sentinel-report-section-body--empty">—</p>;
   }
-  const lines = cleaned.split('\n').map((l) => l.trim()).filter(Boolean);
+  const lines = cleaned
+    .split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean);
   return (
     <div className="sentinel-report-section-body">
       {lines.map((line, i) => (
@@ -801,7 +1153,12 @@ function chainPanelDomId(event) {
   return `pm-chain-${chainEventKey(event).replace(/[^a-zA-Z0-9_-]/g, '_')}`;
 }
 
-function ChainView({ events: externalEvents, loading: externalLoading, showSendToTeam, onRequestSendToTeam }) {
+function ChainView({
+  events: externalEvents,
+  loading: externalLoading,
+  showSendToTeam,
+  onRequestSendToTeam,
+}) {
   const router = useRouter();
   const events = externalEvents || [];
   const loading = externalLoading ?? false;
@@ -826,9 +1183,10 @@ function ChainView({ events: externalEvents, loading: externalLoading, showSendT
   }, [analyzeEvent]);
 
   const timeAgo = (isoOrUnix) => {
-    const ms = typeof isoOrUnix === 'number'
-      ? Date.now() - isoOrUnix * 1000
-      : Date.now() - new Date(isoOrUnix).getTime();
+    const ms =
+      typeof isoOrUnix === 'number'
+        ? Date.now() - isoOrUnix * 1000
+        : Date.now() - new Date(isoOrUnix).getTime();
     const mins = Math.floor(ms / 60000);
     if (mins < 60) return `~${mins}m ago`;
     const hours = Math.floor(mins / 60);
@@ -838,7 +1196,12 @@ function ChainView({ events: externalEvents, loading: externalLoading, showSendT
 
   const formatDate = (isoOrUnix) => {
     const d = typeof isoOrUnix === 'number' ? new Date(isoOrUnix * 1000) : new Date(isoOrUnix);
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    return d.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    });
   };
 
   const formatDateLong = (isoOrUnix) => {
@@ -905,8 +1268,19 @@ function ChainView({ events: externalEvents, loading: externalLoading, showSendT
 
   if (loading) {
     return (
-      <div className="ma-chain ma-chain--loading chain-view-scroll custom-scrollbar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ color: '#4b5563', fontFamily: 'var(--font-mono, monospace)', fontSize: '0.75rem' }}>LOADING CHAIN DATA...</span>
+      <div
+        className="ma-chain ma-chain--loading chain-view-scroll custom-scrollbar"
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+      >
+        <span
+          style={{
+            color: '#4b5563',
+            fontFamily: 'var(--font-mono, monospace)',
+            fontSize: '0.75rem',
+          }}
+        >
+          LOADING CHAIN DATA...
+        </span>
       </div>
     );
   }
@@ -918,129 +1292,148 @@ function ChainView({ events: externalEvents, loading: externalLoading, showSendT
           const eKey = chainEventKey(event);
           const marketsOpen = openMarkets.has(eKey);
           return (
-          <div key={eKey} className="ma-chain-item">
-            <div className="ma-chain-dot" />
-            <div className="ma-chain-content">
-              <div className="ma-chain-header">
-                <span className="ma-chain-title">{event.title}</span>
-                <span className="ma-chain-region">{event.country}</span>
-                <span className={`ma-chain-severity ${(event.impact || '').toLowerCase()}`}>{event.impact || 'MODERATE'}</span>
-                <span className="ma-chain-ago">{timeAgo(event.time)}</span>
-              </div>
-              <div className="ma-chain-time">{formatDate(event.time)}</div>
-              <p className="ma-chain-body">{event.body}</p>
-              <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginTop: '0.5rem' }}>
-                {event.url && (
-                  <a href={event.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.5625rem', color: '#10b981', fontFamily: 'var(--font-mono, monospace)', textDecoration: 'none' }}>
-                    {event.source || 'Read more'} →
-                  </a>
-                )}
-                <button
-                  type="button"
-                  onClick={() => toggleMarkets(eKey)}
-                  aria-expanded={marketsOpen}
-                  aria-controls={chainPanelDomId(event)}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    padding: '4px 10px',
-                    background: marketsOpen
-                      ? 'rgba(16, 185, 129, 0.2)'
-                      : 'rgba(16, 185, 129, 0.1)',
-                    border: marketsOpen
-                      ? '1px solid #10b981'
-                      : '1px solid rgba(16, 185, 129, 0.3)',
-                    borderRadius: '4px',
-                    color: '#10b981',
-                    fontSize: '0.625rem',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    fontFamily: 'var(--font-mono, monospace)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    transition: 'all 0.2s',
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!marketsOpen) {
-                      e.currentTarget.style.background = 'rgba(16, 185, 129, 0.18)';
-                      e.currentTarget.style.borderColor = '#10b981';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!marketsOpen) {
-                      e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)';
-                      e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.3)';
-                    }
-                  }}
-                >
-                  <i className="bi bi-graph-up-arrow" style={{ fontSize: '0.6rem' }} />
-                  {marketsOpen ? 'Hide Markets' : 'Markets'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => router.push('/centaur-intelligence')}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    padding: '4px 10px',
-                    background: 'rgba(212, 175, 55, 0.15)',
-                    border: '1px solid rgba(212, 175, 55, 0.3)',
-                    borderRadius: '4px',
-                    color: '#D4AF37',
-                    fontSize: '0.625rem',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    fontFamily: 'var(--font-mono, monospace)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    transition: 'all 0.2s',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(212, 175, 55, 0.25)';
-                    e.currentTarget.style.borderColor = '#D4AF37';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(212, 175, 55, 0.15)';
-                    e.currentTarget.style.borderColor = 'rgba(212, 175, 55, 0.3)';
-                  }}
-                >
-                  <i className="bi bi-lightning-charge-fill" style={{ fontSize: '0.6rem' }} />
-                  Analyze
-                </button>
-              </div>
-              {marketsOpen && (
-                <div
-                  id={chainPanelDomId(event)}
-                  style={{
-                    marginTop: '0.75rem',
-                    paddingTop: '0.75rem',
-                    borderTop: '1px solid rgba(16, 185, 129, 0.1)',
-                  }}
-                >
-                  <RelatedMarketsPanel
-                    event={{
-                      id: event.id,
-                      title: event.title,
-                      headline: event.title,
-                      body: event.body,
-                      description: event.body,
-                      summary: event.body,
-                      country: event.country,
-                    }}
-                    enabled={marketsOpen}
-                    limit={6}
-                    variant="inline"
-                  />
+            <div key={eKey} className="ma-chain-item">
+              <div className="ma-chain-dot" />
+              <div className="ma-chain-content">
+                <div className="ma-chain-header">
+                  <span className="ma-chain-title">{event.title}</span>
+                  <span className="ma-chain-region">{event.country}</span>
+                  <span className={`ma-chain-severity ${(event.impact || '').toLowerCase()}`}>
+                    {event.impact || 'MODERATE'}
+                  </span>
+                  <span className="ma-chain-ago">{timeAgo(event.time)}</span>
                 </div>
-              )}
+                <div className="ma-chain-time">{formatDate(event.time)}</div>
+                <p className="ma-chain-body">{event.body}</p>
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: '1rem',
+                    alignItems: 'center',
+                    marginTop: '0.5rem',
+                  }}
+                >
+                  {event.url && (
+                    <a
+                      href={event.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        fontSize: '0.5625rem',
+                        color: '#10b981',
+                        fontFamily: 'var(--font-mono, monospace)',
+                        textDecoration: 'none',
+                      }}
+                    >
+                      {event.source || 'Read more'} →
+                    </a>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => toggleMarkets(eKey)}
+                    aria-expanded={marketsOpen}
+                    aria-controls={chainPanelDomId(event)}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      padding: '4px 10px',
+                      background: marketsOpen
+                        ? 'rgba(16, 185, 129, 0.2)'
+                        : 'rgba(16, 185, 129, 0.1)',
+                      border: marketsOpen
+                        ? '1px solid #10b981'
+                        : '1px solid rgba(16, 185, 129, 0.3)',
+                      borderRadius: '4px',
+                      color: '#10b981',
+                      fontSize: '0.625rem',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      fontFamily: 'var(--font-mono, monospace)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      transition: 'all 0.2s',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!marketsOpen) {
+                        e.currentTarget.style.background = 'rgba(16, 185, 129, 0.18)';
+                        e.currentTarget.style.borderColor = '#10b981';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!marketsOpen) {
+                        e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)';
+                        e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+                      }
+                    }}
+                  >
+                    <i className="bi bi-graph-up-arrow" style={{ fontSize: '0.6rem' }} />
+                    {marketsOpen ? 'Hide Markets' : 'Markets'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => router.push('/centaur-intelligence')}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      padding: '4px 10px',
+                      background: 'rgba(212, 175, 55, 0.15)',
+                      border: '1px solid rgba(212, 175, 55, 0.3)',
+                      borderRadius: '4px',
+                      color: '#D4AF37',
+                      fontSize: '0.625rem',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      fontFamily: 'var(--font-mono, monospace)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      transition: 'all 0.2s',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'rgba(212, 175, 55, 0.25)';
+                      e.currentTarget.style.borderColor = '#D4AF37';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'rgba(212, 175, 55, 0.15)';
+                      e.currentTarget.style.borderColor = 'rgba(212, 175, 55, 0.3)';
+                    }}
+                  >
+                    <i className="bi bi-lightning-charge-fill" style={{ fontSize: '0.6rem' }} />
+                    Analyze
+                  </button>
+                </div>
+                {marketsOpen && (
+                  <div
+                    id={chainPanelDomId(event)}
+                    style={{
+                      marginTop: '0.75rem',
+                      paddingTop: '0.75rem',
+                      borderTop: '1px solid rgba(16, 185, 129, 0.1)',
+                    }}
+                  >
+                    <RelatedMarketsPanel
+                      event={{
+                        id: event.id,
+                        title: event.title,
+                        headline: event.title,
+                        body: event.body,
+                        description: event.body,
+                        summary: event.body,
+                        country: event.country,
+                      }}
+                      enabled={marketsOpen}
+                      limit={6}
+                      variant="inline"
+                    />
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
           );
         })}
       </div>
-      
+
       {analyzeEvent && (
         <div
           className="sentinel-modal-overlay"
@@ -1058,9 +1451,13 @@ function ChainView({ events: externalEvents, loading: externalLoading, showSendT
                 <h2 id="ma-event-analysis-title" className="sentinel-modal-title">
                   Event Analysis
                 </h2>
-                <p className="sentinel-modal-date">{analyzeEvent.country} · {formatDateLong(analyzeEvent.time)}</p>
+                <p className="sentinel-modal-date">
+                  {analyzeEvent.country} · {formatDateLong(analyzeEvent.time)}
+                </p>
               </div>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', flexShrink: 0 }}>
+              <div
+                style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', flexShrink: 0 }}
+              >
                 <button
                   type="button"
                   className="ma-event-analysis-debrief-btn"
@@ -1093,7 +1490,9 @@ function ChainView({ events: externalEvents, loading: externalLoading, showSendT
 
             <div className="sentinel-modal-main">
               <div className="sentinel-report-section">
-                <h3 className="sentinel-report-section-title sentinel-report-section-title--gold">Event</h3>
+                <h3 className="sentinel-report-section-title sentinel-report-section-title--gold">
+                  Event
+                </h3>
                 <p className="sentinel-report-health-value">{analyzeEvent.title}</p>
                 <div className="sentinel-report-section-body">
                   <p>{analyzeEvent.body}</p>
@@ -1128,12 +1527,19 @@ function ChainView({ events: externalEvents, loading: externalLoading, showSendT
               </div>
 
               <div className="sentinel-report-section">
-                <h3 className="sentinel-report-section-title sentinel-report-section-title--gold">Portfolio impact</h3>
+                <h3 className="sentinel-report-section-title sentinel-report-section-title--gold">
+                  Portfolio impact
+                </h3>
                 {analyzing ? (
                   <div style={{ textAlign: 'center', padding: '2rem 1rem' }}>
                     <i
                       className="bi bi-lightning-charge-fill"
-                      style={{ fontSize: '1.5rem', color: '#d4af37', display: 'block', marginBottom: '0.5rem' }}
+                      style={{
+                        fontSize: '1.5rem',
+                        color: '#d4af37',
+                        display: 'block',
+                        marginBottom: '0.5rem',
+                      }}
                       aria-hidden
                     />
                     <p className="sentinel-modal-prose" style={{ margin: 0, color: '#9ca3af' }}>
@@ -1148,22 +1554,25 @@ function ChainView({ events: externalEvents, loading: externalLoading, showSendT
           </div>
         </div>
       )}
-      
+
       {toast && (
-        <div style={{
-          position: 'fixed',
-          bottom: '20px',
-          right: '20px',
-          padding: '12px 16px',
-          borderRadius: '8px',
-          background: toast.type === 'success' ? 'rgba(16, 185, 129, 0.9)' : 'rgba(239, 68, 68, 0.9)',
-          color: '#fff',
-          fontSize: '0.85rem',
-          fontWeight: '500',
-          zIndex: 10000,
-          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-          animation: 'slideIn 0.3s ease-out',
-        }}>
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '20px',
+            right: '20px',
+            padding: '12px 16px',
+            borderRadius: '8px',
+            background:
+              toast.type === 'success' ? 'rgba(16, 185, 129, 0.9)' : 'rgba(239, 68, 68, 0.9)',
+            color: '#fff',
+            fontSize: '0.85rem',
+            fontWeight: '500',
+            zIndex: 10000,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+            animation: 'slideIn 0.3s ease-out',
+          }}
+        >
           {toast.message}
         </div>
       )}
@@ -1177,15 +1586,13 @@ const TUTORIAL_STEPS = [
   {
     id: 'welcome',
     title: 'Welcome to Global Market Analysis',
-    body:
-      "Here's a quick tour of what each tool does. You can skip at any time and replay from the help icon in the top-right.",
+    body: "Here's a quick tour of what each tool does. You can skip at any time and replay from the help icon in the top-right.",
     placement: 'center',
   },
   {
     id: 'power-map',
     title: 'Global Power Map',
-    body:
-      'Toggle overlays to visualize geopolitical influence, reserves, trade flows, and more across every country on the map.',
+    body: 'Toggle overlays to visualize geopolitical influence, reserves, trade flows, and more across every country on the map.',
     target: "[data-tour='sidebar-power-map']",
     placement: 'right',
   },
@@ -1227,16 +1634,14 @@ const TUTORIAL_STEPS = [
   {
     id: 'isr',
     title: 'ISR — Intelligence, Surveillance & Reconnaissance',
-    body:
-      'Live geolocated news from public sources, plus Polymarket signals when events could move prediction markets.',
+    body: 'Live geolocated news from public sources, plus Polymarket signals when events could move prediction markets.',
     target: "[data-tour='sidebar-isr']",
     placement: 'right',
   },
   {
     id: 'globe',
     title: 'The map',
-    body:
-      'Drag to pan, scroll to zoom. Pulsating dots mark live news events — click one to read the article inline.',
+    body: 'Drag to pan, scroll to zoom. Pulsating dots mark live news events — click one to read the article inline.',
     target: "[data-tour='globe-canvas']",
     placement: 'left',
   },
@@ -1283,6 +1688,7 @@ export default function MarketAnalysisPage() {
   const countryScores = useGlobalPowerMap((s) => s.countryScores);
   const setClickedCountry = useGlobalPowerMap((s) => s.setClickedCountry);
   const isPowerMapActive = selectedLayers.length > 0;
+  const { scores: billionaireScores, loading: billionaireLoading } = useBillionairesData();
 
   // First-visit tutorial: fire once per user, persisted in localStorage.
   // Deliberately gated behind a short timeout so the layout has a chance to
@@ -1370,7 +1776,7 @@ export default function MarketAnalysisPage() {
       if (!ev) return;
       setSelectedIsrEvent({ event: ev, match: isrMatches?.[eventId] || null });
     },
-    [isrEvents, isrMatches]
+    [isrEvents, isrMatches],
   );
 
   // Decorate the ISR events with a hasPolymarket flag so the WorldMap can
@@ -1387,7 +1793,7 @@ export default function MarketAnalysisPage() {
         country: ev.country,
         hasPolymarket: Boolean(isrMatches?.[ev.id]),
       })),
-    [isrEvents, isrMatches]
+    [isrEvents, isrMatches],
   );
 
   const dismissArrow = useCallback(() => {
@@ -1449,9 +1855,7 @@ export default function MarketAnalysisPage() {
 
   const handlePowerCountryClick = ({ iso, name, lng, lat }) => {
     setSelectedDot(null);
-    setSelectedPowerCountry((prev) =>
-      prev?.iso === iso ? null : { iso, name, lng, lat }
-    );
+    setSelectedPowerCountry((prev) => (prev?.iso === iso ? null : { iso, name, lng, lat }));
   };
 
   useEffect(() => {
@@ -1486,7 +1890,9 @@ export default function MarketAnalysisPage() {
   }, [setClickedCountry]);
 
   return (
-    <div className={`ma-fullscreen force-dark-theme ${view === 'map' ? 'ma-view-map' : ''} ${view === 'chain' ? 'ma-view-chain' : ''}`}>
+    <div
+      className={`ma-fullscreen force-dark-theme ${view === 'map' ? 'ma-view-map' : ''} ${view === 'chain' ? 'ma-view-chain' : ''}`}
+    >
       {/* Portrait orientation block — prompts users to rotate on phones */}
       <div
         className="ma-rotate-prompt"
@@ -1498,7 +1904,15 @@ export default function MarketAnalysisPage() {
           <div className="ma-rotate-prompt__icon" aria-hidden>
             <svg width="64" height="64" viewBox="0 0 64 64" fill="none" aria-hidden>
               <rect x="20" y="8" width="24" height="40" rx="3" stroke="#10b981" strokeWidth="2.5" />
-              <line x1="28" y1="42" x2="36" y2="42" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" />
+              <line
+                x1="28"
+                y1="42"
+                x2="36"
+                y2="42"
+                stroke="#10b981"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              />
               <path
                 d="M50 28 Q56 32 50 36"
                 stroke="#10b981"
@@ -1520,8 +1934,8 @@ export default function MarketAnalysisPage() {
             Rotate your device
           </h2>
           <p className="ma-rotate-prompt__subtitle">
-            The Global Market Analysis terminal is designed for landscape orientation. Turn your phone sideways to view
-            the full geospatial dashboard.
+            The Global Market Analysis terminal is designed for landscape orientation. Turn your
+            phone sideways to view the full geospatial dashboard.
           </p>
           <div className="ma-rotate-prompt__hint">
             <i className="bi bi-phone-flip" aria-hidden /> Rotate to landscape
@@ -1534,19 +1948,26 @@ export default function MarketAnalysisPage() {
 
       {view === 'map' && (
         <div className="ma-ticker-bar">
-          <span className="ma-ticker-live"><span className="ma-ticker-dot" /> LIVE</span>
+          <span className="ma-ticker-live">
+            <span className="ma-ticker-dot" /> LIVE
+          </span>
           <div className="ma-ticker-scroll">
             <div className="ma-ticker-content">
               {tickerData.length === 0 && (
                 <span className="ma-ticker-item">
-                  <span className="ma-ticker-symbol" style={{ color: '#4b5563' }}>LOADING MARKET DATA...</span>
+                  <span className="ma-ticker-symbol" style={{ color: '#4b5563' }}>
+                    LOADING MARKET DATA...
+                  </span>
                 </span>
               )}
               {tickerData.map((item, i) => (
                 <span key={i} className="ma-ticker-item">
                   <span className="ma-ticker-symbol">{item.symbol}</span>
-                  <span className={`ma-ticker-value ${parseFloat(item.change) >= 0 ? 'up' : 'down'}`}>
-                    {item.price} {parseFloat(item.change) >= 0 ? '+' : ''}{item.change}%
+                  <span
+                    className={`ma-ticker-value ${parseFloat(item.change) >= 0 ? 'up' : 'down'}`}
+                  >
+                    {item.price} {parseFloat(item.change) >= 0 ? '+' : ''}
+                    {item.change}%
                   </span>
                   <span className="ma-ticker-sep">•</span>
                 </span>
@@ -1554,8 +1975,11 @@ export default function MarketAnalysisPage() {
               {tickerData.map((item, i) => (
                 <span key={`d-${i}`} className="ma-ticker-item">
                   <span className="ma-ticker-symbol">{item.symbol}</span>
-                  <span className={`ma-ticker-value ${parseFloat(item.change) >= 0 ? 'up' : 'down'}`}>
-                    {item.price} {parseFloat(item.change) >= 0 ? '+' : ''}{item.change}%
+                  <span
+                    className={`ma-ticker-value ${parseFloat(item.change) >= 0 ? 'up' : 'down'}`}
+                  >
+                    {item.price} {parseFloat(item.change) >= 0 ? '+' : ''}
+                    {item.change}%
                   </span>
                   <span className="ma-ticker-sep">•</span>
                 </span>
@@ -1567,8 +1991,20 @@ export default function MarketAnalysisPage() {
 
       <div className="ma-top-bar">
         <div className="ma-view-toggle">
-          <button type="button" className={`ma-view-btn ${view === 'map' ? 'active' : ''}`} onClick={() => setView('map')}>THE MAP</button>
-          <button type="button" className={`ma-view-btn ${view === 'chain' ? 'active' : ''}`} onClick={() => setView('chain')}>THE CHAIN</button>
+          <button
+            type="button"
+            className={`ma-view-btn ${view === 'map' ? 'active' : ''}`}
+            onClick={() => setView('map')}
+          >
+            THE MAP
+          </button>
+          <button
+            type="button"
+            className={`ma-view-btn ${view === 'chain' ? 'active' : ''}`}
+            onClick={() => setView('chain')}
+          >
+            THE CHAIN
+          </button>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
             <Link href="/empire-ranking" className="ma-view-btn ma-view-btn--gold">
               <i className="bi bi-globe-americas" style={{ marginRight: 4 }} />
@@ -1600,7 +2036,10 @@ export default function MarketAnalysisPage() {
               setClickedCountry(null);
             }}
           >
-            <div style={{ position: 'relative', width: '100%', height: '100%' }} data-tour="globe-canvas">
+            <div
+              style={{ position: 'relative', width: '100%', height: '100%' }}
+              data-tour="globe-canvas"
+            >
               <WorldMap
                 ref={mapRef}
                 lineColor="#10b981"
@@ -1664,16 +2103,39 @@ export default function MarketAnalysisPage() {
                   />
 
                   {/* Legend */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginRight: '8px' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      marginRight: '8px',
+                    }}
+                  >
                     {[
-                      { label: '#1',  colour: '#FFD700' },
-                      { label: '#2',  colour: '#00E5FF' },
-                      { label: '#3',  colour: '#00FF88' },
+                      { label: '#1', colour: '#FFD700' },
+                      { label: '#2', colour: '#00E5FF' },
+                      { label: '#3', colour: '#00FF88' },
                       { label: 'low', colour: '#BF0000' },
                     ].map(({ label, colour }) => (
-                      <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                        <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: colour }} />
-                        <span style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.4)', fontVariantNumeric: 'tabular-nums' }}>
+                      <div
+                        key={label}
+                        style={{ display: 'flex', alignItems: 'center', gap: '3px' }}
+                      >
+                        <div
+                          style={{
+                            width: '6px',
+                            height: '6px',
+                            borderRadius: '50%',
+                            background: colour,
+                          }}
+                        />
+                        <span
+                          style={{
+                            fontSize: '0.5rem',
+                            color: 'rgba(255,255,255,0.4)',
+                            fontVariantNumeric: 'tabular-nums',
+                          }}
+                        >
                           {label}
                         </span>
                       </div>
@@ -1690,7 +2152,7 @@ export default function MarketAnalysisPage() {
                     const flag = cs.iso
                       .toUpperCase()
                       .split('')
-                      .map(c => String.fromCodePoint(0x1f1e6 + c.charCodeAt(0) - 65))
+                      .map((c) => String.fromCodePoint(0x1f1e6 + c.charCodeAt(0) - 65))
                       .join('');
 
                     return (
@@ -1711,9 +2173,7 @@ export default function MarketAnalysisPage() {
                         {/* Rank + flag */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
                           {medal ? (
-                            <span style={{ fontSize: '0.7rem', lineHeight: 1 }}>
-                              {medal}
-                            </span>
+                            <span style={{ fontSize: '0.7rem', lineHeight: 1 }}>{medal}</span>
                           ) : (
                             <span
                               style={{
@@ -1726,9 +2186,7 @@ export default function MarketAnalysisPage() {
                               #{rank + 1}
                             </span>
                           )}
-                          <span style={{ fontSize: '0.85rem', lineHeight: 1 }}>
-                            {flag}
-                          </span>
+                          <span style={{ fontSize: '0.85rem', lineHeight: 1 }}>{flag}</span>
                         </div>
 
                         {/* Country name — truncated */}
@@ -1823,7 +2281,9 @@ export default function MarketAnalysisPage() {
                 onClick={() => toggleCategory(cat)}
                 data-tour={`sidebar-${cat}`}
               >
-                <i className={`bi ${cat === 'markets' ? 'bi-graph-up' : cat === 'central-banks' ? 'bi-bank' : cat === 'indices' ? 'bi-bar-chart-line' : cat === 'commodities' ? 'bi-gem' : 'bi-currency-exchange'}`} />
+                <i
+                  className={`bi ${cat === 'markets' ? 'bi-graph-up' : cat === 'central-banks' ? 'bi-bank' : cat === 'indices' ? 'bi-bar-chart-line' : cat === 'commodities' ? 'bi-gem' : 'bi-currency-exchange'}`}
+                />
                 {cat.replace('-', ' ').toUpperCase()}
               </button>
             ))}
@@ -1837,19 +2297,39 @@ export default function MarketAnalysisPage() {
               <i className="bi bi-airplane-fill" />
               ISR
             </button>
+            <DataLayerBar
+              billionaireScores={billionaireScores}
+              billionaireLoading={billionaireLoading}
+            />
           </div>
 
           <div className="ma-controls">
-            <button type="button" className="ma-control-btn ma-control-filter" onClick={() => setFilterOpen(true)}>
+            <button
+              type="button"
+              className="ma-control-btn ma-control-filter"
+              onClick={() => setFilterOpen(true)}
+            >
               <i className="bi bi-funnel" /> FILTER
             </button>
-            <button type="button" className="ma-control-btn" onClick={() => mapRef.current?.zoomIn()}>
+            <button
+              type="button"
+              className="ma-control-btn"
+              onClick={() => mapRef.current?.zoomIn()}
+            >
               <span>+</span> ZOOM IN
             </button>
-            <button type="button" className="ma-control-btn" onClick={() => mapRef.current?.zoomOut()}>
+            <button
+              type="button"
+              className="ma-control-btn"
+              onClick={() => mapRef.current?.zoomOut()}
+            >
               <span>−</span> ZOOM OUT
             </button>
-            <button type="button" className="ma-control-btn" onClick={() => mapRef.current?.resetZoom()}>
+            <button
+              type="button"
+              className="ma-control-btn"
+              onClick={() => mapRef.current?.resetZoom()}
+            >
               <i className="bi bi-arrows-fullscreen" /> RESET
             </button>
             <button type="button" className="ma-control-btn" onClick={() => setSettingsOpen(true)}>
@@ -1857,7 +2337,9 @@ export default function MarketAnalysisPage() {
             </button>
           </div>
 
-          {activeCategory && <CategoryPanel category={activeCategory} onClose={() => setActiveCategory(null)} />}
+          {activeCategory && (
+            <CategoryPanel category={activeCategory} onClose={() => setActiveCategory(null)} />
+          )}
           {filterOpen && <FilterPanel onClose={() => setFilterOpen(false)} />}
           {settingsOpen && <SettingsPanel onClose={() => setSettingsOpen(false)} />}
 
