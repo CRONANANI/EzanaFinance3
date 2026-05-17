@@ -268,15 +268,17 @@ export async function POST(request) {
       );
     }
 
+    let parentPostForNotif = null;
     if (isComment) {
       const { data: parent, error: pErr } = await admin
         .from('community_posts')
-        .select('id, parent_post_id')
+        .select('id, parent_post_id, user_id')
         .eq('id', parent_post_id)
         .maybeSingle();
       if (pErr || !parent || parent.parent_post_id != null) {
         return NextResponse.json({ error: 'Parent post not found' }, { status: 400 });
       }
+      parentPostForNotif = parent;
     }
 
     const { user, client: supabase } = await requireUser(request);
@@ -310,6 +312,41 @@ export async function POST(request) {
       }
     } catch (e) {
       console.error('posts POST: awardXP', e);
+    }
+
+    if (isComment && parentPostForNotif?.user_id && parentPostForNotif.user_id !== user.id) {
+      // ── Notify parent post author of comment ──
+      try {
+        const { data: authorPref } = await admin
+          .from('user_interest_profiles')
+          .select('notification_prefs')
+          .eq('user_id', parentPostForNotif.user_id)
+          .maybeSingle();
+        const prefs = authorPref?.notification_prefs || {};
+        if (prefs.community_interactions !== false) {
+          let commenterName = 'Someone';
+          const { data: cProfile } = await admin
+            .from('profiles')
+            .select('full_name, user_settings')
+            .eq('id', user.id)
+            .maybeSingle();
+          if (cProfile) {
+            commenterName =
+              (cProfile.full_name || cProfile.user_settings?.display_name || '').trim() ||
+              'Someone';
+          }
+
+          const commentContent = content.trim();
+          await admin.from('user_notifications').insert({
+            user_id: parentPostForNotif.user_id,
+            type: 'community',
+            title: `${commenterName} commented on your post`,
+            content: `${commentContent.slice(0, 80)}${commentContent.length > 80 ? '…' : ''}`,
+          });
+        }
+      } catch (notifErr) {
+        console.error('[comment] notification insert:', notifErr);
+      }
     }
 
     const { data: prof } = await admin

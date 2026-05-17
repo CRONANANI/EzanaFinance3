@@ -229,6 +229,38 @@ export async function POST(request) {
       .update({ last_message_at: msg.created_at })
       .eq('id', convo.id);
 
+    // ── Notify recipient of new message ──
+    try {
+      const { data: prefRow } = await admin
+        .from('user_interest_profiles')
+        .select('notification_prefs')
+        .eq('user_id', toUserId)
+        .maybeSingle();
+      const prefs = prefRow?.notification_prefs || {};
+      if (prefs.message_notifications !== false) {
+        let senderName = 'Someone';
+        const { data: senderProfile } = await admin
+          .from('profiles')
+          .select('full_name, user_settings')
+          .eq('id', user.id)
+          .maybeSingle();
+        if (senderProfile) {
+          senderName =
+            (senderProfile.full_name || senderProfile.user_settings?.display_name || '').trim() ||
+            'Someone';
+        }
+
+        await admin.from('user_notifications').insert({
+          user_id: toUserId,
+          type: 'community',
+          title: `New message from ${senderName}`,
+          content: content.length > 80 ? `${content.slice(0, 80)}…` : content,
+        });
+      }
+    } catch (notifErr) {
+      console.error('[messages POST] notification insert:', notifErr);
+    }
+
     return NextResponse.json({
       message: {
         id: msg.id,

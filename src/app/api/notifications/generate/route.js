@@ -164,6 +164,72 @@ export async function GET(request) {
       }
     }
 
+    // ── Portfolio movers: significant same-day moves on tracked holdings ──
+    try {
+      for (const profile of profiles) {
+        const prefs = profile.notification_prefs || {};
+        if (prefs.portfolio_alerts === false) continue;
+
+        const rawKeys = Object.keys(profile.ticker_scores || {});
+        const tickers = rawKeys.slice(0, 20).map((s) => String(s).replace(/-/g, '').toUpperCase());
+        if (tickers.length === 0) continue;
+
+        const quotes = await Promise.all(
+          tickers.map(async (sym) => {
+            try {
+              const quoteRes = await fetch(
+                `${FMP_BASE}/quote?symbol=${encodeURIComponent(sym)}&apikey=${encodeURIComponent(FMP_KEY)}`,
+                { cache: 'no-store' },
+              );
+              if (!quoteRes.ok) return null;
+              const data = await quoteRes.json();
+              const q = Array.isArray(data) ? data[0] : data;
+              return q && typeof q === 'object' ? q : null;
+            } catch {
+              return null;
+            }
+          }),
+        );
+
+        for (const q of quotes) {
+          if (!q) continue;
+          const sym = String(q.symbol || '').toUpperCase();
+          const changePct = Number(q.changesPercentage);
+          if (!Number.isFinite(changePct) || Math.abs(changePct) < 5) continue;
+
+          const fp = `portfolio-mover-${sym}-${new Date().toISOString().slice(0, 10)}`;
+          const { data: dup } = await admin
+            .from('notification_delivery_log')
+            .select('id')
+            .eq('user_id', profile.user_id)
+            .eq('event_fingerprint', fp)
+            .maybeSingle();
+          if (dup) continue;
+
+          const direction = changePct >= 0 ? '📈 up' : '📉 down';
+          const priceNum = Number(q.price || 0);
+          await admin.from('user_notifications').insert({
+            user_id: profile.user_id,
+            type: 'portfolio_alerts',
+            title: `${sym} ${direction} ${Math.abs(changePct).toFixed(1)}%`,
+            content: `Your holding ${sym} moved significantly. Price: $${Number.isFinite(priceNum) ? priceNum.toFixed(2) : '—'}.`,
+          });
+
+          await admin
+            .from('notification_delivery_log')
+            .insert({
+              user_id: profile.user_id,
+              event_fingerprint: fp,
+            })
+            .catch(() => {});
+
+          totalSent += 1;
+        }
+      }
+    } catch (portfolioErr) {
+      console.error('[notification-generator] portfolio movers:', portfolioErr);
+    }
+
     return NextResponse.json({ ok: true, sent: totalSent, events_processed: significant.length });
   } catch (err) {
     console.error('[notification-generator]', err);

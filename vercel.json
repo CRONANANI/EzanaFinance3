@@ -47,7 +47,11 @@
     },
     {
       "path": "/api/notifications/generate",
-      "schedule": "*/15 * * * *"
+      "schedule": "0 */2 * * *"
+    },
+    {
+      "path": "/api/notifications/generate-capitol",
+      "schedule": "0 8,18 * * 1-5"
     }
   ]
 }

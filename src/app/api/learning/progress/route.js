@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getUserClient } from '@/lib/supabase';
+import { getUserClient, getAdminClient } from '@/lib/supabase';
 import { awardXP } from '@/lib/rewards';
 import { getCourseById, getCoursesByTrack, LEVEL_KEYS } from '@/lib/learning-curriculum';
 import { awardELO } from '@/lib/elo';
@@ -37,6 +37,8 @@ import {
 } from '@/lib/learning-progress-logic';
 
 export const dynamic = 'force-dynamic';
+
+const admin = getAdminClient();
 
 // Every question must be answered correctly to pass.
 const PASS_PCT = 100;
@@ -299,10 +301,57 @@ export async function POST(request) {
               'learning',
               { course_id: courseId, level: course.level, tier: tierName },
             );
+
+            // ── Notify: course completed ──
+            try {
+              const { data: learnPref } = await admin
+                .from('user_interest_profiles')
+                .select('notification_prefs')
+                .eq('user_id', user.id)
+                .maybeSingle();
+              const lp = learnPref?.notification_prefs || {};
+              if (lp.learning_progress !== false) {
+                await admin.from('user_notifications').insert({
+                  user_id: user.id,
+                  type: 'learning',
+                  title: `🎓 Course completed: ${course.title}`,
+                  content: `You scored ${scorePct}% and earned 50 XP. ${
+                    badges.length > 0
+                      ? `Unlocked ${badges.length} badge${badges.length > 1 ? 's' : ''}!`
+                      : 'Keep learning to unlock more badges!'
+                  }`,
+                });
+              }
+            } catch (notifErr) {
+              console.error('[learning progress] notification insert:', notifErr);
+            }
+          }
+          let learningNotifPrefs = {};
+          if (badges.length > 0) {
+            const { data: row } = await admin
+              .from('user_interest_profiles')
+              .select('notification_prefs')
+              .eq('user_id', user.id)
+              .maybeSingle();
+            learningNotifPrefs = row?.notification_prefs || {};
           }
           for (const b of badges) {
-            if (b.key && /_level_/.test(b.key)) {
+            const isLevelBadge = b.key && /_level_/.test(b.key);
+            if (isLevelBadge) {
               await awardXP(user.id, 200, `Completed track level: ${b.label}`, 'learning');
+            }
+            if (learningNotifPrefs.learning_progress === false) continue;
+            try {
+              await admin.from('user_notifications').insert({
+                user_id: user.id,
+                type: 'learning',
+                title: `🏅 Badge unlocked: ${b.label}`,
+                content: isLevelBadge
+                  ? `You've completed a track level and earned a new badge. +200 XP!`
+                  : `You've earned a new learning milestone badge!`,
+              });
+            } catch {
+              /* silent */
             }
           }
         } catch (e) {

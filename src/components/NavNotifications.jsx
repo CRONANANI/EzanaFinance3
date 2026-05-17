@@ -215,6 +215,36 @@ export function NavNotifications() {
     };
   }, [isAuthenticated, user]);
 
+  /* ── Realtime: subscribe to new notifications ── */
+  useEffect(() => {
+    if (!isAuthenticated || !user?.id) return undefined;
+
+    const channel = supabase
+      .channel(`user-notifications:${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'user_notifications',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          const row = payload?.new;
+          if (!row) return;
+          setNotifications((prev) => {
+            if (prev.some((n) => n.id === row.id)) return prev;
+            return [mapDbNotification(row), ...prev];
+          });
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [isAuthenticated, user?.id]);
+
   /* Close dropdown on outside click (desktop) */
   useEffect(() => {
     if (!isOpen) return;

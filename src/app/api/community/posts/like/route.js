@@ -31,11 +31,47 @@ export async function POST(request) {
         try {
           const { data: postRow } = await admin
             .from('community_posts')
-            .select('user_id')
+            .select('user_id, content')
             .eq('id', post_id)
             .maybeSingle();
           if (postRow?.user_id && postRow.user_id !== user.id) {
             await awardXP(postRow.user_id, 5, 'Received a like on your post', 'community');
+
+            // ── Notify post author of like ──
+            try {
+              const { data: authorPref } = await admin
+                .from('user_interest_profiles')
+                .select('notification_prefs')
+                .eq('user_id', postRow.user_id)
+                .maybeSingle();
+              const prefs = authorPref?.notification_prefs || {};
+              if (prefs.community_interactions !== false) {
+                let likerName = 'Someone';
+                const { data: likerProfile } = await admin
+                  .from('profiles')
+                  .select('full_name, user_settings')
+                  .eq('id', user.id)
+                  .maybeSingle();
+                if (likerProfile) {
+                  likerName =
+                    (
+                      likerProfile.full_name ||
+                      likerProfile.user_settings?.display_name ||
+                      ''
+                    ).trim() || 'Someone';
+                }
+
+                const body = postRow.content || '';
+                await admin.from('user_notifications').insert({
+                  user_id: postRow.user_id,
+                  type: 'community',
+                  title: `${likerName} liked your post`,
+                  content: `${body.slice(0, 80)}${body.length > 80 ? '…' : ''}`,
+                });
+              }
+            } catch (notifErr) {
+              console.error('[like] notification insert:', notifErr);
+            }
           }
         } catch (e) {
           console.error('like: awardXP', e);

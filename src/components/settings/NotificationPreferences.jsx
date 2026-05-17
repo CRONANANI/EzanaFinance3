@@ -45,6 +45,31 @@ const PREFS = [
     desc: 'Critical market events (wars, crashes, emergency Fed actions)',
   },
   {
+    key: 'message_notifications',
+    label: 'Direct Messages',
+    desc: 'Notifications when someone sends you a message',
+  },
+  {
+    key: 'community_interactions',
+    label: 'Community Interactions',
+    desc: 'Likes, comments, and reposts on your posts',
+  },
+  {
+    key: 'lobbying_alerts',
+    label: 'Lobbying Disclosures',
+    desc: 'New lobbying activity related to your followed politicians or tickers',
+  },
+  {
+    key: 'patent_alerts',
+    label: 'Patent Activity',
+    desc: 'New patent filings from companies in your watchlist',
+  },
+  {
+    key: 'learning_progress',
+    label: 'Learning Milestones',
+    desc: 'Course completions, badge unlocks, and XP awards',
+  },
+  {
     key: 'weekly_digest',
     label: 'Weekly Digest',
     desc: 'Sunday summary of what matters for your portfolio this week',
