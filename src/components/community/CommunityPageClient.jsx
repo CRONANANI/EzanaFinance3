@@ -814,20 +814,7 @@ export default function CommunityPageClient() {
     >
       {/* ═══════════ DESKTOP LAYOUT (≥768px via CSS) ═══════════════════════ */}
       <div className="comm-desktop-shell">
-        <div className="comm-greeting-row">
-          <div className="comm-greeting-section">
-            <h1 className="db-greeting">
-              <span>
-                {getGreeting()}, {firstName}
-              </span>
-              <span className="db-greeting-waving" aria-hidden>
-                👋
-              </span>
-            </h1>
-            <p className="db-greeting-sub">Connect, share, and grow with the investing community</p>
-            <p className="db-greeting-date">{formatDateLine()}</p>
-          </div>
-
+        <div className="comm-tabs-centered">
           <div className="comm-page-tabs comm-page-tabs--top" role="tablist">
             {PAGE_TABS.map((t) => (
               <button
@@ -846,29 +833,6 @@ export default function CommunityPageClient() {
             ))}
           </div>
         </div>
-
-        <section
-          className="db-card comm-usersearch-card"
-          data-community-card
-          aria-label="Find investors"
-        >
-          <div className="db-card-header has-icon">
-            <div className="comm-card-head-left">
-              <div className="comm-card-icon" aria-hidden>
-                <i className="bi bi-search" />
-              </div>
-              <div className="comm-card-head-meta">
-                <h3>Find investors</h3>
-                <p>Search by name or email to view their profile and trading activity.</p>
-              </div>
-            </div>
-          </div>
-          <div className="comm-usersearch-body">
-            <UserSearch />
-          </div>
-        </section>
-
-        {/* Trending topics: compact card in left column (see comm-3col) */}
 
         {/* ═══ KPI strip — community-wide snapshot ═══ */}
         <section className="comm-kpi-row" aria-label="Community at a glance">
@@ -967,6 +931,29 @@ export default function CommunityPageClient() {
             <i className="bi bi-chevron-right comm-kpi-card__chevron" aria-hidden />
           </button>
         </section>
+
+        <section
+          className="db-card comm-usersearch-card"
+          data-community-card
+          aria-label="Find investors"
+        >
+          <div className="db-card-header has-icon">
+            <div className="comm-card-head-left">
+              <div className="comm-card-icon" aria-hidden>
+                <i className="bi bi-search" />
+              </div>
+              <div className="comm-card-head-meta">
+                <h3>Find investors</h3>
+                <p>Search by name or email to view their profile and trading activity.</p>
+              </div>
+            </div>
+          </div>
+          <div className="comm-usersearch-body">
+            <UserSearch />
+          </div>
+        </section>
+
+        {/* Trending topics: compact card in left column (see comm-3col) */}
 
         {activeModal && (
           <CommunityKpiModal kind={activeModal} data={kpiModalData} onClose={closeKpiModal} />
