@@ -2599,3 +2599,135 @@ body.light-mode .sentinel-related-markets-toggle:hover {
     font-size: 0.6rem;
   }
 }
+
+/* ── Data Layer circular buttons (below top bar) ───────── */
+.ma-data-layer-row {
+  position: absolute;
+  top: 42px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 19;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: rgba(10, 14, 19, 0.75);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+}
+
+.ma-data-circle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.ma-data-circle i {
+  font-size: 0.8rem;
+  line-height: 1;
+  transition:
+    color 0.2s ease,
+    filter 0.2s ease;
+}
+
+.ma-data-circle-label {
+  font-size: 0.4rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: 1px;
+  line-height: 1;
+  white-space: nowrap;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.ma-data-circle:hover:not(:disabled) {
+  color: var(--dl-color, #10b981);
+  border-color: var(--dl-color, #10b981);
+  background: rgba(255, 255, 255, 0.06);
+  transform: scale(1.08);
+}
+
+.ma-data-circle:hover:not(:disabled) .ma-data-circle-label {
+  opacity: 1;
+}
+
+.ma-data-circle--active {
+  color: var(--dl-color, #10b981);
+  border-color: var(--dl-color, #10b981);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 0 14px var(--dl-glow, rgba(16, 185, 129, 0.3)),
+    inset 0 0 8px var(--dl-glow, rgba(16, 185, 129, 0.15));
+}
+
+.ma-data-circle--active i {
+  color: var(--dl-color, #10b981);
+  filter: drop-shadow(0 0 4px var(--dl-glow, rgba(16, 185, 129, 0.5)));
+}
+
+.ma-data-circle--active .ma-data-circle-label {
+  opacity: 1;
+  color: var(--dl-color, #10b981);
+}
+
+.ma-data-circle:disabled {
+  opacity: 0.4;
+  cursor: wait;
+}
+
+.ma-fullscreen.ma-view-map .ma-data-layer-row {
+  top: 74px;
+}
+
+@media (max-width: 768px) {
+  .ma-data-layer-row {
+    top: 38px;
+    gap: 5px;
+    padding: 4px 8px;
+  }
+
+  .ma-data-circle {
+    width: 36px;
+    height: 36px;
+  }
+
+  .ma-data-circle i {
+    font-size: 0.65rem;
+  }
+
+  .ma-data-circle-label {
+    font-size: 0.32rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .ma-data-layer-row {
+    gap: 3px;
+    padding: 3px 6px;
+  }
+
+  .ma-data-circle {
+    width: 32px;
+    height: 32px;
+  }
+
+  .ma-data-circle-label {
+    display: none;
+  }
+}

@@ -8,7 +8,6 @@ import { WorldMap, scoreToColor } from '@/components/ui/world-map';
 import { useGlobalPowerMap } from '@/hooks/useGlobalPowerMap';
 import { useBillionairesData } from '@/hooks/useBillionairesData';
 import { ShowMeDataButton } from '@/components/market-analysis/ShowMeDataButton';
-import { DataLayerBar } from '@/components/market-analysis/DataLayerBar';
 import { RelatedMarketsPanel } from '@/components/polymarket/RelatedMarketsPanel';
 import { useAuth } from '@/components/AuthProvider';
 import { useOrg } from '@/contexts/OrgContext';
@@ -94,6 +93,15 @@ const LAYER_CONFIG = {
     dataSource: CURRENCIES_DATA,
   },
 };
+
+const DATA_LAYERS = [
+  { key: 'gdp', icon: 'bi-cash-stack', label: 'GDP', color: '#10b981' },
+  { key: 'debt', icon: 'bi-credit-card-2-back', label: 'DEBT', color: '#ef4444' },
+  { key: 'population', icon: 'bi-people-fill', label: 'POP', color: '#8b5cf6' },
+  { key: 'births', icon: 'bi-heart-pulse-fill', label: 'BIRTHS', color: '#ec4899' },
+  { key: 'wealth', icon: 'bi-coin', label: 'WEALTH', color: '#f59e0b' },
+  { key: 'billionaires', icon: 'bi-trophy-fill', label: 'BILLIONAIRES', color: '#FFD700' },
+];
 
 const FINANCIAL_CITIES = [
   { id: 'toronto', name: 'Toronto', country: 'Canada', exchange: 'TSX', timezone: 'EST' },
@@ -1687,8 +1695,38 @@ export default function MarketAnalysisPage() {
   const selectedLayers = useGlobalPowerMap((s) => s.selectedLayers);
   const countryScores = useGlobalPowerMap((s) => s.countryScores);
   const setClickedCountry = useGlobalPowerMap((s) => s.setClickedCountry);
+  const toggleLayer = useGlobalPowerMap((s) => s.toggleLayer);
+  const clearLayers = useGlobalPowerMap((s) => s.clearLayers);
+  const recomputeScores = useGlobalPowerMap((s) => s.recomputeScores);
   const isPowerMapActive = selectedLayers.length > 0;
   const { scores: billionaireScores, loading: billionaireLoading } = useBillionairesData();
+
+  useEffect(() => {
+    if (
+      billionaireScores &&
+      typeof window !== 'undefined' &&
+      selectedLayers.includes('billionaires')
+    ) {
+      window.__liveBillionaireScores = billionaireScores;
+      recomputeScores();
+    }
+  }, [billionaireScores, selectedLayers, recomputeScores]);
+
+  const handleDataLayerClick = useCallback(
+    (layerKey) => {
+      if (layerKey === 'billionaires' && billionaireLoading) return;
+      if (
+        layerKey === 'billionaires' &&
+        billionaireScores &&
+        typeof window !== 'undefined' &&
+        !selectedLayers.includes('billionaires')
+      ) {
+        window.__liveBillionaireScores = billionaireScores;
+      }
+      toggleLayer(layerKey);
+    },
+    [billionaireLoading, billionaireScores, selectedLayers, toggleLayer],
+  );
 
   // First-visit tutorial: fire once per user, persisted in localStorage.
   // Deliberately gated behind a short timeout so the layout has a chance to
@@ -2015,6 +2053,32 @@ export default function MarketAnalysisPage() {
         </div>
       </div>
 
+      {view === 'map' && (
+        <div className="ma-data-layer-row">
+          {DATA_LAYERS.map((layer) => {
+            const isActive = selectedLayers.includes(layer.key);
+            const isLoading = layer.key === 'billionaires' && billionaireLoading;
+            return (
+              <button
+                key={layer.key}
+                type="button"
+                className={`ma-data-circle${isActive ? ' ma-data-circle--active' : ''}`}
+                onClick={() => handleDataLayerClick(layer.key)}
+                disabled={isLoading}
+                title={isLoading ? 'Loading billionaire data…' : `Toggle ${layer.label} heatmap`}
+                style={{
+                  '--dl-color': layer.color,
+                  '--dl-glow': `${layer.color}55`,
+                }}
+              >
+                <i className={`bi ${layer.icon}`} />
+                <span className="ma-data-circle-label">{isLoading ? '…' : layer.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       <button
         type="button"
         className="ma-help-btn"
@@ -2297,10 +2361,6 @@ export default function MarketAnalysisPage() {
               <i className="bi bi-airplane-fill" />
               ISR
             </button>
-            <DataLayerBar
-              billionaireScores={billionaireScores}
-              billionaireLoading={billionaireLoading}
-            />
           </div>
 
           <div className="ma-controls">
@@ -2328,7 +2388,12 @@ export default function MarketAnalysisPage() {
             <button
               type="button"
               className="ma-control-btn"
-              onClick={() => mapRef.current?.resetZoom()}
+              onClick={() => {
+                mapRef.current?.resetZoom();
+                clearLayers();
+                setActiveCategory(null);
+                setActiveTab(null);
+              }}
             >
               <i className="bi bi-arrows-fullscreen" /> RESET
             </button>
