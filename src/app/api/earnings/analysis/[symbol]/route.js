@@ -248,15 +248,15 @@ export async function GET(_req, context) {
     return NextResponse.json({ error: 'Invalid symbol' }, { status: 400 });
   }
 
-  const fmpKey = process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
-  const avKey =
-    process.env.ALPHA_VANTAGE_API_KEY || process.env.NEXT_PUBLIC_ALPHA_VANTAGE_API_KEY || '';
-  if (!fmpKey && !avKey) {
-    console.error('[earnings/analysis] Neither FMP_API_KEY nor ALPHA_VANTAGE_API_KEY is set');
+  // Only Alpha Vantage is needed for transcripts
+  const avKey = process.env.ALPHA_VANTAGE_API_KEY || '';
+  if (!avKey) {
+    console.error('[earnings/analysis] ALPHA_VANTAGE_API_KEY is not set');
     return NextResponse.json(
       {
-        error: 'Service misconfigured — no transcript data source available.',
-        detail: 'Set ALPHA_VANTAGE_API_KEY and/or FMP_API_KEY on the server.',
+        error: 'Earnings analysis is not configured.',
+        detail:
+          'Set ALPHA_VANTAGE_API_KEY in Vercel environment variables (Production + Preview + Development).',
       },
       { status: 503 },
     );
@@ -265,10 +265,7 @@ export async function GET(_req, context) {
   try {
     console.log(`[earnings/analysis] ${symbol}: starting`);
 
-    const { transcripts, fmpAccessDenied, avKeyConfigured } = await fetchLastNTranscripts(
-      symbol,
-      4,
-    );
+    const { transcripts } = await fetchLastNTranscripts(symbol, 4);
 
     const earnings = await fetchEarningsHistory(symbol, 12).catch((err) => {
       console.warn(`[earnings/analysis] ${symbol} earnings history failed:`, err?.message);
@@ -276,7 +273,7 @@ export async function GET(_req, context) {
     });
 
     console.log(
-      `[earnings/analysis] ${symbol}: ${transcripts.length} transcripts, ${earnings.length} earnings rows, fmpAccessDenied=${fmpAccessDenied}, avKeyConfigured=${avKeyConfigured}`,
+      `[earnings/analysis] ${symbol}: ${transcripts.length} transcripts, ${earnings.length} earnings rows`,
     );
 
     if (transcripts.length > 0) {
@@ -288,32 +285,14 @@ export async function GET(_req, context) {
       });
     }
 
-    if (transcripts.length === 0 && fmpAccessDenied && !avKeyConfigured) {
-      return NextResponse.json(
-        {
-          error:
-            'FMP returned HTTP 402/403 for transcripts and no Alpha Vantage key is configured.',
-          detail:
-            'Set ALPHA_VANTAGE_API_KEY in Vercel environment variables, or upgrade the FMP plan to include earning call transcripts.',
-        },
-        { status: 503 },
-      );
-    }
-
     if (transcripts.length === 0) {
-      const sources = [];
-      if (avKeyConfigured) sources.push('Alpha Vantage');
-      if (fmpKey)
-        sources.push(
-          fmpAccessDenied ? 'FMP (access denied — plan may exclude transcripts)' : 'FMP',
-        );
       return NextResponse.json(
         {
           error: `No earnings call transcripts found for ${symbol}.`,
           detail:
-            `Checked: ${sources.join(', ') || 'no data sources configured'}. ` +
-            'Transcript coverage is best for large-cap US tickers (AAPL, MSFT, NVDA, TSLA). ' +
-            'Check Vercel logs for "[av transcript]" and "[fmp transcript]" entries to debug.',
+            'Alpha Vantage did not have transcripts for recent quarters of this ticker. ' +
+            'Coverage is best for large-cap US tickers (AAPL, MSFT, NVDA, TSLA). ' +
+            'Check Vercel function logs for "[earnings/av]" entries to debug.',
         },
         { status: 404 },
       );
