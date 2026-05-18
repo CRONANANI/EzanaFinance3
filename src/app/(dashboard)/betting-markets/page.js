@@ -16,14 +16,6 @@ import '../../../../app-legacy/components/learning/learning-opportunities.css';
 import './betting-markets.css';
 import TraderProfileModal from '@/components/polymarket/TraderProfileModal';
 
-const SPORT_TABS = ['NFL', 'NBA', 'NHL', 'MLB', 'Soccer'];
-
-// Empty fallback — real games are fetched from /api/betting/live-games at
-// runtime. The fallback exists so the page still has a defined source if
-// the fetch is in flight or fails. Stat cards (live event count, active
-// sports) are derived dynamically inside the component from `liveGames`.
-const ODDS_DATA_FALLBACK = {};
-
 const LEADER_ALL = [
   {
     rank: 1,
@@ -102,88 +94,180 @@ const LEADER_ALL = [
 const LEADER_FRIENDS = LEADER_ALL.filter((_, i) => [0, 1, 3, 7].includes(i));
 const LEADER_PARTNERS = LEADER_ALL.filter((r) => r.partner);
 
-const EV_ITEMS = [
-  {
-    id: 'ev1',
-    title: 'Lakers +3.5 vs Celtics',
-    ev: '+4.2%',
-    confidence: 'High',
-    analysis: {
-      headline: 'Lakers +3.5 vs Celtics',
-      implied: '47.6%',
-      model: '52.1%',
-      edge: '+4.5%',
-      evPer100: '+4.2%',
-      confidence: 'HIGH',
-      basedOn: 'Injury data, ATS trends, matchup history',
-      math: [
-        'Market odds imply Lakers cover 47.6% of the time.',
-        'Our model estimates they cover 52.1%.',
-        'This creates a +4.2% edge.',
-      ],
-      backstory: [
-        'The Lakers are 8-2 ATS in their last 10 road games. Celtics are dealing with a key injury to their starting center.',
-        'Historical ATS record in this matchup favors the underdog by 3.2 points.',
-      ],
+const EV_SPORT_TABS = ['NFL', 'NBA', 'NHL', 'MLB', 'Football'];
+
+const EV_ITEMS_BY_SPORT = {
+  NFL: [
+    {
+      id: 'nfl1',
+      title: 'Chiefs -3.5 vs Ravens',
+      ev: '+3.8%',
+      confidence: 'High',
+      sport: 'NFL',
+      analysis: {
+        headline: 'Chiefs -3.5 vs Ravens',
+        implied: '52.4%',
+        model: '56.8%',
+        edge: '+4.4%',
+        evPer100: '+3.8%',
+        confidence: 'HIGH',
+        basedOn: 'Mahomes home record, Ravens secondary injuries, red-zone efficiency',
+        math: [
+          'Market implies Chiefs cover 52.4% of the time.',
+          'Our Poisson model estimates 56.8% after adjusting for home splits and defensive injuries.',
+          'Edge of +4.4% after vig.',
+        ],
+        backstory: [
+          'Chiefs are 12-3 ATS at home this season. Ravens missing two starting CBs confirmed Friday.',
+          'Mahomes averages 2.4 TDs at home vs 1.8 on the road — regression model weights this heavily.',
+        ],
+      },
     },
-  },
-  {
-    id: 'ev2',
-    title: 'Warriors ML vs Bucks',
-    ev: '+2.8%',
-    confidence: 'Medium',
-    analysis: {
-      headline: 'Warriors ML vs Bucks',
-      implied: '52.0%',
-      model: '55.4%',
-      edge: '+3.4%',
-      evPer100: '+2.8%',
-      confidence: 'MEDIUM',
-      basedOn: 'Rest advantage, home court, injury report',
-      math: [
-        'Market prices Warriors win at 52% implied.',
-        'Our model: 55.4% after pace and defense adjustments.',
-      ],
-      backstory: [
-        'Bucks on a back-to-back; Warriors defense ranks top-5 in rim protection over the last 10.',
-      ],
+    {
+      id: 'nfl2',
+      title: 'Over 44.5 Bills/Dolphins',
+      ev: '+2.1%',
+      confidence: 'Medium',
+      sport: 'NFL',
+      analysis: {
+        headline: 'Over 44.5 Bills/Dolphins',
+        implied: '49.5%',
+        model: '52.0%',
+        edge: '+2.5%',
+        evPer100: '+2.1%',
+        confidence: 'MEDIUM',
+        basedOn: 'Pace of play, weather forecast, total line movement',
+        math: [
+          'Market total at 44.5 implies ~49.5% over probability.',
+          'Our simulation using team pace and defensive DVOA gives 52.0%.',
+        ],
+        backstory: [
+          'Both teams top-10 in pace; dome game removes wind concerns. Divisional games historically trend over.',
+        ],
+      },
     },
-  },
-  {
-    id: 'ev3',
-    title: 'Canadiens +1.5 vs Bruins',
-    ev: '+6.1%',
-    confidence: 'High',
-    analysis: {
-      headline: 'Canadiens +1.5 vs Bruins',
-      implied: '44.2%',
-      model: '51.8%',
-      edge: '+7.6%',
-      evPer100: '+6.1%',
-      confidence: 'HIGH',
-      basedOn: 'Goalie matchup, 5v5 expected goals',
-      math: ['Puck-line mispriced vs our simulation after goalie confirmation.'],
-      backstory: ['Montreal has covered +1.5 in 7 of last 10 as a road dog.'],
+  ],
+  NBA: [
+    {
+      id: 'nba1',
+      title: 'Lakers +3.5 vs Celtics',
+      ev: '+4.2%',
+      confidence: 'High',
+      sport: 'NBA',
+      analysis: {
+        headline: 'Lakers +3.5 vs Celtics',
+        implied: '47.6%',
+        model: '52.1%',
+        edge: '+4.5%',
+        evPer100: '+4.2%',
+        confidence: 'HIGH',
+        basedOn: 'Injury data, ATS trends, matchup history',
+        math: [
+          'Market odds imply Lakers cover 47.6% of the time.',
+          'Our model estimates they cover 52.1%.',
+          'This creates a +4.2% edge.',
+        ],
+        backstory: [
+          'The Lakers are 8-2 ATS in their last 10 road games. Celtics dealing with a key center injury.',
+          'Historical ATS record in this matchup favors the underdog by 3.2 points.',
+        ],
+      },
     },
-  },
-  {
-    id: 'ev4',
-    title: 'Over 224.5 Lakers/Celtics',
-    ev: '+1.9%',
-    confidence: 'Low',
-    analysis: {
-      headline: 'Over 224.5 Lakers/Celtics',
-      implied: '49.0%',
-      model: '51.2%',
-      edge: '+2.2%',
-      evPer100: '+1.9%',
-      confidence: 'LOW',
-      basedOn: 'Pace projection only — thin edge',
-      math: ['Both teams top-8 in pace; total still shaded low vs model.'],
-      backstory: ['Watch late injury scratches before lock — variance is high.'],
+    {
+      id: 'nba2',
+      title: 'Warriors ML vs Bucks',
+      ev: '+2.8%',
+      confidence: 'Medium',
+      sport: 'NBA',
+      analysis: {
+        headline: 'Warriors ML vs Bucks',
+        implied: '52.0%',
+        model: '55.4%',
+        edge: '+3.4%',
+        evPer100: '+2.8%',
+        confidence: 'MEDIUM',
+        basedOn: 'Rest advantage, home court, injury report',
+        math: [
+          'Market prices Warriors win at 52% implied.',
+          'Our model: 55.4% after pace and defense adjustments.',
+        ],
+        backstory: [
+          'Bucks on a back-to-back; Warriors defense ranks top-5 in rim protection over the last 10.',
+        ],
+      },
     },
-  },
-];
+  ],
+  NHL: [
+    {
+      id: 'nhl1',
+      title: 'Canadiens +1.5 vs Bruins',
+      ev: '+6.1%',
+      confidence: 'High',
+      sport: 'NHL',
+      analysis: {
+        headline: 'Canadiens +1.5 vs Bruins',
+        implied: '44.2%',
+        model: '51.8%',
+        edge: '+7.6%',
+        evPer100: '+6.1%',
+        confidence: 'HIGH',
+        basedOn: 'Goalie matchup, 5v5 expected goals',
+        math: ['Puck-line mispriced vs our simulation after goalie confirmation.'],
+        backstory: ['Montreal has covered +1.5 in 7 of last 10 as a road dog.'],
+      },
+    },
+  ],
+  MLB: [
+    {
+      id: 'mlb1',
+      title: 'Yankees -1.5 vs Blue Jays',
+      ev: '+3.4%',
+      confidence: 'Medium',
+      sport: 'MLB',
+      analysis: {
+        headline: 'Yankees -1.5 vs Blue Jays',
+        implied: '41.0%',
+        model: '45.2%',
+        edge: '+4.2%',
+        evPer100: '+3.4%',
+        confidence: 'MEDIUM',
+        basedOn: 'Starting pitcher matchup, bullpen fatigue, run-line regression',
+        math: [
+          'Market run-line implies Yankees cover 41% of the time.',
+          'Our Poisson regression on runs scored gives 45.2% after pitching matchup adjustments.',
+        ],
+        backstory: [
+          'Yankees ace on the mound with a 2.1 ERA at home. Blue Jays bullpen logged 14 innings in 3 days.',
+        ],
+      },
+    },
+  ],
+  Football: [
+    {
+      id: 'fb1',
+      title: 'Arsenal -1 vs Man Utd',
+      ev: '+3.2%',
+      confidence: 'High',
+      sport: 'Football',
+      analysis: {
+        headline: 'Arsenal -1 vs Man Utd',
+        implied: '48.0%',
+        model: '51.9%',
+        edge: '+3.9%',
+        evPer100: '+3.2%',
+        confidence: 'HIGH',
+        basedOn: 'xG trends, home advantage, squad rotation',
+        math: [
+          'Market handicap implies Arsenal covers 48% of the time.',
+          'Our expected goals model gives 51.9% — edge holds after vig.',
+        ],
+        backstory: [
+          'Arsenal unbeaten at home in 14. Man Utd rotate heavily after midweek European fixture.',
+        ],
+      },
+    },
+  ],
+};
 
 const LINE_MOVES = [
   {
@@ -891,9 +975,7 @@ function KalshiSection() {
 
 export default function BettingMarketsPage() {
   const [platform, setPlatform] = useState('polymarket');
-  const [sport, setSport] = useState('NBA');
-  const [liveGames, setLiveGames] = useState({});
-  const [gamesLoading, setGamesLoading] = useState(false);
+  const [evSport, setEvSport] = useState('NFL');
   const [lbTab, setLbTab] = useState('All');
   const [evOpen, setEvOpen] = useState(null);
   const [polymarketLeaderboard, setPolymarketLeaderboard] = useState([]);
@@ -901,82 +983,6 @@ export default function BettingMarketsPage() {
   const [leaderboardPeriod, setLeaderboardPeriod] = useState('WEEK');
 
   const closeModal = useCallback(() => setEvOpen(null), []);
-
-  // Fetch today's real games for every supported league in parallel on
-  // mount. The /api/betting/live-games route normalizes provider output
-  // into { home, away, status, score, win_probability, local_start } and
-  // returns [] when no upstream key is configured — the UI gracefully
-  // renders an empty board in that case rather than stale mock data.
-  useEffect(() => {
-    let cancelled = false;
-    setGamesLoading(true);
-
-    const fetchAllLeagues = async () => {
-      const leagues = ['NBA', 'MLB', 'NHL', 'NFL', 'Soccer'];
-      const results = {};
-
-      await Promise.all(
-        leagues.map(async (league) => {
-          try {
-            const res = await fetch(`/api/betting/live-games?sport=${league}`);
-            if (!res.ok) return;
-            const data = await res.json();
-            if (data.games && data.games.length > 0) {
-              results[league] = [
-                {
-                  league: `${league} — Today`,
-                  games: data.games
-                    .filter(
-                      (g) =>
-                        g.status === 'scheduled' ||
-                        g.status === 'inprogress' ||
-                        g.status === 'closed',
-                    )
-                    .slice(0, 8)
-                    .map((g) => ({
-                      title: `${g.away} vs ${g.home}`,
-                      time:
-                        g.local_start?.replace(/^[A-Za-z]+ [A-Za-z]+ \d+, /, '') || g.start_time,
-                      away: g.away,
-                      home: g.home,
-                      score: g.score
-                        ? `${g.away} ${g.score[g.away]} - ${g.score[g.home]} ${g.home}`
-                        : null,
-                      status: g.status,
-                      spreadAway: g.status === 'scheduled' ? 'TBD' : '',
-                      spreadHome: g.status === 'scheduled' ? 'TBD' : '',
-                      total:
-                        g.status === 'closed' && g.score
-                          ? `Final: ${g.score[g.away]}-${g.score[g.home]}`
-                          : g.status === 'inprogress'
-                            ? `Live: ${g.score?.[g.away] ?? 0}-${g.score?.[g.home] ?? 0}`
-                            : 'Upcoming',
-                      ml: g.win_probability
-                        ? `Win Prob: ${g.away} ${(g.win_probability[g.away] ?? 50).toFixed(0)}% — ${g.home} ${(g.win_probability[g.home] ?? 50).toFixed(0)}%`
-                        : g.score
-                          ? `Final Score: ${g.score[g.away]} - ${g.score[g.home]}`
-                          : '',
-                    })),
-                },
-              ];
-            }
-          } catch (err) {
-            console.warn(`[betting] Failed to fetch ${league}:`, err);
-          }
-        }),
-      );
-
-      if (!cancelled) {
-        setLiveGames(results);
-        setGamesLoading(false);
-      }
-    };
-
-    fetchAllLeagues();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -1015,51 +1021,6 @@ export default function BettingMarketsPage() {
 
   // NOTE: Commented out - getCoursesByTrack not available
   // const bettingCourses = useMemo(() => getCoursesByTrack('betting').slice(0, 4), []);
-
-  const oddsBlocks = liveGames[sport] || ODDS_DATA_FALLBACK[sport] || [];
-
-  // Derive Live Events stat from real fetched data so the card reflects
-  // today's actual game count and which leagues currently have action.
-  const totalGames = Object.values(liveGames).reduce(
-    (sum, blocks) => sum + blocks.reduce((s, b) => s + (b.games?.length || 0), 0),
-    0,
-  );
-  const activeSports = Object.keys(liveGames)
-    .filter((k) => liveGames[k]?.length > 0)
-    .join(' ');
-
-  const dynamicStats = [
-    {
-      id: 'live',
-      icon: '🏈',
-      label: 'Live Events',
-      value: gamesLoading ? '...' : `${totalGames} today`,
-      sub: activeSports || (gamesLoading ? 'Loading...' : 'No games scheduled'),
-    },
-    {
-      id: 'vol',
-      icon: '💰',
-      label: 'Total Volume',
-      value: '$4.2M today',
-      sub: '▲ +12% vs yesterday',
-      subTone: 'up',
-    },
-    {
-      id: 'win',
-      icon: '🎯',
-      label: 'Your Win Rate',
-      value: '68% (34/50)',
-      sub: '▲ from 62%',
-      subTone: 'up',
-    },
-    {
-      id: 'ev',
-      icon: '📊',
-      label: 'EV Opportunities',
-      value: '7 found today',
-      sub: '3 high confidence',
-    },
-  ];
 
   const reverseCount = LINE_MOVES.filter((l) => l.reverse).length;
 
@@ -1131,87 +1092,6 @@ export default function BettingMarketsPage() {
               {p.label}
             </button>
           ))}
-        </div>
-      </div>
-
-      <div className="bm-stat-row">
-        {dynamicStats.map((s) => (
-          <div key={s.id} className="bm-stat-card">
-            <div className="bm-stat-top">
-              <span className="bm-stat-label">
-                <span aria-hidden>{s.icon}</span> {s.label}
-              </span>
-            </div>
-            <div className="bm-stat-value">{s.value}</div>
-            <div className={`bm-stat-sub ${s.subTone === 'up' ? 'bm-stat-delta up' : ''}`}>
-              {s.sub}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div cardId="betting-odds-board" className="db-card bm-odds-board">
-        <div className="db-card-header">
-          <h3>Live Sports Odds</h3>
-          <button type="button" className="db-icon-btn" aria-label="Expand">
-            <i className="bi bi-box-arrow-up-right" />
-          </button>
-        </div>
-        <div style={{ padding: '0 1.25rem 1rem' }}>
-          <div className="bm-odds-head">
-            <h3
-              style={{
-                margin: 0,
-                fontSize: '0.9375rem',
-                fontWeight: 800,
-                color: 'var(--home-heading, #111827)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-              }}
-            >
-              <span aria-hidden>🏈</span> Live Trending Sports Odds
-            </h3>
-            <div className="bm-sport-tabs" role="tablist" aria-label="Sport filter">
-              {SPORT_TABS.map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  role="tab"
-                  aria-selected={sport === t}
-                  className={`bm-sport-tab ${sport === t ? 'on' : ''}`}
-                  onClick={() => setSport(t)}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="bm-odds-scroll">
-            {oddsBlocks.map((block) => (
-              <div key={block.league}>
-                <div className="bm-league-hdr">{block.league}</div>
-                {block.games.map((g) => (
-                  <div key={`${g.away}-${g.home}-${g.time}`} className="bm-game">
-                    <div className="bm-game-title">
-                      <span>{g.title}</span>
-                      <span
-                        className={`bm-game-time ${g.status === 'inprogress' ? 'bm-game-live' : ''}`}
-                      >
-                        {g.status === 'inprogress'
-                          ? '🔴 LIVE'
-                          : g.status === 'closed'
-                            ? 'Final'
-                            : g.time}
-                      </span>
-                    </div>
-                    <div className="bm-game-lines">{g.total}</div>
-                    {g.ml && <div className="bm-game-ml">{g.ml}</div>}
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
         </div>
       </div>
 
@@ -1350,41 +1230,66 @@ export default function BettingMarketsPage() {
 
         <div cardId="betting-ev-finder" className="db-card">
           <div className="db-card-header">
-            <h3>Expected Value Finder</h3>
+            <h3>Expected Value Opportunities</h3>
             <button type="button" className="db-icon-btn" aria-label="Expand">
               <i className="bi bi-box-arrow-up-right" />
             </button>
           </div>
           <div style={{ padding: '0 1.25rem 1.25rem' }}>
+            <div className="bm-ev-sport-tabs">
+              {EV_SPORT_TABS.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  className={`bm-ev-sport-tab ${evSport === s ? 'on' : ''}`}
+                  onClick={() => setEvSport(s)}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
             <p
               style={{
-                margin: '0 0 0.75rem',
-                fontSize: '0.75rem',
+                margin: '0.75rem 0 0.5rem',
+                fontSize: '0.7rem',
                 color: '#6b7280',
                 fontWeight: 600,
               }}
             >
-              High EV Opportunities Today
+              {evSport} — High EV Opportunities Today
             </p>
-            {EV_ITEMS.map((e) => (
-              <button
-                key={e.id}
-                type="button"
-                className="bm-ev-item bm-ev-item--clickable"
-                onClick={() => setEvOpen(e)}
+            {(EV_ITEMS_BY_SPORT[evSport] || []).length === 0 ? (
+              <div
+                style={{
+                  padding: '1.5rem 0',
+                  textAlign: 'center',
+                  color: '#6b7280',
+                  fontSize: '0.75rem',
+                }}
               >
-                <div
-                  className={`bm-ev-confidence-dot bm-ev-confidence-dot--${e.confidence.toLowerCase()}`}
-                />
-                <div className="bm-ev-item-body">
-                  <div className="bm-ev-title">{e.title}</div>
-                  <div className="bm-ev-meta">
-                    EV: {e.ev} &nbsp;·&nbsp; Confidence: {e.confidence}
+                No EV opportunities detected for {evSport} right now.
+              </div>
+            ) : (
+              (EV_ITEMS_BY_SPORT[evSport] || []).map((e) => (
+                <button
+                  key={e.id}
+                  type="button"
+                  className="bm-ev-item bm-ev-item--clickable"
+                  onClick={() => setEvOpen(e)}
+                >
+                  <div
+                    className={`bm-ev-confidence-dot bm-ev-confidence-dot--${e.confidence.toLowerCase()}`}
+                  />
+                  <div className="bm-ev-item-body">
+                    <div className="bm-ev-title">{e.title}</div>
+                    <div className="bm-ev-meta">
+                      EV: {e.ev} &nbsp;·&nbsp; Confidence: {e.confidence}
+                    </div>
                   </div>
-                </div>
-                <i className="bi bi-chevron-right bm-ev-arrow" />
-              </button>
-            ))}
+                  <i className="bi bi-chevron-right bm-ev-arrow" />
+                </button>
+              ))
+            )}
           </div>
         </div>
       </div>
