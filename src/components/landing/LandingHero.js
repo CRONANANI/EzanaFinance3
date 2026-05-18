@@ -6,6 +6,7 @@ import { GlobeWithNotificationCards } from '@/components/landing/GlobeWithNotifi
 import { AnimatedWords } from '@/components/ui/animated-words';
 import { FallingPattern } from '@/components/ui/falling-pattern';
 import HeroLightning from '@/components/ui/HeroLightning';
+import AuroraShaderLayer from '@/components/ui/AuroraShaderLayer';
 import { LAND_GEOJSON_URL } from '@/components/ui/interactive-globe';
 
 /**
@@ -140,6 +141,12 @@ export function LandingHero() {
             density={1.25}
             className="h-full w-full"
           />
+          <AuroraShaderLayer
+            className="hero-aurora-shader-back"
+            opacity={0.35}
+            speed={0.7}
+            tint="green"
+          />
         </div>
       )}
 
@@ -168,7 +175,9 @@ export function LandingHero() {
             </div>
           </div>
         </div>
-        <div className={`card-preview globe-preview ${showHeroVisual ? 'globe-preview--visible' : ''}`}>
+        <div
+          className={`card-preview globe-preview ${showHeroVisual ? 'globe-preview--visible' : ''}`}
+        >
           <GlobeWithNotificationCards
             size={globeSize}
             onGlobeReady={onGlobeReady}
@@ -176,6 +185,15 @@ export function LandingHero() {
             triggerNonce={cardTrigger.nonce}
           />
         </div>
+
+        {mountHeroBg && (
+          <div
+            className={`hero-aurora-shader-front ${showHeroVisual ? 'hero-aurora-shader-front--visible' : ''}`}
+            aria-hidden
+          >
+            <AuroraShaderLayer opacity={0.15} speed={0.5} tint="green" />
+          </div>
+        )}
 
         <HeroLightning intervalMs={3300} onStrike={onLightningStrike} />
       </div>

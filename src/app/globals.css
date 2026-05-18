@@ -93,26 +93,82 @@ body.light-mode {
    * cutoffs from a linear bottom layer on narrow viewports).
    * Pattern is softer behind centered text; fades smoothly outward.
    */
-  mask-image:
-    radial-gradient(
-      ellipse 80% 70% at 50% 25%,
-      transparent 0%,
-      transparent 30%,
-      rgba(0, 0, 0, 0.5) 50%,
-      black 80%
-    );
-  -webkit-mask-image:
-    radial-gradient(
-      ellipse 80% 70% at 50% 25%,
-      transparent 0%,
-      transparent 30%,
-      rgba(0, 0, 0, 0.5) 50%,
-      black 80%
-    );
+  mask-image: radial-gradient(
+    ellipse 80% 70% at 50% 25%,
+    transparent 0%,
+    transparent 30%,
+    rgba(0, 0, 0, 0.5) 50%,
+    black 80%
+  );
+  -webkit-mask-image: radial-gradient(
+    ellipse 80% 70% at 50% 25%,
+    transparent 0%,
+    transparent 30%,
+    rgba(0, 0, 0, 0.5) 50%,
+    black 80%
+  );
 }
 
 .landing-page .hero-aurora-bg.hero-aurora-bg--visible {
   opacity: 1;
+}
+
+/* ── Aurora shader — BACK layer (behind globe, inside hero-aurora-bg) ── */
+.landing-page .hero-aurora-shader-back {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* ── Aurora shader — FRONT layer (in front of globe, translucent overlay) ── */
+.landing-page .hero-aurora-shader-front {
+  position: absolute;
+  inset: 0;
+  z-index: 25;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  /* Radial mask: transparent at center (where globe is) so globe stays sharp,
+     aurora wisps only visible around the edges and corners */
+  mask-image: radial-gradient(
+    ellipse 50% 50% at 50% 50%,
+    transparent 0%,
+    transparent 25%,
+    rgba(0, 0, 0, 0.4) 50%,
+    rgba(0, 0, 0, 0.7) 70%,
+    black 100%
+  );
+  -webkit-mask-image: radial-gradient(
+    ellipse 50% 50% at 50% 50%,
+    transparent 0%,
+    transparent 25%,
+    rgba(0, 0, 0, 0.4) 50%,
+    rgba(0, 0, 0, 0.7) 70%,
+    black 100%
+  );
+}
+
+.landing-page .hero-aurora-shader-front--visible {
+  opacity: 1;
+}
+
+/* On mobile, disable the front layer entirely (saves GPU) and reduce back layer intensity */
+@media (max-width: 768px) {
+  .landing-page .hero-aurora-shader-front {
+    display: none;
+  }
+  .landing-page .hero-aurora-shader-back {
+    opacity: 0.6;
+  }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .landing-page .hero-aurora-shader-back,
+  .landing-page .hero-aurora-shader-front {
+    display: none;
+  }
 }
 
 .landing-page .hero-content-column {
@@ -297,7 +353,7 @@ body.light-mode {
 }
 
 .landing-page .legacy-subtext,
-.landing-page [class*="no-spam"] {
+.landing-page [class*='no-spam'] {
   font-size: 0.6875rem;
   color: #4b5563;
   text-align: center;
@@ -323,9 +379,15 @@ body.light-mode {
   z-index: 10;
 }
 
-.landing-page .globe-card-v-0 { align-self: flex-start; }
-.landing-page .globe-card-v-1 { align-self: center; }
-.landing-page .globe-card-v-2 { align-self: flex-end; }
+.landing-page .globe-card-v-0 {
+  align-self: flex-start;
+}
+.landing-page .globe-card-v-1 {
+  align-self: center;
+}
+.landing-page .globe-card-v-2 {
+  align-self: flex-end;
+}
 
 .landing-page .globe-alert-title {
   font-size: 0.75rem;
@@ -469,7 +531,7 @@ body.light-mode {
 
 /* Trusted by section */
 .landing-page .trusted-section,
-.landing-page [class*="trusted"] {
+.landing-page [class*='trusted'] {
   padding: 2rem;
   text-align: center;
 }
@@ -520,7 +582,9 @@ body.light-mode .nav-logo-img {
   flex-grow: 0;
 }
 @media (max-width: 768px) {
-  .nav-left-zone { gap: 0.25rem; }
+  .nav-left-zone {
+    gap: 0.25rem;
+  }
 }
 
 /* Base theme defaults — light-mode class overrides surface color */
@@ -582,7 +646,11 @@ html:has(.landing-page) body:not(.light-mode) {
 
 /* Fallback: ensure content visible after 6s if JS animations don't run (inline styles override this) */
 @keyframes landing-fallback-visible {
-  to { opacity: 1; transform: none; filter: none; }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
 }
 .landing-page .word-animate,
 .landing-page .animate-in {
@@ -591,9 +659,15 @@ html:has(.landing-page) body:not(.light-mode) {
 
 /* GradientButton - rotating gradient with metallic finish and border */
 @keyframes gradient-rotate {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 .gradient-button-metallic {
@@ -625,20 +699,24 @@ html:has(.landing-page) body:not(.light-mode) {
   animation-delay: 1s;
 }
 .db-light-1 {
-  offset-path: path("M 31 10 v 15 q 0 5 5 5 h 59 q 5 0 5 5 v 25");
+  offset-path: path('M 31 10 v 15 q 0 5 5 5 h 59 q 5 0 5 5 v 25');
 }
 .db-light-2 {
-  offset-path: path("M 77 10 v 10 q 0 5 5 5 h 13 q 5 0 5 5 v 25");
+  offset-path: path('M 77 10 v 10 q 0 5 5 5 h 13 q 5 0 5 5 v 25');
 }
 .db-light-3 {
-  offset-path: path("M 124 10 v 10 q 0 5 -5 5 h -14 q -5 0 -5 5 v 25");
+  offset-path: path('M 124 10 v 10 q 0 5 -5 5 h -14 q -5 0 -5 5 v 25');
 }
 .db-light-4 {
-  offset-path: path("M 170 10 v 15 q 0 5 -5 5 h -60 q -5 0 -5 5 v 25");
+  offset-path: path('M 170 10 v 15 q 0 5 -5 5 h -60 q -5 0 -5 5 v 25');
 }
 @keyframes database-animation-path {
-  0% { offset-distance: 0%; }
-  100% { offset-distance: 100%; }
+  0% {
+    offset-distance: 0%;
+  }
+  100% {
+    offset-distance: 100%;
+  }
 }
 
 /* Data flow lines - prominent pulse animation */
@@ -647,9 +725,17 @@ html:has(.landing-page) body:not(.light-mode) {
   animation: db-pulse-flow 2s linear infinite;
 }
 @keyframes db-pulse-flow {
-  0% { stroke-dashoffset: 0; opacity: 0.9; }
-  50% { opacity: 1; }
-  100% { stroke-dashoffset: 28; opacity: 0.9; }
+  0% {
+    stroke-dashoffset: 0;
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 28;
+    opacity: 0.9;
+  }
 }
 
 /* =====================================================
@@ -952,7 +1038,10 @@ html:has(.landing-page) body:not(.light-mode) {
   border: 1px solid rgba(255, 255, 255, 0.15);
   color: #9ca3af;
   background: transparent;
-  transition: transform 0.25s ease, color 0.2s ease, border-color 0.2s ease,
+  transition:
+    transform 0.25s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
     background 0.2s ease;
 }
 
@@ -1524,7 +1613,7 @@ body.light-mode select option {
 
 /* "Help Center" dropped in the compact desktop range to free horizontal room. */
 @media (min-width: 769px) and (max-width: 1279px) {
-  .navbar .nav-container-centered .nav-menu .nav-item:has(a[href="/help-center"]) {
+  .navbar .nav-container-centered .nav-menu .nav-item:has(a[href='/help-center']) {
     display: none;
   }
 }
@@ -1946,14 +2035,73 @@ body:has(.signin-dark-lock) {
    set to var(--font-mono) (numeric tickers, terminal output, tabular
    figures) keep their monospaced font — the user asked for text only,
    not numbers, to match the dashboard. */
-.landing-page :is(h1, h2, h3, h4, h5, h6, p, a, span, li, button, label,
-  input, select, textarea, blockquote, td, th, dt, dd, figcaption, summary,
-  small, strong, em, time),
-.signin-dark-lock :is(h1, h2, h3, h4, h5, h6, p, a, span, li, button, label,
-  input, select, textarea, blockquote, td, th, dt, dd, figcaption, summary,
-  small, strong, em, time) {
-  font-family: var(--font-sans, 'Plus Jakarta Sans', -apple-system,
-    BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+.landing-page
+  :is(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    a,
+    span,
+    li,
+    button,
+    label,
+    input,
+    select,
+    textarea,
+    blockquote,
+    td,
+    th,
+    dt,
+    dd,
+    figcaption,
+    summary,
+    small,
+    strong,
+    em,
+    time
+  ),
+.signin-dark-lock
+  :is(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    a,
+    span,
+    li,
+    button,
+    label,
+    input,
+    select,
+    textarea,
+    blockquote,
+    td,
+    th,
+    dt,
+    dd,
+    figcaption,
+    summary,
+    small,
+    strong,
+    em,
+    time
+  ) {
+  font-family: var(
+    --font-sans,
+    'Plus Jakarta Sans',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    sans-serif
+  );
 }
 
 /* Defend against body.light-mode rules that try to darken descendant text
