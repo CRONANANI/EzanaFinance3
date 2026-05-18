@@ -3,28 +3,37 @@ import { supabaseAdmin } from '@/lib/plaid';
 
 export const dynamic = 'force-dynamic';
 
-// Request-time read — module-level captures freeze build-container env values.
 function getFmpKey() {
   return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
 }
 
+function getAvKey() {
+  return process.env.ALPHA_VANTAGE_API_KEY || process.env.NEXT_PUBLIC_ALPHA_VANTAGE_API_KEY || '';
+}
+
 /**
- * GET /api/health/earnings — diagnostics for the earnings call analyzer (FMP + Supabase).
- * Does not expose secrets. Safe to hit when the research card misbehaves.
+ * GET /api/health/earnings — diagnostics for the earnings call analyzer.
+ * Checks both FMP and Alpha Vantage, plus Supabase tables.
  */
 export async function GET() {
   const fmpKey = getFmpKey();
+  const avKey = getAvKey();
+
   const checks = {
     fmp_api_key_configured: !!fmpKey,
+    av_api_key_configured: !!avKey,
     transcripts_table_exists: false,
     analysis_table_exists: false,
     transcripts_row_count: null,
     analysis_row_count: null,
     fmp_transcript_probe_ok: false,
     fmp_transcript_probe_status: null,
+    av_transcript_probe_ok: false,
+    av_transcript_probe_status: null,
+    av_transcript_probe_keys: null,
   };
 
-  if (checks.fmp_api_key_configured) {
+  if (fmpKey) {
     try {
       const url = `https://financialmodelingprep.com/stable/earning-call-transcript?symbol=AAPL&year=2024&quarter=4&apikey=${encodeURIComponent(fmpKey)}`;
       const res = await fetch(url, { cache: 'no-store' });
@@ -32,6 +41,26 @@ export async function GET() {
       checks.fmp_transcript_probe_ok = res.ok;
     } catch (e) {
       checks.fmp_transcript_probe_status = `error:${e?.message || 'fetch failed'}`;
+    }
+  }
+
+  if (avKey) {
+    try {
+      const url = `https://www.alphavantage.co/query?function=EARNINGS_CALL_TRANSCRIPT&symbol=AAPL&quarter=2024Q4&apikey=${avKey}`;
+      const res = await fetch(url, { cache: 'no-store' });
+      checks.av_transcript_probe_status = res.status;
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.Note || data?.Information) {
+          checks.av_transcript_probe_ok = false;
+          checks.av_transcript_probe_status = `rate_limited: ${(data.Note || data.Information).slice(0, 100)}`;
+        } else {
+          checks.av_transcript_probe_ok = true;
+          checks.av_transcript_probe_keys = Object.keys(data);
+        }
+      }
+    } catch (e) {
+      checks.av_transcript_probe_status = `error:${e?.message || 'fetch failed'}`;
     }
   }
 
@@ -48,7 +77,7 @@ export async function GET() {
         checks.transcripts_row_count = count ?? 0;
       }
     } catch {
-      /* table missing or client error */
+      /* table missing */
     }
 
     try {
@@ -64,18 +93,21 @@ export async function GET() {
     }
   }
 
-  const healthy =
-    checks.fmp_api_key_configured &&
-    checks.fmp_transcript_probe_ok &&
-    checks.transcripts_table_exists &&
-    checks.analysis_table_exists;
+  const hasAnySource = checks.fmp_transcript_probe_ok || checks.av_transcript_probe_ok;
+  const hasDb = checks.transcripts_table_exists && checks.analysis_table_exists;
+  const healthy = hasAnySource && hasDb;
 
   const degradedReasons = [];
-  if (!checks.fmp_api_key_configured) degradedReasons.push('FMP_API_KEY missing');
+  if (!checks.fmp_api_key_configured && !checks.av_api_key_configured) {
+    degradedReasons.push('Neither FMP_API_KEY nor ALPHA_VANTAGE_API_KEY is configured');
+  }
   if (checks.fmp_api_key_configured && !checks.fmp_transcript_probe_ok) {
     degradedReasons.push(
-      `FMP transcript probe HTTP ${checks.fmp_transcript_probe_status} — plan may exclude transcripts (402/403 common)`,
+      `FMP transcript probe HTTP ${checks.fmp_transcript_probe_status} — plan may exclude transcripts`,
     );
+  }
+  if (checks.av_api_key_configured && !checks.av_transcript_probe_ok) {
+    degradedReasons.push(`AV transcript probe failed: ${checks.av_transcript_probe_status}`);
   }
   if (!checks.transcripts_table_exists || !checks.analysis_table_exists) {
     degradedReasons.push(
@@ -86,10 +118,8 @@ export async function GET() {
     degradedReasons.push('Supabase URL or SUPABASE_SERVICE_ROLE_KEY missing');
   }
 
-  const status = healthy ? 'healthy' : 'degraded';
-
   return NextResponse.json({
-    status,
+    status: healthy ? 'healthy' : 'degraded',
     degradedReasons: healthy ? [] : degradedReasons,
     checks,
   });
