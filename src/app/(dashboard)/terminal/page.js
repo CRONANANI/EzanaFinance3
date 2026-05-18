@@ -8,14 +8,14 @@ import '../../../../app-legacy/assets/css/theme.css';
 import '../home/terminal.css';
 
 const INDEX_SYMBOLS = [
-  { name: 'S&P 500', symbol: 'SPY' },
-  { name: 'NASDAQ', symbol: 'QQQ' },
-  { name: 'DOW', symbol: 'DIA' },
+  { name: 'S&P 500', symbol: 'SPX' },
+  { name: 'NASDAQ', symbol: 'COMP' },
+  { name: 'DOW', symbol: 'DJI' },
   { name: 'GOLD', symbol: 'GLD' },
   { name: 'OIL', symbol: 'USO' },
   { name: 'BONDS', symbol: 'TLT' },
   { name: 'BTC', symbol: 'IBIT' },
-  { name: 'VIX', symbol: 'VIXY' },
+  { name: 'VIX', symbol: 'VIX' },
   { name: 'EUR/USD', symbol: 'FXE' },
 ];
 

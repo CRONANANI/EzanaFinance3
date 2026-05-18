@@ -31,6 +31,29 @@ export async function getBiggestLosers(limit = 5) {
   return data.slice(0, limit).map(normalizeMover);
 }
 
+/** Alpha Vantage TOP_GAINERS_LOSERS row → same shape as {@link normalizeMover}. */
+export function normalizeAlphaVantageMover(m) {
+  const pctRaw = m.change_percentage ?? m.changesPercentage ?? 0;
+  const pct = parseFloat(String(pctRaw).replace(/%/g, '')) || 0;
+  const price = Number(String(m.price ?? 0).replace(/,/g, '')) || 0;
+  const dollarRaw = m.change_amount ?? m.change ?? 0;
+  const dollarChange = parseFloat(String(dollarRaw).replace(/[$,]/g, '')) || 0;
+
+  return {
+    ticker: String(m.ticker || m.symbol || '').toUpperCase(),
+    name: m.name || m.companyName || m.company_name || m.ticker || m.symbol || '',
+    price,
+    change: pct >= 0 ? `+${pct.toFixed(2)}%` : `${pct.toFixed(2)}%`,
+    dollarChange: dollarChange >= 0 ? `+${dollarChange.toFixed(2)}` : dollarChange.toFixed(2),
+    volume:
+      m.volume != null && m.volume !== '' ? formatVolume(String(m.volume).replace(/,/g, '')) : '—',
+    positive: pct >= 0,
+    yearHigh: null,
+    yearLow: null,
+    range52w: '—',
+  };
+}
+
 function normalizeMover(m) {
   const pct = Number(m.changesPercentage ?? 0);
   const dollarChange = Number(m.change ?? 0);
@@ -48,9 +71,7 @@ function normalizeMover(m) {
     yearHigh: yearHigh > 0 ? yearHigh : null,
     yearLow: yearLow > 0 ? yearLow : null,
     range52w:
-      yearHigh > 0 && yearLow > 0
-        ? `$${formatPrice(yearLow)} – $${formatPrice(yearHigh)}`
-        : '—',
+      yearHigh > 0 && yearLow > 0 ? `$${formatPrice(yearLow)} – $${formatPrice(yearHigh)}` : '—',
   };
 }
 

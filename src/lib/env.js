@@ -6,6 +6,7 @@ const required = [
 
 const optional = [
   'FINNHUB_API_KEY',
+  'ALPHA_VANTAGE_API_KEY',
   'PLAID_CLIENT_ID',
   'PLAID_SECRET',
   'ALPACA_API_KEY',
