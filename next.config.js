@@ -19,7 +19,7 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com",
       "img-src 'self' data: blob: https: http:",
       "font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com",
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://*.alpaca.markets https://*.vercel-insights.com https://*.finnhub.io wss://*.finnhub.io https://*.vercel.live https://api.anthropic.com",
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://*.alpaca.markets https://*.vercel-insights.com https://*.finnhub.io wss://*.finnhub.io https://*.vercel.live https://api.anthropic.com https://raw.githubusercontent.com",
       "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://vercel.live",
       "object-src 'none'",
       "base-uri 'self'",
