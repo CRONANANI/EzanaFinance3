@@ -116,6 +116,104 @@ function parseAvResponse(data, config) {
   return points;
 }
 
+/**
+ * UTC Monday start for the calendar week containing `ymd` (YYYY-MM-DD).
+ */
+function weekStartMondayUtc(ymd) {
+  const d = new Date(`${ymd}T12:00:00Z`);
+  const wd = d.getUTCDay();
+  const mondayOffset = wd === 0 ? -6 : 1 - wd;
+  d.setUTCDate(d.getUTCDate() + mondayOffset);
+  return d.toISOString().slice(0, 10);
+}
+
+/**
+ * Group points into weeks (Monday week start); last point per week wins.
+ * Labels "Week 1".."Week N" chronologically within `sliced`.
+ */
+function aggregateByWeek(points, maxWeeks = 4) {
+  if (!points.length) return [];
+
+  const weeks = new Map();
+  for (const p of points) {
+    weeks.set(weekStartMondayUtc(p.date), p);
+  }
+
+  const weekEntries = [...weeks.values()].sort((a, b) => a.date.localeCompare(b.date));
+  const sliced = weekEntries.slice(-maxWeeks);
+
+  return sliced.map((p, i) => ({
+    day: `Week ${i + 1}`,
+    ymd: p.date,
+    close: p.close,
+  }));
+}
+
+/**
+ * Last trading day per calendar month; label = short month in America/New_York.
+ */
+function aggregateByMonth(points) {
+  if (!points.length) return [];
+
+  const months = new Map();
+  for (const p of points) {
+    const monthKey = p.date.slice(0, 7);
+    months.set(monthKey, p);
+  }
+
+  return [...months.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([, p]) => {
+      const d = new Date(`${p.date}T12:00:00Z`);
+      return {
+        day: d.toLocaleDateString('en-US', { timeZone: 'America/New_York', month: 'short' }),
+        ymd: p.date,
+        close: p.close,
+      };
+    });
+}
+
+/** Last trading day per calendar year; label = full year. */
+function aggregateByYear(points) {
+  if (!points.length) return [];
+
+  const years = new Map();
+  for (const p of points) {
+    const yearKey = p.date.slice(0, 4);
+    years.set(yearKey, p);
+  }
+
+  return [...years.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([yearKey, p]) => ({
+      day: yearKey,
+      ymd: p.date,
+      close: p.close,
+    }));
+}
+
+/** % change from first displayed point (chart baseline = 0%). */
+function applyPctSeries(aggregated) {
+  if (!aggregated.length) return [];
+  const baselineClose = aggregated[0].close;
+  if (!Number.isFinite(baselineClose) || baselineClose === 0) {
+    return aggregated.map((p) => ({ ...p, pct: 0 }));
+  }
+  return aggregated.map((p) => ({
+    ...p,
+    pct: parseFloat((((p.close - baselineClose) / baselineClose) * 100).toFixed(3)),
+  }));
+}
+
+/**
+ * Aggregate daily points for the selected period.
+ *
+ * 7D  → last 5 sessions, weekday labels
+ * 1M  → 4 weeks, "Week 1"…
+ * 3M/6M/1Y → last 3 / 6 / 12 month-end closes, month labels
+ * ALL → yearly
+ * 1D  → latest session only
+ */
 function buildSeries(points, period) {
   if (!points.length) return { series: [], currentPrice: null };
 
@@ -124,45 +222,45 @@ function buildSeries(points, period) {
 
   if (filtered.length === 0) return { series: [], currentPrice: null };
 
-  const baseline = filtered[0].close;
+  const currentPrice = filtered[filtered.length - 1].close;
 
-  let sampled = filtered;
-  if (period === '1Y' && sampled.length > 52) {
-    sampled = sampled.filter((_, i) => i === 0 || i === sampled.length - 1 || i % 5 === 0);
-  } else if (period === 'ALL' && sampled.length > 120) {
-    sampled = sampled.filter((_, i) => i === 0 || i === sampled.length - 1 || i % 20 === 0);
-  } else if ((period === '3M' || period === '6M') && sampled.length > 60) {
-    sampled = sampled.filter((_, i) => i === 0 || i === sampled.length - 1 || i % 3 === 0);
-  }
+  let aggregated;
 
-  const series = sampled.map((p) => {
-    const pct = ((p.close - baseline) / baseline) * 100;
-    const d = new Date(`${p.date}T12:00:00Z`);
-    let dayLabel;
-    if (period === '1D' || period === '7D') {
-      dayLabel = d.toLocaleDateString('en-US', { timeZone: 'America/New_York', weekday: 'short' });
-    } else if (period === '1M' || period === '3M') {
-      dayLabel = d.toLocaleDateString('en-US', {
-        timeZone: 'America/New_York',
-        month: 'short',
-        day: 'numeric',
-      });
-    } else {
-      dayLabel = d.toLocaleDateString('en-US', {
-        timeZone: 'America/New_York',
-        month: 'short',
-        year: '2-digit',
-      });
-    }
-    return {
-      day: dayLabel,
+  if (period === '1D') {
+    const last = filtered[filtered.length - 1];
+    const d = new Date(`${last.date}T12:00:00Z`);
+    aggregated = [
+      {
+        day: d.toLocaleDateString('en-US', { timeZone: 'America/New_York', weekday: 'short' }),
+        ymd: last.date,
+        close: last.close,
+      },
+    ];
+  } else if (period === '7D') {
+    aggregated = filtered.slice(-5).map((p) => {
+      const d = new Date(`${p.date}T12:00:00Z`);
+      return {
+        day: d.toLocaleDateString('en-US', { timeZone: 'America/New_York', weekday: 'short' }),
+        ymd: p.date,
+        close: p.close,
+      };
+    });
+  } else if (period === '1M') {
+    aggregated = aggregateByWeek(filtered, 4);
+  } else if (period === '3M' || period === '6M' || period === '1Y') {
+    const n = period === '3M' ? 3 : period === '6M' ? 6 : 12;
+    aggregated = aggregateByMonth(filtered).slice(-n);
+  } else if (period === 'ALL') {
+    aggregated = aggregateByYear(filtered);
+  } else {
+    aggregated = filtered.map((p) => ({
+      day: p.date,
       ymd: p.date,
       close: p.close,
-      pct: parseFloat(pct.toFixed(3)),
-    };
-  });
+    }));
+  }
 
-  const currentPrice = filtered[filtered.length - 1].close;
+  const series = applyPctSeries(aggregated);
   return { series, currentPrice };
 }
 

@@ -384,17 +384,18 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
                       type="monotone"
                       dataKey={k}
                       stroke={SERIES_COLORS[k]}
-                      strokeWidth={k === PORTFOLIO_KEY ? 2.4 : 1.8}
+                      strokeWidth={k === PORTFOLIO_KEY ? 2 : 1.4}
                       dot={{
-                        r: chartData.length <= 1 ? 5 : 2.5,
+                        r: 1.5,
                         fill: SERIES_COLORS[k],
-                        strokeWidth: chartData.length <= 1 ? 2 : 0,
-                        stroke: chartData.length <= 1 ? '#161b22' : 'none',
+                        strokeWidth: 0,
+                        stroke: 'none',
                       }}
                       activeDot={{
-                        r: chartData.length <= 1 ? 7 : 4,
-                        strokeWidth: 1.5,
-                        stroke: '#161b22',
+                        r: 3,
+                        fill: SERIES_COLORS[k],
+                        strokeWidth: 0,
+                        stroke: 'none',
                       }}
                       connectNulls
                       name={SERIES_NAMES[k]}
