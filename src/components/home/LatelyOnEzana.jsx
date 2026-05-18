@@ -123,7 +123,7 @@ function pearson(xs, ys) {
   return num / den;
 }
 
-function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false }) {
+function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false, period = '7D' }) {
   const loading = indexPayload === null;
   const failed = !loading && (!indexPayload?.ok || !indexPayload?.indices);
 
@@ -131,7 +131,10 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
 
   useEffect(() => {
     let cancelled = false;
-    fetch('/api/portfolio/week-series', { credentials: 'same-origin' })
+    setPortfolioPayload(null); // reset on period change so chart doesn't show stale data
+    fetch(`/api/portfolio/week-series?period=${encodeURIComponent(period)}`, {
+      credentials: 'same-origin',
+    })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       .then((d) => {
         if (!cancelled) setPortfolioPayload(d);
@@ -142,7 +145,7 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [period]);
 
   const [visibleSeries, setVisibleSeries] = useState({
     spx: true,
@@ -707,15 +710,16 @@ export function LatelyOnEzana({ compact = false, marketChartOnly = false }) {
       <div
         className="db-card-header hts-week-header"
         style={{
-          flexDirection: 'row',
-          flexWrap: 'wrap',
-          justifyContent: 'space-between',
+          flexDirection: 'column',
           alignItems: 'center',
-          textAlign: 'left',
-          gap: '0.5rem',
+          textAlign: 'center',
+          gap: '0.35rem',
         }}
       >
-        <div className="hts-week-header-titles" style={{ flex: 1, alignItems: 'flex-start' }}>
+        <div
+          className="hts-week-header-titles"
+          style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+        >
           <h3 style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
             <TrendingUp
               className="hts-week-title-ico"
@@ -767,6 +771,7 @@ export function LatelyOnEzana({ compact = false, marketChartOnly = false }) {
               compact={compact}
               indexPayload={indexPayload}
               chartOnly={marketChartOnly}
+              period={period}
             />
           )}
           {activeTab === 'activity' && <PlatformActivityTab />}
