@@ -1,27 +1,17 @@
 import { NextResponse } from 'next/server';
+import { fetchAV, getAlphaVantageApiKey } from '@/lib/alpha-vantage';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const AV_BASE = 'https://www.alphavantage.co/query';
+const FMP_BASE = 'https://financialmodelingprep.com/stable';
 
-function getAvKey() {
-  return process.env.ALPHA_VANTAGE_API_KEY || process.env.NEXT_PUBLIC_ALPHA_VANTAGE_API_KEY || '';
+function getFmpKey() {
+  return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
 }
 
-/**
- * Map period string to number of calendar days to look back.
- */
 function periodToDays(period) {
-  const map = {
-    '1D': 1,
-    '7D': 7,
-    '1M': 30,
-    '3M': 90,
-    '6M': 180,
-    '1Y': 365,
-    ALL: 7300,
-  };
+  const map = { '1D': 1, '7D': 7, '1M': 30, '3M': 90, '6M': 180, '1Y': 365, ALL: 7300 };
   return map[period] || 7;
 }
 
@@ -30,46 +20,68 @@ function toYmd(date) {
 }
 
 function getStartDate(period) {
-  const days = periodToDays(period);
   const d = new Date();
-  d.setDate(d.getDate() - days);
+  d.setDate(d.getDate() - periodToDays(period));
   return toYmd(d);
 }
 
 const INDEX_CONFIGS = {
-  spx: { avFunction: 'INDEX_DATA', avSymbol: 'SPX', name: 'S&P 500' },
-  ixic: { avFunction: 'INDEX_DATA', avSymbol: 'COMP', name: 'NASDAQ' },
-  rut: { avFunction: 'INDEX_DATA', avSymbol: 'RUT', name: 'Russell 2000' },
-  dji: { avFunction: 'INDEX_DATA', avSymbol: 'DJI', name: 'Dow Jones' },
-  vix: { avFunction: 'INDEX_DATA', avSymbol: 'VIX', name: 'VIX' },
-  wti: { avFunction: 'WTI', avSymbol: null, name: 'WTI Crude' },
-  brent: { avFunction: 'BRENT', avSymbol: null, name: 'Brent Crude' },
-  tnx: { avFunction: 'TREASURY_YIELD', avSymbol: null, name: '10Y Treasury' },
+  spx: { avFunction: 'INDEX_DATA', avSymbol: 'SPX', fmpSymbol: 'SPY', name: 'S&P 500' },
+  ixic: { avFunction: 'INDEX_DATA', avSymbol: 'COMP', fmpSymbol: 'QQQ', name: 'NASDAQ' },
+  rut: { avFunction: 'INDEX_DATA', avSymbol: 'RUT', fmpSymbol: 'IWM', name: 'Russell 2000' },
+  dji: { avFunction: 'INDEX_DATA', avSymbol: 'DJI', fmpSymbol: 'DIA', name: 'Dow Jones' },
+  vix: { avFunction: 'INDEX_DATA', avSymbol: 'VIX', fmpSymbol: '^VIX', name: 'VIX' },
+  wti: { avFunction: 'WTI', avSymbol: null, fmpSymbol: 'CLUSD', name: 'WTI Crude' },
+  brent: { avFunction: 'BRENT', avSymbol: null, fmpSymbol: 'BZUSD', name: 'Brent Crude' },
+  tnx: { avFunction: 'TREASURY_YIELD', avSymbol: null, fmpSymbol: '^TNX', name: '10Y Treasury' },
 };
 
 const INDEX_KEYS = Object.keys(INDEX_CONFIGS);
 
-async function fetchAvSeries(key, config) {
-  const AV_KEY = getAvKey();
-  if (!AV_KEY) return null;
-
-  let url;
-  if (config.avFunction === 'INDEX_DATA') {
-    url = `${AV_BASE}?function=INDEX_DATA&symbol=${encodeURIComponent(config.avSymbol)}&interval=daily&apikey=${encodeURIComponent(AV_KEY)}`;
-  } else if (config.avFunction === 'WTI' || config.avFunction === 'BRENT') {
-    url = `${AV_BASE}?function=${config.avFunction}&interval=daily&apikey=${encodeURIComponent(AV_KEY)}`;
-  } else if (config.avFunction === 'TREASURY_YIELD') {
-    url = `${AV_BASE}?function=TREASURY_YIELD&interval=daily&maturity=10year&apikey=${encodeURIComponent(AV_KEY)}`;
-  } else {
+async function fetchAvSeries(config) {
+  try {
+    let params;
+    if (config.avFunction === 'INDEX_DATA') {
+      params = { function: 'INDEX_DATA', symbol: config.avSymbol, interval: 'daily' };
+    } else if (config.avFunction === 'WTI' || config.avFunction === 'BRENT') {
+      params = { function: config.avFunction, interval: 'daily' };
+    } else if (config.avFunction === 'TREASURY_YIELD') {
+      params = { function: 'TREASURY_YIELD', interval: 'daily', maturity: '10year' };
+    } else {
+      return null;
+    }
+    return await fetchAV(params, 300);
+  } catch (err) {
+    console.warn(`[index-history] AV fetch failed for ${config.name}:`, err?.message);
     return null;
   }
+}
 
+async function fetchFmpDaily(fmpSymbol, startDate) {
+  const fmpKey = getFmpKey();
+  if (!fmpKey || !fmpSymbol) return null;
+
+  const toDate = toYmd(new Date());
+  const url = `${FMP_BASE}/historical-price-eod/full?symbol=${encodeURIComponent(fmpSymbol)}&from=${startDate}&to=${toDate}&apikey=${encodeURIComponent(fmpKey)}`;
   try {
     const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) return null;
     const data = await res.json();
-    if (data.Note || data.Information || data['Error Message']) return null;
-    return data;
+    const hist = Array.isArray(data)
+      ? data
+      : Array.isArray(data?.historical)
+        ? data.historical
+        : [];
+    const rows = hist
+      .filter((bar) => bar.date != null)
+      .map((bar) => {
+        const close =
+          typeof bar.close === 'number' ? bar.close : parseFloat(String(bar.close ?? ''));
+        return { date: bar.date, close };
+      })
+      .filter((row) => Number.isFinite(row.close));
+
+    return rows.sort((a, b) => a.date.localeCompare(b.date));
   } catch {
     return null;
   }
@@ -79,13 +91,10 @@ function parseAvResponse(data, config) {
   const points = [];
 
   if (config.avFunction === 'INDEX_DATA') {
-    const arr = data?.data;
-    if (Array.isArray(arr)) {
-      for (const item of arr) {
+    if (Array.isArray(data?.data)) {
+      for (const item of data.data) {
         const close = parseFloat(item.close);
-        if (item.date && Number.isFinite(close)) {
-          points.push({ date: item.date, close });
-        }
+        if (item.date && Number.isFinite(close)) points.push({ date: item.date, close });
       }
     }
     const ts = data['Time Series (Daily)'];
@@ -96,18 +105,11 @@ function parseAvResponse(data, config) {
         if (Number.isFinite(close)) points.push({ date, close });
       }
     }
-  } else if (
-    config.avFunction === 'WTI' ||
-    config.avFunction === 'BRENT' ||
-    config.avFunction === 'TREASURY_YIELD'
-  ) {
-    const arr = data?.data;
-    if (Array.isArray(arr)) {
-      for (const item of arr) {
-        const close = parseFloat(item.value);
-        if (item.date && Number.isFinite(close) && item.value !== '.') {
-          points.push({ date: item.date, close });
-        }
+  } else if (Array.isArray(data?.data)) {
+    for (const item of data.data) {
+      const close = parseFloat(item.value);
+      if (item.date && Number.isFinite(close) && item.value !== '.') {
+        points.push({ date: item.date, close });
       }
     }
   }
@@ -116,51 +118,29 @@ function parseAvResponse(data, config) {
   return points;
 }
 
-/**
- * UTC Monday start for the calendar week containing `ymd` (YYYY-MM-DD).
- */
-function weekStartMondayUtc(ymd) {
-  const d = new Date(`${ymd}T12:00:00Z`);
-  const wd = d.getUTCDay();
-  const mondayOffset = wd === 0 ? -6 : 1 - wd;
-  d.setUTCDate(d.getUTCDate() + mondayOffset);
-  return d.toISOString().slice(0, 10);
-}
-
-/**
- * Group points into weeks (Monday week start); last point per week wins.
- * Labels "Week 1".."Week N" chronologically within `sliced`.
- */
 function aggregateByWeek(points, maxWeeks = 4) {
   if (!points.length) return [];
-
   const weeks = new Map();
   for (const p of points) {
-    weeks.set(weekStartMondayUtc(p.date), p);
+    const d = new Date(`${p.date}T12:00:00Z`);
+    const wd = d.getUTCDay();
+    const mondayOffset = wd === 0 ? -6 : 1 - wd;
+    d.setUTCDate(d.getUTCDate() + mondayOffset);
+    const key = d.toISOString().slice(0, 10);
+    weeks.set(key, p);
   }
-
-  const weekEntries = [...weeks.values()].sort((a, b) => a.date.localeCompare(b.date));
-  const sliced = weekEntries.slice(-maxWeeks);
-
-  return sliced.map((p, i) => ({
+  const sorted = [...weeks.values()].sort((a, b) => a.date.localeCompare(b.date));
+  return sorted.slice(-maxWeeks).map((p, i) => ({
     day: `Week ${i + 1}`,
     ymd: p.date,
     close: p.close,
   }));
 }
 
-/**
- * Last trading day per calendar month; label = short month in America/New_York.
- */
 function aggregateByMonth(points) {
   if (!points.length) return [];
-
   const months = new Map();
-  for (const p of points) {
-    const monthKey = p.date.slice(0, 7);
-    months.set(monthKey, p);
-  }
-
+  for (const p of points) months.set(p.date.slice(0, 7), p);
   return [...months.entries()]
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([, p]) => {
@@ -173,57 +153,33 @@ function aggregateByMonth(points) {
     });
 }
 
-/** Last trading day per calendar year; label = full year. */
 function aggregateByYear(points) {
   if (!points.length) return [];
-
   const years = new Map();
-  for (const p of points) {
-    const yearKey = p.date.slice(0, 4);
-    years.set(yearKey, p);
-  }
-
+  for (const p of points) years.set(p.date.slice(0, 4), p);
   return [...years.entries()]
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([yearKey, p]) => ({
-      day: yearKey,
-      ymd: p.date,
-      close: p.close,
-    }));
+    .map(([yearKey, p]) => ({ day: yearKey, ymd: p.date, close: p.close }));
 }
 
-/** % change from first displayed point (chart baseline = 0%). */
 function applyPctSeries(aggregated) {
   if (!aggregated.length) return [];
-  const baselineClose = aggregated[0].close;
-  if (!Number.isFinite(baselineClose) || baselineClose === 0) {
-    return aggregated.map((p) => ({ ...p, pct: 0 }));
-  }
+  const base = aggregated[0].close;
+  if (!Number.isFinite(base) || base === 0) return aggregated.map((p) => ({ ...p, pct: 0 }));
   return aggregated.map((p) => ({
     ...p,
-    pct: parseFloat((((p.close - baselineClose) / baselineClose) * 100).toFixed(3)),
+    pct: parseFloat((((p.close - base) / base) * 100).toFixed(3)),
   }));
 }
 
-/**
- * Aggregate daily points for the selected period.
- *
- * 7D  → last 5 sessions, weekday labels
- * 1M  → 4 weeks, "Week 1"…
- * 3M/6M/1Y → last 3 / 6 / 12 month-end closes, month labels
- * ALL → yearly
- * 1D  → latest session only
- */
 function buildSeries(points, period) {
   if (!points.length) return { series: [], currentPrice: null };
 
   const startDate = getStartDate(period);
   const filtered = points.filter((p) => p.date >= startDate);
-
-  if (filtered.length === 0) return { series: [], currentPrice: null };
+  if (!filtered.length) return { series: [], currentPrice: null };
 
   const currentPrice = filtered[filtered.length - 1].close;
-
   let aggregated;
 
   if (period === '1D') {
@@ -253,22 +209,17 @@ function buildSeries(points, period) {
   } else if (period === 'ALL') {
     aggregated = aggregateByYear(filtered);
   } else {
-    aggregated = filtered.map((p) => ({
-      day: p.date,
-      ymd: p.date,
-      close: p.close,
-    }));
+    aggregated = filtered.map((p) => ({ day: p.date, ymd: p.date, close: p.close }));
   }
 
-  const series = applyPctSeries(aggregated);
-  return { series, currentPrice };
+  return { series: applyPctSeries(aggregated), currentPrice };
 }
 
 async function fallbackIndexWeek(request) {
   const origin = request.nextUrl.origin;
-  const fallbackRes = await fetch(`${origin}/api/market/index-week`, { cache: 'no-store' });
-  const fallbackData = await fallbackRes.json();
-  return NextResponse.json(fallbackData, {
+  const res = await fetch(`${origin}/api/market/index-week`, { cache: 'no-store' });
+  const data = await res.json();
+  return NextResponse.json(data, {
     headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120' },
   });
 }
@@ -276,18 +227,15 @@ async function fallbackIndexWeek(request) {
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const period = searchParams.get('period') || '7D';
+  const avKey = getAlphaVantageApiKey();
+  const fmpKey = getFmpKey();
 
-  const AV_KEY = getAvKey();
-
-  if (!AV_KEY) {
+  if (!avKey && !fmpKey) {
     if (period === '7D') {
       try {
         return await fallbackIndexWeek(request);
       } catch {
-        return NextResponse.json(
-          { ok: false, error: 'no_key', indices: {}, period },
-          { headers: { 'Cache-Control': 'no-store' } },
-        );
+        /* fall through */
       }
     }
     return NextResponse.json(
@@ -296,34 +244,50 @@ export async function GET(request) {
     );
   }
 
-  const avResults = await Promise.all(
-    INDEX_KEYS.map((key) => fetchAvSeries(key, INDEX_CONFIGS[key])),
-  );
-
+  const startDate = getStartDate(period);
   const indices = {};
   let anySuccess = false;
 
-  for (let i = 0; i < INDEX_KEYS.length; i++) {
-    const key = INDEX_KEYS[i];
+  const results = await Promise.allSettled(
+    INDEX_KEYS.map(async (key) => {
+      const config = INDEX_CONFIGS[key];
+
+      if (avKey) {
+        const avData = await fetchAvSeries(config);
+        if (avData) {
+          const points = parseAvResponse(avData, config);
+          if (points.length > 0) {
+            return { key, points, source: 'av' };
+          }
+        }
+      }
+
+      if (fmpKey && config.fmpSymbol) {
+        const fmpPoints = await fetchFmpDaily(config.fmpSymbol, startDate);
+        if (fmpPoints && fmpPoints.length > 0) {
+          return { key, points: fmpPoints, source: 'fmp' };
+        }
+      }
+
+      return { key, points: [], source: 'none' };
+    }),
+  );
+
+  for (const result of results) {
+    if (result.status !== 'fulfilled') continue;
+    const { key, points } = result.value;
     const config = INDEX_CONFIGS[key];
-    const rawData = avResults[i];
-
-    if (!rawData) {
-      indices[key] = { key, name: config.name, series: [], currentPrice: null };
-      continue;
-    }
-
-    const points = parseAvResponse(rawData, config);
     const { series, currentPrice } = buildSeries(points, period);
 
     if (series.length > 0) anySuccess = true;
 
-    indices[key] = {
-      key,
-      name: config.name,
-      series,
-      currentPrice,
-    };
+    indices[key] = { key, name: config.name, series, currentPrice };
+  }
+
+  for (const key of INDEX_KEYS) {
+    if (!indices[key]) {
+      indices[key] = { key, name: INDEX_CONFIGS[key].name, series: [], currentPrice: null };
+    }
   }
 
   if (!anySuccess && period === '7D') {
