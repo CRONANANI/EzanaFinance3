@@ -167,14 +167,21 @@ function normalizers() {
     economic: (e, i) => {
       const d = parseLocalDate(e.date);
       if (!d || !e.event) return null;
-      const impactLower = String(e.impact ?? '').trim().toLowerCase();
+      const impactLower = String(e.impact ?? '')
+        .trim()
+        .toLowerCase();
       const isHigh = impactLower === 'high';
       const impact =
-        impactLower === 'high' ? 'High'
-        : impactLower === 'medium' ? 'Medium'
-        : impactLower === 'low' ? 'Low'
-        : null;
-      const subParts = [e.country, e.estimate != null ? `Est. ${e.estimate}` : null].filter(Boolean);
+        impactLower === 'high'
+          ? 'High'
+          : impactLower === 'medium'
+            ? 'Medium'
+            : impactLower === 'low'
+              ? 'Low'
+              : null;
+      const subParts = [e.country, e.estimate != null ? `Est. ${e.estimate}` : null].filter(
+        Boolean,
+      );
       return {
         id: `econ-${e.country || 'US'}-${String(e.event).slice(0, 24)}-${fmtDateLabel(e.date)}-${i}`,
         category: 'economic',
@@ -293,7 +300,7 @@ export async function GET(request) {
     if (!getFmpKey()) {
       return NextResponse.json(
         { events: [], errors: ['FMP_API_KEY is not configured on the server.'] },
-        { headers: CACHE_HEADERS }
+        { headers: CACHE_HEADERS },
       );
     }
 
@@ -301,7 +308,7 @@ export async function GET(request) {
     const country = url.searchParams.get('country') || 'US';
     const tickers = parseSet(url.searchParams.get('tickers'));
     const politicians = canonicalPoliticianSet(
-      parseSet(url.searchParams.get('politicians'), { upper: false })
+      parseSet(url.searchParams.get('politicians'), { upper: false }),
     );
     const cryptos = parseSet(url.searchParams.get('cryptos'));
     const commodities = parseSet(url.searchParams.get('commodities'));
@@ -310,7 +317,11 @@ export async function GET(request) {
     // Skip relevance-gated feeds entirely if the user follows nothing of
     // that kind — saves an FMP roundtrip and keeps the response tiny.
     const loaders = [
-      { key: 'earnings', run: getEarningsEvents, gated: tickers.size > 0 },
+      {
+        key: 'earnings',
+        run: () => getEarningsEvents(Array.from(tickers)),
+        gated: tickers.size > 0,
+      },
       { key: 'dividends', run: getDividendEvents, gated: tickers.size > 0 },
       { key: 'ipos', run: getIpoEvents, gated: tickers.size > 0 },
       // Economic is always shown for the user's country — not gated.
@@ -410,12 +421,12 @@ export async function GET(request) {
           isEmpty: !hasRelevance(relevance),
         },
       },
-      { headers: CACHE_HEADERS }
+      { headers: CACHE_HEADERS },
     );
   } catch (error) {
     return NextResponse.json(
       { events: [], errors: [error.message || 'Server error'] },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
