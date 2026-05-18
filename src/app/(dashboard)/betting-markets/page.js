@@ -351,9 +351,9 @@ function chipStyle(isActive) {
     fontSize: '0.65rem',
     fontWeight: 700,
     borderRadius: 5,
-    border: isActive ? '1px solid #6366f1' : '1px solid rgba(0,0,0,0.08)',
+    border: isActive ? '1px solid #6366f1' : '1px solid var(--bm-border)',
     background: isActive ? 'rgba(99,102,241,0.1)' : 'transparent',
-    color: isActive ? '#6366f1' : '#6b7280',
+    color: isActive ? '#6366f1' : 'var(--bm-muted)',
     cursor: 'pointer',
     textTransform: 'uppercase',
     letterSpacing: '0.04em',
@@ -436,7 +436,7 @@ function PolymarketSection() {
     <>
       <div className="db-card">
         <div className="db-card-header">
-          <h3 style={{ color: 'var(--home-heading, #111827)' }}>
+          <h3 style={{ color: 'var(--bm-heading)' }}>
             <span style={{ color: '#6366f1', marginRight: 6 }}>◆</span> Polymarket — Top Markets
           </h3>
           <a
@@ -483,12 +483,10 @@ function PolymarketSection() {
             </div>
           )}
           {marketsLoading && (
-            <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.8125rem' }}>
-              Loading markets…
-            </p>
+            <p style={{ color: 'var(--bm-muted)', fontSize: '0.8125rem' }}>Loading markets…</p>
           )}
           {!marketsLoading && markets.length === 0 && (
-            <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.8125rem' }}>
+            <p style={{ color: 'var(--bm-muted)', fontSize: '0.8125rem' }}>
               No markets available. Check Polymarket API connectivity.
             </p>
           )}
@@ -521,13 +519,13 @@ function PolymarketSection() {
                           : yesProb > 40
                             ? '#f59e0b'
                             : '#ef4444'
-                        : '#6b7280',
+                        : 'var(--bm-subtle)',
                   }}
                 />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p
                     style={{
-                      color: 'var(--home-heading, #111827)',
+                      color: 'var(--bm-heading)',
                       fontSize: '0.8125rem',
                       fontWeight: 600,
                       margin: 0,
@@ -541,7 +539,7 @@ function PolymarketSection() {
                   {vol && (
                     <p
                       style={{
-                        color: 'var(--home-muted, #6b7280)',
+                        color: 'var(--bm-muted)',
                         fontSize: '0.6875rem',
                         margin: 0,
                       }}
@@ -564,7 +562,7 @@ function PolymarketSection() {
                     <p
                       style={{
                         fontSize: '0.5625rem',
-                        color: 'var(--home-muted, #6b7280)',
+                        color: 'var(--bm-muted)',
                         margin: 0,
                       }}
                     >
@@ -580,7 +578,7 @@ function PolymarketSection() {
 
       <div className="db-card">
         <div className="db-card-header">
-          <h3 style={{ color: 'var(--home-heading, #111827)' }}>Search Polymarket Traders</h3>
+          <h3 style={{ color: 'var(--bm-heading)' }}>Search Polymarket Traders</h3>
         </div>
         <div style={{ padding: '0 1.25rem 1.25rem' }}>
           <div
@@ -595,7 +593,7 @@ function PolymarketSection() {
               marginBottom: '0.75rem',
             }}
           >
-            <i className="bi bi-search" style={{ color: '#6b7280', fontSize: '0.8rem' }} />
+            <i className="bi bi-search" style={{ color: 'var(--bm-subtle)', fontSize: '0.8rem' }} />
             <input
               type="text"
               placeholder="Search by wallet address or username…"
@@ -605,20 +603,16 @@ function PolymarketSection() {
                 background: 'transparent',
                 border: 'none',
                 outline: 'none',
-                color: 'var(--home-heading, #111827)',
+                color: 'var(--bm-heading)',
                 fontSize: '0.8125rem',
                 width: '100%',
                 fontFamily: 'var(--font-sans)',
               }}
             />
           </div>
-          {searching && (
-            <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.75rem' }}>Searching…</p>
-          )}
+          {searching && <p style={{ color: 'var(--bm-muted)', fontSize: '0.75rem' }}>Searching…</p>}
           {!searching && searchResults.length === 0 && searchQuery.trim().length >= 2 && (
-            <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.75rem' }}>
-              No traders found.
-            </p>
+            <p style={{ color: 'var(--bm-muted)', fontSize: '0.75rem' }}>No traders found.</p>
           )}
           {searchResults.map((u, i) => (
             <div
@@ -651,7 +645,7 @@ function PolymarketSection() {
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p
                   style={{
-                    color: 'var(--home-heading, #111827)',
+                    color: 'var(--bm-heading)',
                     fontSize: '0.8125rem',
                     fontWeight: 700,
                     margin: 0,
@@ -661,7 +655,7 @@ function PolymarketSection() {
                 </p>
                 <p
                   style={{
-                    color: 'var(--home-muted, #6b7280)',
+                    color: 'var(--bm-muted)',
                     fontSize: '0.6875rem',
                     margin: 0,
                     overflow: 'hidden',
@@ -766,7 +760,7 @@ function KalshiSection() {
     <>
       <div className="db-card">
         <div className="db-card-header">
-          <h3 style={{ color: 'var(--home-heading, #111827)' }}>
+          <h3 style={{ color: 'var(--bm-heading)' }}>
             <span style={{ color: '#10b981', marginRight: 6 }}>◆</span> Kalshi — Top Markets
           </h3>
           <a
@@ -785,12 +779,10 @@ function KalshiSection() {
         </div>
         <div style={{ padding: '0 1.25rem 1.25rem' }}>
           {marketsLoading && (
-            <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.8125rem' }}>
-              Loading markets…
-            </p>
+            <p style={{ color: 'var(--bm-muted)', fontSize: '0.8125rem' }}>Loading markets…</p>
           )}
           {!marketsLoading && markets.length === 0 && (
-            <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.8125rem' }}>
+            <p style={{ color: 'var(--bm-muted)', fontSize: '0.8125rem' }}>
               No markets available. Configure Kalshi API connectivity or try again later.
             </p>
           )}
@@ -828,13 +820,13 @@ function KalshiSection() {
                           : prob > 40
                             ? '#f59e0b'
                             : '#ef4444'
-                        : '#6b7280',
+                        : 'var(--bm-subtle)',
                   }}
                 />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p
                     style={{
-                      color: 'var(--home-heading, #111827)',
+                      color: 'var(--bm-heading)',
                       fontSize: '0.8125rem',
                       fontWeight: 600,
                       margin: 0,
@@ -848,7 +840,7 @@ function KalshiSection() {
                   {vol && (
                     <p
                       style={{
-                        color: 'var(--home-muted, #6b7280)',
+                        color: 'var(--bm-muted)',
                         fontSize: '0.6875rem',
                         margin: 0,
                       }}
@@ -871,7 +863,7 @@ function KalshiSection() {
                     <p
                       style={{
                         fontSize: '0.5625rem',
-                        color: 'var(--home-muted, #6b7280)',
+                        color: 'var(--bm-muted)',
                         margin: 0,
                       }}
                     >
@@ -894,7 +886,7 @@ function KalshiSection() {
               style={{
                 fontSize: '0.6875rem',
                 fontWeight: 700,
-                color: 'var(--home-muted, #6b7280)',
+                color: 'var(--bm-muted)',
                 margin: '0 0 0.5rem',
                 textTransform: 'uppercase',
                 letterSpacing: '0.05em',
@@ -913,7 +905,10 @@ function KalshiSection() {
                 padding: '0.45rem 0.75rem',
               }}
             >
-              <i className="bi bi-search" style={{ color: '#6b7280', fontSize: '0.8rem' }} />
+              <i
+                className="bi bi-search"
+                style={{ color: 'var(--bm-subtle)', fontSize: '0.8rem' }}
+              />
               <input
                 type="text"
                 placeholder="Search by keyword, ticker, or category…"
@@ -923,7 +918,7 @@ function KalshiSection() {
                   background: 'transparent',
                   border: 'none',
                   outline: 'none',
-                  color: 'var(--home-heading, #111827)',
+                  color: 'var(--bm-heading)',
                   fontSize: '0.8125rem',
                   width: '100%',
                   fontFamily: 'var(--font-sans)',
@@ -933,7 +928,7 @@ function KalshiSection() {
             {searching && (
               <p
                 style={{
-                  color: 'var(--home-muted, #6b7280)',
+                  color: 'var(--bm-muted)',
                   fontSize: '0.75rem',
                   marginTop: '0.5rem',
                 }}
@@ -957,7 +952,7 @@ function KalshiSection() {
                   <p
                     style={{
                       flex: 1,
-                      color: 'var(--home-heading, #111827)',
+                      color: 'var(--bm-heading)',
                       fontSize: '0.8125rem',
                       margin: 0,
                     }}
@@ -1041,7 +1036,7 @@ export default function BettingMarketsPage() {
             style={{
               fontSize: '1.125rem',
               fontWeight: 800,
-              color: 'var(--home-heading, #111827)',
+              color: 'var(--bm-heading)',
               margin: 0,
             }}
           >
@@ -1050,7 +1045,7 @@ export default function BettingMarketsPage() {
           <p
             style={{
               fontSize: '0.75rem',
-              color: 'var(--home-muted, #6b7280)',
+              color: 'var(--bm-muted)',
               margin: '0.15rem 0 0',
             }}
           >
@@ -1081,7 +1076,7 @@ export default function BettingMarketsPage() {
                 borderRadius: '7px',
                 border: 'none',
                 background: platform === p.id ? '#d4af37' : 'transparent',
-                color: platform === p.id ? '#111' : 'var(--home-muted, #6b7280)',
+                color: platform === p.id ? '#111' : 'var(--bm-text)',
                 fontSize: '0.8125rem',
                 fontWeight: platform === p.id ? 700 : 500,
                 cursor: 'pointer',
@@ -1118,7 +1113,7 @@ export default function BettingMarketsPage() {
                 style={{
                   fontSize: '0.8125rem',
                   fontWeight: 800,
-                  color: 'var(--home-heading, #111827)',
+                  color: 'var(--bm-heading)',
                   display: 'flex',
                   alignItems: 'center',
                   gap: 6,
@@ -1156,9 +1151,9 @@ export default function BettingMarketsPage() {
                       border:
                         leaderboardPeriod === p
                           ? '1px solid #6366f1'
-                          : '1px solid rgba(0,0,0,0.08)',
+                          : '1px solid var(--bm-border)',
                       background: leaderboardPeriod === p ? 'rgba(99,102,241,0.1)' : 'transparent',
-                      color: leaderboardPeriod === p ? '#6366f1' : '#6b7280',
+                      color: leaderboardPeriod === p ? '#6366f1' : 'var(--bm-muted)',
                       cursor: 'pointer',
                       textTransform: 'uppercase',
                       letterSpacing: '0.05em',
@@ -1176,7 +1171,7 @@ export default function BettingMarketsPage() {
                   style={{
                     padding: '1rem',
                     textAlign: 'center',
-                    color: '#6b7280',
+                    color: 'var(--bm-muted)',
                     fontSize: '0.75rem',
                   }}
                 >
@@ -1188,7 +1183,7 @@ export default function BettingMarketsPage() {
                   style={{
                     padding: '1rem',
                     textAlign: 'center',
-                    color: '#6b7280',
+                    color: 'var(--bm-muted)',
                     fontSize: '0.75rem',
                   }}
                 >
@@ -1216,7 +1211,7 @@ export default function BettingMarketsPage() {
             </div>
             <div className="bm-lb-you bm-lb-row">
               <span className="bm-lb-rank">23</span>
-              <span className="bm-lb-name" style={{ cursor: 'default', color: '#8b949e' }}>
+              <span className="bm-lb-name" style={{ cursor: 'default' }}>
                 You
               </span>
               <span className="bm-lb-pnl">+$840</span>
@@ -1252,7 +1247,7 @@ export default function BettingMarketsPage() {
               style={{
                 margin: '0.75rem 0 0.5rem',
                 fontSize: '0.7rem',
-                color: '#6b7280',
+                color: 'var(--bm-muted)',
                 fontWeight: 600,
               }}
             >
@@ -1263,7 +1258,7 @@ export default function BettingMarketsPage() {
                 style={{
                   padding: '1.5rem 0',
                   textAlign: 'center',
-                  color: '#6b7280',
+                  color: 'var(--bm-muted)',
                   fontSize: '0.75rem',
                 }}
               >
