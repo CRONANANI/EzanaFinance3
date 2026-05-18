@@ -2603,7 +2603,7 @@ body.light-mode .sentinel-related-markets-toggle:hover {
 /* ── Data Layer circular buttons (below top bar) ───────── */
 .ma-data-layer-row {
   position: absolute;
-  top: 42px;
+  top: 84px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 19;
@@ -2692,12 +2692,12 @@ body.light-mode .sentinel-related-markets-toggle:hover {
 }
 
 .ma-fullscreen.ma-view-map .ma-data-layer-row {
-  top: 74px;
+  top: 116px;
 }
 
 @media (max-width: 768px) {
   .ma-data-layer-row {
-    top: 38px;
+    top: 76px;
     gap: 5px;
     padding: 4px 8px;
   }
