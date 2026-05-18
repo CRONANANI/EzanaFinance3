@@ -64,6 +64,10 @@
     {
       "path": "/api/cron/prune-breadcrumbs",
       "schedule": "0 3 1 * *"
+    },
+    {
+      "path": "/api/news/alpha-vantage/poll",
+      "schedule": "*/5 * * * *"
     }
   ]
 }

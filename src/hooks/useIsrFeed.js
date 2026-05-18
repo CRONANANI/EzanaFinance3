@@ -20,7 +20,12 @@ export function useIsrFeed({
   const [error, setError] = useState(null);
   const mountedRef = useRef(true);
 
-  useEffect(() => () => { mountedRef.current = false; }, []);
+  useEffect(
+    () => () => {
+      mountedRef.current = false;
+    },
+    [],
+  );
 
   const countriesKey = countries.join(',');
 
@@ -37,7 +42,10 @@ export function useIsrFeed({
       try {
         setIsLoading(true);
         setError(null);
-        await fetch('/api/news/massive/poll', { cache: 'no-store' });
+        await Promise.allSettled([
+          fetch('/api/news/massive/poll', { cache: 'no-store' }),
+          fetch('/api/news/alpha-vantage/poll', { cache: 'no-store' }),
+        ]);
         const params = new URLSearchParams({
           countries: countriesKey,
           topic,

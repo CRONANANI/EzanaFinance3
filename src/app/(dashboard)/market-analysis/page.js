@@ -55,6 +55,9 @@ import {
   COMMODITIES_DATA,
   CURRENCIES_DATA,
   hasRecentOrUpcomingCBDecision,
+  mergeIndicesIntoMarkets,
+  mergeCommoditiesData,
+  mergeCurrenciesData,
 } from '@/config/marketAnalysisData';
 
 import '../../../../app-legacy/assets/css/theme.css';
@@ -64,35 +67,6 @@ import '../../../../app-legacy/assets/css/light-mode-fixes.css';
 import './market-analysis-world-monitor.css';
 import '../centaur-intelligence/centaur-intelligence.css';
 import '../org-trading/org-trading.css';
-
-// Layer configuration mapping
-const LAYER_CONFIG = {
-  markets: {
-    title: 'MARKETS',
-    tabs: Object.keys(MARKETS_DATA),
-    dataSource: MARKETS_DATA,
-  },
-  'central-banks': {
-    title: 'CENTRAL BANKS',
-    tabs: Object.keys(CENTRAL_BANKS_DATA),
-    dataSource: CENTRAL_BANKS_DATA,
-  },
-  indices: {
-    title: 'INDICES',
-    tabs: Object.keys(INDICES_DATA),
-    dataSource: INDICES_DATA,
-  },
-  commodities: {
-    title: 'COMMODITIES',
-    tabs: Object.keys(COMMODITIES_DATA),
-    dataSource: COMMODITIES_DATA,
-  },
-  currencies: {
-    title: 'CURRENCIES',
-    tabs: Object.keys(CURRENCIES_DATA),
-    dataSource: CURRENCIES_DATA,
-  },
-};
 
 const DATA_LAYERS = [
   { key: 'gdp', icon: 'bi-cash-stack', label: 'GDP', color: '#10b981' },
@@ -564,10 +538,15 @@ function renderTabContent(tabName, category, tabData) {
   return <div style={{ padding: '1rem', color: '#6b7280' }}>No data available</div>;
 }
 
-function CategoryPanel({ category, onClose }) {
+function CategoryPanel({ category, onClose, layerDefs }) {
   const [minimized, setMinimized] = useState(false);
-  const layerConfig = LAYER_CONFIG[category];
+  const layerConfig = layerDefs[category];
   const [activeTab, setActiveTab] = useState(layerConfig?.tabs?.[0] || '');
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- reset sub-tab only when sidebar category changes
+  useEffect(() => {
+    setActiveTab(layerConfig?.tabs?.[0] || '');
+  }, [category]);
 
   if (!layerConfig) return null;
 
@@ -1679,6 +1658,9 @@ export default function MarketAnalysisPage() {
   const [selectedDot, setSelectedDot] = useState(null);
   const [selectedPowerCountry, setSelectedPowerCountry] = useState(null);
   const [tickerData, setTickerData] = useState([]);
+  const [liveMarkets, setLiveMarkets] = useState(null);
+  const [liveCommodities, setLiveCommodities] = useState(null);
+  const [liveCurrencies, setLiveCurrencies] = useState(null);
   const [isrOpen, setIsrOpen] = useState(false);
   const [isrEvents, setIsrEvents] = useState([]);
   const [isrMatches, setIsrMatches] = useState({});
@@ -1727,6 +1709,44 @@ export default function MarketAnalysisPage() {
     },
     [billionaireLoading, billionaireScores, selectedLayers, toggleLayer],
   );
+
+  const mergedLayerConfig = useMemo(() => {
+    const marketsData = { ...MARKETS_DATA };
+    if (liveMarkets?.items) {
+      marketsData['Major Indices'] = {
+        ...marketsData['Major Indices'],
+        items: mergeIndicesIntoMarkets(marketsData['Major Indices'].items, liveMarkets.items),
+      };
+    }
+
+    const commoditiesData = liveCommodities
+      ? mergeCommoditiesData(COMMODITIES_DATA, liveCommodities)
+      : COMMODITIES_DATA;
+
+    const currenciesData = liveCurrencies
+      ? mergeCurrenciesData(CURRENCIES_DATA, liveCurrencies)
+      : CURRENCIES_DATA;
+
+    return {
+      markets: { title: 'MARKETS', tabs: Object.keys(marketsData), dataSource: marketsData },
+      'central-banks': {
+        title: 'CENTRAL BANKS',
+        tabs: Object.keys(CENTRAL_BANKS_DATA),
+        dataSource: CENTRAL_BANKS_DATA,
+      },
+      indices: { title: 'INDICES', tabs: Object.keys(INDICES_DATA), dataSource: INDICES_DATA },
+      commodities: {
+        title: 'COMMODITIES',
+        tabs: Object.keys(commoditiesData),
+        dataSource: commoditiesData,
+      },
+      currencies: {
+        title: 'CURRENCIES',
+        tabs: Object.keys(currenciesData),
+        dataSource: currenciesData,
+      },
+    };
+  }, [liveMarkets, liveCommodities, liveCurrencies]);
 
   // First-visit tutorial: fire once per user, persisted in localStorage.
   // Deliberately gated behind a short timeout so the layout has a chance to
@@ -1787,7 +1807,10 @@ export default function MarketAnalysisPage() {
 
     const interval = setInterval(async () => {
       try {
-        await fetch('/api/news/massive/poll', { cache: 'no-store' });
+        await Promise.allSettled([
+          fetch('/api/news/massive/poll', { cache: 'no-store' }),
+          fetch('/api/news/alpha-vantage/poll', { cache: 'no-store' }),
+        ]);
         if (cancelled) return;
         const res = await fetch('/api/market-data/economic-calendar', { cache: 'no-store' });
         if (!res.ok || cancelled) return;
@@ -1872,8 +1895,12 @@ export default function MarketAnalysisPage() {
   useEffect(() => {
     const fetchTicker = async () => {
       try {
-        const res = await fetch('/api/market-data/quotes');
-        const data = await res.json();
+        let res = await fetch('/api/market-data/quotes-live', { cache: 'no-store' });
+        let data = res.ok ? await res.json() : {};
+        if (!res.ok || data.fallback || !Array.isArray(data.quotes) || data.quotes.length === 0) {
+          res = await fetch('/api/market-data/quotes', { cache: 'no-store' });
+          data = res.ok ? await res.json() : {};
+        }
         if (data.quotes) {
           setTickerData(data.quotes.filter((q) => q.price !== '—'));
         }
@@ -1883,6 +1910,35 @@ export default function MarketAnalysisPage() {
     };
     fetchTicker();
     const interval = setInterval(fetchTicker, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    async function fetchLiveLayers() {
+      try {
+        const [marketsRes, commoditiesRes, currenciesRes] = await Promise.all([
+          fetch('/api/market-data/layers-live?layer=markets', { cache: 'no-store' }),
+          fetch('/api/market-data/layers-live?layer=commodities', { cache: 'no-store' }),
+          fetch('/api/market-data/layers-live?layer=currencies', { cache: 'no-store' }),
+        ]);
+        if (marketsRes.ok) {
+          const json = await marketsRes.json();
+          if (json.ok && json.data) setLiveMarkets(json.data);
+        }
+        if (commoditiesRes.ok) {
+          const json = await commoditiesRes.json();
+          if (json.ok && json.data) setLiveCommodities(json.data);
+        }
+        if (currenciesRes.ok) {
+          const json = await currenciesRes.json();
+          if (json.ok && json.data) setLiveCurrencies(json.data);
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+    fetchLiveLayers();
+    const interval = setInterval(fetchLiveLayers, 120_000);
     return () => clearInterval(interval);
   }, []);
 
@@ -1910,8 +1966,8 @@ export default function MarketAnalysisPage() {
       mapRef.current.setActiveLayers && mapRef.current.setActiveLayers(newCat);
     }
     // Update active tab when switching layers
-    if (newCat && LAYER_CONFIG[newCat]) {
-      setActiveTab(LAYER_CONFIG[newCat].tabs[0]);
+    if (newCat && mergedLayerConfig[newCat]) {
+      setActiveTab(mergedLayerConfig[newCat].tabs[0]);
     }
   };
 
@@ -2403,7 +2459,12 @@ export default function MarketAnalysisPage() {
           </div>
 
           {activeCategory && (
-            <CategoryPanel category={activeCategory} onClose={() => setActiveCategory(null)} />
+            <CategoryPanel
+              key={activeCategory}
+              category={activeCategory}
+              layerDefs={mergedLayerConfig}
+              onClose={() => setActiveCategory(null)}
+            />
           )}
           {filterOpen && <FilterPanel onClose={() => setFilterOpen(false)} />}
           {settingsOpen && <SettingsPanel onClose={() => setSettingsOpen(false)} />}

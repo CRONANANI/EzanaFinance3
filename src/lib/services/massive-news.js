@@ -126,11 +126,7 @@ const TOPIC_KEYWORDS = {
 };
 
 export function classifyTopic(article) {
-  const haystack = [
-    article.title || '',
-    article.description || '',
-    ...(article.keywords || []),
-  ]
+  const haystack = [article.title || '', article.description || '', ...(article.keywords || [])]
     .join(' ')
     .toLowerCase();
 
@@ -146,8 +142,18 @@ export function classifyTopic(article) {
  * Conflict + critical-tone keywords → up to Critical.
  */
 const MAJOR_PUBLISHERS = new Set([
-  'reuters', 'bloomberg', 'ap', 'associated press', 'financial times', 'wsj',
-  'wall street journal', 'cnbc', 'nyt', 'new york times', 'washington post', 'bbc',
+  'reuters',
+  'bloomberg',
+  'ap',
+  'associated press',
+  'financial times',
+  'wsj',
+  'wall street journal',
+  'cnbc',
+  'nyt',
+  'new york times',
+  'washington post',
+  'bbc',
 ]);
 
 const CRITICAL_KEYWORDS = ['urgent', 'breaking', 'crisis', 'crash', 'plunge', 'attack'];
@@ -193,5 +199,6 @@ export function normalizeArticle(a, region) {
     region_label: region.label,
     topic,
     severity,
+    source_api: 'massive',
   };
 }
