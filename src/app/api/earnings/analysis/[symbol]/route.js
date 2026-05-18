@@ -289,9 +289,9 @@ export async function GET(_req, context) {
       return NextResponse.json(
         {
           error:
-            'Financial Modeling Prep returned HTTP 402/403 for earning-call transcripts. Your API plan may not include this endpoint.',
+            'Earnings call transcripts unavailable from both Alpha Vantage and FMP for this ticker.',
           detail:
-            'Upgrade the FMP subscription to include earning call transcripts, or verify FMP_API_KEY. Other FMP routes may still work.',
+            'Alpha Vantage had no transcript for this quarter, and FMP returned HTTP 402/403. Try a large-cap US ticker (AAPL, MSFT, NVDA, TSLA).',
         },
         { status: 503 },
       );
@@ -302,7 +302,7 @@ export async function GET(_req, context) {
         {
           error: 'No earnings call transcripts available for this ticker.',
           detail:
-            'Transcript coverage is limited on FMP for some symbols. Try large-cap US listings such as AAPL, MSFT, NVDA, or TSLA.',
+            'Neither Alpha Vantage nor FMP have transcripts for this symbol. Coverage is best for large-cap US listings (AAPL, MSFT, NVDA, TSLA).',
         },
         { status: 404 },
       );

@@ -43,7 +43,9 @@ export function useCompanySearchFinnhub() {
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [debouncedQuery]);
 
   const clearSuggestions = useCallback(() => setSuggestions([]), []);
@@ -78,7 +80,9 @@ export function useCompanyProfile(symbol) {
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [symbol]);
 
   return { data, loading, error };
@@ -138,7 +142,7 @@ export function useCompanyNews(symbol, daysBack = 30) {
     setError(null);
     FinnhubAPI.getCompanyNews(symbol, fromStr, toStr)
       .then((res) => {
-        if (!cancelled) setData(Array.isArray(res) ? res.slice(0, 10) : []);
+        if (!cancelled) setData(Array.isArray(res) ? res.slice(0, 30) : []);
       })
       .catch((err) => {
         if (!cancelled) {
@@ -149,7 +153,9 @@ export function useCompanyNews(symbol, daysBack = 30) {
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [symbol, daysBack]);
 
   return { data, loading, error };
@@ -182,7 +188,9 @@ export function useStockMetric(symbol) {
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [symbol]);
 
   return { data, loading, error };
@@ -215,7 +223,9 @@ export function useRecommendation(symbol) {
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [symbol]);
 
   return { data, loading, error };
@@ -248,7 +258,9 @@ export function useEarnings(symbol) {
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [symbol]);
 
   return { data, loading, error };
@@ -281,7 +293,9 @@ export function usePriceTarget(symbol) {
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [symbol]);
 
   return { data, loading, error };
@@ -308,10 +322,7 @@ export function useSymbolSearch(query) {
         if (cancelled) return;
         const filtered = raw.filter(
           (r) =>
-            r.type === 'Common Stock' ||
-            r.type === 'ADR' ||
-            r.type === 'ETF' ||
-            r.type === 'REIT'
+            r.type === 'Common Stock' || r.type === 'ADR' || r.type === 'ETF' || r.type === 'REIT',
         );
         setResults(filtered.slice(0, 15));
       })
@@ -324,7 +335,9 @@ export function useSymbolSearch(query) {
       .finally(() => {
         if (!cancelled) setIsLoading(false);
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [debouncedQuery]);
 
   return { results, isLoading, error };
@@ -357,7 +370,9 @@ export function usePeers(symbol) {
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [symbol]);
 
   return { data, loading, error };

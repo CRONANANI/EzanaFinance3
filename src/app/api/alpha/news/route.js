@@ -11,6 +11,7 @@ function mapSentimentFeedItem(article) {
     source: article.source,
     time_published: article.time_published,
     summary: article.summary,
+    banner_image: article.banner_image,
     overall_sentiment_score: article.overall_sentiment_score,
     overall_sentiment_label: article.overall_sentiment_label,
     ticker_sentiment: article.ticker_sentiment,
@@ -50,14 +51,15 @@ export async function GET(request) {
       300,
     );
     const feed = Array.isArray(data.feed) ? data.feed : [];
+    const articles = feed.map(mapSentimentFeedItem);
     return NextResponse.json(
-      { news: feed.map(mapSentimentFeedItem) },
+      { news: articles, articles },
       { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' } },
     );
   } catch (e) {
     console.error('[alpha/news]', e);
     return NextResponse.json(
-      { news: [], error: e.message || 'Failed to fetch news' },
+      { news: [], articles: [], error: e.message || 'Failed to fetch news' },
       { status: 502 },
     );
   }
