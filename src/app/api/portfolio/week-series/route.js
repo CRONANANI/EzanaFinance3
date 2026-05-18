@@ -1,20 +1,11 @@
 import { NextResponse } from 'next/server';
 import { getAuthUser } from '@/lib/auth-helpers';
 import { supabaseAdmin } from '@/lib/plaid';
+import { fetchAV, getAlphaVantageApiKey, fetchAllBulkQuotesAlpha } from '@/lib/alpha-vantage';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-// Request-time read — module-level captures freeze whatever value the
-// build container had, so a later FMP key rotation never reaches running
-// lambdas. Each helper re-reads on every call.
-function getFmpKey() {
-  return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
-}
-
-const FMP_BASE = 'https://financialmodelingprep.com/stable';
-
-/* ── NY timezone helpers ── */
 function todayNy() {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
 }
@@ -47,7 +38,6 @@ const DAY_LABELS = {
   Friday: 'Fri',
 };
 
-/* ── Extract positions from mock_portfolios JSONB ── */
 function extractPositions(portfolio) {
   if (!portfolio || typeof portfolio !== 'object') return [];
   const positions = portfolio.positions;
@@ -72,30 +62,37 @@ function extractPositions(portfolio) {
   return result;
 }
 
-function parseQuotePrice(q) {
-  if (q?.price == null) return null;
-  const raw = q.price;
-  const p = typeof raw === 'number' ? raw : parseFloat(String(raw));
-  return Number.isFinite(p) ? p : null;
+async function fetchAvDailyPrices(ticker) {
+  try {
+    const data = await fetchAV(
+      { function: 'TIME_SERIES_DAILY_ADJUSTED', symbol: ticker, outputsize: 'compact' },
+      300,
+    );
+
+    const ts = data?.['Time Series (Daily)'];
+    if (!ts || typeof ts !== 'object') return {};
+
+    const prices = {};
+    for (const [date, ohlc] of Object.entries(ts)) {
+      const close = parseFloat(ohlc?.['5. adjusted close'] ?? ohlc?.['4. close']);
+      if (Number.isFinite(close)) prices[date] = close;
+    }
+    return prices;
+  } catch (err) {
+    console.warn(`[portfolio/week-series] AV daily prices for ${ticker}:`, err?.message);
+    return {};
+  }
 }
 
-/* ── Fetch current quotes from FMP ── */
-async function fetchQuotes(tickers) {
-  const FMP_KEY = getFmpKey();
-  if (!FMP_KEY || tickers.length === 0) return {};
+async function fetchCurrentQuotes(tickers) {
+  if (!tickers.length || !getAlphaVantageApiKey()) return {};
   try {
-    const symbols = tickers.join(',');
-    const res = await fetch(
-      `${FMP_BASE}/quote?symbol=${encodeURIComponent(symbols)}&apikey=${encodeURIComponent(FMP_KEY)}`,
-      { cache: 'no-store' },
-    );
-    if (!res.ok) return {};
-    const data = await res.json();
+    const quotes = await fetchAllBulkQuotesAlpha(tickers);
     const map = {};
-    for (const q of Array.isArray(data) ? data : []) {
-      const sym = q?.symbol && String(q.symbol).toUpperCase();
-      const price = parseQuotePrice(q);
-      if (sym && price != null) map[sym] = price;
+    for (const [sym, q] of Object.entries(quotes)) {
+      if (q?.price != null && Number.isFinite(q.price) && q.price > 0) {
+        map[sym] = q.price;
+      }
     }
     return map;
   } catch {
@@ -103,41 +100,6 @@ async function fetchQuotes(tickers) {
   }
 }
 
-/* ── Fetch historical daily close for a specific date range from FMP ── */
-async function fetchHistoricalCloses(tickers, fromDate, toDate) {
-  const FMP_KEY = getFmpKey();
-  if (!FMP_KEY || tickers.length === 0) return {};
-  const result = {};
-  for (const ticker of tickers) {
-    try {
-      const res = await fetch(
-        `${FMP_BASE}/historical-price-eod/light?symbol=${encodeURIComponent(ticker)}&from=${fromDate}&to=${toDate}&apikey=${encodeURIComponent(FMP_KEY)}`,
-        { cache: 'no-store' },
-      );
-      if (!res.ok) continue;
-      const data = await res.json();
-      if (Array.isArray(data)) {
-        result[ticker] = {};
-        for (const row of data) {
-          if (row?.date && row.close != null) {
-            const close = typeof row.close === 'number' ? row.close : parseFloat(String(row.close));
-            if (Number.isFinite(close)) result[ticker][row.date] = close;
-          }
-        }
-      }
-    } catch {
-      /* skip */
-    }
-  }
-  return result;
-}
-
-/**
- * GET /api/portfolio/week-series
- *
- * Computes the user's portfolio weekly performance using LIVE prices.
- * Returns % change from Monday's close for each weekday.
- */
 export async function GET(request) {
   try {
     const user = await getAuthUser(request);
@@ -146,7 +108,6 @@ export async function GET(request) {
     }
 
     const monday = startOfWeekNy();
-    const friday = addDays(monday, 4);
     const today = todayNy();
 
     const { data: snapshots } = await supabaseAdmin
@@ -154,7 +115,6 @@ export async function GET(request) {
       .select('snapshot_date, total_value, mock_value')
       .eq('user_id', user.id)
       .gte('snapshot_date', monday)
-      .lte('snapshot_date', friday)
       .order('snapshot_date', { ascending: true });
 
     const slotMap = new Map();
@@ -203,12 +163,22 @@ export async function GET(request) {
       return NextResponse.json({ ok: true, series: empty, source: 'empty' });
     }
 
-    const tickers = [...new Set(positions.map((p) => p.ticker))];
+    const tickers = [...new Set(positions.map((p) => p.ticker.replace(/-/g, '')))];
 
-    const [historicalPrices, currentQuotes] = await Promise.all([
-      fetchHistoricalCloses(tickers, monday, today),
-      fetchQuotes(tickers),
+    const [historicalByTicker, currentQuotes] = await Promise.all([
+      Promise.all(tickers.map(async (t) => ({ ticker: t, prices: await fetchAvDailyPrices(t) }))),
+      fetchCurrentQuotes(tickers),
     ]);
+
+    const priceMap = {};
+    for (const { ticker, prices } of historicalByTicker) {
+      priceMap[ticker] = prices;
+    }
+
+    const positionsNorm = positions.map((p) => ({
+      ...p,
+      ticker: p.ticker.replace(/-/g, ''),
+    }));
 
     const dailyValues = {};
     for (let i = 0; i < 5; i++) {
@@ -216,17 +186,19 @@ export async function GET(request) {
       if (ymd > today) break;
 
       let dayTotal = cash;
-      for (const pos of positions) {
+      for (const pos of positionsNorm) {
         let price;
+
         if (ymd === today && currentQuotes[pos.ticker] != null) {
           price = currentQuotes[pos.ticker];
-        } else if (historicalPrices[pos.ticker]?.[ymd] != null) {
-          price = historicalPrices[pos.ticker][ymd];
+        } else if (priceMap[pos.ticker]?.[ymd] != null) {
+          price = priceMap[pos.ticker][ymd];
         } else {
-          const dates = Object.keys(historicalPrices[pos.ticker] || {}).sort();
+          const dates = Object.keys(priceMap[pos.ticker] || {}).sort();
           const closest = dates.filter((d) => d <= ymd).pop();
-          price = closest ? historicalPrices[pos.ticker][closest] : pos.avgCost;
+          price = closest ? priceMap[pos.ticker][closest] : pos.avgCost;
         }
+
         dayTotal += pos.shares * price;
       }
       dailyValues[ymd] = dayTotal;
@@ -235,8 +207,7 @@ export async function GET(request) {
     let baseline = dailyValues[monday];
     if (baseline == null || baseline <= 0) {
       const sortedDays = Object.keys(dailyValues).sort();
-      const first = sortedDays[0];
-      baseline = first != null ? dailyValues[first] : null;
+      baseline = sortedDays.length ? dailyValues[sortedDays[0]] : null;
     }
     if (baseline == null || baseline <= 0) {
       const empty = slots.map((s) => ({ ...s, pct: null }));
@@ -250,7 +221,7 @@ export async function GET(request) {
       return { ...s, value: parseFloat(val.toFixed(2)), pct: parseFloat(pct.toFixed(3)) };
     });
 
-    return NextResponse.json({ ok: true, series: liveSeries, source: 'live' });
+    return NextResponse.json({ ok: true, series: liveSeries, source: 'live_av' });
   } catch (e) {
     console.error('[portfolio/week-series]', e);
     return NextResponse.json({ ok: false, error: e.message }, { status: 500 });
