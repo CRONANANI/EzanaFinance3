@@ -265,7 +265,10 @@ export async function GET(_req, context) {
   try {
     console.log(`[earnings/analysis] ${symbol}: starting`);
 
-    const { transcripts, fmpAccessDenied } = await fetchLastNTranscripts(symbol, 4);
+    const { transcripts, fmpAccessDenied, avKeyConfigured } = await fetchLastNTranscripts(
+      symbol,
+      4,
+    );
 
     const earnings = await fetchEarningsHistory(symbol, 12).catch((err) => {
       console.warn(`[earnings/analysis] ${symbol} earnings history failed:`, err?.message);
