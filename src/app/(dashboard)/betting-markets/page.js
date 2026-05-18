@@ -1218,7 +1218,7 @@ export default function BettingMarketsPage() {
       <div className="bm-two-col">
         <div cardId="betting-leaderboard" className="db-card">
           <div className="db-card-header">
-            <h3>Betting Leaderboard</h3>
+            <h3>Leaderboard</h3>
             <button type="button" className="db-icon-btn" aria-label="Expand">
               <i className="bi bi-box-arrow-up-right" />
             </button>
@@ -1367,15 +1367,23 @@ export default function BettingMarketsPage() {
               High EV Opportunities Today
             </p>
             {EV_ITEMS.map((e) => (
-              <div key={e.id} className="bm-ev-item">
-                <div className="bm-ev-title">{e.title}</div>
-                <div className="bm-ev-meta">
-                  EV: {e.ev} &nbsp;·&nbsp; Confidence: {e.confidence}
+              <button
+                key={e.id}
+                type="button"
+                className="bm-ev-item bm-ev-item--clickable"
+                onClick={() => setEvOpen(e)}
+              >
+                <div
+                  className={`bm-ev-confidence-dot bm-ev-confidence-dot--${e.confidence.toLowerCase()}`}
+                />
+                <div className="bm-ev-item-body">
+                  <div className="bm-ev-title">{e.title}</div>
+                  <div className="bm-ev-meta">
+                    EV: {e.ev} &nbsp;·&nbsp; Confidence: {e.confidence}
+                  </div>
                 </div>
-                <button type="button" className="bm-ev-btn" onClick={() => setEvOpen(e)}>
-                  View Analysis →
-                </button>
-              </div>
+                <i className="bi bi-chevron-right bm-ev-arrow" />
+              </button>
             ))}
           </div>
         </div>
@@ -1431,7 +1439,48 @@ export default function BettingMarketsPage() {
         >
           <div className="bm-modal" onClick={(e) => e.stopPropagation()}>
             <div className="bm-modal-hdr">
-              <h2 id="bm-ev-title">Expected Value Analysis</h2>
+              <div className="bm-modal-hdr-left">
+                <div
+                  className="bm-modal-type-badge"
+                  style={{
+                    background:
+                      evOpen.confidence === 'High'
+                        ? 'rgba(16,185,129,0.12)'
+                        : evOpen.confidence === 'Medium'
+                          ? 'rgba(245,158,11,0.12)'
+                          : 'rgba(239,68,68,0.12)',
+                    color:
+                      evOpen.confidence === 'High'
+                        ? '#10b981'
+                        : evOpen.confidence === 'Medium'
+                          ? '#f59e0b'
+                          : '#ef4444',
+                    borderColor:
+                      evOpen.confidence === 'High'
+                        ? 'rgba(16,185,129,0.3)'
+                        : evOpen.confidence === 'Medium'
+                          ? 'rgba(245,158,11,0.3)'
+                          : 'rgba(239,68,68,0.3)',
+                  }}
+                >
+                  <i
+                    className={`bi ${
+                      evOpen.confidence === 'High'
+                        ? 'bi-shield-fill-check'
+                        : evOpen.confidence === 'Medium'
+                          ? 'bi-shield-fill-exclamation'
+                          : 'bi-shield-fill-x'
+                    }`}
+                  />
+                  {evOpen.confidence} Confidence
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <h2 id="bm-ev-title" className="bm-modal-title">
+                    {evOpen.analysis.headline}
+                  </h2>
+                  <div className="bm-modal-ev-badge">EV: {evOpen.analysis.evPer100} per $100</div>
+                </div>
+              </div>
               <button
                 type="button"
                 className="bm-modal-close"
@@ -1441,37 +1490,58 @@ export default function BettingMarketsPage() {
                 <i className="bi bi-x-lg" />
               </button>
             </div>
-            <div className="bm-modal-sub">{evOpen.analysis.headline}</div>
-            <div className="bm-modal-section">
-              <h3>The Math</h3>
-              {evOpen.analysis.math.map((line) => (
-                <p key={line} style={{ marginBottom: '0.5rem' }}>
-                  {line}
-                </p>
-              ))}
-            </div>
-            <dl className="bm-modal-grid">
-              <dt>Implied Probability</dt>
-              <dd>{evOpen.analysis.implied ?? '—'}</dd>
-              <dt>Model Probability</dt>
-              <dd>{evOpen.analysis.model ?? '—'}</dd>
-              <dt>Edge</dt>
-              <dd>{evOpen.analysis.edge ?? '—'}</dd>
-              <dt>Expected Value</dt>
-              <dd>{evOpen.analysis.evPer100 ?? '—'} per $100 wagered</dd>
-            </dl>
-            <div className="bm-modal-section">
-              <h3>Backstory</h3>
-              {evOpen.analysis.backstory.map((p) => (
-                <p key={p} style={{ marginBottom: '0.5rem' }}>
-                  {p}
-                </p>
-              ))}
-            </div>
-            <div className="bm-modal-conf">
-              Confidence: {evOpen.analysis.confidence}
-              <div style={{ color: '#9ca3af', fontWeight: 600, marginTop: 6 }}>
-                Based on: {evOpen.analysis.basedOn}
+
+            <div className="bm-modal-body">
+              <div className="bm-modal-section">
+                <h3 className="bm-modal-section-title">
+                  <i className="bi bi-calculator" /> The Math
+                </h3>
+                {evOpen.analysis.math.map((line) => (
+                  <p key={line} className="bm-modal-text">
+                    {line}
+                  </p>
+                ))}
+              </div>
+
+              <div className="bm-modal-kpi-grid">
+                <div className="bm-modal-kpi">
+                  <span className="bm-modal-kpi-label">Implied Prob</span>
+                  <span className="bm-modal-kpi-value">{evOpen.analysis.implied ?? '—'}</span>
+                </div>
+                <div className="bm-modal-kpi">
+                  <span className="bm-modal-kpi-label">Model Prob</span>
+                  <span className="bm-modal-kpi-value">{evOpen.analysis.model ?? '—'}</span>
+                </div>
+                <div className="bm-modal-kpi">
+                  <span className="bm-modal-kpi-label">Edge</span>
+                  <span className="bm-modal-kpi-value" style={{ color: '#10b981' }}>
+                    {evOpen.analysis.edge ?? '—'}
+                  </span>
+                </div>
+                <div className="bm-modal-kpi">
+                  <span className="bm-modal-kpi-label">Expected Value</span>
+                  <span className="bm-modal-kpi-value" style={{ color: '#d4af37' }}>
+                    {evOpen.analysis.evPer100 ?? '—'}
+                  </span>
+                </div>
+              </div>
+
+              <div className="bm-modal-section">
+                <h3 className="bm-modal-section-title">
+                  <i className="bi bi-book" /> Backstory
+                </h3>
+                {evOpen.analysis.backstory.map((p) => (
+                  <p key={p} className="bm-modal-text">
+                    {p}
+                  </p>
+                ))}
+              </div>
+
+              <div className="bm-modal-insight">
+                <div className="bm-modal-insight-label">
+                  <i className="bi bi-lightbulb" /> Based On
+                </div>
+                <p className="bm-modal-insight-text">{evOpen.analysis.basedOn}</p>
               </div>
             </div>
           </div>
