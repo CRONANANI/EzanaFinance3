@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { rateLimiter } from './rate-limit';
 import { getAuthUser } from './auth-helpers';
 import { logger } from './logger';
+import { logSecurityEvent } from './security-audit';
 
 const limiter = rateLimiter({ interval: 60000, limit: 30 });
 const strictLimiter = rateLimiter({ interval: 60000, limit: 10 });
@@ -11,14 +12,24 @@ export function withApiGuard(handler, options = {}) {
 
   return async (request) => {
     try {
-      const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown';
+      const ip =
+        request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+        request.headers.get('x-real-ip') ||
+        'unknown';
       const activeLimiter = strict ? strictLimiter : limiter;
       const { success, remaining } = activeLimiter.check(ip);
 
       if (!success) {
+        let path = '';
+        try {
+          path = new URL(request.url).pathname;
+        } catch {
+          /* ignore */
+        }
+        void logSecurityEvent('rate_limit_hit', { ip, details: { path } });
         return NextResponse.json(
           { error: 'Too many requests. Please try again later.' },
-          { status: 429, headers: { 'Retry-After': '60', 'X-RateLimit-Remaining': '0' } }
+          { status: 429, headers: { 'Retry-After': '60', 'X-RateLimit-Remaining': '0' } },
         );
       }
 

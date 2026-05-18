@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireUser, getCurrentUser, getUserClient, getAdminClient } from '@/lib/supabase';
 import { awardXP } from '@/lib/rewards';
+import { sanitizeInput } from '@/lib/sanitize';
 
 export const dynamic = 'force-dynamic';
 
@@ -183,7 +184,7 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const body = await request.json();
-    const content = typeof body.content === 'string' ? body.content : '';
+    const content = sanitizeInput(typeof body.content === 'string' ? body.content : '');
     const mentioned_ticker = body.mentioned_ticker
       ? String(body.mentioned_ticker).slice(0, 8)
       : null;
@@ -199,14 +200,14 @@ export async function POST(request) {
 
     let poll_data = null;
     if (body.poll_data && typeof body.poll_data === 'object') {
-      const q = String(body.poll_data.question || '').trim();
+      const q = sanitizeInput(String(body.poll_data.question || '').trim());
       const opts = Array.isArray(body.poll_data.options) ? body.poll_data.options : [];
       if (q && opts.length >= 2 && opts.length <= 6) {
         poll_data = {
           question: q.slice(0, 200),
           options: opts.slice(0, 6).map((o, i) => ({
             id: `opt_${i}`,
-            label: String(o.label || o).slice(0, 100),
+            label: sanitizeInput(String(o.label || o).slice(0, 100)),
             votes: 0,
           })),
           total_votes: 0,

@@ -9,23 +9,34 @@ const SEVERITY_THRESHOLDS = {
 };
 
 const TICKER_SECTOR = {
-  AAPL: 'Technology', NVDA: 'Technology', MSFT: 'Technology', GOOG: 'Technology', GOOGL: 'Technology',
-  META: 'Technology', TSLA: 'Technology', JPM: 'Finance', GS: 'Finance',
-  JNJ: 'Healthcare', XOM: 'Energy', BTC: 'Crypto', ETH: 'Crypto',
+  AAPL: 'Technology',
+  NVDA: 'Technology',
+  MSFT: 'Technology',
+  GOOG: 'Technology',
+  GOOGL: 'Technology',
+  META: 'Technology',
+  TSLA: 'Technology',
+  JPM: 'Finance',
+  GS: 'Finance',
+  JNJ: 'Healthcare',
+  XOM: 'Energy',
+  BTC: 'Crypto',
+  ETH: 'Crypto',
 };
 
-export function scoreEventForUser(classified, userProfile) {
+export function scoreEventForUser(classified, userProfile, userSegment = null) {
   let score = 0;
 
   const userTickers = userProfile.ticker_scores || {};
-  for (const ticker of classified.tickers) {
+  const tickers = classified.tickers || [];
+  for (const ticker of tickers) {
     if (userTickers[ticker]) {
       score += Math.round(userTickers[ticker] * 0.5);
     }
   }
 
   const userSectors = userProfile.sector_scores || {};
-  for (const ticker of classified.tickers) {
+  for (const ticker of tickers) {
     const sector = TICKER_SECTOR[ticker];
     if (sector && userSectors[sector]) {
       score += Math.round(userSectors[sector] * 0.2);
@@ -54,6 +65,22 @@ export function scoreEventForUser(classified, userProfile) {
 
   if (classified.severity === 'critical') score = Math.max(score, 40);
   if (classified.severity === 'noteworthy') score = Math.max(score, 20);
+
+  if (userSegment?.persona) {
+    if (userSegment.persona === 'capitol_watcher' && classified.eventType === 'regulatory')
+      score += 20;
+    if (userSegment.persona === 'crypto_native' && classified.eventType === 'crypto') score += 20;
+    if (
+      userSegment.persona === 'news_junkie' &&
+      (classified.eventType === 'macro' || classified.eventType === 'geopolitical')
+    ) {
+      score += 15;
+    }
+    if (userSegment.persona === 'active_trader' && classified.eventType === 'technical')
+      score += 15;
+    if (userSegment.persona === 'learner' && classified.eventType === 'earnings') score += 10;
+    score = Math.min(100, score);
+  }
 
   score = Math.min(100, score);
 

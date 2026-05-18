@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
+import { logSecurityEvent } from '@/lib/security-audit';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -104,6 +105,16 @@ export async function POST(request) {
         revokedSessions = true;
       }
     }
+
+    const ip =
+      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+      request.headers.get('x-real-ip') ||
+      null;
+    await logSecurityEvent(unlock ? 'account_unlocked' : 'account_locked', {
+      targetId: userId,
+      ip,
+      details: { email, reason: unlock ? null : reason },
+    });
 
     return NextResponse.json({
       success: true,

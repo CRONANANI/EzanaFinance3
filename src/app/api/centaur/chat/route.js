@@ -154,6 +154,27 @@ ${debriefContext ? `Recent events to consider:\n${debriefContext}` : ''}
 Give specific, actionable insights. Keep responses focused (2-3 paragraphs).`;
 }
 
+function filterAIOutput(text) {
+  if (typeof text !== 'string') return text;
+  let filtered = text.replace(/<script[\s\S]*?<\/script>/gi, '');
+  filtered = filtered.replace(/<[^>]*>/g, '');
+  const dangerousPatterns = [
+    /guaranteed\s+returns/i,
+    /buy\s+now\s+before/i,
+    /this\s+stock\s+will\s+(definitely|certainly|100%)/i,
+    /insider\s+(tip|information|knowledge)/i,
+    /risk[- ]free\s+(investment|return|profit)/i,
+  ];
+  for (const pattern of dangerousPatterns) {
+    if (pattern.test(filtered)) {
+      filtered +=
+        '\n\n⚠️ Disclaimer: This is AI-generated content for educational purposes only. It should not be interpreted as financial advice. Always do your own research and consult with a qualified financial advisor before making investment decisions.';
+      break;
+    }
+  }
+  return filtered;
+}
+
 export async function POST(request) {
   try {
     const body = await request.json();
@@ -215,7 +236,7 @@ export async function POST(request) {
           ? "I want to be clear — my full AI backend isn't configured here, so I can't give you the depth I'd like. When it's live, we'll walk through cycles, debt, and the world order with real rigor. In the meantime, what's on your mind about macro or your portfolio?"
           : `Thank you for asking! I'd need my AI systems fully configured to give you a complete perspective. Based on what I see in your portfolio, though, the fundamentals look worth exploring further. What specific position would you like to discuss?`;
 
-      return NextResponse.json({ reply: fallbackReply });
+      return NextResponse.json({ reply: filterAIOutput(fallbackReply) });
     }
 
     const sanitisedMessages = sanitiseMessages(messages);
@@ -287,7 +308,7 @@ export async function POST(request) {
       );
     }
 
-    return NextResponse.json({ reply });
+    return NextResponse.json({ reply: filterAIOutput(reply) });
   } catch (error) {
     console.error('[centaur/chat] Caught error:', error);
     return NextResponse.json(

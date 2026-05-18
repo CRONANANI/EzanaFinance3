@@ -11,6 +11,20 @@ const securityHeaders = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
   { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+  {
+    key: 'Content-Security-Policy',
+    value: [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://cdn.vercel-insights.com https://vercel.live",
+      "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com",
+      "img-src 'self' data: blob: https: http:",
+      "font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com",
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://*.alpaca.markets https://*.vercel-insights.com https://*.finnhub.io wss://*.finnhub.io https://*.vercel.live https://api.anthropic.com",
+      "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://vercel.live",
+      "object-src 'none'",
+      "base-uri 'self'",
+    ].join('; '),
+  },
 ];
 
 const nextConfig = {
@@ -41,7 +55,11 @@ const nextConfig = {
   async redirects() {
     return [
       { source: '/commodities-research', destination: '/alternative-markets', permanent: true },
-      { source: '/commodities-research/:path*', destination: '/alternative-markets', permanent: true },
+      {
+        source: '/commodities-research/:path*',
+        destination: '/alternative-markets',
+        permanent: true,
+      },
       { source: '/crypto-research', destination: '/alternative-markets', permanent: true },
       { source: '/crypto-research/:path*', destination: '/alternative-markets', permanent: true },
     ];
@@ -52,9 +70,7 @@ const nextConfig = {
       // Long-cache static assets (images, fonts) so repeat visits don't re-download.
       {
         source: '/:all*(svg|jpg|jpeg|png|webp|avif|gif|ico|woff|woff2|ttf|otf)',
-        headers: [
-          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
-        ],
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
       },
     ];
   },
@@ -90,7 +106,4 @@ const sentryWebpackPluginOptions = {
   tunnelRoute: '/monitoring',
 };
 
-module.exports = withSentryConfig(
-  withBundleAnalyzer(nextConfig),
-  sentryWebpackPluginOptions,
-);
+module.exports = withSentryConfig(withBundleAnalyzer(nextConfig), sentryWebpackPluginOptions);

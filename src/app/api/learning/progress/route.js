@@ -185,6 +185,14 @@ export async function POST(request) {
         .select()
         .single();
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+      await admin
+        .from('activity_breadcrumbs')
+        .insert({
+          user_id: user.id,
+          event_type: 'course_start',
+          event_data: { course_id: courseId, track: course.track },
+        })
+        .catch(() => {});
       return NextResponse.json({ progress: ins });
     }
 
@@ -291,6 +299,15 @@ export async function POST(request) {
         try {
           if (!existing?.quiz_passed) {
             await awardXP(user.id, 50, `Completed course quiz: ${course.title}`, 'learning');
+
+            await admin
+              .from('activity_breadcrumbs')
+              .insert({
+                user_id: user.id,
+                event_type: 'course_complete',
+                event_data: { course_id: courseId, score: scorePct, xp: 50 },
+              })
+              .catch(() => {});
 
             const eloDelta = ELO_PER_COURSE_LEVEL[course.level] || 15;
             const tierName = LEVEL_TO_TIER_NAME[course.level] || 'bronze';

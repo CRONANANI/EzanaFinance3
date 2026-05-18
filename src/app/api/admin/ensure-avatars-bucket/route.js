@@ -4,15 +4,29 @@ import { getAdminClient } from '@/lib/supabase';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
+function authorizeAdminRequest(request) {
+  const authHeader = request.headers.get('authorization') || '';
+  const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+  const adminOk = process.env.ADMIN_LOCK_SECRET && token === process.env.ADMIN_LOCK_SECRET;
+  const cronOk = process.env.CRON_SECRET && token === process.env.CRON_SECRET;
+  return adminOk || cronOk;
+}
+
 /**
  * POST /api/admin/ensure-avatars-bucket
  *
  * Idempotently ensures the `avatars` storage bucket exists in Supabase.
  * Uses the service-role key (server-only). RLS policies must still come from
  * migrations / SQL (this route only creates the bucket).
+ *
+ * Authorization: Bearer ADMIN_LOCK_SECRET or CRON_SECRET
  */
-export async function POST() {
+export async function POST(request) {
   try {
+    if (!authorizeAdminRequest(request)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     let supabase;
     try {
       supabase = getAdminClient();

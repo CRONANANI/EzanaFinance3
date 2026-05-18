@@ -8,11 +8,8 @@
  */
 import { NextResponse } from 'next/server';
 import { getAuthContext } from '@/lib/auth-helpers';
-import {
-  dbErrorResponse,
-  exceptionResponse,
-  validationResponse,
-} from '@/lib/api-errors';
+import { getAdminClient } from '@/lib/supabase';
+import { dbErrorResponse, exceptionResponse, validationResponse } from '@/lib/api-errors';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,25 +42,18 @@ export async function POST(request, { params }) {
 
     const owned = await assertListOwnedByUser(supabase, listId, user.id);
     if (!owned) {
-      return NextResponse.json(
-        { error: 'List not found or not yours.' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'List not found or not yours.' }, { status: 404 });
     }
 
     const body = await request.json().catch(() => ({}));
     const type = typeof body?.type === 'string' ? body.type.toLowerCase() : '';
-    const ticker =
-      typeof body?.ticker === 'string' ? body.ticker.trim().toUpperCase() : '';
+    const ticker = typeof body?.ticker === 'string' ? body.ticker.trim().toUpperCase() : '';
     const name = typeof body?.name === 'string' ? body.name.trim() : null;
     const sector = typeof body?.sector === 'string' ? body.sector.trim() : null;
-    const metadata =
-      body?.metadata && typeof body.metadata === 'object' ? body.metadata : {};
+    const metadata = body?.metadata && typeof body.metadata === 'object' ? body.metadata : {};
 
     if (!VALID_TYPES.has(type)) {
-      return validationResponse(
-        `Invalid type. Must be one of: ${[...VALID_TYPES].join(', ')}.`
-      );
+      return validationResponse(`Invalid type. Must be one of: ${[...VALID_TYPES].join(', ')}.`);
     }
     if (!ticker) {
       return validationResponse('ticker is required.');
@@ -74,7 +64,7 @@ export async function POST(request, { params }) {
       .from('user_watchlist_items')
       .upsert(
         { list_id: listId, user_id: user.id, type, ticker, name, sector, metadata },
-        { onConflict: 'list_id,type,ticker', ignoreDuplicates: false }
+        { onConflict: 'list_id,type,ticker', ignoreDuplicates: false },
       )
       .select('id, list_id, type, ticker, name, sector, metadata, created_at')
       .single();
@@ -84,6 +74,16 @@ export async function POST(request, { params }) {
         fallback: 'Failed to add item to watchlist.',
       });
     }
+
+    const admin = getAdminClient();
+    await admin
+      .from('activity_breadcrumbs')
+      .insert({
+        user_id: user.id,
+        event_type: 'watchlist_add',
+        event_data: { ticker: data.ticker, watchlist_id: listId },
+      })
+      .catch(() => {});
 
     return NextResponse.json({
       item: {
@@ -123,9 +123,7 @@ export async function DELETE(request, { params }) {
 
     if (!ticker) return validationResponse('ticker is required.');
     if (!VALID_TYPES.has(type)) {
-      return validationResponse(
-        `Invalid type. Must be one of: ${[...VALID_TYPES].join(', ')}.`
-      );
+      return validationResponse(`Invalid type. Must be one of: ${[...VALID_TYPES].join(', ')}.`);
     }
 
     const { error } = await supabase
@@ -141,6 +139,16 @@ export async function DELETE(request, { params }) {
         fallback: 'Failed to remove item from watchlist.',
       });
     }
+
+    const admin = getAdminClient();
+    await admin
+      .from('activity_breadcrumbs')
+      .insert({
+        user_id: user.id,
+        event_type: 'watchlist_remove',
+        event_data: { ticker, watchlist_id: listId },
+      })
+      .catch(() => {});
 
     return NextResponse.json({ success: true });
   } catch (e) {

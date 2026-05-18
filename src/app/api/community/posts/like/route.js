@@ -35,6 +35,14 @@ export async function POST(request) {
             .eq('id', post_id)
             .maybeSingle();
           if (postRow?.user_id && postRow.user_id !== user.id) {
+            await admin
+              .from('activity_breadcrumbs')
+              .insert({
+                user_id: user.id,
+                event_type: 'post_like',
+                event_data: { post_id, author_id: postRow.user_id },
+              })
+              .catch(() => {});
             await awardXP(postRow.user_id, 5, 'Received a like on your post', 'community');
 
             // ── Notify post author of like ──

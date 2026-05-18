@@ -137,18 +137,6 @@ export async function buildUserProfile(userId) {
     if (t && t.length <= 5 && /^[A-Z0-9.-]+$/.test(t)) tickerScores[t] = (tickerScores[t] || 0) + 8;
   }
 
-  for (const k of Object.keys(tickerScores)) {
-    tickerScores[k] = Math.min(100, tickerScores[k]);
-  }
-
-  const sectorScores = {};
-  for (const [ticker, score] of Object.entries(tickerScores)) {
-    const sector = SECTOR_MAP[ticker];
-    if (sector) {
-      sectorScores[sector] = Math.min(100, (sectorScores[sector] || 0) + Math.round(score * 0.3));
-    }
-  }
-
   const featureScores = {};
   const pageViews = breadcrumbs.filter((b) => b.event_type === 'page_view');
   for (const b of pageViews) {
@@ -171,6 +159,55 @@ export async function buildUserProfile(userId) {
   for (const b of keywordClicks) {
     const topic = b.event_data?.topic;
     if (topic) topicScores[topic] = Math.min(100, (topicScores[topic] || 0) + 15);
+  }
+
+  const watchlistAdds = breadcrumbs.filter((b) => b.event_type === 'watchlist_add');
+  for (const b of watchlistAdds) {
+    const t = b.event_data?.ticker;
+    if (t) tickerScores[t] = Math.min(100, (tickerScores[t] || 0) + 40);
+  }
+
+  const watchlistRemoves = breadcrumbs.filter((b) => b.event_type === 'watchlist_remove');
+  for (const b of watchlistRemoves) {
+    const t = b.event_data?.ticker;
+    if (t) tickerScores[t] = Math.max(0, (tickerScores[t] || 0) - 20);
+  }
+
+  const trades = breadcrumbs.filter((b) => b.event_type === 'trade_executed');
+  for (const b of trades) {
+    const t = b.event_data?.ticker;
+    if (t) tickerScores[t] = Math.min(100, (tickerScores[t] || 0) + 60);
+  }
+
+  const notifClicks = breadcrumbs.filter((b) => b.event_type === 'notification_click');
+  for (const b of notifClicks) {
+    const type = b.event_data?.type;
+    if (type) topicScores[type] = Math.min(100, (topicScores[type] || 0) + 10);
+  }
+
+  const courseEvents = breadcrumbs.filter(
+    (b) => b.event_type === 'course_start' || b.event_type === 'course_complete',
+  );
+  for (const b of courseEvents) {
+    featureScores.learning = Math.min(
+      100,
+      (featureScores.learning || 0) + (b.event_type === 'course_complete' ? 15 : 5),
+    );
+  }
+
+  const postCreates = breadcrumbs.filter((b) => b.event_type === 'post_create');
+  featureScores.community = Math.min(100, (featureScores.community || 0) + postCreates.length * 8);
+
+  for (const k of Object.keys(tickerScores)) {
+    tickerScores[k] = Math.min(100, Math.max(0, tickerScores[k]));
+  }
+
+  const sectorScores = {};
+  for (const [ticker, score] of Object.entries(tickerScores)) {
+    const sector = SECTOR_MAP[ticker];
+    if (sector) {
+      sectorScores[sector] = Math.min(100, (sectorScores[sector] || 0) + Math.round(score * 0.3));
+    }
   }
 
   const { riskScore, riskCategory } = normalizeRiskFromProfile(questionnaire);

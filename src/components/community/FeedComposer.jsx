@@ -135,6 +135,22 @@ export function FeedComposer({
       });
 
       if (res.ok) {
+        const tickersFromEmbed = (body.ticker_embed?.symbols || [])
+          .map((x) => x.symbol)
+          .filter(Boolean);
+        const mentioned = body.mentioned_ticker
+          ? [String(body.mentioned_ticker).toUpperCase()]
+          : [];
+        const tickers = tickersFromEmbed.length ? tickersFromEmbed : mentioned;
+        fetch('/api/notifications/track', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            event_type: 'post_create',
+            event_data: { tickers, topic: body.mentioned_ticker || null },
+          }),
+        }).catch(() => {});
+
         setComposerText('');
         setComposerImage(null);
         setShowImageMenu(false);

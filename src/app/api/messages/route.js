@@ -3,6 +3,7 @@
  */
 import { NextResponse } from 'next/server';
 import { getCurrentUser, getAdminClient } from '@/lib/supabase';
+import { sanitizeInput } from '@/lib/sanitize';
 
 export const dynamic = 'force-dynamic';
 
@@ -138,7 +139,7 @@ export async function POST(request) {
 
     const body = await request.json().catch(() => ({}));
     const toUserId = typeof body?.to === 'string' ? body.to.trim() : '';
-    const content = typeof body?.content === 'string' ? body.content.trim() : '';
+    const content = sanitizeInput(typeof body?.content === 'string' ? body.content.trim() : '');
 
     if (!toUserId) {
       return NextResponse.json({ error: '"to" (recipient user_id) is required' }, { status: 400 });

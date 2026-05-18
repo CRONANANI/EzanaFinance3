@@ -52,6 +52,18 @@
     {
       "path": "/api/notifications/generate-capitol",
       "schedule": "0 8,18 * * 1-5"
+    },
+    {
+      "path": "/api/cron/assign-personas",
+      "schedule": "0 5 * * 0"
+    },
+    {
+      "path": "/api/cron/recompute-profiles",
+      "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/cron/prune-breadcrumbs",
+      "schedule": "0 3 1 * *"
     }
   ]
 }

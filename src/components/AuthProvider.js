@@ -17,7 +17,20 @@ export function AuthProvider({ children }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        fetch('/api/notifications/track', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            event_type: 'session_start',
+            event_data: {
+              timestamp: Date.now(),
+              device: typeof navigator !== 'undefined' ? navigator.userAgent : '',
+            },
+          }),
+        }).catch(() => {});
+      }
       setUser(session?.user ?? null);
     });
 

@@ -3,6 +3,7 @@ import { getAdminClient } from '@/lib/supabase';
 import { classifyEvent } from '@/lib/notifications/event-classifier';
 import { scoreEventForUser } from '@/lib/notifications/matching-engine';
 import { buildUserProfile } from '@/lib/notifications/interest-profile';
+import { PERSONA_NOTIFICATION_CAPS } from '@/lib/ml/persona-assignment';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
@@ -93,13 +94,44 @@ export async function GET(request) {
       return NextResponse.json({ ok: true, sent: 0, reason: 'no_profiles' });
     }
 
+    const userIds = profiles.map((p) => p.user_id);
+    const segmentMap = {};
+    const { data: segmentRows } = await admin
+      .from('user_segments')
+      .select('user_id, persona')
+      .in('user_id', userIds);
+    for (const s of segmentRows || []) {
+      segmentMap[s.user_id] = s;
+    }
+
+    const dayStart = new Date();
+    dayStart.setUTCHours(0, 0, 0, 0);
+    const dayStartIso = dayStart.toISOString();
+    const { data: todaysRows } = await admin
+      .from('user_notifications')
+      .select('user_id')
+      .gte('created_at', dayStartIso)
+      .in('user_id', userIds);
+    const dayCounts = {};
+    for (const r of todaysRows || []) {
+      dayCounts[r.user_id] = (dayCounts[r.user_id] || 0) + 1;
+    }
+
     let totalSent = 0;
 
     for (const event of significant.slice(0, 5)) {
       for (const profile of profiles) {
-        const { score, shouldNotify } = scoreEventForUser(event, profile);
+        const { score, shouldNotify } = scoreEventForUser(
+          event,
+          profile,
+          segmentMap[profile.user_id] || null,
+        );
 
         if (!shouldNotify) continue;
+
+        const personaKey = segmentMap[profile.user_id]?.persona || 'casual_tracker';
+        const dailyCap = PERSONA_NOTIFICATION_CAPS[personaKey] ?? 8;
+        if ((dayCounts[profile.user_id] || 0) >= dailyCap) continue;
 
         const { data: existing } = await admin
           .from('notification_delivery_log')
@@ -160,6 +192,7 @@ export async function GET(request) {
           console.warn('[notification-generator] delivery log', logErr);
         }
 
+        dayCounts[profile.user_id] = (dayCounts[profile.user_id] || 0) + 1;
         totalSent += 1;
       }
     }
@@ -206,14 +239,19 @@ export async function GET(request) {
             .maybeSingle();
           if (dup) continue;
 
+          const personaKeyP = segmentMap[profile.user_id]?.persona || 'casual_tracker';
+          const dailyCapP = PERSONA_NOTIFICATION_CAPS[personaKeyP] ?? 8;
+          if ((dayCounts[profile.user_id] || 0) >= dailyCapP) continue;
+
           const direction = changePct >= 0 ? '📈 up' : '📉 down';
           const priceNum = Number(q.price || 0);
-          await admin.from('user_notifications').insert({
+          const { error: insPortErr } = await admin.from('user_notifications').insert({
             user_id: profile.user_id,
             type: 'portfolio_alerts',
             title: `${sym} ${direction} ${Math.abs(changePct).toFixed(1)}%`,
             content: `Your holding ${sym} moved significantly. Price: $${Number.isFinite(priceNum) ? priceNum.toFixed(2) : '—'}.`,
           });
+          if (insPortErr) continue;
 
           await admin
             .from('notification_delivery_log')
@@ -223,6 +261,7 @@ export async function GET(request) {
             })
             .catch(() => {});
 
+          dayCounts[profile.user_id] = (dayCounts[profile.user_id] || 0) + 1;
           totalSent += 1;
         }
       }

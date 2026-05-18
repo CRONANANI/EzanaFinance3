@@ -5,7 +5,8 @@
  */
 import { NextResponse } from 'next/server';
 import { alpacaRequest } from '@/lib/alpaca';
-import { getAdminClient, getCurrentUser } from '@/lib/supabase';
+import { getAdminClient } from '@/lib/supabase';
+import { withApiGuard } from '@/lib/api-guard';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,10 +19,8 @@ async function getAlpacaAccountId(supabaseAdmin, userId) {
   return data?.alpaca_account_id;
 }
 
-export async function POST(request) {
+async function postOrder(request, user) {
   try {
-    const user = await getCurrentUser(request);
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const supabaseAdmin = getAdminClient();
 
     const accountId = await getAlpacaAccountId(supabaseAdmin, user.id);
@@ -81,10 +80,8 @@ export async function POST(request) {
   }
 }
 
-export async function GET(request) {
+async function getOrders(request, user) {
   try {
-    const user = await getCurrentUser(request);
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const supabaseAdmin = getAdminClient();
 
     const accountId = await getAlpacaAccountId(supabaseAdmin, user.id);
@@ -122,10 +119,8 @@ export async function GET(request) {
   }
 }
 
-export async function DELETE(request) {
+async function deleteOrders(request, user) {
   try {
-    const user = await getCurrentUser(request);
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const supabaseAdmin = getAdminClient();
 
     const accountId = await getAlpacaAccountId(supabaseAdmin, user.id);
@@ -148,3 +143,7 @@ export async function DELETE(request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+export const POST = withApiGuard(postOrder, { requireAuth: true, strict: true });
+export const GET = withApiGuard(getOrders, { requireAuth: true, strict: true });
+export const DELETE = withApiGuard(deleteOrders, { requireAuth: true, strict: true });

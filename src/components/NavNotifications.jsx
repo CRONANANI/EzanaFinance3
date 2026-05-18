@@ -130,25 +130,42 @@ export function NavNotifications() {
   }, [user?.id]);
 
   const dismissNotification = useCallback(
-    async (id, e) => {
+    async (n, e) => {
       e?.stopPropagation();
-      if (!String(id).startsWith('fr-')) {
+      if (!String(n.id).startsWith('fr-')) {
+        fetch('/api/notifications/track', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            event_type: 'notification_dismiss',
+            event_data: { notification_id: n.id, type: n.type },
+          }),
+        }).catch(() => {});
         try {
-          await supabase.from('user_notifications').delete().eq('id', id);
+          await supabase.from('user_notifications').delete().eq('id', n.id);
         } catch {
-          /* ignore */
+          /* table missing or RLS */
         }
       }
-      setNotifications((prev) => prev.filter((n) => n.id !== id));
-      if (expandedId === id) setExpandedId(null);
+      setNotifications((prev) => prev.filter((x) => x.id !== n.id));
+      if (expandedId === n.id) setExpandedId(null);
     },
     [expandedId],
   );
 
   const toggleExpand = useCallback(
-    (id) => {
-      setExpandedId((prev) => (prev === id ? null : id));
-      markAsRead(id);
+    (n) => {
+      setExpandedId((prev) => (prev === n.id ? null : n.id));
+      markAsRead(n.id);
+      if (String(n.id).startsWith('fr-')) return;
+      fetch('/api/notifications/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event_type: 'notification_click',
+          event_data: { notification_id: n.id, type: n.type },
+        }),
+      }).catch(() => {});
     },
     [markAsRead],
   );
@@ -324,8 +341,8 @@ export function NavNotifications() {
             key={n.id}
             notification={n}
             expanded={expandedId === n.id}
-            onToggle={() => toggleExpand(n.id)}
-            onDismiss={(e) => dismissNotification(n.id, e)}
+            onToggle={() => toggleExpand(n)}
+            onDismiss={(e) => dismissNotification(n, e)}
             onFriendRespond={respondFriendRequest}
           />
         ))
