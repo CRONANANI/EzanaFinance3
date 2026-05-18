@@ -211,3 +211,186 @@ export async function fetchAlphaTopMovers(limit) {
     losers: losers.slice(0, limit).map(normalizeAlphaVantageMover),
   };
 }
+
+// ============================================================================
+// COMMODITY QUOTES — maps watchlist futures symbols to AV commodity endpoints
+// ============================================================================
+
+/**
+ * Map of commodity quoteSymbols used on the Watchlist page to the
+ * correct Alpha Vantage endpoint + parameters.
+ *
+ * AV Commodity endpoints:
+ *   GOLD_SILVER_SPOT  — live spot for gold (GOLD) and silver (SILVER)
+ *   WTI, BRENT, NATURAL_GAS — daily
+ *   COPPER, WHEAT, CORN, COTTON, SUGAR, COFFEE, ALUMINUM — typically monthly
+ */
+const COMMODITY_AV_MAP = {
+  'GC=F': {
+    fn: 'GOLD_SILVER_SPOT',
+    spotSymbol: 'GOLD',
+    name: 'Gold',
+  },
+  'SI=F': {
+    fn: 'GOLD_SILVER_SPOT',
+    spotSymbol: 'SILVER',
+    name: 'Silver',
+  },
+  'PL=F': { fn: null, etfFallback: 'PPLT', name: 'Platinum' },
+  'PA=F': { fn: null, etfFallback: 'PALL', name: 'Palladium' },
+  'HG=F': { fn: 'COPPER', interval: 'monthly', name: 'Copper' },
+  'CL=F': { fn: 'WTI', interval: 'daily', name: 'Oil (WTI)' },
+  'NG=F': { fn: 'NATURAL_GAS', interval: 'daily', name: 'Nat Gas' },
+  'ZW=F': { fn: 'WHEAT', interval: 'monthly', name: 'Wheat' },
+  'ZC=F': { fn: 'CORN', interval: 'monthly', name: 'Corn' },
+  'BZ=F': { fn: 'BRENT', interval: 'daily', name: 'Brent Crude' },
+  'CT=F': { fn: 'COTTON', interval: 'monthly', name: 'Cotton' },
+  'SB=F': { fn: 'SUGAR', interval: 'monthly', name: 'Sugar' },
+  'KC=F': { fn: 'COFFEE', interval: 'monthly', name: 'Coffee' },
+  'ALI=F': { fn: 'ALUMINUM', interval: 'monthly', name: 'Aluminum' },
+};
+
+/**
+ * @param {Record<string, unknown>} data
+ * @returns {Array<{ date?: string; value?: string }>}
+ */
+function commodityHistoryRows(data) {
+  if (!data || typeof data !== 'object') return [];
+  if (Array.isArray(data.data)) return data.data;
+  for (const k of Object.keys(data)) {
+    if (
+      k === 'name' ||
+      k === 'unit' ||
+      k === 'interval' ||
+      k === 'Note' ||
+      k === 'Information' ||
+      k === 'Error Message' ||
+      k === 'Meta Data'
+    ) {
+      continue;
+    }
+    if (Array.isArray(data[k])) return data[k];
+  }
+  return [];
+}
+
+/**
+ * @param {string} symbol
+ */
+export function isCommoditySymbol(symbol) {
+  return Object.hasOwn(COMMODITY_AV_MAP, symbol);
+}
+
+/**
+ * @param {string} symbol
+ */
+async function fetchSingleCommodityQuote(symbol) {
+  const config = COMMODITY_AV_MAP[symbol];
+  if (!config) return null;
+
+  try {
+    if (config.fn === 'GOLD_SILVER_SPOT') {
+      const spotData = await fetchAV(
+        { function: 'GOLD_SILVER_SPOT', symbol: config.spotSymbol },
+        60,
+      );
+
+      let price = num(spotData?.price ?? spotData?.spot_price);
+      let prevClose = num(spotData?.previous_close ?? spotData?.previousClose);
+
+      if (price == null) {
+        const rows = commodityHistoryRows(spotData);
+        if (rows.length >= 2) {
+          price = parseFloat(String(rows[0].value ?? ''));
+          prevClose = parseFloat(String(rows[1].value ?? ''));
+        }
+      }
+
+      if (price == null || !Number.isFinite(price)) return null;
+
+      let change = null;
+      let changePercent = null;
+      if (prevClose != null && Number.isFinite(prevClose) && prevClose > 0) {
+        change = price - prevClose;
+        changePercent = ((price - prevClose) / prevClose) * 100;
+      }
+
+      return {
+        symbol,
+        price,
+        change: change ?? 0,
+        changePercent: changePercent ?? 0,
+        high: num(spotData?.high) ?? price,
+        low: num(spotData?.low) ?? price,
+        open: num(spotData?.open) ?? prevClose ?? price,
+        prevClose: prevClose ?? price,
+        lastRegularSessionPrice: price,
+        _source: 'av_commodity_spot',
+      };
+    }
+
+    if (config.fn) {
+      const params = { function: config.fn, interval: config.interval || 'daily' };
+      const raw = await fetchAV(params, 120);
+
+      const arr = commodityHistoryRows(raw).filter(
+        (d) => d.value != null && d.value !== '' && d.value !== '.',
+      );
+      if (arr.length < 2) return null;
+
+      const latest = parseFloat(String(arr[0].value));
+      const prev = parseFloat(String(arr[1].value));
+
+      if (!Number.isFinite(latest) || !Number.isFinite(prev) || prev === 0) return null;
+
+      const change = latest - prev;
+      const changePercent = (change / prev) * 100;
+
+      return {
+        symbol,
+        price: latest,
+        change: parseFloat(change.toFixed(4)),
+        changePercent: parseFloat(changePercent.toFixed(2)),
+        high: latest,
+        low: latest,
+        open: prev,
+        prevClose: prev,
+        lastRegularSessionPrice: latest,
+        _source: 'av_commodity_history',
+      };
+    }
+
+    if (config.etfFallback) {
+      const q = await fetchSingleGlobalQuote(config.etfFallback);
+      if (!q) return null;
+      return { ...q, symbol };
+    }
+
+    return null;
+  } catch (err) {
+    console.warn(`[av-commodity] ${symbol} (${config.name}) failed:`, err?.message);
+    return null;
+  }
+}
+
+/**
+ * @param {string[]} symbols — commodity futures symbols (e.g. ['GC=F', 'CL=F'])
+ * @returns {Promise<Record<string, ReturnType<typeof bulkRowToQuote> & { _source?: string }>>}
+ */
+export async function fetchCommodityQuotes(symbols) {
+  const commoditySymbols = symbols.filter(isCommoditySymbol);
+  if (commoditySymbols.length === 0) return {};
+
+  const results = await Promise.allSettled(
+    commoditySymbols.map((sym) => fetchSingleCommodityQuote(sym)),
+  );
+
+  const quotes = {};
+  for (const r of results) {
+    if (r.status === 'fulfilled' && r.value) {
+      quotes[r.value.symbol] = r.value;
+    }
+  }
+
+  return quotes;
+}
