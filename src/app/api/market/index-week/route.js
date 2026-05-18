@@ -192,19 +192,19 @@ export async function GET() {
 
     const seriesWithPct = series.map((s) => {
       if (s.close == null || baseline == null || baseline <= 0) {
-        return { day: s.day, close: s.close, pct: null };
+        return { day: s.day, ymd: s.ymd, close: s.close, pct: null };
       }
       if (s.ymd === mondayYmd) {
         const dayOpen = openMap.get(mondayYmd);
         if (dayOpen != null && dayOpen > 0) {
           const pct = ((s.close - dayOpen) / dayOpen) * 100;
-          return { day: s.day, close: s.close, pct: parseFloat(pct.toFixed(3)) };
+          return { day: s.day, ymd: s.ymd, close: s.close, pct: parseFloat(pct.toFixed(3)) };
         }
         const pct = ((s.close - baseline) / baseline) * 100;
-        return { day: s.day, close: s.close, pct: parseFloat(pct.toFixed(3)) };
+        return { day: s.day, ymd: s.ymd, close: s.close, pct: parseFloat(pct.toFixed(3)) };
       }
       const pct = ((s.close - baseline) / baseline) * 100;
-      return { day: s.day, close: s.close, pct: parseFloat(pct.toFixed(3)) };
+      return { day: s.day, ymd: s.ymd, close: s.close, pct: parseFloat(pct.toFixed(3)) };
     });
 
     const currentPrice = quote?.price ?? null;

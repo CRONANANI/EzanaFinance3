@@ -95,8 +95,12 @@ body.light-mode .home-terminal-body {
   gap: 0.25rem;
   line-height: 1.4;
 }
-.hts-change-row.positive { color: #10b981; }
-.hts-change-row.negative { color: #ef4444; }
+.hts-change-row.positive {
+  color: #10b981;
+}
+.hts-change-row.negative {
+  color: #ef4444;
+}
 
 .hts-muted-inline {
   font-weight: 500;
@@ -172,8 +176,12 @@ body.light-mode .home-terminal-body {
   border-radius: 3px;
   flex-shrink: 0;
 }
-.hts-indicator-dot.positive { background: #10b981; }
-.hts-indicator-dot.negative { background: #ef4444; }
+.hts-indicator-dot.positive {
+  background: #10b981;
+}
+.hts-indicator-dot.negative {
+  background: #ef4444;
+}
 
 .hts-ticker-name {
   min-width: 3rem;
@@ -187,8 +195,12 @@ body.light-mode .home-terminal-body {
   font-size: 0.625rem;
   font-weight: 700;
 }
-.hts-ticker-pct.positive { color: #10b981; }
-.hts-ticker-pct.negative { color: #ef4444; }
+.hts-ticker-pct.positive {
+  color: #10b981;
+}
+.hts-ticker-pct.negative {
+  color: #ef4444;
+}
 
 /* —— Streak —— */
 .hts-streak-head {
@@ -259,7 +271,9 @@ body.light-mode .home-terminal-body {
   display: block;
   padding: 0.35rem 0;
   border-radius: 12px;
-  transition: color 0.15s, background 0.15s;
+  transition:
+    color 0.15s,
+    background 0.15s;
 }
 .hts-weekly-lines a:hover {
   color: #10b981;
@@ -346,8 +360,12 @@ body.light-mode .home-terminal-body {
   font-weight: 700;
   text-align: right;
 }
-.hts-sector-pct.positive { color: #10b981; }
-.hts-sector-pct.negative { color: #ef4444; }
+.hts-sector-pct.positive {
+  color: #10b981;
+}
+.hts-sector-pct.negative {
+  color: #ef4444;
+}
 
 .hts-sector-bar {
   height: 8px;
@@ -497,7 +515,7 @@ body.light-mode .home-terminal-body {
   padding-top: 0.75rem;
 }
 
-/* Centered header + tabs (This Week on Ezana) */
+/* Centered header + tabs (Lately on Ezana) */
 .db-card-header.hts-week-header {
   flex-direction: column;
   align-items: center;
@@ -581,7 +599,10 @@ body.light-mode .home-terminal-body {
   border-radius: 999px;
   cursor: pointer;
   font-family: inherit;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
 }
 
 .hts-week-index-legend-btn:hover {
@@ -1142,8 +1163,12 @@ body.light-mode .hts-week-standing-row {
   font-size: 0.6875rem;
   font-weight: 700;
 }
-.hts-week-position-change.positive { color: #10b981; }
-.hts-week-position-change.negative { color: #ef4444; }
+.hts-week-position-change.positive {
+  color: #10b981;
+}
+.hts-week-position-change.negative {
+  color: #ef4444;
+}
 
 @media (max-width: 640px) {
   .hts-week-positions-grid {
@@ -1662,7 +1687,10 @@ body.light-mode .home-top-movers-card .hts-mover-row:hover {
   font-weight: 700;
   letter-spacing: 0.02em;
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .hts-events-filter-chip:hover {
@@ -1793,8 +1821,12 @@ body.light-mode .hts-events-warn {
 }
 
 @keyframes hts-events-shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 .hts-events-empty {
@@ -1831,7 +1863,9 @@ body.light-mode .hts-events-warn {
   background: rgba(16, 185, 129, 0.08);
   color: var(--home-heading, #0f172a);
   text-decoration: none;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
 }
 .hts-events-empty-cta:hover {
   background: rgba(16, 185, 129, 0.14);
@@ -2171,7 +2205,10 @@ body.light-mode .hts-week-legend-item.is-off .hts-week-legend-label {
   height: 100%;
   border-radius: 2px;
   background: var(--border-primary, rgba(16, 185, 129, 0.12));
-  transition: background 200ms ease, transform 150ms ease, opacity 200ms ease;
+  transition:
+    background 200ms ease,
+    transform 150ms ease,
+    opacity 200ms ease;
 }
 
 .streak-card__bar.is-active {

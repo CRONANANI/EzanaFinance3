@@ -13,7 +13,7 @@ import {
 /**
  * GradientAreaChart — thin wrapper around Recharts that encodes the shared
  * visual style used by StockPriceChart, watchlist/Chart, MiniEquityChart,
- * ThisWeekOnEzana, and the Echo article charts.
+ * LatelyOnEzana, and the Echo article charts.
  *
  * Visual contract
  * - Linear gradient area fill (lineColor at top → transparent at bottom)
@@ -60,11 +60,7 @@ export function GradientAreaChart({
         </defs>
 
         {showGrid && (
-          <CartesianGrid
-            strokeDasharray="3 3"
-            stroke="var(--chart-axis, #4b5563)"
-            opacity={0.4}
-          />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-axis, #4b5563)" opacity={0.4} />
         )}
 
         {showAxis && (
@@ -105,7 +101,12 @@ export function GradientAreaChart({
           stroke={lineColor}
           strokeWidth={2}
           fill={`url(#${gradId})`}
-          activeDot={{ r: 4, fill: lineColor, stroke: 'var(--bg-secondary, #0d1117)', strokeWidth: 2 }}
+          activeDot={{
+            r: 4,
+            fill: lineColor,
+            stroke: 'var(--bg-secondary, #0d1117)',
+            strokeWidth: 2,
+          }}
           isAnimationActive={false}
         />
       </AreaChart>

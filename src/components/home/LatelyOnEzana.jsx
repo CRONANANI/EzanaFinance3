@@ -1,7 +1,8 @@
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
-import { Calendar } from 'lucide-react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
+import { TrendingUp } from 'lucide-react';
+import { TimeRangeSelector } from '@/components/ui/TimeRangeSelector';
 import {
   CartesianGrid,
   Line,
@@ -18,42 +19,19 @@ const TABS = [
   { key: 'activity', label: 'Platform Activity' },
 ];
 
-/**
- * Fixed Y-axis for Market Performance: domain ±2.5% with ticks every 1 percentage
- * point (less crowded than 0.25% steps). Chart height is derived from width so
- * vertical distance between ticks ≈ 70% of horizontal distance between weekday
- * ticks: (innerH / 5) = 0.7 * (innerW / 4) → innerH = 0.875 * innerW.
- */
-const Y_AXIS_TICKS = [-2, -1, 0, 1, 2];
-const Y_AXIS_DOMAIN = [-2.5, 2.5];
+const PERIOD_OPTIONS = ['1D', '7D', '1M', '3M', '6M', '1Y', 'ALL'];
 
-function addDaysYmd(ymd, delta) {
-  const [Y, M, D] = ymd.split('-').map(Number);
-  const ms = Date.UTC(Y, M - 1, D, 12, 0, 0) + delta * 86400000;
-  return new Date(ms).toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
-}
-
-function weekdayLongNyFromYmd(ymd) {
-  const [Y, M, D] = ymd.split('-').map(Number);
-  return new Date(Date.UTC(Y, M - 1, D, 12, 0, 0)).toLocaleDateString('en-US', {
-    timeZone: 'America/New_York',
-    weekday: 'long',
-  });
-}
-
-function weekRangeLabel() {
-  const fmt = { timeZone: 'America/New_York', month: 'short', day: 'numeric' };
-  let cur = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
-  for (let i = 0; i < 10; i++) {
-    if (weekdayLongNyFromYmd(cur) === 'Monday') break;
-    cur = addDaysYmd(cur, -1);
-  }
-  const sun = addDaysYmd(cur, 6);
-  const fmtYmd = (ymd) => {
-    const [y, m, d] = ymd.split('-').map(Number);
-    return new Date(Date.UTC(y, m - 1, d, 12, 0, 0)).toLocaleDateString('en-US', fmt);
+function periodToLabel(period) {
+  const labels = {
+    '1D': 'Today',
+    '7D': 'Past 7 Days',
+    '1M': 'Past Month',
+    '3M': 'Past 3 Months',
+    '6M': 'Past 6 Months',
+    '1Y': 'Past Year',
+    ALL: 'All Time',
   };
-  return `${fmtYmd(cur)} – ${fmtYmd(sun)}`;
+  return labels[period] || period;
 }
 
 /** Get today's short day label (Mon, Tue, etc.) in NY timezone */
@@ -70,39 +48,41 @@ const PORTFOLIO_KEY = 'portfolio';
 const CHART_KEYS = [...MARKET_KEYS, PORTFOLIO_KEY];
 
 const SERIES_COLORS = {
-  spx:       '#ef4444',
-  ixic:      '#10b981',
-  rut:       '#8b5cf6',
-  dji:       '#f59e0b',
-  vix:       '#f43f5e',
-  wti:       '#d97706',
-  brent:     '#92400e',
-  tnx:       '#0ea5e9',
+  spx: '#ef4444',
+  ixic: '#10b981',
+  rut: '#8b5cf6',
+  dji: '#f59e0b',
+  vix: '#f43f5e',
+  wti: '#d97706',
+  brent: '#92400e',
+  tnx: '#0ea5e9',
   portfolio: '#06b6d4',
 };
 
 const SERIES_NAMES = {
-  spx:       'S&P 500',
-  ixic:      'NASDAQ',
-  rut:       'Russell 2K',
-  dji:       'Dow Jones',
-  vix:       'VIX',
-  wti:       'WTI Crude',
-  brent:     'Brent Crude',
-  tnx:       '10Y Treasury',
+  spx: 'S&P 500',
+  ixic: 'NASDAQ',
+  rut: 'Russell 2K',
+  dji: 'Dow Jones',
+  vix: 'VIX',
+  wti: 'WTI Crude',
+  brent: 'Brent Crude',
+  tnx: '10Y Treasury',
   portfolio: 'My Portfolio',
 };
 
 const SERIES_DESCRIPTIONS = {
-  spx:       'Tracks the 500 largest US public companies. The broadest measure of how well the American stock market is performing overall.',
-  ixic:      'The NASDAQ Composite is heavily weighted toward technology stocks. It tells you how well the tech sector and growth companies are doing relative to the broader market.',
-  rut:       'Tracks 2,000 small-cap US companies. Small caps tend to lead in early recoveries and lag in recessions — a useful economic sentiment gauge.',
-  dji:       'The Dow Jones Industrial Average tracks 30 blue-chip US stocks. It\'s price-weighted, so higher-priced stocks have more influence.',
-  vix:       'The CBOE Volatility Index measures expected market volatility over the next 30 days. Often called the "Fear Index" — a spike in VIX means investors are pricing in uncertainty and hedging aggressively. When VIX is above 30, markets are in stress.',
-  wti:       'West Texas Intermediate is the US benchmark for crude oil. Tracking WTI helps you understand how oil prices are fluctuating, which directly impacts energy stocks, transportation costs, and consumer inflation.',
-  brent:     'Brent Crude is the international benchmark for oil pricing. It tends to trade at a premium to WTI and reflects global supply/demand dynamics, especially from the Middle East and Europe.',
-  tnx:       'The 10-Year US Treasury yield is the benchmark for interest rates across the economy. When yields rise, borrowing costs increase for mortgages, corporate debt, and government spending. It\'s the single most important number in fixed income.',
-  portfolio: 'Your portfolio\'s weekly performance based on your mock trading positions. Compare against the indices to see if you\'re outperforming or underperforming the market.',
+  spx: 'Tracks the 500 largest US public companies. The broadest measure of how well the American stock market is performing overall.',
+  ixic: 'The NASDAQ Composite is heavily weighted toward technology stocks. It tells you how well the tech sector and growth companies are doing relative to the broader market.',
+  rut: 'Tracks 2,000 small-cap US companies. Small caps tend to lead in early recoveries and lag in recessions — a useful economic sentiment gauge.',
+  dji: "The Dow Jones Industrial Average tracks 30 blue-chip US stocks. It's price-weighted, so higher-priced stocks have more influence.",
+  vix: 'The CBOE Volatility Index measures expected market volatility over the next 30 days. Often called the "Fear Index" — a spike in VIX means investors are pricing in uncertainty and hedging aggressively. When VIX is above 30, markets are in stress.',
+  wti: 'West Texas Intermediate is the US benchmark for crude oil. Tracking WTI helps you understand how oil prices are fluctuating, which directly impacts energy stocks, transportation costs, and consumer inflation.',
+  brent:
+    'Brent Crude is the international benchmark for oil pricing. It tends to trade at a premium to WTI and reflects global supply/demand dynamics, especially from the Middle East and Europe.',
+  tnx: "The 10-Year US Treasury yield is the benchmark for interest rates across the economy. When yields rise, borrowing costs increase for mortgages, corporate debt, and government spending. It's the single most important number in fixed income.",
+  portfolio:
+    "Your portfolio's weekly performance based on your mock trading positions. Compare against the indices to see if you're outperforming or underperforming the market.",
 };
 
 /**
@@ -113,19 +93,29 @@ function pearson(xs, ys) {
   if (!Array.isArray(xs) || !Array.isArray(ys)) return null;
   const filtered = [];
   for (let i = 0; i < Math.min(xs.length, ys.length); i++) {
-    if (typeof xs[i] === 'number' && typeof ys[i] === 'number' &&
-        Number.isFinite(xs[i]) && Number.isFinite(ys[i])) {
+    if (
+      typeof xs[i] === 'number' &&
+      typeof ys[i] === 'number' &&
+      Number.isFinite(xs[i]) &&
+      Number.isFinite(ys[i])
+    ) {
       filtered.push([xs[i], ys[i]]);
     }
   }
   if (filtered.length < 3) return null;
 
   const n = filtered.length;
-  let sumX = 0; let sumY = 0; let sumXY = 0; let sumX2 = 0; let sumY2 = 0;
+  let sumX = 0;
+  let sumY = 0;
+  let sumXY = 0;
+  let sumX2 = 0;
+  let sumY2 = 0;
   for (const [x, y] of filtered) {
-    sumX += x; sumY += y;
+    sumX += x;
+    sumY += y;
     sumXY += x * y;
-    sumX2 += x * x; sumY2 += y * y;
+    sumX2 += x * x;
+    sumY2 += y * y;
   }
   const num = n * sumXY - sumX * sumY;
   const den = Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY));
@@ -143,14 +133,26 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
     let cancelled = false;
     fetch('/api/portfolio/week-series', { credentials: 'same-origin' })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
-      .then((d) => { if (!cancelled) setPortfolioPayload(d); })
-      .catch(() => { if (!cancelled) setPortfolioPayload({ ok: false, series: [] }); });
-    return () => { cancelled = true; };
+      .then((d) => {
+        if (!cancelled) setPortfolioPayload(d);
+      })
+      .catch(() => {
+        if (!cancelled) setPortfolioPayload({ ok: false, series: [] });
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const [visibleSeries, setVisibleSeries] = useState({
-    spx: true, ixic: true, rut: true, dji: true,
-    vix: false, wti: false, brent: false, tnx: false,
+    spx: true,
+    ixic: true,
+    rut: true,
+    dji: true,
+    vix: false,
+    wti: false,
+    brent: false,
+    tnx: false,
     portfolio: true,
   });
 
@@ -170,33 +172,75 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
   const chartData = useMemo(() => {
     const idx = indexPayload?.indices;
     if (!idx) return [];
-    const marketSeries = MARKET_KEYS.map((k) => idx[k]?.series).find((s) => Array.isArray(s) && s.length > 0);
-    if (!marketSeries) return [];
+
+    const byYmd = new Map();
+
+    for (const k of MARKET_KEYS) {
+      const ser = idx[k]?.series;
+      if (!Array.isArray(ser)) continue;
+      for (const pt of ser) {
+        const ymd = pt.ymd;
+        if (!ymd) continue;
+        if (!byYmd.has(ymd)) {
+          byYmd.set(ymd, { ymd, day: pt.day });
+        }
+        const row = byYmd.get(ymd);
+        if (pt.day) row.day = pt.day;
+        if (pt.pct != null && Number.isFinite(pt.pct)) row[k] = pt.pct;
+      }
+    }
+
+    const sorted = [...byYmd.keys()].sort();
+    if (sorted.length === 0) return [];
 
     const portfolioSeries = portfolioPayload?.series || [];
+    const portfolioByYmd = {};
+    for (const pt of portfolioSeries) {
+      if (pt?.ymd && pt.pct != null) portfolioByYmd[pt.ymd] = pt.pct;
+    }
     const portfolioByDay = {};
     for (const pt of portfolioSeries) {
       if (pt?.day && pt?.pct != null) portfolioByDay[pt.day] = pt.pct;
     }
 
-    const allDays = marketSeries.map((row, i) => {
-      const out = { day: row.day };
+    const allDays = sorted.map((ymd) => {
+      const base = byYmd.get(ymd);
+      const out = { day: base.day, ymd };
       MARKET_KEYS.forEach((k) => {
-        const pt = idx[k]?.series?.[i];
-        out[k] = pt?.pct ?? null;
+        out[k] = typeof base[k] === 'number' ? base[k] : null;
       });
-      out.portfolio = portfolioByDay[row.day] ?? null;
+      out.portfolio = portfolioByYmd[ymd] ?? portfolioByDay[base.day] ?? null;
       return out;
     });
 
-    /* Only include days that have at least one real data point.
-       This means Monday-only on Mon, Mon+Tue on Tue, etc.
-       Future days with all-null values are excluded. */
     return allDays.filter((row) => {
       const hasAnyData = CHART_KEYS.some((k) => row[k] !== null && row[k] !== undefined);
       return hasAnyData;
     });
   }, [indexPayload, portfolioPayload]);
+
+  const { yDomain, yTicks } = useMemo(() => {
+    if (!chartData.length) return { yDomain: [-2.5, 2.5], yTicks: [-2, -1, 0, 1, 2] };
+    let min = 0;
+    let max = 0;
+    for (const row of chartData) {
+      for (const k of CHART_KEYS) {
+        const v = row[k];
+        if (typeof v === 'number' && Number.isFinite(v)) {
+          if (v < min) min = v;
+          if (v > max) max = v;
+        }
+      }
+    }
+    const absMax = Math.max(Math.abs(min), Math.abs(max), 1);
+    const padded = Math.ceil(absMax * 1.3);
+    const step = padded <= 3 ? 1 : padded <= 10 ? 2 : padded <= 25 ? 5 : 10;
+    const ticks = [];
+    for (let t = -padded; t <= padded; t += step) ticks.push(t);
+    if (!ticks.includes(0)) ticks.push(0);
+    ticks.sort((a, b) => a - b);
+    return { yDomain: [-padded, padded], yTicks: ticks };
+  }, [chartData]);
 
   const correlation = useMemo(() => {
     if (!visibleSeries.portfolio) return null;
@@ -242,12 +286,23 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
   const chartH = chartOnly ? (compact ? 220 : 240) : compact ? 160 : 200;
 
   return (
-    <div className={`hts-week-tab-inner hts-week-market-v3${chartOnly ? ' hts-week-market-v3--chart-only' : ''}`}>
-
+    <div
+      className={`hts-week-tab-inner hts-week-market-v3${chartOnly ? ' hts-week-market-v3--chart-only' : ''}`}
+    >
       {visibleSeries.portfolio && (
-        <div className="hts-week-corr-badge" aria-label={correlationDisplay ? `Portfolio correlation: ${correlationDisplay}` : 'Portfolio correlation: insufficient data'}>
+        <div
+          className="hts-week-corr-badge"
+          aria-label={
+            correlationDisplay
+              ? `Portfolio correlation: ${correlationDisplay}`
+              : 'Portfolio correlation: insufficient data'
+          }
+        >
           <span className="hts-week-corr-label">Portfolio ρ</span>
-          <span className="hts-week-corr-value" style={{ color: correlationDisplay ? correlationColor : 'var(--home-muted)' }}>
+          <span
+            className="hts-week-corr-value"
+            style={{ color: correlationDisplay ? correlationColor : 'var(--home-muted)' }}
+          >
             {correlationDisplay ?? '—'}
           </span>
         </div>
@@ -259,10 +314,13 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
         </p>
       )}
       {failed && !loading && (
-        <p className="hts-week-loading" style={{ textAlign: 'center', margin: '0.5rem 0', color: '#ef4444' }}>
+        <p
+          className="hts-week-loading"
+          style={{ textAlign: 'center', margin: '0.5rem 0', color: '#ef4444' }}
+        >
           {indexPayload?.error === 'no_key'
-            ? 'Could not load index data. Add FMP_API_KEY (or NEXT_PUBLIC_FMP_API_KEY) in environment.'
-            : 'Could not load index data. Check FMP_API_KEY and server logs.'}
+            ? 'Could not load index data. Add ALPHA_VANTAGE_API_KEY for multi-period charts, or FMP_API_KEY for weekly data.'
+            : 'Could not load index data. Check ALPHA_VANTAGE_API_KEY / FMP_API_KEY and server logs.'}
         </p>
       )}
 
@@ -277,18 +335,25 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
                 data={chartData.length ? chartData : [{ day: todayDayLabel() }]}
                 margin={{ top: 2, right: 12, left: compact ? -4 : 4, bottom: chartOnly ? 4 : 8 }}
               >
-                <CartesianGrid stroke="rgba(255,255,255,0.04)" vertical={false} strokeDasharray="2 4" />
+                <CartesianGrid
+                  stroke="rgba(255,255,255,0.04)"
+                  vertical={false}
+                  strokeDasharray="2 4"
+                />
                 <XAxis
                   dataKey="day"
-                  interval={0}
-                  padding={{ left: chartData.length <= 1 ? 100 : 12, right: chartData.length <= 1 ? 100 : 8 }}
+                  interval={chartData.length > 16 ? 'preserveStartEnd' : 0}
+                  padding={{
+                    left: chartData.length <= 1 ? 100 : 12,
+                    right: chartData.length <= 1 ? 100 : 8,
+                  }}
                   tick={{ fill: 'var(--home-muted)', fontSize: 9 }}
                   axisLine={false}
                   tickLine={false}
                 />
                 <YAxis
-                  domain={Y_AXIS_DOMAIN}
-                  ticks={Y_AXIS_TICKS}
+                  domain={yDomain}
+                  ticks={yTicks}
                   tickFormatter={(v) => `${v > 0 ? '+' : ''}${v.toFixed(2)}%`}
                   tick={{ fill: 'var(--home-muted)', fontSize: 9 }}
                   axisLine={false}
@@ -312,7 +377,7 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
                   }}
                   labelStyle={{ color: 'var(--home-muted-soft)', fontWeight: 600, marginBottom: 4 }}
                 />
-                {CHART_KEYS.map((k) => (
+                {CHART_KEYS.map((k) =>
                   visibleSeries[k] ? (
                     <Line
                       key={k}
@@ -320,19 +385,33 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
                       dataKey={k}
                       stroke={SERIES_COLORS[k]}
                       strokeWidth={k === PORTFOLIO_KEY ? 2.4 : 1.8}
-                      dot={{ r: chartData.length <= 1 ? 5 : 2.5, fill: SERIES_COLORS[k], strokeWidth: chartData.length <= 1 ? 2 : 0, stroke: chartData.length <= 1 ? '#161b22' : 'none' }}
-                      activeDot={{ r: chartData.length <= 1 ? 7 : 4, strokeWidth: 1.5, stroke: '#161b22' }}
+                      dot={{
+                        r: chartData.length <= 1 ? 5 : 2.5,
+                        fill: SERIES_COLORS[k],
+                        strokeWidth: chartData.length <= 1 ? 2 : 0,
+                        stroke: chartData.length <= 1 ? '#161b22' : 'none',
+                      }}
+                      activeDot={{
+                        r: chartData.length <= 1 ? 7 : 4,
+                        strokeWidth: 1.5,
+                        stroke: '#161b22',
+                      }}
                       connectNulls
                       name={SERIES_NAMES[k]}
                       isAnimationActive={false}
                     />
-                  ) : null
-                ))}
+                  ) : null,
+                )}
               </LineChart>
             </ResponsiveContainer>
           </div>
 
-          <div className="hts-week-legend" role="group" aria-label="Toggle chart series" style={{ flexWrap: 'wrap', gap: '0.3rem 0.5rem' }}>
+          <div
+            className="hts-week-legend"
+            role="group"
+            aria-label="Toggle chart series"
+            style={{ flexWrap: 'wrap', gap: '0.3rem 0.5rem' }}
+          >
             {CHART_KEYS.map((k) => {
               const isVisible = visibleSeries[k];
               const isMarket = MARKET_KEYS.includes(k);
@@ -380,10 +459,19 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
                         pointerEvents: 'none',
                       }}
                     >
-                      <p style={{ margin: '0 0 0.25rem', fontSize: '0.7rem', fontWeight: 700, color: SERIES_COLORS[k] }}>
+                      <p
+                        style={{
+                          margin: '0 0 0.25rem',
+                          fontSize: '0.7rem',
+                          fontWeight: 700,
+                          color: SERIES_COLORS[k],
+                        }}
+                      >
                         {SERIES_NAMES[k]}
                       </p>
-                      <p style={{ margin: 0, fontSize: '0.6rem', lineHeight: 1.5, color: '#c9d1d9' }}>
+                      <p
+                        style={{ margin: 0, fontSize: '0.6rem', lineHeight: 1.5, color: '#c9d1d9' }}
+                      >
                         {desc}
                       </p>
                       <div
@@ -475,10 +563,7 @@ function PlatformActivityTab() {
               flexShrink: 0,
             }}
           >
-            <i
-              className="bi bi-graph-up-arrow"
-              style={{ color: row.color, fontSize: '0.9rem' }}
-            />
+            <i className="bi bi-graph-up-arrow" style={{ color: row.color, fontSize: '0.9rem' }} />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <p
@@ -539,7 +624,7 @@ function PlatformActivityTab() {
             fontWeight: 700,
             textTransform: 'uppercase',
             letterSpacing: '0.05em',
-                color: 'var(--home-muted)',
+            color: 'var(--home-muted)',
             margin: '0 0 0.5rem',
           }}
         >
@@ -552,8 +637,7 @@ function PlatformActivityTab() {
             color: 'var(--home-row-text)',
           }}
         >
-          You&apos;re more active than{' '}
-          <strong style={{ color: '#10b981' }}>60%</strong> of users
+          You&apos;re more active than <strong style={{ color: '#10b981' }}>60%</strong> of users
         </p>
         <div
           style={{
@@ -574,30 +658,25 @@ function PlatformActivityTab() {
           />
         </div>
         <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--home-muted-soft)' }}>
-          <i
-            className="bi bi-bar-chart-line"
-            style={{ marginRight: 6, color: '#10b981' }}
-          />
-          Ranked{' '}
-          <strong style={{ color: '#10b981', fontWeight: 600 }}>#8</strong> amongst
-          friends{' '}
-          <span style={{ color: '#10b981' }}>
-            (up 2 spots from last month)
-          </span>
+          <i className="bi bi-bar-chart-line" style={{ marginRight: 6, color: '#10b981' }} />
+          Ranked <strong style={{ color: '#10b981', fontWeight: 600 }}>#8</strong> amongst friends{' '}
+          <span style={{ color: '#10b981' }}>(up 2 spots from last month)</span>
         </p>
       </div>
     </div>
   );
 }
 
-export function ThisWeekOnEzana({ compact = false, marketChartOnly = false }) {
+export function LatelyOnEzana({ compact = false, marketChartOnly = false }) {
   const [activeTab, setActiveTab] = useState('market');
+  const [period, setPeriod] = useState('7D');
   const [indexPayload, setIndexPayload] = useState(null);
-  const range = useMemo(() => weekRangeLabel(), []);
 
-  useEffect(() => {
-    let cancelled = false;
-    fetch('/api/market/index-week', { credentials: 'same-origin' })
+  const fetchData = useCallback((p) => {
+    setIndexPayload(null);
+    fetch(`/api/market/index-history?period=${encodeURIComponent(p)}`, {
+      credentials: 'same-origin',
+    })
       .then(async (r) => {
         let data = {};
         try {
@@ -606,42 +685,55 @@ export function ThisWeekOnEzana({ compact = false, marketChartOnly = false }) {
           data = {};
         }
         if (!r.ok) {
-          return {
-            ok: false,
-            error: 'fetch_failed',
-            indices: {},
-          };
+          return { ok: false, error: 'fetch_failed', indices: {} };
         }
         return data;
       })
-      .then((data) => {
-        if (!cancelled) setIndexPayload(data);
-      })
-      .catch(() => {
-        if (!cancelled)
-          setIndexPayload({ ok: false, error: 'fetch_failed', indices: {} });
-      });
-    return () => {
-      cancelled = true;
-    };
+      .then((data) => setIndexPayload(data))
+      .catch(() => setIndexPayload({ ok: false, error: 'fetch_failed', indices: {} }));
+  }, []);
+
+  useEffect(() => {
+    fetchData(period);
+  }, [period, fetchData]);
+
+  const handlePeriodChange = useCallback((newPeriod) => {
+    setPeriod(newPeriod);
   }, []);
 
   return (
     <>
-      <div className="db-card-header hts-week-header">
-        <div className="hts-week-header-titles">
+      <div
+        className="db-card-header hts-week-header"
+        style={{
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          textAlign: 'left',
+          gap: '0.5rem',
+        }}
+      >
+        <div className="hts-week-header-titles" style={{ flex: 1, alignItems: 'flex-start' }}>
           <h3 style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
-            <Calendar
+            <TrendingUp
               className="hts-week-title-ico"
               size={18}
               strokeWidth={2}
               aria-hidden
               style={{ flexShrink: 0, color: 'var(--home-heading)' }}
             />
-            This Week on Ezana
+            Lately on Ezana
           </h3>
-          <span className="hts-week-date-range">{range}</span>
+          <span className="hts-week-date-range">{periodToLabel(period)}</span>
         </div>
+        <TimeRangeSelector
+          ranges={PERIOD_OPTIONS}
+          value={period}
+          onChange={handlePeriodChange}
+          size="xs"
+          inactiveTextColor="var(--home-muted)"
+        />
       </div>
       <div
         className={`hts-card-body hts-week-card-body${compact ? ' hts-week-card-body--compact' : ''}`}
@@ -649,7 +741,7 @@ export function ThisWeekOnEzana({ compact = false, marketChartOnly = false }) {
         <div
           className="hts-week-tabs db-tf-group-sm"
           role="tablist"
-          aria-label="Weekly recap sections"
+          aria-label="Lately recap sections"
         >
           {TABS.map((tab) => (
             <button
@@ -682,3 +774,5 @@ export function ThisWeekOnEzana({ compact = false, marketChartOnly = false }) {
     </>
   );
 }
+
+export { LatelyOnEzana as ThisWeekOnEzana };

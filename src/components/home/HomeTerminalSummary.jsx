@@ -4,26 +4,28 @@ import { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
-import { TimeRangeSelector } from '@/components/ui/TimeRangeSelector';
 import '@/app/(dashboard)/home-dashboard/home-dashboard.css';
 import './home-terminal-summary.css';
 import dynamic from 'next/dynamic';
 
-/* ThisWeekOnEzana renders several Recharts line/bar charts. Loading
+/* LatelyOnEzana renders several Recharts line/bar charts. Loading
    Recharts (~150 KB gz) on initial Home paint delayed LCP even though
    these charts sit below the fold — the data is weekly metadata, not
    part of the hero. Dynamic-importing with ssr:false keeps the server
    HTML simple and delays the Recharts chunk until the browser is idle. */
-const ThisWeekOnEzana = dynamic(
-  () => import('./ThisWeekOnEzana').then((m) => ({ default: m.ThisWeekOnEzana })),
+const LatelyOnEzana = dynamic(
+  () => import('./LatelyOnEzana').then((m) => ({ default: m.LatelyOnEzana })),
   {
     ssr: false,
     loading: () => (
-      <p className="hts-week-loading" style={{ textAlign: 'center', margin: '1rem 0', color: 'var(--home-muted)' }}>
-        Loading This Week on Ezana…
+      <p
+        className="hts-week-loading"
+        style={{ textAlign: 'center', margin: '1rem 0', color: 'var(--home-muted)' }}
+      >
+        Loading Lately on Ezana…
       </p>
     ),
-  }
+  },
 );
 import { OrgHomeCards } from '@/components/org/OrgHomeCards';
 import { useOrg } from '@/contexts/OrgContext';
@@ -35,7 +37,20 @@ import { HERO_DATA } from '@/lib/dashboard-hero-data';
 import EloWidget from './EloWidget';
 import { MarketOpportunities } from './MarketOpportunities';
 
-const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const MONTH_SHORT = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
 
 /** YYYY-MM-DD in UTC, `daysAgo` calendar days before today UTC. */
 function utcLoginDateKey(daysAgo) {
@@ -73,21 +88,17 @@ function buildYtdMonthlySnapshots({ portfolioTotal, portfolioChange, hasPortfoli
   const baseChange = hasPortfolio ? portfolioChange : 0;
   const monthIdx = new Date().getMonth();
   const n = monthIdx + 1;
-  const drift = [-0.004, 0.002, 0.003, -0.0015, 0.0025, -0.002, 0.0015, 0.002, -0.001, 0.0025, -0.0015, 0.002];
+  const drift = [
+    -0.004, 0.002, 0.003, -0.0015, 0.0025, -0.002, 0.0015, 0.002, -0.001, 0.0025, -0.0015, 0.002,
+  ];
 
   const rows = [];
   for (let i = 0; i < n; i++) {
     const t = n > 1 ? i / (n - 1) : 0;
     const mult = 0.94 + t * 0.06;
     const d = drift[i % drift.length];
-    const v =
-      i === n - 1
-        ? baseValue
-        : baseValue * mult + baseValue * d * 0.08;
-    const ch =
-      i === n - 1
-        ? baseChange
-        : baseChange * (0.35 + t * 0.55) + baseValue * d * 0.04;
+    const v = i === n - 1 ? baseValue : baseValue * mult + baseValue * d * 0.08;
+    const ch = i === n - 1 ? baseChange : baseChange * (0.35 + t * 0.55) + baseValue * d * 0.04;
     const pct = v > 0 ? (ch / v) * 100 : 0;
     const trades = Math.max(0, Math.round((HERO_DATA['1D']?.companies ?? 8) * (0.45 + t * 0.4)));
     rows.push({
@@ -143,15 +154,7 @@ const EVENT_FILTERS = [
 
 const DAY_LABELS_SUN_FIRST = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 
-const TICKER_COLORS = [
-  '#4285F4',
-  '#10b981',
-  '#f59e0b',
-  '#a78bfa',
-  '#ef4444',
-  '#00a4ef',
-  '#ec4899',
-];
+const TICKER_COLORS = ['#4285F4', '#10b981', '#f59e0b', '#a78bfa', '#ef4444', '#00a4ef', '#ec4899'];
 
 function tickerColor(ticker) {
   let h = 0;
@@ -232,7 +235,6 @@ export function HomeTerminalSummary({
   const [sectorLeaders, setSectorLeaders] = useState([]);
   const [sectorLaggards, setSectorLaggards] = useState([]);
   const [sectorsLoading, setSectorsLoading] = useState(true);
-  const [portfolioValueTf, setPortfolioValueTf] = useState('1D');
   const { isOrgUser } = useOrg();
 
   useEffect(() => {
@@ -253,7 +255,8 @@ export function HomeTerminalSummary({
           const last = t.lastName || '';
           const name = `${first} ${last}`.trim() || t.office || t.name || 'Unknown';
           const rawType = (t.type || t.transactionType || '').toString().toLowerCase();
-          const isSell = rawType.includes('sale') || rawType.includes('sell') || rawType.includes('disposal');
+          const isSell =
+            rawType.includes('sale') || rawType.includes('sell') || rawType.includes('disposal');
           const sym = (t.symbol || t.ticker || '').toUpperCase();
 
           const rawAmt = t.amount || '';
@@ -377,7 +380,8 @@ export function HomeTerminalSummary({
 
   const isPlaidSource = plaidConnected && plaidSummary?.totalValue != null;
 
-  const portfolioTotalNum = portfolioTotal != null && Number.isFinite(Number(portfolioTotal)) ? Number(portfolioTotal) : 0;
+  const portfolioTotalNum =
+    portfolioTotal != null && Number.isFinite(Number(portfolioTotal)) ? Number(portfolioTotal) : 0;
 
   const { rows: monthSnapshots, chartPath: ytdChartPath } = useMemo(
     () =>
@@ -398,8 +402,7 @@ export function HomeTerminalSummary({
 
   const showPortfolioHeadline =
     hasUser &&
-    (hasPortfolio ||
-      (portfolioSnapshotNum > 0 && Number.isFinite(portfolioSnapshotNum)));
+    (hasPortfolio || (portfolioSnapshotNum > 0 && Number.isFinite(portfolioSnapshotNum)));
 
   const displayValue = !hasUser
     ? portfolioTotal != null && Number.isFinite(Number(portfolioTotal))
@@ -409,7 +412,9 @@ export function HomeTerminalSummary({
       ? `$${fmtMoney(portfolioSnapshotNum)}`
       : 'Connect a brokerage or try mock trading';
 
-  const changePctStr = showPortfolioHeadline ? `${displayPct >= 0 ? '+' : ''}${displayPct.toFixed(2)}%` : '';
+  const changePctStr = showPortfolioHeadline
+    ? `${displayPct >= 0 ? '+' : ''}${displayPct.toFixed(2)}%`
+    : '';
   const changeDollarStr = showPortfolioHeadline
     ? `${displayChangeDollar >= 0 ? '+' : '-'}$${fmtMoney(Math.abs(displayChangeDollar))}`
     : '';
@@ -449,9 +454,7 @@ export function HomeTerminalSummary({
     });
 
     const filtered =
-      eventFilter === 'all'
-        ? inWindow
-        : inWindow.filter((ev) => ev.category === eventFilter);
+      eventFilter === 'all' ? inWindow : inWindow.filter((ev) => ev.category === eventFilter);
 
     // Calendar dots always reflect the full set (not just the active filter)
     // so users see at-a-glance where every event sits, even when narrowing
@@ -527,7 +530,8 @@ export function HomeTerminalSummary({
         <div
           style={{
             width: '100%',
-            background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.08) 0%, rgba(212, 175, 55, 0.15) 100%)',
+            background:
+              'linear-gradient(135deg, rgba(212, 175, 55, 0.08) 0%, rgba(212, 175, 55, 0.15) 100%)',
             border: '1px solid rgba(212, 175, 55, 0.3)',
             borderRadius: '10px',
             padding: '10px 1.5rem',
@@ -550,7 +554,10 @@ export function HomeTerminalSummary({
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <i className="bi bi-lightning-charge-fill" style={{ color: '#D4AF37', fontSize: '1rem' }} />
+            <i
+              className="bi bi-lightning-charge-fill"
+              style={{ color: '#D4AF37', fontSize: '1rem' }}
+            />
             <span
               style={{
                 color: '#D4AF37',
@@ -578,7 +585,7 @@ export function HomeTerminalSummary({
       {isOrgUser && (
         <div className="dashboard-page-inset home-week-col" style={{ marginBottom: '1.25rem' }}>
           <div className="db-card hts-card hts-week-card hts-week-card--compact">
-            <ThisWeekOnEzana compact marketChartOnly />
+            <LatelyOnEzana compact marketChartOnly />
           </div>
         </div>
       )}
@@ -601,151 +608,223 @@ export function HomeTerminalSummary({
           <div className="home-terminal-main-grid">
             <div className="home-terminal-left-col">
               <div className="home-terminal-top-row">
-            <div className="home-snapshot-col">
-              <div className="db-card home-portfolio-snapshot-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: 0 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-                  <div>
-                    <Link href="/trading/mock" className="db-hero-card-title-link">
-                      <h3
-                        className="db-hero-card-title"
-                        style={{
-                          fontSize: '0.9375rem',
-                          fontWeight: 800,
-                          color: 'var(--home-heading)',
-                          margin: 0,
-                        }}
-                      >
-                        Portfolio Snapshot <i className="bi bi-arrow-up-right db-hero-card-title-icon" />
-                      </h3>
-                    </Link>
-                    <span
-                      className="portfolio-source-label"
-                      style={{ fontSize: '11px', opacity: 0.6, color: 'var(--home-muted-soft)', display: 'block', marginTop: 2 }}
+                <div className="home-snapshot-col">
+                  <div
+                    className="db-card home-portfolio-snapshot-card"
+                    style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: 0 }}
+                  >
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: '0.5rem',
+                        flexWrap: 'wrap',
+                        gap: '0.5rem',
+                      }}
                     >
-                      {hasUser
-                        ? isPlaidSource
-                          ? 'Brokerage Account'
-                          : mockHasMockPortfolio
-                            ? 'Mock Portfolio'
-                            : ''
-                        : '\u00a0'}
-                    </span>
-                  </div>
-                  <TimeRangeSelector
-                    ranges={['1D', '7D', '1M', '3M', '6M', '1Y', 'ALL']}
-                    value={portfolioValueTf}
-                    onChange={setPortfolioValueTf}
-                    inactiveTextColor="var(--home-muted)"
-                    style={{ marginLeft: 'auto' }}
-                  />
-                </div>
-
-                <p className="home-num-hero portfolio-value" style={{ margin: '0 0 0.15rem' }}>
-                  {displayValue}
-                </p>
-                {hasUser && !showPortfolioHeadline ? (
-                  <p
-                    className="home-num-change"
-                    style={{ margin: '0 0 0.5rem', color: 'var(--home-muted)', fontSize: '0.75rem' }}
-                  >
-                    Performance appears when you link an account or use mock trading.
-                  </p>
-                ) : (
-                  <p
-                    className={`home-num-change ${displayChangeDollar >= 0 ? 'positive' : 'negative'}`}
-                    style={{ margin: '0 0 0.5rem' }}
-                  >
-                    {hasUser && showPortfolioHeadline ? `${changePctStr} (${changeDollarStr})` : '\u00a0'}
-                  </p>
-                )}
-
-                <div
-                  style={{ height: 80, minHeight: 80, maxHeight: 80, marginBottom: '0.75rem', overflow: 'hidden' }}
-                  title={`Portfolio view: ${portfolioValueTf} (chart data follows account snapshot until historical ranges are wired)`}
-                >
-                  <HeroSparkline
-                    portfolioValue={snapshotValueNum || currentValue}
-                    changePct={displayPct}
-                    chartPath={ytdChartPath}
-                    axisLabels={monthSnapshots.map((mm) => mm.label)}
-                  />
-                </div>
-
-                <div style={{ height: 1, background: 'rgba(16,185,129,0.08)', margin: '0 -1.25rem 0.65rem' }} />
-
-                <p style={{ fontSize: '0.5625rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--home-muted)', margin: '0 0 0.5rem' }}>
-                  Top Holdings
-                </p>
-
-                {enrichedHoldings.length === 0 ? (
-                  <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', margin: 0 }}>
-                    No positions yet — start mock trading to see holdings here.
-                  </p>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                    {enrichedHoldings.slice(0, 6).map((h) => {
-                      const symbol = h.symbol ?? h.ticker ?? '?';
-                      let pnlPct = h.pnlPct ?? h.pctChange;
-                      if (pnlPct == null && h.costBasis > 0 && (h.value ?? h.posValue) != null) {
-                        const val = h.posValue ?? h.value ?? 0;
-                        pnlPct = ((val - h.costBasis) / h.costBasis) * 100;
-                      }
-                      if (typeof pnlPct !== 'number' || Number.isNaN(pnlPct)) pnlPct = 0;
-                      const posValue = h.posValue ?? h.value ?? 0;
-                      const isPos = pnlPct >= 0;
-                      const dotColor = h.color || tickerColor(symbol);
-                      return (
-                        <Link
-                          key={symbol}
-                          href={`/trading/mock?symbol=${encodeURIComponent(symbol)}`}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem',
-                            padding: '0.3rem 0.5rem',
-                            borderRadius: '6px',
-                            background: isPos ? 'rgba(16,185,129,0.07)' : 'rgba(239,68,68,0.07)',
-                            borderLeft: `3px solid ${isPos ? '#10b981' : '#ef4444'}`,
-                            textDecoration: 'none',
-                            color: 'inherit',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          <span style={{ width: 7, height: 7, borderRadius: '2px', background: dotColor, flexShrink: 0 }} />
-                          <div style={{ minWidth: 0, flex: 1 }}>
-                            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--home-heading)' }}>{symbol}</span>
-                          </div>
-                          <span
+                      <div>
+                        <Link href="/trading/mock" className="db-hero-card-title-link">
+                          <h3
+                            className="db-hero-card-title"
                             style={{
-                              fontSize: '0.6875rem',
-                              fontWeight: 700,
-                              color: isPos ? '#10b981' : '#ef4444',
-                              flexShrink: 0,
-                              minWidth: 48,
-                              textAlign: 'right',
+                              fontSize: '0.9375rem',
+                              fontWeight: 800,
+                              color: 'var(--home-heading)',
+                              margin: 0,
                             }}
                           >
-                            {isPos ? '+' : ''}
-                            {pnlPct.toFixed(2)}%
-                          </span>
-                          <span style={{ fontSize: '0.5625rem', color: 'var(--home-muted)', flexShrink: 0, minWidth: 44, textAlign: 'right' }}>
-                            $
-                            {posValue >= 1000 && Number.isFinite(posValue)
-                              ? `${(posValue / 1000).toFixed(1)}K`
-                              : fmtMoney(posValue, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                          </span>
+                            Portfolio Snapshot{' '}
+                            <i className="bi bi-arrow-up-right db-hero-card-title-icon" />
+                          </h3>
                         </Link>
-                      );
-                    })}
+                        <span
+                          className="portfolio-source-label"
+                          style={{
+                            fontSize: '11px',
+                            opacity: 0.6,
+                            color: 'var(--home-muted-soft)',
+                            display: 'block',
+                            marginTop: 2,
+                          }}
+                        >
+                          {hasUser
+                            ? isPlaidSource
+                              ? 'Brokerage Account'
+                              : mockHasMockPortfolio
+                                ? 'Mock Portfolio'
+                                : ''
+                            : '\u00a0'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <p className="home-num-hero portfolio-value" style={{ margin: '0 0 0.15rem' }}>
+                      {displayValue}
+                    </p>
+                    {hasUser && !showPortfolioHeadline ? (
+                      <p
+                        className="home-num-change"
+                        style={{
+                          margin: '0 0 0.5rem',
+                          color: 'var(--home-muted)',
+                          fontSize: '0.75rem',
+                        }}
+                      >
+                        Performance appears when you link an account or use mock trading.
+                      </p>
+                    ) : (
+                      <p
+                        className={`home-num-change ${displayChangeDollar >= 0 ? 'positive' : 'negative'}`}
+                        style={{ margin: '0 0 0.5rem' }}
+                      >
+                        {hasUser && showPortfolioHeadline
+                          ? `${changePctStr} (${changeDollarStr})`
+                          : '\u00a0'}
+                      </p>
+                    )}
+
+                    <div
+                      style={{
+                        height: 80,
+                        minHeight: 80,
+                        maxHeight: 80,
+                        marginBottom: '0.75rem',
+                        overflow: 'hidden',
+                      }}
+                      title="Portfolio Snapshot"
+                    >
+                      <HeroSparkline
+                        portfolioValue={snapshotValueNum || currentValue}
+                        changePct={displayPct}
+                        chartPath={ytdChartPath}
+                        axisLabels={monthSnapshots.map((mm) => mm.label)}
+                      />
+                    </div>
+
+                    <div
+                      style={{
+                        height: 1,
+                        background: 'rgba(16,185,129,0.08)',
+                        margin: '0 -1.25rem 0.65rem',
+                      }}
+                    />
+
+                    <p
+                      style={{
+                        fontSize: '0.5625rem',
+                        fontWeight: 700,
+                        letterSpacing: '0.07em',
+                        textTransform: 'uppercase',
+                        color: 'var(--home-muted)',
+                        margin: '0 0 0.5rem',
+                      }}
+                    >
+                      Top Holdings
+                    </p>
+
+                    {enrichedHoldings.length === 0 ? (
+                      <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', margin: 0 }}>
+                        No positions yet — start mock trading to see holdings here.
+                      </p>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                        {enrichedHoldings.slice(0, 6).map((h) => {
+                          const symbol = h.symbol ?? h.ticker ?? '?';
+                          let pnlPct = h.pnlPct ?? h.pctChange;
+                          if (
+                            pnlPct == null &&
+                            h.costBasis > 0 &&
+                            (h.value ?? h.posValue) != null
+                          ) {
+                            const val = h.posValue ?? h.value ?? 0;
+                            pnlPct = ((val - h.costBasis) / h.costBasis) * 100;
+                          }
+                          if (typeof pnlPct !== 'number' || Number.isNaN(pnlPct)) pnlPct = 0;
+                          const posValue = h.posValue ?? h.value ?? 0;
+                          const isPos = pnlPct >= 0;
+                          const dotColor = h.color || tickerColor(symbol);
+                          return (
+                            <Link
+                              key={symbol}
+                              href={`/trading/mock?symbol=${encodeURIComponent(symbol)}`}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                padding: '0.3rem 0.5rem',
+                                borderRadius: '6px',
+                                background: isPos
+                                  ? 'rgba(16,185,129,0.07)'
+                                  : 'rgba(239,68,68,0.07)',
+                                borderLeft: `3px solid ${isPos ? '#10b981' : '#ef4444'}`,
+                                textDecoration: 'none',
+                                color: 'inherit',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              <span
+                                style={{
+                                  width: 7,
+                                  height: 7,
+                                  borderRadius: '2px',
+                                  background: dotColor,
+                                  flexShrink: 0,
+                                }}
+                              />
+                              <div style={{ minWidth: 0, flex: 1 }}>
+                                <span
+                                  style={{
+                                    fontSize: '0.75rem',
+                                    fontWeight: 700,
+                                    color: 'var(--home-heading)',
+                                  }}
+                                >
+                                  {symbol}
+                                </span>
+                              </div>
+                              <span
+                                style={{
+                                  fontSize: '0.6875rem',
+                                  fontWeight: 700,
+                                  color: isPos ? '#10b981' : '#ef4444',
+                                  flexShrink: 0,
+                                  minWidth: 48,
+                                  textAlign: 'right',
+                                }}
+                              >
+                                {isPos ? '+' : ''}
+                                {pnlPct.toFixed(2)}%
+                              </span>
+                              <span
+                                style={{
+                                  fontSize: '0.5625rem',
+                                  color: 'var(--home-muted)',
+                                  flexShrink: 0,
+                                  minWidth: 44,
+                                  textAlign: 'right',
+                                }}
+                              >
+                                $
+                                {posValue >= 1000 && Number.isFinite(posValue)
+                                  ? `${(posValue / 1000).toFixed(1)}K`
+                                  : fmtMoney(posValue, {
+                                      minimumFractionDigits: 0,
+                                      maximumFractionDigits: 0,
+                                    })}
+                              </span>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            </div>
-            <div className="home-week-col">
-              <div className="db-card hts-card hts-week-card hts-week-card--compact">
-                <ThisWeekOnEzana compact marketChartOnly />
-              </div>
-            </div>
+                </div>
+                <div className="home-week-col">
+                  <div className="db-card hts-card hts-week-card hts-week-card--compact">
+                    <LatelyOnEzana compact marketChartOnly />
+                  </div>
+                </div>
               </div>
 
               <div className="home-terminal-left-below">
@@ -755,7 +834,11 @@ export function HomeTerminalSummary({
                     style={{ padding: '0.75rem 1.25rem' }}
                   >
                     <h3 style={{ margin: 0 }}>Upcoming Events &amp; Alerts</h3>
-                    <div className="hts-events-filter-row" role="tablist" aria-label="Event category filter">
+                    <div
+                      className="hts-events-filter-row"
+                      role="tablist"
+                      aria-label="Event category filter"
+                    >
                       {availableFilters.map((f) => (
                         <button
                           key={f.key}
@@ -804,7 +887,14 @@ export function HomeTerminalSummary({
                                 <p style={{ marginBottom: '0.25rem', fontWeight: 600 }}>
                                   Nothing to watch yet
                                 </p>
-                                <p style={{ fontSize: '0.75rem', opacity: 0.75, maxWidth: 320, margin: '0 auto' }}>
+                                <p
+                                  style={{
+                                    fontSize: '0.75rem',
+                                    opacity: 0.75,
+                                    maxWidth: 320,
+                                    margin: '0 auto',
+                                  }}
+                                >
                                   Add companies to your portfolio, or follow tickers, politicians,
                                   crypto, or commodities on the Watchlist page to see upcoming
                                   events tailored to you.
@@ -817,30 +907,26 @@ export function HomeTerminalSummary({
                                     marginTop: '0.75rem',
                                   }}
                                 >
-                                  <Link
-                                    href="/watchlist"
-                                    className="hts-events-empty-cta"
-                                  >
+                                  <Link href="/watchlist" className="hts-events-empty-cta">
                                     Go to watchlists
                                   </Link>
-                                  <Link
-                                    href="/trading/mock"
-                                    className="hts-events-empty-cta"
-                                  >
+                                  <Link href="/trading/mock" className="hts-events-empty-cta">
                                     Build portfolio
                                   </Link>
                                 </div>
                               </>
                             ) : upcomingCalendar.totalAll === 0 ? (
                               <p>
-                                No upcoming events for your holdings or watchlists in the
-                                remainder of the month. Economic events for your region will
-                                appear here when scheduled.
+                                No upcoming events for your holdings or watchlists in the remainder
+                                of the month. Economic events for your region will appear here when
+                                scheduled.
                               </p>
                             ) : (
                               <p>
                                 No{' '}
-                                {EVENT_FILTERS.find((f) => f.key === eventFilter)?.label.toLowerCase()}{' '}
+                                {EVENT_FILTERS.find(
+                                  (f) => f.key === eventFilter,
+                                )?.label.toLowerCase()}{' '}
                                 events in this window.
                               </p>
                             )}
@@ -873,7 +959,10 @@ export function HomeTerminalSummary({
                                           style={{ color: ev.color }}
                                         >
                                           {(() => {
-                                            const [, em, ed] = String(ev.fullDate).slice(0, 10).split('-').map(Number);
+                                            const [, em, ed] = String(ev.fullDate)
+                                              .slice(0, 10)
+                                              .split('-')
+                                              .map(Number);
                                             return `${MONTH_SHORT[em - 1]} ${ed}`;
                                           })()}
                                         </span>
@@ -905,7 +994,9 @@ export function HomeTerminalSummary({
                         <div className="hts-events-cal-cells">
                           {upcomingCalendar.cells.map((day, idx) => {
                             if (day == null) {
-                              return <div key={`empty-${idx}`} className="hts-events-cal-day empty" />;
+                              return (
+                                <div key={`empty-${idx}`} className="hts-events-cal-day empty" />
+                              );
                             }
                             const eventType = upcomingCalendar.dayToType[day];
                             const dotColour = eventType ? EVENT_COLOURS[eventType] : null;
@@ -931,7 +1022,12 @@ export function HomeTerminalSummary({
                                 >
                                   {day}
                                 </span>
-                                {dotColour ? <span className="hts-events-cal-dot" style={{ background: dotColour }} /> : null}
+                                {dotColour ? (
+                                  <span
+                                    className="hts-events-cal-dot"
+                                    style={{ background: dotColour }}
+                                  />
+                                ) : null}
                               </div>
                             );
                           })}
@@ -939,7 +1035,10 @@ export function HomeTerminalSummary({
                         <div className="hts-events-cal-legend">
                           {EVENT_LEGEND.map((l) => (
                             <div key={l.type} className="hts-events-cal-legend-row">
-                              <span className="hts-events-cal-legend-swatch" style={{ background: l.colour }} />
+                              <span
+                                className="hts-events-cal-legend-swatch"
+                                style={{ background: l.colour }}
+                              />
                               <span className="hts-events-cal-legend-label">{l.label}</span>
                             </div>
                           ))}
@@ -950,13 +1049,28 @@ export function HomeTerminalSummary({
                 </div>
 
                 <div className="db-card home-pulse-compact home-pulse-rail-wide">
-                  <div className="db-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 1.25rem' }}>
+                  <div
+                    className="db-card-header"
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '0.75rem 1.25rem',
+                    }}
+                  >
                     <Link
                       href="/company-research?view=market"
                       className="market-pulse-title-link"
-                      style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        textDecoration: 'none',
+                      }}
                     >
-                      <h3 style={{ margin: 0, color: 'inherit', transition: 'color 180ms ease' }}>Market Pulse</h3>
+                      <h3 style={{ margin: 0, color: 'inherit', transition: 'color 180ms ease' }}>
+                        Market Pulse
+                      </h3>
                       <span
                         style={{
                           width: 6,
@@ -976,11 +1090,26 @@ export function HomeTerminalSummary({
                         }}
                       />
                     </Link>
-                    <Link href="/ezana-echo" style={{ fontSize: '0.75rem', fontWeight: 700, color: '#10b981', textDecoration: 'none' }}>
+                    <Link
+                      href="/ezana-echo"
+                      style={{
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        color: '#10b981',
+                        textDecoration: 'none',
+                      }}
+                    >
                       View All
                     </Link>
                   </div>
-                  <div style={{ padding: '0 1.25rem 1.25rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div
+                    style={{
+                      padding: '0 1.25rem 1.25rem',
+                      display: 'grid',
+                      gridTemplateColumns: '1fr 1fr',
+                      gap: '1rem',
+                    }}
+                  >
                     <div>
                       <p
                         style={{
@@ -995,30 +1124,36 @@ export function HomeTerminalSummary({
                         Top 3
                       </p>
                       {sectorsLoading ? (
-                        <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', margin: 0 }}>Loading sectors…</p>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', margin: 0 }}>
+                          Loading sectors…
+                        </p>
                       ) : sectorLeaders.length === 0 ? (
-                        <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', margin: 0 }}>No sector data.</p>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', margin: 0 }}>
+                          No sector data.
+                        </p>
                       ) : (
                         sectorLeaders.map((s) => (
-                        <Link
-                          key={s.sector || s.name}
-                          href={`/company-research?view=market&sector=${encodeURIComponent(s.name || s.sector)}`}
-                          className="market-pulse-sector-row"
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            padding: '0.35rem 0.5rem',
-                            margin: '0 -0.5rem',
-                            borderRadius: '4px',
-                            fontSize: '0.75rem',
-                            color: 'var(--home-row-text)',
-                            textDecoration: 'none',
-                            transition: 'background-color 150ms ease, color 150ms ease',
-                          }}
-                        >
-                          <span>{s.name || s.sector}</span>
-                          <span style={{ color: '#10b981', fontWeight: 700 }}>{formatSectorChangePct(s.changePct)}</span>
-                        </Link>
+                          <Link
+                            key={s.sector || s.name}
+                            href={`/company-research?view=market&sector=${encodeURIComponent(s.name || s.sector)}`}
+                            className="market-pulse-sector-row"
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              padding: '0.35rem 0.5rem',
+                              margin: '0 -0.5rem',
+                              borderRadius: '4px',
+                              fontSize: '0.75rem',
+                              color: 'var(--home-row-text)',
+                              textDecoration: 'none',
+                              transition: 'background-color 150ms ease, color 150ms ease',
+                            }}
+                          >
+                            <span>{s.name || s.sector}</span>
+                            <span style={{ color: '#10b981', fontWeight: 700 }}>
+                              {formatSectorChangePct(s.changePct)}
+                            </span>
+                          </Link>
                         ))
                       )}
                     </div>
@@ -1036,30 +1171,36 @@ export function HomeTerminalSummary({
                         Worst 5
                       </p>
                       {sectorsLoading ? (
-                        <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', margin: 0 }}>Loading sectors…</p>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', margin: 0 }}>
+                          Loading sectors…
+                        </p>
                       ) : sectorLaggards.length === 0 ? (
-                        <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', margin: 0 }}>No sector data.</p>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', margin: 0 }}>
+                          No sector data.
+                        </p>
                       ) : (
                         sectorLaggards.map((s) => (
-                        <Link
-                          key={s.sector || s.name}
-                          href={`/company-research?view=market&sector=${encodeURIComponent(s.name || s.sector)}`}
-                          className="market-pulse-sector-row"
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            padding: '0.35rem 0.5rem',
-                            margin: '0 -0.5rem',
-                            borderRadius: '4px',
-                            fontSize: '0.75rem',
-                            color: 'var(--home-row-text)',
-                            textDecoration: 'none',
-                            transition: 'background-color 150ms ease, color 150ms ease',
-                          }}
-                        >
-                          <span>{s.name || s.sector}</span>
-                          <span style={{ color: '#ef4444', fontWeight: 700 }}>{formatSectorChangePct(s.changePct)}</span>
-                        </Link>
+                          <Link
+                            key={s.sector || s.name}
+                            href={`/company-research?view=market&sector=${encodeURIComponent(s.name || s.sector)}`}
+                            className="market-pulse-sector-row"
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              padding: '0.35rem 0.5rem',
+                              margin: '0 -0.5rem',
+                              borderRadius: '4px',
+                              fontSize: '0.75rem',
+                              color: 'var(--home-row-text)',
+                              textDecoration: 'none',
+                              transition: 'background-color 150ms ease, color 150ms ease',
+                            }}
+                          >
+                            <span>{s.name || s.sector}</span>
+                            <span style={{ color: '#ef4444', fontWeight: 700 }}>
+                              {formatSectorChangePct(s.changePct)}
+                            </span>
+                          </Link>
                         ))
                       )}
                     </div>
@@ -1122,19 +1263,44 @@ export function HomeTerminalSummary({
 
               <div className="home-rail-congress">
                 <div className="db-card" style={{ display: 'flex', flexDirection: 'column' }}>
-                  <div className="db-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div
+                    className="db-card-header"
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                  >
                     <h3>Congressional Tracker</h3>
-                    <span style={{ fontSize: '0.625rem', color: 'var(--home-muted)', fontWeight: 500 }}>Latest disclosures</span>
+                    <span
+                      style={{ fontSize: '0.625rem', color: 'var(--home-muted)', fontWeight: 500 }}
+                    >
+                      Latest disclosures
+                    </span>
                   </div>
                   <div style={{ padding: '0 1.25rem 1rem' }}>
                     {congressLoading && (
-                      <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', padding: '0.5rem 0', margin: 0 }}>
+                      <p
+                        style={{
+                          fontSize: '0.75rem',
+                          color: 'var(--home-muted)',
+                          padding: '0.5rem 0',
+                          margin: 0,
+                        }}
+                      >
                         Loading trades…
                       </p>
                     )}
 
                     {!congressLoading && congressTrades.length === 0 && (
-                      <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', padding: '0.5rem 0', margin: 0 }}>
+                      <p
+                        style={{
+                          fontSize: '0.75rem',
+                          color: 'var(--home-muted)',
+                          padding: '0.5rem 0',
+                          margin: 0,
+                        }}
+                      >
                         No recent trades available.
                       </p>
                     )}
@@ -1158,7 +1324,9 @@ export function HomeTerminalSummary({
                               gap: '0.5rem',
                               padding: '0.5rem 0',
                               borderBottom:
-                                i < congressTrades.length - 1 ? '1px solid rgba(16, 185, 129, 0.04)' : 'none',
+                                i < congressTrades.length - 1
+                                  ? '1px solid rgba(16, 185, 129, 0.04)'
+                                  : 'none',
                             }}
                           >
                             <div
@@ -1193,7 +1361,13 @@ export function HomeTerminalSummary({
                               >
                                 {row.name}
                               </p>
-                              <p style={{ color: 'var(--home-muted)', fontSize: '0.625rem', margin: 0 }}>
+                              <p
+                                style={{
+                                  color: 'var(--home-muted)',
+                                  fontSize: '0.625rem',
+                                  margin: 0,
+                                }}
+                              >
                                 {row.chamber} · {row.relDate}
                               </p>
                             </div>
@@ -1205,7 +1379,9 @@ export function HomeTerminalSummary({
                                   borderRadius: '4px',
                                   fontSize: '0.625rem',
                                   fontWeight: 700,
-                                  background: row.isSell ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
+                                  background: row.isSell
+                                    ? 'rgba(239, 68, 68, 0.1)'
+                                    : 'rgba(16, 185, 129, 0.1)',
                                   color: row.isSell ? '#ef4444' : '#10b981',
                                   flexShrink: 0,
                                 }}
@@ -1225,7 +1401,13 @@ export function HomeTerminalSummary({
                               >
                                 {row.isSell ? 'SELL' : 'BUY'}
                               </p>
-                              <p style={{ margin: 0, fontSize: '0.5625rem', color: 'var(--home-muted)' }}>
+                              <p
+                                style={{
+                                  margin: 0,
+                                  fontSize: '0.5625rem',
+                                  color: 'var(--home-muted)',
+                                }}
+                              >
                                 {row.amount}
                               </p>
                             </div>
@@ -1252,211 +1434,294 @@ export function HomeTerminalSummary({
               </div>
 
               <div className="home-rail-movers">
-              <div
-                className="db-card home-top-movers-card"
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'flex-start',
-                  flex: 1,
-                  minHeight: 0,
-                  alignSelf: 'stretch',
-                }}
-              >
-                <div className="db-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <h3>Top Movers Today</h3>
-                  <div style={{ display: 'flex', gap: 4 }}>
-                    <button type="button" className="db-tf-btn-sm" style={{ padding: '0.25rem 0.4rem' }} aria-label="Filter">
-                      <i className="bi bi-sliders" />
-                    </button>
-                    <button type="button" className="db-tf-btn-sm" style={{ padding: '0.25rem 0.4rem' }} aria-label="Expand">
-                      <i className="bi bi-arrows-fullscreen" />
-                    </button>
-                  </div>
-                </div>
                 <div
-                  className="hts-movers-content"
+                  className="db-card home-top-movers-card"
                   style={{
-                    padding: '0 1.25rem 0.75rem',
                     display: 'flex',
                     flexDirection: 'column',
+                    justifyContent: 'flex-start',
                     flex: 1,
                     minHeight: 0,
+                    alignSelf: 'stretch',
                   }}
                 >
-                  <div className="hts-movers-section">
-                    <p
-                      style={{
-                        fontSize: '0.625rem',
-                        fontWeight: 700,
-                        letterSpacing: '0.08em',
-                        color: 'var(--home-muted)',
-                        margin: '0.25rem 0 0.35rem',
-                      }}
-                    >
-                      GAINERS
-                    </p>
-                    <div className="hts-movers-list">
-                      {moversLoading ? (
-                        <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', margin: '0.25rem 0' }}>Loading movers…</p>
-                      ) : marketGainers.length === 0 ? (
-                        <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', margin: '0.25rem 0' }}>No gainer data right now.</p>
-                      ) : (
-                        marketGainers.map((m) => (
-                          <div
-                            key={m.ticker}
-                            className="hts-mover-row"
-                            onClick={() => router.push(`/company-research?q=${encodeURIComponent(m.ticker)}`)}
-                            role="button"
-                            tabIndex={0}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                router.push(`/company-research?q=${encodeURIComponent(m.ticker)}`);
-                              }
-                            }}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '0.5rem',
-                              borderBottom: '1px solid rgba(16, 185, 129, 0.04)',
-                              cursor: 'pointer',
-                            }}
-                          >
-                            <div
-                              style={{
-                                width: 28,
-                                height: 28,
-                                borderRadius: 8,
-                                background: tickerColor(m.ticker),
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: '0.7rem',
-                                fontWeight: 800,
-                                color: '#fff',
-                              }}
-                            >
-                              {(m.ticker || '?')[0]}
-                            </div>
-                            <span style={{ fontWeight: 800, color: 'var(--home-heading)', fontSize: '0.8125rem', minWidth: 44 }}>{m.ticker}</span>
-                            <span
-                              style={{
-                                padding: '0.15rem 0.4rem',
-                                borderRadius: 6,
-                                fontSize: '0.6875rem',
-                                fontWeight: 700,
-                                background: 'rgba(16, 185, 129, 0.12)',
-                                color: '#10b981',
-                              }}
-                            >
-                              {m.change}
-                            </span>
-                            <span style={{ fontSize: '0.75rem', color: 'var(--home-muted-soft)' }}>{m.dollarChange}</span>
-                            <MiniSparkline positive={m.positive} />
-                            <span
-                              style={{
-                                marginLeft: 'auto',
-                                fontSize: '0.575rem',
-                                color: 'var(--home-muted)',
-                                fontVariantNumeric: 'tabular-nums',
-                                whiteSpace: 'nowrap',
-                              }}
-                            >
-                              {m.range52w ?? '—'}
-                            </span>
-                          </div>
-                        ))
-                      )}
+                  <div
+                    className="db-card-header"
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <h3>Top Movers Today</h3>
+                    <div style={{ display: 'flex', gap: 4 }}>
+                      <button
+                        type="button"
+                        className="db-tf-btn-sm"
+                        style={{ padding: '0.25rem 0.4rem' }}
+                        aria-label="Filter"
+                      >
+                        <i className="bi bi-sliders" />
+                      </button>
+                      <button
+                        type="button"
+                        className="db-tf-btn-sm"
+                        style={{ padding: '0.25rem 0.4rem' }}
+                        aria-label="Expand"
+                      >
+                        <i className="bi bi-arrows-fullscreen" />
+                      </button>
                     </div>
                   </div>
-
-                  <div className="hts-movers-section">
-                    <p
-                      style={{
-                        fontSize: '0.625rem',
-                        fontWeight: 700,
-                        letterSpacing: '0.08em',
-                        color: 'var(--home-muted)',
-                        margin: '0.5rem 0 0.35rem',
-                      }}
-                    >
-                      LOSERS
-                    </p>
-                    <div className="hts-movers-list">
-                      {moversLoading ? (
-                        <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', margin: '0.25rem 0' }}>Loading movers…</p>
-                      ) : marketLosers.length === 0 ? (
-                        <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', margin: '0.25rem 0' }}>No loser data right now.</p>
-                      ) : (
-                        marketLosers.map((m) => (
-                          <div
-                            key={m.ticker}
-                            className="hts-mover-row"
-                            onClick={() => router.push(`/company-research?q=${encodeURIComponent(m.ticker)}`)}
-                            role="button"
-                            tabIndex={0}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                router.push(`/company-research?q=${encodeURIComponent(m.ticker)}`);
-                              }
-                            }}
+                  <div
+                    className="hts-movers-content"
+                    style={{
+                      padding: '0 1.25rem 0.75rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      flex: 1,
+                      minHeight: 0,
+                    }}
+                  >
+                    <div className="hts-movers-section">
+                      <p
+                        style={{
+                          fontSize: '0.625rem',
+                          fontWeight: 700,
+                          letterSpacing: '0.08em',
+                          color: 'var(--home-muted)',
+                          margin: '0.25rem 0 0.35rem',
+                        }}
+                      >
+                        GAINERS
+                      </p>
+                      <div className="hts-movers-list">
+                        {moversLoading ? (
+                          <p
                             style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '0.5rem',
-                              borderBottom: '1px solid rgba(16, 185, 129, 0.04)',
-                              cursor: 'pointer',
+                              fontSize: '0.75rem',
+                              color: 'var(--home-muted)',
+                              margin: '0.25rem 0',
                             }}
                           >
+                            Loading movers…
+                          </p>
+                        ) : marketGainers.length === 0 ? (
+                          <p
+                            style={{
+                              fontSize: '0.75rem',
+                              color: 'var(--home-muted)',
+                              margin: '0.25rem 0',
+                            }}
+                          >
+                            No gainer data right now.
+                          </p>
+                        ) : (
+                          marketGainers.map((m) => (
                             <div
+                              key={m.ticker}
+                              className="hts-mover-row"
+                              onClick={() =>
+                                router.push(`/company-research?q=${encodeURIComponent(m.ticker)}`)
+                              }
+                              role="button"
+                              tabIndex={0}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  router.push(
+                                    `/company-research?q=${encodeURIComponent(m.ticker)}`,
+                                  );
+                                }
+                              }}
                               style={{
-                                width: 28,
-                                height: 28,
-                                borderRadius: 8,
-                                background: tickerColor(m.ticker),
                                 display: 'flex',
                                 alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: '0.7rem',
-                                fontWeight: 800,
-                                color: '#fff',
+                                gap: '0.5rem',
+                                borderBottom: '1px solid rgba(16, 185, 129, 0.04)',
+                                cursor: 'pointer',
                               }}
                             >
-                              {(m.ticker || '?')[0]}
+                              <div
+                                style={{
+                                  width: 28,
+                                  height: 28,
+                                  borderRadius: 8,
+                                  background: tickerColor(m.ticker),
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontSize: '0.7rem',
+                                  fontWeight: 800,
+                                  color: '#fff',
+                                }}
+                              >
+                                {(m.ticker || '?')[0]}
+                              </div>
+                              <span
+                                style={{
+                                  fontWeight: 800,
+                                  color: 'var(--home-heading)',
+                                  fontSize: '0.8125rem',
+                                  minWidth: 44,
+                                }}
+                              >
+                                {m.ticker}
+                              </span>
+                              <span
+                                style={{
+                                  padding: '0.15rem 0.4rem',
+                                  borderRadius: 6,
+                                  fontSize: '0.6875rem',
+                                  fontWeight: 700,
+                                  background: 'rgba(16, 185, 129, 0.12)',
+                                  color: '#10b981',
+                                }}
+                              >
+                                {m.change}
+                              </span>
+                              <span
+                                style={{ fontSize: '0.75rem', color: 'var(--home-muted-soft)' }}
+                              >
+                                {m.dollarChange}
+                              </span>
+                              <MiniSparkline positive={m.positive} />
+                              <span
+                                style={{
+                                  marginLeft: 'auto',
+                                  fontSize: '0.575rem',
+                                  color: 'var(--home-muted)',
+                                  fontVariantNumeric: 'tabular-nums',
+                                  whiteSpace: 'nowrap',
+                                }}
+                              >
+                                {m.range52w ?? '—'}
+                              </span>
                             </div>
-                            <span style={{ fontWeight: 800, color: 'var(--home-heading)', fontSize: '0.8125rem', minWidth: 44 }}>{m.ticker}</span>
-                            <span
+                          ))
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="hts-movers-section">
+                      <p
+                        style={{
+                          fontSize: '0.625rem',
+                          fontWeight: 700,
+                          letterSpacing: '0.08em',
+                          color: 'var(--home-muted)',
+                          margin: '0.5rem 0 0.35rem',
+                        }}
+                      >
+                        LOSERS
+                      </p>
+                      <div className="hts-movers-list">
+                        {moversLoading ? (
+                          <p
+                            style={{
+                              fontSize: '0.75rem',
+                              color: 'var(--home-muted)',
+                              margin: '0.25rem 0',
+                            }}
+                          >
+                            Loading movers…
+                          </p>
+                        ) : marketLosers.length === 0 ? (
+                          <p
+                            style={{
+                              fontSize: '0.75rem',
+                              color: 'var(--home-muted)',
+                              margin: '0.25rem 0',
+                            }}
+                          >
+                            No loser data right now.
+                          </p>
+                        ) : (
+                          marketLosers.map((m) => (
+                            <div
+                              key={m.ticker}
+                              className="hts-mover-row"
+                              onClick={() =>
+                                router.push(`/company-research?q=${encodeURIComponent(m.ticker)}`)
+                              }
+                              role="button"
+                              tabIndex={0}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  router.push(
+                                    `/company-research?q=${encodeURIComponent(m.ticker)}`,
+                                  );
+                                }
+                              }}
                               style={{
-                                padding: '0.15rem 0.4rem',
-                                borderRadius: 6,
-                                fontSize: '0.6875rem',
-                                fontWeight: 700,
-                                background: 'rgba(239, 68, 68, 0.12)',
-                                color: '#ef4444',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                borderBottom: '1px solid rgba(16, 185, 129, 0.04)',
+                                cursor: 'pointer',
                               }}
                             >
-                              {m.change}
-                            </span>
-                            <span style={{ fontSize: '0.75rem', color: 'var(--home-muted-soft)' }}>{m.dollarChange}</span>
-                            <MiniSparkline positive={m.positive} />
-                            <span
-                              style={{
-                                marginLeft: 'auto',
-                                fontSize: '0.575rem',
-                                color: 'var(--home-muted)',
-                                fontVariantNumeric: 'tabular-nums',
-                                whiteSpace: 'nowrap',
-                              }}
-                            >
-                              {m.range52w ?? '—'}
-                            </span>
-                          </div>
-                        ))
-                      )}
+                              <div
+                                style={{
+                                  width: 28,
+                                  height: 28,
+                                  borderRadius: 8,
+                                  background: tickerColor(m.ticker),
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontSize: '0.7rem',
+                                  fontWeight: 800,
+                                  color: '#fff',
+                                }}
+                              >
+                                {(m.ticker || '?')[0]}
+                              </div>
+                              <span
+                                style={{
+                                  fontWeight: 800,
+                                  color: 'var(--home-heading)',
+                                  fontSize: '0.8125rem',
+                                  minWidth: 44,
+                                }}
+                              >
+                                {m.ticker}
+                              </span>
+                              <span
+                                style={{
+                                  padding: '0.15rem 0.4rem',
+                                  borderRadius: 6,
+                                  fontSize: '0.6875rem',
+                                  fontWeight: 700,
+                                  background: 'rgba(239, 68, 68, 0.12)',
+                                  color: '#ef4444',
+                                }}
+                              >
+                                {m.change}
+                              </span>
+                              <span
+                                style={{ fontSize: '0.75rem', color: 'var(--home-muted-soft)' }}
+                              >
+                                {m.dollarChange}
+                              </span>
+                              <MiniSparkline positive={m.positive} />
+                              <span
+                                style={{
+                                  marginLeft: 'auto',
+                                  fontSize: '0.575rem',
+                                  color: 'var(--home-muted)',
+                                  fontVariantNumeric: 'tabular-nums',
+                                  whiteSpace: 'nowrap',
+                                }}
+                              >
+                                {m.range52w ?? '—'}
+                              </span>
+                            </div>
+                          ))
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
               </div>
             </div>
           </div>
