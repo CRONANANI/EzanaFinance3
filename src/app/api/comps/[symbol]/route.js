@@ -649,6 +649,11 @@ async function findPeers(symbol, fmpKey) {
   return result;
 }
 
+/**
+ * Fetch financial data for one ticker.
+ * Uses FMP quote + profile + ratios-ttm as primary source.
+ * Falls back to Alpha Vantage OVERVIEW for any fields that come back null.
+ */
 async function fetchTickerData(symbol, key) {
   const sym = encodeURIComponent(symbol);
   const k = encodeURIComponent(key);
@@ -663,24 +668,67 @@ async function fetchTickerData(symbol, key) {
   const prof = Array.isArray(profile) ? profile[0] : profile;
   const rat = Array.isArray(ratios) ? ratios[0] : ratios;
 
-  const price = num(q?.price ?? prof?.price);
-  const marketCap = num(q?.marketCap ?? prof?.mktCap);
+  let price = num(q?.price ?? prof?.price);
+  let marketCap = num(q?.marketCap ?? prof?.mktCap);
   const name = prof?.companyName || q?.name || symbol;
   const sector = prof?.sector || null;
   const industry = prof?.industry || null;
-  const eps = num(q?.eps ?? rat?.netIncomePerShareTTM);
+  let eps = num(q?.eps ?? rat?.netIncomePerShareTTM);
 
-  const pe = num(rat?.peRatioTTM ?? q?.pe);
-  const pb = num(rat?.priceToBookRatioTTM);
-  const ps = num(rat?.priceToSalesRatioTTM);
-  const evRevenue = num(rat?.enterpriseValueOverRevenueTTM ?? rat?.evToSalesTTM);
-  const evEbitda = num(rat?.enterpriseValueOverEBITDATTM ?? rat?.evToEbitdaTTM);
-  const divYield = num(rat?.dividendYieldTTM ?? prof?.lastDivYield);
+  let pe = num(rat?.peRatioTTM ?? q?.pe);
+  let pb = num(rat?.priceToBookRatioTTM);
+  let ps = num(rat?.priceToSalesRatioTTM);
+  let evRevenue = num(rat?.enterpriseValueOverRevenueTTM ?? rat?.evToSalesTTM);
+  let evEbitda = num(rat?.enterpriseValueOverEBITDATTM ?? rat?.evToEbitdaTTM);
+  let divYield = num(rat?.dividendYieldTTM ?? prof?.lastDivYield);
 
-  const grossMargin = num(rat?.grossProfitMarginTTM);
-  const operatingMargin = num(rat?.operatingProfitMarginTTM);
-  const netMargin = num(rat?.netProfitMarginTTM);
-  const revenueGrowth = num(rat?.revenueGrowthTTM);
+  let grossMargin = num(rat?.grossProfitMarginTTM);
+  let operatingMargin = num(rat?.operatingProfitMarginTTM);
+  let netMargin = num(rat?.netProfitMarginTTM);
+  let revenueGrowth = num(rat?.revenueGrowthTTM);
+
+  const needsAv = pe === null || evRevenue === null || evEbitda === null || revenueGrowth === null;
+  if (needsAv && getAlphaVantageApiKey()) {
+    try {
+      const av = await fetchAV({ function: 'OVERVIEW', symbol }, 3600);
+      if (av && !av['Error Message'] && !av.Note) {
+        if (pe === null) pe = num(av.PERatio);
+        if (eps === null) eps = num(av.EPS);
+        if (pb === null) pb = num(av.PriceToBookRatio);
+        if (evRevenue === null) evRevenue = num(av.EVToRevenue);
+        if (evEbitda === null) evEbitda = num(av.EVToEBITDA);
+        if (divYield === null) {
+          const avDiv = num(av.DividendYield);
+          if (avDiv !== null) divYield = parseFloat((avDiv * 100).toFixed(2));
+        }
+        if (grossMargin === null) {
+          const gp = num(av.GrossProfitTTM);
+          const rev = num(av.RevenueTTM);
+          if (gp !== null && rev !== null && rev > 0) grossMargin = gp / rev;
+        }
+        if (operatingMargin === null) {
+          const om = num(av.OperatingMarginTTM);
+          if (om !== null) operatingMargin = om;
+        }
+        if (netMargin === null) {
+          const pm = num(av.ProfitMargin);
+          if (pm !== null) netMargin = pm;
+        }
+        if (revenueGrowth === null) {
+          const qrg = num(av.QuarterlyRevenueGrowthYOY);
+          if (qrg !== null) revenueGrowth = qrg;
+        }
+        if (price === null) price = num(av.AnalystTargetPrice) || num(av['50DayMovingAverage']);
+        if (marketCap === null) marketCap = num(av.MarketCapitalization);
+
+        console.log(
+          `[comps] ${symbol}: AV OVERVIEW filled — pe=${pe}, evRev=${evRevenue}, evEbitda=${evEbitda}, revGrowth=${revenueGrowth}`,
+        );
+      }
+    } catch (err) {
+      console.warn(`[comps] ${symbol}: AV OVERVIEW fallback failed:`, err?.message);
+    }
+  }
 
   const toPct = (v) => {
     if (v === null) return null;
@@ -696,11 +744,11 @@ async function fetchTickerData(symbol, key) {
     price,
     marketCap,
     marketCapFormatted: fmtMcap(marketCap),
-    pe,
-    pb,
-    ps,
-    evRevenue: evRevenue != null ? parseFloat(evRevenue.toFixed(2)) : null,
-    evEbitda: evEbitda != null ? parseFloat(evEbitda.toFixed(2)) : null,
+    pe: pe != null ? parseFloat(Number(pe).toFixed(2)) : null,
+    pb: pb != null ? parseFloat(Number(pb).toFixed(2)) : null,
+    ps: ps != null ? parseFloat(Number(ps).toFixed(2)) : null,
+    evRevenue: evRevenue != null ? parseFloat(Number(evRevenue).toFixed(2)) : null,
+    evEbitda: evEbitda != null ? parseFloat(Number(evEbitda).toFixed(2)) : null,
     divYield:
       divYield != null ? parseFloat((divYield > 1 ? divYield : divYield * 100).toFixed(2)) : null,
     eps,
@@ -825,7 +873,7 @@ export async function GET(_req, context) {
     const peers = [];
     for (const peerSym of peerSymbols) {
       if (peers.length >= 10) break;
-      await sleep(150);
+      await sleep(250);
       try {
         const peerData = await fetchTickerData(peerSym, fmpKey);
         if (peerData.price !== null) peers.push(peerData);
