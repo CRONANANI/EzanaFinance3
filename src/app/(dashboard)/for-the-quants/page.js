@@ -1,22 +1,11 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from 'recharts';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   FTQ_STAT_CARDS,
   MY_STRATEGIES,
-  LATEST_BACKTESTS,
-  LATEST_BACKTEST_BENCHMARK,
   LEADERBOARD,
   RISK_ANALYTICS,
   TRENDING_MARKETS,
@@ -28,7 +17,7 @@ import {
 import { VisualStrategyBuilder } from '@/components/quants/VisualStrategyBuilder';
 import { DatasetRegistryCard } from '@/components/quants/DatasetRegistryCard';
 import { StrategyComparisonCard } from '@/components/quants/StrategyComparisonCard';
-import { BacktestExplainer } from '@/components/quants/BacktestExplainer';
+import { BacktestResultsCard } from '@/components/quants/BacktestResultsCard';
 import { TechnicalScannerCard } from '@/components/quants/TechnicalScannerCard';
 import { CorrelationMatrixCard } from '@/components/quants/CorrelationMatrixCard';
 import { PairsTradingCard } from '@/components/quants/PairsTradingCard';
@@ -42,88 +31,6 @@ import '../../../../app-legacy/assets/css/light-mode-fixes.css';
 import '../../../../app-legacy/pages/home-dashboard.css';
 import '../../../../app-legacy/components/learning/learning-opportunities.css';
 import './for-the-quants.css';
-
-function generatePoints(seed, n, min, max) {
-  const pts = [];
-  let v = min + (max - min) * 0.35;
-  for (let i = 0; i < n; i++) {
-    v += Math.sin(i * 0.35 + seed) * ((max - min) * 0.04) + (max - min) * 0.002;
-    v += Math.sin(i * 1.1 + seed * 2) * ((max - min) * 0.018);
-    v = Math.max(min, Math.min(max, v));
-    pts.push(v);
-  }
-  return pts;
-}
-
-function MiniEquityChart({ seed = 1 }) {
-  const pts = useMemo(() => generatePoints(seed, 40, 100, 220), [seed]);
-
-  const data = useMemo(
-    () =>
-      pts.map((val, i) => ({
-        day: i === 0 ? 'Start' : i === pts.length - 1 ? 'End' : `D${i}`,
-        value: parseFloat(val.toFixed(2)),
-      })),
-    [pts],
-  );
-
-  const startVal = data[0]?.value ?? 0;
-  const endVal = data[data.length - 1]?.value ?? 0;
-  const isPositive = endVal >= startVal;
-  const lineColor = isPositive ? '#10b981' : '#ef4444';
-  const gradId = `ftq-eq-grad-${seed}`;
-
-  return (
-    <div className="ftq-mini-chart-wrap" style={{ height: 140, marginTop: '0.5rem' }}>
-      <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
-          <defs>
-            <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={lineColor} stopOpacity={0.25} />
-              <stop offset="100%" stopColor={lineColor} stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <CartesianGrid strokeDasharray="3 4" stroke="rgba(255,255,255,0.04)" />
-          <XAxis
-            dataKey="day"
-            tick={{ fill: '#6b7280', fontSize: 9 }}
-            axisLine={false}
-            tickLine={false}
-            interval={Math.floor(data.length / 5)}
-          />
-          <YAxis
-            tick={{ fill: '#6b7280', fontSize: 9 }}
-            axisLine={false}
-            tickLine={false}
-            width={38}
-            tickFormatter={(v) => `$${v}`}
-            domain={['auto', 'auto']}
-          />
-          <Tooltip
-            contentStyle={{
-              background: '#161b22',
-              border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: 8,
-              fontSize: '0.7rem',
-              padding: '6px 10px',
-            }}
-            labelStyle={{ color: '#f0f6fc', fontWeight: 700, fontSize: '0.65rem' }}
-            formatter={(val) => [`$${Number(val).toFixed(2)}`, 'Portfolio']}
-          />
-          <Area
-            type="monotone"
-            dataKey="value"
-            stroke={lineColor}
-            strokeWidth={1.5}
-            fill={`url(#${gradId})`}
-            dot={false}
-            activeDot={{ r: 3, fill: lineColor, strokeWidth: 0 }}
-          />
-        </AreaChart>
-      </ResponsiveContainer>
-    </div>
-  );
-}
 
 function VolumeBars() {
   const heights = [40, 55, 35, 70, 45, 90, 65];
@@ -326,58 +233,7 @@ export default function ForTheQuantsPage() {
           </div>
         </div>
 
-        <div className="db-card">
-          <div className="db-card-header">
-            <h3 className="ftq-section-title">
-              <i className="bi bi-graph-up-arrow" aria-hidden />
-              Latest Backtest Results
-            </h3>
-          </div>
-          <div className="ftq-card-body-pad ftq-card-body-pad--flush-top">
-            {LATEST_BACKTESTS.map((bt, idx) => (
-              <div key={bt.id}>
-                {idx > 0 && <hr className="ftq-bt-divider" />}
-                <p style={{ fontSize: '0.8125rem', color: '#9ca3af', margin: '0 0 0.75rem' }}>
-                  Strategy: <strong style={{ color: '#f0f6fc' }}>{bt.strategyName}</strong>
-                </p>
-                <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: '0 0 1rem' }}>
-                  Period: {bt.period}
-                </p>
-                <div className="ftq-bt-grid">
-                  <div className="ftq-bt-row">
-                    <span className="ftq-bt-label">Return</span>
-                    <span className="ftq-bt-value positive">{bt.returnPct}</span>
-                  </div>
-                  <div className="ftq-bt-row">
-                    <span className="ftq-bt-label">Sharpe</span>
-                    <span className="ftq-bt-value">{bt.sharpe}</span>
-                  </div>
-                  <div className="ftq-bt-row">
-                    <span className="ftq-bt-label">Max DD</span>
-                    <span className="ftq-bt-value" style={{ color: '#f87171' }}>
-                      {bt.maxDd}
-                    </span>
-                  </div>
-                  <div className="ftq-bt-row">
-                    <span className="ftq-bt-label">Win Rate</span>
-                    <span className="ftq-bt-value">{bt.winRate}</span>
-                  </div>
-                  <div className="ftq-bt-row">
-                    <span className="ftq-bt-label">Trades</span>
-                    <span className="ftq-bt-value">{bt.trades}</span>
-                  </div>
-                  <div className="ftq-bt-row">
-                    <span className="ftq-bt-label">Alpha</span>
-                    <span className="ftq-bt-value positive">{bt.alpha}</span>
-                  </div>
-                </div>
-                <MiniEquityChart seed={bt.chartSeed} />
-              </div>
-            ))}
-            <div className="ftq-bench">Benchmark (S&amp;P 500): {LATEST_BACKTEST_BENCHMARK}</div>
-            <BacktestExplainer />
-          </div>
-        </div>
+        <BacktestResultsCard />
       </div>
 
       <div className="ftq-row-50">
