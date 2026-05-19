@@ -16,6 +16,7 @@ import { getModelConfig } from '@/lib/ai/analysis-prompts';
 import { getModelStripVariables } from '@/lib/research/modelStripVariables';
 import { ModelVariableStrip } from '@/components/research/models/ModelVariableStrip';
 import { EarningsAnalysisCard } from '@/components/research/models/EarningsAnalysisCard';
+import { CompsAnalysisCard } from '@/components/research/models/CompsAnalysisCard';
 import DCFInteractiveModel from './dcf/DCFInteractiveModel';
 
 function EarningsAnalysisPanel({ symbol, onClose }) {
@@ -42,6 +43,14 @@ export function AIAnalysisPanel({ modelId, symbol, onClose }) {
 
   if (modelId === 'earnings') {
     return <EarningsAnalysisPanel symbol={symbol} onClose={onClose} />;
+  }
+
+  if (modelId === 'comps') {
+    return (
+      <div className="ai-analysis-panel">
+        <CompsAnalysisCard symbol={symbol} onClose={onClose} />
+      </div>
+    );
   }
 
   const [analysis, setAnalysis] = useState(null);
@@ -137,11 +146,7 @@ export function AIAnalysisPanel({ modelId, symbol, onClose }) {
             >
               <i className={`bi bi-arrow-clockwise ${loading ? 'ai-spin' : ''}`} />
             </button>
-            <button
-              className="card-action-btn"
-              onClick={onClose}
-              type="button"
-            >
+            <button className="card-action-btn" onClick={onClose} type="button">
               <i className="bi bi-x-lg" /> Close
             </button>
           </div>
@@ -155,9 +160,18 @@ export function AIAnalysisPanel({ modelId, symbol, onClose }) {
             <div className="ai-analysis-loading">
               <div className="ai-loading-visual">
                 <div className="ai-loading-rings">
-                  <div className="ai-ring ai-ring-1" style={{ borderColor: `${modelConfig.color}40` }} />
-                  <div className="ai-ring ai-ring-2" style={{ borderColor: `${modelConfig.color}25` }} />
-                  <div className="ai-ring ai-ring-3" style={{ borderColor: `${modelConfig.color}15` }} />
+                  <div
+                    className="ai-ring ai-ring-1"
+                    style={{ borderColor: `${modelConfig.color}40` }}
+                  />
+                  <div
+                    className="ai-ring ai-ring-2"
+                    style={{ borderColor: `${modelConfig.color}25` }}
+                  />
+                  <div
+                    className="ai-ring ai-ring-3"
+                    style={{ borderColor: `${modelConfig.color}15` }}
+                  />
                   <div className="ai-loading-icon" style={{ color: modelConfig.color }}>
                     <i className={`bi ${modelConfig.icon}`} />
                   </div>
@@ -208,7 +222,8 @@ export function AIAnalysisPanel({ modelId, symbol, onClose }) {
             <div className="ai-analysis-result">
               <div className="ai-analysis-meta-bar">
                 <span className="ai-meta-item">
-                  <i className="bi bi-clock" /> Generated {new Date(analysis.generatedAt).toLocaleTimeString()}
+                  <i className="bi bi-clock" /> Generated{' '}
+                  {new Date(analysis.generatedAt).toLocaleTimeString()}
                 </span>
                 <span className="ai-meta-item">
                   <i className="bi bi-cpu" /> Claude Sonnet 4
@@ -269,7 +284,7 @@ function AnalysisRenderer({ text, color }) {
               ))}
             </tbody>
           </table>
-        </div>
+        </div>,
       );
       tableHeaders = [];
       tableRows = [];
@@ -315,7 +330,7 @@ function AnalysisRenderer({ text, color }) {
       elements.push(
         <h2 key={i} className="ai-h1" style={{ color }}>
           {formatInlineText(trimmed.slice(2))}
-        </h2>
+        </h2>,
       );
       continue;
     }
@@ -325,7 +340,7 @@ function AnalysisRenderer({ text, color }) {
       elements.push(
         <h3 key={i} className="ai-h2" style={{ color }}>
           {formatInlineText(trimmed.slice(3))}
-        </h3>
+        </h3>,
       );
       continue;
     }
@@ -335,7 +350,7 @@ function AnalysisRenderer({ text, color }) {
       elements.push(
         <h4 key={i} className="ai-h3">
           {formatInlineText(trimmed.slice(4))}
-        </h4>
+        </h4>,
       );
       continue;
     }
@@ -346,7 +361,7 @@ function AnalysisRenderer({ text, color }) {
         <div key={i} className="ai-bullet">
           <span className="ai-bullet-dot" style={{ background: color }} />
           <span>{formatInlineText(trimmed.slice(2))}</span>
-        </div>
+        </div>,
       );
       continue;
     }
@@ -356,9 +371,11 @@ function AnalysisRenderer({ text, color }) {
     if (numMatch) {
       elements.push(
         <div key={i} className="ai-numbered">
-          <span className="ai-num" style={{ color }}>{numMatch[1]}.</span>
+          <span className="ai-num" style={{ color }}>
+            {numMatch[1]}.
+          </span>
           <span>{formatInlineText(numMatch[2])}</span>
-        </div>
+        </div>,
       );
       continue;
     }
@@ -367,7 +384,7 @@ function AnalysisRenderer({ text, color }) {
     elements.push(
       <p key={i} className="ai-paragraph">
         {formatInlineText(trimmed)}
-      </p>
+      </p>,
     );
   }
 
@@ -405,7 +422,7 @@ function formatInlineText(text) {
       parts.push(
         <code key={key++} className="ai-inline-code">
           {codeMatch[1]}
-        </code>
+        </code>,
       );
       remaining = remaining.slice(codeMatch.index + codeMatch[0].length);
       continue;
