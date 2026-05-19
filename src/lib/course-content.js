@@ -18,6 +18,7 @@
  * courses are substantially expanded educational content with 10-question
  * quizzes and distributed visual elements.
  * Silver (intermediate) stocks 1–3: course-content-silver-gold-platinum.js.
+ * All other non-Bronze courses: textbook-sourced generator in learning-content.js.
  */
 
 import BRONZE_REST from './course-content-bronze-rest';
