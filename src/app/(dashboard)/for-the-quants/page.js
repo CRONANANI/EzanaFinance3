@@ -29,6 +29,9 @@ import { VisualStrategyBuilder } from '@/components/quants/VisualStrategyBuilder
 import { DatasetRegistryCard } from '@/components/quants/DatasetRegistryCard';
 import { StrategyComparisonCard } from '@/components/quants/StrategyComparisonCard';
 import { BacktestExplainer } from '@/components/quants/BacktestExplainer';
+import { TechnicalScannerCard } from '@/components/quants/TechnicalScannerCard';
+import { CorrelationMatrixCard } from '@/components/quants/CorrelationMatrixCard';
+import { PairsTradingCard } from '@/components/quants/PairsTradingCard';
 import { CoursePreviewSection } from '@/components/learning/CoursePreviewSection';
 import { getCoursesForQuantsPreview } from '@/lib/learning-curriculum';
 
@@ -61,7 +64,7 @@ function MiniEquityChart({ seed = 1 }) {
         day: i === 0 ? 'Start' : i === pts.length - 1 ? 'End' : `D${i}`,
         value: parseFloat(val.toFixed(2)),
       })),
-    [pts]
+    [pts],
   );
 
   const startVal = data[0]?.value ?? 0;
@@ -211,28 +214,41 @@ export default function ForTheQuantsPage() {
                     {MY_STRATEGIES.map((st) => (
                       <div key={st.id} className="ftq-strategy-row">
                         <h4 className="ftq-strategy-name">
-                          <i className={`bi ${st.biClass}`} style={{ marginRight: '0.35rem' }} aria-hidden />
+                          <i
+                            className={`bi ${st.biClass}`}
+                            style={{ marginRight: '0.35rem' }}
+                            aria-hidden
+                          />
                           {st.name}
                           <span className="ftq-version-badge">v{st.version ?? 1}</span>
                         </h4>
                         <p className="ftq-strategy-detail">{st.detail}</p>
                         <div className="ftq-strategy-meta">
-                          {st.lastRun ? (
-                            <>
-                              Last run: {st.lastRun} ·{' '}
-                            </>
-                          ) : null}
+                          {st.lastRun ? <>Last run: {st.lastRun} · </> : null}
                           Status: <span className={`ftq-status ${st.statusTone}`}>{st.status}</span>
                         </div>
                         <div className="ftq-row-actions">
-                          <button type="button" className="ftq-btn-ghost" onClick={() => setShowBuilder(true)}>
+                          <button
+                            type="button"
+                            className="ftq-btn-ghost"
+                            onClick={() => setShowBuilder(true)}
+                          >
                             Edit
                           </button>
                           <button type="button" className="ftq-btn-ghost">
                             Backtest
                           </button>
-                          {st.statusTone !== 'draft' ? <button type="button" className="ftq-btn-ghost">Deploy</button> : null}
-                          <button type="button" className="ftq-btn-ghost" title="Version history" aria-label="Version history">
+                          {st.statusTone !== 'draft' ? (
+                            <button type="button" className="ftq-btn-ghost">
+                              Deploy
+                            </button>
+                          ) : null}
+                          <button
+                            type="button"
+                            className="ftq-btn-ghost"
+                            title="Version history"
+                            aria-label="Version history"
+                          >
                             <i className="bi bi-clock-history" />
                           </button>
                         </div>
@@ -259,7 +275,9 @@ export default function ForTheQuantsPage() {
                         <span className="ftq-template-sharpe">Sharpe {tmpl.sharpe}</span>
                       </div>
                       {tmpl.datasets.length > 0 && (
-                        <div className="ftq-template-datasets">Requires: {tmpl.datasets.join(', ')}</div>
+                        <div className="ftq-template-datasets">
+                          Requires: {tmpl.datasets.join(', ')}
+                        </div>
                       )}
                     </div>
                     <button
@@ -322,7 +340,9 @@ export default function ForTheQuantsPage() {
                 <p style={{ fontSize: '0.8125rem', color: '#9ca3af', margin: '0 0 0.75rem' }}>
                   Strategy: <strong style={{ color: '#f0f6fc' }}>{bt.strategyName}</strong>
                 </p>
-                <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: '0 0 1rem' }}>Period: {bt.period}</p>
+                <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: '0 0 1rem' }}>
+                  Period: {bt.period}
+                </p>
                 <div className="ftq-bt-grid">
                   <div className="ftq-bt-row">
                     <span className="ftq-bt-label">Return</span>
@@ -334,7 +354,9 @@ export default function ForTheQuantsPage() {
                   </div>
                   <div className="ftq-bt-row">
                     <span className="ftq-bt-label">Max DD</span>
-                    <span className="ftq-bt-value" style={{ color: '#f87171' }}>{bt.maxDd}</span>
+                    <span className="ftq-bt-value" style={{ color: '#f87171' }}>
+                      {bt.maxDd}
+                    </span>
                   </div>
                   <div className="ftq-bt-row">
                     <span className="ftq-bt-label">Win Rate</span>
@@ -352,9 +374,7 @@ export default function ForTheQuantsPage() {
                 <MiniEquityChart seed={bt.chartSeed} />
               </div>
             ))}
-            <div className="ftq-bench">
-              Benchmark (S&amp;P 500): {LATEST_BACKTEST_BENCHMARK}
-            </div>
+            <div className="ftq-bench">Benchmark (S&amp;P 500): {LATEST_BACKTEST_BENCHMARK}</div>
             <BacktestExplainer />
           </div>
         </div>
@@ -435,15 +455,30 @@ export default function ForTheQuantsPage() {
               <span className="ftq-bt-value">{RISK_ANALYTICS.beta}</span>
             </div>
             <div className="ftq-risk-bar">
-              <div className="ftq-risk-bar-fill" style={{ width: `${RISK_ANALYTICS.betaBarPct}%` }} />
+              <div
+                className="ftq-risk-bar-fill"
+                style={{ width: `${RISK_ANALYTICS.betaBarPct}%` }}
+              />
             </div>
-            <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: '0 0 1rem' }}>vs S&amp;P 500</p>
+            <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: '0 0 1rem' }}>
+              vs S&amp;P 500
+            </p>
 
-            <p className="ftq-bt-label" style={{ marginBottom: '0.25rem' }}>Value at Risk (95%)</p>
-            <p style={{ fontSize: '1rem', fontWeight: 800, color: '#f87171', margin: '0 0 0.25rem' }}>{RISK_ANALYTICS.var95}</p>
-            <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: '0 0 1rem' }}>Max potential 1-day loss</p>
+            <p className="ftq-bt-label" style={{ marginBottom: '0.25rem' }}>
+              Value at Risk (95%)
+            </p>
+            <p
+              style={{ fontSize: '1rem', fontWeight: 800, color: '#f87171', margin: '0 0 0.25rem' }}
+            >
+              {RISK_ANALYTICS.var95}
+            </p>
+            <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: '0 0 1rem' }}>
+              Max potential 1-day loss
+            </p>
 
-            <p className="ftq-bt-label" style={{ marginBottom: '0.5rem' }}>Sector Concentration</p>
+            <p className="ftq-bt-label" style={{ marginBottom: '0.5rem' }}>
+              Sector Concentration
+            </p>
             {RISK_ANALYTICS.sectors.map((s) => (
               <div key={s.label} className="ftq-sector-row">
                 <div className="ftq-sector-top">
@@ -489,7 +524,9 @@ export default function ForTheQuantsPage() {
                 Look Up
               </button>
             </div>
-            <p className="ftq-bt-label" style={{ marginBottom: '0.5rem' }}>Trending Markets</p>
+            <p className="ftq-bt-label" style={{ marginBottom: '0.5rem' }}>
+              Trending Markets
+            </p>
             <div className="ftq-betting-list">
               {TRENDING_MARKETS.map((m) => (
                 <div
@@ -498,7 +535,10 @@ export default function ForTheQuantsPage() {
                   role="button"
                   tabIndex={0}
                   onClick={() => router.push(`/betting-markets?focus=${encodeURIComponent(m.id)}`)}
-                  onKeyDown={(e) => e.key === 'Enter' && router.push(`/betting-markets?focus=${encodeURIComponent(m.id)}`)}
+                  onKeyDown={(e) =>
+                    e.key === 'Enter' &&
+                    router.push(`/betting-markets?focus=${encodeURIComponent(m.id)}`)
+                  }
                 >
                   <p className="ftq-bt-q">{m.question}</p>
                   <div className="ftq-bt-side">{m.side}</div>
@@ -524,29 +564,42 @@ export default function ForTheQuantsPage() {
           <div className="ftq-card-body-pad ftq-card-body-pad--flush-top">
             <p className="ftq-bt-label">Smart Money Flow</p>
             <div className="ftq-smart-bar">
-              <div className="ftq-smart-fill" style={{ width: `${BETTING_ANALYTICS.smartMoneyBullish}%` }} />
+              <div
+                className="ftq-smart-fill"
+                style={{ width: `${BETTING_ANALYTICS.smartMoneyBullish}%` }}
+              />
             </div>
-            <p style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 600, margin: '0 0 1rem' }}>
+            <p
+              style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 600, margin: '0 0 1rem' }}
+            >
               {BETTING_ANALYTICS.smartMoneyBullish}% Bullish · Based on top 100 traders
             </p>
 
-            <p className="ftq-bt-label" style={{ marginBottom: '0.35rem' }}>Biggest Position Changes (24h)</p>
+            <p className="ftq-bt-label" style={{ marginBottom: '0.35rem' }}>
+              Biggest Position Changes (24h)
+            </p>
             {BETTING_ANALYTICS.positionChanges.map((p) => (
               <div key={p.trader + p.market} className="ftq-pos-row">
                 <span className="ftq-pos-name">{p.trader}</span>{' '}
-                <span style={{ color: p.change.startsWith('-') ? '#f87171' : '#10b981' }}>{p.change}</span>
-                {' '}on &quot;{p.market}&quot;
+                <span style={{ color: p.change.startsWith('-') ? '#f87171' : '#10b981' }}>
+                  {p.change}
+                </span>{' '}
+                on &quot;{p.market}&quot;
               </div>
             ))}
 
-            <p className="ftq-bt-label" style={{ margin: '1rem 0 0.35rem' }}>Market Accuracy (last 30d)</p>
+            <p className="ftq-bt-label" style={{ margin: '1rem 0 0.35rem' }}>
+              Market Accuracy (last 30d)
+            </p>
             <p style={{ fontSize: '0.8125rem', color: '#d1d5db', margin: 0 }}>
               Resolved correctly: {BETTING_ANALYTICS.accuracy}
               <br />
               Avg prediction error: {BETTING_ANALYTICS.avgError}
             </p>
 
-            <p className="ftq-bt-label" style={{ margin: '1rem 0 0.35rem' }}>Volume Trend</p>
+            <p className="ftq-bt-label" style={{ margin: '1rem 0 0.35rem' }}>
+              Volume Trend
+            </p>
             <VolumeBars />
           </div>
         </div>
@@ -556,6 +609,13 @@ export default function ForTheQuantsPage() {
         <DatasetRegistryCard />
         <StrategyComparisonCard />
       </div>
+
+      <div className="ftq-row-50">
+        <TechnicalScannerCard />
+        <PairsTradingCard />
+      </div>
+
+      <CorrelationMatrixCard />
 
       <div className="db-card" style={{ marginBottom: '1.5rem' }}>
         <div className="db-card-header">
@@ -582,7 +642,9 @@ export default function ForTheQuantsPage() {
               <div key={c.id} className="ftq-ind-card">
                 <p className="ftq-ind-name">{c.name}</p>
                 <p className="ftq-ind-val">{c.value}</p>
-                <button type="button" className="ftq-btn-ghost">{c.action}</button>
+                <button type="button" className="ftq-btn-ghost">
+                  {c.action}
+                </button>
               </div>
             ))}
           </div>
