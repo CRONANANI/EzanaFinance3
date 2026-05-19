@@ -11,7 +11,13 @@ export async function POST(request) {
   try {
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
-      return NextResponse.json({ error: 'ANTHROPIC_API_KEY is not configured' }, { status: 500 });
+      return NextResponse.json(
+        {
+          error:
+            'AI analysis is not configured. Set ANTHROPIC_API_KEY in Vercel environment variables.',
+        },
+        { status: 503 },
+      );
     }
 
     const body = await request.json();
@@ -36,21 +42,18 @@ export async function POST(request) {
       return NextResponse.json({ error: `Unknown model: ${modelId}` }, { status: 400 });
     }
 
-    // Fetch real market data
+    // Fetch real market data (FMP + AV — fetchMarketData never throws)
     let marketData = null;
     let marketDataPrompt = 'Market data unavailable — provide analysis based on your knowledge.';
 
     try {
-      // Request-time read; module-level captures freeze build env values.
-      const fmpKey = process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
-      if (fmpKey) {
-        marketData = await fetchMarketData(ticker);
-        if (marketData?.quote) {
-          marketDataPrompt = formatMarketDataForPrompt(marketData);
-        }
+      marketData = await fetchMarketData(ticker);
+      const prompt = formatMarketDataForPrompt(marketData);
+      if (prompt && prompt !== 'No market data available.') {
+        marketDataPrompt = prompt;
       }
     } catch (err) {
-      console.warn('Market data fetch failed (non-fatal):', err.message);
+      console.warn('[ai-stock-analysis] Market data fetch failed (non-fatal):', err?.message);
     }
 
     // Build the user prompt
