@@ -39,10 +39,17 @@ export function KeyMetrics({ symbol }) {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-6"
+        className="research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-4"
       >
-        <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
-          <div className="w-5 h-5 border-2 border-emerald-500/50 border-t-emerald-500 rounded-full animate-spin" />
+        <div
+          className="flex items-center gap-2"
+          style={{
+            fontSize: '0.6875rem',
+            fontFamily: 'var(--font-mono, monospace)',
+            color: '#6b7280',
+          }}
+        >
+          <div className="w-4 h-4 border-2 border-emerald-500/50 border-t-emerald-500 rounded-full animate-spin" />
           Loading metrics...
         </div>
       </motion.div>
@@ -53,9 +60,17 @@ export function KeyMetrics({ symbol }) {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-6"
+        className="research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-4"
       >
-        <p className="text-gray-500 dark:text-gray-400">Key metrics unavailable.</p>
+        <p
+          style={{
+            fontSize: '0.6875rem',
+            fontFamily: 'var(--font-mono, monospace)',
+            color: '#6b7280',
+          }}
+        >
+          Key metrics unavailable.
+        </p>
       </motion.div>
     );
   }
@@ -67,18 +82,65 @@ export function KeyMetrics({ symbol }) {
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-6"
+      className="research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl"
     >
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Key Financial Metrics</h3>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        {entries.slice(0, 12).map(([key, value]) => (
-          <div key={key} className="bg-gray-100 dark:bg-[#161b22] rounded-lg p-3">
-            <span className="text-xs text-gray-500 block">
-              {METRIC_LABELS[key] || key.replace(/([A-Z])/g, ' $1').trim()}
-            </span>
-            <p className="text-gray-900 dark:text-white font-medium mt-1">{fmt(value)}</p>
-          </div>
-        ))}
+      <div
+        style={{ padding: '0.75rem 1.25rem', borderBottom: '1px solid rgba(16, 185, 129, 0.06)' }}
+      >
+        <h3
+          style={{
+            margin: 0,
+            fontSize: '0.8125rem',
+            fontWeight: 800,
+            fontFamily: 'var(--font-mono, monospace)',
+            color: 'var(--home-heading, #f0f6fc)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.06em',
+          }}
+        >
+          Key Financial Metrics
+        </h3>
+      </div>
+      <div style={{ padding: '0.75rem 1rem' }}>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          {entries.slice(0, 12).map(([key, value]) => (
+            <div
+              key={key}
+              style={{
+                background: 'rgba(10, 14, 19, 0.6)',
+                border: '1px solid rgba(16, 185, 129, 0.06)',
+                borderRadius: 6,
+                padding: '0.5rem 0.625rem',
+              }}
+            >
+              <span
+                style={{
+                  display: 'block',
+                  fontSize: '0.5625rem',
+                  fontFamily: 'var(--font-mono, monospace)',
+                  fontWeight: 700,
+                  color: '#6b7280',
+                  letterSpacing: '0.04em',
+                  marginBottom: '0.2rem',
+                }}
+              >
+                {METRIC_LABELS[key] || key.replace(/([A-Z])/g, ' $1').trim()}
+              </span>
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: '0.75rem',
+                  fontWeight: 800,
+                  fontFamily: 'var(--font-mono, monospace)',
+                  color: '#f0f6fc',
+                  letterSpacing: '0.02em',
+                }}
+              >
+                {fmt(value)}
+              </p>
+            </div>
+          ))}
+        </div>
       </div>
     </motion.div>
   );
