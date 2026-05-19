@@ -11,14 +11,17 @@ import {
 export function VisualStrategyBuilder({ onSave }) {
   const [strategyName, setStrategyName] = useState('');
   const [conditions, setConditions] = useState([
-    { id: Date.now(), categoryIdx: 0, conditionIdx: 0, params: {} },
+    { id: Date.now(), categoryIdx: 0, conditionIdx: 0, params: {}, logic: 'AND' },
   ]);
   const [action, setAction] = useState('buy');
   const [sizing, setSizing] = useState('equal_weight');
   const [exitRule, setExitRule] = useState('trailing_stop_10');
 
   const addCondition = () => {
-    setConditions((prev) => [...prev, { id: Date.now(), categoryIdx: 0, conditionIdx: 0, params: {} }]);
+    setConditions((prev) => [
+      ...prev,
+      { id: Date.now(), categoryIdx: 0, conditionIdx: 0, params: {}, logic: 'AND' },
+    ]);
   };
 
   const removeCondition = (id) => {
@@ -28,14 +31,28 @@ export function VisualStrategyBuilder({ onSave }) {
   const updateCondition = (id, field, value) => {
     setConditions((prev) =>
       prev.map((c) =>
-        c.id === id ? { ...c, [field]: value, ...(field === 'categoryIdx' ? { conditionIdx: 0, params: {} } : {}) } : c
-      )
+        c.id === id
+          ? {
+              ...c,
+              [field]: value,
+              ...(field === 'categoryIdx' ? { conditionIdx: 0, params: {} } : {}),
+            }
+          : c,
+      ),
+    );
+  };
+
+  const toggleLogic = (id) => {
+    setConditions((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, logic: c.logic === 'AND' ? 'OR' : 'AND' } : c)),
     );
   };
 
   const updateParam = (condId, paramName, value) => {
     setConditions((prev) =>
-      prev.map((c) => (c.id === condId ? { ...c, params: { ...c.params, [paramName]: value } } : c))
+      prev.map((c) =>
+        c.id === condId ? { ...c, params: { ...c.params, [paramName]: value } } : c,
+      ),
     );
   };
 
@@ -45,7 +62,7 @@ export function VisualStrategyBuilder({ onSave }) {
       conditions: conditions.map((c) => {
         const cat = CONDITION_CATEGORIES[c.categoryIdx];
         const cond = cat?.conditions?.[c.conditionIdx];
-        return { category: cat?.label, condition: cond?.label, params: c.params };
+        return { category: cat?.label, condition: cond?.label, params: c.params, logic: c.logic };
       }),
       action,
       sizing,
@@ -71,7 +88,18 @@ export function VisualStrategyBuilder({ onSave }) {
         const selectedCond = cat.conditions[cond.conditionIdx] || cat.conditions[0];
         return (
           <div key={cond.id} className="ftq-vb-rule">
-            <span className="ftq-vb-keyword">{idx === 0 ? 'IF' : 'AND'}</span>
+            {idx === 0 ? (
+              <span className="ftq-vb-keyword">IF</span>
+            ) : (
+              <button
+                type="button"
+                className="ftq-vb-logic-toggle"
+                onClick={() => toggleLogic(cond.id)}
+                title={`Click to switch to ${cond.logic === 'AND' ? 'OR' : 'AND'}`}
+              >
+                {cond.logic}
+              </button>
+            )}
             <select
               className="ftq-vb-select"
               value={cond.categoryIdx}
@@ -156,7 +184,11 @@ export function VisualStrategyBuilder({ onSave }) {
       <div className="ftq-vb-config-row">
         <div className="ftq-vb-config-group">
           <span className="ftq-vb-config-label">Position Size</span>
-          <select className="ftq-vb-select" value={sizing} onChange={(e) => setSizing(e.target.value)}>
+          <select
+            className="ftq-vb-select"
+            value={sizing}
+            onChange={(e) => setSizing(e.target.value)}
+          >
             {SIZING_OPTIONS.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.label}
@@ -166,7 +198,11 @@ export function VisualStrategyBuilder({ onSave }) {
         </div>
         <div className="ftq-vb-config-group">
           <span className="ftq-vb-config-label">Exit Rule</span>
-          <select className="ftq-vb-select" value={exitRule} onChange={(e) => setExitRule(e.target.value)}>
+          <select
+            className="ftq-vb-select"
+            value={exitRule}
+            onChange={(e) => setExitRule(e.target.value)}
+          >
             {EXIT_RULES.map((r) => (
               <option key={r.id} value={r.id}>
                 {r.label}
@@ -184,10 +220,9 @@ export function VisualStrategyBuilder({ onSave }) {
             .map((c, i) => {
               const cat = CONDITION_CATEGORIES[c.categoryIdx];
               const cond = cat?.conditions?.[c.conditionIdx];
-              return `${i > 0 ? ' AND ' : ''}${cond?.label || '?'}`;
+              return `${i > 0 ? ` ${c.logic} ` : ''}${cond?.label || '?'}`;
             })
-            .join('')}
-          {' '}
+            .join('')}{' '}
           <strong>THEN</strong> {ACTION_OPTIONS.find((a) => a.id === action)?.label}
           {' · '}
           {SIZING_OPTIONS.find((s) => s.id === sizing)?.label}
