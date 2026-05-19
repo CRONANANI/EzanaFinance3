@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   BarChart3,
   TrendingUp,
@@ -9,6 +9,9 @@ import {
   Info,
   ArrowUpRight,
   ArrowDownRight,
+  ChevronUp,
+  ChevronDown,
+  ChevronsUpDown,
 } from 'lucide-react';
 import { ModelVariableStrip } from '@/components/research/models/ModelVariableStrip';
 
@@ -59,10 +62,56 @@ function verdictConfig(v) {
   );
 }
 
+/**
+ * Compute a composite ranking score for a peer.
+ * Higher score = "better" company (higher margins, growth, lower valuation multiples).
+ */
+function computeRankScore(p) {
+  let score = 0;
+  let count = 0;
+  if (p.grossMargin != null) {
+    score += p.grossMargin;
+    count++;
+  }
+  if (p.revenueGrowth != null) {
+    score += p.revenueGrowth;
+    count++;
+  }
+  if (p.divYield != null) {
+    score += p.divYield * 2;
+    count++;
+  }
+  if (p.pe != null && p.pe > 0) {
+    score += 100 / p.pe;
+    count++;
+  }
+  if (p.evEbitda != null && p.evEbitda > 0) {
+    score += 50 / p.evEbitda;
+    count++;
+  }
+  if (p.evRevenue != null && p.evRevenue > 0) {
+    score += 20 / p.evRevenue;
+    count++;
+  }
+  if (p.marketCap != null) {
+    score += Math.log10(Math.max(p.marketCap, 1)) * 0.5;
+    count++;
+  }
+  return count > 0 ? score / count : 0;
+}
+
+function SortIcon({ sortKey, activeKey, direction }) {
+  if (sortKey !== activeKey) return <ChevronsUpDown className="h-3 w-3 opacity-30" />;
+  if (direction === 'asc') return <ChevronUp className="h-3 w-3" />;
+  return <ChevronDown className="h-3 w-3" />;
+}
+
 export function CompsAnalysisCard({ symbol, onClose }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [sortKey, setSortKey] = useState(null);
+  const [sortDir, setSortDir] = useState('desc');
 
   const load = useCallback(async () => {
     if (!symbol) return;
@@ -87,6 +136,45 @@ export function CompsAnalysisCard({ symbol, onClose }) {
   useEffect(() => {
     load();
   }, [load]);
+
+  const handleSort = (key) => {
+    if (sortKey === key) {
+      if (sortDir === 'desc') setSortDir('asc');
+      else {
+        setSortKey(null);
+        setSortDir('desc');
+      }
+    } else {
+      setSortKey(key);
+      setSortDir('desc');
+    }
+  };
+
+  const sortedPeers = useMemo(() => {
+    if (!data?.peers) return [];
+    if (!sortKey) return data.peers;
+
+    const peers = [...data.peers];
+    peers.sort((a, b) => {
+      let va;
+      let vb;
+      if (sortKey === 'ranking') {
+        va = computeRankScore(a);
+        vb = computeRankScore(b);
+      } else if (sortKey === 'marketCap') {
+        va = a.marketCap ?? 0;
+        vb = b.marketCap ?? 0;
+      } else {
+        va = a[sortKey] ?? -Infinity;
+        vb = b[sortKey] ?? -Infinity;
+      }
+      if (va === -Infinity && vb === -Infinity) return 0;
+      if (va === -Infinity) return 1;
+      if (vb === -Infinity) return -1;
+      return sortDir === 'asc' ? va - vb : vb - va;
+    });
+    return peers;
+  }, [data?.peers, sortKey, sortDir]);
 
   if (loading) {
     return (
@@ -127,7 +215,8 @@ export function CompsAnalysisCard({ symbol, onClose }) {
 
   if (!data) return null;
 
-  const { target, peers, peerStats, positions, valuation, verdict } = data;
+  const { target, peerStats, positions, valuation, verdict } = data;
+  const peers = sortedPeers;
   const vc = verdictConfig(verdict.verdict);
   const VIcon = vc.icon;
 
@@ -145,6 +234,10 @@ export function CompsAnalysisCard({ symbol, onClose }) {
           : '—',
     },
   ];
+
+  const thClass =
+    'px-2 py-2 font-medium text-right cursor-pointer select-none hover:text-foreground transition-colors';
+  const thActiveClass = 'text-amber-600 dark:text-amber-400';
 
   return (
     <section className="rounded-xl border border-amber-500/40 bg-card p-5 space-y-4 ring-1 ring-amber-500/20">
@@ -188,13 +281,34 @@ export function CompsAnalysisCard({ symbol, onClose }) {
         <table className="w-full text-xs">
           <thead>
             <tr className="border-b border-border bg-muted/30">
-              <th className="text-left px-3 py-2 font-semibold text-foreground sticky left-0 bg-muted/30 min-w-[120px]">
-                Company
+              <th
+                className={`text-left px-3 py-2 font-semibold sticky left-0 bg-muted/30 min-w-[120px] cursor-pointer select-none hover:text-amber-600 dark:hover:text-amber-400 transition-colors ${sortKey === 'ranking' ? thActiveClass : 'text-foreground'}`}
+                onClick={() => handleSort('ranking')}
+              >
+                <span className="flex items-center gap-1">
+                  Company Ranking
+                  <SortIcon sortKey="ranking" activeKey={sortKey} direction={sortDir} />
+                </span>
               </th>
-              <th className="px-2 py-2 font-medium text-muted-foreground text-right">Mkt Cap</th>
+              <th
+                className={`${thClass} ${sortKey === 'marketCap' ? thActiveClass : 'text-muted-foreground'}`}
+                onClick={() => handleSort('marketCap')}
+              >
+                <span className="flex items-center justify-end gap-1">
+                  Mkt Cap
+                  <SortIcon sortKey="marketCap" activeKey={sortKey} direction={sortDir} />
+                </span>
+              </th>
               {MULTIPLE_COLS.map((c) => (
-                <th key={c.key} className="px-2 py-2 font-medium text-muted-foreground text-right">
-                  {c.label}
+                <th
+                  key={c.key}
+                  className={`${thClass} ${sortKey === c.key ? thActiveClass : 'text-muted-foreground'}`}
+                  onClick={() => handleSort(c.key)}
+                >
+                  <span className="flex items-center justify-end gap-1">
+                    {c.label}
+                    <SortIcon sortKey={c.key} activeKey={sortKey} direction={sortDir} />
+                  </span>
                 </th>
               ))}
             </tr>
@@ -218,9 +332,12 @@ export function CompsAnalysisCard({ symbol, onClose }) {
               })}
             </tr>
 
-            {peers.map((p) => (
+            {peers.map((p, idx) => (
               <tr key={p.symbol} className="border-b border-border/50 hover:bg-muted/20">
                 <td className="px-3 py-2 font-medium text-foreground sticky left-0 bg-card">
+                  <span className="text-[10px] text-muted-foreground mr-1.5 font-mono">
+                    {idx + 1}.
+                  </span>
                   <span>{p.symbol}</span>
                   <span className="text-[10px] text-muted-foreground ml-1 block truncate max-w-[100px]">
                     {p.name}
@@ -329,9 +446,8 @@ export function CompsAnalysisCard({ symbol, onClose }) {
           <strong className="text-foreground">How this works:</strong> Peers are selected by
           FMP&apos;s peer-matching algorithm (sector, size, business model). Multiples are TTM
           (trailing twelve months). Implied valuation applies peer-median multiples to {symbol}
-          &apos;s financials. Premium/discount reflects where {symbol} trades vs. the peer median —
-          a discount may indicate undervaluation or justified by lower growth/margins. This is one
-          framework among many.
+          &apos;s financials. Click any column header to sort peers. Company Ranking sorts by a
+          composite score based on margins, growth, and valuation efficiency.
         </div>
       </div>
     </section>
