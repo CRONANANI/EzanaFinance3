@@ -165,6 +165,234 @@ function extractTopTopics(content, topN = 5) {
   return counts.sort((a, b) => b.mentions - a.mentions).slice(0, topN);
 }
 
+/* ── Forward guidance detection ── */
+
+const GUIDANCE_RAISED = [
+  'raising our guidance',
+  'raising our outlook',
+  'raising our full-year',
+  'raising our forecast',
+  'raise our guidance',
+  'increased our guidance',
+  'increasing our guidance',
+  'raising expectations',
+  'revising upward',
+  'revising our guidance upward',
+  'above our prior guidance',
+  'above our previous guidance',
+  'better than we expected',
+  'exceeding our expectations',
+  'we now expect higher',
+  'upgraded our outlook',
+  'upgrading our outlook',
+];
+
+const GUIDANCE_LOWERED = [
+  'lowering our guidance',
+  'lowering our outlook',
+  'lowering our forecast',
+  'lower our guidance',
+  'reduced our guidance',
+  'reducing our guidance',
+  'revising downward',
+  'revising our guidance downward',
+  'below our prior guidance',
+  'below our previous guidance',
+  'worse than we expected',
+  'we now expect lower',
+  'downgraded our outlook',
+  'downgrading our outlook',
+  'withdrawing guidance',
+  'suspending guidance',
+  'pulling our guidance',
+];
+
+const GUIDANCE_REITERATED = [
+  'reiterating our guidance',
+  'reiterating guidance',
+  'reaffirming our guidance',
+  'reaffirming guidance',
+  'reaffirmed our outlook',
+  'maintaining our guidance',
+  'maintaining guidance',
+  'in line with our guidance',
+  'consistent with our guidance',
+  'unchanged from our prior guidance',
+  'on track with our guidance',
+  'confirming our outlook',
+];
+
+/**
+ * Detect whether guidance was raised, reiterated, or lowered.
+ * @param {string} content
+ * @returns {'raised' | 'reiterated' | 'lowered' | null}
+ */
+function detectGuidanceDirection(content) {
+  const lower = content.toLowerCase();
+  let raised = 0;
+  let lowered = 0;
+  let reiterated = 0;
+
+  for (const phrase of GUIDANCE_RAISED) {
+    if (lower.includes(phrase)) raised++;
+  }
+  for (const phrase of GUIDANCE_LOWERED) {
+    if (lower.includes(phrase)) lowered++;
+  }
+  for (const phrase of GUIDANCE_REITERATED) {
+    if (lower.includes(phrase)) reiterated++;
+  }
+
+  if (raised > lowered && raised > reiterated) return 'raised';
+  if (lowered > raised && lowered > reiterated) return 'lowered';
+  if (reiterated > 0) return 'reiterated';
+  return null;
+}
+
+/* ── Named executive speaker analysis ── */
+
+/**
+ * Parse speaker labels and compute per-speaker sentiment.
+ * @param {string} content
+ * @returns {Array<{ name: string; role: string; sentiment: number; wordCount: number }>}
+ */
+function extractSpeakerSentiments(content) {
+  if (!content || content.length < 500) return [];
+
+  const speakerPattern = /^([A-Z][a-zA-Z'. -]{2,30})\s*(?:--|—|–|-)\s*(.+)$/gm;
+  const speakers = new Map();
+  const speakerOrder = [];
+
+  let match;
+  const positions = [];
+  while ((match = speakerPattern.exec(content)) !== null) {
+    const name = match[1].trim();
+    const role = match[2].trim().replace(/\s+/g, ' ');
+    if (/operator|moderator|forward.looking|safe.harbor|participants/i.test(name)) continue;
+    if (/operator|moderator/i.test(role)) continue;
+    if (name.length < 3 || name.split(' ').length < 2) continue;
+
+    const key = name.toLowerCase();
+    if (!speakers.has(key)) {
+      speakers.set(key, { name, role, segments: [] });
+      speakerOrder.push(key);
+    }
+    positions.push({ key, index: match.index + match[0].length });
+  }
+
+  if (positions.length < 2) return [];
+
+  for (let i = 0; i < positions.length; i++) {
+    const start = positions[i].index;
+    const end = i + 1 < positions.length ? positions[i + 1].index - 80 : content.length;
+    const text = content.slice(start, Math.max(start, end));
+    speakers.get(positions[i].key).segments.push(text);
+  }
+
+  const results = [];
+  for (const key of speakerOrder) {
+    const speaker = speakers.get(key);
+    const allText = speaker.segments.join(' ');
+    const tokens = tokenize(allText);
+    if (tokens.length < 20) continue;
+
+    const scores = scoreLexicon(tokens);
+    const sentiment = computeSentimentScore(scores.positive, scores.negative, tokens.length);
+
+    results.push({
+      name: speaker.name,
+      role: speaker.role.length > 50 ? speaker.role.slice(0, 47) + '...' : speaker.role,
+      sentiment: parseFloat(sentiment.toFixed(1)),
+      wordCount: tokens.length,
+    });
+  }
+
+  results.sort((a, b) => b.wordCount - a.wordCount);
+  return results.slice(0, 8);
+}
+
+/* ── Financial metric extraction ── */
+
+/**
+ * Extract specific financial metrics mentioned in the transcript.
+ * @param {string} content
+ * @returns {Array<{ label: string; value: string; context: string }>}
+ */
+function extractFinancialMetrics(content) {
+  if (!content || content.length < 500) return [];
+
+  const metrics = [];
+  const seen = new Set();
+
+  const contextPatterns = [
+    {
+      re: /(?:revenue|sales|top.?line)\s+(?:of\s+|was\s+|were\s+|reached\s+|totaled\s+)(\$[\d,.]+\s*(?:billion|million|B|M)?)/gi,
+      label: 'Revenue',
+    },
+    {
+      re: /(?:earnings per share|EPS|diluted EPS)\s+(?:of\s+|was\s+|were\s+)(\$?[\d,.]+)/gi,
+      label: 'EPS',
+    },
+    {
+      re: /(?:gross margin|gross profit margin)\s+(?:of\s+|was\s+|at\s+)([\d,.]+\s*%?)/gi,
+      label: 'Gross Margin',
+    },
+    {
+      re: /(?:operating margin)\s+(?:of\s+|was\s+|at\s+)([\d,.]+\s*%?)/gi,
+      label: 'Operating Margin',
+    },
+    {
+      re: /(?:net income|net earnings)\s+(?:of\s+|was\s+|were\s+|totaled\s+)(\$[\d,.]+\s*(?:billion|million|B|M)?)/gi,
+      label: 'Net Income',
+    },
+    {
+      re: /(?:free cash flow|FCF)\s+(?:of\s+|was\s+|were\s+|totaled\s+)(\$[\d,.]+\s*(?:billion|million|B|M)?)/gi,
+      label: 'Free Cash Flow',
+    },
+    {
+      re: /(?:operating income|operating earnings)\s+(?:of\s+|was\s+|were\s+)(\$[\d,.]+\s*(?:billion|million|B|M)?)/gi,
+      label: 'Operating Income',
+    },
+    {
+      re: /(?:capital expenditure|capex)\s+(?:of\s+|was\s+|were\s+|totaled\s+)(\$[\d,.]+\s*(?:billion|million|B|M)?)/gi,
+      label: 'CapEx',
+    },
+    {
+      re: /(?:EBITDA)\s+(?:of\s+|was\s+|were\s+)(\$[\d,.]+\s*(?:billion|million|B|M)?)/gi,
+      label: 'EBITDA',
+    },
+    {
+      re: /(?:year.over.year|YoY)\s+(?:growth|increase|decline)\s+(?:of\s+)?([\d,.]+\s*%)/gi,
+      label: 'YoY Growth',
+    },
+  ];
+
+  for (const { re, label } of contextPatterns) {
+    let m;
+    while ((m = re.exec(content)) !== null) {
+      const value = m[1].trim();
+      const key = `${label}:${value}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+
+      const ctxStart = Math.max(0, m.index - 30);
+      const ctxEnd = Math.min(content.length, m.index + m[0].length + 40);
+      let context = content.slice(ctxStart, ctxEnd).replace(/\s+/g, ' ').trim();
+      if (ctxStart > 0) context = '…' + context;
+      if (ctxEnd < content.length) context = context + '…';
+
+      metrics.push({ label, value, context });
+    }
+  }
+
+  const byLabel = new Map();
+  for (const m of metrics) {
+    if (!byLabel.has(m.label)) byLabel.set(m.label, m);
+  }
+
+  return [...byLabel.values()].slice(0, 10);
+}
+
 /**
  * @returns {AnalysisResult}
  */
@@ -183,6 +411,9 @@ function createEmptyAnalysis() {
     qaSentiment: 50,
     qaEvasivenessScore: 0,
     topTopics: [],
+    guidanceDirection: null,
+    speakerSentiments: [],
+    financialMetrics: [],
   };
 }
 
@@ -210,7 +441,11 @@ export function analyzeTranscript(content) {
     const preparedScores = scoreLexicon(preparedTokens);
     const qaScores = scoreLexicon(qaTokens);
 
-    const sentimentScore = computeSentimentScore(overall.positive, overall.negative, allTokens.length);
+    const sentimentScore = computeSentimentScore(
+      overall.positive,
+      overall.negative,
+      allTokens.length,
+    );
 
     const uncertaintyScore = computeRateScore(overall.uncertainty, allTokens.length);
     const confidenceScore = 100 - uncertaintyScore;
@@ -221,10 +456,17 @@ export function analyzeTranscript(content) {
       preparedScores.negative,
       preparedTokens.length,
     );
-    const qaSentiment = computeSentimentScore(qaScores.positive, qaScores.negative, qaTokens.length);
+    const qaSentiment = computeSentimentScore(
+      qaScores.positive,
+      qaScores.negative,
+      qaTokens.length,
+    );
 
     const qaEvasivenessScore = detectEvasiveness(qa);
     const topTopics = extractTopTopics(content);
+    const guidanceDirection = detectGuidanceDirection(content);
+    const speakerSentiments = extractSpeakerSentiments(content);
+    const financialMetrics = extractFinancialMetrics(content);
 
     return {
       wordCount: allTokens.length,
@@ -240,6 +482,9 @@ export function analyzeTranscript(content) {
       qaSentiment,
       qaEvasivenessScore,
       topTopics,
+      guidanceDirection,
+      speakerSentiments,
+      financialMetrics,
     };
   } catch (err) {
     console.error('[analyzeTranscript] failed:', err);
@@ -290,81 +535,80 @@ export function synthesize(input) {
   }
 
   try {
-  const { prior, epsBeat, guidanceDirection } = input;
+    const { prior, epsBeat, guidanceDirection } = input;
 
-  const c = {
-    sentimentScore: n(input.current?.sentimentScore, 50),
-    qaSentiment: n(input.current?.qaSentiment, 50),
-    qaEvasivenessScore: n(input.current?.qaEvasivenessScore, 0),
-    uncertaintyScore: n(input.current?.uncertaintyScore, 0),
-    litigiousScore: n(input.current?.litigiousScore, 0),
-  };
-  const pPrior = prior && typeof prior === 'object'
-    ? n(prior.sentimentScore, 50)
-    : null;
+    const c = {
+      sentimentScore: n(input.current?.sentimentScore, 50),
+      qaSentiment: n(input.current?.qaSentiment, 50),
+      qaEvasivenessScore: n(input.current?.qaEvasivenessScore, 0),
+      uncertaintyScore: n(input.current?.uncertaintyScore, 0),
+      litigiousScore: n(input.current?.litigiousScore, 0),
+    };
+    const pPrior = prior && typeof prior === 'object' ? n(prior.sentimentScore, 50) : null;
 
-  if (prior && pPrior != null) {
-    const delta = c.sentimentScore - pPrior;
-    if (delta > 5) positive.push(`Tone improved ${delta.toFixed(0)} pts vs. last quarter`);
-    else if (delta < -5) negative.push(`Tone declined ${Math.abs(delta).toFixed(0)} pts vs. last quarter`);
-  }
+    if (prior && pPrior != null) {
+      const delta = c.sentimentScore - pPrior;
+      if (delta > 5) positive.push(`Tone improved ${delta.toFixed(0)} pts vs. last quarter`);
+      else if (delta < -5)
+        negative.push(`Tone declined ${Math.abs(delta).toFixed(0)} pts vs. last quarter`);
+    }
 
-  if (c.qaSentiment > 60) positive.push('Positive Q&A session tone');
-  else if (c.qaSentiment < 40) negative.push('Defensive Q&A session tone');
+    if (c.qaSentiment > 60) positive.push('Positive Q&A session tone');
+    else if (c.qaSentiment < 40) negative.push('Defensive Q&A session tone');
 
-  if (c.qaEvasivenessScore > 40) {
-    negative.push(`Elevated evasiveness in Q&A (${c.qaEvasivenessScore.toFixed(0)}/100)`);
-  }
+    if (c.qaEvasivenessScore > 40) {
+      negative.push(`Elevated evasiveness in Q&A (${c.qaEvasivenessScore.toFixed(0)}/100)`);
+    }
 
-  if (c.uncertaintyScore > 60) {
-    negative.push('High uncertainty language throughout call');
-  } else if (c.uncertaintyScore < 30) {
-    positive.push('Low uncertainty / confident language');
-  }
+    if (c.uncertaintyScore > 60) {
+      negative.push('High uncertainty language throughout call');
+    } else if (c.uncertaintyScore < 30) {
+      positive.push('Low uncertainty / confident language');
+    }
 
-  if (c.litigiousScore > 30) {
-    negative.push('Legal/regulatory language elevated');
-  }
+    if (c.litigiousScore > 30) {
+      negative.push('Legal/regulatory language elevated');
+    }
 
-  if (epsBeat === true) positive.push('EPS beat consensus');
-  if (epsBeat === false) negative.push('EPS missed consensus');
+    if (epsBeat === true) positive.push('EPS beat consensus');
+    if (epsBeat === false) negative.push('EPS missed consensus');
 
-  if (guidanceDirection === 'raised') positive.push('Guidance raised');
-  if (guidanceDirection === 'lowered') negative.push('Guidance lowered');
+    if (guidanceDirection === 'raised') positive.push('Guidance raised');
+    if (guidanceDirection === 'lowered') negative.push('Guidance lowered');
 
-  const posCount = positive.length;
-  const negCount = negative.length;
-  /** @type {Synthesis['tilt']} */
-  let tilt;
+    const posCount = positive.length;
+    const negCount = negative.length;
+    /** @type {Synthesis['tilt']} */
+    let tilt;
 
-  if (posCount >= 3 && negCount <= 1) tilt = 'bullish';
-  else if (negCount >= 3 && posCount <= 1) tilt = 'bearish';
-  else if (posCount >= 2 && negCount >= 2) tilt = 'mixed';
-  else tilt = 'neutral';
+    if (posCount >= 3 && negCount <= 1) tilt = 'bullish';
+    else if (negCount >= 3 && posCount <= 1) tilt = 'bearish';
+    else if (posCount >= 2 && negCount >= 2) tilt = 'mixed';
+    else tilt = 'neutral';
 
-  /** @type {Synthesis['confidence']} */
-  let confidence;
-  const totalSignals = posCount + negCount;
-  if (totalSignals >= 4 && Math.abs(posCount - negCount) >= 2) confidence = 'high';
-  else if (totalSignals >= 2) confidence = 'moderate';
-  else confidence = 'low';
+    /** @type {Synthesis['confidence']} */
+    let confidence;
+    const totalSignals = posCount + negCount;
+    if (totalSignals >= 4 && Math.abs(posCount - negCount) >= 2) confidence = 'high';
+    else if (totalSignals >= 2) confidence = 'moderate';
+    else confidence = 'low';
 
-  const reasoning =
-    tilt === 'bullish'
-      ? 'Multiple positive signals outweigh concerns'
-      : tilt === 'bearish'
-        ? 'Multiple negative signals outweigh positives'
-        : tilt === 'mixed'
-          ? 'Meaningful signals on both sides — watch for confirmation'
-          : 'Insufficient signal strength either way';
+    const reasoning =
+      tilt === 'bullish'
+        ? 'Multiple positive signals outweigh concerns'
+        : tilt === 'bearish'
+          ? 'Multiple negative signals outweigh positives'
+          : tilt === 'mixed'
+            ? 'Meaningful signals on both sides — watch for confirmation'
+            : 'Insufficient signal strength either way';
 
-  return {
-    tilt,
-    confidence,
-    reasoning,
-    positiveSignals: positive,
-    negativeSignals: negative,
-  };
+    return {
+      tilt,
+      confidence,
+      reasoning,
+      positiveSignals: positive,
+      negativeSignals: negative,
+    };
   } catch (err) {
     console.error('[synthesize] failed:', err);
     return {

@@ -125,6 +125,7 @@ async function getOrComputeAnalysis(t, symbolUpper) {
 
       if (cached) {
         const topTopics = Array.isArray(cached.top_topics) ? cached.top_topics : [];
+        const enriched = analyzeTranscript(t.content);
         return {
           symbol: sym,
           year,
@@ -144,6 +145,9 @@ async function getOrComputeAnalysis(t, symbolUpper) {
             qaEvasivenessScore: Number(cached.qa_evasiveness_score),
             topTopics,
             litigiousCount: 0,
+            guidanceDirection: enriched.guidanceDirection,
+            speakerSentiments: enriched.speakerSentiments,
+            financialMetrics: enriched.financialMetrics,
           },
         };
       }
@@ -337,7 +341,7 @@ export async function GET(_req, context) {
       current: current.analysis,
       prior: prior?.analysis,
       epsBeat,
-      guidanceDirection: null,
+      guidanceDirection: current.analysis.guidanceDirection || null,
     });
 
     await persistSynthesis(symbol, current.year, current.quarter, synthesis);
@@ -362,6 +366,7 @@ export async function GET(_req, context) {
         qaSentiment: a.analysis.qaSentiment,
         uncertaintyScore: a.analysis.uncertaintyScore,
         qaEvasivenessScore: a.analysis.qaEvasivenessScore,
+        guidanceDirection: a.analysis.guidanceDirection || null,
       })),
       earningsHistory: earnings.slice(0, 8),
       synthesis,
