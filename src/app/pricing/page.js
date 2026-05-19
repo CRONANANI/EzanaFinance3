@@ -40,6 +40,25 @@ import './pricing-standalone.css';
  * ────────────────────────────────────────────────────────────────────────── */
 const PLANS = [
   {
+    id: 'free',
+    name: 'Free',
+    tagline: 'Explore the platform — no credit card needed.',
+    monthlyPrice: 0,
+    yearlyPrice: 0,
+    highlight: false,
+    isFree: true,
+    stripeKey: null,
+    features: [
+      'Market news (delayed)',
+      '1 watchlist (3 slots)',
+      'Community (read-only)',
+      'Learning center basics',
+      'Mock portfolio ($10K)',
+      'Basic market overview',
+      'Limited earnings data',
+    ],
+  },
+  {
     id: 'starter',
     name: 'Starter',
     tagline: 'Everything you need to start investing with confidence.',
@@ -120,47 +139,194 @@ const COMPARISON_FEATURES = [
   {
     category: 'Core Platform',
     rows: [
-      { name: 'Portfolio dashboard', starter: true, advanced: true, family: true, enterprise: true },
-      { name: 'Real-time market data', starter: 'Delayed', advanced: true, family: true, enterprise: true },
-      { name: 'Watchlists', starter: '5 slots', advanced: 'Unlimited', family: 'Unlimited', enterprise: 'Unlimited' },
-      { name: 'Mobile app', starter: true, advanced: true, family: true, enterprise: true },
+      {
+        name: 'Portfolio dashboard',
+        free: 'Basic',
+        starter: true,
+        advanced: true,
+        family: true,
+        enterprise: true,
+      },
+      {
+        name: 'Real-time market data',
+        free: 'Delayed',
+        starter: 'Delayed',
+        advanced: true,
+        family: true,
+        enterprise: true,
+      },
+      {
+        name: 'Watchlists',
+        free: '3 slots',
+        starter: '5 slots',
+        advanced: 'Unlimited',
+        family: 'Unlimited',
+        enterprise: 'Unlimited',
+      },
+      {
+        name: 'Mobile app',
+        free: true,
+        starter: true,
+        advanced: true,
+        family: true,
+        enterprise: true,
+      },
     ],
   },
   {
     category: 'Congressional Trading',
     rows: [
-      { name: 'Trade alerts', starter: '24hr delay', advanced: 'Real-time', family: 'Real-time', enterprise: 'Real-time' },
-      { name: 'Politician filtering', starter: false, advanced: true, family: true, enterprise: true },
-      { name: 'Historical trade database', starter: '90 days', advanced: 'Full history', family: 'Full history', enterprise: 'Full history' },
-      { name: 'Trade pattern analysis', starter: false, advanced: true, family: true, enterprise: true },
+      {
+        name: 'Trade alerts',
+        free: false,
+        starter: '24hr delay',
+        advanced: 'Real-time',
+        family: 'Real-time',
+        enterprise: 'Real-time',
+      },
+      {
+        name: 'Politician filtering',
+        free: false,
+        starter: false,
+        advanced: true,
+        family: true,
+        enterprise: true,
+      },
+      {
+        name: 'Historical trade database',
+        free: false,
+        starter: '90 days',
+        advanced: 'Full history',
+        family: 'Full history',
+        enterprise: 'Full history',
+      },
+      {
+        name: 'Trade pattern analysis',
+        free: false,
+        starter: false,
+        advanced: true,
+        family: true,
+        enterprise: true,
+      },
     ],
   },
   {
     category: 'Analytics & Intelligence',
     rows: [
-      { name: 'Portfolio risk scoring', starter: false, advanced: true, family: true, enterprise: true },
-      { name: 'Sector exposure analysis', starter: false, advanced: true, family: true, enterprise: true },
-      { name: 'Government contracts & lobbying', starter: false, advanced: true, family: true, enterprise: true },
-      { name: 'Patent filing intelligence', starter: false, advanced: true, family: true, enterprise: true },
-      { name: 'Custom reports & export', starter: false, advanced: false, family: true, enterprise: true },
+      {
+        name: 'Portfolio risk scoring',
+        free: false,
+        starter: false,
+        advanced: true,
+        family: true,
+        enterprise: true,
+      },
+      {
+        name: 'Sector exposure analysis',
+        free: false,
+        starter: false,
+        advanced: true,
+        family: true,
+        enterprise: true,
+      },
+      {
+        name: 'Government contracts & lobbying',
+        free: false,
+        starter: false,
+        advanced: true,
+        family: true,
+        enterprise: true,
+      },
+      {
+        name: 'Patent filing intelligence',
+        free: false,
+        starter: false,
+        advanced: true,
+        family: true,
+        enterprise: true,
+      },
+      {
+        name: 'Custom reports & export',
+        free: false,
+        starter: false,
+        advanced: false,
+        family: true,
+        enterprise: true,
+      },
     ],
   },
   {
     category: 'Household & Team',
     rows: [
-      { name: 'Accounts included', starter: '1', advanced: '1', family: 'Up to 5', enterprise: 'Unlimited' },
-      { name: 'Shared watchlists', starter: false, advanced: false, family: true, enterprise: true },
-      { name: 'Team management', starter: false, advanced: false, family: false, enterprise: true },
-      { name: 'Organization Hub', starter: false, advanced: false, family: false, enterprise: true },
+      {
+        name: 'Accounts included',
+        free: '1',
+        starter: '1',
+        advanced: '1',
+        family: 'Up to 5',
+        enterprise: 'Unlimited',
+      },
+      {
+        name: 'Shared watchlists',
+        free: false,
+        starter: false,
+        advanced: false,
+        family: true,
+        enterprise: true,
+      },
+      {
+        name: 'Team management',
+        free: false,
+        starter: false,
+        advanced: false,
+        family: false,
+        enterprise: true,
+      },
+      {
+        name: 'Organization Hub',
+        free: false,
+        starter: false,
+        advanced: false,
+        family: false,
+        enterprise: true,
+      },
     ],
   },
   {
     category: 'Support & Integrations',
     rows: [
-      { name: 'Community access', starter: 'Read only', advanced: 'Full', family: 'Full', enterprise: 'Full' },
-      { name: 'Notifications', starter: 'Email', advanced: 'Email + Push', family: 'Email + Push', enterprise: 'Email + Push + API' },
-      { name: 'Support', starter: 'Help center', advanced: 'Priority email', family: 'Priority', enterprise: 'Dedicated manager' },
-      { name: 'API access', starter: false, advanced: 'Limited', family: 'Full', enterprise: 'Full + custom' },
+      {
+        name: 'Community access',
+        free: 'Read only',
+        starter: 'Read only',
+        advanced: 'Full',
+        family: 'Full',
+        enterprise: 'Full',
+      },
+      {
+        name: 'Notifications',
+        free: false,
+        starter: 'Email',
+        advanced: 'Email + Push',
+        family: 'Email + Push',
+        enterprise: 'Email + Push + API',
+      },
+      {
+        name: 'Support',
+        free: 'Help center',
+        starter: 'Help center',
+        advanced: 'Priority email',
+        family: 'Priority',
+        enterprise: 'Dedicated manager',
+      },
+      {
+        name: 'API access',
+        free: false,
+        starter: false,
+        advanced: 'Limited',
+        family: 'Full',
+        enterprise: 'Full + custom',
+      },
     ],
   },
 ];
@@ -296,8 +462,39 @@ export default function PricingPage() {
       setErrorMsg(
         err?.message
           ? `Couldn't start checkout: ${err.message}`
-          : 'Could not connect to billing. Please check your connection and try again.'
+          : 'Could not connect to billing. Please check your connection and try again.',
       );
+      setPendingPlan(null);
+    }
+  }
+
+  async function activateFreePlan() {
+    setPendingPlan('free');
+    setErrorMsg('');
+
+    try {
+      const res = await fetch('/api/auth/activate-free', {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      if (res.status === 401) {
+        window.location.href = '/auth/signup?plan=free';
+        return;
+      }
+
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok && data?.ok) {
+        window.location.href = '/home';
+        return;
+      }
+
+      setErrorMsg(data?.error || 'Could not activate free plan. Please try again.');
+      setPendingPlan(null);
+    } catch (err) {
+      console.error('[pricing] activateFreePlan error:', err);
+      setErrorMsg('Could not connect. Please check your connection and try again.');
       setPendingPlan(null);
     }
   }
@@ -314,8 +511,8 @@ export default function PricingPage() {
           Simple pricing. <span className="pricing-h1-accent">Serious investing.</span>
         </h1>
         <p className="pricing-subtitle">
-          Start with the plan that fits where you are. Every paid plan includes a full
-          14-day free trial — cancel anytime, no charge until the trial ends.
+          Start with the plan that fits where you are. Every paid plan includes a full 14-day free
+          trial — cancel anytime, no charge until the trial ends.
         </p>
 
         <div className="billing-toggle-wrap" role="tablist" aria-label="Billing interval">
@@ -348,16 +545,20 @@ export default function PricingPage() {
 
       {/* ── Plan Cards ──────────────────────────────────────────────── */}
       <section className="pricing-cards-section" aria-label="Plans">
-        <div className="pricing-cards-grid pricing-cards-grid--four">
+        <div className="pricing-cards-grid pricing-cards-grid--five">
           {PLANS.map((plan) => {
             const price = billing === 'yearly' ? plan.yearlyPrice : plan.monthlyPrice;
             const isContact = plan.contactSales;
             const isPending = pendingPlan === plan.id;
-            const ctaLabel = isContact
-              ? 'Contact Sales'
-              : isPending
-                ? 'Starting checkout…'
-                : 'Start 14-day free trial';
+            const ctaLabel = plan.isFree
+              ? isPending
+                ? 'Activating…'
+                : 'Get Started Free'
+              : isContact
+                ? 'Contact Sales'
+                : isPending
+                  ? 'Starting checkout…'
+                  : 'Start 14-day free trial';
 
             return (
               <div
@@ -366,7 +567,9 @@ export default function PricingPage() {
                   'plan-card',
                   plan.highlight && 'plan-card--highlight',
                   billing === 'yearly' && 'plan-card--yearly',
-                ].filter(Boolean).join(' ')}
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
               >
                 {plan.badge ? <span className="plan-badge">{plan.badge}</span> : null}
 
@@ -375,10 +578,10 @@ export default function PricingPage() {
 
                 {/* Consistent trial ribbon slot on every card */}
                 <div className="plan-trial-row">
-                  {isContact ? (
-                    <span className="plan-trial-chip plan-trial-chip--neutral">
-                      Custom pricing
-                    </span>
+                  {plan.isFree ? (
+                    <span className="plan-trial-chip plan-trial-chip--neutral">Free forever</span>
+                  ) : isContact ? (
+                    <span className="plan-trial-chip plan-trial-chip--neutral">Custom pricing</span>
                   ) : (
                     <span className="plan-trial-chip">14-day free trial</span>
                   )}
@@ -387,6 +590,8 @@ export default function PricingPage() {
                 <div className="plan-price">
                   {price === null ? (
                     <span className="plan-price-amount">Custom</span>
+                  ) : plan.isFree ? (
+                    <span className="plan-price-amount">Free</span>
                   ) : (
                     <>
                       <span className="plan-price-amount">${price}</span>
@@ -397,16 +602,18 @@ export default function PricingPage() {
                   )}
                 </div>
                 <p className="plan-annual-note">
-                  {price === null
-                    ? 'Tailored to your organization'
-                    : billing === 'yearly'
-                      ? `Annual invoice of $${price * 12}`
-                      : 'Billed monthly · cancel anytime'}
+                  {plan.isFree
+                    ? 'No credit card required'
+                    : price === null
+                      ? 'Tailored to your organization'
+                      : billing === 'yearly'
+                        ? `Annual invoice of $${price * 12}`
+                        : 'Billed monthly · cancel anytime'}
                 </p>
 
                 <button
                   type="button"
-                  onClick={() => startCheckout(plan)}
+                  onClick={() => (plan.isFree ? activateFreePlan() : startCheckout(plan))}
                   disabled={isPending}
                   className={`plan-cta ${plan.highlight ? 'plan-cta--primary' : ''}`}
                   aria-busy={isPending}
@@ -416,9 +623,11 @@ export default function PricingPage() {
                   {!isPending ? <ArrowRight size={16} aria-hidden /> : null}
                 </button>
                 <p className="plan-finesub">
-                  {isContact
-                    ? 'We reply within 1 business day'
-                    : 'Cancel anytime during trial · No charge'}
+                  {plan.isFree
+                    ? 'No credit card required'
+                    : isContact
+                      ? 'We reply within 1 business day'
+                      : 'Cancel anytime during trial · No charge'}
                 </p>
 
                 <div className="plan-features-divider" />
@@ -468,7 +677,7 @@ export default function PricingPage() {
                       <div className="comp-plan-head">
                         <div className="comp-plan-name">{p.name}</div>
                         <div className="comp-plan-sub">
-                          {subPrice === null ? 'Custom' : `$${subPrice}/mo`}
+                          {subPrice === null ? 'Custom' : p.isFree ? 'Free' : `$${subPrice}/mo`}
                         </div>
                       </div>
                     </th>
@@ -485,10 +694,21 @@ export default function PricingPage() {
                   {group.rows.map((row) => (
                     <tr key={row.name}>
                       <td className="comp-feature-name">{row.name}</td>
-                      <td><CellValue value={row.starter} /></td>
-                      <td className="comp-highlight-col"><CellValue value={row.advanced} /></td>
-                      <td><CellValue value={row.family} /></td>
-                      <td><CellValue value={row.enterprise} /></td>
+                      <td>
+                        <CellValue value={row.free} />
+                      </td>
+                      <td>
+                        <CellValue value={row.starter} />
+                      </td>
+                      <td className="comp-highlight-col">
+                        <CellValue value={row.advanced} />
+                      </td>
+                      <td>
+                        <CellValue value={row.family} />
+                      </td>
+                      <td>
+                        <CellValue value={row.enterprise} />
+                      </td>
                     </tr>
                   ))}
                 </Fragment>
@@ -506,7 +726,9 @@ export default function PricingPage() {
             <details key={item.q} className="pricing-faq-item">
               <summary>
                 <span>{item.q}</span>
-                <span className="pricing-faq-marker" aria-hidden>+</span>
+                <span className="pricing-faq-marker" aria-hidden>
+                  +
+                </span>
               </summary>
               <p className="pricing-faq-answer">{item.a}</p>
             </details>
@@ -519,8 +741,7 @@ export default function PricingPage() {
         <div className="pricing-bottom-cta-card">
           <h2>Start investing smarter today</h2>
           <p>
-            Try any paid plan free for 14 days. No charge until the trial ends,
-            cancel whenever.
+            Try any paid plan free for 14 days. No charge until the trial ends, cancel whenever.
           </p>
           <button
             type="button"
@@ -529,9 +750,7 @@ export default function PricingPage() {
           >
             Start 14-day free trial <ArrowRight size={18} aria-hidden />
           </button>
-          <div className="pricing-bottom-finesub">
-            No charge for 14 days · Cancel anytime
-          </div>
+          <div className="pricing-bottom-finesub">No charge for 14 days · Cancel anytime</div>
         </div>
       </section>
 

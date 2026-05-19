@@ -5,10 +5,15 @@
 export function hasActiveSubscription(profile) {
   if (!profile) return false;
 
-  if (profile.subscription_status === 'active' || profile.subscription_status === 'trialing') {
-    return true;
-  }
+  const status = profile.subscription_status;
 
+  // Paid active or trialing
+  if (status === 'active' || status === 'trialing') return true;
+
+  // Free plan
+  if (status === 'free') return true;
+
+  // One-time purchase (legacy)
   if (profile.one_time_plan && profile.one_time_plan_purchased_at) {
     const purchased = new Date(profile.one_time_plan_purchased_at);
     const expiresAt = new Date(purchased);
@@ -23,11 +28,17 @@ export function isInTrial(profile) {
   return profile?.subscription_status === 'trialing';
 }
 
+export function isFreePlan(profile) {
+  return profile?.subscription_status === 'free' || profile?.subscription_plan === 'free';
+}
+
 export function getActivePlan(profile) {
   if (!profile) return null;
 
+  const status = profile.subscription_status;
+
   if (
-    (profile.subscription_status === 'active' || profile.subscription_status === 'trialing') &&
+    (status === 'active' || status === 'trialing' || status === 'free') &&
     profile.subscription_plan
   ) {
     return profile.subscription_plan;
@@ -43,6 +54,7 @@ export function getActivePlan(profile) {
 /** Higher = more features (for gating). */
 export function getPlanTier(planKey) {
   const tiers = {
+    free: 0,
     personal_monthly: 1,
     individual_annual: 1,
     personal_advanced_monthly: 2,

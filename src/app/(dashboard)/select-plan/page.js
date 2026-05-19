@@ -21,8 +21,15 @@ function SelectPlanContent() {
   const [hasPaidSubscription, setHasPaidSubscription] = useState(false);
   const [trialStatus, setTrialStatus] = useState(null);
 
-  const monthlyPlans = Object.entries(PLANS).filter(([, p]) => p.interval === 'month');
-  const annualPlans = Object.entries(PLANS).filter(([, p]) => p.interval === 'year');
+  const freePlanEntry = Object.entries(PLANS).filter(([key]) => key === 'free');
+  const monthlyPlans = [
+    ...freePlanEntry,
+    ...Object.entries(PLANS).filter(([, p]) => p.interval === 'month'),
+  ];
+  const annualPlans = [
+    ...freePlanEntry,
+    ...Object.entries(PLANS).filter(([, p]) => p.interval === 'year'),
+  ];
   const displayPlans = billingPeriod === 'monthly' ? monthlyPlans : annualPlans;
 
   const getSession = useCallback(async () => {
@@ -59,8 +66,39 @@ function SelectPlanContent() {
     };
   }, [getSession]);
 
+  const handleActivateFree = async () => {
+    setLoading('free');
+    setCheckoutError('');
+    try {
+      const session = await getSession();
+      if (!session?.access_token) {
+        window.location.href = '/auth/signup?plan=free';
+        return;
+      }
+      const res = await fetch('/api/auth/activate-free', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data?.ok) {
+        window.location.href = '/home';
+        return;
+      }
+      setCheckoutError(data?.error || 'Could not activate free plan. Please try again.');
+    } catch (err) {
+      console.error('[select-plan] activateFree error:', err);
+      setCheckoutError('Could not connect. Please try again.');
+    } finally {
+      setLoading(null);
+    }
+  };
+
   const handleCheckout = async (planKey) => {
     const plan = PLANS[planKey];
+    if (planKey === 'free') {
+      await handleActivateFree();
+      return;
+    }
     if (!plan?.priceId) return;
     setLoading(planKey);
     setCheckoutError('');
@@ -205,10 +243,12 @@ function SelectPlanContent() {
 
       <div className="pricing-grid">
         {displayPlans.map(([key, plan]) => {
+          const isFree = key === 'free';
           const isPopular = plan.popular === true;
           const isPro = key === 'professional_monthly' || key === 'professional_annual';
           const displayPrice = plan.price.toLocaleString('en-US');
-          const periodLabel = plan.interval === 'month' ? '/month' : '/year';
+          const periodLabel =
+            plan.interval === 'month' ? '/month' : plan.interval === 'year' ? '/year' : '';
 
           return (
             <div
@@ -219,8 +259,16 @@ function SelectPlanContent() {
               <h3>{plan.name}</h3>
               <p className="pricing-desc">{plan.description || ''}</p>
               <div className="pricing-price">
-                ${displayPrice}
-                <span>{periodLabel}</span>
+                {isFree ? (
+                  <>
+                    Free<span> forever</span>
+                  </>
+                ) : (
+                  <>
+                    ${displayPrice}
+                    <span>{periodLabel}</span>
+                  </>
+                )}
               </div>
               {isPro && (
                 <p className="pricing-partner-note">Verified partners receive a discounted rate</p>
@@ -236,13 +284,17 @@ function SelectPlanContent() {
                 type="button"
                 className="pricing-btn primary"
                 onClick={() => handleCheckout(key)}
-                disabled={loading === key || !plan.priceId}
+                disabled={loading === key || (!isFree && !plan.priceId)}
               >
                 {loading === key
-                  ? 'Redirecting…'
-                  : !plan.priceId
-                    ? 'Coming soon'
-                    : 'Start free trial'}
+                  ? isFree
+                    ? 'Activating…'
+                    : 'Redirecting…'
+                  : isFree
+                    ? 'Get Started Free'
+                    : !plan.priceId
+                      ? 'Coming soon'
+                      : 'Start free trial'}
               </button>
             </div>
           );

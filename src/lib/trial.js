@@ -19,6 +19,18 @@ export function getTrialStatus(profile, userCreatedAt) {
     };
   }
 
+  // Free plan — never expires, not in trial, not paid
+  if (profile?.subscription_status === 'free') {
+    return {
+      isInTrial: false,
+      trialExpired: false,
+      isPaid: false,
+      daysRemaining: 0,
+      trialEndDate: null,
+      source: 'free',
+    };
+  }
+
   if (profile?.subscription_status === 'trialing' && profile?.current_period_end) {
     const trialEnd = new Date(profile.current_period_end);
     const now = new Date();
