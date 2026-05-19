@@ -5,106 +5,150 @@ import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 type FallingPatternProps = React.ComponentProps<'div'> & {
+  /** Primary color of the falling elements (default: Ezana emerald) — used as fallback */
   color?: string;
+  /** Tall streak gradients (darker / higher-opacity than legacy single `color`) */
   streakColor?: string;
+  /** Small twinkle dots — should be darker green with solid mid-stop so shimmer reads clearly */
   sparkleColor?: string;
+  /** Background color (default: Ezana dark) */
   backgroundColor?: string;
+  /** Animation duration in seconds (default: 150) */
   duration?: number;
+  /** Blur intensity for the overlay effect (default: '1em') */
   blurIntensity?: string;
+  /** Pattern density - affects spacing (default: 1) */
   density?: number;
 };
-
-/**
- * Each layer is a group of 3 patterns (streak-left, streak-right, sparkle)
- * with its own speed, vertical offset, and start delay.
- */
-type StreakLayer = {
-  bgSize: string;
-  startY: number;
-  speed: number;
-  delay: number;
-};
-
-const LAYERS: StreakLayer[] = [
-  { bgSize: '300px 235px', startY: 220, speed: 10, delay: 0 },
-  { bgSize: '300px 252px', startY: 24, speed: 8, delay: 1.5 },
-  { bgSize: '300px 150px', startY: 16, speed: 12, delay: 0.8 },
-  { bgSize: '300px 253px', startY: 224, speed: 9, delay: 3.2 },
-  { bgSize: '300px 204px', startY: 19, speed: 14, delay: 2.0 },
-  { bgSize: '300px 134px', startY: 120, speed: 7, delay: 4.5 },
-  { bgSize: '300px 179px', startY: 31, speed: 11, delay: 1.0 },
-  { bgSize: '300px 299px', startY: 235, speed: 16, delay: 5.5 },
-  { bgSize: '300px 215px', startY: 121, speed: 9, delay: 3.8 },
-  { bgSize: '300px 281px', startY: 224, speed: 13, delay: 0.3 },
-  { bgSize: '300px 158px', startY: 26, speed: 8, delay: 6.0 },
-  { bgSize: '300px 210px', startY: 75, speed: 15, delay: 2.5 },
-];
 
 export function FallingPattern({
   color = '#10b981',
   streakColor,
   sparkleColor,
   backgroundColor = '#0a0e13',
-  duration: _duration = 15,
+  duration = 150,
   blurIntensity: _blurIntensity = '1em',
   density = 1,
   className,
 }: FallingPatternProps) {
   const streak = streakColor ?? color;
   const sparkle = sparkleColor ?? 'rgba(21, 128, 61, 0.5)';
+  const generateBackgroundImage = () => {
+    const patterns = [
+      `radial-gradient(4px 100px at 0px 235px, ${streak}, transparent)`,
+      `radial-gradient(4px 100px at 300px 235px, ${streak}, transparent)`,
+      `radial-gradient(1.5px 1.5px at 150px 117.5px, ${sparkle} 0%, ${sparkle} 48%, transparent 78%)`,
+      `radial-gradient(4px 100px at 0px 252px, ${streak}, transparent)`,
+      `radial-gradient(4px 100px at 300px 252px, ${streak}, transparent)`,
+      `radial-gradient(1.5px 1.5px at 150px 126px, ${sparkle} 0%, ${sparkle} 48%, transparent 78%)`,
+      `radial-gradient(4px 100px at 0px 150px, ${streak}, transparent)`,
+      `radial-gradient(4px 100px at 300px 150px, ${streak}, transparent)`,
+      `radial-gradient(1.5px 1.5px at 150px 75px, ${sparkle} 0%, ${sparkle} 48%, transparent 78%)`,
+      `radial-gradient(4px 100px at 0px 253px, ${streak}, transparent)`,
+      `radial-gradient(4px 100px at 300px 253px, ${streak}, transparent)`,
+      `radial-gradient(1.5px 1.5px at 150px 126.5px, ${sparkle} 0%, ${sparkle} 48%, transparent 78%)`,
+      `radial-gradient(4px 100px at 0px 204px, ${streak}, transparent)`,
+      `radial-gradient(4px 100px at 300px 204px, ${streak}, transparent)`,
+      `radial-gradient(1.5px 1.5px at 150px 102px, ${sparkle} 0%, ${sparkle} 48%, transparent 78%)`,
+      `radial-gradient(4px 100px at 0px 134px, ${streak}, transparent)`,
+      `radial-gradient(4px 100px at 300px 134px, ${streak}, transparent)`,
+      `radial-gradient(1.5px 1.5px at 150px 67px, ${sparkle} 0%, ${sparkle} 48%, transparent 78%)`,
+      `radial-gradient(4px 100px at 0px 179px, ${streak}, transparent)`,
+      `radial-gradient(4px 100px at 300px 179px, ${streak}, transparent)`,
+      `radial-gradient(1.5px 1.5px at 150px 89.5px, ${sparkle} 0%, ${sparkle} 48%, transparent 78%)`,
+      `radial-gradient(4px 100px at 0px 299px, ${streak}, transparent)`,
+      `radial-gradient(4px 100px at 300px 299px, ${streak}, transparent)`,
+      `radial-gradient(1.5px 1.5px at 150px 149.5px, ${sparkle} 0%, ${sparkle} 48%, transparent 78%)`,
+      `radial-gradient(4px 100px at 0px 215px, ${streak}, transparent)`,
+      `radial-gradient(4px 100px at 300px 215px, ${streak}, transparent)`,
+      `radial-gradient(1.5px 1.5px at 150px 107.5px, ${sparkle} 0%, ${sparkle} 48%, transparent 78%)`,
+      `radial-gradient(4px 100px at 0px 281px, ${streak}, transparent)`,
+      `radial-gradient(4px 100px at 300px 281px, ${streak}, transparent)`,
+      `radial-gradient(1.5px 1.5px at 150px 140.5px, ${sparkle} 0%, ${sparkle} 48%, transparent 78%)`,
+      `radial-gradient(4px 100px at 0px 158px, ${streak}, transparent)`,
+      `radial-gradient(4px 100px at 300px 158px, ${streak}, transparent)`,
+      `radial-gradient(1.5px 1.5px at 150px 79px, ${sparkle} 0%, ${sparkle} 48%, transparent 78%)`,
+      `radial-gradient(4px 100px at 0px 210px, ${streak}, transparent)`,
+      `radial-gradient(4px 100px at 300px 210px, ${streak}, transparent)`,
+      `radial-gradient(1.5px 1.5px at 150px 105px, ${sparkle} 0%, ${sparkle} 48%, transparent 78%)`,
+    ];
+    return patterns.join(', ');
+  };
+
+  const backgroundSizes = [
+    '300px 235px',
+    '300px 235px',
+    '300px 235px',
+    '300px 252px',
+    '300px 252px',
+    '300px 252px',
+    '300px 150px',
+    '300px 150px',
+    '300px 150px',
+    '300px 253px',
+    '300px 253px',
+    '300px 253px',
+    '300px 204px',
+    '300px 204px',
+    '300px 204px',
+    '300px 134px',
+    '300px 134px',
+    '300px 134px',
+    '300px 179px',
+    '300px 179px',
+    '300px 179px',
+    '300px 299px',
+    '300px 299px',
+    '300px 299px',
+    '300px 215px',
+    '300px 215px',
+    '300px 215px',
+    '300px 281px',
+    '300px 281px',
+    '300px 281px',
+    '300px 158px',
+    '300px 158px',
+    '300px 158px',
+    '300px 210px',
+    '300px 210px',
+    '300px 210px',
+  ].join(', ');
+
+  const startPositions =
+    '0px 220px, 3px 220px, 151.5px 337.5px, 25px 24px, 28px 24px, 176.5px 150px, 50px 16px, 53px 16px, 201.5px 91px, 75px 224px, 78px 224px, 226.5px 230.5px, 100px 19px, 103px 19px, 251.5px 121px, 125px 120px, 128px 120px, 276.5px 187px, 150px 31px, 153px 31px, 301.5px 120.5px, 175px 235px, 178px 235px, 326.5px 384.5px, 200px 121px, 203px 121px, 351.5px 228.5px, 225px 224px, 228px 224px, 376.5px 364.5px, 250px 26px, 253px 26px, 401.5px 105px, 275px 75px, 278px 75px, 426.5px 180px';
+  const endPositions =
+    '0px 6800px, 3px 6800px, 151.5px 6917.5px, 25px 13632px, 28px 13632px, 176.5px 13758px, 50px 5416px, 53px 5416px, 201.5px 5491px, 75px 17175px, 78px 17175px, 226.5px 17301.5px, 100px 5119px, 103px 5119px, 251.5px 5221px, 125px 8428px, 128px 8428px, 276.5px 8495px, 150px 9876px, 153px 9876px, 301.5px 9965.5px, 175px 13391px, 178px 13391px, 326.5px 13540.5px, 200px 14741px, 203px 14741px, 351.5px 14848.5px, 225px 18770px, 228px 18770px, 376.5px 18910.5px, 250px 5082px, 253px 5082px, 401.5px 5161px, 275px 6375px, 278px 6375px, 426.5px 6480px';
 
   return (
     <div className={cn('relative h-full w-full', className)}>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.3 }}
+        transition={{ duration: 0.2 }}
         className="size-full"
-        style={{ backgroundColor }}
       >
-        {LAYERS.map((layer, i) => {
-          const h = parseInt(layer.bgSize.split(' ')[1], 10) || 235;
-          const halfH = Math.round(h / 2);
-          const xOff = i * 25;
-
-          const bgImage = [
-            `radial-gradient(3px 90px at ${xOff}px ${h}px, ${streak}, transparent)`,
-            `radial-gradient(3px 90px at ${xOff + 300}px ${h}px, ${streak}, transparent)`,
-            `radial-gradient(1.5px 1.5px at ${xOff + 150}px ${halfH}px, ${sparkle} 0%, ${sparkle} 48%, transparent 78%)`,
-          ].join(', ');
-
-          const bgSize = `${layer.bgSize}, ${layer.bgSize}, ${layer.bgSize}`;
-
-          const startY = layer.startY;
-          const travelDistance = 3000 + i * 400;
-          const endY = startY + travelDistance;
-
-          const startPos = `${xOff}px ${startY}px, ${xOff + 3}px ${startY}px, ${xOff + 150.5}px ${startY + halfH}px`;
-          const endPos = `${xOff}px ${endY}px, ${xOff + 3}px ${endY}px, ${xOff + 150.5}px ${endY + halfH}px`;
-
-          return (
-            <motion.div
-              key={i}
-              className="absolute inset-0"
-              style={{
-                backgroundImage: bgImage,
-                backgroundSize: bgSize,
-                zIndex: 0,
-              }}
-              animate={{
-                backgroundPosition: [startPos, endPos],
-              }}
-              transition={{
-                duration: layer.speed,
+        <motion.div
+          className="relative size-full z-0"
+          style={{
+            backgroundColor,
+            backgroundImage: generateBackgroundImage(),
+            backgroundSize: backgroundSizes,
+          }}
+          variants={{
+            initial: { backgroundPosition: startPositions },
+            animate: {
+              backgroundPosition: [startPositions, endPositions],
+              transition: {
+                duration: duration,
                 ease: 'linear',
-                repeat: Infinity,
-                delay: layer.delay,
-              }}
-            />
-          );
-        })}
+                repeat: Number.POSITIVE_INFINITY,
+              },
+            },
+          }}
+          initial="initial"
+          animate="animate"
+        />
       </motion.div>
-
       <div
         className="absolute inset-0"
         style={{
