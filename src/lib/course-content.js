@@ -17,10 +17,12 @@
  * Bronze stocks (stocks-basic-1..8) and bronze crypto (crypto-basic-1..8)
  * courses are substantially expanded educational content with 10-question
  * quizzes and distributed visual elements.
+ * Silver (intermediate) stocks 1–3: course-content-silver-gold-platinum.js.
  */
 
 import BRONZE_REST from './course-content-bronze-rest';
 import CRYPTO_BRONZE from './course-content-crypto-bronze';
+import SILVER_GOLD_PLATINUM from './course-content-silver-gold-platinum';
 
 const STOCKS_BRONZE = {
   'stocks-basic-1': {
@@ -28,13 +30,18 @@ const STOCKS_BRONZE = {
       {
         title: 'What a stock exchange actually is',
         content:
-          "A stock exchange is an organized marketplace where buyers and sellers of ownership shares in public companies come together to transact at prices set by their own bids and offers. When people picture an exchange, they often imagine a crowded trading floor with shouting traders in colored jackets. That image is mostly a relic. Modern exchanges are regulated electronic networks, and the overwhelming majority of U.S. stock trades now execute through computer matching engines operated by organizations like the New York Stock Exchange, Nasdaq, and a growing list of alternative trading systems. The exchange itself does not own the shares being traded. It simply provides the venue, the rules, and the mechanism for price discovery. Think of it as a referee at a very fast auction — it enforces the rules, publishes the results, and stays out of the way of the trade itself. When you place an order through your brokerage, your broker routes that order to one of these exchanges (or to a dealer who trades against their own inventory), and a match is found in milliseconds. The price you pay or receive is determined by whoever happens to be on the other side of your order at that exact moment — not by the exchange, not by the company, not by any central authority.",
-        keyTerms: ['stock exchange', 'matching engine', 'price discovery', 'alternative trading system'],
+          'A stock exchange is an organized marketplace where buyers and sellers of ownership shares in public companies come together to transact at prices set by their own bids and offers. When people picture an exchange, they often imagine a crowded trading floor with shouting traders in colored jackets. That image is mostly a relic. Modern exchanges are regulated electronic networks, and the overwhelming majority of U.S. stock trades now execute through computer matching engines operated by organizations like the New York Stock Exchange, Nasdaq, and a growing list of alternative trading systems. The exchange itself does not own the shares being traded. It simply provides the venue, the rules, and the mechanism for price discovery. Think of it as a referee at a very fast auction — it enforces the rules, publishes the results, and stays out of the way of the trade itself. When you place an order through your brokerage, your broker routes that order to one of these exchanges (or to a dealer who trades against their own inventory), and a match is found in milliseconds. The price you pay or receive is determined by whoever happens to be on the other side of your order at that exact moment — not by the exchange, not by the company, not by any central authority.',
+        keyTerms: [
+          'stock exchange',
+          'matching engine',
+          'price discovery',
+          'alternative trading system',
+        ],
       },
       {
         title: 'Bids, asks, and the spread',
         content:
-          "At any given moment during trading hours, every publicly traded stock has two prices posted: the highest bid, which is the most any buyer is currently willing to pay, and the lowest ask (sometimes called the offer), which is the least any seller is willing to accept. The gap between them is called the bid-ask spread. When a buyer agrees to the asking price, or a seller agrees to the bid, a trade happens and a new price is printed to the tape. This continuous auction is how markets discover what a share is worth right now. There is no committee setting the price. No government agency publishes a daily rate. The price emerges from the aggregated decisions of every participant — from individual retail investors placing small orders to pension funds moving billions. A narrow spread of a penny or two usually means the stock is highly liquid, with lots of buyers and sellers competing to trade. A wide spread of several dollars usually means the opposite: few participants, low volume, or unusual conditions. When you buy a stock, you typically pay the ask; when you sell, you typically receive the bid. That spread is effectively a small cost of transacting, and it matters more for stocks that trade less frequently.",
+          'At any given moment during trading hours, every publicly traded stock has two prices posted: the highest bid, which is the most any buyer is currently willing to pay, and the lowest ask (sometimes called the offer), which is the least any seller is willing to accept. The gap between them is called the bid-ask spread. When a buyer agrees to the asking price, or a seller agrees to the bid, a trade happens and a new price is printed to the tape. This continuous auction is how markets discover what a share is worth right now. There is no committee setting the price. No government agency publishes a daily rate. The price emerges from the aggregated decisions of every participant — from individual retail investors placing small orders to pension funds moving billions. A narrow spread of a penny or two usually means the stock is highly liquid, with lots of buyers and sellers competing to trade. A wide spread of several dollars usually means the opposite: few participants, low volume, or unusual conditions. When you buy a stock, you typically pay the ask; when you sell, you typically receive the bid. That spread is effectively a small cost of transacting, and it matters more for stocks that trade less frequently.',
         visual: {
           type: 'comparison-table',
           data: {
@@ -45,11 +52,18 @@ const STOCKS_BRONZE = {
             rows: [
               { attribute: 'Typical spread', values: ['$0.01 – $0.05', '$0.50 – $5.00+'] },
               { attribute: 'Daily volume', values: ['Millions of shares', 'Thousands or fewer'] },
-              { attribute: 'Impact of a large order', values: ['Barely moves price', 'Can move price several percent'] },
-              { attribute: 'Example ticker type', values: ['Large-cap like AAPL, MSFT', 'Micro-cap or emerging markets'] },
+              {
+                attribute: 'Impact of a large order',
+                values: ['Barely moves price', 'Can move price several percent'],
+              },
+              {
+                attribute: 'Example ticker type',
+                values: ['Large-cap like AAPL, MSFT', 'Micro-cap or emerging markets'],
+              },
             ],
           },
-          caption: 'Liquidity directly affects the cost of transacting. Wider spreads are a hidden friction on less-traded names.',
+          caption:
+            'Liquidity directly affects the cost of transacting. Wider spreads are a hidden friction on less-traded names.',
         },
         keyTerms: ['bid', 'ask', 'spread', 'liquidity'],
       },
@@ -58,7 +72,7 @@ const STOCKS_BRONZE = {
         content:
           "One of the most useful mental models for a beginning investor is to imagine the stock market as a single business partner — a slightly unstable one. Every trading day, this partner shows up at your door and offers to either buy your share of the business or sell you more of his. He quotes a new price every day. Some days he is euphoric and offers you wildly high prices; other days he is depressed and will sell you his shares for a pittance. He never takes offense if you ignore him, and he always comes back the next day with fresh quotes. The crucial insight is this: you are under no obligation to trade with him at the prices he quotes. He exists to serve you, not to instruct you. If his price is clearly too low relative to what the underlying business is actually worth, you can buy from him cheaply. If his price is clearly too high, you can sell to him expensively. And if his price makes no sense in either direction, you can simply do nothing and wait. The market, like this imaginary partner, is there to offer you opportunities. Treating its daily moves as commands — feeling that you must act when prices rise or panic when prices fall — is precisely the behavior that destroys most amateur investors' returns. The sensible investor uses the market's mood swings, rather than being swept along by them.",
         callout:
-          "The market exists to serve you, not instruct you. Its daily price quotes are opportunities, not commands.",
+          'The market exists to serve you, not instruct you. Its daily price quotes are opportunities, not commands.',
         keyTerms: ['market psychology', 'mental model'],
       },
       {
@@ -89,7 +103,8 @@ const STOCKS_BRONZE = {
           'Guarantees that every trade will be profitable',
         ],
         correctIndex: 1,
-        explanation: 'An exchange is a neutral marketplace — it matches orders and enforces rules, but it does not own shares or set prices itself.',
+        explanation:
+          'An exchange is a neutral marketplace — it matches orders and enforces rules, but it does not own shares or set prices itself.',
       },
       {
         question: 'The bid-ask spread is best described as:',
@@ -100,10 +115,12 @@ const STOCKS_BRONZE = {
           'The commission your broker earns for placing your order',
         ],
         correctIndex: 1,
-        explanation: 'The spread is the gap between the best available buy price and the best available sell price. Tight spreads usually mean a liquid market.',
+        explanation:
+          'The spread is the gap between the best available buy price and the best available sell price. Tight spreads usually mean a liquid market.',
       },
       {
-        question: 'If a stock you own drops sharply on no company-specific news, the best framing for a sensible investor is:',
+        question:
+          'If a stock you own drops sharply on no company-specific news, the best framing for a sensible investor is:',
         options: [
           'The market is telling you to sell immediately',
           'The market is always right and you should accept the new valuation',
@@ -111,7 +128,8 @@ const STOCKS_BRONZE = {
           'The company must have done something wrong you don’t know about',
         ],
         correctIndex: 2,
-        explanation: 'The market serves you with daily prices; it does not instruct you. Moves on no news are opportunities to evaluate, not commands to act on.',
+        explanation:
+          'The market serves you with daily prices; it does not instruct you. Moves on no news are opportunities to evaluate, not commands to act on.',
       },
       {
         question: 'Why does after-hours trading typically have wider spreads than regular hours?',
@@ -122,10 +140,12 @@ const STOCKS_BRONZE = {
           'Stocks are literally worth less when markets are closed',
         ],
         correctIndex: 1,
-        explanation: 'Lower participation means less depth on both sides of the order book, and small orders can move the price disproportionately.',
+        explanation:
+          'Lower participation means less depth on both sides of the order book, and small orders can move the price disproportionately.',
       },
       {
-        question: 'When you buy 100 shares of a company from another investor on the exchange, who receives your money?',
+        question:
+          'When you buy 100 shares of a company from another investor on the exchange, who receives your money?',
         options: [
           'The company whose shares you bought',
           'The exchange, which keeps a percentage as profit',
@@ -133,7 +153,8 @@ const STOCKS_BRONZE = {
           'The SEC, which redistributes it to shareholders',
         ],
         correctIndex: 2,
-        explanation: 'This is a secondary market transaction — money flows between investors, not to the company. Companies receive cash from share sales at IPO or follow-on offerings, not from secondary trading.',
+        explanation:
+          'This is a secondary market transaction — money flows between investors, not to the company. Companies receive cash from share sales at IPO or follow-on offerings, not from secondary trading.',
       },
       {
         question: 'The "primary market" refers to:',
@@ -144,10 +165,12 @@ const STOCKS_BRONZE = {
           'The first hour of trading each day',
         ],
         correctIndex: 1,
-        explanation: 'The primary market is where shares are first issued, such as through an IPO. The secondary market is where those shares trade between investors afterward.',
+        explanation:
+          'The primary market is where shares are first issued, such as through an IPO. The secondary market is where those shares trade between investors afterward.',
       },
       {
-        question: 'Why is the official closing price at 4:00 p.m. a particularly important reference?',
+        question:
+          'Why is the official closing price at 4:00 p.m. a particularly important reference?',
         options: [
           'It is guaranteed to be the next day’s opening price',
           'Data vendors, indices, and fund NAVs use it as their benchmark value',
@@ -155,10 +178,12 @@ const STOCKS_BRONZE = {
           'Dividends are calculated from the closing price',
         ],
         correctIndex: 1,
-        explanation: 'The 4 p.m. close anchors index calculations, fund net asset values, and most published performance figures, which is why so much volume concentrates in the final minutes.',
+        explanation:
+          'The 4 p.m. close anchors index calculations, fund net asset values, and most published performance figures, which is why so much volume concentrates in the final minutes.',
       },
       {
-        question: 'Two stocks trade at the same price of $50. Stock A has a bid-ask spread of $0.02. Stock B has a spread of $2.00. What is the most likely explanation?',
+        question:
+          'Two stocks trade at the same price of $50. Stock A has a bid-ask spread of $0.02. Stock B has a spread of $2.00. What is the most likely explanation?',
         options: [
           'Stock A is more expensive overall',
           'Stock A is more liquid, with many more active buyers and sellers',
@@ -166,10 +191,12 @@ const STOCKS_BRONZE = {
           'Stock B pays a higher dividend',
         ],
         correctIndex: 1,
-        explanation: 'A tighter spread almost always indicates deeper liquidity — more participants competing to trade at the best available price.',
+        explanation:
+          'A tighter spread almost always indicates deeper liquidity — more participants competing to trade at the best available price.',
       },
       {
-        question: 'If the stock market is closed and you place a market order at 2 a.m., what typically happens?',
+        question:
+          'If the stock market is closed and you place a market order at 2 a.m., what typically happens?',
         options: [
           'The order executes at whatever the last trade price was',
           'The order is queued and will be routed when the market opens',
@@ -177,10 +204,12 @@ const STOCKS_BRONZE = {
           'The order executes at a randomly chosen price',
         ],
         correctIndex: 1,
-        explanation: 'Orders placed outside trading hours are queued by your broker and routed to the market when trading resumes, at which point they execute at the prevailing prices.',
+        explanation:
+          'Orders placed outside trading hours are queued by your broker and routed to the market when trading resumes, at which point they execute at the prevailing prices.',
       },
       {
-        question: 'A beginner is considering trading in the pre-market session because they saw surprising earnings news. The strongest caution is:',
+        question:
+          'A beginner is considering trading in the pre-market session because they saw surprising earnings news. The strongest caution is:',
         options: [
           'Pre-market trading is illegal for retail investors',
           'Pre-market spreads are typically wider and prices can swing sharply on thin volume',
@@ -188,7 +217,8 @@ const STOCKS_BRONZE = {
           'You cannot sell stocks in the pre-market, only buy',
         ],
         correctIndex: 1,
-        explanation: 'Pre-market volume is a small fraction of regular-hours volume. Orders have bigger price impact and spreads are wider, which makes beginner trading in these sessions particularly risky.',
+        explanation:
+          'Pre-market volume is a small fraction of regular-hours volume. Orders have bigger price impact and spreads are wider, which makes beginner trading in these sessions particularly risky.',
       },
     ],
   },
@@ -197,7 +227,7 @@ const STOCKS_BRONZE = {
       {
         title: 'Stocks: ownership in a business',
         content:
-          "When you buy a share of stock, you are buying a tiny fractional piece of a real business. That single share entitles you to a proportional claim on the company's future profits (usually paid out as dividends or reinvested in the business), a proportional vote on certain corporate decisions, and a proportional claim on the leftover assets if the company ever liquidates. People sometimes lose sight of this and think of stocks as abstract trading tokens whose prices bounce around on a screen, but every share of every listed company is ultimately a slice of an operating business with employees, customers, factories, warehouses, software, and contracts. The price of that share reflects what the collective market thinks all of those things, plus the future profits they'll generate, are worth at this moment. Stocks are also called \"equities\" because they represent equity ownership. When people say \"invest in equities,\" they mean own pieces of businesses. Over long time horizons, owning a diversified portfolio of stocks has historically delivered higher returns than any other liquid asset class, largely because the businesses themselves grow, innovate, and reinvest profits into producing more profits. But the ride is bumpy. A stock can drop 50% in a year for reasons that have little to do with the underlying business, and individual companies can go bankrupt, wiping out their shareholders entirely. The tradeoff for higher long-term returns is accepting that the short-term path is unpredictable.",
+          'When you buy a share of stock, you are buying a tiny fractional piece of a real business. That single share entitles you to a proportional claim on the company\'s future profits (usually paid out as dividends or reinvested in the business), a proportional vote on certain corporate decisions, and a proportional claim on the leftover assets if the company ever liquidates. People sometimes lose sight of this and think of stocks as abstract trading tokens whose prices bounce around on a screen, but every share of every listed company is ultimately a slice of an operating business with employees, customers, factories, warehouses, software, and contracts. The price of that share reflects what the collective market thinks all of those things, plus the future profits they\'ll generate, are worth at this moment. Stocks are also called "equities" because they represent equity ownership. When people say "invest in equities," they mean own pieces of businesses. Over long time horizons, owning a diversified portfolio of stocks has historically delivered higher returns than any other liquid asset class, largely because the businesses themselves grow, innovate, and reinvest profits into producing more profits. But the ride is bumpy. A stock can drop 50% in a year for reasons that have little to do with the underlying business, and individual companies can go bankrupt, wiping out their shareholders entirely. The tradeoff for higher long-term returns is accepting that the short-term path is unpredictable.',
         keyTerms: ['equity', 'share', 'dividend', 'shareholder'],
       },
       {
@@ -212,15 +242,31 @@ const STOCKS_BRONZE = {
               { label: 'Bonds (debt)', color: '#3b82f6' },
             ],
             rows: [
-              { attribute: 'What you own', values: ['A piece of the business', 'A promise to repay plus interest'] },
-              { attribute: 'Upside if company thrives', values: ['Unlimited (price + dividends)', 'Capped at the promised interest'] },
-              { attribute: 'Downside if company fails', values: ['Can go to zero', 'Paid before stockholders in bankruptcy'] },
+              {
+                attribute: 'What you own',
+                values: ['A piece of the business', 'A promise to repay plus interest'],
+              },
+              {
+                attribute: 'Upside if company thrives',
+                values: ['Unlimited (price + dividends)', 'Capped at the promised interest'],
+              },
+              {
+                attribute: 'Downside if company fails',
+                values: ['Can go to zero', 'Paid before stockholders in bankruptcy'],
+              },
               { attribute: 'Typical volatility', values: ['High', 'Low to moderate'] },
-              { attribute: 'Historical long-term return', values: ['~9-10% annually', '~4-5% annually'] },
-              { attribute: 'Income pattern', values: ['Dividends (variable)', 'Coupon payments (fixed)'] },
+              {
+                attribute: 'Historical long-term return',
+                values: ['~9-10% annually', '~4-5% annually'],
+              },
+              {
+                attribute: 'Income pattern',
+                values: ['Dividends (variable)', 'Coupon payments (fixed)'],
+              },
             ],
           },
-          caption: 'Stocks and bonds are not just different risk levels — they are fundamentally different legal and economic relationships with the issuing company.',
+          caption:
+            'Stocks and bonds are not just different risk levels — they are fundamentally different legal and economic relationships with the issuing company.',
         },
         keyTerms: ['bond', 'coupon', 'principal', 'credit risk', 'Treasury'],
       },
@@ -242,7 +288,8 @@ const STOCKS_BRONZE = {
             ],
             centerLabel: 'S&P 500',
           },
-          caption: 'A single share of an S&P 500 ETF gives you exposure to roughly this sector breakdown — diversification in one ticker.',
+          caption:
+            'A single share of an S&P 500 ETF gives you exposure to roughly this sector breakdown — diversification in one ticker.',
         },
         keyTerms: ['ETF', 'expense ratio', 'index fund', 'diversification'],
       },
@@ -262,7 +309,7 @@ const STOCKS_BRONZE = {
       {
         title: 'Key takeaways',
         content:
-          "Stocks make you a part-owner of a business with unlimited upside and real downside. Bonds make you a lender with capped upside and (usually) steadier cash flow. ETFs package a basket of securities into a single tradable ticker, giving instant diversification for almost no effort. Mutual funds do the same thing but trade at end-of-day prices and often carry higher fees than comparable ETFs. For most beginning investors, a handful of broad low-cost index ETFs, held for a long time, beats any more complex strategy. Stocks are for growth, bonds are for stability, and a sensible mix of the two held in diversified funds is the foundation of nearly every reasonable investment plan.",
+          'Stocks make you a part-owner of a business with unlimited upside and real downside. Bonds make you a lender with capped upside and (usually) steadier cash flow. ETFs package a basket of securities into a single tradable ticker, giving instant diversification for almost no effort. Mutual funds do the same thing but trade at end-of-day prices and often carry higher fees than comparable ETFs. For most beginning investors, a handful of broad low-cost index ETFs, held for a long time, beats any more complex strategy. Stocks are for growth, bonds are for stability, and a sensible mix of the two held in diversified funds is the foundation of nearly every reasonable investment plan.',
       },
     ],
     quiz: [
@@ -275,7 +322,8 @@ const STOCKS_BRONZE = {
           'Reserving the right to buy the stock at a future date',
         ],
         correctIndex: 1,
-        explanation: 'A share represents equity ownership in the underlying business — a proportional claim on profits, votes, and residual assets.',
+        explanation:
+          'A share represents equity ownership in the underlying business — a proportional claim on profits, votes, and residual assets.',
       },
       {
         question: 'The key difference between a stock and a bond is:',
@@ -286,7 +334,8 @@ const STOCKS_BRONZE = {
           'Stocks are tax-free; bonds are not',
         ],
         correctIndex: 1,
-        explanation: 'Stocks give you ownership and upside in the business. Bonds give you a contractual promise of interest and principal repayment with capped upside.',
+        explanation:
+          'Stocks give you ownership and upside in the business. Bonds give you a contractual promise of interest and principal repayment with capped upside.',
       },
       {
         question: 'If a company goes bankrupt, who gets paid first?',
@@ -297,7 +346,8 @@ const STOCKS_BRONZE = {
           'Everyone is paid equally from whatever is left',
         ],
         correctIndex: 2,
-        explanation: 'Bondholders are creditors and sit higher in the capital structure than stockholders. They get paid (or partially paid) before equity holders see anything.',
+        explanation:
+          'Bondholders are creditors and sit higher in the capital structure than stockholders. They get paid (or partially paid) before equity holders see anything.',
       },
       {
         question: 'An ETF that tracks the S&P 500 index contains:',
@@ -308,7 +358,8 @@ const STOCKS_BRONZE = {
           'Any 500 stocks the fund manager thinks will perform well',
         ],
         correctIndex: 1,
-        explanation: 'An S&P 500 index ETF holds all the companies in the index in weights that match the index. This is passive management.',
+        explanation:
+          'An S&P 500 index ETF holds all the companies in the index in weights that match the index. This is passive management.',
       },
       {
         question: 'The expense ratio of a fund is best described as:',
@@ -319,7 +370,8 @@ const STOCKS_BRONZE = {
           'The commission your broker earns per trade',
         ],
         correctIndex: 1,
-        explanation: 'The expense ratio is an ongoing annual fee expressed as a percentage of assets. Broad index ETFs often charge under 0.1% per year.',
+        explanation:
+          'The expense ratio is an ongoing annual fee expressed as a percentage of assets. Broad index ETFs often charge under 0.1% per year.',
       },
       {
         question: 'A mutual fund order placed at 11 a.m. will typically execute:',
@@ -330,7 +382,8 @@ const STOCKS_BRONZE = {
           'At whatever price the fund manager decides',
         ],
         correctIndex: 1,
-        explanation: 'Mutual funds transact once per day at the end-of-day NAV. This is a key difference from ETFs, which trade continuously during market hours.',
+        explanation:
+          'Mutual funds transact once per day at the end-of-day NAV. This is a key difference from ETFs, which trade continuously during market hours.',
       },
       {
         question: 'Long-term academic research on actively managed funds has found that:',
@@ -341,7 +394,8 @@ const STOCKS_BRONZE = {
           'Index funds are illegal for retail investors',
         ],
         correctIndex: 1,
-        explanation: 'A large body of research shows that most active funds underperform simple index funds over long horizons once fees are subtracted.',
+        explanation:
+          'A large body of research shows that most active funds underperform simple index funds over long horizons once fees are subtracted.',
       },
       {
         question: 'Why do junk bonds pay higher interest rates than Treasury bonds?',
@@ -352,7 +406,8 @@ const STOCKS_BRONZE = {
           'Because the federal government sets their rates higher',
         ],
         correctIndex: 1,
-        explanation: 'Higher risk of the borrower defaulting requires a higher interest rate to attract lenders — this is the fundamental pricing logic of credit.',
+        explanation:
+          'Higher risk of the borrower defaulting requires a higher interest rate to attract lenders — this is the fundamental pricing logic of credit.',
       },
       {
         question: 'A 25-year-old with a 40-year time horizon is typically advised to:',
@@ -363,7 +418,8 @@ const STOCKS_BRONZE = {
           'Trade options to generate monthly income',
         ],
         correctIndex: 1,
-        explanation: 'Long time horizons let younger investors absorb short-term volatility in exchange for stocks’ higher long-term expected returns.',
+        explanation:
+          'Long time horizons let younger investors absorb short-term volatility in exchange for stocks’ higher long-term expected returns.',
       },
       {
         question: 'The simplest evidence-backed starting portfolio for a beginner is:',
@@ -374,7 +430,8 @@ const STOCKS_BRONZE = {
           'A single junk bond fund',
         ],
         correctIndex: 2,
-        explanation: 'The evidence overwhelmingly favors low-cost diversified index funds held over long periods. It is not exciting, but it is what has worked for nearly everyone who has stuck with it.',
+        explanation:
+          'The evidence overwhelmingly favors low-cost diversified index funds held over long periods. It is not exciting, but it is what has worked for nearly everyone who has stuck with it.',
       },
     ],
   },
@@ -396,7 +453,7 @@ const STOCKS_BRONZE = {
       {
         title: 'Market capitalization: what it really measures',
         content:
-          "Market capitalization, often shortened to \"market cap,\" is the total dollar value the market is currently putting on all the outstanding shares of a company. The math is simple: share price × total shares outstanding. A company with 1 billion shares trading at $50 has a market cap of $50 billion. A company with 10 million shares trading at $500 has a market cap of $5 billion. The first company is ten times larger despite having a lower share price. Market cap is the single most useful number for quickly gauging the size of a company, and it is also how stocks are typically categorized. The industry conventions shift over time, but a rough set of categories is: mega-cap (over $200 billion), large-cap ($10B–$200B), mid-cap ($2B–$10B), small-cap ($300M–$2B), and micro-cap (under $300M). Large-cap stocks tend to be established businesses with relatively stable cash flows and less dramatic price swings. Small-cap stocks tend to be younger or more specialized businesses with higher growth potential but also higher volatility and more bankruptcy risk. Neither is automatically better — they serve different roles in a diversified portfolio — but the categorization helps you understand what kind of company you're dealing with before you dig deeper.",
+          'Market capitalization, often shortened to "market cap," is the total dollar value the market is currently putting on all the outstanding shares of a company. The math is simple: share price × total shares outstanding. A company with 1 billion shares trading at $50 has a market cap of $50 billion. A company with 10 million shares trading at $500 has a market cap of $5 billion. The first company is ten times larger despite having a lower share price. Market cap is the single most useful number for quickly gauging the size of a company, and it is also how stocks are typically categorized. The industry conventions shift over time, but a rough set of categories is: mega-cap (over $200 billion), large-cap ($10B–$200B), mid-cap ($2B–$10B), small-cap ($300M–$2B), and micro-cap (under $300M). Large-cap stocks tend to be established businesses with relatively stable cash flows and less dramatic price swings. Small-cap stocks tend to be younger or more specialized businesses with higher growth potential but also higher volatility and more bankruptcy risk. Neither is automatically better — they serve different roles in a diversified portfolio — but the categorization helps you understand what kind of company you\'re dealing with before you dig deeper.',
         visual: {
           type: 'bar-chart',
           data: {
@@ -408,7 +465,8 @@ const STOCKS_BRONZE = {
               { label: 'Mega-cap', value: 1000, color: '#a78bfa', suffix: 'B+' },
             ],
           },
-          caption: 'Approximate upper bounds for each market cap category. The boundaries are conventions, not strict rules, and they shift over time.',
+          caption:
+            'Approximate upper bounds for each market cap category. The boundaries are conventions, not strict rules, and they shift over time.',
         },
         keyTerms: ['market capitalization', 'shares outstanding', 'large-cap', 'small-cap'],
       },
@@ -433,25 +491,27 @@ const STOCKS_BRONZE = {
               { label: 'Fri (fades)', value: 3, color: '#6b7280', suffix: 'M' },
             ],
           },
-          caption: 'Volume surges on meaningful events (like earnings) and fades back to normal. Reading volume in context helps separate real signals from noise.',
+          caption:
+            'Volume surges on meaningful events (like earnings) and fades back to normal. Reading volume in context helps separate real signals from noise.',
         },
         keyTerms: ['volume', 'average daily volume'],
       },
       {
         title: 'Dividend yield and payout basics',
         content:
-          "Many mature companies return cash directly to their shareholders in the form of dividends — periodic cash payments, usually paid quarterly. The dividend yield is the annual dividend divided by the current stock price, expressed as a percentage. A stock trading at $100 that pays $3 per year in dividends has a dividend yield of 3%. This is approximately the annual cash return you would receive as a shareholder if the stock price and the dividend payment both stayed perfectly flat. High-dividend stocks tend to be mature, slower-growing businesses that generate more cash than they need to reinvest in their operations. Technology companies, especially younger ones, often pay no dividend at all — they reinvest every dollar into growth. Utilities, consumer staples, and financial services firms tend to be the biggest dividend payers. A few warnings are worth noting. First, a very high dividend yield (say, above 8%) often means the market expects the dividend to be cut — the yield looks big because the stock price has already dropped in anticipation. Second, dividends are not guaranteed; companies can cut or eliminate them at any time, and they often do during recessions. Third, dividends are usually taxable in the year you receive them, which matters for your after-tax return. None of this makes dividends bad — they can be a useful source of portfolio income and a signal of financial discipline — but they should not be the only thing you look at when evaluating a stock.",
+          'Many mature companies return cash directly to their shareholders in the form of dividends — periodic cash payments, usually paid quarterly. The dividend yield is the annual dividend divided by the current stock price, expressed as a percentage. A stock trading at $100 that pays $3 per year in dividends has a dividend yield of 3%. This is approximately the annual cash return you would receive as a shareholder if the stock price and the dividend payment both stayed perfectly flat. High-dividend stocks tend to be mature, slower-growing businesses that generate more cash than they need to reinvest in their operations. Technology companies, especially younger ones, often pay no dividend at all — they reinvest every dollar into growth. Utilities, consumer staples, and financial services firms tend to be the biggest dividend payers. A few warnings are worth noting. First, a very high dividend yield (say, above 8%) often means the market expects the dividend to be cut — the yield looks big because the stock price has already dropped in anticipation. Second, dividends are not guaranteed; companies can cut or eliminate them at any time, and they often do during recessions. Third, dividends are usually taxable in the year you receive them, which matters for your after-tax return. None of this makes dividends bad — they can be a useful source of portfolio income and a signal of financial discipline — but they should not be the only thing you look at when evaluating a stock.',
         keyTerms: ['dividend', 'dividend yield', 'payout ratio'],
       },
       {
         title: 'Key takeaways',
         content:
-          "A stock quote is a dashboard, not a verdict. Share price alone is meaningless — two companies can have wildly different per-share prices but identical business values. Always compare companies by market cap, which is share price times total shares outstanding. The P/E ratio tells you how much the market is paying for each dollar of current earnings, and it should always be interpreted in context — high P/Es imply expected growth, low P/Es imply skepticism or stagnation. Volume tells you about conviction: big moves on big volume matter more than big moves on thin volume. Dividends are useful for cash-returning mature companies but should never be the only lens through which you evaluate a stock. No single number makes or breaks an investment thesis, and the beginner who learns to read these numbers together, in context, is already doing better analysis than most.",
+          'A stock quote is a dashboard, not a verdict. Share price alone is meaningless — two companies can have wildly different per-share prices but identical business values. Always compare companies by market cap, which is share price times total shares outstanding. The P/E ratio tells you how much the market is paying for each dollar of current earnings, and it should always be interpreted in context — high P/Es imply expected growth, low P/Es imply skepticism or stagnation. Volume tells you about conviction: big moves on big volume matter more than big moves on thin volume. Dividends are useful for cash-returning mature companies but should never be the only lens through which you evaluate a stock. No single number makes or breaks an investment thesis, and the beginner who learns to read these numbers together, in context, is already doing better analysis than most.',
       },
     ],
     quiz: [
       {
-        question: 'Two companies have identical businesses but different share prices: Company A trades at $20 and Company B trades at $200. What does this tell you about their relative size?',
+        question:
+          'Two companies have identical businesses but different share prices: Company A trades at $20 and Company B trades at $200. What does this tell you about their relative size?',
         options: [
           'Company B is ten times larger than Company A',
           'Company A is cheaper and therefore a better investment',
@@ -459,7 +519,8 @@ const STOCKS_BRONZE = {
           'Company B is riskier because it has a higher price',
         ],
         correctIndex: 2,
-        explanation: 'Share price is arbitrary — it depends on how many shares were issued. Total size is measured by market cap (price × shares), not per-share price.',
+        explanation:
+          'Share price is arbitrary — it depends on how many shares were issued. Total size is measured by market cap (price × shares), not per-share price.',
       },
       {
         question: 'Market capitalization is calculated as:',
@@ -470,7 +531,8 @@ const STOCKS_BRONZE = {
           'Share price minus book value',
         ],
         correctIndex: 1,
-        explanation: 'Market cap = price × shares outstanding. It measures the total dollar value the market is putting on the entire company.',
+        explanation:
+          'Market cap = price × shares outstanding. It measures the total dollar value the market is putting on the entire company.',
       },
       {
         question: 'A P/E ratio of 20 means:',
@@ -481,7 +543,8 @@ const STOCKS_BRONZE = {
           'The company has 20 years until bankruptcy',
         ],
         correctIndex: 1,
-        explanation: 'The P/E ratio expresses how many dollars of market price each dollar of annual earnings is worth. A P/E of 20 means $20 of price for $1 of earnings.',
+        explanation:
+          'The P/E ratio expresses how many dollars of market price each dollar of annual earnings is worth. A P/E of 20 means $20 of price for $1 of earnings.',
       },
       {
         question: 'A company with a P/E ratio of 50 is most likely:',
@@ -492,10 +555,12 @@ const STOCKS_BRONZE = {
           'Too small to trade',
         ],
         correctIndex: 2,
-        explanation: 'High P/Es usually reflect market expectations of rapid earnings growth. Whether that growth actually arrives is a separate question — a high P/E is neither automatically good nor bad.',
+        explanation:
+          'High P/Es usually reflect market expectations of rapid earnings growth. Whether that growth actually arrives is a separate question — a high P/E is neither automatically good nor bad.',
       },
       {
-        question: 'A stock rises 10% on volume that is 5 times its normal daily volume. Compared to a 10% rise on normal volume, this move is generally interpreted as:',
+        question:
+          'A stock rises 10% on volume that is 5 times its normal daily volume. Compared to a 10% rise on normal volume, this move is generally interpreted as:',
         options: [
           'Less meaningful, because volume is irrelevant',
           'More meaningful, because many participants are confirming the move',
@@ -503,7 +568,8 @@ const STOCKS_BRONZE = {
           'Identical — volume has no bearing on price movement',
         ],
         correctIndex: 1,
-        explanation: 'Heavy volume on a big move suggests broad participation and conviction, making the move more significant than the same move on thin volume.',
+        explanation:
+          'Heavy volume on a big move suggests broad participation and conviction, making the move more significant than the same move on thin volume.',
       },
       {
         question: 'Dividend yield is calculated as:',
@@ -514,10 +580,12 @@ const STOCKS_BRONZE = {
           'Dividend growth rate over the past year',
         ],
         correctIndex: 0,
-        explanation: 'Dividend yield = annual dividend per share ÷ current share price. It expresses the annual cash return as a percentage of the price.',
+        explanation:
+          'Dividend yield = annual dividend per share ÷ current share price. It expresses the annual cash return as a percentage of the price.',
       },
       {
-        question: 'A stock has a dividend yield of 12%. A beginner excited about the "income" should be cautious because:',
+        question:
+          'A stock has a dividend yield of 12%. A beginner excited about the "income" should be cautious because:',
         options: [
           'High yields are illegal',
           'A very high yield often means the market expects the dividend to be cut',
@@ -525,10 +593,12 @@ const STOCKS_BRONZE = {
           'Dividend stocks cannot be sold',
         ],
         correctIndex: 1,
-        explanation: 'An unusually high yield is often a warning sign: the stock price has already dropped in anticipation of a dividend cut, inflating the yield on paper.',
+        explanation:
+          'An unusually high yield is often a warning sign: the stock price has already dropped in anticipation of a dividend cut, inflating the yield on paper.',
       },
       {
-        question: 'A stock’s 52-week range is $30 to $80, and it currently trades at $75. This tells you:',
+        question:
+          'A stock’s 52-week range is $30 to $80, and it currently trades at $75. This tells you:',
         options: [
           'The stock is guaranteed to hit $100 next',
           'The stock is near the high end of its recent range',
@@ -536,10 +606,12 @@ const STOCKS_BRONZE = {
           'The stock has paid a dividend 52 weeks in a row',
         ],
         correctIndex: 1,
-        explanation: 'The 52-week range shows the high and low over the past year. At $75 out of a $30-$80 range, the stock is near the top of that range. That is context, not a buy or sell signal.',
+        explanation:
+          'The 52-week range shows the high and low over the past year. At $75 out of a $30-$80 range, the stock is near the top of that range. That is context, not a buy or sell signal.',
       },
       {
-        question: 'If Company A has a market cap of $500 billion and Company B has a market cap of $5 billion, the most accurate statement is:',
+        question:
+          'If Company A has a market cap of $500 billion and Company B has a market cap of $5 billion, the most accurate statement is:',
         options: [
           'A is 100 times more expensive per share',
           'A is classified as large-cap or mega-cap; B is mid-cap or small-cap',
@@ -547,7 +619,8 @@ const STOCKS_BRONZE = {
           'A is always safer than B',
         ],
         correctIndex: 1,
-        explanation: 'Market cap determines size classification. A at $500B is mega-cap; B at $5B sits in the mid-cap range. Neither is automatically better — they serve different roles in a portfolio.',
+        explanation:
+          'Market cap determines size classification. A at $500B is mega-cap; B at $5B sits in the mid-cap range. Neither is automatically better — they serve different roles in a portfolio.',
       },
       {
         question: 'Which of these statements about the P/E ratio is most accurate?',
@@ -558,7 +631,8 @@ const STOCKS_BRONZE = {
           'P/E ratios only apply to dividend-paying stocks',
         ],
         correctIndex: 2,
-        explanation: 'Different industries have structurally different P/E ranges — tech tends to be higher, utilities lower. Comparing a growth software company’s P/E to a utility’s P/E is a common beginner mistake.',
+        explanation:
+          'Different industries have structurally different P/E ranges — tech tends to be higher, utilities lower. Comparing a growth software company’s P/E to a utility’s P/E is a common beginner mistake.',
       },
     ],
   },
@@ -567,13 +641,20 @@ const STOCKS_BRONZE = {
       {
         title: 'What an index actually measures',
         content:
-          "A stock market index is a calculated average of the prices (or values) of a specific group of stocks, designed to give you a single number that summarizes how a slice of the market is doing. When you hear someone on the news say \"the market was up 0.6% today,\" they're almost always quoting the change in a major index like the S&P 500 rather than talking about every single stock. An index is essentially a shorthand. It lets you describe the behavior of hundreds or thousands of individual stocks with one number that moves up and down in a way that correlates roughly with the performance of that slice of the market. Different indices track different slices. The S&P 500 tracks 500 of the largest U.S. companies. The Dow Jones Industrial Average tracks 30 large U.S. stocks chosen by a committee. The Nasdaq Composite tracks nearly every stock listed on the Nasdaq exchange. The Russell 2000 tracks 2,000 smaller U.S. companies. The MSCI World tracks thousands of large companies across developed markets globally. No index is \"the\" market. They're all different lenses on different parts of it, and they can diverge significantly over short periods. In 2000, the Nasdaq Composite dropped more than 70% over the next two years while the broader S&P 500 dropped about 40% over the same period. Both were real, both were market indices, and both told very different stories about what was happening.",
-        keyTerms: ['index', 'benchmark', 'S&P 500', 'Dow Jones', 'Nasdaq Composite', 'Russell 2000'],
+          'A stock market index is a calculated average of the prices (or values) of a specific group of stocks, designed to give you a single number that summarizes how a slice of the market is doing. When you hear someone on the news say "the market was up 0.6% today," they\'re almost always quoting the change in a major index like the S&P 500 rather than talking about every single stock. An index is essentially a shorthand. It lets you describe the behavior of hundreds or thousands of individual stocks with one number that moves up and down in a way that correlates roughly with the performance of that slice of the market. Different indices track different slices. The S&P 500 tracks 500 of the largest U.S. companies. The Dow Jones Industrial Average tracks 30 large U.S. stocks chosen by a committee. The Nasdaq Composite tracks nearly every stock listed on the Nasdaq exchange. The Russell 2000 tracks 2,000 smaller U.S. companies. The MSCI World tracks thousands of large companies across developed markets globally. No index is "the" market. They\'re all different lenses on different parts of it, and they can diverge significantly over short periods. In 2000, the Nasdaq Composite dropped more than 70% over the next two years while the broader S&P 500 dropped about 40% over the same period. Both were real, both were market indices, and both told very different stories about what was happening.',
+        keyTerms: [
+          'index',
+          'benchmark',
+          'S&P 500',
+          'Dow Jones',
+          'Nasdaq Composite',
+          'Russell 2000',
+        ],
       },
       {
         title: 'Why most indices are weighted by size, not equally',
         content:
-          "The way an index is constructed — specifically, how it weights its constituents — has huge consequences for how it behaves. There are three main approaches: market-cap weighted, price weighted, and equal weighted. Most modern indices, including the S&P 500, are market-cap weighted. This means bigger companies carry bigger influence on the index. If Apple is worth 7% of the total market cap of the S&P 500, then Apple alone drives 7% of the S&P 500's daily movement. A smaller company worth only 0.1% of the index barely matters. The Dow Jones Industrial Average is unusual in that it is price weighted — the literal share price of each company determines its influence, regardless of how many shares are outstanding. This has strange consequences. A company with a share price of $500 carries more weight in the Dow than a company with a share price of $50, even if the $50 company is a hundred times bigger by market cap. Equal-weighted indices, which give each company identical influence regardless of size, exist but are less common. Understanding the weighting method matters because it changes what the index is actually telling you. A cap-weighted index is dominated by the few largest companies and reflects mostly what those giants are doing. An equal-weighted version of the same universe gives you a much cleaner read on the \"average\" stock's performance.",
+          'The way an index is constructed — specifically, how it weights its constituents — has huge consequences for how it behaves. There are three main approaches: market-cap weighted, price weighted, and equal weighted. Most modern indices, including the S&P 500, are market-cap weighted. This means bigger companies carry bigger influence on the index. If Apple is worth 7% of the total market cap of the S&P 500, then Apple alone drives 7% of the S&P 500\'s daily movement. A smaller company worth only 0.1% of the index barely matters. The Dow Jones Industrial Average is unusual in that it is price weighted — the literal share price of each company determines its influence, regardless of how many shares are outstanding. This has strange consequences. A company with a share price of $500 carries more weight in the Dow than a company with a share price of $50, even if the $50 company is a hundred times bigger by market cap. Equal-weighted indices, which give each company identical influence regardless of size, exist but are less common. Understanding the weighting method matters because it changes what the index is actually telling you. A cap-weighted index is dominated by the few largest companies and reflects mostly what those giants are doing. An equal-weighted version of the same universe gives you a much cleaner read on the "average" stock\'s performance.',
         visual: {
           type: 'comparison-table',
           data: {
@@ -583,13 +664,30 @@ const STOCKS_BRONZE = {
               { label: 'Equal-weighted', color: '#3b82f6' },
             ],
             rows: [
-              { attribute: 'Example index', values: ['S&P 500, MSCI', 'Dow Jones', 'S&P 500 Equal Weight'] },
-              { attribute: 'Bigger companies matter more', values: ['Yes', 'No (based on price)', 'No'] },
-              { attribute: 'Price-based distortion', values: ['No', 'Yes — $500 stock > $50 stock', 'No'] },
-              { attribute: 'Reflects', values: ['Market value dynamics', 'Price movement of chosen list', 'Average stock performance'] },
+              {
+                attribute: 'Example index',
+                values: ['S&P 500, MSCI', 'Dow Jones', 'S&P 500 Equal Weight'],
+              },
+              {
+                attribute: 'Bigger companies matter more',
+                values: ['Yes', 'No (based on price)', 'No'],
+              },
+              {
+                attribute: 'Price-based distortion',
+                values: ['No', 'Yes — $500 stock > $50 stock', 'No'],
+              },
+              {
+                attribute: 'Reflects',
+                values: [
+                  'Market value dynamics',
+                  'Price movement of chosen list',
+                  'Average stock performance',
+                ],
+              },
             ],
           },
-          caption: 'The weighting method determines what the index is actually measuring — and it can cause two indices of the same market to tell quite different stories.',
+          caption:
+            'The weighting method determines what the index is actually measuring — and it can cause two indices of the same market to tell quite different stories.',
         },
         keyTerms: ['market-cap weighted', 'price weighted', 'equal weighted'],
       },
@@ -602,7 +700,7 @@ const STOCKS_BRONZE = {
       {
         title: 'Why the Dow Jones is less useful than you think',
         content:
-          "The Dow Jones Industrial Average is probably the best-known stock market index in American culture — it's the number newsreaders quote most often and the headline figure in most casual conversations about \"the stock market.\" But it has several quirks that make it a poor benchmark for serious analysis. First, it contains only 30 companies, which is a tiny sliver of the actual U.S. stock market. Second, it's price-weighted rather than cap-weighted, which means the influence of each company depends on its share price rather than its actual size. If a $40 stock splits 2-for-1 and becomes a $20 stock, its influence on the Dow suddenly drops by half — even though nothing about the underlying business has changed. Third, the 30 companies in the Dow are picked by a committee at the Wall Street Journal based on vague criteria like \"reputation\" and \"representativeness,\" and changes are rare, which means the Dow often reflects an older view of what the U.S. economy looks like. The S&P 500 is a far better benchmark for most purposes: it covers 16 times more companies, uses the more sensible cap-weighting methodology, and is updated continuously to reflect changes in company size and composition. The Dow persists in headlines mostly because of tradition. When you're trying to understand what the market is doing, the S&P 500 (or a broader total-market index) is almost always the better number to look at.",
+          'The Dow Jones Industrial Average is probably the best-known stock market index in American culture — it\'s the number newsreaders quote most often and the headline figure in most casual conversations about "the stock market." But it has several quirks that make it a poor benchmark for serious analysis. First, it contains only 30 companies, which is a tiny sliver of the actual U.S. stock market. Second, it\'s price-weighted rather than cap-weighted, which means the influence of each company depends on its share price rather than its actual size. If a $40 stock splits 2-for-1 and becomes a $20 stock, its influence on the Dow suddenly drops by half — even though nothing about the underlying business has changed. Third, the 30 companies in the Dow are picked by a committee at the Wall Street Journal based on vague criteria like "reputation" and "representativeness," and changes are rare, which means the Dow often reflects an older view of what the U.S. economy looks like. The S&P 500 is a far better benchmark for most purposes: it covers 16 times more companies, uses the more sensible cap-weighting methodology, and is updated continuously to reflect changes in company size and composition. The Dow persists in headlines mostly because of tradition. When you\'re trying to understand what the market is doing, the S&P 500 (or a broader total-market index) is almost always the better number to look at.',
         callout:
           'The Dow Jones is the most famous index but one of the least useful for serious analysis. The S&P 500 is a far better benchmark.',
         keyTerms: ['Dow Jones', 'price-weighted'],
@@ -634,7 +732,8 @@ const STOCKS_BRONZE = {
           'A random sample of 500 U.S. stocks updated weekly',
         ],
         correctIndex: 1,
-        explanation: 'The S&P 500 contains roughly 500 of the largest U.S. public companies, selected by a committee, and weighted by market cap.',
+        explanation:
+          'The S&P 500 contains roughly 500 of the largest U.S. public companies, selected by a committee, and weighted by market cap.',
       },
       {
         question: 'In a market-cap weighted index, the largest companies:',
@@ -645,7 +744,8 @@ const STOCKS_BRONZE = {
           'Are capped at 1% each',
         ],
         correctIndex: 1,
-        explanation: 'Cap-weighted indices give bigger companies more influence. A 7%-weighted company moves the index seven times more per percent change than a 1%-weighted company.',
+        explanation:
+          'Cap-weighted indices give bigger companies more influence. A 7%-weighted company moves the index seven times more per percent change than a 1%-weighted company.',
       },
       {
         question: 'The Dow Jones Industrial Average is unusual because it is:',
@@ -656,7 +756,8 @@ const STOCKS_BRONZE = {
           'Weighted by revenue',
         ],
         correctIndex: 1,
-        explanation: 'The Dow is price-weighted, which means a company with a higher per-share price carries more influence, regardless of its actual size — a quirky methodology that produces distortions.',
+        explanation:
+          'The Dow is price-weighted, which means a company with a higher per-share price carries more influence, regardless of its actual size — a quirky methodology that produces distortions.',
       },
       {
         question: 'Why is the S&P 500 a better benchmark than the Dow Jones for most investors?',
@@ -667,7 +768,8 @@ const STOCKS_BRONZE = {
           'It is cheaper to invest in',
         ],
         correctIndex: 1,
-        explanation: 'The S&P 500 covers 16 times more companies and uses cap-weighting, which reflects actual company sizes. The Dow persists mostly due to tradition.',
+        explanation:
+          'The S&P 500 covers 16 times more companies and uses cap-weighting, which reflects actual company sizes. The Dow persists mostly due to tradition.',
       },
       {
         question: 'Over the past several decades, the S&P 500 has returned roughly:',
@@ -678,7 +780,8 @@ const STOCKS_BRONZE = {
           '50% per year on average',
         ],
         correctIndex: 1,
-        explanation: 'The S&P 500 has averaged about 10% annually over long periods including reinvested dividends. Year-to-year variation is enormous — some years +30%, others -30% — but the long-run average clusters around 10%.',
+        explanation:
+          'The S&P 500 has averaged about 10% annually over long periods including reinvested dividends. Year-to-year variation is enormous — some years +30%, others -30% — but the long-run average clusters around 10%.',
       },
       {
         question: 'An index fund that tracks the S&P 500 is designed to:',
@@ -689,21 +792,20 @@ const STOCKS_BRONZE = {
           'Rotate holdings daily based on momentum',
         ],
         correctIndex: 1,
-        explanation: 'An index fund passively holds the constituent stocks in index proportions, aiming to match the index’s return rather than beat it. This keeps costs very low.',
+        explanation:
+          'An index fund passively holds the constituent stocks in index proportions, aiming to match the index’s return rather than beat it. This keeps costs very low.',
       },
       {
-        question: 'The U.S. stock market represents roughly what share of the total global stock market value?',
-        options: [
-          '10%',
-          '40-45%',
-          '80%',
-          '100% — international markets are too small to matter',
-        ],
+        question:
+          'The U.S. stock market represents roughly what share of the total global stock market value?',
+        options: ['10%', '40-45%', '80%', '100% — international markets are too small to matter'],
         correctIndex: 1,
-        explanation: 'The U.S. is the single largest market but still only around 40-45% of global stock market value. International stocks matter for true geographic diversification.',
+        explanation:
+          'The U.S. is the single largest market but still only around 40-45% of global stock market value. International stocks matter for true geographic diversification.',
       },
       {
-        question: 'You pick a portfolio of individual stocks and earn 8% in a year. The S&P 500 returns 14% that year. What should you conclude?',
+        question:
+          'You pick a portfolio of individual stocks and earn 8% in a year. The S&P 500 returns 14% that year. What should you conclude?',
         options: [
           'Your stock picks are clearly winning',
           'Your active choices underperformed the simple alternative of an index fund',
@@ -711,7 +813,8 @@ const STOCKS_BRONZE = {
           'You should pick even more aggressive stocks next year',
         ],
         correctIndex: 1,
-        explanation: 'If your active picks underperform a low-cost index fund, you failed to add value with your effort. Honestly comparing your results to an index is the main way investors evaluate whether their active choices are justified.',
+        explanation:
+          'If your active picks underperform a low-cost index fund, you failed to add value with your effort. Honestly comparing your results to an index is the main way investors evaluate whether their active choices are justified.',
       },
       {
         question: 'Sector-specific indices (like a technology index or energy index) are:',
@@ -722,10 +825,12 @@ const STOCKS_BRONZE = {
           'Always safer than broad indices',
         ],
         correctIndex: 1,
-        explanation: 'Sector indices concentrate your exposure in one industry, which is the opposite of diversification. They can amplify both gains and losses and are usually not a great starting point for beginners.',
+        explanation:
+          'Sector indices concentrate your exposure in one industry, which is the opposite of diversification. They can amplify both gains and losses and are usually not a great starting point for beginners.',
       },
       {
-        question: 'Two S&P 500 index funds from different companies, both tracking the same index, should have:',
+        question:
+          'Two S&P 500 index funds from different companies, both tracking the same index, should have:',
         options: [
           'Wildly different returns',
           'Nearly identical returns, with differences mostly driven by fees',
@@ -733,7 +838,8 @@ const STOCKS_BRONZE = {
           'Returns that depend on which company has the better manager',
         ],
         correctIndex: 1,
-        explanation: 'Both funds hold the same underlying stocks in the same proportions. Their returns should be nearly identical, with the tiny remaining difference coming from expense ratios and trading efficiency.',
+        explanation:
+          'Both funds hold the same underlying stocks in the same proportions. Their returns should be nearly identical, with the tiny remaining difference coming from expense ratios and trading efficiency.',
       },
     ],
   },
@@ -742,13 +848,13 @@ const STOCKS_BRONZE = {
       {
         title: 'Opening a brokerage account',
         content:
-          "A brokerage account is the on-ramp to the stock market for ordinary people. It's an account at a financial firm (a brokerage) that is authorized to buy and sell securities on your behalf and to hold those securities for you afterward. Opening one is much simpler than most beginners expect. Most major U.S. brokerages — Fidelity, Charles Schwab, Vanguard, E*TRADE, Robinhood, and several others — let you open an account entirely online in about fifteen minutes. You'll be asked for basic personal information (name, address, Social Security number), employment details, and a few questions about your investing experience and financial goals. Those questions are part of a regulatory requirement called \"know your customer\" rules designed to help match you with appropriate investment products and to flag anything unusual. Once the account is approved, you link your bank account and transfer money in. After a short waiting period (often a few business days for electronic transfers to fully settle), the cash is available and you can start buying investments. The fees for maintaining a brokerage account have dropped dramatically over the past decade. Many major brokers now charge zero commissions on U.S. stock and ETF trades, zero account maintenance fees, and no minimum balance. This was not always the case — as recently as the early 2000s, placing a single trade could cost $20 or more — but fee compression has made basic investing nearly free for small accounts. Beginners do not need a fancy or expensive brokerage. Any of the major low-cost providers will do everything a typical investor needs to do.",
+          'A brokerage account is the on-ramp to the stock market for ordinary people. It\'s an account at a financial firm (a brokerage) that is authorized to buy and sell securities on your behalf and to hold those securities for you afterward. Opening one is much simpler than most beginners expect. Most major U.S. brokerages — Fidelity, Charles Schwab, Vanguard, E*TRADE, Robinhood, and several others — let you open an account entirely online in about fifteen minutes. You\'ll be asked for basic personal information (name, address, Social Security number), employment details, and a few questions about your investing experience and financial goals. Those questions are part of a regulatory requirement called "know your customer" rules designed to help match you with appropriate investment products and to flag anything unusual. Once the account is approved, you link your bank account and transfer money in. After a short waiting period (often a few business days for electronic transfers to fully settle), the cash is available and you can start buying investments. The fees for maintaining a brokerage account have dropped dramatically over the past decade. Many major brokers now charge zero commissions on U.S. stock and ETF trades, zero account maintenance fees, and no minimum balance. This was not always the case — as recently as the early 2000s, placing a single trade could cost $20 or more — but fee compression has made basic investing nearly free for small accounts. Beginners do not need a fancy or expensive brokerage. Any of the major low-cost providers will do everything a typical investor needs to do.',
         keyTerms: ['brokerage account', 'know your customer', 'commission-free trading'],
       },
       {
         title: 'Cash accounts vs margin accounts',
         content:
-          "When you open a brokerage account, you will usually be offered two types: a cash account or a margin account. A cash account is the simpler of the two. You can only buy securities with money you've already deposited. If you have $1,000 in the account, you can buy up to $1,000 of stock. When you sell a stock, the proceeds have to \"settle\" (typically a day or two) before that cash is available to buy something else. A margin account lets you borrow money from the brokerage to buy more stock than you actually have cash to pay for. If you deposit $1,000, a margin account might let you buy up to $2,000 of stock — with the other $1,000 borrowed from the broker at an interest rate set by the broker. This is called \"buying on margin\" or \"leverage,\" and it has historically been a very effective way for inexperienced investors to destroy their wealth. The math is simple: leverage amplifies both gains and losses. If the stock goes up 10%, you earn 20% on your original $1,000 (minus interest). But if the stock goes down 10%, you lose 20% of your original money. And if the stock drops far enough that your account equity falls below the brokerage's required minimum, the broker will issue a \"margin call\" and can forcibly sell your positions at the worst possible moment to cover the loan. For beginners, the correct choice is almost always a cash account. The temptation of margin is real — more buying power looks like more opportunity — but it is a specialized tool that has a long history of wrecking investors who used it without understanding it.",
+          'When you open a brokerage account, you will usually be offered two types: a cash account or a margin account. A cash account is the simpler of the two. You can only buy securities with money you\'ve already deposited. If you have $1,000 in the account, you can buy up to $1,000 of stock. When you sell a stock, the proceeds have to "settle" (typically a day or two) before that cash is available to buy something else. A margin account lets you borrow money from the brokerage to buy more stock than you actually have cash to pay for. If you deposit $1,000, a margin account might let you buy up to $2,000 of stock — with the other $1,000 borrowed from the broker at an interest rate set by the broker. This is called "buying on margin" or "leverage," and it has historically been a very effective way for inexperienced investors to destroy their wealth. The math is simple: leverage amplifies both gains and losses. If the stock goes up 10%, you earn 20% on your original $1,000 (minus interest). But if the stock goes down 10%, you lose 20% of your original money. And if the stock drops far enough that your account equity falls below the brokerage\'s required minimum, the broker will issue a "margin call" and can forcibly sell your positions at the worst possible moment to cover the loan. For beginners, the correct choice is almost always a cash account. The temptation of margin is real — more buying power looks like more opportunity — but it is a specialized tool that has a long history of wrecking investors who used it without understanding it.',
         callout:
           'Beginners should open a cash account, not a margin account. The extra buying power from margin is the main way inexperienced investors turn losses into catastrophes.',
         keyTerms: ['cash account', 'margin account', 'leverage', 'margin call'],
@@ -765,22 +871,41 @@ const STOCKS_BRONZE = {
               { label: 'Limit order', color: '#3b82f6' },
             ],
             rows: [
-              { attribute: 'Execution', values: ['Almost guaranteed', 'Only if price reaches your target'] },
-              { attribute: 'Price control', values: ['No — you take the current market', 'Yes — set your max/min'] },
-              { attribute: 'Speed', values: ['Immediate', 'Depends on market reaching your price'] },
-              { attribute: 'Best for', values: ['Liquid stocks, fast fills', 'Thin stocks, specific price targets'] },
-              { attribute: 'Risk of bad fill', values: ['Higher in thin markets', 'Zero — you control the price'] },
-              { attribute: 'Risk of non-execution', values: ['Very low', 'Real — order may never fill'] },
+              {
+                attribute: 'Execution',
+                values: ['Almost guaranteed', 'Only if price reaches your target'],
+              },
+              {
+                attribute: 'Price control',
+                values: ['No — you take the current market', 'Yes — set your max/min'],
+              },
+              {
+                attribute: 'Speed',
+                values: ['Immediate', 'Depends on market reaching your price'],
+              },
+              {
+                attribute: 'Best for',
+                values: ['Liquid stocks, fast fills', 'Thin stocks, specific price targets'],
+              },
+              {
+                attribute: 'Risk of bad fill',
+                values: ['Higher in thin markets', 'Zero — you control the price'],
+              },
+              {
+                attribute: 'Risk of non-execution',
+                values: ['Very low', 'Real — order may never fill'],
+              },
             ],
           },
-          caption: 'The choice between market and limit orders is a tradeoff between execution certainty and price control.',
+          caption:
+            'The choice between market and limit orders is a tradeoff between execution certainty and price control.',
         },
         keyTerms: ['market order', 'limit order'],
       },
       {
         title: 'Stop orders and other special types',
         content:
-          "Beyond basic market and limit orders, most brokerages offer a few additional order types that are worth knowing even if you don't use them often. A stop order is an order that only becomes active once the stock reaches a specific price. The most common use is the \"stop-loss order,\" which is designed to automatically sell a position if the price drops to a predetermined level — a way to limit your downside if a trade goes against you. You buy a stock at $100 and set a stop-loss at $90. If the stock ever trades at or below $90, your stop order becomes a market sell order and your position is closed out at roughly that price. Stop orders have one notable weakness: in a sharp gap or fast-moving market, the execution price can be significantly worse than the stop price you set, because the order becomes a market order once triggered. A \"stop-limit order\" is a variant that tries to address this by converting into a limit order instead of a market order, but then you face the opposite risk — your order may not execute at all if the price gaps past your limit. There are also time-in-force modifiers you can attach to any order: \"day\" (the order is valid only for today; if it doesn't fill, it's cancelled at market close) and \"good-til-cancelled\" (GTC, meaning the order stays open until it fills or you manually cancel it). For most beginners, day orders are safer. A GTC order you forgot about and then remembered three months later might execute at a surprising price on a day when you weren't paying attention.",
+          'Beyond basic market and limit orders, most brokerages offer a few additional order types that are worth knowing even if you don\'t use them often. A stop order is an order that only becomes active once the stock reaches a specific price. The most common use is the "stop-loss order," which is designed to automatically sell a position if the price drops to a predetermined level — a way to limit your downside if a trade goes against you. You buy a stock at $100 and set a stop-loss at $90. If the stock ever trades at or below $90, your stop order becomes a market sell order and your position is closed out at roughly that price. Stop orders have one notable weakness: in a sharp gap or fast-moving market, the execution price can be significantly worse than the stop price you set, because the order becomes a market order once triggered. A "stop-limit order" is a variant that tries to address this by converting into a limit order instead of a market order, but then you face the opposite risk — your order may not execute at all if the price gaps past your limit. There are also time-in-force modifiers you can attach to any order: "day" (the order is valid only for today; if it doesn\'t fill, it\'s cancelled at market close) and "good-til-cancelled" (GTC, meaning the order stays open until it fills or you manually cancel it). For most beginners, day orders are safer. A GTC order you forgot about and then remembered three months later might execute at a surprising price on a day when you weren\'t paying attention.',
         keyTerms: ['stop order', 'stop-loss', 'stop-limit', 'time in force', 'GTC'],
       },
       {
@@ -811,7 +936,8 @@ const STOCKS_BRONZE = {
           'Only margin accounts can hold ETFs',
         ],
         correctIndex: 1,
-        explanation: 'Cash accounts require settled cash for every purchase. Margin accounts allow borrowing from the broker, amplifying both gains and losses.',
+        explanation:
+          'Cash accounts require settled cash for every purchase. Margin accounts allow borrowing from the broker, amplifying both gains and losses.',
       },
       {
         question: 'Why is a cash account the safer default for beginners?',
@@ -822,7 +948,8 @@ const STOCKS_BRONZE = {
           'It is required by law for anyone under 30',
         ],
         correctIndex: 1,
-        explanation: 'Margin amplifies losses and can force involuntary selling at the worst moments via margin calls. A cash account protects beginners from this specific risk.',
+        explanation:
+          'Margin amplifies losses and can force involuntary selling at the worst moments via margin calls. A cash account protects beginners from this specific risk.',
       },
       {
         question: 'A market order is best described as:',
@@ -833,7 +960,8 @@ const STOCKS_BRONZE = {
           '"Buy this stock if the market index rises"',
         ],
         correctIndex: 1,
-        explanation: 'A market order executes immediately at the best available price. You trade price control for execution certainty.',
+        explanation:
+          'A market order executes immediately at the best available price. You trade price control for execution certainty.',
       },
       {
         question: 'When is a limit order particularly useful?',
@@ -844,7 +972,8 @@ const STOCKS_BRONZE = {
           'When you are trading in a margin account',
         ],
         correctIndex: 1,
-        explanation: 'Limit orders give you precise price control. They shine when the stock is illiquid (where market orders can fill at bad prices) or when you need a specific price.',
+        explanation:
+          'Limit orders give you precise price control. They shine when the stock is illiquid (where market orders can fill at bad prices) or when you need a specific price.',
       },
       {
         question: 'What is the primary risk of a stop-loss order in a fast-moving market?',
@@ -855,7 +984,8 @@ const STOCKS_BRONZE = {
           'The SEC prohibits stop-losses',
         ],
         correctIndex: 1,
-        explanation: 'Once triggered, a stop-loss converts to a market order. In a gap-down scenario, the execution can happen well below the stop price, undermining the protection you thought you had.',
+        explanation:
+          'Once triggered, a stop-loss converts to a market order. In a gap-down scenario, the execution can happen well below the stop price, undermining the protection you thought you had.',
       },
       {
         question: 'Fractional shares allow you to:',
@@ -866,7 +996,8 @@ const STOCKS_BRONZE = {
           'Vote at shareholder meetings with weighted votes',
         ],
         correctIndex: 0,
-        explanation: 'Fractional shares decouple investment amount from per-share price. You can buy $25 of a $3,000 stock, which is especially helpful for small-dollar systematic investing.',
+        explanation:
+          'Fractional shares decouple investment amount from per-share price. You can buy $25 of a $3,000 stock, which is especially helpful for small-dollar systematic investing.',
       },
       {
         question: 'A "GTC" (good-til-cancelled) order:',
@@ -877,7 +1008,8 @@ const STOCKS_BRONZE = {
           'Is only valid for margin accounts',
         ],
         correctIndex: 1,
-        explanation: 'A GTC order remains active indefinitely until filled or cancelled. This is powerful but also risky — a forgotten GTC can surprise you by executing weeks later.',
+        explanation:
+          'A GTC order remains active indefinitely until filled or cancelled. This is powerful but also risky — a forgotten GTC can surprise you by executing weeks later.',
       },
       {
         question: 'The U.S. equity settlement period is:',
@@ -888,10 +1020,12 @@ const STOCKS_BRONZE = {
           'Two calendar weeks',
         ],
         correctIndex: 1,
-        explanation: 'U.S. equity trades settle T+1, meaning the actual transfer of securities and cash officially completes one business day after the trade date.',
+        explanation:
+          'U.S. equity trades settle T+1, meaning the actual transfer of securities and cash officially completes one business day after the trade date.',
       },
       {
-        question: 'If you have $1,000 of cash in a brokerage account and you buy $500 of Stock A today, what happens if you try to buy another $500 of Stock B using those funds tomorrow?',
+        question:
+          'If you have $1,000 of cash in a brokerage account and you buy $500 of Stock A today, what happens if you try to buy another $500 of Stock B using those funds tomorrow?',
         options: [
           'You cannot, because the broker will reject the order',
           'You can — you still have $500 of unspent cash available',
@@ -899,10 +1033,12 @@ const STOCKS_BRONZE = {
           'You need a margin account for this',
         ],
         correctIndex: 1,
-        explanation: 'You only spent $500 of your $1,000 on Stock A. The remaining $500 is available for other purchases. No margin or leverage is involved.',
+        explanation:
+          'You only spent $500 of your $1,000 on Stock A. The remaining $500 is available for other purchases. No margin or leverage is involved.',
       },
       {
-        question: 'Commission-free stock trading is now standard at most major U.S. brokerages. This means:',
+        question:
+          'Commission-free stock trading is now standard at most major U.S. brokerages. This means:',
         options: [
           'All trading is completely free with no hidden costs',
           'You pay no per-trade commission, though other costs like bid-ask spreads still apply',
@@ -910,7 +1046,8 @@ const STOCKS_BRONZE = {
           'There are no regulations on commissions',
         ],
         correctIndex: 1,
-        explanation: 'Most brokerages charge no explicit per-trade commission, but you still incur spreads and other small indirect costs. The headline "commission-free" is accurate but not the only cost to consider.',
+        explanation:
+          'Most brokerages charge no explicit per-trade commission, but you still incur spreads and other small indirect costs. The headline "commission-free" is accurate but not the only cost to consider.',
       },
     ],
   },
@@ -928,7 +1065,8 @@ const STOCKS_BRONZE = {
             years: 40,
             milestones: [0, 10, 20, 30, 40],
           },
-          caption: 'A single $1,000 deposit growing at 7% per year. Notice how the bars barely move for the first decade and then explode — that is compounding doing its work.',
+          caption:
+            'A single $1,000 deposit growing at 7% per year. Notice how the bars barely move for the first decade and then explode — that is compounding doing its work.',
         },
         keyTerms: ['compound interest', 'principal', 'annual return', 'time horizon'],
       },
@@ -960,7 +1098,8 @@ const STOCKS_BRONZE = {
               { label: 'U.S. stocks (broad)', value: 7, color: '#10b981', suffix: '%' },
             ],
           },
-          caption: 'Approximate real (inflation-adjusted) historical returns for different asset classes over long periods. Cash actually loses purchasing power over time.',
+          caption:
+            'Approximate real (inflation-adjusted) historical returns for different asset classes over long periods. Cash actually loses purchasing power over time.',
         },
         keyTerms: ['inflation', 'real return', 'nominal return', 'purchasing power'],
       },
@@ -991,21 +1130,20 @@ const STOCKS_BRONZE = {
           'It is calculated once per year instead of monthly',
         ],
         correctIndex: 1,
-        explanation: 'Compound interest earns returns on the accumulated value, not just the original principal. This recursive effect is what makes long-term returns grow faster and faster over time.',
+        explanation:
+          'Compound interest earns returns on the accumulated value, not just the original principal. This recursive effect is what makes long-term returns grow faster and faster over time.',
       },
       {
-        question: 'Using the rule of 72, approximately how many years does it take money to double at a 9% annual return?',
-        options: [
-          '4 years',
-          '8 years',
-          '12 years',
-          '20 years',
-        ],
+        question:
+          'Using the rule of 72, approximately how many years does it take money to double at a 9% annual return?',
+        options: ['4 years', '8 years', '12 years', '20 years'],
         correctIndex: 1,
-        explanation: '72 ÷ 9 = 8 years. The rule of 72 gives a quick mental estimate of doubling time at any given rate of return.',
+        explanation:
+          '72 ÷ 9 = 8 years. The rule of 72 gives a quick mental estimate of doubling time at any given rate of return.',
       },
       {
-        question: 'Alice invests $5,000/year from age 25 to 34 (total $50,000) then stops. Bob invests $5,000/year from age 35 to 64 (total $150,000). Both earn 7% per year. At age 65, who likely has more?',
+        question:
+          'Alice invests $5,000/year from age 25 to 34 (total $50,000) then stops. Bob invests $5,000/year from age 35 to 64 (total $150,000). Both earn 7% per year. At age 65, who likely has more?',
         options: [
           'Bob, because he invested three times as much money',
           'Alice, because her money had 10 extra years to compound',
@@ -1013,10 +1151,12 @@ const STOCKS_BRONZE = {
           'It depends entirely on which stocks they picked',
         ],
         correctIndex: 1,
-        explanation: 'Alice’s earlier start gives her money a decade of additional compounding, and those early years matter enormously. This is the mathematical case for starting as early as possible, even with small amounts.',
+        explanation:
+          'Alice’s earlier start gives her money a decade of additional compounding, and those early years matter enormously. This is the mathematical case for starting as early as possible, even with small amounts.',
       },
       {
-        question: 'Your savings account pays 2% annual interest. Inflation is 4%. What is your real return?',
+        question:
+          'Your savings account pays 2% annual interest. Inflation is 4%. What is your real return?',
         options: [
           '+6% — you’re gaining 6% per year in real terms',
           '+2% — the inflation rate is irrelevant',
@@ -1024,10 +1164,12 @@ const STOCKS_BRONZE = {
           '0% — they cancel out exactly',
         ],
         correctIndex: 2,
-        explanation: 'Real return is approximately nominal return minus inflation. 2% − 4% = −2%. Your nominal dollars are growing but their purchasing power is shrinking.',
+        explanation:
+          'Real return is approximately nominal return minus inflation. 2% − 4% = −2%. Your nominal dollars are growing but their purchasing power is shrinking.',
       },
       {
-        question: 'Why do most long-term financial advisors recommend investing in stocks rather than holding cash over multi-decade periods?',
+        question:
+          'Why do most long-term financial advisors recommend investing in stocks rather than holding cash over multi-decade periods?',
         options: [
           'Stocks are guaranteed to go up every year',
           'Stocks have historically produced returns well above inflation, growing real purchasing power',
@@ -1035,7 +1177,8 @@ const STOCKS_BRONZE = {
           'Stocks avoid all taxes on gains',
         ],
         correctIndex: 1,
-        explanation: 'Over long horizons, stocks have historically delivered real (inflation-adjusted) returns of around 6-7%, while cash effectively loses purchasing power. This is the central case for investing over saving.',
+        explanation:
+          'Over long horizons, stocks have historically delivered real (inflation-adjusted) returns of around 6-7%, while cash effectively loses purchasing power. This is the central case for investing over saving.',
       },
       {
         question: 'Dollar-cost averaging is best described as:',
@@ -1046,7 +1189,8 @@ const STOCKS_BRONZE = {
           'A strategy for picking individual winning stocks',
         ],
         correctIndex: 1,
-        explanation: 'DCA involves investing a fixed amount on a schedule. It removes emotional timing and smooths out the average price paid over time.',
+        explanation:
+          'DCA involves investing a fixed amount on a schedule. It removes emotional timing and smooths out the average price paid over time.',
       },
       {
         question: 'The primary behavioral benefit of dollar-cost averaging is:',
@@ -1057,21 +1201,20 @@ const STOCKS_BRONZE = {
           'It works only in bull markets',
         ],
         correctIndex: 1,
-        explanation: 'DCA’s main value is behavioral — by pre-committing to a schedule, investors avoid the emotional traps of trying to time markets. The mechanical discipline often beats clever improvisation.',
+        explanation:
+          'DCA’s main value is behavioral — by pre-committing to a schedule, investors avoid the emotional traps of trying to time markets. The mechanical discipline often beats clever improvisation.',
       },
       {
-        question: 'Two index funds track the same index. Fund A charges 0.05% per year; Fund B charges 1% per year. Over 40 years on a $10,000 investment at 7% pre-fee returns, the fee difference costs you approximately:',
-        options: [
-          'Less than $1,000',
-          'Around $5,000',
-          'Around $45,000',
-          'Around $500,000',
-        ],
+        question:
+          'Two index funds track the same index. Fund A charges 0.05% per year; Fund B charges 1% per year. Over 40 years on a $10,000 investment at 7% pre-fee returns, the fee difference costs you approximately:',
+        options: ['Less than $1,000', 'Around $5,000', 'Around $45,000', 'Around $500,000'],
         correctIndex: 2,
-        explanation: 'A 0.95% annual fee drag compounds to roughly $46,000 of lost wealth over 40 years on a $10,000 investment. Small fees become enormous over long horizons — this is why expense ratios matter so much.',
+        explanation:
+          'A 0.95% annual fee drag compounds to roughly $46,000 of lost wealth over 40 years on a $10,000 investment. Small fees become enormous over long horizons — this is why expense ratios matter so much.',
       },
       {
-        question: 'A 25-year-old who invests $100/month is typically in a better long-term position than a 45-year-old who invests $500/month because:',
+        question:
+          'A 25-year-old who invests $100/month is typically in a better long-term position than a 45-year-old who invests $500/month because:',
         options: [
           '$100 buys more shares than $500',
           'Young people automatically earn higher returns',
@@ -1079,7 +1222,8 @@ const STOCKS_BRONZE = {
           'Markets always perform better for young investors',
         ],
         correctIndex: 2,
-        explanation: 'The 25-year-old has 40 years of compounding ahead, while the 45-year-old has 20. That extra time often outweighs larger monthly contributions starting later.',
+        explanation:
+          'The 25-year-old has 40 years of compounding ahead, while the 45-year-old has 20. That extra time often outweighs larger monthly contributions starting later.',
       },
       {
         question: 'A "real return" of 5% means:',
@@ -1090,7 +1234,8 @@ const STOCKS_BRONZE = {
           'The return was in dollars rather than foreign currency',
         ],
         correctIndex: 1,
-        explanation: 'Real return = nominal return − inflation rate. It measures growth in actual purchasing power, which is what matters for long-term wealth building.',
+        explanation:
+          'Real return = nominal return − inflation rate. It measures growth in actual purchasing power, which is what matters for long-term wealth building.',
       },
     ],
   },
@@ -1099,7 +1244,7 @@ const STOCKS_BRONZE = {
       {
         title: 'Why every investment carries risk',
         content:
-          "Every investment carries some form of risk — there is no such thing as a truly safe investment. Even cash sitting in a checking account is exposed to inflation risk, which slowly erodes its purchasing power over time. A U.S. Treasury bond, which is considered the closest thing to a risk-free investment in the world, still has interest rate risk (if rates rise, the market value of your bond drops) and inflation risk (if prices rise faster than the bond's yield, your real return is negative). Stocks carry all of the above plus business risk (the company might fail), market risk (the whole market might crash), and liquidity risk (in extreme conditions, you might not be able to sell when you want to). Real estate has property-specific risks, natural disaster risks, and interest rate sensitivity. Commodities have storage costs and dramatic price swings. Cryptocurrency has all of the market risks plus regulatory risks and exchange hack risks. None of this means investing is foolish. It means that the question \"is this investment safe?\" is the wrong question. The right question is \"what kinds of risk does this investment carry, and am I being compensated enough to take them?\" A sensible investor accepts that risk is unavoidable and focuses on understanding what they're taking on and how it fits into the rest of their portfolio. The goal isn't to eliminate risk — that's impossible — but to structure your portfolio so that no single risk can do catastrophic damage.",
+          'Every investment carries some form of risk — there is no such thing as a truly safe investment. Even cash sitting in a checking account is exposed to inflation risk, which slowly erodes its purchasing power over time. A U.S. Treasury bond, which is considered the closest thing to a risk-free investment in the world, still has interest rate risk (if rates rise, the market value of your bond drops) and inflation risk (if prices rise faster than the bond\'s yield, your real return is negative). Stocks carry all of the above plus business risk (the company might fail), market risk (the whole market might crash), and liquidity risk (in extreme conditions, you might not be able to sell when you want to). Real estate has property-specific risks, natural disaster risks, and interest rate sensitivity. Commodities have storage costs and dramatic price swings. Cryptocurrency has all of the market risks plus regulatory risks and exchange hack risks. None of this means investing is foolish. It means that the question "is this investment safe?" is the wrong question. The right question is "what kinds of risk does this investment carry, and am I being compensated enough to take them?" A sensible investor accepts that risk is unavoidable and focuses on understanding what they\'re taking on and how it fits into the rest of their portfolio. The goal isn\'t to eliminate risk — that\'s impossible — but to structure your portfolio so that no single risk can do catastrophic damage.',
         keyTerms: ['risk', 'inflation risk', 'market risk', 'business risk', 'liquidity risk'],
       },
       {
@@ -1118,14 +1263,15 @@ const STOCKS_BRONZE = {
             ],
             centerLabel: 'Diversified',
           },
-          caption: 'A simple globally-diversified portfolio mix. The goal is not to own everything — it is to own things that behave differently under different conditions.',
+          caption:
+            'A simple globally-diversified portfolio mix. The goal is not to own everything — it is to own things that behave differently under different conditions.',
         },
         keyTerms: ['diversification', 'correlation', 'asset classes'],
       },
       {
         title: 'Systematic vs unsystematic risk',
         content:
-          "Risk in a portfolio comes in two flavors. Unsystematic risk is risk specific to individual companies or industries — an earnings miss, a product recall, a scandal, a lawsuit, a bad CEO decision. This kind of risk can be diversified away almost entirely by owning a broad basket of stocks. If one company in your portfolio of 500 companies has a bad quarter, it barely moves the needle on your total wealth. Systematic risk, also called market risk, is risk that affects the entire market at once — recessions, financial crises, wars, pandemics, and large-scale panic. This kind of risk cannot be diversified away by holding more stocks. If the whole market drops 30%, a diversified portfolio of 500 stocks will still drop about 30%, because the drop is happening to everything at once. The practical implication is that diversification protects you from bad luck with individual companies but not from broad market downturns. To protect against systematic risk, you need to diversify across asset classes, not just across stocks — adding bonds, international exposure, real estate, and possibly some commodity exposure. This is the rationale behind the classic balanced portfolio: stocks provide long-term growth, bonds provide stability during market crashes, international exposure protects against a U.S.-specific catastrophe, and so on. No combination completely eliminates risk, but a thoughtfully diversified portfolio can significantly reduce the chance of a portfolio-destroying event.",
+          'Risk in a portfolio comes in two flavors. Unsystematic risk is risk specific to individual companies or industries — an earnings miss, a product recall, a scandal, a lawsuit, a bad CEO decision. This kind of risk can be diversified away almost entirely by owning a broad basket of stocks. If one company in your portfolio of 500 companies has a bad quarter, it barely moves the needle on your total wealth. Systematic risk, also called market risk, is risk that affects the entire market at once — recessions, financial crises, wars, pandemics, and large-scale panic. This kind of risk cannot be diversified away by holding more stocks. If the whole market drops 30%, a diversified portfolio of 500 stocks will still drop about 30%, because the drop is happening to everything at once. The practical implication is that diversification protects you from bad luck with individual companies but not from broad market downturns. To protect against systematic risk, you need to diversify across asset classes, not just across stocks — adding bonds, international exposure, real estate, and possibly some commodity exposure. This is the rationale behind the classic balanced portfolio: stocks provide long-term growth, bonds provide stability during market crashes, international exposure protects against a U.S.-specific catastrophe, and so on. No combination completely eliminates risk, but a thoughtfully diversified portfolio can significantly reduce the chance of a portfolio-destroying event.',
         keyTerms: ['systematic risk', 'unsystematic risk', 'market risk'],
       },
       {
@@ -1145,14 +1291,15 @@ const STOCKS_BRONZE = {
               { label: 'Crypto / junk bonds', risk: 10, return: 8 },
             ],
           },
-          caption: 'Rough positioning of asset classes on risk/return axes. The upward trend is real but imperfect — at the extremes, more risk does not necessarily mean proportionally more expected return.',
+          caption:
+            'Rough positioning of asset classes on risk/return axes. The upward trend is real but imperfect — at the extremes, more risk does not necessarily mean proportionally more expected return.',
         },
         keyTerms: ['risk-reward tradeoff', 'expected return'],
       },
       {
         title: 'How much risk can you actually handle?',
         content:
-          "Risk tolerance is the amount of portfolio volatility you can live with without making panic decisions. This is a personal, emotional, often uncomfortable question, and it's different from the question of how much risk your situation can theoretically support. A 30-year-old with a stable job and a 35-year time horizon can theoretically support a lot of risk — a 40% portfolio drawdown would eventually recover long before retirement. But the same 30-year-old might be emotionally unable to watch their account balance drop 40% without selling out in panic. Theoretical capacity is one thing; real human behavior is another. The best way to measure your actual risk tolerance is not to ask yourself how you'd feel about a hypothetical 40% drop — most people dramatically overestimate how calm they'd be — but to notice how you reacted during real market downturns in the past, or to start with a moderate allocation and honestly assess whether you're losing sleep at night. If you are, your allocation is too aggressive for you regardless of what any textbook says. The right risk level is the one you can actually stick with for decades. A boring 50/50 stock-bond portfolio that you hold through a 30-year career will typically beat an aggressive 100% stock portfolio that you panic out of during the first crash. The only strategy that works is the one you follow. Matching risk to tolerance means not just asking \"what should I own?\" but \"what could I actually hold during the worst moments this market might throw at me?\"",
+          'Risk tolerance is the amount of portfolio volatility you can live with without making panic decisions. This is a personal, emotional, often uncomfortable question, and it\'s different from the question of how much risk your situation can theoretically support. A 30-year-old with a stable job and a 35-year time horizon can theoretically support a lot of risk — a 40% portfolio drawdown would eventually recover long before retirement. But the same 30-year-old might be emotionally unable to watch their account balance drop 40% without selling out in panic. Theoretical capacity is one thing; real human behavior is another. The best way to measure your actual risk tolerance is not to ask yourself how you\'d feel about a hypothetical 40% drop — most people dramatically overestimate how calm they\'d be — but to notice how you reacted during real market downturns in the past, or to start with a moderate allocation and honestly assess whether you\'re losing sleep at night. If you are, your allocation is too aggressive for you regardless of what any textbook says. The right risk level is the one you can actually stick with for decades. A boring 50/50 stock-bond portfolio that you hold through a 30-year career will typically beat an aggressive 100% stock portfolio that you panic out of during the first crash. The only strategy that works is the one you follow. Matching risk to tolerance means not just asking "what should I own?" but "what could I actually hold during the worst moments this market might throw at me?"',
         callout:
           'The best portfolio is not the one that looks optimal on paper — it’s the one you can actually stick with through bad markets without panic-selling.',
         keyTerms: ['risk tolerance', 'asset allocation'],
@@ -1173,7 +1320,8 @@ const STOCKS_BRONZE = {
           'Interest rates are always negative',
         ],
         correctIndex: 1,
-        explanation: 'Cash faces inflation risk — its nominal value is stable but its purchasing power declines. Over decades, inflation can cut the real value of cash in half or more.',
+        explanation:
+          'Cash faces inflation risk — its nominal value is stable but its purchasing power declines. Over decades, inflation can cut the real value of cash in half or more.',
       },
       {
         question: 'Diversification reduces risk most effectively when:',
@@ -1184,7 +1332,8 @@ const STOCKS_BRONZE = {
           'You hold only cash',
         ],
         correctIndex: 1,
-        explanation: 'The magic of diversification comes from combining assets that aren’t perfectly correlated. Owning 50 tech stocks is less diversified than owning 10 stocks across 10 different sectors.',
+        explanation:
+          'The magic of diversification comes from combining assets that aren’t perfectly correlated. Owning 50 tech stocks is less diversified than owning 10 stocks across 10 different sectors.',
       },
       {
         question: 'Unsystematic risk is:',
@@ -1195,7 +1344,8 @@ const STOCKS_BRONZE = {
           'Risk that cannot ever be measured',
         ],
         correctIndex: 1,
-        explanation: 'Unsystematic (or idiosyncratic) risk is company-specific — an earnings miss, a scandal, a product failure. Owning many stocks averages these risks out.',
+        explanation:
+          'Unsystematic (or idiosyncratic) risk is company-specific — an earnings miss, a scandal, a product failure. Owning many stocks averages these risks out.',
       },
       {
         question: 'Systematic risk cannot be diversified away by owning more stocks because:',
@@ -1206,7 +1356,8 @@ const STOCKS_BRONZE = {
           'It doesn’t actually exist',
         ],
         correctIndex: 1,
-        explanation: 'Systematic risk — market-wide events like recessions or crashes — hits all stocks simultaneously. To protect against it, you need to diversify across asset classes (bonds, international, etc.), not just across individual stocks.',
+        explanation:
+          'Systematic risk — market-wide events like recessions or crashes — hits all stocks simultaneously. To protect against it, you need to diversify across asset classes (bonds, international, etc.), not just across individual stocks.',
       },
       {
         question: 'The risk-reward tradeoff says that:',
@@ -1217,7 +1368,8 @@ const STOCKS_BRONZE = {
           'You can eliminate risk entirely with enough diversification',
         ],
         correctIndex: 1,
-        explanation: 'Higher risk demands compensation in the form of higher expected return on average, but "expected" does not mean "guaranteed." Bad outcomes still happen, even over long horizons.',
+        explanation:
+          'Higher risk demands compensation in the form of higher expected return on average, but "expected" does not mean "guaranteed." Bad outcomes still happen, even over long horizons.',
       },
       {
         question: 'A portfolio of 50 technology stocks is:',
@@ -1228,7 +1380,8 @@ const STOCKS_BRONZE = {
           'Not allowed for retail investors',
         ],
         correctIndex: 1,
-        explanation: 'Concentration in one sector means correlated exposures. If the tech sector falls 30%, nearly all 50 stocks will fall together. True diversification requires cross-industry exposure.',
+        explanation:
+          'Concentration in one sector means correlated exposures. If the tech sector falls 30%, nearly all 50 stocks will fall together. True diversification requires cross-industry exposure.',
       },
       {
         question: 'What is the best way to actually measure your own risk tolerance?',
@@ -1239,10 +1392,12 @@ const STOCKS_BRONZE = {
           'Copy whatever Warren Buffett does',
         ],
         correctIndex: 1,
-        explanation: 'Theoretical capacity is easy to overestimate. Real past behavior and present emotional reaction are the only reliable signals for how you’ll act in the next crash.',
+        explanation:
+          'Theoretical capacity is easy to overestimate. Real past behavior and present emotional reaction are the only reliable signals for how you’ll act in the next crash.',
       },
       {
-        question: 'In a financial crisis where stocks drop 40%, a well-diversified stock-heavy portfolio will most likely:',
+        question:
+          'In a financial crisis where stocks drop 40%, a well-diversified stock-heavy portfolio will most likely:',
         options: [
           'Be unaffected — diversification eliminates all drops',
           'Drop significantly, since diversification within stocks doesn’t protect against systematic risk',
@@ -1250,10 +1405,12 @@ const STOCKS_BRONZE = {
           'Become illegal to sell',
         ],
         correctIndex: 1,
-        explanation: 'Stock diversification protects against individual company failures but not against broad market downturns. A crisis that pushes all stocks down will push a diversified stock portfolio down roughly in proportion.',
+        explanation:
+          'Stock diversification protects against individual company failures but not against broad market downturns. A crisis that pushes all stocks down will push a diversified stock portfolio down roughly in proportion.',
       },
       {
-        question: 'A young investor with a 30-year horizon tells you they cannot emotionally handle watching their portfolio drop 30%. What’s the right conclusion?',
+        question:
+          'A young investor with a 30-year horizon tells you they cannot emotionally handle watching their portfolio drop 30%. What’s the right conclusion?',
         options: [
           'They should hold 100% stocks anyway because of their long time horizon',
           'Their emotional risk tolerance is lower than their theoretical capacity, and their allocation should reflect what they can actually stick with',
@@ -1261,7 +1418,8 @@ const STOCKS_BRONZE = {
           'They are not ready to invest at any age',
         ],
         correctIndex: 1,
-        explanation: 'The best portfolio is one the investor can actually hold through bad markets. Matching risk to real emotional tolerance (not textbook capacity) prevents panic-selling at the worst moments.',
+        explanation:
+          'The best portfolio is one the investor can actually hold through bad markets. Matching risk to real emotional tolerance (not textbook capacity) prevents panic-selling at the worst moments.',
       },
       {
         question: 'The statement "diversification is a free lunch" means:',
@@ -1272,7 +1430,8 @@ const STOCKS_BRONZE = {
           'Diversification eliminates all risk at no cost',
         ],
         correctIndex: 1,
-        explanation: 'The "free lunch" phrase captures the fact that uncorrelated diversification reduces volatility more than it reduces expected return — a mathematically proven benefit with no equivalent cost.',
+        explanation:
+          'The "free lunch" phrase captures the fact that uncorrelated diversification reduces volatility more than it reduces expected return — a mathematically proven benefit with no equivalent cost.',
       },
     ],
   },
@@ -1281,13 +1440,13 @@ const STOCKS_BRONZE = {
       {
         title: 'The financial press as entertainment',
         content:
-          "When you turn on a financial news channel, open a market website, or scroll through investing content on social media, you are not primarily consuming information. You are primarily consuming entertainment dressed up as information. This is not a cynical or conspiratorial claim — it follows directly from the business model of financial media. These outlets generate revenue through advertising, subscriptions, and clicks, all of which depend on keeping an audience glued to the screen. Keeping an audience glued requires drama: urgent-sounding headlines, breathless coverage of minor market moves, confident predictions that rarely pan out, interviews with people who sound like they know something, and a constant drumbeat of \"now is a pivotal moment.\" Markets are actually boring most of the time — they grind slowly upward over decades — and a media ecosystem that told you \"nothing interesting happened today, just keep doing what you were doing\" would go out of business within a month. So instead the ecosystem manufactures drama. A routine 1% market move becomes \"stocks plunge\" or \"stocks soar.\" A routine interest rate comment becomes \"breaking news\" with red banners. A company's earnings result becomes a \"miss\" or a \"beat\" regardless of whether it matters over any horizon longer than a day. A patient investor learns to recognize this pattern and step back from it. The frantic tone is almost never correlated with what you should actually do, which is almost always: nothing.",
+          'When you turn on a financial news channel, open a market website, or scroll through investing content on social media, you are not primarily consuming information. You are primarily consuming entertainment dressed up as information. This is not a cynical or conspiratorial claim — it follows directly from the business model of financial media. These outlets generate revenue through advertising, subscriptions, and clicks, all of which depend on keeping an audience glued to the screen. Keeping an audience glued requires drama: urgent-sounding headlines, breathless coverage of minor market moves, confident predictions that rarely pan out, interviews with people who sound like they know something, and a constant drumbeat of "now is a pivotal moment." Markets are actually boring most of the time — they grind slowly upward over decades — and a media ecosystem that told you "nothing interesting happened today, just keep doing what you were doing" would go out of business within a month. So instead the ecosystem manufactures drama. A routine 1% market move becomes "stocks plunge" or "stocks soar." A routine interest rate comment becomes "breaking news" with red banners. A company\'s earnings result becomes a "miss" or a "beat" regardless of whether it matters over any horizon longer than a day. A patient investor learns to recognize this pattern and step back from it. The frantic tone is almost never correlated with what you should actually do, which is almost always: nothing.',
         keyTerms: ['financial media', 'business model', 'attention economy'],
       },
       {
         title: 'The difference between signal and noise',
         content:
-          "In signal-processing terms, a \"signal\" is the useful pattern in a stream of data, and \"noise\" is the random variation surrounding it. Financial markets produce vastly more noise than signal. The noise consists of daily price fluctuations, analyst upgrades and downgrades, rumors, political soundbites, short-term trader positioning, and the endless river of media commentary trying to explain the day's moves after the fact. The signal is much smaller: the slow accumulation of company earnings, the gradual growth of the underlying economy, the long-term demographic and technological trends that shape industries, and the compounding of dividends and reinvested returns over many years. A useful rule of thumb: the shorter the timeframe you're looking at, the more noise and less signal you're seeing. A one-minute chart is almost pure noise. A one-day chart is mostly noise with a tiny bit of signal. A one-year chart has a clearer signal but still substantial noise. A ten-year chart starts to show the actual long-term direction of a company or market, with noise mostly averaged out. This is why short-term trading is so much harder than long-term investing: traders are trying to extract meaning from a stream that is mostly meaningless. Long-term investors, by contrast, can simply wait for the noise to cancel itself out and let the signal accumulate. The discipline is in learning to ignore the daily and weekly commotion and only pay attention to the events that matter on the timescales you actually care about.",
+          'In signal-processing terms, a "signal" is the useful pattern in a stream of data, and "noise" is the random variation surrounding it. Financial markets produce vastly more noise than signal. The noise consists of daily price fluctuations, analyst upgrades and downgrades, rumors, political soundbites, short-term trader positioning, and the endless river of media commentary trying to explain the day\'s moves after the fact. The signal is much smaller: the slow accumulation of company earnings, the gradual growth of the underlying economy, the long-term demographic and technological trends that shape industries, and the compounding of dividends and reinvested returns over many years. A useful rule of thumb: the shorter the timeframe you\'re looking at, the more noise and less signal you\'re seeing. A one-minute chart is almost pure noise. A one-day chart is mostly noise with a tiny bit of signal. A one-year chart has a clearer signal but still substantial noise. A ten-year chart starts to show the actual long-term direction of a company or market, with noise mostly averaged out. This is why short-term trading is so much harder than long-term investing: traders are trying to extract meaning from a stream that is mostly meaningless. Long-term investors, by contrast, can simply wait for the noise to cancel itself out and let the signal accumulate. The discipline is in learning to ignore the daily and weekly commotion and only pay attention to the events that matter on the timescales you actually care about.',
         visual: {
           type: 'comparison-table',
           data: {
@@ -1296,23 +1455,45 @@ const STOCKS_BRONZE = {
               { label: 'Noise (not meaningful)', color: '#ef4444' },
             ],
             rows: [
-              { attribute: 'Multi-year earnings trends', values: ['Yes — reflects real business performance', ''] },
-              { attribute: 'One-day price moves', values: ['', 'Yes — random short-term fluctuation'] },
-              { attribute: 'Long-term demographic shifts', values: ['Yes — changes industries over decades', ''] },
-              { attribute: 'Analyst price targets', values: ['', 'Yes — frequently wrong, rarely actionable'] },
-              { attribute: 'Company fundamentals over years', values: ['Yes — the actual underlying business', ''] },
-              { attribute: 'Social media stock tips', values: ['', 'Yes — almost always noise or worse'] },
-              { attribute: 'Policy/regulatory changes', values: ['Sometimes — depends on durability', 'Sometimes'] },
+              {
+                attribute: 'Multi-year earnings trends',
+                values: ['Yes — reflects real business performance', ''],
+              },
+              {
+                attribute: 'One-day price moves',
+                values: ['', 'Yes — random short-term fluctuation'],
+              },
+              {
+                attribute: 'Long-term demographic shifts',
+                values: ['Yes — changes industries over decades', ''],
+              },
+              {
+                attribute: 'Analyst price targets',
+                values: ['', 'Yes — frequently wrong, rarely actionable'],
+              },
+              {
+                attribute: 'Company fundamentals over years',
+                values: ['Yes — the actual underlying business', ''],
+              },
+              {
+                attribute: 'Social media stock tips',
+                values: ['', 'Yes — almost always noise or worse'],
+              },
+              {
+                attribute: 'Policy/regulatory changes',
+                values: ['Sometimes — depends on durability', 'Sometimes'],
+              },
             ],
           },
-          caption: 'Learning to sort signal from noise is one of the most valuable skills an investor can develop. Most of what fills a financial news feed is noise.',
+          caption:
+            'Learning to sort signal from noise is one of the most valuable skills an investor can develop. Most of what fills a financial news feed is noise.',
         },
         keyTerms: ['signal', 'noise', 'time horizon'],
       },
       {
         title: 'Why predictions are mostly worthless',
         content:
-          "Financial media is saturated with confident predictions — where the market will be in three months, which stock will triple, when the next recession will hit, which sector will lead next year. The evidence on the accuracy of these predictions, collected over decades of research, is damning: the average professional forecaster is not meaningfully better than a coin flip for short-term predictions, and even long-term predictions tend to cluster around whatever has happened recently rather than reflect genuine foresight. This is not because forecasters are stupid or dishonest. Most are reasonably intelligent people doing their best. The problem is that markets aggregate the views of millions of participants in real time, and by the time any single forecaster has an insight worth acting on, the market has already priced it in. To consistently beat the market requires not just being right, but being right in ways and at times that nobody else has yet figured out — a standard very few people can reliably meet. The practical takeaway is that a beginner should treat confident predictions in financial media with deep skepticism, regardless of how credentialed the person making them is. Economists predicting recessions, analysts predicting earnings, pundits predicting crashes — none have a track record that would justify changing your long-term strategy based on what they say. Keep a mental file of predictions you hear this year, revisit it in a year, and you'll probably notice that roughly half were wrong and that even the right ones were mostly lucky. The best investors learn to say \"I don't know\" and build portfolios robust to many possible futures rather than betting on any single forecast.",
+          'Financial media is saturated with confident predictions — where the market will be in three months, which stock will triple, when the next recession will hit, which sector will lead next year. The evidence on the accuracy of these predictions, collected over decades of research, is damning: the average professional forecaster is not meaningfully better than a coin flip for short-term predictions, and even long-term predictions tend to cluster around whatever has happened recently rather than reflect genuine foresight. This is not because forecasters are stupid or dishonest. Most are reasonably intelligent people doing their best. The problem is that markets aggregate the views of millions of participants in real time, and by the time any single forecaster has an insight worth acting on, the market has already priced it in. To consistently beat the market requires not just being right, but being right in ways and at times that nobody else has yet figured out — a standard very few people can reliably meet. The practical takeaway is that a beginner should treat confident predictions in financial media with deep skepticism, regardless of how credentialed the person making them is. Economists predicting recessions, analysts predicting earnings, pundits predicting crashes — none have a track record that would justify changing your long-term strategy based on what they say. Keep a mental file of predictions you hear this year, revisit it in a year, and you\'ll probably notice that roughly half were wrong and that even the right ones were mostly lucky. The best investors learn to say "I don\'t know" and build portfolios robust to many possible futures rather than betting on any single forecast.',
         callout:
           'Forecasters are usually wrong and almost never consistently right. Build portfolios that survive many possible futures, not ones that bet on a single prediction.',
         keyTerms: ['forecasting', 'market prediction', 'hindsight bias'],
@@ -1334,7 +1515,8 @@ const STOCKS_BRONZE = {
               { year: 'New high', label: 'Greed returns' },
             ],
           },
-          caption: 'The emotional cycle most investors go through — and the one that destroys returns. The antidote is mechanical discipline rather than emotional response.',
+          caption:
+            'The emotional cycle most investors go through — and the one that destroys returns. The antidote is mechanical discipline rather than emotional response.',
         },
         keyTerms: ['emotional cycle', 'fear and greed', 'rebalancing'],
       },
@@ -1347,7 +1529,7 @@ const STOCKS_BRONZE = {
       {
         title: 'Key takeaways',
         content:
-          "Financial media is structured to hold attention, not to help you invest. Most of what you see is noise rather than signal, and the ratio of noise to signal gets worse as the timeframe gets shorter. Confident predictions from forecasters have a poor track record — they are not reliable enough to change your long-term strategy on. The emotional cycle of markets leads most investors to buy high and sell low, and the antidote is mechanical discipline rather than trying to be emotionally stoic. A minimal, intentional media diet — preferring fundamentals over commentary, limiting exposure during extremes, and reading financial history — is better than either total media avoidance or constant consumption. The best investors are boring. They tune out the noise, stick to their plan, and let compounding do the work.",
+          'Financial media is structured to hold attention, not to help you invest. Most of what you see is noise rather than signal, and the ratio of noise to signal gets worse as the timeframe gets shorter. Confident predictions from forecasters have a poor track record — they are not reliable enough to change your long-term strategy on. The emotional cycle of markets leads most investors to buy high and sell low, and the antidote is mechanical discipline rather than trying to be emotionally stoic. A minimal, intentional media diet — preferring fundamentals over commentary, limiting exposure during extremes, and reading financial history — is better than either total media avoidance or constant consumption. The best investors are boring. They tune out the noise, stick to their plan, and let compounding do the work.',
       },
     ],
     quiz: [
@@ -1360,7 +1542,8 @@ const STOCKS_BRONZE = {
           'Individual stockbrokers who provide their content',
         ],
         correctIndex: 1,
-        explanation: 'Financial media is mostly funded by ads and subscriptions tied to attention. Dramatic coverage keeps viewers watching; calm accurate coverage doesn’t, so the incentives push toward drama.',
+        explanation:
+          'Financial media is mostly funded by ads and subscriptions tied to attention. Dramatic coverage keeps viewers watching; calm accurate coverage doesn’t, so the incentives push toward drama.',
       },
       {
         question: 'In financial markets, the ratio of noise to signal tends to:',
@@ -1371,10 +1554,12 @@ const STOCKS_BRONZE = {
           'Only apply to bond markets',
         ],
         correctIndex: 1,
-        explanation: 'One-day price movements are nearly all noise. Multi-year trends are mostly signal. Short timeframes give you more random variation and less meaningful information.',
+        explanation:
+          'One-day price movements are nearly all noise. Multi-year trends are mostly signal. Short timeframes give you more random variation and less meaningful information.',
       },
       {
-        question: 'A thoughtful investor should treat confident short-term market predictions with:',
+        question:
+          'A thoughtful investor should treat confident short-term market predictions with:',
         options: [
           'Deep skepticism regardless of the forecaster’s credentials',
           'Automatic acceptance if the person is on TV',
@@ -1382,7 +1567,8 @@ const STOCKS_BRONZE = {
           'Indifference — predictions are harmless',
         ],
         correctIndex: 0,
-        explanation: 'Decades of research show that short-term forecasts have poor accuracy regardless of credentials. Even well-credentialed forecasters do not consistently beat a coin flip over short horizons.',
+        explanation:
+          'Decades of research show that short-term forecasts have poor accuracy regardless of credentials. Even well-credentialed forecasters do not consistently beat a coin flip over short horizons.',
       },
       {
         question: 'The typical emotional cycle of investing leads most amateur investors to:',
@@ -1393,7 +1579,8 @@ const STOCKS_BRONZE = {
           'Only trade in bear markets',
         ],
         correctIndex: 1,
-        explanation: 'Fear and greed drive most investors to do the opposite of what makes money. Piling in at tops and selling at bottoms is a well-documented behavioral failure.',
+        explanation:
+          'Fear and greed drive most investors to do the opposite of what makes money. Piling in at tops and selling at bottoms is a well-documented behavioral failure.',
       },
       {
         question: 'Which of these is most likely to be signal rather than noise?',
@@ -1404,7 +1591,8 @@ const STOCKS_BRONZE = {
           'Intraday social media chatter about a stock',
         ],
         correctIndex: 2,
-        explanation: 'Multi-year fundamental trends reflect real business performance. Daily moves, price targets, and social chatter are almost entirely noise.',
+        explanation:
+          'Multi-year fundamental trends reflect real business performance. Daily moves, price targets, and social chatter are almost entirely noise.',
       },
       {
         question: 'The best antidote to the emotional cycle of investing is:',
@@ -1415,10 +1603,12 @@ const STOCKS_BRONZE = {
           'Only trading on weekends when markets are closed',
         ],
         correctIndex: 2,
-        explanation: 'Emotional discipline through willpower fails for most people. Pre-committed mechanical rules remove the need to decide in the heat of the moment and defeat most behavioral errors.',
+        explanation:
+          'Emotional discipline through willpower fails for most people. Pre-committed mechanical rules remove the need to decide in the heat of the moment and defeat most behavioral errors.',
       },
       {
-        question: 'A headline reads "Market Plunges on Fed Comments." A patient long-term investor should:',
+        question:
+          'A headline reads "Market Plunges on Fed Comments." A patient long-term investor should:',
         options: [
           'Sell immediately to avoid further losses',
           'Ignore the headline and continue their long-term plan',
@@ -1426,7 +1616,8 @@ const STOCKS_BRONZE = {
           'Call their broker to ask what to do',
         ],
         correctIndex: 1,
-        explanation: 'Dramatic headlines describe noise, not signal. A long-term plan is not improved by reacting to one day’s news. The best action is almost always inaction.',
+        explanation:
+          'Dramatic headlines describe noise, not signal. A long-term plan is not improved by reacting to one day’s news. The best action is almost always inaction.',
       },
       {
         question: 'The phrase "the market has already priced it in" means:',
@@ -1437,10 +1628,12 @@ const STOCKS_BRONZE = {
           'The stock has reached its ceiling',
         ],
         correctIndex: 1,
-        explanation: 'Markets aggregate millions of participants’ views in real time. By the time news is public, the price usually already reflects it, which is why acting on widely known information rarely produces excess returns.',
+        explanation:
+          'Markets aggregate millions of participants’ views in real time. By the time news is public, the price usually already reflects it, which is why acting on widely known information rarely produces excess returns.',
       },
       {
-        question: 'Which of the following is the most useful thing a beginner can do to improve their investing judgment?',
+        question:
+          'Which of the following is the most useful thing a beginner can do to improve their investing judgment?',
         options: [
           'Watch CNBC all day to stay informed',
           'Read books about historical market bubbles, crashes, and recoveries',
@@ -1448,10 +1641,12 @@ const STOCKS_BRONZE = {
           'Follow hot stock influencers on social media',
         ],
         correctIndex: 1,
-        explanation: 'Reading financial history gives you the full arc of past manias and crashes, which is far more educational than real-time coverage of the current cycle. Historical perspective is one of the most underrated investing skills.',
+        explanation:
+          'Reading financial history gives you the full arc of past manias and crashes, which is far more educational than real-time coverage of the current cycle. Historical perspective is one of the most underrated investing skills.',
       },
       {
-        question: 'When you notice yourself feeling especially confident or especially frightened about markets, that emotion should be treated as:',
+        question:
+          'When you notice yourself feeling especially confident or especially frightened about markets, that emotion should be treated as:',
         options: [
           'A strong signal to act immediately',
           'A warning sign that you might be about to make an emotional rather than analytical decision',
@@ -1459,12 +1654,18 @@ const STOCKS_BRONZE = {
           'Irrelevant to investing',
         ],
         correctIndex: 1,
-        explanation: 'Strong emotional reactions are usually a sign that the crowd is at an extreme, which is historically the worst time to act on instinct. Noticing the emotion is the first step to not being ruled by it.',
+        explanation:
+          'Strong emotional reactions are usually a sign that the crowd is at an extreme, which is historically the worst time to act on instinct. Noticing the emotion is the first step to not being ruled by it.',
       },
     ],
   },
 };
 
-const COURSE_CONTENT = { ...STOCKS_BRONZE, ...BRONZE_REST, ...CRYPTO_BRONZE };
+const COURSE_CONTENT = {
+  ...STOCKS_BRONZE,
+  ...BRONZE_REST,
+  ...CRYPTO_BRONZE,
+  ...SILVER_GOLD_PLATINUM,
+};
 
 export default COURSE_CONTENT;
