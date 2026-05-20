@@ -21,6 +21,7 @@
  * (see ./ezana-echo-article-iran-commodities-2026.js)
  */
 
+import { africaBillionCompaniesArticle } from './ezana-echo-article-africa-billion-companies.js';
 import { iranWarCommoditiesArticle2026 } from './ezana-echo-article-iran-commodities-2026.js';
 import { sectorDominanceArticle } from './ezana-echo-article-sector-dominance.js';
 import { fiberOpticArticle } from './ezana-echo-article-fiber-optic.js';
@@ -30,6 +31,7 @@ import { semiconductorArticle } from './ezana-echo-article-semiconductors.js';
 const ARTICLES = [
   sectorDominanceArticle,
   iranWarCommoditiesArticle2026,
+  africaBillionCompaniesArticle,
   fiberOpticArticle,
   hantavirusArticle,
   semiconductorArticle,
@@ -37,17 +39,48 @@ const ARTICLES = [
 
 export const ECHO_TRENDING = {
   mostRead: [
-    { title: "Tech Reigns, But Falls Short of History's Heavyweights", reads: 12400, id: 'dominating-us-stock-market-sectors-through-the-times' },
-    { title: 'Fiber Optic Cable: Alotta Money In This Stuff', reads: 5840, id: 'fiber-optic-cable-ai-boom-benny-fazio' },
-    { title: 'Best Performing Commodities During the Iran Conflict', reads: 8900, id: 'best-performing-commodities-iran-war-2026' },
+    {
+      title: "Tech Reigns, But Falls Short of History's Heavyweights",
+      reads: 12400,
+      id: 'dominating-us-stock-market-sectors-through-the-times',
+    },
+    {
+      title: 'Fiber Optic Cable: Alotta Money In This Stuff',
+      reads: 5840,
+      id: 'fiber-optic-cable-ai-boom-benny-fazio',
+    },
+    {
+      title: 'Best Performing Commodities During the Iran Conflict',
+      reads: 8900,
+      id: 'best-performing-commodities-iran-war-2026',
+    },
+    {
+      title: 'Africa Has at Least 345 Companies with Revenues of $1B or More',
+      reads: 4200,
+      id: 'africa-billion-dollar-companies-2026',
+    },
   ],
   mostDiscussed: [
-    { title: 'Fiber Optic Cable: Alotta Money In This Stuff', comments: 64, id: 'fiber-optic-cable-ai-boom-benny-fazio' },
-    { title: "Tech Reigns, But Falls Short of History's Heavyweights", comments: 42, id: 'dominating-us-stock-market-sectors-through-the-times' },
+    {
+      title: 'Fiber Optic Cable: Alotta Money In This Stuff',
+      comments: 64,
+      id: 'fiber-optic-cable-ai-boom-benny-fazio',
+    },
+    {
+      title: "Tech Reigns, But Falls Short of History's Heavyweights",
+      comments: 42,
+      id: 'dominating-us-stock-market-sectors-through-the-times',
+    },
   ],
   bookmarks: [
-    { title: 'Best Performing Commodities During the Iran Conflict', id: 'best-performing-commodities-iran-war-2026' },
-    { title: 'Fiber Optic Cable: Alotta Money In This Stuff', id: 'fiber-optic-cable-ai-boom-benny-fazio' },
+    {
+      title: 'Best Performing Commodities During the Iran Conflict',
+      id: 'best-performing-commodities-iran-war-2026',
+    },
+    {
+      title: 'Fiber Optic Cable: Alotta Money In This Stuff',
+      id: 'fiber-optic-cable-ai-boom-benny-fazio',
+    },
   ],
 };
 
@@ -65,13 +98,15 @@ export const ECHO_MOCK_COMMENTS_BY_ARTICLE = {
     {
       id: 'c-fiber-1',
       author: { name: 'David Kim', initials: 'DK' },
-      content: 'The Benny Fazio opening is legendary. Also, MCF at 4x density is a bigger deal than people realize.',
+      content:
+        'The Benny Fazio opening is legendary. Also, MCF at 4x density is a bigger deal than people realize.',
       createdAt: '2026-05-02T14:00:00Z',
     },
     {
       id: 'c-fiber-2',
       author: { name: 'Lisa Park', initials: 'LP' },
-      content: "That interactive map is incredible — clicked through every company. Corning profile card is chef's kiss.",
+      content:
+        "That interactive map is incredible — clicked through every company. Corning profile card is chef's kiss.",
       createdAt: '2026-05-02T16:20:00Z',
     },
   ],
@@ -79,8 +114,25 @@ export const ECHO_MOCK_COMMENTS_BY_ARTICLE = {
     {
       id: 'c-iran-1',
       author: { name: 'Jordan R.', initials: 'JR' },
-      content: 'Oil price projections seem conservative given the escalation timeline. Great data though.',
+      content:
+        'Oil price projections seem conservative given the escalation timeline. Great data though.',
       createdAt: '2026-04-15T18:00:00Z',
+    },
+  ],
+  'africa-billion-dollar-companies-2026': [
+    {
+      id: 'c-africa-1',
+      author: { name: 'Nneka Okafor', initials: 'NO' },
+      content:
+        'The 54 foreign-HQ companies stat is the most important number here. That is value extraction in real time.',
+      createdAt: '2026-05-19T14:00:00Z',
+    },
+    {
+      id: 'c-africa-2',
+      author: { name: 'James Mensah', initials: 'JM' },
+      content:
+        'Mauritius with 3 companies at 1.3M population is wild. Financial hub effects are real.',
+      createdAt: '2026-05-19T16:30:00Z',
     },
   ],
 };
@@ -98,7 +150,8 @@ export function getFeaturedArticle() {
 }
 
 export function getArticlesByCategory(category) {
-  if (category === 'markets') return ARTICLES.filter((a) => a.category === 'markets' && !a.featured);
+  if (category === 'markets')
+    return ARTICLES.filter((a) => a.category === 'markets' && !a.featured);
   if (category === 'companies') return ARTICLES.filter((a) => a.category === 'companies');
   if (category === 'policy') return ARTICLES.filter((a) => a.category === 'policy');
   if (category === 'crypto') return ARTICLES.filter((a) => a.category === 'crypto');
