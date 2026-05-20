@@ -51,7 +51,8 @@ function extractPositions(portfolio) {
       const shares = Number(p?.shares ?? p?.qty ?? 0);
       if (shares <= 0) continue;
       const avgCost = Number(p?.avgCost ?? p?.costBasis ?? 0);
-      result.push({ ticker: String(ticker).toUpperCase(), shares, avgCost });
+      const openedAt = p?.openedAt ?? p?.createdAt ?? p?.date ?? null;
+      result.push({ ticker: String(ticker).toUpperCase(), shares, avgCost, openedAt });
     }
   } else if (Array.isArray(positions)) {
     for (const p of positions) {
@@ -59,7 +60,8 @@ function extractPositions(portfolio) {
       const shares = Number(p?.shares ?? p?.qty ?? 0);
       if (!ticker || shares <= 0) continue;
       const avgCost = Number(p?.avgCost ?? p?.costBasis ?? 0);
-      result.push({ ticker, shares, avgCost });
+      const openedAt = p?.openedAt ?? p?.createdAt ?? p?.date ?? null;
+      result.push({ ticker, shares, avgCost, openedAt });
     }
   }
   return result;
@@ -167,6 +169,27 @@ export async function GET(request) {
     const positions = extractPositions(portfolio);
     const cash = Number(portfolio?.cash ?? 0) || 0;
 
+    // Earliest buy per ticker from mock_trades (for positions missing openedAt)
+    const { data: trades } = await supabaseAdmin
+      .from('mock_trades')
+      .select('ticker, trade_type, created_at')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: true });
+
+    const openedByTicker = {};
+    for (const t of trades || []) {
+      if (t.trade_type !== 'buy') continue;
+      const sym = String(t.ticker || '')
+        .toUpperCase()
+        .trim();
+      if (sym && !openedByTicker[sym]) openedByTicker[sym] = t.created_at;
+    }
+    for (const pos of positions) {
+      if (!pos.openedAt && openedByTicker[pos.ticker]) {
+        pos.openedAt = openedByTicker[pos.ticker];
+      }
+    }
+
     if (positions.length === 0) {
       return NextResponse.json({ ok: true, series: [], source: 'empty', period });
     }
@@ -184,11 +207,24 @@ export async function GET(request) {
       priceMap[ticker] = prices;
     }
 
-    // Collect all trading dates in the range across all tickers
+    // Find the nearest trading date BEFORE the period start as baseline
+    let baselineDate = startDate;
+    for (const ticker of tickers) {
+      const dates = Object.keys(priceMap[ticker] || {}).sort();
+      const prior = dates.filter((d) => d < startDate);
+      if (prior.length > 0) {
+        const candidate = prior[prior.length - 1];
+        if (candidate < baselineDate || baselineDate === startDate) {
+          baselineDate = candidate;
+        }
+      }
+    }
+
+    // Collect all trading dates including the baseline date
     const allDatesSet = new Set();
     for (const ticker of tickers) {
       for (const date of Object.keys(priceMap[ticker] || {})) {
-        if (date >= startDate && date <= today) allDatesSet.add(date);
+        if (date >= baselineDate && date <= today) allDatesSet.add(date);
       }
     }
     // Always include today
@@ -205,6 +241,13 @@ export async function GET(request) {
       let dayTotal = cash;
 
       for (const pos of positions) {
+        // Skip positions that didn't exist yet on this date
+        if (pos.openedAt && ymd < pos.openedAt.slice(0, 10)) {
+          // Position not yet opened — use cash equivalent (avgCost × shares)
+          dayTotal += pos.shares * pos.avgCost;
+          continue;
+        }
+
         let price;
         if (ymd === today && currentQuotes[pos.ticker] != null) {
           price = currentQuotes[pos.ticker];
@@ -258,10 +301,13 @@ export async function GET(request) {
       return NextResponse.json({ ok: true, series: [], source: 'empty', period });
     }
 
-    // Compute % change from first point (baseline)
-    const baseline = aggregated[0].value;
+    // Use the value at the baseline date (before period start) as anchor
+    // This ensures the first point shows actual return from period start, not 0%
+    const baselineEntry = dailyEntries.find((e) => e.ymd <= startDate) || dailyEntries[0];
+    const baselineValue = baselineEntry.value;
+
     const series = aggregated.map((e) => {
-      const pct = baseline > 0 ? ((e.value - baseline) / baseline) * 100 : 0;
+      const pct = baselineValue > 0 ? ((e.value - baselineValue) / baselineValue) * 100 : 0;
       return {
         day: e.day,
         ymd: e.ymd,

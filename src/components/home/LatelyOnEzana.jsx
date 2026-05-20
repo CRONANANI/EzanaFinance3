@@ -223,7 +223,8 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
   }, [indexPayload, portfolioPayload]);
 
   const { yDomain, yTicks } = useMemo(() => {
-    if (!chartData.length) return { yDomain: [-2.5, 2.5], yTicks: [-2, -1, 0, 1, 2] };
+    if (!chartData.length) return { yDomain: [-2.5, 2.5], yTicks: [-2, 0, 2] };
+
     let min = 0;
     let max = 0;
     for (const row of chartData) {
@@ -235,13 +236,44 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
         }
       }
     }
-    const absMax = Math.max(Math.abs(min), Math.abs(max), 1);
-    const padded = Math.ceil(absMax * 1.3);
-    const step = padded <= 3 ? 1 : padded <= 10 ? 2 : padded <= 25 ? 5 : 10;
+
+    // Ensure minimum range so chart isn't a flat line
+    const range = max - min;
+    if (range < 1) {
+      min = Math.floor(min - 0.5);
+      max = Math.ceil(max + 0.5);
+    }
+
+    const absMax = Math.max(Math.abs(min), Math.abs(max), 0.5);
+    const padded = absMax < 1 ? 1 : absMax < 2 ? Math.ceil(absMax) : Math.ceil(absMax * 1.2);
+
+    // Choose step to produce exactly 4–6 ticks (never more than 7)
+    const totalRange = padded * 2;
+    let step;
+    if (totalRange <= 2) step = 0.5;
+    else if (totalRange <= 4) step = 1;
+    else if (totalRange <= 10) step = 2;
+    else if (totalRange <= 20) step = 5;
+    else if (totalRange <= 50) step = 10;
+    else step = 20;
+
+    const tickCount = Math.floor(totalRange / step) + 1;
+    if (tickCount > 7) step *= 2;
+
     const ticks = [];
-    for (let t = -padded; t <= padded; t += step) ticks.push(t);
+    for (let t = -padded; t <= padded; t += step) {
+      ticks.push(parseFloat(t.toFixed(2)));
+    }
     if (!ticks.includes(0)) ticks.push(0);
     ticks.sort((a, b) => a - b);
+
+    if (ticks.length > 7) {
+      const filtered = ticks.filter((_, i) => i % 2 === 0);
+      if (!filtered.includes(0)) filtered.push(0);
+      filtered.sort((a, b) => a - b);
+      return { yDomain: [-padded, padded], yTicks: filtered };
+    }
+
     return { yDomain: [-padded, padded], yTicks: ticks };
   }, [chartData]);
 
