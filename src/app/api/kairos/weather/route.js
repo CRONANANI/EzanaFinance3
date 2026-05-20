@@ -34,11 +34,22 @@ export async function GET(request) {
 
   const OWM_KEY = getOwmKey();
   if (!OWM_KEY) {
+    // Return a degraded but valid response so the page doesn't break.
+    // All Open-Meteo-powered cards still work; only OWM-exclusive features
+    // (AI summary, live conditions, government alerts) are missing.
     return NextResponse.json(
-      { error: 'OpenWeather API key not configured' },
       {
-        status: 500,
-        headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' },
+        ok: false,
+        degraded: true,
+        reason: 'OPENWEATHER_API_KEY not configured',
+        current: null,
+        daily: [],
+        alerts: [],
+        overview: null,
+      },
+      {
+        status: 200,
+        headers: { 'Cache-Control': 'public, s-maxage=60' },
       },
     );
   }

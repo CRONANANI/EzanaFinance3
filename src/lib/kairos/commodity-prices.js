@@ -1,4 +1,5 @@
 import { getAdminClient } from '@/lib/supabase';
+import { fetchAV, getAlphaVantageApiKey } from '@/lib/alpha-vantage';
 
 /** @typedef {{ date: string, open?: number, high?: number, low?: number, close: number, volume?: number }} PriceRow */
 
@@ -19,6 +20,89 @@ const FMP_BASE = 'https://financialmodelingprep.com/api/v3';
 
 function getFmpKey() {
   return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+}
+
+/**
+ * Map Yahoo-style commodity symbols to Alpha Vantage symbols.
+ * AV uses different tickers for commodities.
+ */
+const AV_COMMODITY_MAP = {
+  'CL=F': { fn: 'WTI', type: 'commodity' },
+  'NG=F': { fn: 'NATURAL_GAS', type: 'commodity' },
+  'GC=F': { fn: 'GOLD', type: 'commodity' },
+  'ZW=F': { fn: 'WHEAT', type: 'commodity' },
+  'ZC=F': { fn: 'CORN', type: 'commodity' },
+  'CC=F': { fn: 'COFFEE', type: 'commodity' },
+};
+
+async function fetchFromAlphaVantage(symbol, fromDate, toDate) {
+  const avKey = getAlphaVantageApiKey();
+  if (!avKey) return [];
+
+  const avMapping = AV_COMMODITY_MAP[symbol];
+
+  if (avMapping?.type === 'commodity') {
+    try {
+      const data = await fetchAV(
+        {
+          function: avMapping.fn,
+          interval: 'daily',
+        },
+        3600,
+      );
+
+      const seriesKey = Object.keys(data || {}).find((k) => k.includes('data'));
+      if (!seriesKey) return [];
+
+      const series = data[seriesKey];
+      if (!Array.isArray(series)) return [];
+
+      return series
+        .filter((row) => {
+          const date = row.date;
+          return date >= fromDate && date <= toDate;
+        })
+        .map((row) => ({
+          date: row.date,
+          close: parseFloat(row.value),
+        }))
+        .filter((r) => Number.isFinite(r.close));
+    } catch (err) {
+      console.warn(`[kairos/commodity-prices] AV fetch failed for ${symbol}:`, err?.message);
+      return [];
+    }
+  }
+
+  try {
+    const ticker = symbol.replace('=F', '');
+    const data = await fetchAV(
+      {
+        function: 'TIME_SERIES_DAILY_ADJUSTED',
+        symbol: ticker,
+        outputsize: 'full',
+      },
+      3600,
+    );
+
+    const ts = data?.['Time Series (Daily)'];
+    if (!ts) return [];
+
+    return Object.entries(ts)
+      .filter(([date]) => date >= fromDate && date <= toDate)
+      .map(([date, ohlc]) => ({
+        date,
+        open: parseFloat(ohlc['1. open']),
+        high: parseFloat(ohlc['2. high']),
+        low: parseFloat(ohlc['3. low']),
+        close: parseFloat(ohlc['4. close']),
+        volume: parseInt(ohlc['6. volume'] || ohlc['5. volume'], 10),
+      }))
+      .filter((r) => Number.isFinite(r.close))
+      .sort((a, b) => a.date.localeCompare(b.date));
+  } catch (err) {
+    console.warn(`[kairos/commodity-prices] AV equity fetch failed for ${symbol}:`, err?.message);
+    return [];
+  }
 }
 
 /**
@@ -90,8 +174,18 @@ export async function fetchCommodityHistory(symbol, fromDate, toDate) {
   try {
     fmpRows = await fetchFromFmp(symbol, fromDate, toDate);
   } catch (e) {
-    console.error('[kairos/commodity-prices] FMP fetch failed:', symbol, e.message);
-    return (cached || []).map(mapCachedRow);
+    console.warn('[kairos/commodity-prices] FMP fetch failed:', symbol, e.message);
+    try {
+      fmpRows = await fetchFromAlphaVantage(symbol, fromDate, toDate);
+      if (fmpRows.length > 0) {
+        console.log(
+          `[kairos/commodity-prices] AV fallback succeeded for ${symbol}: ${fmpRows.length} rows`,
+        );
+      }
+    } catch (avErr) {
+      console.warn('[kairos/commodity-prices] AV fallback also failed:', symbol, avErr.message);
+    }
+    if (fmpRows.length === 0) return (cached || []).map(mapCachedRow);
   }
 
   if (fmpRows.length === 0) {

@@ -2256,7 +2256,13 @@ export default function KairosSignalPage() {
       const [openMeteoData, owmRes] = await Promise.all([
         fetchWeatherForecast(region.lat, region.lon),
         fetch(`/api/kairos/weather?lat=${region.lat}&lon=${region.lon}`)
-          .then((r) => (r.ok ? r.json() : null))
+          .then(async (r) => {
+            const json = await r.json().catch(() => null);
+            // Accept both 200 (full or degraded) responses
+            if (json && !json.degraded) return json;
+            // Degraded or failed — return null so OWM-only cards hide gracefully
+            return null;
+          })
           .catch(() => null),
       ]);
       setWeatherData(openMeteoData);

@@ -70,20 +70,28 @@ function CorrelationRow({ correlation }) {
         <div className="kcc-row-detail">
           <div className="kcc-detail-grid">
             <div className="kcc-detail-cell">
-              <div className="kcc-detail-label">When {correlation.weather_label.toLowerCase()} is HIGH</div>
+              <div className="kcc-detail-label">
+                When {correlation.weather_label.toLowerCase()} is HIGH
+              </div>
               <div
                 className="kcc-detail-value"
-                style={{ color: wetReturn != null ? (wetReturn >= 0 ? '#10b981' : '#ef4444') : 'inherit' }}
+                style={{
+                  color: wetReturn != null ? (wetReturn >= 0 ? '#10b981' : '#ef4444') : 'inherit',
+                }}
               >
                 {wetReturn != null ? `${wetReturn >= 0 ? '+' : ''}${wetReturn.toFixed(2)}%` : '—'}
               </div>
               <div className="kcc-detail-sub">avg forward return</div>
             </div>
             <div className="kcc-detail-cell">
-              <div className="kcc-detail-label">When {correlation.weather_label.toLowerCase()} is LOW</div>
+              <div className="kcc-detail-label">
+                When {correlation.weather_label.toLowerCase()} is LOW
+              </div>
               <div
                 className="kcc-detail-value"
-                style={{ color: dryReturn != null ? (dryReturn >= 0 ? '#10b981' : '#ef4444') : 'inherit' }}
+                style={{
+                  color: dryReturn != null ? (dryReturn >= 0 ? '#10b981' : '#ef4444') : 'inherit',
+                }}
               >
                 {dryReturn != null ? `${dryReturn >= 0 ? '+' : ''}${dryReturn.toFixed(2)}%` : '—'}
               </div>
@@ -94,12 +102,14 @@ function CorrelationRow({ correlation }) {
             {direction === 'positive' ? (
               <>
                 Higher {correlation.weather_label.toLowerCase()} historically associates with higher{' '}
-                {correlation.commodity_label} returns over the next {correlation.lookahead_days} days.
+                {correlation.commodity_label} returns over the next {correlation.lookahead_days}{' '}
+                days.
               </>
             ) : (
               <>
                 Higher {correlation.weather_label.toLowerCase()} historically associates with lower{' '}
-                {correlation.commodity_label} returns over the next {correlation.lookahead_days} days.
+                {correlation.commodity_label} returns over the next {correlation.lookahead_days}{' '}
+                days.
               </>
             )}
           </div>
@@ -136,6 +146,8 @@ export function KairosCorrelationsCard({ regionId }) {
     };
   }, [regionId]);
 
+  const correlations = data?.correlations ?? [];
+
   return (
     <section className="kairos-card kairos-card--wide kcc-card">
       <div className="kairos-card-header">
@@ -145,30 +157,73 @@ export function KairosCorrelationsCard({ regionId }) {
         </div>
         <div className="kcc-header-meta">
           {data?.total_significant != null && (
-            <span className="kcc-header-meta-text">{data.total_significant} significant relationships</span>
+            <span className="kcc-header-meta-text">
+              {data.total_significant} significant relationships
+            </span>
           )}
         </div>
       </div>
       <div className="kairos-card-body">
         <p className="kairos-card-hint">
-          The strongest weather-to-commodity relationships in this region over the past 5 years. Only correlations
-          with p &lt; 0.05 and |r| ≥ 0.2 are shown.
+          The strongest weather-to-commodity relationships in this region over the past 5 years.
+          Only correlations with p &lt; 0.05 and |r| ≥ 0.2 are shown.
         </p>
 
         {loading && <div className="kcc-state">Loading correlations…</div>}
 
         {error && <div className="kcc-state kcc-state-error">Failed to load: {error}</div>}
 
-        {!loading && !error && data?.correlations?.length === 0 && (
-          <div className="kcc-state">
-            No significant correlations found for this region yet. The cron may not have run, or relationships are
-            below the significance threshold.
+        {!loading && !error && correlations.length === 0 && (
+          <div className="kcc-empty">
+            <i
+              className="bi bi-calculator"
+              style={{
+                fontSize: '1.5rem',
+                color: '#d4af37',
+                opacity: 0.5,
+                marginBottom: '0.5rem',
+                display: 'block',
+              }}
+            />
+            <p
+              style={{
+                fontSize: '0.8125rem',
+                fontWeight: 600,
+                color: 'var(--home-heading, #f0f6fc)',
+                margin: '0 0 0.25rem',
+              }}
+            >
+              No correlations computed yet
+            </p>
+            <p
+              style={{
+                fontSize: '0.6875rem',
+                color: 'var(--home-muted, #6b7280)',
+                margin: 0,
+                maxWidth: 300,
+              }}
+            >
+              The correlation engine runs on a scheduled cron job that pairs 5 years of weather data
+              with commodity price history. It needs FMP_API_KEY or ALPHA_VANTAGE_API_KEY for
+              commodity prices. Trigger manually via{' '}
+              <code
+                style={{
+                  fontSize: '0.6rem',
+                  background: 'rgba(255,255,255,0.06)',
+                  padding: '1px 4px',
+                  borderRadius: 3,
+                }}
+              >
+                /api/cron/kairos-recompute-correlations
+              </code>{' '}
+              with the CRON_SECRET bearer token.
+            </p>
           </div>
         )}
 
-        {!loading && !error && data?.correlations?.length > 0 && (
+        {!loading && !error && correlations.length > 0 && (
           <ul className="kcc-list">
-            {data.correlations.map((c) => (
+            {correlations.map((c) => (
               <CorrelationRow key={c.id} correlation={c} />
             ))}
           </ul>
