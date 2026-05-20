@@ -135,7 +135,7 @@ export const sectorDominanceArticle = {
     },
     {
       type: 'paragraph',
-      text: "The reason was structural. The early American economy was overwhelmingly agricultural, and most commercial enterprise was conducted through partnerships and proprietorships rather than publicly traded corporations. Manufacturing was small, local, and family-owned. Transportation infrastructure was limited to what private investors and local governments could finance through bonds and turnpike companies. The stocks that DID trade publicly were almost exclusively bank stocks, marine insurance companies, and a handful of land-development corporations. The market was, in effect, a financial sector ETF — there was nothing else to buy.",
+      text: 'The reason was structural. The early American economy was overwhelmingly agricultural, and most commercial enterprise was conducted through partnerships and proprietorships rather than publicly traded corporations. Manufacturing was small, local, and family-owned. Transportation infrastructure was limited to what private investors and local governments could finance through bonds and turnpike companies. The stocks that DID trade publicly were almost exclusively bank stocks, marine insurance companies, and a handful of land-development corporations. The market was, in effect, a financial sector ETF — there was nothing else to buy.',
     },
     {
       type: 'paragraph',
@@ -143,7 +143,7 @@ export const sectorDominanceArticle = {
     },
     {
       type: 'paragraph',
-      text: "Real estate played a smaller but meaningful role. Land companies that pooled investor capital to acquire and subdivide western territories — particularly along the routes of planned canals and turnpikes — issued shares that traded actively. Some of these enterprises generated extraordinary returns; others collapsed in spectacular fraud. The line between legitimate land speculation and outright swindling was blurry, and the period produced some of the earliest American securities scandals.",
+      text: 'Real estate played a smaller but meaningful role. Land companies that pooled investor capital to acquire and subdivide western territories — particularly along the routes of planned canals and turnpikes — issued shares that traded actively. Some of these enterprises generated extraordinary returns; others collapsed in spectacular fraud. The line between legitimate land speculation and outright swindling was blurry, and the period produced some of the earliest American securities scandals.',
     },
     {
       type: 'paragraph',
@@ -151,22 +151,22 @@ export const sectorDominanceArticle = {
     },
     {
       type: 'paragraph',
-      text: "By 1850, finance and real estate had fallen from ninety percent to roughly fifty percent of the market — still the largest sector, but only barely. Within a single generation, the next era was already emerging on the horizon, and it would arrive on iron rails.",
+      text: 'By 1850, finance and real estate had fallen from ninety percent to roughly fifty percent of the market — still the largest sector, but only barely. Within a single generation, the next era was already emerging on the horizon, and it would arrive on iron rails.',
     },
 
     /* ─── ERA 2: TRANSPORT (≈750 words) ─── */
     { type: 'heading', text: '1850–1910: Transport Era', level: 2 },
     {
       type: 'paragraph',
-      text: "The transport century is the most concentrated and most singular regime in American stock market history. Beginning in earnest in the 1840s and accelerating through Reconstruction, railroad companies became the largest, most numerous, and most actively traded equities on the exchanges. By 1880, transport stocks accounted for more than sixty percent of the entire US stock market. New York Central, Pennsylvania Railroad, Erie, Baltimore and Ohio, Union Pacific, and dozens of regional lines collectively represented an unprecedented concentration of capital — and of risk.",
+      text: 'The transport century is the most concentrated and most singular regime in American stock market history. Beginning in earnest in the 1840s and accelerating through Reconstruction, railroad companies became the largest, most numerous, and most actively traded equities on the exchanges. By 1880, transport stocks accounted for more than sixty percent of the entire US stock market. New York Central, Pennsylvania Railroad, Erie, Baltimore and Ohio, Union Pacific, and dozens of regional lines collectively represented an unprecedented concentration of capital — and of risk.',
     },
     {
       type: 'paragraph',
-      text: "What made railroads different from the banks and canals that preceded them was scale. The capital required to build a transcontinental rail line dwarfed anything previously raised in American [[kw:market-indices]]markets[[/kw]]. The Union Pacific and Central Pacific, racing to meet at Promontory Summit in 1869, together consumed more than $100 million in public and private capital — a sum that would have been unimaginable two decades earlier. The federal government provided massive land grants and bond guarantees, but the operating capital came from public stock and bond issuance. The exchanges existed, in many ways, to serve the railroads.",
+      text: 'What made railroads different from the banks and canals that preceded them was scale. The capital required to build a transcontinental rail line dwarfed anything previously raised in American [[kw:market-indices]]markets[[/kw]]. The Union Pacific and Central Pacific, racing to meet at Promontory Summit in 1869, together consumed more than $100 million in public and private capital — a sum that would have been unimaginable two decades earlier. The federal government provided massive land grants and bond guarantees, but the operating capital came from public stock and bond issuance. The exchanges existed, in many ways, to serve the railroads.',
     },
     {
       type: 'paragraph',
-      text: "This created a market that was both extraordinarily large and extraordinarily volatile. The financial history of the late nineteenth century is, in significant measure, the financial history of railroad booms and busts. The Panic of 1873 began with the failure of Jay Cooke and Company, a banking house overexposed to Northern Pacific Railroad bonds. The Panic of 1893 was triggered by the bankruptcy of the Philadelphia and Reading Railroad, which cascaded through the financial system and produced one of the deepest depressions in American history. The Panic of 1907 had multiple causes, but the collapse of overleveraged rail and trust company stocks was central to it.",
+      text: 'This created a market that was both extraordinarily large and extraordinarily volatile. The financial history of the late nineteenth century is, in significant measure, the financial history of railroad booms and busts. The Panic of 1873 began with the failure of Jay Cooke and Company, a banking house overexposed to Northern Pacific Railroad bonds. The Panic of 1893 was triggered by the bankruptcy of the Philadelphia and Reading Railroad, which cascaded through the financial system and produced one of the deepest depressions in American history. The Panic of 1907 had multiple causes, but the collapse of overleveraged rail and trust company stocks was central to it.',
     },
     {
       type: 'paragraph',
@@ -178,7 +178,7 @@ export const sectorDominanceArticle = {
     },
     {
       type: 'paragraph',
-      text: "Decline was gradual but unmistakable. The [[kw:antitrust]]Sherman Antitrust Act of 1890[[/kw]] and subsequent rulings broke up the largest combinations. The rise of the automobile after 1900 began to siphon investment toward a new transportation paradigm. The Hepburn Act of 1906 imposed federal rate regulation that capped railroad profitability. By 1910, transport had fallen to about forty-two percent of the market — still the largest sector, but no longer dominant. Standard Oil, US Steel, and a new generation of industrial giants were rising fast. The next regime had already begun.",
+      text: 'Decline was gradual but unmistakable. The [[kw:antitrust]]Sherman Antitrust Act of 1890[[/kw]] and subsequent rulings broke up the largest combinations. The rise of the automobile after 1900 began to siphon investment toward a new transportation paradigm. The Hepburn Act of 1906 imposed federal rate regulation that capped railroad profitability. By 1910, transport had fallen to about forty-two percent of the market — still the largest sector, but no longer dominant. Standard Oil, US Steel, and a new generation of industrial giants were rising fast. The next regime had already begun.',
     },
 
     /* ─── ERA 3: ENERGY & MATERIALS (≈750 words) ─── */
@@ -189,19 +189,19 @@ export const sectorDominanceArticle = {
     },
     {
       type: 'paragraph',
-      text: "The transition from transport to energy and materials happened in stages. The first stage was the rise of integrated industrial corporations — Standard Oil, founded in 1870 and broken up by the Supreme Court in 1911, was so large that its dissolution into thirty-four separate companies created an entire sector overnight. Exxon, Chevron, Mobil, Amoco, Atlantic Richfield, and Marathon all trace their lineage to that single 1911 ruling. US Steel, formed in 1901 as the largest corporation in American history at the time of its incorporation, similarly anchored an industrial complex that included Bethlehem, Inland, and dozens of regional steel makers.",
+      text: 'The transition from transport to energy and materials happened in stages. The first stage was the rise of integrated industrial corporations — Standard Oil, founded in 1870 and broken up by the Supreme Court in 1911, was so large that its dissolution into thirty-four separate companies created an entire sector overnight. Exxon, Chevron, Mobil, Amoco, Atlantic Richfield, and Marathon all trace their lineage to that single 1911 ruling. US Steel, formed in 1901 as the largest corporation in American history at the time of its incorporation, similarly anchored an industrial complex that included Bethlehem, Inland, and dozens of regional steel makers.',
     },
     {
       type: 'paragraph',
-      text: "The second stage was the automobile. General Motors, Ford, and Chrysler did not merely create new companies — they created entirely new categories of demand for materials. Steel, aluminum, copper, glass, and rubber all expanded dramatically as auto production scaled from thousands of vehicles per year in 1900 to millions per year by 1929. The chemical industry, led by DuPont, expanded in parallel to supply materials, paint, and synthetic compounds. Each of these industries traded as publicly listed equities, and together they pushed energy and materials past transport in market share by the early 1920s.",
+      text: 'The second stage was the automobile. General Motors, Ford, and Chrysler did not merely create new companies — they created entirely new categories of demand for materials. Steel, aluminum, copper, glass, and rubber all expanded dramatically as auto production scaled from thousands of vehicles per year in 1900 to millions per year by 1929. The chemical industry, led by DuPont, expanded in parallel to supply materials, paint, and synthetic compounds. Each of these industries traded as publicly listed equities, and together they pushed energy and materials past transport in market share by the early 1920s.',
     },
     {
       type: 'paragraph',
-      text: "The third stage was the post-war boom. Between 1945 and 1970, American manufacturing operated nearly without international competition. European and Japanese industrial bases had been destroyed during the war and would take decades to rebuild. American oil majors developed reserves across the Middle East, North Africa, and Latin America. American steel producers supplied the Marshall Plan rebuilding of Europe, the Korean War mobilization, the interstate highway construction, and the suburban housing boom. Profits were enormous, [[kw:dividends]]dividends[[/kw]] were generous, and energy and materials stocks were considered the bedrock of any institutional portfolio.",
+      text: 'The third stage was the post-war boom. Between 1945 and 1970, American manufacturing operated nearly without international competition. European and Japanese industrial bases had been destroyed during the war and would take decades to rebuild. American oil majors developed reserves across the Middle East, North Africa, and Latin America. American steel producers supplied the Marshall Plan rebuilding of Europe, the Korean War mobilization, the interstate highway construction, and the suburban housing boom. Profits were enormous, [[kw:dividends]]dividends[[/kw]] were generous, and energy and materials stocks were considered the bedrock of any institutional portfolio.',
     },
     {
       type: 'paragraph',
-      text: "The peak was perhaps the 1950s and early 1960s — a period sometimes called the golden age of industrial capitalism. The Dow Jones Industrial Average was, almost literally, an index of industrial companies: General Motors, US Steel, Standard Oil of New Jersey, Bethlehem Steel, DuPont, Goodyear, and similar firms made up most of its membership. The fortunes of these companies were the fortunes of the American economy.",
+      text: 'The peak was perhaps the 1950s and early 1960s — a period sometimes called the golden age of industrial capitalism. The Dow Jones Industrial Average was, almost literally, an index of industrial companies: General Motors, US Steel, Standard Oil of New Jersey, Bethlehem Steel, DuPont, Goodyear, and similar firms made up most of its membership. The fortunes of these companies were the fortunes of the American economy.',
     },
     {
       type: 'paragraph',
@@ -209,14 +209,18 @@ export const sectorDominanceArticle = {
     },
 
     /* ─── ERA 4: INFORMATION TECHNOLOGY & COMMUNICATIONS (≈750 words) ─── */
-    { type: 'heading', text: '1990–Present: Information Technology & Communications Era', level: 2 },
     {
-      type: 'paragraph',
-      text: "The current era is the shortest of the four — barely thirty-five years old as of 2025 — but it has already produced the highest single-stock concentrations in American market history. Information technology and communications companies, taken together, now represent roughly forty-five percent of the US stock market. Microsoft, Apple, Nvidia, Alphabet, Meta, and Amazon collectively account for more than a quarter of the S&P 500 by themselves. The largest companies in the largest economy in the world are technology companies, and the gap between them and everything else continues to widen.",
+      type: 'heading',
+      text: '1990–Present: Information Technology & Communications Era',
+      level: 2,
     },
     {
       type: 'paragraph',
-      text: "The era can be subdivided into roughly four phases. The first was the personal computer phase, beginning in the early 1980s and accelerating through the 1990s. IBM, Microsoft, Intel, and a wave of hardware and software companies created a new category of equity that did not fit the industrial framework of the previous era. These companies had high gross margins, low capital requirements, and the ability to grow revenues at rates that would have been unthinkable for a steel manufacturer or an oil major. The market gradually learned to value them differently — using metrics like growth rates, recurring revenue, and software [[kw:pe-ratio]]multiples[[/kw]] that had no clear precedent.",
+      text: 'The current era is the shortest of the four — barely thirty-five years old as of 2025 — but it has already produced the highest single-stock concentrations in American market history. Information technology and communications companies, taken together, now represent roughly forty-five percent of the US stock market. Microsoft, Apple, Nvidia, Alphabet, Meta, and Amazon collectively account for more than a quarter of the S&P 500 by themselves. The largest companies in the largest economy in the world are technology companies, and the gap between them and everything else continues to widen.',
+    },
+    {
+      type: 'paragraph',
+      text: 'The era can be subdivided into roughly four phases. The first was the personal computer phase, beginning in the early 1980s and accelerating through the 1990s. IBM, Microsoft, Intel, and a wave of hardware and software companies created a new category of equity that did not fit the industrial framework of the previous era. These companies had high gross margins, low capital requirements, and the ability to grow revenues at rates that would have been unthinkable for a steel manufacturer or an oil major. The market gradually learned to value them differently — using metrics like growth rates, recurring revenue, and software [[kw:pe-ratio]]multiples[[/kw]] that had no clear precedent.',
     },
     {
       type: 'paragraph',
@@ -247,6 +251,6 @@ export const sectorDominanceArticle = {
   tickers: ['SPY', 'XLK', 'XLE', 'XLF', 'XLI'],
   readTime: 18,
   publishedAt: '2026-04-30',
-  featured: true,
+  featured: false,
   source: 'Datastream, Goldman Sachs Research (October 2025)',
 };

@@ -22,6 +22,7 @@
  */
 
 import { africaBillionCompaniesArticle } from './ezana-echo-article-africa-billion-companies.js';
+import { nvidiaSecondMostValuableArticle } from './ezana-echo-article-nvidia-most-valuable.js';
 import { iranWarCommoditiesArticle2026 } from './ezana-echo-article-iran-commodities-2026.js';
 import { sectorDominanceArticle } from './ezana-echo-article-sector-dominance.js';
 import { fiberOpticArticle } from './ezana-echo-article-fiber-optic.js';
@@ -29,6 +30,7 @@ import { hantavirusArticle } from './ezana-echo-article-hantavirus.js';
 import { semiconductorArticle } from './ezana-echo-article-semiconductors.js';
 
 const ARTICLES = [
+  nvidiaSecondMostValuableArticle,
   sectorDominanceArticle,
   iranWarCommoditiesArticle2026,
   africaBillionCompaniesArticle,
@@ -39,6 +41,11 @@ const ARTICLES = [
 
 export const ECHO_TRENDING = {
   mostRead: [
+    {
+      title: "Nvidia Is the World's Second Most Valuable Asset",
+      reads: 15200,
+      id: 'nvidia-worlds-second-most-valuable-asset-2026',
+    },
     {
       title: "Tech Reigns, But Falls Short of History's Heavyweights",
       reads: 12400,
@@ -73,6 +80,10 @@ export const ECHO_TRENDING = {
     },
   ],
   bookmarks: [
+    {
+      title: "Nvidia Is the World's Second Most Valuable Asset",
+      id: 'nvidia-worlds-second-most-valuable-asset-2026',
+    },
     {
       title: 'Best Performing Commodities During the Iran Conflict',
       id: 'best-performing-commodities-iran-war-2026',
@@ -117,6 +128,28 @@ export const ECHO_MOCK_COMMENTS_BY_ARTICLE = {
       content:
         'Oil price projections seem conservative given the escalation timeline. Great data though.',
       createdAt: '2026-04-15T18:00:00Z',
+    },
+  ],
+  'nvidia-worlds-second-most-valuable-asset-2026': [
+    {
+      id: 'c-nvda-val-1',
+      author: { name: 'Marcus Chen', initials: 'MC' },
+      content:
+        'The NVDA/GLD ratio as a trade expression is brilliant. Long intelligence, short inertia.',
+      createdAt: '2026-05-19T10:00:00Z',
+    },
+    {
+      id: 'c-nvda-val-2',
+      author: { name: 'Priya Sharma', initials: 'PS' },
+      content:
+        'Aramco dropping from #1 to #10 in five years is the single most important chart in macro right now.',
+      createdAt: '2026-05-19T12:30:00Z',
+    },
+    {
+      id: 'c-nvda-val-3',
+      author: { name: 'David Oyelaran', initials: 'DO' },
+      content: 'The $26B R&D spend exceeding AMD entire revenue — that is the moat in one number.',
+      createdAt: '2026-05-19T15:45:00Z',
     },
   ],
   'africa-billion-dollar-companies-2026': [
