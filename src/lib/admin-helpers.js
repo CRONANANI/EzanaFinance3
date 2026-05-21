@@ -4,7 +4,7 @@
  * An "admin" is defined as a user whose email appears in the comma-separated
  * ADMIN_EMAILS environment variable. Add to .env.local:
  *
- *   ADMIN_EMAILS=axmabeto@gmail.com,founder@ezana.world
+ *   ADMIN_EMAILS=axmabeto@gmail.com,founder@ezana.world,isabel.lim546@gmail.com
  *
  * This is a deliberate stub for the changelog feature. If/when the platform
  * needs more granular admin permissions (e.g., role-based: changelog-editor,
