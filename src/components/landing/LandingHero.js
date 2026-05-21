@@ -186,14 +186,8 @@ export function LandingHero() {
           />
         </div>
 
-        {mountHeroBg && (
-          <div
-            className={`hero-aurora-shader-front ${showHeroVisual ? 'hero-aurora-shader-front--visible' : ''}`}
-            aria-hidden
-          >
-            <AuroraShaderLayer opacity={0.15} speed={0.5} tint="green" />
-          </div>
-        )}
+        {/* Front aurora removed — 15% opacity layer was invisible to most users
+            but doubled GPU shader cost. Back aurora (35% opacity) provides the effect. */}
 
         <HeroLightning intervalMs={3300} onStrike={onLightningStrike} />
       </div>

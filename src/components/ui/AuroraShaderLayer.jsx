@@ -46,7 +46,7 @@ export default function AuroraShaderLayer({
 
     const rect = container.getBoundingClientRect();
     renderer.setSize(rect.width, rect.height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    renderer.setPixelRatio(1); // Aurora is a blurry effect — retina rendering wastes GPU for no visible gain
     container.appendChild(renderer.domElement);
 
     const greenTint = `
@@ -125,16 +125,16 @@ export default function AuroraShaderLayer({
           for (float i = 0.0; i < 35.0; i++) {
             v = p + cos(i * i + (iTime + p.x * 0.08) * 0.025 + i * vec2(13.0, 11.0)) * 3.5
                 + vec2(sin(iTime * 3.0 + i) * 0.003, cos(iTime * 3.5 - i) * 0.003);
-            float tailNoise = fbm(v + vec2(iTime * 0.5, i)) * 0.3 * (1.0 - (i / 35.0));
+            float tailNoise = fbm(v + vec2(iTime * 0.5, i)) * 0.3 * (1.0 - (i / 20.0));
             ${tintBlock}
             vec4 currentContribution = auroraColors
               * exp(sin(i * i + iTime * 0.8))
               / length(max(v, vec2(v.x * f * 0.015, v.y * 1.5)));
-            float thinnessFactor = smoothstep(0.0, 1.0, i / 35.0) * 0.6;
+            float thinnessFactor = smoothstep(0.0, 1.0, i / 20.0) * 0.6;
             o += currentContribution * (1.0 + tailNoise * 0.8) * thinnessFactor;
           }
 
-          o = tanh(pow(o / 100.0, vec4(1.6)));
+          o = tanh(pow(o / 60.0, vec4(1.6)));
           o *= 1.5;
           o.a = length(o.rgb) * uOpacity;
           gl_FragColor = o;
@@ -147,14 +147,30 @@ export default function AuroraShaderLayer({
     scene.add(mesh);
 
     let frameId = 0;
-    const animate = () => {
+    let lastFrameTime = 0;
+    const TARGET_INTERVAL = 1000 / 30; // 30fps — aurora doesn't need 60fps
+    let isPageVisible = true;
+
+    const handleVisibility = () => {
+      isPageVisible = document.visibilityState === 'visible';
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    const animate = (now) => {
+      frameId = requestAnimationFrame(animate);
+
+      if (!isPageVisible) return;
+
+      const delta = now - lastFrameTime;
+      if (delta < TARGET_INTERVAL) return;
+      lastFrameTime = now - (delta % TARGET_INTERVAL);
+
       if (!reduceMotion) {
-        material.uniforms.iTime.value += 0.016 * speed;
+        material.uniforms.iTime.value += 0.033 * speed;
       }
       renderer.render(scene, camera);
-      frameId = requestAnimationFrame(animate);
     };
-    animate();
+    frameId = requestAnimationFrame(animate);
 
     const handleResize = () => {
       const r = container.getBoundingClientRect();
@@ -165,6 +181,7 @@ export default function AuroraShaderLayer({
 
     return () => {
       cancelAnimationFrame(frameId);
+      document.removeEventListener('visibilitychange', handleVisibility);
       window.removeEventListener('resize', handleResize);
       if (container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);

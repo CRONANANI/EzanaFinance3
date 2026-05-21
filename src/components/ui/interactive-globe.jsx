@@ -1749,12 +1749,21 @@ export function InteractiveGlobe({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const dpr = window.devicePixelRatio || 1;
     const w = canvas.clientWidth;
     const h = canvas.clientHeight;
-    canvas.width = w * dpr;
-    canvas.height = h * dpr;
-    ctx.scale(dpr, dpr);
+    const dpr =
+      canvas._cachedDpr ??
+      (() => {
+        canvas._cachedDpr = Math.min(window.devicePixelRatio || 1, 1.5);
+        return canvas._cachedDpr;
+      })();
+    const targetW = w * dpr;
+    const targetH = h * dpr;
+    if (canvas.width !== targetW || canvas.height !== targetH) {
+      canvas.width = targetW;
+      canvas.height = targetH;
+    }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     const cx = w / 2;
     const cy = h / 2;
@@ -1838,13 +1847,35 @@ export function InteractiveGlobe({
       ctx.restore();
     }
 
-    animRef.current = requestAnimationFrame(draw);
+    // Frame scheduling moved to the throttled useEffect loop below
   }, [dotColor, oceanFill, autoRotateSpeed, loaded]);
 
   useEffect(() => {
     if (!loaded) return;
-    animRef.current = requestAnimationFrame(draw);
-    return () => cancelAnimationFrame(animRef.current);
+
+    let lastTime = 0;
+    const TARGET_MS = 1000 / 30;
+    let visible = true;
+
+    const onVis = () => {
+      visible = document.visibilityState === 'visible';
+    };
+    document.addEventListener('visibilitychange', onVis);
+
+    const loop = (now) => {
+      animRef.current = requestAnimationFrame(loop);
+      if (!visible) return;
+      const dt = now - lastTime;
+      if (dt < TARGET_MS) return;
+      lastTime = now - (dt % TARGET_MS);
+      draw();
+    };
+    animRef.current = requestAnimationFrame(loop);
+
+    return () => {
+      cancelAnimationFrame(animRef.current);
+      document.removeEventListener('visibilitychange', onVis);
+    };
   }, [draw, loaded]);
 
   // Drag interaction — matches reference component sensitivity and behavior
