@@ -1056,8 +1056,11 @@ function CommoditySensitivityCard() {
               type="button"
               className={`kairos-pill-btn${selected === k ? ' active' : ''}`}
               onClick={() => {
-                setSelected(k);
-                setActiveDim(null);
+                if (selected === k) {
+                  setActiveDim(null);
+                } else {
+                  setSelected(k);
+                }
               }}
             >
               {v.label}
