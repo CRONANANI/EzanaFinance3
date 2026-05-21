@@ -1,6 +1,10 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
-import { matchesRoutePrefix, PARTNER_DASHBOARD_ROUTES, USER_DASHBOARD_ROUTES } from '@/lib/auth/protected-routes';
+import {
+  matchesRoutePrefix,
+  PARTNER_DASHBOARD_ROUTES,
+  USER_DASHBOARD_ROUTES,
+} from '@/lib/auth/protected-routes';
 
 const ALLOWED_ORIGINS = ['https://ezana.world', 'http://localhost:3000', 'http://127.0.0.1:3000'];
 
@@ -40,7 +44,7 @@ export async function middleware(request) {
           });
         },
       },
-    }
+    },
   );
 
   const {
@@ -73,7 +77,7 @@ export async function middleware(request) {
       if (apiProfile?.is_disabled === true) {
         const apiResponse = NextResponse.json(
           { error: 'Account locked', code: 'ACCOUNT_DISABLED' },
-          { status: 403, headers: response.headers }
+          { status: 403, headers: response.headers },
         );
         const supabase = createServerClient(
           process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -174,6 +178,32 @@ export async function middleware(request) {
       return redirectResponse;
     }
 
+    // First-time users must complete the investor questionnaire before accessing the platform.
+    const isOnboardingPage = pathname === '/onboarding' || pathname.startsWith('/onboarding');
+    const isAuthPage = pathname.startsWith('/auth');
+    const isApiRoute = pathname.startsWith('/api');
+    const isPublicRoute =
+      pathname === '/' || pathname === '/waitlist' || pathname.startsWith('/select-plan');
+
+    if (
+      user &&
+      !isOnboardingPage &&
+      !isAuthPage &&
+      !isApiRoute &&
+      !isPublicRoute &&
+      !pathname.startsWith('/settings')
+    ) {
+      const { data: onboardProfile } = await supabase
+        .from('profiles')
+        .select('investor_questionnaire_completed')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (onboardProfile && onboardProfile.investor_questionnaire_completed !== true) {
+        return NextResponse.redirect(new URL('/onboarding', request.url));
+      }
+    }
+
     if (!isTradingPublicPath) {
       if (profile?.email_verified !== true) {
         const url = request.nextUrl.clone();
@@ -219,4 +249,3 @@ export async function middleware(request) {
 export const config = {
   matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
 };
-
