@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser, getAdminClient } from '@/lib/supabase';
+import { sanitizeText } from '@/lib/sanitize';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -95,16 +96,13 @@ export async function POST(request) {
 
     const body = await request.json().catch(() => ({}));
     const articleId = parseArticleId(body);
-    const content = String(body?.content || '').trim();
+    const content = sanitizeText(body?.content, 2000);
 
     if (!articleId) {
       return NextResponse.json({ error: 'articleId required' }, { status: 400 });
     }
     if (!content) {
-      return NextResponse.json({ error: 'Comment cannot be empty' }, { status: 400 });
-    }
-    if (content.length > 4000) {
-      return NextResponse.json({ error: 'Comment too long (max 4000 chars)' }, { status: 400 });
+      return NextResponse.json({ error: 'Comment content required' }, { status: 400 });
     }
 
     const { data: inserted, error: insertErr } = await admin

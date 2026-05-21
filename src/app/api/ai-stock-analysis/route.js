@@ -2,13 +2,43 @@ import { NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { getModelConfig } from '@/lib/ai/analysis-prompts';
 import { fetchMarketData, formatMarketDataForPrompt } from '@/lib/ai/market-data';
+import { createServerSupabase } from '@/lib/supabase-server';
+import { sanitizeAIOutput } from '@/lib/sanitize';
 
 export const dynamic = 'force-dynamic';
 
 const MODEL = 'claude-sonnet-4-20250514';
 
+const aiRateMap = new Map();
+function checkAiRateLimit(ip) {
+  const now = Date.now();
+  const entry = aiRateMap.get(ip);
+  if (!entry || now - entry.ts > 60000) {
+    aiRateMap.set(ip, { ts: now, n: 1 });
+    return true;
+  }
+  entry.n++;
+  return entry.n <= 10;
+}
+
 export async function POST(request) {
   try {
+    const supabase = createServerSupabase();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    if (!checkAiRateLimit(ip)) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded. Try again in 60 seconds.' },
+        { status: 429 },
+      );
+    }
+
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
@@ -72,7 +102,7 @@ export async function POST(request) {
       messages: [{ role: 'user', content: userPrompt }],
     });
 
-    const analysisText = response.content?.[0]?.text ?? '';
+    const analysisText = sanitizeAIOutput(response.content?.[0]?.text ?? '');
 
     return NextResponse.json({
       ticker: ticker.toUpperCase(),

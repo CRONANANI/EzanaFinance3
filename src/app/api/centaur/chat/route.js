@@ -185,7 +185,6 @@ export async function POST(request) {
     }
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('[centaur/chat] ANTHROPIC_API_KEY set:', Boolean(process.env.ANTHROPIC_API_KEY));
     }
 
     let user;

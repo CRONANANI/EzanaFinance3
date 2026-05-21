@@ -74,7 +74,15 @@ export async function GET(request) {
 
   if (authorId) query = query.eq('author_id', authorId);
   if (category) query = query.eq('article_category', category);
-  if (search) query = query.or(`article_title.ilike.%${search}%,author_name.ilike.%${search}%`);
+  if (search) {
+    const safe = search
+      .replace(/[(){}[\];,`'"\\%_]/g, '')
+      .slice(0, 100)
+      .trim();
+    if (safe) {
+      query = query.or(`article_title.ilike.%${safe}%,author_name.ilike.%${safe}%`);
+    }
+  }
 
   const { data: articles, count } = await query;
   return NextResponse.json({ articles: articles || [], total: count ?? 0 });

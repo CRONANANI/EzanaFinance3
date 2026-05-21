@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient, requireUser } from '@/lib/supabase';
 import { isAdminUser } from '@/lib/admin-helpers';
+import { sanitizeFilterValue } from '@/lib/sanitize';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -32,7 +33,10 @@ export async function GET(request) {
       .limit(limit);
 
     if (q) {
-      query = query.or(`full_name.ilike.%${q}%,username.ilike.%${q}%`);
+      const safe = sanitizeFilterValue(q, 100);
+      if (safe) {
+        query = query.or(`full_name.ilike.%${safe}%,username.ilike.%${safe}%`);
+      }
     }
 
     const { data, error } = await query;
