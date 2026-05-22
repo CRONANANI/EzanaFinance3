@@ -20,7 +20,10 @@ const DATA_SOURCES = [
     tagline: 'Institutional positions disclosed quarterly',
     sources: [
       { name: 'SEC EDGAR', description: '13F, 13D, and 13G filings direct from the source' },
-      { name: 'WhaleWisdom', description: 'Institutional holder consolidation and change detection' },
+      {
+        name: 'WhaleWisdom',
+        description: 'Institutional holder consolidation and change detection',
+      },
       { name: 'Financial Modeling Prep', description: 'Normalized institutional holdings feed' },
     ],
   },
@@ -43,7 +46,10 @@ const DATA_SOURCES = [
       { name: 'GDELT Project', description: 'Geolocated global news and event data' },
       { name: 'World Bank Open Data API', description: 'Macroeconomic indicators' },
       { name: 'IMF Data API', description: 'Fiscal and financial stability data' },
-      { name: 'Financial Modeling Prep', description: 'Sector performance, earnings, dividends, IPOs, economic calendar' },
+      {
+        name: 'Financial Modeling Prep',
+        description: 'Sector performance, earnings, dividends, IPOs, economic calendar',
+      },
     ],
   },
   {
@@ -69,10 +75,10 @@ export function ResourcesSection() {
       <div className="resources-container">
         <div className="resources-header">
           <h2>Data Sources &amp; Resources</h2>
-          <p className="max-w-4xl mx-auto">
-            Every signal, traced to its source. Hover a category to see which providers and
-            datasets power it — from SEC EDGAR filings and Polymarket prediction odds to the
-            World Bank, GDELT, and our own platform signals.
+          <p className="max-w-5xl mx-auto px-6">
+            Every signal, traced to its source. Hover a category to see which providers and datasets
+            power it — from SEC EDGAR filings and Polymarket prediction odds to the World Bank,
+            GDELT, and our own platform signals.
           </p>
         </div>
 
