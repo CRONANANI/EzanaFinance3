@@ -92,24 +92,15 @@ export function GlobeWithNotificationCards({
   const timeAgo = TIME_AGOS[activeIndex % TIME_AGOS.length];
   const { side, vPos: verticalPos } = position;
 
-  const [isMobile, setIsMobile] = useState(false);
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 639px)');
-    const update = () => setIsMobile(mq.matches);
-    update();
-    mq.addEventListener('change', update);
-    return () => mq.removeEventListener('change', update);
-  }, []);
-
   const Alert = ({ cardItem, cardTimeAgo, cardSide, vPos }) => (
     <motion.div
       className={`globe-notification-alert globe-card-v-${vPos}`}
-      initial={isMobile ? { y: 12, opacity: 0 } : { x: cardSide === 'left' ? 24 : -24 }}
-      animate={
-        isMobile
-          ? { y: 0, opacity: 1, transition: { duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] } }
-          : { x: 0, transition: { duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] } }
-      }
+      initial={{ x: cardSide === 'left' ? 16 : -16, opacity: 0 }}
+      animate={{
+        x: 0,
+        opacity: 1,
+        transition: { duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] },
+      }}
     >
       <div className={`globe-alert-icon ${cardItem.type}`}>
         <i className={`bi ${cardItem.icon}`} />

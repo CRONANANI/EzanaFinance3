@@ -1889,7 +1889,12 @@ export function InteractiveGlobe({
       startY: e.clientY,
       startRotation: [...rotationRef.current],
     };
-    e.target.setPointerCapture(e.pointerId);
+    try {
+      e.target.setPointerCapture(e.pointerId);
+    } catch {
+      /* ignore — drag still works via global pointer events */
+    }
+    e.preventDefault();
   }, []);
 
   const onPointerMove = useCallback((e) => {
@@ -1923,11 +1928,21 @@ export function InteractiveGlobe({
   return (
     <canvas
       ref={canvasRef}
-      className={cn('w-full h-full cursor-grab active:cursor-grabbing', className)}
-      style={{ width: size, height: size }}
+      className={cn('w-full h-full cursor-grab active:cursor-grabbing select-none', className)}
+      style={{
+        width: size,
+        height: size,
+        touchAction: 'none',
+        WebkitTouchCallout: 'none',
+        WebkitUserSelect: 'none',
+      }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
+      onPointerLeave={(e) => {
+        if (dragRef.current.active) onPointerUp(e);
+      }}
     />
   );
 }
