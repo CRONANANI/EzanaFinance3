@@ -322,8 +322,8 @@ const COMPARISON_FEATURES = [
       {
         name: 'API access',
         free: false,
-        starter: false,
-        advanced: 'Limited',
+        starter: 'Limited access',
+        advanced: 'Customized access',
         family: 'Full',
         enterprise: 'Full + custom',
       },
