@@ -233,7 +233,10 @@
   overflow: hidden;
   text-decoration: none;
   color: inherit;
-  transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
+  transition:
+    box-shadow 0.2s,
+    transform 0.2s,
+    border-color 0.2s;
 }
 
 .echo-article-card:hover {
@@ -747,7 +750,10 @@ body.light-mode .echo-article-page .echo-article-body > p:first-child::first-let
 
 /* Section headings — visual weight inside reading column */
 .echo-article-page .echo-article-body .echo-article-h2 {
-  font-family: 'Inter', -apple-system, sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    sans-serif;
   font-size: 1.625rem;
   font-weight: 800;
   color: var(--text-primary, #f0f6fc);
@@ -766,7 +772,10 @@ body.light-mode .echo-article-page .echo-article-body .echo-article-h2 {
 }
 
 .echo-article-page .echo-article-body .echo-article-h3 {
-  font-family: 'Inter', -apple-system, sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    sans-serif;
   font-size: 1.25rem;
   font-weight: 700;
   color: var(--text-primary, #f0f6fc);
@@ -2116,6 +2125,18 @@ body.light-mode .echo-map-chip {
   border-radius: 10px;
 }
 
+/* Infographic modifier — for tall portrait-orientation images that should not be cropped */
+.echo-hero-image-img--infographic {
+  max-height: none;
+  object-fit: contain;
+  background: #0d1117;
+  padding: 0;
+}
+
+body.light-mode .echo-hero-image-img--infographic {
+  background: #f9fafb;
+}
+
 .echo-hero-image-caption {
   margin-top: 0.5rem;
   font-size: 0.7rem;
@@ -2168,6 +2189,10 @@ body.light-mode .echo-inline-image-caption {
     max-height: 280px;
   }
 
+  .echo-hero-image-img--infographic {
+    max-height: none;
+  }
+
   .echo-hero-image-caption {
     font-size: 0.625rem;
     padding: 0 0.5rem;
@@ -2176,4 +2201,181 @@ body.light-mode .echo-inline-image-caption {
   .echo-inline-image-img {
     max-height: 320px;
   }
+}
+
+/* ════════════════════════════════════════════════════════════
+   AFRICA INTERACTIVE MAP — Hover countries for company counts
+   ════════════════════════════════════════════════════════════ */
+.echo-africa-map {
+  margin: 2.5rem 0;
+  padding: 1.75rem;
+  background: linear-gradient(180deg, #0a0e13 0%, #0d1117 100%);
+  border: 1px solid #1f2937;
+  border-radius: 14px;
+  position: relative;
+}
+body.light-mode .echo-africa-map {
+  background: linear-gradient(180deg, #f9fafb 0%, #ffffff 100%);
+  border-color: #e5e7eb;
+}
+
+.echo-africa-map-header {
+  margin-bottom: 1rem;
+  text-align: center;
+}
+.echo-africa-map-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #f0f6fc;
+  margin: 0 0 0.25rem;
+}
+body.light-mode .echo-africa-map-title {
+  color: #111827;
+}
+
+.echo-africa-map-subtitle {
+  font-size: 0.7rem;
+  color: #8b949e;
+  margin: 0;
+}
+body.light-mode .echo-africa-map-subtitle {
+  color: #6b7280;
+}
+
+.echo-africa-map-stage {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 1.5rem;
+  align-items: start;
+}
+@media (max-width: 640px) {
+  .echo-africa-map-stage {
+    grid-template-columns: 1fr;
+  }
+}
+
+.echo-africa-svg {
+  width: 100%;
+  height: auto;
+  max-width: 600px;
+  margin: 0 auto;
+  display: block;
+}
+
+.echo-africa-country {
+  cursor: pointer;
+  transition:
+    filter 0.2s ease,
+    stroke-width 0.2s ease;
+  stroke: #0d1117;
+  stroke-width: 0.5;
+}
+body.light-mode .echo-africa-country {
+  stroke: #ffffff;
+}
+
+.echo-africa-country:hover,
+.echo-africa-country.active {
+  filter: brightness(1.25) drop-shadow(0 0 6px rgba(16, 185, 129, 0.5));
+  stroke: #10b981;
+  stroke-width: 1.5;
+}
+
+.echo-africa-tooltip {
+  background: rgba(13, 17, 23, 0.95);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  backdrop-filter: blur(8px);
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+body.light-mode .echo-africa-tooltip {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: #e5e7eb;
+}
+
+.echo-africa-tooltip-country {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #f0f6fc;
+  margin: 0 0 0.5rem;
+  letter-spacing: 0.02em;
+}
+body.light-mode .echo-africa-tooltip-country {
+  color: #111827;
+}
+
+.echo-africa-tooltip-count {
+  font-size: 2.25rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  line-height: 1;
+  margin: 0 0 0.35rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.echo-africa-tooltip-label {
+  font-size: 0.65rem;
+  color: #8b949e;
+  margin: 0 0 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+body.light-mode .echo-africa-tooltip-label {
+  color: #6b7280;
+}
+
+.echo-africa-tooltip-region {
+  font-size: 0.7rem;
+  color: #c9d1d9;
+  margin: 0;
+  padding-top: 0.6rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+body.light-mode .echo-africa-tooltip-region {
+  color: #4b5563;
+  border-top-color: #e5e7eb;
+}
+
+.echo-africa-tooltip-empty {
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-align: center;
+  font-style: italic;
+}
+
+.echo-africa-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+body.light-mode .echo-africa-legend {
+  border-top-color: #e5e7eb;
+}
+
+.echo-africa-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.7rem;
+  color: #8b949e;
+}
+body.light-mode .echo-africa-legend-item {
+  color: #6b7280;
+}
+
+.echo-africa-legend-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
 }

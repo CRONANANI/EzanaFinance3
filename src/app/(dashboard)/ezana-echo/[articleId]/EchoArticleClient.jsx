@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   AreaChart,
   Area,
@@ -34,7 +34,11 @@ import {
   INDUSTRY_COLORS,
 } from '@/lib/ezana-echo-article-fiber-optic';
 import { HANTAVIRUS_YEARLY_DATA, HANTAVIRUS_STATE_DATA } from '@/lib/ezana-echo-article-hantavirus';
-import { US_SEMI_MARKET_CAP, SEMI_FINANCIALS, FOUNDRY_MARKET_SHARE } from '@/lib/ezana-echo-article-semiconductors';
+import {
+  US_SEMI_MARKET_CAP,
+  SEMI_FINANCIALS,
+  FOUNDRY_MARKET_SHARE,
+} from '@/lib/ezana-echo-article-semiconductors';
 
 import '../../../../../app-legacy/assets/css/theme.css';
 import '../../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -45,7 +49,8 @@ import '../ezana-echo.css';
 
 function getEraForYear(year) {
   return (
-    SECTOR_ERAS.find((e) => year >= e.yearStart && year <= e.yearEnd) ?? SECTOR_ERAS[SECTOR_ERAS.length - 1]
+    SECTOR_ERAS.find((e) => year >= e.yearStart && year <= e.yearEnd) ??
+    SECTOR_ERAS[SECTOR_ERAS.length - 1]
   );
 }
 
@@ -73,6 +78,196 @@ function ParagraphWithKeywords({ text }) {
         );
       })}
     </p>
+  );
+}
+
+function AfricaInteractiveMap({ title, subtitle }) {
+  const [hovered, setHovered] = useState(null);
+
+  const COUNTRIES = useMemo(
+    () => ({
+      'south-africa': {
+        name: 'South Africa',
+        count: 147,
+        region: 'Southern Africa',
+        color: '#1abc9c',
+      },
+      egypt: { name: 'Egypt', count: 33, region: 'Northern Africa', color: '#27ae60' },
+      nigeria: { name: 'Nigeria', count: 23, region: 'Western Africa', color: '#f39c12' },
+      morocco: { name: 'Morocco', count: 20, region: 'Northern Africa', color: '#27ae60' },
+      algeria: { name: 'Algeria', count: 12, region: 'Northern Africa', color: '#27ae60' },
+      angola: { name: 'Angola', count: 9, region: 'Southern Africa', color: '#1abc9c' },
+      kenya: { name: 'Kenya', count: 6, region: 'Eastern Africa', color: '#3498db' },
+      ethiopia: { name: 'Ethiopia', count: 4, region: 'Eastern Africa', color: '#3498db' },
+      tunisia: { name: 'Tunisia', count: 4, region: 'Northern Africa', color: '#27ae60' },
+      drc: { name: 'DR Congo', count: 4, region: 'Central Africa', color: '#9b59b6' },
+      ghana: { name: 'Ghana', count: 2, region: 'Western Africa', color: '#f39c12' },
+      'ivory-coast': {
+        name: "Côte d'Ivoire",
+        count: 2,
+        region: 'Western Africa',
+        color: '#f39c12',
+      },
+      senegal: { name: 'Senegal', count: 3, region: 'Western Africa', color: '#f39c12' },
+      cameroon: { name: 'Cameroon', count: 2, region: 'Central Africa', color: '#9b59b6' },
+      libya: { name: 'Libya', count: 2, region: 'Northern Africa', color: '#27ae60' },
+      sudan: { name: 'Sudan', count: 1, region: 'Eastern Africa', color: '#3498db' },
+      tanzania: { name: 'Tanzania', count: 1, region: 'Eastern Africa', color: '#3498db' },
+      madagascar: { name: 'Madagascar', count: 1, region: 'Eastern Africa', color: '#3498db' },
+      mauritius: { name: 'Mauritius', count: 3, region: 'Eastern Africa', color: '#3498db' },
+      zambia: { name: 'Zambia', count: 2, region: 'Southern Africa', color: '#1abc9c' },
+      botswana: { name: 'Botswana', count: 1, region: 'Southern Africa', color: '#1abc9c' },
+      zimbabwe: { name: 'Zimbabwe', count: 1, region: 'Southern Africa', color: '#1abc9c' },
+      mozambique: { name: 'Mozambique', count: 1, region: 'Southern Africa', color: '#1abc9c' },
+      namibia: { name: 'Namibia', count: 1, region: 'Southern Africa', color: '#1abc9c' },
+    }),
+    [],
+  );
+
+  const PATHS = useMemo(
+    () => ({
+      morocco: 'M 100 80 L 180 70 L 195 110 L 165 130 L 130 135 L 105 115 Z',
+      algeria: 'M 195 110 L 280 105 L 295 175 L 275 220 L 215 220 L 200 175 Z',
+      tunisia: 'M 235 80 L 265 80 L 270 110 L 245 110 Z',
+      libya: 'M 295 175 L 360 170 L 365 230 L 335 250 L 280 240 L 275 220 Z',
+      egypt: 'M 365 170 L 425 175 L 430 235 L 395 260 L 365 230 Z',
+      sudan: 'M 360 240 L 410 235 L 425 295 L 395 320 L 355 315 L 340 285 Z',
+      ethiopia: 'M 395 300 L 440 295 L 445 345 L 420 365 L 390 350 Z',
+      kenya: 'M 395 360 L 435 365 L 440 405 L 410 415 L 390 395 Z',
+      tanzania: 'M 380 410 L 425 410 L 430 450 L 395 460 L 375 440 Z',
+      somalia: 'M 440 330 L 475 320 L 480 380 L 450 380 Z',
+      nigeria: 'M 230 270 L 285 265 L 290 310 L 260 325 L 230 315 Z',
+      ghana: 'M 200 305 L 220 305 L 222 345 L 205 345 Z',
+      'ivory-coast': 'M 175 305 L 198 305 L 200 345 L 180 345 Z',
+      senegal: 'M 125 245 L 155 245 L 158 280 L 130 280 Z',
+      mali: 'M 160 220 L 215 215 L 220 270 L 175 270 Z',
+      mauritania: 'M 110 195 L 175 190 L 180 240 L 125 245 L 115 230 Z',
+      cameroon: 'M 285 285 L 315 285 L 318 340 L 295 345 L 285 320 Z',
+      drc: 'M 295 350 L 365 345 L 370 425 L 320 430 L 295 405 Z',
+      angola: 'M 275 430 L 335 425 L 340 485 L 305 495 L 275 470 Z',
+      zambia: 'M 335 445 L 380 445 L 385 480 L 345 485 Z',
+      zimbabwe: 'M 350 485 L 385 485 L 388 515 L 355 515 Z',
+      mozambique: 'M 390 470 L 415 465 L 420 540 L 395 545 Z',
+      madagascar: 'M 445 460 L 470 470 L 475 530 L 455 535 Z',
+      mauritius: 'M 488 525 L 498 525 L 498 535 L 488 535 Z',
+      'south-africa': 'M 300 500 L 380 510 L 385 555 L 350 575 L 305 565 Z',
+      namibia: 'M 270 480 L 305 485 L 310 540 L 280 545 Z',
+      botswana: 'M 305 490 L 350 490 L 355 525 L 315 525 Z',
+      chad: 'M 290 240 L 335 235 L 340 290 L 305 295 Z',
+      niger: 'M 220 215 L 285 210 L 290 255 L 230 265 Z',
+      'burkina-faso': 'M 195 270 L 230 270 L 232 295 L 200 295 Z',
+      guinea: 'M 145 285 L 180 285 L 183 315 L 150 315 Z',
+      liberia: 'M 160 320 L 180 320 L 182 345 L 165 345 Z',
+      'central-african': 'M 305 295 L 340 295 L 345 335 L 310 340 Z',
+      gabon: 'M 270 345 L 290 345 L 293 380 L 275 380 Z',
+      congo: 'M 290 345 L 310 345 L 313 380 L 295 380 Z',
+      rwanda: 'M 372 380 L 385 380 L 387 392 L 374 392 Z',
+      burundi: 'M 372 393 L 385 393 L 387 405 L 374 405 Z',
+      uganda: 'M 375 360 L 395 360 L 397 380 L 377 380 Z',
+      eritrea: 'M 405 275 L 430 275 L 433 300 L 410 300 Z',
+      djibouti: 'M 440 305 L 455 305 L 457 318 L 442 318 Z',
+      malawi: 'M 388 460 L 400 460 L 403 495 L 390 495 Z',
+      lesotho: 'M 340 545 L 358 545 L 360 560 L 345 560 Z',
+      eswatini: 'M 372 540 L 383 540 L 385 552 L 374 552 Z',
+      'western-sahara': 'M 90 130 L 130 135 L 135 175 L 95 175 Z',
+      'sierra-leone': 'M 145 320 L 165 320 L 167 345 L 148 345 Z',
+      'guinea-bissau': 'M 125 285 L 145 285 L 147 305 L 128 305 Z',
+      gambia: 'M 125 275 L 145 275 L 147 282 L 128 282 Z',
+      togo: 'M 222 305 L 230 305 L 232 345 L 224 345 Z',
+      benin: 'M 232 305 L 245 305 L 247 345 L 234 345 Z',
+      'equatorial-guinea': 'M 265 348 L 278 348 L 280 360 L 267 360 Z',
+      'south-sudan': 'M 345 305 L 395 300 L 398 340 L 348 345 Z',
+      comoros: 'M 440 445 L 448 445 L 450 453 L 442 453 Z',
+    }),
+    [],
+  );
+
+  const activeData = hovered ? COUNTRIES[hovered] : null;
+
+  return (
+    <div className="echo-africa-map">
+      <div className="echo-africa-map-header">
+        <h4 className="echo-africa-map-title">
+          {title || 'Companies with $1B+ Revenue by Country'}
+        </h4>
+        <p className="echo-africa-map-subtitle">
+          {subtitle ||
+            'Hover any country to see how many billion-dollar companies are headquartered there'}
+        </p>
+      </div>
+
+      <div className="echo-africa-map-stage">
+        <svg
+          className="echo-africa-svg"
+          viewBox="0 0 500 600"
+          xmlns="http://www.w3.org/2000/svg"
+          role="img"
+          aria-label="Interactive map of Africa"
+        >
+          {Object.entries(PATHS).map(([code, d]) => {
+            const country = COUNTRIES[code];
+            const fill = country?.color || '#374151';
+            const isActive = hovered === code;
+            return (
+              <path
+                key={code}
+                d={d}
+                fill={fill}
+                opacity={country ? 1 : 0.4}
+                className={`echo-africa-country${isActive ? ' active' : ''}`}
+                onMouseEnter={() => country && setHovered(code)}
+                onMouseLeave={() => setHovered(null)}
+                onClick={() => country && setHovered(code === hovered ? null : code)}
+              >
+                {country && <title>{`${country.name}: ${country.count} companies`}</title>}
+              </path>
+            );
+          })}
+        </svg>
+
+        <div className="echo-africa-tooltip">
+          {activeData ? (
+            <>
+              <p className="echo-africa-tooltip-country">{activeData.name}</p>
+              <p className="echo-africa-tooltip-count">{activeData.count}</p>
+              <p className="echo-africa-tooltip-label">
+                {activeData.count === 1
+                  ? 'Company with $1B+ revenue'
+                  : 'Companies with $1B+ revenue'}
+              </p>
+              <p className="echo-africa-tooltip-region">{activeData.region}</p>
+            </>
+          ) : (
+            <p className="echo-africa-tooltip-empty">
+              Hover a country to see its billion-dollar company count
+            </p>
+          )}
+        </div>
+      </div>
+
+      <div className="echo-africa-legend">
+        <span className="echo-africa-legend-item">
+          <span className="echo-africa-legend-swatch" style={{ background: '#27ae60' }} />
+          Northern Africa (73)
+        </span>
+        <span className="echo-africa-legend-item">
+          <span className="echo-africa-legend-swatch" style={{ background: '#f39c12' }} />
+          Western Africa (35)
+        </span>
+        <span className="echo-africa-legend-item">
+          <span className="echo-africa-legend-swatch" style={{ background: '#3498db' }} />
+          Eastern Africa (16)
+        </span>
+        <span className="echo-africa-legend-item">
+          <span className="echo-africa-legend-swatch" style={{ background: '#9b59b6' }} />
+          Central Africa (7)
+        </span>
+        <span className="echo-africa-legend-item">
+          <span className="echo-africa-legend-swatch" style={{ background: '#1abc9c' }} />
+          Southern Africa (160)
+        </span>
+      </div>
+    </div>
   );
 }
 
@@ -130,16 +325,29 @@ function ArticleBlock({ block }) {
             className="echo-inline-image-img"
             loading="lazy"
           />
-          {block.caption && <figcaption className="echo-inline-image-caption">{block.caption}</figcaption>}
+          {block.caption && (
+            <figcaption className="echo-inline-image-caption">{block.caption}</figcaption>
+          )}
         </figure>
       );
+
+    case 'africa-map':
+      return <AfricaInteractiveMap title={block.title} subtitle={block.subtitle} />;
 
     default:
       return null;
   }
 }
 
-function ArticleChart({ variant = 'line', title, caption, data, series = [], annotations = [], yLabel }) {
+function ArticleChart({
+  variant = 'line',
+  title,
+  caption,
+  data,
+  series = [],
+  annotations = [],
+  yLabel,
+}) {
   const W = 720;
   const H = 320;
   const PADDING = { top: 30, right: 80, bottom: 40, left: 50 };
@@ -197,10 +405,24 @@ function ArticleChart({ variant = 'line', title, caption, data, series = [], ann
   return null;
 }
 
-function renderLineChart({ data, series, annotations, yLabel, W, H, PADDING, innerW, innerH, title, caption }) {
+function renderLineChart({
+  data,
+  series,
+  annotations,
+  yLabel,
+  W,
+  H,
+  PADDING,
+  innerW,
+  innerH,
+  title,
+  caption,
+}) {
   if (!data?.length || !series?.length) return null;
 
-  const allValues = data.flatMap((d) => series.map((s) => d[s.key])).filter((v) => typeof v === 'number');
+  const allValues = data
+    .flatMap((d) => series.map((s) => d[s.key]))
+    .filter((v) => typeof v === 'number');
   if (!allValues.length) return null;
 
   const yMin = Math.floor(Math.min(...allValues) / 10) * 10;
@@ -210,7 +432,10 @@ function renderLineChart({ data, series, annotations, yLabel, W, H, PADDING, inn
   const xScale = (i) => PADDING.left + (i / xMax) * innerW;
 
   const yTicks = 5;
-  const yTickValues = Array.from({ length: yTicks + 1 }, (_, i) => yMin + (i * (yMax - yMin)) / yTicks);
+  const yTickValues = Array.from(
+    { length: yTicks + 1 },
+    (_, i) => yMin + (i * (yMax - yMin)) / yTicks,
+  );
   const yPrefix = yLabel && /USD|barrel/i.test(yLabel) ? '$' : '';
   const xLabelStride = Math.max(1, Math.ceil(data.length / 6));
 
@@ -218,7 +443,12 @@ function renderLineChart({ data, series, annotations, yLabel, W, H, PADDING, inn
     <figure className="echo-chart">
       {title && <div className="echo-chart-title">{title}</div>}
       {caption && <div className="echo-chart-caption">{caption}</div>}
-      <svg viewBox={`0 0 ${W} ${H}`} className="echo-chart-svg" role="img" aria-label={title || 'Chart'}>
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        className="echo-chart-svg"
+        role="img"
+        aria-label={title || 'Chart'}
+      >
         {yTickValues.map((tv, i) => (
           <g key={i}>
             <line
@@ -229,7 +459,12 @@ function renderLineChart({ data, series, annotations, yLabel, W, H, PADDING, inn
               stroke="var(--echo-chart-grid, rgba(120, 120, 120, 0.15))"
               strokeWidth="1"
             />
-            <text x={PADDING.left - 8} y={yScale(tv) + 4} textAnchor="end" className="echo-chart-tick">
+            <text
+              x={PADDING.left - 8}
+              y={yScale(tv) + 4}
+              textAnchor="end"
+              className="echo-chart-tick"
+            >
               {yPrefix}
               {Math.round(tv)}
             </text>
@@ -239,7 +474,13 @@ function renderLineChart({ data, series, annotations, yLabel, W, H, PADDING, inn
         {data.map((d, i) => {
           if (i % xLabelStride !== 0 && i !== data.length - 1) return null;
           return (
-            <text key={i} x={xScale(i)} y={H - PADDING.bottom + 18} textAnchor="middle" className="echo-chart-tick">
+            <text
+              key={i}
+              x={xScale(i)}
+              y={H - PADDING.bottom + 18}
+              textAnchor="middle"
+              className="echo-chart-tick"
+            >
               {d.x}
             </text>
           );
@@ -295,7 +536,12 @@ function renderLineChart({ data, series, annotations, yLabel, W, H, PADDING, inn
                 strokeWidth="1"
                 strokeDasharray="4 4"
               />
-              <text x={x} y={PADDING.top - 8} textAnchor="middle" className="echo-chart-annotation-label">
+              <text
+                x={x}
+                y={PADDING.top - 8}
+                textAnchor="middle"
+                className="echo-chart-annotation-label"
+              >
                 {a.label}
               </text>
             </g>
@@ -322,7 +568,12 @@ function renderHorizontalBarChart({ data, title, caption, W, H, PADDING }) {
     <figure className="echo-chart">
       {title && <div className="echo-chart-title">{title}</div>}
       {caption && <div className="echo-chart-caption">{caption}</div>}
-      <svg viewBox={`0 0 ${W} ${chartHeight}`} className="echo-chart-svg" role="img" aria-label={title || 'Chart'}>
+      <svg
+        viewBox={`0 0 ${W} ${chartHeight}`}
+        className="echo-chart-svg"
+        role="img"
+        aria-label={title || 'Chart'}
+      >
         {data.map((d, i) => {
           const y = PADDING.top + i * (rowHeight + gap);
           const barWidth = maxValue ? (d.value / maxValue) * barTrackWidth : 0;
@@ -381,7 +632,12 @@ function renderBarChart({ data, title, caption, W, H, PADDING, innerW, innerH })
     <figure className="echo-chart">
       {title && <div className="echo-chart-title">{title}</div>}
       {caption && <div className="echo-chart-caption">{caption}</div>}
-      <svg viewBox={`0 0 ${W} ${H}`} className="echo-chart-svg" role="img" aria-label={title || 'Chart'}>
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        className="echo-chart-svg"
+        role="img"
+        aria-label={title || 'Chart'}
+      >
         <line
           x1={PADDING.left}
           x2={W - PADDING.right}
@@ -401,8 +657,20 @@ function renderBarChart({ data, title, caption, W, H, PADDING, innerW, innerH })
             : 'var(--echo-chart-green, #10b981)';
           return (
             <g key={i}>
-              <rect x={x} y={top} width={barWidth} height={Math.max(height, 1)} fill={color} rx="2" />
-              <text x={x + barWidth / 2} y={top - 6} textAnchor="middle" className="echo-chart-bar-value">
+              <rect
+                x={x}
+                y={top}
+                width={barWidth}
+                height={Math.max(height, 1)}
+                fill={color}
+                rx="2"
+              />
+              <text
+                x={x + barWidth / 2}
+                y={top - 6}
+                textAnchor="middle"
+                className="echo-chart-bar-value"
+              >
                 {d.value > 0 ? '+' : ''}
                 {d.value}%
               </text>
@@ -497,10 +765,7 @@ function MarketForecastChart({ title, caption, yLabel }) {
     <div className="echo-forecast-legend">
       {MARKET_FORECAST_KEYS.map((k) => (
         <div key={k.key} className="echo-forecast-legend-item">
-          <span
-            className="echo-forecast-legend-swatch"
-            style={{ background: k.color }}
-          />
+          <span className="echo-forecast-legend-swatch" style={{ background: k.color }} />
           <div>
             <div className="echo-forecast-legend-name">{k.key}</div>
             <div className="echo-forecast-legend-cagr" style={{ color: k.color }}>
@@ -601,8 +866,12 @@ function FiberCompanyProfileCard({ company, isDark, onClose }) {
     Promise.all([
       fetch(`/api/fmp/quote?symbols=${sym}`).then((r) => (r.ok ? r.json() : null)),
       fetch(`/api/fmp/stock-stats?symbol=${sym}`).then((r) => (r.ok ? r.json() : null)),
-      fetch(`/api/market-data/stock-candles?symbol=${sym}&range=1Y`).then((r) => (r.ok ? r.json() : null)),
-      fetch(`/api/market-data/stock-candles?symbol=${sym}&range=3Y`).then((r) => (r.ok ? r.json() : null)),
+      fetch(`/api/market-data/stock-candles?symbol=${sym}&range=1Y`).then((r) =>
+        r.ok ? r.json() : null,
+      ),
+      fetch(`/api/market-data/stock-candles?symbol=${sym}&range=3Y`).then((r) =>
+        r.ok ? r.json() : null,
+      ),
     ])
       .then(([q, s, ytd, threeY]) => {
         if (cancelled) return;
@@ -612,7 +881,9 @@ function FiberCompanyProfileCard({ company, isDark, onClose }) {
         setQuote(quoteObj);
         setStats(s);
         setYtdChart((ytd?.candles || ytd?.data || []).map((c) => c.close ?? c.c).filter(Boolean));
-        setThreeYChart((threeY?.candles || threeY?.data || []).map((c) => c.close ?? c.c).filter(Boolean));
+        setThreeYChart(
+          (threeY?.candles || threeY?.data || []).map((c) => c.close ?? c.c).filter(Boolean),
+        );
         setLoading(false);
       })
       .catch(() => {
@@ -638,10 +909,14 @@ function FiberCompanyProfileCard({ company, isDark, onClose }) {
         : null;
   const peRaw = stats?.pe ?? stats?.peRatio ?? null;
   const peDisplay =
-    peRaw != null && peRaw !== '--' && !Number.isNaN(Number(peRaw)) ? Number(peRaw).toFixed(1) : null;
+    peRaw != null && peRaw !== '--' && !Number.isNaN(Number(peRaw))
+      ? Number(peRaw).toFixed(1)
+      : null;
   const epsRaw = stats?.eps ?? null;
   const epsDisplay =
-    epsRaw != null && epsRaw !== '--' && !Number.isNaN(Number(epsRaw)) ? `$${Number(epsRaw).toFixed(2)}` : null;
+    epsRaw != null && epsRaw !== '--' && !Number.isNaN(Number(epsRaw))
+      ? `$${Number(epsRaw).toFixed(2)}`
+      : null;
   const high52 = stats?.yearHigh ?? stats?.range?.split('-')?.[1] ?? null;
   const low52 = stats?.yearLow ?? stats?.range?.split('-')?.[0] ?? null;
 
@@ -676,7 +951,9 @@ function FiberCompanyProfileCard({ company, isDark, onClose }) {
         <i className="bi bi-x-lg" />
       </button>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
+      <div
+        style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}
+      >
         <div
           style={{
             width: 36,
@@ -727,21 +1004,45 @@ function FiberCompanyProfileCard({ company, isDark, onClose }) {
       </div>
 
       {!company.ticker && (
-        <div style={{ padding: '1rem 0', textAlign: 'center', color: t.mutedColor, fontSize: '0.75rem' }}>
-          <i className="bi bi-lock" style={{ fontSize: '1.25rem', display: 'block', marginBottom: '0.4rem' }} />
+        <div
+          style={{
+            padding: '1rem 0',
+            textAlign: 'center',
+            color: t.mutedColor,
+            fontSize: '0.75rem',
+          }}
+        >
+          <i
+            className="bi bi-lock"
+            style={{ fontSize: '1.25rem', display: 'block', marginBottom: '0.4rem' }}
+          />
           Private company — financial data not available.
         </div>
       )}
 
       {company.ticker && loading && (
-        <div style={{ padding: '1.5rem 0', textAlign: 'center', color: t.mutedColor, fontSize: '0.75rem' }}>
+        <div
+          style={{
+            padding: '1.5rem 0',
+            textAlign: 'center',
+            color: t.mutedColor,
+            fontSize: '0.75rem',
+          }}
+        >
           Loading {company.ticker} data…
         </div>
       )}
 
       {company.ticker && !loading && (
         <>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '0.75rem' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'baseline',
+              gap: '0.5rem',
+              marginBottom: '0.75rem',
+            }}
+          >
             <span style={{ fontSize: '1.4rem', fontWeight: 800, color: t.headingColor }}>
               {price != null ? `$${Number(price).toFixed(2)}` : '—'}
             </span>
@@ -775,7 +1076,9 @@ function FiberCompanyProfileCard({ company, isDark, onClose }) {
               {
                 label: '52W Range',
                 value:
-                  low52 && high52 ? `${Number(low52).toFixed(0)} – ${Number(high52).toFixed(0)}` : '—',
+                  low52 && high52
+                    ? `${Number(low52).toFixed(0)} – ${Number(high52).toFixed(0)}`
+                    : '—',
               },
             ].map((s) => (
               <div
@@ -883,14 +1186,21 @@ function MiniSparkChart({ data, label, isDark, bg }) {
           {pctChange}%
         </span>
       </div>
-      <svg viewBox={`0 0 ${w} ${h}`} style={{ width: '100%', height: 48 }} preserveAspectRatio="none">
+      <svg
+        viewBox={`0 0 ${w} ${h}`}
+        style={{ width: '100%', height: 48 }}
+        preserveAspectRatio="none"
+      >
         <defs>
           <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={lineColor} stopOpacity="0.15" />
             <stop offset="100%" stopColor={lineColor} stopOpacity="0" />
           </linearGradient>
         </defs>
-        <polygon points={`${pad},${h - pad} ${points} ${w - pad},${h - pad}`} fill={`url(#${gradId})`} />
+        <polygon
+          points={`${pad},${h - pad} ${points} ${w - pad},${h - pad}`}
+          fill={`url(#${gradId})`}
+        />
         <polyline
           points={points}
           fill="none"
@@ -925,15 +1235,36 @@ function HantavirusYearlyChart({ title, caption }) {
   };
 
   return (
-    <div style={{ width: '100%', background: t.bg, borderRadius: 12, border: `1px solid ${t.border}`, padding: '1rem' }}>
-      <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: isDark ? '#f0f6fc' : '#111827', margin: '0 0 0.75rem' }}>
+    <div
+      style={{
+        width: '100%',
+        background: t.bg,
+        borderRadius: 12,
+        border: `1px solid ${t.border}`,
+        padding: '1rem',
+      }}
+    >
+      <h4
+        style={{
+          fontSize: '0.85rem',
+          fontWeight: 700,
+          color: isDark ? '#f0f6fc' : '#111827',
+          margin: '0 0 0.75rem',
+        }}
+      >
         {title || 'U.S. Hantavirus Cases by Year (1993–2023)'}
       </h4>
       <div className="echo-chart-responsive-wrap">
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={HANTAVIRUS_YEARLY_DATA} barCategoryGap="15%">
             <CartesianGrid strokeDasharray="3 3" stroke={t.grid} />
-            <XAxis dataKey="year" tick={{ fill: t.text, fontSize: 9 }} interval={2} axisLine={false} tickLine={false} />
+            <XAxis
+              dataKey="year"
+              tick={{ fill: t.text, fontSize: 9 }}
+              interval={2}
+              axisLine={false}
+              tickLine={false}
+            />
             <YAxis tick={{ fill: t.text, fontSize: 10 }} axisLine={false} tickLine={false} />
             <Tooltip
               contentStyle={{
@@ -946,13 +1277,27 @@ function HantavirusYearlyChart({ title, caption }) {
             />
             <Legend wrapperStyle={{ fontSize: '0.65rem' }} />
             <Bar dataKey="died" stackId="cases" fill="#3b82f6" name="Died" radius={[0, 0, 0, 0]} />
-            <Bar dataKey="lived" stackId="cases" fill="#86efac" name="Lived" radius={[0, 0, 0, 0]} />
-            <Bar dataKey="unknown" stackId="cases" fill="#bfdbfe" name="Unknown Outcome" radius={[2, 2, 0, 0]} />
+            <Bar
+              dataKey="lived"
+              stackId="cases"
+              fill="#86efac"
+              name="Lived"
+              radius={[0, 0, 0, 0]}
+            />
+            <Bar
+              dataKey="unknown"
+              stackId="cases"
+              fill="#bfdbfe"
+              name="Unknown Outcome"
+              radius={[2, 2, 0, 0]}
+            />
           </BarChart>
         </ResponsiveContainer>
       </div>
       <p style={{ fontSize: '0.6rem', color: t.text, marginTop: '0.5rem', opacity: 0.6 }}>
-        {caption ? `Source: ${caption}. Cases met surveillance case definition at time of reporting.` : 'Source: CDC / NNDSS. Cases met surveillance case definition at time of reporting.'}
+        {caption
+          ? `Source: ${caption}. Cases met surveillance case definition at time of reporting.`
+          : 'Source: CDC / NNDSS. Cases met surveillance case definition at time of reporting.'}
       </p>
     </div>
   );
@@ -988,8 +1333,23 @@ function HantavirusStateMap({ title, caption }) {
   const projectY = (lat) => ((50 - lat) / 22) * 450;
 
   return (
-    <div style={{ width: '100%', background: t.bg, borderRadius: 12, border: `1px solid ${t.border}`, padding: '1rem' }}>
-      <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: isDark ? '#f0f6fc' : '#111827', margin: '0 0 0.75rem' }}>
+    <div
+      style={{
+        width: '100%',
+        background: t.bg,
+        borderRadius: 12,
+        border: `1px solid ${t.border}`,
+        padding: '1rem',
+      }}
+    >
+      <h4
+        style={{
+          fontSize: '0.85rem',
+          fontWeight: 700,
+          color: isDark ? '#f0f6fc' : '#111827',
+          margin: '0 0 0.75rem',
+        }}
+      >
         {title || 'Cumulative Hantavirus Cases by State (1993–2023)'}
       </h4>
       <div className="echo-chart-responsive-wrap" style={{ position: 'relative' }}>
@@ -1027,7 +1387,14 @@ function HantavirusStateMap({ title, caption }) {
                   {s.state}
                 </text>
                 {(s.cases > 20 || isHovered) && (
-                  <text x={cx} y={cy + 4} textAnchor="middle" fill="#fff" fontSize={isHovered ? 11 : 8} fontWeight={700}>
+                  <text
+                    x={cx}
+                    y={cy + 4}
+                    textAnchor="middle"
+                    fill="#fff"
+                    fontSize={isHovered ? 11 : 8}
+                    fontWeight={700}
+                  >
                     {s.cases}
                   </text>
                 )}
@@ -1055,13 +1422,25 @@ function HantavirusStateMap({ title, caption }) {
                 }}
               >
                 <div style={{ fontWeight: 700 }}>{s.name}</div>
-                <div style={{ color: getColor(s.cases), fontWeight: 800, fontSize: '1rem' }}>{s.cases} cases</div>
-                <div style={{ fontSize: '0.6rem', color: t.text, opacity: 0.7 }}>1993–2023 cumulative</div>
+                <div style={{ color: getColor(s.cases), fontWeight: 800, fontSize: '1rem' }}>
+                  {s.cases} cases
+                </div>
+                <div style={{ fontSize: '0.6rem', color: t.text, opacity: 0.7 }}>
+                  1993–2023 cumulative
+                </div>
               </div>
             );
           })()}
       </div>
-      <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem', fontSize: '0.6rem', color: t.text }}>
+      <div
+        style={{
+          display: 'flex',
+          gap: '1rem',
+          marginTop: '0.5rem',
+          fontSize: '0.6rem',
+          color: t.text,
+        }}
+      >
         <span>
           <span
             style={{
@@ -1127,7 +1506,16 @@ function SemiMarketCapChart({ title, caption }) {
   const maxCap = US_SEMI_MARKET_CAP[0].marketCap;
 
   return (
-    <div style={{ width: '100%', background: t.bg, borderRadius: 12, border: `1px solid ${t.border}`, padding: '1rem', overflow: 'hidden' }}>
+    <div
+      style={{
+        width: '100%',
+        background: t.bg,
+        borderRadius: 12,
+        border: `1px solid ${t.border}`,
+        padding: '1rem',
+        overflow: 'hidden',
+      }}
+    >
       <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: t.heading, margin: '0 0 0.75rem' }}>
         {title || 'Who Dominates U.S. Semiconductors?'}
       </h4>
@@ -1172,8 +1560,17 @@ function SemiMarketCapChart({ title, caption }) {
                 position: 'relative',
               }}
             >
-              <span style={{ fontSize: '0.75rem', fontWeight: 800, color: t.text }}>{row.rank}</span>
-              <span style={{ fontSize: '0.75rem', fontWeight: 800, color: t.heading, fontFamily: 'var(--font-mono, monospace)' }}>
+              <span style={{ fontSize: '0.75rem', fontWeight: 800, color: t.text }}>
+                {row.rank}
+              </span>
+              <span
+                style={{
+                  fontSize: '0.75rem',
+                  fontWeight: 800,
+                  color: t.heading,
+                  fontFamily: 'var(--font-mono, monospace)',
+                }}
+              >
                 {row.ticker}
               </span>
               <div style={{ position: 'relative', minHeight: 24 }}>
@@ -1189,7 +1586,16 @@ function SemiMarketCapChart({ title, caption }) {
                     transition: 'width 0.5s ease',
                   }}
                 />
-                <span style={{ position: 'relative', fontSize: '0.7rem', color: t.text, lineHeight: '24px' }}>{row.company}</span>
+                <span
+                  style={{
+                    position: 'relative',
+                    fontSize: '0.7rem',
+                    color: t.text,
+                    lineHeight: '24px',
+                  }}
+                >
+                  {row.company}
+                </span>
               </div>
               <span
                 style={{
@@ -1200,7 +1606,9 @@ function SemiMarketCapChart({ title, caption }) {
                   fontFamily: 'var(--font-mono, monospace)',
                 }}
               >
-                {row.marketCap >= 1000 ? `$${(row.marketCap / 1000).toFixed(2)}T` : `$${row.marketCap.toFixed(1)}B`}
+                {row.marketCap >= 1000
+                  ? `$${(row.marketCap / 1000).toFixed(2)}T`
+                  : `$${row.marketCap.toFixed(1)}B`}
               </span>
             </div>
           );
@@ -1248,14 +1656,32 @@ function SemiFinancialsTable({ title, caption }) {
     { key: 'company', label: 'Company', align: 'left', format: (v) => v },
     { key: 'type', label: 'Type', align: 'left', format: (v) => v },
     { key: 'revenue', label: 'Revenue TTM', align: 'right', format: (v) => `$${v}B` },
-    { key: 'netIncome', label: 'Net Income TTM', align: 'right', format: (v) => (v < 0 ? `-$${Math.abs(v)}B` : `$${v}B`) },
-    { key: 'marketCap', label: 'Market Cap', align: 'right', format: (v) => (v >= 1000 ? `$${(v / 1000).toFixed(1)}T` : `$${v}B`) },
+    {
+      key: 'netIncome',
+      label: 'Net Income TTM',
+      align: 'right',
+      format: (v) => (v < 0 ? `-$${Math.abs(v)}B` : `$${v}B`),
+    },
+    {
+      key: 'marketCap',
+      label: 'Market Cap',
+      align: 'right',
+      format: (v) => (v >= 1000 ? `$${(v / 1000).toFixed(1)}T` : `$${v}B`),
+    },
   ];
 
   const sortable = (key) => key === 'revenue' || key === 'netIncome' || key === 'marketCap';
 
   return (
-    <div style={{ width: '100%', background: t.bg, borderRadius: 12, border: `1px solid ${t.border}`, overflow: 'hidden' }}>
+    <div
+      style={{
+        width: '100%',
+        background: t.bg,
+        borderRadius: 12,
+        border: `1px solid ${t.border}`,
+        overflow: 'hidden',
+      }}
+    >
       <div style={{ padding: '1rem 1rem 0.5rem' }}>
         <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: t.heading, margin: 0 }}>
           {title || 'U.S. Semiconductor Financials (TTM)'}
@@ -1367,11 +1793,27 @@ function FoundryMarketShareChart({ title, caption }) {
   const hoveredRow = hovered ? FOUNDRY_MARKET_SHARE.find((d) => d.company === hovered) : null;
 
   return (
-    <div style={{ width: '100%', background: t.bg, borderRadius: 12, border: `1px solid ${t.border}`, padding: '1rem' }}>
+    <div
+      style={{
+        width: '100%',
+        background: t.bg,
+        borderRadius: 12,
+        border: `1px solid ${t.border}`,
+        padding: '1rem',
+      }}
+    >
       <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: t.heading, margin: '0 0 0.75rem' }}>
         {title || 'Global Foundry Market Share'}
       </h4>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '2rem',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+        }}
+      >
         <svg viewBox="0 0 240 240" style={{ width: 220, height: 220 }}>
           {slices.map((s) => (
             <path
@@ -1386,7 +1828,14 @@ function FoundryMarketShareChart({ title, caption }) {
               style={{ cursor: 'pointer', transition: 'opacity 0.2s' }}
             />
           ))}
-          <text x={cx} y={cy - 6} textAnchor="middle" fill={t.heading} fontSize={hovered ? 14 : 22} fontWeight={800}>
+          <text
+            x={cx}
+            y={cy - 6}
+            textAnchor="middle"
+            fill={t.heading}
+            fontSize={hovered ? 14 : 22}
+            fontWeight={800}
+          >
             {hoveredRow ? `${hoveredRow.share}%` : 'TSMC'}
           </text>
           <text x={cx} y={cy + 14} textAnchor="middle" fill={t.text} fontSize={hovered ? 10 : 11}>
@@ -1409,9 +1858,29 @@ function FoundryMarketShareChart({ title, caption }) {
                 transition: 'opacity 0.2s',
               }}
             >
-              <span style={{ width: 10, height: 10, borderRadius: 3, background: d.color, flexShrink: 0 }} />
-              <span style={{ fontSize: '0.7rem', fontWeight: 600, color: t.heading, minWidth: 110 }}>{d.company}</span>
-              <span style={{ fontSize: '0.7rem', color: t.text, fontFamily: 'var(--font-mono, monospace)' }}>{d.share}%</span>
+              <span
+                style={{
+                  width: 10,
+                  height: 10,
+                  borderRadius: 3,
+                  background: d.color,
+                  flexShrink: 0,
+                }}
+              />
+              <span
+                style={{ fontSize: '0.7rem', fontWeight: 600, color: t.heading, minWidth: 110 }}
+              >
+                {d.company}
+              </span>
+              <span
+                style={{
+                  fontSize: '0.7rem',
+                  color: t.text,
+                  fontFamily: 'var(--font-mono, monospace)',
+                }}
+              >
+                {d.share}%
+              </span>
               <span style={{ fontSize: '0.6rem', color: t.text, opacity: 0.6 }}>{d.region}</span>
             </div>
           ))}
@@ -1491,7 +1960,7 @@ function FiberOpticWorldMap({ title, caption }) {
   };
 
   const visible = FIBER_OPTIC_COMPANIES.filter(
-    (c) => activeContinents.has(c.continent) && activeIndustries.has(c.industry)
+    (c) => activeContinents.has(c.continent) && activeIndustries.has(c.industry),
   );
 
   const project = (lat, lng) => {
@@ -1516,7 +1985,15 @@ function FiberOpticWorldMap({ title, caption }) {
               type="button"
               onClick={() => toggleContinent(c)}
               className={`echo-map-chip ${activeContinents.has(c) ? 'is-active' : ''}`}
-              style={activeContinents.has(c) ? { borderColor: '#6366f1', background: isDark ? 'rgba(99,102,241,0.15)' : 'rgba(99,102,241,0.1)', color: isDark ? '#c7d2fe' : '#4338ca' } : { borderColor: t.indBorderInactive, color: t.indColorInactive }}
+              style={
+                activeContinents.has(c)
+                  ? {
+                      borderColor: '#6366f1',
+                      background: isDark ? 'rgba(99,102,241,0.15)' : 'rgba(99,102,241,0.1)',
+                      color: isDark ? '#c7d2fe' : '#4338ca',
+                    }
+                  : { borderColor: t.indBorderInactive, color: t.indColorInactive }
+              }
             >
               {c}
             </button>
@@ -1534,7 +2011,15 @@ function FiberOpticWorldMap({ title, caption }) {
               type="button"
               onClick={() => toggleIndustry(ind)}
               className={`echo-map-chip ${activeIndustries.has(ind) ? 'is-active' : ''}`}
-              style={activeIndustries.has(ind) ? { borderColor: industryColor(ind), background: `${industryColor(ind)}22`, color: industryColor(ind) } : { borderColor: t.indBorderInactive, color: t.indColorInactive }}
+              style={
+                activeIndustries.has(ind)
+                  ? {
+                      borderColor: industryColor(ind),
+                      background: `${industryColor(ind)}22`,
+                      color: industryColor(ind),
+                    }
+                  : { borderColor: t.indBorderInactive, color: t.indColorInactive }
+              }
             >
               <span className="echo-map-chip-dot" style={{ background: industryColor(ind) }} />
               {ind}
@@ -1569,7 +2054,13 @@ function FiberOpticWorldMap({ title, caption }) {
         </g>
 
         {/* Continent labels */}
-        <g fill={t.continentLabelFill} fontSize="9" fontFamily="sans-serif" fontWeight="600" letterSpacing="0.1em">
+        <g
+          fill={t.continentLabelFill}
+          fontSize="9"
+          fontFamily="sans-serif"
+          fontWeight="600"
+          letterSpacing="0.1em"
+        >
           <text x="120" y="110">
             N. AMERICA
           </text>
@@ -1603,9 +2094,27 @@ function FiberOpticWorldMap({ title, caption }) {
               style={{ cursor: 'pointer' }}
             >
               {c.highlight && (
-                <circle cx={x} cy={y} r={14} fill="none" stroke={t.highlightPulseStroke} strokeWidth={1} opacity={0.25}>
-                  <animate attributeName="r" values="10;18;10" dur="2.5s" repeatCount="indefinite" />
-                  <animate attributeName="opacity" values="0.45;0.1;0.45" dur="2.5s" repeatCount="indefinite" />
+                <circle
+                  cx={x}
+                  cy={y}
+                  r={14}
+                  fill="none"
+                  stroke={t.highlightPulseStroke}
+                  strokeWidth={1}
+                  opacity={0.25}
+                >
+                  <animate
+                    attributeName="r"
+                    values="10;18;10"
+                    dur="2.5s"
+                    repeatCount="indefinite"
+                  />
+                  <animate
+                    attributeName="opacity"
+                    values="0.45;0.1;0.45"
+                    dur="2.5s"
+                    repeatCount="indefinite"
+                  />
                 </circle>
               )}
               <circle
@@ -1630,44 +2139,65 @@ function FiberOpticWorldMap({ title, caption }) {
           );
         })}
 
-        {hovered && (() => {
-          const { x, y } = project(hovered.lat, hovered.lng);
-          const tipX = x > 500 ? x - 160 : x + 12;
-          const tipY = y > 300 ? y - 60 : y + 8;
-          const hc = industryColor(hovered.industry);
-          return (
-            <g>
-              <rect
-                x={tipX}
-                y={tipY}
-                width={155}
-                height={52}
-                rx={6}
-                fill={t.tooltipBg}
-                stroke={t.tooltipBorder}
-                strokeWidth={1}
-              />
-              <text
-                x={tipX + 8}
-                y={tipY + 16}
-                fill={t.tooltipNameFill}
-                fontSize="9"
-                fontWeight="700"
-                fontFamily="sans-serif"
-              >
-                {hovered.name}
-              </text>
-              <text x={tipX + 8} y={tipY + 28} fill={t.tooltipMetaFill} fontSize="7.5" fontFamily="sans-serif">
-                {hovered.hq} · {hovered.industry}
-              </text>
-              <text x={tipX + 8} y={tipY + 40} fill={hc} fontSize="7.5" fontWeight="600" fontFamily="sans-serif">
-                {hovered.ticker ? `${hovered.ticker}` : 'Private'}
-              </text>
-            </g>
-          );
-        })()}
+        {hovered &&
+          (() => {
+            const { x, y } = project(hovered.lat, hovered.lng);
+            const tipX = x > 500 ? x - 160 : x + 12;
+            const tipY = y > 300 ? y - 60 : y + 8;
+            const hc = industryColor(hovered.industry);
+            return (
+              <g>
+                <rect
+                  x={tipX}
+                  y={tipY}
+                  width={155}
+                  height={52}
+                  rx={6}
+                  fill={t.tooltipBg}
+                  stroke={t.tooltipBorder}
+                  strokeWidth={1}
+                />
+                <text
+                  x={tipX + 8}
+                  y={tipY + 16}
+                  fill={t.tooltipNameFill}
+                  fontSize="9"
+                  fontWeight="700"
+                  fontFamily="sans-serif"
+                >
+                  {hovered.name}
+                </text>
+                <text
+                  x={tipX + 8}
+                  y={tipY + 28}
+                  fill={t.tooltipMetaFill}
+                  fontSize="7.5"
+                  fontFamily="sans-serif"
+                >
+                  {hovered.hq} · {hovered.industry}
+                </text>
+                <text
+                  x={tipX + 8}
+                  y={tipY + 40}
+                  fill={hc}
+                  fontSize="7.5"
+                  fontWeight="600"
+                  fontFamily="sans-serif"
+                >
+                  {hovered.ticker ? `${hovered.ticker}` : 'Private'}
+                </text>
+              </g>
+            );
+          })()}
 
-        <text x={685} y={390} textAnchor="end" fill={t.counterFill} fontSize="8" fontFamily="sans-serif">
+        <text
+          x={685}
+          y={390}
+          textAnchor="end"
+          fill={t.counterFill}
+          fontSize="8"
+          fontFamily="sans-serif"
+        >
           {visible.length} companies shown
         </text>
       </svg>
@@ -1728,7 +2258,10 @@ function SectorDominanceChart({ title, caption, yLabel }) {
   const activeEra = hoverYear != null ? getEraForYear(hoverYear) : null;
 
   return (
-    <figure className="echo-chart echo-sector-chart-block" aria-label={yLabel ? `${title}. ${yLabel}` : title || 'Sector dominance chart'}>
+    <figure
+      className="echo-chart echo-sector-chart-block"
+      aria-label={yLabel ? `${title}. ${yLabel}` : title || 'Sector dominance chart'}
+    >
       {title && <div className="echo-chart-title">{title}</div>}
 
       <div className="echo-sector-chart-wrap">
@@ -1740,7 +2273,14 @@ function SectorDominanceChart({ title, caption, yLabel }) {
           >
             <defs>
               {SECTOR_ERAS.map((era) => (
-                <linearGradient key={era.sector} id={`echo-grad-${era.sector}`} x1="0" y1="0" x2="0" y2="1">
+                <linearGradient
+                  key={era.sector}
+                  id={`echo-grad-${era.sector}`}
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
                   <stop offset="0%" stopColor={era.color} stopOpacity={0.85} />
                   <stop offset="100%" stopColor={era.color} stopOpacity={0.45} />
                 </linearGradient>
@@ -1766,7 +2306,9 @@ function SectorDominanceChart({ title, caption, yLabel }) {
               width={42}
             />
             <Tooltip
-              content={(tooltipProps) => <SectorDominanceTooltip {...tooltipProps} setHoverYear={setHoverYear} />}
+              content={(tooltipProps) => (
+                <SectorDominanceTooltip {...tooltipProps} setHoverYear={setHoverYear} />
+              )}
               cursor={{ stroke: 'rgba(255,255,255,0.2)', strokeWidth: 1 }}
             />
 
@@ -1898,11 +2440,13 @@ export default function EchoArticleClient({ article }) {
                   <img
                     src={article.heroImage.src}
                     alt={article.heroImage.alt}
-                    className="echo-hero-image-img"
+                    className={`echo-hero-image-img${article.heroImage.kind === 'infographic' ? ' echo-hero-image-img--infographic' : ''}`}
                     loading="eager"
                   />
                   {article.heroImage.caption && (
-                    <figcaption className="echo-hero-image-caption">{article.heroImage.caption}</figcaption>
+                    <figcaption className="echo-hero-image-caption">
+                      {article.heroImage.caption}
+                    </figcaption>
                   )}
                 </figure>
               )}
@@ -1911,9 +2455,7 @@ export default function EchoArticleClient({ article }) {
             <div className="echo-article-body">
               {Array.isArray(blocks) && blocks.length > 0
                 ? blocks.map((block, i) => <ArticleBlock key={i} block={block} />)
-                : paragraphs.map((p, i) => (
-                    <ParagraphWithKeywords key={i} text={p} />
-                  ))}
+                : paragraphs.map((p, i) => <ParagraphWithKeywords key={i} text={p} />)}
             </div>
 
             <div className="echo-article-footer">
@@ -1930,7 +2472,9 @@ export default function EchoArticleClient({ article }) {
               <div className="echo-related-grid">
                 {relatedCards.map((a) => (
                   <Link key={a.id} href={`/ezana-echo/${a.id}`} className="echo-related-card">
-                    <span className="echo-related-card-kicker">{(a.category || 'markets').toUpperCase()}</span>
+                    <span className="echo-related-card-kicker">
+                      {(a.category || 'markets').toUpperCase()}
+                    </span>
                     <p className="echo-related-title">{a.title}</p>
                     {a.excerpt && <p className="echo-related-excerpt">{a.excerpt}</p>}
                     <span className="echo-related-card-meta">{a.readTime} min read</span>

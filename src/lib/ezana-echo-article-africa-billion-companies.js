@@ -12,6 +12,7 @@ export const africaBillionCompaniesArticle = {
     alt: 'Map of Africa showing the distribution of companies with revenues of $1 billion or more across the continent, color-coded by region',
     caption:
       'Africa is home to at least 345 companies generating over $1B in annual revenue — more than most investors assume.',
+    kind: 'infographic',
   },
   contentBlocks: [
     {
@@ -27,6 +28,12 @@ export const africaBillionCompaniesArticle = {
         { label: 'Western Africa', value: '35', change: 'Nigeria: 23' },
         { label: 'Foreign-HQ (no local)', value: '54', change: 'Operating but not domiciled' },
       ],
+    },
+    {
+      type: 'africa-map',
+      title: 'Companies with $1B+ Revenue by Country',
+      subtitle:
+        'Hover any country to see how many billion-dollar companies are headquartered there',
     },
     { type: 'heading', text: 'Southern Africa: the continental heavyweight', level: 2 },
     {
