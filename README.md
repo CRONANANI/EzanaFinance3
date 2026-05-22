@@ -2,7 +2,7 @@
 
 A comprehensive investment analytics platform built with Python (FastAPI) backend and modern web frontend, featuring real-time congressional trading data, portfolio management, and market intelligence.
 
-## 🚀 Features
+##  Features
 
 ### 🏠 Landing Page & Navigation
 - **Main Landing (`app/index.html`)**: Hero with left-aligned “Ezana Finance” title, “Your Network Is Your Net Worth” tagline, subtitle, and Sign Up / Learn More CTAs (no logo in hero). Antigravity particle background; center card preview hides on scroll past hero.
@@ -14,7 +14,7 @@ A comprehensive investment analytics platform built with Python (FastAPI) backen
 - **Dark/Light Theme Toggle**: Seamless theme switching with persistent user preferences
 - **Loading States**: Professional loading indicators and smooth page transitions
 
-### 📊 Core Portfolio Management
+###  Core Portfolio Management
 - **Personal Portfolio Dashboard**: Real-time portfolio tracking with:
   - Total portfolio value, daily P&L, and time-preset charts (1D–All) with benchmark comparison (S&P 500, NASDAQ) and export (PNG, CSV, PDF)
   - **Enhanced Investment Feed** (left sidebar): filters (Show All, Congress Trades, Portfolio Alerts, Community, Market News), priority badges, sentiment, Mark as Read/Dismiss, clickable tickers with quick Buy/Sell
@@ -27,7 +27,7 @@ A comprehensive investment analytics platform built with Python (FastAPI) backen
 - **Portfolio Charts**: Chart.js with type toggle (Line/Area), benchmark overlay, and export
 - **Platform consistency**: Uniform hero and layout across all pages; shared card styling on research, watchlist, and community
 
-### 🏛️ Market Intelligence (Inside The Capitol)
+###  Market Intelligence (Inside The Capitol)
 - **Congressional Trading Data**: Real-time tracking of congress members' stock trades with:
   - Follow system to track specific congress members
   - Advanced filtering by trade type, party, and chamber
@@ -38,7 +38,7 @@ A comprehensive investment analytics platform built with Python (FastAPI) backen
 - **Patent Momentum**: Analyze patent filings and their impact on stock performance
 - **House & Senate Trading**: Separate tracking for House and Senate trading activities
 
-### 📈 Advanced Analytics & Research
+###  Advanced Analytics & Research
 - **Market Analysis**: Comprehensive market analysis tools with sector performance
 - **Company Research**: Detailed company research with financial metrics and analysis
 - **Economic Indicators**: Real-time economic data and market sentiment analysis
@@ -46,14 +46,14 @@ A comprehensive investment analytics platform built with Python (FastAPI) backen
 - **Watchlists**: Follow specific congress members and track their trading patterns
 - **Community Features**: Connect with other investors and share insights
 
-### 👤 User Management & Settings
+###  User Management & Settings
 - **User Profile Settings**: Complete profile management with personal information
 - **Account Management**: Multiple financial account support (checking, savings, investment, credit)
 - **Transaction Tracking**: Comprehensive transaction recording and categorization
 - **Budget Management**: Budget planning and spending analysis
 - **Bank Integration**: Mock bank account integration for transaction import
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 ### Backend (Python)
 - **FastAPI**: Modern, fast web framework for building APIs
@@ -72,7 +72,7 @@ A comprehensive investment analytics platform built with Python (FastAPI) backen
 - **Quiver Quantitative API**: Congressional trading and government data
 - **Market Data APIs**: Real-time stock prices and market information
 
-## 📋 Quick Start
+##  Quick Start
 
 ### Prerequisites
 - Python 3.11+
@@ -146,7 +146,7 @@ DEBUG=True
 CORS_ORIGINS=http://localhost:3000,http://localhost:5173,http://localhost:8000
 ```
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 EzanaFinance3/
@@ -255,7 +255,7 @@ EzanaFinance3/
 └── README.md                  # This file
 ```
 
-## 🎯 Component Directory Reference
+##  Component Directory Reference
 
 ### 🏠 Home Dashboard Components
 | Component | File | Purpose |
@@ -274,18 +274,18 @@ EzanaFinance3/
 | Quick Actions | `components/pages/home-dashboard/quick-actions/*` | Refresh, Report, Transaction, Analysis, Alerts, Watchlist |
 | Asset Allocation Panel | `components/pages/home-dashboard/asset-allocation-panel/*` | Target vs Actual allocation, rebalance CTA |
 
-### 👥 Community Components
+###  Community Components
 | Component | File | Purpose |
 |-----------|------|---------|
 | Community Cards | `components/pages/community/community-cards.*` | Main community action cards |
 | Trophy Cabinet | `components/pages/community/trophy-cabinet.*` | User achievements display |
 
-### 📋 Watchlist Components
+###  Watchlist Components
 | Component | File | Purpose |
 |-----------|------|---------|
 | Watchlist Cards | `components/pages/watchlist/watchlist-cards.*` | Watchlist management cards |
 
-### 🏛️ Inside The Capitol Components
+###  Inside The Capitol Components
 | Component | File | Purpose |
 |-----------|------|---------|
 | Congressional Trading | `components/pages/inside-the-capitol/congressional-trading-card.*` | Congress trading data |
@@ -298,14 +298,14 @@ EzanaFinance3/
 | Insights Section | `components/pages/inside-the-capitol/insights-section.*` | Key insights display |
 | Summary Stats | `components/pages/inside-the-capitol/summary-stats-cards.*` | Summary statistics |
 
-### 🔧 Research Tools Components
+###  Research Tools Components
 | Component | File | Purpose |
 |-----------|------|---------|
 | Company Research | `components/pages/research-tools/company-research-cards.*` | Company analysis tools |
 | Market Analysis | `components/pages/research-tools/market-analysis-cards.*` | Market analysis tools |
 | Economic Indicators | `components/pages/research-tools/economic-indicators-cards.*` | Economic data tools |
 
-### 🔧 Shared Components
+###  Shared Components
 | Component | File | Purpose |
 |-----------|------|---------|
 | Navigation | `components/shared/navigation.html` | Main navigation bar |
@@ -317,13 +317,13 @@ EzanaFinance3/
 | Notifications Logic | `components/notifications/notifications-sidebar.js` | Feed filters, Mark as Read, Dismiss, sample data |
 | Notification Helpers | `components/notifications/notification-helpers.js` | Notification utilities |
 
-### 🎨 UI Components
+###  UI Components
 | Component | File | Purpose |
 |-----------|------|---------|
 | Prism Background | `components/ui/prism-background.*` | 3D background effect |
 | Shiny Text | `components/ui/shiny-text.*` | Text animation effects |
 
-### 📁 Assets
+###  Assets
 | Asset Type | Location | Purpose |
 |------------|----------|---------|
 | Main Styles | `assets/css/styles.css` | Global application styles |
@@ -333,16 +333,16 @@ EzanaFinance3/
 | Component Loader | `assets/js/component-loader.js` | Dynamic component loading |
 | Images | `assets/images/` | Static image assets |
 
-## 🔌 API Endpoints
+##  API Endpoints
 
-### 🔐 Authentication & User Management
+###  Authentication & User Management
 - `POST /api/auth/register` - Register new user
 - `POST /api/auth/login` - User login with JWT token
 - `GET /api/auth/me` - Get current user info
 - `PUT /api/auth/profile` - Update user profile
 - `POST /api/auth/change-password` - Change user password
 
-### 💰 Portfolio Management
+###  Portfolio Management
 - `GET /api/accounts/` - List user accounts with pagination
 - `POST /api/accounts/` - Create new account (checking, savings, investment, credit)
 - `GET /api/accounts/{id}` - Get specific account details
@@ -356,7 +356,7 @@ EzanaFinance3/
 - `GET /api/transactions/summary/monthly` - Monthly transaction summary
 - `GET /api/transactions/summary/category` - Category-wise spending analysis
 
-### 💳 Budget Management
+###  Budget Management
 - `GET /api/budgets/` - List all budgets
 - `POST /api/budgets/` - Create new budget
 - `GET /api/budgets/{id}` - Get budget details
@@ -365,7 +365,7 @@ EzanaFinance3/
 - `GET /api/budgets/status/overview` - Budget status overview
 - `GET /api/budgets/analytics/spending` - Spending analytics
 
-### 🏛️ Congressional Trading Intelligence (Quiver API)
+###  Congressional Trading Intelligence (Quiver API)
 - `GET /api/quiver/congressional-trading` - Congressional trading data with filtering
 - `GET /api/quiver/government-contracts` - Government contracts data
 - `GET /api/quiver/house-trading` - House of Representatives trading data
@@ -375,7 +375,7 @@ EzanaFinance3/
 - `GET /api/quiver/contracts` - Government contract awards
 - `GET /api/quiver/insider-trading` - Insider trading data
 
-### 📊 Market Research API
+###  Market Research API
 - `GET /MarketResearch/API/Quiver/CongressionalTrading` - Congressional trading for research
 - `GET /MarketResearch/API/Quiver/GovernmentContracts` - Government contracts for research
 - `GET /MarketResearch/API/Quiver/HouseTrading` - House trading for research
@@ -383,29 +383,29 @@ EzanaFinance3/
 - `GET /MarketResearch/API/Quiver/LobbyingActivity` - Lobbying data for research
 - `GET /MarketResearch/API/Quiver/PatentMomentum` - Patent data for research
 
-### 🏦 Bank Integration
+###  Bank Integration
 - `POST /api/bank/connect` - Connect bank account
 - `GET /api/bank/accounts` - List connected bank accounts
 - `GET /api/bank/transactions` - Import bank transactions
 - `POST /api/bank/sync` - Sync bank data
 - `DELETE /api/bank/disconnect` - Disconnect bank account
 
-### 📈 Financial Analytics
+###  Financial Analytics
 - `GET /api/analytics/portfolio-performance` - Portfolio performance metrics
 - `GET /api/analytics/risk-assessment` - Risk assessment analysis
 - `GET /api/analytics/asset-allocation` - Asset allocation breakdown
 - `GET /api/analytics/dividend-analysis` - Dividend income analysis
 - `GET /api/analytics/spending-trends` - Spending trend analysis
 
-## 📱 Frontend Pages & UI Features
+##  Frontend Pages & UI Features
 
-### 📐 Platform-wide layout & consistency
+###  Platform-wide layout & consistency
 - **Unified hero**: All pages (home dashboard, watchlist, community, company-research, market-analysis, economic-indicators, for-the-quants, financial-analytics) use the same hero card size and formatting via `assets/css/pages-common.css`. No page-specific hero overrides.
 - **Page layout**: `.page-content` and `.dashboard-page-content` share the same max-width, padding, and responsive behavior. Main content margin adjusts when the Investment Feed sidebar is open or closed (sidebar closed = content expands into full width).
 - **Investment Feed sidebar**: Left sidebar anchored to the top of the viewport; filter tabs (Show All, Congress Trades, Portfolio Alerts, Community, Market News); no separate bell toggle (collapse/expand via header controls). Used on dashboard and other pages that include the notifications component.
 - **Research / Watchlist / Community**: Section headers and content use card styling from `research-pages-cards.css` (card headers with icons, dark theme) so these pages match the home dashboard card style.
 
-### 🏠 Main Landing Page (`app/index.html`)
+###  Main Landing Page (`app/index.html`)
 - **Hero Section**: Left-aligned layout—title “Ezana Finance”, tagline “Your Network Is Your Net Worth”, subtitle, and Sign Up / Learn More buttons on a consistent left edge; no logo or image beside the title. Antigravity particle background; card preview (right) fades out when scrolling past hero.
 - **Navigation**: Brand “Ezana Finance” text only (white logo icon removed); nav bar aligned with hero (same max-width and padding).
 - **Features Section**: Inlined feature blocks with congressional trading (filter pills), portfolio metrics (rotating sets), market intelligence (Contracts / Lobbying / Patents tabs), and community feed (Trending / Recent). CTAs link to docs, #resources, and sign-up.
@@ -414,7 +414,7 @@ EzanaFinance3/
 - **Responsive Design**: Optimized for all device sizes with consistent left alignment at all breakpoints.
 - **Other**: Prism/Split Text/Electric Border assets available; Bootstrap Icons.
 
-### 📊 Home Dashboard (`pages/home-dashboard.html`)
+###  Home Dashboard (`pages/home-dashboard.html`)
 - **Portfolio Overview**: Real-time portfolio value and performance metrics
 - **Enhanced Investment Feed** (left sidebar): Filters (Show All, Congress Trades, Portfolio Alerts, Community, Market News); priority badges (High/Medium/Low); sentiment (Bullish/Bearish); Mark as Read and Dismiss; clickable tickers with quick Buy/Sell actions
 - **Chart Controls**: Line / Area / Vs Benchmark toggle; S&P 500 and NASDAQ comparison overlay; Export to PNG, CSV, PDF; time presets 1D, 1W, 1M, 3M, 6M, 1Y, 3Y, 5Y, 10Y, All
@@ -425,7 +425,7 @@ EzanaFinance3/
 - **Responsive Grid Layout**: Adaptive cards; glass-morphism styling
 - **Historical Charts**: Interactive portfolio performance charts with benchmark comparison
 
-### 🏛️ Inside The Capitol (`pages/inside-the-capitol.html`)
+###  Inside The Capitol (`pages/inside-the-capitol.html`)
 - **Congressional Trading Tracker**: Real-time trading data with filtering
 - **Follow System**: Star and follow specific congress members
 - **Advanced Filtering**: Filter by trade type, party, chamber, and date range
@@ -433,90 +433,90 @@ EzanaFinance3/
 - **Interactive Tables**: Sortable, searchable tables with pagination
 - **Trade Notifications**: Real-time alerts for followed members' trades
 
-### 📈 Market Analysis (`pages/market-analysis.html`)
+###  Market Analysis (`pages/market-analysis.html`)
 - **Sector Performance**: Comprehensive market sector analysis
 - **Market Trends**: Interactive charts showing market movements
 - **Stock Screener**: Advanced filtering and screening tools
 - **Market Sentiment**: Real-time sentiment indicators and analysis
 
-### 🏢 Company Research (`pages/company-research.html`)
+###  Company Research (`pages/company-research.html`)
 - **Company Profiles**: Detailed company information and financials
 - **Financial Metrics**: Key performance indicators and ratios
 - **News & Analysis**: Latest news and analyst recommendations
 - **Peer Comparison**: Side-by-side company comparisons
 
-### 📊 Economic Indicators (`pages/economic-indicators.html`)
+###  Economic Indicators (`pages/economic-indicators.html`)
 - **Economic Data**: Real-time economic indicators and metrics
 - **Market Sentiment**: Sentiment analysis and market mood indicators
 - **Economic Calendar**: Upcoming economic events and releases
 - **Historical Data**: Long-term economic trend analysis
 
-### 📋 Watchlist (`pages/watchlist.html`)
+###  Watchlist (`pages/watchlist.html`)
 - **Custom Watchlists**: Create and manage multiple watchlists
 - **Congress Member Tracking**: Follow specific congress members
 - **Price Alerts**: Set up price and trade alerts
 - **Portfolio Integration**: Link watchlists to portfolio holdings
 
-### 👥 Community (`pages/community.html`)
+###  Community (`pages/community.html`)
 - **Discussion Forums**: Community discussions and insights
 - **User Profiles**: Connect with other investors
 - **Share Insights**: Share analysis and trading ideas
 - **Social Features**: Like, comment, and follow other users
 - **Trophy Cabinet**: User achievements and recognition
 
-### 📊 Financial Analytics (`pages/financial-analytics.html`)
+###  Financial Analytics (`pages/financial-analytics.html`)
 - **Advanced Analytics**: Comprehensive financial health scoring
 - **Risk Assessment**: Portfolio risk analysis and recommendations
 - **Performance Metrics**: Detailed performance tracking and analysis
 - **Trend Analysis**: Historical performance and trend identification
 
-### ⚙️ User Profile Settings (`pages/user-profile-settings.html`)
+###  User Profile Settings (`pages/user-profile-settings.html`)
 - **Personal Information**: Update profile details and contact info
 - **Account Preferences**: Customize dashboard and notification settings
 - **Security Settings**: Password management and security options
 - **Data Management**: Export data and privacy controls
 
-### 🔐 Account Creation (`pages/create-account.html`)
+###  Account Creation (`pages/create-account.html`)
 - **Registration Form**: Complete user registration process
 - **Form Validation**: Real-time validation and error handling
 - **Password Security**: Secure password requirements and visibility toggle
 - **Terms & Conditions**: User agreement and privacy policy
 
-## 🎨 UI/UX Features
+##  UI/UX Features
 
-### 🎨 Design System
+###  Design System
 - **Custom Color Palette**: Professional dark theme with gold accents
 - **Typography**: Clean, modern font hierarchy with excellent readability
 - **Spacing**: Consistent spacing system using CSS variables
 - **Icons**: Comprehensive Bootstrap Icons integration
 - **CSS Variables**: Centralized theming and customization
 
-### 📱 Responsive Design
+###  Responsive Design
 - **Mobile-First**: Optimized for mobile devices with touch-friendly interfaces
 - **Tablet Support**: Seamless experience on tablet devices
 - **Desktop Enhancement**: Full-featured desktop experience with advanced layouts
 - **Cross-Browser**: Compatible with all modern browsers
 
-### 🌙 Theme System
+###  Theme System
 - **Dark/Light Mode**: Seamless theme switching with persistent preferences
 - **Smooth Transitions**: CSS transitions for theme changes
 - **System Preference**: Automatic theme detection based on system settings
 - **Custom Themes**: Extensible theme system for future customization
 
-### 🎯 Interactive Components
+###  Interactive Components
 - **Collapsible Sidebar**: Smooth sidebar collapse/expand with animations
 - **Loading States**: Professional loading indicators and skeleton screens
 - **Modal Dialogs**: Clean modal system for forms and confirmations
 - **Tooltips**: Helpful tooltips for better user guidance
 - **Toast Notifications**: Non-intrusive notification system
 
-### 📊 Data Visualization
+###  Data Visualization
 - **Chart.js Integration**: Interactive charts and graphs
 - **Real-time Updates**: Live data refresh with smooth animations
 - **Export Functionality**: Export charts and data in multiple formats
 - **Responsive Charts**: Charts that adapt to different screen sizes
 
-## 🔒 Security Features
+##  Security Features
 
 - **JWT Authentication**: Secure token-based authentication
 - **Password Hashing**: bcrypt password hashing
@@ -524,7 +524,7 @@ EzanaFinance3/
 - **Input Validation**: Pydantic model validation
 - **SQL Injection Protection**: SQLAlchemy ORM protection
 
-## 🚀 Deployment
+##  Deployment
 
 ### Development
 ```bash
@@ -564,7 +564,7 @@ The application uses a unified deployment approach where FastAPI serves both the
 
 4. **Deploy the frontend** to Vercel (see `VERCEL_DEPLOY.md`).
 
-## 📊 Database Schema
+##  Database Schema
 
 ### Core Tables
 - **users**: User authentication and profile data
@@ -579,7 +579,7 @@ The application uses a unified deployment approach where FastAPI serves both the
 - **followed_congress_people**: User's followed congress members
 - **watchlists**: User's stock watchlists
 
-## 🧪 Testing
+##  Testing
 
 ```bash
 # Run backend tests
@@ -590,7 +590,7 @@ pytest
 pytest --cov=.
 ```
 
-## 📈 Performance
+##  Performance
 
 - **Fast API Response**: Sub-100ms API response times
 - **Efficient Caching**: Redis caching for external API calls
@@ -598,7 +598,7 @@ pytest --cov=.
 - **Frontend Optimization**: Minified assets and lazy loading
 - **Component Loading**: Dynamic component loading for better performance
 
-## 🤝 Contributing
+##  Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
@@ -606,18 +606,18 @@ pytest --cov=.
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📝 License
+##  License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🆘 Support
+##  Support
 
 For support and questions:
 - Create an issue in the GitHub repository
 - Check the documentation in the `/docs` folder
 - Review the API documentation at `http://localhost:8000/docs`
 
-## 🔮 Roadmap
+##  Roadmap
 
 ### Upcoming Features
 - **AI-Powered Insights**: Machine learning analysis of trading patterns
@@ -638,9 +638,9 @@ For support and questions:
 - **v3.5.1**: Research Tools dropdown hover fix — Dropdown stays visible when moving cursor from trigger to menu (CSS: zero gap, invisible bridge; JS: 200ms close delay, cancel on mouse re-enter); chevron rotates when open
 - **v3.5.2**: Main landing overhauls — Hero: “Ezana Finance” title and “Your Network Is Your Net Worth” tagline, left-aligned; no logo in hero. Nav: white logo icon removed; brand text only; nav aligned with hero (1400px + 2rem). FAQ: two-level accordion (categories expand/collapse, then questions); inlined so it works without fetch; fixed double-init so category toggles work. Landing interactivity: congressional trading filters, portfolio metrics rotation, market intelligence tabs (Contracts/Lobbying/Patents), community feed Trending/Recent, CTAs and resources section, contact support modal.
 
-## 🎯 Current Project Status
+##  Current Project Status
 
-### ✅ Completed Features
+###  Completed Features
 - **Complete Frontend Application**: 9+ fully functional pages with modern UI
 - **Responsive Design**: Mobile-first approach with desktop enhancements
 - **Dark/Light Theme System**: Seamless theme switching with persistence
@@ -659,12 +659,12 @@ For support and questions:
 - **Navigation**: Research Tools dropdown hover behavior fixed (menu remains open while moving to options; closes only when cursor leaves the dropdown area or after brief delay)
 - **Main landing (v3.5.2)**: Hero and nav left-aligned with no logo in hero and no icon beside “Ezana Finance” in nav; FAQ two-level accordion (categories/questions) inlined and working; congressional filters, portfolio rotation, intel tabs, community toggle, resources section, contact modal
 
-### 🚧 In Progress
+###  In Progress
 - **Real-time Data Integration**: Live market data and congressional trading updates
 - **Advanced Analytics**: Machine learning-based portfolio recommendations
 - **Mobile App**: React Native mobile application development
 
-### 🔮 Planned Features
+###  Planned Features
 - **AI-Powered Insights**: Machine learning analysis of trading patterns
 - **Social Features**: Enhanced community and sharing features
 - **Real-time Notifications**: Push notifications for important events
