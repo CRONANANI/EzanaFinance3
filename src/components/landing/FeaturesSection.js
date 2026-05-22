@@ -34,73 +34,425 @@ const PORTFOLIO_METRICS = {
 // Mock congressional trading data - EXACTLY 6 trades per filter for consistent sizing
 const CONGRESS_TRADES = {
   all: [
-    { id: 1, name: 'Nancy Pelosi', party: 'Democrat', chamber: 'House', ticker: 'NVDA', type: 'Purchase', amount: '$1M - $5M', time: '2 hours ago' },
-    { id: 2, name: 'Dan Crenshaw', party: 'Republican', chamber: 'House', ticker: 'TSLA', type: 'Sale', amount: '$15K - $50K', time: '5 hours ago' },
-    { id: 3, name: 'Mark Warner', party: 'Democrat', chamber: 'Senate', ticker: 'MSFT', type: 'Purchase', amount: '$1K - $15K', time: '8 hours ago' },
-    { id: 4, name: 'Tommy Tuberville', party: 'Republican', chamber: 'Senate', ticker: 'META', type: 'Sale', amount: '$50K - $100K', time: '12 hours ago' },
-    { id: 5, name: 'Josh Gottheimer', party: 'Democrat', chamber: 'House', ticker: 'AAPL', type: 'Purchase', amount: '$100K - $250K', time: '1 day ago' },
-    { id: 6, name: 'Ro Khanna', party: 'Democrat', chamber: 'House', ticker: 'GOOGL', type: 'Sale', amount: '$15K - $50K', time: '1 day ago' },
+    {
+      id: 1,
+      name: 'Nancy Pelosi',
+      party: 'Democrat',
+      chamber: 'House',
+      ticker: 'NVDA',
+      type: 'Purchase',
+      amount: '$1M - $5M',
+      time: '2 hours ago',
+    },
+    {
+      id: 2,
+      name: 'Dan Crenshaw',
+      party: 'Republican',
+      chamber: 'House',
+      ticker: 'TSLA',
+      type: 'Sale',
+      amount: '$15K - $50K',
+      time: '5 hours ago',
+    },
+    {
+      id: 3,
+      name: 'Mark Warner',
+      party: 'Democrat',
+      chamber: 'Senate',
+      ticker: 'MSFT',
+      type: 'Purchase',
+      amount: '$1K - $15K',
+      time: '8 hours ago',
+    },
+    {
+      id: 4,
+      name: 'Tommy Tuberville',
+      party: 'Republican',
+      chamber: 'Senate',
+      ticker: 'META',
+      type: 'Sale',
+      amount: '$50K - $100K',
+      time: '12 hours ago',
+    },
+    {
+      id: 5,
+      name: 'Josh Gottheimer',
+      party: 'Democrat',
+      chamber: 'House',
+      ticker: 'AAPL',
+      type: 'Purchase',
+      amount: '$100K - $250K',
+      time: '1 day ago',
+    },
+    {
+      id: 6,
+      name: 'Ro Khanna',
+      party: 'Democrat',
+      chamber: 'House',
+      ticker: 'GOOGL',
+      type: 'Sale',
+      amount: '$15K - $50K',
+      time: '1 day ago',
+    },
   ],
   purchases: [
-    { id: 1, name: 'Nancy Pelosi', party: 'Democrat', chamber: 'House', ticker: 'NVDA', type: 'Purchase', amount: '$1M - $5M', time: '2 hours ago' },
-    { id: 2, name: 'Mark Warner', party: 'Democrat', chamber: 'Senate', ticker: 'MSFT', type: 'Purchase', amount: '$1K - $15K', time: '5 hours ago' },
-    { id: 3, name: 'Josh Gottheimer', party: 'Democrat', chamber: 'House', ticker: 'AAPL', type: 'Purchase', amount: '$100K - $250K', time: '8 hours ago' },
-    { id: 4, name: 'Michael McCaul', party: 'Republican', chamber: 'House', ticker: 'RTX', type: 'Purchase', amount: '$50K - $100K', time: '12 hours ago' },
-    { id: 5, name: 'John Hickenlooper', party: 'Democrat', chamber: 'Senate', ticker: 'XOM', type: 'Purchase', amount: '$15K - $50K', time: '1 day ago' },
-    { id: 6, name: 'Kevin Hern', party: 'Republican', chamber: 'House', ticker: 'CVX', type: 'Purchase', amount: '$1K - $15K', time: '2 days ago' },
+    {
+      id: 1,
+      name: 'Nancy Pelosi',
+      party: 'Democrat',
+      chamber: 'House',
+      ticker: 'NVDA',
+      type: 'Purchase',
+      amount: '$1M - $5M',
+      time: '2 hours ago',
+    },
+    {
+      id: 2,
+      name: 'Mark Warner',
+      party: 'Democrat',
+      chamber: 'Senate',
+      ticker: 'MSFT',
+      type: 'Purchase',
+      amount: '$1K - $15K',
+      time: '5 hours ago',
+    },
+    {
+      id: 3,
+      name: 'Josh Gottheimer',
+      party: 'Democrat',
+      chamber: 'House',
+      ticker: 'AAPL',
+      type: 'Purchase',
+      amount: '$100K - $250K',
+      time: '8 hours ago',
+    },
+    {
+      id: 4,
+      name: 'Michael McCaul',
+      party: 'Republican',
+      chamber: 'House',
+      ticker: 'RTX',
+      type: 'Purchase',
+      amount: '$50K - $100K',
+      time: '12 hours ago',
+    },
+    {
+      id: 5,
+      name: 'John Hickenlooper',
+      party: 'Democrat',
+      chamber: 'Senate',
+      ticker: 'XOM',
+      type: 'Purchase',
+      amount: '$15K - $50K',
+      time: '1 day ago',
+    },
+    {
+      id: 6,
+      name: 'Kevin Hern',
+      party: 'Republican',
+      chamber: 'House',
+      ticker: 'CVX',
+      type: 'Purchase',
+      amount: '$1K - $15K',
+      time: '2 days ago',
+    },
   ],
   sales: [
-    { id: 1, name: 'Dan Crenshaw', party: 'Republican', chamber: 'House', ticker: 'TSLA', type: 'Sale', amount: '$15K - $50K', time: '2 hours ago' },
-    { id: 2, name: 'Tommy Tuberville', party: 'Republican', chamber: 'Senate', ticker: 'META', type: 'Sale', amount: '$50K - $100K', time: '5 hours ago' },
-    { id: 3, name: 'Ro Khanna', party: 'Democrat', chamber: 'House', ticker: 'GOOGL', type: 'Sale', amount: '$15K - $50K', time: '8 hours ago' },
-    { id: 4, name: 'Shelley Moore Capito', party: 'Republican', chamber: 'Senate', ticker: 'JPM', type: 'Sale', amount: '$100K - $250K', time: '12 hours ago' },
-    { id: 5, name: 'Pete Sessions', party: 'Republican', chamber: 'House', ticker: 'BAC', type: 'Sale', amount: '$1K - $15K', time: '1 day ago' },
-    { id: 6, name: 'Debbie Wasserman Schultz', party: 'Democrat', chamber: 'House', ticker: 'DIS', type: 'Sale', amount: '$15K - $50K', time: '2 days ago' },
+    {
+      id: 1,
+      name: 'Dan Crenshaw',
+      party: 'Republican',
+      chamber: 'House',
+      ticker: 'TSLA',
+      type: 'Sale',
+      amount: '$15K - $50K',
+      time: '2 hours ago',
+    },
+    {
+      id: 2,
+      name: 'Tommy Tuberville',
+      party: 'Republican',
+      chamber: 'Senate',
+      ticker: 'META',
+      type: 'Sale',
+      amount: '$50K - $100K',
+      time: '5 hours ago',
+    },
+    {
+      id: 3,
+      name: 'Ro Khanna',
+      party: 'Democrat',
+      chamber: 'House',
+      ticker: 'GOOGL',
+      type: 'Sale',
+      amount: '$15K - $50K',
+      time: '8 hours ago',
+    },
+    {
+      id: 4,
+      name: 'Shelley Moore Capito',
+      party: 'Republican',
+      chamber: 'Senate',
+      ticker: 'JPM',
+      type: 'Sale',
+      amount: '$100K - $250K',
+      time: '12 hours ago',
+    },
+    {
+      id: 5,
+      name: 'Pete Sessions',
+      party: 'Republican',
+      chamber: 'House',
+      ticker: 'BAC',
+      type: 'Sale',
+      amount: '$1K - $15K',
+      time: '1 day ago',
+    },
+    {
+      id: 6,
+      name: 'Debbie Wasserman Schultz',
+      party: 'Democrat',
+      chamber: 'House',
+      ticker: 'DIS',
+      type: 'Sale',
+      amount: '$15K - $50K',
+      time: '2 days ago',
+    },
   ],
   house: [
-    { id: 1, name: 'Nancy Pelosi', party: 'Democrat', chamber: 'House', ticker: 'NVDA', type: 'Purchase', amount: '$1M - $5M', time: '2 hours ago' },
-    { id: 2, name: 'Dan Crenshaw', party: 'Republican', chamber: 'House', ticker: 'TSLA', type: 'Sale', amount: '$15K - $50K', time: '5 hours ago' },
-    { id: 3, name: 'Josh Gottheimer', party: 'Democrat', chamber: 'House', ticker: 'AAPL', type: 'Purchase', amount: '$100K - $250K', time: '8 hours ago' },
-    { id: 4, name: 'Ro Khanna', party: 'Democrat', chamber: 'House', ticker: 'GOOGL', type: 'Sale', amount: '$15K - $50K', time: '12 hours ago' },
-    { id: 5, name: 'Michael McCaul', party: 'Republican', chamber: 'House', ticker: 'RTX', type: 'Purchase', amount: '$50K - $100K', time: '1 day ago' },
-    { id: 6, name: 'Pete Sessions', party: 'Republican', chamber: 'House', ticker: 'BAC', type: 'Sale', amount: '$1K - $15K', time: '2 days ago' },
+    {
+      id: 1,
+      name: 'Nancy Pelosi',
+      party: 'Democrat',
+      chamber: 'House',
+      ticker: 'NVDA',
+      type: 'Purchase',
+      amount: '$1M - $5M',
+      time: '2 hours ago',
+    },
+    {
+      id: 2,
+      name: 'Dan Crenshaw',
+      party: 'Republican',
+      chamber: 'House',
+      ticker: 'TSLA',
+      type: 'Sale',
+      amount: '$15K - $50K',
+      time: '5 hours ago',
+    },
+    {
+      id: 3,
+      name: 'Josh Gottheimer',
+      party: 'Democrat',
+      chamber: 'House',
+      ticker: 'AAPL',
+      type: 'Purchase',
+      amount: '$100K - $250K',
+      time: '8 hours ago',
+    },
+    {
+      id: 4,
+      name: 'Ro Khanna',
+      party: 'Democrat',
+      chamber: 'House',
+      ticker: 'GOOGL',
+      type: 'Sale',
+      amount: '$15K - $50K',
+      time: '12 hours ago',
+    },
+    {
+      id: 5,
+      name: 'Michael McCaul',
+      party: 'Republican',
+      chamber: 'House',
+      ticker: 'RTX',
+      type: 'Purchase',
+      amount: '$50K - $100K',
+      time: '1 day ago',
+    },
+    {
+      id: 6,
+      name: 'Pete Sessions',
+      party: 'Republican',
+      chamber: 'House',
+      ticker: 'BAC',
+      type: 'Sale',
+      amount: '$1K - $15K',
+      time: '2 days ago',
+    },
   ],
   senate: [
-    { id: 1, name: 'Mark Warner', party: 'Democrat', chamber: 'Senate', ticker: 'MSFT', type: 'Purchase', amount: '$1K - $15K', time: '2 hours ago' },
-    { id: 2, name: 'Tommy Tuberville', party: 'Republican', chamber: 'Senate', ticker: 'META', type: 'Sale', amount: '$50K - $100K', time: '5 hours ago' },
-    { id: 3, name: 'John Hickenlooper', party: 'Democrat', chamber: 'Senate', ticker: 'XOM', type: 'Purchase', amount: '$15K - $50K', time: '8 hours ago' },
-    { id: 4, name: 'Shelley Moore Capito', party: 'Republican', chamber: 'Senate', ticker: 'JPM', type: 'Sale', amount: '$100K - $250K', time: '12 hours ago' },
-    { id: 5, name: 'Gary Peters', party: 'Democrat', chamber: 'Senate', ticker: 'F', type: 'Purchase', amount: '$1K - $15K', time: '1 day ago' },
-    { id: 6, name: 'Bill Hagerty', party: 'Republican', chamber: 'Senate', ticker: 'GS', type: 'Sale', amount: '$15K - $50K', time: '2 days ago' },
+    {
+      id: 1,
+      name: 'Mark Warner',
+      party: 'Democrat',
+      chamber: 'Senate',
+      ticker: 'MSFT',
+      type: 'Purchase',
+      amount: '$1K - $15K',
+      time: '2 hours ago',
+    },
+    {
+      id: 2,
+      name: 'Tommy Tuberville',
+      party: 'Republican',
+      chamber: 'Senate',
+      ticker: 'META',
+      type: 'Sale',
+      amount: '$50K - $100K',
+      time: '5 hours ago',
+    },
+    {
+      id: 3,
+      name: 'John Hickenlooper',
+      party: 'Democrat',
+      chamber: 'Senate',
+      ticker: 'XOM',
+      type: 'Purchase',
+      amount: '$15K - $50K',
+      time: '8 hours ago',
+    },
+    {
+      id: 4,
+      name: 'Shelley Moore Capito',
+      party: 'Republican',
+      chamber: 'Senate',
+      ticker: 'JPM',
+      type: 'Sale',
+      amount: '$100K - $250K',
+      time: '12 hours ago',
+    },
+    {
+      id: 5,
+      name: 'Gary Peters',
+      party: 'Democrat',
+      chamber: 'Senate',
+      ticker: 'F',
+      type: 'Purchase',
+      amount: '$1K - $15K',
+      time: '1 day ago',
+    },
+    {
+      id: 6,
+      name: 'Bill Hagerty',
+      party: 'Republican',
+      chamber: 'Senate',
+      ticker: 'GS',
+      type: 'Sale',
+      amount: '$15K - $50K',
+      time: '2 days ago',
+    },
   ],
 };
 
 const INTEL_DATA = {
   contracts: [
-    { agency: 'Department of Defense', company: 'Lockheed Martin', amount: '$450M Contract Award', date: '2 days ago', impact: 'high' },
-    { agency: 'NASA', company: 'SpaceX', amount: '$1.2B Contract Award', date: '1 week ago', impact: 'high' },
-    { agency: 'Department of Energy', company: 'Tesla', amount: '$85M Contract Award', date: '2 weeks ago', impact: 'medium' },
+    {
+      agency: 'Department of Defense',
+      company: 'Lockheed Martin',
+      amount: '$450M Contract Award',
+      date: '2 days ago',
+      impact: 'high',
+    },
+    {
+      agency: 'NASA',
+      company: 'SpaceX',
+      amount: '$1.2B Contract Award',
+      date: '1 week ago',
+      impact: 'high',
+    },
+    {
+      agency: 'Department of Energy',
+      company: 'Tesla',
+      amount: '$85M Contract Award',
+      date: '2 weeks ago',
+      impact: 'medium',
+    },
   ],
   lobbying: [
-    { agency: 'Meta Platforms', company: 'Lobbying Expenditure', amount: '$5.2M spent in Q4 2025', date: 'Tech Policy, Privacy', impact: 'high' },
-    { agency: 'Amazon', company: 'Lobbying Expenditure', amount: '$4.8M spent in Q4 2025', date: 'Cloud Computing, Labor', impact: 'high' },
-    { agency: 'Google', company: 'Lobbying Expenditure', amount: '$3.9M spent in Q4 2025', date: 'AI Regulation, Antitrust', impact: 'medium' },
+    {
+      agency: 'Meta Platforms',
+      company: 'Lobbying Expenditure',
+      amount: '$5.2M spent in Q4 2025',
+      date: 'Tech Policy, Privacy',
+      impact: 'high',
+    },
+    {
+      agency: 'Amazon',
+      company: 'Lobbying Expenditure',
+      amount: '$4.8M spent in Q4 2025',
+      date: 'Cloud Computing, Labor',
+      impact: 'high',
+    },
+    {
+      agency: 'Google',
+      company: 'Lobbying Expenditure',
+      amount: '$3.9M spent in Q4 2025',
+      date: 'AI Regulation, Antitrust',
+      impact: 'medium',
+    },
   ],
   patents: [
-    { agency: 'Apple', company: 'Consumer Electronics', amount: '1247 patents filed in Q4 2025', date: 'Trend: ↑ Increasing', impact: 'high' },
-    { agency: 'Tesla', company: 'Automotive AI', amount: '892 patents filed in Q4 2025', date: 'Trend: ↑ Increasing', impact: 'high' },
-    { agency: 'Nvidia', company: 'AI Hardware', amount: '743 patents filed in Q4 2025', date: 'Trend: ↑ Increasing', impact: 'medium' },
+    {
+      agency: 'Apple',
+      company: 'Consumer Electronics',
+      amount: '1247 patents filed in Q4 2025',
+      date: 'Trend: ↑ Increasing',
+      impact: 'high',
+    },
+    {
+      agency: 'Tesla',
+      company: 'Automotive AI',
+      amount: '892 patents filed in Q4 2025',
+      date: 'Trend: ↑ Increasing',
+      impact: 'high',
+    },
+    {
+      agency: 'Nvidia',
+      company: 'AI Hardware',
+      amount: '743 patents filed in Q4 2025',
+      date: 'Trend: ↑ Increasing',
+      impact: 'medium',
+    },
   ],
 };
 
 const COMMUNITY_DATA = {
   trending: [
-    { author: 'JD', name: 'John Doe', badge: 'expert', content: 'Just noticed a pattern in semiconductor congressional trades. NVDA purchases up 40% this week among tech committee members...', stats: { likes: 124, comments: 38, bookmarks: 56 } },
-    { author: 'AS', name: 'Alex Smith', badge: 'verified', content: 'Defense contract awards correlating strongly with recent lobbying spend. Check out my detailed analysis...', stats: { likes: 89, comments: 22, bookmarks: 43 } },
+    {
+      author: 'JD',
+      name: 'John Doe',
+      badge: 'expert',
+      content:
+        'Just noticed a pattern in semiconductor congressional trades. NVDA purchases up 40% this week among tech committee members...',
+      stats: { likes: 124, comments: 38, bookmarks: 56 },
+    },
+    {
+      author: 'AS',
+      name: 'Alex Smith',
+      badge: 'verified',
+      content:
+        'Defense contract awards correlating strongly with recent lobbying spend. Check out my detailed analysis...',
+      stats: { likes: 89, comments: 22, bookmarks: 43 },
+    },
   ],
   recent: [
-    { author: 'MK', name: 'Maria Kim', badge: 'verified', content: 'New congressional trade alert: Senator just disclosed a large purchase in renewable energy sector. Interesting timing with upcoming legislation...', stats: { likes: 45, comments: 12, bookmarks: 23 } },
-    { author: 'RP', name: 'Robert Park', badge: 'expert', content: 'Anyone else tracking the unusual patent filing activity from major tech companies this quarter? Something big might be coming...', stats: { likes: 67, comments: 18, bookmarks: 34 } },
+    {
+      author: 'MK',
+      name: 'Maria Kim',
+      badge: 'verified',
+      content:
+        'New congressional trade alert: Senator just disclosed a large purchase in renewable energy sector. Interesting timing with upcoming legislation...',
+      stats: { likes: 45, comments: 12, bookmarks: 23 },
+    },
+    {
+      author: 'RP',
+      name: 'Robert Park',
+      badge: 'expert',
+      content:
+        'Anyone else tracking the unusual patent filing activity from major tech companies this quarter? Something big might be coming...',
+      stats: { likes: 67, comments: 18, bookmarks: 34 },
+    },
   ],
 };
 
@@ -121,7 +473,7 @@ export function FeaturesSection() {
           if (entry.isIntersecting) entry.target.classList.add('visible');
         });
       },
-      { threshold: 0.2, rootMargin: '0px 0px -100px 0px' }
+      { threshold: 0.2, rootMargin: '0px 0px -100px 0px' },
     );
     blocks.forEach((block) => observer.observe(block));
     const fallback = setTimeout(() => {
@@ -139,12 +491,42 @@ export function FeaturesSection() {
   const communityPosts = COMMUNITY_DATA[communityView] || COMMUNITY_DATA.trending;
 
   const FEATURE_CARDS = [
-    { title: 'Congressional Trading', desc: 'Track real-time congressional stock trades with alerts, filters, and portfolio analysis. See exactly what politicians are buying and selling.', href: '/auth/login', icon: 'bi-building' },
-    { title: 'Portfolio Analytics', desc: 'Real-time portfolio tracking with P&L, risk scoring, dividend tracking, and benchmark comparison against S&P 500 and NASDAQ.', href: '/auth/login', icon: 'bi-graph-up-arrow' },
-    { title: 'Market Intelligence', desc: 'Government contracts, lobbying activity, and patent momentum data correlated with stock movements for insider-level insights.', href: '/auth/login', icon: 'bi-activity' },
-    { title: 'Real-Time Alerts', desc: 'Instant notifications when politicians you follow make trades or when your portfolio triggers risk alerts and price targets.', href: '/auth/login', icon: 'bi-bell' },
-    { title: 'Community Insights', desc: 'Connect with investors following similar strategies. Share analysis, discuss trades, and learn from the community\'s collective intelligence.', href: '/auth/login', icon: 'bi-people' },
-    { title: 'Advanced Analytics', desc: 'Professional-grade metrics including Sharpe ratio, beta analysis, volatility scoring, and sector exposure with export capabilities.', href: '/auth/login', icon: 'bi-bar-chart' },
+    {
+      title: 'Congressional Trading',
+      desc: 'Track real-time congressional stock trades with alerts, filters, and portfolio analysis. See exactly what politicians are buying and selling.',
+      href: '/auth/login',
+      icon: 'bi-building',
+    },
+    {
+      title: 'Portfolio Analytics',
+      desc: 'Real-time portfolio tracking with P&L, risk scoring, dividend tracking, and benchmark comparison against S&P 500 and NASDAQ.',
+      href: '/auth/login',
+      icon: 'bi-graph-up-arrow',
+    },
+    {
+      title: 'Market Intelligence',
+      desc: 'Government contracts, lobbying activity, and patent momentum data correlated with stock movements for insider-level insights.',
+      href: '/auth/login',
+      icon: 'bi-activity',
+    },
+    {
+      title: 'Real-Time Alerts',
+      desc: 'Instant notifications when politicians you follow make trades or when your portfolio triggers risk alerts and price targets.',
+      href: '/auth/login',
+      icon: 'bi-bell',
+    },
+    {
+      title: 'Community Insights',
+      desc: "Connect with investors following similar strategies. Share analysis, discuss trades, and learn from the community's collective intelligence.",
+      href: '/auth/login',
+      icon: 'bi-people',
+    },
+    {
+      title: 'Advanced Analytics',
+      desc: 'Professional-grade metrics including Sharpe ratio, beta analysis, volatility scoring, and sector exposure with export capabilities.',
+      href: '/auth/login',
+      icon: 'bi-bar-chart',
+    },
   ];
 
   return (
@@ -154,7 +536,8 @@ export function FeaturesSection() {
         <div className="features-grid-header">
           <h2>Why Ezana Finance</h2>
           <p className="section-subtitle">
-            Professional-grade tools designed for serious investors who want transparency and intelligence.
+            Professional-grade tools designed for serious investors who want transparency and
+            intelligence.
           </p>
         </div>
         <div className="features-grid">
@@ -167,7 +550,19 @@ export function FeaturesSection() {
               <p className="feature-card-description">{card.desc}</p>
               <Link href={card.href} className="feature-card-link">
                 Explore
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
               </Link>
             </div>
           ))}
@@ -183,26 +578,54 @@ export function FeaturesSection() {
                     <h4>Portfolio Performance</h4>
                     <div className="time-range">
                       {['1D', '1W', '1M', '1Y'].map((r) => (
-                        <button key={r} type="button" className={`time-btn ${portfolioRange === r ? 'active' : ''}`} onClick={() => setPortfolioRange(r)}>{r}</button>
+                        <button
+                          key={r}
+                          type="button"
+                          className={`time-btn ${portfolioRange === r ? 'active' : ''}`}
+                          onClick={() => setPortfolioRange(r)}
+                        >
+                          {r}
+                        </button>
                       ))}
                     </div>
                   </div>
                   <div className="portfolio-value">
                     <div className="value-amount">$127,843.52</div>
-                    <div className="value-change positive"><i className="bi bi-arrow-up" /><span>+$2,847.31 (+2.28%)</span></div>
+                    <div className="value-change positive">
+                      <i className="bi bi-arrow-up" />
+                      <span>+$2,847.31 (+2.28%)</span>
+                    </div>
                   </div>
                   <div className="mini-chart">
                     <svg width="100%" height="120" viewBox="0 0 400 120" aria-hidden="true">
-                      <defs><linearGradient id="chartGradient" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style={{ stopColor: '#10b981', stopOpacity: 0.3 }} /><stop offset="100%" style={{ stopColor: '#10b981', stopOpacity: 0 }} /></linearGradient></defs>
-                      <path className="chart-line" d="M 0 80 L 50 70 L 100 65 L 150 55 L 200 50 L 250 45 L 300 35 L 350 30 L 400 20" fill="none" stroke="#10b981" strokeWidth="2" />
-                      <path className="chart-area" d="M 0 80 L 50 70 L 100 65 L 150 55 L 200 50 L 250 45 L 300 35 L 350 30 L 400 20 L 400 120 L 0 120 Z" fill="url(#chartGradient)" />
+                      <defs>
+                        <linearGradient id="chartGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <stop offset="0%" style={{ stopColor: '#10b981', stopOpacity: 0.3 }} />
+                          <stop offset="100%" style={{ stopColor: '#10b981', stopOpacity: 0 }} />
+                        </linearGradient>
+                      </defs>
+                      <path
+                        className="chart-line"
+                        d="M 0 80 L 50 70 L 100 65 L 150 55 L 200 50 L 250 45 L 300 35 L 350 30 L 400 20"
+                        fill="none"
+                        stroke="#10b981"
+                        strokeWidth="2"
+                      />
+                      <path
+                        className="chart-area"
+                        d="M 0 80 L 50 70 L 100 65 L 150 55 L 200 50 L 250 45 L 300 35 L 350 30 L 400 20 L 400 120 L 0 120 Z"
+                        fill="url(#chartGradient)"
+                      />
                     </svg>
                   </div>
                   <div className="metrics-mini-grid">
                     {portfolioMetrics.map((m, i) => (
                       <div key={i} className="metric-mini">
                         <span className="metric-label">{m.label}</span>
-                        <span className="metric-value">{m.value}{m.unit ? <span className="metric-unit">{m.unit}</span> : null}</span>
+                        <span className="metric-value">
+                          {m.value}
+                          {m.unit ? <span className="metric-unit">{m.unit}</span> : null}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -211,13 +634,29 @@ export function FeaturesSection() {
             </div>
             <div className="feature-description">
               <h2 className="feature-title">Professional-grade portfolio analytics</h2>
-              <p className="feature-text">Track your investments with institutional-quality tools. Get real-time performance metrics, automated risk assessment, dividend tracking, and sophisticated asset allocation analysis—all in one elegant dashboard.</p>
+              <p className="feature-text">
+                Track your investments with institutional-quality tools. Get real-time performance
+                metrics, automated risk assessment, dividend tracking, and sophisticated asset
+                allocation analysis—all in one elegant dashboard.
+              </p>
               <div className="feature-stats">
-                <div className="stat-item"><CountUpStat value="Sub-100ms" className="stat-value" /><span className="stat-label">Response Time</span></div>
-                <div className="stat-item"><CountUpStat value="10+" className="stat-value" /><span className="stat-label">Asset Classes</span></div>
-                <div className="stat-item"><CountUpStat value="24/7" className="stat-value" /><span className="stat-label">Market Data</span></div>
+                <div className="stat-item">
+                  <CountUpStat value="Sub-100ms" className="stat-value" />
+                  <span className="stat-label">Response Time</span>
+                </div>
+                <div className="stat-item">
+                  <CountUpStat value="10+" className="stat-value" />
+                  <span className="stat-label">Asset Classes</span>
+                </div>
+                <div className="stat-item">
+                  <CountUpStat value="24/7" className="stat-value" />
+                  <span className="stat-label">Market Data</span>
+                </div>
               </div>
-              <Link href="/auth/login" className="feature-cta"><span>See Portfolio Tools</span><i className="bi bi-arrow-right" /></Link>
+              <Link href="/auth/login" className="feature-cta">
+                <span>See Portfolio Tools</span>
+                <i className="bi bi-arrow-right" />
+              </Link>
             </div>
           </div>
         </div>
@@ -229,7 +668,9 @@ export function FeaturesSection() {
               <div className="visual-container congress-visual">
                 <div className="ledger-header">
                   <h4>Congressional Trading Ledger</h4>
-                  <span className="live-badge"><span className="pulse-dot" /> Live</span>
+                  <span className="live-badge">
+                    <span className="pulse-dot" /> Live
+                  </span>
                 </div>
 
                 <div className="ledger-filters">
@@ -240,7 +681,9 @@ export function FeaturesSection() {
                       className={`filter-pill ${congressFilter === filter ? 'active' : ''}`}
                       onClick={() => setCongressFilter(filter)}
                     >
-                      {filter === 'all' ? 'All Trades' : filter.charAt(0).toUpperCase() + filter.slice(1)}
+                      {filter === 'all'
+                        ? 'All Trades'
+                        : filter.charAt(0).toUpperCase() + filter.slice(1)}
                     </button>
                   ))}
                 </div>
@@ -257,11 +700,15 @@ export function FeaturesSection() {
                     {congressTrades.map((trade) => (
                       <div key={trade.id} className="ledger-row">
                         <span className={`col-type ${trade.type.toLowerCase()}`}>
-                          <i className={`bi ${trade.type === 'Purchase' ? 'bi-arrow-up-circle-fill' : 'bi-arrow-down-circle-fill'}`} />
+                          <i
+                            className={`bi ${trade.type === 'Purchase' ? 'bi-arrow-up-circle-fill' : 'bi-arrow-down-circle-fill'}`}
+                          />
                         </span>
                         <span className="col-member">
                           <span className="member-name">{trade.name}</span>
-                          <span className={`party-badge ${trade.party.toLowerCase()}`}>{trade.party.charAt(0)}</span>
+                          <span className={`party-badge ${trade.party.toLowerCase()}`}>
+                            {trade.party.charAt(0)}
+                          </span>
                           <span className="chamber-badge">{trade.chamber}</span>
                         </span>
                         <span className="col-ticker">{trade.ticker}</span>
@@ -280,13 +727,29 @@ export function FeaturesSection() {
             </div>
             <div className="feature-description">
               <h2 className="feature-title">Track congressional trades in real-time</h2>
-              <p className="feature-text">Monitor stock purchases and sales by members of Congress with advanced filtering, real-time alerts, and detailed portfolio analysis. Follow specific politicians and never miss a trade that could move the market.</p>
+              <p className="feature-text">
+                Monitor stock purchases and sales by members of Congress with advanced filtering,
+                real-time alerts, and detailed portfolio analysis. Follow specific politicians and
+                never miss a trade that could move the market.
+              </p>
               <div className="feature-stats">
-                <div className="stat-item"><CountUpStat value="15,000+" className="stat-value" /><span className="stat-label">Trades Tracked</span></div>
-                <div className="stat-item"><CountUpStat value="535" className="stat-value" /><span className="stat-label">Congress Members</span></div>
-                <div className="stat-item"><CountUpStat value="Real-time" className="stat-value" /><span className="stat-label">Updates</span></div>
+                <div className="stat-item">
+                  <CountUpStat value="15,000+" className="stat-value" />
+                  <span className="stat-label">Trades Tracked</span>
+                </div>
+                <div className="stat-item">
+                  <CountUpStat value="535" className="stat-value" />
+                  <span className="stat-label">Congress Members</span>
+                </div>
+                <div className="stat-item">
+                  <CountUpStat value="Real-time" className="stat-value" />
+                  <span className="stat-label">Updates</span>
+                </div>
               </div>
-              <Link href="/auth/login" className="feature-cta"><span>Explore Congressional Trading</span><i className="bi bi-arrow-right" /></Link>
+              <Link href="/auth/login" className="feature-cta">
+                <span>Explore Congressional Trading</span>
+                <i className="bi bi-arrow-right" />
+              </Link>
             </div>
           </div>
         </div>
@@ -297,9 +760,17 @@ export function FeaturesSection() {
             <div className="feature-visual">
               <div className="visual-container intelligence-visual">
                 <div className="intelligence-dashboard">
+                  <div className="ledger-header">
+                    <h4>Government Activity</h4>
+                  </div>
                   <div className="intelligence-tabs">
                     {['contracts', 'lobbying', 'patents'].map((tab) => (
-                      <button key={tab} type="button" className={`intel-tab ${intelTab === tab ? 'active' : ''}`} onClick={() => setIntelTab(tab)}>
+                      <button
+                        key={tab}
+                        type="button"
+                        className={`intel-tab ${intelTab === tab ? 'active' : ''}`}
+                        onClick={() => setIntelTab(tab)}
+                      >
                         {tab.charAt(0).toUpperCase() + tab.slice(1)}
                       </button>
                     ))}
@@ -308,13 +779,20 @@ export function FeaturesSection() {
                     {intelItems.map((item, i) => (
                       <div key={i} className="intel-item">
                         <div className={`intel-icon ${intelTab}`}>
-                          <i className={`bi ${intelTab === 'contracts' ? 'bi-file-earmark-text' : intelTab === 'lobbying' ? 'bi-megaphone' : 'bi-lightbulb'}`} />
+                          <i
+                            className={`bi ${intelTab === 'contracts' ? 'bi-file-earmark-text' : intelTab === 'lobbying' ? 'bi-megaphone' : 'bi-lightbulb'}`}
+                          />
                         </div>
                         <div className="intel-content">
                           <div className="intel-title">{item.agency}</div>
                           <div className="intel-company">{item.company}</div>
                           <div className="intel-amount">{item.amount}</div>
-                          <div className="intel-meta"><span className="intel-date">{item.date}</span><span className={`intel-impact ${item.impact}`}>{item.impact === 'high' ? 'High' : 'Medium'} Impact</span></div>
+                          <div className="intel-meta">
+                            <span className="intel-date">{item.date}</span>
+                            <span className={`intel-impact ${item.impact}`}>
+                              {item.impact === 'high' ? 'High' : 'Medium'} Impact
+                            </span>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -324,13 +802,29 @@ export function FeaturesSection() {
             </div>
             <div className="feature-description">
               <h2 className="feature-title">Uncover market-moving intelligence</h2>
-              <p className="feature-text">Access critical data that institutional investors use: government contract awards, lobbying expenditures, and patent filings. Identify opportunities before they become mainstream news and stay ahead of market movements.</p>
+              <p className="feature-text">
+                Access critical data that institutional investors use: government contract awards,
+                lobbying expenditures, and patent filings. Identify opportunities before they become
+                mainstream news and stay ahead of market movements.
+              </p>
               <div className="feature-stats">
-                <div className="stat-item"><CountUpStat value="5,000+" className="stat-value" /><span className="stat-label">Contracts/Year</span></div>
-                <div className="stat-item"><CountUpStat value="$3.7B" className="stat-value" /><span className="stat-label">Lobbying Tracked</span></div>
-                <div className="stat-item"><CountUpStat value="100K+" className="stat-value" /><span className="stat-label">Patents Filed</span></div>
+                <div className="stat-item">
+                  <CountUpStat value="5,000+" className="stat-value" />
+                  <span className="stat-label">Contracts/Year</span>
+                </div>
+                <div className="stat-item">
+                  <CountUpStat value="$3.7B" className="stat-value" />
+                  <span className="stat-label">Lobbying Tracked</span>
+                </div>
+                <div className="stat-item">
+                  <CountUpStat value="100K+" className="stat-value" />
+                  <span className="stat-label">Patents Filed</span>
+                </div>
               </div>
-              <Link href="#resources" className="feature-cta"><span>Discover Market Intelligence</span><i className="bi bi-arrow-right" /></Link>
+              <Link href="#resources" className="feature-cta">
+                <span>Discover Market Intelligence</span>
+                <i className="bi bi-arrow-right" />
+              </Link>
             </div>
           </div>
         </div>
@@ -344,8 +838,20 @@ export function FeaturesSection() {
                   <div className="feed-header">
                     <h4>Community Insights</h4>
                     <div className="feed-actions">
-                      <button type="button" className={`feed-action ${communityView === 'trending' ? 'active' : ''}`} onClick={() => setCommunityView('trending')}><i className="bi bi-fire" /> Trending</button>
-                      <button type="button" className={`feed-action ${communityView === 'recent' ? 'active' : ''}`} onClick={() => setCommunityView('recent')}><i className="bi bi-clock" /> Recent</button>
+                      <button
+                        type="button"
+                        className={`feed-action ${communityView === 'trending' ? 'active' : ''}`}
+                        onClick={() => setCommunityView('trending')}
+                      >
+                        <i className="bi bi-fire" /> Trending
+                      </button>
+                      <button
+                        type="button"
+                        className={`feed-action ${communityView === 'recent' ? 'active' : ''}`}
+                        onClick={() => setCommunityView('recent')}
+                      >
+                        <i className="bi bi-clock" /> Recent
+                      </button>
                     </div>
                   </div>
                   <div className="community-items">
@@ -353,10 +859,27 @@ export function FeaturesSection() {
                       <div key={i} className="community-post">
                         <div className="post-author">
                           <div className="author-avatar">{post.author}</div>
-                          <div className="author-info"><span className="author-name">{post.name}</span><span className={`author-badge ${post.badge}`}>{post.badge === 'expert' ? 'Expert Trader' : 'Verified'}</span></div>
+                          <div className="author-info">
+                            <span className="author-name">{post.name}</span>
+                            <span className={`author-badge ${post.badge}`}>
+                              {post.badge === 'expert' ? 'Expert Trader' : 'Verified'}
+                            </span>
+                          </div>
                         </div>
-                        <div className="post-content"><p>{post.content}</p></div>
-                        <div className="post-stats"><span className="stat"><i className="bi bi-hand-thumbs-up" /> {post.stats.likes}</span><span className="stat"><i className="bi bi-chat" /> {post.stats.comments}</span><span className="stat"><i className="bi bi-bookmark" /> {post.stats.bookmarks}</span></div>
+                        <div className="post-content">
+                          <p>{post.content}</p>
+                        </div>
+                        <div className="post-stats">
+                          <span className="stat">
+                            <i className="bi bi-hand-thumbs-up" /> {post.stats.likes}
+                          </span>
+                          <span className="stat">
+                            <i className="bi bi-chat" /> {post.stats.comments}
+                          </span>
+                          <span className="stat">
+                            <i className="bi bi-bookmark" /> {post.stats.bookmarks}
+                          </span>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -365,13 +888,29 @@ export function FeaturesSection() {
             </div>
             <div className="feature-description">
               <h2 className="feature-title">Learn from collective intelligence</h2>
-              <p className="feature-text">Join a thriving community of informed investors. Share research, discuss strategies, and learn from collective market intelligence. Build your reputation and connect with traders who share your investment philosophy.</p>
+              <p className="feature-text">
+                Join a thriving community of informed investors. Share research, discuss strategies,
+                and learn from collective market intelligence. Build your reputation and connect
+                with traders who share your investment philosophy.
+              </p>
               <div className="feature-stats">
-                <div className="stat-item"><CountUpStat value="10,000+" className="stat-value" /><span className="stat-label">Active Users</span></div>
-                <div className="stat-item"><CountUpStat value="50K+" className="stat-value" /><span className="stat-label">Shared Insights</span></div>
-                <div className="stat-item"><CountUpStat value="Daily" className="stat-value" /><span className="stat-label">Discussions</span></div>
+                <div className="stat-item">
+                  <CountUpStat value="10,000+" className="stat-value" />
+                  <span className="stat-label">Active Users</span>
+                </div>
+                <div className="stat-item">
+                  <CountUpStat value="50K+" className="stat-value" />
+                  <span className="stat-label">Shared Insights</span>
+                </div>
+                <div className="stat-item">
+                  <CountUpStat value="Daily" className="stat-value" />
+                  <span className="stat-label">Discussions</span>
+                </div>
               </div>
-              <Link href="#heroSection" className="feature-cta"><span>Join the Community</span><i className="bi bi-arrow-right" /></Link>
+              <Link href="#heroSection" className="feature-cta">
+                <span>Join the Community</span>
+                <i className="bi bi-arrow-right" />
+              </Link>
             </div>
           </div>
         </div>
