@@ -484,15 +484,89 @@ body.light-mode {
 
 /* ════════════════════════════════════════════════════════════
    NOTIFICATION CARDS — Adaptive layout
-   <640px: hide entirely (globe is the focus, no room for cards)
+   <640px: centered below globe, compact card
    640-767px: show in stacked layout below the globe
    768-1023px: side-by-side compact
    1024px+: full side-by-side (existing behavior)
    ════════════════════════════════════════════════════════════ */
 
 @media (max-width: 639px) {
+  .landing-page .globe-with-cards-wrapper {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+  }
+
   .landing-page .globe-notification-cards {
-    display: none !important;
+    display: flex !important;
+    position: absolute;
+    bottom: -0.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100vw - 2.5rem);
+    max-width: 320px;
+    justify-content: center;
+    z-index: 30;
+    pointer-events: none;
+  }
+
+  /* Both left and right columns render in the same centered spot on mobile */
+  .landing-page .globe-cards-left,
+  .landing-page .globe-cards-right {
+    position: absolute;
+    bottom: -0.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100vw - 2.5rem);
+    max-width: 320px;
+  }
+
+  .landing-page .globe-notification-alert {
+    max-width: 100%;
+    font-size: 0.7rem;
+    padding: 0.5rem 0.6rem !important;
+    border-radius: 10px !important;
+    backdrop-filter: blur(12px);
+    background: rgba(13, 17, 23, 0.85) !important;
+    border: 1px solid rgba(16, 185, 129, 0.15) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  .landing-page .globe-alert-icon {
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    border-radius: 6px;
+  }
+
+  .landing-page .globe-alert-icon i {
+    font-size: 0.65rem;
+  }
+
+  .landing-page .globe-alert-title {
+    font-size: 0.65rem;
+    line-height: 1.3;
+  }
+
+  .landing-page .globe-alert-text {
+    font-size: 0.6rem;
+    line-height: 1.35;
+    -webkit-line-clamp: 2;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .landing-page .globe-alert-time {
+    font-size: 0.5rem;
+  }
+
+  /* Vertical position classes — on mobile, always at bottom of globe */
+  .landing-page .globe-card-v-0,
+  .landing-page .globe-card-v-1,
+  .landing-page .globe-card-v-2 {
+    margin-top: 0;
   }
 }
 
