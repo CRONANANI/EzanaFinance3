@@ -17,7 +17,7 @@ export const nvidiaSecondMostValuableArticle = {
   contentBlocks: [
     {
       type: 'paragraph',
-      text: "Nvidia is now the second most valuable asset on Earth. At a market capitalization of $5.34 trillion, the chipmaker has surpassed not only every publicly traded company except — briefly and intermittently — Apple, but also silver as a global store of value. Only gold, at $31.19 trillion, sits above it. The ranking is remarkable not just for the number but for the speed: Nvidia's market cap was below $1 trillion as recently as May 2023. In three years, the company has added more value than the entire GDP of Japan.",
+      text: "Nvidia is now the second most valuable asset on Earth. At a [[kw:market-capitalization]]market capitalization[[/kw]] of $5.34 trillion, the chipmaker has surpassed not only every publicly traded company except — briefly and intermittently — Apple, but also silver as a global store of value. Only gold, at $31.19 trillion, sits above it. The ranking is remarkable not just for the number but for the speed: Nvidia's market cap was below $1 trillion as recently as May 2023. In three years, the company has added more value than the entire GDP of Japan.",
     },
     {
       type: 'stat-grid',
@@ -56,16 +56,16 @@ export const nvidiaSecondMostValuableArticle = {
     },
     {
       type: 'paragraph',
-      text: "What makes this ranking structurally different from prior reshuffles — Apple overtaking Exxon in 2012, Microsoft overtaking Apple in 2021 — is that Nvidia is not a consumer-facing company. Its revenue comes almost entirely from selling GPUs to hyperscalers (Microsoft Azure, Google Cloud, Amazon AWS, Meta) and sovereign AI programs. The end customers are data centers, not individuals. This means Nvidia's valuation is a direct market bet on enterprise AI infrastructure spend sustaining its current trajectory — roughly $300 billion per year across the hyperscaler complex, growing at 40–60% annually.",
+      text: "What makes this ranking structurally different from prior reshuffles — Apple overtaking Exxon in 2012, Microsoft overtaking Apple in 2021 — is that Nvidia is not a consumer-facing company. Its revenue comes almost entirely from selling [[kw:gpu-accelerator]]GPUs[[/kw]] to [[kw:hyperscalers]]hyperscalers[[/kw]] (Microsoft Azure, Google Cloud, Amazon AWS, Meta) and [[kw:sovereign-ai]]sovereign AI programs[[/kw]]. The end customers are data centers, not individuals. This means Nvidia's valuation is a direct market bet on enterprise AI infrastructure spend sustaining its current trajectory — roughly $300 billion per year across the hyperscaler complex, growing at 40–60% annually.",
     },
     { type: 'heading', text: 'The GPU monopoly: why Nvidia and not AMD', level: 2 },
     {
       type: 'paragraph',
-      text: "Nvidia controls an estimated 80–90% of the data center AI accelerator market. Its dominance rests on three compounding advantages: CUDA (the software ecosystem that 4 million developers are locked into), the networking stack (NVLink, InfiniBand via the Mellanox acquisition), and the cadence of hardware releases (Hopper → Blackwell → Rubin, each delivering roughly 2x inference throughput per generation). AMD's MI300X is the closest competitor, but it lacks the software ecosystem depth — porting CUDA workloads to ROCm remains a friction that most enterprise buyers choose not to endure.",
+      text: "Nvidia controls an estimated 80–90% of the data center AI accelerator market. Its dominance rests on three compounding advantages: [[kw:cuda]]CUDA (the software ecosystem that 4 million developers are locked into)[[/kw]], the networking stack (NVLink, InfiniBand via the Mellanox acquisition), and the cadence of hardware releases (Hopper → Blackwell → Rubin, each delivering roughly 2x inference throughput per generation). AMD's MI300X is the closest competitor, but it lacks the software ecosystem depth — porting CUDA workloads to ROCm remains a friction that most enterprise buyers choose not to endure.",
     },
     {
       type: 'paragraph',
-      text: "The moat is deepening, not narrowing. Nvidia's $26 billion R&D spend in fiscal 2026 exceeds AMD's entire revenue. The Blackwell architecture, which began shipping at scale in Q1 2026, delivers 4x the training throughput of Hopper at comparable power — a step-function improvement that is pulling hyperscaler capex forward. When Jensen Huang says \"the more you buy, the more you save,\" the math actually works: Blackwell's performance-per-dollar improvement is large enough that customers save on electricity and cooling even after paying the premium.",
+      text: "The moat is deepening, not narrowing. Nvidia's $26 billion R&D spend in fiscal 2026 exceeds AMD's entire revenue. The [[kw:blackwell-architecture]]Blackwell architecture[[/kw]], which began shipping at scale in Q1 2026, delivers 4x the training throughput of Hopper at comparable power — a step-function improvement that is pulling hyperscaler capex forward. When Jensen Huang says \"the more you buy, the more you save,\" the math actually works: Blackwell's performance-per-dollar improvement is large enough that customers save on electricity and cooling even after paying the premium.",
     },
     {
       type: 'callout',
@@ -77,7 +77,7 @@ export const nvidiaSecondMostValuableArticle = {
     { type: 'heading', text: 'Gold at $31T: the gap that matters', level: 2 },
     {
       type: 'paragraph',
-      text: "Gold's $31.19 trillion total market value dwarfs Nvidia by nearly 6x. This gap is itself informative: gold has been accumulating value for 5,000 years; Nvidia has been accumulating it for 30 months. Gold is a monetary reserve held by central banks (35,000+ tonnes globally), a jewelry input (50% of annual demand), and a crisis hedge with no counterparty risk. Nvidia is an operating company with ~$130 billion in annual revenue, ~60% gross margins, and a single customer segment (AI compute) that did not exist at meaningful scale four years ago.",
+      text: "[[kw:gold-store-of-value]]Gold's $31.19 trillion total market value[[/kw]] dwarfs Nvidia by nearly 6x. This gap is itself informative: gold has been accumulating value for 5,000 years; Nvidia has been accumulating it for 30 months. Gold is a monetary reserve held by central banks (35,000+ tonnes globally), a jewelry input (50% of annual demand), and a crisis hedge with no counterparty risk. Nvidia is an operating company with ~$130 billion in annual revenue, ~60% gross margins, and a single customer segment (AI compute) that did not exist at meaningful scale four years ago.",
     },
     {
       type: 'paragraph',
@@ -107,7 +107,7 @@ export const nvidiaSecondMostValuableArticle = {
     { type: 'heading', text: 'The semiconductor supply chain gets its own tier', level: 2 },
     {
       type: 'paragraph',
-      text: "TSMC ($2.04T) and Broadcom ($1.95T) rounding out the top 10 signals that the semiconductor supply chain is now an asset class in its own right. TSMC fabricates the physical chips that Nvidia designs — every H100, B100, and GB200 runs on TSMC's 4nm and 3nm process nodes. Broadcom provides the custom silicon (TPUs for Google, Trainium for Amazon) and the networking ASICs that connect GPU clusters. Together, these three companies — Nvidia, TSMC, Broadcom — represent over $9 trillion in market value and form the critical path for every AI workload running in the cloud today.",
+      text: "[[kw:tsmc-foundry]]TSMC ($2.04T)[[/kw]] and Broadcom ($1.95T) rounding out the top 10 signals that the semiconductor supply chain is now an asset class in its own right. TSMC fabricates the physical chips that Nvidia designs — every H100, B100, and GB200 runs on TSMC's 4nm and 3nm process nodes. Broadcom provides the custom silicon (TPUs for Google, Trainium for Amazon) and the networking ASICs that connect GPU clusters. Together, these three companies — Nvidia, TSMC, Broadcom — represent over $9 trillion in market value and form the critical path for every AI workload running in the cloud today.",
     },
     {
       type: 'paragraph',
@@ -121,11 +121,11 @@ export const nvidiaSecondMostValuableArticle = {
     { type: 'heading', text: 'Valuation: is $5.34 trillion justified?', level: 2 },
     {
       type: 'paragraph',
-      text: 'At $5.34 trillion, Nvidia trades at approximately 40–45x forward earnings and 35–40x EV/EBITDA. These multiples are high by any historical standard for a hardware company, but the bull case rests on three arguments: (1) data center GPU revenue is still growing at 50%+ year-over-year, (2) the Blackwell product cycle is pulling forward demand that would otherwise have been spread over 2–3 years, and (3) the total addressable market for AI compute is expanding — inference workloads are growing faster than training, and every enterprise deploying AI models needs GPU capacity.',
+      text: 'At $5.34 trillion, Nvidia trades at approximately 40–45x forward earnings and 35–40x EV/EBITDA. These multiples are high by any historical standard for a hardware company, but the bull case rests on three arguments: (1) data center GPU revenue is still growing at 50%+ year-over-year, (2) the Blackwell product cycle is pulling forward demand that would otherwise have been spread over 2–3 years, and (3) the total addressable market for AI compute is expanding — [[kw:inference-vs-training]]inference workloads are growing faster than training[[/kw]], and every enterprise deploying AI models needs GPU capacity.',
     },
     {
       type: 'paragraph',
-      text: "The bear case is equally clear: Nvidia's revenue concentration in a handful of hyperscaler customers creates binary risk. If Google, Microsoft, or Amazon slow their AI capex — which could happen in a recession, a regulatory crackdown, or simply because model efficiency improves faster than expected — Nvidia's revenue could decelerate sharply. The stock's 40x+ multiple leaves no margin for error. At $5.34 trillion, the market is pricing in sustained 30%+ revenue growth for years. Any wobble in that trajectory would reprice the stock aggressively.",
+      text: "The bear case is equally clear: Nvidia's revenue concentration in a handful of hyperscaler customers creates binary risk. If Google, Microsoft, or Amazon slow their [[kw:capex-cycle]]AI capex[[/kw]] — which could happen in a recession, a regulatory crackdown, or simply because model efficiency improves faster than expected — Nvidia's revenue could decelerate sharply. The stock's 40x+ multiple leaves no margin for error. At $5.34 trillion, the market is pricing in sustained 30%+ revenue growth for years. Any wobble in that trajectory would reprice the stock aggressively.",
     },
     { type: 'heading', text: 'How to position around this ranking', level: 2 },
     {
@@ -134,7 +134,7 @@ export const nvidiaSecondMostValuableArticle = {
     },
     {
       type: 'paragraph',
-      text: "For investors who view $5.34 trillion as stretched, the ranking itself suggests a hedged approach: pair long NVDA with long GLD (gold). The infographic shows gold at 5.8x Nvidia's market cap — if AI capex disappoints and risk assets sell off, gold historically benefits from the flight to safety. The NVDA/GLD ratio is a clean expression of the market's confidence in AI infrastructure versus traditional stores of value. As of May 2026, the market has never been more tilted toward intelligence over inertia.",
+      text: "For investors who view $5.34 trillion as stretched, the ranking itself suggests a hedged approach: pair long NVDA with long GLD (gold). The market's positioning is part of the broader [[kw:mag-7]]Magnificent 7[[/kw]] dynamic where these few companies drive most index returns. The infographic shows gold at 5.8x Nvidia's market cap — if AI capex disappoints and risk assets sell off, gold historically benefits from the flight to safety. The NVDA/GLD ratio is a clean expression of the market's confidence in AI infrastructure versus traditional stores of value. As of May 2026, the market has never been more tilted toward intelligence over inertia.",
     },
     {
       type: 'chart',

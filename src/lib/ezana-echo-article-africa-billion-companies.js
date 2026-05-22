@@ -17,7 +17,7 @@ export const africaBillionCompaniesArticle = {
   contentBlocks: [
     {
       type: 'paragraph',
-      text: "Africa is home to at least 345 companies with annual revenues exceeding $1 billion — a figure that challenges the persistent narrative of the continent as an investment frontier defined primarily by aid flows and extractive industries. The data, mapped by region, reveals a corporate landscape that is structurally deeper and more diversified than global investors typically credit. Southern Africa dominates with 160 companies, driven overwhelmingly by South Africa's mature financial and mining sectors. Northern Africa contributes 73, anchored by Egypt's 33 and Morocco's 20. Western Africa adds 35, with Nigeria's 23 accounting for two-thirds of the region's total. Eastern Africa registers 16, and Central Africa — the least penetrated region — has 7.",
+      text: "Africa is home to at least 345 companies with annual revenues exceeding $1 billion — a figure that challenges the persistent narrative of the continent as an investment [[kw:frontier-markets]]frontier market[[/kw]] defined primarily by aid flows and extractive industries. The data, mapped by region, reveals a corporate landscape that is structurally deeper and more diversified than global investors typically credit. Southern Africa dominates with 160 companies, driven overwhelmingly by South Africa's mature financial and mining sectors. Northern Africa contributes 73, anchored by Egypt's 33 and Morocco's 20. Western Africa adds 35, with Nigeria's 23 accounting for two-thirds of the region's total. Eastern Africa registers 16, and Central Africa — the least penetrated region — has 7.",
     },
     {
       type: 'stat-grid',
@@ -38,11 +38,11 @@ export const africaBillionCompaniesArticle = {
     { type: 'heading', text: 'Southern Africa: the continental heavyweight', level: 2 },
     {
       type: 'paragraph',
-      text: "South Africa alone accounts for 147 of the continent's 345 billion-dollar companies — 43% of the total. This concentration reflects the country's uniquely developed capital markets, Johannesburg Stock Exchange (JSE) infrastructure that dates to 1887, and deep integration into global supply chains through mining, financial services, and telecommunications. Companies like Naspers, Sasol, FirstRand, and MTN Group are not just African champions — they are global operators with market capitalizations and revenue footprints that rival their developed-market peers.",
+      text: "South Africa alone accounts for 147 of the continent's 345 billion-dollar companies — 43% of the total. This concentration reflects the country's uniquely developed capital markets, [[kw:jse]]Johannesburg Stock Exchange (JSE)[[/kw]] infrastructure that dates to 1887, and deep integration into global supply chains through mining, financial services, and telecommunications. Companies like Naspers, Sasol, FirstRand, and MTN Group are not just African champions — they are global operators with market capitalizations and revenue footprints that rival their developed-market peers.",
     },
     {
       type: 'paragraph',
-      text: "Beyond South Africa, the Southern African region includes Botswana (1), Zambia (2), Zimbabwe (1), Angola (9), and the DRC (4). Angola's count is almost entirely petroleum-driven — Sonangol and associated joint ventures account for the bulk of its $1B+ revenue companies. The DRC's four are dominated by mining — copper and cobalt extraction that feeds directly into the global EV battery supply chain. Zambia's two are similarly mining-dependent. The concentration in extractives across the region outside South Africa highlights both the opportunity (resource demand is structurally growing) and the risk (revenue diversity is thin).",
+      text: "Beyond South Africa, the Southern African region includes Botswana (1), Zambia (2), Zimbabwe (1), Angola (9), and the DRC (4). Angola's count is almost entirely petroleum-driven — Sonangol and associated joint ventures account for the bulk of its $1B+ revenue companies. The DRC's four are dominated by mining — copper and cobalt extraction that feeds directly into the global EV battery supply chain. Zambia's two are similarly mining-dependent. The concentration in [[kw:extractive-industries]]extractives[[/kw]] across the region outside South Africa highlights both the opportunity (resource demand is structurally growing) and the risk (revenue diversity is thin).",
     },
     {
       type: 'chart',
@@ -66,11 +66,11 @@ export const africaBillionCompaniesArticle = {
     { type: 'heading', text: 'Northern Africa: diversified and capital-markets ready', level: 2 },
     {
       type: 'paragraph',
-      text: "Egypt's 33 billion-dollar companies span financial services (Commercial International Bank, EFG Hermes), real estate (Orascom), telecommunications (Vodafone Egypt), and construction. The Egyptian Exchange (EGX) is one of Africa's oldest and most liquid, making Egyptian corporates more accessible to foreign portfolio investors than peers in less-developed capital markets. Egypt's economic reform program since 2016 — including the float of the Egyptian pound, subsidy rationalization, and IMF-backed structural adjustments — has improved the operating environment for large corporates even as it imposed short-term pain on consumers.",
+      text: "Egypt's 33 billion-dollar companies span financial services (Commercial International Bank, EFG Hermes), real estate (Orascom), telecommunications (Vodafone Egypt), and construction. The Egyptian Exchange (EGX) is one of Africa's oldest and most liquid, making Egyptian corporates more accessible to foreign portfolio investors than peers in less-developed capital markets. Egypt's economic reform program since 2016 — including the float of the Egyptian pound, subsidy rationalization, and [[kw:imf-program]]IMF-backed structural adjustments[[/kw]] — has improved the operating environment for large corporates even as it imposed short-term pain on consumers.",
     },
     {
       type: 'paragraph',
-      text: "Morocco's 20 billion-dollar companies reflect a different economic model: the country has positioned itself as a manufacturing and logistics hub serving both European and sub-Saharan African markets. OCP Group, the state-controlled phosphate producer, is the standout — Morocco controls roughly 70% of the world's phosphate reserves, a critical input for fertilizers. Morocco's automotive sector has also scaled rapidly, with Renault and PSA operating assembly plants that export to Europe. The combination of proximity to the EU, stable governance, and strategic resource positions makes Morocco one of the most investable markets on the continent.",
+      text: "Morocco's 20 billion-dollar companies reflect a different economic model: the country has positioned itself as a manufacturing and logistics hub serving both European and sub-Saharan African markets. OCP Group, the state-controlled phosphate producer, is the standout — Morocco controls roughly 70% of the world's [[kw:phosphate-reserves]]phosphate reserves[[/kw]], a critical input for fertilizers. Morocco's automotive sector has also scaled rapidly, with Renault and PSA operating assembly plants that export to Europe. The combination of proximity to the EU, stable governance, and strategic resource positions makes Morocco one of the most investable markets on the continent.",
     },
     { type: 'heading', text: 'Western Africa: Nigeria leads, but depth is shallow', level: 2 },
     {
@@ -99,7 +99,7 @@ export const africaBillionCompaniesArticle = {
     { type: 'heading', text: 'Eastern Africa: the fastest-growing frontier', level: 2 },
     {
       type: 'paragraph',
-      text: "Eastern Africa's 16 billion-dollar companies are distributed across Kenya (6), Ethiopia (4), Tanzania (1), Sudan (1), Madagascar (1), and Mauritius (3). Kenya is the region's corporate and financial hub — Safaricom (the company behind M-Pesa, the mobile money platform that processes more transactions annually than PayPal does in all of sub-Saharan Africa), Equity Group Holdings, and East African Breweries are among its marquee names. Nairobi's stock exchange is the gateway for portfolio investors targeting East Africa.",
+      text: "Eastern Africa's 16 billion-dollar companies are distributed across Kenya (6), Ethiopia (4), Tanzania (1), Sudan (1), Madagascar (1), and Mauritius (3). Kenya is the region's corporate and financial hub — Safaricom (the company behind [[kw:m-pesa]]M-Pesa[[/kw]], the mobile money platform that processes more transactions annually than PayPal does in all of sub-Saharan Africa), Equity Group Holdings, and East African Breweries are among its marquee names. Nairobi's stock exchange is the gateway for portfolio investors targeting East Africa.",
     },
     {
       type: 'paragraph',
@@ -115,7 +115,7 @@ export const africaBillionCompaniesArticle = {
     { type: 'heading', text: 'The 54 without a local headquarters', level: 2 },
     {
       type: 'paragraph',
-      text: "Perhaps the most revealing number in the dataset is 54 — the count of companies generating over $1 billion in revenue from African operations but headquartered outside the continent. These are the Unilevers, Totals, Glencores, and Vodafones that operate across multiple African markets but domicile their corporate entities — and book their profits — in London, Paris, Zurich, or The Hague. This dynamic has significant implications: it means a substantial share of Africa's corporate value creation is captured in foreign equity markets, not African ones.",
+      text: "Perhaps the most revealing number in the dataset is 54 — the count of companies generating over $1 billion in revenue from African operations but headquartered outside the continent. These are the Unilevers, Totals, Glencores, and Vodafones that operate as [[kw:foreign-direct-investment]]foreign direct investment[[/kw]] across multiple African markets but domicile their corporate entities — and book their profits — in London, Paris, Zurich, or The Hague. This dynamic has significant implications: it means a substantial share of Africa's corporate value creation is captured in foreign equity markets, not African ones.",
     },
     {
       type: 'paragraph',
@@ -124,7 +124,7 @@ export const africaBillionCompaniesArticle = {
     { type: 'heading', text: 'Sector composition: beyond extractives', level: 2 },
     {
       type: 'paragraph',
-      text: "The common assumption that Africa's billion-dollar companies are primarily extractive — oil, gas, mining — is only partially correct. While extractives dominate in Angola, the DRC, Algeria, and much of Central Africa, the largest economies (South Africa, Egypt, Nigeria, Morocco, Kenya) have diversified corporate sectors. Financial services is the single largest sector by company count across the continent. Telecommunications is second — driven by the mobile revolution that leapfrogged fixed-line infrastructure entirely. Consumer goods, construction, and agriculture round out the top five.",
+      text: "The common assumption that Africa's billion-dollar companies are primarily extractive — oil, gas, mining — is only partially correct. While extractives dominate in Angola, the DRC, Algeria, and much of Central Africa, the largest economies (South Africa, Egypt, Nigeria, Morocco, Kenya) have diversified corporate sectors. Financial services is the single largest sector by company count across the continent. Telecommunications is second — driven by the mobile revolution that [[kw:leapfrog-development]]leapfrogged fixed-line infrastructure[[/kw]] entirely. Consumer goods, construction, and agriculture round out the top five.",
     },
     {
       type: 'chart',
@@ -151,7 +151,7 @@ export const africaBillionCompaniesArticle = {
     },
     {
       type: 'paragraph',
-      text: 'The structural case for African corporate growth rests on three pillars: demographics (the youngest population of any continent, with 60% under age 25), urbanization (the fastest rate globally, creating concentrated consumer markets), and digital infrastructure (mobile penetration and fintech adoption that are leapfrogging developed-market models). The risks are equally structural: political instability, currency volatility, capital controls, and governance gaps that make company-level due diligence essential. 345 billion-dollar companies is the starting point, not the ceiling — the question is how fast the next 345 emerge.',
+      text: 'The structural case for African corporate growth rests on three pillars: [[kw:demographic-dividend]]demographics (the youngest population of any continent, with 60% under age 25)[[/kw]], urbanization (the fastest rate globally, creating concentrated consumer markets), and digital infrastructure (mobile penetration and fintech adoption that are leapfrogging developed-market models). The risks are equally structural: political instability, currency volatility, [[kw:currency-controls]]capital controls[[/kw]], and governance gaps that make company-level due diligence essential. 345 billion-dollar companies is the starting point, not the ceiling — the question is how fast the next 345 emerge.',
     },
     {
       type: 'quote',

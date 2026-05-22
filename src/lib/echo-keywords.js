@@ -72,14 +72,22 @@ export const KEYWORDS = {
     templateData: {
       title: 'Sectors that lead at each economic stage',
       nodes: [
-        { label: 'Early recovery', sectors: ['Technology', 'Consumer Discretionary'], color: '#10b981' },
+        {
+          label: 'Early recovery',
+          sectors: ['Technology', 'Consumer Discretionary'],
+          color: '#10b981',
+        },
         { label: 'Mid-expansion', sectors: ['Industrials', 'Materials'], color: '#3b82f6' },
         { label: 'Late expansion', sectors: ['Energy', 'Financials'], color: '#f59e0b' },
-        { label: 'Recession', sectors: ['Utilities', 'Consumer Staples', 'Healthcare'], color: '#a855f7' },
+        {
+          label: 'Recession',
+          sectors: ['Utilities', 'Consumer Staples', 'Healthcare'],
+          color: '#a855f7',
+        },
       ],
     },
     realWorld:
-      "The article shows sector rotation playing out across CENTURIES instead of business cycles. The same logic applies on shorter timescales: when interest rates fall, defensive sectors lose favor and growth sectors take the lead.",
+      'The article shows sector rotation playing out across CENTURIES instead of business cycles. The same logic applies on shorter timescales: when interest rates fall, defensive sectors lose favor and growth sectors take the lead.',
     courseId: 'stocks-intermediate-4',
     courseTitle: 'Sector Analysis',
   },
@@ -88,7 +96,7 @@ export const KEYWORDS = {
     id: 'antitrust',
     term: 'Antitrust Law',
     definition:
-      "Federal laws designed to prevent monopolies, cartels, and anti-competitive business practices. The Sherman Act (1890) and Clayton Act (1914) are the foundations of US antitrust regulation, used to break up Standard Oil, AT&T, and others.",
+      'Federal laws designed to prevent monopolies, cartels, and anti-competitive business practices. The Sherman Act (1890) and Clayton Act (1914) are the foundations of US antitrust regulation, used to break up Standard Oil, AT&T, and others.',
     template: 'timeline',
     templateData: {
       title: 'Major US antitrust actions',
@@ -97,8 +105,16 @@ export const KEYWORDS = {
         { year: '1911', label: 'Standard Oil broken up', detail: 'Split into 34 companies' },
         { year: '1914', label: 'Clayton Act passed', detail: 'Strengthened Sherman Act' },
         { year: '1982', label: 'AT&T breakup', detail: 'Created the "Baby Bells"' },
-        { year: '2001', label: 'Microsoft case settled', detail: 'Avoided breakup, restricted practices' },
-        { year: '2024+', label: 'Big Tech scrutiny', detail: 'Google, Amazon, Apple, Meta cases ongoing' },
+        {
+          year: '2001',
+          label: 'Microsoft case settled',
+          detail: 'Avoided breakup, restricted practices',
+        },
+        {
+          year: '2024+',
+          label: 'Big Tech scrutiny',
+          detail: 'Google, Amazon, Apple, Meta cases ongoing',
+        },
       ],
     },
     realWorld:
@@ -122,7 +138,8 @@ export const KEYWORDS = {
         { label: 'Growth Stocks', cells: ['Tesla, Nvidia, Amazon', '0%'] },
         { label: 'Mixed', cells: ['Microsoft, Apple', '0.5-1%'] },
       ],
-      footnote: '"Aristocrats" are S&P 500 companies that have raised dividends for 25+ consecutive years.',
+      footnote:
+        '"Aristocrats" are S&P 500 companies that have raised dividends for 25+ consecutive years.',
     },
     realWorld:
       "The article describes the post-war energy & materials era as paying 'generous dividends.' That meant a $10,000 stake in US Steel or Standard Oil might pay $400-700 per year just in cash dividends — without selling a single share.",
@@ -134,21 +151,33 @@ export const KEYWORDS = {
     id: 'growth-vs-value',
     term: 'Growth vs Value Investing',
     definition:
-      "Two opposing investment philosophies. Growth investors buy companies expanding rapidly, accepting high valuations for future potential. Value investors buy companies trading below their intrinsic worth, betting the market will eventually recognize them.",
+      'Two opposing investment philosophies. Growth investors buy companies expanding rapidly, accepting high valuations for future potential. Value investors buy companies trading below their intrinsic worth, betting the market will eventually recognize them.',
     template: 'comparison',
     templateData: {
       title: 'Two opposing schools',
       headers: ['Style', 'Looks for', 'Famous practitioners'],
       rows: [
-        { label: 'Growth', cells: ['High revenue growth, large addressable market', 'Cathie Wood, Peter Lynch'] },
-        { label: 'Value', cells: ['Low P/E ratio, strong cash flow, undervalued', 'Warren Buffett, Charlie Munger'] },
-        { label: 'GARP', cells: ['Growth At Reasonable Price (hybrid)', 'Peter Lynch (later years)'] },
-        { label: 'Quality', cells: ['Best businesses regardless of price', 'Terry Smith, Nick Train'] },
+        {
+          label: 'Growth',
+          cells: ['High revenue growth, large addressable market', 'Cathie Wood, Peter Lynch'],
+        },
+        {
+          label: 'Value',
+          cells: ['Low P/E ratio, strong cash flow, undervalued', 'Warren Buffett, Charlie Munger'],
+        },
+        {
+          label: 'GARP',
+          cells: ['Growth At Reasonable Price (hybrid)', 'Peter Lynch (later years)'],
+        },
+        {
+          label: 'Quality',
+          cells: ['Best businesses regardless of price', 'Terry Smith, Nick Train'],
+        },
       ],
       footnote: 'Most professional investors blend elements of both approaches.',
     },
     realWorld:
-      "When the article describes early 1980s investors learning to value tech companies differently than steel manufacturers, that was growth-vs-value tension at work. Buying Microsoft in 1990 looked expensive on traditional value metrics but was a bargain on growth metrics.",
+      'When the article describes early 1980s investors learning to value tech companies differently than steel manufacturers, that was growth-vs-value tension at work. Buying Microsoft in 1990 looked expensive on traditional value metrics but was a bargain on growth metrics.',
     courseId: 'stocks-intermediate-6',
     courseTitle: 'Growth vs Value Investing',
   },
@@ -192,10 +221,14 @@ export const KEYWORDS = {
       title: 'PPI vs CPI',
       headers: ['Metric', 'What it measures', 'Who uses it'],
       rows: [
-        { label: 'PPI', cells: ['Prices received by producers', 'Manufacturers, commodity traders'] },
+        {
+          label: 'PPI',
+          cells: ['Prices received by producers', 'Manufacturers, commodity traders'],
+        },
         { label: 'CPI', cells: ['Prices paid by consumers', 'Fed policy, wage negotiations'] },
       ],
-      footnote: 'Rising PPI often leads CPI — factory price increases eventually pass through to consumers.',
+      footnote:
+        'Rising PPI often leads CPI — factory price increases eventually pass through to consumers.',
     },
     realWorld:
       "When the PPI for fiber optic cable rises, it signals that demand is outrunning supply at the factory level. Cable installers and data center operators will soon pay more, which flows into Corning's revenue and margins.",
@@ -320,7 +353,8 @@ export const KEYWORDS = {
       formula: 'Free Cash Flow = Operating Cash Flow – CapEx',
       example: {
         title: "Meta's AI capex",
-        substitution: '2025 CapEx guidance: $37B–$40B · Primarily: data center construction · Includes: fiber optic cable, GPUs, cooling',
+        substitution:
+          '2025 CapEx guidance: $37B–$40B · Primarily: data center construction · Includes: fiber optic cable, GPUs, cooling',
       },
     },
     realWorld:
@@ -409,7 +443,11 @@ export const KEYWORDS = {
         { label: '~20% of global oil transit', sectors: [], color: '#f59e0b' },
         { label: '~25% of global LNG transit', sectors: [], color: '#10b981' },
         { label: 'Iran controls the northern shore', sectors: [], color: '#64748b' },
-        { label: 'Key for: Saudi, Iraq, Kuwait, UAE, Qatar exports', sectors: [], color: '#3b82f6' },
+        {
+          label: 'Key for: Saudi, Iraq, Kuwait, UAE, Qatar exports',
+          sectors: [],
+          color: '#3b82f6',
+        },
       ],
     },
     realWorld:
@@ -454,7 +492,8 @@ export const KEYWORDS = {
         { label: 'Sectoral', cells: ['Specific industries (oil, tech)', 'Iran oil sanctions'] },
         { label: 'Targeted', cells: ['Named individuals/entities', 'Asset freezes, travel bans'] },
       ],
-      footnote: 'Sanctions often have unintended consequences — they can spike commodity prices globally.',
+      footnote:
+        'Sanctions often have unintended consequences — they can spike commodity prices globally.',
     },
     realWorld:
       "When the US sanctions Iranian oil exports, the lost supply (1–2M barrels/day) tightens the global market and lifts prices for every other producer. Saudi Aramco, ExxonMobil, and Chevron benefit even though they're not the target.",
@@ -489,7 +528,7 @@ export const KEYWORDS = {
     id: 'strategic-reserves',
     term: 'Strategic Petroleum Reserve (SPR)',
     definition:
-      'Government-held stockpiles of crude oil maintained for emergency supply disruptions. The US SPR is the world\'s largest at ~370M barrels (down from 700M+ after drawdowns in 2022). The SPR acts as a buffer — releasing barrels can temporarily moderate price spikes.',
+      "Government-held stockpiles of crude oil maintained for emergency supply disruptions. The US SPR is the world's largest at ~370M barrels (down from 700M+ after drawdowns in 2022). The SPR acts as a buffer — releasing barrels can temporarily moderate price spikes.",
     template: 'timeline',
     templateData: {
       events: [
@@ -518,7 +557,8 @@ export const KEYWORDS = {
         { label: 'Backwardation', cells: ['Near > Far', 'Current supply shortage, urgency'] },
         { label: 'Contango', cells: ['Near < Far', 'Ample supply, storage costs priced in'] },
       ],
-      footnote: 'Oil markets shifted into steep backwardation during the Iran conflict — a clear supply-fear signal.',
+      footnote:
+        'Oil markets shifted into steep backwardation during the Iran conflict — a clear supply-fear signal.',
     },
     realWorld:
       'When oil is in backwardation, refiners and airlines are scrambling for barrels today, not next month. For investors, backwardation in commodity futures is one of the strongest signals that a supply disruption is real, not just media noise.',
@@ -587,7 +627,8 @@ export const KEYWORDS = {
         { label: 'HPS', cells: ['Americas', '~38%', 'Deer mouse (Peromyscus maniculatus)'] },
         { label: 'HFRS', cells: ['Europe, Asia', '1–15%', 'Bank vole, striped field mouse'] },
       ],
-      footnote: '~150,000 HFRS cases reported annually worldwide, mainly in China. HPS cases are rarer but far more lethal.',
+      footnote:
+        '~150,000 HFRS cases reported annually worldwide, mainly in China. HPS cases are rarer but far more lethal.',
     },
     realWorld:
       'Hantavirus is named after the Hantan River in South Korea, where it was first isolated in 1978. In the US, it was identified in 1993 after a cluster of mysterious deaths on a Navajo reservation in the Four Corners region.',
@@ -787,7 +828,8 @@ export const KEYWORDS = {
         { label: 'CDC', cells: ['Surveillance, outbreak response', '~$9B/year'] },
         { label: 'ASPR', cells: ['Strategic National Stockpile', '~$3B/year'] },
       ],
-      footnote: 'Hantavirus is classified by NIH as a Category A priority pathogen for biodefense research.',
+      footnote:
+        'Hantavirus is classified by NIH as a Category A priority pathogen for biodefense research.',
     },
     realWorld:
       'In 2024, the NIH identified hantaviruses as one of several pathogen families with no effective vaccines or treatments, making them "of special concern for pandemic potential." The ReVAMPP grants fund structural biology, vaccine candidates, and antibody therapies — but progress is slow without a commercial market to incentivize pharma investment.',
@@ -876,11 +918,21 @@ export const KEYWORDS = {
       title: 'Global economic chokepoints',
       headers: ['Chokepoint', 'Controls', 'Disruption impact'],
       rows: [
-        { label: 'Taiwan (TSMC)', cells: ['90% advanced chips', 'Global tech, AI, military — $600B-$1T GDP hit'] },
-        { label: 'Strait of Hormuz', cells: ['20% global oil', 'Energy prices, inflation — $200-400B GDP hit'] },
-        { label: 'ASML (Netherlands)', cells: ['100% EUV lithography machines', 'No new advanced fabs without ASML'] },
+        {
+          label: 'Taiwan (TSMC)',
+          cells: ['90% advanced chips', 'Global tech, AI, military — $600B-$1T GDP hit'],
+        },
+        {
+          label: 'Strait of Hormuz',
+          cells: ['20% global oil', 'Energy prices, inflation — $200-400B GDP hit'],
+        },
+        {
+          label: 'ASML (Netherlands)',
+          cells: ['100% EUV lithography machines', 'No new advanced fabs without ASML'],
+        },
       ],
-      footnote: 'TSMC + ASML together form a two-node chokepoint — you need both to make advanced chips.',
+      footnote:
+        'TSMC + ASML together form a two-node chokepoint — you need both to make advanced chips.',
     },
     realWorld:
       'The concentration of advanced chip manufacturing in Taiwan is more extreme than oil in the Middle East. At least 13 countries produce significant oil. Only one company produces 90%+ of advanced chips.',
@@ -992,10 +1044,11 @@ export const KEYWORDS = {
         { label: 'Density', cells: ['96M/mm²', '~490M/mm²', '5× more transistors'] },
         { label: 'Fab cost', cells: ['~$5B', '~$20B+', '4× more expensive to build'] },
       ],
-      footnote: 'Only TSMC and Samsung are attempting 2nm production. Intel targets 18A (roughly equivalent).',
+      footnote:
+        'Only TSMC and Samsung are attempting 2nm production. Intel targets 18A (roughly equivalent).',
     },
     realWorld:
-      "For AI training, the difference between 7nm and 2nm is roughly the difference between training a model in 6 months versus 6 weeks — same compute, fraction of the power bill. This is why every hyperscaler is competing for TSMC 2nm allocation.",
+      'For AI training, the difference between 7nm and 2nm is roughly the difference between training a model in 6 months versus 6 weeks — same compute, fraction of the power bill. This is why every hyperscaler is competing for TSMC 2nm allocation.',
     courseId: 'tech-fundamentals-8',
     courseTitle: 'Semiconductor Manufacturing',
   },
@@ -1012,9 +1065,13 @@ export const KEYWORDS = {
       rows: [
         { label: 'Fabless', cells: ['Yes', 'No (outsource)', 'Nvidia, AMD, Qualcomm, Apple'] },
         { label: 'IDM', cells: ['Yes', 'Yes (own fabs)', 'Intel, Micron, Texas Instruments'] },
-        { label: 'Foundry', cells: ['No', 'Yes (for others)', 'TSMC, Samsung Foundry, GlobalFoundries'] },
+        {
+          label: 'Foundry',
+          cells: ['No', 'Yes (for others)', 'TSMC, Samsung Foundry, GlobalFoundries'],
+        },
       ],
-      footnote: 'Fabless companies capture the highest margins — Nvidia\'s net margin is ~52% vs Intel\'s negative.',
+      footnote:
+        "Fabless companies capture the highest margins — Nvidia's net margin is ~52% vs Intel's negative.",
     },
     realWorld:
       'The fabless model is why Nvidia can be worth $5 trillion without owning a single factory. All the manufacturing risk, capital expenditure, and yield headaches belong to TSMC. Nvidia focuses purely on design, software, and ecosystem — the highest-margin activities.',
@@ -1096,17 +1153,516 @@ export const KEYWORDS = {
       title: 'Semiconductor onshoring efforts',
       headers: ['Country', 'Investment', 'Key projects'],
       rows: [
-        { label: 'United States', cells: ['$52B (CHIPS Act) + private', 'TSMC Arizona, Intel Ohio, Samsung Texas'] },
-        { label: 'European Union', cells: ['€43B (EU Chips Act)', 'Intel Magdeburg, TSMC Dresden'] },
+        {
+          label: 'United States',
+          cells: ['$52B (CHIPS Act) + private', 'TSMC Arizona, Intel Ohio, Samsung Texas'],
+        },
+        {
+          label: 'European Union',
+          cells: ['€43B (EU Chips Act)', 'Intel Magdeburg, TSMC Dresden'],
+        },
         { label: 'Japan', cells: ['¥3.9T ($26B)', 'TSMC Kumamoto, Rapidus Hokkaido'] },
         { label: 'India', cells: ['$10B incentives', 'Tata-PSMC Gujarat fab'] },
       ],
-      footnote: 'Even with these investments, analysts expect Taiwan to retain 60%+ of advanced chip production through 2030.',
+      footnote:
+        'Even with these investments, analysts expect Taiwan to retain 60%+ of advanced chip production through 2030.',
     },
     realWorld:
-      'Onshoring sounds straightforward but is extraordinarily difficult. TSMC\'s Arizona fab has faced delays, cost overruns, and talent shortages. Building a fab is a $20B+ commitment that takes 3-5 years — and the technology may advance a full node in that time, requiring redesigns.',
+      "Onshoring sounds straightforward but is extraordinarily difficult. TSMC's Arizona fab has faced delays, cost overruns, and talent shortages. Building a fab is a $20B+ commitment that takes 3-5 years — and the technology may advance a full node in that time, requiring redesigns.",
     courseId: 'policy-101-2',
     courseTitle: 'Manufacturing Reshoring',
+  },
+
+  /* Africa $1B+ Companies article keywords */
+  'frontier-markets': {
+    id: 'frontier-markets',
+    term: 'Frontier Markets',
+    definition:
+      'A classification for countries that are less developed than emerging markets but have functioning capital markets. They offer high growth potential paired with higher political, currency, and liquidity risk. MSCI classifies markets into Developed, Emerging, and Frontier tiers.',
+    template: 'comparison',
+    templateData: {
+      title: 'Market classification tiers',
+      headers: ['Tier', 'Examples', 'Risk profile'],
+      rows: [
+        { label: 'Developed', cells: ['US, UK, Japan, Germany', 'Lowest risk, deep liquidity'] },
+        {
+          label: 'Emerging',
+          cells: ['China, India, Brazil, South Africa', 'Moderate risk, growing liquidity'],
+        },
+        {
+          label: 'Frontier',
+          cells: ['Nigeria, Kenya, Vietnam, Morocco', 'High risk, thin liquidity'],
+        },
+      ],
+      footnote:
+        'Many African markets sit in the Frontier tier — high potential return, high volatility.',
+    },
+    realWorld:
+      "When the article says Africa's corporate landscape is deeper than investors realize, it's referring to opportunities in frontier markets that don't show up in standard emerging-market indices. Most global portfolios have zero frontier-market exposure.",
+    courseId: 'global-1',
+    courseTitle: 'Frontier vs Emerging Markets',
+  },
+
+  jse: {
+    id: 'jse',
+    term: 'Johannesburg Stock Exchange (JSE)',
+    definition:
+      "Africa's largest and oldest stock exchange, founded in 1887 in Johannesburg, South Africa. The JSE hosts most of Africa's largest companies and is the primary capital markets infrastructure for the continent.",
+    template: 'comparison',
+    templateData: {
+      title: 'Major African stock exchanges',
+      headers: ['Exchange', 'Country', 'Listed companies'],
+      rows: [
+        { label: 'JSE', cells: ['South Africa', '~330 companies'] },
+        { label: 'EGX', cells: ['Egypt', '~220 companies'] },
+        { label: 'NSE', cells: ['Nigeria', '~150 companies'] },
+        { label: 'NSE Kenya', cells: ['Kenya', '~60 companies'] },
+        { label: 'Casablanca', cells: ['Morocco', '~75 companies'] },
+      ],
+      footnote: 'The JSE alone accounts for over 80% of African market capitalization.',
+    },
+    realWorld:
+      "South Africa's 147 billion-dollar companies are almost all listed on the JSE. Names like Naspers, FirstRand, Sasol, and MTN Group are JSE primary listings and are how foreign investors get the cleanest exposure to African corporate value.",
+    courseId: 'global-2',
+    courseTitle: 'African Capital Markets',
+  },
+
+  'extractive-industries': {
+    id: 'extractive-industries',
+    term: 'Extractive Industries',
+    definition:
+      'Sectors that extract natural resources from the earth — primarily oil & gas, mining (metals and minerals), and forestry. African economies are often heavily exposed to extractives, which creates both opportunity and concentration risk.',
+    template: 'schema',
+    templateData: {
+      title: 'African extractive concentrations',
+      nodes: [
+        {
+          label: 'Oil & Gas',
+          sectors: ['Nigeria', 'Angola', 'Algeria', 'Libya'],
+          color: '#f59e0b',
+        },
+        { label: 'Mining (Metals)', sectors: ['South Africa', 'DRC', 'Zambia'], color: '#10b981' },
+        { label: 'Phosphates', sectors: ['Morocco'], color: '#3b82f6' },
+        { label: 'Diamonds', sectors: ['Botswana', 'Namibia'], color: '#a855f7' },
+      ],
+    },
+    realWorld:
+      "Angola's 9 billion-dollar companies are almost entirely petroleum. The DRC's 4 are dominated by copper and cobalt — both critical for EV batteries. Resource concentration means these economies are highly exposed to commodity price cycles.",
+    courseId: 'sector-2',
+    courseTitle: 'Commodities & Extractives',
+  },
+
+  'foreign-direct-investment': {
+    id: 'foreign-direct-investment',
+    term: 'Foreign Direct Investment (FDI)',
+    definition:
+      'Cross-border investment where a company or individual from one country invests in business interests in another country. FDI typically involves taking a controlling stake or establishing operations, distinct from portfolio investment which is more liquid.',
+    template: 'comparison',
+    templateData: {
+      title: 'FDI vs portfolio investment',
+      headers: ['Type', 'Time horizon', 'Control'],
+      rows: [
+        { label: 'FDI', cells: ['Long-term (5+ years)', 'Typically controlling'] },
+        { label: 'Portfolio', cells: ['Short to medium', 'Passive minority stakes'] },
+        { label: 'Aid/Grants', cells: ['One-time or recurring', 'No commercial return'] },
+      ],
+      footnote:
+        'FDI brings capital, technology transfer, and jobs — but commits the investor to local political and currency risk.',
+    },
+    realWorld:
+      'The 54 companies headquartered outside Africa but generating $1B+ from African operations represent locked-in FDI. Unilever, Total, Vodafone, and Glencore have factory and infrastructure investments that take decades to wind down.',
+    courseId: 'global-3',
+    courseTitle: 'Foreign Direct Investment',
+  },
+
+  'm-pesa': {
+    id: 'm-pesa',
+    term: 'M-Pesa & Mobile Money',
+    definition:
+      'M-Pesa is a mobile-phone-based money transfer service launched by Safaricom in Kenya in 2007. It processes more annual transactions in sub-Saharan Africa than PayPal does globally and is the textbook example of African financial technology leapfrogging traditional banking infrastructure.',
+    template: 'timeline',
+    templateData: {
+      events: [
+        { date: '2007', label: 'M-Pesa launches in Kenya' },
+        { date: '2010', label: 'Crosses 10M users' },
+        { date: '2014', label: 'Expands to Tanzania, India, Romania' },
+        { date: '2020', label: '50M active users across 7 countries' },
+        { date: '2024', label: 'Processes >$300B annual transaction volume' },
+      ],
+    },
+    realWorld:
+      "Safaricom (Kenya's flagship telecom) is one of Eastern Africa's 6 billion-dollar companies almost entirely because of M-Pesa. The platform has more users than the entire Kenyan banking system serves — a perfect example of mobile-first financial leapfrogging.",
+    courseId: 'fintech-3',
+    courseTitle: 'Mobile Money & Fintech in EM',
+  },
+
+  'currency-controls': {
+    id: 'currency-controls',
+    term: 'Currency Controls / Capital Controls',
+    definition:
+      'Government restrictions on the movement of money into and out of a country. Common forms include limits on foreign currency purchases, restrictions on repatriating profits, and forced conversion of foreign earnings at official rates rather than market rates.',
+    template: 'schema',
+    templateData: {
+      title: 'Common forms of capital controls',
+      nodes: [
+        {
+          label: 'Inflow controls',
+          sectors: ['Limits on foreign equity stakes', 'Reserve requirements on inflows'],
+          color: '#f59e0b',
+        },
+        {
+          label: 'Outflow controls',
+          sectors: ['Limits on dividend repatriation', 'Forced FX conversion'],
+          color: '#ef4444',
+        },
+        {
+          label: 'Exchange rate',
+          sectors: ['Multi-tier official rates', 'Black-market premia'],
+          color: '#a855f7',
+        },
+      ],
+    },
+    realWorld:
+      'Capital controls are a major risk for investors in many African markets. Egypt, Nigeria, and Ethiopia have all imposed restrictions on dollar conversion at various points. A 30% return in local currency can become a 0% return after FX conversion — or worse if the official rate diverges from market.',
+    courseId: 'risk-3',
+    courseTitle: 'EM Capital Controls',
+  },
+
+  'leapfrog-development': {
+    id: 'leapfrog-development',
+    term: 'Leapfrog Development',
+    definition:
+      'When an economy skips an entire stage of technology development that more advanced economies passed through. African markets famously leapfrogged fixed-line telephones (going straight to mobile) and traditional banking (going straight to mobile money).',
+    template: 'comparison',
+    templateData: {
+      title: 'African technology leapfrog examples',
+      headers: ['Technology', 'Skipped stage', 'Adopted stage'],
+      rows: [
+        { label: 'Telecom', cells: ['Fixed landlines', 'Mobile (1G/2G/3G/4G/5G)'] },
+        { label: 'Finance', cells: ['Bank branches & checks', 'Mobile money (M-Pesa)'] },
+        { label: 'Internet', cells: ['Dial-up + DSL', 'Mobile data + fiber'] },
+        { label: 'Energy', cells: ['Centralized grids', 'Solar microgrids'] },
+      ],
+      footnote:
+        'Leapfrogging means new infrastructure can be deployed without first decommissioning old infrastructure.',
+    },
+    realWorld:
+      "The MTN Group is Africa's largest telecom company precisely because the continent skipped the fixed-line phase. The same dynamic is now playing out with solar microgrids replacing the need to extend centralized national power grids to rural areas.",
+    courseId: 'global-4',
+    courseTitle: 'Leapfrog Development',
+  },
+
+  'demographic-dividend': {
+    id: 'demographic-dividend',
+    term: 'Demographic Dividend',
+    definition:
+      "The economic growth that can result from a shift in a country's age structure — specifically when the working-age population grows larger relative to dependents (children + elderly). Africa has the youngest population of any continent, with 60% under age 25.",
+    template: 'schema',
+    templateData: {
+      title: 'Africa demographic profile (2026)',
+      nodes: [
+        { label: 'Under 15', sectors: ['~40% of population'], color: '#10b981' },
+        { label: '15-24', sectors: ['~20% of population'], color: '#3b82f6' },
+        { label: '25-64', sectors: ['~37% of population'], color: '#f59e0b' },
+        { label: '65+', sectors: ['~3% of population'], color: '#a855f7' },
+      ],
+    },
+    realWorld:
+      "Africa's demographic dividend is the structural bull case for the continent. Over the next 30 years, the working-age population is expected to nearly double. If those workers find productive employment, it's the largest growth tailwind in the global economy.",
+    courseId: 'macro-4',
+    courseTitle: 'Demographic Investing',
+  },
+
+  'phosphate-reserves': {
+    id: 'phosphate-reserves',
+    term: 'Phosphate Reserves',
+    definition:
+      "Phosphate rock is a non-renewable mineral that is the primary source of phosphorus — a critical input for synthetic fertilizers. Without phosphorus, modern agricultural yields would collapse. Morocco controls roughly 70% of the world's economically extractable phosphate reserves.",
+    template: 'comparison',
+    templateData: {
+      title: 'World phosphate reserves (USGS estimates)',
+      headers: ['Country', 'Reserves (Mt)', 'Share'],
+      rows: [
+        { label: 'Morocco + W. Sahara', cells: ['~50,000', '~70%'] },
+        { label: 'China', cells: ['~3,200', '~4.5%'] },
+        { label: 'Egypt', cells: ['~2,800', '~4%'] },
+        { label: 'Algeria', cells: ['~2,200', '~3%'] },
+        { label: 'Others', cells: ['~13,000', '~18%'] },
+      ],
+      footnote:
+        'Phosphate dependence makes OCP Group (state-controlled Moroccan producer) strategically critical to global food security.',
+    },
+    realWorld:
+      "OCP Group is one of Morocco's most valuable companies and a key reason Morocco has 20 billion-dollar firms. As global food demand grows and finite phosphate reserves deplete, Morocco's position is structurally appreciating — similar to OPEC's position in oil.",
+    courseId: 'sector-3',
+    courseTitle: 'Critical Minerals',
+  },
+
+  'imf-program': {
+    id: 'imf-program',
+    term: 'IMF Structural Adjustment Program',
+    definition:
+      'A lending arrangement where the International Monetary Fund provides financing to a country experiencing balance-of-payments problems in exchange for the country implementing specific economic reforms — typically including currency devaluation, subsidy reduction, fiscal tightening, and market liberalization.',
+    template: 'timeline',
+    templateData: {
+      events: [
+        { date: '1980s', label: 'Original "structural adjustment" era — controversial in Africa' },
+        { date: '2016', label: 'Egypt $12B program — floats EGP, reforms subsidies' },
+        { date: '2019', label: 'Argentina program collapses, $57B unwinds' },
+        { date: '2022', label: 'Egypt + Pakistan + Sri Lanka all back at IMF table' },
+        { date: '2024', label: 'Egypt expands program to $8B addition' },
+      ],
+    },
+    realWorld:
+      "Egypt's economic reforms since 2016 have been driven by IMF program conditions: floating the pound, slashing subsidies, raising interest rates. The short-term cost was painful for consumers but improved the operating environment for large corporates — which is why Egypt now has 33 billion-dollar companies.",
+    courseId: 'macro-5',
+    courseTitle: 'IMF & Sovereign Debt',
+  },
+
+  /* NVIDIA Most Valuable article keywords */
+  'gpu-accelerator': {
+    id: 'gpu-accelerator',
+    term: 'GPU / AI Accelerator',
+    definition:
+      'Graphics Processing Units (GPUs) are specialized processors originally designed for rendering graphics. Their parallel architecture — thousands of small cores running simultaneously — makes them ideal for training and running AI models. Modern data center GPUs like the H100 and B100 are purpose-built AI accelerators with little resemblance to consumer graphics cards.',
+    template: 'comparison',
+    templateData: {
+      title: 'Data center AI accelerators',
+      headers: ['Chip', 'Maker', 'Use case'],
+      rows: [
+        { label: 'H100', cells: ['NVIDIA', 'AI training + inference'] },
+        { label: 'B100/B200 (Blackwell)', cells: ['NVIDIA', 'Next-gen, 4x H100 throughput'] },
+        { label: 'MI300X', cells: ['AMD', 'NVIDIA H100 competitor'] },
+        { label: 'TPU v5', cells: ['Google', 'Internal AI training (custom)'] },
+        { label: 'Trainium', cells: ['Amazon', 'AWS internal AI training (custom)'] },
+      ],
+      footnote: 'NVIDIA controls 80-90% of the merchant data center GPU market.',
+    },
+    realWorld:
+      "When the article says NVIDIA's $5.34T valuation is a bet on AI infrastructure, the asset being bet on is GPU sales. Every ChatGPT query, every Midjourney image, every autonomous vehicle perception system runs on a stack of GPUs — and the vast majority of those GPUs were sold by NVIDIA.",
+    courseId: 'tech-4',
+    courseTitle: 'AI Hardware Basics',
+  },
+
+  cuda: {
+    id: 'cuda',
+    term: 'CUDA',
+    definition:
+      "CUDA (Compute Unified Device Architecture) is NVIDIA's proprietary programming platform and API for running general-purpose computation on its GPUs. Released in 2007, CUDA has become the standard for high-performance computing — and the network effect locks in NVIDIA's market position.",
+    template: 'schema',
+    templateData: {
+      title: "CUDA's lock-in effect",
+      nodes: [
+        {
+          label: 'Developers',
+          sectors: ['~4 million CUDA developers worldwide'],
+          color: '#10b981',
+        },
+        {
+          label: 'Libraries',
+          sectors: ['cuDNN, cuBLAS, TensorRT', 'Optimized for NVIDIA only'],
+          color: '#3b82f6',
+        },
+        {
+          label: 'Frameworks',
+          sectors: ['PyTorch + TensorFlow', 'Default CUDA backend'],
+          color: '#f59e0b',
+        },
+        {
+          label: 'Switching cost',
+          sectors: ['Port CUDA code to AMD ROCm', 'Months of engineering work'],
+          color: '#ef4444',
+        },
+      ],
+    },
+    realWorld:
+      "AMD's MI300X chip has performance comparable to NVIDIA's H100, but enterprise buyers still choose NVIDIA because their existing code runs on CUDA. Switching to AMD's ROCm framework requires re-engineering software — most teams won't pay that cost even for cheaper hardware.",
+    courseId: 'tech-5',
+    courseTitle: 'CUDA & AI Software Stacks',
+  },
+
+  hyperscalers: {
+    id: 'hyperscalers',
+    term: 'Hyperscalers',
+    definition:
+      "The largest cloud computing providers — primarily Amazon AWS, Microsoft Azure, Google Cloud, and Meta. They operate hundreds of data centers globally and represent the bulk of enterprise AI capex. NVIDIA's revenue is concentrated in selling GPUs to this small group of buyers.",
+    template: 'comparison',
+    templateData: {
+      title: 'Hyperscaler AI capex (2025-26 estimates)',
+      headers: ['Company', '2025 capex', '2026 estimate'],
+      rows: [
+        { label: 'Amazon', cells: ['~$83B', '~$110B'] },
+        { label: 'Microsoft', cells: ['~$80B', '~$95B'] },
+        { label: 'Google', cells: ['~$75B', '~$85B'] },
+        { label: 'Meta', cells: ['~$40B', '~$55B'] },
+      ],
+      footnote:
+        'A large share of this capex flows directly into NVIDIA GPUs, networking, and software.',
+    },
+    realWorld:
+      "Roughly 40-50% of NVIDIA's data center revenue comes from just 4-5 hyperscaler customers. That concentration is the bull case (these customers have endless demand) AND the bear case (if any of them slows, NVIDIA revenue decelerates fast).",
+    courseId: 'tech-6',
+    courseTitle: 'Cloud Hyperscalers',
+  },
+
+  'tsmc-foundry': {
+    id: 'tsmc-foundry',
+    term: 'TSMC & Foundry Model',
+    definition:
+      "Taiwan Semiconductor Manufacturing Company (TSMC) is the world's largest contract chip manufacturer. Under the 'foundry model', TSMC manufactures chips designed by other companies (NVIDIA, AMD, Apple, Qualcomm) instead of designing its own. TSMC owns ~60% of the global foundry market and 90%+ of the advanced (5nm and below) node market.",
+    template: 'schema',
+    templateData: {
+      title: 'Semiconductor value chain',
+      nodes: [
+        { label: 'Design', sectors: ['NVIDIA, AMD, Apple, Qualcomm'], color: '#10b981' },
+        { label: 'Manufacture', sectors: ['TSMC, Samsung, Intel Foundry'], color: '#3b82f6' },
+        { label: 'Equipment', sectors: ['ASML, Applied Materials, LAM'], color: '#f59e0b' },
+        { label: 'Packaging', sectors: ['ASE, Amkor, TSMC-CoWoS'], color: '#a855f7' },
+      ],
+    },
+    realWorld:
+      "Every NVIDIA H100, B100, and GB200 is physically manufactured at TSMC in Taiwan on 4nm or 3nm process nodes. TSMC's $2.04T market cap reflects its role as the critical-path supplier for the entire AI build-out — without TSMC capacity, NVIDIA can't ship chips no matter how high demand goes.",
+    courseId: 'tech-7',
+    courseTitle: 'Foundry Model & TSMC',
+  },
+
+  'blackwell-architecture': {
+    id: 'blackwell-architecture',
+    term: 'Blackwell Architecture',
+    definition:
+      "NVIDIA's chip architecture announced in March 2024, succeeding the Hopper architecture (H100). Blackwell GPUs (B100, B200, GB200) deliver roughly 4x the training throughput and 30x the inference throughput of H100, in a similar power envelope. The Blackwell ramp began at scale in Q1 2026.",
+    template: 'timeline',
+    templateData: {
+      events: [
+        { date: '2017', label: 'Volta (V100) — first datacenter Tensor Cores' },
+        { date: '2020', label: 'Ampere (A100) — early generative AI training' },
+        { date: '2022', label: 'Hopper (H100) — ChatGPT era workhorse' },
+        { date: '2024', label: 'Blackwell announced at GTC 2024' },
+        { date: '2026', label: 'Blackwell scale ramp + Rubin announced' },
+      ],
+    },
+    realWorld:
+      "The Blackwell ramp is the single biggest factor in NVIDIA's $5T+ valuation. Each Blackwell unit ships at higher ASPs (average selling prices) and higher margins than Hopper, AND the performance jump pulls forward hyperscaler capex that would have been spread over 2-3 years.",
+    courseId: 'tech-8',
+    courseTitle: 'GPU Architecture Generations',
+  },
+
+  'mag-7': {
+    id: 'mag-7',
+    term: 'Magnificent 7',
+    definition:
+      'Term coined by Bank of America in 2023 to describe the seven largest US technology stocks driving market returns: Apple, Microsoft, Alphabet (Google), Amazon, Meta, NVIDIA, and Tesla. These seven companies have together accounted for the majority of S&P 500 returns since 2023.',
+    template: 'comparison',
+    templateData: {
+      title: 'Magnificent 7 market caps (May 2026)',
+      headers: ['Company', 'Market cap', 'Primary business'],
+      rows: [
+        { label: 'NVIDIA', cells: ['$5.34T', 'AI accelerators'] },
+        { label: 'Alphabet', cells: ['$4.66T', 'Search + cloud + AI'] },
+        { label: 'Apple', cells: ['$4.39T', 'Consumer hardware + services'] },
+        { label: 'Microsoft', cells: ['$3.10T', 'Cloud + enterprise software'] },
+        { label: 'Amazon', cells: ['$2.79T', 'E-commerce + AWS cloud'] },
+        { label: 'Meta', cells: ['~$1.5T', 'Social + ads + AI infra'] },
+        { label: 'Tesla', cells: ['~$1T', 'EVs + energy storage'] },
+      ],
+      footnote:
+        '6 of these 7 are exposed to AI infrastructure either as buyer or seller — NVIDIA sits at the center of the trade.',
+    },
+    realWorld:
+      'When NVIDIA became the #2 most valuable asset behind only gold, it reshuffled the order INSIDE the Magnificent 7. Three years ago, Apple was the clear leader. Now NVIDIA, GOOG, and AAPL all sit above $4T — and NVIDIA is on top.',
+    courseId: 'stocks-3',
+    courseTitle: 'Magnificent 7 Stocks',
+  },
+
+  'inference-vs-training': {
+    id: 'inference-vs-training',
+    term: 'AI Training vs Inference',
+    definition:
+      'Two distinct workloads in AI computing. Training is the one-time (or periodic) process of building a model from data — it requires massive compute clusters running for weeks. Inference is running the trained model to answer queries — it requires less compute per request but happens billions of times per day across all users.',
+    template: 'comparison',
+    templateData: {
+      title: 'Training vs inference characteristics',
+      headers: ['Property', 'Training', 'Inference'],
+      rows: [
+        { label: 'Frequency', cells: ['Periodic (weeks-months)', 'Continuous (every user query)'] },
+        { label: 'Compute pattern', cells: ['Huge bursts', 'Steady stream'] },
+        { label: 'Cost per query', cells: ['N/A (one-time)', 'Pennies to dollars'] },
+        {
+          label: 'Growth trajectory',
+          cells: ['Slowing as models mature', 'Accelerating with adoption'],
+        },
+        { label: 'Hardware', cells: ['NVIDIA dominant', 'NVIDIA dominant + custom ASICs'] },
+      ],
+      footnote:
+        'The inference workload is becoming the larger market — every enterprise needs continuous inference capacity.',
+    },
+    realWorld:
+      "NVIDIA Blackwell's 30x inference throughput improvement over Hopper is more important than its 4x training improvement, because inference workloads are growing faster than training. Every ChatGPT query is an inference call — and there are billions per day.",
+    courseId: 'tech-9',
+    courseTitle: 'AI Training & Inference',
+  },
+
+  'gold-store-of-value': {
+    id: 'gold-store-of-value',
+    term: 'Gold as Store of Value',
+    definition:
+      'Gold has functioned as a monetary asset for ~5,000 years because of its scarcity, durability, and divisibility. Roughly 215,000 tonnes have been mined globally — most of it still exists in jewelry, bullion, and central bank reserves. Gold is the asset most often bought as a hedge against currency debasement, inflation, and crisis.',
+    template: 'schema',
+    templateData: {
+      title: "Where the world's gold sits",
+      nodes: [
+        { label: 'Jewelry', sectors: ['~46% of stock'], color: '#f59e0b' },
+        { label: 'Private investment', sectors: ['~22% (bullion + coins)'], color: '#10b981' },
+        { label: 'Central bank reserves', sectors: ['~17% (35,000+ tonnes)'], color: '#3b82f6' },
+        { label: 'Industrial / other', sectors: ['~15%'], color: '#a855f7' },
+      ],
+    },
+    realWorld:
+      "When the article puts NVIDIA's $5.34T next to gold's $31.19T, the comparison is about durability vs growth. Gold has been accumulating value for millennia and has zero counterparty risk. NVIDIA has been at this scale for 30 months and depends entirely on AI capex continuing.",
+    courseId: 'macro-6',
+    courseTitle: 'Gold & Monetary Assets',
+  },
+
+  'capex-cycle': {
+    id: 'capex-cycle',
+    term: 'AI Capex Cycle',
+    definition:
+      'Capital expenditure (capex) cycles are multi-year periods of elevated industry investment that eventually peak and unwind. The current AI capex cycle began in early 2023 with the launch of ChatGPT. The market is pricing in 30%+ annual growth in hyperscaler AI spending continuing for years — any deceleration would reprice the sector aggressively.',
+    template: 'timeline',
+    templateData: {
+      events: [
+        { date: 'Nov 2022', label: 'ChatGPT launches — kicks off cycle' },
+        { date: '2023', label: 'Hyperscaler AI capex ramps from ~$130B to ~$200B' },
+        { date: '2024', label: 'Capex hits ~$220B — NVIDIA data center revenue 3x YoY' },
+        { date: '2025', label: 'Capex hits ~$300B — Blackwell ramp begins' },
+        { date: '2026 est.', label: 'Capex ~$345B+ — sustained growth or peak?' },
+      ],
+    },
+    realWorld:
+      "NVIDIA's $5T+ valuation is fundamentally a bet that hyperscalers will keep growing their AI capex at 30-50% annually. The bear case is that AI model efficiency improves faster than expected — same intelligence, less compute — causing capex growth to stall or reverse.",
+    courseId: 'macro-7',
+    courseTitle: 'Capex Cycles & Cyclicals',
+  },
+
+  'sovereign-ai': {
+    id: 'sovereign-ai',
+    term: 'Sovereign AI',
+    definition:
+      'The push by national governments to build their own AI infrastructure — domestic data centers, locally-trained models, and indigenous compute capacity — rather than depending on US-hosted services. Sovereign AI initiatives are now active in the UK, EU, India, Japan, Saudi Arabia, UAE, Singapore, and others.',
+    template: 'schema',
+    templateData: {
+      title: 'Major sovereign AI initiatives (2026)',
+      nodes: [
+        { label: 'Saudi Arabia', sectors: ['Humain', '$15B+ NVIDIA commitment'], color: '#10b981' },
+        { label: 'UAE', sectors: ['G42 + Falcon model', 'TII NVIDIA cluster'], color: '#3b82f6' },
+        { label: 'India', sectors: ['IndiaAI Mission', '$1.2B compute fund'], color: '#f59e0b' },
+        { label: 'UK', sectors: ['AI Research Resource', '~£900M for GPUs'], color: '#a855f7' },
+      ],
+    },
+    realWorld:
+      "Sovereign AI is the underappreciated leg of NVIDIA's bull case. Hyperscaler demand is concentrated in 4-5 customers — but sovereign AI adds new buyers (national governments) whose demand has different drivers and is less correlated with US enterprise capex.",
+    courseId: 'tech-10',
+    courseTitle: 'Sovereign AI & Geopolitics',
   },
 };
 
