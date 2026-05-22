@@ -31,7 +31,8 @@ export const revalidate = 0;
 
 export const metadata = {
   title: 'Ezana Finance - Follow the moves that matter',
-  description: 'Track congressional trades, analyze market intelligence, and manage your portfolio with institutional-grade tools.',
+  description:
+    'Track congressional trades, analyze market intelligence, and manage your portfolio with institutional-grade tools.',
 };
 
 export default async function RootLayout({ children }) {
@@ -62,12 +63,7 @@ export default async function RootLayout({ children }) {
     : { backgroundColor: '#ffffff', colorScheme: 'light' };
 
   return (
-    <html
-      lang="en"
-      className={htmlClassName}
-      style={htmlStyle}
-      suppressHydrationWarning
-    >
+    <html lang="en" className={htmlClassName} style={htmlStyle} suppressHydrationWarning>
       <head>
         {/* Blocking theme script — must be first, prevents theme flash.
 
@@ -140,7 +136,7 @@ export default async function RootLayout({ children }) {
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap"
           rel="stylesheet"
         />
         {/* Bootstrap Icons: preconnect so the jsdelivr CDN is warmed early,
@@ -165,7 +161,7 @@ export default async function RootLayout({ children }) {
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "(function(){var l=document.querySelector('link[href*=\"bootstrap-icons\"][media=\"print\"]');if(l){l.media='all';}})();",
+              '(function(){var l=document.querySelector(\'link[href*="bootstrap-icons"][media="print"]\');if(l){l.media=\'all\';}})();',
           }}
         />
         <noscript>
@@ -176,29 +172,33 @@ export default async function RootLayout({ children }) {
         </noscript>
       </head>
       <body className={bodyClassName} suppressHydrationWarning>
-        <a href="#main-content" className="skip-to-content">Skip to content</a>
+        <a href="#main-content" className="skip-to-content">
+          Skip to content
+        </a>
         <ThemeProvider initialTheme={initialTheme}>
           <AuthProvider>
             <ProGateProvider>
-            <SettingsProvider>
-              <ActiveTaskProvider>
-                <PartnerProvider>
-                  <OrgProvider>
-                  <CongressProvider>
-                    <PinnedCardsProvider>
-                      <ToastProvider>
-                        <Suspense fallback={<nav className="main-nav" style={{ minHeight: 64 }} />}>
-                          <ConditionalNavbar />
-                        </Suspense>
-                        <PartnerChromeEffects />
-                        {children}
-                      </ToastProvider>
-                    </PinnedCardsProvider>
-                  </CongressProvider>
-                  </OrgProvider>
-                </PartnerProvider>
-              </ActiveTaskProvider>
-            </SettingsProvider>
+              <SettingsProvider>
+                <ActiveTaskProvider>
+                  <PartnerProvider>
+                    <OrgProvider>
+                      <CongressProvider>
+                        <PinnedCardsProvider>
+                          <ToastProvider>
+                            <Suspense
+                              fallback={<nav className="main-nav" style={{ minHeight: 64 }} />}
+                            >
+                              <ConditionalNavbar />
+                            </Suspense>
+                            <PartnerChromeEffects />
+                            {children}
+                          </ToastProvider>
+                        </PinnedCardsProvider>
+                      </CongressProvider>
+                    </OrgProvider>
+                  </PartnerProvider>
+                </ActiveTaskProvider>
+              </SettingsProvider>
             </ProGateProvider>
           </AuthProvider>
         </ThemeProvider>
