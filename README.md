@@ -4,7 +4,7 @@ A comprehensive investment analytics platform built with Python (FastAPI) backen
 
 ##  Features
 
-### 🏠 Landing Page & Navigation
+###  Landing Page & Navigation
 - **Main Landing (`app/index.html`)**: Hero with left-aligned “Ezana Finance” title, “Your Network Is Your Net Worth” tagline, subtitle, and Sign Up / Learn More CTAs (no logo in hero). Antigravity particle background; center card preview hides on scroll past hero.
 - **Nav Bar**: “Ezana Finance” text only (no logo icon); nav container aligned with hero content (max-width 1400px, padding 2rem).
 - **FAQ Section**: Two-level accordion—categories (Getting Started, Congressional Trading, etc.) collapse by default; click category to expand questions, then click a question to reveal the answer. FAQ HTML inlined so it works without fetch (e.g. file://).
