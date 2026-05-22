@@ -3,8 +3,14 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { motion, MotionConfig, AnimatePresence } from 'framer-motion';
+import { isBetaLockedRoute } from '@/lib/beta-locked-routes';
 
-export function AnimatedNav({ items, accentColor = '#10b981', onProGateClick }) {
+export function AnimatedNav({
+  items,
+  accentColor = '#10b981',
+  onProGateClick,
+  hasFullBetaAccess = false,
+}) {
   const [hovered, setHovered] = useState(null);
 
   return (
@@ -67,9 +73,16 @@ export function AnimatedNav({ items, accentColor = '#10b981', onProGateClick }) 
                           <>
                             {sub.icon && <i className={`bi ${sub.icon}`} />}
                             <div className="animated-nav-dropdown-text">
-                              <span className="animated-nav-dropdown-title">{sub.title}</span>
+                              <span className="animated-nav-dropdown-title">
+                                {sub.title}
+                                {isBetaLockedRoute(sub.url) && !hasFullBetaAccess && (
+                                  <span className="nav-v1-badge">v1.0</span>
+                                )}
+                              </span>
                               {sub.description && (
-                                <span className="animated-nav-dropdown-desc">{sub.description}</span>
+                                <span className="animated-nav-dropdown-desc">
+                                  {sub.description}
+                                </span>
                               )}
                             </div>
                           </>

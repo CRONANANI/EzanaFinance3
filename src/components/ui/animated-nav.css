@@ -36,7 +36,9 @@
   border-radius: 8px;
   cursor: pointer;
   text-decoration: none;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
   font-family: inherit;
   white-space: nowrap;
 }
@@ -241,7 +243,8 @@ body.light-mode .partner-nav .animated-nav-dropdown-item > i {
 }
 
 /* Gold separator — thin divider above the first gold item (follows last emerald row) */
-.animated-nav-dropdown-item:not(.animated-nav-dropdown-item--gold) + .animated-nav-dropdown-item--gold {
+.animated-nav-dropdown-item:not(.animated-nav-dropdown-item--gold)
+  + .animated-nav-dropdown-item--gold {
   margin-top: 0.25rem;
   padding-top: 0.75rem;
   border-top: 1px solid rgba(212, 175, 55, 0.12);
@@ -276,4 +279,19 @@ body.light-mode .partner-nav .animated-nav-dropdown-item > i {
   .animated-nav {
     display: none;
   }
+}
+
+.nav-v1-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  border-radius: 4px;
+  color: #10b981;
+  text-transform: uppercase;
+  vertical-align: middle;
 }

@@ -8,6 +8,7 @@ import { MobileBottomNav } from '@/components/Layout/MobileBottomNav';
 import { DashboardTrialShell } from '@/components/DashboardTrialShell';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { TutorialWalkthrough } from '@/components/TutorialWalkthrough';
+import { BetaLockGate } from '@/components/beta/BetaLockGate';
 import { useWatchlistPriceAlerts } from '@/hooks/useWatchlistPriceAlerts';
 import '@/components/Layout/mobile-bottom-nav.css';
 import './layout.css';
@@ -17,8 +18,7 @@ import './dashboard-polish.css';
    browser paints — so any correction to body classes happens in the same
    frame as hydration, never as a visible flash. Falls back to useEffect
    during SSR where useLayoutEffect is a no-op (and would warn). */
-const useIsomorphicLayoutEffect =
-  typeof window === 'undefined' ? useEffect : useLayoutEffect;
+const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
 export default function DashboardLayout({ children }) {
   const pathname = usePathname();
@@ -83,8 +83,12 @@ export default function DashboardLayout({ children }) {
         className={`dashboard-main dashboard-main-content bg-app${isMarketAnalysisFullscreen ? ' dashboard-main-content--fullscreen' : ''}`}
         id="main-content"
       >
-        <div className={`dashboard-container${isPartnerExperience ? ' dashboard-container--partner-inset' : ''}`}>
-          <DashboardTrialShell>{children}</DashboardTrialShell>
+        <div
+          className={`dashboard-container${isPartnerExperience ? ' dashboard-container--partner-inset' : ''}`}
+        >
+          <DashboardTrialShell>
+            <BetaLockGate>{children}</BetaLockGate>
+          </DashboardTrialShell>
         </div>
       </main>
       <MobileBottomNav />

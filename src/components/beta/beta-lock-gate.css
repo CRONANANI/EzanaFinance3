@@ -1,0 +1,226 @@
+/* BetaLockGate — modal overlay shown on routes locked behind the v1.0 launch. */
+
+.beta-lock-page-underlay {
+  filter: blur(4px) saturate(0.7);
+  pointer-events: none;
+  user-select: none;
+  opacity: 0.3;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.beta-lock-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgba(8, 12, 18, 0.78);
+  backdrop-filter: blur(16px);
+  animation: betaLockFadeIn 0.35s ease;
+}
+
+@keyframes betaLockFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.beta-lock-modal {
+  position: relative;
+  max-width: 520px;
+  width: 100%;
+  background: linear-gradient(180deg, rgba(13, 17, 23, 0.98), rgba(10, 14, 19, 0.98));
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 16px;
+  padding: 2.25rem 2rem 1.75rem;
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.5),
+    0 0 40px rgba(16, 185, 129, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  animation: betaLockSlideUp 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  text-align: center;
+}
+
+body.light-mode .beta-lock-modal {
+  background: linear-gradient(180deg, #ffffff, #f9fafb);
+  border-color: rgba(16, 185, 129, 0.3);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.15),
+    0 0 40px rgba(16, 185, 129, 0.1);
+}
+
+@keyframes betaLockSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.beta-lock-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.75rem;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #10b981;
+  margin-bottom: 1.25rem;
+}
+.beta-lock-badge i {
+  font-size: 0.7rem;
+}
+
+.beta-lock-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #f0f6fc;
+  margin: 0 0 0.75rem;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+body.light-mode .beta-lock-title {
+  color: #0f172a;
+}
+
+.beta-lock-version {
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.beta-lock-subtitle {
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: #c9d1d9;
+  margin: 0 0 1.5rem;
+  padding: 0 0.5rem;
+}
+body.light-mode .beta-lock-subtitle {
+  color: #475569;
+}
+
+.beta-lock-meta {
+  background: rgba(16, 185, 129, 0.05);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  border-radius: 10px;
+  padding: 0.875rem 1rem;
+  margin-bottom: 1.5rem;
+}
+.beta-lock-meta p {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: #8b949e;
+  margin: 0;
+}
+.beta-lock-meta strong {
+  color: #10b981;
+  font-weight: 600;
+}
+body.light-mode .beta-lock-meta {
+  background: rgba(16, 185, 129, 0.04);
+  border-color: rgba(16, 185, 129, 0.18);
+}
+body.light-mode .beta-lock-meta p {
+  color: #475569;
+}
+body.light-mode .beta-lock-meta strong {
+  color: #059669;
+}
+
+.beta-lock-actions {
+  display: flex;
+  gap: 0.625rem;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+.beta-lock-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.65rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s,
+    background 0.15s;
+}
+.beta-lock-btn:hover {
+  transform: translateY(-1px);
+}
+
+.beta-lock-btn--primary {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  box-shadow:
+    0 0 0 1px rgba(16, 185, 129, 0.4),
+    0 4px 16px rgba(16, 185, 129, 0.3);
+}
+.beta-lock-btn--primary:hover {
+  box-shadow:
+    0 0 0 1px rgba(16, 185, 129, 0.6),
+    0 6px 22px rgba(16, 185, 129, 0.45);
+}
+
+.beta-lock-btn--secondary {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #c9d1d9;
+}
+.beta-lock-btn--secondary:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+body.light-mode .beta-lock-btn--secondary {
+  color: #475569;
+  border-color: rgba(0, 0, 0, 0.12);
+}
+body.light-mode .beta-lock-btn--secondary:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.beta-lock-footnote {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin: 0;
+  font-style: italic;
+}
+body.light-mode .beta-lock-footnote {
+  color: #94a3b8;
+}
+
+@media (max-width: 540px) {
+  .beta-lock-modal {
+    padding: 1.75rem 1.25rem 1.25rem;
+  }
+  .beta-lock-title {
+    font-size: 1.4rem;
+  }
+  .beta-lock-actions {
+    flex-direction: column;
+  }
+  .beta-lock-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

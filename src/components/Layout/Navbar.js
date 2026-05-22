@@ -12,12 +12,14 @@ import { ChecklistProgressIcon } from '@/components/ChecklistProgressIcon';
 import { AnimatedNav } from '@/components/ui/AnimatedNav';
 import { MobileAuthNavDrawer } from '@/components/Layout/MobileAuthNavDrawer';
 import { useActivityTracker } from '@/hooks/useActivityTracker';
+import { isBetaLockedRoute, hasBetaFullAccess } from '@/lib/beta-locked-routes';
 import '@/components/ui/animated-nav.css';
 
 export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+  const hasFullBetaAccess = hasBetaFullAccess(user);
   const { isOrgUser } = useOrg();
   useActivityTracker();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -425,7 +427,11 @@ export function Navbar() {
           </div>
         </div>
 
-        <AnimatedNav items={userNavItems} accentColor="#10b981" />
+        <AnimatedNav
+          items={userNavItems}
+          accentColor="#10b981"
+          hasFullBetaAccess={hasFullBetaAccess}
+        />
 
         {/* ── RIGHT ZONE: gear + logout (desktop) | hamburger (mobile) ── */}
         <div className="nav-actions">
