@@ -105,12 +105,6 @@ export const sectorDominanceArticle = {
   title: "Tech Reigns, But Falls Short of History's Heavyweights",
   excerpt:
     "Two centuries of US equity history compressed into one chart: how Finance, Transport, Energy, and now Technology each held the largest sector crown — and what each era's dominance reveals about the economy that produced it.",
-  heroImage: {
-    src: '/images/ezana-echo/sector-dominance-cover.png',
-    alt: 'Stacked area chart of US stock market sector shares from 1800 to 2025 — finance, transport, energy, and technology eras',
-    caption:
-      'Share of the largest sector in the US stock market, 1800–2025. Source: Datastream, Goldman Sachs Research (October 2025).',
-  },
   contentBlocks: [
     {
       type: 'paragraph',
