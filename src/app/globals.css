@@ -2297,7 +2297,7 @@ body.light-mode .signin-dark-lock textarea {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 3rem;
-  align-items: center;
+  align-items: end;
   padding-top: 6rem;
   padding-bottom: 4rem;
 }
@@ -2306,6 +2306,13 @@ body.light-mode .signin-dark-lock textarea {
   .hero-container--split {
     grid-template-columns: 1fr;
     gap: 2.5rem;
+    align-items: stretch;
+  }
+  .hero-split-right {
+    align-self: stretch;
+  }
+  .hero-device-stack {
+    transform: none;
   }
 }
 
@@ -2320,6 +2327,11 @@ body.light-mode .signin-dark-lock textarea {
 .hero-split-right {
   position: relative;
   z-index: 10;
+  align-self: end;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100%;
 }
 
 .hero-data-flow {
@@ -2454,8 +2466,9 @@ body.light-mode .signin-dark-lock textarea {
   position: relative;
   width: 100%;
   max-width: 620px;
-  margin: 0 auto;
+  margin: 0 auto 0;
   aspect-ratio: 1.1 / 1;
+  transform: translateY(-4rem);
 }
 
 .hero-desktop-frame {
