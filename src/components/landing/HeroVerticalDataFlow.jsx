@@ -1,40 +1,19 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 const SOURCES = [
-  {
-    id: 'congress',
-    label: 'Congress',
-    tagline: 'Political trading + legislative signals',
-    color: '#10b981',
-  },
-  {
-    id: '13f',
-    label: '13F Filings',
-    tagline: 'Quarterly institutional positions',
-    color: '#10b981',
-  },
+  { id: 'congress', label: 'Congress', tagline: 'Political trading + legislative signals' },
+  { id: '13f', label: '13F Filings', tagline: 'Quarterly institutional positions' },
   {
     id: 'institutional',
     label: 'Institutional Portfolios',
     tagline: 'Fund composition + manager behavior',
-    color: '#10b981',
   },
-  {
-    id: 'analytics',
-    label: 'Alternative Analytics',
-    tagline: 'Markets, macro, prediction data',
-    color: '#10b981',
-  },
-  {
-    id: 'community',
-    label: 'Community',
-    tagline: 'Retail sentiment + platform activity',
-    color: '#10b981',
-  },
+  { id: 'analytics', label: 'Alternative Analytics', tagline: 'Markets, macro, prediction data' },
+  { id: 'community', label: 'Community', tagline: 'Retail sentiment + platform activity' },
 ];
 
 const PROVIDERS = {
@@ -56,126 +35,228 @@ const PROVIDERS = {
   community: ['Ezana Platform'],
 };
 
+function DatabaseIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <ellipse cx="12" cy="5" rx="9" ry="3" />
+      <path d="M3 5V19A9 3 0 0 0 21 19V5" />
+      <path d="M3 12A9 3 0 0 0 21 12" />
+    </svg>
+  );
+}
+
+function PersonIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
+  );
+}
+
 export function HeroVerticalDataFlow() {
   const [hovered, setHovered] = useState(null);
 
-  const badgePositions = useMemo(
-    () =>
-      SOURCES.map((s, i) => ({
-        ...s,
-        y: 70 + i * 75,
-        x: 25,
-      })),
-    [],
-  );
+  const VB_W = 1200;
+  const VB_H = 540;
 
-  const hubX = 240;
-  const hubY = 240;
+  const BADGE_X_END = 360;
+  const BADGE_Y = [60, 160, 260, 360, 460];
 
-  const pathFor = (badge) => {
-    const startX = 120;
-    const startY = badge.y;
-    const midX = (startX + hubX) / 2;
-    return `M ${startX} ${startY} Q ${midX} ${startY}, ${midX} ${(startY + hubY) / 2} T ${hubX} ${hubY}`;
+  const HUB_X = 620;
+  const HUB_Y = 260;
+  const HUB_R = 60;
+
+  const OUT_X = 820;
+  const OUT_Y = HUB_Y;
+
+  const pathToHub = (yStart) => {
+    const c1x = (BADGE_X_END + HUB_X) / 2;
+    return `M ${BADGE_X_END} ${yStart} C ${c1x} ${yStart}, ${c1x} ${HUB_Y}, ${HUB_X - HUB_R} ${HUB_Y}`;
   };
+
+  const arrowPath = `M ${HUB_X + HUB_R} ${HUB_Y} L ${OUT_X - 10} ${HUB_Y}`;
 
   return (
     <div className="hero-data-flow" aria-label="Ezana data sources">
       <svg
         className="hero-data-flow-svg"
-        viewBox="0 0 480 480"
+        viewBox={`0 0 ${VB_W} ${VB_H}`}
         preserveAspectRatio="xMidYMid meet"
         aria-hidden
       >
-        {badgePositions.map((b) => (
+        <defs>
+          <filter id="hubGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="6" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          <radialGradient id="outputHalo" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="rgba(16, 185, 129, 0.55)" />
+            <stop offset="40%" stopColor="rgba(16, 185, 129, 0.18)" />
+            <stop offset="100%" stopColor="rgba(16, 185, 129, 0)" />
+          </radialGradient>
+          <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="rgba(16, 185, 129, 0.55)" />
+            <stop offset="100%" stopColor="rgba(16, 185, 129, 0.85)" />
+          </linearGradient>
+        </defs>
+
+        <ellipse cx={OUT_X + 145} cy={OUT_Y} rx={230} ry={90} fill="url(#outputHalo)" />
+
+        {BADGE_Y.map((y, i) => (
           <path
-            key={`line-${b.id}`}
-            d={pathFor(b)}
-            stroke="rgba(16, 185, 129, 0.28)"
-            strokeWidth={1.5}
+            key={`line-${i}`}
+            d={pathToHub(y)}
+            stroke="url(#lineGrad)"
+            strokeWidth={2.5}
             fill="none"
+            opacity={hovered && hovered !== SOURCES[i].id ? 0.25 : 1}
+            style={{ transition: 'opacity 0.18s ease' }}
           />
         ))}
 
-        {badgePositions.map((b) => {
-          const isActive = hovered === b.id || hovered === null;
+        {BADGE_Y.map((y, i) => {
+          const sourceId = SOURCES[i].id;
+          const isActive = hovered === sourceId || hovered === null;
           if (!isActive) return null;
           return (
-            <motion.circle
-              key={`dot-${b.id}-${hovered || 'auto'}`}
-              r={3.5}
-              fill={b.color}
-              filter="drop-shadow(0 0 4px #10b981)"
+            <circle
+              key={`dot-${sourceId}-${hovered || 'auto'}`}
+              r={5}
+              fill="#10b981"
+              filter="drop-shadow(0 0 6px rgba(16, 185, 129, 0.9))"
             >
               <animateMotion
-                dur={hovered ? '1.2s' : '2.6s'}
+                dur={hovered ? '1.4s' : '2.8s'}
                 repeatCount="indefinite"
-                path={pathFor(b)}
-                begin={hovered ? '0s' : `${badgePositions.indexOf(b) * 0.4}s`}
+                path={pathToHub(y)}
+                begin={hovered ? '0s' : `${i * 0.5}s`}
               />
-            </motion.circle>
+            </circle>
           );
         })}
 
         <circle
-          cx={hubX}
-          cy={hubY}
-          r={32}
-          fill="rgba(16, 185, 129, 0.1)"
-          stroke="rgba(16, 185, 129, 0.5)"
+          cx={HUB_X}
+          cy={HUB_Y}
+          r={HUB_R + 18}
+          fill="none"
+          stroke="rgba(16, 185, 129, 0.18)"
+          strokeWidth={1.5}
+        >
+          <animate
+            attributeName="r"
+            values={`${HUB_R + 18};${HUB_R + 30};${HUB_R + 18}`}
+            dur="3s"
+            repeatCount="indefinite"
+          />
+          <animate attributeName="opacity" values="0.6;0.1;0.6" dur="3s" repeatCount="indefinite" />
+        </circle>
+        <circle
+          cx={HUB_X}
+          cy={HUB_Y}
+          r={HUB_R + 8}
+          fill="none"
+          stroke="rgba(16, 185, 129, 0.3)"
+          strokeWidth={1.5}
+        >
+          <animate
+            attributeName="r"
+            values={`${HUB_R + 8};${HUB_R + 18};${HUB_R + 8}`}
+            dur="3s"
+            repeatCount="indefinite"
+          />
+        </circle>
+
+        <circle
+          cx={HUB_X}
+          cy={HUB_Y}
+          r={HUB_R}
+          fill="rgba(16, 185, 129, 0.08)"
+          stroke="#10b981"
           strokeWidth={2}
+          filter="url(#hubGlow)"
         />
         <text
-          x={hubX}
-          y={hubY + 4}
+          x={HUB_X}
+          y={HUB_Y + 6}
           textAnchor="middle"
-          fill="#34d399"
-          fontSize="11"
+          fill="#ffffff"
+          fontSize="22"
           fontWeight="700"
-          letterSpacing="0.04em"
+          letterSpacing="-0.01em"
         >
-          EZANA
+          Ezana
         </text>
 
         <motion.path
-          d={`M ${hubX + 32} ${hubY} L ${hubX + 110} ${hubY}`}
-          stroke="rgba(16, 185, 129, 0.5)"
-          strokeWidth={2}
+          d={arrowPath}
+          stroke="#10b981"
+          strokeWidth={2.5}
           fill="none"
-          strokeDasharray="4 4"
-          animate={{ strokeDashoffset: [0, -16] }}
-          transition={{ duration: 1.2, repeat: Number.POSITIVE_INFINITY, ease: 'linear' }}
+          strokeDasharray="6 6"
+          animate={{ strokeDashoffset: [0, -24] }}
+          transition={{ duration: 1.4, repeat: Number.POSITIVE_INFINITY, ease: 'linear' }}
+        />
+        <polygon
+          points={`${OUT_X - 14},${HUB_Y - 9} ${OUT_X - 2},${HUB_Y} ${OUT_X - 14},${HUB_Y + 9}`}
+          fill="#10b981"
         />
       </svg>
 
-      <div className="hero-data-flow-badges">
-        {badgePositions.map((b) => (
+      <div className="hero-data-flow-overlay">
+        {SOURCES.map((s, i) => (
           <button
-            key={b.id}
+            key={s.id}
             type="button"
-            className={cn(
-              'hero-data-flow-badge',
-              hovered === b.id && 'hero-data-flow-badge--active',
-            )}
-            onMouseEnter={() => setHovered(b.id)}
+            className={cn('hero-df-badge', hovered === s.id && 'hero-df-badge--active')}
+            onMouseEnter={() => setHovered(s.id)}
             onMouseLeave={() => setHovered(null)}
-            onFocus={() => setHovered(b.id)}
+            onFocus={() => setHovered(s.id)}
             onBlur={() => setHovered(null)}
-            style={{ top: `${(b.y / 480) * 100}%` }}
+            style={{
+              top: `${(BADGE_Y[i] / VB_H) * 100}%`,
+            }}
           >
-            <span className="hero-data-flow-badge-label">{b.label}</span>
+            <span className="hero-df-badge-icon">
+              <DatabaseIcon />
+            </span>
+            <span className="hero-df-badge-label">{s.label}</span>
             <AnimatePresence>
-              {hovered === b.id && (
+              {hovered === s.id && (
                 <motion.div
-                  className="hero-data-flow-badge-tooltip"
-                  initial={{ opacity: 0, x: -6 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -6 }}
+                  className="hero-df-tooltip"
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 4 }}
                   transition={{ duration: 0.18 }}
                 >
-                  <div className="hero-data-flow-badge-tagline">{b.tagline}</div>
-                  <ul className="hero-data-flow-badge-providers">
-                    {PROVIDERS[b.id].map((p) => (
+                  <div className="hero-df-tooltip-tagline">{s.tagline}</div>
+                  <ul className="hero-df-tooltip-providers">
+                    {PROVIDERS[s.id].map((p) => (
                       <li key={p}>{p}</li>
                     ))}
                   </ul>
@@ -184,25 +265,15 @@ export function HeroVerticalDataFlow() {
             </AnimatePresence>
           </button>
         ))}
-      </div>
 
-      <div className="hero-data-flow-output">
-        <div className="hero-data-flow-output-icon" aria-hidden>
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <rect x="3" y="3" width="18" height="18" rx="2" />
-            <path d="M3 9h18M9 21V9" />
-          </svg>
-        </div>
-        <div className="hero-data-flow-output-text">
-          <div className="hero-data-flow-output-title">Personalized Intelligence</div>
-          <div className="hero-data-flow-output-sub">Dashboard</div>
+        <div className="hero-df-output" style={{ top: `${(OUT_Y / VB_H) * 100}%` }}>
+          <span className="hero-df-output-icon">
+            <PersonIcon />
+          </span>
+          <span className="hero-df-output-text">
+            <span className="hero-df-output-title">Personalized Intelligence</span>
+            <span className="hero-df-output-sub">Dashboard</span>
+          </span>
         </div>
       </div>
     </div>

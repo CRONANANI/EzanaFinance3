@@ -78,37 +78,43 @@ export function LandingHero() {
       )}
 
       <div className="content-container hero-container hero-container--split">
-        <div className="hero-split-left">
-          <div className="hero-content">
-            <h1 className="hero-tagline">
-              <AnimatedWords text="Your network is your net worth" baseDelay={160} staggerMs={40} />
-            </h1>
-            <div className="hero-subtitle hero-subtitle--lead">
-              <AnimatedWords
-                text="Better data, Better decisions, Better Returns."
-                baseDelay={480}
-                staggerMs={20}
-              />
-            </div>
-            <p className="hero-subtitle hero-subtitle--secondary">
-              <AnimatedWords
-                text="Ezana brings Wall Street intelligence to your portfolio."
-                baseDelay={720}
-                staggerMs={22}
-              />
-            </p>
-            <div className="hero-waitlist animate-in" data-delay="1880">
-              <AnimatedWaitlistForm />
+        <div className="hero-split-toprow">
+          <div className="hero-split-text">
+            <div className="hero-content">
+              <h1 className="hero-tagline">
+                <AnimatedWords
+                  text="Your network is your net worth"
+                  baseDelay={160}
+                  staggerMs={40}
+                />
+              </h1>
+              <div className="hero-subtitle hero-subtitle--lead">
+                <AnimatedWords
+                  text="Better data, Better decisions, Better Returns."
+                  baseDelay={480}
+                  staggerMs={20}
+                />
+              </div>
+              <p className="hero-subtitle hero-subtitle--secondary">
+                <AnimatedWords
+                  text="Ezana brings Wall Street intelligence to your portfolio."
+                  baseDelay={720}
+                  staggerMs={22}
+                />
+              </p>
+              <div className="hero-waitlist animate-in" data-delay="1880">
+                <AnimatedWaitlistForm />
+              </div>
             </div>
           </div>
 
-          <div className="hero-data-flow-wrapper animate-in" data-delay="2200">
-            <HeroVerticalDataFlow />
+          <div className="hero-split-devices animate-in" data-delay="2400">
+            <HeroDeviceMockups />
           </div>
         </div>
 
-        <div className="hero-split-right animate-in" data-delay="2400">
-          <HeroDeviceMockups />
+        <div className="hero-split-dataflow animate-in" data-delay="2600">
+          <HeroVerticalDataFlow />
         </div>
       </div>
     </div>
