@@ -18,10 +18,6 @@ const GlobeSection = dynamic(
   () => import('@/components/landing/GlobeSection').then((m) => ({ default: m.GlobeSection })),
   { loading: () => null, ssr: false },
 );
-const PricingSection = dynamic(
-  () => import('@/components/landing/PricingSection').then((m) => ({ default: m.PricingSection })),
-  { loading: () => null },
-);
 const Faq1 = dynamic(() => import('@/components/ui/faq1').then((m) => ({ default: m.Faq1 })), {
   loading: () => null,
 });
@@ -59,7 +55,6 @@ export default function HomePage() {
 
         <GlobeSection />
 
-        <PricingSection />
         <section id="faq" className="faq-section-wrapper">
           <Faq1 heading="FAQ" onContactClick={() => setSupportOpen(true)} />
         </section>

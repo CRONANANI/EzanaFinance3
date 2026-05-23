@@ -5,34 +5,52 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 const SOURCES = [
-  { id: 'congress', label: 'Congress', tagline: 'Political trading + legislative signals' },
-  { id: '13f', label: '13F Filings', tagline: 'Quarterly institutional positions' },
+  { id: 'congress', label: 'Congress', tagline: 'Political trading and legislative signals' },
+  { id: '13f', label: '13F Filings', tagline: 'Institutional positions disclosed quarterly' },
   {
     id: 'institutional',
     label: 'Institutional Portfolios',
-    tagline: 'Fund composition + manager behavior',
+    tagline: 'Fund composition and manager behavior',
   },
-  { id: 'analytics', label: 'Alternative Analytics', tagline: 'Markets, macro, prediction data' },
-  { id: 'community', label: 'Community', tagline: 'Retail sentiment + platform activity' },
+  {
+    id: 'analytics',
+    label: 'Alternative Analytics',
+    tagline: 'Markets, macro, and prediction data',
+  },
+  { id: 'community', label: 'Community', tagline: 'Retail sentiment and platform activity' },
 ];
 
 const PROVIDERS = {
   congress: [
-    'Quiver Quantitative',
-    'House Financial Disclosures',
-    'Senate Disclosures',
-    'OpenSecrets',
+    { name: 'Quiver Quantitative', description: 'Congressional trading disclosures' },
+    { name: 'House Financial Disclosures', description: 'Official US House filings' },
+    { name: 'Senate Financial Disclosures', description: 'Official US Senate filings' },
+    { name: 'OpenSecrets', description: 'Campaign finance and lobbying context' },
   ],
-  '13f': ['SEC EDGAR', 'WhaleWisdom', 'Financial Modeling Prep'],
-  institutional: ['Financial Modeling Prep', 'Morningstar API', 'SEC EDGAR'],
+  '13f': [
+    { name: 'SEC EDGAR', description: '13F, 13D, and 13G filings direct from the source' },
+    { name: 'WhaleWisdom', description: 'Institutional holder consolidation and change detection' },
+    { name: 'Financial Modeling Prep', description: 'Normalized institutional holdings feed' },
+  ],
+  institutional: [
+    { name: 'Financial Modeling Prep', description: 'Fund holdings and manager profiles' },
+    { name: 'Morningstar API', description: 'Fund composition and performance' },
+    { name: 'SEC EDGAR', description: 'Fund disclosures and prospectuses' },
+  ],
   analytics: [
-    'Polymarket',
-    'GDELT Project',
-    'World Bank API',
-    'IMF Data API',
-    'Financial Modeling Prep',
+    { name: 'Polymarket', description: 'Prediction market odds and live bets' },
+    { name: 'GDELT Project', description: 'Geolocated global news and event data' },
+    { name: 'World Bank Open Data API', description: 'Macroeconomic indicators' },
+    { name: 'IMF Data API', description: 'Fiscal and financial stability data' },
+    {
+      name: 'Financial Modeling Prep',
+      description: 'Sector performance, earnings, dividends, IPOs, economic calendar',
+    },
   ],
-  community: ['Ezana Platform'],
+  community: [
+    { name: 'Ezana Platform', description: 'User-generated watchlists, discussions, and posts' },
+    { name: 'Reddit API', description: 'Relevant investing subreddit signals' },
+  ],
 };
 
 function DatabaseIcon() {
@@ -58,8 +76,8 @@ function DatabaseIcon() {
 function PersonIcon() {
   return (
     <svg
-      width="18"
-      height="18"
+      width="16"
+      height="16"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -77,17 +95,14 @@ function PersonIcon() {
 export function HeroVerticalDataFlow() {
   const [hovered, setHovered] = useState(null);
 
-  const VB_W = 1200;
-  const VB_H = 540;
-
-  const BADGE_X_END = 360;
-  const BADGE_Y = [60, 160, 260, 360, 460];
-
-  const HUB_X = 620;
-  const HUB_Y = 260;
-  const HUB_R = 60;
-
-  const OUT_X = 820;
+  const VB_W = 800;
+  const VB_H = 440;
+  const BADGE_X_END = 240;
+  const BADGE_Y = [50, 130, 210, 290, 370];
+  const HUB_X = 420;
+  const HUB_Y = 210;
+  const HUB_R = 44;
+  const OUT_X = 580;
   const OUT_Y = HUB_Y;
 
   const pathToHub = (yStart) => {
@@ -107,15 +122,15 @@ export function HeroVerticalDataFlow() {
       >
         <defs>
           <filter id="hubGlow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="6" result="blur" />
+            <feGaussianBlur stdDeviation="4" result="blur" />
             <feMerge>
               <feMergeNode in="blur" />
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
           <radialGradient id="outputHalo" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="rgba(16, 185, 129, 0.55)" />
-            <stop offset="40%" stopColor="rgba(16, 185, 129, 0.18)" />
+            <stop offset="0%" stopColor="rgba(16, 185, 129, 0.5)" />
+            <stop offset="40%" stopColor="rgba(16, 185, 129, 0.15)" />
             <stop offset="100%" stopColor="rgba(16, 185, 129, 0)" />
           </radialGradient>
           <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -124,14 +139,14 @@ export function HeroVerticalDataFlow() {
           </linearGradient>
         </defs>
 
-        <ellipse cx={OUT_X + 145} cy={OUT_Y} rx={230} ry={90} fill="url(#outputHalo)" />
+        <ellipse cx={OUT_X + 110} cy={OUT_Y} rx={180} ry={70} fill="url(#outputHalo)" />
 
         {BADGE_Y.map((y, i) => (
           <path
             key={`line-${i}`}
             d={pathToHub(y)}
             stroke="url(#lineGrad)"
-            strokeWidth={2.5}
+            strokeWidth={2}
             fill="none"
             opacity={hovered && hovered !== SOURCES[i].id ? 0.25 : 1}
             style={{ transition: 'opacity 0.18s ease' }}
@@ -145,9 +160,9 @@ export function HeroVerticalDataFlow() {
           return (
             <circle
               key={`dot-${sourceId}-${hovered || 'auto'}`}
-              r={5}
+              r={4}
               fill="#10b981"
-              filter="drop-shadow(0 0 6px rgba(16, 185, 129, 0.9))"
+              filter="drop-shadow(0 0 5px rgba(16, 185, 129, 0.9))"
             >
               <animateMotion
                 dur={hovered ? '1.4s' : '2.8s'}
@@ -162,14 +177,14 @@ export function HeroVerticalDataFlow() {
         <circle
           cx={HUB_X}
           cy={HUB_Y}
-          r={HUB_R + 18}
+          r={HUB_R + 14}
           fill="none"
           stroke="rgba(16, 185, 129, 0.18)"
-          strokeWidth={1.5}
+          strokeWidth={1.2}
         >
           <animate
             attributeName="r"
-            values={`${HUB_R + 18};${HUB_R + 30};${HUB_R + 18}`}
+            values={`${HUB_R + 14};${HUB_R + 24};${HUB_R + 14}`}
             dur="3s"
             repeatCount="indefinite"
           />
@@ -178,14 +193,14 @@ export function HeroVerticalDataFlow() {
         <circle
           cx={HUB_X}
           cy={HUB_Y}
-          r={HUB_R + 8}
+          r={HUB_R + 6}
           fill="none"
           stroke="rgba(16, 185, 129, 0.3)"
-          strokeWidth={1.5}
+          strokeWidth={1.2}
         >
           <animate
             attributeName="r"
-            values={`${HUB_R + 8};${HUB_R + 18};${HUB_R + 8}`}
+            values={`${HUB_R + 6};${HUB_R + 14};${HUB_R + 6}`}
             dur="3s"
             repeatCount="indefinite"
           />
@@ -202,10 +217,10 @@ export function HeroVerticalDataFlow() {
         />
         <text
           x={HUB_X}
-          y={HUB_Y + 6}
+          y={HUB_Y + 5}
           textAnchor="middle"
           fill="#ffffff"
-          fontSize="22"
+          fontSize="17"
           fontWeight="700"
           letterSpacing="-0.01em"
         >
@@ -215,14 +230,19 @@ export function HeroVerticalDataFlow() {
         <motion.path
           d={arrowPath}
           stroke="#10b981"
-          strokeWidth={2.5}
+          strokeWidth={2}
           fill="none"
-          strokeDasharray="6 6"
-          animate={{ strokeDashoffset: [0, -24] }}
-          transition={{ duration: 1.4, repeat: Number.POSITIVE_INFINITY, ease: 'linear' }}
+          strokeDasharray="5 5"
+          animate={{ strokeDashoffset: [0, -20] }}
+          transition={{ duration: 1.2, repeat: Number.POSITIVE_INFINITY, ease: 'linear' }}
         />
+
+        <circle r={3.5} fill="#10b981" filter="drop-shadow(0 0 4px rgba(16, 185, 129, 0.9))">
+          <animateMotion dur="1.4s" repeatCount="indefinite" path={arrowPath} />
+        </circle>
+
         <polygon
-          points={`${OUT_X - 14},${HUB_Y - 9} ${OUT_X - 2},${HUB_Y} ${OUT_X - 14},${HUB_Y + 9}`}
+          points={`${OUT_X - 12},${HUB_Y - 7} ${OUT_X - 2},${HUB_Y} ${OUT_X - 12},${HUB_Y + 7}`}
           fill="#10b981"
         />
       </svg>
@@ -257,7 +277,10 @@ export function HeroVerticalDataFlow() {
                   <div className="hero-df-tooltip-tagline">{s.tagline}</div>
                   <ul className="hero-df-tooltip-providers">
                     {PROVIDERS[s.id].map((p) => (
-                      <li key={p}>{p}</li>
+                      <li key={p.name}>
+                        <span className="hero-df-tooltip-provider-name">{p.name}</span>
+                        <span className="hero-df-tooltip-provider-desc">{p.description}</span>
+                      </li>
                     ))}
                   </ul>
                 </motion.div>
