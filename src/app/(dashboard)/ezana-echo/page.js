@@ -1,8 +1,10 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getAllArticles, getFeaturedArticle, formatPublishedShort } from '@/lib/ezana-echo-mock';
+import { useAuth } from '@/components/AuthProvider';
+import { isAdminUserClient } from '@/lib/admin-helpers-client';
 
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -21,7 +23,6 @@ const FEED_TABS = [
 
 const SORT_OPTIONS = ['Newest', 'Most Read', 'Most Discussed'];
 
-// Category badge colours matching the app's accent palette
 const CATEGORY_COLOURS = {
   policy: { bg: 'rgba(99,102,241,0.12)', text: '#6366f1', border: 'rgba(99,102,241,0.25)' },
   markets: { bg: 'rgba(16,185,129,0.12)', text: '#10b981', border: 'rgba(16,185,129,0.25)' },
@@ -59,13 +60,77 @@ function AuthorAvatar({ name }) {
 const HERO_FALLBACK_IMG = '/congress-chamber.jpg';
 
 export default function EzanaEchoPage() {
-  const featured = useMemo(() => getFeaturedArticle(), []);
-  const allArticles = useMemo(() => getAllArticles(), []);
-  const heroSrc = featured.heroImage?.src ?? HERO_FALLBACK_IMG;
-  const heroAlt = featured.heroImage?.alt ?? featured.title;
+  const { user } = useAuth();
+  const isAdmin = isAdminUserClient(user);
+  const [archivedSet, setArchivedSet] = useState(new Set());
+  const [archivedCount, setArchivedCount] = useState(0);
+  const [archivingId, setArchivingId] = useState(null);
 
   const [tab, setTab] = useState('all');
   const [sort, setSort] = useState('Newest');
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/echo/article-statuses', { cache: 'no-store' });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled) return;
+        const ids = new Set(data.archivedIds || []);
+        setArchivedSet(ids);
+        setArchivedCount(ids.size);
+      } catch {
+        /* ignore */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function handleArchive(articleId, e) {
+    e?.preventDefault();
+    e?.stopPropagation();
+    if (!confirm('Archive this article? It will be hidden from non-admin users.')) return;
+    setArchivingId(articleId);
+    try {
+      const res = await fetch('/api/echo/admin/archive', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ articleId }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || `HTTP ${res.status}`);
+      }
+      setArchivedSet((prev) => {
+        const next = new Set(prev);
+        next.add(articleId);
+        return next;
+      });
+      setArchivedCount((c) => c + 1);
+    } catch (err) {
+      alert(`Failed to archive: ${err.message}`);
+    } finally {
+      setArchivingId(null);
+    }
+  }
+
+  const rawArticles = useMemo(() => getAllArticles(), []);
+  const allArticles = useMemo(
+    () => rawArticles.filter((a) => !archivedSet.has(a.id)),
+    [rawArticles, archivedSet],
+  );
+
+  const featuredRaw = useMemo(() => getFeaturedArticle(), []);
+  const featured = useMemo(
+    () => (featuredRaw && !archivedSet.has(featuredRaw.id) ? featuredRaw : null),
+    [featuredRaw, archivedSet],
+  );
+
+  const heroSrc = featured?.heroImage?.src ?? HERO_FALLBACK_IMG;
+  const heroAlt = featured?.heroImage?.alt ?? featured?.title;
 
   const sortedFiltered = useMemo(() => {
     let list = tab === 'all' ? allArticles : allArticles.filter((a) => a.category === tab);
@@ -80,43 +145,75 @@ export default function EzanaEchoPage() {
   }, [allArticles, tab, sort]);
 
   const gridArticles = useMemo(
-    () => allArticles.filter((a) => a.id !== featured.id),
+    () => allArticles.filter((a) => a.id !== featured?.id),
     [allArticles, featured],
   );
 
   return (
     <div className="echo-page-v2 dashboard-page-inset">
-      <Link href={`/ezana-echo/${featured.id}`} className="echo-hero-banner" aria-label={featured.title}>
-        <div className="echo-hero-banner-img-wrap">
-          <img
-            src={heroSrc}
-            alt={heroAlt}
-            className="echo-hero-banner-img"
-            onError={(e) => {
-              e.currentTarget.style.display = 'none';
-            }}
-          />
-          <div className="echo-hero-banner-overlay" />
+      {isAdmin && (
+        <div className="echo-admin-bar">
+          <Link href="/ezana-echo/archived" className="echo-admin-bar-link">
+            <i className="bi bi-archive-fill" />
+            View Archived Articles{' '}
+            {archivedCount > 0 && <span className="echo-admin-bar-count">({archivedCount})</span>}
+          </Link>
         </div>
-        <div className="echo-hero-banner-content">
-          <CategoryBadge category={featured.category} />
-          <h1 className="echo-hero-banner-title">{featured.title}</h1>
-          <p className="echo-hero-banner-excerpt">{featured.excerpt}</p>
-          <div className="echo-hero-banner-meta">
-            <AuthorAvatar name={featured.author} />
-            <span>{featured.author}</span>
-            <span className="echo-hero-banner-sep">·</span>
-            <span>{formatPublishedShort(featured.publishedAt)}</span>
-            <span className="echo-hero-banner-sep">·</span>
-            <span>{featured.readTime} min read</span>
-          </div>
+      )}
+
+      {featured && (
+        <div className="echo-article-card-wrap">
+          {isAdmin && (
+            <button
+              type="button"
+              className="echo-admin-archive-btn"
+              onClick={(e) => handleArchive(featured.id, e)}
+              disabled={archivingId === featured.id}
+              title="Archive this article"
+            >
+              <i className="bi bi-archive" />
+              {archivingId === featured.id ? 'Archiving…' : 'Archive'}
+            </button>
+          )}
+          <Link
+            href={`/ezana-echo/${featured.id}`}
+            className="echo-hero-banner"
+            aria-label={featured.title}
+          >
+            <div className="echo-hero-banner-img-wrap">
+              <img
+                src={heroSrc}
+                alt={heroAlt}
+                className="echo-hero-banner-img"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+              <div className="echo-hero-banner-overlay" />
+            </div>
+            <div className="echo-hero-banner-content">
+              <CategoryBadge category={featured.category} />
+              <h1 className="echo-hero-banner-title">{featured.title}</h1>
+              <p className="echo-hero-banner-excerpt">{featured.excerpt}</p>
+              <div className="echo-hero-banner-meta">
+                <AuthorAvatar name={featured.author} />
+                <span>{featured.author}</span>
+                <span className="echo-hero-banner-sep">·</span>
+                <span>{formatPublishedShort(featured.publishedAt)}</span>
+                <span className="echo-hero-banner-sep">·</span>
+                <span>{featured.readTime} min read</span>
+              </div>
+            </div>
+          </Link>
         </div>
-      </Link>
+      )}
 
       <div className="echo-blog-header">
         <div>
           <h2 className="echo-blog-title">Blog</h2>
-          <p className="echo-blog-desc">Financial news, analysis, and insights curated for Ezana investors.</p>
+          <p className="echo-blog-desc">
+            Financial news, analysis, and insights curated for Ezana investors.
+          </p>
         </div>
         <div className="echo-blog-header-right">
           <div className="echo-filter-tabs">
@@ -133,7 +230,11 @@ export default function EzanaEchoPage() {
           </div>
           <div className="echo-sort-wrap">
             <span className="echo-sort-label">Sort by:</span>
-            <select className="echo-sort-select" value={sort} onChange={(e) => setSort(e.target.value)}>
+            <select
+              className="echo-sort-select"
+              value={sort}
+              onChange={(e) => setSort(e.target.value)}
+            >
               {SORT_OPTIONS.map((o) => (
                 <option key={o} value={o}>
                   {o}
@@ -145,13 +246,27 @@ export default function EzanaEchoPage() {
       </div>
 
       <div className="echo-article-grid">
-        {(tab === 'all' ? gridArticles : sortedFiltered)
-          .slice(0, 9)
-          .map((article) => (
-            <Link key={article.id} href={`/ezana-echo/${article.id}`} className="echo-article-card">
+        {(tab === 'all' ? gridArticles : sortedFiltered).slice(0, 9).map((article) => (
+          <div key={article.id} className="echo-article-card-wrap">
+            {isAdmin && (
+              <button
+                type="button"
+                className="echo-admin-archive-btn"
+                onClick={(e) => handleArchive(article.id, e)}
+                disabled={archivingId === article.id}
+                title="Archive this article"
+              >
+                <i className="bi bi-archive" />
+                {archivingId === article.id ? 'Archiving…' : 'Archive'}
+              </button>
+            )}
+            <Link href={`/ezana-echo/${article.id}`} className="echo-article-card">
               <div className="echo-article-card-img-wrap">
                 {article.heroImage?.src ? (
-                  <div className="echo-article-card-img-placeholder" style={{ position: 'relative', overflow: 'hidden' }}>
+                  <div
+                    className="echo-article-card-img-placeholder"
+                    style={{ position: 'relative', overflow: 'hidden' }}
+                  >
                     <img
                       src={article.heroImage.src}
                       alt={article.heroImage.alt || article.title}
@@ -175,7 +290,8 @@ export default function EzanaEchoPage() {
               </div>
               <div className="echo-article-card-body">
                 <p className="echo-article-card-date">
-                  {formatPublishedShort(article.publishedAt)} &nbsp;·&nbsp; {article.readTime} mins read
+                  {formatPublishedShort(article.publishedAt)} &nbsp;·&nbsp; {article.readTime} mins
+                  read
                 </p>
                 <h3 className="echo-article-card-title">{article.title}</h3>
                 <p className="echo-article-card-excerpt">{article.excerpt}</p>
@@ -185,9 +301,9 @@ export default function EzanaEchoPage() {
                 </div>
               </div>
             </Link>
-          ))}
+          </div>
+        ))}
       </div>
-
     </div>
   );
 }

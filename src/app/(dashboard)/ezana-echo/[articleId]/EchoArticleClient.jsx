@@ -16,7 +16,9 @@ import {
   Bar,
   Legend,
 } from 'recharts';
+import { useAuth } from '@/components/AuthProvider';
 import { useTheme } from '@/components/ThemeProvider';
+import { isAdminUserClient } from '@/lib/admin-helpers-client';
 import { EchoArticleEngagement } from '@/components/echo/EchoArticleEngagement';
 import { EchoKeywordProvider, useKeywordPopup } from '@/components/echo/EchoKeywordContext';
 import { EchoKeywordPopup } from '@/components/echo/EchoKeywordPopup';
@@ -2378,7 +2380,54 @@ function SectorDominanceChart({ title, caption, yLabel }) {
   );
 }
 
-export default function EchoArticleClient({ article }) {
+export default function EchoArticleClient({ article, isArchived: initialArchived = false }) {
+  const { user } = useAuth();
+  const isAdmin = isAdminUserClient(user);
+  const [isArchived, setIsArchived] = useState(initialArchived);
+  const [busy, setBusy] = useState(false);
+
+  async function handleArchive() {
+    if (!confirm('Archive this article? It will be hidden from non-admin users.')) return;
+    setBusy(true);
+    try {
+      const res = await fetch('/api/echo/admin/archive', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ articleId: article.id }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || `HTTP ${res.status}`);
+      }
+      setIsArchived(true);
+    } catch (err) {
+      alert(`Failed to archive: ${err.message}`);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleRepublish() {
+    if (!confirm('Republish this article? It will reappear in the public Echo feed.')) return;
+    setBusy(true);
+    try {
+      const res = await fetch('/api/echo/admin/archive', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ articleId: article.id }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || `HTTP ${res.status}`);
+      }
+      setIsArchived(false);
+    } catch (err) {
+      alert(`Failed to republish: ${err.message}`);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   const related = getRelatedArticles(article.category, article.id, 3);
   const fallback =
     related.length < 3
@@ -2400,6 +2449,38 @@ export default function EchoArticleClient({ article }) {
           </Link>
 
           <article className="echo-article-shell">
+            {isAdmin && (
+              <div className="echo-article-admin-bar">
+                {isArchived && (
+                  <span className="echo-article-archived-badge">
+                    <i className="bi bi-archive-fill" /> Archived (only admins can see this)
+                  </span>
+                )}
+                <div className="echo-article-admin-actions">
+                  {isArchived ? (
+                    <button
+                      type="button"
+                      className="echo-article-republish-btn"
+                      onClick={handleRepublish}
+                      disabled={busy}
+                    >
+                      <i className="bi bi-arrow-counterclockwise" />
+                      {busy ? 'Republishing…' : 'Republish'}
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="echo-article-archive-btn"
+                      onClick={handleArchive}
+                      disabled={busy}
+                    >
+                      <i className="bi bi-archive" />
+                      {busy ? 'Archiving…' : 'Archive Article'}
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
             <header className="echo-article-header">
               <div className="echo-article-kicker">
                 <span className="echo-article-kicker-dot" aria-hidden />

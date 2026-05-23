@@ -1,5 +1,8 @@
 import { notFound } from 'next/navigation';
 import { getArticleById } from '@/lib/ezana-echo-mock';
+import { createServerSupabase } from '@/lib/supabase-server';
+import { isAdminUser } from '@/lib/admin-helpers';
+import { isArticleArchived } from '@/lib/echo-article-status';
 import EchoArticleClient from './EchoArticleClient';
 
 export async function generateMetadata({ params }) {
@@ -11,8 +14,20 @@ export async function generateMetadata({ params }) {
   };
 }
 
-export default function EzanaEchoArticlePage({ params }) {
+export default async function EzanaEchoArticlePage({ params }) {
   const article = getArticleById(params.articleId);
   if (!article) notFound();
-  return <EchoArticleClient article={article} />;
+
+  const archived = await isArticleArchived(params.articleId);
+  if (archived) {
+    const supabase = createServerSupabase();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user || !isAdminUser(user)) {
+      notFound();
+    }
+  }
+
+  return <EchoArticleClient article={article} isArchived={archived} />;
 }
