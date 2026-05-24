@@ -1643,12 +1643,14 @@ const TUTORIAL_STEPS = [
 // Tutorial persistence key prefix. We scope by user so different accounts on
 // the same device each get their own tour, with a "guest" fallback when the
 // user isn't authenticated yet.
+const TOUR_NAME = 'market_analysis';
+
 function tutorialKeyFor(userId) {
   return `ezana.tutorial.globalMarket.${userId || 'guest'}`;
 }
 
 export default function MarketAnalysisPage() {
-  const { user } = useAuth() || {};
+  const { user, loading: authLoading } = useAuth() || {};
   const { isOrgUser, hasPermission } = useOrg();
   const [view, setView] = useState('map');
   const [activeCategory, setActiveCategory] = useState(null);
@@ -1748,16 +1750,55 @@ export default function MarketAnalysisPage() {
     };
   }, [liveMarkets, liveCommodities, liveCurrencies]);
 
-  // First-visit tutorial: fire once per user, persisted in localStorage.
-  // Deliberately gated behind a short timeout so the layout has a chance to
-  // settle before we start measuring spotlight targets.
+  // First-visit tutorial: shown once per user via localStorage cache + profiles.tours_seen.
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
-    const key = tutorialKeyFor(user?.id);
-    if (window.localStorage.getItem(key)) return undefined;
-    const t = setTimeout(() => setTutorialOpen(true), 600);
-    return () => clearTimeout(t);
-  }, [user?.id]);
+    if (authLoading) return undefined;
+
+    let cancelled = false;
+    let timeoutId = null;
+
+    (async () => {
+      const lsKey = tutorialKeyFor(user?.id);
+      const lsCached = window.localStorage.getItem(lsKey);
+      if (lsCached === 'done') {
+        return;
+      }
+
+      if (user?.id) {
+        try {
+          const res = await fetch(`/api/profile/tour-seen?tour=${TOUR_NAME}`, {
+            cache: 'no-store',
+          });
+          if (cancelled) return;
+          if (res.ok) {
+            const data = await res.json();
+            if (data?.seen === true) {
+              try {
+                window.localStorage.setItem(lsKey, 'done');
+              } catch {
+                /* ignore */
+              }
+              return;
+            }
+          }
+        } catch {
+          /* fall through — duplicate tour beats never-shown */
+        }
+      }
+
+      if (cancelled) return;
+
+      timeoutId = setTimeout(() => {
+        if (!cancelled) setTutorialOpen(true);
+      }, 600);
+    })();
+
+    return () => {
+      cancelled = true;
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [user?.id, authLoading]);
 
   const finishTutorial = useCallback(() => {
     try {
@@ -1765,8 +1806,17 @@ export default function MarketAnalysisPage() {
         window.localStorage.setItem(tutorialKeyFor(user?.id), 'done');
       }
     } catch {
-      // localStorage can throw in private-mode Safari; safe to ignore
+      /* localStorage can throw in private-mode Safari */
     }
+
+    if (user?.id) {
+      fetch('/api/profile/tour-seen', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tour: TOUR_NAME }),
+      }).catch(() => {});
+    }
+
     setTutorialOpen(false);
   }, [user?.id]);
 
