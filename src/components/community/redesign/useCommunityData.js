@@ -26,6 +26,7 @@ export function useCommunityData({ feedTab = 'Feed', feedSort = 'Latest', hasUse
   const [trendingDiscussions, setTrendingDiscussions] = useState([]);
   const [friendsActivity, setFriendsActivity] = useState([]);
   const [suggestedUsers, setSuggestedUsers] = useState([]);
+  const [topSector, setTopSector] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -56,23 +57,26 @@ export function useCommunityData({ feedTab = 'Feed', feedSort = 'Latest', hasUse
     setError(null);
     try {
       const skipPosts = feedTab === 'Badges';
-      const [postsRes, topicsRes, discRes, friendsRes, leaderRes] = await Promise.all([
+      const [postsRes, topicsRes, discRes, friendsRes, leaderRes, sectorRes] = await Promise.all([
         skipPosts
           ? Promise.resolve({ ok: true, json: async () => ({ posts: [] }) })
           : fetch(`/api/community/posts?tab=${encodeURIComponent(apiTab)}`),
         fetch('/api/community/trending-topics'),
         fetch('/api/community/trending-discussions'),
         fetch('/api/community/friends-activity'),
-        fetch('/api/community/leaderboard'),
+        fetch('/api/community/leaderboard?period=weekly'),
+        fetch('/api/fmp/sector-performance?range=1W'),
       ]);
 
-      const [postsData, topicsData, discData, friendsData, leaderData] = await Promise.all([
-        postsRes.ok ? postsRes.json() : { posts: [] },
-        topicsRes.ok ? topicsRes.json() : { topics: [] },
-        discRes.ok ? discRes.json() : { discussions: [] },
-        friendsRes.ok ? friendsRes.json() : { activity: [] },
-        leaderRes.ok ? leaderRes.json() : { rankings: [] },
-      ]);
+      const [postsData, topicsData, discData, friendsData, leaderData, sectorData] =
+        await Promise.all([
+          postsRes.ok ? postsRes.json() : { posts: [] },
+          topicsRes.ok ? topicsRes.json() : { topics: [] },
+          discRes.ok ? discRes.json() : { discussions: [] },
+          friendsRes.ok ? friendsRes.json() : { activity: [] },
+          leaderRes.ok ? leaderRes.json() : { users: [] },
+          sectorRes.ok ? sectorRes.json() : { sectors: [] },
+        ]);
 
       let rawPosts = postsData.posts || [];
       if (feedTab === 'Discussions') {
@@ -123,6 +127,7 @@ export function useCommunityData({ feedTab = 'Feed', feedSort = 'Latest', hasUse
     trendingDiscussions,
     friendsActivity,
     suggestedUsers,
+    topSector,
     loading,
     error,
     updatePostConviction,

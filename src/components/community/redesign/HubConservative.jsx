@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { useCommunityData } from './useCommunityData';
-import { TopNav, PageTabs } from './TopNav';
+import { TopNav } from './TopNav';
 import { NotificationsPanel, useNotificationCount } from './NotificationsPanel';
 import { KpiCard } from './KpiCard';
 import { KpiModal } from './KpiModal';
@@ -56,10 +56,9 @@ export function HubConservative() {
   const [activeTab, setActiveTab] = useState('Feed');
   const [activeModal, setActiveModal] = useState(null);
   const [feedSort, setFeedSort] = useState('Latest');
-  const [composerExpanded, setComposerExpanded] = useState(false);
-  const [composerText, setComposerText] = useState('');
-  const [composerMode, setComposerMode] = useState(null);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [newPostCount, setNewPostCount] = useState(0);
+  const [followingIds, setFollowingIds] = useState(new Set());
 
   const notifCount = useNotificationCount();
 
@@ -69,6 +68,7 @@ export function HubConservative() {
     trendingDiscussions,
     friendsActivity,
     suggestedUsers,
+    topSector,
     loading,
     error,
     updatePostConviction,
@@ -78,6 +78,52 @@ export function HubConservative() {
     feedSort,
     hasUser: !!user?.id,
   });
+
+  useEffect(() => {
+    const lastVisitKey = 'ezana.community.lastVisit';
+    let lastVisit = null;
+    try {
+      const stored = window.localStorage.getItem(lastVisitKey);
+      if (stored) lastVisit = new Date(stored);
+    } catch {
+      /* ignore */
+    }
+
+    try {
+      window.localStorage.setItem(lastVisitKey, new Date().toISOString());
+    } catch {
+      /* ignore */
+    }
+
+    if (lastVisit && posts.length > 0) {
+      const count = posts.filter((p) => {
+        const created = new Date(p.created_at);
+        return created > lastVisit;
+      }).length;
+      setNewPostCount(count);
+    } else {
+      setNewPostCount(posts.length);
+    }
+  }, [posts]);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/community/follow?list=following');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled) return;
+        setFollowingIds(new Set((data.following || []).map((u) => u.id)));
+      } catch {
+        /* ignore */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
 
   const displayName = useMemo(() => {
     return (
@@ -91,6 +137,7 @@ export function HubConservative() {
   const greeting = getGreeting();
   const today = formatDateLine();
   const topPerformer = suggestedUsers[0] ?? null;
+  const unfollowedSuggestions = suggestedUsers.filter((u) => !followingIds.has(u.id));
 
   const handleFeedTab = (t) => {
     if (t === 'Badges') {
@@ -98,14 +145,6 @@ export function HubConservative() {
       return;
     }
     setActiveTab(t);
-  };
-
-  const handlePageTab = (t) => {
-    if (t === 'Messages') router.push('/community/messages');
-    if (t === 'My Profile' && user?.id) {
-      const handle = user.user_metadata?.username || user.id;
-      router.push(`/profile/${handle}`);
-    }
   };
 
   return (
@@ -123,48 +162,47 @@ export function HubConservative() {
       <div style={{ padding: '20px 28px', maxWidth: 1320, margin: '0 auto' }}>
         <div
           style={{
+            marginBottom: 22,
             display: 'flex',
             justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: 18,
+            alignItems: 'flex-start',
+            gap: 16,
+            flexWrap: 'wrap',
           }}
         >
-          <PageTabs active="Community" onChange={handlePageTab} />
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div
-              className="ez-pill"
+          <div>
+            <h1
               style={{
-                background: 'transparent',
-                border: '1px solid var(--border-input)',
-                color: 'var(--text-muted)',
+                margin: 0,
+                fontSize: 26,
+                fontWeight: 700,
+                color: 'var(--text-primary)',
+                letterSpacing: '-0.02em',
               }}
             >
-              <i className="bi bi-clock" style={{ fontSize: 11 }} />
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>{today}</span>
-            </div>
+              {greeting}, {displayName}{' '}
+              <span style={{ fontSize: 22 }} aria-hidden>
+                👋
+              </span>
+            </h1>
+            <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--text-muted)' }}>
+              {loading
+                ? 'Loading community feed…'
+                : `${posts.length} posts in your feed. Join the conversation around markets and investing.`}
+            </p>
           </div>
-        </div>
-
-        <div style={{ marginBottom: 22 }}>
-          <h1
+          <div
+            className="ez-pill"
             style={{
-              margin: 0,
-              fontSize: 26,
-              fontWeight: 700,
-              color: 'var(--text-primary)',
-              letterSpacing: '-0.02em',
+              background: 'transparent',
+              border: '1px solid var(--border-input)',
+              color: 'var(--text-muted)',
+              flexShrink: 0,
             }}
           >
-            {greeting}, {displayName}{' '}
-            <span style={{ fontSize: 22 }} aria-hidden>
-              👋
-            </span>
-          </h1>
-          <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--text-muted)' }}>
-            {loading
-              ? 'Loading community feed…'
-              : `${posts.length} posts in your feed. Join the conversation around markets and investing.`}
-          </p>
+            <i className="bi bi-clock" style={{ fontSize: 11 }} />
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>{today}</span>
+          </div>
         </div>
 
         <div
@@ -178,10 +216,14 @@ export function HubConservative() {
           <KpiCard
             icon="bi-chat-square-text"
             label="New posts"
-            value={loading ? '…' : String(posts.length)}
-            sub="in current feed"
+            value={loading ? '…' : newPostCount > 0 ? `+${newPostCount}` : String(posts.length)}
+            sub={newPostCount > 0 ? 'since your last visit' : 'in current feed'}
             tone="emerald"
             chevron="down"
+            onClick={() => {
+              const feed = document.querySelector('[data-feed-anchor]');
+              if (feed) feed.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }}
           />
           <KpiCard
             icon="bi-graph-up-arrow"
@@ -198,16 +240,28 @@ export function HubConservative() {
           <KpiCard
             icon="bi-bar-chart-line"
             label="Sector momentum"
-            value="Technology"
-            sub="+4.2% past 7d"
+            value={topSector?.name || (loading ? '…' : '—')}
+            sub={
+              topSector
+                ? `${topSector.pct >= 0 ? '+' : ''}${topSector.pct.toFixed(1)}% past 7d`
+                : 'Data unavailable'
+            }
             tone="info"
             onClick={() => setActiveModal('sector-momentum')}
           />
           <KpiCard
             icon="bi-stars"
             label="Suggested for you"
-            value={`${suggestedUsers.length || 0} investors`}
-            sub={topPerformer ? `Top: ${topPerformer.name}` : 'From leaderboard'}
+            value={
+              loading
+                ? '…'
+                : `${unfollowedSuggestions.length} investor${unfollowedSuggestions.length === 1 ? '' : 's'}`
+            }
+            sub={
+              unfollowedSuggestions[0]
+                ? `Top: ${unfollowedSuggestions[0].name}`
+                : 'Build your network'
+            }
             tone="gold"
             onClick={() => setActiveModal('investors-to-follow')}
           />
@@ -224,15 +278,7 @@ export function HubConservative() {
           }}
         >
           <div>
-            <Composer
-              expanded={composerExpanded}
-              setExpanded={setComposerExpanded}
-              text={composerText}
-              setText={setComposerText}
-              mode={composerMode}
-              setMode={setComposerMode}
-              onPosted={refetch}
-            />
+            <Composer onPosted={refetch} />
 
             <div
               style={{
@@ -290,7 +336,12 @@ export function HubConservative() {
                 </select>
                 <button
                   type="button"
-                  onClick={() => setComposerExpanded(true)}
+                  onClick={() => {
+                    const el =
+                      document.querySelector('[data-composer-anchor]') ||
+                      document.querySelector('[data-feed-anchor]');
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }}
                   className="ez-btn ez-btn--primary"
                   style={{ padding: '6px 12px', fontSize: 12 }}
                 >
@@ -309,7 +360,7 @@ export function HubConservative() {
             {loading ? (
               <FeedSkeleton />
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div data-feed-anchor style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 {posts.length === 0 && (
                   <div
                     className="ez-card"
@@ -342,7 +393,7 @@ export function HubConservative() {
           type={activeModal}
           onClose={() => setActiveModal(null)}
           topPerformer={topPerformer}
-          suggestedUsers={suggestedUsers}
+          suggestedUsers={unfollowedSuggestions.length ? unfollowedSuggestions : suggestedUsers}
         />
       )}
     </div>

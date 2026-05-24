@@ -9,6 +9,35 @@ const admin = getAdminClient();
 
 const SITE_ORIGIN = process.env.NEXT_PUBLIC_SITE_URL || 'https://ezana.world';
 
+/** GET ?list=following — IDs the current user follows */
+export async function GET(request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    if (searchParams.get('list') !== 'following') {
+      return NextResponse.json({ error: 'Unsupported list' }, { status: 400 });
+    }
+
+    const { user, client: supabase } = await requireUser(request);
+    const { data, error } = await supabase
+      .from('user_follows')
+      .select('following_id')
+      .eq('follower_id', user.id);
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({
+      following: (data || []).map((row) => ({ id: row.following_id })),
+    });
+  } catch (error) {
+    if (error?.status === 401) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
 /** POST { target_user_id, action: 'follow' | 'unfollow' } */
 export async function POST(request) {
   try {
