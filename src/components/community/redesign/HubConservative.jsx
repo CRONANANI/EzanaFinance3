@@ -4,8 +4,6 @@ import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { useCommunityData } from './useCommunityData';
-import { TopNav } from './TopNav';
-import { NotificationsPanel, useNotificationCount } from './NotificationsPanel';
 import { KpiCard } from './KpiCard';
 import { KpiModal } from './KpiModal';
 import { SearchBar } from './SearchBar';
@@ -56,11 +54,8 @@ export function HubConservative() {
   const [activeTab, setActiveTab] = useState('Feed');
   const [activeModal, setActiveModal] = useState(null);
   const [feedSort, setFeedSort] = useState('Latest');
-  const [notifOpen, setNotifOpen] = useState(false);
   const [newPostCount, setNewPostCount] = useState(0);
   const [followingIds, setFollowingIds] = useState(new Set());
-
-  const notifCount = useNotificationCount();
 
   const {
     posts,
@@ -152,13 +147,6 @@ export function HubConservative() {
       className="ezana-theme"
       style={{ minHeight: '100%', background: 'var(--bg-primary)', position: 'relative' }}
     >
-      <TopNav
-        active="Community"
-        onOpenNotifications={() => setNotifOpen(true)}
-        notifCount={notifCount}
-      />
-      <NotificationsPanel open={notifOpen} onClose={() => setNotifOpen(false)} />
-
       <div style={{ padding: '20px 28px', maxWidth: 1320, margin: '0 auto' }}>
         <div
           style={{
