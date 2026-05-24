@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser, getAdminClient } from '@/lib/supabase';
+import { enforceAuthRateLimit } from '@/lib/auth-rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,6 +12,9 @@ export const dynamic = 'force-dynamic';
  * Idempotent — calling it again on a free user is a no-op.
  */
 export async function POST(request) {
+  const limited = await enforceAuthRateLimit(request, { endpointLabel: 'activate-free' });
+  if (limited) return limited;
+
   try {
     const user = await getCurrentUser(request);
     if (!user) {

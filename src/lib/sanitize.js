@@ -24,6 +24,18 @@ export function sanitizeText(input, maxLength = 5000) {
 }
 
 /**
+ * Normalize and sanitize an email address before use.
+ */
+export function sanitizeEmail(input) {
+  if (typeof input !== 'string') return '';
+  return input
+    .trim()
+    .toLowerCase()
+    .slice(0, 254)
+    .replace(/[<>"'`\s]/g, '');
+}
+
+/**
  * Sanitize a value for use in PostgREST .or() / .filter() expressions.
  * Prevents filter injection by stripping characters that could alter query logic.
  */

@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { resend } from '@/lib/services/resend';
 import { getAdminClient, requireUser } from '@/lib/supabase';
+import { enforceAuthRateLimit } from '@/lib/auth-rate-limit';
+import { sanitizeEmail } from '@/lib/sanitize';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -10,6 +12,9 @@ function generateCode() {
 }
 
 export async function POST(request) {
+  const limited = await enforceAuthRateLimit(request, { endpointLabel: 'send-verification' });
+  if (limited) return limited;
+
   try {
     if (!process.env.RESEND_API_KEY) {
       console.error('RESEND_API_KEY is not set');
@@ -43,9 +48,10 @@ export async function POST(request) {
       .maybeSingle();
 
     if (!profile) {
+      const email = sanitizeEmail(user.email ?? '');
       const { error: insertProfileErr } = await supabaseAdmin.from('profiles').insert({
         id: user.id,
-        email: user.email ?? '',
+        email,
         email_verified: false,
         onboarding_completed: true,
         updated_at: new Date().toISOString(),
@@ -93,9 +99,14 @@ export async function POST(request) {
     const code = generateCode();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
+    const email = sanitizeEmail(user.email ?? '');
+    if (!email) {
+      return NextResponse.json({ error: 'Account email is missing' }, { status: 400 });
+    }
+
     const { error: insertError } = await supabaseAdmin.from('email_verification_codes').insert({
       user_id: user.id,
-      email: user.email,
+      email,
       code,
       expires_at: expiresAt,
     });
@@ -109,7 +120,7 @@ export async function POST(request) {
 
     const { error: emailError } = await resend.emails.send({
       from: fromAddress,
-      to: user.email,
+      to: email,
       subject: 'Your Ezana Finance verification code',
       html: `<div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">
           <h2 style="color: #10b981; margin-bottom: 8px;">Ezana Finance</h2>
@@ -127,7 +138,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Failed to send verification email' }, { status: 500 });
     }
 
-    const [localPart, domain] = user.email.split('@');
+    const [localPart, domain] = email.split('@');
     const maskedEmail = `${localPart.slice(0, 2)}${'*'.repeat(Math.max(localPart.length - 2, 2))}@${domain}`;
 
     return NextResponse.json({ success: true, email: maskedEmail });

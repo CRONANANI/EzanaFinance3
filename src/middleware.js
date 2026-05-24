@@ -11,6 +11,51 @@ const ALLOWED_ORIGINS = ['https://ezana.world', 'http://localhost:3000', 'http:/
 export async function middleware(request) {
   const pathname = request.nextUrl.pathname;
 
+  // Global rate limit: 100 req/min per IP on /api/* (excludes auth + webhooks)
+  if (pathname.startsWith('/api/') && !pathname.startsWith('/api/auth/')) {
+    const skipPaths = [
+      '/api/webhooks/',
+      '/api/stripe/webhook',
+      '/api/alpaca/webhook',
+      '/api/trading/webhook',
+    ];
+    const shouldSkip = skipPaths.some((s) => pathname.startsWith(s));
+
+    if (!shouldSkip) {
+      try {
+        const { checkRateLimit, logSecurityEvent } = await import('@/lib/persistent-rate-limit');
+        const ip =
+          request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+          request.headers.get('x-real-ip') ||
+          'unknown';
+        const result = await checkRateLimit(`global:${ip}`, 100, 60 * 1000);
+
+        if (!result.allowed) {
+          await logSecurityEvent('global_rate_limit_hit', {
+            severity: 'warning',
+            ip,
+            endpoint: pathname,
+            details: { resetAt: result.resetAt.toISOString() },
+          });
+
+          return NextResponse.json(
+            { error: 'Too many requests. Please slow down.' },
+            {
+              status: 429,
+              headers: {
+                'Retry-After': String(Math.ceil((result.resetAt.getTime() - Date.now()) / 1000)),
+                'X-RateLimit-Limit': '100',
+                'X-RateLimit-Remaining': '0',
+              },
+            },
+          );
+        }
+      } catch (err) {
+        console.warn('[middleware-rate-limit] error:', err?.message);
+      }
+    }
+  }
+
   /* Forward the resolved pathname as a request header so server components
      (e.g. the root layout) can pre-compute route-scoped body classes
      server-side. Eliminates the class-application race on first paint that

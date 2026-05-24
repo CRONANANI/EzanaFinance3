@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { awardELO } from '@/lib/elo';
 import { getAdminClient, requireUser } from '@/lib/supabase';
+import { enforceAuthRateLimit } from '@/lib/auth-rate-limit';
+import { sanitizeText, sanitizeEmail } from '@/lib/sanitize';
 
 async function grantEmailVerifiedElo(supabaseAdmin, userId) {
   try {
@@ -26,14 +28,16 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function POST(request) {
+  const limited = await enforceAuthRateLimit(request, { endpointLabel: 'verify-code' });
+  if (limited) return limited;
+
   try {
     const { code } = await request.json();
+    const codeStr = sanitizeText(String(code ?? ''), 16);
 
-    if (!code || String(code).length !== 6) {
+    if (!codeStr || codeStr.length !== 6) {
       return NextResponse.json({ error: 'Please enter a valid 6-digit code' }, { status: 400 });
     }
-
-    const codeStr = String(code).trim();
 
     let user;
     try {
@@ -119,7 +123,7 @@ export async function POST(request) {
 
     const now = new Date().toISOString();
 
-    const email = user.email ?? null;
+    const email = sanitizeEmail(user.email ?? '');
     if (!email) {
       console.error('verify-code: authenticated user has no email on profile');
       return NextResponse.json({ error: 'Account email is missing' }, { status: 400 });
