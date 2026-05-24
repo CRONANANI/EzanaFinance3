@@ -53,12 +53,18 @@ export default async function RootLayout({ children }) {
   const pathname = headers().get('x-pathname') ?? '';
   const routeShellClasses = resolveRouteShellClasses(pathname);
 
-  const bodyClassName = ['app-body', isDark ? null : 'light-mode', ...routeShellClasses]
+  /* Marketing landing page (/) renders dark by spec regardless of the
+     user's stored theme preference — match the blocking inline script
+     above so SSR class agrees with first-paint class. */
+  const isLandingRoute = pathname === '/' || pathname === '';
+  const effectiveIsDark = isDark || isLandingRoute;
+
+  const bodyClassName = ['app-body', effectiveIsDark ? null : 'light-mode', ...routeShellClasses]
     .filter(Boolean)
     .join(' ');
 
-  const htmlClassName = isDark ? 'dark' : 'light-mode';
-  const htmlStyle = isDark
+  const htmlClassName = effectiveIsDark ? 'dark' : 'light-mode';
+  const htmlStyle = effectiveIsDark
     ? { backgroundColor: '#0a0e13', colorScheme: 'light' }
     : { backgroundColor: '#ffffff', colorScheme: 'light' };
 
@@ -97,6 +103,17 @@ export default async function RootLayout({ children }) {
               var cookieTheme = cookieMatch ? cookieMatch[1] : null;
               theme = (cookieTheme === 'dark' || cookieTheme === 'light') ? cookieTheme : 'light';
             }
+            /* Marketing landing page (/) is dark-mode only — force it
+               before paint so the navbar doesn't briefly render with a
+               light background. Other public marketing routes that should
+               also be dark-only can be added here. */
+            var landingDarkRoutes = ['/'];
+            try {
+              var path = window.location.pathname || '/';
+              if (landingDarkRoutes.indexOf(path) !== -1) {
+                theme = 'dark';
+              }
+            } catch (e) { /* ignore */ }
             var root = document.documentElement;
             var body = document.body;
             root.style.colorScheme = 'light';

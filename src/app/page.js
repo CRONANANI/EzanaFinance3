@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { LandingHero } from '@/components/landing/LandingHero';
 
@@ -35,10 +35,6 @@ const ContactSupportDialog = dynamic(
 
 export default function HomePage() {
   const [supportOpen, setSupportOpen] = useState(false);
-
-  useEffect(() => {
-    document.body.classList.remove('light-mode');
-  }, []);
 
   return (
     <div className="landing-page">
