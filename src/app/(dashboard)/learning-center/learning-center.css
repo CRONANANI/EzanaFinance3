@@ -1,1300 +1,987 @@
-/* Learning Center — dashboard card styling */
+/* Learning Center — redesigned hub styles */
 
-/* ── Hero (~30% smaller than partner ptr-hero) ── */
-.lc2-hero {
-  position: relative;
-  display: flex;
-  align-items: flex-start;
-  gap: 1.25rem;
-  padding: 1.75rem 1.4rem;
-  margin-bottom: 1.25rem;
-  border-radius: 14px;
-  overflow: hidden;
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.02) 100%);
-  border: 1px solid rgba(16, 185, 129, 0.12);
+.lc-page {
+  padding: 28px 36px 48px;
+  max-width: 1440px;
+  margin: 0 auto;
+  color: var(--fg);
 }
 
-.lc2-hero-glow {
-  position: absolute;
-  top: -35%;
-  right: -8%;
-  width: 280px;
-  height: 280px;
-  background: radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, transparent 70%);
-  pointer-events: none;
-}
-
-.lc2-hero-avatar-wrap {
-  flex-shrink: 0;
-  position: relative;
-  z-index: 1;
-}
-
-.lc2-hero-avatar {
-  width: 62px;
-  height: 62px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.18), rgba(16, 185, 129, 0.06));
-  border: 2px solid rgba(16, 185, 129, 0.28);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.lc2-hero-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
-}
-
-.lc2-hero-avatar-initials {
-  font-size: 1.35rem;
-  font-weight: 800;
-  color: #10b981;
-}
-
-.lc2-hero-main {
-  flex: 1;
-  min-width: 0;
-  position: relative;
-  z-index: 1;
-}
-
-.lc2-hero-kicker {
-  font-size: 1.35rem;
-  font-weight: 800;
-  color: #f0f6fc;
-  margin: 0 0 0.25rem;
-  letter-spacing: -0.02em;
-}
-
-.lc2-hero-sub {
-  font-size: 0.8125rem;
-  color: #8b949e;
-  margin: 0 0 0.65rem;
-}
-
-.lc2-hero-progress-line,
-.lc2-hero-track-line {
-  font-size: 0.8125rem;
-  color: #9ca3af;
-  margin: 0;
-  line-height: 1.5;
-}
-
-.lc2-hero-track-line {
-  margin-top: 0.35rem;
-}
-
-.lc2-hero-track-bar {
-  height: 8px;
-  border-radius: 4px;
-  background: rgba(16, 185, 129, 0.12);
-  overflow: hidden;
-  margin-top: 0.5rem;
-  max-width: 320px;
-}
-
-.lc2-hero-track-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #10b981, #059669);
-  border-radius: 4px;
-  transition: width 0.4s ease;
-}
-
-.lc2-hero-badges-block {
-  margin-top: 0.85rem;
-}
-
-.lc2-hero-badges-label {
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #d1d5db;
-  margin-bottom: 0.35rem;
-}
-
-.lc2-hero-badges-empty {
-  font-size: 0.75rem;
-  color: #6b7280;
-}
-
-body.light-mode .lc2-hero-avatar {
-  background: linear-gradient(135deg, rgba(5, 150, 105, 0.12), rgba(5, 150, 105, 0.04));
-  border-color: rgba(5, 150, 105, 0.22);
-}
-
-body.light-mode .lc2-hero-avatar-initials {
-  color: #059669;
-}
-
-body.light-mode .lc2-hero-kicker {
-  color: #111827;
-}
-
-/* ── Partner + Friends cards ── */
-.lc2-partner-card,
-.lc2-friends-card {
-  margin-bottom: 1.25rem;
-}
-
-.lc2-sec-head {
-  margin-bottom: 0.85rem;
-}
-
-.lc2-sec-title {
-  font-size: 1rem;
-  font-weight: 800;
-  color: #f0f6fc;
-  margin: 0;
-  letter-spacing: -0.02em;
-}
-
-.lc2-sec-link {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: #10b981;
-  text-decoration: none;
-}
-
-.lc2-sec-link:hover {
-  text-decoration: underline;
-}
-
-.lc2-partner-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.lc2-partner-row {
-  display: flex;
-  gap: 0.75rem;
-  align-items: flex-start;
-  padding: 0.75rem 0;
-  margin: 0;
-}
-
-.lc2-partner-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(16, 185, 129, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.6875rem;
-  font-weight: 800;
-  color: #10b981;
-  flex-shrink: 0;
-  overflow: hidden;
-}
-
-.lc2-partner-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.lc2-partner-body {
-  min-width: 0;
-  flex: 1;
-}
-
-.lc2-partner-meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.35rem 0.5rem;
-  font-size: 0.75rem;
-  color: #9ca3af;
-  margin-bottom: 0.25rem;
-}
-
-.lc2-partner-name {
-  font-weight: 700;
-  color: #e5e7eb;
-}
-
-.lc2-partner-role {
-  color: #6b7280;
-}
-
-.lc2-partner-time {
-  margin-left: auto;
-  font-size: 0.6875rem;
-  color: #6b7280;
-}
-
-.lc2-partner-title {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #f0f6fc;
-  line-height: 1.4;
-  margin-bottom: 0.25rem;
-}
-
-.lc2-partner-foot {
-  font-size: 0.6875rem;
-  color: #6b7280;
-}
-
-.lc2-partner-footer {
-  margin-top: 1rem;
-  padding: 0.75rem 0 0;
-  border-top: 1px solid rgba(16, 185, 129, 0.08);
-}
-
-.lc2-friends-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1.1rem;
-}
-
-.lc2-friend-row {
-  display: flex;
-  gap: 0.75rem;
-  align-items: flex-start;
-}
-
-.lc2-friend-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(16, 185, 129, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.6875rem;
-  font-weight: 800;
-  color: #10b981;
-  flex-shrink: 0;
-}
-
-.lc2-friend-body {
-  flex: 1;
-  min-width: 0;
-}
-
-.lc2-friend-top {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.35rem 0.65rem;
-  font-size: 0.8125rem;
-}
-
-.lc2-friend-name {
-  font-weight: 700;
-  color: #e5e7eb;
-}
-
-.lc2-friend-track-label {
-  font-size: 0.75rem;
-  color: #9ca3af;
-}
-
-.lc2-friend-bar-wrap {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex: 1;
-  min-width: 120px;
-}
-
-.lc2-friend-bar {
-  flex: 1;
-  height: 6px;
-  border-radius: 3px;
-  background: rgba(16, 185, 129, 0.1);
-  overflow: hidden;
-}
-
-.lc2-friend-bar-fill {
-  height: 100%;
-  background: #10b981;
-  border-radius: 3px;
-}
-
-.lc2-friend-pct {
-  font-size: 0.6875rem;
-  color: #6b7280;
-  margin-left: auto;
+.lc-mono {
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+.lc-emerald {
+  color: var(--emerald);
+}
+.lc-fg-muted {
+  color: var(--fg-muted);
+}
+.lc-text-sm {
+  font-size: 12px;
+}
+.lc-text-xs {
+  font-size: 11px;
+}
+.lc-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--fg-muted);
 }
 
-.lc2-friend-course {
-  font-size: 0.75rem;
-  color: #9ca3af;
-  margin-top: 0.25rem;
-  line-height: 1.4;
+.lc-page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 16px;
 }
-
-.lc2-friend-badges {
-  margin-top: 0.4rem;
-}
-
-.lc2-friends-empty {
-  font-size: 0.8125rem;
-  color: #6b7280;
-  margin: 0;
-}
-
-.lc2-friends-footer {
-  margin-top: 1rem;
-  padding: 0.75rem 0 0;
-  border-top: 1px solid rgba(16, 185, 129, 0.08);
-}
-
-@media (max-width: 640px) {
-  .lc2-partner-time {
-    margin-left: 0;
-    width: 100%;
-  }
-
-  .lc2-friend-row .lc2-friend-top {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .lc2-friend-bar-wrap {
-    width: 100%;
-  }
-}
-
-.lc2-page .lc2-header-title {
-  font-size: 1.75rem;
-  font-weight: 800;
-  color: #f0f6fc;
-  margin: 0;
-  letter-spacing: -0.02em;
-}
-
-.lc2-page .lc2-header-desc {
-  font-size: 0.875rem;
-  color: #6b7280;
-  margin: 0.35rem 0 0;
-  line-height: 1.5;
-}
-
-.lc2-overall {
-  margin: 1.25rem 0 1.5rem;
-  padding: 1rem 1.25rem;
-  border-radius: 12px;
-  background: rgba(16, 185, 129, 0.06);
-  border: 1px solid rgba(16, 185, 129, 0.12);
-}
-
-.lc2-overall-label {
-  font-size: 0.8125rem;
-  color: #9ca3af;
-  margin-bottom: 0.35rem;
-}
-
-.lc2-overall-bar {
-  height: 10px;
-  border-radius: 5px;
-  background: rgba(16, 185, 129, 0.12);
-  overflow: hidden;
-  margin-top: 0.5rem;
-}
-
-.lc2-overall-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #10b981, #059669);
-  border-radius: 5px;
-  transition: width 0.4s ease;
-}
-
-.lc2-track-row {
+.lc-header-tile {
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--emerald-soft), transparent 80%);
+  border: 1px solid var(--emerald-border);
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
+  place-items: center;
+  color: var(--emerald);
+  font-size: 24px;
+}
+.lc-greeting {
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  margin: 4px 0 0;
+  color: var(--fg);
 }
 
+.lc-hero-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 18px;
+  margin-bottom: 18px;
+}
 @media (max-width: 1200px) {
-  .lc2-track-row {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 640px) {
-  .lc2-track-row {
+  .lc-hero-grid {
     grid-template-columns: 1fr;
   }
 }
 
-.lc2-track-card {
-  display: block;
-  width: 100%;
-  text-align: left;
-  padding: 1rem 1.1rem;
-  border-radius: 14px;
-  background: rgba(16, 185, 129, 0.02);
-  border: 1px solid rgba(16, 185, 129, 0.1);
-  color: inherit;
-  cursor: pointer;
-  font-family: inherit;
-  transition: border-color 0.2s, box-shadow 0.2s;
+.lc-elo-hero {
+  padding: 24px 26px;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.18) 0%, transparent 50%),
+    linear-gradient(180deg, var(--surface), var(--surface-2));
+  border: 1px solid var(--emerald-border);
+  position: relative;
+  overflow: hidden;
+}
+.lc-elo-hero-glow {
+  position: absolute;
+  top: -30px;
+  right: -30px;
+  width: 240px;
+  height: 240px;
+  background: conic-gradient(from 0deg, rgba(16, 185, 129, 0.18), transparent 70%);
+  filter: blur(20px);
+  pointer-events: none;
+}
+.lc-elo-hero-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  position: relative;
+}
+.lc-elo-big {
+  font-family: var(--font-mono);
+  font-size: 64px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  background: linear-gradient(180deg, var(--emerald), var(--emerald-hover));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+.lc-elo-delta-pill {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: var(--emerald-soft);
+  border: 1px solid var(--emerald-border);
+  color: var(--emerald);
+  -webkit-text-fill-color: var(--emerald);
+}
+.lc-elo-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  flex-wrap: wrap;
 }
 
-.lc2-track-card:hover {
-  border-color: rgba(16, 185, 129, 0.22);
+.lc-streak-badge {
+  width: 110px;
+  height: 110px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(245, 158, 11, 0.18), rgba(245, 158, 11, 0.02));
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  flex-shrink: 0;
 }
-
-.lc2-track-card.active {
-  border-color: rgba(16, 185, 129, 0.45);
-  box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.15);
+.lc-streak-flame {
+  font-size: 30px;
 }
-
-.lc2-track-icon {
-  font-size: 1.35rem;
-  margin-bottom: 0.35rem;
-}
-.lc2-track-icon .bi {
-  font-size: 1.35rem;
-  color: #10b981;
+.lc-streak-num {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--amber);
   line-height: 1;
 }
-
-.lc2-track-name {
-  font-size: 0.8125rem;
-  font-weight: 700;
-  color: #f0f6fc;
-  margin: 0 0 0.35rem;
-  line-height: 1.35;
-}
-
-.lc2-track-meta {
-  font-size: 0.6875rem;
-  color: #6b7280;
-  margin-bottom: 0.5rem;
-}
-
-.lc2-track-bar {
-  height: 6px;
-  border-radius: 3px;
-  background: rgba(16, 185, 129, 0.1);
-  overflow: hidden;
-}
-
-.lc2-track-bar-fill {
-  height: 100%;
-  background: #10b981;
-  border-radius: 3px;
-}
-
-.lc2-track-pct {
-  font-size: 0.625rem;
-  color: #6b7280;
-  margin-top: 0.35rem;
-}
-
-.lc2-detail {
-  margin-top: 0.5rem;
-}
-
-.lc2-level-block {
-  margin-bottom: 1rem;
-  border-radius: 14px;
-  background: rgba(16, 185, 129, 0.02);
-  border: 1px solid rgba(16, 185, 129, 0.08);
-  overflow: hidden;
-}
-
-.lc2-level-block.locked {
-  opacity: 0.55;
-  border-style: dashed;
-}
-
-.lc2-level-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.85rem 1.15rem;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.06);
-  font-size: 0.875rem;
-  font-weight: 800;
-  color: #f0f6fc;
-}
-
-.lc2-level-body {
-  padding: 0.4rem 0;
-}
-
-.lc2-course-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.65rem 1.15rem;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.06);
-  font-size: 0.8125rem;
-}
-
-.lc2-course-row:last-child {
-  border-bottom: none;
-}
-
-.lc2-course-row.done {
-  color: #9ca3af;
-}
-
-.lc2-course-row.active {
-  background: rgba(16, 185, 129, 0.06);
-  border-left: 3px solid #10b981;
-  padding-left: calc(1.15rem - 3px);
-}
-
-.lc2-course-row.locked {
-  color: #6b7280;
-}
-
-.lc2-course-title {
-  font-weight: 600;
-  color: #e5e7eb;
-  flex: 1;
-  min-width: 0;
-}
-
-.lc2-course-meta {
-  font-size: 0.75rem;
-  color: #6b7280;
-  white-space: nowrap;
-}
-
-.lc2-course-action {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #10b981;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.lc2-course-action:hover {
-  text-decoration: underline;
-}
-
-.lc2-badges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 1.5rem;
-}
-
-.lc2-badge {
-  font-size: 0.75rem;
-  padding: 0.35rem 0.65rem;
-  border-radius: 8px;
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.2);
-  color: #d1d5db;
-}
-
-.lc2-loading {
-  padding: 2rem;
-  text-align: center;
-  color: #6b7280;
-}
-
-body.light-mode .lc2-track-card {
-  background: #fff;
-  border-color: rgba(5, 150, 105, 0.12);
-}
-
-body.light-mode .lc2-header-title {
-  color: #111827;
-}
-
-/* ═══ Learning Center v3 layout (dashboard-aligned) ═══ */
-.lc3-page-title {
-  font-size: 1.75rem;
-  font-weight: 800;
-  color: #f0f6fc;
-  letter-spacing: -0.02em;
-  margin: 0;
-}
-
-.lc3-header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-}
-
-.lc3-trophy-card {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem 1.25rem;
-  min-width: min(340px, 100%);
-}
-
-.lc3-trophy-avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: rgba(16, 185, 129, 0.08);
-  border: 2px solid rgba(16, 185, 129, 0.15);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #10b981;
-  font-weight: 800;
-  font-size: 1rem;
-  flex-shrink: 0;
-  overflow: hidden;
-}
-
-.lc3-label {
-  font-size: 0.625rem;
+.lc-streak-label {
+  font-size: 9px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #6b7280;
-  margin-bottom: 0.65rem;
+  letter-spacing: 0.1em;
+  color: var(--amber);
 }
 
-.lc3-journey-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
+.lc-elo-ladder-wrap {
+  margin-top: 24px;
 }
-
-.lc3-inprogress-row {
+.lc-elo-ladder-labels {
   display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  padding: 0.6rem 0.85rem;
-  border-radius: 10px;
-  background: var(--surface-card);
-  border: 1px solid var(--border-primary);
-  margin-bottom: 0.5rem;
-}
-
-.lc3-badge-tiles {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.lc3-badge-tile {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.15rem;
-}
-
-.lc3-badge-tile-earned {
-  background: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(16, 185, 129, 0.2);
-}
-
-.lc3-badge-tile-locked {
-  background: rgba(107, 114, 128, 0.15);
-  border: 1px solid rgba(107, 114, 128, 0.2);
-  color: #6b7280;
-  font-size: 1rem;
-  font-weight: 700;
-}
-
-.lc3-track-progress-row {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 0.85rem;
-  margin-bottom: 1.25rem;
-}
-
-.lc3-track-card-btn {
-  padding: 0.6rem 1rem !important;
-  min-height: unset !important;
-  text-align: center;
-  cursor: pointer;
-  transition: border-color 0.2s, transform 0.15s;
-  border: 1px solid var(--border-primary);
-  background: var(--surface-card);
-}
-
-.lc3-track-card-btn:hover {
-  transform: translateY(-1px);
-  border-color: rgba(16, 185, 129, 0.2);
-}
-
-.lc3-track-card-btn--selected {
-  outline: 2px solid rgba(16, 185, 129, 0.45);
-  outline-offset: 0;
-}
-
-.lc3-bottom-grid {
-  display: grid;
-  grid-template-columns: 340px 1fr;
-  gap: 1.25rem;
-  align-items: stretch;
-}
-
-.lc3-friends-card {
-  height: 100%;
-  min-height: var(--lc3-track-card-height, auto);
-}
-
-.lc3-friend-name {
-  color: #f0f6fc;
-}
-
-body.light-mode .lc3-friend-name {
-  color: #111827;
-}
-
-.lc3-course-panel-header {
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  align-items: flex-start;
-}
-
-.lc3-level-tabs {
-  display: flex;
-  gap: 0.25rem;
-  flex-wrap: wrap;
-}
-
-.lc3-level-tab {
-  padding: 0.25rem 0.65rem;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-size: 0.6875rem;
+  justify-content: space-between;
+  font-size: 10px;
   font-weight: 600;
-  background: rgba(16, 185, 129, 0.04);
-  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg-muted);
+  margin-bottom: 12px;
 }
-
-.lc3-level-tab--active {
-  font-weight: 700;
-  background: #10b981;
-  color: #fff;
+.lc-elo-ladder {
+  position: relative;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  overflow: visible;
 }
-
-.lc3-course-row-link {
+.lc-tier-zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+.lc-tier-zone--bronze {
+  background: rgba(205, 127, 50, 0.12);
+}
+.lc-tier-zone--silver {
+  background: rgba(192, 192, 192, 0.1);
+}
+.lc-tier-zone--gold {
+  background: rgba(243, 201, 105, 0.1);
+}
+.lc-tier-boundary {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1.5px;
+}
+.lc-elo-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(16, 185, 129, 0.12) 80%,
+    rgba(16, 185, 129, 0.28)
+  );
+  transition: width 0.6s ease;
+}
+.lc-elo-marker {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 4px;
+  background: var(--emerald);
+  box-shadow: 0 0 10px var(--emerald);
+  transform: translateX(-50%);
+  transition: left 0.6s ease;
+}
+.lc-elo-marker-label {
+  position: absolute;
+  top: -26px;
+  transform: translateX(-50%);
+  background: var(--emerald);
+  color: #001512;
+  padding: 3px 9px;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.lc-elo-friend {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1.5px solid var(--border-strong);
+  display: grid;
+  place-items: center;
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--fg);
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+.lc-elo-friend:hover {
+  transform: translate(-50%, -50%) scale(1.15);
+  z-index: 2;
+}
+.lc-elo-ladder-caption {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.65rem 0;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.04);
-  text-decoration: none;
-  color: inherit;
+  gap: 6px;
+  margin-top: 14px;
+  font-size: 12px;
+  color: var(--fg-muted);
 }
 
-.lc3-course-row-link:last-child {
-  border-bottom: none;
+.lc-hero-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+@media (max-width: 900px) {
+  .lc-hero-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+.lc-hero-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.lc-hero-stat-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--fg-muted);
+}
+.lc-hero-stat-value {
+  font-size: 22px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  color: var(--fg);
+}
+.lc-hero-stat-sub {
+  font-size: 11px;
+  color: var(--fg-muted);
 }
 
-.lc3-course-row-link--disabled {
-  cursor: not-allowed;
-  opacity: 0.95;
+.lc-daily-quest {
+  padding: 24px 26px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, var(--surface), var(--surface-2));
+  border: 1px solid var(--border);
 }
-
-/* From Partners & Creators — compact 3×3 (~50% shorter than original) */
-.lc3-partner-section {
-  padding: 0.625rem 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.lc3-partner-section-header {
+.lc-dq-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 0.4rem;
-  margin-bottom: 0.4rem;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.05);
+  gap: 12px;
 }
-
-.lc3-partner-section-title {
-  font-size: 0.8125rem;
-  font-weight: 800;
-  margin: 0;
-  color: #f0f6fc;
-  letter-spacing: -0.01em;
+.lc-dq-primary {
+  margin-top: 14px;
+  padding: 14px;
+  background: var(--emerald-soft);
+  border: 1px solid var(--emerald-border);
+  border-radius: 12px;
 }
-
-.lc3-partner-section-link {
-  color: #10b981;
-  font-size: 0.625rem;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.lc3-partner-section-link:hover {
-  text-decoration: underline;
-}
-
-.lc3-partner-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.45rem;
-  align-items: stretch;
-}
-
-.lc3-partner-cell {
+.lc-dq-primary-row1 {
   display: flex;
-  flex-direction: column;
-  min-width: 0;
-  height: 100%;
-  padding: 0.45rem 0.5rem;
-  border-radius: 10px;
-  background: rgba(16, 185, 129, 0.03);
-  border: 1px solid rgba(16, 185, 129, 0.08);
-  box-sizing: border-box;
-}
-
-.lc3-partner-cell-top {
-  display: flex;
+  gap: 10px;
   align-items: center;
-  gap: 0.4rem;
-  margin-bottom: 0.2rem;
 }
-
-.lc3-partner-cell-avatar {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  overflow: hidden;
+.lc-dq-primary-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--fg);
+  margin-top: 2px;
+}
+.lc-dq-primary-meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  font-size: 11.5px;
+  color: var(--fg-muted);
+}
+.lc-dq-cta {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.55rem;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 10px 14px;
+  border-radius: 9px;
+  background: var(--emerald);
+  color: #001512;
+  font-size: 13px;
   font-weight: 700;
+  text-decoration: none;
+  transition: background 0.15s;
 }
-
-.lc3-partner-cell-head {
-  min-width: 0;
-  flex: 1;
+.lc-dq-cta:hover {
+  background: var(--emerald-hover);
+}
+.lc-dq-bonus-header {
+  margin-top: 16px;
+  margin-bottom: 8px;
+}
+.lc-dq-bonus-list {
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
+  gap: 8px;
 }
-
-.lc3-partner-cell-name {
-  margin: 0;
-  font-size: 0.6875rem;
-  font-weight: 700;
-  color: #f0f6fc;
-  line-height: 1.2;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.lc-dq-bonus {
+  display: grid;
+  grid-template-columns: 24px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 9px;
+  background: var(--surface);
+  border: 1px solid var(--border);
 }
-
-.lc3-partner-cell-role {
-  display: inline-block;
-  width: fit-content;
-  padding: 0.06rem 0.28rem;
-  border-radius: 3px;
-  font-size: 0.5rem;
-  font-weight: 700;
+.lc-dq-bonus--done {
+  opacity: 0.7;
 }
-
-.lc3-partner-cell-title {
-  margin: 0;
-  flex: 1;
-  font-size: 0.6875rem;
+.lc-dq-bonus--done .lc-dq-bonus-label {
+  text-decoration: line-through;
+  color: var(--fg-muted);
+}
+.lc-dq-bonus-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  background: var(--surface-2);
+  color: var(--fg-muted);
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+}
+.lc-dq-bonus--done .lc-dq-bonus-icon {
+  background: var(--emerald-soft);
+  color: var(--emerald);
+}
+.lc-dq-bonus-label {
+  font-size: 12px;
   font-weight: 600;
-  color: #e2e8f0;
-  line-height: 1.28;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
+  color: var(--fg);
+}
+.lc-dq-bonus-reward {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--amber);
 }
 
-.lc3-partner-cell-meta {
-  margin: 0.2rem 0 0;
-  font-size: 0.55rem;
-  color: #6b7280;
-  line-height: 1.3;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.lc-track-towers {
+  margin-bottom: 18px;
 }
-
-.lc3-partner-cell-time {
-  color: #8b949e;
+.lc-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
-
-body.light-mode .lc3-partner-cell {
-  background: rgba(16, 185, 129, 0.04);
-  border-color: rgba(16, 185, 129, 0.12);
+.lc-section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--fg);
+  margin: 4px 0 0;
 }
-
-body.light-mode .lc3-partner-cell-name {
-  color: #111827;
+.lc-towers-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
 }
-
-body.light-mode .lc3-partner-cell-title {
-  color: #1f2937;
-}
-
-body.light-mode .lc3-partner-section-title {
-  color: #111827;
-}
-
-/* ═══ NEW Learning Center Responsive ═══ */
-@media (max-width: 1200px) {
-  .lc3-track-progress-row {
+@media (max-width: 1100px) {
+  .lc-towers-grid {
     grid-template-columns: repeat(3, 1fr);
   }
 }
-
-@media (max-width: 900px) {
-  .lc3-bottom-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .lc3-track-progress-row {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .lc3-partner-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.4rem;
-  }
-}
-
 @media (max-width: 768px) {
-  .lc3-header-row {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .lc3-journey-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .lc3-track-progress-row {
+  .lc-towers-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-
-  .lc3-trophy-card {
-    min-width: 0;
-  }
-
-  .lc3-partner-grid {
-    grid-template-columns: 1fr;
-  }
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   Surface-context system — Learning Center
-   Every card declares a `surface`; every CardPrimary / CardSecondary /
-   CardMuted / CardBadge inside reads the matching foreground token.
-   All values resolve via CSS variables so dark + light + partner-gold
-   all work without per-instance overrides.
-
-   See: src/components/learning/LearningCard.jsx
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-.lc-surface {
-  /* sensible defaults — overridden by surface variant */
-  --lc-primary-fg: var(--text-primary);
-  --lc-secondary-fg: var(--text-secondary);
-  --lc-muted-fg: var(--text-muted);
-  --lc-badge-bg: var(--emerald-bg);
-  --lc-badge-fg: var(--emerald-text);
-  color: var(--lc-primary-fg);
+.lc-tower {
+  padding: 14px;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  text-align: left;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+  color: inherit;
+  width: 100%;
 }
-
-.lc-surface-default {
-  --lc-primary-fg: var(--text-primary);
-  --lc-secondary-fg: var(--text-secondary);
-  --lc-muted-fg: var(--text-muted);
-  --lc-badge-bg: var(--emerald-bg);
-  --lc-badge-fg: var(--emerald-text);
+.lc-tower:hover {
+  border-color: var(--border-strong);
 }
-
-/* Previously emerald-washed — now a plain neutral card. Tint was visually
-   redundant with default cards once the surface system took over; a subtle
-   border change would have read as "broken theme" more than "highlighted." */
-.lc-surface-tinted {
-  --lc-primary-fg: var(--text-primary);
-  --lc-secondary-fg: var(--text-secondary);
-  --lc-muted-fg: var(--text-muted);
-  --lc-badge-bg: var(--emerald-bg);
-  --lc-badge-fg: var(--emerald-text);
+.lc-tower--main {
+  background: linear-gradient(180deg, var(--track-soft, var(--emerald-soft)), var(--surface));
+  border: 1px solid var(--track-color, var(--emerald));
+  box-shadow: 0 0 0 3px var(--emerald-soft);
 }
-.lc-surface-tinted.db-card,
-.db-card.lc-surface-tinted {
-  background: var(--surface-card);
-  border-color: var(--border-primary);
+.lc-tower-main-tag {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 4px 10px;
+  border-radius: 0 14px 0 10px;
+  background: var(--track-color, var(--emerald));
+  color: #001512;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
 }
-
-/* Previously a brand-green hero card with forced-white text. Selected state
-   is now signaled by the outline ring on .lc3-track-card-btn--selected and
-   by the track-colored metric inside the card, not by a green background. */
-.lc-surface-accent {
-  --lc-primary-fg: var(--text-primary);
-  --lc-secondary-fg: var(--text-secondary);
-  --lc-muted-fg: var(--text-muted);
-  --lc-badge-bg: var(--emerald-bg);
-  --lc-badge-fg: var(--emerald-text);
+.lc-tower-set-main {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  font-size: 9px;
+  color: var(--fg-muted);
+  background: var(--surface-2);
+  padding: 2px 6px;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.15s;
+  cursor: pointer;
 }
-.lc-surface-accent.db-card,
-.db-card.lc-surface-accent {
-  background: var(--surface-card);
-  border-color: var(--border-primary);
-  color: var(--text-primary);
-}
-
-.lc-surface-muted {
-  --lc-primary-fg: var(--text-primary);
-  --lc-secondary-fg: var(--text-secondary);
-  --lc-muted-fg: var(--text-muted);
-  --lc-badge-bg: var(--surface-card);
-  --lc-badge-fg: var(--text-primary);
-}
-.lc-surface-muted.db-card,
-.db-card.lc-surface-muted {
-  background: var(--surface-card-hover);
-  border-color: var(--border-primary);
-}
-
-/* Previously had a green wash to signal completion — now neutral. The
-   "Complete" checkmark circle, the positive-tone status badge, and the
-   progress-bar fill still carry the green signal, so completion reads
-   clearly without the whole-card tint. */
-.lc-surface-completed {
-  --lc-primary-fg: var(--text-primary);
-  --lc-secondary-fg: var(--text-secondary);
-  --lc-muted-fg: var(--text-muted);
-  --lc-badge-bg: var(--positive-bg);
-  --lc-badge-fg: var(--emerald-text);
-}
-.lc-surface-completed.db-card,
-.db-card.lc-surface-completed {
-  background: var(--surface-card);
-  border-color: var(--border-primary);
-}
-
-/* Locked — dimmed but readable; passes AA against its card background */
-.lc-surface-locked {
-  --lc-primary-fg: var(--text-muted);
-  --lc-secondary-fg: var(--text-muted);
-  --lc-muted-fg: var(--text-faint);
-  --lc-badge-bg: var(--surface-card-hover);
-  --lc-badge-fg: var(--text-muted);
-}
-.lc-surface-locked.db-card,
-.db-card.lc-surface-locked {
-  background: var(--surface-card-hover);
-  border-color: var(--border-secondary);
-}
-
-body.light-mode .lc-surface-locked {
-  --lc-primary-fg: #475569;
-  --lc-secondary-fg: #475569;
-  --lc-muted-fg: #64748b;
-}
-
-/* Text helpers — consume the foreground variable set above */
-.lc-fg-primary {
-  color: var(--lc-primary-fg, var(--text-primary));
-}
-.lc-fg-secondary {
-  color: var(--lc-secondary-fg, var(--text-secondary));
-}
-.lc-fg-muted {
-  color: var(--lc-muted-fg, var(--text-muted));
-}
-
-/* Badge primitive */
-.lc-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.18rem 0.5rem;
-  border-radius: 999px;
-  background: var(--lc-badge-bg, var(--emerald-bg));
-  color: var(--lc-badge-fg, var(--emerald-text));
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  line-height: 1;
-  border: 1px solid transparent;
-}
-
-.lc-badge-tone-positive {
-  background: var(--positive-bg);
-  color: var(--emerald-text);
-}
-.lc-badge-tone-warning {
-  background: var(--warning-bg);
-  color: var(--warning);
-}
-.lc-badge-tone-negative {
-  background: var(--negative-bg);
-  color: var(--negative);
-}
-.lc-badge-tone-info {
-  background: var(--info-bg);
-  color: var(--info);
-}
-.lc-badge-tone-neutral {
-  background: var(--surface-card-hover);
-  color: var(--text-secondary);
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   Contrast-safety overrides for existing .lc3-* classes that previously
-   only worked in dark mode. Adds light-mode rules so text reaches WCAG AA.
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-/* Page title was #f0f6fc (near-white) — unreadable on light page bg */
-.lc3-page-title {
-  color: var(--text-primary);
-}
-
-.lc3-label {
-  color: var(--text-muted);
-}
-
-/* Tracks tile — wire to surface system when wrapped; standalone button still
-   needs theme-aware bg + border so the tile itself passes AA in light mode. */
-body.light-mode .lc3-track-card-btn {
-  background: var(--surface-card);
-  border-color: var(--border-primary);
-}
-
-body.light-mode .lc3-track-card-btn--selected {
-  outline-color: var(--emerald);
-}
-
-/* Level tabs: inactive text was #6b7280 on a muted green tint — boost contrast
-   in light mode so normal body text passes AA against the tab bg. */
-.lc3-level-tab {
-  background: var(--surface-card-hover);
-  color: var(--text-secondary);
-  transition: background 150ms ease, color 150ms ease;
-}
-.lc3-level-tab:hover {
-  background: var(--surface-card-hover);
-  color: var(--text-primary);
-}
-.lc3-level-tab:focus-visible {
-  outline: 2px solid var(--border-focus);
-  outline-offset: 2px;
-}
-
-.lc3-level-tab--active,
-.lc3-level-tab--active:hover {
-  background: var(--emerald);
-  color: #ffffff;
-}
-
-/* Course row disabled — opacity: 0.95 gave a false sense of accessibility.
-   Swap to a proper readable muted foreground. */
-.lc3-course-row-link--disabled {
+.lc-tower:hover .lc-tower-set-main {
   opacity: 1;
-  color: var(--text-muted);
 }
-.lc3-course-row-link--disabled * {
-  cursor: not-allowed;
+.lc-tower-header {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 14px;
 }
-
-/* New surface-aware course row card — replaces the old .lc3-course-row-link
-   row layout. Surface class (.lc-surface-*) supplies background + border +
-   text tokens. Interactive states flip in both themes automatically. */
-.lc3-course-row-card {
+.lc-tower-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--fg);
+}
+.lc-tower-meta {
+  font-size: 10.5px;
+  color: var(--fg-muted);
+}
+.lc-tower-tiers {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.lc-tower-tier {
+  height: 22px;
+  border-radius: 5px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+.lc-tower-tier-fill {
+  position: absolute;
+  inset: 0;
+  transition: width 0.6s ease;
+}
+.lc-tower-tier-row {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 8px;
+  height: 100%;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--fg);
+}
+.lc-tower-tier-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  margin-right: 4px;
+}
+.lc-tower-footer {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.6rem 0.8rem;
-  margin-bottom: 0.4rem;
+  gap: 8px;
+}
+.lc-tower-footer-pct {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.lc-active-path {
+  padding: 22px 26px;
+  border-radius: 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  margin-bottom: 18px;
+}
+.lc-ap-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.lc-ap-header-left {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+.lc-ap-title {
+  font-size: 20px;
+  font-weight: 800;
+  margin: 2px 0 0;
+  color: var(--fg);
+}
+.lc-ap-tier-tabs {
+  display: flex;
+  padding: 4px;
   border-radius: 10px;
-  border: 1px solid var(--border-primary);
-  background: var(--surface-card);
-  text-decoration: none;
-  transition: border-color 150ms ease, background 150ms ease, transform 150ms ease;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  gap: 2px;
+  flex-wrap: wrap;
 }
-.lc3-course-row-card:last-child {
-  margin-bottom: 0;
+.lc-tier-tab {
+  padding: 7px 14px;
+  border-radius: 7px;
+  font-size: 11.5px;
+  font-weight: 700;
+  background: transparent;
+  border: none;
+  color: var(--fg-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
-a.lc3-course-row-card:hover {
-  border-color: var(--border-hover);
-  background: var(--surface-card-hover);
-  transform: translateY(-1px);
+.lc-tier-tab--active {
+  background: var(--bg-elev);
+  color: var(--fg);
+  box-shadow: var(--shadow);
 }
-a.lc3-course-row-card:focus-visible {
-  outline: 2px solid var(--border-focus);
-  outline-offset: 2px;
-}
-
-/* Surface-specific row overrides — neutralized so course rows no longer
-   carry a persistent green wash. Completion / in-progress / locked state
-   is signaled via the row's status pill, the circle icon, and (for
-   completed) the progress-bar fill — not via the row background. */
-.lc3-course-row-card.lc-surface-tinted {
-  background: var(--surface-card);
-  border-color: var(--border-primary);
-}
-.lc3-course-row-card.lc-surface-completed {
-  background: var(--surface-card);
-  border-color: var(--border-primary);
-}
-.lc3-course-row-card.lc-surface-locked {
-  background: var(--surface-card-hover);
-  border-color: var(--border-secondary);
-}
-
-.lc3-course-row-card--disabled {
+.lc-tier-tab--locked {
+  color: var(--fg-muted);
   cursor: not-allowed;
+  opacity: 0.6;
 }
-.lc3-course-row-card--disabled,
-.lc3-course-row-card--disabled * {
+.lc-tier-tab-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.lc-path-vis {
+  position: relative;
+  padding: 20px 0 10px;
+}
+.lc-path-svg {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 80px;
   pointer-events: none;
 }
-
-/* In-progress row inside Journey card — neutralized so the row sits on a
-   plain surface like every other card. The row is already visually scoped
-   by its container (the Journey card) and by the small track-colored
-   progress bar on the right. */
-body.light-mode .lc3-inprogress-row {
-  background: var(--surface-card);
-  border-color: var(--border-primary);
+.lc-path-nodes {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  position: relative;
+  z-index: 1;
+}
+@media (max-width: 900px) {
+  .lc-path-nodes {
+    grid-template-columns: repeat(4, 1fr);
+    row-gap: 24px;
+  }
+}
+.lc-path-col {
+  padding: 40px 6px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+  position: relative;
+  cursor: pointer;
+}
+.lc-path-node {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  position: relative;
+  transition: transform 0.15s;
+}
+.lc-path-node--completed {
+  background: var(--emerald);
+  border: 2px solid var(--emerald);
+  color: #001512;
+  font-size: 20px;
+}
+.lc-path-node--next {
+  background: var(--emerald);
+  border: 2px solid #001512;
+  color: #001512;
+  box-shadow: 0 0 18px rgba(16, 185, 129, 0.5);
+}
+.lc-path-node--locked {
+  background: var(--surface-2);
+  border: 1.5px dashed var(--border-strong);
+  color: var(--fg-dim);
+  font-size: 13px;
+  cursor: not-allowed;
+}
+.lc-path-node--unstarted {
+  background: var(--surface-2);
+  border: 2px solid var(--surface-2);
+  color: var(--fg-muted);
+}
+.lc-path-node-idx {
+  font-size: 14px;
+  font-weight: 700;
+}
+.lc-path-node-pulse {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid var(--emerald);
+  opacity: 0.35;
+  animation: lc-pulse 2s infinite;
+}
+@keyframes lc-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.35;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0;
+  }
+}
+.lc-path-node-bookmark {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  display: grid;
+  place-items: center;
+  color: var(--amber);
+  font-size: 9px;
+  cursor: pointer;
+  padding: 0;
+}
+.lc-path-node-label {
+  text-align: center;
+  max-width: 140px;
+}
+.lc-path-node-title {
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--fg);
+}
+.lc-path-node-meta {
+  font-size: 10px;
+  color: var(--fg-muted);
+  margin-top: 4px;
+}
+.lc-path-node-here {
+  display: inline-block;
+  margin-top: 6px;
+  background: var(--emerald);
+  color: #001512;
+  padding: 2px 7px;
+  border-radius: 5px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
 }
 
-/* Friends-name: retain light-mode override already in file, but also provide
-   a dark mode explicit binding via var so partner-gold flip works. */
-.lc3-friend-name {
-  color: var(--text-primary);
+.lc-ap-footer {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
 }
-body.light-mode .lc3-friend-name {
-  color: var(--text-primary);
-}
-
-/* Hover contrast on the badges CTA pill (inline-styled), partner cell, etc. */
-body.light-mode .lc3-partner-cell-meta {
-  color: var(--text-muted);
-}
-body.light-mode .lc3-partner-cell-time {
-  color: var(--text-faint);
-}
-
-/* ── Defensive override: ensure learning center surface matches navbar ── */
-body.light-mode .learning-center-page,
-body.light-mode .lc-page,
-body.light-mode .learning-center-root,
-body.light-mode .lc3-page {
-  background-color: #ffffff;
+.lc-ap-footer-stats {
+  display: flex;
+  gap: 18px;
+  font-size: 12px;
+  color: var(--fg-muted);
+  flex-wrap: wrap;
 }
 
+.lc-bottom-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 18px;
+}
+@media (max-width: 1100px) {
+  .lc-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+}
 
+.lc-btn {
+  padding: 11px 20px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  border: none;
+}
+.lc-btn-primary {
+  background: var(--emerald);
+  color: #001512;
+  border: 1px solid var(--emerald);
+}
+.lc-btn-primary:hover {
+  background: var(--emerald-hover);
+}
+.lc-btn-secondary {
+  background: var(--surface);
+  color: var(--fg);
+  border: 1px solid var(--border);
+}
 
+.lc-leaderboard,
+.lc-bookmarks {
+  padding: 22px 26px;
+  border-radius: 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.lc-podium {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 12px;
+  margin: 20px 0;
+  min-height: 120px;
+}
+.lc-podium-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 90px;
+}
+.lc-podium-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 3px solid;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 800;
+  position: relative;
+  background: var(--surface-2);
+  color: var(--fg);
+  margin-bottom: 8px;
+}
+.lc-podium-rank {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  font-size: 10px;
+  display: grid;
+  place-items: center;
+}
+.lc-podium-bar {
+  width: 100%;
+  border-radius: 8px 8px 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 8px 4px;
+  gap: 4px;
+}
+.lc-podium-name {
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--fg);
+}
+.lc-podium-elo {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--emerald);
+}
+
+.lc-leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.lc-leaderboard-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.lc-leaderboard-row--me {
+  background: var(--emerald-soft);
+  border-color: var(--emerald-border);
+}
+.lc-leaderboard-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 800;
+}
+.lc-leaderboard-you-pill {
+  margin-left: 8px;
+}
+.lc-leaderboard-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.lc-bookmarks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+.lc-bookmark-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s;
+}
+.lc-bookmark-row:hover {
+  border-color: var(--border-strong);
+}
+.lc-bookmark-remove {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--fg-muted);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+.lc-bookmarks-footer {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.lc-bookmarks-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.lc-bookmark-chip {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--fg-muted);
+}
+
+.lc-org-card {
+  border-radius: 14px;
+}

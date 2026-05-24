@@ -14,9 +14,9 @@
 
 :root {
   /* ── Core Backgrounds ── */
-  --bg-primary: #0a0e13;          /* Page background */
-  --bg-secondary: #0d1117;        /* Elevated surfaces (cards) */
-  --bg-tertiary: #161b22;         /* Deeply nested elements */
+  --bg-primary: #0a0e13; /* Page background */
+  --bg-secondary: #0d1117; /* Elevated surfaces (cards) */
+  --bg-tertiary: #161b22; /* Deeply nested elements */
   --bg-overlay: rgba(0, 0, 0, 0.6); /* Modal/overlay backdrop */
 
   /* ── Card / Surface ── */
@@ -33,11 +33,11 @@
   --border-input: rgba(16, 185, 129, 0.1);
 
   /* ── Text ── */
-  --text-primary: #f0f6fc;        /* Headings, values, important text */
-  --text-secondary: #e2e8f0;      /* Body text, labels */
-  --text-muted: #8b949e;          /* De-emphasized text */
-  --text-faint: #6b7280;          /* Captions, meta, timestamps */
-  --text-ghost: #4b5563;          /* Placeholders, disabled */
+  --text-primary: #f0f6fc; /* Headings, values, important text */
+  --text-secondary: #e2e8f0; /* Body text, labels */
+  --text-muted: #8b949e; /* De-emphasized text */
+  --text-faint: #6b7280; /* Captions, meta, timestamps */
+  --text-ghost: #4b5563; /* Placeholders, disabled */
 
   /* ── Brand: Emerald (User) ── */
   --emerald: #10b981;
@@ -127,13 +127,37 @@
   --badge-ring: #0f1419;
 
   /* ── Typography (Dashboard + app-wide) ── */
-  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-sans:
+    'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
 
   /* Native form control chrome (dropdowns, date inputs, scrollbars) */
   color-scheme: dark;
-}
 
+  /* Learning Center redesign tokens */
+  --bg: var(--bg-primary);
+  --bg-elev: var(--bg-secondary);
+  --surface: var(--bg-secondary);
+  --surface-2: var(--bg-tertiary);
+  --surface-tinted: rgba(16, 185, 129, 0.05);
+  --fg: var(--text-primary);
+  --fg-muted: var(--text-muted);
+  --fg-dim: var(--text-faint);
+  --border: var(--border-primary);
+  --border-strong: rgba(255, 255, 255, 0.14);
+  --emerald-soft: rgba(16, 185, 129, 0.12);
+  --amber-soft: rgba(245, 158, 11, 0.12);
+  --indigo: #6366f1;
+  --indigo-soft: rgba(99, 102, 241, 0.12);
+  --pink: #ec4899;
+  --pink-soft: rgba(236, 72, 153, 0.12);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15);
+  --tier-bronze: #cd7f32;
+  --tier-silver: #cbd1d6;
+  --tier-gold: #f3c969;
+  --tier-platinum: #cfe6e0;
+  --tier-diamond: #b9f2ff;
+}
 
 /* ═══════════════════════════════════════════════════════════
    LIGHT MODE — Complete Override
@@ -217,6 +241,18 @@ body.light-mode {
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08);
   --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.1);
   --shadow-glow: 0 0 20px rgba(16, 185, 129, 0.08);
+
+  --bg: #f6f8f7;
+  --bg-elev: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #f9fbfa;
+  --surface-tinted: #ecfdf5;
+  --fg: #0c1916;
+  --fg-muted: #5c6b67;
+  --fg-dim: #9aa6a3;
+  --border: rgba(15, 32, 28, 0.08);
+  --border-strong: rgba(15, 32, 28, 0.14);
+  --shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 2px 8px rgba(15, 23, 42, 0.06);
 
   /* ── Navbar ── */
   --nav-bg: rgba(255, 255, 255, 0.92);
