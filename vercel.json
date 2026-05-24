@@ -68,6 +68,10 @@
     {
       "path": "/api/news/alpha-vantage/poll",
       "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/compute-community-pulse",
+      "schedule": "*/5 * * * *"
     }
   ]
 }

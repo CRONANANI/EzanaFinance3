@@ -416,3 +416,95 @@ html.light-mode .ezana-theme {
 .ez-icon-lg {
   font-size: 17px;
 }
+
+/* ── Evolutionary hub layout helpers ── */
+.evo-hub {
+  color: var(--text-primary);
+}
+
+.evo-quick-nav {
+  margin-bottom: 16px;
+}
+
+.evo-pulse-hero {
+  overflow: hidden;
+}
+
+.evo-pulse-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 720px) {
+  .evo-pulse-stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+.evo-sector-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.evo-sector-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid var(--border-secondary);
+  background: var(--bg-tertiary);
+}
+
+.evo-conviction-map .evo-ticker-row {
+  cursor: pointer;
+}
+
+.evo-lens-bar select {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-input);
+  border-radius: 8px;
+  color: var(--text-primary);
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+.evo-bull-bear {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 768px) {
+  .evo-bull-bear {
+    grid-template-columns: 1fr;
+  }
+}
+
+.evo-narrative-strength-bar {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--bg-tertiary);
+  overflow: hidden;
+}
+
+.evo-skill-progress-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--bg-tertiary);
+  overflow: hidden;
+}
+
+.evo-composer textarea,
+.evo-composer-collapsed textarea {
+  font-family: var(--font-sans);
+}
+
+.evo-post-discussion {
+  border-left: 3px solid var(--emerald);
+}

@@ -35,6 +35,57 @@ function engagementScore(p) {
   return (p.likes_count || 0) + (p.comments_count || 0) + (p.reposts_count || 0);
 }
 
+const SKILL_RANK = { Novice: 0, Apprentice: 1, Journeyman: 2, Master: 3, Oracle: 4 };
+
+async function applySkillFilter(list, minSkillRaw) {
+  if (!minSkillRaw || minSkillRaw === 'All') return list;
+
+  const normalized = String(minSkillRaw).replace('+', '').replace(' only', '').trim();
+  const minRank = SKILL_RANK[normalized] ?? 0;
+  const oracleOnly =
+    String(minSkillRaw).toLowerCase().includes('oracle only') ||
+    (normalized === 'Oracle' && String(minSkillRaw).toLowerCase().includes('only'));
+
+  const userIds = [...new Set(list.map((p) => p.user_id))];
+  if (!userIds.length) return list;
+
+  const { data: profiles } = await admin
+    .from('profiles')
+    .select('id, user_settings')
+    .in('id', userIds);
+
+  const userRank = new Map();
+  for (const prof of profiles || []) {
+    const tier = prof.user_settings?.skill_tier || prof.user_settings?.skill_rating || 'Novice';
+    userRank.set(prof.id, SKILL_RANK[tier] ?? 0);
+  }
+
+  return list.filter((p) => {
+    const rank = userRank.get(p.user_id) ?? 0;
+    if (oracleOnly) return rank === SKILL_RANK.Oracle;
+    return rank >= minRank;
+  });
+}
+
+async function fetchConvictionAvgs(postIds) {
+  if (!postIds.length) return {};
+  const { data: convictions } = await admin
+    .from('post_convictions')
+    .select('post_id, conviction_pct')
+    .in('post_id', postIds);
+
+  const map = {};
+  for (const c of convictions || []) {
+    map[c.post_id] = map[c.post_id] || [];
+    map[c.post_id].push(Number(c.conviction_pct));
+  }
+  const avgs = {};
+  for (const [id, arr] of Object.entries(map)) {
+    avgs[id] = Math.round(arr.reduce((a, b) => a + b, 0) / arr.length);
+  }
+  return avgs;
+}
+
 async function buildEnrichedResponse(supabase, user, list) {
   const userIds = [...new Set(list.map((p) => p.user_id))];
 
@@ -88,8 +139,9 @@ async function buildEnrichedResponse(supabase, user, list) {
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
-    const rawTab = (searchParams.get('tab') || 'recent').toLowerCase();
+    const rawTab = (searchParams.get('tab') || searchParams.get('type') || 'recent').toLowerCase();
     const tab = rawTab === 'latest' ? 'recent' : rawTab;
+    const minSkill = searchParams.get('skill_min') || searchParams.get('min_skill');
     const page = Math.max(0, parseInt(searchParams.get('page') || '0', 10));
 
     const supabase = getUserClient();
@@ -100,6 +152,82 @@ export async function GET(request) {
 
     const selectCols =
       'id, user_id, content, mentioned_ticker, image_url, poll_data, ticker_embed, likes_count, comments_count, reposts_count, created_at';
+
+    if (tab === 'signal') {
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const { data: batch, error } = await supabase
+        .from('community_posts')
+        .select(selectCols)
+        .gt('created_at', sevenDaysAgo)
+        .is('parent_post_id', null)
+        .limit(200);
+
+      if (error) {
+        console.error('Fetch signal posts error:', error);
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+
+      const ids = (batch || []).map((p) => p.id);
+      const convAvgs = await fetchConvictionAvgs(ids);
+      const ranked = [...(batch || [])]
+        .map((p) => {
+          const conv = convAvgs[p.id] ?? 0;
+          const engagement = engagementScore(p);
+          return { ...p, signal_score: conv * 0.6 + engagement * 0.4 };
+        })
+        .sort((a, b) => b.signal_score - a.signal_score);
+
+      const list = ranked.slice(from, from + LIMIT);
+      const filtered = await applySkillFilter(list, minSkill);
+      return await buildEnrichedResponse(supabase, user, filtered);
+    }
+
+    if (tab === 'legendary') {
+      const { data: legendaryProfiles } = await admin
+        .from('profiles')
+        .select('id')
+        .filter('user_settings->>is_legendary', 'eq', 'true')
+        .limit(50);
+
+      const ids = (legendaryProfiles || []).map((p) => p.id);
+      if (!ids.length) {
+        return NextResponse.json({ posts: [] });
+      }
+
+      const { data: posts, error } = await supabase
+        .from('community_posts')
+        .select(selectCols)
+        .in('user_id', ids)
+        .is('parent_post_id', null)
+        .order('created_at', { ascending: false })
+        .range(from, to);
+
+      if (error) {
+        console.error('Fetch legendary posts error:', error);
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+
+      const filtered = await applySkillFilter(posts || [], minSkill);
+      return await buildEnrichedResponse(supabase, user, filtered);
+    }
+
+    if (tab === 'discussions') {
+      const { data: posts, error } = await supabase
+        .from('community_posts')
+        .select(selectCols)
+        .is('parent_post_id', null)
+        .ilike('content', '%#discussion%')
+        .order('created_at', { ascending: false })
+        .range(from, to);
+
+      if (error) {
+        console.error('Fetch discussions error:', error);
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+
+      const filtered = await applySkillFilter(posts || [], minSkill);
+      return await buildEnrichedResponse(supabase, user, filtered);
+    }
 
     /** Popular / trending: sort by likes + comments + reposts (batched then sliced) */
     if (tab === 'trending' || tab === 'popular') {
@@ -116,7 +244,8 @@ export async function GET(request) {
 
       const sorted = [...(batch || [])].sort((a, b) => engagementScore(b) - engagementScore(a));
       const list = sorted.slice(from, from + LIMIT);
-      return await buildEnrichedResponse(supabase, user, list);
+      const filtered = await applySkillFilter(list, minSkill);
+      return await buildEnrichedResponse(supabase, user, filtered);
     }
 
     let query = supabase.from('community_posts').select(selectCols).is('parent_post_id', null);
@@ -174,7 +303,8 @@ export async function GET(request) {
     }
 
     const list = posts || [];
-    return await buildEnrichedResponse(supabase, user, list);
+    const filtered = await applySkillFilter(list, minSkill);
+    return await buildEnrichedResponse(supabase, user, filtered);
   } catch (error) {
     console.error('GET posts:', error);
     return NextResponse.json({ error: error.message || 'Server error' }, { status: 500 });

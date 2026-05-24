@@ -1,8 +1,8 @@
 'use client';
 
 import './community.css';
-import { HubConservative } from '@/components/community/redesign/HubConservative';
+import { HubEvolutionary } from '@/components/community/redesign_v2/HubEvolutionary';
 
 export default function CommunityPage() {
-  return <HubConservative />;
+  return <HubEvolutionary />;
 }
