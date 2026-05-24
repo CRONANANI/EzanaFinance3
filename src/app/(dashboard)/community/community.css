@@ -508,3 +508,11 @@ html.light-mode .ezana-theme {
 .evo-post-discussion {
   border-left: 3px solid var(--emerald);
 }
+
+.evo-post-menu-item:hover:not(:disabled) {
+  background: var(--surface-card-hover);
+}
+
+.evo-post-menu-item--danger:hover:not(:disabled) {
+  background: var(--negative-bg);
+}

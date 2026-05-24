@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useAuth } from '@/components/AuthProvider';
 import { Avatar, VerifiedTick, SkillBadge } from './Atoms';
 import { RichContent } from '../_legacy_v1/RichContent';
 import { MiniChart } from '../_legacy_v1/MiniChart';
@@ -632,8 +633,48 @@ export function QuotedPost({ quoted }) {
   );
 }
 
-export function PostHeader({ post, showSkill = true }) {
+export function PostHeader({ post, showSkill = true, onDelete }) {
+  const { user } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const menuRef = useRef(null);
   const u = post.author || {};
+  const isOwner = !!(user?.id && u.id === user.id);
+
+  useEffect(() => {
+    if (!menuOpen) return undefined;
+    const close = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [menuOpen]);
+
+  const handleDelete = async (e) => {
+    e.stopPropagation();
+    if (!window.confirm('Delete this post? This cannot be undone.')) return;
+
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/community/posts?post_id=${encodeURIComponent(post.id)}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        window.alert(data.error || 'Could not delete post.');
+        return;
+      }
+      setMenuOpen(false);
+      onDelete?.(post.id);
+    } catch {
+      window.alert('Could not delete post.');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
       <Avatar author={u} size={40} />
@@ -665,24 +706,73 @@ export function PostHeader({ post, showSkill = true }) {
           )}
         </div>
       </div>
-      <button
-        type="button"
-        style={{
-          background: 'transparent',
-          border: 'none',
-          color: 'var(--text-muted)',
-          cursor: 'pointer',
-          padding: 6,
-          borderRadius: 6,
-        }}
-      >
-        <i className="bi bi-three-dots" style={{ fontSize: 14 }} />
-      </button>
+      {isOwner && (
+        <div ref={menuRef} style={{ position: 'relative', flexShrink: 0 }}>
+          <button
+            type="button"
+            aria-label="Post options"
+            aria-expanded={menuOpen}
+            onClick={(e) => {
+              e.stopPropagation();
+              setMenuOpen((open) => !open);
+            }}
+            style={{
+              background: menuOpen ? 'var(--surface-card-hover)' : 'transparent',
+              border: 'none',
+              color: 'var(--text-muted)',
+              cursor: 'pointer',
+              padding: 6,
+              borderRadius: 6,
+            }}
+          >
+            <i className="bi bi-three-dots" style={{ fontSize: 14 }} />
+          </button>
+          {menuOpen && (
+            <div
+              className="ez-card evo-post-menu"
+              style={{
+                position: 'absolute',
+                right: 0,
+                top: 'calc(100% + 4px)',
+                minWidth: 160,
+                padding: 6,
+                zIndex: 20,
+                boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
+              }}
+            >
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={deleting}
+                className="evo-post-menu-item evo-post-menu-item--danger"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  width: '100%',
+                  padding: '8px 10px',
+                  border: 'none',
+                  borderRadius: 8,
+                  background: 'transparent',
+                  color: 'var(--negative)',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: deleting ? 'wait' : 'pointer',
+                  textAlign: 'left',
+                }}
+              >
+                <i className="bi bi-trash" style={{ fontSize: 14 }} />
+                {deleting ? 'Deleting…' : 'Delete post'}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
 
-export function PostCard({ post, variant = 'conviction-bar', onConvictionChange }) {
+export function PostCard({ post, variant = 'conviction-bar', onConvictionChange, onDelete }) {
   const isDiscussion = post.isDiscussion;
   const padding = variant === 'compact' ? 14 : 18;
   const useConvictionBar = variant === 'conviction-bar' || variant === 'default';
@@ -728,7 +818,7 @@ export function PostCard({ post, variant = 'conviction-bar', onConvictionChange 
         </div>
       )}
 
-      <PostHeader post={post} />
+      <PostHeader post={post} onDelete={onDelete} />
 
       {post.title && (
         <h3

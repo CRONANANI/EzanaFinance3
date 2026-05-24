@@ -198,6 +198,10 @@ export function useEvolutionaryData({
     [],
   );
 
+  const removePost = useCallback((postId) => {
+    setPosts((prev) => prev.filter((p) => p.id !== postId));
+  }, []);
+
   const convictionTickers = useMemo(
     () => (convictionMap.tickers || []).slice(0, 6),
     [convictionMap.tickers],
@@ -215,6 +219,7 @@ export function useEvolutionaryData({
     loading,
     error,
     updatePostConviction,
+    removePost,
     refetch,
     setEvents,
     setCopyRequests,

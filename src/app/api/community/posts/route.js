@@ -575,3 +575,54 @@ export async function PATCH(request) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
+
+export async function DELETE(request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    let post_id = searchParams.get('post_id') || searchParams.get('id');
+
+    if (!post_id) {
+      const body = await request.json().catch(() => null);
+      post_id = body?.post_id || body?.id || null;
+    }
+
+    if (!post_id) {
+      return NextResponse.json({ error: 'post_id required' }, { status: 400 });
+    }
+
+    const { user, client: supabase } = await requireUser(request);
+
+    const { data: row, error: fetchErr } = await supabase
+      .from('community_posts')
+      .select('id, user_id')
+      .eq('id', post_id)
+      .maybeSingle();
+
+    if (fetchErr || !row) {
+      return NextResponse.json({ error: 'Post not found' }, { status: 404 });
+    }
+
+    if (row.user_id !== user.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const { error: delErr } = await supabase
+      .from('community_posts')
+      .delete()
+      .eq('id', post_id)
+      .eq('user_id', user.id);
+
+    if (delErr) {
+      console.error('Delete post error:', delErr);
+      return NextResponse.json({ error: delErr.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ ok: true, id: post_id });
+  } catch (error) {
+    if (error?.status === 401) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    console.error('DELETE posts:', error);
+    return NextResponse.json({ error: error.message || 'Server error' }, { status: 500 });
+  }
+}

@@ -74,6 +74,7 @@ export function HubEvolutionary() {
     loading,
     error,
     updatePostConviction,
+    removePost,
     refetch,
     setEvents,
     setCopyRequests,
@@ -188,6 +189,7 @@ export function HubEvolutionary() {
                     key={p.id}
                     post={p}
                     onConvictionChange={(stats) => updatePostConviction(p.id, stats)}
+                    onDelete={removePost}
                   />
                 ))}
               </div>
