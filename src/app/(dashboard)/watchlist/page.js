@@ -198,7 +198,7 @@ const STOCKS = [
   },
 ];
 
-/* ── Bonds (treasuries and bond ETFs) ── */
+/* ── Bond ETFs (trade like stocks at dollar price per share) ── */
 const BONDS = [
   {
     id: 'bnd-tlt',
@@ -500,7 +500,7 @@ const CRYPTO = [
 /* ── Asset class catalog ── */
 const ASSET_CLASSES = [
   { id: 'Stocks', label: 'Stocks', icon: 'bi-graph-up', data: STOCKS },
-  { id: 'Bonds', label: 'Bonds', icon: 'bi-bank', data: BONDS },
+  { id: 'Bonds', label: 'Bond ETFs', icon: 'bi-bank', data: BONDS },
   { id: 'Commodities', label: 'Commodities', icon: 'bi-droplet-half', data: COMMODITIES_ONLY },
   { id: 'Politicians', label: 'Politicians', icon: 'bi-person-badge', data: POLITICIANS_LIST },
   { id: 'Crypto', label: 'Crypto', icon: 'bi-currency-bitcoin', data: CRYPTO },
@@ -1113,7 +1113,18 @@ export default function WatchlistPage() {
                 selected.type !== 'politician' &&
                 selected.type !== 'institution' && (
                   <>
-                    <div className="wl-big-price">{fmtPrice(selectedMerged.price)}</div>
+                    <div className="wl-big-price">
+                      {fmtPrice(selectedMerged.price)}
+                      {selectedMerged.type === 'bond' && (
+                        <span
+                          className="wl-bond-etf-note"
+                          title="This is a bond ETF traded on a stock exchange. The price shown is the dollar price per share of the ETF, not the percentage-of-par price of the underlying bonds."
+                          aria-label="Bond ETF pricing note"
+                        >
+                          <i className="bi bi-info-circle" />
+                        </span>
+                      )}
+                    </div>
                     <div className="wl-price-meta">
                       {selected.name} · {selected.displayTicker || selected.ticker}
                     </div>
