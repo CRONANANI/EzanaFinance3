@@ -192,6 +192,11 @@ html.light-mode .ezana-theme {
   color: var(--text-muted);
 }
 
+.comm-quick-nav-link:hover {
+  background: var(--surface-card-hover);
+  color: var(--text-primary);
+}
+
 .ez-btn {
   display: inline-flex;
   align-items: center;

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
 import { useCommunityData } from './useCommunityData';
 import { KpiCard } from './KpiCard';
@@ -15,7 +15,60 @@ import {
   SidebarFriendsActivity,
 } from './Sidebar';
 
-const FEED_TABS = ['Feed', 'Following', 'Friends', 'Discussions', 'Badges'];
+const FEED_TABS = ['Feed', 'Following', 'Friends', 'Discussions'];
+
+const QUICK_NAV = [
+  { id: 'profile', label: 'My Profile', icon: 'bi-person-circle' },
+  { id: 'messages', label: 'Messages', icon: 'bi-chat-dots', href: '/community/messages' },
+  { id: 'badges', label: 'Badges', icon: 'bi-award', href: '/badges' },
+];
+
+function CommunityQuickNav({ profileHref }) {
+  return (
+    <div
+      className="comm-quick-nav"
+      style={{
+        display: 'flex',
+        gap: 4,
+        padding: '4px',
+        background: 'var(--surface-card)',
+        borderRadius: 10,
+        border: '1px solid var(--border-primary)',
+        marginBottom: 18,
+        width: 'fit-content',
+        flexWrap: 'wrap',
+      }}
+    >
+      {QUICK_NAV.map((item) => {
+        const href = item.href || profileHref;
+        if (!href) return null;
+        return (
+          <Link
+            key={item.id}
+            href={href}
+            className="comm-quick-nav-link"
+            style={{
+              padding: '8px 14px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              borderRadius: 7,
+              fontSize: 13,
+              fontWeight: 600,
+              background: 'transparent',
+              color: 'var(--text-muted)',
+              textDecoration: 'none',
+              transition: 'background .15s, color .15s',
+            }}
+          >
+            <i className={`bi ${item.icon}`} style={{ fontSize: 13 }} />
+            <span>{item.label}</span>
+          </Link>
+        );
+      })}
+    </div>
+  );
+}
 
 function FeedSkeleton({ rows = 3 }) {
   return (
@@ -49,7 +102,6 @@ function getGreeting() {
 }
 
 export function HubConservative() {
-  const router = useRouter();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('Feed');
   const [activeModal, setActiveModal] = useState(null);
@@ -134,11 +186,13 @@ export function HubConservative() {
   const topPerformer = suggestedUsers[0] ?? null;
   const unfollowedSuggestions = suggestedUsers.filter((u) => !followingIds.has(u.id));
 
+  const profileHref = useMemo(() => {
+    if (!user?.id) return null;
+    const handle = user.user_metadata?.username || user.id;
+    return `/profile/${handle}`;
+  }, [user]);
+
   const handleFeedTab = (t) => {
-    if (t === 'Badges') {
-      router.push('/badges');
-      return;
-    }
     setActiveTab(t);
   };
 
@@ -148,6 +202,8 @@ export function HubConservative() {
       style={{ minHeight: '100%', background: 'var(--bg-primary)', position: 'relative' }}
     >
       <div style={{ padding: '20px 28px', maxWidth: 1320, margin: '0 auto' }}>
+        <CommunityQuickNav profileHref={profileHref} />
+
         <div
           style={{
             marginBottom: 22,
@@ -298,7 +354,6 @@ export function HubConservative() {
                       gap: 5,
                     }}
                   >
-                    {t === 'Badges' && <i className="bi bi-award" style={{ fontSize: 12 }} />}
                     {t}
                   </button>
                 ))}
