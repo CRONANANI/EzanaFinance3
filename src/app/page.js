@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { LandingHero } from '@/components/landing/LandingHero';
-import { LightningProvider } from '@/components/ui/LightningContext';
 
 const TrustedLogos = dynamic(
   () => import('@/components/TrustedLogos').then((m) => ({ default: m.TrustedLogos })),
@@ -14,9 +13,10 @@ const FeaturesSection = dynamic(
     import('@/components/landing/FeaturesSection').then((m) => ({ default: m.FeaturesSection })),
   { loading: () => null },
 );
-const GlobeSection = dynamic(
-  () => import('@/components/landing/GlobeSection').then((m) => ({ default: m.GlobeSection })),
-  { loading: () => null, ssr: false },
+const ResourcesSection = dynamic(
+  () =>
+    import('@/components/landing/ResourcesSection').then((m) => ({ default: m.ResourcesSection })),
+  { loading: () => null },
 );
 const Faq1 = dynamic(() => import('@/components/ui/faq1').then((m) => ({ default: m.Faq1 })), {
   loading: () => null,
@@ -41,26 +41,25 @@ export default function HomePage() {
   }, []);
 
   return (
-    <LightningProvider intervalMs={3300}>
-      <div className="landing-page">
-        <main className="main-content hero-section" id="heroSection">
-          <LandingHero />
-        </main>
+    <div className="landing-page">
+      <main className="main-content hero-section" id="heroSection">
+        <LandingHero />
+      </main>
 
-        <TrustedLogos />
+      <TrustedLogos />
 
-        <div id="features-section-container">
-          <FeaturesSection />
-        </div>
-
-        <GlobeSection />
-
-        <section id="faq" className="faq-section-wrapper">
-          <Faq1 heading="FAQ" onContactClick={() => setSupportOpen(true)} />
-        </section>
-        <FooterSection onContactClick={() => setSupportOpen(true)} />
-        <ContactSupportDialog open={supportOpen} onOpenChange={setSupportOpen} />
+      <div id="features-section-container">
+        <FeaturesSection />
       </div>
-    </LightningProvider>
+
+      <ResourcesSection />
+
+      <section id="faq" className="faq-section-wrapper">
+        <Faq1 heading="FAQ" onContactClick={() => setSupportOpen(true)} />
+      </section>
+
+      <FooterSection onContactClick={() => setSupportOpen(true)} />
+      <ContactSupportDialog open={supportOpen} onOpenChange={setSupportOpen} />
+    </div>
   );
 }
