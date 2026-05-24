@@ -18,7 +18,7 @@ import { usePartner } from '@/contexts/PartnerContext';
    while the chunk streams in. */
 const CommunityFeedPost = dynamic(
   () =>
-    import('@/components/community/CommunityFeedPost').then((m) => ({
+    import('@/components/community/_legacy/CommunityFeedPost').then((m) => ({
       default: m.CommunityFeedPost,
     })),
   {
@@ -31,7 +31,7 @@ const CommunityFeedPost = dynamic(
 import { CommunitySocialConnectCard } from '@/components/community/CommunitySocialConnectCard';
 import CopyRequestInbox from '@/components/community/CopyRequestInbox';
 import { UserSearch } from '@/components/community/UserSearch';
-import { FeedComposer } from '@/components/community/FeedComposer';
+import { FeedComposer } from '@/components/community/_legacy/FeedComposer';
 import {
   extractTickerFromContent,
   formatRelativeTime,
