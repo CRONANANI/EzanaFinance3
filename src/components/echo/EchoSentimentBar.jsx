@@ -63,8 +63,8 @@ export function EchoSentimentBar({ articleId }) {
     }
   };
 
-  const bullishPct = Math.round(average);
-  const bearishPct = 100 - bullishPct;
+  const signalPct = Math.round(average);
+  const noisePct = 100 - signalPct;
 
   return (
     <div className="echo-sentiment-bar">
@@ -76,18 +76,18 @@ export function EchoSentimentBar({ articleId }) {
       </div>
 
       <div className="echo-sentiment-gauge" aria-hidden>
-        <div className="echo-sentiment-gauge-bearish" style={{ width: `${bearishPct}%` }} />
-        <div className="echo-sentiment-gauge-bullish" style={{ width: `${bullishPct}%` }} />
+        <div className="echo-sentiment-gauge-noise" style={{ width: `${noisePct}%` }} />
+        <div className="echo-sentiment-gauge-signal" style={{ width: `${signalPct}%` }} />
       </div>
       <div className="echo-sentiment-gauge-labels">
-        <span>Bearish {bearishPct}%</span>
-        <span>Bullish {bullishPct}%</span>
+        <span>Noise {noisePct}%</span>
+        <span>Signal {signalPct}%</span>
       </div>
 
       {isAuthenticated ? (
         <div className="echo-sentiment-submit">
           <label htmlFor={`echo-sentiment-${articleId}`} className="echo-sentiment-submit-label">
-            Your take: {draftSentiment >= 50 ? 'Bullish' : 'Bearish'} ({draftSentiment}% bullish)
+            Your take: {draftSentiment >= 50 ? 'Signal' : 'Noise'} ({draftSentiment}% signal)
           </label>
           <input
             id={`echo-sentiment-${articleId}`}
@@ -124,8 +124,8 @@ export function EchoSentimentBar({ articleId }) {
       {showAuthPrompt && (
         <SaveAuthPrompt
           icon="bi-bar-chart-fill"
-          headline="Share your market sentiment"
-          body="Create a free account to vote on whether this article's thesis is bullish or bearish and see how other readers feel."
+          headline="Share your read on this article"
+          body="Create a free account to flag whether this article's thesis reads as signal or noise — and see how other readers weighed in."
           onClose={() => setShowAuthPrompt(false)}
           onSignUp={() => router.push(`/auth/signup?redirect=${redirectParam}`)}
           onSignIn={() => router.push(`/auth/signin?redirect=${redirectParam}`)}

@@ -2507,9 +2507,17 @@ export default function EchoArticleClient({ article, isArchived: initialArchived
     <EchoKeywordProvider articleTracker={articleTracker}>
       <div className="echo-article-page">
         <div className="echo-article-page-inset">
-          <Link href="/ezana-echo" className="echo-back">
-            <i className="bi bi-arrow-left" aria-hidden /> Back to Ezana Echo
-          </Link>
+          <div className="echo-back-row">
+            <Link href="/ezana-echo" className="echo-back">
+              <i className="bi bi-arrow-left" aria-hidden /> Back to Ezana Echo
+            </Link>
+            <EchoSaveButton
+              articleId={article.id}
+              articleTags={articleTags}
+              placement="top"
+              articleTracker={articleTracker}
+            />
+          </div>
 
           <article className="echo-article-shell">
             {isAdmin && (
@@ -2584,14 +2592,6 @@ export default function EchoArticleClient({ article, isArchived: initialArchived
                   ·
                 </span>
                 <span>{article.readTime} min read</span>
-              </div>
-              <div className="echo-article-actions-top">
-                <EchoSaveButton
-                  articleId={article.id}
-                  articleTags={articleTags}
-                  placement="top"
-                  articleTracker={articleTracker}
-                />
               </div>
               {tickers.length > 0 && (
                 <div className="echo-ticker-row" role="list" aria-label="Related tickers">
