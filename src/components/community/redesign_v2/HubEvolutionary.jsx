@@ -117,7 +117,7 @@ export function HubEvolutionary() {
 
   return (
     <div
-      className="ezana-theme evo-hub"
+      className="ezana-theme evo-hub dashboard-page-inset db-page"
       style={{ minHeight: '100%', background: 'var(--bg-primary)' }}
     >
       <div style={{ padding: '20px 28px', maxWidth: 1320, margin: '0 auto' }}>

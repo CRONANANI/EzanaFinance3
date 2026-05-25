@@ -419,6 +419,9 @@ html.light-mode .ezana-theme {
 
 /* ── Evolutionary hub layout helpers ── */
 .evo-hub {
+  padding: 28px 36px 48px;
+  max-width: 1440px;
+  margin: 0 auto;
   color: var(--text-primary);
 }
 
