@@ -179,7 +179,7 @@ export const nvidiaSecondMostValuableArticle = {
   tickers: ['NVDA', 'GOOG', 'AAPL', 'MSFT', 'AMZN', 'TSM', 'AVGO', 'GLD', 'SMH', 'SOXX'],
   readTime: 11,
   publishedAt: '2026-05-19',
-  featured: true,
+  featured: false,
   likes: 0,
   comments: 0,
   reads: 0,

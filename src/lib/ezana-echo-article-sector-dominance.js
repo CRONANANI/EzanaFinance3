@@ -105,6 +105,12 @@ export const sectorDominanceArticle = {
   title: "Tech Reigns, But Falls Short of History's Heavyweights",
   excerpt:
     "Two centuries of US equity history compressed into one chart: how Finance, Transport, Energy, and now Technology each held the largest sector crown — and what each era's dominance reveals about the economy that produced it.",
+  heroImage: {
+    src: '/tech-reigns-wall-street-panic.jpg',
+    alt: 'Engraving of a 19th-century Wall Street crowd packed in front of stock broker offices during a market panic, with Drake Brothers and Hodgkin Randall & Hudson signage visible',
+    caption:
+      'Wall Street in panic, c. 1880s — a moment from one of the recurring market dislocations that punctuated the 225-year arc of US equity history.',
+  },
   contentBlocks: [
     {
       type: 'paragraph',
@@ -245,6 +251,6 @@ export const sectorDominanceArticle = {
   tickers: ['SPY', 'XLK', 'XLE', 'XLF', 'XLI'],
   readTime: 18,
   publishedAt: '2026-04-30',
-  featured: false,
+  featured: true,
   source: 'Datastream, Goldman Sachs Research (October 2025)',
 };
