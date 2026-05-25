@@ -10,10 +10,10 @@ export const maxDuration = 300;
 const ADMIN_SECRET = process.env.ADMIN_LOCK_SECRET;
 
 const ELO_PER_COURSE_LEVEL = {
-  basic: 15,
+  basic: 10,
   intermediate: 20,
-  advanced: 25,
-  expert: 25,
+  advanced: 35,
+  expert: 55,
 };
 
 const LEVEL_TO_TIER_NAME = {

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useEloLiveRefetch } from '@/hooks/useEloLiveRefetch';
 import { TierChip } from './atoms';
 
 function HeroStat({ label, value, sub }) {
@@ -39,7 +40,9 @@ export function EloHero({
   friendsOnLadder = [],
   stats,
   nextBadgeCoursesLeft = 2,
+  refetchTrigger,
 }) {
+  useEloLiveRefetch(refetchTrigger);
   const animatedElo = useAnimatedNumber(elo?.total || 0);
   const positionPct = Math.min(100, Math.max(0, elo?.position_pct ?? 0));
   const delta = elo?.weekly_delta || 0;

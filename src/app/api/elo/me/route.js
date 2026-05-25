@@ -3,12 +3,15 @@ import { getUserClient } from '@/lib/supabase';
 import { getUserEloState, awardELO } from '@/lib/elo';
 import { getCourseById } from '@/lib/learning-curriculum';
 
-/** Same deltas as PATCH /api/learning/progress course completion. */
+/**
+ * Same deltas as PATCH /api/learning/progress course completion.
+ * MUST stay synchronized with learning/progress and admin/elo/backfill.
+ */
 const ELO_PER_COURSE_LEVEL = {
-  basic: 15,
+  basic: 10,
   intermediate: 20,
-  advanced: 25,
-  expert: 25,
+  advanced: 35,
+  expert: 55,
 };
 
 const LEVEL_TO_TIER_NAME = {
@@ -57,7 +60,7 @@ export async function GET() {
         for (const p of progress) {
           const course = getCourseById(p.course_id);
           if (!course) continue;
-          const points = ELO_PER_COURSE_LEVEL[course.level] || 15;
+          const points = ELO_PER_COURSE_LEVEL[course.level] || 10;
           const tierName = LEVEL_TO_TIER_NAME[course.level] || 'bronze';
           await awardELO(
             user.id,

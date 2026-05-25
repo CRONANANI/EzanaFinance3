@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useMemo, useId } from 'react';
+import { useState, useEffect, useMemo, useId, useCallback } from 'react';
+import { useEloLiveRefetch } from '@/hooks/useEloLiveRefetch';
 import Link from 'next/link';
 import { AreaChart, Area, ResponsiveContainer, Tooltip, YAxis } from 'recharts';
 import './profile-elo-card.css';
@@ -91,12 +92,15 @@ function HistorySparkline({ transactions, lineColor }) {
   const data = useMemo(() => {
     if (!transactions?.length) return [];
     const sorted = [...transactions].sort(
-      (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
     );
     return sorted.map((tx, i) => ({
       idx: i,
       rating: tx.rating_after,
-      label: new Date(tx.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      label: new Date(tx.created_at).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+      }),
       delta: tx.delta,
     }));
   }, [transactions]);
@@ -214,7 +218,10 @@ function ImprovementPaths() {
           const meta = CATEGORY_LABELS[path.category] || { color: '#6b7280' };
           return (
             <li key={path.title} className="pec-improvement">
-              <div className="pec-improvement-icon" style={{ color: meta.color, borderColor: `${meta.color}33` }}>
+              <div
+                className="pec-improvement-icon"
+                style={{ color: meta.color, borderColor: `${meta.color}33` }}
+              >
                 <i className={`bi ${path.icon}`} />
               </div>
               <div className="pec-improvement-body">
@@ -245,30 +252,30 @@ export function ProfileEloCard({ userId, isOwn }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
+  const url = isOwn ? '/api/elo/me' : `/api/elo/user/${userId}`;
+
+  const refetch = useCallback(() => {
     if (!userId) return;
-    let cancelled = false;
     setLoading(true);
     setError(null);
-
-    const url = isOwn ? '/api/elo/me' : `/api/elo/user/${userId}`;
-
     fetch(url)
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       .then((data) => {
-        if (!cancelled) setState(data);
+        setState(data);
       })
       .catch((e) => {
-        if (!cancelled) setError(e.message);
+        setError(e.message);
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        setLoading(false);
       });
+  }, [userId, url]);
 
-    return () => {
-      cancelled = true;
-    };
-  }, [userId, isOwn]);
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
+  useEloLiveRefetch(isOwn ? refetch : null);
 
   if (loading) {
     return (
@@ -303,7 +310,7 @@ export function ProfileEloCard({ userId, isOwn }) {
     <div className="pec-card">
       <header className="pec-head">
         <div className="pec-head-left">
-          <h3 className="pec-card-title">ELO Ranking</h3>
+          <h3 className="pec-card-title">ELO Rating</h3>
         </div>
         <Link href="/leaderboard/elo" className="pec-head-link" title="View leaderboard">
           Leaderboard <i className="bi bi-arrow-up-right" />
@@ -343,7 +350,10 @@ export function ProfileEloCard({ userId, isOwn }) {
 
       {nextTier && (
         <div className="pec-progress-bar">
-          <div className="pec-progress-fill" style={{ width: `${progressPct}%`, background: tierMeta.color }} />
+          <div
+            className="pec-progress-fill"
+            style={{ width: `${progressPct}%`, background: tierMeta.color }}
+          />
         </div>
       )}
 

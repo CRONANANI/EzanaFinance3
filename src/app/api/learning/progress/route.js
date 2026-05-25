@@ -6,16 +6,21 @@ import { awardELO } from '@/lib/elo';
 
 /**
  * ELO award per course completion, mapped from the course's level.
- * Totals across all 120 courses: 32×15 + 32×20 + 32×25 + 24×25 = 2,520.
  *
- * Levels in learning-curriculum.js: basic, intermediate, advanced, expert.
- *   basic → bronze, intermediate → silver, advanced → gold, expert → platinum
+ * Graduated 4-tier scale:
+ *   Bronze (basic):        10 × 32 =   320
+ *   Silver (intermediate): 20 × 32 =   640
+ *   Gold (advanced):       35 × 32 = 1,120
+ *   Platinum (expert):     55 × 24 = 1,320
+ *   Grand total possible: 3,400 ELO
+ *
+ * Duplicated in admin/elo/backfill and elo/me — keep all three in sync.
  */
 const ELO_PER_COURSE_LEVEL = {
-  basic: 15,
+  basic: 10,
   intermediate: 20,
-  advanced: 25,
-  expert: 25,
+  advanced: 35,
+  expert: 55,
 };
 
 const LEVEL_TO_TIER_NAME = {
@@ -292,6 +297,11 @@ export async function POST(request) {
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
       let badges = [];
+      let eloChanged = false;
+      let eloDelta = 0;
+      let newRating;
+      let oldRating;
+      let newTier;
       if (passed) {
         await updateBrokerageFlags(supabase, user.id, courseId);
         badges = await syncTrackAndBadges(supabase, user.id, course);
@@ -309,15 +319,22 @@ export async function POST(request) {
               })
               .catch(() => {});
 
-            const eloDelta = ELO_PER_COURSE_LEVEL[course.level] || 15;
+            const courseEloDelta = ELO_PER_COURSE_LEVEL[course.level] || 10;
             const tierName = LEVEL_TO_TIER_NAME[course.level] || 'bronze';
-            await awardELO(
+            const eloResult = await awardELO(
               user.id,
-              eloDelta,
+              courseEloDelta,
               `Completed ${tierName} course: ${course.title}`,
               'learning',
               { course_id: courseId, level: course.level, tier: tierName },
             );
+            if (eloResult) {
+              eloChanged = true;
+              eloDelta = eloResult.newRating - eloResult.oldRating;
+              newRating = eloResult.newRating;
+              oldRating = eloResult.oldRating;
+              newTier = eloResult.newTier;
+            }
 
             // ── Notify: course completed ──
             try {
@@ -387,6 +404,7 @@ export async function POST(request) {
         passThreshold: PASS_PCT,
         quiz,
         badges,
+        ...(eloChanged ? { eloChanged: true, eloDelta, newRating, oldRating, newTier } : {}),
       });
     }
 

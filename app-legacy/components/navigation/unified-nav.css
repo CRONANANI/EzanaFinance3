@@ -283,6 +283,32 @@ body:not(.light-mode) .nav-action-tap:focus-visible {
   line-height: 1;
 }
 
+/* Profile icon — same visual weight as settings gear */
+.main-nav .nav-action-inner.nav-profile-icon,
+.partner-nav .nav-action-inner.nav-profile-icon {
+  color: #047857;
+  border: 1px solid rgba(4, 120, 87, 0.45);
+  background: rgba(4, 120, 87, 0.12);
+}
+
+.main-nav .nav-action-inner.nav-profile-icon i,
+.partner-nav .nav-action-inner.nav-profile-icon i {
+  color: #047857;
+  font-size: 1.125rem;
+}
+
+.main-nav .nav-action-tap:hover .nav-action-inner.nav-profile-icon,
+.partner-nav .nav-action-tap:hover .nav-action-inner.nav-profile-icon {
+  background: #047857;
+  color: #ffffff;
+  border-color: #047857;
+}
+
+.main-nav .nav-action-tap:hover .nav-action-inner.nav-profile-icon i,
+.partner-nav .nav-action-tap:hover .nav-action-inner.nav-profile-icon i {
+  color: #ffffff;
+}
+
 /* Settings gear — deep emerald + light outline on icon */
 .main-nav .nav-action-inner.nav-settings-gear,
 .partner-nav .nav-action-inner.nav-settings-gear {

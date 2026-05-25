@@ -26,6 +26,25 @@
   animation: elo-spin 800ms linear infinite;
 }
 
+@keyframes elo-flash-pulse {
+  0% {
+    color: inherit;
+    transform: scale(1);
+  }
+  30% {
+    color: var(--emerald, #10b981);
+    transform: scale(1.06);
+  }
+  100% {
+    color: inherit;
+    transform: scale(1);
+  }
+}
+
+.elo-flash {
+  animation: elo-flash-pulse 0.8s ease-out;
+}
+
 @keyframes elo-spin {
   to {
     transform: rotate(360deg);

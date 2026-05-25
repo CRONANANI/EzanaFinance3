@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { useEloLiveRefetch } from '@/hooks/useEloLiveRefetch';
 import './elo-widget.css';
 
 const TIER_DISPLAY = {
@@ -34,26 +35,25 @@ export default function EloWidget() {
   const [state, setState] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [flashKey, setFlashKey] = useState(0);
 
-  useEffect(() => {
-    let cancelled = false;
+  const refetch = useCallback(() => {
     fetch('/api/elo/me')
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       .then((data) => {
-        if (cancelled) return;
         setState(data);
+        setFlashKey((k) => k + 1);
+        setError(null);
       })
-      .catch((err) => {
-        if (cancelled) return;
-        setError(err.message);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
+  useEloLiveRefetch(refetch);
 
   if (loading) {
     return (
@@ -77,7 +77,7 @@ export default function EloWidget() {
   const progressPct = nextTier
     ? Math.max(
         0,
-        Math.min(100, ((rating - currentThreshold) / (nextThreshold - currentThreshold)) * 100)
+        Math.min(100, ((rating - currentThreshold) / (nextThreshold - currentThreshold)) * 100),
       )
     : 100;
 
@@ -85,7 +85,7 @@ export default function EloWidget() {
     <div className="db-card elo-widget" data-dashboard-card>
       <div className="elo-widget-header">
         <div className="elo-widget-title-row">
-          <h3>Skill Rating</h3>
+          <h3>ELO Rating</h3>
           <span
             className="elo-widget-tier-pill"
             style={{ color: tierInfo.color, borderColor: `${tierInfo.color}40` }}
@@ -96,7 +96,11 @@ export default function EloWidget() {
       </div>
 
       <div className="elo-widget-rating-block">
-        <div className="elo-widget-rating-num" style={{ color: tierInfo.color }}>
+        <div
+          key={flashKey}
+          className="elo-widget-rating-num elo-flash"
+          style={{ color: tierInfo.color }}
+        >
           {rating.toLocaleString()}
         </div>
         <div className="elo-widget-rating-suffix">/ 10,000</div>

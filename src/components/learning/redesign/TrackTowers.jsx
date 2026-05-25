@@ -9,7 +9,6 @@ const TRACK_COLORS = {
 };
 
 const TIER_ROWS = [
-  { key: 'overall', label: 'DIAMOND', color: 'var(--tier-diamond)' },
   { key: 'expert', label: 'PLATINUM', color: 'var(--tier-platinum)' },
   { key: 'advanced', label: 'GOLD', color: 'var(--tier-gold)' },
   { key: 'intermediate', label: 'SILVER', color: 'var(--tier-silver)' },

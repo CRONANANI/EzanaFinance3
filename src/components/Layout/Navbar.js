@@ -433,8 +433,20 @@ export function Navbar() {
           hasFullBetaAccess={hasFullBetaAccess}
         />
 
-        {/* ── RIGHT ZONE: gear + logout (desktop) | hamburger (mobile) ── */}
+        {/* ── RIGHT ZONE: profile + gear + logout (desktop) | hamburger (mobile) ── */}
         <div className="nav-actions">
+          {user?.id && (
+            <Link
+              href={`/profile/${user.id}`}
+              className="nav-action-tap nav-action-tap--desktop-only"
+              title="My profile"
+              aria-label="My profile"
+            >
+              <span className="nav-action-inner nav-profile-icon">
+                <i className="bi bi-person-circle" aria-hidden="true" />
+              </span>
+            </Link>
+          )}
           <Link
             href="/settings"
             className="nav-action-tap nav-action-tap--desktop-only"

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { getCourseById, getLevelLabel, TRACKS } from '@/lib/learning-curriculum';
 import { getOrderedCoursesForTrack } from '@/lib/learning-progress-logic';
+import { emitEloChanged } from '@/lib/elo-events';
 import { Hero } from './chapter/Hero';
 import { EyebrowPill } from './chapter/EyebrowPill';
 import { SectionRenderer } from './chapter/SectionRenderer';
@@ -182,6 +183,15 @@ export function LearningCoursePage() {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Failed');
+      if (json.eloChanged) {
+        emitEloChanged({
+          delta: json.eloDelta,
+          newRating: json.newRating,
+          oldRating: json.oldRating,
+          source: 'course_complete',
+          courseId,
+        });
+      }
       setResult(json);
       setQuizMode(false);
       // Leaving retry mode — the next action (retry or back) resets it explicitly.

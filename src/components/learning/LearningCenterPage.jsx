@@ -187,7 +187,7 @@ function OrgAssignedCard() {
 export function LearningCenterPage() {
   const { user } = useAuth();
   const { isOrgUser } = useOrg();
-  const { data, loading, error, setMainTrack, toggleBookmark, setLeaderboardPeriod } =
+  const { data, loading, error, refetch, setMainTrack, toggleBookmark, setLeaderboardPeriod } =
     useLearningCenterData();
 
   const [selectedTrack, setSelectedTrack] = useState(null);
@@ -266,6 +266,7 @@ export function LearningCenterPage() {
           friendsOnLadder={(data.leaderboard?.rankings || []).filter((r) => !r.is_me).slice(0, 6)}
           stats={buildStats(data.courses)}
           nextBadgeCoursesLeft={computeNextBadgeRemaining(effectiveTrack, progressById)}
+          refetchTrigger={refetch}
         />
         <DailyQuest
           primary={data.quests?.primary}
