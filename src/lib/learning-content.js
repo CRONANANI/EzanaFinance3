@@ -1,4 +1,14 @@
 import COURSE_CONTENT from './course-content';
+import { transformCourseContent } from './section-modules-transform';
+import COURSE_CONTENT_BRONZE_REST_MODULES from './course-content-bronze-rest.modules.json';
+import COURSE_CONTENT_CRYPTO_BRONZE_MODULES from './course-content-crypto-bronze.modules.json';
+import COURSE_CONTENT_SILVER_GOLD_PLATINUM_MODULES from './course-content-silver-gold-platinum.modules.json';
+
+const MIGRATED_CONTENT = {
+  ...COURSE_CONTENT_SILVER_GOLD_PLATINUM_MODULES,
+  ...COURSE_CONTENT_CRYPTO_BRONZE_MODULES,
+  ...COURSE_CONTENT_BRONZE_REST_MODULES,
+};
 
 function hashSeed(str) {
   let h = 0;
@@ -501,10 +511,13 @@ function buildTopicQuiz(course, seed) {
  * otherwise falls back to the textbook-enhanced generator.
  */
 export function getCourseContent(course) {
+  const migrated = MIGRATED_CONTENT[course.id];
+  if (migrated && Array.isArray(migrated.sections) && Array.isArray(migrated.quiz)) {
+    return transformCourseContent(migrated);
+  }
   const handWritten = COURSE_CONTENT[course.id];
   if (handWritten && Array.isArray(handWritten.sections) && Array.isArray(handWritten.quiz)) {
-    return handWritten;
+    return transformCourseContent(handWritten);
   }
-  return buildPlaceholderContent(course);
+  return transformCourseContent(buildPlaceholderContent(course));
 }
-``;

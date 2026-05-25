@@ -1,0 +1,1543 @@
+{
+  "betting-basic-1": {
+    "sections": [
+      {
+        "title": "Prediction markets in one sentence",
+        "content": "Prediction markets let participants trade contracts whose payouts depend on real-world outcomes — aggregating beliefs into prices that approximate probabilities. Liquidity and design matter: thin markets can swing wildly; deep markets often outperform polls for some event types.",
+        "shortTitle": "Prediction markets in one sentence",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Prediction markets let participants trade contracts whose payouts depend on real-world outcomes — aggregating beliefs into prices that approximate probabilities. Liquidity and design matter: thin markets can swing wildly; deep markets often outperform polls for some event types."
+          }
+        ]
+      },
+      {
+        "title": "Why prices move",
+        "content": "Prices change as traders incorporate new information and as risk-averse participants demand compensation for holding risky positions. A 60-cent price does not mean “60% true” in every model — it reflects marginal trader beliefs plus fees and constraints.",
+        "shortTitle": "Why prices move",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Prices change as traders incorporate new information and as risk-averse participants demand compensation for holding risky positions. A 60-cent price does not mean “60% true” in every model — it reflects marginal trader beliefs plus fees and constraints."
+          }
+        ]
+      },
+      {
+        "title": "Ezana context",
+        "content": "Platforms like Polymarket have popularized crypto-settled event markets. Always read the resolution rules: ambiguous wording causes disputes. The market price is only as good as the rulebook.",
+        "shortTitle": "Ezana context",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Platforms like Polymarket have popularized crypto-settled event markets. Always read the resolution rules: ambiguous wording causes disputes. The market price is only as good as the rulebook."
+          }
+        ]
+      }
+    ],
+    "quiz": [
+      {
+        "question": "A prediction market price can be interpreted as:",
+        "options": [
+          "A guaranteed outcome",
+          "A market-implied probability blended with fees and risk premia",
+          "A sports score",
+          "A bank interest rate"
+        ],
+        "correctIndex": 1,
+        "explanation": "It is informative but not infallible."
+      },
+      {
+        "question": "Liquidity matters because:",
+        "options": [
+          "It only affects colors",
+          "Thin books mean small trades move prices more",
+          "It removes all risk",
+          "It bans retail"
+        ],
+        "correctIndex": 1,
+        "explanation": "Depth reduces slippage and noise."
+      },
+      {
+        "question": "Resolution rules matter because:",
+        "options": [
+          "They define what counts as winning",
+          "They are irrelevant",
+          "They are always identical",
+          "They replace math"
+        ],
+        "correctIndex": 0,
+        "explanation": "Read the contract carefully before trading."
+      },
+      {
+        "question": "Why might prediction markets outperform simple polls?",
+        "options": [
+          "They always bribe voters",
+          "Participants have financial incentives to be informed",
+          "They ignore news",
+          "They sample randomly"
+        ],
+        "correctIndex": 1,
+        "explanation": "Skin in the game can aggregate information."
+      },
+      {
+        "question": "New information tends to:",
+        "options": [
+          "Never affect prices",
+          "Move prices as traders update beliefs",
+          "Freeze markets forever",
+          "Guarantee arbitrage profits"
+        ],
+        "correctIndex": 1,
+        "explanation": "Markets are forward-looking."
+      }
+    ]
+  },
+  "betting-basic-2": {
+    "sections": [
+      {
+        "title": "Decimal odds",
+        "content": "Decimal odds of 3.0 mean a winning one-unit stake returns three units total (profit plus stake). Implied probability is roughly 1/decimal for fair-ish markets before margin — bookmakers embed margin so implied probabilities sum above 100%.",
+        "shortTitle": "Decimal odds",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Decimal odds of 3.0 mean a winning one-unit stake returns three units total (profit plus stake). Implied probability is roughly 1/decimal for fair-ish markets before margin — bookmakers embed margin so implied probabilities sum above 100%."
+          }
+        ]
+      },
+      {
+        "title": "American odds",
+        "content": "Positive American odds (+200) show profit on a $100 stake; negative (-150) shows how much you must stake to win $100. Converting formats is essential when line shopping.",
+        "shortTitle": "American odds",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Positive American odds (+200) show profit on a $100 stake; negative (-150) shows how much you must stake to win $100. Converting formats is essential when line shopping."
+          }
+        ]
+      },
+      {
+        "title": "Implied probability",
+        "content": "Implied probability is the break-even win rate needed ignoring fees. Comparing implied probability to your own estimate is the start of value betting — never the end.",
+        "shortTitle": "Implied probability",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Implied probability is the break-even win rate needed ignoring fees. Comparing implied probability to your own estimate is the start of value betting — never the end."
+          }
+        ]
+      }
+    ],
+    "quiz": [
+      {
+        "question": "Decimal odds of 2.5 on a winning bet return:",
+        "options": [
+          "2.5 units total including stake in typical display",
+          "Exactly 1 unit always",
+          "0 units",
+          "Stake × 10"
+        ],
+        "correctIndex": 0,
+        "explanation": "Decimal includes stake in the return multiple (check your book’s display)."
+      },
+      {
+        "question": "American odds of +300 imply a $100 bet wins how much profit if successful?",
+        "options": ["$30", "$300", "$3", "$100"],
+        "correctIndex": 1,
+        "explanation": "+300 means $300 profit on $100 stake at standard interpretation."
+      },
+      {
+        "question": "Bookmaker margin causes:",
+        "options": [
+          "Implied probabilities to sum above 100%",
+          "Perfect efficiency with no spread",
+          "Free money",
+          "Negative decimals"
+        ],
+        "correctIndex": 0,
+        "explanation": "The overround is how books earn."
+      },
+      {
+        "question": "Implied probability helps you:",
+        "options": [
+          "Guarantee wins",
+          "Compare market price to your own fair odds",
+          "Eliminate variance",
+          "Avoid math"
+        ],
+        "correctIndex": 1,
+        "explanation": "Edge is the gap between belief and price — if you are calibrated."
+      },
+      {
+        "question": "Fractional odds 5/1 profit on a 1-unit stake is:",
+        "options": ["5 units profit", "1 unit", "6 units total always", "0.2 units"],
+        "correctIndex": 0,
+        "explanation": "Classic fractional shows profit relative to stake."
+      }
+    ]
+  },
+  "betting-basic-3": {
+    "sections": [
+      {
+        "title": "Spreads and moneylines",
+        "content": "Point spreads handicap favorites: covering means beating the spread after the adjustment. Moneylines pick winners outright with odds reflecting strength. Totals (over/under) bet combined scores. Parlays multiply payouts but multiply risk — each leg must win.",
+        "shortTitle": "Spreads and moneylines",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Point spreads handicap favorites: covering means beating the spread after the adjustment. Moneylines pick winners outright with odds reflecting strength. Totals (over/under) bet combined scores. Parlays multiply payouts but multiply risk — each leg must win."
+          }
+        ]
+      },
+      {
+        "title": "House edge",
+        "content": "Sportsbooks embed margin in lines. Beating sports long-run requires finding mispriced lines — not picking winners more often in a naive sense. Bankroll discipline keeps you in the game while signal accumulates.",
+        "shortTitle": "House edge",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Sportsbooks embed margin in lines. Beating sports long-run requires finding mispriced lines — not picking winners more often in a naive sense. Bankroll discipline keeps you in the game while signal accumulates."
+          }
+        ]
+      },
+      {
+        "title": "Variance",
+        "content": "Even positive-expectation bets can lose for long streaks due to variance. Short-term results are noisy; evaluate process over many bets.",
+        "shortTitle": "Variance",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Even positive-expectation bets can lose for long streaks due to variance. Short-term results are noisy; evaluate process over many bets."
+          }
+        ]
+      }
+    ],
+    "quiz": [
+      {
+        "question": "A favorite “covers the spread” when:",
+        "options": [
+          "They win the game",
+          "They win after applying the point spread adjustment",
+          "The game ties always",
+          "The spread is zero"
+        ],
+        "correctIndex": 1,
+        "explanation": "Spread betting is about margin of victory, not only W/L."
+      },
+      {
+        "question": "A parlay loses if:",
+        "options": ["Any leg loses", "Any leg wins", "The first leg loses only", "Weather is cold"],
+        "correctIndex": 0,
+        "explanation": "Parlays chain outcomes — variance spikes."
+      },
+      {
+        "question": "The sportsbook’s margin mainly:",
+        "options": [
+          "Guarantees you win",
+          "Skews lines so implied probabilities include profit for the book",
+          "Eliminates randomness",
+          "Sets player salaries"
+        ],
+        "correctIndex": 1,
+        "explanation": "You are paying for market making and risk."
+      },
+      {
+        "question": "Why is “picking winners” alone a weak strategy?",
+        "options": [
+          "Win rate without odds is meaningless",
+          "Edges live in price vs probability",
+          "Sports are random",
+          "Books are illegal"
+        ],
+        "correctIndex": 1,
+        "explanation": "Value is price-relative."
+      },
+      {
+        "question": "Variance means:",
+        "options": [
+          "Results equal expectation every time",
+          "Short-run outcomes can deviate wildly from expectation",
+          "Odds never change",
+          "Kelly is illegal"
+        ],
+        "correctIndex": 1,
+        "explanation": "Even good processes face losing streaks."
+      }
+    ]
+  },
+  "betting-basic-4": {
+    "sections": [
+      {
+        "title": "Getting started safely",
+        "content": "Create an account on a reputable platform, enable two-factor authentication, and fund with amounts you can afford to lose. Read each market’s rules: some markets resolve on specific oracles or sources. Start small while learning order types and fees.",
+        "shortTitle": "Getting started safely",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Create an account on a reputable platform, enable two-factor authentication, and fund with amounts you can afford to lose. Read each market’s rules: some markets resolve on specific oracles or sources. Start small while learning order types and fees."
+          }
+        ]
+      },
+      {
+        "title": "Orders and liquidity",
+        "content": "Limit orders control price; market orders prioritize speed. In thin markets, market orders can slip badly. Watch the order book depth when sizing trades.",
+        "shortTitle": "Orders and liquidity",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Limit orders control price; market orders prioritize speed. In thin markets, market orders can slip badly. Watch the order book depth when sizing trades."
+          }
+        ]
+      },
+      {
+        "title": "Responsible participation",
+        "content": "Treat prediction markets as high-risk entertainment unless you have a verified edge and strict bankroll rules. Seek help if trading causes distress.",
+        "shortTitle": "Responsible participation",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Treat prediction markets as high-risk entertainment unless you have a verified edge and strict bankroll rules. Seek help if trading causes distress."
+          }
+        ]
+      }
+    ],
+    "quiz": [
+      {
+        "question": "Before trading a Polymarket-style contract you should:",
+        "options": [
+          "Ignore the rules",
+          "Read resolution criteria and fee schedule",
+          "Max leverage always",
+          "Share your seed phrase"
+        ],
+        "correctIndex": 1,
+        "explanation": "Ambiguous rules cause disputes and losses."
+      },
+      {
+        "question": "Two-factor authentication helps because:",
+        "options": [
+          "It adds a second layer beyond password theft",
+          "It removes fees",
+          "It guarantees profits",
+          "It replaces KYC"
+        ],
+        "correctIndex": 0,
+        "explanation": "Stolen passwords are common; 2FA mitigates."
+      },
+      {
+        "question": "Market orders in illiquid books may:",
+        "options": [
+          "Always fill at mid",
+          "Execute at worse prices than expected (slippage)",
+          "Be free",
+          "Cancel automatically"
+        ],
+        "correctIndex": 1,
+        "explanation": "Depth protects execution quality."
+      },
+      {
+        "question": "You should size positions:",
+        "options": [
+          "With money you can afford to lose",
+          "With rent money",
+          "Randomly",
+          "Based on horoscopes"
+        ],
+        "correctIndex": 0,
+        "explanation": "Prediction markets are risky and can go to zero."
+      },
+      {
+        "question": "Limit orders help traders:",
+        "options": [
+          "Guarantee fills",
+          "Control execution price at the risk of non-fill",
+          "Eliminate taxes",
+          "Remove oracle risk"
+        ],
+        "correctIndex": 1,
+        "explanation": "Price vs certainty trade-off."
+      }
+    ]
+  },
+  "betting-basic-5": {
+    "sections": [
+      {
+        "title": "Crowd wisdom",
+        "content": "Aggregating diverse independent estimates can outperform individual experts under the right conditions — but markets need sufficient participation and incentives. Manipulation and thin liquidity break the magic.",
+        "shortTitle": "Crowd wisdom",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Aggregating diverse independent estimates can outperform individual experts under the right conditions — but markets need sufficient participation and incentives. Manipulation and thin liquidity break the magic."
+          }
+        ]
+      },
+      {
+        "title": "Information incorporation",
+        "content": "Prices should reflect available public information quickly when traders compete. If some participants have private information, markets may be less “fair” in the informational sense.",
+        "shortTitle": "Information incorporation",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Prices should reflect available public information quickly when traders compete. If some participants have private information, markets may be less “fair” in the informational sense."
+          }
+        ]
+      },
+      {
+        "title": "Limits",
+        "content": "Crowds can herd and panic. Financial markets and prediction markets both suffer bubbles. Use markets as inputs, not oracles of moral truth.",
+        "shortTitle": "Limits",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Crowds can herd and panic. Financial markets and prediction markets both suffer bubbles. Use markets as inputs, not oracles of moral truth."
+          }
+        ]
+      }
+    ],
+    "quiz": [
+      {
+        "question": "The “wisdom of crowds” works best when:",
+        "options": [
+          "Everyone copies one influencer",
+          "Estimates are diverse and independent",
+          "No one trades",
+          "Information is secret to one person"
+        ],
+        "correctIndex": 1,
+        "explanation": "Diversity reduces correlated error."
+      },
+      {
+        "question": "Manipulation can break prediction markets when:",
+        "options": [
+          "Liquidity is deep",
+          "A trader can move prices with relatively small size",
+          "Regulators exist",
+          "There are fees"
+        ],
+        "correctIndex": 1,
+        "explanation": "Thin markets are fragile."
+      },
+      {
+        "question": "Prediction market prices update when:",
+        "options": [
+          "Only once per year",
+          "Traders incorporate new information",
+          "Never",
+          "Only if the SEC posts"
+        ],
+        "correctIndex": 1,
+        "explanation": "Markets are forward-looking mechanisms."
+      },
+      {
+        "question": "Herding can cause:",
+        "options": [
+          "More accurate prices always",
+          "Bubbles and correlated mistakes",
+          "Zero volatility",
+          "Perfect forecasts"
+        ],
+        "correctIndex": 1,
+        "explanation": "Independence assumption fails."
+      },
+      {
+        "question": "A fair market in the economic sense:",
+        "options": [
+          "Means you always win",
+          "Still can be wrong ex post about outcomes",
+          "Ignores probabilities",
+          "Eliminates risk"
+        ],
+        "correctIndex": 1,
+        "explanation": "Good prices ≠ guaranteed truth."
+      }
+    ]
+  },
+  "betting-basic-6": {
+    "sections": [
+      {
+        "title": "Bankroll basics",
+        "content": "Your bankroll is the dedicated trading stake — separate from living expenses. Risking a tiny fraction per bet (often 1–2% or less of bankroll) prevents ruin during losing streaks. Chasing losses with larger bets is a common path to zero.",
+        "shortTitle": "Bankroll basics",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Your bankroll is the dedicated trading stake — separate from living expenses. Risking a tiny fraction per bet (often 1–2% or less of bankroll) prevents ruin during losing streaks. Chasing losses with larger bets is a common path to zero."
+          }
+        ]
+      },
+      {
+        "title": "Kelly criterion (intro)",
+        "content": "Kelly sizing suggests bet size grows with edge and shrinks with odds — but real Kelly requires accurate probability estimates and can be volatile. Many pros use fractional Kelly to reduce variance.",
+        "shortTitle": "Kelly criterion (intro)",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Kelly sizing suggests bet size grows with edge and shrinks with odds — but real Kelly requires accurate probability estimates and can be volatile. Many pros use fractional Kelly to reduce variance."
+          }
+        ]
+      },
+      {
+        "title": "Emotional discipline",
+        "content": "Tilt after losses leads to oversized bets. Pre-commit to rules and take breaks. Track results to see if your edge is real or imagined.",
+        "shortTitle": "Emotional discipline",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Tilt after losses leads to oversized bets. Pre-commit to rules and take breaks. Track results to see if your edge is real or imagined."
+          }
+        ]
+      }
+    ],
+    "quiz": [
+      {
+        "question": "Why do professionals avoid betting the rent?",
+        "options": [
+          "Rent is too cheap",
+          "Ruin risk dominates even with a small edge",
+          "Landlords forbid it",
+          "Taxes are zero"
+        ],
+        "correctIndex": 1,
+        "explanation": "Survival first — then edge."
+      },
+      {
+        "question": "Chasing losses typically:",
+        "options": [
+          "Restores EV",
+          "Increases risk of ruin and emotional decisions",
+          "Is required",
+          "Guarantees recovery"
+        ],
+        "correctIndex": 1,
+        "explanation": "Negative expectancy spirals hurt."
+      },
+      {
+        "question": "Fractional Kelly is often used because:",
+        "options": [
+          "Full Kelly assumes perfect probabilities and can be very volatile",
+          "It is illegal",
+          "It removes all risk",
+          "It doubles your bankroll daily"
+        ],
+        "correctIndex": 0,
+        "explanation": "Real-world uncertainty warrants downsizing."
+      },
+      {
+        "question": "A 1% per-bet rule means:",
+        "options": [
+          "Each bet risks ~1% of bankroll (definitions vary)",
+          "You always win 1%",
+          "You bet once per year",
+          "You ignore odds"
+        ],
+        "correctIndex": 0,
+        "explanation": "Common heuristic — adapt to your edge model."
+      },
+      {
+        "question": "Tracking results helps you:",
+        "options": [
+          "Prove you have an edge or discover you do not",
+          "Win every week",
+          "Avoid taxes",
+          "Predict coin flips"
+        ],
+        "correctIndex": 1,
+        "explanation": "Process evaluation beats gut feelings."
+      }
+    ]
+  },
+  "commodities-basic-1": {
+    "sections": [
+      {
+        "title": "What commodities are",
+        "content": "Commodities are fungible physical goods traded in standardized units: energy (oil, gas), metals (gold, copper), agriculture (corn, coffee). Prices balance global supply and demand with storage, transport, and geopolitics layered on top.",
+        "shortTitle": "What commodities are",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Commodities are fungible physical goods traded in standardized units: energy (oil, gas), metals (gold, copper), agriculture (corn, coffee). Prices balance global supply and demand with storage, transport, and geopolitics layered on top."
+          },
+          {
+            "type": "tickerChart",
+            "ticker": "META",
+            "range": "1Y",
+            "eyebrow": "Live example",
+            "title": "META — live price"
+          }
+        ]
+      },
+      {
+        "title": "Why they matter to portfolios",
+        "content": "Commodities can diversify equity risk and sometimes hedge inflation — but they are volatile and can draw down for years. Role in a portfolio should match your horizon and risk tolerance.",
+        "shortTitle": "Why they matter to portfolios",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Commodities can diversify equity risk and sometimes hedge inflation — but they are volatile and can draw down for years. Role in a portfolio should match your horizon and risk tolerance."
+          }
+        ]
+      },
+      {
+        "title": "Spot vs futures",
+        "content": "Spot refers to immediate delivery markets; most retail exposure is via futures-based products or ETFs that roll contracts. Rolling introduces nuances like contango that affect returns.",
+        "shortTitle": "Spot vs futures",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Spot refers to immediate delivery markets; most retail exposure is via futures-based products or ETFs that roll contracts. Rolling introduces nuances like contango that affect returns."
+          }
+        ]
+      }
+    ],
+    "quiz": [
+      {
+        "question": "Commodities are generally:",
+        "options": [
+          "Identical branded goods",
+          "Fungible bulk goods with standardized grades",
+          "Only stocks",
+          "Tax-exempt always"
+        ],
+        "correctIndex": 1,
+        "explanation": "Standardization enables global markets."
+      },
+      {
+        "question": "Why might commodities diversify stocks?",
+        "options": [
+          "They always move together",
+          "Drivers differ — supply shocks, weather, geopolitics",
+          "They are the same asset class",
+          "They never fall"
+        ],
+        "correctIndex": 1,
+        "explanation": "Correlation is not fixed at 1."
+      },
+      {
+        "question": "Retail investors often gain exposure through:",
+        "options": [
+          "Storing oil in a garage",
+          "ETFs, funds, or futures products",
+          "Printing gold",
+          "Only coins"
+        ],
+        "correctIndex": 1,
+        "explanation": "Physical storage is costly; products abstract it."
+      },
+      {
+        "question": "Geopolitics can move commodity prices because:",
+        "options": [
+          "Supply chains and sanctions affect availability",
+          "CEOs choose colors",
+          "Bond yields are fixed",
+          "Weather stops"
+        ],
+        "correctIndex": 0,
+        "explanation": "Energy and ag markets are politically sensitive."
+      },
+      {
+        "question": "“Fungible” means:",
+        "options": [
+          "Unique art pieces",
+          "Units are interchangeable within a grade",
+          "Illiquid",
+          "Illegal"
+        ],
+        "correctIndex": 1,
+        "explanation": "Standard barrels or bushels trade interchangeably."
+      }
+    ]
+  },
+  "commodities-basic-2": {
+    "sections": [
+      {
+        "title": "Gold",
+        "content": "Gold is a monetary metal and jewelry/industrial input. It often behaves as a crisis and inflation hedge — imperfectly — and pays no coupon, so opportunity cost rises when real rates are high.",
+        "shortTitle": "Gold",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Gold is a monetary metal and jewelry/industrial input. It often behaves as a crisis and inflation hedge — imperfectly — and pays no coupon, so opportunity cost rises when real rates are high."
+          },
+          {
+            "type": "tickerChart",
+            "ticker": "META",
+            "range": "1Y",
+            "eyebrow": "Live example",
+            "title": "META — live price"
+          }
+        ]
+      },
+      {
+        "title": "Oil",
+        "content": "Crude oil prices hinge on OPEC+ decisions, shale supply, refining constraints, and global demand. Inventory data releases routinely move markets.",
+        "shortTitle": "Oil",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Crude oil prices hinge on OPEC+ decisions, shale supply, refining constraints, and global demand. Inventory data releases routinely move markets."
+          }
+        ]
+      },
+      {
+        "title": "Agriculture",
+        "content": "Weather dominates short-run crop prices; disease affects livestock. Seasonal planting and harvest patterns create recurring annual rhythms traders watch.",
+        "shortTitle": "Agriculture",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Weather dominates short-run crop prices; disease affects livestock. Seasonal planting and harvest patterns create recurring annual rhythms traders watch."
+          }
+        ]
+      }
+    ],
+    "quiz": [
+      {
+        "question": "Gold’s lack of coupon means:",
+        "options": [
+          "It always beats stocks",
+          "Its opportunity cost rises when real interest rates are attractive elsewhere",
+          "It pays monthly dividends",
+          "It cannot be stored"
+        ],
+        "correctIndex": 1,
+        "explanation": "Yielding assets compete for capital."
+      },
+      {
+        "question": "Oil inventories often:",
+        "options": [
+          "Have no impact",
+          "Move prices when they surprise versus expectations",
+          "Are secret",
+          "Are fixed by law"
+        ],
+        "correctIndex": 1,
+        "explanation": "Stock levels signal near-term tightness."
+      },
+      {
+        "question": "Weather primarily impacts:",
+        "options": [
+          "Tech stock multiples",
+          "Agricultural yields and short-run ag prices",
+          "Bond coupons",
+          "Forever unchanged oil"
+        ],
+        "correctIndex": 1,
+        "explanation": "Crop stress and yields link to price."
+      },
+      {
+        "question": "OPEC+ coordination can influence oil by:",
+        "options": [
+          "Setting fashion trends",
+          "Adjusting production targets affecting supply",
+          "Setting retail gas prices directly in every country",
+          "Banning futures"
+        ],
+        "correctIndex": 1,
+        "explanation": "Supply policy shifts the global balance."
+      },
+      {
+        "question": "Gold industrial and jewelry demand:",
+        "options": [
+          "Is irrelevant",
+          "Contributes to baseline physical demand alongside investment flows",
+          "Sets Fed policy",
+          "Fixes bitcoin price"
+        ],
+        "correctIndex": 1,
+        "explanation": "Multiple demand channels matter."
+      }
+    ]
+  },
+  "commodities-basic-3": {
+    "sections": [
+      {
+        "title": "Supply and demand",
+        "content": "Commodity prices clear markets where supply meets demand. Supply shocks (hurricanes, wars) can spike prices even without demand changes. Demand shocks (recessions) can crush energy use.",
+        "shortTitle": "Supply and demand",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Commodity prices clear markets where supply meets demand. Supply shocks (hurricanes, wars) can spike prices even without demand changes. Demand shocks (recessions) can crush energy use."
+          }
+        ]
+      },
+      {
+        "title": "Seasonality",
+        "content": "Agricultural markets show planting and harvest cycles. Natural gas has winter heating demand. Seasonality is a tendency, not a guarantee — exogenous shocks override patterns.",
+        "shortTitle": "Seasonality",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Agricultural markets show planting and harvest cycles. Natural gas has winter heating demand. Seasonality is a tendency, not a guarantee — exogenous shocks override patterns."
+          }
+        ]
+      },
+      {
+        "title": "Inventories",
+        "content": "Low inventories amplify price volatility when supply wobbles. High inventories buffer shocks. Analysts track days of supply and stockpiles.",
+        "shortTitle": "Inventories",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Low inventories amplify price volatility when supply wobbles. High inventories buffer shocks. Analysts track days of supply and stockpiles."
+          }
+        ]
+      }
+    ],
+    "quiz": [
+      {
+        "question": "A hurricane in the Gulf might:",
+        "options": [
+          "Ignore oil markets",
+          "Disrupt refining or production, affecting fuel prices",
+          "Lower all prices",
+          "Guarantee calm markets"
+        ],
+        "correctIndex": 1,
+        "explanation": "Physical disruptions propagate to prices."
+      },
+      {
+        "question": "Seasonal patterns:",
+        "options": [
+          "Always repeat exactly",
+          "Provide tendencies that can be overridden by shocks",
+          "Only apply to stocks",
+          "Are illegal"
+        ],
+        "correctIndex": 1,
+        "explanation": "Expectations vs surprises."
+      },
+      {
+        "question": "Recessions often reduce commodity demand because:",
+        "options": [
+          "Factories and transport slow",
+          "Governments ban oil",
+          "Gold stops trading",
+          "Weather stops"
+        ],
+        "correctIndex": 0,
+        "explanation": "Industrial activity ties to energy and metals."
+      },
+      {
+        "question": "Inventories buffer prices by:",
+        "options": [
+          "Allowing consumption without immediate production shocks",
+          "Eliminating speculation",
+          "Fixing OPEC",
+          "Setting interest rates"
+        ],
+        "correctIndex": 0,
+        "explanation": "Stocks smooth short mismatches."
+      },
+      {
+        "question": "Demand elasticity varies:",
+        "options": [
+          "Never",
+          "By commodity — gasoline is inelastic short-run vs luxury goods",
+          "Only for bitcoin",
+          "Only weekly"
+        ],
+        "correctIndex": 1,
+        "explanation": "Substitution and necessity matter."
+      }
+    ]
+  },
+  "commodities-basic-4": {
+    "sections": [
+      {
+        "title": "Commodity ETFs",
+        "content": "ETFs like broad commodity funds or single-commodity trackers offer exposure without futures accounts — but returns may differ from spot due to rolling futures, fees, and tax treatment.",
+        "shortTitle": "Commodity ETFs",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "ETFs like broad commodity funds or single-commodity trackers offer exposure without futures accounts — but returns may differ from spot due to rolling futures, fees, and tax treatment."
+          }
+        ]
+      },
+      {
+        "title": "ETNs and credit risk",
+        "content": "Exchange-traded notes are unsecured debt of the issuer — if the bank fails, you may lose money unrelated to the commodity. Read the prospectus.",
+        "shortTitle": "ETNs and credit risk",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Exchange-traded notes are unsecured debt of the issuer — if the bank fails, you may lose money unrelated to the commodity. Read the prospectus."
+          }
+        ]
+      },
+      {
+        "title": "Equity producers",
+        "content": "Buying mining or oil company stocks gives commodity-linked exposure with corporate fundamentals layered in — not a pure commodity play.",
+        "shortTitle": "Equity producers",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Buying mining or oil company stocks gives commodity-linked exposure with corporate fundamentals layered in — not a pure commodity play."
+          }
+        ]
+      }
+    ],
+    "quiz": [
+      {
+        "question": "A futures-based commodity ETF may diverge from spot because:",
+        "options": [
+          "It rolls contracts and pays fees",
+          "It always matches spot perfectly",
+          "Spots do not exist",
+          "ETFs cannot trade"
+        ],
+        "correctIndex": 0,
+        "explanation": "Roll yield and expenses matter."
+      },
+      {
+        "question": "An ETN’s risk includes:",
+        "options": ["Issuer credit risk", "Only commodity risk", "No risk", "Football scores"],
+        "correctIndex": 0,
+        "explanation": "You are exposed to the note issuer."
+      },
+      {
+        "question": "Buying an oil major’s stock gives:",
+        "options": [
+          "Pure oil spot exposure",
+          "Equity exposure with company-specific risks",
+          "A barrel delivery",
+          "Guaranteed dividends"
+        ],
+        "correctIndex": 1,
+        "explanation": "Stocks ≠ commodities."
+      },
+      {
+        "question": "Expense ratios:",
+        "options": [
+          "Do not matter",
+          "Drag long-run returns and vary by fund",
+          "Are always zero",
+          "Are paid by the Fed"
+        ],
+        "correctIndex": 1,
+        "explanation": "Compare products carefully."
+      },
+      {
+        "question": "Physical gold ETFs hold:",
+        "options": [
+          "Your house deeds",
+          "Bullion or claims per prospectus — verify",
+          "Only bitcoin",
+          "Cash only"
+        ],
+        "correctIndex": 1,
+        "explanation": "Read what backs shares."
+      }
+    ]
+  },
+  "commodities-basic-5": {
+    "sections": [
+      {
+        "title": "OPEC and cartels",
+        "content": "OPEC+ coordinates production targets among major oil exporters. When members comply, prices can stabilize or rise; cheating or political fractures undermine agreements. Sanctions also reroute oil flows.",
+        "shortTitle": "OPEC and cartels",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "OPEC+ coordinates production targets among major oil exporters. When members comply, prices can stabilize or rise; cheating or political fractures undermine agreements. Sanctions also reroute oil flows."
+          }
+        ]
+      },
+      {
+        "title": "Strategic reserves",
+        "content": "Countries maintain petroleum reserves to buffer emergencies. Releases can temporarily lower prices but do not fix structural shortages.",
+        "shortTitle": "Strategic reserves",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Countries maintain petroleum reserves to buffer emergencies. Releases can temporarily lower prices but do not fix structural shortages."
+          }
+        ]
+      },
+      {
+        "title": "Non-OPEC supply",
+        "content": "U.S. shale, Norway, Brazil, and others add non-OPEC supply that responds to price with lags — technology and financing matter.",
+        "shortTitle": "Non-OPEC supply",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "U.S. shale, Norway, Brazil, and others add non-OPEC supply that responds to price with lags — technology and financing matter."
+          }
+        ]
+      }
+    ],
+    "quiz": [
+      {
+        "question": "OPEC+ decisions matter because:",
+        "options": [
+          "They influence collective oil supply targets",
+          "They set your mortgage rate",
+          "They ban gold",
+          "They control weather"
+        ],
+        "correctIndex": 0,
+        "explanation": "Supply policy shifts global balances."
+      },
+      {
+        "question": "Cartel cohesion can weaken when:",
+        "options": [
+          "Members cheat on quotas or face domestic budget stress",
+          "Everyone always complies perfectly",
+          "Oil is free",
+          "Demand is zero"
+        ],
+        "correctIndex": 0,
+        "explanation": "Incentives misalign across members."
+      },
+      {
+        "question": "Sanctions can:",
+        "options": [
+          "Shift oil flows between regions and affect prices",
+          "Have no economic effect",
+          "Guarantee lower prices always",
+          "Eliminate futures"
+        ],
+        "correctIndex": 0,
+        "explanation": "Barrels find routes — at a cost."
+      },
+      {
+        "question": "Strategic reserve releases:",
+        "options": [
+          "Guarantee permanently lower prices",
+          "Can add short-term supply",
+          "Replace production forever",
+          "Ban exports"
+        ],
+        "correctIndex": 1,
+        "explanation": "Temporary buffer, not a fix."
+      },
+      {
+        "question": "Shale supply often responds to:",
+        "options": [
+          "Price signals with drilling and financing lags",
+          "Daily tweets only",
+          "Moon phases",
+          "Stock buybacks only"
+        ],
+        "correctIndex": 0,
+        "explanation": "High prices eventually attract capital — with delay."
+      }
+    ]
+  },
+  "commodities-basic-6": {
+    "sections": [
+      {
+        "title": "Correlation over time",
+        "content": "Commodities and equities are not perfectly correlated — correlation rises in some crises when everything sells off (liquidity crunch) and diverges during supply shocks that hurt growth but raise energy prices.",
+        "shortTitle": "Correlation over time",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Commodities and equities are not perfectly correlated — correlation rises in some crises when everything sells off (liquidity crunch) and diverges during supply shocks that hurt growth but raise energy prices."
+          }
+        ]
+      },
+      {
+        "title": "Inflation hedging",
+        "content": "Commodities can help when inflation surprises — but they are volatile and can lag policy responses. Size positions thoughtfully.",
+        "shortTitle": "Inflation hedging",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Commodities can help when inflation surprises — but they are volatile and can lag policy responses. Size positions thoughtfully."
+          }
+        ]
+      },
+      {
+        "title": "Portfolio role",
+        "content": "Think of commodities as a satellite allocation: potential diversification and inflation sensitivity, not a core replacement for diversified equities and bonds for most investors.",
+        "shortTitle": "Portfolio role",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Think of commodities as a satellite allocation: potential diversification and inflation sensitivity, not a core replacement for diversified equities and bonds for most investors."
+          }
+        ]
+      }
+    ],
+    "quiz": [
+      {
+        "question": "During a liquidity crisis, many assets may:",
+        "options": [
+          "Always decorrelate",
+          "Correlate upward as investors raise cash",
+          "Stop trading forever",
+          "Guarantee profits"
+        ],
+        "correctIndex": 1,
+        "explanation": "Correlation is not stable in stress."
+      },
+      {
+        "question": "Commodities as an inflation hedge are:",
+        "options": [
+          "Perfect and risk-free",
+          "Imperfect but sometimes helpful",
+          "Unrelated to inflation",
+          "Guaranteed by FDIC"
+        ],
+        "correctIndex": 1,
+        "explanation": "Macro regimes matter."
+      },
+      {
+        "question": "A satellite allocation means:",
+        "options": [
+          "All-in bet",
+          "Smaller supportive slice around a core portfolio",
+          "Only bonds",
+          "Margin-only"
+        ],
+        "correctIndex": 1,
+        "explanation": "Risk budgeting concept."
+      },
+      {
+        "question": "Energy price spikes can:",
+        "options": [
+          "Hurt consumers while benefiting producers",
+          "Help everyone equally",
+          "Lower all stock prices always",
+          "Eliminate inflation"
+        ],
+        "correctIndex": 0,
+        "explanation": "Winners and losers differ."
+      },
+      {
+        "question": "Long-run commodity returns are:",
+        "options": [
+          "Guaranteed above stocks",
+          "Volatile and cycle-dependent",
+          "Zero always",
+          "Equal to cash"
+        ],
+        "correctIndex": 1,
+        "explanation": "Cycles and supercycles dominate narratives."
+      }
+    ]
+  },
+  "risk-basic-1": {
+    "sections": [
+      {
+        "title": "Why risk management matters",
+        "content": "Markets are uncertain; outcomes are path-dependent. Risk management exists so one bad streak does not end your ability to participate. Professionals obsess about survival first, returns second — because without capital, there is no compounding.",
+        "shortTitle": "Why risk management matters",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Markets are uncertain; outcomes are path-dependent. Risk management exists so one bad streak does not end your ability to participate. Professionals obsess about survival first, returns second — because without capital, there is no compounding."
+          }
+        ]
+      },
+      {
+        "title": "Process over prediction",
+        "content": "You cannot control whether the next trade wins; you can control position sizing, entry rules, and how you respond to losses. A repeatable process is the only durable edge for most participants.",
+        "shortTitle": "Process over prediction",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "You cannot control whether the next trade wins; you can control position sizing, entry rules, and how you respond to losses. A repeatable process is the only durable edge for most participants."
+          }
+        ]
+      },
+      {
+        "title": "Expectancy",
+        "content": "Long-run results approximate average win × win rate minus average loss × loss rate (simplified). Negative expectancy cannot be fixed by doubling down — only by improving the strategy or quitting.",
+        "shortTitle": "Expectancy",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Long-run results approximate average win × win rate minus average loss × loss rate (simplified). Negative expectancy cannot be fixed by doubling down — only by improving the strategy or quitting."
+          }
+        ]
+      }
+    ],
+    "quiz": [
+      {
+        "question": "The main goal of risk management is often:",
+        "options": [
+          "Win every trade",
+          "Stay in the game and limit ruin risk",
+          "Eliminate all losses",
+          "Predict the future"
+        ],
+        "correctIndex": 1,
+        "explanation": "Survival enables compounding."
+      },
+      {
+        "question": "You control:",
+        "options": [
+          "Tomorrow’s headlines",
+          "Position size and adherence to rules",
+          "Other traders’ emotions",
+          "Fed decisions"
+        ],
+        "correctIndex": 1,
+        "explanation": "Focus on controllable inputs."
+      },
+      {
+        "question": "Doubling down after losses without edge:",
+        "options": ["Always recovers", "Increases risk of ruin", "Is required", "Removes variance"],
+        "correctIndex": 1,
+        "explanation": "Martingale-like behavior is dangerous."
+      },
+      {
+        "question": "Expectancy depends on:",
+        "options": [
+          "Only win rate",
+          "The full distribution of wins and losses",
+          "Luck spells",
+          "Chart colors"
+        ],
+        "correctIndex": 1,
+        "explanation": "Size of wins/losses matters as much as frequency."
+      },
+      {
+        "question": "A process-based approach means:",
+        "options": [
+          "No rules",
+          "Documented rules you follow consistently",
+          "Random entries",
+          "Ignoring stops"
+        ],
+        "correctIndex": 1,
+        "explanation": "Discipline scales better than hero trades."
+      }
+    ]
+  },
+  "risk-basic-2": {
+    "sections": [
+      {
+        "title": "The 1–2% idea",
+        "content": "A common guideline is to risk only a small fraction of account equity on a single trade — often 1–2% — so a string of losses cannot wipe you out. The exact number should fit your strategy’s win rate and payoff ratio.",
+        "shortTitle": "The 1–2% idea",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "A common guideline is to risk only a small fraction of account equity on a single trade — often 1–2% — so a string of losses cannot wipe you out. The exact number should fit your strategy’s win rate and payoff ratio."
+          }
+        ]
+      },
+      {
+        "title": "Risk per trade vs stop distance",
+        "content": "Position size links stop distance to dollar risk: tighter stops allow larger share counts for the same dollar risk — but tight stops get hunted in noise. Calibrate stops to volatility, not wishful thinking.",
+        "shortTitle": "Risk per trade vs stop distance",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Position size links stop distance to dollar risk: tighter stops allow larger share counts for the same dollar risk — but tight stops get hunted in noise. Calibrate stops to volatility, not wishful thinking."
+          }
+        ]
+      },
+      {
+        "title": "Leverage",
+        "content": "Leverage multiplies both gains and losses — and margin calls can force exits at the worst time. Treat leverage as a risk amplifier, not a free tool.",
+        "shortTitle": "Leverage",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Leverage multiplies both gains and losses — and margin calls can force exits at the worst time. Treat leverage as a risk amplifier, not a free tool."
+          }
+        ]
+      }
+    ],
+    "quiz": [
+      {
+        "question": "Risking 1% per trade means:",
+        "options": [
+          "Each trade risks ~1% of equity (by common definition)",
+          "You always lose 1%",
+          "You trade once per year",
+          "You ignore stops"
+        ],
+        "correctIndex": 0,
+        "explanation": "Definitions vary — write yours down."
+      },
+      {
+        "question": "Wider stops generally require:",
+        "options": [
+          "Smaller position size for the same dollar risk",
+          "Larger size always",
+          "No math",
+          "Higher leverage"
+        ],
+        "correctIndex": 0,
+        "explanation": "Risk = size × per-unit move to stop."
+      },
+      {
+        "question": "Leverage increases:",
+        "options": [
+          "Only upside",
+          "Both upside and downside variability",
+          "Certainty",
+          "Tax refunds"
+        ],
+        "correctIndex": 1,
+        "explanation": "Borrowed money magnifies outcomes."
+      },
+      {
+        "question": "Position sizing should reflect:",
+        "options": [
+          "Your edge quality and volatility",
+          "Only optimism",
+          "Round numbers",
+          "Social media"
+        ],
+        "correctIndex": 0,
+        "explanation": "Match size to strategy stats and market conditions."
+      },
+      {
+        "question": "A losing streak with proper sizing should:",
+        "options": [
+          "Still leave capital to continue if rules were sound",
+          "Always mean the strategy is wrong immediately",
+          "Force all-in",
+          "Ignore review"
+        ],
+        "correctIndex": 0,
+        "explanation": "Evaluate after enough samples."
+      }
+    ]
+  },
+  "risk-basic-3": {
+    "sections": [
+      {
+        "title": "Stop losses",
+        "content": "A stop order exits a position at a market order once a price level trades — it caps loss but can be whipsawed in volatile names. Stops are insurance, not perfection.",
+        "shortTitle": "Stop losses",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "A stop order exits a position at a market order once a price level trades — it caps loss but can be whipsawed in volatile names. Stops are insurance, not perfection."
+          }
+        ]
+      },
+      {
+        "title": "Take profits",
+        "content": "Taking profits locks in gains — but cutting winners too early can forfeit trend upside. Some traders scale out: partial profits at targets, runner for trends.",
+        "shortTitle": "Take profits",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Taking profits locks in gains — but cutting winners too early can forfeit trend upside. Some traders scale out: partial profits at targets, runner for trends."
+          }
+        ]
+      },
+      {
+        "title": "Plan before entry",
+        "content": "Define stop and target logic before you enter — when you are calm. In the trade, emotions argue for moving stops; pre-commitment resists that.",
+        "shortTitle": "Plan before entry",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Define stop and target logic before you enter — when you are calm. In the trade, emotions argue for moving stops; pre-commitment resists that."
+          }
+        ]
+      }
+    ],
+    "quiz": [
+      {
+        "question": "A stop-loss order primarily:",
+        "options": [
+          "Guarantees fill at exactly the stop price in all conditions",
+          "Triggers a market order after the stop level — slippage possible",
+          "Eliminates gaps",
+          "Prevents all losses"
+        ],
+        "correctIndex": 1,
+        "explanation": "Gaps can blow through stops."
+      },
+      {
+        "question": "Take-profit rules help by:",
+        "options": [
+          "Removing some emotional exit decisions in advance",
+          "Guaranteeing maximum gains",
+          "Banning losses",
+          "Replacing research"
+        ],
+        "correctIndex": 0,
+        "explanation": "Automation supports discipline."
+      },
+      {
+        "question": "Whipsaw risk means:",
+        "options": [
+          "Stops can exit before a favorable move continues",
+          "Stops always win",
+          "No volatility",
+          "Profits double"
+        ],
+        "correctIndex": 0,
+        "explanation": "Balance stop tightness vs noise."
+      },
+      {
+        "question": "Planning exits before entry reduces:",
+        "options": [
+          "Emotional decision-making mid-trade",
+          "All risk to zero",
+          "Need for research",
+          "Liquidity"
+        ],
+        "correctIndex": 0,
+        "explanation": "Process beats panic."
+      },
+      {
+        "question": "Trailing stops:",
+        "options": [
+          "Move with favorable price to protect gains",
+          "Never change",
+          "Only for bonds",
+          "Guarantee tops"
+        ],
+        "correctIndex": 0,
+        "explanation": "Lock in progress while allowing trend participation."
+      }
+    ]
+  },
+  "risk-basic-4": {
+    "sections": [
+      {
+        "title": "Losses hurt more than gains help",
+        "content": "Loss aversion is well documented: a dollar lost feels worse than a dollar gained feels good. Revenge trading tries to “make it back” immediately — usually enlarging mistakes.",
+        "shortTitle": "Losses hurt more than gains help",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "Loss aversion is well documented: a dollar lost feels worse than a dollar gained feels good. Revenge trading tries to “make it back” immediately — usually enlarging mistakes."
+          }
+        ]
+      },
+      {
+        "title": "Cooldown routines",
+        "content": "After a loss, step away, journal what happened, and return only when rules are clear. Reducing trade frequency after tilt preserves capital.",
+        "shortTitle": "Cooldown routines",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "After a loss, step away, journal what happened, and return only when rules are clear. Reducing trade frequency after tilt preserves capital."
+          }
+        ]
+      },
+      {
+        "title": "Identity",
+        "content": "If your self-worth is tied to each trade’s outcome, variance becomes unbearable. Treat trading as a probabilistic game with bounded risk — not a verdict on your value.",
+        "shortTitle": "Identity",
+        "estimatedMinutes": 3,
+        "modules": [
+          {
+            "type": "paragraphs",
+            "body": "If your self-worth is tied to each trade’s outcome, variance becomes unbearable. Treat trading as a probabilistic game with bounded risk — not a verdict on your value."
+          }
+        ]
+      }
+    ],
+    "quiz": [
+      {
+        "question": "Revenge trading usually:",
+        "options": [
+          "Restores discipline",
+          "Increases size and risk after losses",
+          "Is encouraged",
+          "Eliminates emotions"
+        ],
+        "correctIndex": 1,
+        "explanation": "Emotional escalation compounds damage."
+      },
+      {
+        "question": "A trading journal helps because:",
+        "options": [
+          "It forces review of decisions independent of P&L luck",
+          "It guarantees profits",
+          "It replaces stops",
+          "It is optional always"
+        ],
+        "correctIndex": 0,
+        "explanation": "Feedback loops improve process."
+      },
+      {
+        "question": "Loss aversion implies:",
+        "options": [
+          "People feel losses more strongly than equivalent gains",
+          "People are rational always",
+          "Gains hurt",
+          "Risk does not exist"
+        ],
+        "correctIndex": 0,
+        "explanation": "Classic behavioral finding."
+      },
+      {
+        "question": "After a large loss, a healthy step is:",
+        "options": [
+          "Immediately double position",
+          "Cooldown and review rules before next trade",
+          "Ignore the loss",
+          "Blame others only"
+        ],
+        "correctIndex": 1,
+        "explanation": "Break the tilt cycle."
+      },
+      {
+        "question": "Detaching self-worth from each trade:",
+        "options": [
+          "Makes you careless",
+          "Reduces emotional overreaction to variance",
+          "Means no rules",
+          "Bans journaling"
+        ],
+        "correctIndex": 1,
+        "explanation": "Process focus beats ego protection."
+      }
+    ]
+  }
+}

@@ -31,20 +31,40 @@ function CustomTooltip({ active, payload, label }) {
         boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
       }}
     >
-      <p style={{ color: 'var(--muted-foreground, #6b7280)', margin: '0 0 4px', fontSize: '0.65rem' }}>
+      <p
+        style={{
+          color: 'var(--muted-foreground, #6b7280)',
+          margin: '0 0 4px',
+          fontSize: '0.65rem',
+        }}
+      >
         {label}
       </p>
       <p style={{ color: 'var(--foreground, #f0f6fc)', margin: 0, fontWeight: 700 }}>
-        ${Number(d.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        $
+        {Number(d.price).toLocaleString('en-US', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}
       </p>
       {d.high != null && d.low != null && (
         <>
-          <p style={{ color: '#10b981', margin: '2px 0 0', fontSize: '0.65rem' }}>H: ${Number(d.high).toFixed(2)}</p>
-          <p style={{ color: '#ef4444', margin: 0, fontSize: '0.65rem' }}>L: ${Number(d.low).toFixed(2)}</p>
+          <p style={{ color: '#10b981', margin: '2px 0 0', fontSize: '0.65rem' }}>
+            H: ${Number(d.high).toFixed(2)}
+          </p>
+          <p style={{ color: '#ef4444', margin: 0, fontSize: '0.65rem' }}>
+            L: ${Number(d.low).toFixed(2)}
+          </p>
         </>
       )}
       {d.volume > 0 && (
-        <p style={{ color: 'var(--muted-foreground, #6b7280)', margin: '2px 0 0', fontSize: '0.6rem' }}>
+        <p
+          style={{
+            color: 'var(--muted-foreground, #6b7280)',
+            margin: '2px 0 0',
+            fontSize: '0.6rem',
+          }}
+        >
           Vol: {Number(d.volume).toLocaleString()}
         </p>
       )}
@@ -52,8 +72,14 @@ function CustomTooltip({ active, payload, label }) {
   );
 }
 
-export default function StockPriceChart({ symbol, livePrice = null, stats = null }) {
-  const [range, setRange] = useState('1M');
+export default function StockPriceChart({
+  symbol,
+  livePrice = null,
+  stats = null,
+  initialRange = '1M',
+  compact = false,
+}) {
+  const [range, setRange] = useState(initialRange);
   const [candles, setCandles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -66,39 +92,45 @@ export default function StockPriceChart({ symbol, livePrice = null, stats = null
   const [measurement, setMeasurement] = useState(null);
   const chartContainerRef = useRef(null);
 
-  const handleChartMouseDown = useCallback((data) => {
-    if (!data?.activePayload?.[0]) return;
-    const point = data.activePayload[0].payload;
-    if (measurement) {
-      setMeasurement(null);
-      return;
-    }
-    const idx =
-      typeof data.activeTooltipIndex === 'number'
-        ? data.activeTooltipIndex
-        : candles.findIndex((c) => c.label === point.label);
-    setDragStart({
-      price: point.price,
-      label: point.label,
-      index: idx >= 0 ? idx : 0,
-    });
-    setDragEnd(null);
-    setIsDragging(true);
-  }, [measurement, candles]);
+  const handleChartMouseDown = useCallback(
+    (data) => {
+      if (!data?.activePayload?.[0]) return;
+      const point = data.activePayload[0].payload;
+      if (measurement) {
+        setMeasurement(null);
+        return;
+      }
+      const idx =
+        typeof data.activeTooltipIndex === 'number'
+          ? data.activeTooltipIndex
+          : candles.findIndex((c) => c.label === point.label);
+      setDragStart({
+        price: point.price,
+        label: point.label,
+        index: idx >= 0 ? idx : 0,
+      });
+      setDragEnd(null);
+      setIsDragging(true);
+    },
+    [measurement, candles],
+  );
 
-  const handleChartMouseMove = useCallback((data) => {
-    if (!isDragging || !dragStart || !data?.activePayload?.[0]) return;
-    const point = data.activePayload[0].payload;
-    const idx =
-      typeof data.activeTooltipIndex === 'number'
-        ? data.activeTooltipIndex
-        : candles.findIndex((c) => c.label === point.label);
-    setDragEnd({
-      price: point.price,
-      label: point.label,
-      index: idx >= 0 ? idx : 0,
-    });
-  }, [isDragging, dragStart, candles]);
+  const handleChartMouseMove = useCallback(
+    (data) => {
+      if (!isDragging || !dragStart || !data?.activePayload?.[0]) return;
+      const point = data.activePayload[0].payload;
+      const idx =
+        typeof data.activeTooltipIndex === 'number'
+          ? data.activeTooltipIndex
+          : candles.findIndex((c) => c.label === point.label);
+      setDragEnd({
+        price: point.price,
+        label: point.label,
+        index: idx >= 0 ? idx : 0,
+      });
+    },
+    [isDragging, dragStart, candles],
+  );
 
   const handleChartMouseUp = useCallback(() => {
     if (!isDragging) return;
@@ -139,12 +171,11 @@ export default function StockPriceChart({ symbol, livePrice = null, stats = null
     }
   }, [isDragging, dragStart, dragEnd, handleChartMouseUp]);
 
-  const activePct = isDragging && dragStart && dragEnd
-    ? ((dragEnd.price - dragStart.price) / dragStart.price) * 100
-    : null;
-  const activeDollar = isDragging && dragStart && dragEnd
-    ? dragEnd.price - dragStart.price
-    : null;
+  const activePct =
+    isDragging && dragStart && dragEnd
+      ? ((dragEnd.price - dragStart.price) / dragStart.price) * 100
+      : null;
+  const activeDollar = isDragging && dragStart && dragEnd ? dragEnd.price - dragStart.price : null;
 
   const fetchCandles = useCallback(async (sym, rng) => {
     if (!sym) return;
@@ -153,7 +184,9 @@ export default function StockPriceChart({ symbol, livePrice = null, stats = null
     setHasFetched(false);
     setCandles([]);
     try {
-      const res = await fetch(`/api/market-data/stock-candles?symbol=${encodeURIComponent(sym)}&range=${rng}`);
+      const res = await fetch(
+        `/api/market-data/stock-candles?symbol=${encodeURIComponent(sym)}&range=${rng}`,
+      );
       const data = await res.json();
       if (data.error && !data.candles?.length) {
         setError(data.error);
@@ -178,21 +211,21 @@ export default function StockPriceChart({ symbol, livePrice = null, stats = null
   }, [symbol, range, fetchCandles]);
 
   const firstPrice = candles[0]?.price;
-  const lastPrice  = candles[candles.length - 1]?.price;
+  const lastPrice = candles[candles.length - 1]?.price;
   const isPositive = lastPrice != null && firstPrice != null ? lastPrice >= firstPrice : true;
-  const pctChange  = firstPrice && lastPrice
-    ? (((lastPrice - firstPrice) / firstPrice) * 100).toFixed(2)
-    : null;
-  const lineColour  = isPositive ? '#10b981' : '#ef4444';
-  const gradientId  = `grad-${symbol?.replace(/[^a-zA-Z0-9]/g, '')}`;
-  const minPrice    = candles.length ? Math.min(...candles.map((c) => (c.low  ?? c.price) * 0.998)) : 0;
-  const maxPrice    = candles.length ? Math.max(...candles.map((c) => (c.high ?? c.price) * 1.002)) : 0;
+  const pctChange =
+    firstPrice && lastPrice ? (((lastPrice - firstPrice) / firstPrice) * 100).toFixed(2) : null;
+  const lineColour = isPositive ? '#10b981' : '#ef4444';
+  const gradientId = `grad-${symbol?.replace(/[^a-zA-Z0-9]/g, '')}`;
+  const minPrice = candles.length ? Math.min(...candles.map((c) => (c.low ?? c.price) * 0.998)) : 0;
+  const maxPrice = candles.length
+    ? Math.max(...candles.map((c) => (c.high ?? c.price) * 1.002))
+    : 0;
 
   if (!symbol) return null;
 
   return (
     <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 0 }}>
-
       {/* ── Header row: ticker + price + change  |  range selector top-right ── */}
       <div
         style={{
@@ -208,12 +241,25 @@ export default function StockPriceChart({ symbol, livePrice = null, stats = null
       >
         {/* Left: ticker, price, change */}
         <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
-          <span style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--foreground, #f0f6fc)', letterSpacing: '0.02em' }}>
+          <span
+            style={{
+              fontSize: '1.1rem',
+              fontWeight: 800,
+              color: 'var(--foreground, #f0f6fc)',
+              letterSpacing: '0.02em',
+            }}
+          >
             {symbol}
           </span>
           {(livePrice != null || lastPrice != null) && (
-            <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--foreground, #f0f6fc)' }}>
-              ${Number(livePrice ?? lastPrice).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            <span
+              style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--foreground, #f0f6fc)' }}
+            >
+              $
+              {Number(livePrice ?? lastPrice).toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
             </span>
           )}
           {pctChange !== null && (
@@ -227,7 +273,8 @@ export default function StockPriceChart({ symbol, livePrice = null, stats = null
                 borderRadius: '4px',
               }}
             >
-              {isPositive ? '+' : ''}{pctChange}%
+              {isPositive ? '+' : ''}
+              {pctChange}%
             </span>
           )}
         </div>
@@ -270,39 +317,105 @@ export default function StockPriceChart({ symbol, livePrice = null, stats = null
       </div>
 
       {/* ── Chart body ── */}
-      <div ref={chartContainerRef} className="chart-viewport-sm relative w-full" style={{ overflow: 'visible' }}>
+      <div
+        ref={chartContainerRef}
+        className={`chart-viewport-sm relative w-full${compact ? ' stock-price-chart--compact' : ''}`}
+        style={{ overflow: 'visible' }}
+      >
         {loading && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '8px', color: 'var(--muted-foreground, #6b7280)', fontSize: '0.78rem' }}>
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" style={{ animation: 'spin 0.9s linear infinite' }}>
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexDirection: 'column',
+              gap: '8px',
+              color: 'var(--muted-foreground, #6b7280)',
+              fontSize: '0.78rem',
+            }}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="20"
+              height="20"
+              fill="none"
+              style={{ animation: 'spin 0.9s linear infinite' }}
+            >
               <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" opacity="0.25" />
-              <path d="M12 2a10 10 0 0 1 10 10" stroke="#10b981" strokeWidth="2" strokeLinecap="round" />
+              <path
+                d="M12 2a10 10 0 0 1 10 10"
+                stroke="#10b981"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
             </svg>
             Loading {symbol}…
           </div>
         )}
 
         {!loading && error && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '6px', color: error.includes('Rate limit') ? 'var(--muted-foreground, #6b7280)' : '#ef4444', fontSize: '0.75rem', textAlign: 'center', padding: '1rem' }}>
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexDirection: 'column',
+              gap: '6px',
+              color: error.includes('Rate limit') ? 'var(--muted-foreground, #6b7280)' : '#ef4444',
+              fontSize: '0.75rem',
+              textAlign: 'center',
+              padding: '1rem',
+            }}
+          >
             {error.includes('Rate limit') ? (
               <>
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" style={{ opacity: 0.5 }}>
+                <svg
+                  viewBox="0 0 24 24"
+                  width="20"
+                  height="20"
+                  fill="none"
+                  style={{ opacity: 0.5 }}
+                >
                   <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
-                  <path d="M12 6v6l4 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                  <path
+                    d="M12 6v6l4 2"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
                 </svg>
                 <span>Too many requests — please wait a moment</span>
-                <span style={{ color: 'var(--muted-foreground, #6b7280)', fontSize: '0.65rem' }}>Chart data will load automatically on retry</span>
+                <span style={{ color: 'var(--muted-foreground, #6b7280)', fontSize: '0.65rem' }}>
+                  Chart data will load automatically on retry
+                </span>
               </>
             ) : (
               <>
                 Could not load chart data.
-                <span style={{ color: 'var(--muted-foreground, #6b7280)', fontSize: '0.65rem' }}>{error}</span>
+                <span style={{ color: 'var(--muted-foreground, #6b7280)', fontSize: '0.65rem' }}>
+                  {error}
+                </span>
               </>
             )}
           </div>
         )}
 
         {!loading && hasFetched && !error && candles.length === 0 && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted-foreground, #6b7280)', fontSize: '0.75rem' }}>
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'var(--muted-foreground, #6b7280)',
+              fontSize: '0.75rem',
+            }}
+          >
             No data available for {symbol} · {range}
           </div>
         )}
@@ -321,11 +434,15 @@ export default function StockPriceChart({ symbol, livePrice = null, stats = null
               >
                 <defs>
                   <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%"   stopColor={lineColour} stopOpacity={0.25} />
+                    <stop offset="0%" stopColor={lineColour} stopOpacity={0.25} />
                     <stop offset="100%" stopColor={lineColour} stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="2 4" stroke="rgba(128,128,128,0.12)" vertical={false} />
+                <CartesianGrid
+                  strokeDasharray="2 4"
+                  stroke="rgba(128,128,128,0.12)"
+                  vertical={false}
+                />
                 <XAxis
                   dataKey="label"
                   tick={{
@@ -335,7 +452,10 @@ export default function StockPriceChart({ symbol, livePrice = null, stats = null
                     fontSize: 10,
                     fontFamily: 'var(--font-mono, monospace)',
                   }}
-                  axisLine={false} tickLine={false} interval="preserveStartEnd" minTickGap={50}
+                  axisLine={false}
+                  tickLine={false}
+                  interval="preserveStartEnd"
+                  minTickGap={50}
                 />
                 <YAxis
                   domain={[minPrice, maxPrice]}
@@ -344,11 +464,24 @@ export default function StockPriceChart({ symbol, livePrice = null, stats = null
                     fontSize: 10,
                     fontFamily: 'var(--font-mono, monospace)',
                   }}
-                  axisLine={false} tickLine={false} width={40}
-                  tickFormatter={(v) => `$${Number(v).toLocaleString('en-US', { maximumFractionDigits: 0 })}`}
+                  axisLine={false}
+                  tickLine={false}
+                  width={40}
+                  tickFormatter={(v) =>
+                    `$${Number(v).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
+                  }
                 />
-                <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(128,128,128,0.2)', strokeWidth: 1 }} />
-                {firstPrice && <ReferenceLine y={firstPrice} stroke="rgba(128,128,128,0.2)" strokeDasharray="3 4" />}
+                <Tooltip
+                  content={<CustomTooltip />}
+                  cursor={{ stroke: 'rgba(128,128,128,0.2)', strokeWidth: 1 }}
+                />
+                {firstPrice && (
+                  <ReferenceLine
+                    y={firstPrice}
+                    stroke="rgba(128,128,128,0.2)"
+                    strokeDasharray="3 4"
+                  />
+                )}
                 {isDragging && dragStart && dragEnd && (
                   <ReferenceArea
                     x1={candles[Math.min(dragStart.index, dragEnd.index)]?.label}
@@ -361,12 +494,24 @@ export default function StockPriceChart({ symbol, livePrice = null, stats = null
                   <ReferenceArea
                     x1={candles[measurement.startIndex]?.label}
                     x2={candles[measurement.endIndex]?.label}
-                    fill={measurement.pct >= 0 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'}
-                    stroke={measurement.pct >= 0 ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}
+                    fill={
+                      measurement.pct >= 0 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'
+                    }
+                    stroke={
+                      measurement.pct >= 0 ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'
+                    }
                     strokeDasharray="3 3"
                   />
                 )}
-                <Area type="monotone" dataKey="price" stroke={lineColour} strokeWidth={1.5} fill={`url(#${gradientId})`} dot={false} activeDot={{ r: 3, fill: lineColour, strokeWidth: 0 }} />
+                <Area
+                  type="monotone"
+                  dataKey="price"
+                  stroke={lineColour}
+                  strokeWidth={1.5}
+                  fill={`url(#${gradientId})`}
+                  dot={false}
+                  activeDot={{ r: 3, fill: lineColour, strokeWidth: 0 }}
+                />
               </AreaChart>
             </ResponsiveContainer>
             {isDragging && dragStart && dragEnd && activePct !== null && (
@@ -387,22 +532,38 @@ export default function StockPriceChart({ symbol, livePrice = null, stats = null
                   boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, justifyContent: 'center' }}>
-                  <span style={{
-                    fontSize: '0.95rem', fontWeight: 800, fontFamily: 'var(--font-mono, monospace)',
-                    color: activePct >= 0 ? '#10b981' : '#ef4444',
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'baseline',
+                    gap: 6,
+                    justifyContent: 'center',
                   }}
+                >
+                  <span
+                    style={{
+                      fontSize: '0.95rem',
+                      fontWeight: 800,
+                      fontFamily: 'var(--font-mono, monospace)',
+                      color: activePct >= 0 ? '#10b981' : '#ef4444',
+                    }}
                   >
-                    {activeDollar >= 0 ? '+' : ''}{activeDollar.toFixed(2)}
+                    {activeDollar >= 0 ? '+' : ''}
+                    {activeDollar.toFixed(2)}
                   </span>
-                  <span style={{
-                    fontSize: '0.8rem', fontWeight: 700, fontFamily: 'var(--font-mono, monospace)',
-                    color: activePct >= 0 ? '#10b981' : '#ef4444',
-                  }}
+                  <span
+                    style={{
+                      fontSize: '0.8rem',
+                      fontWeight: 700,
+                      fontFamily: 'var(--font-mono, monospace)',
+                      color: activePct >= 0 ? '#10b981' : '#ef4444',
+                    }}
                   >
                     ({Math.abs(activePct).toFixed(2)}%)
                   </span>
-                  <span style={{ fontSize: '0.85rem', color: activePct >= 0 ? '#10b981' : '#ef4444' }}>
+                  <span
+                    style={{ fontSize: '0.85rem', color: activePct >= 0 ? '#10b981' : '#ef4444' }}
+                  >
                     {activePct >= 0 ? '↑' : '↓'}
                   </span>
                 </div>
@@ -430,22 +591,41 @@ export default function StockPriceChart({ symbol, livePrice = null, stats = null
                   boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, justifyContent: 'center' }}>
-                  <span style={{
-                    fontSize: '1.05rem', fontWeight: 800, fontFamily: 'var(--font-mono, monospace)',
-                    color: measurement.pct >= 0 ? '#10b981' : '#ef4444',
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'baseline',
+                    gap: 6,
+                    justifyContent: 'center',
                   }}
+                >
+                  <span
+                    style={{
+                      fontSize: '1.05rem',
+                      fontWeight: 800,
+                      fontFamily: 'var(--font-mono, monospace)',
+                      color: measurement.pct >= 0 ? '#10b981' : '#ef4444',
+                    }}
                   >
-                    {measurement.dollarChange >= 0 ? '+' : ''}{measurement.dollarChange.toFixed(2)}
+                    {measurement.dollarChange >= 0 ? '+' : ''}
+                    {measurement.dollarChange.toFixed(2)}
                   </span>
-                  <span style={{
-                    fontSize: '0.85rem', fontWeight: 700, fontFamily: 'var(--font-mono, monospace)',
-                    color: measurement.pct >= 0 ? '#10b981' : '#ef4444',
-                  }}
+                  <span
+                    style={{
+                      fontSize: '0.85rem',
+                      fontWeight: 700,
+                      fontFamily: 'var(--font-mono, monospace)',
+                      color: measurement.pct >= 0 ? '#10b981' : '#ef4444',
+                    }}
                   >
                     ({Math.abs(measurement.pct).toFixed(2)}%)
                   </span>
-                  <span style={{ fontSize: '0.95rem', color: measurement.pct >= 0 ? '#10b981' : '#ef4444' }}>
+                  <span
+                    style={{
+                      fontSize: '0.95rem',
+                      color: measurement.pct >= 0 ? '#10b981' : '#ef4444',
+                    }}
+                  >
                     {measurement.pct >= 0 ? '↑' : '↓'}
                   </span>
                 </div>
@@ -468,10 +648,10 @@ export default function StockPriceChart({ symbol, livePrice = null, stats = null
           data-stat-cards
         >
           {[
-            { label: 'Market Cap',    value: stats.mcap,     sub: stats.capType  },
-            { label: 'P/E Ratio',     value: stats.pe,       sub: 'Price / Earnings' },
-            { label: 'Dividend Yield',value: stats.divYield, sub: 'Annual yield' },
-            { label: 'EPS',           value: stats.eps,      sub: 'Earnings per share' },
+            { label: 'Market Cap', value: stats.mcap, sub: stats.capType },
+            { label: 'P/E Ratio', value: stats.pe, sub: 'Price / Earnings' },
+            { label: 'Dividend Yield', value: stats.divYield, sub: 'Annual yield' },
+            { label: 'EPS', value: stats.eps, sub: 'Earnings per share' },
           ].map(({ label, value, sub }) => (
             <div
               key={label}

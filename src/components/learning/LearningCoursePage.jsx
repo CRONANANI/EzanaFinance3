@@ -5,7 +5,10 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { getCourseById, getLevelLabel, TRACKS } from '@/lib/learning-curriculum';
 import { getOrderedCoursesForTrack } from '@/lib/learning-progress-logic';
-import CourseVisual from './visuals/CourseVisual';
+import { Hero } from './chapter/Hero';
+import { EyebrowPill } from './chapter/EyebrowPill';
+import { SectionRenderer } from './chapter/SectionRenderer';
+import { FooterDock } from './chapter/FooterDock';
 
 // Quiz answers are keyed by questionId to avoid the index-based off-by-one
 // bugs that leaked strings like "Submit 5 answers (indices 0-3)" to the UI.
@@ -94,10 +97,7 @@ export function LearningCoursePage() {
   }, [content?.sections?.length, progress?.reading_complete]);
 
   const trackLabel = TRACKS.find((t) => t.id === course?.track)?.label || 'Track';
-  const ordered = useMemo(
-    () => (course ? getOrderedCoursesForTrack(course.track) : []),
-    [course]
-  );
+  const ordered = useMemo(() => (course ? getOrderedCoursesForTrack(course.track) : []), [course]);
   const currentIdx = course ? ordered.findIndex((c) => c.id === course.id) : -1;
   const pos = currentIdx + 1;
   const nextCourse = currentIdx >= 0 ? ordered[currentIdx + 1] || null : null;
@@ -115,7 +115,7 @@ export function LearningCoursePage() {
       Array.isArray(retryIndices) && retryIndices.length > 0
         ? retryIndices
         : Array.from({ length: quizForWalker.length }, (_, i) => i),
-    [retryIndices, quizForWalker.length]
+    [retryIndices, quizForWalker.length],
   );
 
   const goNextCourse = () => {
@@ -155,15 +155,13 @@ export function LearningCoursePage() {
         const v = answers[questionKey(courseId, i)];
         return v === undefined ? null : v;
       }),
-    [answers, courseId]
+    [answers, courseId],
   );
 
   const submitQuiz = async () => {
     const quizArr = content?.quiz || [];
     const payloadAnswers = buildAnswersPayload(quizArr);
-    const missing = payloadAnswers
-      .map((a, i) => (a === null ? i : -1))
-      .filter((i) => i !== -1);
+    const missing = payloadAnswers.map((a, i) => (a === null ? i : -1)).filter((i) => i !== -1);
     if (missing.length > 0) {
       const first = missing[0];
       setErr(`Please answer question ${first + 1} before submitting.`);
@@ -236,7 +234,8 @@ export function LearningCoursePage() {
   const currentAnswer = answers[questionKey(courseId, currentOriginalIdx)];
   const isLastQuestion = qIdx === walkLen - 1;
   const isCorrect = confirmed && currentAnswer === currentQuestion?.correctIndex;
-  const quizProgressPct = walkLen > 0 ? Math.round(((qIdx + (confirmed ? 1 : 0)) / walkLen) * 100) : 0;
+  const quizProgressPct =
+    walkLen > 0 ? Math.round(((qIdx + (confirmed ? 1 : 0)) / walkLen) * 100) : 0;
 
   const handleOptionPick = (optionIndex) => {
     if (confirmed) return;
@@ -280,24 +279,43 @@ export function LearningCoursePage() {
     setQuizMode(true);
   };
 
-  return (
-    <div className="lc3-page dashboard-page-inset db-page">
-      <Link href="/learning-center" className="lc3-back">
-        ← Back to Learning Center
-      </Link>
+  const levelLabel = getLevelLabel(course?.level);
+  const currentSectionData = content?.sections?.[currentSection];
+  const nextSectionData = content?.sections?.[currentSection + 1];
+  const isLastSection = currentSection === (content?.sections?.length ?? 1) - 1;
+  const completedSet = new Set(
+    Object.entries(sectionCompleted)
+      .filter(([, done]) => done)
+      .map(([idx]) => Number(idx)),
+  );
 
-      <p className="lc3-breadcrumb">
-        {TRACKS.find((t) => t.id === course.track)?.icon} {trackLabel} &gt; {getLevelLabel(course.level)} &gt; Course{' '}
-        {pos} of {ordered.length}
-      </p>
-      <h1 className="lc3-title">{course.title}</h1>
-      <p className="lc3-meta">
-        Duration: {course.duration_minutes} min · Progress:{' '}
-        <span className="lc3-pct">{pct}%</span>
-      </p>
-      <div className="lc3-bar">
-        <div className="lc3-bar-fill" style={{ width: `${pct}%` }} />
-      </div>
+  const handlePrev = () => {
+    if (currentSection > 0) setCurrentSection((p) => p - 1);
+  };
+
+  const handleNext = () => {
+    setSectionCompleted((prev) => ({ ...prev, [currentSection]: true }));
+    if (!isLastSection) {
+      setCurrentSection((p) => p + 1);
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    } else {
+      setReadAck(true);
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+  };
+
+  const handleSectionJump = (idx) => {
+    setCurrentSection(idx);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
+
+  return (
+    <div className="lc3-page dashboard-page-inset db-page lc-edit-page">
+      {(quizMode || result) && (
+        <Link href="/learning-center" className="lc3-back">
+          ← Back to Learning Center
+        </Link>
+      )}
 
       {quizPassed && !result && (
         <div className="lc3-banner">
@@ -315,154 +333,93 @@ export function LearningCoursePage() {
       )}
 
       {!quizMode && !result && (
-        <article className="lc3-article db-card">
+        <>
           {content?.sections?.length > 0 ? (
-            <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
-              <div style={{ width: '220px', flexShrink: 0 }}>
-                {content.sections.map((sec, i) => {
-                  const canOpen = i <= currentSection || (i > 0 && sectionCompleted[i - 1]);
-                  return (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => {
-                        if (canOpen) setCurrentSection(i);
-                      }}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                        width: '100%',
-                        padding: '0.6rem 0.75rem',
-                        border: 'none',
-                        borderLeft: i === currentSection ? '3px solid #10b981' : '3px solid transparent',
-                        background: i === currentSection ? 'rgba(16, 185, 129, 0.08)' : 'transparent',
-                        color:
-                          i === currentSection
-                            ? '#10b981'
-                            : sectionCompleted[i]
-                              ? 'var(--text-primary, #f0f6fc)'
-                              : '#6b7280',
-                        fontSize: '0.8125rem',
-                        fontWeight: i === currentSection ? 700 : 500,
-                        textAlign: 'left',
-                        cursor: canOpen ? 'pointer' : 'not-allowed',
-                        opacity: canOpen ? 1 : 0.5,
-                        borderRadius: '0 6px 6px 0',
-                        transition: 'all 0.15s',
-                        marginBottom: 4,
-                      }}
-                    >
-                      {sectionCompleted[i] ? (
-                        <i className="bi bi-check-circle-fill" style={{ color: '#10b981' }} />
-                      ) : (
-                        <span
-                          style={{
-                            width: '18px',
-                            height: '18px',
-                            borderRadius: '50%',
-                            border: `2px solid ${i === currentSection ? '#10b981' : '#4b5563'}`,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '0.625rem',
-                            fontWeight: 700,
-                          }}
-                        >
-                          {i + 1}
-                        </span>
-                      )}
-                      <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {sec.title}
-                      </span>
-                    </button>
-                  );
-                })}
+            <>
+              <Hero
+                course={{
+                  title: course.title,
+                  track: course.track,
+                  level: course.level,
+                  totalCourses: ordered.length,
+                  courseIndex: pos,
+                  totalSections: content.sections.length,
+                  estimatedMinutes: course.duration_minutes || 15,
+                }}
+                trackLabel={trackLabel}
+                levelLabel={levelLabel}
+                subDeck={
+                  currentSection === 0 ? currentSectionData?.subDeck || course.description : null
+                }
+                sections={content.sections.map((s, i) => ({
+                  id: s.id || i,
+                  title: s.title,
+                  shortTitle: s.shortTitle || s.title,
+                }))}
+                currentSectionIdx={currentSection}
+                completedSet={completedSet}
+                onSectionJump={handleSectionJump}
+              />
+
+              <div className="lc3-bar lc-edit-progress-bar">
+                <div className="lc3-bar-fill" style={{ width: `${pct}%` }} />
               </div>
 
-              <div style={{ flex: 1, minWidth: 0 }}>
-                {content.sections[currentSection] && (
-                  <section className="lc3-section">
-                    <h2 className="lc3-h2">{content.sections[currentSection].title}</h2>
-                    <div className="lc3-body">{content.sections[currentSection].content}</div>
-                    {content.sections[currentSection].visual && (
-                      <CourseVisual
-                        type={content.sections[currentSection].visual.type}
-                        data={content.sections[currentSection].visual.data}
-                        caption={content.sections[currentSection].visual.caption}
-                      />
-                    )}
-                    {content.sections[currentSection].callout && (
-                      <div className="lc3-callout">{content.sections[currentSection].callout}</div>
-                    )}
-                    {content.sections[currentSection].keyTerms?.length > 0 && (
-                      <div className="lc3-terms">
-                        <strong>Key terms:</strong> {content.sections[currentSection].keyTerms.join(', ')}
-                      </div>
-                    )}
+              <article className="lc-edit-article">
+                <EyebrowPill
+                  sectionIdx={currentSection}
+                  totalSections={content.sections.length}
+                  isComplete={completedSet.has(currentSection)}
+                />
+                <h2 className="lc-edit-h2">{currentSectionData?.title}</h2>
+                <SectionRenderer modules={currentSectionData?.modules || []} />
+              </article>
 
-                    <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
-                      {currentSection < content.sections.length - 1 ? (
-                        <button
-                          type="button"
-                          className="lc3-btn lc3-btn-primary"
-                          onClick={() => {
-                            setSectionCompleted((prev) => ({ ...prev, [currentSection]: true }));
-                            setCurrentSection((prev) => prev + 1);
-                          }}
-                        >
-                          Continue to next section →
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          className="lc3-btn lc3-btn-primary"
-                          onClick={() => {
-                            setSectionCompleted((prev) => ({ ...prev, [currentSection]: true }));
-                            setReadAck(true);
-                          }}
-                        >
-                          Complete reading ✓
-                        </button>
-                      )}
+              <FooterDock
+                currentIdx={currentSection}
+                totalSections={content.sections.length}
+                isLastSection={isLastSection}
+                isMarkedRead={completedSet.has(currentSection)}
+                nextShortTitle={nextSectionData?.shortTitle || nextSectionData?.title}
+                onPrev={handlePrev}
+                onNext={handleNext}
+              />
+
+              {!quizPassed && (
+                <>
+                  {readAck && !progress?.reading_complete && (
+                    <div className="lc3-read-row" style={{ marginTop: '1.25rem' }}>
+                      <button
+                        type="button"
+                        className="lc3-btn lc3-btn-primary"
+                        disabled={submitting}
+                        onClick={onReadingDone}
+                      >
+                        {progress?.reading_complete
+                          ? 'Reading complete ✓'
+                          : 'Confirm & unlock quiz'}
+                      </button>
                     </div>
-                  </section>
-                )}
-              </div>
-            </div>
+                  )}
+
+                  {progress?.reading_complete && (
+                    <button
+                      type="button"
+                      className="lc3-btn lc3-btn-primary"
+                      style={{ marginTop: '0.75rem' }}
+                      onClick={handleStartQuiz}
+                      data-task-target="learning-quiz-button"
+                    >
+                      Take Quiz →
+                    </button>
+                  )}
+                </>
+              )}
+            </>
           ) : (
             <p className="lc3-muted">No sections for this course.</p>
           )}
-
-          {!quizPassed && (
-            <>
-              {readAck && !progress?.reading_complete && (
-                <div className="lc3-read-row" style={{ marginTop: '1.25rem' }}>
-                  <button
-                    type="button"
-                    className="lc3-btn lc3-btn-primary"
-                    disabled={submitting}
-                    onClick={onReadingDone}
-                  >
-                    {progress?.reading_complete ? 'Reading complete ✓' : 'Confirm & unlock quiz'}
-                  </button>
-                </div>
-              )}
-
-              {progress?.reading_complete && (
-                <button
-                  type="button"
-                  className="lc3-btn lc3-btn-primary"
-                  style={{ marginTop: '0.75rem' }}
-                  onClick={handleStartQuiz}
-                  data-task-target="learning-quiz-button"
-                >
-                  Take Quiz →
-                </button>
-              )}
-            </>
-          )}
-        </article>
+        </>
       )}
 
       {quizMode && currentQuestion && (
@@ -474,8 +431,8 @@ export function LearningCoursePage() {
           </h2>
           {retryIndices && (
             <p className="lc3-muted" style={{ marginTop: '-0.25rem' }}>
-              Answering the {walkLen} question{walkLen === 1 ? '' : 's'} you missed.
-              Your correct answers are preserved.
+              Answering the {walkLen} question{walkLen === 1 ? '' : 's'} you missed. Your correct
+              answers are preserved.
             </p>
           )}
 
@@ -578,7 +535,9 @@ export function LearningCoursePage() {
             {result.passed ? (
               <>
                 <div className="lc3-results-badge pass">🏆</div>
-                <h2 className="lc3-h2" style={{ margin: 0 }}>Perfect score!</h2>
+                <h2 className="lc3-h2" style={{ margin: 0 }}>
+                  Perfect score!
+                </h2>
                 <p className="lc3-muted">
                   You got {result.correct} out of {result.total} right. You&apos;ve completed{' '}
                   <strong style={{ color: 'var(--text-primary, #f0f6fc)' }}>{course.title}</strong>.
@@ -591,9 +550,8 @@ export function LearningCoursePage() {
                   You got {result.correct} out of {result.total}
                 </h2>
                 <p className="lc3-muted">
-                  You need {result.total} out of {result.total} to complete this course.
-                  Review the questions you missed and try again — your correct answers
-                  are saved.
+                  You need {result.total} out of {result.total} to complete this course. Review the
+                  questions you missed and try again — your correct answers are saved.
                 </p>
               </>
             )}
@@ -633,7 +591,7 @@ export function LearningCoursePage() {
                 const userText =
                   userIndex === undefined || userIndex === null
                     ? '—'
-                    : q.options?.[userIndex] ?? '—';
+                    : (q.options?.[userIndex] ?? '—');
                 const correctText = q.options?.[q.correctIndex] ?? '';
                 return (
                   <li key={i} className={ok ? 'ok' : 'bad'}>
@@ -673,7 +631,11 @@ export function LearningCoursePage() {
                     Begin “{nextCourse.title}” →
                   </button>
                 ) : (
-                  <button type="button" className="lc3-btn lc3-btn-primary" onClick={goBackToCenter}>
+                  <button
+                    type="button"
+                    className="lc3-btn lc3-btn-primary"
+                    onClick={goBackToCenter}
+                  >
                     {trackLabel} series complete 🏆
                   </button>
                 )}
