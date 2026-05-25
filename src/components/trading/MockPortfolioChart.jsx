@@ -12,8 +12,8 @@ import {
 } from 'recharts';
 import './mock-portfolio-chart.css';
 
-const RANGES = ['1M', '6M', '1Y'];
-const RANGE_LABELS = { '1M': '1M', '6M': '6M', '1Y': '1Y' };
+const RANGES = ['ALL', '1M', '6M', '1Y'];
+const RANGE_LABELS = { ALL: 'Since start', '1M': '1M', '6M': '6M', '1Y': '1Y' };
 
 function formatUSD(v) {
   if (!Number.isFinite(v)) return '$0';
@@ -24,7 +24,7 @@ function formatUSD(v) {
 
 function formatDateLabel(iso, range) {
   const d = new Date(iso);
-  if (range === '1M') {
+  if (range === '1M' || range === 'ALL') {
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   }
   return d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
@@ -36,7 +36,11 @@ function CustomTooltip({ active, payload }) {
   return (
     <div className="mpc-tooltip">
       <div className="mpc-tooltip-date">
-        {new Date(p.at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+        {new Date(p.at).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        })}
       </div>
       <div className="mpc-tooltip-value">{formatUSD(p.value)}</div>
     </div>
@@ -44,7 +48,7 @@ function CustomTooltip({ active, payload }) {
 }
 
 export default function MockPortfolioChart() {
-  const [range, setRange] = useState('1M');
+  const [range, setRange] = useState('ALL');
   const [data, setData] = useState({ points: [], source: 'loading' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -60,9 +64,14 @@ export default function MockPortfolioChart() {
         if (cancelled) return;
         if (d.error) {
           setError(d.error);
-          setData({ points: [], source: 'error' });
+          setData({ points: [], source: 'error', note: null });
         } else {
-          setData({ points: d.points || [], source: d.source || 'unknown' });
+          setData({
+            points: d.points || [],
+            source: d.source || 'unknown',
+            note: d.note || null,
+            startedAt: d.startedAt || null,
+          });
         }
       })
       .catch((e) => {
@@ -108,7 +117,8 @@ export default function MockPortfolioChart() {
             <div className="mpc-stats">
               <span className="mpc-stat-value">{formatUSD(stats.end)}</span>
               <span className={`mpc-stat-change ${stats.isPositive ? 'is-up' : 'is-down'}`}>
-                {stats.isPositive ? '+' : ''}{formatUSD(stats.change)} ({stats.changePct.toFixed(2)}%)
+                {stats.isPositive ? '+' : ''}
+                {formatUSD(stats.change)} ({stats.changePct.toFixed(2)}%)
               </span>
             </div>
           )}
@@ -132,7 +142,13 @@ export default function MockPortfolioChart() {
       {!loading && isEmpty && (
         <div className="mpc-empty">
           <i className="bi bi-graph-up mpc-empty-icon" />
-          <p>Start trading to see your portfolio performance over time.</p>
+          <p>
+            {data.source === 'no-portfolio'
+              ? 'Create your mock portfolio to start tracking performance.'
+              : data.source === 'empty-portfolio'
+                ? 'Your portfolio is empty. Place a trade to start tracking performance over time.'
+                : 'Start trading to see your portfolio performance over time.'}
+          </p>
         </div>
       )}
 
@@ -154,21 +170,32 @@ export default function MockPortfolioChart() {
                 <CartesianGrid stroke="rgba(255,255,255,0.04)" vertical={false} />
                 <XAxis
                   dataKey="label"
-                  tick={{ className: 'mpc-axis-tick', fontSize: 10, fontFamily: 'var(--font-mono, monospace)' }}
+                  tick={{
+                    className: 'mpc-axis-tick',
+                    fontSize: 10,
+                    fontFamily: 'var(--font-mono, monospace)',
+                  }}
                   axisLine={false}
                   tickLine={false}
                   interval="preserveStartEnd"
                   minTickGap={50}
                 />
                 <YAxis
-                  tick={{ className: 'mpc-axis-tick', fontSize: 10, fontFamily: 'var(--font-mono, monospace)' }}
+                  tick={{
+                    className: 'mpc-axis-tick',
+                    fontSize: 10,
+                    fontFamily: 'var(--font-mono, monospace)',
+                  }}
                   axisLine={false}
                   tickLine={false}
                   width={50}
                   tickFormatter={(v) => formatUSD(v)}
                   domain={['auto', 'auto']}
                 />
-                <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(16,185,129,0.3)', strokeDasharray: '3 3' }} />
+                <Tooltip
+                  content={<CustomTooltip />}
+                  cursor={{ stroke: 'rgba(16,185,129,0.3)', strokeDasharray: '3 3' }}
+                />
                 <Area
                   type="monotone"
                   dataKey="value"
@@ -179,10 +206,16 @@ export default function MockPortfolioChart() {
               </AreaChart>
             </ResponsiveContainer>
           </div>
-          {data.source === 'synthetic' && (
+          {data.note && (
             <div className="mpc-source-note">
               <i className="bi bi-info-circle" />
-              Showing simulated history — your real performance will appear after a few days of activity.
+              {data.note}
+            </div>
+          )}
+          {data.source === 'trade-replay-tradeprice' && (
+            <div className="mpc-source-note">
+              <i className="bi bi-info-circle" />
+              Historical prices unavailable — showing approximation based on trade execution prices.
             </div>
           )}
         </>
