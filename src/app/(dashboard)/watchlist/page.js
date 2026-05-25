@@ -1132,15 +1132,6 @@ export default function WatchlistPage() {
                 )}
             </div>
             <div className="wl-price-right-cluster">
-              {selected.type === 'stock' && (
-                <div className="wl-price-num-block">
-                  <div className="wl-big-price">{fmtPrice(selectedMerged.price)}</div>
-                  <div className={`wl-big-chg ${isUp ? 'up' : 'dn'}`}>
-                    <i className={`bi ${isUp ? 'bi-arrow-up-right' : 'bi-arrow-down-right'}`} />
-                    {fmtPct(selectedMerged.pct)}
-                  </div>
-                </div>
-              )}
               {selected.type !== 'stock' &&
                 selected.type !== 'politician' &&
                 selected.type !== 'institution' && (
@@ -1168,25 +1159,7 @@ export default function WatchlistPage() {
                       </button>
                     ))}
                   </div>
-                  <button
-                    type="button"
-                    className="wl-bc-link wl-price-alert-btn"
-                    onClick={() => completeTask('watchlist_3')}
-                    data-task-target="watchlist-price-alert"
-                  >
-                    <i className="bi bi-bell" /> Set price alert
-                  </button>
                 </div>
-              )}
-              {selected.type === 'stock' && holderList.length === 0 && (
-                <button
-                  type="button"
-                  className="wl-bc-link wl-price-alert-btn"
-                  onClick={() => completeTask('watchlist_3')}
-                  data-task-target="watchlist-price-alert"
-                >
-                  <i className="bi bi-bell" /> Set price alert
-                </button>
               )}
             </div>
           </div>

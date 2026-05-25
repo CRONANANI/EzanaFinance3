@@ -55,7 +55,8 @@ export const CHECKLIST_TASKS = {
     page: '/company-research',
     guide: {
       targetSelector: '[data-task-target="research-search-bar"]',
-      message: 'Type a company name or ticker in the search bar and press Enter or pick a suggestion.',
+      message:
+        'Type a company name or ticker in the search bar and press Enter or pick a suggestion.',
       position: 'bottom',
     },
     completionTrigger: 'search',
@@ -167,21 +168,6 @@ export const CHECKLIST_TASKS = {
     },
     completionTrigger: 'click',
     completionMessage: 'You created a custom watchlist!',
-  },
-  watchlist_3: {
-    id: 'watchlist_3',
-    section: 'watchlist',
-    sectionName: 'Watchlist',
-    title: 'Set a price alert',
-    description: 'Set a price alert on a stock in your watchlist',
-    page: '/watchlist',
-    guide: {
-      targetSelector: '[data-task-target="watchlist-price-alert"]',
-      message: 'Select a stock in the strip, then click Set price alert.',
-      position: 'left',
-    },
-    completionTrigger: 'click',
-    completionMessage: 'You set a price alert!',
   },
 
   community_1: {
