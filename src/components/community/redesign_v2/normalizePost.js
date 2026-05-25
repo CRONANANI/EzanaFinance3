@@ -64,6 +64,7 @@ export function normalizePost(p) {
       display_name: displayName,
       username: author.username || '',
       avatar_url: author.avatar_url || '',
+      tier: author.tier || 'novice',
       initials: getInitials(displayName, author.username),
       gradient: avatarGradientFromId(author.id),
     },

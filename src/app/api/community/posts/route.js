@@ -90,12 +90,14 @@ async function buildEnrichedResponse(supabase, user, list) {
   const userIds = [...new Set(list.map((p) => p.user_id))];
 
   let profileMap = {};
+  let tierMap = {};
   if (userIds.length > 0) {
-    const { data: profs } = await admin
-      .from('profiles')
-      .select('id, username, user_settings')
-      .in('id', userIds);
+    const [{ data: profs }, { data: eloRows }] = await Promise.all([
+      admin.from('profiles').select('id, username, user_settings').in('id', userIds),
+      admin.from('user_elo').select('user_id, tier').in('user_id', userIds),
+    ]);
     profileMap = Object.fromEntries((profs || []).map((p) => [p.id, p]));
+    tierMap = Object.fromEntries((eloRows || []).map((r) => [r.user_id, r.tier]));
   }
 
   const postIds = list.map((p) => p.id);
@@ -127,7 +129,10 @@ async function buildEnrichedResponse(supabase, user, list) {
 
   const enrichedPosts = list.map((post) => ({
     ...post,
-    author: mapAuthor(profileMap[post.user_id], user?.id),
+    author: {
+      ...(mapAuthor(profileMap[post.user_id], user?.id) || {}),
+      tier: tierMap[post.user_id] || 'novice',
+    },
     liked_by_me: likedSet.has(post.id),
     saved_by_me: savedSet.has(post.id),
     my_vote: votedMap[post.id] ?? null,
@@ -486,10 +491,19 @@ export async function POST(request) {
       .eq('id', user.id)
       .maybeSingle();
 
+    const { data: eloRow } = await admin
+      .from('user_elo')
+      .select('tier')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
     return NextResponse.json({
       post: {
         ...post,
-        author: mapAuthor(prof, user.id),
+        author: {
+          ...(mapAuthor(prof, user.id) || {}),
+          tier: eloRow?.tier || 'novice',
+        },
         liked_by_me: false,
         saved_by_me: false,
         my_vote: null,

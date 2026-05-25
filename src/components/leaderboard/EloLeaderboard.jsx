@@ -2,29 +2,10 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
+import { TIER_COLORS, TIER_LABELS, getTierColor, getTierLabel } from '@/lib/elo-tier-colors';
 import './elo-leaderboard.css';
 
-const TIER_COLORS = {
-  novice: '#94a3b8',
-  apprentice: '#60a5fa',
-  strategist: '#a78bfa',
-  tactician: '#10b981',
-  master: '#f59e0b',
-  grandmaster: '#D4AF37',
-};
-
-const TIER_LABELS = {
-  all: 'All Tiers',
-  novice: 'Novice',
-  apprentice: 'Apprentice',
-  strategist: 'Strategist',
-  tactician: 'Tactician',
-  master: 'Master',
-  grandmaster: 'Grandmaster',
-};
-
 const PAGE_SIZE = 50;
-const INACTIVE_MS = 90 * 24 * 60 * 60 * 1000;
 
 export default function EloLeaderboard() {
   const [rows, setRows] = useState([]);
@@ -65,7 +46,7 @@ export default function EloLeaderboard() {
     return rows.filter(
       (r) =>
         (r.username || '').toLowerCase().includes(s) ||
-        (r.display_name || '').toLowerCase().includes(s)
+        (r.display_name || '').toLowerCase().includes(s),
     );
   }, [rows, search]);
 
@@ -75,12 +56,10 @@ export default function EloLeaderboard() {
   return (
     <div className="elo-lb-container">
       <header className="elo-lb-header">
-        <div>
-          <h1 className="elo-lb-title">ELO Leaderboard</h1>
-          <p className="elo-lb-subtitle">
-            Platform-wide skill rankings · {total.toLocaleString()} ranked users
-          </p>
-        </div>
+        <h1 className="elo-lb-title">ELO Leaderboard</h1>
+        <p className="elo-lb-subtitle">
+          Platform-wide skill rankings · {total.toLocaleString()} ranked users
+        </p>
       </header>
 
       <div className="elo-lb-controls">
@@ -95,9 +74,9 @@ export default function EloLeaderboard() {
                 setOffset(0);
               }}
               style={
-                key !== 'all' && tierFilter === key ?
-                  { borderColor: TIER_COLORS[key], color: TIER_COLORS[key] }
-                : undefined
+                key !== 'all' && tierFilter === key
+                  ? { borderColor: TIER_COLORS[key], color: TIER_COLORS[key] }
+                  : undefined
               }
             >
               {label}
@@ -127,17 +106,13 @@ export default function EloLeaderboard() {
                 <th className="elo-lb-th-tier">Tier</th>
                 <th className="elo-lb-th-num">Rating</th>
                 <th className="elo-lb-th-num">Peak</th>
-                <th className="elo-lb-th-status">Status</th>
               </tr>
             </thead>
             <tbody>
               {filteredRows.map((r) => {
                 const tierKey = r.tier || 'novice';
-                const tierColor = TIER_COLORS[tierKey] || '#94a3b8';
-                const tierLabel = TIER_LABELS[tierKey] || tierKey;
-                const isInactive =
-                  r.last_activity_at &&
-                  Date.now() - new Date(r.last_activity_at).getTime() > INACTIVE_MS;
+                const tierColor = getTierColor(tierKey);
+                const tierLabel = getTierLabel(tierKey);
                 return (
                   <tr key={r.user_id} className="elo-lb-row">
                     <td className="elo-lb-rank">
@@ -159,7 +134,9 @@ export default function EloLeaderboard() {
                             {(r.display_name || '?').charAt(0).toUpperCase()}
                           </span>
                         )}
-                        <span className="elo-lb-user-name">{r.display_name}</span>
+                        <span className="elo-lb-user-name" style={{ color: tierColor }}>
+                          {r.display_name}
+                        </span>
                         {r.username && <span className="elo-lb-user-handle">@{r.username}</span>}
                       </Link>
                     </td>
@@ -175,12 +152,6 @@ export default function EloLeaderboard() {
                       {r.current_rating.toLocaleString()}
                     </td>
                     <td className="elo-lb-peak">{r.peak_rating.toLocaleString()}</td>
-                    <td>
-                      {r.partner_eligible && (
-                        <span className="elo-lb-flag elo-lb-flag-partner">Partner-eligible</span>
-                      )}
-                      {isInactive && <span className="elo-lb-flag elo-lb-flag-inactive">Inactive</span>}
-                    </td>
                   </tr>
                 );
               })}

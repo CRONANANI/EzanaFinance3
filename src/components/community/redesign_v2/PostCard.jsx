@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { Avatar, VerifiedTick, SkillBadge } from './Atoms';
+import { getTierColor, getTierLabel } from '@/lib/elo-tier-colors';
 import { RichContent } from '../_legacy_v1/RichContent';
 import { MiniChart } from '../_legacy_v1/MiniChart';
 
@@ -619,7 +620,10 @@ export function QuotedPost({ quoted }) {
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
         <Avatar author={author} size={22} />
-        <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>
+        <span
+          style={{ fontSize: 12, fontWeight: 600, color: getTierColor(author.tier) }}
+          title={`${author.display_name} · ${getTierLabel(author.tier)}`}
+        >
           {author.display_name}
         </span>
         <span style={{ fontSize: 11, color: 'var(--text-faint)' }}>
@@ -680,7 +684,10 @@ export function PostHeader({ post, showSkill = true, onDelete }) {
       <Avatar author={u} size={40} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-          <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>
+          <span
+            style={{ fontSize: 14, fontWeight: 700, color: getTierColor(u.tier) }}
+            title={`${u.display_name || 'Member'} · ${getTierLabel(u.tier)}`}
+          >
             {u.display_name || 'Member'}
           </span>
           {u.isVerified && <VerifiedTick size={13} gold={u.isLegendary} />}
