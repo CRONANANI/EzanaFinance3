@@ -67,9 +67,6 @@ export function EloHero({
           </div>
         </div>
         <div className="lc-streak-badge">
-          <span className="lc-streak-flame" aria-hidden>
-            🔥
-          </span>
           <span className="lc-streak-num lc-mono">{streak?.current_streak ?? 0}</span>
           <span className="lc-streak-label">Day streak</span>
         </div>

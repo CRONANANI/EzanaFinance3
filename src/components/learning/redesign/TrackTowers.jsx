@@ -1,7 +1,5 @@
 'use client';
 
-import { TrackIcon } from './atoms';
-
 const TRACK_COLORS = {
   stocks: 'var(--emerald)',
   crypto: '#f59e0b',
@@ -58,7 +56,6 @@ function Tower({ track, isMain, onClick, onSetAsMain }) {
         </span>
       )}
       <div className="lc-tower-header">
-        <TrackIcon trackId={track.id} />
         <div>
           <div className="lc-tower-name">{track.shortLabel || track.label}</div>
           <div className="lc-tower-meta">
