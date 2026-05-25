@@ -20,11 +20,18 @@ import { useAuth } from '@/components/AuthProvider';
 import { useTheme } from '@/components/ThemeProvider';
 import { isAdminUserClient } from '@/lib/admin-helpers-client';
 import { EchoArticleEngagement } from '@/components/echo/EchoArticleEngagement';
+import { EchoSaveButton } from '@/components/echo/EchoSaveButton';
+import { EchoNewsletterSignup } from '@/components/echo/EchoNewsletterSignup';
+import { EchoCommunityReactions } from '@/components/echo/EchoCommunityReactions';
+import { EchoSentimentBar } from '@/components/echo/EchoSentimentBar';
+import { EchoCtaCallout } from '@/components/echo/EchoCtaCallout';
+import { InteractiveChartCTAOverlay } from '@/components/echo/InteractiveChartCTAOverlay';
 import { EchoKeywordProvider, useKeywordPopup } from '@/components/echo/EchoKeywordContext';
 import { EchoKeywordPopup } from '@/components/echo/EchoKeywordPopup';
 import { parseKeywords } from '@/components/echo/parseKeywords';
 import { formatPublishedDate, getAllArticles, getRelatedArticles } from '@/lib/ezana-echo-mock';
 import { createArticleTracker } from '@/lib/echo-article-tracker';
+import { useAnonymousEchoTracker } from '@/hooks/useAnonymousEchoTracker';
 import { getTag } from '@/lib/echo-tag-taxonomy';
 import { getKeywordById } from '@/lib/echo-keywords';
 import { SECTOR_DOMINANCE_DATA, SECTOR_ERAS } from '@/lib/ezana-echo-article-sector-dominance';
@@ -338,6 +345,9 @@ function ArticleBlock({ block }) {
     case 'africa-map':
       return <AfricaInteractiveMap title={block.title} subtitle={block.subtitle} />;
 
+    case 'cta-callout':
+      return <EchoCtaCallout block={block} />;
+
     default:
       return null;
   }
@@ -359,7 +369,14 @@ function ArticleChart({
   const innerH = H - PADDING.top - PADDING.bottom;
 
   if (variant === 'interactive-stacked-area') {
-    return <SectorDominanceChart title={title} caption={caption} yLabel={yLabel} />;
+    return (
+      <InteractiveChartCTAOverlay
+        teaserHeadline="What was driving each era?"
+        teaserBody="Unlock the era-by-era breakdown: dominant companies, capitalization peaks, what triggered each rotation, and the ETF exposure for each sector regime. Free with an Ezana account."
+      >
+        <SectorDominanceChart title={title} caption={caption} yLabel={yLabel} />
+      </InteractiveChartCTAOverlay>
+    );
   }
   if (variant === 'line') {
     return renderLineChart({
@@ -389,7 +406,14 @@ function ArticleChart({
     return <MarketForecastChart title={title} caption={caption} yLabel={yLabel} />;
   }
   if (variant === 'fiber-optic-world-map') {
-    return <FiberOpticWorldMap title={title} caption={caption} />;
+    return (
+      <InteractiveChartCTAOverlay
+        teaserHeadline="Explore the global fiber map"
+        teaserBody="Tap any company to see headquarters, industry, ticker, and market cap across the fiber optic supply chain. Free with an Ezana account."
+      >
+        <FiberOpticWorldMap title={title} caption={caption} />
+      </InteractiveChartCTAOverlay>
+    );
   }
   if (variant === 'hantavirus-yearly') {
     return <HantavirusYearlyChart title={title} caption={caption} />;
@@ -2383,7 +2407,7 @@ function SectorDominanceChart({ title, caption, yLabel }) {
 }
 
 export default function EchoArticleClient({ article, isArchived: initialArchived = false }) {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const isAdmin = isAdminUserClient(user);
   const [isArchived, setIsArchived] = useState(initialArchived);
   const [busy, setBusy] = useState(false);
@@ -2415,6 +2439,15 @@ export default function EchoArticleClient({ article, isArchived: initialArchived
     if (!articleTracker || !articleBodyRef.current) return undefined;
     return articleTracker.attach(articleBodyRef.current);
   }, [articleTracker, article?.id]);
+
+  useAnonymousEchoTracker({
+    articleId: article?.id,
+    articleTitle: article?.title,
+    tags: articleTags,
+    category: article.category,
+    enabled: !isAuthenticated && !!article?.id,
+    articleBodyRef,
+  });
 
   async function handleArchive() {
     if (!confirm('Archive this article? It will be hidden from non-admin users.')) return;
@@ -2516,6 +2549,27 @@ export default function EchoArticleClient({ article, isArchived: initialArchived
                 <span className="echo-article-kicker-dot" aria-hidden />
                 {(article.category || 'markets').toUpperCase()}
               </div>
+              {article.tags && article.tags.length > 0 && (
+                <div className="echo-detail-tags echo-detail-tags-compact">
+                  {article.tags.map((tagId) => {
+                    const t = getTag(tagId);
+                    return (
+                      <Link
+                        key={tagId}
+                        href={`/ezana-echo?tag=${tagId}`}
+                        className="echo-article-tag-chip echo-article-tag-chip-compact"
+                        style={{
+                          background: t.color.bg,
+                          color: t.color.fg,
+                          border: `1px solid ${t.color.border}`,
+                        }}
+                      >
+                        {t.label}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
               <h1 className="echo-article-h1">{article.title}</h1>
               {article.excerpt && <p className="echo-article-deck">{article.excerpt}</p>}
               <div className="echo-article-byline">
@@ -2531,27 +2585,14 @@ export default function EchoArticleClient({ article, isArchived: initialArchived
                 </span>
                 <span>{article.readTime} min read</span>
               </div>
-              {article.tags && article.tags.length > 0 && (
-                <div className="echo-detail-tags">
-                  {article.tags.map((tagId) => {
-                    const t = getTag(tagId);
-                    return (
-                      <Link
-                        key={tagId}
-                        href={`/ezana-echo?tag=${tagId}`}
-                        className="echo-article-tag-chip"
-                        style={{
-                          background: t.color.bg,
-                          color: t.color.fg,
-                          border: `1px solid ${t.color.border}`,
-                        }}
-                      >
-                        {t.label}
-                      </Link>
-                    );
-                  })}
-                </div>
-              )}
+              <div className="echo-article-actions-top">
+                <EchoSaveButton
+                  articleId={article.id}
+                  articleTags={articleTags}
+                  placement="top"
+                  articleTracker={articleTracker}
+                />
+              </div>
               {tickers.length > 0 && (
                 <div className="echo-ticker-row" role="list" aria-label="Related tickers">
                   {tickers.map((t) => (
@@ -2588,6 +2629,21 @@ export default function EchoArticleClient({ article, isArchived: initialArchived
               {Array.isArray(blocks) && blocks.length > 0
                 ? blocks.map((block, i) => <ArticleBlock key={i} block={block} />)
                 : paragraphs.map((p, i) => <ParagraphWithKeywords key={i} text={p} />)}
+            </div>
+
+            <div className="echo-article-actions-bottom">
+              <EchoSaveButton
+                articleId={article.id}
+                articleTags={articleTags}
+                placement="bottom"
+                articleTracker={articleTracker}
+              />
+            </div>
+
+            <div className="echo-article-public-cta">
+              <EchoCommunityReactions articleId={article.id} articleTitle={article.title} />
+              <EchoSentimentBar articleId={article.id} />
+              <EchoNewsletterSignup />
             </div>
 
             <div className="echo-article-footer">

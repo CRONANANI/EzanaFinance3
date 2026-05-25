@@ -114,7 +114,7 @@ export const sectorDominanceArticle = {
   contentBlocks: [
     {
       type: 'paragraph',
-      text: "The composition of the US stock market has never been static. Across 225 years of equity history, four sectors have taken turns as the single largest slice of the market: finance and real estate in the early republic, transport during the railroad century, energy and materials through the industrial era, and information technology in the digital age. The chart below shows the share of the largest sector at every point in time. Each color marks a regime — a stretch of decades when one industry's share towered over everything else. Hover over any point on the timeline to see what was driving that era's dominance.",
+      text: "Across 225 years of equity history, four sectors have taken turns as the single largest slice of the market: finance and real estate in the early republic, transport during the railroad century, energy and materials through the industrial era, and information technology in the digital age. The chart below shows the share of the largest sector at every point in time. Each color marks a regime — a stretch of decades when one industry's share towered over everything else. Hover over any point on the timeline to see what was driving that era's dominance.",
     },
 
     {
@@ -135,11 +135,11 @@ export const sectorDominanceArticle = {
     },
     {
       type: 'paragraph',
-      text: 'The reason was structural. The early American economy was overwhelmingly agricultural, and most commercial enterprise was conducted through partnerships and proprietorships rather than publicly traded corporations. Manufacturing was small, local, and family-owned. Transportation infrastructure was limited to what private investors and local governments could finance through bonds and turnpike companies. The stocks that DID trade publicly were almost exclusively bank stocks, marine insurance companies, and a handful of land-development corporations. The market was, in effect, a financial sector ETF — there was nothing else to buy.',
+      text: 'The reason was structural. The early American economy was overwhelmingly agricultural, and most commercial enterprise was conducted through partnerships and proprietorships rather than [[kw:market-indices]]publicly traded corporations[[/kw]]. Manufacturing was small, local, and family-owned. Transportation infrastructure was limited to what private investors and local governments could finance through bonds and turnpike companies. The stocks that DID trade publicly were almost exclusively bank stocks, marine insurance companies, and a handful of land-development corporations. The market was, in effect, a financial sector ETF — there was nothing else to buy.',
     },
     {
       type: 'paragraph',
-      text: "This concentration also reflected the economic theory of the early republic. Alexander Hamilton's vision of national finance — a central bank, federal debt assumption, and a domestic banking system — was the constitutional foundation on which American capital markets were built. The First Bank of the United States, chartered in 1791, was both a public institution and a publicly traded one, and its shares were among the most actively traded securities in the country. When its charter expired in 1811 and the Second Bank took its place in 1816, the pattern repeated. State-chartered banks proliferated in their wake, each issuing tradable shares that found their way onto the rosters of the regional exchanges that emerged in Philadelphia, Boston, and New York.",
+      text: "This concentration also reflected the economic theory of the early republic. Alexander Hamilton's vision of national finance — a [[kw:market-capitalization]]central bank[[/kw]], federal debt assumption, and a domestic banking system — was the constitutional foundation on which American capital markets were built. The First Bank of the United States, chartered in 1791, was both a public institution and a publicly traded one, and its shares were among the most actively traded securities in the country. When its charter expired in 1811 and the Second Bank took its place in 1816, the pattern repeated. State-chartered banks proliferated in their wake, each issuing tradable shares that found their way onto the rosters of the regional exchanges that emerged in Philadelphia, Boston, and New York.",
     },
     {
       type: 'paragraph',
@@ -197,7 +197,7 @@ export const sectorDominanceArticle = {
     },
     {
       type: 'paragraph',
-      text: 'The third stage was the post-war boom. Between 1945 and 1970, American manufacturing operated nearly without international competition. European and Japanese industrial bases had been destroyed during the war and would take decades to rebuild. American oil majors developed reserves across the Middle East, North Africa, and Latin America. American steel producers supplied the Marshall Plan rebuilding of Europe, the Korean War mobilization, the interstate highway construction, and the suburban housing boom. Profits were enormous, [[kw:dividends]]dividends[[/kw]] were generous, and energy and materials stocks were considered the bedrock of any institutional portfolio.',
+      text: 'The third stage was the post-war boom. Between 1945 and 1970, American manufacturing operated nearly without international competition. European and Japanese industrial bases had been destroyed during the war and would take decades to rebuild. American oil majors developed reserves across the Middle East, North Africa, and Latin America. American steel producers supplied the [[kw:supply-chain]]Marshall Plan rebuilding[[/kw]] of Europe, the Korean War mobilization, the interstate highway construction, and the suburban housing boom. Profits were enormous, [[kw:dividends]]dividends[[/kw]] were generous, and energy and materials stocks were considered the bedrock of any [[kw:sector-rotation]]institutional portfolio[[/kw]].',
     },
     {
       type: 'paragraph',
@@ -237,6 +237,15 @@ export const sectorDominanceArticle = {
     {
       type: 'paragraph',
       text: "What's striking about the current era, viewed in long historical context, is that technology's dominance — at roughly forty-five percent of the [[kw:market-capitalization]]market[[/kw]] — is real but not as overwhelming as the regimes that came before. Finance hit ninety percent in 1800. Transport hit sixty-two percent in 1880. Energy and materials peaked at thirty-eight percent in 1940. Today's technology concentration, while significant, is below the high-water marks of every previous era. The sectors of yore were more dominant. Whether that means technology has further to run, or whether market structure simply prevents any single sector from reaching the heights it once could, is a question only the next chart — drawn fifty or one hundred years from now — will be able to answer.",
+    },
+    {
+      type: 'cta-callout',
+      variant: 'sub-industry-teaser',
+      headline: 'What comes next within technology?',
+      body: "Technology as a sector contains dozens of sub-industries — AI infrastructure, cloud-native software, advanced semiconductors, fiber optics, cybersecurity, edge compute. Some will define the next phase of the cycle. Others will be displaced before the decade ends. Ezana surfaces the specific companies positioned for each sub-industry's next move and tracks the rotation in real time.",
+      ctaLabel: 'See the sector analysis →',
+      ctaHref: '/market-analysis?sector=technology',
+      ctaAuthGate: true,
     },
 
     /* ─── CLOSING ─── */

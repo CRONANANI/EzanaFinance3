@@ -140,10 +140,15 @@ export function createArticleTracker({
     });
   }
 
+  function getKeywordClickCount() {
+    return keywordClicks;
+  }
+
   return {
     attach,
     recordKeywordClick,
     recordSave,
     recordShare,
+    getKeywordClickCount,
   };
 }

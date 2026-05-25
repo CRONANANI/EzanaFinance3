@@ -19,6 +19,20 @@ export function AuthProvider({ children }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
+        const anonId =
+          typeof window !== 'undefined' ? window.localStorage.getItem('ezana_anon_id') : null;
+        if (anonId) {
+          fetch('/api/auth/merge-anon', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ anonId }),
+          })
+            .then(() => {
+              window.localStorage.removeItem('ezana_anon_id');
+            })
+            .catch(() => {});
+        }
         fetch('/api/notifications/track', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
