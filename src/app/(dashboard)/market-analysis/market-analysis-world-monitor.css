@@ -64,7 +64,7 @@
 /* Gold variant for Empire Ranking button */
 .ma-view-btn.ma-view-btn--gold {
   color: #d4af37;
-  background: rgba(212, 175, 55, 0.08);
+  background: transparent;
   border-left: 1px solid rgba(212, 175, 55, 0.25);
   text-decoration: none;
   display: inline-flex;
@@ -79,7 +79,8 @@
 
 .ma-view-btn.ma-view-btn--gold:hover {
   color: #e6c35a;
-  background: rgba(212, 175, 55, 0.15);
+  background: rgba(212, 175, 55, 0.05);
+  border-color: rgba(212, 175, 55, 0.45);
 }
 
 .ma-power-map-data-link {
@@ -118,8 +119,9 @@
 }
 
 .ma-power-map-trigger--on {
-  background: rgba(212, 175, 55, 0.16) !important;
+  background: transparent !important;
   color: #f0d78c !important;
+  border-color: rgba(212, 175, 55, 0.55) !important;
 }
 
 .ma-power-map-trigger-badge {
