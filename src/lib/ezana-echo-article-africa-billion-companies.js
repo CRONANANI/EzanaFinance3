@@ -165,6 +165,7 @@ export const africaBillionCompaniesArticle = {
   ],
   author: 'Ezana Finance Editorial',
   category: 'markets',
+  tags: ['markets', 'emerging-markets', 'africa', 'companies'],
   tickers: ['EZA', 'AFK', 'FM', 'PROSY', 'MTNOY', 'SSL', 'GFI', 'HMY', 'BTI'],
   readTime: 10,
   publishedAt: '2026-05-19',

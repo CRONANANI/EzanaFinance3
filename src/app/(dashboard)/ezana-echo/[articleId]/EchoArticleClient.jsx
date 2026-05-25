@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import {
   AreaChart,
   Area,
@@ -24,6 +24,8 @@ import { EchoKeywordProvider, useKeywordPopup } from '@/components/echo/EchoKeyw
 import { EchoKeywordPopup } from '@/components/echo/EchoKeywordPopup';
 import { parseKeywords } from '@/components/echo/parseKeywords';
 import { formatPublishedDate, getAllArticles, getRelatedArticles } from '@/lib/ezana-echo-mock';
+import { createArticleTracker } from '@/lib/echo-article-tracker';
+import { getTag } from '@/lib/echo-tag-taxonomy';
 import { getKeywordById } from '@/lib/echo-keywords';
 import { SECTOR_DOMINANCE_DATA, SECTOR_ERAS } from '@/lib/ezana-echo-article-sector-dominance';
 import {
@@ -72,7 +74,7 @@ function ParagraphWithKeywords({ text }) {
             key={i}
             type="button"
             className={`ekp-keyword-span ${isActive ? 'is-active' : ''}`}
-            onClick={(e) => openKeyword(token.keywordId, e.currentTarget)}
+            onClick={(e) => openKeyword(token.keywordId, e.currentTarget, keyword.term)}
             data-keyword-id={token.keywordId}
           >
             {token.display}
@@ -2385,6 +2387,34 @@ export default function EchoArticleClient({ article, isArchived: initialArchived
   const isAdmin = isAdminUserClient(user);
   const [isArchived, setIsArchived] = useState(initialArchived);
   const [busy, setBusy] = useState(false);
+  const articleBodyRef = useRef(null);
+  const [articleTracker, setArticleTracker] = useState(null);
+
+  const articleTags = useMemo(
+    () => (article.tags?.length ? article.tags : [article.category || 'markets']),
+    [article.tags, article.category],
+  );
+
+  useEffect(() => {
+    if (!user?.id || !article?.id) {
+      setArticleTracker(null);
+      return undefined;
+    }
+    const tracker = createArticleTracker({
+      articleId: article.id,
+      articleTitle: article.title,
+      tags: articleTags,
+      category: article.category,
+      enabled: true,
+    });
+    setArticleTracker(tracker);
+    return () => setArticleTracker(null);
+  }, [article?.id, article.title, article.category, articleTags, user?.id]);
+
+  useEffect(() => {
+    if (!articleTracker || !articleBodyRef.current) return undefined;
+    return articleTracker.attach(articleBodyRef.current);
+  }, [articleTracker, article?.id]);
 
   async function handleArchive() {
     if (!confirm('Archive this article? It will be hidden from non-admin users.')) return;
@@ -2441,7 +2471,7 @@ export default function EchoArticleClient({ article, isArchived: initialArchived
   const paragraphs = article.contentParagraphs ?? [];
 
   return (
-    <EchoKeywordProvider>
+    <EchoKeywordProvider articleTracker={articleTracker}>
       <div className="echo-article-page">
         <div className="echo-article-page-inset">
           <Link href="/ezana-echo" className="echo-back">
@@ -2501,6 +2531,27 @@ export default function EchoArticleClient({ article, isArchived: initialArchived
                 </span>
                 <span>{article.readTime} min read</span>
               </div>
+              {article.tags && article.tags.length > 0 && (
+                <div className="echo-detail-tags">
+                  {article.tags.map((tagId) => {
+                    const t = getTag(tagId);
+                    return (
+                      <Link
+                        key={tagId}
+                        href={`/ezana-echo?tag=${tagId}`}
+                        className="echo-article-tag-chip"
+                        style={{
+                          background: t.color.bg,
+                          color: t.color.fg,
+                          border: `1px solid ${t.color.border}`,
+                        }}
+                      >
+                        {t.label}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
               {tickers.length > 0 && (
                 <div className="echo-ticker-row" role="list" aria-label="Related tickers">
                   {tickers.map((t) => (
@@ -2533,14 +2584,18 @@ export default function EchoArticleClient({ article, isArchived: initialArchived
               )}
             </header>
 
-            <div className="echo-article-body">
+            <div className="echo-article-body" ref={articleBodyRef}>
               {Array.isArray(blocks) && blocks.length > 0
                 ? blocks.map((block, i) => <ArticleBlock key={i} block={block} />)
                 : paragraphs.map((p, i) => <ParagraphWithKeywords key={i} text={p} />)}
             </div>
 
             <div className="echo-article-footer">
-              <EchoArticleEngagement articleId={article.id} />
+              <EchoArticleEngagement
+                articleId={article.id}
+                articleTitle={article.title}
+                articleTracker={articleTracker}
+              />
             </div>
 
             <section className="echo-article-related">

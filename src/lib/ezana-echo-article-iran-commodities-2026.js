@@ -16,7 +16,7 @@ export const iranWarCommoditiesArticle2026 = {
   contentBlocks: [
     {
       type: 'paragraph',
-      text: "When the United States and Israel launched joint strikes on Iran on February 28, 2026, [[kw:commodity-supercycle]]commodities[[/kw]] markets entered one of the most aggressive repricing cycles in recent years. What was forecast to be a relatively balanced year — modest demand growth, robust supply, and weakening prices — has instead been redefined by a geopolitical shock centered on the [[kw:strait-of-hormuz]]Strait of Hormuz[[/kw]]. The strait carries roughly one-fifth of global oil and LNG trade, and its effective closure has rippled through energy, metals, and agricultural commodities almost simultaneously.",
+      text: 'When the United States and Israel launched joint strikes on Iran on February 28, 2026, [[kw:commodity-supercycle]]commodities[[/kw]] markets entered one of the most aggressive repricing cycles in recent years. What was forecast to be a relatively balanced year — modest demand growth, robust supply, and weakening prices — has instead been redefined by a geopolitical shock centered on the [[kw:strait-of-hormuz]]Strait of Hormuz[[/kw]]. The strait carries roughly one-fifth of global oil and LNG trade, and its effective closure has rippled through energy, metals, and agricultural commodities almost simultaneously.',
     },
     {
       type: 'stat-grid',
@@ -30,7 +30,7 @@ export const iranWarCommoditiesArticle2026 = {
     { type: 'heading', text: 'Energy markets at the center of the shock', level: 2 },
     {
       type: 'paragraph',
-      text: "Oil markets reacted first and hardest. The Strait of Hormuz carries roughly 10 million barrels per day of crude exports — most of it from Saudi Arabia, the UAE, Iraq, Kuwait, and Iran itself. Following the joint strikes, the strait closed to commercial transit. Brent crude rallied from roughly $70 per barrel in early February to above $115 at the peak of the supply scare in late March. As of mid-April, Brent has settled around $96.36, with WTI tracking close behind at $92.52. Drawdowns from [[kw:strategic-reserves]]strategic reserves[[/kw]] were too small to fully offset the shock.",
+      text: 'Oil markets reacted first and hardest. The Strait of Hormuz carries roughly 10 million barrels per day of crude exports — most of it from Saudi Arabia, the UAE, Iraq, Kuwait, and Iran itself. Following the joint strikes, the strait closed to commercial transit. Brent crude rallied from roughly $70 per barrel in early February to above $115 at the peak of the supply scare in late March. As of mid-April, Brent has settled around $96.36, with WTI tracking close behind at $92.52. Drawdowns from [[kw:strategic-reserves]]strategic reserves[[/kw]] were too small to fully offset the shock.',
     },
     {
       type: 'chart',
@@ -62,12 +62,12 @@ export const iranWarCommoditiesArticle2026 = {
     },
     {
       type: 'paragraph',
-      text: "Natural gas reacted even more violently. Qatari LNG, which accounts for roughly one-fifth of global gas supply, was effectively shut in. European TTF prices roughly doubled, and Asian JKM benchmark prices followed. US Henry Hub prices rose far more modestly thanks to domestic supply insulation — a divergence that has reshaped competitive dynamics for European and Asian manufacturers reliant on imported LNG.",
+      text: 'Natural gas reacted even more violently. Qatari LNG, which accounts for roughly one-fifth of global gas supply, was effectively shut in. European TTF prices roughly doubled, and Asian JKM benchmark prices followed. US Henry Hub prices rose far more modestly thanks to domestic supply insulation — a divergence that has reshaped competitive dynamics for European and Asian manufacturers reliant on imported LNG.',
     },
     { type: 'heading', text: 'Tungsten: the standout performer', level: 2 },
     {
       type: 'paragraph',
-      text: "But oil is not even the standout performer. That title belongs to [[kw:tungsten]]tungsten[[/kw]], the metal almost as hard as a diamond and with the highest melting point of any element on the periodic table. Tungsten powers electronics, computing, and telecommunications — and increasingly, advanced AI chips, where it manages heat and provides the electrical stability inference workloads demand. Demand was already structurally tight thanks to the AI buildout. The Iran war has now layered military demand on top: tungsten is critical to missiles, ammunition, and aircraft, all of which are being procured at accelerated rates by Western governments.",
+      text: 'But oil is not even the standout performer. That title belongs to [[kw:tungsten]]tungsten[[/kw]], the metal almost as hard as a diamond and with the highest melting point of any element on the periodic table. Tungsten powers electronics, computing, and telecommunications — and increasingly, advanced AI chips, where it manages heat and provides the electrical stability inference workloads demand. Demand was already structurally tight thanks to the AI buildout. The Iran war has now layered military demand on top: tungsten is critical to missiles, ammunition, and aircraft, all of which are being procured at accelerated rates by Western governments.',
     },
     {
       type: 'callout',
@@ -83,20 +83,20 @@ export const iranWarCommoditiesArticle2026 = {
     { type: 'heading', text: 'Industrial metals: divergence within the complex', level: 2 },
     {
       type: 'paragraph',
-      text: "Aluminum is the next major mover within the industrial metals complex, up roughly 12% since the conflict began and approaching $3,450 per tonne — close to record levels. The Gulf region accounts for a meaningful share of global aluminum supply, and the industry is highly energy-intensive, meaning the spike in oil and gas prices is also lifting aluminum production costs globally. Two pressures push the same direction at once: less supply available, and more expensive to produce what does come to market. Further upside is likely capped by demand destruction — at $3,500 per tonne, downstream buyers begin substituting or postponing purchases — but the near-term setup remains tight.",
+      text: 'Aluminum is the next major mover within the industrial metals complex, up roughly 12% since the conflict began and approaching $3,450 per tonne — close to record levels. The Gulf region accounts for a meaningful share of global aluminum supply, and the industry is highly energy-intensive, meaning the spike in oil and gas prices is also lifting aluminum production costs globally. Two pressures push the same direction at once: less supply available, and more expensive to produce what does come to market. Further upside is likely capped by demand destruction — at $3,500 per tonne, downstream buyers begin substituting or postponing purchases — but the near-term setup remains tight.',
     },
     {
       type: 'paragraph',
-      text: "The divergence within base metals is now stark. While aluminum benefits from disruption-plus-cost dynamics, copper has weakened on cyclical headwinds: tightening financial conditions, a stronger US dollar, and rising inventories are unwinding the speculative positioning that lifted prices earlier in the year. The takeaway for investors is that the metals complex cannot be treated as one trade right now. The same shock helping aluminum is hurting copper through the dollar channel.",
+      text: 'The divergence within base metals is now stark. While aluminum benefits from disruption-plus-cost dynamics, copper has weakened on cyclical headwinds: tightening financial conditions, a stronger US dollar, and rising inventories are unwinding the speculative positioning that lifted prices earlier in the year. The takeaway for investors is that the metals complex cannot be treated as one trade right now. The same shock helping aluminum is hurting copper through the dollar channel.',
     },
     { type: 'heading', text: 'Fertilizers and agriculture: the long tail', level: 2 },
     {
       type: 'paragraph',
-      text: "[[kw:fertilizer-market]]Fertilizers[[/kw]] are the third major story, and arguably the one with the longest tail. Roughly one-third of global fertilizer production passes through the Strait of Hormuz, and natural gas — a critical feedstock for nitrogen fertilizers like urea — has spiked harder than oil in regional terms. Urea prices are now up roughly 75% year-on-year, with broader fertilizer prices forecast to be 20% higher in Q2 2026 than the prior year.",
+      text: '[[kw:fertilizer-market]]Fertilizers[[/kw]] are the third major story, and arguably the one with the longest tail. Roughly one-third of global fertilizer production passes through the Strait of Hormuz, and natural gas — a critical feedstock for nitrogen fertilizers like urea — has spiked harder than oil in regional terms. Urea prices are now up roughly 75% year-on-year, with broader fertilizer prices forecast to be 20% higher in Q2 2026 than the prior year.',
     },
     {
       type: 'paragraph',
-      text: "This timing is bad: it lands in the planting season for major Northern Hemisphere crops. Higher input costs will reduce fertilizer use, shift planting decisions toward less fertilizer-intensive crops, and ultimately translate into lower yields. Global food prices are now forecast to rise about 6% in 2026, with the full effect extending into 2027 as the reduced-yield harvests come in. The fertilizer trade has a longer fuse than the oil trade — but it is also harder to unwind, because agricultural cycles take seasons, not weeks, to rebalance.",
+      text: 'This timing is bad: it lands in the planting season for major Northern Hemisphere crops. Higher input costs will reduce fertilizer use, shift planting decisions toward less fertilizer-intensive crops, and ultimately translate into lower yields. Global food prices are now forecast to rise about 6% in 2026, with the full effect extending into 2027 as the reduced-yield harvests come in. The fertilizer trade has a longer fuse than the oil trade — but it is also harder to unwind, because agricultural cycles take seasons, not weeks, to rebalance.',
     },
     {
       type: 'heading',
@@ -105,11 +105,11 @@ export const iranWarCommoditiesArticle2026 = {
     },
     {
       type: 'paragraph',
-      text: "Sulfuric acid sits in a less visible but strategically important position. It is essential for fertilizer production, chemical manufacturing, and petroleum refining, and electronic-grade sulfuric acid is used to clean silicon wafers during semiconductor manufacturing — putting it directly in the AI supply chain. China produces roughly 35% of global sulfuric acid. Sulfur itself is a byproduct of oil refining and natural gas processing, which means refining cuts caused by the conflict are reducing sulfur supply, which then constrains acid output.",
+      text: 'Sulfuric acid sits in a less visible but strategically important position. It is essential for fertilizer production, chemical manufacturing, and petroleum refining, and electronic-grade sulfuric acid is used to clean silicon wafers during semiconductor manufacturing — putting it directly in the AI supply chain. China produces roughly 35% of global sulfuric acid. Sulfur itself is a byproduct of oil refining and natural gas processing, which means refining cuts caused by the conflict are reducing sulfur supply, which then constrains acid output.',
     },
     {
       type: 'quote',
-      text: "A two- to three-month blockage in the Strait of Hormuz would likely become a severe supply shock, especially as freight and insurance stay elevated and Middle East-origin cargoes become harder to execute.",
+      text: 'A two- to three-month blockage in the Strait of Hormuz would likely become a severe supply shock, especially as freight and insurance stay elevated and Middle East-origin cargoes become harder to execute.',
       source: 'S&P Global Energy, March 20, 2026',
     },
     {
@@ -119,12 +119,12 @@ export const iranWarCommoditiesArticle2026 = {
     { type: 'heading', text: 'Gold: the nuanced safe haven', level: 2 },
     {
       type: 'paragraph',
-      text: "Gold has been a more nuanced story. As a traditional safe haven it has been supported, but the response has not been linear. Liquidity pressures during the initial shock pushed investors to sell gold to raise cash, which suppressed early gains. Sustained upside has tended to materialize when geopolitical stress combines with looser monetary policy and falling real yields. Recent gold movement reflects this interaction — the metal is supported by expectations of Fed easing, but volatile as those expectations shift week to week. Over the medium term, central bank buying and reserve diversification provide structural support, but the path will not be smooth.",
+      text: 'Gold has been a more nuanced story. As a traditional safe haven it has been supported, but the response has not been linear. Liquidity pressures during the initial shock pushed investors to sell gold to raise cash, which suppressed early gains. Sustained upside has tended to materialize when geopolitical stress combines with looser monetary policy and falling real yields. Recent gold movement reflects this interaction — the metal is supported by expectations of Fed easing, but volatile as those expectations shift week to week. Over the medium term, central bank buying and reserve diversification provide structural support, but the path will not be smooth.',
     },
     { type: 'heading', text: 'Downstream: pump prices and government response', level: 2 },
     {
       type: 'paragraph',
-      text: "The downstream effects of these commodity moves are now visible in retail energy prices. According to data from Global Petrol Prices analyzed in early March, at least 85 countries have reported petrol price increases since February 28. The biggest increases are in Southeast Asia and Africa, where currency depreciation compounds the underlying commodity move.",
+      text: 'The downstream effects of these commodity moves are now visible in retail energy prices. According to data from Global Petrol Prices analyzed in early March, at least 85 countries have reported petrol price increases since February 28. The biggest increases are in Southeast Asia and Africa, where currency depreciation compounds the underlying commodity move.',
     },
     {
       type: 'chart',
@@ -147,7 +147,7 @@ export const iranWarCommoditiesArticle2026 = {
     },
     {
       type: 'paragraph',
-      text: "These pump-price shocks are forcing governments to act. Pakistan has moved to a four-day workweek for government employees with half the staff working from home on rotation. The Philippines has done the same. Thailand has made remote work mandatory for civil servants. Energy-importing economies in Asia and Africa are now operating with rolling supply constraints that did not exist eight weeks ago.",
+      text: 'These pump-price shocks are forcing governments to act. Pakistan has moved to a four-day workweek for government employees with half the staff working from home on rotation. The Philippines has done the same. Thailand has made remote work mandatory for civil servants. Energy-importing economies in Asia and Africa are now operating with rolling supply constraints that did not exist eight weeks ago.',
     },
     { type: 'heading', text: 'Equity markets: uneven absorption', level: 2 },
     {
@@ -176,15 +176,15 @@ export const iranWarCommoditiesArticle2026 = {
     { type: 'heading', text: 'How to position around the move', level: 2 },
     {
       type: 'paragraph',
-      text: "Investors looking to get exposure to the commodity rally have several routes. For broad commodity exposure, S&P GSCI tracking ETFs and DBC capture the basket move. For oil specifically, USO tracks WTI futures — when the curve shows [[kw:backwardation]]backwardation[[/kw]], futures-based ETFs face extra roll dynamics — OIH captures oilfield services, XLE holds the largest US energy companies, and individual names like XOM, CVX, and EOG provide leveraged exposure to crude. Aluminum exposure is harder — the cleanest plays are Alcoa (AA) and Century Aluminum (CENX). Fertilizer exposure runs through CF Industries (CF), Nutrien (NTR), and Mosaic (MOS). For tungsten, the listed pure-play universe is small; rare-earth metals ETFs like REMX provide partial exposure. Gold investors have GLD and IAU.",
+      text: 'Investors looking to get exposure to the commodity rally have several routes. For broad commodity exposure, S&P GSCI tracking ETFs and DBC capture the basket move. For oil specifically, USO tracks WTI futures — when the curve shows [[kw:backwardation]]backwardation[[/kw]], futures-based ETFs face extra roll dynamics — OIH captures oilfield services, XLE holds the largest US energy companies, and individual names like XOM, CVX, and EOG provide leveraged exposure to crude. Aluminum exposure is harder — the cleanest plays are Alcoa (AA) and Century Aluminum (CENX). Fertilizer exposure runs through CF Industries (CF), Nutrien (NTR), and Mosaic (MOS). For tungsten, the listed pure-play universe is small; rare-earth metals ETFs like REMX provide partial exposure. Gold investors have GLD and IAU.',
     },
     {
       type: 'paragraph',
-      text: "The conventional analytical framework — supply, demand, inventories, seasonality — is not sufficient for the current market. Three forces are now interacting: direct [[kw:supply-disruption]]supply disruption[[/kw]] (especially in energy), cost transmission (energy costs flowing into metals and agriculture), and financial amplification (positioning, dollar dynamics, and policy expectations). Each of these moves on its own timeline, and the cross-market linkages are tighter than they have been in any commodity cycle since 2008. That makes single-commodity bets riskier than they look on paper, and basket exposure — or paired trades that hedge one leg of the disruption — more attractive.",
+      text: 'The conventional analytical framework — supply, demand, inventories, seasonality — is not sufficient for the current market. Three forces are now interacting: direct [[kw:supply-disruption]]supply disruption[[/kw]] (especially in energy), cost transmission (energy costs flowing into metals and agriculture), and financial amplification (positioning, dollar dynamics, and policy expectations). Each of these moves on its own timeline, and the cross-market linkages are tighter than they have been in any commodity cycle since 2008. That makes single-commodity bets riskier than they look on paper, and basket exposure — or paired trades that hedge one leg of the disruption — more attractive.',
     },
     {
       type: 'paragraph',
-      text: "The base case for the rest of 2026 assumes a gradual normalization of Hormuz traffic, which would let oil drift back toward $80 per barrel by year-end and aluminum ease from current highs. The bear case is a sustained closure or escalation that locks in current price levels and pushes them higher. Either way, the geopolitical risk premium that has been embedded into commodity prices since February 28 is unlikely to fully dissipate even if the conflict ends quickly. Markets do not forget supply shocks; they reprice the probability of the next one.",
+      text: 'The base case for the rest of 2026 assumes a gradual normalization of Hormuz traffic, which would let oil drift back toward $80 per barrel by year-end and aluminum ease from current highs. The bear case is a sustained closure or escalation that locks in current price levels and pushes them higher. Either way, the geopolitical risk premium that has been embedded into commodity prices since February 28 is unlikely to fully dissipate even if the conflict ends quickly. Markets do not forget supply shocks; they reprice the probability of the next one.',
     },
     {
       type: 'paragraph',
@@ -193,6 +193,7 @@ export const iranWarCommoditiesArticle2026 = {
   ],
   author: 'Ezana Finance Editorial',
   category: 'markets',
+  tags: ['markets', 'policy', 'geopolitics', 'commodities', 'energy', 'macro'],
   tickers: ['USO', 'XLE', 'XOM', 'CVX', 'EOG', 'AA', 'CF', 'NTR', 'GLD'],
   readTime: 11,
   publishedAt: '2026-04-26',

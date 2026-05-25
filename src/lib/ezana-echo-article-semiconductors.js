@@ -7,28 +7,101 @@
 export const US_SEMI_MARKET_CAP = [
   { rank: 1, ticker: 'NVDA', company: 'NVIDIA Corp.', marketCap: 5180, color: '#76b900' },
   { rank: 2, ticker: 'AVGO', company: 'Broadcom Inc.', marketCap: 1930, color: '#cc0000' },
-  { rank: 3, ticker: 'MU', company: 'Micron Technology, Inc.', marketCap: 726.59, color: '#0071c5' },
-  { rank: 4, ticker: 'AMD', company: 'Advanced Micro Devices, Inc.', marketCap: 662.68, color: '#ed1c24' },
+  {
+    rank: 3,
+    ticker: 'MU',
+    company: 'Micron Technology, Inc.',
+    marketCap: 726.59,
+    color: '#0071c5',
+  },
+  {
+    rank: 4,
+    ticker: 'AMD',
+    company: 'Advanced Micro Devices, Inc.',
+    marketCap: 662.68,
+    color: '#ed1c24',
+  },
   { rank: 5, ticker: 'INTC', company: 'Intel Corp.', marketCap: 552.63, color: '#0071c5' },
   { rank: 6, ticker: 'LRCX', company: 'Lam Research Corp.', marketCap: 358.38, color: '#003366' },
-  { rank: 7, ticker: 'AMAT', company: 'Applied Materials, Inc.', marketCap: 326.38, color: '#e87722' },
-  { rank: 8, ticker: 'TXN', company: 'Texas Instruments Inc.', marketCap: 258.86, color: '#cc0000' },
+  {
+    rank: 7,
+    ticker: 'AMAT',
+    company: 'Applied Materials, Inc.',
+    marketCap: 326.38,
+    color: '#e87722',
+  },
+  {
+    rank: 8,
+    ticker: 'TXN',
+    company: 'Texas Instruments Inc.',
+    marketCap: 258.86,
+    color: '#cc0000',
+  },
   { rank: 9, ticker: 'KLAC', company: 'KLA Corp.', marketCap: 229.53, color: '#003366' },
   { rank: 10, ticker: 'QCOM', company: 'QUALCOMM Inc.', marketCap: 215.72, color: '#3253dc' },
 ];
 
 /* ── Detailed Financials Comparison ──────────────────────────────────── */
 export const SEMI_FINANCIALS = [
-  { company: 'Nvidia', type: 'Fabless', revenue: 165, netIncome: 86.6, marketCap: 4150, ticker: 'NVDA' },
-  { company: 'Broadcom', type: 'Fabless', revenue: 57, netIncome: 13.2, marketCap: 1400, ticker: 'AVGO' },
+  {
+    company: 'Nvidia',
+    type: 'Fabless',
+    revenue: 165,
+    netIncome: 86.6,
+    marketCap: 4150,
+    ticker: 'NVDA',
+  },
+  {
+    company: 'Broadcom',
+    type: 'Fabless',
+    revenue: 57,
+    netIncome: 13.2,
+    marketCap: 1400,
+    ticker: 'AVGO',
+  },
   { company: 'Intel', type: 'IDM', revenue: 53, netIncome: -20.5, marketCap: 107, ticker: 'INTC' },
-  { company: 'Qualcomm', type: 'Conglomerate', revenue: 43.2, netIncome: 11.6, marketCap: 170, ticker: 'QCOM' },
-  { company: 'Applied Materials', type: 'Equipment', revenue: 28, netIncome: 6.8, marketCap: 124.5, ticker: 'AMAT' },
+  {
+    company: 'Qualcomm',
+    type: 'Conglomerate',
+    revenue: 43.2,
+    netIncome: 11.6,
+    marketCap: 170,
+    ticker: 'QCOM',
+  },
+  {
+    company: 'Applied Materials',
+    type: 'Equipment',
+    revenue: 28,
+    netIncome: 6.8,
+    marketCap: 124.5,
+    ticker: 'AMAT',
+  },
   { company: 'AMD', type: 'Fabless', revenue: 29.6, netIncome: 2.7, marketCap: 260, ticker: 'AMD' },
   { company: 'Micron', type: 'IDM', revenue: 34, netIncome: 6.2, marketCap: 133, ticker: 'MU' },
-  { company: 'Texas Instruments', type: 'IDM', revenue: 16.7, netIncome: 5, marketCap: 177, ticker: 'TXN' },
-  { company: 'Lam Research', type: 'Equipment', revenue: 18.4, netIncome: 5.3, marketCap: 125, ticker: 'LRCX' },
-  { company: 'Analog Devices', type: 'IDM', revenue: 10.4, netIncome: 1.96, marketCap: 120, ticker: 'ADI' },
+  {
+    company: 'Texas Instruments',
+    type: 'IDM',
+    revenue: 16.7,
+    netIncome: 5,
+    marketCap: 177,
+    ticker: 'TXN',
+  },
+  {
+    company: 'Lam Research',
+    type: 'Equipment',
+    revenue: 18.4,
+    netIncome: 5.3,
+    marketCap: 125,
+    ticker: 'LRCX',
+  },
+  {
+    company: 'Analog Devices',
+    type: 'IDM',
+    revenue: 10.4,
+    netIncome: 1.96,
+    marketCap: 120,
+    ticker: 'ADI',
+  },
 ];
 
 /* ── TSMC Global Foundry Market Share (Approximate) ───────────────── */
@@ -48,7 +121,7 @@ export const semiconductorArticle = {
   subtitle:
     "Taiwan's semiconductor dominance is a geopolitical weapon, a $5 trillion investment thesis, and the most consequential chokepoint in the global economy.",
   excerpt:
-    "One company — TSMC — produces over 90% of the world's most advanced semiconductor chips. These chips power AI training, military systems, smartphones, and the entire digital economy. Taiwan transformed this manufacturing supremacy into what analysts call a \"silicon shield\" — the theory that no rational actor would invade the island and risk disrupting the global chip supply. Here's the full picture for investors.",
+    'One company — TSMC — produces over 90% of the world\'s most advanced semiconductor chips. These chips power AI training, military systems, smartphones, and the entire digital economy. Taiwan transformed this manufacturing supremacy into what analysts call a "silicon shield" — the theory that no rational actor would invade the island and risk disrupting the global chip supply. Here\'s the full picture for investors.',
   heroImage: null,
   contentBlocks: [
     { type: 'heading', text: 'The Most Important Factory In The World', level: 2 },
@@ -58,7 +131,7 @@ export const semiconductorArticle = {
     },
     {
       type: 'paragraph',
-      text: "These are not commodity products. They are the processors that train large language models, guide precision munitions, render real-time graphics, and enable every smartphone sold on the planet. Without them, Nvidia cannot ship GPUs. Apple cannot build iPhones. The Pentagon cannot deploy its most advanced weapons systems. The concentration of this capability in a single company, on a single island, 100 miles from a hostile superpower, is the most consequential [[kw:chokepoint]]chokepoint[[/kw]] in the global economy.",
+      text: 'These are not commodity products. They are the processors that train large language models, guide precision munitions, render real-time graphics, and enable every smartphone sold on the planet. Without them, Nvidia cannot ship GPUs. Apple cannot build iPhones. The Pentagon cannot deploy its most advanced weapons systems. The concentration of this capability in a single company, on a single island, 100 miles from a hostile superpower, is the most consequential [[kw:chokepoint]]chokepoint[[/kw]] in the global economy.',
     },
     {
       type: 'chart',
@@ -94,7 +167,7 @@ export const semiconductorArticle = {
     { type: 'heading', text: 'The Reshoring Race: CHIPS Act vs Made in China 2030', level: 2 },
     {
       type: 'paragraph',
-      text: "Both Washington and Beijing are working to reduce dependence on Taiwanese chips, but from opposite directions. The United States passed the [[kw:chips-act]]CHIPS and Science Act[[/kw]] in 2022, offering $52 billion in incentives to build domestic semiconductor manufacturing. TSMC received up to $6.6 billion in direct investment and significant tax credits for its Arizona fabrication facility, and committed $65 billion to the project. In March 2025, the Trump administration announced TSMC would boost its US investment by a further $100 billion.",
+      text: 'Both Washington and Beijing are working to reduce dependence on Taiwanese chips, but from opposite directions. The United States passed the [[kw:chips-act]]CHIPS and Science Act[[/kw]] in 2022, offering $52 billion in incentives to build domestic semiconductor manufacturing. TSMC received up to $6.6 billion in direct investment and significant tax credits for its Arizona fabrication facility, and committed $65 billion to the project. In March 2025, the Trump administration announced TSMC would boost its US investment by a further $100 billion.',
     },
     {
       type: 'paragraph',
@@ -138,11 +211,12 @@ export const semiconductorArticle = {
     { type: 'heading', text: 'What Investors Should Watch', level: 2 },
     {
       type: 'paragraph',
-      text: 'Five catalysts will shape the semiconductor investment landscape over the next 12-18 months. First, the TSMC Arizona yield ramp — if yields approach Taiwan levels, it validates [[kw:onshoring]]onshoring[[/kw]] as viable. Second, China\'s SMIC progress at 7nm and below — any breakthrough accelerates the timeline for Chinese chip independence. Third, Intel\'s foundry pivot — the IFS (Intel Foundry Services) order book will signal whether the IDM 2.0 thesis has legs. Fourth, AI capex cycles — Nvidia\'s revenue is a direct function of hyperscale data center spending by Meta, Microsoft, Amazon, and Google. Fifth, geopolitical escalation across the Taiwan Strait — any increase in military posturing reprices the entire sector\'s risk premium overnight.',
+      text: "Five catalysts will shape the semiconductor investment landscape over the next 12-18 months. First, the TSMC Arizona yield ramp — if yields approach Taiwan levels, it validates [[kw:onshoring]]onshoring[[/kw]] as viable. Second, China's SMIC progress at 7nm and below — any breakthrough accelerates the timeline for Chinese chip independence. Third, Intel's foundry pivot — the IFS (Intel Foundry Services) order book will signal whether the IDM 2.0 thesis has legs. Fourth, AI capex cycles — Nvidia's revenue is a direct function of hyperscale data center spending by Meta, Microsoft, Amazon, and Google. Fifth, geopolitical escalation across the Taiwan Strait — any increase in military posturing reprices the entire sector's risk premium overnight.",
     },
   ],
   author: 'Ezana Finance Editorial',
   category: 'companies',
+  tags: ['markets', 'technology', 'semiconductors', 'geopolitics', 'policy'],
   featured: false,
   readTime: 10,
   publishedAt: '2026-05-07',

@@ -3,6 +3,7 @@
 import { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getAllArticles, getFeaturedArticle, formatPublishedShort } from '@/lib/ezana-echo-mock';
+import { getTag } from '@/lib/echo-tag-taxonomy';
 import { useAuth } from '@/components/AuthProvider';
 import { isAdminUserClient } from '@/lib/admin-helpers-client';
 
@@ -68,6 +69,13 @@ export default function EzanaEchoPage() {
 
   const [tab, setTab] = useState('all');
   const [sort, setSort] = useState('Newest');
+  const [activeTag, setActiveTag] = useState(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const tagFromUrl = new URLSearchParams(window.location.search).get('tag');
+    if (tagFromUrl) setActiveTag(tagFromUrl);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -134,6 +142,7 @@ export default function EzanaEchoPage() {
 
   const sortedFiltered = useMemo(() => {
     let list = tab === 'all' ? allArticles : allArticles.filter((a) => a.category === tab);
+    if (activeTag) list = list.filter((a) => a.tags?.includes(activeTag));
     if (sort === 'Most Read') {
       list = [...list].sort((a, b) => (b.reads ?? 0) - (a.reads ?? 0));
     } else if (sort === 'Most Discussed') {
@@ -142,7 +151,7 @@ export default function EzanaEchoPage() {
       list = [...list].sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
     }
     return list;
-  }, [allArticles, tab, sort]);
+  }, [allArticles, tab, sort, activeTag]);
 
   const gridArticles = useMemo(
     () => allArticles.filter((a) => a.id !== featured?.id),
@@ -222,7 +231,10 @@ export default function EzanaEchoPage() {
                 key={t.id}
                 type="button"
                 className={`echo-filter-tab ${tab === t.id ? 'active' : ''}`}
-                onClick={() => setTab(t.id)}
+                onClick={() => {
+                  setTab(t.id);
+                  setActiveTag(null);
+                }}
               >
                 {t.label}
               </button>
@@ -245,64 +257,108 @@ export default function EzanaEchoPage() {
         </div>
       </div>
 
+      {activeTag && (
+        <div className="echo-active-tag-banner">
+          <i className="bi bi-funnel-fill" />
+          <span>Filtered by:</span>
+          <span className="echo-active-tag-chip">{getTag(activeTag).label}</span>
+          <button
+            type="button"
+            className="echo-active-tag-clear"
+            onClick={() => setActiveTag(null)}
+          >
+            <i className="bi bi-x-lg" /> Clear
+          </button>
+        </div>
+      )}
+
       <div className="echo-article-grid">
-        {(tab === 'all' ? gridArticles : sortedFiltered).slice(0, 9).map((article) => (
-          <div key={article.id} className="echo-article-card-wrap">
-            {isAdmin && (
-              <button
-                type="button"
-                className="echo-admin-archive-btn"
-                onClick={(e) => handleArchive(article.id, e)}
-                disabled={archivingId === article.id}
-                title="Archive this article"
-              >
-                <i className="bi bi-archive" />
-                {archivingId === article.id ? 'Archiving…' : 'Archive'}
-              </button>
-            )}
-            <Link href={`/ezana-echo/${article.id}`} className="echo-article-card">
-              <div className="echo-article-card-img-wrap">
-                {article.heroImage?.src ? (
-                  <div
-                    className="echo-article-card-img-placeholder"
-                    style={{ position: 'relative', overflow: 'hidden' }}
-                  >
-                    <img
-                      src={article.heroImage.src}
-                      alt={article.heroImage.alt || article.title}
-                      style={{
-                        position: 'absolute',
-                        inset: 0,
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                      }}
-                    />
-                    <div style={{ position: 'absolute', top: 8, left: 8, zIndex: 2 }}>
+        {(tab === 'all' && !activeTag ? gridArticles : sortedFiltered)
+          .slice(0, 9)
+          .map((article) => (
+            <div key={article.id} className="echo-article-card-wrap">
+              {isAdmin && (
+                <button
+                  type="button"
+                  className="echo-admin-archive-btn"
+                  onClick={(e) => handleArchive(article.id, e)}
+                  disabled={archivingId === article.id}
+                  title="Archive this article"
+                >
+                  <i className="bi bi-archive" />
+                  {archivingId === article.id ? 'Archiving…' : 'Archive'}
+                </button>
+              )}
+              <Link href={`/ezana-echo/${article.id}`} className="echo-article-card">
+                <div className="echo-article-card-img-wrap">
+                  {article.heroImage?.src ? (
+                    <div
+                      className="echo-article-card-img-placeholder"
+                      style={{ position: 'relative', overflow: 'hidden' }}
+                    >
+                      <img
+                        src={article.heroImage.src}
+                        alt={article.heroImage.alt || article.title}
+                        style={{
+                          position: 'absolute',
+                          inset: 0,
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                        }}
+                      />
+                      <div style={{ position: 'absolute', top: 8, left: 8, zIndex: 2 }}>
+                        <CategoryBadge category={article.category} />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="echo-article-card-img-placeholder">
                       <CategoryBadge category={article.category} />
                     </div>
-                  </div>
-                ) : (
-                  <div className="echo-article-card-img-placeholder">
-                    <CategoryBadge category={article.category} />
-                  </div>
-                )}
-              </div>
-              <div className="echo-article-card-body">
-                <p className="echo-article-card-date">
-                  {formatPublishedShort(article.publishedAt)} &nbsp;·&nbsp; {article.readTime} mins
-                  read
-                </p>
-                <h3 className="echo-article-card-title">{article.title}</h3>
-                <p className="echo-article-card-excerpt">{article.excerpt}</p>
-                <div className="echo-article-card-author">
-                  <AuthorAvatar name={article.author} />
-                  <span className="echo-article-card-author-name">{article.author}</span>
+                  )}
                 </div>
-              </div>
-            </Link>
-          </div>
-        ))}
+                <div className="echo-article-card-body">
+                  <p className="echo-article-card-date">
+                    {formatPublishedShort(article.publishedAt)} &nbsp;·&nbsp; {article.readTime}{' '}
+                    mins read
+                  </p>
+                  <h3 className="echo-article-card-title">{article.title}</h3>
+                  <p className="echo-article-card-excerpt">{article.excerpt}</p>
+                  {article.tags && article.tags.length > 1 && (
+                    <div className="echo-article-tags">
+                      {article.tags.slice(1, 4).map((tagId) => {
+                        const t = getTag(tagId);
+                        return (
+                          <button
+                            key={tagId}
+                            type="button"
+                            className="echo-article-tag-chip"
+                            style={{
+                              background: t.color.bg,
+                              color: t.color.fg,
+                              border: `1px solid ${t.color.border}`,
+                            }}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setTab('all');
+                              setActiveTag(tagId);
+                            }}
+                          >
+                            {t.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                  <div className="echo-article-card-author">
+                    <AuthorAvatar name={article.author} />
+                    <span className="echo-article-card-author-name">{article.author}</span>
+                  </div>
+                </div>
+              </Link>
+            </div>
+          ))}
       </div>
     </div>
   );

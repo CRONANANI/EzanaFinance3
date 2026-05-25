@@ -4,14 +4,20 @@ import { createContext, useContext, useState, useCallback } from 'react';
 
 const Ctx = createContext(null);
 
-export function EchoKeywordProvider({ children }) {
+export function EchoKeywordProvider({ children, articleTracker = null }) {
   const [activeKeywordId, setActiveKeywordId] = useState(null);
   const [anchorElement, setAnchorElement] = useState(null);
 
-  const openKeyword = useCallback((keywordId, element) => {
-    setActiveKeywordId(keywordId);
-    setAnchorElement(element);
-  }, []);
+  const openKeyword = useCallback(
+    (keywordId, element, keywordTerm) => {
+      setActiveKeywordId(keywordId);
+      setAnchorElement(element);
+      if (articleTracker?.recordKeywordClick) {
+        articleTracker.recordKeywordClick(keywordId, keywordTerm);
+      }
+    },
+    [articleTracker],
+  );
 
   const closeKeyword = useCallback(() => {
     setActiveKeywordId(null);

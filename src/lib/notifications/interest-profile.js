@@ -3,6 +3,7 @@
  */
 
 import { getAdminClient } from '@/lib/supabase';
+import { getTagWeight } from '@/lib/echo-tag-taxonomy';
 
 const DEFAULT_NOTIFICATION_PREFS = {
   earnings_alerts: true,
@@ -149,16 +150,72 @@ export async function buildUserProfile(userId) {
   }
 
   const topicScores = {};
+  const tagEngagement = {};
+
+  function bumpEngagement(tagId, field, amount = 1) {
+    if (!tagEngagement[tagId]) {
+      tagEngagement[tagId] = {
+        opens: 0,
+        reads: 0,
+        keyword_clicks: 0,
+        saves: 0,
+        shares: 0,
+        total_dwell_ms: 0,
+      };
+    }
+    tagEngagement[tagId][field] += amount;
+  }
+
+  function bumpTopicScore(tagId, points) {
+    const weighted = points * getTagWeight(tagId);
+    topicScores[tagId] = Math.min(100, (topicScores[tagId] || 0) + weighted);
+  }
+
+  for (const b of breadcrumbs.filter((b) => b.event_type === 'article_open')) {
+    const topics = b.event_data?.topics || [];
+    for (const t of topics) {
+      bumpTopicScore(t, 2);
+      bumpEngagement(t, 'opens');
+    }
+  }
+
   const articleReads = breadcrumbs.filter((b) => b.event_type === 'article_read');
   for (const b of articleReads) {
     const topics = b.event_data?.topics || [];
-    for (const t of topics) topicScores[t] = Math.min(100, (topicScores[t] || 0) + 10);
+    const keywordClickCount = b.event_data?.keyword_clicks || 0;
+    const dwellMs = b.event_data?.dwell_ms || 0;
+    const intensityBonus = Math.min(20, keywordClickCount * 2);
+    for (const t of topics) {
+      bumpTopicScore(t, 5 + intensityBonus);
+      bumpEngagement(t, 'reads');
+      bumpEngagement(t, 'total_dwell_ms', dwellMs);
+    }
   }
 
-  const keywordClicks = breadcrumbs.filter((b) => b.event_type === 'keyword_click');
-  for (const b of keywordClicks) {
-    const topic = b.event_data?.topic;
-    if (topic) topicScores[topic] = Math.min(100, (topicScores[topic] || 0) + 15);
+  for (const b of breadcrumbs.filter((b) => b.event_type === 'keyword_click')) {
+    const topics = b.event_data?.topics || [];
+    const legacyTopic = b.event_data?.topic;
+    const tagList = topics.length ? topics : legacyTopic ? [legacyTopic] : [];
+    for (const t of tagList) {
+      bumpTopicScore(t, 2);
+      bumpEngagement(t, 'keyword_clicks');
+    }
+  }
+
+  for (const b of breadcrumbs.filter((b) => b.event_type === 'article_save')) {
+    const topics = b.event_data?.topics || [];
+    for (const t of topics) {
+      bumpTopicScore(t, 15);
+      bumpEngagement(t, 'saves');
+    }
+  }
+
+  for (const b of breadcrumbs.filter((b) => b.event_type === 'article_share')) {
+    const topics = b.event_data?.topics || [];
+    for (const t of topics) {
+      bumpTopicScore(t, 10);
+      bumpEngagement(t, 'shares');
+    }
   }
 
   const watchlistAdds = breadcrumbs.filter((b) => b.event_type === 'watchlist_add');
@@ -227,6 +284,7 @@ export async function buildUserProfile(userId) {
       sector_scores: sectorScores,
       feature_scores: featureScores,
       topic_scores: topicScores,
+      tag_engagement: tagEngagement,
       risk_score: riskScore,
       risk_category: riskCategory,
       notification_prefs: mergedPrefs,

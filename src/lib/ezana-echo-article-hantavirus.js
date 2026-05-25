@@ -142,7 +142,7 @@ export const hantavirusArticle = {
     { type: 'heading', text: 'The MV Hondius Timeline: How An Outbreak Unfolds At Sea', level: 2 },
     {
       type: 'paragraph',
-      text: "The cruise ship outbreak is unprecedented for hantavirus. The MV Hondius departed from Ushuaia — deep in Andes virus territory — and visited Antarctica, South Georgia, and remote Atlantic islands before the first passenger fell ill. The [[kw:incubation-period]]incubation period[[/kw]] for hantavirus ranges from 1 to 8 weeks, which means passengers could have been infected before boarding, at any port of call, or onboard from contaminated surfaces.",
+      text: 'The cruise ship outbreak is unprecedented for hantavirus. The MV Hondius departed from Ushuaia — deep in Andes virus territory — and visited Antarctica, South Georgia, and remote Atlantic islands before the first passenger fell ill. The [[kw:incubation-period]]incubation period[[/kw]] for hantavirus ranges from 1 to 8 weeks, which means passengers could have been infected before boarding, at any port of call, or onboard from contaminated surfaces.',
     },
     {
       type: 'paragraph',
@@ -189,6 +189,7 @@ export const hantavirusArticle = {
   ],
   author: 'Ezana Finance Editorial',
   category: 'markets',
+  tags: ['markets', 'public-health', 'biotech', 'healthcare'],
   featured: false,
   readTime: 8,
   publishedAt: '2026-05-06',

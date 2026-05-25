@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
 import { useEchoEngagement } from '@/hooks/useEchoEngagement';
+
+const SAVED_KEY = 'echo_saved_articles';
 
 function formatRelativeTime(iso) {
   if (!iso) return '';
@@ -21,7 +23,18 @@ function formatRelativeTime(iso) {
   return new Date(iso).toLocaleDateString([], { month: 'short', day: 'numeric' });
 }
 
-export function EchoArticleEngagement({ articleId }) {
+function readSavedIds() {
+  if (typeof window === 'undefined') return new Set();
+  try {
+    const raw = localStorage.getItem(SAVED_KEY);
+    const arr = raw ? JSON.parse(raw) : [];
+    return new Set(Array.isArray(arr) ? arr : []);
+  } catch {
+    return new Set();
+  }
+}
+
+export function EchoArticleEngagement({ articleId, articleTitle, articleTracker }) {
   const { user } = useAuth();
   const {
     likeCount,
@@ -37,6 +50,55 @@ export function EchoArticleEngagement({ articleId }) {
 
   const [draft, setDraft] = useState('');
   const [actionMessage, setActionMessage] = useState(null);
+  const [isSaved, setIsSaved] = useState(false);
+
+  useEffect(() => {
+    setIsSaved(readSavedIds().has(articleId));
+  }, [articleId]);
+
+  const handleSave = useCallback(() => {
+    if (!user) {
+      setActionMessage({ type: 'auth', text: 'Sign in to save articles' });
+      return;
+    }
+    const ids = readSavedIds();
+    if (ids.has(articleId)) {
+      ids.delete(articleId);
+      setIsSaved(false);
+    } else {
+      ids.add(articleId);
+      setIsSaved(true);
+      articleTracker?.recordSave?.();
+    }
+    try {
+      localStorage.setItem(SAVED_KEY, JSON.stringify([...ids]));
+    } catch {
+      /* ignore */
+    }
+    setActionMessage(null);
+  }, [user, articleId, articleTracker]);
+
+  const handleShare = useCallback(async () => {
+    const url =
+      typeof window !== 'undefined'
+        ? `${window.location.origin}/ezana-echo/${articleId}`
+        : `/ezana-echo/${articleId}`;
+    const title = articleTitle || 'Ezana Echo';
+    try {
+      if (typeof navigator !== 'undefined' && navigator.share) {
+        await navigator.share({ title, url });
+        articleTracker?.recordShare?.('native');
+      } else if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url);
+        setActionMessage({ type: 'info', text: 'Link copied to clipboard' });
+        articleTracker?.recordShare?.('link');
+      }
+    } catch (err) {
+      if (err?.name !== 'AbortError') {
+        setActionMessage({ type: 'error', text: 'Could not share. Try copying the URL.' });
+      }
+    }
+  }, [articleId, articleTitle, articleTracker]);
 
   const onLikeClick = async () => {
     if (!user) {
@@ -61,7 +123,7 @@ export function EchoArticleEngagement({ articleId }) {
       setDraft('');
       setActionMessage(null);
     } else if (result.error === 'empty') {
-      // Silent fail — empty comments shouldn't show error UI
+      // Silent fail
     } else {
       setActionMessage({ type: 'error', text: 'Could not post comment. Try again.' });
     }
@@ -85,6 +147,27 @@ export function EchoArticleEngagement({ articleId }) {
 
         <button
           type="button"
+          className={`echo-engage-btn ${isSaved ? 'echo-engage-btn--saved' : ''}`}
+          onClick={handleSave}
+          aria-label={isSaved ? 'Remove from saved' : 'Save article'}
+          aria-pressed={isSaved}
+        >
+          <i className={`bi ${isSaved ? 'bi-bookmark-fill' : 'bi-bookmark'}`} aria-hidden />
+          <span className="echo-engage-btn-label">{isSaved ? 'Saved' : 'Save'}</span>
+        </button>
+
+        <button
+          type="button"
+          className="echo-engage-btn"
+          onClick={handleShare}
+          aria-label="Share article"
+        >
+          <i className="bi bi-share" aria-hidden />
+          <span className="echo-engage-btn-label">Share</span>
+        </button>
+
+        <button
+          type="button"
           className="echo-engage-btn"
           onClick={() => {
             const el = document.getElementById('echo-comments-section');
@@ -97,7 +180,9 @@ export function EchoArticleEngagement({ articleId }) {
         >
           <i className="bi bi-chat-text" aria-hidden />
           <span>{commentCount}</span>
-          <span className="echo-engage-btn-label">{commentCount === 1 ? 'Comment' : 'Comments'}</span>
+          <span className="echo-engage-btn-label">
+            {commentCount === 1 ? 'Comment' : 'Comments'}
+          </span>
         </button>
       </div>
 
@@ -115,7 +200,9 @@ export function EchoArticleEngagement({ articleId }) {
 
       <section id="echo-comments-section" className="echo-comments">
         <h2 className="echo-comments-title">
-          {commentCount === 0 ? 'No comments yet' : `${commentCount} ${commentCount === 1 ? 'Comment' : 'Comments'}`}
+          {commentCount === 0
+            ? 'No comments yet'
+            : `${commentCount} ${commentCount === 1 ? 'Comment' : 'Comments'}`}
         </h2>
 
         {user ? (
@@ -138,7 +225,11 @@ export function EchoArticleEngagement({ articleId }) {
                 <span className="echo-comment-form-counter">
                   {draft.length > 3500 && `${4000 - draft.length} characters remaining`}
                 </span>
-                <button type="submit" className="echo-comment-submit" disabled={!draft.trim() || isPosting}>
+                <button
+                  type="submit"
+                  className="echo-comment-submit"
+                  disabled={!draft.trim() || isPosting}
+                >
                   {isPosting ? 'Posting...' : 'Post Comment'}
                 </button>
               </div>
@@ -146,7 +237,9 @@ export function EchoArticleEngagement({ articleId }) {
           </form>
         ) : (
           <div className="echo-comment-signin">
-            <Link href={`/auth/signin?redirect=/ezana-echo/${articleId}`}>Sign in to leave a comment →</Link>
+            <Link href={`/auth/signin?redirect=/ezana-echo/${articleId}`}>
+              Sign in to leave a comment →
+            </Link>
           </div>
         )}
 
@@ -171,7 +264,10 @@ export function EchoArticleEngagement({ articleId }) {
                         type="button"
                         className="echo-comment-delete"
                         onClick={() => {
-                          if (typeof window !== 'undefined' && window.confirm('Delete this comment?')) {
+                          if (
+                            typeof window !== 'undefined' &&
+                            window.confirm('Delete this comment?')
+                          ) {
                             deleteComment(c.id);
                           }
                         }}
