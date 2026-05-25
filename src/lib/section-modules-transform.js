@@ -62,13 +62,46 @@ export function isHistorySection(title) {
   return HISTORY_TRIGGERS.some((re) => re.test(title || ''));
 }
 
+function escapeRegex(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function wrapTickerMentions(text) {
+  if (!text) return text;
+  if (text.includes('[[ticker:')) return text;
+
+  let result = text;
+  const seenTickers = new Set();
+
+  result = result.replace(new RegExp(TICKER_REGEX.source, 'g'), (match) => {
+    const symbol = match.toUpperCase();
+    if (seenTickers.has(symbol)) return match;
+    seenTickers.add(symbol);
+    return `[[ticker:${symbol}]]${match}[[/ticker]]`;
+  });
+
+  const sortedNames = Object.keys(COMPANY_TO_TICKER).sort((a, b) => b.length - a.length);
+  const seenCompanies = new Set();
+  for (const name of sortedNames) {
+    const ticker = COMPANY_TO_TICKER[name];
+    if (seenCompanies.has(ticker) || seenTickers.has(ticker)) continue;
+    const re = new RegExp(`\\b(${escapeRegex(name)})\\b`, 'i');
+    if (re.test(result)) {
+      result = result.replace(re, (matched) => `[[ticker:${ticker}]]${matched}[[/ticker]]`);
+      seenCompanies.add(ticker);
+    }
+  }
+
+  return result;
+}
+
 function buildParagraphModules(content) {
   if (!content) return [];
   return content
     .split(/\n\n+/)
     .map((p) => p.trim())
     .filter(Boolean)
-    .map((body) => ({ type: 'paragraphs', body }));
+    .map((body) => ({ type: 'paragraphs', body: wrapTickerMentions(body) }));
 }
 
 function buildChartModule(visual) {
@@ -79,16 +112,6 @@ function buildChartModule(visual) {
     data: visual.data,
     eyebrow: 'Live example',
     title: visual.caption || 'Visualization',
-  };
-}
-
-function buildTickerChartModule(ticker) {
-  return {
-    type: 'tickerChart',
-    ticker,
-    range: '1Y',
-    eyebrow: 'Live example',
-    title: `${ticker} — live price`,
   };
 }
 
@@ -139,16 +162,11 @@ export function transformSection(section) {
   const modules = [];
   const allText = section.content || '';
   const isHistory = isHistorySection(section.title);
-  const tickers = findTickersInText(allText);
 
   modules.push(...buildParagraphModules(allText));
 
   if (isHistory) {
     modules.push(buildContextTimeline(section));
-  }
-
-  for (const ticker of tickers) {
-    modules.push(buildTickerChartModule(ticker));
   }
 
   const chart = buildChartModule(section.visual);

@@ -577,13 +577,6 @@
           {
             "type": "paragraphs",
             "body": "Commodities are fungible physical goods traded in standardized units: energy (oil, gas), metals (gold, copper), agriculture (corn, coffee). Prices balance global supply and demand with storage, transport, and geopolitics layered on top."
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "META",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "META — live price"
           }
         ]
       },
@@ -681,13 +674,6 @@
           {
             "type": "paragraphs",
             "body": "Gold is a monetary metal and jewelry/industrial input. It often behaves as a crisis and inflation hedge — imperfectly — and pays no coupon, so opportunity cost rises when real rates are high."
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "META",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "META — live price"
           }
         ]
       },

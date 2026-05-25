@@ -9,6 +9,8 @@ import { Hero } from './chapter/Hero';
 import { EyebrowPill } from './chapter/EyebrowPill';
 import { SectionRenderer } from './chapter/SectionRenderer';
 import { FooterDock } from './chapter/FooterDock';
+import { TickerPopupProvider } from './chapter/ticker-popup/TickerPopupContext';
+import { TickerPopup } from './chapter/ticker-popup/TickerPopup';
 
 // Quiz answers are keyed by questionId to avoid the index-based off-by-one
 // bugs that leaked strings like "Submit 5 answers (indices 0-3)" to the UI.
@@ -310,360 +312,370 @@ export function LearningCoursePage() {
   };
 
   return (
-    <div className="lc3-page dashboard-page-inset db-page lc-edit-page">
-      {(quizMode || result) && (
-        <Link href="/learning-center" className="lc3-back">
-          ← Back to Learning Center
-        </Link>
-      )}
+    <TickerPopupProvider>
+      <div className="lc3-page dashboard-page-inset db-page lc-edit-page">
+        <TickerPopup />
+        {(quizMode || result) && (
+          <Link href="/learning-center" className="lc3-back">
+            ← Back to Learning Center
+          </Link>
+        )}
 
-      {quizPassed && !result && (
-        <div className="lc3-banner">
-          ✅ Course completed · Quiz {progress.quiz_score}%
-          {nextCourse ? (
-            <button type="button" className="lc3-btn lc3-btn-primary" onClick={goNextCourse}>
-              Begin “{nextCourse.title}” →
-            </button>
-          ) : (
-            <button type="button" className="lc3-btn lc3-btn-primary" onClick={goBackToCenter}>
-              {trackLabel} series complete 🏆
-            </button>
-          )}
-        </div>
-      )}
+        {quizPassed && !result && (
+          <div className="lc3-banner">
+            ✅ Course completed · Quiz {progress.quiz_score}%
+            {nextCourse ? (
+              <button type="button" className="lc3-btn lc3-btn-primary" onClick={goNextCourse}>
+                Begin “{nextCourse.title}” →
+              </button>
+            ) : (
+              <button type="button" className="lc3-btn lc3-btn-primary" onClick={goBackToCenter}>
+                {trackLabel} series complete 🏆
+              </button>
+            )}
+          </div>
+        )}
 
-      {!quizMode && !result && (
-        <>
-          {content?.sections?.length > 0 ? (
-            <>
-              <Hero
-                course={{
-                  title: course.title,
-                  track: course.track,
-                  level: course.level,
-                  totalCourses: ordered.length,
-                  courseIndex: pos,
-                  totalSections: content.sections.length,
-                  estimatedMinutes: course.duration_minutes || 15,
-                }}
-                trackLabel={trackLabel}
-                levelLabel={levelLabel}
-                subDeck={
-                  currentSection === 0 ? currentSectionData?.subDeck || course.description : null
-                }
-                sections={content.sections.map((s, i) => ({
-                  id: s.id || i,
-                  title: s.title,
-                  shortTitle: s.shortTitle || s.title,
-                }))}
-                currentSectionIdx={currentSection}
-                completedSet={completedSet}
-                onSectionJump={handleSectionJump}
-              />
-
-              <div className="lc3-bar lc-edit-progress-bar">
-                <div className="lc3-bar-fill" style={{ width: `${pct}%` }} />
-              </div>
-
-              <article className="lc-edit-article">
-                <EyebrowPill
-                  sectionIdx={currentSection}
-                  totalSections={content.sections.length}
-                  isComplete={completedSet.has(currentSection)}
+        {!quizMode && !result && (
+          <>
+            {content?.sections?.length > 0 ? (
+              <>
+                <Hero
+                  course={{
+                    title: course.title,
+                    track: course.track,
+                    level: course.level,
+                    totalCourses: ordered.length,
+                    courseIndex: pos,
+                    totalSections: content.sections.length,
+                    estimatedMinutes: course.duration_minutes || 15,
+                  }}
+                  trackLabel={trackLabel}
+                  levelLabel={levelLabel}
+                  subDeck={
+                    currentSection === 0 ? currentSectionData?.subDeck || course.description : null
+                  }
+                  sections={content.sections.map((s, i) => ({
+                    id: s.id || i,
+                    title: s.title,
+                    shortTitle: s.shortTitle || s.title,
+                  }))}
+                  currentSectionIdx={currentSection}
+                  completedSet={completedSet}
+                  onSectionJump={handleSectionJump}
                 />
-                <h2 className="lc-edit-h2">{currentSectionData?.title}</h2>
-                <SectionRenderer modules={currentSectionData?.modules || []} />
-              </article>
 
-              <FooterDock
-                currentIdx={currentSection}
-                totalSections={content.sections.length}
-                isLastSection={isLastSection}
-                isMarkedRead={completedSet.has(currentSection)}
-                nextShortTitle={nextSectionData?.shortTitle || nextSectionData?.title}
-                onPrev={handlePrev}
-                onNext={handleNext}
-              />
+                <div className="lc3-bar lc-edit-progress-bar">
+                  <div className="lc3-bar-fill" style={{ width: `${pct}%` }} />
+                </div>
 
-              {!quizPassed && (
-                <>
-                  {readAck && !progress?.reading_complete && (
-                    <div className="lc3-read-row" style={{ marginTop: '1.25rem' }}>
+                <article className="lc-edit-article">
+                  <EyebrowPill
+                    sectionIdx={currentSection}
+                    totalSections={content.sections.length}
+                    isComplete={completedSet.has(currentSection)}
+                  />
+                  <h2 className="lc-edit-h2">{currentSectionData?.title}</h2>
+                  <SectionRenderer modules={currentSectionData?.modules || []} />
+                </article>
+
+                <FooterDock
+                  currentIdx={currentSection}
+                  totalSections={content.sections.length}
+                  isLastSection={isLastSection}
+                  isMarkedRead={completedSet.has(currentSection)}
+                  nextShortTitle={nextSectionData?.shortTitle || nextSectionData?.title}
+                  onPrev={handlePrev}
+                  onNext={handleNext}
+                />
+
+                {!quizPassed && (
+                  <>
+                    {readAck && !progress?.reading_complete && (
+                      <div className="lc3-read-row" style={{ marginTop: '1.25rem' }}>
+                        <button
+                          type="button"
+                          className="lc3-btn lc3-btn-primary"
+                          disabled={submitting}
+                          onClick={onReadingDone}
+                        >
+                          {progress?.reading_complete
+                            ? 'Reading complete ✓'
+                            : 'Confirm & unlock quiz'}
+                        </button>
+                      </div>
+                    )}
+
+                    {progress?.reading_complete && (
                       <button
                         type="button"
                         className="lc3-btn lc3-btn-primary"
-                        disabled={submitting}
-                        onClick={onReadingDone}
+                        style={{ marginTop: '0.75rem' }}
+                        onClick={handleStartQuiz}
+                        data-task-target="learning-quiz-button"
                       >
-                        {progress?.reading_complete
-                          ? 'Reading complete ✓'
-                          : 'Confirm & unlock quiz'}
+                        Take Quiz →
                       </button>
-                    </div>
-                  )}
-
-                  {progress?.reading_complete && (
-                    <button
-                      type="button"
-                      className="lc3-btn lc3-btn-primary"
-                      style={{ marginTop: '0.75rem' }}
-                      onClick={handleStartQuiz}
-                      data-task-target="learning-quiz-button"
-                    >
-                      Take Quiz →
-                    </button>
-                  )}
-                </>
-              )}
-            </>
-          ) : (
-            <p className="lc3-muted">No sections for this course.</p>
-          )}
-        </>
-      )}
-
-      {quizMode && currentQuestion && (
-        <div className="lc3-quiz db-card">
-          <h2 className="lc3-h2">
-            {retryIndices
-              ? `Retry: ${course.title} (${qIdx + 1} of ${walkLen})`
-              : `Quiz: ${course.title} (${qIdx + 1} of ${walkLen})`}
-          </h2>
-          {retryIndices && (
-            <p className="lc3-muted" style={{ marginTop: '-0.25rem' }}>
-              Answering the {walkLen} question{walkLen === 1 ? '' : 's'} you missed. Your correct
-              answers are preserved.
-            </p>
-          )}
-
-          <div className="lc3-quiz-progress-wrap">
-            <div className="lc3-quiz-progress-label">
-              <span>
-                Question {qIdx + 1} / {walkLen}
-              </span>
-              <span>{quizProgressPct}% complete</span>
-            </div>
-            <div className="lc3-quiz-progress-track">
-              <div className="lc3-quiz-progress-fill" style={{ width: `${quizProgressPct}%` }} />
-            </div>
-          </div>
-
-          <p className="lc3-qtext">{currentQuestion.question}</p>
-          <div className="lc3-options">
-            {currentQuestion.options?.map((opt, oi) => {
-              let cls = 'lc3-opt';
-              if (currentAnswer === oi && !confirmed) cls += ' sel';
-              if (confirmed) {
-                cls += ' locked';
-                if (oi === currentQuestion.correctIndex) cls += ' correct';
-                else if (oi === currentAnswer) cls += ' incorrect';
-              }
-              return (
-                <label key={oi} className={cls}>
-                  <input
-                    type="radio"
-                    name={`q-${currentOriginalIdx}`}
-                    checked={currentAnswer === oi}
-                    disabled={confirmed}
-                    onChange={() => handleOptionPick(oi)}
-                  />
-                  <span style={{ flex: 1 }}>{opt}</span>
-                  {confirmed && oi === currentQuestion.correctIndex && (
-                    <span className="lc3-opt-mark" style={{ color: '#10b981' }}>
-                      ✓
-                    </span>
-                  )}
-                  {confirmed && oi === currentAnswer && oi !== currentQuestion.correctIndex && (
-                    <span className="lc3-opt-mark" style={{ color: '#ef4444' }}>
-                      ✗
-                    </span>
-                  )}
-                </label>
-              );
-            })}
-          </div>
-
-          {confirmed && (
-            <div className={`lc3-feedback ${isCorrect ? 'right' : 'wrong'}`}>
-              <span className="lc3-feedback-icon">{isCorrect ? '✓' : '✗'}</span>
-              <div className="lc3-feedback-text">
-                <strong>{isCorrect ? 'Correct!' : 'Not quite.'}</strong>
-                {currentQuestion.explanation}
-              </div>
-            </div>
-          )}
-
-          <div className="lc3-quiz-actions">
-            {!isLastQuestion ? (
-              <button
-                type="button"
-                className="lc3-btn lc3-btn-primary"
-                disabled={!confirmed}
-                onClick={handleNextQuestion}
-              >
-                Next question →
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="lc3-btn lc3-btn-primary"
-                data-task-target="learning-quiz-button"
-                disabled={!confirmed || submitting}
-                onClick={submitQuiz}
-              >
-                {submitting ? 'Submitting…' : 'Submit quiz'}
-              </button>
-            )}
-          </div>
-          <button
-            type="button"
-            className="lc3-link"
-            onClick={() => {
-              setQuizMode(false);
-              setConfirmed(false);
-              setQIdx(0);
-            }}
-          >
-            Cancel
-          </button>
-        </div>
-      )}
-
-      {result && (
-        <div className="lc3-results db-card">
-          <div className="lc3-results-header">
-            {result.passed ? (
-              <>
-                <div className="lc3-results-badge pass">🏆</div>
-                <h2 className="lc3-h2" style={{ margin: 0 }}>
-                  Perfect score!
-                </h2>
-                <p className="lc3-muted">
-                  You got {result.correct} out of {result.total} right. You&apos;ve completed{' '}
-                  <strong style={{ color: 'var(--text-primary, #f0f6fc)' }}>{course.title}</strong>.
-                </p>
-              </>
-            ) : (
-              <>
-                <div className="lc3-results-badge fail">↻</div>
-                <h2 className="lc3-h2" style={{ margin: 0 }}>
-                  You got {result.correct} out of {result.total}
-                </h2>
-                <p className="lc3-muted">
-                  You need {result.total} out of {result.total} to complete this course. Review the
-                  questions you missed and try again — your correct answers are saved.
-                </p>
-              </>
-            )}
-          </div>
-
-          <div className="lc3-results-chart">
-            <div className="lc3-results-chart-title">Performance Summary</div>
-            <div className="lc3-results-ring">
-              <ResultsRing correct={result.correct} total={result.total} />
-              <div className="lc3-results-stats">
-                <div className="lc3-results-stat-row">
-                  <span className="lc3-results-stat-dot right" />
-                  <span className="lc3-results-stat-label">Correct answers</span>
-                  <span className="lc3-results-stat-value">{result.correct}</span>
-                </div>
-                <div className="lc3-results-stat-row">
-                  <span className="lc3-results-stat-dot wrong" />
-                  <span className="lc3-results-stat-label">Incorrect answers</span>
-                  <span className="lc3-results-stat-value">{result.total - result.correct}</span>
-                </div>
-                <div className="lc3-results-stat-row">
-                  <span className="lc3-results-stat-label" style={{ marginLeft: '18px' }}>
-                    Final score
-                  </span>
-                  <span className="lc3-results-stat-value">{result.scorePct}%</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="lc3-review-block">
-            <h3 className="lc3-review-title">Review</h3>
-            <ol className="lc3-review">
-              {result.quiz?.map((q, i) => {
-                const userIndex = answers[questionKey(courseId, i)];
-                const ok = userIndex === q.correctIndex;
-                const userText =
-                  userIndex === undefined || userIndex === null
-                    ? '—'
-                    : (q.options?.[userIndex] ?? '—');
-                const correctText = q.options?.[q.correctIndex] ?? '';
-                return (
-                  <li key={i} className={ok ? 'ok' : 'bad'}>
-                    <div className="lc3-review-q">
-                      <span className="lc3-review-mark">{ok ? '✓' : '✗'}</span>
-                      <span className="lc3-review-text">
-                        <strong>Q{i + 1}.</strong> {q.question}
-                      </span>
-                    </div>
-                    {!ok && (
-                      <div className="lc3-review-detail">
-                        <div className="lc3-review-your">
-                          Your answer: <span>{userText}</span>
-                        </div>
-                        <div className="lc3-review-correct">
-                          Correct answer: <span>{correctText}</span>
-                        </div>
-                        {q.explanation && (
-                          <div className="lc3-review-explanation">{q.explanation}</div>
-                        )}
-                      </div>
                     )}
-                  </li>
-                );
-              })}
-            </ol>
-          </div>
-
-          <div className="lc3-results-actions">
-            {result.passed ? (
-              <>
-                <button type="button" className="lc3-btn" onClick={goBackToCenter}>
-                  Back to Learning Center
-                </button>
-                {nextCourse ? (
-                  <button type="button" className="lc3-btn lc3-btn-primary" onClick={goNextCourse}>
-                    Begin “{nextCourse.title}” →
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    className="lc3-btn lc3-btn-primary"
-                    onClick={goBackToCenter}
-                  >
-                    {trackLabel} series complete 🏆
-                  </button>
+                  </>
                 )}
               </>
             ) : (
-              <>
-                <button type="button" className="lc3-btn" onClick={goBackToCenter}>
-                  Back to Learning Center
-                </button>
+              <p className="lc3-muted">No sections for this course.</p>
+            )}
+          </>
+        )}
+
+        {quizMode && currentQuestion && (
+          <div className="lc3-quiz db-card">
+            <h2 className="lc3-h2">
+              {retryIndices
+                ? `Retry: ${course.title} (${qIdx + 1} of ${walkLen})`
+                : `Quiz: ${course.title} (${qIdx + 1} of ${walkLen})`}
+            </h2>
+            {retryIndices && (
+              <p className="lc3-muted" style={{ marginTop: '-0.25rem' }}>
+                Answering the {walkLen} question{walkLen === 1 ? '' : 's'} you missed. Your correct
+                answers are preserved.
+              </p>
+            )}
+
+            <div className="lc3-quiz-progress-wrap">
+              <div className="lc3-quiz-progress-label">
+                <span>
+                  Question {qIdx + 1} / {walkLen}
+                </span>
+                <span>{quizProgressPct}% complete</span>
+              </div>
+              <div className="lc3-quiz-progress-track">
+                <div className="lc3-quiz-progress-fill" style={{ width: `${quizProgressPct}%` }} />
+              </div>
+            </div>
+
+            <p className="lc3-qtext">{currentQuestion.question}</p>
+            <div className="lc3-options">
+              {currentQuestion.options?.map((opt, oi) => {
+                let cls = 'lc3-opt';
+                if (currentAnswer === oi && !confirmed) cls += ' sel';
+                if (confirmed) {
+                  cls += ' locked';
+                  if (oi === currentQuestion.correctIndex) cls += ' correct';
+                  else if (oi === currentAnswer) cls += ' incorrect';
+                }
+                return (
+                  <label key={oi} className={cls}>
+                    <input
+                      type="radio"
+                      name={`q-${currentOriginalIdx}`}
+                      checked={currentAnswer === oi}
+                      disabled={confirmed}
+                      onChange={() => handleOptionPick(oi)}
+                    />
+                    <span style={{ flex: 1 }}>{opt}</span>
+                    {confirmed && oi === currentQuestion.correctIndex && (
+                      <span className="lc3-opt-mark" style={{ color: '#10b981' }}>
+                        ✓
+                      </span>
+                    )}
+                    {confirmed && oi === currentAnswer && oi !== currentQuestion.correctIndex && (
+                      <span className="lc3-opt-mark" style={{ color: '#ef4444' }}>
+                        ✗
+                      </span>
+                    )}
+                  </label>
+                );
+              })}
+            </div>
+
+            {confirmed && (
+              <div className={`lc3-feedback ${isCorrect ? 'right' : 'wrong'}`}>
+                <span className="lc3-feedback-icon">{isCorrect ? '✓' : '✗'}</span>
+                <div className="lc3-feedback-text">
+                  <strong>{isCorrect ? 'Correct!' : 'Not quite.'}</strong>
+                  {currentQuestion.explanation}
+                </div>
+              </div>
+            )}
+
+            <div className="lc3-quiz-actions">
+              {!isLastQuestion ? (
                 <button
                   type="button"
                   className="lc3-btn lc3-btn-primary"
-                  onClick={handleRetryIncorrect}
-                  disabled={!result.incorrectIndices || result.incorrectIndices.length === 0}
+                  disabled={!confirmed}
+                  onClick={handleNextQuestion}
                 >
-                  Retry {result.incorrectIndices?.length ?? 0} incorrect{' '}
-                  {result.incorrectIndices?.length === 1 ? 'question' : 'questions'}
+                  Next question →
                 </button>
-              </>
-            )}
+              ) : (
+                <button
+                  type="button"
+                  className="lc3-btn lc3-btn-primary"
+                  data-task-target="learning-quiz-button"
+                  disabled={!confirmed || submitting}
+                  onClick={submitQuiz}
+                >
+                  {submitting ? 'Submitting…' : 'Submit quiz'}
+                </button>
+              )}
+            </div>
+            <button
+              type="button"
+              className="lc3-link"
+              onClick={() => {
+                setQuizMode(false);
+                setConfirmed(false);
+                setQIdx(0);
+              }}
+            >
+              Cancel
+            </button>
           </div>
-        </div>
-      )}
+        )}
 
-      {err && err !== 'Course not found' && (
-        <p style={{ color: '#f87171', marginTop: '1rem' }}>{err}</p>
-      )}
-    </div>
+        {result && (
+          <div className="lc3-results db-card">
+            <div className="lc3-results-header">
+              {result.passed ? (
+                <>
+                  <div className="lc3-results-badge pass">🏆</div>
+                  <h2 className="lc3-h2" style={{ margin: 0 }}>
+                    Perfect score!
+                  </h2>
+                  <p className="lc3-muted">
+                    You got {result.correct} out of {result.total} right. You&apos;ve completed{' '}
+                    <strong style={{ color: 'var(--text-primary, #f0f6fc)' }}>
+                      {course.title}
+                    </strong>
+                    .
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className="lc3-results-badge fail">↻</div>
+                  <h2 className="lc3-h2" style={{ margin: 0 }}>
+                    You got {result.correct} out of {result.total}
+                  </h2>
+                  <p className="lc3-muted">
+                    You need {result.total} out of {result.total} to complete this course. Review
+                    the questions you missed and try again — your correct answers are saved.
+                  </p>
+                </>
+              )}
+            </div>
+
+            <div className="lc3-results-chart">
+              <div className="lc3-results-chart-title">Performance Summary</div>
+              <div className="lc3-results-ring">
+                <ResultsRing correct={result.correct} total={result.total} />
+                <div className="lc3-results-stats">
+                  <div className="lc3-results-stat-row">
+                    <span className="lc3-results-stat-dot right" />
+                    <span className="lc3-results-stat-label">Correct answers</span>
+                    <span className="lc3-results-stat-value">{result.correct}</span>
+                  </div>
+                  <div className="lc3-results-stat-row">
+                    <span className="lc3-results-stat-dot wrong" />
+                    <span className="lc3-results-stat-label">Incorrect answers</span>
+                    <span className="lc3-results-stat-value">{result.total - result.correct}</span>
+                  </div>
+                  <div className="lc3-results-stat-row">
+                    <span className="lc3-results-stat-label" style={{ marginLeft: '18px' }}>
+                      Final score
+                    </span>
+                    <span className="lc3-results-stat-value">{result.scorePct}%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="lc3-review-block">
+              <h3 className="lc3-review-title">Review</h3>
+              <ol className="lc3-review">
+                {result.quiz?.map((q, i) => {
+                  const userIndex = answers[questionKey(courseId, i)];
+                  const ok = userIndex === q.correctIndex;
+                  const userText =
+                    userIndex === undefined || userIndex === null
+                      ? '—'
+                      : (q.options?.[userIndex] ?? '—');
+                  const correctText = q.options?.[q.correctIndex] ?? '';
+                  return (
+                    <li key={i} className={ok ? 'ok' : 'bad'}>
+                      <div className="lc3-review-q">
+                        <span className="lc3-review-mark">{ok ? '✓' : '✗'}</span>
+                        <span className="lc3-review-text">
+                          <strong>Q{i + 1}.</strong> {q.question}
+                        </span>
+                      </div>
+                      {!ok && (
+                        <div className="lc3-review-detail">
+                          <div className="lc3-review-your">
+                            Your answer: <span>{userText}</span>
+                          </div>
+                          <div className="lc3-review-correct">
+                            Correct answer: <span>{correctText}</span>
+                          </div>
+                          {q.explanation && (
+                            <div className="lc3-review-explanation">{q.explanation}</div>
+                          )}
+                        </div>
+                      )}
+                    </li>
+                  );
+                })}
+              </ol>
+            </div>
+
+            <div className="lc3-results-actions">
+              {result.passed ? (
+                <>
+                  <button type="button" className="lc3-btn" onClick={goBackToCenter}>
+                    Back to Learning Center
+                  </button>
+                  {nextCourse ? (
+                    <button
+                      type="button"
+                      className="lc3-btn lc3-btn-primary"
+                      onClick={goNextCourse}
+                    >
+                      Begin “{nextCourse.title}” →
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="lc3-btn lc3-btn-primary"
+                      onClick={goBackToCenter}
+                    >
+                      {trackLabel} series complete 🏆
+                    </button>
+                  )}
+                </>
+              ) : (
+                <>
+                  <button type="button" className="lc3-btn" onClick={goBackToCenter}>
+                    Back to Learning Center
+                  </button>
+                  <button
+                    type="button"
+                    className="lc3-btn lc3-btn-primary"
+                    onClick={handleRetryIncorrect}
+                    disabled={!result.incorrectIndices || result.incorrectIndices.length === 0}
+                  >
+                    Retry {result.incorrectIndices?.length ?? 0} incorrect{' '}
+                    {result.incorrectIndices?.length === 1 ? 'question' : 'questions'}
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        {err && err !== 'Course not found' && (
+          <p style={{ color: '#f87171', marginTop: '1rem' }}>{err}</p>
+        )}
+      </div>
+    </TickerPopupProvider>
   );
 }
 

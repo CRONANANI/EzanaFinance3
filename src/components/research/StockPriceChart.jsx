@@ -77,9 +77,12 @@ export default function StockPriceChart({
   livePrice = null,
   stats = null,
   initialRange = '1M',
+  defaultRange,
   compact = false,
+  hideRangeButtons = false,
 }) {
-  const [range, setRange] = useState(initialRange);
+  const resolvedInitialRange = defaultRange || initialRange;
+  const [range, setRange] = useState(resolvedInitialRange);
   const [candles, setCandles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -279,41 +282,42 @@ export default function StockPriceChart({
           )}
         </div>
 
-        {/* Right: range selector — top-right of header */}
-        <div
-          style={{
-            display: 'flex',
-            gap: '2px',
-            background: 'var(--muted, rgba(255,255,255,0.04))',
-            borderRadius: '8px',
-            padding: '2px',
-            flexShrink: 0,
-          }}
-        >
-          {RANGES.map((r) => (
-            <button
-              key={r}
-              type="button"
-              onClick={() => setRange(r)}
-              style={{
-                padding: '3px 8px',
-                borderRadius: '6px',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '0.62rem',
-                fontWeight: 700,
-                fontFamily: 'var(--font-mono, monospace)',
-                letterSpacing: '0.03em',
-                transition: 'all 0.12s ease',
-                background: range === r ? lineColour : 'transparent',
-                color: range === r ? '#fff' : 'var(--muted-foreground, #6b7280)',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {r}
-            </button>
-          ))}
-        </div>
+        {!hideRangeButtons && (
+          <div
+            style={{
+              display: 'flex',
+              gap: '2px',
+              background: 'var(--muted, rgba(255,255,255,0.04))',
+              borderRadius: '8px',
+              padding: '2px',
+              flexShrink: 0,
+            }}
+          >
+            {RANGES.map((r) => (
+              <button
+                key={r}
+                type="button"
+                onClick={() => setRange(r)}
+                style={{
+                  padding: '3px 8px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '0.62rem',
+                  fontWeight: 700,
+                  fontFamily: 'var(--font-mono, monospace)',
+                  letterSpacing: '0.03em',
+                  transition: 'all 0.12s ease',
+                  background: range === r ? lineColour : 'transparent',
+                  color: range === r ? '#fff' : 'var(--muted-foreground, #6b7280)',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {r}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* ── Chart body ── */}

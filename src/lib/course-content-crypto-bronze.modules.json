@@ -10,14 +10,7 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "A cryptocurrency is a digital asset whose ownership is recorded on a blockchain — a shared ledger maintained by a distributed network of computers rather than by a single bank or government. This is the fundamental breakthrough: for the first time in history, two people who do not know or trust each other can exchange value over the internet without needing a trusted intermediary to verify the transaction. The \"crypto\" prefix refers to the cryptography — the mathematical techniques — that secures the ledger, not to anything secret or hidden. Cryptographic signatures prove ownership, and a structure called a cryptographic hash links each new block of transactions to the previous one, making the whole chain extremely difficult to alter after the fact. The term \"cryptocurrency\" covers thousands of different assets today, all with different purposes and designs. Bitcoin is one of them, not the whole category. Some cryptocurrencies are designed as stores of value, others as payment systems, others as the fuel for computer programs that run on blockchains, and others still as stablecoins pegged to traditional currencies. When someone asks \"what is cryptocurrency?\" the most accurate answer is that it's a category, not a single thing — and understanding the differences between the assets in that category is the beginning of being literate in this space."
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "BTC",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "BTC — live price"
+            "body": "A cryptocurrency is a digital asset whose ownership is recorded on a blockchain — a shared ledger maintained by a distributed network of computers rather than by a single bank or government. This is the fundamental breakthrough: for the first time in history, two people who do not know or trust each other can exchange value over the internet without needing a trusted intermediary to verify the transaction. The \"crypto\" prefix refers to the cryptography — the mathematical techniques — that secures the ledger, not to anything secret or hidden. Cryptographic signatures prove ownership, and a structure called a cryptographic hash links each new block of transactions to the previous one, making the whole chain extremely difficult to alter after the fact. The term \"cryptocurrency\" covers thousands of different assets today, all with different purposes and designs. [[ticker:BTC]]Bitcoin[[/ticker]] is one of them, not the whole category. Some cryptocurrencies are designed as stores of value, others as payment systems, others as the fuel for computer programs that run on blockchains, and others still as stablecoins pegged to traditional currencies. When someone asks \"what is cryptocurrency?\" the most accurate answer is that it's a category, not a single thing — and understanding the differences between the assets in that category is the beginning of being literate in this space."
           },
           {
             "type": "keyTermCards",
@@ -57,21 +50,7 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "A decentralized network has no central operator who can shut it down, change the rules unilaterally, or reverse a transaction after it happens. The best analogy for most beginners is email. There is no single \"email company\" that owns and controls all email traffic. Instead, email is a protocol — a set of rules — that anyone can implement, and millions of independent mail servers run by different organizations and individuals all follow the same rules to pass messages along. If one email server goes down, the protocol keeps functioning through all the others. Blockchain networks like Bitcoin and Ethereum work the same way. Thousands of independent computers around the world (called nodes) each keep a copy of the shared ledger, and changes to that ledger are accepted only when a majority of them agree, according to the rules of the protocol. No single person, company, or government can override this. If one node goes offline or tries to cheat, the rest of the network ignores it and keeps functioning. This is what gives these networks their censorship resistance and their political significance. A traditional banking system depends entirely on the bank's willingness to process your transaction. A truly decentralized blockchain doesn't need anyone's permission. Whether that's a feature or a bug depends on your perspective, but the technical property is real and it's the core thing that makes crypto different from a regular online payment system."
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "BTC",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "BTC — live price"
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "ETH",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "ETH — live price"
+            "body": "A decentralized network has no central operator who can shut it down, change the rules unilaterally, or reverse a transaction after it happens. The best analogy for most beginners is email. There is no single \"email company\" that owns and controls all email traffic. Instead, email is a protocol — a set of rules — that anyone can implement, and millions of independent mail servers run by different organizations and individuals all follow the same rules to pass messages along. If one email server goes down, the protocol keeps functioning through all the others. Blockchain networks like [[ticker:BTC]]Bitcoin[[/ticker]] and [[ticker:ETH]]Ethereum[[/ticker]] work the same way. Thousands of independent computers around the world (called nodes) each keep a copy of the shared ledger, and changes to that ledger are accepted only when a majority of them agree, according to the rules of the protocol. No single person, company, or government can override this. If one node goes offline or tries to cheat, the rest of the network ignores it and keeps functioning. This is what gives these networks their censorship resistance and their political significance. A traditional banking system depends entirely on the bank's willingness to process your transaction. A truly decentralized blockchain doesn't need anyone's permission. Whether that's a feature or a bug depends on your perspective, but the technical property is real and it's the core thing that makes crypto different from a regular online payment system."
           },
           {
             "type": "keyTermCards",
@@ -135,14 +114,7 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "The early internet connected people — email, messaging, social media, the web — and it fundamentally changed how humans communicate and share information. A second wave, sometimes called Internet of Things, connected physical devices to each other so that your phone could track your watch, your thermostat could respond to your door, and automated systems could see and measure the physical world at massive scale. Blockchain is sometimes called the next stage of internet evolution — the Internet of Money — because it enables value to flow across the internet the way information and device signals already do. Before blockchain, sending money online always required a trusted middleman: a bank, a credit card network, PayPal, or some similar institution that kept records of who owed what and processed the transfers. Blockchain removes that middleman by replacing central trust with cryptographic proof. A Bitcoin transaction doesn't need a bank because the network itself verifies that the sender has the coins they're trying to send, and records the transfer permanently in the shared ledger. Once the transaction is confirmed by the network, it is final. No bank, no reversal, no customer service department that can undo it. This is both the most powerful and the most dangerous property of the system, and understanding it is the first step toward understanding what crypto can and cannot do."
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "BTC",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "BTC — live price"
+            "body": "The early internet connected people — email, messaging, social media, the web — and it fundamentally changed how humans communicate and share information. A second wave, sometimes called Internet of Things, connected physical devices to each other so that your phone could track your watch, your thermostat could respond to your door, and automated systems could see and measure the physical world at massive scale. Blockchain is sometimes called the next stage of internet evolution — the Internet of Money — because it enables value to flow across the internet the way information and device signals already do. Before blockchain, sending money online always required a trusted middleman: a bank, a credit card network, PayPal, or some similar institution that kept records of who owed what and processed the transfers. Blockchain removes that middleman by replacing central trust with cryptographic proof. A [[ticker:BTC]]Bitcoin[[/ticker]] transaction doesn't need a bank because the network itself verifies that the sender has the coins they're trying to send, and records the transfer permanently in the shared ledger. Once the transaction is confirmed by the network, it is final. No bank, no reversal, no customer service department that can undo it. This is both the most powerful and the most dangerous property of the system, and understanding it is the first step toward understanding what crypto can and cannot do."
           },
           {
             "type": "chart",
@@ -204,14 +176,7 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "For decades, computer scientists tried to build a form of digital cash and kept running into the same fundamental problem: digital files can be copied. If a dollar was just a file on your computer, you could make two copies and spend it twice. This is called the double-spend problem, and it was the main obstacle preventing digital money from working. Traditional online payments solve this by putting a central institution in the middle of every transaction. Your bank keeps track of your balance, and when you send someone money, the bank debits your account and credits theirs. The bank is the single source of truth, and it prevents you from spending the same dollar twice by simply not allowing it. This works, but it requires trusting the bank. Blockchain solved the double-spend problem without a central authority by combining three ideas: a public ledger that everyone can see, a network of computers that maintain and update it, and a consensus mechanism that ensures everyone agrees on which transactions are valid and in what order. When you try to send the same coins twice, the network sees both attempts and only accepts the first one. The second is rejected as invalid. This is a genuinely important computer science achievement — one that had eluded researchers for decades before Bitcoin's design cracked it — and it's the technical foundation that every cryptocurrency since Bitcoin has built on."
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "BTC",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "BTC — live price"
+            "body": "For decades, computer scientists tried to build a form of digital cash and kept running into the same fundamental problem: digital files can be copied. If a dollar was just a file on your computer, you could make two copies and spend it twice. This is called the double-spend problem, and it was the main obstacle preventing digital money from working. Traditional online payments solve this by putting a central institution in the middle of every transaction. Your bank keeps track of your balance, and when you send someone money, the bank debits your account and credits theirs. The bank is the single source of truth, and it prevents you from spending the same dollar twice by simply not allowing it. This works, but it requires trusting the bank. Blockchain solved the double-spend problem without a central authority by combining three ideas: a public ledger that everyone can see, a network of computers that maintain and update it, and a consensus mechanism that ensures everyone agrees on which transactions are valid and in what order. When you try to send the same coins twice, the network sees both attempts and only accepts the first one. The second is rejected as invalid. This is a genuinely important computer science achievement — one that had eluded researchers for decades before [[ticker:BTC]]Bitcoin[[/ticker]]'s design cracked it — and it's the technical foundation that every cryptocurrency since Bitcoin has built on."
           },
           {
             "type": "callout",
@@ -250,14 +215,7 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Almost as important as understanding what cryptocurrency is, is understanding what it is not. Cryptocurrency is not a currency in the everyday sense — most cryptocurrencies are too volatile and too slow to serve as practical substitutes for dollars at the grocery store. Cryptocurrency is not anonymous, despite popular belief. Most blockchains are pseudonymous: every transaction is permanently visible to the entire world, and if your real identity is ever linked to a wallet address, every transaction that address has ever made becomes traceable back to you forever. Cryptocurrency is not guaranteed to go up in value — the history of the space is littered with coins that went to zero and projects that collapsed. Cryptocurrency is not the same as a stock — buying a coin does not give you ownership of any business, any claim on future earnings, or any voting rights in a company. Some tokens are designed to confer governance rights over a project, but they are structurally different from equity ownership. Cryptocurrency is not a hedge against all financial problems — during broad market panics, crypto has often moved in lockstep with stocks rather than as a safe haven. And most importantly for a beginner, cryptocurrency is not a shortcut to wealth. The stories of people who bought Bitcoin in 2011 and retired in 2017 are real but they are the exception, not the rule. Far more common are the stories of people who bought near a peak, held through a crash, and either sold at the bottom or watched their holdings lose most of their value. Expecting easy gains is the single most reliable way to lose money in this space."
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "BTC",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "BTC — live price"
+            "body": "Almost as important as understanding what cryptocurrency is, is understanding what it is not. Cryptocurrency is not a currency in the everyday sense — most cryptocurrencies are too volatile and too slow to serve as practical substitutes for dollars at the grocery store. Cryptocurrency is not anonymous, despite popular belief. Most blockchains are pseudonymous: every transaction is permanently visible to the entire world, and if your real identity is ever linked to a wallet address, every transaction that address has ever made becomes traceable back to you forever. Cryptocurrency is not guaranteed to go up in value — the history of the space is littered with coins that went to zero and projects that collapsed. Cryptocurrency is not the same as a stock — buying a coin does not give you ownership of any business, any claim on future earnings, or any voting rights in a company. Some tokens are designed to confer governance rights over a project, but they are structurally different from equity ownership. Cryptocurrency is not a hedge against all financial problems — during broad market panics, crypto has often moved in lockstep with stocks rather than as a safe haven. And most importantly for a beginner, cryptocurrency is not a shortcut to wealth. The stories of people who bought [[ticker:BTC]]Bitcoin[[/ticker]] in 2011 and retired in 2017 are real but they are the exception, not the rule. Far more common are the stories of people who bought near a peak, held through a crash, and either sold at the bottom or watched their holdings lose most of their value. Expecting easy gains is the single most reliable way to lose money in this space."
           },
           {
             "type": "keyTermCards",
@@ -452,14 +410,7 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "In October 2008, a person (or group) using the pseudonym Satoshi Nakamoto published a nine-page document titled \"Bitcoin: A Peer-to-Peer Electronic Cash System.\" It described a new kind of digital currency that didn't need banks or any other trusted intermediaries. This was not the first attempt at digital cash. Computer scientists and cryptographers had been trying to build one for decades, with projects like DigiCash, e-gold, and b-money dating back to the 1980s and 1990s. All of them had failed commercially, some because they required a central operator that could be shut down, others because they couldn't solve the double-spend problem without one. Satoshi's paper proposed a specific combination of existing cryptographic and networking techniques that, put together, made digital cash work without any central authority. On January 3, 2009, Satoshi launched the Bitcoin network by creating the first block of the chain, known as the genesis block. Embedded in that first block was a short text message referencing a newspaper headline about government bank bailouts — a political signal about the kind of system Bitcoin was designed to be an alternative to. The network has run continuously since that day without a single hour of downtime, processing transactions without permission from any government or bank. Satoshi remained active in the project for about two years, helping early developers, then disappeared from the project in 2011 and has never been conclusively identified. Their real identity remains one of the most famous unsolved mysteries in technology."
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "BTC",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "BTC — live price"
+            "body": "In October 2008, a person (or group) using the pseudonym Satoshi Nakamoto published a nine-page document titled \"[[ticker:BTC]]Bitcoin[[/ticker]]: A Peer-to-Peer Electronic Cash System.\" It described a new kind of digital currency that didn't need banks or any other trusted intermediaries. This was not the first attempt at digital cash. Computer scientists and cryptographers had been trying to build one for decades, with projects like DigiCash, e-gold, and b-money dating back to the 1980s and 1990s. All of them had failed commercially, some because they required a central operator that could be shut down, others because they couldn't solve the double-spend problem without one. Satoshi's paper proposed a specific combination of existing cryptographic and networking techniques that, put together, made digital cash work without any central authority. On January 3, 2009, Satoshi launched the Bitcoin network by creating the first block of the chain, known as the genesis block. Embedded in that first block was a short text message referencing a newspaper headline about government bank bailouts — a political signal about the kind of system Bitcoin was designed to be an alternative to. The network has run continuously since that day without a single hour of downtime, processing transactions without permission from any government or bank. Satoshi remained active in the project for about two years, helping early developers, then disappeared from the project in 2011 and has never been conclusively identified. Their real identity remains one of the most famous unsolved mysteries in technology."
           },
           {
             "type": "chart",
@@ -562,14 +513,7 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "One of the most distinctive features of Bitcoin is its fixed maximum supply. There will never be more than 21 million bitcoins in existence. This is not a guideline or a goal — it is enforced by the protocol itself. The rules that all Bitcoin software follows include a schedule that defines how many new bitcoins are created in each block, and that schedule ensures that the total number can never exceed 21 million. New bitcoins enter circulation through a process called mining (covered in the next section), and the rate of new creation is cut in half approximately every four years in an event called the halving. In Bitcoin's earliest years, 50 new bitcoins were created in each block. Then 25. Then 12.5. Then 6.25. As of the most recent halving, the block reward is 3.125 bitcoins, and it will continue to halve roughly every four years until all 21 million are in circulation some time around the year 2140. The economic argument for this fixed supply is that it makes Bitcoin fundamentally scarce — more like gold than like a national currency that a central bank can print freely. Proponents argue that this scarcity makes Bitcoin attractive as a store of value, especially in an era of aggressive money printing by central banks. Critics argue that a currency with a fixed supply has serious practical problems as an everyday medium of exchange and that the scarcity story is mostly a speculative narrative. Whatever you think of the debate, the mechanical fact remains: the Bitcoin protocol caps the total supply, and changing that cap would require the vast majority of the network to agree — which would be virtually impossible because most holders would strenuously oppose any change that diluted their holdings."
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "BTC",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "BTC — live price"
+            "body": "One of the most distinctive features of [[ticker:BTC]]Bitcoin[[/ticker]] is its fixed maximum supply. There will never be more than 21 million bitcoins in existence. This is not a guideline or a goal — it is enforced by the protocol itself. The rules that all Bitcoin software follows include a schedule that defines how many new bitcoins are created in each block, and that schedule ensures that the total number can never exceed 21 million. New bitcoins enter circulation through a process called mining (covered in the next section), and the rate of new creation is cut in half approximately every four years in an event called the halving. In Bitcoin's earliest years, 50 new bitcoins were created in each block. Then 25. Then 12.5. Then 6.25. As of the most recent halving, the block reward is 3.125 bitcoins, and it will continue to halve roughly every four years until all 21 million are in circulation some time around the year 2140. The economic argument for this fixed supply is that it makes Bitcoin fundamentally scarce — more like gold than like a national currency that a central bank can print freely. Proponents argue that this scarcity makes Bitcoin attractive as a store of value, especially in an era of aggressive money printing by central banks. Critics argue that a currency with a fixed supply has serious practical problems as an everyday medium of exchange and that the scarcity story is mostly a speculative narrative. Whatever you think of the debate, the mechanical fact remains: the Bitcoin protocol caps the total supply, and changing that cap would require the vast majority of the network to agree — which would be virtually impossible because most holders would strenuously oppose any change that diluted their holdings."
           },
           {
             "type": "chart",
@@ -645,21 +589,7 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Bitcoin mining is the process by which new transactions are confirmed and added to the blockchain, and by which new bitcoins are created. The name \"mining\" is a metaphor — no one is literally digging anything up — but the analogy to gold mining is useful because both involve expending energy to discover something valuable that is difficult to produce. Here's the mechanic in simplified form. Miners (really, just specialized computers) around the world collect pending Bitcoin transactions into proposed blocks. To add their block to the chain, they have to solve a difficult mathematical puzzle — finding a number that, when combined with the block's data and run through a cryptographic hash function, produces an output meeting specific criteria. There's no shortcut. The only way to find the right number is to try trillions of possibilities until one works. The miner who finds a valid solution first gets to add their block to the chain and is rewarded with newly created bitcoins plus the transaction fees from the transactions included in the block. The whole network then accepts that block as the new tip of the chain and starts working on the next one. This process happens roughly every ten minutes, twenty-four hours a day, and has been doing so continuously since 2009. The energy consumption is significant — Bitcoin mining uses as much electricity as a medium-sized country — and this is probably the most controversial aspect of the system. Defenders argue that the energy use is the cost of securing a truly decentralized monetary network and that much of it comes from renewable or otherwise wasted sources. Critics argue that whatever its defenders claim, the environmental impact is too large to justify. You can form your own view, but the technical mechanism is simply this: energy is converted into ledger security, and that security is what makes the whole system work."
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "META",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "META — live price"
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "BTC",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "BTC — live price"
+            "body": "[[ticker:BTC]]Bitcoin[[/ticker]] mining is the process by which new transactions are confirmed and added to the blockchain, and by which new bitcoins are created. The name \"mining\" is a metaphor — no one is literally digging anything up — but the analogy to gold mining is useful because both involve expending energy to discover something valuable that is difficult to produce. Here's the mechanic in simplified form. Miners (really, just specialized computers) around the world collect pending Bitcoin transactions into proposed blocks. To add their block to the chain, they have to solve a difficult mathematical puzzle — finding a number that, when combined with the block's data and run through a cryptographic hash function, produces an output meeting specific criteria. There's no shortcut. The only way to find the right number is to try trillions of possibilities until one works. The miner who finds a valid solution first gets to add their block to the chain and is rewarded with newly created bitcoins plus the transaction fees from the transactions included in the block. The whole network then accepts that block as the new tip of the chain and starts working on the next one. This process happens roughly every ten minutes, twenty-four hours a day, and has been doing so continuously since 2009. The energy consumption is significant — Bitcoin mining uses as much electricity as a medium-sized country — and this is probably the most controversial aspect of the system. Defenders argue that the energy use is the cost of securing a truly decentralized monetary network and that much of it comes from renewable or otherwise wasted sources. Critics argue that whatever its defenders claim, the environmental impact is too large to justify. You can form your own view, but the technical mechanism is simply this: energy is converted into ledger security, and that security is what makes the whole system work."
           },
           {
             "type": "keyTermCards",
@@ -700,14 +630,7 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "A frequent beginner question is \"what is Bitcoin for?\" The answer depends on who you ask, but the most consistent technical answer is that Bitcoin was designed to be censorship-resistant digital money — a way to hold and transfer value without needing permission from any bank or government. This purpose shaped many of its specific design choices. The fixed supply was designed to make Bitcoin resistant to monetary debasement — no central bank can print more to dilute holders. The decentralized network was designed to be resistant to shutdown — no authority can order Bitcoin to stop operating the way they can order a bank or exchange to freeze accounts. The public ledger was designed for transparency and auditability — anyone can verify the entire history of every coin. The proof-of-work mining system was designed to be slow and expensive to attack — an attacker would need to spend more computational energy than the entire existing network combined, which is financially prohibitive at current scale. These design choices come with real trade-offs. Bitcoin is not particularly fast: the network processes about 7 transactions per second globally, compared to thousands per second for Visa. Bitcoin is not particularly cheap to use at the base layer: fees can spike to dollars or tens of dollars when the network is busy. Bitcoin is not particularly private without additional effort. And Bitcoin is not particularly easy to use for ordinary commerce because its price is too volatile. But for its intended purpose — an apolitical, censorship-resistant store of value — these trade-offs are design choices, not bugs. The system was built to prioritize security and decentralization over speed and convenience, and the design has held up for over fifteen years of continuous operation."
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "BTC",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "BTC — live price"
+            "body": "A frequent beginner question is \"what is [[ticker:BTC]]Bitcoin[[/ticker]] for?\" The answer depends on who you ask, but the most consistent technical answer is that Bitcoin was designed to be censorship-resistant digital money — a way to hold and transfer value without needing permission from any bank or government. This purpose shaped many of its specific design choices. The fixed supply was designed to make Bitcoin resistant to monetary debasement — no central bank can print more to dilute holders. The decentralized network was designed to be resistant to shutdown — no authority can order Bitcoin to stop operating the way they can order a bank or exchange to freeze accounts. The public ledger was designed for transparency and auditability — anyone can verify the entire history of every coin. The proof-of-work mining system was designed to be slow and expensive to attack — an attacker would need to spend more computational energy than the entire existing network combined, which is financially prohibitive at current scale. These design choices come with real trade-offs. Bitcoin is not particularly fast: the network processes about 7 transactions per second globally, compared to thousands per second for Visa. Bitcoin is not particularly cheap to use at the base layer: fees can spike to dollars or tens of dollars when the network is busy. Bitcoin is not particularly private without additional effort. And Bitcoin is not particularly easy to use for ordinary commerce because its price is too volatile. But for its intended purpose — an apolitical, censorship-resistant store of value — these trade-offs are design choices, not bugs. The system was built to prioritize security and decentralization over speed and convenience, and the design has held up for over fifteen years of continuous operation."
           },
           {
             "type": "callout",
@@ -746,7 +669,7 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Bitcoin's price history is among the most volatile of any publicly traded asset in modern history. In its first few years, bitcoins traded for pennies, then for a few dollars each. The price reached about $1,000 for the first time in 2013, collapsed, recovered, reached $20,000 in late 2017 during a speculative frenzy, collapsed to about $3,000 in 2018, recovered again to cross $60,000 in early 2021, fell to around $15,000 in late 2022, and has since traded at various levels through multiple cycles. Each cycle followed a broadly similar pattern: a long slow accumulation period, a rapid price rise as mainstream attention returned, a manic peak with widespread media coverage and new investors rushing in, then a crash of 70-90% as speculation unwound, then another long accumulation period. A beginning investor should understand two things about this history. First, the volatility is not a bug or a temporary phase — it is a durable feature of an asset whose total market value is still relatively small and whose fundamental value is still being debated. Volatility of this magnitude is not what you want from the majority of your savings. Second, historical returns for anyone who held through multiple cycles have been spectacular, but those returns are not a prediction that the same pattern will continue. Past price action in any asset is not proof that the asset will perform the same way in the future, and in a relatively young asset like Bitcoin, there is even less data to draw conclusions from than with the centuries of history we have for stocks and bonds. Size your position based on what you can afford to lose entirely, not based on optimistic projections of another cycle like the last one."
+            "body": "[[ticker:BTC]]Bitcoin[[/ticker]]'s price history is among the most volatile of any publicly traded asset in modern history. In its first few years, bitcoins traded for pennies, then for a few dollars each. The price reached about $1,000 for the first time in 2013, collapsed, recovered, reached $20,000 in late 2017 during a speculative frenzy, collapsed to about $3,000 in 2018, recovered again to cross $60,000 in early 2021, fell to around $15,000 in late 2022, and has since traded at various levels through multiple cycles. Each cycle followed a broadly similar pattern: a long slow accumulation period, a rapid price rise as mainstream attention returned, a manic peak with widespread media coverage and new investors rushing in, then a crash of 70-90% as speculation unwound, then another long accumulation period. A beginning investor should understand two things about this history. First, the volatility is not a bug or a temporary phase — it is a durable feature of an asset whose total market value is still relatively small and whose fundamental value is still being debated. Volatility of this magnitude is not what you want from the majority of your savings. Second, historical returns for anyone who held through multiple cycles have been spectacular, but those returns are not a prediction that the same pattern will continue. Past price action in any asset is not proof that the asset will perform the same way in the future, and in a relatively young asset like Bitcoin, there is even less data to draw conclusions from than with the centuries of history we have for stocks and bonds. Size your position based on what you can afford to lose entirely, not based on optimistic projections of another cycle like the last one."
           },
           {
             "type": "contextTimeline",
@@ -760,13 +683,6 @@
               }
             ],
             "_needsAuthoring": true
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "BTC",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "BTC — live price"
           },
           {
             "type": "keyTermCards",
@@ -800,14 +716,7 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Bitcoin was launched in January 2009 by the pseudonymous Satoshi Nakamoto and has run continuously since, building on decades of earlier failed attempts at digital cash. Its total supply is hard-capped at 21 million coins, enforced by the protocol and reduced over time through halving events roughly every four years. New bitcoins are created through mining — a process where specialized computers expend energy to solve cryptographic puzzles, securing the network in the process. Its design prioritizes censorship resistance and decentralization over speed, cost, and convenience, which is why it is better understood as a store of value than a payment system. Its price has been extraordinarily volatile throughout its history, with large speculative cycles, and beginners should size any exposure based on what they can afford to lose rather than on optimistic projections of future price action."
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "BTC",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "BTC — live price"
+            "body": "[[ticker:BTC]]Bitcoin[[/ticker]] was launched in January 2009 by the pseudonymous Satoshi Nakamoto and has run continuously since, building on decades of earlier failed attempts at digital cash. Its total supply is hard-capped at 21 million coins, enforced by the protocol and reduced over time through halving events roughly every four years. New bitcoins are created through mining — a process where specialized computers expend energy to solve cryptographic puzzles, securing the network in the process. Its design prioritizes censorship resistance and decentralization over speed, cost, and convenience, which is why it is better understood as a store of value than a payment system. Its price has been extraordinarily volatile throughout its history, with large speculative cycles, and beginners should size any exposure based on what they can afford to lose rather than on optimistic projections of future price action."
           }
         ]
       }
@@ -926,21 +835,7 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "If Bitcoin is digital money, Ethereum is something more ambitious: a programmable blockchain designed to run general-purpose computer programs, not just track who owns what. Launched in 2015 by a team led by a young programmer named Vitalik Buterin, Ethereum took the core idea of a decentralized, consensus-driven ledger and added something new — the ability to deploy small computer programs directly onto the blockchain and have them run automatically according to their own rules, without anyone's permission. These programs are called smart contracts, and they are the foundation of everything people mean when they talk about decentralized applications, decentralized finance, NFTs, and most of the crypto innovation of the past decade. The key insight behind Ethereum is that a blockchain doesn't have to be limited to tracking balances. A blockchain can also store code, and if every node in the network runs that code and agrees on the result, you have a computer that nobody controls — a shared virtual machine that executes instructions the same way no matter who is running it. That shared virtual machine is called the Ethereum Virtual Machine (EVM), and it's what makes Ethereum fundamentally different from Bitcoin. Bitcoin asks: \"Can we build decentralized digital cash?\" Ethereum asks: \"Can we build a decentralized computer?\" The answer, at least technically, has been yes for almost a decade now, though whether the applications built on it are worth the complexity is still being debated."
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "BTC",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "BTC — live price"
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "ETH",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "ETH — live price"
+            "body": "If [[ticker:BTC]]Bitcoin[[/ticker]] is digital money, [[ticker:ETH]]Ethereum[[/ticker]] is something more ambitious: a programmable blockchain designed to run general-purpose computer programs, not just track who owns what. Launched in 2015 by a team led by a young programmer named Vitalik Buterin, Ethereum took the core idea of a decentralized, consensus-driven ledger and added something new — the ability to deploy small computer programs directly onto the blockchain and have them run automatically according to their own rules, without anyone's permission. These programs are called smart contracts, and they are the foundation of everything people mean when they talk about decentralized applications, decentralized finance, NFTs, and most of the crypto innovation of the past decade. The key insight behind Ethereum is that a blockchain doesn't have to be limited to tracking balances. A blockchain can also store code, and if every node in the network runs that code and agrees on the result, you have a computer that nobody controls — a shared virtual machine that executes instructions the same way no matter who is running it. That shared virtual machine is called the Ethereum Virtual Machine (EVM), and it's what makes Ethereum fundamentally different from Bitcoin. Bitcoin asks: \"Can we build decentralized digital cash?\" Ethereum asks: \"Can we build a decentralized computer?\" The answer, at least technically, has been yes for almost a decade now, though whether the applications built on it are worth the complexity is still being debated."
           },
           {
             "type": "keyTermCards",
@@ -1093,21 +988,7 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Every interaction with the Ethereum network — sending ETH, calling a smart contract, creating a new token — costs a fee called \"gas.\" The name is metaphorical: gas is what fuels your transaction, and the more complex the transaction, the more gas it burns. The fee is paid in ETH, Ethereum's native currency, and it goes to the miners (or in Ethereum's case, \"validators\" under its current proof-of-stake system) who process the transaction and include it in a block. Gas exists for two practical reasons. First, it prevents spam and denial-of-service attacks — if every transaction costs something, nobody can cheaply flood the network with millions of useless transactions. Second, it allocates limited block space to the transactions that value it most — in a busy period, people willing to pay higher gas fees get their transactions processed first, and people willing to wait can pay less. During extremely busy periods, gas fees can spike dramatically, sometimes reaching tens of dollars for a simple token swap or hundreds of dollars for complex operations. This has been one of Ethereum's biggest practical problems: the base layer can get expensive to use when demand is high, which prices out smaller transactions and makes the network feel impractical for everyday activities. The Ethereum community has spent years building solutions to this called \"layer 2\" networks, which we'll touch on in a later section. For a beginner, the key point is this: every action on Ethereum has a cost, that cost varies based on network demand, and the cost is paid in ETH regardless of what token you're actually interacting with. If you want to send USDC or any other token on Ethereum, you need to hold some ETH to pay the gas fees, or you can't transact at all."
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "ETH",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "ETH — live price"
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "META",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "META — live price"
+            "body": "Every interaction with the Ethereum network — sending [[ticker:ETH]]ETH[[/ticker]], calling a smart contract, creating a new token — costs a fee called \"gas.\" The name is metaphorical: gas is what fuels your transaction, and the more complex the transaction, the more gas it burns. The fee is paid in ETH, Ethereum's native currency, and it goes to the miners (or in Ethereum's case, \"validators\" under its current proof-of-stake system) who process the transaction and include it in a block. Gas exists for two practical reasons. First, it prevents spam and denial-of-service attacks — if every transaction costs something, nobody can cheaply flood the network with millions of useless transactions. Second, it allocates limited block space to the transactions that value it most — in a busy period, people willing to pay higher gas fees get their transactions processed first, and people willing to wait can pay less. During extremely busy periods, gas fees can spike dramatically, sometimes reaching tens of dollars for a simple token swap or hundreds of dollars for complex operations. This has been one of Ethereum's biggest practical problems: the base layer can get expensive to use when demand is high, which prices out smaller transactions and makes the network feel impractical for everyday activities. The Ethereum community has spent years building solutions to this called \"layer 2\" networks, which we'll touch on in a later section. For a beginner, the key point is this: every action on Ethereum has a cost, that cost varies based on network demand, and the cost is paid in ETH regardless of what token you're actually interacting with. If you want to send USDC or any other token on Ethereum, you need to hold some ETH to pay the gas fees, or you can't transact at all."
           },
           {
             "type": "keyTermCards",
@@ -1147,14 +1028,7 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Ethereum's real explosion in usage came from a simple idea: if you can deploy smart contracts that execute arbitrary code, you can deploy contracts that represent ownership of something other than ETH. These are called tokens, and they have become the main reason most people interact with Ethereum. A token is just a smart contract that keeps a running record of who owns how much of something. You can create a token for any purpose — to represent ownership of a project, to act as a currency within an app, to represent a share of a real-world asset, to tokenize art or collectibles, to give holders governance rights over a protocol, or just to speculate. The token standards are well-defined and easy to implement, which is why thousands of new tokens appear on Ethereum every month. The most common token standard is called ERC-20, and it's what powers most of the fungible tokens (meaning each one is identical and interchangeable with any other of the same type). Stablecoins like USDC and USDT, governance tokens for decentralized protocols, and most speculative coins are ERC-20 tokens. A different standard called ERC-721 is used for non-fungible tokens, or NFTs, where each token is unique and distinguishable from every other — this is the standard used for digital art, collectible items, and other assets where individual identity matters. The key thing to understand about tokens is that they are not Ethereum. They are programs running on Ethereum. When you hold a token, you are holding a claim recorded by a smart contract, and the value of that claim depends entirely on what the contract was programmed to do and whether anyone else wants to hold it. Many tokens are designed to be worthless scams. Others represent genuine ownership of real economic activity. Telling them apart is one of the central skills of participating in the Ethereum ecosystem."
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "ETH",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "ETH — live price"
+            "body": "Ethereum's real explosion in usage came from a simple idea: if you can deploy smart contracts that execute arbitrary code, you can deploy contracts that represent ownership of something other than [[ticker:ETH]]ETH[[/ticker]]. These are called tokens, and they have become the main reason most people interact with Ethereum. A token is just a smart contract that keeps a running record of who owns how much of something. You can create a token for any purpose — to represent ownership of a project, to act as a currency within an app, to represent a share of a real-world asset, to tokenize art or collectibles, to give holders governance rights over a protocol, or just to speculate. The token standards are well-defined and easy to implement, which is why thousands of new tokens appear on Ethereum every month. The most common token standard is called ERC-20, and it's what powers most of the fungible tokens (meaning each one is identical and interchangeable with any other of the same type). Stablecoins like USDC and USDT, governance tokens for decentralized protocols, and most speculative coins are ERC-20 tokens. A different standard called ERC-721 is used for non-fungible tokens, or NFTs, where each token is unique and distinguishable from every other — this is the standard used for digital art, collectible items, and other assets where individual identity matters. The key thing to understand about tokens is that they are not Ethereum. They are programs running on Ethereum. When you hold a token, you are holding a claim recorded by a smart contract, and the value of that claim depends entirely on what the contract was programmed to do and whether anyone else wants to hold it. Many tokens are designed to be worthless scams. Others represent genuine ownership of real economic activity. Telling them apart is one of the central skills of participating in the Ethereum ecosystem."
           },
           {
             "type": "keyTermCards",
@@ -1200,21 +1074,7 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "For most of its history, Ethereum secured its network the same way Bitcoin does: through proof-of-work mining, where computers expended energy to earn the right to add blocks. In September 2022, after years of planning, the Ethereum network transitioned to a different consensus mechanism called proof-of-stake. Instead of miners competing to solve cryptographic puzzles, validators put up ETH as collateral — called \"staking\" — and are randomly chosen to propose and validate new blocks. If they try to cheat, they lose their stake. If they behave honestly, they earn new ETH as a reward. This transition, often called \"the Merge,\" reduced Ethereum's energy consumption by roughly 99%, addressing one of the main environmental criticisms of the network. It also changed the economics of holding ETH: holders can now \"stake\" their ETH to earn ongoing rewards (similar in concept to earning interest on a deposit), though staking comes with its own technical complexity and risks. Proof-of-stake is still a relatively new consensus mechanism at this scale, and there are legitimate debates about whether it provides as much security as proof-of-work. Defenders argue that stake-based security is economically sufficient and far more efficient. Critics argue that it creates different centralization pressures, since wealthy validators have more influence. For a beginning investor, the key practical takeaway is that Ethereum is now a proof-of-stake network, which means its energy footprint is far smaller than Bitcoin's and ETH holders can earn yield by staking, but it also means the network's security model is different from Bitcoin's in ways that still have to prove themselves over time."
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "ETH",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "ETH — live price"
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "BTC",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "BTC — live price"
+            "body": "For most of its history, Ethereum secured its network the same way [[ticker:BTC]]Bitcoin[[/ticker]] does: through proof-of-work mining, where computers expended energy to earn the right to add blocks. In September 2022, after years of planning, the Ethereum network transitioned to a different consensus mechanism called proof-of-stake. Instead of miners competing to solve cryptographic puzzles, validators put up [[ticker:ETH]]ETH[[/ticker]] as collateral — called \"staking\" — and are randomly chosen to propose and validate new blocks. If they try to cheat, they lose their stake. If they behave honestly, they earn new ETH as a reward. This transition, often called \"the Merge,\" reduced Ethereum's energy consumption by roughly 99%, addressing one of the main environmental criticisms of the network. It also changed the economics of holding ETH: holders can now \"stake\" their ETH to earn ongoing rewards (similar in concept to earning interest on a deposit), though staking comes with its own technical complexity and risks. Proof-of-stake is still a relatively new consensus mechanism at this scale, and there are legitimate debates about whether it provides as much security as proof-of-work. Defenders argue that stake-based security is economically sufficient and far more efficient. Critics argue that it creates different centralization pressures, since wealthy validators have more influence. For a beginning investor, the key practical takeaway is that Ethereum is now a proof-of-stake network, which means its energy footprint is far smaller than Bitcoin's and ETH holders can earn yield by staking, but it also means the network's security model is different from Bitcoin's in ways that still have to prove themselves over time."
           },
           {
             "type": "callout",
@@ -1258,21 +1118,7 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Even if you never personally use Ethereum, it matters for anyone trying to understand cryptocurrency as a whole. Ethereum pioneered smart contracts at scale, which opened the door for everything that came after it. Decentralized finance (DeFi) — lending, borrowing, and trading without traditional banks or brokers — runs primarily on Ethereum and Ethereum-compatible chains. Stablecoins, which have become one of the most useful applications of crypto (allowing fast, borderless transfers of dollar-pegged value), are mostly smart contracts running on Ethereum. NFT markets, whatever you think of them, are mostly Ethereum-based. When a new cryptocurrency project launches today, it very often launches as a token on Ethereum or on an Ethereum-compatible chain rather than as its own separate blockchain. This has made ETH the second-most-valuable cryptocurrency after Bitcoin, and Ethereum the most actively used blockchain in terms of transaction volume and economic activity. Understanding Ethereum — even at a surface level — is basically required to follow what's happening in crypto beyond Bitcoin. It's not the only programmable blockchain (there are competitors like Solana, Avalanche, and many others), but it is the oldest, the largest, and the one most new developers build on. For practical purposes, if you're going to explore anything in crypto beyond just holding Bitcoin, you'll eventually interact with Ethereum or one of the many chains that were designed to be compatible with it."
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "ETH",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "ETH — live price"
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "BTC",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "BTC — live price"
+            "body": "Even if you never personally use Ethereum, it matters for anyone trying to understand cryptocurrency as a whole. Ethereum pioneered smart contracts at scale, which opened the door for everything that came after it. Decentralized finance (DeFi) — lending, borrowing, and trading without traditional banks or brokers — runs primarily on Ethereum and Ethereum-compatible chains. Stablecoins, which have become one of the most useful applications of crypto (allowing fast, borderless transfers of dollar-pegged value), are mostly smart contracts running on Ethereum. NFT markets, whatever you think of them, are mostly Ethereum-based. When a new cryptocurrency project launches today, it very often launches as a token on Ethereum or on an Ethereum-compatible chain rather than as its own separate blockchain. This has made [[ticker:ETH]]ETH[[/ticker]] the second-most-valuable cryptocurrency after [[ticker:BTC]]Bitcoin[[/ticker]], and Ethereum the most actively used blockchain in terms of transaction volume and economic activity. Understanding Ethereum — even at a surface level — is basically required to follow what's happening in crypto beyond Bitcoin. It's not the only programmable blockchain (there are competitors like Solana, Avalanche, and many others), but it is the oldest, the largest, and the one most new developers build on. For practical purposes, if you're going to explore anything in crypto beyond just holding Bitcoin, you'll eventually interact with Ethereum or one of the many chains that were designed to be compatible with it."
           },
           {
             "type": "keyTermCards",
@@ -1306,21 +1152,7 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Ethereum is a programmable blockchain — it extends the core idea of decentralized ledgers by adding the ability to run arbitrary computer programs called smart contracts. Smart contracts execute automatically according to their code, which enables automation but also means bugs can be catastrophic and transactions are irreversible. Every interaction with Ethereum costs gas, paid in ETH, which prevents spam and allocates block space based on willingness to pay. Tokens are programs running on Ethereum that track ownership of anything — currencies, art, shares in projects, governance rights. Ethereum transitioned from proof-of-work to proof-of-stake in 2022, dramatically reducing its energy consumption and enabling holders to earn rewards by staking. And Ethereum matters broadly because most crypto innovation beyond Bitcoin — DeFi, stablecoins, NFTs, new token projects — either runs on Ethereum directly or on chains designed to be compatible with it."
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "ETH",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "ETH — live price"
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "BTC",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "BTC — live price"
+            "body": "Ethereum is a programmable blockchain — it extends the core idea of decentralized ledgers by adding the ability to run arbitrary computer programs called smart contracts. Smart contracts execute automatically according to their code, which enables automation but also means bugs can be catastrophic and transactions are irreversible. Every interaction with Ethereum costs gas, paid in [[ticker:ETH]]ETH[[/ticker]], which prevents spam and allocates block space based on willingness to pay. Tokens are programs running on Ethereum that track ownership of anything — currencies, art, shares in projects, governance rights. Ethereum transitioned from proof-of-work to proof-of-stake in 2022, dramatically reducing its energy consumption and enabling holders to earn rewards by staking. And Ethereum matters broadly because most crypto innovation beyond [[ticker:BTC]]Bitcoin[[/ticker]] — DeFi, stablecoins, NFTs, new token projects — either runs on Ethereum directly or on chains designed to be compatible with it."
           }
         ]
       }
@@ -1449,21 +1281,7 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "For the vast majority of people, the first practical question about cryptocurrency isn't \"how does blockchain work?\" but \"how do I actually buy some?\" The answer almost always starts with a cryptocurrency exchange — a platform where you can deposit traditional money (U.S. dollars, euros, and so on) and trade it for Bitcoin, Ethereum, or other crypto assets. Exchanges function much like stock brokerages but for crypto. You create an account, verify your identity through a process called KYC (know your customer), link a bank account or debit card, deposit funds, and then place orders to buy the crypto you want. The exchange handles the actual blockchain transactions in the background and credits your account with the coins you bought. Major exchanges include names like Coinbase, Kraken, Gemini, and Binance. They compete primarily on fees, supported coins, user interface, and regulatory standing. For a complete beginner in the U.S., the most important factor is usually whether the exchange is fully licensed and based in a jurisdiction with clear consumer protections — Coinbase, Kraken, and Gemini are the most commonly recommended U.S.-based options. Exchanges located overseas may offer more coins and lower fees but also come with more regulatory uncertainty and, in some cases, less recourse if something goes wrong. The fees exchanges charge can vary wildly, from 0.1% or less for high-volume traders on some platforms to 2% or more for small retail purchases on others. Always check the actual fee schedule for the specific transaction type you're doing rather than assuming."
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "BTC",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "BTC — live price"
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "ETH",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "ETH — live price"
+            "body": "For the vast majority of people, the first practical question about cryptocurrency isn't \"how does blockchain work?\" but \"how do I actually buy some?\" The answer almost always starts with a cryptocurrency exchange — a platform where you can deposit traditional money (U.S. dollars, euros, and so on) and trade it for [[ticker:BTC]]Bitcoin[[/ticker]], [[ticker:ETH]]Ethereum[[/ticker]], or other crypto assets. Exchanges function much like stock brokerages but for crypto. You create an account, verify your identity through a process called KYC (know your customer), link a bank account or debit card, deposit funds, and then place orders to buy the crypto you want. The exchange handles the actual blockchain transactions in the background and credits your account with the coins you bought. Major exchanges include names like Coinbase, Kraken, Gemini, and Binance. They compete primarily on fees, supported coins, user interface, and regulatory standing. For a complete beginner in the U.S., the most important factor is usually whether the exchange is fully licensed and based in a jurisdiction with clear consumer protections — Coinbase, Kraken, and Gemini are the most commonly recommended U.S.-based options. Exchanges located overseas may offer more coins and lower fees but also come with more regulatory uncertainty and, in some cases, less recourse if something goes wrong. The fees exchanges charge can vary wildly, from 0.1% or less for high-volume traders on some platforms to 2% or more for small retail purchases on others. Always check the actual fee schedule for the specific transaction type you're doing rather than assuming."
           },
           {
             "type": "keyTermCards",
@@ -1540,14 +1358,7 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "There's an important distinction between centralized exchanges (CEXs) like the ones just mentioned and decentralized exchanges (DEXs) that run as smart contracts on a blockchain. A centralized exchange is a company. It holds customer funds, it matches orders using its own internal systems, and you must trust it to keep your money safe and to follow through on your transactions. The tradeoff is convenience — centralized exchanges have simple user interfaces, customer service, and the ability to convert between traditional money and crypto easily. A decentralized exchange is a smart contract (or set of smart contracts) that facilitates trades directly between users' wallets. You never deposit your funds to the exchange; you keep them in your own wallet and interact with the contract to execute trades. The tradeoff is the opposite: more technical complexity and no customer service, but no trusted party is holding your money. Examples of decentralized exchanges include Uniswap, Curve, and SushiSwap. They typically only support trading between crypto assets — you can swap ETH for USDC, for instance, but you can't use a DEX to deposit dollars from your bank account directly. For that reason, most beginners start with centralized exchanges to get their first crypto, then optionally move to decentralized exchanges for specific trades they can't do at centralized venues. Both have real uses, and neither is universally better. The right answer depends on what you're trying to do and how comfortable you are with the tradeoffs."
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "ETH",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "ETH — live price"
+            "body": "There's an important distinction between centralized exchanges (CEXs) like the ones just mentioned and decentralized exchanges (DEXs) that run as smart contracts on a blockchain. A centralized exchange is a company. It holds customer funds, it matches orders using its own internal systems, and you must trust it to keep your money safe and to follow through on your transactions. The tradeoff is convenience — centralized exchanges have simple user interfaces, customer service, and the ability to convert between traditional money and crypto easily. A decentralized exchange is a smart contract (or set of smart contracts) that facilitates trades directly between users' wallets. You never deposit your funds to the exchange; you keep them in your own wallet and interact with the contract to execute trades. The tradeoff is the opposite: more technical complexity and no customer service, but no trusted party is holding your money. Examples of decentralized exchanges include Uniswap, Curve, and SushiSwap. They typically only support trading between crypto assets — you can swap [[ticker:ETH]]ETH[[/ticker]] for USDC, for instance, but you can't use a DEX to deposit dollars from your bank account directly. For that reason, most beginners start with centralized exchanges to get their first crypto, then optionally move to decentralized exchanges for specific trades they can't do at centralized venues. Both have real uses, and neither is universally better. The right answer depends on what you're trying to do and how comfortable you are with the tradeoffs."
           },
           {
             "type": "chart",
@@ -1637,13 +1448,6 @@
             "body": "A cryptocurrency wallet is not a place where your coins are stored — this is one of the most widely misunderstood things in crypto. Your coins are always recorded on the blockchain itself. The wallet is just the software (or hardware) that holds the cryptographic keys that prove you own those coins. The central concept is something called a private key, which is essentially a very long random number that functions like a master password. Whoever knows the private key has complete control over everything that belongs to the address derived from that key. That's it. There's no customer service department you can call to recover lost keys, and there's no one who can take away your coins if the keys are stolen. The blockchain doesn't know who you are — it only knows whether the current transaction is signed by the correct key. Wallets come in several forms. A \"hot wallet\" is software running on an internet-connected device like your phone or laptop. Examples include MetaMask (a browser extension), Trust Wallet (a mobile app), and the wallets built into apps like Coinbase Wallet. Hot wallets are convenient for everyday use but are exposed to malware, phishing, and other internet-based threats. A \"cold wallet\" is a hardware device (like a Ledger or Trezor) that stores your keys offline and only signs transactions when you physically connect it and approve them. Cold wallets are dramatically more secure because the keys never touch an internet-connected device, but they're less convenient for frequent use. A common approach is to keep a small \"spending\" balance in a hot wallet and a larger long-term balance in a cold wallet. For beginners, keeping funds on a reputable centralized exchange is often the practical starting point, but for anyone holding meaningful amounts long-term, learning to use a cold wallet is an important step."
           },
           {
-            "type": "tickerChart",
-            "ticker": "META",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "META — live price"
-          },
-          {
             "type": "keyTermCards",
             "eyebrow": "Key terms unlocked this section",
             "pillLabel": "4 new",
@@ -1682,14 +1486,7 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "One of the most famous phrases in crypto is \"not your keys, not your coins.\" It refers to the fundamental distinction between holding crypto yourself (where you control the private keys) versus holding it on an exchange or other custodial service (where the exchange controls the keys and just promises to give you your coins back when you ask). History has proven the phrase right repeatedly. When Mt. Gox, once the largest Bitcoin exchange, collapsed in 2014, about 850,000 bitcoins (roughly 7% of all bitcoins in existence at the time) simply disappeared. Customers who had trusted the exchange to hold their coins had no legal recourse and most never saw a fraction of what they were owed. More recently, the FTX exchange collapse in 2022 made a similar point in a different way — customer funds were mingled with the exchange's own funds and used for other purposes, and when the exchange failed, users lost billions of dollars. Both cases illustrate the same lesson: if you don't hold the keys, you are trusting someone else with your money, and that trust can be broken in ways you cannot detect until it's too late. This doesn't mean exchanges are inherently unsafe or that no one should use them. Regulated exchanges with good security practices and proper separation of customer funds have operated reliably for years. But it does mean that the tradeoff between convenience and control is real, and that for any amount you'd consider a significant chunk of your savings, the boring option of self-custody through a cold wallet is usually the right call. The exchanges themselves will often tell you this — reputable ones explicitly encourage customers to move long-term holdings off the platform."
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "BTC",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "BTC — live price"
+            "body": "One of the most famous phrases in crypto is \"not your keys, not your coins.\" It refers to the fundamental distinction between holding crypto yourself (where you control the private keys) versus holding it on an exchange or other custodial service (where the exchange controls the keys and just promises to give you your coins back when you ask). History has proven the phrase right repeatedly. When Mt. Gox, once the largest [[ticker:BTC]]Bitcoin[[/ticker]] exchange, collapsed in 2014, about 850,000 bitcoins (roughly 7% of all bitcoins in existence at the time) simply disappeared. Customers who had trusted the exchange to hold their coins had no legal recourse and most never saw a fraction of what they were owed. More recently, the FTX exchange collapse in 2022 made a similar point in a different way — customer funds were mingled with the exchange's own funds and used for other purposes, and when the exchange failed, users lost billions of dollars. Both cases illustrate the same lesson: if you don't hold the keys, you are trusting someone else with your money, and that trust can be broken in ways you cannot detect until it's too late. This doesn't mean exchanges are inherently unsafe or that no one should use them. Regulated exchanges with good security practices and proper separation of customer funds have operated reliably for years. But it does mean that the tradeoff between convenience and control is real, and that for any amount you'd consider a significant chunk of your savings, the boring option of self-custody through a cold wallet is usually the right call. The exchanges themselves will often tell you this — reputable ones explicitly encourage customers to move long-term holdings off the platform."
           },
           {
             "type": "callout",
@@ -1736,13 +1533,6 @@
             "body": "When you set up a self-custody wallet, the wallet software gives you a list of twelve or twenty-four common English words called a seed phrase (sometimes called a recovery phrase or mnemonic phrase). This phrase is the human-readable form of your private key, and whoever has it can reconstruct your entire wallet on any device. Losing the seed phrase means losing access to your coins permanently — nobody can recover it for you, and no company has a backup. Sharing the seed phrase with anyone means giving them complete control over your wallet. This is one of the most important things a beginner needs to internalize: the seed phrase must be backed up, stored securely offline, and shared with nobody, ever. The common recommendation is to write it down on paper (or engrave it on metal for durability) and store it in at least one secure physical location — a home safe, a safe deposit box, or a trusted relative's house. Never type it into a computer that's connected to the internet after the initial setup. Never photograph it. Never save it to cloud storage, email, or a password manager. Never share it in response to any message, email, or customer service request — no legitimate wallet company or exchange will ever ask for your seed phrase, and anyone who does is trying to steal your coins. A useful mental model: treat your seed phrase the way you'd treat a winning lottery ticket for a sum equal to whatever crypto you're holding. You wouldn't photograph it, email it, or trust a stranger with it. The seed phrase requires the same level of paranoia. Most losses to scams and hacks in crypto trace back to seed phrase mishandling of one kind or another."
           },
           {
-            "type": "tickerChart",
-            "ticker": "META",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "META — live price"
-          },
-          {
             "type": "keyTermCards",
             "eyebrow": "Key terms unlocked this section",
             "pillLabel": "3 new",
@@ -1775,21 +1565,7 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "For a complete beginner who just wants to buy their first cryptocurrency and hold it safely, here's a reasonable starting approach. Step one: open an account at a reputable regulated exchange in your country — in the U.S., that typically means Coinbase, Kraken, or Gemini. Complete the KYC process, link a bank account, and deposit a small amount you can afford to lose as you're learning. Step two: buy a small amount of Bitcoin or Ethereum and spend time watching how the price moves, how the interface works, and how you feel about it. Don't put in a large amount until you've gotten comfortable with the basics. Step three: once you're holding an amount you'd consider meaningful, learn to use a cold wallet. Buy a reputable hardware device (Ledger and Trezor are the two most established brands), set it up following the official instructions carefully, write down the seed phrase on paper, verify the backup by restoring the wallet from the seed phrase on a test device, then transfer your crypto from the exchange to your cold wallet. Step four: keep the seed phrase in at least one secure offline location and never share it with anyone. This setup is not the most convenient or the most sophisticated. Experienced crypto users have more elaborate setups with multiple wallets, hardware signers, and complex security procedures. But for someone just starting out, this basic progression — reputable exchange → small learning amounts → cold wallet for long-term storage — avoids the most common ways beginners lose money. More importantly, it establishes the habit of thinking about security as the first concern, which is the mindset that serves you over the long run."
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "BTC",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "BTC — live price"
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "ETH",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "ETH — live price"
+            "body": "For a complete beginner who just wants to buy their first cryptocurrency and hold it safely, here's a reasonable starting approach. Step one: open an account at a reputable regulated exchange in your country — in the U.S., that typically means Coinbase, Kraken, or Gemini. Complete the KYC process, link a bank account, and deposit a small amount you can afford to lose as you're learning. Step two: buy a small amount of [[ticker:BTC]]Bitcoin[[/ticker]] or [[ticker:ETH]]Ethereum[[/ticker]] and spend time watching how the price moves, how the interface works, and how you feel about it. Don't put in a large amount until you've gotten comfortable with the basics. Step three: once you're holding an amount you'd consider meaningful, learn to use a cold wallet. Buy a reputable hardware device (Ledger and Trezor are the two most established brands), set it up following the official instructions carefully, write down the seed phrase on paper, verify the backup by restoring the wallet from the seed phrase on a test device, then transfer your crypto from the exchange to your cold wallet. Step four: keep the seed phrase in at least one secure offline location and never share it with anyone. This setup is not the most convenient or the most sophisticated. Experienced crypto users have more elaborate setups with multiple wallets, hardware signers, and complex security procedures. But for someone just starting out, this basic progression — reputable exchange → small learning amounts → cold wallet for long-term storage — avoids the most common ways beginners lose money. More importantly, it establishes the habit of thinking about security as the first concern, which is the mindset that serves you over the long run."
           },
           {
             "type": "keyTermCards",
@@ -2030,14 +1806,7 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "The first structural driver of crypto volatility is simply the size of the market. As of this writing, the total market capitalization of all cryptocurrencies combined is a small fraction of the size of the U.S. stock market alone. Bitcoin, the largest cryptocurrency, has a market cap comparable to a single large tech company. When a market is small relative to the capital that can flow into or out of it, even modest shifts in investor interest can cause dramatic price movements. If a single large investor decides to put a few hundred million dollars into a smaller cryptocurrency — or to pull that money out — the price impact can be enormous because there aren't enough buyers or sellers on the other side to absorb the flow without moving the price. Compare this to the U.S. Treasury market, which is so large and deep that even trillion-dollar positions can be established and unwound with minimal price disruption. Small markets also tend to be more vulnerable to manipulation. A coordinated group can push a thinly traded coin up or down with a relatively modest amount of capital, harvesting gains from unsuspecting retail traders who assume the price movement reflects real news. This is a known problem in crypto markets and one of the main reasons regulators have been slow to approve certain crypto investment products — they worry about market manipulation in ways that would be harder to achieve in more liquid traditional markets."
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "BTC",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "BTC — live price"
+            "body": "The first structural driver of crypto volatility is simply the size of the market. As of this writing, the total market capitalization of all cryptocurrencies combined is a small fraction of the size of the U.S. stock market alone. [[ticker:BTC]]Bitcoin[[/ticker]], the largest cryptocurrency, has a market cap comparable to a single large tech company. When a market is small relative to the capital that can flow into or out of it, even modest shifts in investor interest can cause dramatic price movements. If a single large investor decides to put a few hundred million dollars into a smaller cryptocurrency — or to pull that money out — the price impact can be enormous because there aren't enough buyers or sellers on the other side to absorb the flow without moving the price. Compare this to the U.S. Treasury market, which is so large and deep that even trillion-dollar positions can be established and unwound with minimal price disruption. Small markets also tend to be more vulnerable to manipulation. A coordinated group can push a thinly traded coin up or down with a relatively modest amount of capital, harvesting gains from unsuspecting retail traders who assume the price movement reflects real news. This is a known problem in crypto markets and one of the main reasons regulators have been slow to approve certain crypto investment products — they worry about market manipulation in ways that would be harder to achieve in more liquid traditional markets."
           },
           {
             "type": "chart",
@@ -2112,21 +1881,7 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Traditional stock markets have opening and closing bells. They run during business hours in their respective time zones and pause at night and on weekends. When a stock falls too far too fast, most exchanges will automatically halt trading for a few minutes to let participants catch their breath and prevent panic cascades. None of this exists in crypto. Bitcoin, Ethereum, and every other major cryptocurrency trade continuously, 24 hours a day, 365 days a year, worldwide. There are no opening bells, no closing auctions, no pauses for holidays, and no circuit breakers that kick in during crashes. This design choice reflects crypto's origins — a global, always-on, apolitical network — and it has real benefits: people in any time zone can transact whenever they want, and traders can respond immediately to news without waiting for a market to open. But it also means that when sentiment shifts suddenly, there is no mechanism to slow the movement. A Sunday afternoon panic can cascade for hours without any intervention, and large price drops often happen during weekends and holidays when traditional markets are closed and fewer sophisticated participants are watching. This is one of the reasons crypto feels more chaotic than stocks: it genuinely is more chaotic at a structural level. A beginner should know that the absence of trading halts is a feature of the system, not a bug, and that any investment strategy has to account for the possibility of large price moves happening at 3 a.m. on Christmas Day with no one in charge to slow them down."
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "BTC",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "BTC — live price"
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "ETH",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "ETH — live price"
+            "body": "Traditional stock markets have opening and closing bells. They run during business hours in their respective time zones and pause at night and on weekends. When a stock falls too far too fast, most exchanges will automatically halt trading for a few minutes to let participants catch their breath and prevent panic cascades. None of this exists in crypto. [[ticker:BTC]]Bitcoin[[/ticker]], [[ticker:ETH]]Ethereum[[/ticker]], and every other major cryptocurrency trade continuously, 24 hours a day, 365 days a year, worldwide. There are no opening bells, no closing auctions, no pauses for holidays, and no circuit breakers that kick in during crashes. This design choice reflects crypto's origins — a global, always-on, apolitical network — and it has real benefits: people in any time zone can transact whenever they want, and traders can respond immediately to news without waiting for a market to open. But it also means that when sentiment shifts suddenly, there is no mechanism to slow the movement. A Sunday afternoon panic can cascade for hours without any intervention, and large price drops often happen during weekends and holidays when traditional markets are closed and fewer sophisticated participants are watching. This is one of the reasons crypto feels more chaotic than stocks: it genuinely is more chaotic at a structural level. A beginner should know that the absence of trading halts is a feature of the system, not a bug, and that any investment strategy has to account for the possibility of large price moves happening at 3 a.m. on Christmas Day with no one in charge to slow them down."
           },
           {
             "type": "keyTermCards",
@@ -2202,21 +1957,7 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Stocks have earnings. Bonds have coupon payments. Real estate has rental income. Commodities have real-world demand from industries that consume them. All of these assets have some form of fundamental cash flow or economic use that gives analysts at least a rough way to estimate what they should be worth. Crypto assets are different. Most cryptocurrencies don't generate cash flows in any conventional sense. They don't produce revenue, pay dividends, or have earnings that can be analyzed. Bitcoin's value comes from its properties as a censorship-resistant digital asset and the willingness of others to hold it for that reason. Ethereum's value is somewhat more tangible because of network fees paid to validators, but the relationship between those fees and the token's price is indirect and debated. Smaller coins often have even less fundamental backing — their value depends almost entirely on whether others are willing to pay more for them later. This absence of a fundamental anchor is one of the deepest reasons crypto prices can swing so dramatically. In equity markets, when a stock's price diverges too far from its underlying earnings, fundamental investors step in and trade against the movement, which tends to pull prices back toward reasonable ranges. In crypto, there's no equivalent gravity well. Prices can travel enormous distances from any fundamental baseline without triggering the automatic corrective pressure that exists in markets with cash-flow-based valuations. This doesn't mean crypto is worthless or that the prices are fake — many people genuinely value the properties these assets provide — but it does mean the valuation process is fundamentally different, and often much more speculative, than what applies to traditional financial assets."
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "BTC",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "BTC — live price"
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "ETH",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "ETH — live price"
+            "body": "Stocks have earnings. Bonds have coupon payments. Real estate has rental income. Commodities have real-world demand from industries that consume them. All of these assets have some form of fundamental cash flow or economic use that gives analysts at least a rough way to estimate what they should be worth. Crypto assets are different. Most cryptocurrencies don't generate cash flows in any conventional sense. They don't produce revenue, pay dividends, or have earnings that can be analyzed. [[ticker:BTC]]Bitcoin[[/ticker]]'s value comes from its properties as a censorship-resistant digital asset and the willingness of others to hold it for that reason. [[ticker:ETH]]Ethereum[[/ticker]]'s value is somewhat more tangible because of network fees paid to validators, but the relationship between those fees and the token's price is indirect and debated. Smaller coins often have even less fundamental backing — their value depends almost entirely on whether others are willing to pay more for them later. This absence of a fundamental anchor is one of the deepest reasons crypto prices can swing so dramatically. In equity markets, when a stock's price diverges too far from its underlying earnings, fundamental investors step in and trade against the movement, which tends to pull prices back toward reasonable ranges. In crypto, there's no equivalent gravity well. Prices can travel enormous distances from any fundamental baseline without triggering the automatic corrective pressure that exists in markets with cash-flow-based valuations. This doesn't mean crypto is worthless or that the prices are fake — many people genuinely value the properties these assets provide — but it does mean the valuation process is fundamentally different, and often much more speculative, than what applies to traditional financial assets."
           },
           {
             "type": "callout",
@@ -2255,14 +1996,7 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "A final amplifier of crypto volatility is the widespread use of leverage — borrowed money used to increase position sizes. Most major crypto exchanges offer leverage on trades, often at extreme ratios. Some platforms have historically allowed 50x, 100x, or even higher leverage, meaning a trader could control a position 100 times larger than their actual collateral. When prices move, leverage magnifies both gains and losses dramatically. A 1% price move against a 100x leveraged position produces a 100% loss of the trader's collateral, which triggers an automatic liquidation by the exchange. During periods of volatility, cascades of liquidations can happen — a price drop causes leveraged longs to be liquidated, which forces selling to close the positions, which drives the price down further, which liquidates more leveraged longs, and so on until the cascade exhausts itself. These liquidation cascades often account for the most dramatic price moves in crypto history — sudden 20% or 30% drops in Bitcoin over the course of an hour that seem unexplained by any news. The news was the cascade itself. For beginners, the practical takeaways are: first, don't use leverage unless you fully understand what you're signing up for; the statistics on leveraged crypto traders are brutal, with most accounts being liquidated within months. Second, understand that leverage-driven cascades can happen at any time and can affect even your unleveraged holdings, because they move the whole market. And third, recognize that the volatility you see on the chart is often amplified by these mechanics rather than reflecting any real change in what the asset is worth — which is another reason to stick to long-term holding rather than trying to react to every move."
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "BTC",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "BTC — live price"
+            "body": "A final amplifier of crypto volatility is the widespread use of leverage — borrowed money used to increase position sizes. Most major crypto exchanges offer leverage on trades, often at extreme ratios. Some platforms have historically allowed 50x, 100x, or even higher leverage, meaning a trader could control a position 100 times larger than their actual collateral. When prices move, leverage magnifies both gains and losses dramatically. A 1% price move against a 100x leveraged position produces a 100% loss of the trader's collateral, which triggers an automatic liquidation by the exchange. During periods of volatility, cascades of liquidations can happen — a price drop causes leveraged longs to be liquidated, which forces selling to close the positions, which drives the price down further, which liquidates more leveraged longs, and so on until the cascade exhausts itself. These liquidation cascades often account for the most dramatic price moves in crypto history — sudden 20% or 30% drops in [[ticker:BTC]]Bitcoin[[/ticker]] over the course of an hour that seem unexplained by any news. The news was the cascade itself. For beginners, the practical takeaways are: first, don't use leverage unless you fully understand what you're signing up for; the statistics on leveraged crypto traders are brutal, with most accounts being liquidated within months. Second, understand that leverage-driven cascades can happen at any time and can affect even your unleveraged holdings, because they move the whole market. And third, recognize that the volatility you see on the chart is often amplified by these mechanics rather than reflecting any real change in what the asset is worth — which is another reason to stick to long-term holding rather than trying to react to every move."
           },
           {
             "type": "keyTermCards",
@@ -2463,21 +2197,7 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "If you look at a list of cryptocurrencies, you'll quickly notice that there are thousands of them. Different tracking sites list anywhere from 20,000 to 50,000 distinct tokens, and new ones appear every day. This is overwhelming for a beginner and creates a natural question: are there really that many different kinds of digital money? The answer is that almost all of these assets fall into a small number of functional categories, and once you understand the categories, the \"thousands of coins\" problem becomes much more manageable. You don't need to evaluate each coin individually — you need to recognize what type of coin it is and then ask whether that type makes sense at all for your purposes. The main categories most coins fall into are: base-layer cryptocurrencies (like Bitcoin and Ethereum, which are the native tokens of their own blockchains), stablecoins (which are designed to track the value of a traditional currency like the U.S. dollar), utility tokens (which give holders access to services within a specific platform), governance tokens (which give holders voting rights in decentralized projects), security tokens (which represent regulated investment instruments), memecoins (which exist mainly as cultural phenomena or jokes with no fundamental utility claim), and real-world asset tokens (which represent fractional ownership of physical assets like real estate or commodities). Most speculative altcoins fit into one of the first six categories, and understanding which one helps you evaluate whether the coin is worth anything at all."
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "BTC",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "BTC — live price"
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "ETH",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "ETH — live price"
+            "body": "If you look at a list of cryptocurrencies, you'll quickly notice that there are thousands of them. Different tracking sites list anywhere from 20,000 to 50,000 distinct tokens, and new ones appear every day. This is overwhelming for a beginner and creates a natural question: are there really that many different kinds of digital money? The answer is that almost all of these assets fall into a small number of functional categories, and once you understand the categories, the \"thousands of coins\" problem becomes much more manageable. You don't need to evaluate each coin individually — you need to recognize what type of coin it is and then ask whether that type makes sense at all for your purposes. The main categories most coins fall into are: base-layer cryptocurrencies (like [[ticker:BTC]]Bitcoin[[/ticker]] and [[ticker:ETH]]Ethereum[[/ticker]], which are the native tokens of their own blockchains), stablecoins (which are designed to track the value of a traditional currency like the U.S. dollar), utility tokens (which give holders access to services within a specific platform), governance tokens (which give holders voting rights in decentralized projects), security tokens (which represent regulated investment instruments), memecoins (which exist mainly as cultural phenomena or jokes with no fundamental utility claim), and real-world asset tokens (which represent fractional ownership of physical assets like real estate or commodities). Most speculative altcoins fit into one of the first six categories, and understanding which one helps you evaluate whether the coin is worth anything at all."
           },
           {
             "type": "chart",
@@ -2547,28 +2267,7 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Base-layer cryptocurrencies are the native tokens of their own blockchains. Bitcoin is the native token of the Bitcoin network. Ether (ETH) is the native token of Ethereum. Solana's SOL is the native token of the Solana blockchain. Avalanche's AVAX is the native token of Avalanche. These tokens are the currency used to pay transaction fees on their respective networks and to secure those networks (through mining or staking). They represent the economic layer of an actual functioning blockchain infrastructure, with real users, real transaction volume, and real development activity. This is the category that most legitimate long-term crypto investors focus on, because the value of these tokens is tied to the usage and adoption of the underlying networks. There are dozens of base-layer networks competing for developers and users, and their relative success depends on factors like transaction speed, cost, security, decentralization, developer tools, and community. Bitcoin and Ethereum are the most established by far — Bitcoin because it was first and has accumulated the most trust and network effect, Ethereum because of its programmability and the ecosystem of applications built on it. Other base-layer networks have carved out niches based on different trade-offs: Solana prioritizes speed and low fees at some cost to decentralization, Avalanche emphasizes custom subnets for specific use cases, and so on. For a beginning investor interested in crypto at all, base-layer coins — particularly Bitcoin and Ethereum — are usually the most defensible starting points because they have the longest track records, the most established networks, and the most real-world activity behind them."
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "ETH",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "ETH — live price"
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "SOL",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "SOL — live price"
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "BTC",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "BTC — live price"
+            "body": "Base-layer cryptocurrencies are the native tokens of their own blockchains. [[ticker:BTC]]Bitcoin[[/ticker]] is the native token of the Bitcoin network. Ether ([[ticker:ETH]]ETH[[/ticker]]) is the native token of Ethereum. Solana's [[ticker:SOL]]SOL[[/ticker]] is the native token of the Solana blockchain. Avalanche's AVAX is the native token of Avalanche. These tokens are the currency used to pay transaction fees on their respective networks and to secure those networks (through mining or staking). They represent the economic layer of an actual functioning blockchain infrastructure, with real users, real transaction volume, and real development activity. This is the category that most legitimate long-term crypto investors focus on, because the value of these tokens is tied to the usage and adoption of the underlying networks. There are dozens of base-layer networks competing for developers and users, and their relative success depends on factors like transaction speed, cost, security, decentralization, developer tools, and community. Bitcoin and Ethereum are the most established by far — Bitcoin because it was first and has accumulated the most trust and network effect, Ethereum because of its programmability and the ecosystem of applications built on it. Other base-layer networks have carved out niches based on different trade-offs: Solana prioritizes speed and low fees at some cost to decentralization, Avalanche emphasizes custom subnets for specific use cases, and so on. For a beginning investor interested in crypto at all, base-layer coins — particularly Bitcoin and Ethereum — are usually the most defensible starting points because they have the longest track records, the most established networks, and the most real-world activity behind them."
           },
           {
             "type": "keyTermCards",
@@ -2766,14 +2465,7 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Governance tokens give holders the right to vote on changes to a decentralized protocol. If a particular DeFi lending platform is run by its community rather than a central company, the holders of its governance token decide things like what interest rate parameters to set, which new assets to support, and how to allocate treasury funds. The idea is that the community collectively runs the platform, with voting weight proportional to holdings. In practice, governance token models have had mixed results. Some protocols are run by active, engaged communities that have made reasonable decisions over long periods. Others are effectively run by a small number of large holders who can dominate any vote. And many governance tokens are mostly speculative — people hold them hoping the price will rise rather than because they actually care about participating in governance decisions. Utility tokens are different in concept: they are tokens required to access specific services within a platform. If a blockchain-based cloud storage service charges customers in its own token, that token has utility in the sense that you need it to use the service. Utility tokens are often framed as giving a coin \"real use\" but in practice, the overlap between \"service that needs a token\" and \"service you would pay for in crypto if tokens didn't exist\" is small. Most utility tokens exist because the project wanted a fundraising mechanism and created a token as part of that, not because there was a genuine technical need for a token. For a beginner evaluating a coin, a useful question is: does this token need to exist for this service to work, or could the service simply accept dollars or ETH and function identically? If the answer is the latter, the token's long-term value is probably questionable."
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "ETH",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "ETH — live price"
+            "body": "Governance tokens give holders the right to vote on changes to a decentralized protocol. If a particular DeFi lending platform is run by its community rather than a central company, the holders of its governance token decide things like what interest rate parameters to set, which new assets to support, and how to allocate treasury funds. The idea is that the community collectively runs the platform, with voting weight proportional to holdings. In practice, governance token models have had mixed results. Some protocols are run by active, engaged communities that have made reasonable decisions over long periods. Others are effectively run by a small number of large holders who can dominate any vote. And many governance tokens are mostly speculative — people hold them hoping the price will rise rather than because they actually care about participating in governance decisions. Utility tokens are different in concept: they are tokens required to access specific services within a platform. If a blockchain-based cloud storage service charges customers in its own token, that token has utility in the sense that you need it to use the service. Utility tokens are often framed as giving a coin \"real use\" but in practice, the overlap between \"service that needs a token\" and \"service you would pay for in crypto if tokens didn't exist\" is small. Most utility tokens exist because the project wanted a fundraising mechanism and created a token as part of that, not because there was a genuine technical need for a token. For a beginner evaluating a coin, a useful question is: does this token need to exist for this service to work, or could the service simply accept dollars or [[ticker:ETH]]ETH[[/ticker]] and function identically? If the answer is the latter, the token's long-term value is probably questionable."
           },
           {
             "type": "keyTermCards",
@@ -2858,21 +2550,7 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "With thousands of coins competing for attention, the practical skill for a beginner is not to memorize each one but to develop a filter for separating the serious from the rest. Some useful heuristics: look at the age of the project — how long has it been operating? Coins that have survived multiple market cycles are more likely to be durable than brand-new launches. Check the activity on the blockchain and code repository — is the team actively building, and are real users transacting? A coin with a beautiful website but zero on-chain activity and no recent development commits is probably a shell. Look at who is behind the project — are the developers public and accountable, or are they anonymous with no track record? Read the documentation — can you actually understand what the project claims to do, and does that use case require a blockchain at all? Many projects are solutions in search of problems. Look at the token distribution — do founders or early investors hold a majority of the supply, and could they dump it on retail investors? Look at the community — is there substantive discussion of the project's technology and adoption, or is it all price speculation and hype? None of these heuristics is definitive, and applying them takes real work. But together they form a filter that can eliminate most of the obviously unserious projects and let you focus attention on the smaller set that might actually be worth understanding. For a complete beginner, the simplest version of this filter is: start with Bitcoin and Ethereum. Once you've learned how they work and decided whether you want to hold them, then you can decide whether it's worth investing time in understanding anything else. Most beginners discover that just those two cover what they actually want from the asset class."
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "BTC",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "BTC — live price"
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "ETH",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "ETH — live price"
+            "body": "With thousands of coins competing for attention, the practical skill for a beginner is not to memorize each one but to develop a filter for separating the serious from the rest. Some useful heuristics: look at the age of the project — how long has it been operating? Coins that have survived multiple market cycles are more likely to be durable than brand-new launches. Check the activity on the blockchain and code repository — is the team actively building, and are real users transacting? A coin with a beautiful website but zero on-chain activity and no recent development commits is probably a shell. Look at who is behind the project — are the developers public and accountable, or are they anonymous with no track record? Read the documentation — can you actually understand what the project claims to do, and does that use case require a blockchain at all? Many projects are solutions in search of problems. Look at the token distribution — do founders or early investors hold a majority of the supply, and could they dump it on retail investors? Look at the community — is there substantive discussion of the project's technology and adoption, or is it all price speculation and hype? None of these heuristics is definitive, and applying them takes real work. But together they form a filter that can eliminate most of the obviously unserious projects and let you focus attention on the smaller set that might actually be worth understanding. For a complete beginner, the simplest version of this filter is: start with [[ticker:BTC]]Bitcoin[[/ticker]] and [[ticker:ETH]]Ethereum[[/ticker]]. Once you've learned how they work and decided whether you want to hold them, then you can decide whether it's worth investing time in understanding anything else. Most beginners discover that just those two cover what they actually want from the asset class."
           },
           {
             "type": "keyTermCards",
@@ -2906,21 +2584,7 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "The thousands of cryptocurrencies fall into a small number of functional categories: base-layer coins (the native tokens of actual blockchains, like Bitcoin and Ethereum), stablecoins (designed to hold a stable value), governance tokens (voting rights in decentralized protocols), utility tokens (access to specific services), memecoins (cultural and speculative phenomena with little fundamental backing), and outright scams. Understanding which category a coin belongs to tells you most of what you need to know about its value proposition and risk profile. Base-layer coins are the most defensible category for long-term exposure because their value is tied to real network usage. Stablecoins are useful tools with specific risks that should not be treated as risk-free. Governance and utility tokens vary widely in quality. Memecoins and scams make up a large share of the total, and distinguishing them from legitimate projects is one of the central skills of navigating this space. For most beginners, starting with Bitcoin and Ethereum and ignoring the rest until you've learned how those work is a perfectly reasonable approach."
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "BTC",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "BTC — live price"
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "ETH",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "ETH — live price"
+            "body": "The thousands of cryptocurrencies fall into a small number of functional categories: base-layer coins (the native tokens of actual blockchains, like [[ticker:BTC]]Bitcoin[[/ticker]] and [[ticker:ETH]]Ethereum[[/ticker]]), stablecoins (designed to hold a stable value), governance tokens (voting rights in decentralized protocols), utility tokens (access to specific services), memecoins (cultural and speculative phenomena with little fundamental backing), and outright scams. Understanding which category a coin belongs to tells you most of what you need to know about its value proposition and risk profile. Base-layer coins are the most defensible category for long-term exposure because their value is tied to real network usage. Stablecoins are useful tools with specific risks that should not be treated as risk-free. Governance and utility tokens vary widely in quality. Memecoins and scams make up a large share of the total, and distinguishing them from legitimate projects is one of the central skills of navigating this space. For most beginners, starting with Bitcoin and Ethereum and ignoring the rest until you've learned how those work is a perfectly reasonable approach."
           }
         ]
       }
@@ -3219,21 +2883,7 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "In traditional finance, a transaction that looks complete on your screen often isn't actually final for days afterward. When you buy a stock, the trade settles one business day later. When you wire money, the transfer typically settles in one to two business days. When you deposit a check, the funds are usually available quickly but the check itself can still bounce for up to a week or two. During these settlement windows, there's a lot of room for the transaction to be reversed, corrected, or frozen. If a bank discovers that a transfer was fraudulent, they can claw it back. If an exchange discovers a trade was in error, they can cancel it. This lag is inconvenient but it's also a safety feature. Crypto is different. A Bitcoin transaction is typically considered effectively final after a few confirmations, which takes roughly an hour on average. Ethereum transactions are final even faster. Transactions on some newer chains are considered final within seconds. Once a transaction is buried under enough subsequent blocks, it is effectively impossible to reverse without an attack that would require more computational power than the entire network combined. This fast finality enables things that traditional finance cannot do easily — real-time settlement of large value transfers, automated programs that respond instantly to payment receipts, cross-border payments that complete in minutes rather than days. But it also means the gap between \"the transaction happened\" and \"the transaction is irreversible\" is much smaller, which removes the buffer that traditional systems use to catch and correct fraud or mistakes. Both are real trade-offs, and neither system is universally better. Crypto's finality is a powerful feature for the use cases that want it and a meaningful risk for users who make mistakes."
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "BTC",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "BTC — live price"
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "ETH",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "ETH — live price"
+            "body": "In traditional finance, a transaction that looks complete on your screen often isn't actually final for days afterward. When you buy a stock, the trade settles one business day later. When you wire money, the transfer typically settles in one to two business days. When you deposit a check, the funds are usually available quickly but the check itself can still bounce for up to a week or two. During these settlement windows, there's a lot of room for the transaction to be reversed, corrected, or frozen. If a bank discovers that a transfer was fraudulent, they can claw it back. If an exchange discovers a trade was in error, they can cancel it. This lag is inconvenient but it's also a safety feature. Crypto is different. A [[ticker:BTC]]Bitcoin[[/ticker]] transaction is typically considered effectively final after a few confirmations, which takes roughly an hour on average. [[ticker:ETH]]Ethereum[[/ticker]] transactions are final even faster. Transactions on some newer chains are considered final within seconds. Once a transaction is buried under enough subsequent blocks, it is effectively impossible to reverse without an attack that would require more computational power than the entire network combined. This fast finality enables things that traditional finance cannot do easily — real-time settlement of large value transfers, automated programs that respond instantly to payment receipts, cross-border payments that complete in minutes rather than days. But it also means the gap between \"the transaction happened\" and \"the transaction is irreversible\" is much smaller, which removes the buffer that traditional systems use to catch and correct fraud or mistakes. Both are real trade-offs, and neither system is universally better. Crypto's finality is a powerful feature for the use cases that want it and a meaningful risk for users who make mistakes."
           },
           {
             "type": "keyTermCards",
@@ -3483,14 +3133,7 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "Smart contracts are code, and all code has bugs. Most bugs in most software are minor — a button that doesn't work, a display glitch, a feature that fails under unusual conditions. Bugs in smart contracts have a different risk profile because smart contracts often hold large amounts of money and because they execute automatically without any human review of individual transactions. A bug in a traditional banking system might cause some accounts to display wrong balances temporarily, and an engineer can correct it. A bug in a smart contract that holds hundreds of millions of dollars can allow an attacker to drain the contract in minutes, and the losses are typically permanent. Over the years, there have been many multi-million-dollar losses from smart contract exploits. Some of the most famous include the DAO hack in 2016 (which resulted in Ethereum forking into two chains), the Ronin bridge hack in 2022 (which lost over $600 million), the Nomad bridge hack in 2022 (which lost nearly $200 million), and many smaller incidents on specific DeFi protocols. Bridges — smart contracts that let users move tokens between different blockchains — have been particularly susceptible because they tend to hold large amounts of collateral in one place. The basic defensive advice for users is: prefer protocols that have been audited by reputable security firms, have been operating for long periods without incident, and have transparent bug bounty programs. Prefer holding funds in simpler contracts (or just in your own wallet) rather than in complex multi-step protocols. Understand that even audited and battle-tested protocols can have undiscovered vulnerabilities. And remember that when a smart contract is exploited, the funds are usually gone — not because anyone wants it that way, but because the transactions are final."
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "ETH",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "ETH — live price"
+            "body": "Smart contracts are code, and all code has bugs. Most bugs in most software are minor — a button that doesn't work, a display glitch, a feature that fails under unusual conditions. Bugs in smart contracts have a different risk profile because smart contracts often hold large amounts of money and because they execute automatically without any human review of individual transactions. A bug in a traditional banking system might cause some accounts to display wrong balances temporarily, and an engineer can correct it. A bug in a smart contract that holds hundreds of millions of dollars can allow an attacker to drain the contract in minutes, and the losses are typically permanent. Over the years, there have been many multi-million-dollar losses from smart contract exploits. Some of the most famous include the DAO hack in 2016 (which resulted in [[ticker:ETH]]Ethereum[[/ticker]] forking into two chains), the Ronin bridge hack in 2022 (which lost over $600 million), the Nomad bridge hack in 2022 (which lost nearly $200 million), and many smaller incidents on specific DeFi protocols. Bridges — smart contracts that let users move tokens between different blockchains — have been particularly susceptible because they tend to hold large amounts of collateral in one place. The basic defensive advice for users is: prefer protocols that have been audited by reputable security firms, have been operating for long periods without incident, and have transparent bug bounty programs. Prefer holding funds in simpler contracts (or just in your own wallet) rather than in complex multi-step protocols. Understand that even audited and battle-tested protocols can have undiscovered vulnerabilities. And remember that when a smart contract is exploited, the funds are usually gone — not because anyone wants it that way, but because the transactions are final."
           },
           {
             "type": "keyTermCards",
@@ -3691,13 +3334,6 @@
             "body": "Counterparty risk is the risk that someone you've trusted with your money — an exchange, a lender, a custodian — fails to give it back when you ask. Crypto has a long history of counterparty failures, some of which have been covered in earlier courses but bear repeating here. Mt. Gox (2014) lost hundreds of thousands of bitcoins that had been held on behalf of customers. Many smaller exchanges have disappeared quietly over the years with customer funds. Lending platforms like Celsius and BlockFi collapsed in 2022 when the market turned and they couldn't meet withdrawal demands. FTX, once one of the largest exchanges in the world, collapsed spectacularly in late 2022 when it became clear that customer funds had been mingled with the owners' own speculative trading. In each of these cases, customers lost money that they believed was being held safely on their behalf. The defensive response is a mix of diversification and self-custody. Don't keep all your crypto on a single exchange, even a reputable one. Don't leave large long-term holdings on any exchange if you can avoid it — move them to a hardware wallet where you control the keys. Be especially cautious about yield-generating services that pay you interest on deposits, because those services usually work by taking risks with your money (lending it to borrowers, using it for market making) that you are ultimately bearing even if you don't see them. The interest rate you're being offered is roughly the compensation for the risk being taken on your behalf, and in crypto those risks have repeatedly materialized in ways that wipe out depositors. A useful rule: the higher the promised yield, the more carefully you should investigate what's actually happening behind the scenes. Most of the collapsed crypto lenders were offering double-digit yields that were unsustainable and, in hindsight, clearly risky."
           },
           {
-            "type": "tickerChart",
-            "ticker": "BTC",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "BTC — live price"
-          },
-          {
             "type": "keyTermCards",
             "eyebrow": "Key terms unlocked this section",
             "pillLabel": "4 new",
@@ -3770,28 +3406,7 @@
         "modules": [
           {
             "type": "paragraphs",
-            "body": "A short practical checklist for a beginner who wants to participate in crypto without being part of the \"people who lost money\" statistics: First, only invest money you can afford to lose entirely. Crypto is not the place for rent, food, or emergency savings. Second, stick to well-established assets (Bitcoin, Ethereum, and a small number of other large base-layer coins or reputable stablecoins) until you've developed real understanding. The long tail of altcoins is where the majority of losses happen. Third, learn self-custody early. Use a hardware wallet for amounts you'd regret losing. Back up your seed phrase properly and test the backup. Never share it with anyone for any reason. Fourth, never click on unsolicited links, fake customer service contacts, or messages from strangers offering crypto opportunities. Legitimate projects do not reach out to you. Fifth, treat \"guaranteed returns\" or \"no-risk yields\" as immediate red flags. Real returns come with real risks. Sixth, keep records of every transaction and report taxes honestly in your jurisdiction. Sixth, be skeptical of leverage — it's the mechanism by which most retail traders lose most of their capital. Seventh, don't assume past price patterns will repeat. Crypto cycles have shared similarities but each one has been different, and nobody knows where the next one will take prices. And finally, the meta-rule: be patient. The people who have done best in crypto over long periods have generally been the ones who bought early, held through multiple cycles, didn't panic at the bottoms, didn't get greedy at the tops, and treated the whole thing as a long-term learning exercise rather than a get-rich-quick scheme. There is no shortcut. The people trying to shortcut the process are usually the ones who end up as the stories you hear about."
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "META",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "META — live price"
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "BTC",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "BTC — live price"
-          },
-          {
-            "type": "tickerChart",
-            "ticker": "ETH",
-            "range": "1Y",
-            "eyebrow": "Live example",
-            "title": "ETH — live price"
+            "body": "A short practical checklist for a beginner who wants to participate in crypto without being part of the \"people who lost money\" statistics: First, only invest money you can afford to lose entirely. Crypto is not the place for rent, food, or emergency savings. Second, stick to well-established assets ([[ticker:BTC]]Bitcoin[[/ticker]], [[ticker:ETH]]Ethereum[[/ticker]], and a small number of other large base-layer coins or reputable stablecoins) until you've developed real understanding. The long tail of altcoins is where the majority of losses happen. Third, learn self-custody early. Use a hardware wallet for amounts you'd regret losing. Back up your seed phrase properly and test the backup. Never share it with anyone for any reason. Fourth, never click on unsolicited links, fake customer service contacts, or messages from strangers offering crypto opportunities. Legitimate projects do not reach out to you. Fifth, treat \"guaranteed returns\" or \"no-risk yields\" as immediate red flags. Real returns come with real risks. Sixth, keep records of every transaction and report taxes honestly in your jurisdiction. Sixth, be skeptical of leverage — it's the mechanism by which most retail traders lose most of their capital. Seventh, don't assume past price patterns will repeat. Crypto cycles have shared similarities but each one has been different, and nobody knows where the next one will take prices. And finally, the [[ticker:META]]meta[[/ticker]]-rule: be patient. The people who have done best in crypto over long periods have generally been the ones who bought early, held through multiple cycles, didn't panic at the bottoms, didn't get greedy at the tops, and treated the whole thing as a long-term learning exercise rather than a get-rich-quick scheme. There is no shortcut. The people trying to shortcut the process are usually the ones who end up as the stories you hear about."
           },
           {
             "type": "keyTermCards",

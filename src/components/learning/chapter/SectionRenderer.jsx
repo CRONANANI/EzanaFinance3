@@ -2,38 +2,21 @@
 
 import { PullQuote } from './PullQuote';
 import { ChartModule } from './ChartModule';
-import { TickerChart } from './TickerChart';
 import { TickerCards } from './TickerCards';
 import { KeyTermCards } from './KeyTermCards';
 import { KeyTermsList } from './KeyTermsList';
 import { ContextTimeline } from './ContextTimeline';
 import { Callout } from './Callout';
-
-function renderRichText(body) {
-  if (!body) return '';
-  return body
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g, '<em>$1</em>');
-}
+import { BodyText } from './BodyText';
 
 function Module({ module }) {
   switch (module.type) {
     case 'paragraphs':
-      return (
-        <div
-          className="lc-edit-paragraph"
-          dangerouslySetInnerHTML={{ __html: renderRichText(module.body) }}
-        />
-      );
+      return <BodyText body={module.body} />;
     case 'pullQuote':
       return <PullQuote {...module} />;
     case 'chart':
       return <ChartModule {...module} />;
-    case 'tickerChart':
-      return <TickerChart {...module} />;
     case 'tickerCards':
       return <TickerCards {...module} />;
     case 'keyTermCards':

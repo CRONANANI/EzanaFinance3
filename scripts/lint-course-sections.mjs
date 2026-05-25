@@ -34,17 +34,16 @@ function lintSection(section) {
     .filter((m) => m.type === 'paragraphs')
     .map((m) => m.body || '')
     .join(' ');
-  const tickersInProse = (proseText.match(new RegExp(TICKER_RE.source, 'gi')) || []).map((t) =>
-    t.toUpperCase(),
-  );
-  const tickersInModules = modules
-    .filter((m) => m.type === 'tickerChart')
-    .map((m) => (m.ticker || '').toUpperCase());
 
-  for (const ticker of new Set(tickersInProse)) {
-    if (!tickersInModules.includes(ticker)) {
-      violations.push(`prose mentions ${ticker} but no tickerChart module for it`);
-    }
+  const proseWithoutTokens = proseText.replace(
+    /\[\[ticker:[A-Z0-9.-]+\]\](.*?)\[\[\/ticker\]\]/g,
+    '',
+  );
+  const nakedTickerMatches = proseWithoutTokens.match(new RegExp(TICKER_RE.source, 'gi'));
+
+  if (nakedTickerMatches && nakedTickerMatches.length > 0) {
+    const unique = [...new Set(nakedTickerMatches.map((t) => t.toUpperCase()))];
+    violations.push(`prose mentions ${unique.join(', ')} without [[ticker:...]] wrapper`);
   }
 
   if (types.filter((t) => t === 'pullQuote').length > 1) {

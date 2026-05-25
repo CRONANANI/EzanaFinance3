@@ -1,0 +1,249 @@
+/* ════════════════════════════════════════════════════════════════════════════
+   Ticker Popup — side-mounted card (mirrors EchoKeywordPopup pattern)
+   ════════════════════════════════════════════════════════════════════════════ */
+
+.lc-ticker-popup {
+  position: fixed;
+  top: 50%;
+  right: 1.5rem;
+  width: 380px;
+  max-height: 78vh;
+  transform: translateY(-50%) translateX(20px);
+  background: var(--bg-secondary, #0d1117);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 16px;
+  padding: 1.25rem 1.25rem 1rem;
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(16, 185, 129, 0.05);
+  z-index: 100;
+  overflow-y: auto;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 220ms ease,
+    transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+body.light-mode .lc-ticker-popup {
+  background: #ffffff;
+  box-shadow:
+    0 20px 60px rgba(15, 23, 42, 0.15),
+    0 0 0 1px rgba(16, 185, 129, 0.08);
+}
+
+.lc-ticker-popup.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(-50%) translateX(0);
+}
+
+.lc-ticker-popup-close {
+  position: absolute;
+  top: 0.85rem;
+  right: 0.85rem;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  transition: all 150ms ease;
+}
+.lc-ticker-popup-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+.lc-ticker-popup-eyebrow {
+  font-size: 0.625rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--emerald);
+  margin-bottom: 0.35rem;
+}
+
+.lc-ticker-popup-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.lc-ticker-popup-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  padding-right: 2rem;
+}
+.lc-ticker-popup-symbol {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--emerald);
+  background: rgba(16, 185, 129, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0;
+}
+
+.lc-ticker-popup-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin-bottom: 0.85rem;
+}
+.lc-ticker-popup-price {
+  font-family: var(--font-mono);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.lc-ticker-popup-change {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+.lc-ticker-popup-change.is-positive {
+  color: var(--positive, #10b981);
+}
+.lc-ticker-popup-change.is-negative {
+  color: var(--negative, #ef4444);
+}
+
+.lc-ticker-popup-chart {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  padding: 8px;
+  margin-bottom: 1rem;
+  height: 180px;
+  overflow: hidden;
+}
+
+.lc-ticker-popup-meta {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  padding: 0.65rem 0.8rem;
+  margin-bottom: 0.85rem;
+}
+.lc-ticker-popup-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  padding: 3px 0;
+}
+.lc-ticker-popup-meta-label {
+  color: var(--text-muted);
+}
+.lc-ticker-popup-meta-value {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.lc-ticker-popup-research-link {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 0.8rem;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 10px;
+  text-decoration: none;
+  color: var(--text-primary);
+  transition: all 150ms ease;
+}
+.lc-ticker-popup-research-link:hover {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.35);
+}
+.lc-ticker-popup-research-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--emerald);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.lc-ticker-popup-research-text {
+  flex: 1;
+  min-width: 0;
+}
+.lc-ticker-popup-research-eyebrow {
+  font-size: 0.6rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--emerald);
+}
+.lc-ticker-popup-research-title {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.lc-ticker-popup-research-arrow {
+  color: var(--emerald);
+  flex-shrink: 0;
+}
+
+.lc-ticker-popup-loading {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  padding: 0.5rem 0;
+}
+
+/* ─── Inline clickable ticker in prose ──────────────────────────── */
+
+.lc-ticker-inline {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: var(--emerald);
+  cursor: pointer;
+  font-weight: 600;
+  border-bottom: 1px dotted rgba(16, 185, 129, 0.45);
+  transition: all 120ms ease;
+  display: inline;
+}
+.lc-ticker-inline:hover {
+  color: var(--emerald-hover, #34d399);
+  border-bottom-color: var(--emerald-hover, #34d399);
+  background: rgba(16, 185, 129, 0.06);
+}
+.lc-ticker-inline:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@media (max-width: 768px) {
+  .lc-ticker-popup {
+    top: auto;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    width: auto;
+    max-height: 70vh;
+    border-radius: 16px 16px 0 0;
+    transform: translateY(20px);
+  }
+  .lc-ticker-popup.is-visible {
+    transform: translateY(0);
+  }
+}
