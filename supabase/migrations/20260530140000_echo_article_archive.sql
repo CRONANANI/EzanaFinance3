@@ -21,11 +21,13 @@ CREATE INDEX IF NOT EXISTS idx_echo_article_status_archived
 
 ALTER TABLE public.echo_article_status ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "authenticated read echo_article_status" ON public.echo_article_status;
 CREATE POLICY "authenticated read echo_article_status"
   ON public.echo_article_status FOR SELECT
   TO authenticated
   USING (true);
 
+DROP POLICY IF EXISTS "service role write echo_article_status" ON public.echo_article_status;
 CREATE POLICY "service role write echo_article_status"
   ON public.echo_article_status FOR ALL
   USING (auth.role() = 'service_role')
