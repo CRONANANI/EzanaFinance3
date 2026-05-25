@@ -68,13 +68,29 @@ import './market-analysis-world-monitor.css';
 import '../centaur-intelligence/centaur-intelligence.css';
 import '../org-trading/org-trading.css';
 
-const DATA_LAYERS = [
-  { key: 'gdp', icon: 'bi-cash-stack', label: 'GDP', color: '#10b981' },
-  { key: 'debt', icon: 'bi-credit-card-2-back', label: 'DEBT', color: '#ef4444' },
-  { key: 'population', icon: 'bi-people-fill', label: 'POP', color: '#8b5cf6' },
-  { key: 'births', icon: 'bi-heart-pulse-fill', label: 'BIRTHS', color: '#ec4899' },
-  { key: 'wealth', icon: 'bi-coin', label: 'WEALTH', color: '#f59e0b' },
-  { key: 'billionaires', icon: 'bi-trophy-fill', label: 'BILLIONAIRES', color: '#FFD700' },
+const DATA_LAYER_GROUPS = [
+  {
+    key: 'economic',
+    label: 'ECONOMIC',
+    icon: 'bi-bank2',
+    color: '#10b981',
+    layers: [
+      { key: 'gdp', icon: 'bi-cash-stack', label: 'GDP', color: '#10b981' },
+      { key: 'debt', icon: 'bi-credit-card-2-back', label: 'DEBT', color: '#ef4444' },
+      { key: 'wealth', icon: 'bi-coin', label: 'WEALTH', color: '#f59e0b' },
+      { key: 'billionaires', icon: 'bi-trophy-fill', label: 'BILLIONAIRES', color: '#FFD700' },
+    ],
+  },
+  {
+    key: 'demographic',
+    label: 'DEMOGRAPHIC',
+    icon: 'bi-people-fill',
+    color: '#8b5cf6',
+    layers: [
+      { key: 'population', icon: 'bi-people-fill', label: 'POP', color: '#8b5cf6' },
+      { key: 'births', icon: 'bi-heart-pulse-fill', label: 'BIRTHS', color: '#ec4899' },
+    ],
+  },
 ];
 
 const FINANCIAL_CITIES = [
@@ -1664,6 +1680,7 @@ export default function MarketAnalysisPage() {
   const [liveCommodities, setLiveCommodities] = useState(null);
   const [liveCurrencies, setLiveCurrencies] = useState(null);
   const [isrOpen, setIsrOpen] = useState(false);
+  const [expandedDataGroup, setExpandedDataGroup] = useState(null);
   const [isrEvents, setIsrEvents] = useState([]);
   const [isrMatches, setIsrMatches] = useState({});
   const [selectedIsrEvent, setSelectedIsrEvent] = useState(null);
@@ -2159,32 +2176,6 @@ export default function MarketAnalysisPage() {
         </div>
       </div>
 
-      {view === 'map' && (
-        <div className="ma-data-layer-row">
-          {DATA_LAYERS.map((layer) => {
-            const isActive = selectedLayers.includes(layer.key);
-            const isLoading = layer.key === 'billionaires' && billionaireLoading;
-            return (
-              <button
-                key={layer.key}
-                type="button"
-                className={`ma-data-circle${isActive ? ' ma-data-circle--active' : ''}`}
-                onClick={() => handleDataLayerClick(layer.key)}
-                disabled={isLoading}
-                title={isLoading ? 'Loading billionaire data…' : `Toggle ${layer.label} heatmap`}
-                style={{
-                  '--dl-color': layer.color,
-                  '--dl-glow': `${layer.color}55`,
-                }}
-              >
-                <i className={`bi ${layer.icon}`} />
-                <span className="ma-data-circle-label">{isLoading ? '…' : layer.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      )}
-
       <button
         type="button"
         className="ma-help-btn"
@@ -2457,6 +2448,78 @@ export default function MarketAnalysisPage() {
                 {cat.replace('-', ' ').toUpperCase()}
               </button>
             ))}
+            <div className="ma-sidebar-divider" />
+            <div className="ma-sidebar-section-label">DATA LAYERS</div>
+
+            {DATA_LAYER_GROUPS.map((group) => {
+              const isExpanded = expandedDataGroup === group.key;
+              const activeCount = group.layers.filter((l) => selectedLayers.includes(l.key)).length;
+
+              return (
+                <div key={group.key} className="ma-sidebar-data-group">
+                  <button
+                    type="button"
+                    className={`ma-sidebar-btn ma-sidebar-data-group-toggle ${
+                      activeCount > 0 ? 'active' : ''
+                    }`}
+                    onClick={() =>
+                      setExpandedDataGroup((prev) => (prev === group.key ? null : group.key))
+                    }
+                    style={{ '--group-color': group.color }}
+                  >
+                    <i className={`bi ${group.icon}`} />
+                    {group.label}
+                    {activeCount > 0 && (
+                      <span className="ma-sidebar-data-badge">{activeCount}</span>
+                    )}
+                    <i
+                      className={`bi bi-chevron-${isExpanded ? 'up' : 'down'} ma-sidebar-chevron`}
+                    />
+                  </button>
+
+                  {isExpanded && (
+                    <div className="ma-sidebar-data-layers">
+                      {group.layers.map((layer) => {
+                        const isActive = selectedLayers.includes(layer.key);
+                        const isLoading = layer.key === 'billionaires' && billionaireLoading;
+                        return (
+                          <button
+                            key={layer.key}
+                            type="button"
+                            className={`ma-sidebar-data-layer-btn ${
+                              isActive ? 'ma-sidebar-data-layer-btn--active' : ''
+                            }`}
+                            onClick={() => handleDataLayerClick(layer.key)}
+                            disabled={isLoading}
+                            style={{
+                              '--layer-color': layer.color,
+                              '--layer-glow': `${layer.color}40`,
+                            }}
+                            title={
+                              isLoading
+                                ? 'Loading billionaire data…'
+                                : `Toggle ${layer.label} heatmap`
+                            }
+                          >
+                            <span
+                              className="ma-sidebar-data-check"
+                              aria-hidden
+                              data-checked={isActive ? 'true' : 'false'}
+                            >
+                              {isActive ? '✓' : ''}
+                            </span>
+                            <i className={`bi ${layer.icon}`} />
+                            <span className="ma-sidebar-data-layer-label">
+                              {isLoading ? '…' : layer.label}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
             <button
               type="button"
               className={`ma-sidebar-btn ma-sidebar-btn--isr ${isrOpen ? 'active' : ''}`}
