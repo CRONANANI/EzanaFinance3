@@ -985,3 +985,114 @@
 .lc-org-card {
   border-radius: 14px;
 }
+
+/* ─────────────────────────────────────────────────────────────────
+ * DARK MODE — Flat Card Backgrounds
+ *
+ * All Learning Center cards share the page's background color in dark
+ * mode. Borders define each card's shape; backgrounds blend into the page.
+ * Scoped via body:not(.light-mode) so light mode is unaffected.
+ * ───────────────────────────────────────────────────────────────── */
+
+body:not(.light-mode) .lc-page {
+  /* Cards on the page should feel painted, not stacked */
+}
+
+/* ── ELO Hero ───────────────────────────────────────────────────── */
+/* Keep the emerald radial glow but softer; flatten the base layer */
+body:not(.light-mode) .lc-elo-hero {
+  background:
+    radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.08) 0%, transparent 50%),
+    var(--bg-primary);
+  border: 1px solid rgba(16, 185, 129, 0.22);
+}
+
+/* The corner glow overlay — tone down so it blends rather than burns */
+body:not(.light-mode) .lc-elo-hero-glow {
+  background: conic-gradient(from 0deg, rgba(16, 185, 129, 0.08), transparent 70%);
+  filter: blur(28px);
+  opacity: 0.6;
+}
+
+/* ── Daily Quest ───────────────────────────────────────────────── */
+body:not(.light-mode) .lc-daily-quest {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+}
+
+body:not(.light-mode) .lc-dq-bonus {
+  background: transparent;
+  border: 1px solid var(--border);
+}
+
+body:not(.light-mode) .lc-dq-bonus-icon {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* ── Track Towers ──────────────────────────────────────────────── */
+body:not(.light-mode) .lc-tower {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+}
+
+body:not(.light-mode) .lc-tower:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-primary);
+}
+
+body:not(.light-mode) .lc-tower--main {
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.06), transparent 70%), var(--bg-primary);
+  border: 1px solid rgba(16, 185, 129, 0.32);
+  box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.18);
+}
+
+body:not(.light-mode) .lc-tower[data-track-color] {
+  background: var(--bg-primary);
+}
+
+body:not(.light-mode) .lc-tower-tier {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+body:not(.light-mode) .lc-tower-footer {
+  background: transparent;
+  border-top: 1px solid var(--border);
+}
+
+/* ── Active Path ───────────────────────────────────────────────── */
+body:not(.light-mode) .lc-active-path {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+}
+
+/* ── Leaderboard + Bookmarks cards ─────────────────────────────── */
+body:not(.light-mode) .lc-leaderboard,
+body:not(.light-mode) .lc-bookmarks {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+}
+
+body:not(.light-mode) .lc-hero-stat {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+}
+
+body:not(.light-mode) .lc-streak-badge {
+  background: linear-gradient(180deg, rgba(245, 158, 11, 0.1), transparent 70%), var(--bg-primary);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+body:not(.light-mode) .lc-btn-secondary {
+  background: transparent;
+  border: 1px solid var(--border);
+}
+
+body:not(.light-mode) .lc-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: var(--border-strong);
+}
+
+body:not(.light-mode) .lc-leaderboard .lc-leaderboard-row,
+body:not(.light-mode) .lc-bookmarks .lc-bookmark-row {
+  background: transparent;
+}
