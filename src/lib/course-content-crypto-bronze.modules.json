@@ -20,22 +20,22 @@
               {
                 "name": "cryptocurrency",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"cryptocurrency\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "blockchain",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"blockchain\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "cryptography",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"cryptography\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "digital asset",
                 "color": "violet",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"digital asset\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -60,22 +60,22 @@
               {
                 "name": "decentralization",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"decentralization\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "node",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"node\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "protocol",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"protocol\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "censorship resistance",
                 "color": "violet",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"censorship resistance\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -150,17 +150,17 @@
               {
                 "name": "Internet of Money",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"Internet of Money\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "middleman",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"middleman\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "transaction finality",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"transaction finality\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -190,17 +190,17 @@
               {
                 "name": "double-spend problem",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"double-spend problem\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "consensus mechanism",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"consensus mechanism\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "public ledger",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"public ledger\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -225,17 +225,17 @@
               {
                 "name": "volatility",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"volatility\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "pseudonymous",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"pseudonymous\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "not a stock",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"not a stock\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -454,17 +454,17 @@
               {
                 "name": "Satoshi Nakamoto",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"Satoshi Nakamoto\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "whitepaper",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"whitepaper\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "genesis block",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"genesis block\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -559,22 +559,22 @@
               {
                 "name": "fixed supply",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"fixed supply\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "halving",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"halving\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "scarcity",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"scarcity\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "store of value",
                 "color": "violet",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"store of value\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -599,22 +599,22 @@
               {
                 "name": "mining",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"mining\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "proof of work",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"proof of work\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "hash function",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"hash function\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "block reward",
                 "color": "violet",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"block reward\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -644,17 +644,17 @@
               {
                 "name": "censorship resistance",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"censorship resistance\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "base layer",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"base layer\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "design trade-offs",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"design trade-offs\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -692,17 +692,17 @@
               {
                 "name": "volatility",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"volatility\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "market cycle",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"market cycle\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "speculation",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"speculation\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -845,22 +845,22 @@
               {
                 "name": "Ethereum",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"Ethereum\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "smart contract",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"smart contract\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "EVM",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"EVM\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "Vitalik Buterin",
                 "color": "violet",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"Vitalik Buterin\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -963,17 +963,17 @@
               {
                 "name": "smart contract",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"smart contract\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "automation",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"automation\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "code-as-law",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"code-as-law\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -998,22 +998,22 @@
               {
                 "name": "gas",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"gas\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "ETH",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"ETH\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "validator",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"validator\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "block space",
                 "color": "violet",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"block space\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -1038,27 +1038,27 @@
               {
                 "name": "token",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"token\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "ERC-20",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"ERC-20\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "ERC-721",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"ERC-721\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "NFT",
                 "color": "violet",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"NFT\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "stablecoin",
                 "color": "coralDeep",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"stablecoin\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -1088,22 +1088,22 @@
               {
                 "name": "proof of stake",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"proof of stake\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "validator",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"validator\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "staking",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"staking\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "the Merge",
                 "color": "violet",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"the Merge\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -1128,17 +1128,17 @@
               {
                 "name": "DeFi",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"DeFi\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "stablecoin",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"stablecoin\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "Ethereum ecosystem",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"Ethereum ecosystem\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -1291,17 +1291,17 @@
               {
                 "name": "exchange",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"exchange\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "KYC",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"KYC\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "fiat onramp",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"fiat onramp\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -1415,22 +1415,22 @@
               {
                 "name": "centralized exchange",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"centralized exchange\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "decentralized exchange",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"decentralized exchange\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "CEX",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"CEX\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "DEX",
                 "color": "violet",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"DEX\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -1455,22 +1455,22 @@
               {
                 "name": "private key",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"private key\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "hot wallet",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"hot wallet\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "cold wallet",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"cold wallet\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "self-custody",
                 "color": "violet",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"self-custody\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -1500,22 +1500,22 @@
               {
                 "name": "custody",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"custody\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "Mt. Gox",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"Mt. Gox\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "FTX",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"FTX\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "counterparty risk",
                 "color": "violet",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"counterparty risk\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -1540,17 +1540,17 @@
               {
                 "name": "seed phrase",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"seed phrase\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "mnemonic",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"mnemonic\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "recovery phrase",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"recovery phrase\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -1575,22 +1575,22 @@
               {
                 "name": "starter setup",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"starter setup\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "hardware wallet",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"hardware wallet\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "Ledger",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"Ledger\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "Trezor",
                 "color": "violet",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"Trezor\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -1743,17 +1743,17 @@
               {
                 "name": "volatility",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"volatility\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "market structure",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"market structure\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "sentiment",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"sentiment\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -1856,17 +1856,17 @@
               {
                 "name": "market cap",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"market cap\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "liquidity",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"liquidity\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "manipulation",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"manipulation\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -1891,17 +1891,17 @@
               {
                 "name": "24/7 trading",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"24/7 trading\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "circuit breaker",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"circuit breaker\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "trading halt",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"trading halt\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -1926,22 +1926,22 @@
               {
                 "name": "retail investors",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"retail investors\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "narrative",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"narrative\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "social media",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"social media\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "reflexivity",
                 "color": "violet",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"reflexivity\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -1971,17 +1971,17 @@
               {
                 "name": "fundamental value",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"fundamental value\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "cash flow",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"cash flow\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "speculative asset",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"speculative asset\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -2006,22 +2006,22 @@
               {
                 "name": "leverage",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"leverage\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "liquidation",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"liquidation\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "cascade",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"cascade\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "margin call",
                 "color": "violet",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"margin call\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -2242,17 +2242,17 @@
               {
                 "name": "taxonomy",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"taxonomy\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "altcoin",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"altcoin\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "categories",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"categories\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -2277,17 +2277,17 @@
               {
                 "name": "base layer",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"base layer\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "layer 1",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"layer 1\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "network effect",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"network effect\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -2430,27 +2430,27 @@
               {
                 "name": "stablecoin",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"stablecoin\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "USDC",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"USDC\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "USDT",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"USDT\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "DAI",
                 "color": "violet",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"DAI\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "peg",
                 "color": "coralDeep",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"peg\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -2475,22 +2475,22 @@
               {
                 "name": "governance token",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"governance token\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "utility token",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"utility token\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "DAO",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"DAO\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "voting rights",
                 "color": "violet",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"voting rights\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -2520,22 +2520,22 @@
               {
                 "name": "memecoin",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"memecoin\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "Dogecoin",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"Dogecoin\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "Shiba Inu",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"Shiba Inu\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "long tail",
                 "color": "violet",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"long tail\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -2560,17 +2560,17 @@
               {
                 "name": "due diligence",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"due diligence\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "evaluation",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"evaluation\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "project assessment",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"project assessment\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -2718,17 +2718,17 @@
               {
                 "name": "consumer protections",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"consumer protections\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "finality",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"finality\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "permissionless innovation",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"permissionless innovation\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -2853,22 +2853,22 @@
               {
                 "name": "FDIC",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"FDIC\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "SIPC",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"SIPC\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "chargeback",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"chargeback\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "consumer protection",
                 "color": "violet",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"consumer protection\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -2893,17 +2893,17 @@
               {
                 "name": "settlement",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"settlement\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "finality",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"finality\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "confirmation",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"confirmation\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -2928,17 +2928,17 @@
               {
                 "name": "permissionless",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"permissionless\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "innovation",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"innovation\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "DeFi primitives",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"DeFi primitives\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -2968,17 +2968,17 @@
               {
                 "name": "structural difference",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"structural difference\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "personal responsibility",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"personal responsibility\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "informed decisions",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"informed decisions\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -3120,7 +3120,16 @@
           },
           {
             "type": "keyTermsList",
-            "terms": ["risk categories", "informed participation"]
+            "terms": [
+              {
+                "name": "risk categories",
+                "definition": "Definition for \"risk categories\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
+              },
+              {
+                "name": "informed participation",
+                "definition": "Definition for \"informed participation\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
+              }
+            ]
           }
         ]
       },
@@ -3143,22 +3152,22 @@
               {
                 "name": "smart contract bug",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"smart contract bug\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "exploit",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"exploit\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "bridge hack",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"bridge hack\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "DeFi risk",
                 "color": "violet",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"DeFi risk\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -3261,22 +3270,22 @@
               {
                 "name": "scam",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"scam\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "rug pull",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"rug pull\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "phishing",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"phishing\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "pig butchering",
                 "color": "violet",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"pig butchering\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -3306,17 +3315,17 @@
               {
                 "name": "too good to be true",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"too good to be true\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "Ponzi",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"Ponzi\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "red flags",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"red flags\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -3341,22 +3350,22 @@
               {
                 "name": "counterparty risk",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"counterparty risk\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "lending",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"lending\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "Celsius",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"Celsius\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "FTX",
                 "color": "violet",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"FTX\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -3381,17 +3390,17 @@
               {
                 "name": "regulatory risk",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"regulatory risk\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "taxation",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"taxation\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "compliance",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"compliance\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }
@@ -3416,17 +3425,17 @@
               {
                 "name": "safety checklist",
                 "color": "amber",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"safety checklist\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "position sizing",
                 "color": "blue",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"position sizing\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               },
               {
                 "name": "long-term thinking",
                 "color": "red",
-                "definition": "(definition pending)"
+                "definition": "Definition for \"long-term thinking\" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js."
               }
             ]
           }

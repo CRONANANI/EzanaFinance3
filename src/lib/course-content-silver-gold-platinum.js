@@ -3,6 +3,8 @@
  * Sources: Isichenko, Hilpisch, Khraisha, Eager, Kanungo (B3), Huyen (B1), Nelson (B8)
  */
 
+import FINANCIAL_STATEMENTS from './course-content-financial-statements.js';
+
 const CONTENT = {
   'stocks-intermediate-1': {
     sections: [
@@ -277,129 +279,7 @@ The best technical traders win only 40-60% of the time. They profit because winn
     ],
   },
 
-  'stocks-intermediate-3': {
-    sections: [
-      {
-        title: 'The Three Financial Statements',
-        content: `Khraisha defines three core statements: the balance sheet ("what a firm owns, what it owes, and what its shareholders own"), the income statement ("financial performance over a specific period, such as annual revenues and net profit"), and the cash flow statement ("information on cash movements in and out, which can help determine whether the firm is generating enough cash to carry out its operations").
-
-These statements are linked by accounting identity. Net income flows into retained earnings on the balance sheet. Depreciation (non-cash expense on the income statement) gets added back in the cash flow statement. Capital expenditures reduce cash but increase fixed assets.
-
-Khraisha notes that "each financial statement contains a large number of items representing different quantities. A special type of financial statement item is ratios, which combine multiple items." Understanding these linkages is what makes a financial analyst.`,
-        keyTerms: ['income statement', 'balance sheet', 'cash flow', 'retained earnings'],
-      },
-      {
-        title: 'The Income Statement Cascade',
-        content: `Revenue → minus COGS = Gross Profit → minus Operating Expenses = Operating Income (EBIT) → minus Interest and Taxes = Net Income. Each level removes a cost layer.
-
-Key metrics: gross margin (gross profit / revenue) shows pricing power. Operating margin (EBIT / revenue) shows operational efficiency. Net margin shows bottom-line profitability. Margin trends matter more than absolute levels.
-
-Isichenko (Ch.2.1.3) notes that fundamental data is "fairly complex including hundreds of numeric and text fields per company." Start with these five: revenue growth, gross margin, operating margin, EPS growth, and free cash flow.`,
-        visual: {
-          type: 'bar-chart',
-          data: {
-            bars: [
-              { label: 'Revenue', value: 100, color: '#10b981' },
-              { label: 'Gross Profit', value: 65, color: '#6366f1' },
-              { label: 'Operating Income', value: 25, color: '#f59e0b' },
-              { label: 'Net Income', value: 18, color: '#ef4444' },
-            ],
-            unit: '%',
-          },
-          caption:
-            'Each level removes a layer of costs — understanding where margins compress reveals the business model.',
-        },
-      },
-      {
-        title: 'The Balance Sheet',
-        content: `Assets = Liabilities + Shareholders' Equity. Current assets (cash, receivables, inventory) minus current liabilities gives working capital. The current ratio should be above 1.0.
-
-Isichenko warns that "capital structure of banks and manufacturers is not the same" — compare debt-to-equity within industries. Banks naturally have high leverage; tech companies typically have low leverage.
-
-Book value (total equity / shares outstanding) gives accounting value per share. Price-to-book (P/B) below 1.0 might indicate undervaluation — or impaired assets.`,
-      },
-      {
-        title: 'The Cash Flow Statement',
-        content: `Three sections: operating activities (cash from core business), investing activities (capex, acquisitions), and financing activities (debt, equity, dividends). Free cash flow = operating cash flow minus capex.
-
-Khraisha emphasizes the cash flow statement "can help determine whether the firm is generating enough cash to carry out its operations." This is the reality check: growing earnings with negative FCF may signal unsustainable growth.
-
-On Ezana, the 3-Statement Model (Company Research page) projects all three statements forward with consistent driver assumptions — exactly the integrated analysis described here.`,
-        callout:
-          'The cash conversion cycle (days to convert inventory to cash from sales) is a key working capital metric. Shorter cycles mean more efficient operations.',
-      },
-      {
-        title: 'Linking the Three Statements',
-        content: `Net income → retained earnings → operating cash flow. Depreciation → reduces fixed assets → added back as non-cash expense. Capex → increases fixed assets → future depreciation. Debt issuance → increases liabilities → future interest expense.
-
-When projecting forward, all three must balance and reconcile. Alpha Vantage provides INCOME_STATEMENT, BALANCE_SHEET, and CASH_FLOW endpoints — the raw data our models use to generate these projections automatically.
-
-Khraisha notes that financial data is increasingly processed at high velocity: "high-frequency trading, financial transactions, financial news feeds, and finance-related social media posts all produce data at high speeds." The same tools that help you read annual statements also help you react to quarterly surprises.`,
-      },
-    ],
-    quiz: [
-      {
-        question: 'According to Khraisha, what does the balance sheet show?',
-        options: [
-          'Revenue over a period',
-          "What a firm owns, owes, and shareholders' equity at a point in time",
-          'Cash movements',
-          'Stock price history',
-        ],
-        correctIndex: 1,
-        explanation:
-          'Khraisha: the balance sheet provides "figures on what a firm owns (assets), what it owes (liabilities), and what its shareholders own."',
-      },
-      {
-        question: 'How does depreciation connect the three financial statements?',
-        options: [
-          'It only affects the income statement',
-          'It reduces income (IS), reduces fixed assets (BS), and is added back as non-cash expense (CF)',
-          'It has no connection between statements',
-          'It only affects cash flow',
-        ],
-        correctIndex: 1,
-        explanation:
-          'Depreciation flows through all three statements \u2014 a key linking item for model consistency.',
-      },
-      {
-        question: 'Why does Isichenko say comparing bank and manufacturer ratios is problematic?',
-        options: [
-          'Because banks are always more profitable',
-          'Different industries have structurally different balance sheets \u2014 bank leverage is structural, not a risk signal',
-          "Manufacturers don't have balance sheets",
-          "Banks don't report financial statements",
-        ],
-        correctIndex: 1,
-        explanation:
-          'Isichenko Ch.2.1.3: "capital structure of banks and manufacturers is not the same" \u2014 cross-industry ratio comparison is misleading.',
-      },
-      {
-        question: 'What does Khraisha identify as the purpose of the cash flow statement?',
-        options: [
-          'To show the stock price',
-          'To determine whether the firm is generating enough cash to carry out its operations',
-          'To calculate the P/E ratio',
-          'To report to the SEC only',
-        ],
-        correctIndex: 1,
-        explanation:
-          'Khraisha: the cash flow statement provides "information on a firm\'s cash movements, which can help determine whether the firm is generating enough cash."',
-      },
-      {
-        question: 'What is the fundamental accounting equation?',
-        options: [
-          'Revenue = Expenses + Profit',
-          "Assets = Liabilities + Shareholders' Equity",
-          'Cash In = Cash Out',
-          'Price = Earnings \u00d7 Multiple',
-        ],
-        correctIndex: 1,
-        explanation:
-          'The balance sheet identity \u2014 Assets = Liabilities + Equity \u2014 must always hold. Every transaction affects at least two items.',
-      },
-    ],
-  },
+  ...FINANCIAL_STATEMENTS,
 };
 
 export default CONTENT;

@@ -26,7 +26,7 @@ export function KeyTermCards({ eyebrow, pillLabel, terms = [] }) {
         {terms.map((t, i) => {
           const color = TERM_COLORS[t.color] || TERM_COLORS.green;
           return (
-            <article key={i} className="lc-edit-keyterm">
+            <article key={i} className="lc-edit-keyterm" title={t.definition}>
               <span className="lc-edit-keyterm-swatch" style={{ background: `${color}22` }}>
                 <span style={{ background: color }} />
               </span>

@@ -515,7 +515,7 @@ body.light-mode .lc3-review-explanation {
 .lc-edit-hero {
   background: linear-gradient(180deg, var(--bg-primary) 0%, rgba(16, 185, 129, 0.04) 100%);
   border-bottom: 1px solid var(--border-primary);
-  padding: 28px 56px 32px;
+  padding: 10px 56px 12px;
   margin: -24px -24px 0;
 }
 body.light-mode .lc-edit-hero {
@@ -524,8 +524,8 @@ body.light-mode .lc-edit-hero {
 .lc-edit-backlink {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 13px;
+  gap: 4px;
+  font-size: 11.5px;
   font-weight: 600;
   color: var(--emerald);
   text-decoration: none;
@@ -533,51 +533,55 @@ body.light-mode .lc-edit-hero {
 .lc-edit-backlink:hover {
   text-decoration: underline;
 }
-.lc-edit-breadcrumb {
+.lc-edit-hero-row {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12.5px;
-  font-weight: 500;
+  gap: 16px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+.lc-edit-breadcrumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
   color: var(--text-muted);
-  margin: 18px 0 12px;
+  margin: 0;
 }
 .lc-edit-bc-sep {
   opacity: 0.4;
 }
 .lc-edit-h1 {
   font-family: var(--font-serif), Georgia, serif;
-  font-size: 56px;
-  font-weight: 500;
-  line-height: 1;
-  letter-spacing: -0.028em;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
   color: var(--text-primary);
-  margin: 0 0 12px;
+  margin: 0;
+  flex: 1;
+  min-width: 0;
 }
 .lc-edit-subdeck {
-  font-size: 17px;
-  line-height: 1.5;
-  letter-spacing: -0.005em;
-  color: var(--text-secondary);
-  max-width: 620px;
-  margin: 0 0 18px;
+  display: none;
 }
 .lc-edit-meta {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 12px;
-  font-size: 13px;
-  color: var(--text-secondary);
-  margin-bottom: 28px;
+  gap: 10px;
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin: 0;
+  white-space: nowrap;
 }
 .lc-edit-meta-item {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 .lc-edit-meta-divider {
   width: 1px;
-  height: 14px;
+  height: 10px;
   background: var(--border-primary);
 }
 
@@ -585,16 +589,16 @@ body.light-mode .lc-edit-hero {
   display: flex;
   list-style: none;
   padding: 0;
-  margin: 0;
+  margin: 8px 0 0;
   position: relative;
   gap: 0;
 }
 .lc-edit-stepper::before {
   content: '';
   position: absolute;
-  top: 14px;
-  left: 14px;
-  right: 14px;
+  top: 7px;
+  left: 7px;
+  right: 7px;
   height: 2px;
   background: var(--border-primary);
   z-index: 0;
@@ -604,13 +608,13 @@ body.light-mode .lc-edit-hero {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 0;
   position: relative;
   z-index: 1;
 }
 .lc-edit-step-node {
-  width: 28px;
-  height: 28px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   background: var(--bg-primary);
   border: 2px solid var(--border-primary);
@@ -618,16 +622,17 @@ body.light-mode .lc-edit-hero {
   align-items: center;
   justify-content: center;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 9px;
   font-weight: 700;
   color: var(--text-muted);
   cursor: pointer;
   transition: all 0.2s ease;
+  padding: 0;
 }
 .lc-edit-step.is-active .lc-edit-step-node {
   border-color: var(--emerald);
   color: var(--emerald);
-  box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.15);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
 }
 .lc-edit-step.is-done .lc-edit-step-node {
   background: var(--emerald);
@@ -635,16 +640,25 @@ body.light-mode .lc-edit-hero {
   color: white;
 }
 .lc-edit-step-label {
-  font-size: 11.5px;
-  font-weight: 500;
-  text-align: center;
-  color: var(--text-muted);
-  max-width: 140px;
-  line-height: 1.3;
+  display: none;
 }
-.lc-edit-step.is-active .lc-edit-step-label {
-  font-weight: 700;
+.lc-edit-step:hover .lc-edit-step-label {
+  display: block;
+  position: absolute;
+  top: 20px;
+  background: var(--bg-tertiary);
   color: var(--text-primary);
+  padding: 3px 7px;
+  border-radius: 4px;
+  border: 1px solid var(--border-primary);
+  font-size: 10.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  z-index: 5;
+  pointer-events: none;
 }
 
 .lc-edit-article {
@@ -1049,11 +1063,16 @@ body.light-mode .lc-edit-keyterms {
   padding: 14px;
   transition:
     transform 0.15s ease,
-    box-shadow 0.15s ease;
+    box-shadow 0.15s ease,
+    border-color 0.15s ease;
+  position: relative;
+  cursor: help;
 }
 .lc-edit-keyterm:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 16px -8px rgba(0, 0, 0, 0.15);
+  border-color: var(--emerald-border, rgba(16, 185, 129, 0.3));
+  z-index: 2;
 }
 .lc-edit-keyterm-swatch {
   display: inline-flex;
@@ -1080,6 +1099,15 @@ body.light-mode .lc-edit-keyterms {
   font-size: 11.5px;
   line-height: 1.45;
   color: var(--text-secondary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lc-edit-keyterm:hover .lc-edit-keyterm-def {
+  -webkit-line-clamp: unset;
+  display: block;
 }
 .lc-edit-keyterms-legacy {
   font-size: 13px;
@@ -1193,7 +1221,7 @@ body.light-mode .lc-edit-keyterms {
 
 @media (max-width: 1100px) {
   .lc-edit-hero {
-    padding: 24px 40px 28px;
+    padding: 10px 40px 12px;
   }
   .lc-edit-article,
   .lc-edit-progress-bar {
@@ -1228,7 +1256,7 @@ body.light-mode .lc-edit-keyterms {
 }
 @media (max-width: 600px) {
   .lc-edit-hero {
-    padding: 20px;
+    padding: 10px 20px 12px;
   }
   .lc-edit-article,
   .lc-edit-progress-bar {
@@ -1240,7 +1268,7 @@ body.light-mode .lc-edit-keyterms {
     gap: 12px;
   }
   .lc-edit-h1 {
-    font-size: 36px;
+    font-size: 16px;
   }
   .lc-edit-h2 {
     font-size: 28px;
@@ -1258,4 +1286,117 @@ body.light-mode .lc-edit-keyterms {
   .lc-edit-step {
     min-width: 80px;
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   FINANCIAL STATEMENT MODULE
+   ═══════════════════════════════════════════════════════════════ */
+
+.lc-edit-finstmt {
+  background: rgba(16, 185, 129, 0.04);
+  border: 1px solid var(--border-primary);
+  border-radius: 14px;
+  padding: 20px;
+  margin: 28px -24px;
+}
+body.light-mode .lc-edit-finstmt {
+  background: #faf7f1;
+}
+
+.lc-edit-finstmt--loading,
+.lc-edit-finstmt--error {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+.lc-edit-finstmt--error {
+  color: var(--negative);
+}
+
+.lc-edit-finstmt-head {
+  margin-bottom: 14px;
+}
+.lc-edit-finstmt-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--emerald);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.lc-edit-finstmt-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 4px 0 0;
+}
+
+.lc-edit-finstmt-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-sans);
+}
+.lc-edit-finstmt-table th {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  text-align: right;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-primary);
+}
+.lc-edit-finstmt-table th.lc-edit-finstmt-label-col {
+  text-align: left;
+}
+.lc-edit-finstmt-table td {
+  font-size: 13px;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--border-secondary);
+}
+.lc-edit-finstmt-label {
+  color: var(--text-primary);
+}
+.lc-edit-finstmt-num {
+  font-family: var(--font-mono);
+  text-align: right;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+.lc-edit-finstmt-table tr.is-subtotal td {
+  font-weight: 600;
+  background: rgba(16, 185, 129, 0.03);
+}
+.lc-edit-finstmt-table tr.is-total td {
+  font-weight: 700;
+  border-top: 2px solid var(--emerald);
+  border-bottom: 2px solid var(--emerald);
+  background: rgba(16, 185, 129, 0.06);
+}
+.lc-edit-finstmt-section td {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  padding: 14px 12px 4px;
+  background: transparent;
+}
+.lc-edit-finstmt-delta {
+  font-size: 12px;
+}
+.lc-edit-finstmt-pos {
+  color: var(--positive);
+}
+.lc-edit-finstmt-neg {
+  color: var(--negative);
+}
+
+.lc-edit-finstmt-caption {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
 }

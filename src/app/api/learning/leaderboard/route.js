@@ -45,13 +45,26 @@ export async function GET(request) {
     }
     userIds = Array.from(new Set(userIds.filter(Boolean)));
 
-    const [{ data: elos }, { data: profiles }] = await Promise.all([
+    const [{ data: elosRaw, error: eloError }, { data: profiles }] = await Promise.all([
       admin
         .from('user_learning_elo')
         .select('user_id, total_elo, weekly_delta')
         .in('user_id', userIds),
       admin.from('profiles').select('id, full_name, username, user_settings').in('id', userIds),
     ]);
+
+    let elos = elosRaw;
+    if (eloError) {
+      const { data: fallback } = await admin
+        .from('user_elo')
+        .select('user_id, current_rating')
+        .in('user_id', userIds);
+      elos = (fallback || []).map((e) => ({
+        user_id: e.user_id,
+        total_elo: e.current_rating,
+        weekly_delta: 0,
+      }));
+    }
 
     const profileMap = new Map((profiles || []).map((p) => [p.id, p]));
     const eloMap = new Map((elos || []).map((e) => [e.user_id, e]));

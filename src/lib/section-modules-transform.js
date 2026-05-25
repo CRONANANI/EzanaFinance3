@@ -1,3 +1,118 @@
+import { KEYWORDS } from './echo-keywords.js';
+
+const SUPPLEMENTAL_DEFINITIONS = {
+  'inflation risk': 'Your money buys less over time as prices rise.',
+  'interest rate risk': 'Bond prices fall when interest rates rise.',
+  'market risk': 'A broad selloff drags every asset down at once.',
+  'business risk': 'The specific company you own falters or fails.',
+  'liquidity risk': "You can't sell when you need to — or only at a steep discount.",
+  diversification: 'Holding many uncorrelated positions so no single risk dominates the outcome.',
+  'asset allocation':
+    'How a portfolio is split across asset classes (stocks, bonds, cash, real estate).',
+  rebalancing: 'Periodically restoring a portfolio to its target allocation after market moves.',
+  correlation:
+    'How closely two assets move together. Diversification works because correlations are below 1.',
+  overfitting: 'Building a model so closely fit to past noise that it fails on new data.',
+  crowding: 'When too many traders follow the same signal, the edge erodes.',
+  'survivorship bias': 'You see the winners that survived but not the failures that disappeared.',
+  'base rate': 'The unconditional probability of an outcome before considering specifics.',
+  edge: 'A repeatable reason your decisions should outperform a passive benchmark net of costs.',
+  revenue: 'Total money the company collected from selling products or services during the period.',
+  'cost of revenue': 'The direct cost of producing the product or service that was sold.',
+  'gross profit':
+    'Revenue minus cost of revenue. The profit from the product itself, before overhead.',
+  'operating expenses':
+    'Costs of running the business beyond the direct cost of the product — R&D, sales, admin.',
+  'operating income':
+    'Profit from the core business after operating expenses, before interest and taxes.',
+  'net income': 'Final profit after every cost. The "bottom line."',
+  eps: 'Earnings per share. Net income divided by shares outstanding.',
+  'diluted eps': 'EPS including the dilutive effect of options and convertible securities.',
+  assets: 'Economic resources the company controls.',
+  liabilities: 'Money the company owes to others.',
+  equity: 'What would remain for shareholders if every asset were sold and every debt paid.',
+  'current assets': 'Assets expected to convert to cash within a year.',
+  'current liabilities': 'Debts due within a year.',
+  goodwill: 'The premium paid above book value when acquiring another company.',
+  'retained earnings': 'Cumulative profit kept by the company rather than paid out as dividends.',
+  'book value': 'Total assets minus total liabilities. The accounting value of shareholder equity.',
+  'operating cash flow':
+    'Cash generated or used by the core business operations during the period.',
+  'capital expenditure': 'Cash spent on long-term assets like property, equipment, software.',
+  capex: 'Capital expenditure. Cash spent on long-term assets.',
+  'free cash flow':
+    'Operating cash flow minus capital expenditure. Cash available after maintaining operations.',
+  fcf: 'Free cash flow. Operating cash flow minus capital expenditure.',
+  depreciation:
+    'A non-cash expense allocating the cost of long-term assets over their useful life.',
+  amortization: 'Like depreciation, but for intangible assets like software, patents, or goodwill.',
+  'working capital':
+    'Current assets minus current liabilities. Changes in working capital affect operating cash flow.',
+  'p/e ratio':
+    'Price-to-earnings ratio. Stock price divided by EPS. Measures how much investors pay per dollar of profit.',
+  'current ratio': 'Current assets divided by current liabilities. Short-term liquidity measure.',
+  'quick ratio': 'Like current ratio but excludes inventory. A stricter liquidity test.',
+  'debt-to-equity': 'Total debt divided by total equity. Measures financial leverage.',
+  'return on equity':
+    'Net income divided by shareholder equity. How efficiently the company uses shareholder capital.',
+  roe: 'Return on equity. Net income divided by shareholder equity.',
+  'return on invested capital':
+    'After-tax operating income divided by invested capital. The truest measure of business returns.',
+  roic: 'Return on invested capital.',
+};
+
+const TERM_DEFINITION_LOOKUP = (() => {
+  const lookup = { ...SUPPLEMENTAL_DEFINITIONS };
+  for (const entry of Object.values(KEYWORDS)) {
+    if (entry?.term && entry?.definition) {
+      const key = entry.term.toLowerCase().trim();
+      lookup[key] = entry.definition;
+      if (!key.endsWith('s')) lookup[`${key}s`] = entry.definition;
+      else lookup[key.slice(0, -1)] = entry.definition;
+    }
+  }
+  return lookup;
+})();
+
+function lookupDefinition(term) {
+  if (!term) return null;
+  return TERM_DEFINITION_LOOKUP[String(term).toLowerCase().trim()] || null;
+}
+
+function resolveTermDefinition(term, existingDef) {
+  if (existingDef && existingDef !== '(definition pending)') return existingDef;
+  return (
+    lookupDefinition(term) ||
+    `Definition for "${term}" — add to SUPPLEMENTAL_DEFINITIONS in section-modules-transform.js.`
+  );
+}
+
+function enrichKeyTermDefinitions(modules) {
+  if (!Array.isArray(modules)) return modules;
+  return modules.map((m) => {
+    if (m.type === 'keyTermCards' && Array.isArray(m.terms)) {
+      return {
+        ...m,
+        terms: m.terms.map((t) => ({
+          ...t,
+          definition: resolveTermDefinition(t.name, t.definition),
+        })),
+      };
+    }
+    if (m.type === 'keyTermsList' && Array.isArray(m.terms)) {
+      return {
+        ...m,
+        terms: m.terms.map((t) =>
+          typeof t === 'string'
+            ? { name: t, definition: resolveTermDefinition(t) }
+            : { ...t, definition: resolveTermDefinition(t.name, t.definition) },
+        ),
+      };
+    }
+    return m;
+  });
+}
+
 const HISTORY_TRIGGERS = [
   /history/i,
   /historical/i,
@@ -140,11 +255,14 @@ function buildKeyTermsModule(keyTerms) {
     type: 'keyTermCards',
     eyebrow: 'Key terms unlocked this section',
     pillLabel: `${keyTerms.length} new`,
-    terms: keyTerms.map((t, i) => ({
-      name: typeof t === 'string' ? t : t.name,
-      color: TERM_COLORS[i % TERM_COLORS.length],
-      definition: typeof t === 'object' && t.definition ? t.definition : '(definition pending)',
-    })),
+    terms: keyTerms.map((t, i) => {
+      const name = typeof t === 'string' ? t : t.name;
+      return {
+        name,
+        color: TERM_COLORS[i % TERM_COLORS.length],
+        definition: resolveTermDefinition(name, typeof t === 'object' ? t.definition : null),
+      };
+    }),
   };
 }
 
@@ -156,7 +274,10 @@ function buildCalloutModule(callout) {
 /** Convert legacy section shape to explicit modules array. Idempotent. */
 export function transformSection(section) {
   if (Array.isArray(section.modules) && section.modules.length > 0) {
-    return section;
+    return {
+      ...section,
+      modules: enrichKeyTermDefinitions(section.modules),
+    };
   }
 
   const modules = [];
@@ -182,7 +303,7 @@ export function transformSection(section) {
     ...section,
     shortTitle: section.shortTitle || section.title,
     estimatedMinutes: section.estimatedMinutes || 3,
-    modules,
+    modules: enrichKeyTermDefinitions(modules),
   };
 }
 
