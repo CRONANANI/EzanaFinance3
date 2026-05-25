@@ -11,7 +11,7 @@
   max-width: 480px;
   width: 100%;
   padding: 3rem 2.5rem;
-  background: rgba(16, 185, 129, 0.02);
+  background: var(--surface-card);
   border: 1px solid rgba(16, 185, 129, 0.15);
   border-radius: 16px;
   text-align: center;
@@ -82,7 +82,9 @@ body.light-mode .reactivate-card p {
   font-weight: 600;
   cursor: pointer;
   margin-bottom: 1rem;
-  transition: transform 150ms ease, box-shadow 150ms ease;
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease;
 }
 
 .reactivate-btn:hover:not(:disabled) {
@@ -118,5 +120,7 @@ body.light-mode .reactivate-card p {
 }
 
 @keyframes react-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }

@@ -121,8 +121,14 @@
 }
 
 @keyframes settingsNavFadeIn {
-  from { opacity: 0; transform: translateX(-8px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .settings-nav-item:hover {
@@ -224,7 +230,6 @@
   color: #10b981;
 }
 
-
 /* ══════════════════════════════
    CONTENT AREA
    ══════════════════════════════ */
@@ -235,7 +240,6 @@
   overflow-y: auto;
 }
 
-
 /* ══════════════════════════════
    SHARED PANEL STYLES
    ══════════════════════════════ */
@@ -244,8 +248,14 @@
 }
 
 @keyframes settingsPanelIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .settings-panel-header {
@@ -611,7 +621,9 @@ body.light-mode .settings-input option:checked {
   cursor: pointer;
 }
 
-.settings-avatar-input { display: none; }
+.settings-avatar-input {
+  display: none;
+}
 
 .settings-avatar img,
 .settings-avatar-img {
@@ -638,9 +650,31 @@ body.light-mode .settings-input option:checked {
 }
 
 /* Danger Zone */
-.settings-danger-zone { margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(239, 68, 68, 0.15); }
-.settings-danger-title { font-size: 0.875rem; font-weight: 700; color: #f87171; margin: 0 0 1rem; display: flex; align-items: center; gap: 0.5rem; }
-.settings-danger-card { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.25rem; background: rgba(239, 68, 68, 0.04); border: 1px solid rgba(239, 68, 68, 0.15); border-radius: 12px; flex-wrap: wrap; }
+.settings-danger-zone {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(239, 68, 68, 0.15);
+}
+.settings-danger-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #f87171;
+  margin: 0 0 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.settings-danger-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: rgba(239, 68, 68, 0.04);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  border-radius: 12px;
+  flex-wrap: wrap;
+}
 
 /* Danger zone — readable contrast in both modes */
 .settings-danger-card .settings-danger-text strong,
@@ -671,10 +705,32 @@ body.light-mode .settings-danger-card .settings-danger-text p {
 }
 
 /* Password strength */
-.settings-password-strength { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
-.settings-strength-bar { flex: 1; height: 4px; background: rgba(16, 185, 129, 0.1); border-radius: 2px; overflow: hidden; }
-.settings-strength-fill { height: 100%; border-radius: 2px; transition: width 0.2s, background 0.2s; }
-.settings-strength-label { font-size: 0.6875rem; font-weight: 600; color: #6b7280; min-width: 60px; }
+.settings-password-strength {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+.settings-strength-bar {
+  flex: 1;
+  height: 4px;
+  background: rgba(16, 185, 129, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.settings-strength-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition:
+    width 0.2s,
+    background 0.2s;
+}
+.settings-strength-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #6b7280;
+  min-width: 60px;
+}
 
 /* Info cards / badges */
 .settings-info-card {
@@ -733,7 +789,7 @@ body.light-mode .settings-danger-card .settings-danger-text p {
 .settings-plan-card {
   padding: 1.25rem;
   background: rgba(16, 185, 129, 0.03);
-  border: 1px solid rgba(16, 185, 129, 0.08);
+  border: 1px solid var(--border-primary);
   border-radius: 14px;
   cursor: pointer;
   transition: all 0.2s;
@@ -842,7 +898,7 @@ body.light-mode .settings-danger-card .settings-danger-text p {
 .settings-integration-card {
   padding: 1.25rem;
   background: rgba(16, 185, 129, 0.03);
-  border: 1px solid rgba(16, 185, 129, 0.08);
+  border: 1px solid var(--border-primary);
   border-radius: 14px;
   display: flex;
   align-items: center;
@@ -915,7 +971,7 @@ body.light-mode .settings-danger-card .settings-danger-text p {
 }
 
 .settings-table tbody tr:hover {
-  background: rgba(16, 185, 129, 0.02);
+  background: var(--surface-card);
 }
 
 /* Usage meter */
@@ -942,7 +998,6 @@ body.light-mode .settings-danger-card .settings-danger-text p {
   color: #6b7280;
 }
 
-
 /* ══════════════════════════════
    TOAST NOTIFICATION
    ══════════════════════════════ */
@@ -968,10 +1023,15 @@ body.light-mode .settings-danger-card .settings-danger-text p {
 }
 
 @keyframes toastIn {
-  from { opacity: 0; transform: translateX(-50%) translateY(16px); }
-  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 }
-
 
 /* ══════════════════════════════
    MOBILE
@@ -1039,8 +1099,14 @@ body.light-mode .settings-danger-card .settings-danger-text p {
   }
 
   @keyframes settingsMobileDropIn {
-    from { opacity: 0; transform: translateY(-8px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   .settings-mobile-item {
@@ -1193,7 +1259,6 @@ body.light-mode .settings-push-card--muted {
   border-color: rgba(0, 0, 0, 0.08);
 }
 
-
 /* ══════════════════════════════
    LIGHT MODE
    ══════════════════════════════ */
@@ -1210,31 +1275,55 @@ body.light-mode .settings-sidebar {
   border-right-color: rgba(0, 0, 0, 0.06);
 }
 
-body.light-mode .settings-title { color: #111827; }
-body.light-mode .settings-panel-title { color: #111827; }
-body.light-mode .settings-section-title { color: #1f2937; }
-body.light-mode .settings-nav-item.active { background: rgba(16, 185, 129, 0.06); }
+body.light-mode .settings-title {
+  color: #111827;
+}
+body.light-mode .settings-panel-title {
+  color: #111827;
+}
+body.light-mode .settings-section-title {
+  color: #1f2937;
+}
+body.light-mode .settings-nav-item.active {
+  background: rgba(16, 185, 129, 0.06);
+}
 
 /* Resting label: bump from #6b7280 → #1f2937 for proper contrast on cream bg */
-body.light-mode .settings-nav-label { color: #1f2937; }
+body.light-mode .settings-nav-label {
+  color: #1f2937;
+}
 
 /* Active label: stays the deepest contrast */
-body.light-mode .settings-nav-item.active .settings-nav-label { color: #111827; }
+body.light-mode .settings-nav-item.active .settings-nav-label {
+  color: #111827;
+}
 
 /* Hover label: explicitly override the dark-mode #e2e8f0 rule.
    Dark mode hover lightens text (white-on-dark); light mode hover should
    DARKEN text + add emerald tint to signal interactivity. */
-body.light-mode .settings-nav-item:hover .settings-nav-label { color: #047857; }
+body.light-mode .settings-nav-item:hover .settings-nav-label {
+  color: #047857;
+}
 
 /* Description text under labels — also bumped from #4b5563 for readability */
-body.light-mode .settings-nav-desc { color: #4b5563; }
-body.light-mode .settings-nav-item:hover .settings-nav-desc { color: #6b7280; }
+body.light-mode .settings-nav-desc {
+  color: #4b5563;
+}
+body.light-mode .settings-nav-item:hover .settings-nav-desc {
+  color: #6b7280;
+}
 
 /* Icon hover: dark mode keeps the emerald tint already; light mode needs the
    same explicit emerald (icon color is #6b7280 by default). */
-body.light-mode .settings-nav-icon { color: #6b7280; }
-body.light-mode .settings-nav-item:hover .settings-nav-icon { color: #10b981; }
-body.light-mode .settings-nav-item.active .settings-nav-icon { color: #10b981; }
+body.light-mode .settings-nav-icon {
+  color: #6b7280;
+}
+body.light-mode .settings-nav-item:hover .settings-nav-icon {
+  color: #10b981;
+}
+body.light-mode .settings-nav-item.active .settings-nav-icon {
+  color: #10b981;
+}
 
 body.light-mode .settings-input {
   background: rgba(0, 0, 0, 0.02);
@@ -1245,21 +1334,37 @@ body.light-mode .settings-input:focus {
   border-color: rgba(16, 185, 129, 0.4);
   background: #fff;
 }
-body.light-mode .settings-toggle-label { color: #1f2937; }
-body.light-mode .settings-plan-name { color: #111827; }
-body.light-mode .settings-table td { color: #1f2937; }
-body.light-mode .settings-integration-name { color: #1f2937; }
-body.light-mode .settings-api-key { background: rgba(0, 0, 0, 0.03); }
+body.light-mode .settings-toggle-label {
+  color: #1f2937;
+}
+body.light-mode .settings-plan-name {
+  color: #111827;
+}
+body.light-mode .settings-table td {
+  color: #1f2937;
+}
+body.light-mode .settings-integration-name {
+  color: #1f2937;
+}
+body.light-mode .settings-api-key {
+  background: rgba(0, 0, 0, 0.03);
+}
 
 @media (max-width: 768px) {
-  body.light-mode .settings-mobile-selector { background: #f8f9fb; }
+  body.light-mode .settings-mobile-selector {
+    background: #f8f9fb;
+  }
   body.light-mode .settings-mobile-trigger {
     background: rgba(0, 0, 0, 0.03);
     border-color: rgba(0, 0, 0, 0.08);
     color: #111827;
   }
-  body.light-mode .settings-mobile-dropdown { background: rgba(255, 255, 255, 0.98); }
-  body.light-mode .settings-mobile-item-label { color: #1f2937; }
+  body.light-mode .settings-mobile-dropdown {
+    background: rgba(255, 255, 255, 0.98);
+  }
+  body.light-mode .settings-mobile-item-label {
+    color: #1f2937;
+  }
 }
 
 /* ══════════════════════════════
@@ -1296,7 +1401,9 @@ body.light-mode .settings-api-key { background: rgba(0, 0, 0, 0.03); }
   border: 1px solid rgba(16, 185, 129, 0.12);
   background: rgba(16, 185, 129, 0.03);
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 }
 
 .settings-data-request-option:hover {
@@ -1441,16 +1548,24 @@ body.light-mode .settings-data-request-option.is-selected {
   background: rgba(16, 185, 129, 0.08);
 }
 
-body.light-mode .settings-data-request-option-label { color: #111827; }
-body.light-mode .settings-data-request-option-desc { color: #64748b; }
+body.light-mode .settings-data-request-option-label {
+  color: #111827;
+}
+body.light-mode .settings-data-request-option-desc {
+  color: #64748b;
+}
 
 body.light-mode .settings-data-request-list-item {
   background: #fff;
   border-color: rgba(0, 0, 0, 0.08);
 }
 
-body.light-mode .settings-data-request-list-type { color: #111827; }
-body.light-mode .settings-data-request-list-details { color: #64748b; }
+body.light-mode .settings-data-request-list-type {
+  color: #111827;
+}
+body.light-mode .settings-data-request-list-details {
+  color: #64748b;
+}
 
 body.light-mode .settings-data-request-hint {
   color: #64748b;
@@ -1475,8 +1590,12 @@ body.light-mode .settings-data-request-hint strong {
 }
 
 @keyframes settings-fade {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .settings-delete-modal {
@@ -1491,8 +1610,14 @@ body.light-mode .settings-data-request-hint strong {
 }
 
 @keyframes settings-modal-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 body.light-mode .settings-delete-modal {

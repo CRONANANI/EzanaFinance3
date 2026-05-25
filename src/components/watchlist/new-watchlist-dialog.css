@@ -19,13 +19,23 @@
 }
 
 @keyframes nwdFadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes nwdPop {
-  from { opacity: 0; transform: translateY(8px) scale(0.98); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .nwd-dialog {
@@ -105,7 +115,9 @@ body.light-mode .nwd-dialog {
   gap: 1.25rem;
 }
 
-.nwd-body::-webkit-scrollbar { width: 8px; }
+.nwd-body::-webkit-scrollbar {
+  width: 8px;
+}
 .nwd-body::-webkit-scrollbar-thumb {
   background: var(--scrollbar-thumb, rgba(16, 185, 129, 0.15));
   border-radius: 8px;
@@ -184,7 +196,9 @@ body.light-mode .nwd-dialog {
   font-family: inherit;
   font-size: 0.875rem;
   outline: none;
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 }
 
 .nwd-input::placeholder,
@@ -220,7 +234,10 @@ body.light-mode .nwd-dialog {
   align-items: center;
   justify-content: center;
   padding: 0;
-  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s,
+    border-color 0.15s;
 }
 
 .nwd-color.on {
@@ -249,7 +266,7 @@ body.light-mode .nwd-color.on {
   justify-content: space-between;
   gap: 0.75rem;
   padding: 0.5rem 0.625rem;
-  background: var(--surface-card, rgba(16, 185, 129, 0.02));
+  background: var(--surface-card);
   border: 1px solid var(--border-secondary, rgba(16, 185, 129, 0.06));
   border-radius: 8px;
 }
@@ -308,8 +325,12 @@ body.light-mode .nwd-color.on {
   font-variant-numeric: tabular-nums;
 }
 
-.nwd-sug-chg.up   { color: var(--positive, #10b981); }
-.nwd-sug-chg.down { color: var(--negative, #ef4444); }
+.nwd-sug-chg.up {
+  color: var(--positive, #10b981);
+}
+.nwd-sug-chg.down {
+  color: var(--negative, #ef4444);
+}
 
 .nwd-sug-add {
   display: inline-flex;
@@ -323,7 +344,9 @@ body.light-mode .nwd-color.on {
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  transition: background 0.15s, opacity 0.15s;
+  transition:
+    background 0.15s,
+    opacity 0.15s;
 }
 
 .nwd-sug-add:hover:not(:disabled) {
@@ -420,7 +443,9 @@ body.light-mode .nwd-badge-nasdaq {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 .nwd-chip-x:hover {
@@ -454,9 +479,15 @@ body.light-mode .nwd-badge-nasdaq {
   height: 1rem !important;
 }
 
-.nwd-search-wrap .left-5 { left: 0.85rem !important; }
-.nwd-search-wrap .right-5 { right: 0.85rem !important; }
-.nwd-search-wrap .right-14 { right: 2.5rem !important; }
+.nwd-search-wrap .left-5 {
+  left: 0.85rem !important;
+}
+.nwd-search-wrap .right-5 {
+  right: 0.85rem !important;
+}
+.nwd-search-wrap .right-14 {
+  right: 2.5rem !important;
+}
 
 /* Alert toggle row */
 .nwd-alert {
@@ -469,7 +500,7 @@ body.light-mode .nwd-badge-nasdaq {
   user-select: none;
 }
 
-.nwd-alert input[type="checkbox"] {
+.nwd-alert input[type='checkbox'] {
   width: 14px;
   height: 14px;
   accent-color: var(--emerald, #10b981);
@@ -493,7 +524,7 @@ body.light-mode .nwd-badge-nasdaq {
   gap: 0.5rem;
   padding: 0.875rem 1.25rem;
   border-top: 1px solid var(--border-secondary, rgba(16, 185, 129, 0.06));
-  background: var(--surface-card, rgba(16, 185, 129, 0.02));
+  background: var(--surface-card);
 }
 
 body.light-mode .nwd-footer {
@@ -538,13 +569,33 @@ body.light-mode .nwd-footer {
 
 /* Mobile */
 @media (max-width: 560px) {
-  .nwd-overlay { padding: 0.75rem; align-items: flex-end; }
-  .nwd-dialog  { max-height: 92vh; border-radius: 14px 14px 0 0; }
-  .nwd-header  { padding: 1rem 1rem 0.75rem; }
-  .nwd-body    { padding: 0.875rem 1rem; gap: 1rem; }
-  .nwd-footer  { padding: 0.75rem 1rem; }
-  .nwd-sug-row { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
-  .nwd-sug-side { width: 100%; justify-content: space-between; }
+  .nwd-overlay {
+    padding: 0.75rem;
+    align-items: flex-end;
+  }
+  .nwd-dialog {
+    max-height: 92vh;
+    border-radius: 14px 14px 0 0;
+  }
+  .nwd-header {
+    padding: 1rem 1rem 0.75rem;
+  }
+  .nwd-body {
+    padding: 0.875rem 1rem;
+    gap: 1rem;
+  }
+  .nwd-footer {
+    padding: 0.75rem 1rem;
+  }
+  .nwd-sug-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  .nwd-sug-side {
+    width: 100%;
+    justify-content: space-between;
+  }
 }
 
 /* ---------- Polymorphic item kind picker ---------- */
@@ -567,7 +618,10 @@ body.light-mode .nwd-footer {
   background: transparent;
   color: var(--text-secondary, #94a3b8);
   cursor: pointer;
-  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease;
 }
 .nwd-kind-chip:hover {
   color: var(--text-primary, #f0f6fc);
@@ -598,7 +652,10 @@ body.light-mode .nwd-footer {
   background: transparent;
   color: var(--text-secondary, #94a3b8);
   cursor: pointer;
-  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease,
+    background 0.15s ease;
 }
 .nwd-quickpick:hover:not(:disabled) {
   color: var(--text-primary, #f0f6fc);

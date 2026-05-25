@@ -108,13 +108,15 @@ body.light-mode .pricing-free-banner {
 
 .pricing-card {
   position: relative;
-  background: rgba(16, 185, 129, 0.02);
-  border: 1px solid rgba(16, 185, 129, 0.08);
+  background: var(--surface-card);
+  border: 1px solid var(--border-primary);
   border-radius: 16px;
   padding: 1.25rem;
   display: flex;
   flex-direction: column;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
 }
 
 .pricing-card:hover {

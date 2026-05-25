@@ -13,16 +13,16 @@
    ═══════════════════════════════════════════════════════════ */
 
 :root {
-  /* ── Core Backgrounds ── */
+  /* ── Core Backgrounds — flat single-tone dark mode ── */
   --bg-primary: #0a0e13; /* Page background */
-  --bg-secondary: #0d1117; /* Elevated surfaces (cards) */
-  --bg-tertiary: #161b22; /* Deeply nested elements */
+  --bg-secondary: #0a0e13; /* Cards match page (was #0d1117) */
+  --bg-tertiary: #0a0e13; /* Nested elements match page (was #161b22) */
   --bg-overlay: rgba(0, 0, 0, 0.6); /* Modal/overlay backdrop */
 
-  /* ── Card / Surface ── */
-  --surface-card: rgba(16, 185, 129, 0.02);
-  --surface-card-hover: rgba(16, 185, 129, 0.04);
-  --surface-input: rgba(16, 185, 129, 0.04);
+  /* ── Card / Surface — transparent over the flat page bg ── */
+  --surface-card: transparent; /* was rgba(16,185,129,0.02) */
+  --surface-card-hover: rgba(16, 185, 129, 0.04); /* subtle emerald hover kept */
+  --surface-input: transparent; /* was rgba(16,185,129,0.04) */
   --surface-input-focus: rgba(16, 185, 129, 0.06);
 
   /* ── Borders ── */
@@ -306,16 +306,16 @@ html:has(body.route-market-analysis),
 body.route-market-analysis,
 .force-dark-theme,
 body.light-mode .force-dark-theme {
-  /* Core backgrounds */
+  /* Core backgrounds — flat single-tone */
   --bg-primary: #0a0e13;
-  --bg-secondary: #0d1117;
-  --bg-tertiary: #161b22;
+  --bg-secondary: #0a0e13; /* was #0d1117 */
+  --bg-tertiary: #0a0e13; /* was #161b22 */
   --bg-overlay: rgba(0, 0, 0, 0.6);
 
-  /* Card / surface */
-  --surface-card: rgba(16, 185, 129, 0.02);
+  /* Card / surface — transparent over flat page bg */
+  --surface-card: transparent; /* was rgba(16,185,129,0.02) */
   --surface-card-hover: rgba(16, 185, 129, 0.04);
-  --surface-input: rgba(16, 185, 129, 0.04);
+  --surface-input: transparent; /* was rgba(16,185,129,0.04) */
   --surface-input-focus: rgba(16, 185, 129, 0.06);
 
   /* Borders */

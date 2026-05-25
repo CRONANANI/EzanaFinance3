@@ -277,7 +277,7 @@ body.light-mode .home-terminal-body {
 }
 .hts-weekly-lines a:hover {
   color: #10b981;
-  background: rgba(16, 185, 129, 0.02);
+  background: var(--surface-card);
 }
 
 .hts-weekly-footer {
@@ -1148,7 +1148,7 @@ body.light-mode .hts-week-standing-row {
   padding: 0.5rem;
   border-radius: 8px;
   background: rgba(16, 185, 129, 0.04);
-  border: 1px solid rgba(16, 185, 129, 0.08);
+  border: 1px solid var(--border-primary);
 }
 .hts-week-position-ticker {
   font-size: 0.75rem;

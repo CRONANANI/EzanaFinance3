@@ -41,7 +41,9 @@
   cursor: pointer;
   background: transparent;
   color: #8b949e;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 .am-page .am-toggle button:hover {
@@ -61,8 +63,8 @@
 }
 
 .am-page .am-stat-card {
-  background: rgba(16, 185, 129, 0.02);
-  border: 1px solid rgba(16, 185, 129, 0.08);
+  background: var(--surface-card);
+  border: 1px solid var(--border-primary);
   border-radius: 16px;
   padding: 1rem 1.25rem;
 }
@@ -153,7 +155,7 @@
 }
 
 .am-page .am-table-wrap {
-  border: 1px solid rgba(16, 185, 129, 0.08);
+  border: 1px solid var(--border-primary);
   border-radius: 12px;
   overflow: hidden;
   max-height: 380px;
@@ -165,7 +167,10 @@
 /* Fixed column widths so Price / 24h / Mkt cap (or Vol) line up under headers — avoid `auto` + mixed content widths */
 .am-page .am-table-head {
   display: grid;
-  grid-template-columns: minmax(0, 1.45fr) minmax(4.75rem, 1fr) minmax(3.5rem, 0.75fr) minmax(4.25rem, 1.05fr) 72px;
+  grid-template-columns: minmax(0, 1.45fr) minmax(4.75rem, 1fr) minmax(3.5rem, 0.75fr) minmax(
+      4.25rem,
+      1.05fr
+    ) 72px;
   gap: 0.5rem;
   align-items: center;
   padding: 0.5rem 0.75rem;
@@ -180,7 +185,10 @@
 
 .am-page .am-table-row {
   display: grid;
-  grid-template-columns: minmax(0, 1.45fr) minmax(4.75rem, 1fr) minmax(3.5rem, 0.75fr) minmax(4.25rem, 1.05fr) 72px;
+  grid-template-columns: minmax(0, 1.45fr) minmax(4.75rem, 1fr) minmax(3.5rem, 0.75fr) minmax(
+      4.25rem,
+      1.05fr
+    ) 72px;
   gap: 0.5rem;
   align-items: center;
   padding: 0.45rem 0.75rem;
@@ -275,7 +283,10 @@
   font-size: 0.7rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
   font-family: inherit;
 }
 

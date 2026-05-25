@@ -341,7 +341,7 @@ body.light-mode .lc3-opt:hover {
 }
 body.light-mode .lc3-opt.sel {
   color: #065f46;
-  background: rgba(16, 185, 129, 0.10);
+  background: rgba(16, 185, 129, 0.1);
   border-color: rgba(16, 185, 129, 0.55);
 }
 
@@ -409,7 +409,7 @@ body.light-mode .lc3-results-badge.fail {
   padding: 1rem 1.25rem;
   border: 1px solid rgba(16, 185, 129, 0.08);
   border-radius: 12px;
-  background: rgba(16, 185, 129, 0.02);
+  background: var(--surface-card);
 }
 .lc3-review-title {
   font-size: 0.8125rem;
