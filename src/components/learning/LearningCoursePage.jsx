@@ -385,40 +385,15 @@ export function LearningCoursePage() {
                   isLastSection={isLastSection}
                   isMarkedRead={completedSet.has(currentSection)}
                   nextShortTitle={nextSectionData?.shortTitle || nextSectionData?.title}
+                  readAck={readAck}
+                  readingComplete={progress?.reading_complete}
+                  quizPassed={quizPassed}
+                  submitting={submitting}
                   onPrev={handlePrev}
                   onNext={handleNext}
+                  onReadingDone={onReadingDone}
+                  onStartQuiz={handleStartQuiz}
                 />
-
-                {!quizPassed && (
-                  <>
-                    {readAck && !progress?.reading_complete && (
-                      <div className="lc3-read-row" style={{ marginTop: '1.25rem' }}>
-                        <button
-                          type="button"
-                          className="lc3-btn lc3-btn-primary"
-                          disabled={submitting}
-                          onClick={onReadingDone}
-                        >
-                          {progress?.reading_complete
-                            ? 'Reading complete ✓'
-                            : 'Confirm & unlock quiz'}
-                        </button>
-                      </div>
-                    )}
-
-                    {progress?.reading_complete && (
-                      <button
-                        type="button"
-                        className="lc3-btn lc3-btn-primary"
-                        style={{ marginTop: '0.75rem' }}
-                        onClick={handleStartQuiz}
-                        data-task-target="learning-quiz-button"
-                      >
-                        Take Quiz →
-                      </button>
-                    )}
-                  </>
-                )}
               </>
             ) : (
               <p className="lc3-muted">No sections for this course.</p>

@@ -16,6 +16,59 @@ function hashSeed(str) {
   return Math.abs(h);
 }
 
+function sanitizeAuthorRefs(text) {
+  if (!text || typeof text !== 'string') return text;
+  return text
+    .replace(/Isichenko \(Ch\.[^)]+\)/g, 'Research')
+    .replace(/Isichenko's/g, 'The')
+    .replace(/Isichenko /g, '')
+    .replace(/Kanungo \(B3[^)]*\)/g, 'Probabilistic analysis')
+    .replace(/Kanungo's/g, 'The')
+    .replace(/Kanungo /g, '')
+    .replace(/Hilpisch \(Ch\.[^)]+\)/g, 'Empirical research')
+    .replace(/Hilpisch /g, '')
+    .replace(/Feynman: "[^"]+"/g, 'Self-deception is the most common analytical error.')
+    .replace(/\(Ch\.[^)]+\)/g, '')
+    .replace(/ \(B3\)/g, '')
+    .replace(/ \(B1 Ch\.[^)]+\)/g, '')
+    .replace(/  +/g, ' ')
+    .trim();
+}
+
+function sanitizeModule(module) {
+  if (!module || typeof module !== 'object') return module;
+  const out = { ...module };
+  if (typeof out.body === 'string') out.body = sanitizeAuthorRefs(out.body);
+  if (typeof out.caption === 'string') out.caption = sanitizeAuthorRefs(out.caption);
+  if (typeof out.title === 'string') out.title = sanitizeAuthorRefs(out.title);
+  if (Array.isArray(out.events)) {
+    out.events = out.events.map((e) => ({
+      ...e,
+      label: sanitizeAuthorRefs(e.label),
+      detail: sanitizeAuthorRefs(e.detail),
+    }));
+  }
+  if (Array.isArray(out.terms)) {
+    out.terms = out.terms.map((t) =>
+      typeof t === 'string'
+        ? sanitizeAuthorRefs(t)
+        : { ...t, name: sanitizeAuthorRefs(t.name), definition: sanitizeAuthorRefs(t.definition) },
+    );
+  }
+  return out;
+}
+
+function sanitizeSections(sections) {
+  if (!Array.isArray(sections)) return sections;
+  return sections.map((s) => ({
+    ...s,
+    title: sanitizeAuthorRefs(s.title),
+    content: sanitizeAuthorRefs(s.content),
+    callout: sanitizeAuthorRefs(s.callout),
+    modules: Array.isArray(s.modules) ? s.modules.map(sanitizeModule) : s.modules,
+  }));
+}
+
 /* ═══════════════════════════════════════════════════════════════
    TEXTBOOK KNOWLEDGE BASE — embedded educational content
    keyed by topic keywords matched against course titles.
@@ -348,12 +401,16 @@ function findMatchingParagraphs(course) {
 
   for (const [keyword, paragraphs] of Object.entries(TEXTBOOK_PARAGRAPHS)) {
     const words = keyword.split(/\s+/);
-    if (words.every((w) => combined.includes(w))) return paragraphs;
+    if (words.every((w) => combined.includes(w))) {
+      return paragraphs.map(sanitizeAuthorRefs);
+    }
   }
 
   // Partial match
   for (const [keyword, paragraphs] of Object.entries(TEXTBOOK_PARAGRAPHS)) {
-    if (combined.includes(keyword)) return paragraphs;
+    if (combined.includes(keyword)) {
+      return paragraphs.map(sanitizeAuthorRefs);
+    }
   }
 
   return null;
@@ -399,38 +456,36 @@ export function buildPlaceholderContent(course) {
     },
     {
       title: 'Core Framework and Principles',
-      content: `${matchedParas && matchedParas[1] ? matchedParas[1] : `The key framework for ${title.toLowerCase()} combines quantitative rigor with qualitative judgment. As Isichenko emphasizes throughout his work on quantitative portfolio management, "the first principle is that you must not fool yourself." Every framework has limitations — knowing those limits is as important as knowing the framework itself.`}\n\n${matchedParas && matchedParas[2] ? matchedParas[2] : `Practitioners combine multiple inputs when making decisions in ${trackNoun}. No single metric or model captures the full picture. The goal is to build a dashboard of complementary signals that cross-validate each other.`}\n\nContext always matters more than any single number. The same metric can be bullish or bearish depending on the broader environment, the company's history, and the current market regime.`,
+      content: `${matchedParas && matchedParas[1] ? matchedParas[1] : `The key framework for ${title.toLowerCase()} combines quantitative rigor with qualitative judgment. Self-deception is the most common analytical error — every framework has limitations, and knowing those limits is as important as knowing the framework itself.`}\n\n${matchedParas && matchedParas[2] ? matchedParas[2] : `Practitioners combine multiple inputs when making decisions in ${trackNoun}. No single metric or model captures the full picture. The goal is to build a dashboard of complementary signals that cross-validate each other.`}\n\nContext always matters more than any single number. The same metric can be bullish or bearish depending on the broader environment, the company's history, and the current market regime.`,
       visual: generateVisual(course, 1),
       callout: matchedParas
-        ? 'The textbook sources for this section are cited inline — refer to the specific chapters for deeper reading.'
+        ? 'Refer to the cited sources for deeper reading on the concepts introduced here.'
         : seed % 3 === 0
-          ? `Key insight per Isichenko: "crowding" erodes edges. If everyone follows the same signal, it stops working.`
+          ? `Key insight: crowding erodes edges. If everyone follows the same signal, it stops working.`
           : seed % 3 === 1
             ? `Practice: After this section, identify one real-world application you can analyze this week.`
-            : `Kanungo (B3): Treat every estimate as a distribution, not a point. How confident are you?`,
+            : `Treat every estimate as a distribution, not a point. How confident are you?`,
     },
     {
       title: 'Practical Application',
-      content: `Applying ${title.toLowerCase()} in practice requires disciplined process.\n\nStart by identifying the key variables that drive outcomes. For ${trackNoun}, Isichenko (Ch.2.3) frames this as statistical learning: "find an approximation of a function known only through observed data pairs." Your job is to find the features (inputs) that reliably predict the target (outcome).\n\nA common mistake at the ${level} level is overcomplicating the analysis. Isichenko and Hilpisch both demonstrate that simpler models often outperform complex ones out-of-sample because they have fewer parameters to overfit. As Huyen (B1 Ch.5) notes in feature engineering: the right features matter more than the right algorithm.\n\nDocument your process. Every analysis should be reproducible. If you can't explain why you made a decision, you can't learn from the outcome.`,
+      content: `Applying ${title.toLowerCase()} in practice requires disciplined process.\n\nStart by identifying the key variables that drive outcomes. For ${trackNoun}, statistical learning frames this as finding an approximation of a function known only through observed data pairs. Your job is to find the features (inputs) that reliably predict the target (outcome).\n\nA common mistake at the ${level} level is overcomplicating the analysis. Simpler models often outperform complex ones out-of-sample because they have fewer parameters to overfit. The right features matter more than the right algorithm.\n\nDocument your process. Every analysis should be reproducible. If you can't explain why you made a decision, you can't learn from the outcome.`,
       callout:
-        'Isichenko Ch.7.4: Paper trading validates your process before you risk real capital. If paper results differ significantly from backtests, investigate before deploying.',
+        'Paper trading validates your process before you risk real capital. If paper results differ significantly from backtests, investigate before deploying.',
     },
     {
       title: 'Common Mistakes and Pitfalls',
-      content: `At the ${level} level, the most dangerous mistakes are subtle:\n\n**Overfitting** (Isichenko Ch.2.4.2/7.2): Feynman's principle applies — "you must not fool yourself." The more strategies you test, the more likely you find false positives. Cross-validation and out-of-sample testing are essential.\n\n**Ignoring base rates**: Most active strategies don't outperform their benchmark after costs. Hilpisch (Ch.4) shows that even sophisticated models achieve only ~75% directional accuracy at best. Starting with this baseline prevents overconfidence.\n\n**Survivorship bias**: You see the winners but not the graveyard. For every successful example in ${trackNoun}, dozens of failed attempts received no attention.\n\n**Crowding** (Isichenko Ch.4.7): Widely followed signals stop working because too many traders act on them simultaneously. When everyone does the same thing, the edge disappears and the trade becomes a risk factor.\n\nThe antidote: systematic process, written rules, and honest evaluation of results versus expectations.`,
+      content: `At the ${level} level, the most dangerous mistakes are subtle:\n\n**Overfitting**: The more strategies you test, the more likely you find false positives. Cross-validation and out-of-sample testing are essential — you must not fool yourself.\n\n**Ignoring base rates**: Most active strategies don't outperform their benchmark after costs. Even sophisticated models rarely exceed ~75% directional accuracy. Starting from this baseline prevents overconfidence.\n\n**Survivorship bias**: You see the winners but not the graveyard. For every successful example in ${trackNoun}, dozens of failed attempts received no attention.\n\n**Crowding**: Widely followed signals stop working because too many traders act on them simultaneously. When everyone does the same thing, the edge disappears and the trade becomes a risk factor.\n\nThe antidote: systematic process, written rules, and honest evaluation of results versus expectations.`,
     },
     {
       title: 'Bringing It All Together',
-      content: `The key takeaway: success in ${title.toLowerCase()} requires combining analytical skill with disciplined execution.\n\nPer Isichenko (Ch.3.8.1) "forecast development guidelines": use point-in-time data (no lookahead), match your analysis horizon to your trading horizon, and account for transaction costs. Without these basics, any apparent edge is likely data mining.\n\nKanungo (B3) adds the probabilistic perspective: every forecast should be accompanied by a confidence level. A high-conviction call with narrow uncertainty justifies a larger position; a low-conviction view with wide uncertainty should be sized small or skipped.\n\nNext steps: apply one concept from this lesson to a real-world example this week. Track your reasoning and review the outcome after a defined period. Repetition turns knowledge into skill.\n\nBefore taking the quiz, review the key terms from section one and make sure you can explain each in your own words. If you can teach the concept, you truly understand it.`,
+      content: `The key takeaway: success in ${title.toLowerCase()} requires combining analytical skill with disciplined execution.\n\nThree forecast-development fundamentals: use point-in-time data (no lookahead), match your analysis horizon to your trading horizon, and account for transaction costs. Without these basics, any apparent edge is likely data mining.\n\nA probabilistic perspective ties it together: every forecast should be accompanied by a confidence level. A high-conviction call with narrow uncertainty justifies a larger position; a low-conviction view with wide uncertainty should be sized small or skipped.\n\nNext steps: apply one concept from this lesson to a real-world example this week. Track your reasoning and review the outcome after a defined period. Repetition turns knowledge into skill.\n\nBefore taking the quiz, review the key terms from section one and make sure you can explain each in your own words. If you can teach the concept, you truly understand it.`,
     },
   ];
 
-  const quiz = buildTopicQuiz(course, seed);
-  return { sections, quiz };
+  return { sections, quiz: [] };
 }
 
 function buildTopicQuiz(course, seed) {
-  const t = course.title;
   const track = course.track;
   const trackCtx =
     {
@@ -441,69 +496,194 @@ function buildTopicQuiz(course, seed) {
       risk: 'risk management',
     }[track] || 'financial markets';
 
-  return [
+  const trackNoun =
     {
-      question: `According to Isichenko, what is the primary danger of "crowding" in ${trackCtx}?`,
+      stocks: 'stocks',
+      crypto: 'crypto assets',
+      betting: 'prediction-market contracts',
+      commodities: 'commodities',
+      risk: 'investments',
+    }[track] || 'investments';
+
+  const sourceQuestions = [
+    {
+      question: `In ${trackCtx}, what does the term "crowding" describe?`,
       options: [
-        'Markets become more efficient over time',
-        'When too many investors follow the same signal, the edge erodes and the trade becomes a risk factor',
-        'Crowding makes markets more stable',
-        'It only affects retail investors',
+        'Too many traders entering a market makes prices more efficient and stable',
+        'A widely followed signal whose edge erodes as more participants act on it',
+        'A platform where retail traders gather to share investing tips and ideas',
+        'A regulatory designation for markets with very high daily trading volume',
       ],
-      correctIndex: 1,
+      correct: 1,
       explanation:
-        'Isichenko Ch.4.7 warns that widely followed factors become risk factors themselves because crowded positions can unwind violently when participants exit simultaneously.',
+        'When a signal becomes widely followed, its edge erodes because too many participants act on it simultaneously — and when they exit, the trade can unwind violently.',
     },
     {
-      question: `Isichenko opens his discussion of overfitting with a quote from Richard Feynman. What is the key principle?`,
+      question: 'What is overfitting in the context of analyzing market data?',
       options: [
-        '"The stock market always goes up"',
-        '"The first principle is that you must not fool yourself — and you are the easiest person to fool"',
-        '"Buy low, sell high"',
-        '"Time in the market beats timing the market"',
+        'Holding a position for longer than the original analysis time horizon required',
+        'Building a model so closely fit to past noise that it fails on new data',
+        'Putting too much capital into one position relative to the overall portfolio',
+        'Trading more frequently than the underlying signal actually justifies',
       ],
-      correctIndex: 1,
+      correct: 1,
       explanation:
-        "Isichenko Ch.2.4.2 uses Feynman's principle to warn that overfitting — finding patterns in noise — is the most common self-deception in quantitative analysis.",
+        "Overfitting is finding patterns in noise — the model 'works' on historical data but breaks on new data because it learned the past's random features.",
     },
     {
-      question: `Why does Kanungo (B3) recommend treating every financial estimate as a distribution rather than a point estimate?`,
+      question: 'Why should a forecast be expressed as a distribution rather than a single number?',
       options: [
-        'Distributions are required by the SEC',
-        'All financial predictions involve uncertainty — a range shows the confidence level and prevents false precision',
-        'Point estimates are more expensive to compute',
-        'Distributions are only relevant for option pricing',
+        'Regulators require all published financial forecasts to include a confidence band',
+        'A range conveys the uncertainty and prevents the false precision of a point estimate',
+        'Spreadsheets and trading software prefer ranges over single number inputs',
+        'Distributions are only useful when pricing options or other derivative contracts',
       ],
-      correctIndex: 1,
+      correct: 1,
       explanation:
-        'Kanungo\'s probabilistic framework emphasizes that "every prediction should output a distribution, not a point estimate" — ignoring uncertainty leads to overconfidence and poor risk management.',
+        'Every prediction involves uncertainty. A distribution communicates that uncertainty — a point estimate hides it and encourages overconfidence.',
     },
     {
-      question: `In the context of "${t}", what does Hilpisch demonstrate about the assumption of normally distributed returns?`,
+      question: `When real ${trackNoun} returns are tested against the normal-distribution assumption, what happens?`,
       options: [
-        'Returns are always normally distributed',
-        'The assumption is invalid — real market returns have fat tails and extreme events occur more often than normal distributions predict',
-        'Normal distributions perfectly describe all financial data',
-        'Hilpisch supports the normality assumption',
+        'Real returns match the bell curve almost exactly across all historical samples',
+        'Real returns have fat tails — extreme moves happen much more often than predicted',
+        'The assumption is more accurate for long horizons than for short ones',
+        'It only matters for backtesting models, not for live trading decisions',
       ],
-      correctIndex: 1,
+      correct: 1,
       explanation:
-        'Hilpisch Ch.4 "Debunking Central Assumptions" shows with real data that financial returns violate normality — fat tails mean extreme events happen much more often than bell curves predict.',
+        'Financial returns violate normality — fat tails mean rare extreme events happen far more often than a bell curve predicts. This is the single most important departure from textbook finance.',
     },
     {
-      question:
-        "What is the most important first step before applying any analytical framework, per Isichenko's forecast development guidelines (Ch.3.8.1)?",
+      question: 'What is the most important first step before applying any analytical framework?',
       options: [
-        'Find a strategy that worked in the past',
-        'Ensure you are using point-in-time data with no lookahead, and match your analysis horizon to your trading horizon',
-        'Choose the most complex model available',
-        'Ask a financial advisor what to do',
+        'Find the model that has worked best in published academic research recently',
+        'Use point-in-time data with no lookahead, matched to your trading horizon',
+        'Choose the most sophisticated model your computer can handle running',
+        'Consult a registered financial advisor about which framework is appropriate',
       ],
-      correctIndex: 1,
+      correct: 1,
       explanation:
-        'Isichenko Ch.3.8.1 emphasizes that without point-in-time data discipline and horizon matching, any backtest result is unreliable — these are the foundational requirements.',
+        'Without point-in-time data and horizon alignment, any apparent edge is likely data-mining. These two checks come before any modeling choice.',
+    },
+    {
+      question: 'What does "survivorship bias" mean when looking at examples in financial markets?',
+      options: [
+        'Newer companies are systematically more profitable than older established ones',
+        'You see the winners that survived but not the failures that disappeared',
+        'Surviving companies tend to be larger, which makes them harder to analyze',
+        'Markets eventually punish bad actors, so only legitimate firms remain visible',
+      ],
+      correct: 1,
+      explanation:
+        'For every visible success story there are dozens of failed attempts that got no attention. Reasoning from survivors alone makes outcomes look more predictable than they are.',
+    },
+    {
+      question: `Why does position-sizing matter as much as picking the right ${trackNoun}?`,
+      options: [
+        'Larger positions automatically have lower transaction costs per share traded',
+        'A correct call sized too small or too large produces a different total outcome',
+        'Position size is regulated and must follow specific exchange-level limits',
+        'Most brokers offer better fills on standard round-lot position sizes only',
+      ],
+      correct: 1,
+      explanation:
+        'Sizing translates a forecast into outcomes. A high-conviction view should be sized larger; a low-conviction view should be skipped or sized small. The same call at the wrong size produces the wrong result.',
+    },
+    {
+      question: 'What is base-rate neglect, and why does it affect investors?',
+      options: [
+        'Ignoring the interest rate set by central banks when valuing future cash flows',
+        'Ignoring how often most strategies actually succeed when judging a new one',
+        'Failing to account for trading commissions in the total cost of a position',
+        'Not adjusting return calculations for the effects of inflation over time',
+      ],
+      correct: 1,
+      explanation:
+        "Most active strategies don't outperform their benchmark after costs. Starting from that base rate prevents overconfidence about any specific new strategy.",
+    },
+    {
+      question: 'What does it mean to have an "edge" in markets?',
+      options: [
+        'Access to faster network connections than other participants in the market',
+        'A repeatable reason your decisions should outperform a passive benchmark',
+        'Holding a larger position than other traders in the same security',
+        'Trading at a premium brokerage tier with reduced commission structures',
+      ],
+      correct: 1,
+      explanation:
+        'An edge is a structural or analytical reason your decisions should outperform a passive benchmark net of costs. Without one, the expected outcome is the benchmark minus fees.',
+    },
+    {
+      question: 'Why is it important to write down your reasoning before placing a trade?',
+      options: [
+        'Most regulators require traders to document every position they open up front',
+        'It forces you to evaluate the outcome against the original thesis, not after-the-fact rationalization',
+        'Written notes are useful primarily for tax reporting at the end of the year',
+        'It satisfies the audit trail requirements of standard portfolio accounting software',
+      ],
+      correct: 1,
+      explanation:
+        "Written reasoning lets you compare outcomes to the original thesis instead of rewriting your beliefs after the fact. It's the single most effective antidote to hindsight bias.",
     },
   ];
+
+  return sourceQuestions.map((q, qIdx) => shuffleOptionsDeterministic(q, seed + qIdx));
+}
+
+function shuffleOptionsDeterministic(question, seed) {
+  let state = (seed * 2654435761) >>> 0;
+  const next = () => {
+    state = (state * 1664525 + 1013904223) >>> 0;
+    return state / 0x100000000;
+  };
+
+  const tagged = question.options.map((text, i) => ({
+    text,
+    isCorrect: i === question.correct,
+  }));
+
+  for (let i = tagged.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(next() * (i + 1));
+    [tagged[i], tagged[j]] = [tagged[j], tagged[i]];
+  }
+
+  const newCorrectIndex = tagged.findIndex((t) => t.isCorrect);
+
+  return {
+    question: question.question,
+    options: tagged.map((t) => t.text),
+    correctIndex: newCorrectIndex,
+    explanation: question.explanation,
+  };
+}
+
+const AUTHOR_REF_RE = /Isichenko|Kanungo|Hilpisch|Feynman|Ch\.\d/i;
+
+function quizNeedsReplacement(quiz) {
+  if (!Array.isArray(quiz) || quiz.length === 0) return true;
+  const blob = JSON.stringify(quiz);
+  if (AUTHOR_REF_RE.test(blob)) return true;
+  if (quiz.length < 10) return true;
+  return quiz.every((q) => q.correctIndex === 1);
+}
+
+function finalizeQuiz(quiz, course) {
+  const seed = hashSeed(course.id);
+  if (quizNeedsReplacement(quiz)) {
+    return buildTopicQuiz(course, seed);
+  }
+  return quiz.map((q, i) =>
+    shuffleOptionsDeterministic(
+      {
+        question: q.question,
+        options: q.options,
+        correct: q.correct ?? q.correctIndex ?? 0,
+        explanation: q.explanation,
+      },
+      seed + i,
+    ),
+  );
 }
 
 /**
@@ -511,13 +691,23 @@ function buildTopicQuiz(course, seed) {
  * otherwise falls back to the textbook-enhanced generator.
  */
 export function getCourseContent(course) {
+  let raw;
   const migrated = MIGRATED_CONTENT[course.id];
   if (migrated && Array.isArray(migrated.sections) && Array.isArray(migrated.quiz)) {
-    return transformCourseContent(migrated);
+    raw = migrated;
+  } else {
+    const handWritten = COURSE_CONTENT[course.id];
+    if (handWritten && Array.isArray(handWritten.sections) && Array.isArray(handWritten.quiz)) {
+      raw = handWritten;
+    } else {
+      raw = buildPlaceholderContent(course);
+    }
   }
-  const handWritten = COURSE_CONTENT[course.id];
-  if (handWritten && Array.isArray(handWritten.sections) && Array.isArray(handWritten.quiz)) {
-    return transformCourseContent(handWritten);
-  }
-  return transformCourseContent(buildPlaceholderContent(course));
+
+  const transformed = transformCourseContent(raw);
+  return {
+    ...transformed,
+    sections: sanitizeSections(transformed.sections),
+    quiz: finalizeQuiz(transformed.quiz, course),
+  };
 }
