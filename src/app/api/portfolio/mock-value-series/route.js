@@ -7,11 +7,13 @@ import { fetchBatchedHistoricalPrices } from '@/lib/fmp-historical-batched';
 export const dynamic = 'force-dynamic';
 
 const RANGES = new Set(['1M', '6M', '1Y', 'ALL']);
+const DEFAULT_STARTING_CASH = 10000;
 
 /**
  * GET /api/portfolio/mock-value-series?range=1M|6M|1Y|ALL
  *
- * Returns the user's mock portfolio value over time via trade-replay reconstruction.
+ * Returns the user's mock portfolio value over time, sourced primarily from
+ * `mock_trades`. `mock_portfolios.portfolio` is a hint for current value only.
  */
 export async function GET(req) {
   try {
@@ -23,47 +25,103 @@ export async function GET(req) {
     const requestedRange = req.nextUrl.searchParams.get('range');
     const range = RANGES.has(requestedRange) ? requestedRange : 'ALL';
 
-    const { data: portfolioRow } = await supabaseAdmin
-      .from('mock_portfolios')
-      .select('portfolio, updated_at')
-      .eq('user_id', user.id)
-      .maybeSingle();
-
-    if (!portfolioRow?.portfolio) {
-      return NextResponse.json({ range, points: [], source: 'no-portfolio' });
-    }
-
-    const currentCash = Number(portfolioRow.portfolio?.cash) || 0;
-    const currentValue = computeCurrentValue(portfolioRow.portfolio);
-
-    if (currentValue <= 0) {
-      return NextResponse.json({ range, points: [], source: 'empty-portfolio' });
-    }
-
-    const { data: trades, error: tradesError } = await supabaseAdmin
+    const { data: tradesRaw, error: tradesError } = await supabaseAdmin
       .from('mock_trades')
       .select('ticker, quantity, price, trade_type, total_amount, created_at')
       .eq('user_id', user.id)
       .order('created_at', { ascending: true });
 
     if (tradesError) {
-      console.error('[mock-value-series] mock_trades error', tradesError);
+      console.error('[mock-value-series] mock_trades query failed', tradesError);
     }
 
-    const tradeList = Array.isArray(trades) ? trades : [];
-    const portfolioCreatedAt = portfolioRow.updated_at || null;
+    const trades = Array.isArray(tradesRaw) ? tradesRaw : [];
+
+    const { data: portfolioRow } = await supabaseAdmin
+      .from('mock_portfolios')
+      .select('portfolio, updated_at')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    const portfolio = portfolioRow?.portfolio || null;
+
+    if (trades.length === 0 && !portfolio) {
+      console.info('[mock-value-series] empty state — no trades, no portfolio', {
+        user_id: user.id,
+      });
+      return NextResponse.json({
+        range,
+        points: [],
+        source: 'no-portfolio',
+      });
+    }
+
+    if (trades.length === 0 && portfolio) {
+      const cash = Number(portfolio.cash) || DEFAULT_STARTING_CASH;
+      const createdAt = portfolioRow.updated_at || new Date().toISOString();
+      const startISO = new Date(createdAt).toISOString().slice(0, 10);
+      const endISO = new Date().toISOString().slice(0, 10);
+      console.info('[mock-value-series] flat line — has portfolio, no trades', {
+        user_id: user.id,
+        cash,
+      });
+      return NextResponse.json({
+        range,
+        points: [
+          { at: `${startISO}T16:00:00.000Z`, value: cash },
+          { at: `${endISO}T16:00:00.000Z`, value: cash },
+        ],
+        source: 'no-trades',
+        startedAt: createdAt,
+      });
+    }
+
+    const currentPositions = derivePositionsFromTrades(trades);
+    const currentPrices = await fetchCurrentPrices(Object.keys(currentPositions));
+
+    const currentCash = computeCashFromTrades(trades, DEFAULT_STARTING_CASH);
+    const positionsValue = Object.entries(currentPositions).reduce((sum, [ticker, qty]) => {
+      const px = Number(currentPrices[ticker] || 0);
+      return sum + qty * px;
+    }, 0);
+    const currentValue = Math.max(0, currentCash + positionsValue);
+
+    let effectiveCurrentValue = currentValue;
+    let valueSource = 'derived-from-trades';
+    if (positionsValue === 0 && Object.keys(currentPositions).length > 0 && portfolio) {
+      const jsonbValue = computeCurrentValueFromJsonb(portfolio);
+      if (jsonbValue > 0) {
+        effectiveCurrentValue = jsonbValue;
+        valueSource = 'jsonb-fallback';
+      }
+    }
+
+    console.info('[mock-value-series] reconstructing', {
+      user_id: user.id,
+      trade_count: trades.length,
+      open_position_count: Object.keys(currentPositions).length,
+      current_cash: currentCash,
+      positions_value: positionsValue,
+      current_value: effectiveCurrentValue,
+      value_source: valueSource,
+    });
+
+    const firstTradeAt = trades[0].created_at;
+    const portfolioCreatedAt = portfolioRow?.updated_at || firstTradeAt;
+    const anchorDate =
+      new Date(firstTradeAt) < new Date(portfolioCreatedAt) ? firstTradeAt : portfolioCreatedAt;
 
     const replay = await replayTradesToValueSeries({
-      trades: tradeList,
+      trades,
       currentCash,
-      currentValue,
-      portfolioCreatedAt,
+      currentValue: effectiveCurrentValue,
+      portfolioCreatedAt: anchorDate,
       fetchHistoricalPrices: fetchBatchedHistoricalPrices,
     });
 
-    const points = clipPointsToRange(replay.points, range);
+    const clipped = clipPointsToRange(replay.points, range);
 
-    if (points.length < 2 && replay.points.length >= 2) {
+    if (clipped.length < 2 && replay.points.length >= 2) {
       return NextResponse.json({
         range: 'ALL',
         requested_range: range,
@@ -76,28 +134,89 @@ export async function GET(req) {
 
     return NextResponse.json({
       range,
-      points,
+      points: clipped,
       source: replay.source,
       startedAt: replay.startedAt,
     });
   } catch (e) {
-    console.error('[mock-value-series] failed', e);
+    console.error('[mock-value-series] unexpected failure', {
+      message: e?.message,
+      stack: e?.stack,
+    });
     return NextResponse.json({ error: e?.message ?? 'Unknown', points: [] }, { status: 500 });
   }
 }
 
-function computeCurrentValue(portfolio) {
+function derivePositionsFromTrades(trades) {
+  const positions = {};
+  for (const t of trades) {
+    const qty = Number(t.quantity);
+    if (!Number.isFinite(qty) || qty <= 0) continue;
+    const ticker = String(t.ticker || '').toUpperCase();
+    if (!ticker) continue;
+    positions[ticker] = (positions[ticker] || 0) + (t.trade_type === 'buy' ? qty : -qty);
+  }
+  for (const ticker of Object.keys(positions)) {
+    if (positions[ticker] <= 0) delete positions[ticker];
+  }
+  return positions;
+}
+
+function computeCashFromTrades(trades, startingCash) {
+  let cash = startingCash;
+  for (const t of trades) {
+    const total = Number(t.total_amount ?? Number(t.quantity) * Number(t.price));
+    if (!Number.isFinite(total)) continue;
+    cash += t.trade_type === 'buy' ? -total : total;
+  }
+  return Math.max(0, cash);
+}
+
+async function fetchCurrentPrices(tickers) {
+  if (!tickers || tickers.length === 0) return {};
+
+  const apiKey = process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+  if (!apiKey) {
+    console.warn('[mock-value-series] FMP_API_KEY missing — cannot fetch current prices');
+    return {};
+  }
+
+  try {
+    const symbols = tickers.join(',');
+    const url = `https://financialmodelingprep.com/api/v3/quote/${symbols}?apikey=${apiKey}`;
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) {
+      console.warn('[mock-value-series] FMP quote failed', { status: res.status });
+      return {};
+    }
+    const data = await res.json();
+    if (!Array.isArray(data)) return {};
+
+    const prices = {};
+    for (const row of data) {
+      if (row?.symbol && row?.price != null) {
+        prices[String(row.symbol).toUpperCase()] = Number(row.price);
+      }
+    }
+    return prices;
+  } catch (err) {
+    console.warn('[mock-value-series] FMP current-price fetch threw', err?.message);
+    return {};
+  }
+}
+
+function computeCurrentValueFromJsonb(portfolio) {
   if (!portfolio || typeof portfolio !== 'object') return 0;
   const cash = Number(portfolio.cash) || 0;
   const positions = portfolio.positions;
   if (!positions || typeof positions !== 'object') return Math.max(0, cash);
 
   let positionsValue = 0;
-  const iterate = Array.isArray(positions) ? positions : Object.values(positions);
-  for (const p of iterate) {
-    const q = Number(p?.shares ?? p?.qty ?? 0) || 0;
-    const pr = Number(p?.currentPrice ?? p?.lastPrice ?? p?.avgCost ?? 0) || 0;
-    positionsValue += q * pr;
+  const entries = Array.isArray(positions) ? positions : Object.values(positions);
+  for (const p of entries) {
+    const qty = Number(p?.shares ?? p?.qty ?? 0) || 0;
+    const px = Number(p?.currentPrice ?? p?.lastPrice ?? p?.avgCost ?? 0) || 0;
+    positionsValue += qty * px;
   }
   return Math.max(0, cash + positionsValue);
 }

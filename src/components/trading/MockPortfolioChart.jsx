@@ -143,11 +143,16 @@ export default function MockPortfolioChart() {
         <div className="mpc-empty">
           <i className="bi bi-graph-up mpc-empty-icon" />
           <p>
-            {data.source === 'no-portfolio'
-              ? 'Create your mock portfolio to start tracking performance.'
-              : data.source === 'empty-portfolio'
-                ? 'Your portfolio is empty. Place a trade to start tracking performance over time.'
-                : 'Start trading to see your portfolio performance over time.'}
+            {data.source === 'no-portfolio' &&
+              'No portfolio activity yet — place a trade to start tracking performance.'}
+            {data.source === 'no-trades' &&
+              'Your portfolio has cash but no trades yet. Place a trade to see performance over time.'}
+            {data.source === 'empty-portfolio' &&
+              'Your portfolio is empty. Add some starting cash to begin.'}
+            {data.source === 'error' &&
+              'Unable to load portfolio history. Please refresh the page.'}
+            {!['no-portfolio', 'no-trades', 'empty-portfolio', 'error'].includes(data.source) &&
+              'Start trading to see your portfolio performance over time.'}
           </p>
         </div>
       )}
