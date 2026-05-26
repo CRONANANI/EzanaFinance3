@@ -1,8 +1,10 @@
 'use client';
 
-import { delta as deltaTokens } from './elo-design-tokens';
+import { useEloTheme } from './EloThemeContext';
 
-export function Sparkline({ data, w = 62, h = 14, color = '#16a34a' }) {
+export function Sparkline({ data, w = 62, h = 14, color }) {
+  const { delta: deltaTokens, brand } = useEloTheme();
+  const lineColor = color ?? brand.base;
   if (!data || data.length < 2) {
     return <svg width={w} height={h} aria-hidden />;
   }
@@ -22,7 +24,7 @@ export function Sparkline({ data, w = 62, h = 14, color = '#16a34a' }) {
 
   const path = `M ${points}`;
   const isDown = data[data.length - 1] < data[0];
-  const strokeColor = isDown ? deltaTokens.neg : color;
+  const strokeColor = isDown ? deltaTokens.neg : lineColor;
 
   const ariaLabel = `${data[0].toLocaleString()} to ${data[data.length - 1].toLocaleString()}`;
 

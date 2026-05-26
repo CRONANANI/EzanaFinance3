@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { TIER_LIST } from '@/lib/elo-tier-colors';
-import { page, brand, shape, type as typeTokens } from './elo-design-tokens';
+import { type as typeTokens } from './elo-design-tokens';
+import { useEloTheme } from './EloThemeContext';
 
 const TIME_RANGES = ['1W', '1M', '3M', 'YTD', 'All'];
 
@@ -14,6 +15,7 @@ export function FilterBar({
   activeTier,
   onTierChange,
 }) {
+  const { page, brand, shape } = useEloTheme();
   const [localQuery, setLocalQuery] = useState(query);
   const debounceRef = useRef();
   const inputRef = useRef(null);
@@ -193,6 +195,8 @@ export function FilterBar({
 }
 
 function TierFilterChip({ isActive, onClick, label, tier }) {
+  const { page } = useEloTheme();
+
   return (
     <button
       type="button"
@@ -205,7 +209,7 @@ function TierFilterChip({ isActive, onClick, label, tier }) {
         gap: 5,
         padding: '5px 10px',
         background: isActive ? page.surfaceAlt : page.surface,
-        color: isActive ? (tier ? tier.ink : page.ink) : page.inkSoft,
+        color: isActive ? (tier ? tier.base : page.ink) : page.inkSoft,
         border: isActive
           ? `1px solid ${tier ? tier.ring : page.borderStrong}`
           : `1px solid ${page.border}`,

@@ -1,9 +1,12 @@
 'use client';
 
 import { NumberText } from './NumberText';
-import { page, delta as deltaTokens, shape, type as typeTokens } from './elo-design-tokens';
+import { type as typeTokens } from './elo-design-tokens';
+import { useEloTheme } from './EloThemeContext';
 
 export function StatsStrip({ stats }) {
+  const { page, delta: deltaTokens, shape } = useEloTheme();
+
   if (!stats) return null;
 
   const formatTime = (iso) => {

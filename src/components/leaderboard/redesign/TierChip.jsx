@@ -1,9 +1,11 @@
 'use client';
 
 import { getTier } from '@/lib/elo-tier-colors';
-import { page, type as typeTokens } from './elo-design-tokens';
+import { type as typeTokens } from './elo-design-tokens';
+import { useEloTheme } from './EloThemeContext';
 
 export function TierChip({ tier, size = 'md' }) {
+  const { page, isDark } = useEloTheme();
   const t = getTier(tier);
   const isSmall = size === 'sm';
 
@@ -16,12 +18,12 @@ export function TierChip({ tier, size = 'md' }) {
         gap: 6,
         padding: isSmall ? '2px 7px 2px 6px' : '3px 9px 3px 7px',
         borderRadius: 5,
-        background: page.surfaceAlt,
-        color: t.ink,
+        background: isDark ? `${t.base}1f` : page.surfaceAlt,
+        color: isDark ? t.base : t.ink,
         fontFamily: typeTokens.sans,
         fontSize: isSmall ? 10 : 11,
         fontWeight: 500,
-        border: `1px solid ${page.border}`,
+        border: `1px solid ${isDark ? `${t.base}40` : page.border}`,
         whiteSpace: 'nowrap',
         lineHeight: 1,
       }}

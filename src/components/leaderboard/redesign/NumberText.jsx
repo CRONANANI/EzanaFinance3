@@ -1,6 +1,7 @@
 'use client';
 
-import { type as typeTokens, page } from './elo-design-tokens';
+import { type as typeTokens } from './elo-design-tokens';
+import { useEloTheme } from './EloThemeContext';
 
 export function NumberText({
   children,
@@ -11,6 +12,8 @@ export function NumberText({
   style = {},
   className = '',
 }) {
+  const { page } = useEloTheme();
+
   return (
     <span
       className={className}

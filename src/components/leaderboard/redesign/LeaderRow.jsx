@@ -6,17 +6,13 @@ import { TierChip } from './TierChip';
 import { Sparkline } from './Sparkline';
 import { NumberText } from './NumberText';
 import { getTier } from '@/lib/elo-tier-colors';
-import {
-  page,
-  brand,
-  delta as deltaTokens,
-  type as typeTokens,
-  density,
-} from './elo-design-tokens';
+import { type as typeTokens, density } from './elo-design-tokens';
+import { useEloTheme } from './EloThemeContext';
 
 const COLUMN_GRID = '40px 1fr 130px 80px 60px 60px 64px 72px 72px';
 
 export function LeaderRow({ user, isYou, zone }) {
+  const { page, brand, delta: deltaTokens } = useEloTheme();
   const t = getTier(user.tier);
 
   const rankColor = isYou

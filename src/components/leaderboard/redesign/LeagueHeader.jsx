@@ -3,9 +3,11 @@
 import { useRouter } from 'next/navigation';
 import { getTier } from '@/lib/elo-tier-colors';
 import { NumberText } from './NumberText';
-import { page, brand, type as typeTokens } from './elo-design-tokens';
+import { type as typeTokens } from './elo-design-tokens';
+import { useEloTheme } from './EloThemeContext';
 
 export function LeagueHeader({ league, onEarnXp }) {
+  const { page, brand } = useEloTheme();
   const router = useRouter();
   const handleClick = onEarnXp || (() => router.push('/learning-center'));
 

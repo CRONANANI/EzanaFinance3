@@ -3,7 +3,7 @@
 import { LeaderRow } from './LeaderRow';
 import { ZoneDivider } from './ZoneDivider';
 import { NumberText } from './NumberText';
-import { page, shape } from './elo-design-tokens';
+import { useEloTheme } from './EloThemeContext';
 
 const HEADERS = [
   { key: 'rank', label: '#', sortable: false, align: 'left' },
@@ -29,6 +29,7 @@ export function LeaderboardTable({
   range,
   total,
 }) {
+  const { page, shape } = useEloTheme();
   const promotionCount = league?.promotionCount ?? 3;
   const demotionCount = league?.demotionCount ?? 2;
   const visibleTotal = rows.length;

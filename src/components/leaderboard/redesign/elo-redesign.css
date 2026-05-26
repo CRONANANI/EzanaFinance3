@@ -6,6 +6,27 @@
   color: #0a0a0a;
 }
 
+/* Dark mode — follows Settings → Appearance (html/body without .light-mode) */
+html:not(.light-mode) .elo-page-wrap,
+body:not(.light-mode) .elo-page-wrap {
+  color: #f0f6fc;
+}
+
+html:not(.light-mode) .elo-page-wrap button:focus-visible,
+html:not(.light-mode) .elo-page-wrap input:focus-visible,
+html:not(.light-mode) .elo-page-wrap a:focus-visible,
+body:not(.light-mode) .elo-page-wrap button:focus-visible,
+body:not(.light-mode) .elo-page-wrap input:focus-visible,
+body:not(.light-mode) .elo-page-wrap a:focus-visible {
+  outline-color: #10b981;
+}
+
+html:not(.light-mode) .elo-skeleton-shimmer,
+body:not(.light-mode) .elo-skeleton-shimmer {
+  background: linear-gradient(90deg, #161b22 25%, #21262d 50%, #161b22 75%) !important;
+  background-size: 200% 100% !important;
+}
+
 .elo-page-wrap *,
 .elo-page-wrap *::before,
 .elo-page-wrap *::after {

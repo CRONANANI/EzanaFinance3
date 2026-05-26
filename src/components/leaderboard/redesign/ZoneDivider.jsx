@@ -1,8 +1,9 @@
 'use client';
 
-import { zones, page } from './elo-design-tokens';
+import { useEloTheme } from './EloThemeContext';
 
 export function ZoneDivider({ kind, count }) {
+  const { zones, page } = useEloTheme();
   const z = zones[kind];
   const labels = {
     promo: `Promotion · top ${count ?? 3} move up`,

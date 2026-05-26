@@ -1,9 +1,12 @@
 'use client';
 
 import { NumberText } from './NumberText';
-import { categoryAccents, page, shape, type as typeTokens } from './elo-design-tokens';
+import { type as typeTokens } from './elo-design-tokens';
+import { useEloTheme } from './EloThemeContext';
 
 export function DailyQuests({ quests, refreshesAt }) {
+  const { categoryAccents, page, shape, delta } = useEloTheme();
+
   return (
     <div
       className="elo-daily-quests"
@@ -39,7 +42,8 @@ export function DailyQuests({ quests, refreshesAt }) {
   );
 }
 
-function QuestRow({ quest, isFirst }) {
+function QuestRow({ quest, isFirst, categoryAccents }) {
+  const { page, delta } = useEloTheme();
   const accentColor = categoryAccents[quest.category] || categoryAccents.PICK;
   const isDone = quest.done;
 
@@ -99,7 +103,7 @@ function QuestRow({ quest, isFirst }) {
           fontFamily: typeTokens.sans,
           fontSize: 11,
           fontWeight: 600,
-          color: isDone ? '#15803d' : page.ink,
+          color: isDone ? delta.pos : page.ink,
           fontVariantNumeric: 'tabular-nums',
         }}
       >

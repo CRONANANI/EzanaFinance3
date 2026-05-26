@@ -4,15 +4,11 @@ import { TierChip } from './TierChip';
 import { XPRing } from './XPRing';
 import { NumberText } from './NumberText';
 import { getTier } from '@/lib/elo-tier-colors';
-import {
-  page,
-  delta as deltaTokens,
-  shape,
-  type as typeTokens,
-  density,
-} from './elo-design-tokens';
+import { type as typeTokens, density } from './elo-design-tokens';
+import { useEloTheme } from './EloThemeContext';
 
 export function HeroCard({ user, weeklyDelta, streakDays }) {
+  const { page, delta: deltaTokens, shape } = useEloTheme();
   const currentTier = getTier(user.tier);
   const nextTier = user.nextTier ? getTier(user.nextTier) : null;
   const pct = user.progressToNext ?? 0;
@@ -150,6 +146,8 @@ export function HeroCard({ user, weeklyDelta, streakDays }) {
 }
 
 function StatTile({ label, number, unit, numberColor }) {
+  const { page } = useEloTheme();
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 70 }}>
       <div

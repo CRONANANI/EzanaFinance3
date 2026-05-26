@@ -2,9 +2,10 @@
 
 import { Avatar } from './Avatar';
 import { getTier } from '@/lib/elo-tier-colors';
-import { page } from './elo-design-tokens';
+import { useEloTheme } from './EloThemeContext';
 
 export function XPRing({ user, pct, size = 84 }) {
+  const { page } = useEloTheme();
   const t = getTier(user.tier);
   const radius = (size - 6) / 2;
   const circumference = 2 * Math.PI * radius;

@@ -9,7 +9,7 @@ import { FilterBar } from './FilterBar';
 import { StatsStrip } from './StatsStrip';
 import { LeaderboardTable } from './LeaderboardTable';
 import { LeaderboardSkeleton } from './LeaderboardSkeleton';
-import { page } from './elo-design-tokens';
+import { EloThemeProvider, useEloTheme } from './EloThemeContext';
 import { MOCK_LEAGUE, MOCK_STATS, MOCK_QUESTS } from './mock-data';
 import './elo-redesign.css';
 
@@ -33,7 +33,8 @@ function normalizeUser(row) {
   };
 }
 
-export default function EloLeaderboardPage() {
+function EloLeaderboardContent() {
+  const { page, isDark } = useEloTheme();
   const [query, setQuery] = useState('');
   const [range, setRange] = useState('1W');
   const [activeTier, setActiveTier] = useState('all');
@@ -174,8 +175,9 @@ export default function EloLeaderboardPage() {
         <p
           role="alert"
           style={{
-            background: '#fef2f2',
-            color: '#b91c1c',
+            background: isDark ? 'rgba(239, 68, 68, 0.12)' : '#fef2f2',
+            color: isDark ? '#fca5a5' : '#b91c1c',
+            border: isDark ? '1px solid rgba(239, 68, 68, 0.25)' : 'none',
             padding: '10px 14px',
             borderRadius: 8,
             marginBottom: 14,
@@ -231,5 +233,13 @@ export default function EloLeaderboardPage() {
         total={stats?.totalTraders ?? totalTraders}
       />
     </div>
+  );
+}
+
+export default function EloLeaderboardPage() {
+  return (
+    <EloThemeProvider>
+      <EloLeaderboardContent />
+    </EloThemeProvider>
   );
 }
