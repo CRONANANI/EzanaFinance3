@@ -37,9 +37,19 @@ const SETTINGS_TABS = [
   { key: 'email', label: 'Email', icon: 'bi-envelope', desc: 'Email preferences' },
   { key: 'notifications', label: 'Notifications', icon: 'bi-bell', desc: 'Alert & push settings' },
   { key: 'integrations', label: 'Integrations', icon: 'bi-plug', desc: 'Connected services' },
-  { key: 'platform-changelog', label: 'Platform changelog', icon: 'bi-clock-history', desc: 'Updates & improvements log' },
+  {
+    key: 'platform-changelog',
+    label: 'Platform changelog',
+    icon: 'bi-clock-history',
+    desc: 'Updates & improvements log',
+  },
   { key: 'api', label: 'API', icon: 'bi-code-slash', desc: 'API keys & access' },
-  { key: 'privacy-data', label: 'Privacy & data', icon: 'bi-shield-lock', desc: 'Data export, mock portfolio archives' },
+  {
+    key: 'privacy-data',
+    label: 'Privacy & data',
+    icon: 'bi-shield-lock',
+    desc: 'Data export, mock portfolio archives',
+  },
 ];
 
 const PANEL_MAP = {
@@ -74,40 +84,75 @@ function SettingsInner() {
   const backFromReferrerRef = useRef(false);
 
   useEffect(() => {
+    const PAGE_NAMES = {
+      '/home': 'Home',
+      '/home-dashboard': 'Dashboard',
+      '/company-research': 'Company Research',
+      '/market-analysis': 'Market Analysis',
+      '/trading/mock': 'Mock Trading',
+      '/ezana-echo': 'Ezana Echo',
+      '/community': 'Community',
+      '/for-the-quants': 'For The Quants',
+      '/centaur-intelligence': 'Centaur Intelligence',
+      '/betting-markets': 'Betting Markets',
+      '/inside-the-capitol': 'Inside The Capitol',
+      '/kairos-signal': 'Kairos Signal',
+      '/learning-center': 'Learning Center',
+      '/alternative-markets': 'Alternative Markets',
+      '/watchlist': 'Watchlist',
+      '/changelog': 'Changelog',
+      '/partner-home': 'Partner Home',
+      '/partner-dashboard': 'Partner Dashboard',
+      '/partner-community': 'Partner Community',
+      '/partner-learning': 'Creator Studio',
+      '/real-estate': 'Real Estate',
+      '/empire-ranking': 'Empire Ranking',
+      '/financial-analytics': 'Financial Analytics',
+      '/badges': 'Badges',
+      '/leaderboard/elo': 'ELO Leaderboard',
+      '/profile': 'Profile',
+      '/org-team-hub': 'Team Hub',
+      '/org-trading': 'Council Trading',
+      '/org-team-hub/hierarchy': 'Org Hierarchy',
+      '/org-trading/inbox': 'Flag Inbox',
+      '/user-profile-settings': 'Profile Settings',
+    };
+
+    const lookupPageName = (path) => {
+      if (!path) return null;
+      if (PAGE_NAMES[path]) return PAGE_NAMES[path];
+      const entries = Object.entries(PAGE_NAMES).sort((a, b) => b[0].length - a[0].length);
+      return entries.find(([p]) => path.startsWith(`${p}/`))?.[1] || null;
+    };
+
+    let path = null;
     try {
-      const ref = document.referrer;
-      if (ref) {
-        const url = new URL(ref);
-        const path = url.pathname;
-        const PAGE_NAMES = {
-          '/home': 'Home',
-          '/home-dashboard': 'Dashboard',
-          '/company-research': 'Company Research',
-          '/market-analysis': 'Market Analysis',
-          '/trading/mock': 'Mock Trading',
-          '/ezana-echo': 'Ezana Echo',
-          '/community': 'Community',
-          '/for-the-quants': 'For The Quants',
-          '/centaur-intelligence': 'Centaur Intelligence',
-          '/betting-markets': 'Betting Markets',
-          '/inside-the-capitol': 'Inside The Capitol',
-          '/kairos-signal': 'Kairos Signal',
-          '/learning-center': 'Learning Center',
-          '/alternative-markets': 'Alternative Markets',
-          '/watchlist': 'Watchlist',
-          '/changelog': 'Changelog',
-          '/partner-home': 'Partner Home',
-        };
-        const match =
-          PAGE_NAMES[path] || Object.entries(PAGE_NAMES).find(([p]) => path.startsWith(`${p}/`))?.[1];
-        if (match) {
-          backFromReferrerRef.current = true;
-          setBackLabel(match);
-          setBackPath(path);
-        }
-      }
+      path = window.sessionStorage.getItem('previous-route');
     } catch {
-      /* referrer parsing failed — keep defaults */
+      /* sessionStorage unavailable */
+    }
+
+    if (!path) {
+      try {
+        const ref = document.referrer;
+        if (ref) {
+          const url = new URL(ref);
+          if (url.origin === window.location.origin) {
+            path = url.pathname;
+          }
+        }
+      } catch {
+        /* referrer parsing failed */
+      }
+    }
+
+    if (path && path !== '/settings' && !path.startsWith('/settings/')) {
+      const match = lookupPageName(path);
+      if (match) {
+        backFromReferrerRef.current = true;
+        setBackLabel(match);
+        setBackPath(path);
+      }
     }
   }, []);
 
@@ -117,15 +162,8 @@ function SettingsInner() {
     }
   }, [dashboardPath]);
 
-  const {
-    settings,
-    loading,
-    saving,
-    saved,
-    error,
-    updateSetting,
-    saveSettings,
-  } = useUserSettings();
+  const { settings, loading, saving, saved, error, updateSetting, saveSettings } =
+    useUserSettings();
 
   useEffect(() => {
     fetch('/api/admin/users/list', { method: 'OPTIONS' })
@@ -135,7 +173,14 @@ function SettingsInner() {
 
   const tabs = useMemo(() => {
     const partnersTab = partnersTabAllowed
-      ? [{ key: 'partners', label: 'Partners', icon: 'bi-shield-check', desc: 'Manage partner accounts (admin)' }]
+      ? [
+          {
+            key: 'partners',
+            label: 'Partners',
+            icon: 'bi-shield-check',
+            desc: 'Manage partner accounts (admin)',
+          },
+        ]
       : [];
     const withPartners = SETTINGS_TABS.flatMap((tab) =>
       tab.key === 'integrations' ? [tab, ...partnersTab] : [tab],
@@ -143,7 +188,12 @@ function SettingsInner() {
     if (isOrgUser && orgRole === 'executive') {
       return [
         ...withPartners,
-        { key: 'organization', label: 'Organization', icon: 'bi-building', desc: 'Manage members & permissions' },
+        {
+          key: 'organization',
+          label: 'Organization',
+          icon: 'bi-building',
+          desc: 'Manage members & permissions',
+        },
       ];
     }
     return withPartners;
@@ -183,7 +233,9 @@ function SettingsInner() {
   if (loading) {
     return (
       <div className="settings-page">
-        <div style={{ padding: '3rem 1.5rem', textAlign: 'center', color: 'rgba(255,255,255,0.6)' }}>
+        <div
+          style={{ padding: '3rem 1.5rem', textAlign: 'center', color: 'rgba(255,255,255,0.6)' }}
+        >
           Loading settings…
         </div>
       </div>
@@ -288,7 +340,8 @@ function SettingsInner() {
           gap: '0.75rem',
           padding: '1rem 1.25rem',
           marginTop: '1rem',
-          background: 'linear-gradient(180deg, transparent 0%, rgba(15,20,25,0.95) 20%, #0f1419 100%)',
+          background:
+            'linear-gradient(180deg, transparent 0%, rgba(15,20,25,0.95) 20%, #0f1419 100%)',
           borderTop: '1px solid rgba(255,255,255,0.06)',
         }}
       >
@@ -325,7 +378,9 @@ export default function SettingsPage() {
     <Suspense
       fallback={
         <div className="settings-page">
-          <div style={{ padding: '3rem 1.5rem', textAlign: 'center', color: 'rgba(255,255,255,0.6)' }}>
+          <div
+            style={{ padding: '3rem 1.5rem', textAlign: 'center', color: 'rgba(255,255,255,0.6)' }}
+          >
             Loading settings…
           </div>
         </div>

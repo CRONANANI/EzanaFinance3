@@ -24,6 +24,21 @@ export default function DashboardLayout({ children }) {
   const pathname = usePathname();
   const { isPartner, isLoading } = usePartner();
 
+  // Track the previous route in sessionStorage so the Settings page's
+  // "Back to {Page}" button knows where the user actually came from.
+  // Skipped when the user is on /settings itself — we want to preserve
+  // the route they navigated FROM, not let /settings overwrite itself.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (pathname && pathname !== '/settings' && !pathname.startsWith('/settings/')) {
+      try {
+        window.sessionStorage.setItem('previous-route', pathname);
+      } catch {
+        /* sessionStorage unavailable — ignore */
+      }
+    }
+  }, [pathname]);
+
   // Runs the watchlist price-alert poller for the whole logged-in session.
   // Safe on every dashboard route — it's a no-op when the user has no
   // watchlists with alerts enabled.
