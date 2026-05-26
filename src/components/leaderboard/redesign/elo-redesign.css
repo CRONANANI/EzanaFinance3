@@ -1,0 +1,59 @@
+/* ELO Leaderboard Redesign */
+
+.elo-page-wrap {
+  font-family: var(--font-display, 'Nunito', system-ui, sans-serif);
+  -webkit-font-smoothing: antialiased;
+  color: #1c1917;
+}
+
+.elo-page-wrap *,
+.elo-page-wrap *::before,
+.elo-page-wrap *::after {
+  box-sizing: border-box;
+}
+
+.elo-page-wrap button:focus-visible,
+.elo-page-wrap input:focus-visible,
+.elo-page-wrap a:focus-visible {
+  outline: 2px solid #16a34a;
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+@keyframes elo-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (max-width: 900px) {
+  .elo-hero-row {
+    flex-direction: column;
+  }
+  .elo-hero-card {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+@media (max-width: 720px) {
+  .elo-page-wrap {
+    padding: 16px !important;
+  }
+  .elo-table-card {
+    overflow-x: auto;
+  }
+  .elo-table-card > div:first-of-type,
+  .elo-table-card .elo-zone-divider + div {
+    min-width: 880px;
+  }
+}
+
+@media (max-width: 500px) {
+  .elo-stats-strip {
+    gap: 14px !important;
+  }
+}

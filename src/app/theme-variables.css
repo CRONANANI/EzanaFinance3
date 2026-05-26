@@ -13,6 +13,8 @@
    ═══════════════════════════════════════════════════════════ */
 
 :root {
+  --font-display: 'Nunito', system-ui, sans-serif;
+
   /* ── Core Backgrounds — flat single-tone dark mode ── */
   --bg-primary: #0a0e13; /* Page background */
   --bg-secondary: #0a0e13; /* Cards match page (was #0d1117) */

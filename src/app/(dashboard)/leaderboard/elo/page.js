@@ -1,5 +1,5 @@
-import EloLeaderboard from '@/components/leaderboard/EloLeaderboard';
+import EloLeaderboardPage from '@/components/leaderboard/redesign/EloLeaderboardPage';
 
-export default function EloLeaderboardPage() {
-  return <EloLeaderboard />;
+export default function Page() {
+  return <EloLeaderboardPage />;
 }

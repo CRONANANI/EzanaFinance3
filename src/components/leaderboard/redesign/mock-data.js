@@ -1,0 +1,121 @@
+// Fallback mock data when APIs are unavailable (dev / error states).
+
+export const MOCK_LEAGUE = {
+  name: 'Strategist League',
+  week: 24,
+  endsAt: '2026-06-08T00:00:00Z',
+  endsIn: '3d 14h',
+  promoteTo: 'Tactician',
+  demoteTo: 'Apprentice',
+  promotionCount: 3,
+  demotionCount: 2,
+};
+
+export const MOCK_STATS = {
+  totalTraders: 12847,
+  totalTradersDelta: 142,
+  avgElo: 1247,
+  avgEloDelta: 18,
+  medianElo: 1180,
+  medianEloDelta: 12,
+  top1PctThreshold: 2876,
+  lastUpdate: new Date().toISOString(),
+};
+
+export const MOCK_QUESTS = [
+  {
+    id: 'q1',
+    category: 'LEARN',
+    title: 'Complete 3 lessons from any course',
+    xp: 25,
+    progress: { current: 2, target: 3 },
+    done: false,
+  },
+  {
+    id: 'q2',
+    category: 'TRADE',
+    title: 'Beat the S&P on 3 paper trades',
+    xp: 40,
+    progress: { current: 1, target: 3 },
+    done: false,
+  },
+  {
+    id: 'q3',
+    category: 'ENGAGE',
+    title: 'Comment on 2 research posts',
+    xp: 15,
+    progress: { current: 2, target: 2 },
+    done: true,
+  },
+  {
+    id: 'q4',
+    category: 'PICK',
+    title: 'Add 5 stocks to a watchlist',
+    xp: 20,
+    progress: { current: 5, target: 5 },
+    done: true,
+  },
+];
+
+export const MOCK_ME = {
+  id: 'me',
+  rank: 47,
+  globalRank: 47,
+  name: 'Alex Morgan',
+  initials: 'AM',
+  title: 'Crypto Curious',
+  tier: 'strategist',
+  rating: 1547,
+  peak: 1612,
+  delta7d: 47,
+  delta30d: 112,
+  sparkline: [1480, 1495, 1503, 1518, 1530, 1542, 1547],
+  active: 'Now',
+  nextTier: 'tactician',
+  progressToNext: 0.58,
+};
+
+export const MOCK_USERS = [
+  {
+    id: 'u1',
+    rank: 1,
+    name: 'Daria Volkov',
+    initials: 'DV',
+    title: 'Quant Architect',
+    tier: 'grandmaster',
+    rating: 3247,
+    peak: 3289,
+    delta7d: 23,
+    delta30d: 89,
+    sparkline: [3180, 3195, 3210, 3225, 3230, 3240, 3247],
+    active: 'Now',
+  },
+  {
+    id: 'u2',
+    rank: 2,
+    name: 'Kai Chen',
+    initials: 'KC',
+    title: 'Options Architect',
+    tier: 'grandmaster',
+    rating: 3142,
+    peak: 3201,
+    delta7d: -12,
+    delta30d: 34,
+    sparkline: [3155, 3160, 3158, 3150, 3148, 3145, 3142],
+    active: '2m ago',
+  },
+  {
+    id: 'me',
+    rank: 11,
+    name: 'Alex Morgan',
+    initials: 'AM',
+    title: 'Crypto Curious',
+    tier: 'strategist',
+    rating: 1547,
+    peak: 1612,
+    delta7d: 47,
+    delta30d: 112,
+    sparkline: [1480, 1495, 1503, 1518, 1530, 1542, 1547],
+    active: 'Now',
+  },
+];
