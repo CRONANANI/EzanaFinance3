@@ -1,18 +1,25 @@
-/* Ezana Echo — Article Footer (V3 "The Marquee") */
+/* Ezana Echo — Article Footer (V3 "The Marquee") — COMPRESSED
+ *
+ * Reduced footprint pass: ~40% smaller hero typography, tighter
+ * module spacing, shorter spectrum + slider, smaller thumb.
+ * All structure, interaction, and theming preserved from the original.
+ */
 
 .echo-footer-v3 {
   max-width: 860px;
-  margin: 48px auto 64px;
+  margin: 32px auto 40px; /* was 48px auto 64px */
   padding: 0 56px;
   font-family: var(--font-sans, system-ui, -apple-system, 'Segoe UI', sans-serif);
   color: var(--text-primary);
 }
 
+/* ── Diamond + Byline ─────────────────────────────────────────── */
+
 .echo-footer-diamond {
   display: block;
-  margin: 48px auto 0;
-  width: 8px;
-  height: 8px;
+  margin: 20px auto 0; /* was 48px auto 0 */
+  width: 6px; /* was 8px */
+  height: 6px;
   background: var(--text-muted);
   opacity: 0.45;
   transform: rotate(45deg);
@@ -22,10 +29,10 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 10px;
+  gap: 8px; /* was 10px */
   flex-wrap: wrap;
-  margin-top: 64px;
-  font-size: 13px;
+  margin-top: 18px; /* was 64px */
+  font-size: 10px; /* was 13px */
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--text-muted);
@@ -37,8 +44,8 @@
 }
 
 .echo-footer-byline-dot {
-  width: 3px;
-  height: 3px;
+  width: 2px; /* was 3px */
+  height: 2px;
   border-radius: 50%;
   background: var(--text-muted);
   opacity: 0.5;
@@ -49,41 +56,43 @@
   background: transparent;
   border: none;
   padding: 0;
-  font-size: 11.5px;
+  font-size: 9px; /* was 11.5px */
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--echo-accent);
   text-decoration: underline;
-  text-underline-offset: 4px;
+  text-underline-offset: 3px; /* was 4px */
   text-decoration-thickness: 1px;
   cursor: pointer;
   font-family: inherit;
 }
 
+/* ── Sentiment Hero ───────────────────────────────────────────── */
+
 .echo-footer-sentiment-hero {
-  margin-top: 64px;
+  margin-top: 24px; /* was 64px */
 }
 
 .echo-footer-sentiment-eyebrow {
-  font-size: 11.5px;
+  font-size: 9.5px; /* was 11.5px — light cut, was already small */
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--echo-accent);
   text-align: center;
-  margin-bottom: 14px;
+  margin-bottom: 8px; /* was 14px */
 }
 
 .echo-footer-sentiment-headline {
   font-family: var(--echo-font-serif);
-  font-size: 34px;
+  font-size: 20px; /* was 34px — full 40% cut */
   font-weight: 500;
   letter-spacing: -0.025em;
-  line-height: 1.15;
+  line-height: 1.2; /* was 1.15 — tiny bump for the smaller size */
   text-align: center;
   color: var(--text-primary);
-  margin: 0 0 28px;
+  margin: 0 0 12px; /* was 0 0 28px — pulls histogram up */
 }
 
 .echo-footer-sentiment-headline em {
@@ -92,6 +101,8 @@
   color: var(--echo-accent);
 }
 
+/* ── Histogram ────────────────────────────────────────────────── */
+
 .echo-histogram-wrap {
   position: relative;
 }
@@ -99,20 +110,20 @@
 .echo-histogram-bars {
   display: flex;
   align-items: flex-end;
-  gap: 6px;
-  height: 140px;
+  gap: 4px; /* was 6px */
+  height: 80px; /* was 140px */
 }
 
 .echo-histogram-bar {
   flex: 1;
-  border-radius: 3px 3px 0 0;
+  border-radius: 2px 2px 0 0; /* was 3px */
   background: var(--echo-surface-3);
   background-size: 2100% 100%;
   background-position: 0% 0;
   transition:
     height 0.3s ease-out,
     background 0.15s linear;
-  min-height: 4px;
+  min-height: 3px; /* was 4px */
   position: relative;
 }
 
@@ -126,23 +137,23 @@
 
 .echo-histogram-you-label {
   position: absolute;
-  top: -22px;
+  top: -16px; /* was -22px */
   left: 50%;
   transform: translateX(-50%);
-  font-size: 9.5px;
+  font-size: 8px; /* was 9.5px */
   font-weight: 800;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em; /* was 0.12em */
   color: var(--text-primary);
   white-space: nowrap;
 }
 
 .echo-histogram-axis {
-  margin-top: 8px;
-  padding-top: 8px;
+  margin-top: 6px; /* was 8px */
+  padding-top: 6px; /* was 8px */
   border-top: 1px solid var(--border-primary);
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  font-size: 11px;
+  font-size: 9.5px; /* was 11px */
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -165,13 +176,15 @@ body.light-mode .echo-histogram-axis-noise {
   color: #ea580c;
 }
 
+/* ── Readout panel ────────────────────────────────────────────── */
+
 .echo-footer-readout {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 24px;
+  gap: 16px; /* was 24px */
   align-items: center;
-  margin-top: 24px;
-  padding: 24px 0;
+  margin-top: 14px; /* was 24px */
+  padding: 14px 0; /* was 24px */
   border-top: 1px solid var(--border-primary);
   border-bottom: 1px solid var(--border-primary);
 }
@@ -179,12 +192,12 @@ body.light-mode .echo-histogram-axis-noise {
 .echo-readout-number-row {
   display: flex;
   align-items: baseline;
-  gap: 4px;
+  gap: 3px; /* was 4px */
 }
 
 .echo-readout-number {
   font-family: var(--echo-font-serif);
-  font-size: 68px;
+  font-size: 40px; /* was 68px — full 40% cut */
   font-weight: 500;
   letter-spacing: -0.04em;
   line-height: 0.95;
@@ -194,14 +207,14 @@ body.light-mode .echo-histogram-axis-noise {
 
 .echo-readout-pct {
   font-family: var(--echo-font-serif);
-  font-size: 32px;
+  font-size: 19px; /* was 32px */
   font-weight: 500;
   color: var(--echo-accent);
 }
 
 .echo-readout-meta-1 {
-  margin-top: 8px;
-  font-size: 13px;
+  margin-top: 5px; /* was 8px */
+  font-size: 10px; /* was 13px */
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -210,7 +223,7 @@ body.light-mode .echo-histogram-axis-noise {
 
 .echo-readout-meta-2 {
   margin-top: 2px;
-  font-size: 13px;
+  font-size: 10.5px; /* was 13px */
   font-weight: 400;
   color: var(--text-secondary, var(--text-muted));
 }
@@ -220,35 +233,37 @@ body.light-mode .echo-histogram-axis-noise {
 }
 
 .echo-readout-your-direction {
-  font-size: 14px;
+  font-size: 11px; /* was 14px */
   font-weight: 600;
   color: var(--text-primary);
 }
 
 .echo-readout-your-label {
-  margin-top: 4px;
-  font-size: 11.5px;
+  margin-top: 3px; /* was 4px */
+  font-size: 9.5px; /* was 11.5px */
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text-muted);
 }
 
+/* ── Your-take slider ─────────────────────────────────────────── */
+
 .echo-footer-slider-section {
-  margin-top: 28px;
+  margin-top: 16px; /* was 28px */
 }
 
 .echo-slider-helper {
   font-family: var(--echo-font-serif);
   font-style: italic;
-  font-size: 17px;
+  font-size: 11px; /* was 17px */
   color: var(--text-secondary, var(--text-muted));
   text-align: center;
-  margin-bottom: 18px;
+  margin-bottom: 10px; /* was 18px */
 }
 
 .echo-slider-container {
-  height: 64px;
+  height: 36px; /* was 64px — keeps touch hit area but compact */
   position: relative;
   display: flex;
   align-items: center;
@@ -256,7 +271,7 @@ body.light-mode .echo-histogram-axis-noise {
 
 .echo-slider-track {
   width: 100%;
-  height: 14px;
+  height: 8px; /* was 14px */
   border-radius: 99px;
   background: var(--echo-sentiment-gradient);
   opacity: 0.9;
@@ -270,13 +285,13 @@ body.light-mode .echo-histogram-axis-noise {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 18px;
+  padding: 0 11px; /* was 18px — scaled to thumb radius */
   pointer-events: none;
 }
 
 .echo-slider-tick {
   width: 1px;
-  height: 6px;
+  height: 4px; /* was 6px */
   background: rgba(0, 0, 0, 0.25);
 }
 
@@ -302,34 +317,34 @@ body.light-mode .echo-slider-tick {
 .echo-slider-thumb {
   position: absolute;
   top: 50%;
-  width: 36px;
-  height: 36px;
+  width: 22px; /* was 36px */
+  height: 22px; /* was 36px */
   border-radius: 50%;
   background: var(--bg-secondary, var(--bg-primary));
-  border: 4px solid var(--text-primary);
+  border: 3px solid var(--text-primary); /* was 4px — scales with thumb */
   transform: translate(-50%, -50%);
   pointer-events: none;
   box-shadow:
-    0 6px 20px rgba(0, 0, 0, 0.5),
-    0 0 0 1px var(--border-primary);
+    0 4px 12px rgba(0, 0, 0, 0.5),
+    /* was 0 6px 20px */ 0 0 0 1px var(--border-primary);
 }
 
 body.light-mode .echo-slider-thumb {
   box-shadow:
-    0 6px 20px rgba(0, 0, 0, 0.15),
-    0 0 0 1px var(--border-primary);
+    0 4px 12px rgba(0, 0, 0, 0.15),
+    /* was 0 6px 20px */ 0 0 0 1px var(--border-primary);
 }
 
 .echo-slider-cast-btn {
   display: block;
-  margin: 18px auto 0;
-  padding: 12px 28px;
+  margin: 10px auto 0; /* was 18px */
+  padding: 8px 20px; /* was 12px 28px */
   border-radius: 999px;
   background: var(--text-primary);
   color: var(--bg-primary);
   border: none;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 11px; /* was 14px */
   font-weight: 600;
   letter-spacing: -0.005em;
   cursor: pointer;
@@ -341,11 +356,11 @@ body.light-mode .echo-slider-thumb {
 
 .echo-slider-cast-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5); /* was 0 8px 24px */
 }
 
 body.light-mode .echo-slider-cast-btn:hover {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12); /* was 0 8px 24px */
 }
 
 .echo-slider-cast-btn.is-voted {
@@ -353,37 +368,39 @@ body.light-mode .echo-slider-cast-btn:hover {
   color: #fff;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px; /* was 8px */
 }
 
+/* ── Worth-it section ─────────────────────────────────────────── */
+
 .echo-footer-worthit {
-  margin-top: 64px;
+  margin-top: 28px; /* was 64px */
 }
 
 .echo-worthit-question {
   font-family: var(--echo-font-serif);
   font-style: italic;
-  font-size: 18px;
+  font-size: 11px; /* was 18px */
   color: var(--text-secondary, var(--text-muted));
   text-align: center;
-  margin-bottom: 22px;
+  margin-bottom: 12px; /* was 22px */
 }
 
 .echo-worthit-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  gap: 8px; /* was 10px */
 }
 
 .echo-worthit-tile {
   background: var(--bg-secondary, var(--bg-primary));
   border: 1px solid var(--border-primary);
-  border-radius: 14px;
-  padding: 22px 14px;
+  border-radius: 10px; /* was 14px */
+  padding: 12px 10px; /* was 22px 14px */
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 6px; /* was 10px */
   cursor: pointer;
   font-family: inherit;
   transition:
@@ -401,8 +418,8 @@ body.light-mode .echo-slider-cast-btn:hover {
 }
 
 .echo-worthit-tile-icon-wrap {
-  width: 42px;
-  height: 42px;
+  width: 28px; /* was 42px */
+  height: 28px; /* was 42px */
   border-radius: 50%;
   background: var(--bg-tertiary, var(--bg-secondary));
   display: flex;
@@ -415,18 +432,18 @@ body.light-mode .echo-slider-cast-btn:hover {
 }
 
 .echo-worthit-tile-icon-wrap i {
-  font-size: 20px;
+  font-size: 14px; /* was 20px */
 }
 
 .echo-worthit-tile-label {
-  font-size: 13.5px;
+  font-size: 10.5px; /* was 13.5px */
   font-weight: 600;
   letter-spacing: -0.005em;
   color: var(--text-primary);
 }
 
 .echo-worthit-tile-sub {
-  font-size: 11.5px;
+  font-size: 9px; /* was 11.5px */
   color: var(--text-muted);
   letter-spacing: 0.02em;
 }
@@ -451,13 +468,15 @@ body.light-mode .echo-slider-cast-btn:hover {
   opacity: 0.7;
 }
 
+/* ── Discuss inline link ──────────────────────────────────────── */
+
 .echo-footer-discuss {
   font-family: var(--echo-font-serif);
   font-style: italic;
-  font-size: 17px;
+  font-size: 11px; /* was 17px */
   color: var(--text-secondary, var(--text-muted));
   text-align: center;
-  margin-top: 48px;
+  margin-top: 20px; /* was 48px */
 }
 
 .echo-footer-discuss-link {
@@ -470,15 +489,17 @@ body.light-mode .echo-slider-cast-btn:hover {
   text-decoration-thickness: 1px;
 }
 
+/* ── More from {Author} panel ─────────────────────────────────── */
+
 .echo-footer-more-from {
-  margin-top: 64px;
+  margin-top: 28px; /* was 64px */
   background: var(--bg-secondary, var(--bg-primary));
   border: 1px solid var(--border-primary);
-  border-radius: 18px;
-  padding: 32px;
+  border-radius: 12px; /* was 18px */
+  padding: 16px 20px; /* was 32px */
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 24px;
+  gap: 14px; /* was 24px */
   align-items: center;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.04),
@@ -492,15 +513,15 @@ body.light-mode .echo-footer-more-from {
 }
 
 .echo-more-avatar {
-  width: 72px;
-  height: 72px;
+  width: 44px; /* was 72px */
+  height: 44px;
   border-radius: 50%;
   background: var(--echo-accent-soft);
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--echo-font-serif);
-  font-size: 30px;
+  font-size: 18px; /* was 30px */
   font-weight: 700;
   letter-spacing: -0.03em;
   color: var(--echo-accent);
@@ -509,7 +530,7 @@ body.light-mode .echo-footer-more-from {
 
 .echo-more-heading {
   font-family: var(--echo-font-serif);
-  font-size: 22px;
+  font-size: 13px; /* was 22px */
   font-weight: 500;
   letter-spacing: -0.02em;
   color: var(--text-primary);
@@ -517,26 +538,26 @@ body.light-mode .echo-footer-more-from {
 }
 
 .echo-more-body {
-  font-size: 13.5px;
-  line-height: 1.55;
+  font-size: 10.5px; /* was 13.5px */
+  line-height: 1.5; /* was 1.55 */
   color: var(--text-secondary, var(--text-muted));
-  margin: 6px 0 14px;
+  margin: 4px 0 8px; /* was 6px 0 14px */
 }
 
 .echo-more-form {
   display: flex;
-  gap: 8px;
-  max-width: 440px;
+  gap: 6px; /* was 8px */
+  max-width: 360px; /* was 440px */
 }
 
 .echo-more-input {
   flex: 1;
-  padding: 11px 14px;
-  border-radius: 10px;
+  padding: 7px 10px; /* was 11px 14px */
+  border-radius: 7px; /* was 10px */
   background: var(--bg-tertiary, var(--bg-secondary));
   border: 1px solid var(--border-primary);
   font-family: inherit;
-  font-size: 14px;
+  font-size: 11px; /* was 14px */
   color: var(--text-primary);
   transition:
     border-color 0.15s,
@@ -550,18 +571,18 @@ body.light-mode .echo-footer-more-from {
 }
 
 .echo-more-subscribe-btn {
-  padding: 11px 18px;
-  border-radius: 10px;
+  padding: 7px 12px; /* was 11px 18px */
+  border-radius: 7px; /* was 10px */
   background: var(--text-primary);
   color: var(--bg-primary);
   border: none;
   font-family: inherit;
-  font-size: 13.5px;
+  font-size: 10.5px; /* was 13.5px */
   font-weight: 600;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px; /* was 6px */
   transition:
     background 0.15s,
     color 0.15s;
@@ -572,32 +593,34 @@ body.light-mode .echo-footer-more-from {
   color: #fff;
 }
 
+/* ── Comments section ─────────────────────────────────────────── */
+
 .echo-footer-comments {
-  margin-top: 64px;
+  margin-top: 28px; /* was 64px */
 }
 
 .echo-comments-heading {
   font-family: var(--echo-font-serif);
-  font-size: 24px;
+  font-size: 14.5px; /* was 24px */
   font-weight: 500;
   letter-spacing: -0.02em;
   color: var(--text-primary);
-  margin: 0 0 6px;
+  margin: 0 0 4px; /* was 0 0 6px */
 }
 
 .echo-comments-subhead {
   font-family: var(--echo-font-serif);
   font-style: italic;
-  font-size: 13.5px;
+  font-size: 10.5px; /* was 13.5px */
   color: var(--text-muted);
-  margin: 0 0 20px;
+  margin: 0 0 12px; /* was 0 0 20px */
 }
 
 .echo-comments-composer {
   background: var(--bg-secondary, var(--bg-primary));
   border: 1px solid var(--border-primary);
-  border-radius: 16px;
-  padding: 24px;
+  border-radius: 10px; /* was 16px */
+  padding: 14px; /* was 24px */
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.04),
     0 1px 2px rgba(0, 0, 0, 0.4);
@@ -614,10 +637,10 @@ body.light-mode .echo-comments-composer {
   background: transparent;
   border: none;
   resize: none;
-  min-height: 80px;
+  min-height: 52px; /* was 80px */
   font-family: var(--echo-font-serif);
-  font-size: 17px;
-  line-height: 1.55;
+  font-size: 11px; /* was 17px */
+  line-height: 1.5; /* was 1.55 */
   color: var(--text-primary);
   outline: none;
 }
@@ -628,17 +651,17 @@ body.light-mode .echo-comments-composer {
 }
 
 .echo-comments-composer-footer {
-  margin-top: 14px;
-  padding-top: 14px;
+  margin-top: 8px; /* was 14px */
+  padding-top: 8px; /* was 14px */
   border-top: 1px solid var(--border-primary);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  gap: 10px; /* was 12px */
 }
 
 .echo-comments-composer-meta {
-  font-size: 12px;
+  font-size: 9.5px; /* was 12px */
   color: var(--text-muted);
 }
 
@@ -648,13 +671,13 @@ body.light-mode .echo-comments-composer {
 }
 
 .echo-comments-post-btn {
-  padding: 10px 22px;
+  padding: 6px 14px; /* was 10px 22px */
   border-radius: 999px;
   background: var(--echo-accent);
   color: #fff;
   border: none;
   font-family: inherit;
-  font-size: 13.5px;
+  font-size: 10.5px; /* was 13.5px */
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s;
@@ -671,14 +694,14 @@ body.light-mode .echo-comments-composer {
 }
 
 .echo-comments-list {
-  margin-top: 24px;
+  margin-top: 14px; /* was 24px */
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px; /* was 16px */
 }
 
 .echo-comments-item {
-  padding: 16px 0;
+  padding: 10px 0; /* was 16px */
   border-bottom: 1px solid var(--border-primary);
 }
 
@@ -687,9 +710,9 @@ body.light-mode .echo-comments-composer {
 }
 
 .echo-comments-item-meta {
-  font-size: 12px;
+  font-size: 9.5px; /* was 12px */
   color: var(--text-muted);
-  margin-bottom: 6px;
+  margin-bottom: 4px; /* was 6px */
 }
 
 .echo-comments-item-meta b {
@@ -699,11 +722,13 @@ body.light-mode .echo-comments-composer {
 
 .echo-comments-item-body {
   font-family: var(--echo-font-serif);
-  font-size: 16px;
-  line-height: 1.55;
+  font-size: 10.5px; /* was 16px */
+  line-height: 1.5; /* was 1.55 */
   color: var(--text-primary);
   white-space: pre-wrap;
 }
+
+/* ── Responsive (proportional reductions) ─────────────────────── */
 
 @media (max-width: 720px) {
   .echo-footer-v3 {
@@ -711,11 +736,11 @@ body.light-mode .echo-comments-composer {
   }
 
   .echo-footer-sentiment-headline {
-    font-size: clamp(24px, 5vw, 34px);
+    font-size: clamp(16px, 3.5vw, 20px); /* was clamp(24px, 5vw, 34px) */
   }
 
   .echo-histogram-bars {
-    height: 100px;
+    height: 60px; /* was 100px */
   }
 
   .echo-footer-readout {
