@@ -1,9 +1,8 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { delta as deltaTokens } from './elo-design-tokens';
 
-export function Sparkline({ data, w = 70, h = 18, color = '#16a34a' }) {
+export function Sparkline({ data, w = 62, h = 14, color = '#16a34a' }) {
   if (!data || data.length < 2) {
     return <svg width={w} height={h} aria-hidden />;
   }
@@ -24,28 +23,26 @@ export function Sparkline({ data, w = 70, h = 18, color = '#16a34a' }) {
   const path = `M ${points}`;
   const isDown = data[data.length - 1] < data[0];
   const strokeColor = isDown ? deltaTokens.neg : color;
+
   const ariaLabel = `${data[0].toLocaleString()} to ${data[data.length - 1].toLocaleString()}`;
 
   return (
-    <motion.svg
+    <svg
       width={w}
       height={h}
       viewBox={`0 0 ${w} ${h}`}
       role="img"
       aria-label={ariaLabel}
       style={{ display: 'block' }}
-      initial={{ opacity: 0.4 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.2 }}
     >
       <path
         d={path}
         fill="none"
         stroke={strokeColor}
-        strokeWidth={1.5}
+        strokeWidth={1.25}
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-    </motion.svg>
+    </svg>
   );
 }

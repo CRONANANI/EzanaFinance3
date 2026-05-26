@@ -1,9 +1,9 @@
-/* ELO Leaderboard Redesign */
+/* ELO Leaderboard Redesign v2 ("Sweet Spot") — global page styles */
 
 .elo-page-wrap {
-  font-family: var(--font-display, 'Nunito', system-ui, sans-serif);
+  font-family: var(--font-sans, 'Inter', system-ui, sans-serif);
   -webkit-font-smoothing: antialiased;
-  color: #1c1917;
+  color: #0a0a0a;
 }
 
 .elo-page-wrap *,
@@ -17,7 +17,15 @@
 .elo-page-wrap a:focus-visible {
   outline: 2px solid #16a34a;
   outline-offset: 2px;
-  border-radius: 8px;
+  border-radius: 4px;
+}
+
+.elo-page-wrap > * + * {
+  margin-top: 14px;
+}
+
+.elo-page-wrap .elo-league-header + .elo-hero-row {
+  margin-top: 14px;
 }
 
 @keyframes elo-shimmer {
@@ -36,6 +44,10 @@
   .elo-hero-card {
     flex-direction: column;
     text-align: center;
+    align-items: stretch;
+  }
+  .elo-hero-card > div[style*='width: 1px'] {
+    display: none;
   }
 }
 
@@ -46,14 +58,14 @@
   .elo-table-card {
     overflow-x: auto;
   }
-  .elo-table-card > div:first-of-type,
-  .elo-table-card .elo-zone-divider + div {
-    min-width: 880px;
+  .elo-table-card > div {
+    min-width: 760px;
   }
-}
-
-@media (max-width: 500px) {
   .elo-stats-strip {
-    gap: 14px !important;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .elo-stats-strip > div[style*='width: 1px'] {
+    display: none;
   }
 }

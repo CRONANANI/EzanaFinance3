@@ -2,8 +2,15 @@
 
 import { TierChip } from './TierChip';
 import { XPRing } from './XPRing';
+import { NumberText } from './NumberText';
 import { getTier } from '@/lib/elo-tier-colors';
-import { page, shape, statTiles } from './elo-design-tokens';
+import {
+  page,
+  delta as deltaTokens,
+  shape,
+  type as typeTokens,
+  density,
+} from './elo-design-tokens';
 
 export function HeroCard({ user, weeklyDelta, streakDays }) {
   const currentTier = getTier(user.tier);
@@ -15,56 +22,67 @@ export function HeroCard({ user, weeklyDelta, streakDays }) {
     <div
       className="elo-hero-card"
       style={{
-        background: page.card,
-        border: `2px solid ${page.cardLine}`,
+        background: page.surface,
+        border: `1px solid ${page.border}`,
         borderRadius: shape.radius.card,
-        boxShadow: shape.shadowCard,
-        padding: 24,
+        boxShadow: shape.shadow.card,
+        padding: `${density.cardPaddingY}px ${density.cardPaddingX}px`,
         display: 'flex',
-        gap: 18,
         alignItems: 'center',
+        gap: density.cardPaddingX,
         flex: 1.6,
         minWidth: 0,
+        fontFamily: typeTokens.sans,
       }}
     >
-      <XPRing user={user} pct={pct} size={110} />
+      <XPRing user={user} pct={pct} size={84} />
 
-      <div style={{ flex: 1.4, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <TierChip tier={user.tier} size="sm" />
+      <div style={{ width: 1, alignSelf: 'stretch', background: page.border }} />
 
-        <div>
-          <h2
-            style={{
-              margin: 0,
-              fontSize: 22,
-              fontWeight: 800,
-              letterSpacing: '-0.4px',
-              color: page.ink,
-              fontFamily: 'var(--font-display, Nunito, system-ui, sans-serif)',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            }}
-          >
-            {user.name}
-          </h2>
-          <p
-            style={{
-              margin: '2px 0 0',
-              fontSize: 12,
-              fontWeight: 600,
-              color: page.inkSoft,
-            }}
-          >
-            {user.title || 'Trader'} · Rank{' '}
-            <strong style={{ color: page.ink, fontWeight: 800 }}>
-              #{user.globalRank ?? user.rank}
-            </strong>{' '}
-            of{' '}
-            <strong style={{ color: page.ink, fontWeight: 800 }}>
-              {user.totalTraders?.toLocaleString() ?? '—'}
-            </strong>
-          </p>
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            fontSize: 11,
+            color: page.inkMuted,
+          }}
+        >
+          <TierChip tier={user.tier} size="sm" />
+          {user.title && (
+            <>
+              <span>·</span>
+              <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {user.title}
+              </span>
+            </>
+          )}
+        </div>
+
+        <div
+          style={{
+            fontSize: 20,
+            fontWeight: 600,
+            letterSpacing: '-0.4px',
+            color: page.ink,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
+          {user.name}
+        </div>
+
+        <div style={{ fontSize: 12, color: page.inkSoft }}>
+          Rank{' '}
+          <NumberText size={12} weight={600}>
+            #{user.globalRank ?? user.rank}
+          </NumberText>{' '}
+          of{' '}
+          <NumberText size={12} weight={600}>
+            {user.totalTraders?.toLocaleString() ?? '—'}
+          </NumberText>
         </div>
 
         {nextTier && (
@@ -74,33 +92,39 @@ export function HeroCard({ user, weeklyDelta, streakDays }) {
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                marginBottom: 6,
+                marginBottom: 4,
                 fontSize: 10,
-                fontWeight: 800,
-                letterSpacing: 0.6,
+                fontWeight: 600,
+                letterSpacing: 0.4,
+                textTransform: 'uppercase',
                 color: page.inkMuted,
               }}
             >
-              <span>NEXT: {nextTier.label.toUpperCase()}</span>
-              <span style={{ fontVariantNumeric: 'tabular-nums', color: page.ink }}>
-                {user.rating.toLocaleString()} / {nextMin.toLocaleString()}
+              <span>Next · {nextTier.label}</span>
+              <span>
+                <NumberText size={10} weight={600} color={page.inkMuted}>
+                  {user.rating.toLocaleString()}
+                </NumberText>
+                {' / '}
+                <NumberText size={10} weight={600} color={page.inkMuted}>
+                  {nextMin.toLocaleString()}
+                </NumberText>
               </span>
             </div>
             <div
               style={{
-                height: 12,
-                background: '#f5f0e6',
+                height: 6,
+                background: page.surfaceAlt,
+                border: `1px solid ${page.border}`,
                 borderRadius: 999,
                 overflow: 'hidden',
-                position: 'relative',
               }}
             >
               <div
                 style={{
                   width: `${Math.round(pct * 100)}%`,
                   height: '100%',
-                  background: `linear-gradient(90deg, ${currentTier.base}, ${nextTier.base})`,
-                  boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.08)',
+                  background: currentTier.base,
                   transition: 'width 480ms ease',
                 }}
               />
@@ -109,52 +133,41 @@ export function HeroCard({ user, weeklyDelta, streakDays }) {
         )}
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minWidth: 96 }}>
-        <StatTile number={streakDays} label="DAY STREAK" colors={statTiles.streak} />
+      <div style={{ width: 1, alignSelf: 'stretch', background: page.border }} />
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, alignSelf: 'stretch' }}>
+        <StatTile label="STREAK" number={streakDays} unit="days" numberColor={page.ink} />
+        <div style={{ width: 1, alignSelf: 'stretch', background: page.border }} />
         <StatTile
-          number={`${weeklyDelta >= 0 ? '+' : ''}${weeklyDelta}`}
           label="THIS WEEK"
-          colors={statTiles.weekly}
+          number={`${weeklyDelta >= 0 ? '+' : ''}${weeklyDelta}`}
+          unit="ELO"
+          numberColor={deltaTokens.pos}
         />
       </div>
     </div>
   );
 }
 
-function StatTile({ number, label, colors }) {
+function StatTile({ label, number, unit, numberColor }) {
   return (
-    <div
-      style={{
-        background: colors.bg,
-        border: `1.5px solid ${colors.border}`,
-        borderRadius: 12,
-        padding: '10px 12px',
-        textAlign: 'center',
-      }}
-    >
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 70 }}>
       <div
         style={{
-          fontSize: 22,
-          fontWeight: 900,
-          color: colors.text,
-          fontFamily: 'var(--font-display, Nunito, system-ui, sans-serif)',
-          fontVariantNumeric: 'tabular-nums',
-          lineHeight: 1,
-        }}
-      >
-        {number}
-      </div>
-      <div
-        style={{
-          marginTop: 4,
-          fontSize: 9,
-          fontWeight: 800,
-          letterSpacing: 0.8,
-          color: colors.text,
-          opacity: 0.85,
+          fontSize: 10,
+          fontWeight: 600,
+          letterSpacing: 0.4,
+          textTransform: 'uppercase',
+          color: page.inkMuted,
         }}
       >
         {label}
+      </div>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+        <NumberText size={22} weight={600} color={numberColor}>
+          {number}
+        </NumberText>
+        <span style={{ fontSize: 11, color: page.inkMuted, fontWeight: 500 }}>{unit}</span>
       </div>
     </div>
   );

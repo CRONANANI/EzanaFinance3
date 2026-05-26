@@ -1,6 +1,7 @@
 'use client';
 
 import { getTier } from '@/lib/elo-tier-colors';
+import { page, type as typeTokens } from './elo-design-tokens';
 
 export function TierChip({ tier, size = 'md' }) {
   const t = getTier(tier);
@@ -12,28 +13,28 @@ export function TierChip({ tier, size = 'md' }) {
       style={{
         display: 'inline-flex',
         alignItems: 'center',
-        gap: 5,
-        padding: isSmall ? '2px 8px 2px 6px' : '3px 10px 3px 8px',
-        borderRadius: 999,
-        background: t.soft,
+        gap: 6,
+        padding: isSmall ? '2px 7px 2px 6px' : '3px 9px 3px 7px',
+        borderRadius: 5,
+        background: page.surfaceAlt,
         color: t.ink,
+        fontFamily: typeTokens.sans,
         fontSize: isSmall ? 10 : 11,
-        fontWeight: 800,
-        border: `1.5px solid ${t.ring}88`,
-        letterSpacing: '0.2px',
-        fontFamily: 'var(--font-display, Nunito, system-ui, sans-serif)',
+        fontWeight: 500,
+        border: `1px solid ${page.border}`,
         whiteSpace: 'nowrap',
+        lineHeight: 1,
       }}
     >
       <span
         style={{
-          width: isSmall ? 6 : 7,
-          height: isSmall ? 6 : 7,
+          width: isSmall ? 5 : 6,
+          height: isSmall ? 5 : 6,
           borderRadius: '50%',
           background: t.base,
         }}
       />
-      {t.label.toUpperCase()}
+      {t.label}
     </span>
   );
 }

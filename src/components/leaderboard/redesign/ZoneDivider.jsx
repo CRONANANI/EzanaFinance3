@@ -1,13 +1,13 @@
 'use client';
 
-import { zones } from './elo-design-tokens';
+import { zones, page } from './elo-design-tokens';
 
 export function ZoneDivider({ kind, count }) {
   const z = zones[kind];
   const labels = {
-    promo: `PROMOTION ZONE — TOP ${count ?? 3} MOVE UP`,
-    safe: 'SAFE ZONE',
-    demo: `DEMOTION ZONE — BOTTOM ${count ?? 2} DROP`,
+    promo: `Promotion · top ${count ?? 3} move up`,
+    safe: 'Safe zone',
+    demo: `Demotion · bottom ${count ?? 2} drop`,
   };
 
   return (
@@ -17,13 +17,15 @@ export function ZoneDivider({ kind, count }) {
         display: 'flex',
         alignItems: 'center',
         gap: 8,
-        padding: '14px 8px 6px',
+        padding: '5px 16px',
+        background: z.bg,
+        borderBottom: `1px solid ${page.border}`,
       }}
     >
       <span
         style={{
-          width: 6,
-          height: 6,
+          width: 5,
+          height: 5,
           borderRadius: '50%',
           background: z.dot,
           flexShrink: 0,
@@ -33,21 +35,14 @@ export function ZoneDivider({ kind, count }) {
         style={{
           color: z.text,
           fontSize: 10,
-          fontWeight: 800,
-          letterSpacing: 0.6,
+          fontWeight: 600,
+          letterSpacing: 0.4,
+          textTransform: 'uppercase',
           whiteSpace: 'nowrap',
         }}
       >
         {labels[kind]}
       </span>
-      <span
-        style={{
-          flex: 1,
-          height: 2,
-          background: z.line,
-          borderRadius: 999,
-        }}
-      />
     </div>
   );
 }

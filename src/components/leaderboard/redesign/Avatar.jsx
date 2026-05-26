@@ -1,11 +1,11 @@
 'use client';
 
 import { getTier } from '@/lib/elo-tier-colors';
+import { type as typeTokens } from './elo-design-tokens';
 
-export function Avatar({ user, size = 32, ring = true }) {
+export function Avatar({ user, size = 26 }) {
   const t = getTier(user.tier);
-  const fontSize = Math.round(size * 0.38);
-  const ringWidth = size > 40 ? 4 : 3.5;
+  const fontSize = Math.round(size * 0.36);
 
   return (
     <div
@@ -14,17 +14,17 @@ export function Avatar({ user, size = 32, ring = true }) {
         width: size,
         height: size,
         borderRadius: '50%',
-        background: `linear-gradient(180deg, ${t.base} 0%, ${t.ink} 100%)`,
-        color: '#fff',
+        background: t.soft,
+        color: t.ink,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        fontWeight: 800,
+        fontFamily: typeTokens.sans,
+        fontWeight: 600,
         fontSize,
         letterSpacing: '-0.2px',
         flexShrink: 0,
-        boxShadow: ring ? `0 0 0 2px #fff, 0 0 0 ${ringWidth}px ${t.ring}` : 'none',
-        fontFamily: 'var(--font-display, Nunito, system-ui, sans-serif)',
+        boxShadow: `inset 0 0 0 1px ${t.ring}88`,
       }}
     >
       {user.initials}

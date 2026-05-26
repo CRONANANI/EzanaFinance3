@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
+import { getTier } from '@/lib/elo-tier-colors';
 import { LeagueHeader } from './LeagueHeader';
 import { HeroCard } from './HeroCard';
 import { DailyQuests } from './DailyQuests';
@@ -38,7 +39,6 @@ export default function EloLeaderboardPage() {
   const [activeTier, setActiveTier] = useState('all');
   const [sort, setSort] = useState('rating');
   const [sortDir, setSortDir] = useState('desc');
-  const [focusedIndex, setFocusedIndex] = useState(-1);
 
   const [users, setUsers] = useState([]);
   const [me, setMe] = useState(null);
@@ -46,11 +46,11 @@ export default function EloLeaderboardPage() {
   const [stats, setStats] = useState(MOCK_STATS);
   const [quests, setQuests] = useState(MOCK_QUESTS);
   const [refreshesAt, setRefreshesAt] = useState('—');
+  const [totalTraders, setTotalTraders] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const searchRef = useRef(null);
-  const rowRefs = useRef([]);
+  const activeTierLabel = activeTier === 'all' ? 'All tiers' : getTier(activeTier).label;
 
   useEffect(() => {
     let cancelled = false;
@@ -84,9 +84,13 @@ export default function EloLeaderboardPage() {
         if (eloData.error) throw new Error(eloData.error);
 
         setUsers((eloData.rows || []).map(normalizeUser));
-        if (meData && !meData.error) setMe(meData);
+        setTotalTraders(eloData.pagination?.total ?? statsData?.totalTraders ?? 0);
+        if (meData && !meData.error) setMe(normalizeUser(meData));
         if (leagueData && !leagueData.error) setLeague(leagueData);
-        if (statsData && !statsData.error) setStats(statsData);
+        if (statsData && !statsData.error) {
+          setStats(statsData);
+          if (!eloData.pagination?.total) setTotalTraders(statsData.totalTraders ?? 0);
+        }
         if (questsData?.quests) {
           setQuests(questsData.quests);
           setRefreshesAt(questsData.refreshesIn || '—');
@@ -138,62 +142,23 @@ export default function EloLeaderboardPage() {
     return sorted.map((u, i) => ({ ...u, rank: i + 1 }));
   }, [users, query, sort, sortDir]);
 
-  useEffect(() => {
-    rowRefs.current = rows.map(() => null);
-    setFocusedIndex(-1);
-  }, [rows]);
-
-  useEffect(() => {
-    const onKeyDown = (e) => {
-      if (e.key === '/' && document.activeElement?.tagName !== 'INPUT') {
-        e.preventDefault();
-        searchRef.current?.focus();
-        return;
-      }
-
-      if (e.key === 'Escape') {
-        if (document.activeElement === searchRef.current) {
-          setQuery('');
-          searchRef.current?.blur();
-        }
-        setFocusedIndex(-1);
-        return;
-      }
-
-      if (!rows.length) return;
-
-      if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        setFocusedIndex((i) => {
-          const next = i < rows.length - 1 ? i + 1 : 0;
-          rowRefs.current[next]?.focus();
-          return next;
-        });
-      }
-
-      if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        setFocusedIndex((i) => {
-          const next = i > 0 ? i - 1 : rows.length - 1;
-          rowRefs.current[next]?.focus();
-          return next;
-        });
-      }
-    };
-
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [rows]);
-
   if (loading && users.length === 0) {
     return <LeaderboardSkeleton />;
   }
 
   const currentUserId = me?.id;
   const heroUser = me
-    ? { ...me, totalTraders: stats?.totalTraders }
+    ? { ...me, totalTraders: stats?.totalTraders ?? totalTraders }
     : rows[0]
       ? { ...rows[0], globalRank: rows[0].rank, progressToNext: 0, nextTier: null }
+      : null;
+
+  const meForTable =
+    me && currentUserId
+      ? {
+          ...me,
+          rank: me.globalRank ?? me.rank,
+        }
       : null;
 
   return (
@@ -212,7 +177,7 @@ export default function EloLeaderboardPage() {
             background: '#fef2f2',
             color: '#b91c1c',
             padding: '10px 14px',
-            borderRadius: 10,
+            borderRadius: 8,
             marginBottom: 14,
             fontSize: 13,
             fontWeight: 600,
@@ -229,7 +194,6 @@ export default function EloLeaderboardPage() {
         style={{
           display: 'flex',
           gap: 14,
-          marginBottom: 14,
           flexWrap: 'wrap',
         }}
       >
@@ -243,8 +207,9 @@ export default function EloLeaderboardPage() {
         <DailyQuests quests={quests} refreshesAt={refreshesAt} />
       </div>
 
+      <StatsStrip stats={stats} />
+
       <FilterBar
-        ref={searchRef}
         query={query}
         onQueryChange={setQuery}
         range={range}
@@ -253,17 +218,17 @@ export default function EloLeaderboardPage() {
         onTierChange={setActiveTier}
       />
 
-      <StatsStrip stats={stats} />
-
       <LeaderboardTable
         rows={rows}
         currentUserId={currentUserId}
         league={league}
+        me={meForTable}
         sort={sort}
         sortDir={sortDir}
         onSortChange={onSortChange}
-        focusedIndex={focusedIndex}
-        rowRefs={rowRefs}
+        activeTierLabel={activeTierLabel}
+        range={range}
+        total={stats?.totalTraders ?? totalTraders}
       />
     </div>
   );

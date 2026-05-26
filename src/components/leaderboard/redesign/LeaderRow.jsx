@@ -1,80 +1,82 @@
 'use client';
 
 import Link from 'next/link';
-import { forwardRef } from 'react';
 import { Avatar } from './Avatar';
 import { TierChip } from './TierChip';
 import { Sparkline } from './Sparkline';
+import { NumberText } from './NumberText';
 import { getTier } from '@/lib/elo-tier-colors';
-import { page, delta as deltaTokens } from './elo-design-tokens';
+import {
+  page,
+  brand,
+  delta as deltaTokens,
+  type as typeTokens,
+  density,
+} from './elo-design-tokens';
 
-const COLUMN_GRID = '48px 1fr 130px 84px 64px 64px 70px 84px 76px';
+const COLUMN_GRID = '40px 1fr 130px 80px 60px 60px 64px 72px 72px';
 
-function profileHref(user) {
-  if (user.username) return `/profile/${encodeURIComponent(user.username)}`;
-  return '#';
-}
-
-export const LeaderRow = forwardRef(function LeaderRow(
-  { user, isYou, zone, isFocused, tabIndex = -1 },
-  ref,
-) {
+export function LeaderRow({ user, isYou, zone }) {
   const t = getTier(user.tier);
-  const baseBg = isYou ? page.brandSoft : isFocused ? '#fafaf9' : 'transparent';
-  const baseBorder = isYou
-    ? `2px solid ${page.brand}`
-    : isFocused
-      ? `2px solid ${page.brand}88`
-      : '2px solid transparent';
 
-  const href = profileHref(user);
+  const rankColor = isYou
+    ? brand.dark
+    : zone === 'promo'
+      ? deltaTokens.pos
+      : zone === 'demo'
+        ? deltaTokens.neg
+        : page.inkSoft;
+
+  const rowStyle = {
+    position: 'relative',
+    display: 'grid',
+    gridTemplateColumns: COLUMN_GRID,
+    alignItems: 'center',
+    padding: `${density.rowPaddingY}px ${density.rowPaddingX}px`,
+    background: isYou ? brand.soft : page.surface,
+    borderBottom: `1px solid ${page.border}`,
+    textDecoration: 'none',
+    color: 'inherit',
+    fontFamily: typeTokens.sans,
+    transition: 'background 120ms ease',
+    cursor: 'pointer',
+  };
 
   return (
     <Link
-      ref={ref}
-      href={href}
-      tabIndex={tabIndex}
-      aria-current={isYou ? 'true' : undefined}
-      style={{
-        display: 'grid',
-        gridTemplateColumns: COLUMN_GRID,
-        alignItems: 'center',
-        gap: 0,
-        padding: '8px 14px',
-        background: baseBg,
-        border: baseBorder,
-        borderRadius: 10,
-        textDecoration: 'none',
-        color: 'inherit',
-        transition: 'background 120ms ease',
-        marginBottom: 4,
-        outline: 'none',
-      }}
+      href={user.username ? `/profile/${encodeURIComponent(user.username)}` : '#'}
+      style={rowStyle}
       onMouseEnter={(e) => {
-        if (!isYou) e.currentTarget.style.background = '#fafaf9';
+        if (!isYou) e.currentTarget.style.background = page.surfaceAlt;
       }}
       onMouseLeave={(e) => {
-        if (!isYou && !isFocused) e.currentTarget.style.background = 'transparent';
-        else if (isFocused && !isYou) e.currentTarget.style.background = '#fafaf9';
+        if (!isYou) e.currentTarget.style.background = page.surface;
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+      {isYou && (
         <span
+          aria-hidden
           style={{
-            fontSize: 14,
-            fontWeight: 800,
-            color: page.ink,
-            fontVariantNumeric: 'tabular-nums',
-            fontFamily: 'var(--font-display, Nunito, system-ui, sans-serif)',
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: 2,
+            background: brand.base,
           }}
-        >
+        />
+      )}
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+        <NumberText size={12} weight={500} color={rankColor}>
           {user.rank}
-        </span>
+        </NumberText>
         {user.delta7d !== 0 && (
           <span
             style={{
               fontSize: 9,
-              color: user.delta7d > 0 ? deltaTokens.posLight : deltaTokens.neg,
+              color: user.delta7d > 0 ? deltaTokens.posDot : deltaTokens.negDot,
+              lineHeight: 1,
             }}
           >
             {user.delta7d > 0 ? '▲' : '▼'}
@@ -83,13 +85,13 @@ export const LeaderRow = forwardRef(function LeaderRow(
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-        <Avatar user={user} size={32} />
+        <Avatar user={user} size={26} />
         <div style={{ minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span
               style={{
                 fontSize: 13,
-                fontWeight: 700,
+                fontWeight: 500,
                 color: page.ink,
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
@@ -101,33 +103,38 @@ export const LeaderRow = forwardRef(function LeaderRow(
             {isYou && (
               <span
                 style={{
-                  background: page.brand,
-                  color: '#fff',
+                  background: '#fff',
+                  color: brand.dark,
+                  border: `1px solid ${brand.ring}`,
+                  fontFamily: typeTokens.mono,
                   fontSize: 9,
-                  fontWeight: 800,
-                  padding: '1px 6px',
-                  borderRadius: 999,
-                  letterSpacing: 0.5,
+                  fontWeight: 600,
+                  letterSpacing: 0.4,
+                  padding: '1px 5px',
+                  borderRadius: 3,
                   flexShrink: 0,
+                  lineHeight: 1,
                 }}
               >
                 YOU
               </span>
             )}
           </div>
-          <div
-            style={{
-              fontSize: 11,
-              fontWeight: 600,
-              color: page.inkMuted,
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              marginTop: 1,
-            }}
-          >
-            {user.title || 'Trader'}
-          </div>
+          {user.title && (
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 500,
+                color: page.inkMuted,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                marginTop: 1,
+              }}
+            >
+              {user.title}
+            </div>
+          )}
         </div>
       </div>
 
@@ -135,72 +142,57 @@ export const LeaderRow = forwardRef(function LeaderRow(
         <TierChip tier={user.tier} size="sm" />
       </div>
 
-      <div
-        style={{
-          textAlign: 'right',
-          fontSize: 14,
-          fontWeight: 800,
-          fontVariantNumeric: 'tabular-nums',
-          color: page.ink,
-          fontFamily: 'var(--font-display, Nunito, system-ui, sans-serif)',
-        }}
-      >
-        {user.rating.toLocaleString()}
+      <div style={{ textAlign: 'right' }}>
+        <NumberText size={13} weight={600}>
+          {user.rating.toLocaleString()}
+        </NumberText>
       </div>
 
-      <div
-        style={{
-          textAlign: 'right',
-          fontSize: 12,
-          fontWeight: 800,
-          fontVariantNumeric: 'tabular-nums',
-          color:
-            user.delta7d > 0 ? deltaTokens.pos : user.delta7d < 0 ? deltaTokens.neg : page.inkMuted,
-        }}
-      >
-        {user.delta7d > 0 ? '+' : ''}
-        {user.delta7d}
+      <div style={{ textAlign: 'right' }}>
+        <NumberText
+          size={12}
+          weight={500}
+          color={
+            user.delta7d > 0 ? deltaTokens.pos : user.delta7d < 0 ? deltaTokens.neg : page.inkMuted
+          }
+        >
+          {user.delta7d > 0 ? '+' : ''}
+          {user.delta7d}
+        </NumberText>
       </div>
 
-      <div
-        style={{
-          textAlign: 'right',
-          fontSize: 12,
-          fontWeight: 700,
-          fontVariantNumeric: 'tabular-nums',
-          color:
+      <div style={{ textAlign: 'right' }}>
+        <NumberText
+          size={12}
+          weight={500}
+          color={
             user.delta30d > 0
               ? deltaTokens.pos
               : user.delta30d < 0
                 ? deltaTokens.neg
-                : page.inkMuted,
-        }}
-      >
-        {user.delta30d > 0 ? '+' : ''}
-        {user.delta30d}
+                : page.inkMuted
+          }
+        >
+          {user.delta30d > 0 ? '+' : ''}
+          {user.delta30d}
+        </NumberText>
       </div>
 
-      <div
-        style={{
-          textAlign: 'right',
-          fontSize: 12,
-          fontWeight: 700,
-          color: page.inkMuted,
-          fontVariantNumeric: 'tabular-nums',
-        }}
-      >
-        {user.peak.toLocaleString()}
+      <div style={{ textAlign: 'right' }}>
+        <NumberText size={12} weight={500} color={page.inkSoft}>
+          {user.peak.toLocaleString()}
+        </NumberText>
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <Sparkline data={user.sparkline} w={70} h={18} color={t.base} />
+        <Sparkline data={user.sparkline} w={62} h={14} color={t.base} />
       </div>
 
       <div
         style={{
           textAlign: 'right',
           fontSize: 11,
-          fontWeight: 600,
+          fontWeight: 500,
           color: page.inkMuted,
         }}
       >
@@ -208,6 +200,6 @@ export const LeaderRow = forwardRef(function LeaderRow(
       </div>
     </Link>
   );
-});
+}
 
 LeaderRow.COLUMN_GRID = COLUMN_GRID;

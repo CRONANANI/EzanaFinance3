@@ -1,56 +1,90 @@
 /**
- * Page-level + auxiliary tokens for the ELO Leaderboard redesign.
+ * Page-level + auxiliary tokens for the ELO Leaderboard redesign (v2).
+ *
+ * Visual direction: "Sweet Spot" — sleek fintech between Stripe's whitespace-led
+ * calm and Bloomberg's data-density. Cool neutral surfaces, Inter for UI,
+ * JetBrains Mono for numbers, single hairline shadow, 1px borders only.
+ *
+ * Tier palette imports from the canonical `elo-tier-colors.js` — DO NOT
+ * duplicate tier colors here. The tier palette is identical between v1 and v2.
  */
 
 export { TIERS, TIER_LIST, tierForRating, getTier } from '@/lib/elo-tier-colors';
 
 export const page = {
-  bg: '#fffaf0',
-  card: '#ffffff',
-  ink: '#1c1917',
-  inkSoft: '#57534e',
-  inkMuted: '#a8a29e',
-  cardLine: '#f5f0e6',
-  shadow: '#ece5d3',
-  brand: '#16a34a',
-  brandSoft: '#dcfce7',
-  brandDark: '#15803d',
+  bg: '#f8f8f9',
+  surface: '#ffffff',
+  surfaceAlt: '#f7f7f8',
+  ink: '#0a0a0a',
+  inkSoft: '#525252',
+  inkMuted: '#8a8a8a',
+  border: '#ececec',
+  borderStrong: '#dcdcdc',
+};
+
+export const brand = {
+  base: '#16a34a',
+  dark: '#15803d',
+  soft: '#f0fdf4',
+  ring: '#86efac',
 };
 
 export const delta = {
   pos: '#15803d',
-  posLight: '#22c55e',
+  posDot: '#16a34a',
   neg: '#dc2626',
-  neutral: '#a8a29e',
+  negDot: '#dc2626',
+  neutral: '#8a8a8a',
 };
 
 export const categoryAccents = {
-  LEARN: { accent: '#7c3aed', soft: '#ede9fe' },
-  TRADE: { accent: '#16a34a', soft: '#dcfce7' },
-  ENGAGE: { accent: '#0284c7', soft: '#e0f2fe' },
-  PICK: { accent: '#ea580c', soft: '#ffedd5' },
+  LEARN: '#7c3aed',
+  TRADE: '#16a34a',
+  ENGAGE: '#0284c7',
+  PICK: '#ea580c',
 };
 
 export const zones = {
-  promo: { dot: '#16a34a', text: '#15803d', line: '#86efac', bg: '#f0fdf4', ring: '#16a34a40' },
-  safe: {
-    dot: '#a8a29e',
-    text: '#a8a29e',
-    line: '#f5f0e6',
-    bg: 'transparent',
-    ring: 'transparent',
-  },
-  demo: { dot: '#dc2626', text: '#b91c1c', line: '#fecaca', bg: '#fef2f2', ring: '#dc262640' },
+  promo: { dot: '#16a34a', text: '#15803d', bg: '#f7f7f8' },
+  safe: { dot: '#8a8a8a', text: '#8a8a8a', bg: '#f7f7f8' },
+  demo: { dot: '#dc2626', text: '#b91c1c', bg: '#f7f7f8' },
 };
 
-export const statTiles = {
-  streak: { bg: '#fff7ed', border: '#fed7aa', text: '#c2410c' },
-  weekly: { bg: '#dcfce7', border: '#86efac', text: '#15803d' },
+export const type = {
+  sans: 'var(--font-sans, "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif)',
+  mono: 'var(--font-mono, "JetBrains Mono", "SF Mono", ui-monospace, Menlo, Consolas, monospace)',
+  weights: {
+    regular: 400,
+    medium: 500,
+    semibold: 600,
+    bold: 700,
+  },
+  numericFeatures: 'tabular-nums',
 };
 
 export const shape = {
-  radius: { pill: 999, chip: 999, card: 18, rowCard: 10, button: 12, input: 12 },
-  shadowCard: `0 4px 0 ${page.shadow}`,
-  shadowSubtle: `0 2px 0 ${page.shadow}`,
-  shadowCTA: `0 4px 0 ${page.brandDark}`,
+  radius: {
+    card: 10,
+    row: 6,
+    chip: 5,
+    button: 8,
+    pill: 999,
+  },
+  border: {
+    width: '1px',
+    color: page.border,
+  },
+  shadow: {
+    card: '0 1px 2px rgba(15, 23, 42, 0.04)',
+    button: 'none',
+    none: 'none',
+  },
+};
+
+export const density = {
+  rowPaddingY: 9,
+  rowPaddingX: 16,
+  sectionGap: 14,
+  cardPaddingY: 18,
+  cardPaddingX: 20,
 };

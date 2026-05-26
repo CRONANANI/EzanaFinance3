@@ -1,82 +1,57 @@
 'use client';
 
-import { AnimatePresence, motion } from 'framer-motion';
 import { LeaderRow } from './LeaderRow';
 import { ZoneDivider } from './ZoneDivider';
+import { NumberText } from './NumberText';
 import { page, shape } from './elo-design-tokens';
 
 const HEADERS = [
   { key: 'rank', label: '#', sortable: false, align: 'left' },
-  { key: 'trader', label: 'TRADER', sortable: false, align: 'left' },
-  { key: 'tier', label: 'TIER', sortable: false, align: 'left' },
+  { key: 'trader', label: 'Trader', sortable: false, align: 'left' },
+  { key: 'tier', label: 'Tier', sortable: false, align: 'left' },
   { key: 'rating', label: 'ELO', sortable: true, align: 'right' },
   { key: 'd7', label: 'Δ 7D', sortable: true, align: 'right' },
   { key: 'd30', label: 'Δ 30D', sortable: true, align: 'right' },
-  { key: 'peak', label: 'PEAK', sortable: true, align: 'right' },
-  { key: 'trend', label: 'TREND', sortable: false, align: 'right' },
-  { key: 'active', label: 'ACTIVE', sortable: false, align: 'right' },
+  { key: 'peak', label: 'Peak', sortable: true, align: 'right' },
+  { key: 'trend', label: 'Trend', sortable: false, align: 'right' },
+  { key: 'active', label: 'Active', sortable: false, align: 'right' },
 ];
 
 export function LeaderboardTable({
   rows,
   currentUserId,
   league,
+  me,
   sort,
   sortDir,
   onSortChange,
-  focusedIndex = -1,
-  rowRefs,
+  activeTierLabel,
+  range,
+  total,
 }) {
   const promotionCount = league?.promotionCount ?? 3;
   const demotionCount = league?.demotionCount ?? 2;
-  const total = rows.length;
+  const visibleTotal = rows.length;
 
   const partitioned = rows.map((row, idx) => {
     let zone = 'safe';
     if (idx < promotionCount) zone = 'promo';
-    else if (idx >= total - demotionCount) zone = 'demo';
-    return { row, zone, idx };
+    else if (idx >= visibleTotal - demotionCount) zone = 'demo';
+    return { row, zone };
   });
 
-  const youRow = rows.find((r) => r.id === currentUserId);
-
-  const renderSection = (zoneKind) => {
-    const items = partitioned.filter((p) => p.zone === zoneKind);
-    return (
-      <AnimatePresence mode="popLayout" initial={false}>
-        {items.map(({ row, zone, idx }) => (
-          <motion.div
-            key={row.id}
-            layout
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.2 }}
-          >
-            <ZonedRow
-              user={row}
-              zone={zone}
-              isYou={row.id === currentUserId}
-              isFocused={idx === focusedIndex}
-              setRowRef={(el) => {
-                if (rowRefs?.current) rowRefs.current[idx] = el;
-              }}
-            />
-          </motion.div>
-        ))}
-      </AnimatePresence>
-    );
-  };
+  const youInView = rows.some((r) => r.id === currentUserId);
+  const youRow = me && !youInView ? me : null;
 
   return (
     <div
       className="elo-table-card"
       style={{
-        background: page.card,
-        border: `2px solid ${page.cardLine}`,
+        background: page.surface,
+        border: `1px solid ${page.border}`,
         borderRadius: shape.radius.card,
-        boxShadow: shape.shadowCard,
-        padding: '8px 12px 12px',
+        boxShadow: shape.shadow.card,
+        overflow: 'hidden',
         position: 'relative',
       }}
     >
@@ -84,14 +59,15 @@ export function LeaderboardTable({
         style={{
           display: 'grid',
           gridTemplateColumns: LeaderRow.COLUMN_GRID,
-          padding: '12px 14px 10px',
-          borderBottom: `1px solid ${page.cardLine}`,
-          marginBottom: 4,
+          padding: '10px 16px',
+          background: page.surfaceAlt,
+          borderBottom: `1px solid ${page.border}`,
         }}
       >
         {HEADERS.map((h) => {
           const isActive = sort === h.key;
           const Tag = h.sortable ? 'button' : 'div';
+          const arrow = isActive ? (sortDir === 'asc' ? '↑' : '↓') : '';
           return (
             <Tag
               key={h.key}
@@ -112,84 +88,100 @@ export function LeaderboardTable({
                 padding: 0,
                 textAlign: h.align,
                 fontSize: 10,
-                fontWeight: 800,
+                fontWeight: 600,
                 letterSpacing: 0.6,
+                textTransform: 'uppercase',
                 color: isActive ? page.ink : page.inkMuted,
                 cursor: h.sortable ? 'pointer' : 'default',
                 fontFamily: 'inherit',
+                display: 'flex',
+                justifyContent: h.align === 'right' ? 'flex-end' : 'flex-start',
+                alignItems: 'center',
+                gap: 4,
               }}
             >
               {h.label}
-              {isActive ? ' ▼' : ''}
+              {arrow && <span style={{ fontSize: 10 }}>{arrow}</span>}
             </Tag>
           );
         })}
       </div>
 
-      <ZoneDivider kind="promo" count={promotionCount} />
-      {renderSection('promo')}
+      {promotionCount > 0 && partitioned.some((p) => p.zone === 'promo') && (
+        <>
+          <ZoneDivider kind="promo" count={promotionCount} />
+          {partitioned
+            .filter((p) => p.zone === 'promo')
+            .map(({ row, zone }) => (
+              <LeaderRow key={row.id} user={row} zone={zone} isYou={row.id === currentUserId} />
+            ))}
+        </>
+      )}
 
-      <ZoneDivider kind="safe" />
-      {renderSection('safe')}
+      {partitioned.some((p) => p.zone === 'safe') && (
+        <>
+          <ZoneDivider kind="safe" />
+          {partitioned
+            .filter((p) => p.zone === 'safe')
+            .map(({ row, zone }) => (
+              <LeaderRow key={row.id} user={row} zone={zone} isYou={row.id === currentUserId} />
+            ))}
+        </>
+      )}
 
-      <ZoneDivider kind="demo" count={demotionCount} />
-      {renderSection('demo')}
+      {demotionCount > 0 && partitioned.some((p) => p.zone === 'demo') && (
+        <>
+          <ZoneDivider kind="demo" count={demotionCount} />
+          {partitioned
+            .filter((p) => p.zone === 'demo')
+            .map(({ row, zone }) => (
+              <LeaderRow key={row.id} user={row} zone={zone} isYou={row.id === currentUserId} />
+            ))}
+        </>
+      )}
 
       {youRow && (
         <div
-          className="elo-sticky-you"
           style={{
             position: 'sticky',
             bottom: 0,
-            background: page.brandSoft,
-            margin: '12px -12px -12px',
-            padding: '8px 12px',
-            borderTop: `2px solid ${page.brand}`,
-            borderBottomLeftRadius: shape.radius.card,
-            borderBottomRightRadius: shape.radius.card,
+            background: '#fff',
+            borderTop: `1px solid ${page.border}`,
           }}
         >
-          <LeaderRow user={youRow} isYou zone="safe" tabIndex={0} />
+          <LeaderRow user={youRow} zone="safe" isYou={true} />
         </div>
       )}
-    </div>
-  );
-}
 
-function ZonedRow({ user, zone, isYou, isFocused, setRowRef }) {
-  if (zone === 'safe') {
-    return (
-      <LeaderRow
-        ref={setRowRef}
-        user={user}
-        isYou={isYou}
-        zone={zone}
-        isFocused={isFocused}
-        tabIndex={isFocused ? 0 : -1}
-      />
-    );
-  }
-
-  const bg = zone === 'promo' ? '#f0fdf4' : '#fef2f2';
-  const ring = zone === 'promo' ? '#16a34a40' : '#dc262640';
-
-  return (
-    <div
-      style={{
-        background: bg,
-        borderRadius: 10,
-        boxShadow: `inset 0 0 0 1px ${ring}`,
-        marginBottom: 4,
-      }}
-    >
-      <LeaderRow
-        ref={setRowRef}
-        user={user}
-        isYou={isYou}
-        zone={zone}
-        isFocused={isFocused}
-        tabIndex={isFocused ? 0 : -1}
-      />
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '8px 16px',
+          background: page.surfaceAlt,
+          borderTop: `1px solid ${page.border}`,
+          fontSize: 10,
+          fontWeight: 600,
+          letterSpacing: 0.4,
+          textTransform: 'uppercase',
+          color: page.inkMuted,
+        }}
+      >
+        <div>
+          Showing{' '}
+          <NumberText size={10} weight={600} color={page.ink}>
+            {visibleTotal}
+          </NumberText>{' '}
+          of{' '}
+          <NumberText size={10} weight={600} color={page.ink}>
+            {(total ?? visibleTotal).toLocaleString()}
+          </NumberText>
+        </div>
+        <div>
+          {activeTierLabel || 'All tiers'} · {range || '1W'}
+        </div>
+      </div>
     </div>
   );
 }

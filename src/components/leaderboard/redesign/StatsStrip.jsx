@@ -1,6 +1,7 @@
 'use client';
 
-import { page, shape, delta as deltaTokens } from './elo-design-tokens';
+import { NumberText } from './NumberText';
+import { page, delta as deltaTokens, shape, type as typeTokens } from './elo-design-tokens';
 
 export function StatsStrip({ stats }) {
   if (!stats) return null;
@@ -47,57 +48,70 @@ export function StatsStrip({ stats }) {
     <div
       className="elo-stats-strip"
       style={{
-        background: page.card,
-        border: `2px solid ${page.cardLine}`,
+        background: page.surface,
+        border: `1px solid ${page.border}`,
         borderRadius: shape.radius.card,
-        boxShadow: shape.shadowSubtle,
-        padding: '12px 24px',
+        boxShadow: shape.shadow.card,
+        padding: '14px 20px',
         display: 'flex',
-        gap: 28,
         alignItems: 'center',
-        marginBottom: 14,
-        flexWrap: 'wrap',
+        fontFamily: typeTokens.sans,
       }}
     >
-      {cells.map((c) => (
-        <div key={c.label} style={{ minWidth: 90 }}>
-          <div
+      {cells.flatMap((c, i) => {
+        const elements = [];
+        if (i > 0) {
+          elements.push(
+            <div
+              key={`div-${i}`}
+              style={{
+                width: 1,
+                alignSelf: 'stretch',
+                background: page.border,
+                margin: '0 24px',
+              }}
+            />,
+          );
+        }
+        elements.push(<StatCell key={c.label} cell={c} />);
+        return elements;
+      })}
+    </div>
+  );
+}
+
+function StatCell({ cell }) {
+  return (
+    <div style={{ flex: 1, minWidth: 0 }}>
+      <div
+        style={{
+          fontSize: 9.5,
+          fontWeight: 600,
+          letterSpacing: 0.8,
+          color: page.inkMuted,
+          marginBottom: 4,
+          textTransform: 'uppercase',
+        }}
+      >
+        {cell.label}
+      </div>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+        <NumberText size={16} weight={600}>
+          {cell.value}
+        </NumberText>
+        {cell.delta && (
+          <span
             style={{
-              fontSize: 9,
-              fontWeight: 800,
-              letterSpacing: 0.8,
-              color: page.inkMuted,
-              marginBottom: 4,
+              fontFamily: 'inherit',
+              fontSize: 10.5,
+              fontWeight: 500,
+              color: cell.deltaNeutral ? page.inkMuted : deltaTokens.pos,
             }}
           >
-            {c.label}
-          </div>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-            <span
-              style={{
-                fontSize: 17,
-                fontWeight: 800,
-                fontVariantNumeric: 'tabular-nums',
-                color: page.ink,
-                fontFamily: 'var(--font-display, Nunito, system-ui, sans-serif)',
-              }}
-            >
-              {c.value}
-            </span>
-            {c.delta && (
-              <span
-                style={{
-                  fontSize: 10,
-                  fontWeight: 700,
-                  color: c.deltaNeutral ? page.inkMuted : deltaTokens.pos,
-                }}
-              >
-                {c.delta}
-              </span>
-            )}
-          </div>
-        </div>
-      ))}
+            {cell.delta}
+          </span>
+        )}
+      </div>
     </div>
   );
 }
