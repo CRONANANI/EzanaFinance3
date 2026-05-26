@@ -9,7 +9,7 @@ import { getTier } from '@/lib/elo-tier-colors';
 import { type as typeTokens, density } from './elo-design-tokens';
 import { useEloTheme } from './EloThemeContext';
 
-const COLUMN_GRID = '40px 1fr 130px 80px 60px 60px 64px 72px 72px';
+export const LEADER_ROW_COLUMN_GRID = '40px 1fr 130px 80px 60px 60px 64px 72px 72px';
 
 export function LeaderRow({ user, isYou, zone }) {
   const { page, brand, delta: deltaTokens } = useEloTheme();
@@ -26,7 +26,7 @@ export function LeaderRow({ user, isYou, zone }) {
   const rowStyle = {
     position: 'relative',
     display: 'grid',
-    gridTemplateColumns: COLUMN_GRID,
+    gridTemplateColumns: LEADER_ROW_COLUMN_GRID,
     alignItems: 'center',
     padding: `${density.rowPaddingY}px ${density.rowPaddingX}px`,
     background: isYou ? brand.soft : page.surface,

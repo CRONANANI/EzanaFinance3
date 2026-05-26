@@ -1,6 +1,6 @@
 'use client';
 
-import { LeaderRow } from './LeaderRow';
+import { LeaderRow, LEADER_ROW_COLUMN_GRID } from './LeaderRow';
 import { ZoneDivider } from './ZoneDivider';
 import { NumberText } from './NumberText';
 import { useEloTheme } from './EloThemeContext';
@@ -59,7 +59,7 @@ export function LeaderboardTable({
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: LeaderRow.COLUMN_GRID,
+          gridTemplateColumns: LEADER_ROW_COLUMN_GRID,
           padding: '10px 16px',
           background: page.surfaceAlt,
           borderBottom: `1px solid ${page.border}`,
@@ -146,7 +146,7 @@ export function LeaderboardTable({
           style={{
             position: 'sticky',
             bottom: 0,
-            background: '#fff',
+            background: page.surface,
             borderTop: `1px solid ${page.border}`,
           }}
         >

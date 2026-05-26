@@ -84,6 +84,8 @@ export function StatsStrip({ stats }) {
 }
 
 function StatCell({ cell }) {
+  const { page, delta: deltaTokens } = useEloTheme();
+
   return (
     <div style={{ flex: 1, minWidth: 0 }}>
       <div
