@@ -573,6 +573,13 @@ export function ProfilePageClient({ username }) {
                     variant="compact"
                   />
                 )}
+                <ProfilePerformancePanel
+                  userSeriesFull={userSeriesFull}
+                  isLive={activity.isLive}
+                  sourceTag={activity.sourceLabel}
+                  showSourceTag={isOwn && activity.source !== 'empty'}
+                  profileSource={isOwn && effectiveTrades.length === 0 ? 'empty-own' : null}
+                />
               </div>
             </div>
           </div>
@@ -585,13 +592,6 @@ export function ProfilePageClient({ username }) {
               <ProfileTradeNotes userId={profile.id} isOwn={isOwn} />
             </>
           )}
-          <ProfilePerformancePanel
-            userSeriesFull={userSeriesFull}
-            isLive={activity.isLive}
-            sourceTag={activity.sourceLabel}
-            showSourceTag={isOwn && activity.source !== 'empty'}
-            profileSource={isOwn && effectiveTrades.length === 0 ? 'empty-own' : null}
-          />
         </aside>
       </div>
     </div>
