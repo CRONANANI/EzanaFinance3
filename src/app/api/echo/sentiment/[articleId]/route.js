@@ -23,6 +23,12 @@ export async function GET(request, { params }) {
   const count = rows.length;
   const average = count > 0 ? rows.reduce((sum, r) => sum + (r.sentiment || 0), 0) / count : 50;
 
+  const distribution = new Array(21).fill(0);
+  for (const row of rows) {
+    const bucket = Math.min(20, Math.max(0, Math.round((row.sentiment || 0) / 5)));
+    distribution[bucket]++;
+  }
+
   let userSentiment = null;
   try {
     const user = await getCurrentUser(request);
@@ -37,6 +43,7 @@ export async function GET(request, { params }) {
   return NextResponse.json({
     average: Math.round(average),
     count,
+    distribution,
     userSentiment,
   });
 }

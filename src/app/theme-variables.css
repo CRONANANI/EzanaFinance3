@@ -374,3 +374,46 @@ body.partner-app.light-mode {
   --chart-fill-start: rgba(184, 146, 47, 0.18);
   --chart-fill-end: rgba(184, 146, 47, 0);
 }
+
+/* V3 Marquee — Ezana Echo Article Footer Tokens */
+:root {
+  --echo-surface-3: #172230;
+  --echo-border-strong: rgba(255, 255, 255, 0.14);
+  --echo-accent: #14b88a;
+  --echo-accent-soft: rgba(20, 184, 138, 0.14);
+  --echo-accent-ring: rgba(20, 184, 138, 0.3);
+  --echo-accent-deep: #0f8e6c;
+  --echo-sentiment-gradient: linear-gradient(
+    90deg,
+    #ef4444 0%,
+    #f97316 28%,
+    #eab308 50%,
+    #22c55e 75%,
+    #14b88a 100%
+  );
+  --echo-font-serif: var(
+    --font-serif-editorial,
+    'Source Serif 4',
+    'Source Serif Pro',
+    Georgia,
+    'Times New Roman',
+    serif
+  );
+}
+
+body.light-mode {
+  --echo-surface-3: #eef2f5;
+  --echo-border-strong: rgba(15, 23, 42, 0.14);
+  --echo-accent: #0e9c74;
+  --echo-accent-soft: rgba(14, 156, 116, 0.1);
+  --echo-accent-ring: rgba(14, 156, 116, 0.28);
+  --echo-accent-deep: #0a7d5d;
+  --echo-sentiment-gradient: linear-gradient(
+    90deg,
+    #dc2626 0%,
+    #ea580c 28%,
+    #ca8a04 50%,
+    #16a34a 75%,
+    #0e9c74 100%
+  );
+}

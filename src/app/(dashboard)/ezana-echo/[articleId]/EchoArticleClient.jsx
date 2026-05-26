@@ -19,11 +19,8 @@ import {
 import { useAuth } from '@/components/AuthProvider';
 import { useTheme } from '@/components/ThemeProvider';
 import { isAdminUserClient } from '@/lib/admin-helpers-client';
-import { EchoArticleEngagement } from '@/components/echo/EchoArticleEngagement';
 import { EchoSaveButton } from '@/components/echo/EchoSaveButton';
-import { EchoNewsletterSignup } from '@/components/echo/EchoNewsletterSignup';
-import { EchoCommunityReactions } from '@/components/echo/EchoCommunityReactions';
-import { EchoSentimentBar } from '@/components/echo/EchoSentimentBar';
+import { EchoArticleFooter } from '@/components/echo/footer/EchoArticleFooter';
 import { EchoCtaCallout } from '@/components/echo/EchoCtaCallout';
 import { InteractiveChartCTAOverlay } from '@/components/echo/InteractiveChartCTAOverlay';
 import { EchoKeywordProvider, useKeywordPopup } from '@/components/echo/EchoKeywordContext';
@@ -2631,28 +2628,13 @@ export default function EchoArticleClient({ article, isArchived: initialArchived
                 : paragraphs.map((p, i) => <ParagraphWithKeywords key={i} text={p} />)}
             </div>
 
-            <div className="echo-article-actions-bottom">
-              <EchoSaveButton
-                articleId={article.id}
-                articleTags={articleTags}
-                placement="bottom"
-                articleTracker={articleTracker}
-              />
-            </div>
-
-            <div className="echo-article-public-cta">
-              <EchoCommunityReactions articleId={article.id} articleTitle={article.title} />
-              <EchoSentimentBar articleId={article.id} />
-              <EchoNewsletterSignup />
-            </div>
-
-            <div className="echo-article-footer">
-              <EchoArticleEngagement
-                articleId={article.id}
-                articleTitle={article.title}
-                articleTracker={articleTracker}
-              />
-            </div>
+            <EchoArticleFooter
+              articleId={article.id}
+              articleTitle={article.title}
+              articleAuthor={article.author}
+              articlePublishedAt={article.publishedAt}
+              articleTracker={articleTracker}
+            />
 
             <section className="echo-article-related">
               <div className="echo-article-related-header">

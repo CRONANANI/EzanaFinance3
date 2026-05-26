@@ -1,9 +1,18 @@
 import { notFound } from 'next/navigation';
+import { Source_Serif_4 } from 'next/font/google';
 import { getArticleById } from '@/lib/ezana-echo-mock';
 import { createServerSupabase } from '@/lib/supabase-server';
 import { isAdminUser } from '@/lib/admin-helpers';
 import { isArticleArchived } from '@/lib/echo-article-status';
 import EchoArticleClient from './EchoArticleClient';
+
+const sourceSerif = Source_Serif_4({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  style: ['normal', 'italic'],
+  variable: '--font-serif-editorial',
+  display: 'swap',
+});
 
 export async function generateMetadata({ params }) {
   const a = getArticleById(params.articleId);
@@ -29,5 +38,9 @@ export default async function EzanaEchoArticlePage({ params }) {
     }
   }
 
-  return <EchoArticleClient article={article} isArchived={archived} />;
+  return (
+    <div className={sourceSerif.variable}>
+      <EchoArticleClient article={article} isArchived={archived} />
+    </div>
+  );
 }
