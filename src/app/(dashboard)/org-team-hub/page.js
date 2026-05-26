@@ -9,10 +9,7 @@ import { OrgMemberProfileModal } from '@/components/org/OrgMemberProfileModal';
 import { OrgNotificationManager } from '@/components/org/OrgNotificationManager';
 import { PerformanceMetricsCard } from '@/components/org/PerformanceMetricsCard';
 import { UpcomingDeadlinesCard } from '@/components/org/UpcomingDeadlinesCard';
-import {
-  StrategicOverviewCard,
-  ResourceAllocationCard,
-} from '@/components/org/ExecutiveCards';
+import { StrategicOverviewCard, ResourceAllocationCard } from '@/components/org/ExecutiveCards';
 import {
   TeamPortfolioSummaryCard,
   AnalystWorkloadCard,
@@ -23,26 +20,53 @@ import {
   ResearchDeliverablesCard,
   SkillDevelopmentCard,
 } from '@/components/org/AnalystCards';
-import { getTasksByRole, getMemberByEmail, MOCK_MEMBERS, MOCK_TEAMS, MOCK_TEAM_PERFORMANCE } from '@/lib/orgMockData';
+import {
+  getTasksByRole,
+  getMemberByEmail,
+  MOCK_MEMBERS,
+  MOCK_TEAMS,
+  MOCK_TEAM_PERFORMANCE,
+} from '@/lib/orgMockData';
 import { FilePreviewModal } from '@/components/file-preview/FilePreviewModal';
 import '../../../../app-legacy/assets/css/theme.css';
 import './team-hub.css';
 import '../org-trading/org-trading.css';
 
 const OrgSendToTeamModal = dynamic(
-  () => import('@/components/org/OrgSendToTeamModal').then((m) => ({ default: m.OrgSendToTeamModal })),
+  () =>
+    import('@/components/org/OrgSendToTeamModal').then((m) => ({ default: m.OrgSendToTeamModal })),
   { ssr: false },
 );
 
 /* ── Helpers ───────────────────────────────────────────────── */
 function getFileTypeInfo(filename) {
   const ext = filename.split('.').pop()?.toLowerCase();
-  if (['pdf'].includes(ext)) return { type: 'pdf', icon: 'bi-file-earmark-pdf', label: 'PDF', category: 'pdf' };
-  if (['pptx', 'ppt'].includes(ext)) return { type: 'pptx', icon: 'bi-file-earmark-slides', label: 'PowerPoint', category: 'powerpoint' };
-  if (['xlsx', 'xls', 'csv'].includes(ext)) return { type: 'xlsx', icon: 'bi-file-earmark-spreadsheet', label: 'Spreadsheet', category: 'spreadsheet' };
-  if (['mp4', 'mov', 'avi', 'webm', 'mkv'].includes(ext)) return { type: 'video', icon: 'bi-camera-video', label: 'Video', category: 'video' };
-  if (['doc', 'docx'].includes(ext)) return { type: 'doc', icon: 'bi-file-earmark-word', label: 'Word', category: 'document' };
-  return { type: 'other', icon: 'bi-file-earmark', label: ext?.toUpperCase() || 'File', category: 'other' };
+  if (['pdf'].includes(ext))
+    return { type: 'pdf', icon: 'bi-file-earmark-pdf', label: 'PDF', category: 'pdf' };
+  if (['pptx', 'ppt'].includes(ext))
+    return {
+      type: 'pptx',
+      icon: 'bi-file-earmark-slides',
+      label: 'PowerPoint',
+      category: 'powerpoint',
+    };
+  if (['xlsx', 'xls', 'csv'].includes(ext))
+    return {
+      type: 'xlsx',
+      icon: 'bi-file-earmark-spreadsheet',
+      label: 'Spreadsheet',
+      category: 'spreadsheet',
+    };
+  if (['mp4', 'mov', 'avi', 'webm', 'mkv'].includes(ext))
+    return { type: 'video', icon: 'bi-camera-video', label: 'Video', category: 'video' };
+  if (['doc', 'docx'].includes(ext))
+    return { type: 'doc', icon: 'bi-file-earmark-word', label: 'Word', category: 'document' };
+  return {
+    type: 'other',
+    icon: 'bi-file-earmark',
+    label: ext?.toUpperCase() || 'File',
+    category: 'other',
+  };
 }
 
 function formatSize(bytes) {
@@ -102,7 +126,17 @@ const MOCK_FILES = [
       'https://placehold.co/1280x720/0d1117/a78bfa?text=Slide+5+%E2%80%94+Recommendation',
     ],
   },
-  { id: 'f2', name: 'AAPL Valuation Model.xlsx', size: 890000, uploadedBy: 'm10', sharedWith: ['m3', 'm11'], uploadedAt: '2026-04-01', team_id: 't7', tag: null, contentType: 'models_dcf' },
+  {
+    id: 'f2',
+    name: 'AAPL Valuation Model.xlsx',
+    size: 890000,
+    uploadedBy: 'm10',
+    sharedWith: ['m3', 'm11'],
+    uploadedAt: '2026-04-01',
+    team_id: 't7',
+    tag: null,
+    contentType: 'models_dcf',
+  },
   {
     id: 'f3',
     name: 'Healthcare Sector Primer.pdf',
@@ -127,7 +161,17 @@ const MOCK_FILES = [
     contentType: null,
     previewUrl: DEMO_VIDEO_URL,
   },
-  { id: 'f5', name: 'Comparable Company Analysis - Semis.xlsx', size: 1200000, uploadedBy: 'm22', sharedWith: ['m3', 'm10'], uploadedAt: '2026-03-27', team_id: 't7', tag: null, contentType: 'models_comparable_companies' },
+  {
+    id: 'f5',
+    name: 'Comparable Company Analysis - Semis.xlsx',
+    size: 1200000,
+    uploadedBy: 'm22',
+    sharedWith: ['m3', 'm10'],
+    uploadedAt: '2026-03-27',
+    team_id: 't7',
+    tag: null,
+    contentType: 'models_comparable_companies',
+  },
   {
     id: 'f6',
     name: 'Energy Sector Update Q1.pdf',
@@ -196,8 +240,28 @@ const MOCK_FILES = [
       'https://placehold.co/1280x720/312e81/2dd4bf?text=Staples+Preview+3',
     ],
   },
-  { id: 'f11', name: 'Industrials Capex Model.xlsx', size: 1500000, uploadedBy: 'm8', sharedWith: ['m1', 'm18'], uploadedAt: '2026-03-10', team_id: 't5', tag: null, contentType: 'models_capex' },
-  { id: 'f12', name: 'Utilities Dividend Discount Model.xlsx', size: 920000, uploadedBy: 'm10', sharedWith: ['m3', 'm11'], uploadedAt: '2026-04-03', team_id: 't7', tag: null, contentType: 'models_ddm' },
+  {
+    id: 'f11',
+    name: 'Industrials Capex Model.xlsx',
+    size: 1500000,
+    uploadedBy: 'm8',
+    sharedWith: ['m1', 'm18'],
+    uploadedAt: '2026-03-10',
+    team_id: 't5',
+    tag: null,
+    contentType: 'models_capex',
+  },
+  {
+    id: 'f12',
+    name: 'Utilities Dividend Discount Model.xlsx',
+    size: 920000,
+    uploadedBy: 'm10',
+    sharedWith: ['m3', 'm11'],
+    uploadedAt: '2026-04-03',
+    team_id: 't7',
+    tag: null,
+    contentType: 'models_ddm',
+  },
 ];
 
 /** File extension / MIME-style categories (Format filter) */
@@ -288,7 +352,8 @@ function UploadModal({ isOpen, onClose, members }) {
   const handleFileSelect = (e) => {
     if (e.target.files?.[0]) setSelectedFile(e.target.files[0]);
   };
-  const toggleRecipient = (id) => setRecipients((p) => (p.includes(id) ? p.filter((r) => r !== id) : [...p, id]));
+  const toggleRecipient = (id) =>
+    setRecipients((p) => (p.includes(id) ? p.filter((r) => r !== id) : [...p, id]));
   const handleUpload = () => {
     alert(`Upload "${selectedFile?.name}" shared with ${recipients.length} member(s).`);
     onClose();
@@ -296,10 +361,18 @@ function UploadModal({ isOpen, onClose, members }) {
 
   return (
     <div className="th-modal-overlay" onClick={onClose} role="presentation">
-      <div className="th-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-labelledby="th-upload-title">
+      <div
+        className="th-modal"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-labelledby="th-upload-title"
+      >
         <div className="th-modal-header">
           <h2 id="th-upload-title">
-            <i className="bi bi-cloud-arrow-up" style={{ marginRight: '0.5rem', color: '#6366f1' }} />
+            <i
+              className="bi bi-cloud-arrow-up"
+              style={{ marginRight: '0.5rem', color: '#6366f1' }}
+            />
             Upload & share
           </h2>
           <button type="button" className="th-modal-close" onClick={onClose} aria-label="Close">
@@ -359,7 +432,8 @@ function UploadModal({ isOpen, onClose, members }) {
             }}
             onClick={() => setShowMemberPicker(!showMemberPicker)}
           >
-            <i className="bi bi-people" /> {recipients.length ? `${recipients.length} selected` : 'Select recipients'}
+            <i className="bi bi-people" />{' '}
+            {recipients.length ? `${recipients.length} selected` : 'Select recipients'}
           </button>
           {showMemberPicker && (
             <div className="th-member-list">
@@ -377,10 +451,16 @@ function UploadModal({ isOpen, onClose, members }) {
                   role="button"
                   tabIndex={0}
                 >
-                  <div className="th-member-check">{recipients.includes(m.id) && <i className="bi bi-check" />}</div>
+                  <div className="th-member-check">
+                    {recipients.includes(m.id) && <i className="bi bi-check" />}
+                  </div>
                   <AvatarCircle name={m.name} role={m.role} size={28} />
                   <div style={{ flex: 1 }}>
-                    <p style={{ color: '#f0f6fc', fontSize: '0.78rem', fontWeight: 600, margin: 0 }}>{m.name}</p>
+                    <p
+                      style={{ color: '#f0f6fc', fontSize: '0.78rem', fontWeight: 600, margin: 0 }}
+                    >
+                      {m.name}
+                    </p>
                     <p style={{ color: '#6b7280', fontSize: '0.6rem', margin: 0 }}>{m.sub_role}</p>
                   </div>
                 </div>
@@ -409,7 +489,12 @@ function UploadModal({ isOpen, onClose, members }) {
             </div>
           )}
         </div>
-        <button type="button" className="th-submit-btn" disabled={!selectedFile} onClick={handleUpload}>
+        <button
+          type="button"
+          className="th-submit-btn"
+          disabled={!selectedFile}
+          onClick={handleUpload}
+        >
           Upload{recipients.length > 0 ? ` & share with ${recipients.length}` : ''}
         </button>
       </div>
@@ -434,7 +519,9 @@ function TeamFilterDropdown({ teamFilters, toggleTeam, clearTeams }) {
   const ref = useRef(null);
   useCloseOnOutsideClick(open, setOpen, ref);
   const summary =
-    teamFilters.length === 0 ? 'All teams' : `${teamFilters.length} team${teamFilters.length === 1 ? '' : 's'}`;
+    teamFilters.length === 0
+      ? 'All teams'
+      : `${teamFilters.length} team${teamFilters.length === 1 ? '' : 's'}`;
 
   return (
     <div className="th-filter-dd" ref={ref}>
@@ -458,7 +545,11 @@ function TeamFilterDropdown({ teamFilters, toggleTeam, clearTeams }) {
           )}
           {TEAM_FILTERS.map((t) => (
             <label key={t.id} className="th-filter-dd-checkrow">
-              <input type="checkbox" checked={teamFilters.includes(t.id)} onChange={() => toggleTeam(t.id)} />
+              <input
+                type="checkbox"
+                checked={teamFilters.includes(t.id)}
+                onChange={() => toggleTeam(t.id)}
+              />
               <span>{t.label}</span>
             </label>
           ))}
@@ -583,7 +674,8 @@ function FilePortalCard({ members }) {
   const [contentTypeFilter, setContentTypeFilter] = useState('');
   const [showAdmin, setShowAdmin] = useState(false);
 
-  const toggleTeam = (id) => setTeamFilters((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
+  const toggleTeam = (id) =>
+    setTeamFilters((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
   const clearTeams = () => setTeamFilters([]);
 
   const filtered = useMemo(() => {
@@ -593,7 +685,8 @@ function FilePortalCard({ members }) {
       list = list.filter((f) => f.name.toLowerCase().includes(q));
     }
     if (formatFilter) list = list.filter((f) => getFileTypeInfo(f.name).category === formatFilter);
-    if (teamFilters.length > 0) list = list.filter((f) => f.team_id && teamFilters.includes(f.team_id));
+    if (teamFilters.length > 0)
+      list = list.filter((f) => f.team_id && teamFilters.includes(f.team_id));
     if (contentTypeFilter) list = list.filter((f) => f.contentType === contentTypeFilter);
     if (showAdmin) list = list.filter((f) => f.tag === 'administrative');
     return list;
@@ -604,20 +697,38 @@ function FilePortalCard({ members }) {
       <UploadModal isOpen={uploadOpen} onClose={() => setUploadOpen(false)} members={members} />
       {sendFile && (
         <div className="th-modal-overlay" onClick={() => setSendFile(null)} role="presentation">
-          <div className="th-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-labelledby="th-send-title">
+          <div
+            className="th-modal"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-labelledby="th-send-title"
+          >
             <div className="th-modal-header">
               <h2 id="th-send-title">
                 <i className="bi bi-send" style={{ marginRight: '0.5rem', color: '#6366f1' }} />
                 Send &quot;{sendFile.name}&quot;
               </h2>
-              <button type="button" className="th-modal-close" onClick={() => setSendFile(null)} aria-label="Close">
+              <button
+                type="button"
+                className="th-modal-close"
+                onClick={() => setSendFile(null)}
+                aria-label="Close"
+              >
                 <i className="bi bi-x-lg" />
               </button>
             </div>
             <p style={{ color: '#9ca3af', fontSize: '0.78rem' }}>
-              Select recipients from the member list and click send. (Production: updates shared_with in DB)
+              Select recipients from the member list and click send. (Production: updates
+              shared_with in DB)
             </p>
-            <button type="button" className="th-submit-btn" onClick={() => { alert('Sent!'); setSendFile(null); }}>
+            <button
+              type="button"
+              className="th-submit-btn"
+              onClick={() => {
+                alert('Sent!');
+                setSendFile(null);
+              }}
+            >
               Send
             </button>
           </div>
@@ -662,21 +773,40 @@ function FilePortalCard({ members }) {
               ))}
             </select>
           </div>
-          <TeamFilterDropdown teamFilters={teamFilters} toggleTeam={toggleTeam} clearTeams={clearTeams} />
+          <TeamFilterDropdown
+            teamFilters={teamFilters}
+            toggleTeam={toggleTeam}
+            clearTeams={clearTeams}
+          />
           <TypeFilterDropdown value={contentTypeFilter} onChange={setContentTypeFilter} />
           <span className="th-filter-divider" aria-hidden />
-          <button type="button" className={`th-filter-btn${showAdmin ? ' active' : ''}`} onClick={() => setShowAdmin(!showAdmin)}>
+          <button
+            type="button"
+            className={`th-filter-btn${showAdmin ? ' active' : ''}`}
+            onClick={() => setShowAdmin(!showAdmin)}
+          >
             Administrative
           </button>
         </div>
         <div className="th-file-list">
           {filtered.length === 0 && (
-            <p style={{ color: '#6b7280', fontSize: '0.82rem', textAlign: 'center', padding: '1.5rem 0' }}>No files match your filters.</p>
+            <p
+              style={{
+                color: '#6b7280',
+                fontSize: '0.82rem',
+                textAlign: 'center',
+                padding: '1.5rem 0',
+              }}
+            >
+              No files match your filters.
+            </p>
           )}
           {filtered.map((file) => {
             const info = getFileTypeInfo(file.name);
             const uploader = members.find((m) => m.id === file.uploadedBy);
-            const shared = file.sharedWith.map((sid) => members.find((mm) => mm.id === sid)).filter(Boolean);
+            const shared = file.sharedWith
+              .map((sid) => members.find((mm) => mm.id === sid))
+              .filter(Boolean);
             const team = file.team_id ? MOCK_TEAMS.find((t) => t.id === file.team_id) : null;
             return (
               <div
@@ -710,11 +840,18 @@ function FilePortalCard({ members }) {
                     <AvatarCircle key={mem.id} name={mem.name} role={mem.role} size={22} />
                   ))}
                   {shared.length > 3 && (
-                    <span style={{ fontSize: '0.55rem', color: '#6b7280', marginLeft: 4 }}>+{shared.length - 3}</span>
+                    <span style={{ fontSize: '0.55rem', color: '#6b7280', marginLeft: 4 }}>
+                      +{shared.length - 3}
+                    </span>
                   )}
                 </div>
                 <div className="th-file-actions" onClick={(e) => e.stopPropagation()}>
-                  <button type="button" className="th-icon-btn" title="Send to…" onClick={() => setSendFile(file)}>
+                  <button
+                    type="button"
+                    className="th-icon-btn"
+                    title="Send to…"
+                    onClick={() => setSendFile(file)}
+                  >
                     <i className="bi bi-send" />
                   </button>
                   <button type="button" className="th-icon-btn" title="Download">
@@ -743,12 +880,18 @@ export default function OrgTeamHubPage() {
   useEffect(() => {
     if (!isOrgUser || !orgData) return;
     const emailMatch = getMemberByEmail(orgData?.member?.email);
-    const currentMember = emailMatch || MOCK_MEMBERS.find((m) => m.role === orgRole) || MOCK_MEMBERS[0];
+    const currentMember =
+      emailMatch || MOCK_MEMBERS.find((m) => m.role === orgRole) || MOCK_MEMBERS[0];
     setTasks(getTasksByRole(orgRole, currentMember.id));
   }, [isOrgUser, orgData, orgRole]);
 
   if (isLoading) return <div style={{ padding: '2rem', color: '#888' }}>Loading Team Hub…</div>;
-  if (!isOrgUser) return <div style={{ padding: '2rem', color: '#888' }}>This page is for organizational members only.</div>;
+  if (!isOrgUser)
+    return (
+      <div style={{ padding: '2rem', color: '#888' }}>
+        This page is for organizational members only.
+      </div>
+    );
 
   const isExecutive = orgRole === 'executive';
   const isPortfolioManager = orgRole === 'portfolio_manager';
@@ -768,7 +911,29 @@ export default function OrgTeamHubPage() {
             </p>
           </div>
         </div>
-        <div className="th-hero-stats">
+        <div
+          className="th-hero-stats"
+          style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}
+        >
+          <a
+            href="/org-team-hub/pitches"
+            className="th-upload-btn"
+            style={{ textDecoration: 'none' }}
+          >
+            <i className="bi bi-kanban" /> Pitch Pipeline
+          </a>
+          <a
+            href="/org-team-hub/pitch-archive"
+            className="th-upload-btn"
+            style={{
+              textDecoration: 'none',
+              background: 'rgba(255,255,255,0.04)',
+              color: '#9ca3af',
+              borderColor: 'rgba(255,255,255,0.1)',
+            }}
+          >
+            <i className="bi bi-archive" /> Archive
+          </a>
           <div className="th-hero-stat">
             <div className="th-hero-stat-value">{MOCK_MEMBERS.length}</div>
             <div className="th-hero-stat-label">Members</div>
@@ -795,7 +960,9 @@ export default function OrgTeamHubPage() {
               <i className="bi bi-list-task" />
               <span>{isAnalyst ? 'My Tasks' : 'Task Management'}</span>
             </div>
-            <span style={{ fontSize: '0.6rem', color: '#6b7280', fontWeight: 600 }}>{tasks.length}</span>
+            <span style={{ fontSize: '0.6rem', color: '#6b7280', fontWeight: 600 }}>
+              {tasks.length}
+            </span>
           </div>
           <div className="th-card-body th-task-scroll">
             {tasks.length === 0 ? (

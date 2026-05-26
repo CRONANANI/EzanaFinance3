@@ -1,0 +1,344 @@
+/* Org stock pitch pipeline + archive */
+
+.op-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.op-hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.op-hero h1 {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #f0f6fc;
+  margin: 0;
+}
+
+.op-hero-sub {
+  font-size: 0.78rem;
+  color: #9ca3af;
+  margin: 0.25rem 0 0;
+}
+
+.op-hero-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.op-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.9rem;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  background: rgba(99, 102, 241, 0.12);
+  color: #a5b4fc;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+
+.op-btn:hover {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
+.op-btn--ghost {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #9ca3af;
+}
+
+.op-btn--ghost:hover {
+  color: #f0f6fc;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.op-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.op-filters select,
+.op-search {
+  padding: 0.45rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  color: #f0f6fc;
+  font-size: 0.78rem;
+}
+
+.op-search {
+  flex: 1;
+  min-width: 200px;
+  max-width: 420px;
+}
+
+/* Kanban board */
+.op-board {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(140px, 1fr));
+  gap: 0.65rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+
+@media (max-width: 1200px) {
+  .op-board {
+    grid-template-columns: repeat(6, minmax(160px, 1fr));
+  }
+}
+
+.op-column {
+  min-width: 140px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  max-height: 70vh;
+}
+
+.op-column-header {
+  padding: 0.55rem 0.65rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #9ca3af;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
+}
+
+.op-column-body {
+  padding: 0.45rem;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.op-card {
+  display: block;
+  padding: 0.55rem 0.6rem;
+  border-radius: 8px;
+  background: rgba(99, 102, 241, 0.06);
+  border: 1px solid rgba(99, 102, 241, 0.15);
+  text-decoration: none;
+  color: inherit;
+  transition:
+    border-color 0.15s,
+    transform 0.15s;
+}
+
+.op-card:hover {
+  border-color: rgba(99, 102, 241, 0.35);
+  transform: translateY(-1px);
+}
+
+.op-card-ticker {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #f0f6fc;
+}
+
+.op-card-meta {
+  font-size: 0.62rem;
+  color: #9ca3af;
+  margin-top: 0.2rem;
+  line-height: 1.35;
+}
+
+.op-card-foot {
+  font-size: 0.58rem;
+  color: #6b7280;
+  margin-top: 0.35rem;
+}
+
+/* Archive list */
+.op-archive-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.op-archive-card {
+  padding: 1rem 1.1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: border-color 0.15s;
+}
+
+.op-archive-card:hover {
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+.op-archive-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.op-archive-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #f0f6fc;
+  margin: 0;
+}
+
+.op-decision {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.op-decision--accepted {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+.op-decision--rejected {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.op-decision--watchlist {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+
+.op-decision--deferred {
+  background: rgba(148, 163, 184, 0.15);
+  color: #94a3b8;
+}
+
+.op-archive-thesis {
+  font-size: 0.78rem;
+  color: #9ca3af;
+  margin: 0.5rem 0 0;
+  line-height: 1.45;
+}
+
+.op-hindsight {
+  font-size: 0.72rem;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.op-hindsight--pos {
+  color: #10b981;
+}
+
+.op-hindsight--neg {
+  color: #ef4444;
+}
+
+.op-archive-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.6rem;
+  font-size: 0.68rem;
+  color: #6366f1;
+}
+
+/* Detail */
+.op-detail-banner {
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  color: #fbbf24;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.op-tabs {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 1rem;
+}
+
+.op-tab {
+  padding: 0.5rem 0.85rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #9ca3af;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  margin-bottom: -1px;
+}
+
+.op-tab--active {
+  color: #a5b4fc;
+  border-bottom-color: #6366f1;
+}
+
+.op-panel {
+  font-size: 0.82rem;
+  color: #d1d5db;
+  line-height: 1.55;
+}
+
+.op-panel h3 {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+  margin: 1rem 0 0.35rem;
+}
+
+.op-panel h3:first-child {
+  margin-top: 0;
+}
+
+.op-loading,
+.op-empty {
+  text-align: center;
+  padding: 2rem;
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+
+.op-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  color: #9ca3af;
+  text-decoration: none;
+  margin-bottom: 0.5rem;
+}
+
+.op-back:hover {
+  color: #a5b4fc;
+}

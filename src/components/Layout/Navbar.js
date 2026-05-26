@@ -210,6 +210,23 @@ export function Navbar() {
             isActive: pathname?.includes('/org-trading'),
             variant: 'purple',
           },
+          {
+            id: 53,
+            title: 'Pitch Pipeline',
+            url: '/org-team-hub/pitches',
+            icon: 'bi-kanban',
+            isActive:
+              pathname?.includes('/org-team-hub/pitches') && !pathname?.includes('/pitch-archive'),
+            variant: 'purple',
+          },
+          {
+            id: 54,
+            title: 'Pitch Archive',
+            url: '/org-team-hub/pitch-archive',
+            icon: 'bi-archive',
+            isActive: pathname?.includes('/pitch-archive'),
+            variant: 'purple',
+          },
         ]
       : [
           {
