@@ -5,14 +5,20 @@ import { METRIC_KEYS } from '@/lib/profile-metrics';
 import './metrics-grid.css';
 
 /**
- * Renders the 6 retail-friendly metrics in a 2×3 / 3×2 responsive grid.
+ * Renders the 6 retail-friendly metrics in a responsive grid.
  * Each card shows label, value, delta vs. platform average, and a
  * percentile bar.
+ *
+ * @param {object} props
+ * @param {object} props.metrics - keyed by METRIC_KEYS, each { label, value, vsAverage, percentile, higherIsBetter }
+ * @param {'default' | 'compact'} [props.variant='default'] - 'compact' for inline placement (smaller text, tighter padding, 3-col grid at all widths)
  */
-export function MetricsGrid({ metrics }) {
+export function MetricsGrid({ metrics, variant = 'default' }) {
   if (!metrics) return null;
+  const gridClass = variant === 'compact' ? 'mg-grid mg-grid-compact' : 'mg-grid';
+
   return (
-    <div className="mg-grid">
+    <div className={gridClass}>
       {METRIC_KEYS.map((k) => {
         const m = metrics[k];
         if (!m) return null;
@@ -27,7 +33,7 @@ export function MetricsGrid({ metrics }) {
             <div className="mg-value">{m.value}</div>
             <div className="mg-row">
               <span className={`mg-delta ${deltaClass}`}>
-                <Icon size={11} aria-hidden />
+                <Icon size={variant === 'compact' ? 9 : 11} aria-hidden />
                 <span>{m.vsAverageFormatted} vs avg</span>
               </span>
               <span className="mg-rank">Top {topPct}%</span>

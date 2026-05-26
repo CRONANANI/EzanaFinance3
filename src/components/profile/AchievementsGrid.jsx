@@ -23,7 +23,9 @@ const TIER_TONE = {
 
 function AchievementModal({ achievement, onClose }) {
   useEffect(() => {
-    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    const onKey = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
     document.addEventListener('keydown', onKey);
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -44,11 +46,15 @@ function AchievementModal({ achievement, onClose }) {
         <button type="button" className="ag-modal-close" onClick={onClose} aria-label="Close">
           <X size={16} />
         </button>
-        <div className={`ag-modal-icon tier-${TIER_TONE[achievement.tier] || 'bronze'} ${earned ? 'on' : 'off'}`}>
+        <div
+          className={`ag-modal-icon tier-${TIER_TONE[achievement.tier] || 'bronze'} ${earned ? 'on' : 'off'}`}
+        >
           {earned ? <Trophy size={22} /> : <Lock size={18} />}
         </div>
         <h3 className="ag-modal-title">{achievement.name}</h3>
-        <div className="ag-modal-cat">{CATEGORY_LABEL[achievement.category] || achievement.category}</div>
+        <div className="ag-modal-cat">
+          {CATEGORY_LABEL[achievement.category] || achievement.category}
+        </div>
         <p className="ag-modal-desc">{achievement.description}</p>
         <div className="ag-modal-crit">
           <span>How to earn:</span> {achievement.criteria}
@@ -68,12 +74,14 @@ function AchievementModal({ achievement, onClose }) {
   );
 }
 
-export function AchievementsGrid({ positions = [], totalReturnPct = 0 }) {
+export function AchievementsGrid({ positions = [], totalReturnPct = 0, variant = 'default' }) {
   const { achievements, earnedCount, totalCount, loading } = useAchievements({
     positions,
     totalReturnPct,
   });
   const [selectedId, setSelectedId] = useState(null);
+  const cardClass = variant === 'compact' ? 'ag-card ag-card-compact' : 'ag-card';
+  const gridClass = variant === 'compact' ? 'ag-grid ag-grid-compact' : 'ag-grid';
 
   const sorted = useMemo(() => {
     const earned = achievements.filter((a) => a.earnedAt);
@@ -88,15 +96,13 @@ export function AchievementsGrid({ positions = [], totalReturnPct = 0 }) {
   const selected = sorted.find((a) => a.id === selectedId) || null;
 
   return (
-    <div className="ag-card" data-profile-card="achievements">
+    <div className={cardClass} data-profile-card="achievements">
       <div className="ag-head">
         <div className="ag-head-left">
           <Trophy size={14} className="ag-trophy-icon" />
           <h2 className="ag-title">Achievements</h2>
         </div>
-        <span className="ag-count">
-          {loading ? '—' : `${earnedCount} of ${totalCount} earned`}
-        </span>
+        <span className="ag-count">{loading ? '—' : `${earnedCount} of ${totalCount} earned`}</span>
       </div>
       <div className="ag-progress">
         <div className="ag-progress-fill" style={{ width: `${pct}%` }} aria-hidden />
@@ -107,7 +113,7 @@ export function AchievementsGrid({ positions = [], totalReturnPct = 0 }) {
       ) : sorted.length === 0 ? (
         <div className="ag-empty">No achievements yet — start trading or take a course.</div>
       ) : (
-        <div className="ag-grid">
+        <div className={gridClass}>
           {sorted.map((a) => {
             const earned = Boolean(a.earnedAt);
             const tier = TIER_TONE[a.tier] || 'bronze';

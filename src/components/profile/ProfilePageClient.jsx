@@ -6,11 +6,14 @@ import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
 import { useMockPortfolio } from '@/hooks/useMockPortfolio';
 import { supabase } from '@/lib/supabase-browser';
-import { TradeCard } from './TradeCard';
+import { MetricsGrid } from './MetricsGrid';
+import { AchievementsGrid } from './AchievementsGrid';
 import { ProfilePerformancePanel } from './ProfilePerformancePanel';
 import { ProfileEloCard } from './ProfileEloCard';
 import { ProfileTradeNotes } from './ProfileTradeNotes';
 import CopyRequestButton from './CopyRequestButton';
+import { useProfileActivity } from '@/hooks/useProfileActivity';
+import { computeProfileMetrics } from '@/lib/profile-metrics';
 import './copy-request-button.css';
 
 function badgePills(stats, isPartner) {
@@ -100,6 +103,80 @@ export function ProfilePageClient({ username }) {
   }, [isOwn, useLiveHoldings, plaidHoldingsPayload, mock?.enrichedPositions]);
 
   const effectiveTrades = portfolioTrades ?? trades;
+
+  const activity = useProfileActivity();
+
+  const { positions, totalReturnPct, userSeriesFull, platformAverages, benchmarkReturnPct } =
+    useMemo(() => {
+      if (isOwn) {
+        return {
+          positions: activity.positions,
+          totalReturnPct: activity.totalReturnPct,
+          userSeriesFull: activity.userSeriesFull,
+          platformAverages: activity.platformAverages,
+          benchmarkReturnPct: activity.benchmarkReturnPct,
+        };
+      }
+      const closed = effectiveTrades.filter(
+        (t) => t.status === 'closed' || t.status === 'partial_exit',
+      );
+      const withPnl = closed.filter((t) => t.pnl_percent != null);
+      const avgReturn = withPnl.length
+        ? withPnl.reduce((s, t) => s + Number(t.pnl_percent), 0) / withPnl.length
+        : 0;
+      const pseudoPositions = [
+        {
+          symbol: 'PORTFOLIO',
+          qty: 1,
+          avgCost: 100,
+          currentPrice: 100 * (1 + avgReturn / 100),
+          costBasis: 100,
+          marketValue: 100 * (1 + avgReturn / 100),
+          sector: '',
+        },
+      ];
+      const today = new Date();
+      today.setUTCHours(0, 0, 0, 0);
+      const yearStart = new Date(Date.UTC(today.getUTCFullYear(), 0, 1));
+      const daysSinceYearStart = Math.round((today.getTime() - yearStart.getTime()) / 86_400_000);
+      const points = Math.max(100, daysSinceYearStart + 1);
+      const series = Array.from({ length: points }, (_, i) => {
+        const d = new Date(today);
+        d.setUTCDate(today.getUTCDate() - (points - 1 - i));
+        const t = i / Math.max(1, points - 1);
+        return {
+          date: d.toISOString().slice(0, 10),
+          cumReturnPct: Number((avgReturn * t).toFixed(3)),
+        };
+      });
+      return {
+        positions: pseudoPositions,
+        totalReturnPct: avgReturn,
+        userSeriesFull: series,
+        platformAverages: activity.platformAverages,
+        benchmarkReturnPct: activity.benchmarkReturnPct,
+      };
+    }, [isOwn, activity, effectiveTrades]);
+
+  const metrics = useMemo(
+    () =>
+      computeProfileMetrics({
+        positions,
+        trades: isOwn ? activity.trades : effectiveTrades,
+        deposits: isOwn ? activity.deposits : [],
+        benchmarkReturnPct,
+        platformAverages,
+      }),
+    [
+      positions,
+      isOwn,
+      activity.trades,
+      activity.deposits,
+      effectiveTrades,
+      benchmarkReturnPct,
+      platformAverages,
+    ],
+  );
 
   const statsQuick = useMemo(() => {
     const closed = effectiveTrades.filter(
@@ -441,271 +518,63 @@ export function ProfilePageClient({ username }) {
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px] 2xl:grid-cols-[minmax(0,1fr)_390px]">
         <section className="min-w-0">
           <div className="rounded-xl border border-gray-200 dark:border-[#1a1a24] bg-white dark:bg-[#111118] p-5">
-            <div className="flex flex-wrap items-start gap-4">
-              <div
-                className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-gray-100 text-2xl font-bold text-gray-600 dark:border-[#1a1a24] dark:bg-[#16161f] dark:text-[#9ca3af]"
-                style={{
-                  backgroundImage: profile.avatar_url ? `url(${profile.avatar_url})` : undefined,
-                  backgroundSize: 'cover',
-                }}
-              >
-                {!profile.avatar_url && (display?.[0] || '?').toUpperCase()}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                    {profile.username || display}
-                  </h1>
-                  {profile.is_partner && <span title="Partner">⚡</span>}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setTab('followers')}
-                  className="mt-1 text-sm text-gray-500 hover:text-emerald-500 dark:text-[#6b7280] dark:hover:text-emerald-400 transition-colors cursor-pointer bg-transparent border-none p-0"
+            <div className="flex flex-col xl:flex-row xl:items-start gap-6">
+              <div className="flex flex-wrap items-start gap-4 xl:w-[280px] xl:shrink-0">
+                <div
+                  className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-gray-100 text-2xl font-bold text-gray-600 dark:border-[#1a1a24] dark:bg-[#16161f] dark:text-[#9ca3af]"
+                  style={{
+                    backgroundImage: profile.avatar_url ? `url(${profile.avatar_url})` : undefined,
+                    backgroundSize: 'cover',
+                  }}
                 >
-                  {followerCount} {followerCount === 1 ? 'follower' : 'followers'}
-                </button>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {pills.map((p) => (
-                    <span
-                      key={p.key}
-                      className="rounded border border-gray-300 bg-gray-200 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-gray-600 dark:border-[#2a2a34] dark:bg-[#1a1a24] dark:text-[#9ca3af]"
-                    >
-                      {p.label}
-                    </span>
-                  ))}
+                  {!profile.avatar_url && (display?.[0] || '?').toUpperCase()}
                 </div>
-                {!isOwn && user?.id && (
-                  <div className="mt-4 flex flex-wrap items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={toggleFollow}
-                      className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-400 hover:bg-emerald-500/20"
-                    >
-                      {following ? 'Unfollow' : 'Follow'}
-                    </button>
-                    <CopyRequestButton targetUserId={profile.id} />
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                      {profile.username || display}
+                    </h1>
+                    {profile.is_partner && <span title="Partner">⚡</span>}
                   </div>
-                )}
-              </div>
-            </div>
-
-            <div className="mt-6 border-b border-gray-200 dark:border-[#1a1a24]">
-              <div className="flex gap-6">
-                {['trades', 'followers', 'following', 'activity', 'bookmarked'].map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => setTab(t)}
-                    className={`border-b-2 pb-3 text-sm font-semibold transition ${
-                      tab === t
-                        ? 'border-emerald-500 text-gray-900 dark:text-white'
-                        : 'border-transparent text-gray-500 dark:text-[#6b7280]'
-                    }`}
-                  >
-                    {t === 'trades'
-                      ? 'My Trades'
-                      : t === 'followers'
-                        ? `Followers${followerCount > 0 ? ` (${followerCount})` : ''}`
-                        : t === 'following'
-                          ? 'Following'
-                          : t === 'activity'
-                            ? 'My Activity'
-                            : 'Bookmarked'}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {tab === 'trades' && (
-              <>
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex flex-wrap gap-2">
-                    {['recent', 'popular', 'profitable'].map((s) => (
-                      <button
-                        key={s}
-                        type="button"
-                        onClick={() => setSubTab(s)}
-                        className={`rounded px-3 py-1.5 text-xs font-medium capitalize ${
-                          subTab === s
-                            ? 'bg-gray-200 dark:bg-[#1a1a24] text-gray-900 dark:text-white'
-                            : 'text-gray-500 hover:text-gray-600 dark:text-[#6b7280] dark:hover:text-[#9ca3af]'
-                        }`}
+                  <div className="mt-1 text-sm text-gray-500 dark:text-[#6b7280]">
+                    {followerCount} {followerCount === 1 ? 'follower' : 'followers'}
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {pills.map((p) => (
+                      <span
+                        key={p.key}
+                        className="rounded border border-gray-300 bg-gray-200 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-gray-600 dark:border-[#2a2a34] dark:bg-[#1a1a24] dark:text-[#9ca3af]"
                       >
-                        {s === 'recent' ? 'Recents' : s}
-                      </button>
+                        {p.label}
+                      </span>
                     ))}
                   </div>
-                  <div className="flex gap-1 rounded border border-gray-200 dark:border-[#1a1a24] p-1">
-                    <button
-                      type="button"
-                      className={`rounded px-2 py-1 text-xs ${viewMode === 'card' ? 'bg-gray-200 dark:bg-[#1a1a24] text-gray-900 dark:text-white' : 'text-gray-500 dark:text-[#6b7280]'}`}
-                      onClick={() => setViewMode('card')}
-                    >
-                      ▦
-                    </button>
-                    <button
-                      type="button"
-                      className={`rounded px-2 py-1 text-xs ${viewMode === 'list' ? 'bg-gray-200 dark:bg-[#1a1a24] text-gray-900 dark:text-white' : 'text-gray-500 dark:text-[#6b7280]'}`}
-                      onClick={() => setViewMode('list')}
-                    >
-                      ☰
-                    </button>
-                  </div>
-                </div>
-
-                {privacyBlocked ? (
-                  <p className="mt-8 rounded-xl border border-amber-500/30 bg-amber-500/5 p-6 text-center text-sm text-gray-600 dark:text-[#9ca3af]">
-                    This user has hidden their trades.
-                  </p>
-                ) : (
-                  <div className={`mt-6 ${viewMode === 'list' ? 'space-y-2' : 'space-y-4'}`}>
-                    {sortedTrades.length === 0 ? (
-                      <p className="text-sm text-gray-500 dark:text-[#6b7280]">No trades yet.</p>
-                    ) : (
-                      sortedTrades.map((tr) => <TradeCard key={tr.id} trade={tr} isOwner={isOwn} />)
-                    )}
-                  </div>
-                )}
-              </>
-            )}
-
-            {tab === 'bookmarked' && (
-              <div className="mt-6 space-y-4">
-                {bookmarked.length === 0 ? (
-                  <p className="text-sm text-gray-500 dark:text-[#6b7280]">No bookmarked trades.</p>
-                ) : (
-                  bookmarked.map((tr) => <TradeCard key={tr.id} trade={tr} isOwner={false} />)
-                )}
-              </div>
-            )}
-
-            {tab === 'activity' && (
-              <div className="mt-6 space-y-3">
-                {activityItems.length === 0 ? (
-                  <p className="text-sm text-gray-500 dark:text-[#6b7280]">No activity yet.</p>
-                ) : (
-                  activityItems.map((item) => (
-                    <div
-                      key={item.id}
-                      className="rounded-xl border border-gray-200 dark:border-[#1a1a24] bg-gray-50 dark:bg-[#111118] p-4"
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <p className="text-sm text-gray-800 dark:text-[#e5e7eb]">{item.text}</p>
-                        <span className="rounded bg-gray-200 px-2 py-0.5 text-[10px] uppercase tracking-wider text-gray-600 dark:bg-[#1a1a24] dark:text-[#9ca3af]">
-                          {item.type}
-                        </span>
-                      </div>
-                      <p className="mt-2 text-xs text-gray-500 dark:text-[#6b7280]">
-                        {new Date(item.created_at).toLocaleString()}
-                      </p>
+                  {!isOwn && user?.id && (
+                    <div className="mt-4 flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={toggleFollow}
+                        className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-400 hover:bg-emerald-500/20"
+                      >
+                        {following ? 'Unfollow' : 'Follow'}
+                      </button>
+                      <CopyRequestButton targetUserId={profile.id} />
                     </div>
-                  ))
-                )}
+                  )}
+                </div>
               </div>
-            )}
 
-            {tab === 'followers' && (
-              <div className="mt-6 space-y-3">
-                {followerItems.length === 0 ? (
-                  <p className="text-sm text-gray-500 dark:text-[#6b7280]">
-                    {isOwn
-                      ? "You don't have any followers yet. Share your profile and engage with the community!"
-                      : 'This user has no followers yet.'}
-                  </p>
-                ) : (
-                  followerItems.map((item) => (
-                    <Link
-                      key={item.id}
-                      href={`/profile/${item.username || item.id}`}
-                      className="block rounded-xl border border-gray-200 bg-white p-4 transition-colors hover:border-emerald-200 dark:border-[#1a1a24] dark:bg-[#111118] dark:hover:border-[#2a2a34]"
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex min-w-0 items-center gap-3">
-                          <div
-                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-gray-100 text-sm font-semibold text-gray-600 dark:border-[#1a1a24] dark:bg-[#16161f] dark:text-[#9ca3af]"
-                            style={{
-                              backgroundImage: item.avatar_url
-                                ? `url(${item.avatar_url})`
-                                : undefined,
-                              backgroundSize: 'cover',
-                            }}
-                          >
-                            {!item.avatar_url && (item.name?.[0] || '?').toUpperCase()}
-                          </div>
-                          <div className="min-w-0">
-                            <p className="truncate text-sm font-semibold text-gray-900 dark:text-[#f5f5f5]">
-                              {item.name}
-                            </p>
-                            <p className="truncate text-xs text-gray-500 dark:text-[#6b7280]">
-                              @{item.username || item.id}
-                              {item.is_partner
-                                ? ` · ${item.partner_type || 'Legendary Investor'}`
-                                : ''}
-                            </p>
-                          </div>
-                        </div>
-                        {item.is_partner && (
-                          <span className="rounded border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-300">
-                            Legendary
-                          </span>
-                        )}
-                      </div>
-                    </Link>
-                  ))
+              <div className="min-w-0 flex-1 space-y-3">
+                <MetricsGrid metrics={metrics} variant="compact" />
+                {isOwn && (
+                  <AchievementsGrid
+                    positions={positions}
+                    totalReturnPct={totalReturnPct}
+                    variant="compact"
+                  />
                 )}
               </div>
-            )}
-
-            {tab === 'following' && (
-              <div className="mt-6 space-y-3">
-                {followingItems.length === 0 ? (
-                  <p className="text-sm text-gray-500 dark:text-[#6b7280]">
-                    This user is not following anyone yet.
-                  </p>
-                ) : (
-                  followingItems.map((item) => (
-                    <Link
-                      key={item.id}
-                      href={`/profile/${item.username || item.id}`}
-                      className="block rounded-xl border border-gray-200 bg-white p-4 transition-colors hover:border-emerald-200 dark:border-[#1a1a24] dark:bg-[#111118] dark:hover:border-[#2a2a34]"
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex min-w-0 items-center gap-3">
-                          <div
-                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-gray-100 text-sm font-semibold text-gray-600 dark:border-[#1a1a24] dark:bg-[#16161f] dark:text-[#9ca3af]"
-                            style={{
-                              backgroundImage: item.avatar_url
-                                ? `url(${item.avatar_url})`
-                                : undefined,
-                              backgroundSize: 'cover',
-                            }}
-                          >
-                            {!item.avatar_url && (item.name?.[0] || '?').toUpperCase()}
-                          </div>
-                          <div className="min-w-0">
-                            <p className="truncate text-sm font-semibold text-gray-900 dark:text-[#f5f5f5]">
-                              {item.name}
-                            </p>
-                            <p className="truncate text-xs text-gray-500 dark:text-[#6b7280]">
-                              @{item.username || item.id}
-                              {item.is_partner
-                                ? ` · ${item.partner_type || 'Legendary Investor'}`
-                                : ''}
-                            </p>
-                          </div>
-                        </div>
-                        {item.is_partner && (
-                          <span className="rounded border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-300">
-                            Legendary
-                          </span>
-                        )}
-                      </div>
-                    </Link>
-                  ))
-                )}
-              </div>
-            )}
+            </div>
           </div>
         </section>
 
@@ -717,8 +586,10 @@ export function ProfilePageClient({ username }) {
             </>
           )}
           <ProfilePerformancePanel
-            trades={effectiveTrades}
-            ownProfile={isOwn}
+            userSeriesFull={userSeriesFull}
+            isLive={activity.isLive}
+            sourceTag={activity.sourceLabel}
+            showSourceTag={isOwn && activity.source !== 'empty'}
             profileSource={isOwn && effectiveTrades.length === 0 ? 'empty-own' : null}
           />
         </aside>
