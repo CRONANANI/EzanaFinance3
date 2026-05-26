@@ -1,0 +1,89 @@
+/* Profile page Stripe-leaning redesign — global page styles + responsive */
+
+.profile-stripe-wrap {
+  font-family: var(--font-sans, 'Inter', -apple-system, sans-serif);
+  background: #fafafa;
+  min-height: 100vh;
+  color: #0a0a0a;
+}
+
+.profile-stripe-wrap *,
+.profile-stripe-wrap *::before,
+.profile-stripe-wrap *::after {
+  box-sizing: border-box;
+}
+
+.profile-stripe-body {
+  display: flex;
+  gap: 16px;
+  padding: 20px 28px 40px;
+}
+
+.profile-stripe-left {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.profile-stripe-right {
+  width: 360px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.profile-stripe-wrap button:focus-visible,
+.profile-stripe-wrap a:focus-visible {
+  outline: 2px solid #16a34a;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.profile-stripe-trade-notes .ptn-section {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+@media (max-width: 1099px) {
+  .profile-stripe-body {
+    flex-direction: column;
+    padding: 16px;
+  }
+  .profile-stripe-right {
+    width: 100%;
+  }
+}
+
+@media (max-width: 760px) {
+  .profile-stripe-hero {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+  .profile-stripe-hero-progress {
+    border-left: none !important;
+    padding-left: 0 !important;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #ededed;
+  }
+  .profile-stripe-perfstats {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .profile-stripe-achievements-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-stripe-perfstats {
+    grid-template-columns: 1fr !important;
+  }
+  .profile-stripe-achievements-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}

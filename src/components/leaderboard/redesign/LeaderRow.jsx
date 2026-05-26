@@ -197,5 +197,3 @@ export function LeaderRow({ user, isYou, zone }) {
     </Link>
   );
 }
-
-LeaderRow.COLUMN_GRID = COLUMN_GRID;

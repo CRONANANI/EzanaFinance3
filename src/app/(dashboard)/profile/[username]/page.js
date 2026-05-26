@@ -1,5 +1,5 @@
-import { ProfilePageClient } from '@/components/profile/ProfilePageClient';
+import { ProfilePageStripe } from '@/components/profile/redesign/ProfilePageStripe';
 
 export default function ProfilePage({ params }) {
-  return <ProfilePageClient username={params.username} />;
+  return <ProfilePageStripe username={params.username} />;
 }
