@@ -1,7 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { PitchSupportingData } from './PitchSupportingData';
+import { PitchStageActions } from './PitchStageActions';
+import {
+  PitchDeliverablesPanel,
+  PitchDiscussionPanel,
+  PitchVotingPanel,
+} from './PitchDetailPanels';
 
 const TABS = [
   { id: 'thesis', label: 'Thesis' },
@@ -17,20 +24,27 @@ export function PitchDetailClient({ pitchId }) {
   const [tab, setTab] = useState('thesis');
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    let cancelled = false;
-    fetch(`/api/org/pitches/${pitchId}`)
+  const load = useCallback(() => {
+    return fetch(`/api/org/pitches/${pitchId}`)
       .then((r) => r.json())
       .then((data) => {
-        if (!cancelled) setPitch(data.pitch || null);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
+        setPitch(data.pitch || null);
+        return data.pitch;
       });
+  }, [pitchId]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    load().finally(() => {
+      if (!cancelled) setLoading(false);
+    });
     return () => {
       cancelled = true;
     };
-  }, [pitchId]);
+  }, [load]);
+
+  const onRefresh = (p) => setPitch(p || pitch);
 
   if (loading) return <div className="op-loading">Loading pitch…</div>;
   if (!pitch) return <div className="op-empty">Pitch not found.</div>;
@@ -73,6 +87,8 @@ export function PitchDetailClient({ pitchId }) {
           </p>
         </div>
       </div>
+
+      <PitchStageActions pitch={pitch} onRefresh={onRefresh} />
 
       <div className="op-tabs">
         {visibleTabs.map((t) => (
@@ -132,89 +148,13 @@ export function PitchDetailClient({ pitchId }) {
           </>
         )}
 
-        {tab === 'data' && (
-          <p style={{ color: '#9ca3af' }}>
-            Live FMP company snapshot (profile, quote, financials, DCF, ratings) will load here in a
-            later phase. Thesis and deliverables are available now.
-          </p>
-        )}
+        {tab === 'data' && <PitchSupportingData pitchId={pitchId} />}
 
-        {tab === 'deliverables' && (
-          <>
-            {pitch.deliverables?.length === 0 ? (
-              <p>No deliverables uploaded yet.</p>
-            ) : (
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                {pitch.deliverables.map((d) => (
-                  <li
-                    key={d.id}
-                    style={{
-                      padding: '0.5rem 0',
-                      borderBottom: '1px solid rgba(255,255,255,0.06)',
-                    }}
-                  >
-                    <strong>{d.title}</strong>
-                    <span style={{ color: '#6b7280', marginLeft: 8 }}>
-                      {d.kind} · {d.file_type}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </>
-        )}
+        {tab === 'deliverables' && <PitchDeliverablesPanel pitch={pitch} onRefresh={onRefresh} />}
 
-        {tab === 'discussion' && (
-          <>
-            {pitch.discussion?.length === 0 ? (
-              <p>No discussion yet.</p>
-            ) : (
-              pitch.discussion.map((m) => (
-                <div
-                  key={m.id}
-                  style={{
-                    marginBottom: '0.75rem',
-                    paddingLeft: m.parent_message_id ? '1rem' : 0,
-                    borderLeft: m.parent_message_id ? '2px solid rgba(99,102,241,0.3)' : 'none',
-                  }}
-                >
-                  <strong>{m.author_name}</strong>
-                  <p style={{ margin: '0.25rem 0 0' }}>{m.body}</p>
-                </div>
-              ))
-            )}
-          </>
-        )}
+        {tab === 'discussion' && <PitchDiscussionPanel pitch={pitch} onRefresh={onRefresh} />}
 
-        {tab === 'voting' && (
-          <>
-            <p>
-              Tally: {pitch.vote_yes_count} yes · {pitch.vote_no_count} no ·{' '}
-              {pitch.vote_abstain_count} abstain
-            </p>
-            {pitch.votes?.map((v) => (
-              <div
-                key={v.id}
-                style={{
-                  marginTop: '0.75rem',
-                  padding: '0.65rem',
-                  background: 'rgba(255,255,255,0.02)',
-                  borderRadius: 8,
-                }}
-              >
-                <strong>
-                  {v.voter_name} — {v.vote.toUpperCase()}
-                </strong>
-                {v.conviction_level && (
-                  <span style={{ color: '#f59e0b', marginLeft: 8 }}>
-                    {'★'.repeat(v.conviction_level)}
-                  </span>
-                )}
-                <p style={{ margin: '0.35rem 0 0', fontSize: '0.78rem' }}>{v.rationale}</p>
-              </div>
-            ))}
-          </>
-        )}
+        {tab === 'voting' && <PitchVotingPanel pitch={pitch} onRefresh={onRefresh} />}
 
         {tab === 'decision' && (
           <>
@@ -225,23 +165,32 @@ export function PitchDetailClient({ pitchId }) {
                   <strong>{pitch.status_label}</strong>
                   {pitch.decision_rationale && ` — ${pitch.decision_rationale}`}
                 </p>
-                {pitch.position_size_pct && (
-                  <p>Position size: {pitch.position_size_pct}% of portfolio</p>
-                )}
+                {pitch.position_size_pct && <p>Position size: {pitch.position_size_pct}%</p>}
                 {pitch.hindsight && (
                   <>
                     <h3>Hindsight</h3>
                     <p>
-                      Return since decision: {pitch.hindsight.return_pct >= 0 ? '+' : ''}
-                      {pitch.hindsight.return_pct?.toFixed(1)}% · Alpha vs SPY:{' '}
+                      Return: {pitch.hindsight.return_pct >= 0 ? '+' : ''}
+                      {pitch.hindsight.return_pct}% · Alpha vs SPY:{' '}
                       {pitch.hindsight.alpha_pct >= 0 ? '+' : ''}
-                      {pitch.hindsight.alpha_pct?.toFixed(1)}%
+                      {pitch.hindsight.alpha_pct}%
                     </p>
+                    {!pitch.is_archived && (
+                      <button
+                        type="button"
+                        className="op-btn op-btn--ghost"
+                        onClick={() =>
+                          fetch(`/api/org/archive/hindsight/${pitch.id}`).then(() => load())
+                        }
+                      >
+                        Refresh hindsight
+                      </button>
+                    )}
                   </>
                 )}
               </>
             ) : (
-              <p>Decision pending — committee vote in progress or not yet scheduled.</p>
+              <p>Decision pending.</p>
             )}
           </>
         )}

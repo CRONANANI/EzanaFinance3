@@ -1,13 +1,17 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useOrg } from '@/contexts/OrgContext';
 import { PitchPipelineBoard } from '@/components/org/pitches/PitchPipelineBoard';
+import { PitchComposer } from '@/components/org/pitches/PitchComposer';
 import '../team-hub.css';
 import '../org-pitches.css';
 
 export default function OrgPitchPipelinePage() {
   const { isOrgUser, isLoading } = useOrg();
+  const [composerOpen, setComposerOpen] = useState(false);
+  const [boardKey, setBoardKey] = useState(0);
 
   if (isLoading) return <div style={{ padding: '2rem', color: '#888' }}>Loading…</div>;
   if (!isOrgUser) {
@@ -35,18 +39,18 @@ export default function OrgPitchPipelinePage() {
           <Link href="/org-team-hub" className="op-btn op-btn--ghost">
             <i className="bi bi-building" /> Team Hub
           </Link>
-          <button
-            type="button"
-            className="op-btn"
-            disabled
-            title="Submission flow coming in Phase 2"
-          >
+          <button type="button" className="op-btn" onClick={() => setComposerOpen(true)}>
             <i className="bi bi-plus-lg" /> Submit New Pitch
           </button>
         </div>
       </div>
 
-      <PitchPipelineBoard />
+      <PitchComposer
+        open={composerOpen}
+        onClose={() => setComposerOpen(false)}
+        onCreated={() => setBoardKey((k) => k + 1)}
+      />
+      <PitchPipelineBoard key={boardKey} />
     </div>
   );
 }
