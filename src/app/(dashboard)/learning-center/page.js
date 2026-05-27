@@ -1,9 +1,7 @@
 'use client';
 
-import '@/app/(dashboard)/home-dashboard/home-dashboard.css';
-import './learning-center.css';
-import { LearningCenterPage } from '@/components/learning/LearningCenterPage';
+import { LcPage } from '@/components/learning/lc2/LcPage';
 
 export default function Page() {
-  return <LearningCenterPage />;
+  return <LcPage />;
 }
