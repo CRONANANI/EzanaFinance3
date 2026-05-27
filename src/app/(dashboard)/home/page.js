@@ -236,16 +236,17 @@ function genSeries(seed, n = 40, drift = 0.5, vol = 1) {
 }
 
 /* Inline sparkline SVG */
-function Spark({ values, w = 96, h = 28, color = '#0e7c4f', fill = false, strokeWidth = 1.5 }) {
+function Spark({ values, w = 96, h = 28, color, fill = false, strokeWidth = 1.5 }) {
+  const resolvedColor = color || 'var(--bs-green)';
   const { d, pts } = pathFromValues(values, w, h, 3);
   const areaD = d + ` L ${pts[pts.length - 1][0].toFixed(2)} ${h} L ${pts[0][0].toFixed(2)} ${h} Z`;
   return (
     <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} style={{ display: 'block' }}>
-      {fill && <path d={areaD} fill={color} fillOpacity="0.12" />}
+      {fill && <path d={areaD} fill={resolvedColor} fillOpacity="0.12" />}
       <path
         d={d}
         fill="none"
-        stroke={color}
+        stroke={resolvedColor}
         strokeWidth={strokeWidth}
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -319,11 +320,11 @@ function BigChart({ timeframe }) {
   const dow = genSeries(53, 60, 0.2, 0.9);
   const port = genSeries(71, 60, 0.55, 1.0);
   const sets = [
-    { vals: ssp, c: '#94928a', sw: 1.2 },
-    { vals: nas, c: '#0e7c4f', sw: 1.4 },
+    { vals: ssp, c: 'var(--bs-text-label-caps)', sw: 1.2 },
+    { vals: nas, c: 'var(--bs-green)', sw: 1.4 },
     { vals: rus, c: '#7c3aed', sw: 1.4 },
     { vals: dow, c: '#d97706', sw: 1.4 },
-    { vals: port, c: '#0b0d10', sw: 2.4 },
+    { vals: port, c: 'var(--bs-chart-port-color)', sw: 2.4 },
   ];
   return (
     <div style={{ position: 'relative' }}>
@@ -341,7 +342,7 @@ function BigChart({ timeframe }) {
             x2={w}
             y1={(h / 4) * i + 0.5}
             y2={(h / 4) * i + 0.5}
-            stroke="#e6e2d1"
+            stroke="var(--bs-chart-grid)"
             strokeWidth="1"
           />
         ))}
@@ -658,7 +659,7 @@ export default function HomePage() {
                         <td className="bs-td-spark">
                           <Spark
                             values={genSeries(7 + i * 11, 28, up ? 0.6 : -0.3, 1.2)}
-                            color={up ? '#0e7c4f' : '#a8261d'}
+                            color={up ? 'var(--bs-green)' : 'var(--bs-red)'}
                             fill
                           />
                         </td>
@@ -852,7 +853,7 @@ export default function HomePage() {
                   <span className="bs-mover-pct bs-mover-pct--up">+{g.pct.toFixed(2)}%</span>
                   <Spark
                     values={genSeries(91 + i * 7, 24, 0.8, 1.0)}
-                    color="#0e7c4f"
+                    color="var(--bs-green)"
                     w={56}
                     h={20}
                   />
@@ -867,7 +868,7 @@ export default function HomePage() {
                   <span className="bs-mover-pct bs-mover-pct--down">{l.pct.toFixed(2)}%</span>
                   <Spark
                     values={genSeries(31 + i * 9, 24, -0.6, 1.0)}
-                    color="#a8261d"
+                    color="var(--bs-red)"
                     w={56}
                     h={20}
                   />
