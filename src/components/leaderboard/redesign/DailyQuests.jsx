@@ -42,8 +42,8 @@ export function DailyQuests({ quests, refreshesAt }) {
   );
 }
 
-function QuestRow({ quest, isFirst, categoryAccents }) {
-  const { page, delta } = useEloTheme();
+function QuestRow({ quest, isFirst }) {
+  const { page, delta, categoryAccents } = useEloTheme();
   const accentColor = categoryAccents[quest.category] || categoryAccents.PICK;
   const isDone = quest.done;
 
