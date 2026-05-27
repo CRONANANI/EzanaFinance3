@@ -3,7 +3,7 @@
  * Reads from platform global tokens â€” no new global variables introduced. */
 
 .am2-page {
-  background: var(--bg-primary);
+  background: transparent;
   min-height: 100vh;
   font-family: var(--font-sans);
   color: var(--text-primary);
@@ -121,12 +121,13 @@
 
 .am2-marquee {
   height: 34px;
-  background: var(--bg-secondary);
+  background: var(--app-bg, var(--bg-primary));
   border-top: 1px solid var(--border-primary);
   border-bottom: 1px solid var(--border-primary);
   overflow: hidden;
   position: relative;
-  margin: 0 -28px;
+  margin: 0 -2rem;
+  padding: 0 2rem;
 }
 
 .am2-marquee-track {
@@ -1085,7 +1086,8 @@
     padding: 0 16px 24px;
   }
   .am2-marquee {
-    margin: 0 -16px;
+    margin: 0 -1rem;
+    padding: 0 1rem;
   }
   .am2-metrics {
     grid-template-columns: 1fr;
