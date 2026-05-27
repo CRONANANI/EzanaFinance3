@@ -358,10 +358,10 @@ function computeOrgProfile(answers, role) {
 }
 
 const PROFILE_CONFIGS = {
-  Beginner: { icon: '🌱', desc: 'Starting your journey.' },
-  Intermediate: { icon: '📊', desc: 'Building solid foundations.' },
-  Advanced: { icon: '🚀', desc: 'Strong analytical skills.' },
-  Expert: { icon: '⚡', desc: 'Seasoned market veteran.' },
+  Beginner: { label: 'Beginner', desc: 'Starting your journey.' },
+  Intermediate: { label: 'Intermediate', desc: 'Building solid foundations.' },
+  Advanced: { label: 'Advanced', desc: 'Strong analytical skills.' },
+  Expert: { label: 'Expert', desc: 'Seasoned market veteran.' },
 };
 
 export function OrgQuestionnaire({ userId, role, onComplete }) {
@@ -537,9 +537,7 @@ export function OrgQuestionnaire({ userId, role, onComplete }) {
     return (
       <div className="iq-container">
         <div className="iq-card">
-          <div className="iq-result-badge">
-            <span style={{ fontSize: 48 }}>{cfg.icon}</span>
-          </div>
+          <div className="iq-result-level-label">{cfg.label}</div>
           <h1 className="iq-result-title">Your {getRoleLabel(normalizedRole)} Profile</h1>
           <div className="iq-result-grid">
             <div className="iq-result-stat">

@@ -75,8 +75,8 @@ export default function OnboardingPage() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: '#0a0e13',
-          color: '#8b949e',
+          background: '#ffffff',
+          color: '#6b7280',
           fontSize: '0.875rem',
         }}
       >

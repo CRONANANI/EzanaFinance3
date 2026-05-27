@@ -124,19 +124,19 @@ function computeProfile(answers) {
 
 const PROFILE_CONFIGS = {
   Beginner: {
-    icon: '🌱',
+    label: 'Beginner',
     desc: "You're just getting started. We'll surface educational content, low-risk insights, and beginner-friendly analysis.",
   },
   Intermediate: {
-    icon: '📊',
+    label: 'Intermediate',
     desc: "You have solid foundations. We'll show deeper market analysis, prediction markets, and balanced risk insights.",
   },
   Advanced: {
-    icon: '🚀',
+    label: 'Advanced',
     desc: "You know your way around markets. We'll prioritize advanced analytics and sophisticated setups.",
   },
   Expert: {
-    icon: '⚡',
+    label: 'Expert',
     desc: "You're a seasoned investor. We'll give you the full firehose — real-time signals, complex markets, institutional-grade analysis.",
   },
 };
@@ -296,9 +296,7 @@ export function InvestorQuestionnaire({ userId, onComplete }) {
     return (
       <div className="iq-container">
         <div className="iq-card">
-          <div className="iq-result-badge">
-            <span style={{ fontSize: 48 }}>{cfg.icon}</span>
-          </div>
+          <div className="iq-result-level-label">{cfg.label}</div>
           <h1 className="iq-result-title">Your Investor Profile</h1>
           <div className="iq-result-grid">
             <div className="iq-result-stat">
@@ -312,7 +310,7 @@ export function InvestorQuestionnaire({ userId, onComplete }) {
           </div>
           <p className="iq-result-desc">{cfg.desc}</p>
           <button type="button" className="iq-cta-btn" onClick={() => onCompleteRef.current?.()}>
-            Continue to Ezana →
+            Continue to Ezana
           </button>
           <p className="iq-footnote">
             Your profile shapes what you see. Update it anytime in Settings.
