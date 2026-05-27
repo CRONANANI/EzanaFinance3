@@ -15,54 +15,6 @@ export const KEYWORDS = {
      Sector Dominance article keywords
      ════════════════════════════════════════════════════════════════════════ */
 
-  'market-indices': {
-    id: 'market-indices',
-    term: 'Stock Market Indices',
-    definition:
-      'A weighted basket of stocks that represents a portion of the market. Indices like the S&P 500, NASDAQ Composite, and Dow Jones Industrial Average let investors track how a group of companies is performing without buying every stock individually.',
-    template: 'comparison',
-    templateData: {
-      title: 'How major US indices differ',
-      headers: ['Index', 'Stocks', 'Weighting'],
-      rows: [
-        { label: 'S&P 500', cells: ['500 large-cap US', 'Market-cap weighted'] },
-        { label: 'Dow Jones', cells: ['30 large US companies', 'Price-weighted'] },
-        { label: 'NASDAQ Comp.', cells: ['~3,000 NASDAQ stocks', 'Market-cap weighted'] },
-        { label: 'Russell 2000', cells: ['2,000 small-caps', 'Market-cap weighted'] },
-      ],
-      footnote: 'Each index tells a different story about the market.',
-    },
-    realWorld:
-      "When a news headline says 'the market was up 1% today,' it usually means the S&P 500 rose 1%. The Dow's 30 stocks make it a narrower picture; the Russell 2000 captures smaller companies that bigger indices miss.",
-    courseId: 'stocks-basic-4',
-    courseTitle: 'Understanding Market Indices',
-  },
-
-  'market-capitalization': {
-    id: 'market-capitalization',
-    term: 'Market Capitalization',
-    definition:
-      "Market cap is the total dollar value of a company's outstanding shares. Calculated as: share price × shares outstanding. It's how investors compare company sizes regardless of share price alone.",
-    template: 'formula',
-    templateData: {
-      formula: 'Market Cap = Share Price × Shares Outstanding',
-      example: {
-        title: 'Apple example',
-        substitution: '$200 × 15.4 billion shares = $3.08 trillion',
-      },
-      tiers: [
-        { label: 'Mega-cap', value: '$200B+', color: '#10b981' },
-        { label: 'Large-cap', value: '$10B–$200B', color: '#3b82f6' },
-        { label: 'Mid-cap', value: '$2B–$10B', color: '#f59e0b' },
-        { label: 'Small-cap', value: '$300M–$2B', color: '#a855f7' },
-      ],
-    },
-    realWorld:
-      "When the article says Apple's market cap passed $3 trillion, that means the total value of every share — if you summed every shareholder's holdings — equals 3 trillion dollars. For context, that's larger than the entire GDP of France.",
-    courseId: 'stocks-basic-3',
-    courseTitle: 'How to Read a Stock Quote',
-  },
-
   'sector-rotation': {
     id: 'sector-rotation',
     term: 'Sector Rotation',
@@ -123,90 +75,6 @@ export const KEYWORDS = {
     courseTitle: 'Macroeconomics for Traders',
   },
 
-  dividends: {
-    id: 'dividends',
-    term: 'Dividends',
-    definition:
-      "Cash payments companies make to shareholders, usually quarterly. They represent a portion of profits paid out rather than reinvested. Mature, profitable companies pay dividends; high-growth companies typically don't.",
-    template: 'comparison',
-    templateData: {
-      title: 'Dividend stocks vs growth stocks',
-      headers: ['Type', 'Examples', 'Yield'],
-      rows: [
-        { label: 'Dividend Aristocrats', cells: ['Coca-Cola, Johnson & Johnson', '2-4%'] },
-        { label: 'High-Yield Stocks', cells: ['REITs, utilities', '4-7%'] },
-        { label: 'Growth Stocks', cells: ['Tesla, Nvidia, Amazon', '0%'] },
-        { label: 'Mixed', cells: ['Microsoft, Apple', '0.5-1%'] },
-      ],
-      footnote:
-        '"Aristocrats" are S&P 500 companies that have raised dividends for 25+ consecutive years.',
-    },
-    realWorld:
-      "The article describes the post-war energy & materials era as paying 'generous dividends.' That meant a $10,000 stake in US Steel or Standard Oil might pay $400-700 per year just in cash dividends — without selling a single share.",
-    courseId: 'stocks-intermediate-5',
-    courseTitle: 'Dividend Investing',
-  },
-
-  'growth-vs-value': {
-    id: 'growth-vs-value',
-    term: 'Growth vs Value Investing',
-    definition:
-      'Two opposing investment philosophies. Growth investors buy companies expanding rapidly, accepting high valuations for future potential. Value investors buy companies trading below their intrinsic worth, betting the market will eventually recognize them.',
-    template: 'comparison',
-    templateData: {
-      title: 'Two opposing schools',
-      headers: ['Style', 'Looks for', 'Famous practitioners'],
-      rows: [
-        {
-          label: 'Growth',
-          cells: ['High revenue growth, large addressable market', 'Cathie Wood, Peter Lynch'],
-        },
-        {
-          label: 'Value',
-          cells: ['Low P/E ratio, strong cash flow, undervalued', 'Warren Buffett, Charlie Munger'],
-        },
-        {
-          label: 'GARP',
-          cells: ['Growth At Reasonable Price (hybrid)', 'Peter Lynch (later years)'],
-        },
-        {
-          label: 'Quality',
-          cells: ['Best businesses regardless of price', 'Terry Smith, Nick Train'],
-        },
-      ],
-      footnote: 'Most professional investors blend elements of both approaches.',
-    },
-    realWorld:
-      'When the article describes early 1980s investors learning to value tech companies differently than steel manufacturers, that was growth-vs-value tension at work. Buying Microsoft in 1990 looked expensive on traditional value metrics but was a bargain on growth metrics.',
-    courseId: 'stocks-intermediate-6',
-    courseTitle: 'Growth vs Value Investing',
-  },
-
-  'pe-ratio': {
-    id: 'pe-ratio',
-    term: 'P/E Ratio',
-    definition:
-      "Price-to-Earnings ratio: a company's share price divided by its earnings per share. The most-cited single number for measuring whether a stock is expensive. Low P/E = cheap, high P/E = expensive — but interpretation depends on growth rate and sector norms.",
-    template: 'formula',
-    templateData: {
-      formula: 'P/E = Share Price ÷ Earnings Per Share',
-      example: {
-        title: 'Apple example',
-        substitution: '$200 ÷ $6.50 = 30.8',
-      },
-      tiers: [
-        { label: 'Low (often value)', value: '< 15', color: '#10b981' },
-        { label: 'Average', value: '15–25', color: '#3b82f6' },
-        { label: 'High (growth)', value: '25–50', color: '#f59e0b' },
-        { label: 'Very high', value: '> 50', color: '#ef4444' },
-      ],
-    },
-    realWorld:
-      "The article describes early-1980s railroad stocks trading at low single-digit P/Es — investors paid less than $5 for every $1 of earnings. By the 2000 dot-com peak, some tech stocks had P/Es over 200. Today, Nvidia's P/E sits around 50 — high, but justified by triple-digit growth.",
-    courseId: 'stocks-intermediate-1',
-    courseTitle: 'Fundamental Analysis 101',
-  },
-
   /* ════════════════════════════════════════════════════════════════════════
      Fiber Optic Cable article keywords
      ════════════════════════════════════════════════════════════════════════ */
@@ -255,29 +123,6 @@ export const KEYWORDS = {
     courseTitle: 'Growth Rate Analysis',
   },
 
-  'data-center': {
-    id: 'data-center',
-    term: 'Data Center',
-    definition:
-      'A facility housing networked computers and storage used to organize, process, store, and disseminate large amounts of data. AI training requires massive data center buildouts with thousands of GPU racks connected by fiber optic cables.',
-    template: 'schema',
-    templateData: {
-      title: 'Data center infrastructure stack',
-      nodes: [
-        { label: 'Power Grid', sectors: [], color: '#10b981' },
-        { label: 'Cooling Systems', sectors: [], color: '#3b82f6' },
-        { label: 'Server Racks (GPUs)', sectors: [], color: '#f59e0b' },
-        { label: 'Networking (Fiber Optic)', sectors: [], color: '#a855f7' },
-        { label: 'Storage (SSD/HDD)', sectors: [], color: '#64748b' },
-        { label: 'Software Layer', sectors: [], color: '#0ea5e9' },
-      ],
-    },
-    realWorld:
-      'A single hyperscale data center can cost $500M–$2B to build. Meta, Microsoft, Amazon, and Google are each spending $30–50B+ per year on data center capex — and most of that networking layer is fiber optic cable.',
-    courseId: 'tech-fundamentals-5',
-    courseTitle: 'Understanding Cloud Infrastructure',
-  },
-
   'multicore-fiber': {
     id: 'multicore-fiber',
     term: 'Multicore Fiber (MCF)',
@@ -319,48 +164,6 @@ export const KEYWORDS = {
       "When Corning signs a $6B deal with Meta for optical fiber, that's hyperscale purchasing power. A single hyperscale customer can justify building an entire new factory.",
     courseId: 'tech-fundamentals-7',
     courseTitle: 'Cloud Computing Economics',
-  },
-
-  'supply-chain': {
-    id: 'supply-chain',
-    term: 'Supply Chain',
-    definition:
-      'The entire system of organizations, people, activities, and resources involved in moving a product from supplier to customer. For fiber optic cables, this spans glass preform manufacturing, fiber drawing, cable assembly, and installation.',
-    template: 'schema',
-    templateData: {
-      title: 'Fiber optic cable supply chain',
-      nodes: [
-        { label: 'Glass preform mfg (Corning, YOFC)', sectors: [], color: '#10b981' },
-        { label: 'Fiber drawing', sectors: [], color: '#3b82f6' },
-        { label: 'Cable assembly', sectors: [], color: '#f59e0b' },
-        { label: 'Distribution', sectors: [], color: '#a855f7' },
-        { label: 'Installation (telcos, data centers)', sectors: [], color: '#64748b' },
-      ],
-    },
-    realWorld:
-      'The fiber optic supply chain is oligopolistic — Corning, Prysmian, and YOFC control ~60% of global preform capacity. When AI demand surges, supply chain constraints create pricing power for manufacturers.',
-    courseId: 'economics-101-4',
-    courseTitle: 'Supply Chain Economics',
-  },
-
-  capex: {
-    id: 'capex',
-    term: 'Capital Expenditure (CapEx)',
-    definition:
-      'Money spent by a company to acquire, upgrade, or maintain physical assets like buildings, equipment, or infrastructure. CapEx is distinct from operating expenses (OpEx) — it represents long-term investment that gets depreciated over time.',
-    template: 'formula',
-    templateData: {
-      formula: 'Free Cash Flow = Operating Cash Flow – CapEx',
-      example: {
-        title: "Meta's AI capex",
-        substitution:
-          '2025 CapEx guidance: $37B–$40B · Primarily: data center construction · Includes: fiber optic cable, GPUs, cooling',
-      },
-    },
-    realWorld:
-      "When Meta commits $6B to Corning for fiber optic cable, that's a CapEx line item on Meta's income statement. For Corning, it's revenue. Following Big Tech capex budgets tells you where infrastructure demand is heading.",
-    courseId: 'accounting-101-3',
-    courseTitle: 'Understanding Financial Statements',
   },
 
   'single-mode-vs-multi-mode': {
@@ -475,53 +278,6 @@ export const KEYWORDS = {
       'Some analysts argue we are in the early stages of a new commodity supercycle driven by the energy transition (copper, lithium, nickel for EVs), AI infrastructure (power, cooling), and geopolitical supply disruptions (sanctions, reshoring).',
     courseId: 'commodities-101-1',
     courseTitle: 'Understanding Commodity Markets',
-  },
-
-  sanctions: {
-    id: 'sanctions',
-    term: 'Economic Sanctions',
-    definition:
-      'Restrictions imposed by governments to limit trade, financial transactions, or economic activity with targeted countries, entities, or individuals. Sanctions are a foreign policy tool used as an alternative to military action.',
-    template: 'comparison',
-    templateData: {
-      title: 'Types of sanctions',
-      headers: ['Type', 'What it restricts', 'Example'],
-      rows: [
-        { label: 'Trade embargo', cells: ['Import/export of goods', 'US-Cuba embargo'] },
-        { label: 'Financial', cells: ['Banking, SWIFT access', 'Russia post-2022'] },
-        { label: 'Sectoral', cells: ['Specific industries (oil, tech)', 'Iran oil sanctions'] },
-        { label: 'Targeted', cells: ['Named individuals/entities', 'Asset freezes, travel bans'] },
-      ],
-      footnote:
-        'Sanctions often have unintended consequences — they can spike commodity prices globally.',
-    },
-    realWorld:
-      "When the US sanctions Iranian oil exports, the lost supply (1–2M barrels/day) tightens the global market and lifts prices for every other producer. Saudi Aramco, ExxonMobil, and Chevron benefit even though they're not the target.",
-    courseId: 'geopolitics-101-2',
-    courseTitle: 'Sanctions & Market Impact',
-  },
-
-  'supply-disruption': {
-    id: 'supply-disruption',
-    term: 'Supply Disruption',
-    definition:
-      'An unexpected reduction in the availability of a commodity or good, typically caused by geopolitical events, natural disasters, or infrastructure failures. Supply disruptions create immediate price spikes because demand is relatively inelastic in the short term.',
-    template: 'schema',
-    templateData: {
-      title: 'Supply disruption transmission mechanism',
-      nodes: [
-        { label: 'Event (war, storm, embargo)', sectors: [], color: '#ef4444' },
-        { label: 'Physical supply reduced', sectors: [], color: '#f59e0b' },
-        { label: 'Inventory drawdown', sectors: [], color: '#eab308' },
-        { label: 'Spot price spikes', sectors: [], color: '#10b981' },
-        { label: 'Futures curve shifts to backwardation', sectors: [], color: '#3b82f6' },
-        { label: 'End-user costs rise', sectors: [], color: '#64748b' },
-      ],
-    },
-    realWorld:
-      'The Iran conflict disrupted tanker traffic through the Strait of Hormuz, cutting ~3M barrels/day of accessible supply. Oil prices jumped 40–55% in weeks — not because global oil ran out, but because deliverable supply shrank faster than demand could adjust.',
-    courseId: 'commodities-101-2',
-    courseTitle: 'Commodity Price Dynamics',
   },
 
   'strategic-reserves': {
@@ -744,51 +500,6 @@ export const KEYWORDS = {
       'Hantavirus was originally called "Four Corners disease" before it was formally named. The Navajo Nation, which spans parts of all four states, was particularly affected in 1993. Traditional Navajo knowledge already recognized a connection between increased mouse populations and respiratory illness — long before Western medicine identified the virus.',
     courseId: 'health-101-5',
     courseTitle: 'Geography of Disease',
-  },
-
-  'incubation-period': {
-    id: 'incubation-period',
-    term: 'Incubation Period',
-    definition:
-      'The time between exposure to a pathogen and the onset of symptoms. For hantavirus, the incubation period is unusually long: 1 to 8 weeks (most commonly 2-4 weeks). This long window makes contact tracing difficult because patients may not remember their exposure event.',
-    template: 'comparison',
-    templateData: {
-      title: 'Incubation periods of notable pathogens',
-      headers: ['Pathogen', 'Incubation', 'Implication'],
-      rows: [
-        { label: 'Influenza', cells: ['1–4 days', 'Rapid spread, rapid detection'] },
-        { label: 'COVID-19', cells: ['2–14 days', 'Moderate tracing window'] },
-        { label: 'Hantavirus', cells: ['1–8 weeks', 'Very difficult to trace exposure'] },
-        { label: 'HIV', cells: ['2–4 weeks (acute)', 'Years before AIDS'] },
-      ],
-      footnote: 'Longer incubation periods make outbreak investigation harder.',
-    },
-    realWorld:
-      'On the MV Hondius, the first patient developed symptoms on April 6 — five days after departure from Ushuaia on April 1. With a 1-8 week incubation period, he could have been infected anytime from early February to early April, including before boarding.',
-    courseId: 'health-101-6',
-    courseTitle: 'Epidemiology Basics',
-  },
-
-  'contact-tracing': {
-    id: 'contact-tracing',
-    term: 'Contact Tracing',
-    definition:
-      'The process of identifying, notifying, and monitoring people who have been in contact with an infected person. For the MV Hondius outbreak, contact tracing spans passengers who disembarked at multiple ports across different countries, co-passengers on medical evacuation flights, and healthcare workers at receiving hospitals.',
-    template: 'schema',
-    templateData: {
-      title: 'MV Hondius contact tracing challenge',
-      nodes: [
-        { label: '147 passengers from 23 countries' },
-        { label: 'Multiple port stops (Antarctica → Saint Helena → Ascension → Cabo Verde)' },
-        { label: 'Medical evacuations to South Africa' },
-        { label: 'Flight co-passengers at risk' },
-        { label: '5 countries coordinating response' },
-      ],
-    },
-    realWorld:
-      'Contact tracing for a cruise ship is exponentially harder than for a land-based outbreak. Passengers scattered to 23 countries after disembarking, each with different health surveillance systems. The WHO is coordinating between Cabo Verde, Netherlands, Spain, South Africa, and the UK.',
-    courseId: 'health-101-7',
-    courseTitle: 'Outbreak Response Methods',
   },
 
   ecmo: {
@@ -1143,36 +854,6 @@ export const KEYWORDS = {
     courseTitle: 'Vertical Integration in Tech',
   },
 
-  onshoring: {
-    id: 'onshoring',
-    term: 'Onshoring / Reshoring',
-    definition:
-      'The process of moving manufacturing from overseas locations back to the home country. In semiconductors, onshoring refers to the US and European efforts to build domestic chip fabrication capacity to reduce dependence on Taiwan.',
-    template: 'comparison',
-    templateData: {
-      title: 'Semiconductor onshoring efforts',
-      headers: ['Country', 'Investment', 'Key projects'],
-      rows: [
-        {
-          label: 'United States',
-          cells: ['$52B (CHIPS Act) + private', 'TSMC Arizona, Intel Ohio, Samsung Texas'],
-        },
-        {
-          label: 'European Union',
-          cells: ['€43B (EU Chips Act)', 'Intel Magdeburg, TSMC Dresden'],
-        },
-        { label: 'Japan', cells: ['¥3.9T ($26B)', 'TSMC Kumamoto, Rapidus Hokkaido'] },
-        { label: 'India', cells: ['$10B incentives', 'Tata-PSMC Gujarat fab'] },
-      ],
-      footnote:
-        'Even with these investments, analysts expect Taiwan to retain 60%+ of advanced chip production through 2030.',
-    },
-    realWorld:
-      "Onshoring sounds straightforward but is extraordinarily difficult. TSMC's Arizona fab has faced delays, cost overruns, and talent shortages. Building a fab is a $20B+ commitment that takes 3-5 years — and the technology may advance a full node in that time, requiring redesigns.",
-    courseId: 'policy-101-2',
-    courseTitle: 'Manufacturing Reshoring',
-  },
-
   /* Africa $1B+ Companies article keywords */
   'frontier-markets': {
     id: 'frontier-markets',
@@ -1250,29 +931,6 @@ export const KEYWORDS = {
       "Angola's 9 billion-dollar companies are almost entirely petroleum. The DRC's 4 are dominated by copper and cobalt — both critical for EV batteries. Resource concentration means these economies are highly exposed to commodity price cycles.",
     courseId: 'sector-2',
     courseTitle: 'Commodities & Extractives',
-  },
-
-  'foreign-direct-investment': {
-    id: 'foreign-direct-investment',
-    term: 'Foreign Direct Investment (FDI)',
-    definition:
-      'Cross-border investment where a company or individual from one country invests in business interests in another country. FDI typically involves taking a controlling stake or establishing operations, distinct from portfolio investment which is more liquid.',
-    template: 'comparison',
-    templateData: {
-      title: 'FDI vs portfolio investment',
-      headers: ['Type', 'Time horizon', 'Control'],
-      rows: [
-        { label: 'FDI', cells: ['Long-term (5+ years)', 'Typically controlling'] },
-        { label: 'Portfolio', cells: ['Short to medium', 'Passive minority stakes'] },
-        { label: 'Aid/Grants', cells: ['One-time or recurring', 'No commercial return'] },
-      ],
-      footnote:
-        'FDI brings capital, technology transfer, and jobs — but commits the investor to local political and currency risk.',
-    },
-    realWorld:
-      'The 54 companies headquartered outside Africa but generating $1B+ from African operations represent locked-in FDI. Unilever, Total, Vodafone, and Glencore have factory and infrastructure investments that take decades to wind down.',
-    courseId: 'global-3',
-    courseTitle: 'Foreign Direct Investment',
   },
 
   'm-pesa': {
@@ -1420,30 +1078,6 @@ export const KEYWORDS = {
   },
 
   /* NVIDIA Most Valuable article keywords */
-  'gpu-accelerator': {
-    id: 'gpu-accelerator',
-    term: 'GPU / AI Accelerator',
-    definition:
-      'Graphics Processing Units (GPUs) are specialized processors originally designed for rendering graphics. Their parallel architecture — thousands of small cores running simultaneously — makes them ideal for training and running AI models. Modern data center GPUs like the H100 and B100 are purpose-built AI accelerators with little resemblance to consumer graphics cards.',
-    template: 'comparison',
-    templateData: {
-      title: 'Data center AI accelerators',
-      headers: ['Chip', 'Maker', 'Use case'],
-      rows: [
-        { label: 'H100', cells: ['NVIDIA', 'AI training + inference'] },
-        { label: 'B100/B200 (Blackwell)', cells: ['NVIDIA', 'Next-gen, 4x H100 throughput'] },
-        { label: 'MI300X', cells: ['AMD', 'NVIDIA H100 competitor'] },
-        { label: 'TPU v5', cells: ['Google', 'Internal AI training (custom)'] },
-        { label: 'Trainium', cells: ['Amazon', 'AWS internal AI training (custom)'] },
-      ],
-      footnote: 'NVIDIA controls 80-90% of the merchant data center GPU market.',
-    },
-    realWorld:
-      "When the article says NVIDIA's $5.34T valuation is a bet on AI infrastructure, the asset being bet on is GPU sales. Every ChatGPT query, every Midjourney image, every autonomous vehicle perception system runs on a stack of GPUs — and the vast majority of those GPUs were sold by NVIDIA.",
-    courseId: 'tech-4',
-    courseTitle: 'AI Hardware Basics',
-  },
-
   cuda: {
     id: 'cuda',
     term: 'CUDA',
@@ -1663,6 +1297,446 @@ export const KEYWORDS = {
       "Sovereign AI is the underappreciated leg of NVIDIA's bull case. Hyperscaler demand is concentrated in 4-5 customers — but sovereign AI adds new buyers (national governments) whose demand has different drivers and is less correlated with US enterprise capex.",
     courseId: 'tech-10',
     courseTitle: 'Sovereign AI & Geopolitics',
+  },
+
+  /* Niche article-specific keywords (replaced general terms) */
+  'buttonwood-agreement': {
+    id: 'buttonwood-agreement',
+    term: 'Buttonwood Agreement',
+    definition:
+      'A compact signed on May 17, 1792 by 24 stockbrokers under a buttonwood tree at 68 Wall Street, establishing rules for securities trading in New York. It created the precursor to the New York Stock Exchange by setting fixed commission rates and requiring brokers to trade only with each other. Before this, securities changed hands informally in coffeehouses and on street corners.',
+    template: 'timeline',
+    templateData: {
+      events: [
+        { year: '1790', label: 'First US government bonds issued — traded informally' },
+        { year: '1792', label: 'Buttonwood Agreement signed — 24 brokers formalize trading' },
+        { year: '1817', label: 'New York Stock & Exchange Board formed (becomes NYSE)' },
+        { year: '1863', label: 'Renamed New York Stock Exchange' },
+        { year: '1878', label: 'Telephones installed on NYSE trading floor' },
+      ],
+    },
+    realWorld:
+      'The Buttonwood Agreement matters because it established the principle of organized, rule-bound securities trading. Before it, buying shares meant finding a willing seller on the street. After it, there was a centralized marketplace with standardized rules — the seed of everything the modern stock market became.',
+    courseId: 'market-history-1',
+    courseTitle: 'Origins of US Capital Markets',
+  },
+
+  'hamiltonian-finance': {
+    id: 'hamiltonian-finance',
+    term: 'Hamiltonian Finance',
+    definition:
+      "Alexander Hamilton's economic program (1790-1791) that created the institutional architecture of American capital markets: federal assumption of state war debts, a national bank (First Bank of the United States), a mint, and customs revenue to service the debt. Hamilton's system made US government bonds the first widely traded securities and established the creditworthiness that attracted foreign capital.",
+    template: 'timeline',
+    templateData: {
+      events: [
+        { year: '1789', label: 'Hamilton becomes first Secretary of the Treasury' },
+        { year: '1790', label: 'Federal assumption of $25M in state war debts' },
+        { year: '1791', label: 'First Bank of the United States chartered (20-year term)' },
+        { year: '1792', label: 'Panic of 1792 — first US financial crisis, Hamilton intervenes' },
+        { year: '1811', label: 'First Bank charter expires; Second Bank chartered 1816' },
+      ],
+    },
+    realWorld:
+      "Hamilton's genius was recognizing that public debt, properly managed, could be a national asset. By making US bonds safe and liquid, he created the first instruments that attracted institutional capital — and the exchanges that emerged to trade them became the foundation of American capitalism.",
+    courseId: 'market-history-1',
+    courseTitle: 'Origins of US Capital Markets',
+  },
+
+  'coupon-clipping-era': {
+    id: 'coupon-clipping-era',
+    term: 'Coupon-Clipping Era',
+    definition:
+      'The period from roughly 1945-1980 when equity investing was dominated by income-oriented strategies. Institutional portfolios were constructed primarily around dividend yield and bond coupons rather than capital appreciation. The term "coupon clipper" described investors who literally cut interest coupons from physical bearer bonds to redeem them. During this era, a stock that didn\'t pay a generous dividend was considered speculative.',
+    template: 'comparison',
+    templateData: {
+      title: 'Investment philosophy shift',
+      headers: ['Era', 'Primary return source', 'Valuation metric'],
+      rows: [
+        {
+          label: '1945-1980 (Coupon era)',
+          cells: ['Dividends & coupons (income)', 'Dividend yield, payout ratio'],
+        },
+        {
+          label: '1980-2000 (Growth era)',
+          cells: ['Capital appreciation', 'P/E ratio, revenue growth'],
+        },
+        {
+          label: '2010-present (Tech era)',
+          cells: ['Share buybacks + appreciation', 'EV/Revenue, FCF yield'],
+        },
+      ],
+      footnote:
+        'The shift from income to growth investing fundamentally changed which sectors dominated the market.',
+    },
+    realWorld:
+      'When the article describes energy and materials stocks paying "generous dividends" in the post-war era, it\'s describing the coupon-clipping mentality: investors held US Steel or Standard Oil for the quarterly checks, not for share price appreciation. That entire investment philosophy had to die for technology stocks — which reinvest everything — to dominate.',
+    courseId: 'stocks-intermediate-5',
+    courseTitle: 'Dividend Investing',
+  },
+
+  'marshall-plan-capital-formation': {
+    id: 'marshall-plan-capital-formation',
+    term: 'Marshall Plan Capital Formation',
+    definition:
+      "The European Recovery Program (1948-1952) channeled $13.3 billion ($173 billion in 2024 dollars) from the US to rebuild Western Europe. For American industrial companies, it created a captive export market: US Steel, Caterpillar, and energy majors sold materials and equipment at scale with payment guaranteed by the US government. This demand boom propelled the energy & materials sector's dominance of the US equity market through the 1950s-60s.",
+    template: 'schema',
+    templateData: {
+      title: 'How the Marshall Plan fueled US equity sectors',
+      nodes: [
+        { label: 'US government funds $13.3B to Europe', sectors: [], color: '#10b981' },
+        { label: 'European nations buy US steel, machinery, fuel', sectors: [], color: '#3b82f6' },
+        { label: 'US industrials book massive export revenue', sectors: [], color: '#f59e0b' },
+        { label: 'Energy & materials stocks dominate S&P', sectors: [], color: '#a855f7' },
+      ],
+    },
+    realWorld:
+      'The Marshall Plan was one of the most powerful demand catalysts in market history. American steel, oil, and heavy equipment companies had a government-backed customer (all of Western Europe) for over a decade. The sector dominance chart shows energy & materials peaking during exactly this window.',
+    courseId: 'market-history-3',
+    courseTitle: 'Post-War Economic Boom',
+  },
+
+  'revenue-multiple-valuation': {
+    id: 'revenue-multiple-valuation',
+    term: 'Revenue Multiple Valuation',
+    definition:
+      'A valuation method that prices a company as a multiple of its annual revenue (EV/Revenue or Price/Sales), rather than earnings. It emerged in the 1990s because many high-growth technology companies had no earnings — traditional P/E ratios were undefined. Revenue multiples allowed investors to compare and price companies like Amazon, Netscape, and Yahoo that were reinvesting all revenue into growth.',
+    template: 'formula',
+    templateData: {
+      formula: 'EV/Revenue = Enterprise Value ÷ Annual Revenue',
+      example: {
+        title: 'Early Microsoft (1990)',
+        substitution: '$6B market cap ÷ $1.18B revenue = 5.1× revenue',
+      },
+      tiers: [
+        { label: 'Legacy industrial', value: '0.5–2× revenue', color: '#64748b' },
+        { label: 'Mature tech', value: '3–8× revenue', color: '#3b82f6' },
+        { label: 'High-growth SaaS', value: '10–30× revenue', color: '#f59e0b' },
+        { label: 'Dot-com peak', value: '50–200× revenue', color: '#ef4444' },
+      ],
+    },
+    realWorld:
+      'When the article says the market "learned to value tech differently," this is what it means. Steel companies were valued on earnings. Software companies were valued on revenue — because earnings were deliberately zero (reinvested into growth). That conceptual leap changed which sectors could command premium valuations.',
+    courseId: 'valuation-101-2',
+    courseTitle: 'Valuation Methods',
+  },
+
+  'speculative-mania': {
+    id: 'speculative-mania',
+    term: 'Speculative Mania',
+    definition:
+      'A self-reinforcing cycle where rising asset prices attract more buyers, whose purchases drive prices higher still, detaching valuations from fundamentals. Manias follow a pattern identified by economist Hyman Minsky: displacement (new technology), boom (credit expansion), euphoria (everyone participates), profit-taking (smart money exits), panic (crash). The dot-com bubble of 1999-2000 is a textbook Minsky cycle.',
+    template: 'timeline',
+    templateData: {
+      title: 'Minsky cycle in the dot-com bubble',
+      events: [
+        { year: '1995', label: 'Displacement — Netscape IPO proves internet is commercial' },
+        { year: '1997-98', label: 'Boom — venture capital floods in, IPOs multiply' },
+        { year: '1999', label: 'Euphoria — day traders, pets.com, $10T NASDAQ' },
+        { year: 'Mar 2000', label: 'Profit-taking — insiders begin selling' },
+        { year: '2001-02', label: 'Panic — NASDAQ falls 78%, $5T in value destroyed' },
+      ],
+    },
+    realWorld:
+      'The dot-com mania followed Minsky\'s pattern precisely. The "displacement" was real (the internet DID change everything), but the euphoria phase detached stock prices from any rational valuation. The crash destroyed temporary companies but left permanent infrastructure — the fiber, the data centers, the software platforms that the next era was built on.',
+    courseId: 'market-history-2',
+    courseTitle: 'Market Bubbles & Crashes',
+  },
+
+  'glass-preform-oligopoly': {
+    id: 'glass-preform-oligopoly',
+    term: 'Glass Preform Oligopoly',
+    definition:
+      "The fiber optic industry's critical bottleneck: glass preforms — cylindrical rods of ultra-pure silica from which optical fiber is drawn. Only three companies (Corning, Prysmian, YOFC) control ~60% of global preform manufacturing capacity. Preform production requires proprietary vapor deposition techniques (OVD, VAD, MCVD) and 18-24 months of lead time to add capacity. This concentration gives manufacturers pricing power during demand surges.",
+    template: 'schema',
+    templateData: {
+      title: 'Fiber optic preform manufacturing process',
+      nodes: [
+        {
+          label: 'Vapor deposition of SiO₂ onto a mandrel (OVD/VAD/MCVD)',
+          sectors: [],
+          color: '#10b981',
+        },
+        {
+          label: 'Consolidation at 1,500°C into solid glass preform',
+          sectors: [],
+          color: '#3b82f6',
+        },
+        {
+          label: 'Fiber drawing at 2,000°C — 1 preform = 8,000 km of fiber',
+          sectors: [],
+          color: '#f59e0b',
+        },
+        { label: 'Coating, testing, spooling into cable', sectors: [], color: '#a855f7' },
+      ],
+    },
+    realWorld:
+      'A single glass preform — about 1 meter long and 20 cm in diameter — yields up to 8,000 kilometers of optical fiber when drawn. The manufacturing process requires ultra-pure synthetic silica with impurities below 1 part per billion. This extreme precision is why only three companies dominate global production, and why expanding capacity takes years, not months.',
+    courseId: 'tech-fundamentals-6',
+    courseTitle: 'Fiber Optic Technology Basics',
+  },
+
+  'hyperscaler-pull-through': {
+    id: 'hyperscaler-pull-through',
+    term: 'Hyperscaler Pull-Through Demand',
+    definition:
+      'The cascading demand effect when a hyperscale cloud provider (Meta, Amazon, Microsoft, Google) commits capital expenditure to a data center buildout. A single $1 billion data center order "pulls through" demand across dozens of suppliers: GPUs (NVIDIA), networking (Arista), fiber optic cable (Corning), power equipment (Eaton), cooling systems (Vertiv), and construction services. The pull-through multiplier from hyperscaler capex to total supply chain revenue is estimated at 3-5×.',
+    template: 'formula',
+    templateData: {
+      formula: 'Pull-Through Revenue = Hyperscaler CapEx × Supply Chain Multiplier',
+      example: {
+        title: "Meta's $6B Corning order",
+        substitution:
+          'Meta $40B data center capex → $6B Corning fiber alone → total pull-through ~$120-200B across supply chain',
+      },
+    },
+    realWorld:
+      "When Meta commits $6 billion to Corning for fiber optic cable, that's just the networking layer. The same data center buildout also requires GPUs, cooling, power infrastructure, steel, concrete, and land. Corning's order signals the scale of the entire AI infrastructure spend, not just the fiber market.",
+    courseId: 'tech-fundamentals-7',
+    courseTitle: 'Cloud Computing Economics',
+  },
+
+  'ai-supercluster': {
+    id: 'ai-supercluster',
+    term: 'AI Supercluster',
+    definition:
+      'A purpose-built data center facility designed specifically for training and running large AI models, distinct from traditional cloud or enterprise data centers. AI superclusters concentrate 50,000-100,000+ GPUs in a single facility with specialized power (100+ MW), liquid cooling, and ultra-low-latency fiber optic interconnects between GPU racks. The networking requirements per rack are 10-100× greater than a traditional cloud data center.',
+    template: 'comparison',
+    templateData: {
+      title: 'AI supercluster vs traditional data center',
+      headers: ['Feature', 'Traditional cloud DC', 'AI supercluster'],
+      rows: [
+        { label: 'Power per rack', cells: ['5-15 kW', '40-120 kW'] },
+        { label: 'Cooling', cells: ['Air cooling', 'Liquid/immersion cooling'] },
+        { label: 'Network per rack', cells: ['10-25 Gbps', '400 Gbps - 1.6 Tbps'] },
+        { label: 'Fiber density', cells: ['Moderate', '10-100× more fiber per rack'] },
+        { label: 'Cost per MW', cells: ['$8-12M', '$15-25M'] },
+      ],
+      footnote:
+        'AI superclusters consume 10-100× more fiber optic cable per square foot than traditional data centers.',
+    },
+    realWorld:
+      "The reason Corning's demand outlook is transformational — not incremental — is that AI superclusters consume fiber at 10-100× the density of traditional data centers. Every GPU rack needs multiple high-bandwidth fiber connections to every other rack. The networking bill for a single AI supercluster can exceed $500 million in fiber alone.",
+    courseId: 'tech-fundamentals-5',
+    courseTitle: 'Understanding Cloud Infrastructure',
+  },
+
+  'secondary-sanctions': {
+    id: 'secondary-sanctions',
+    term: 'Secondary Sanctions',
+    definition:
+      'Penalties imposed not on the sanctioned country directly, but on third-party companies and countries that do business with the sanctioned entity. Secondary sanctions are the enforcement mechanism that makes US sanctions extraterritorial — a Chinese bank that processes Iranian oil payments can itself be cut off from the US dollar system. This "long arm" reach is why US sanctions are far more effective than those of other nations.',
+    template: 'schema',
+    templateData: {
+      title: 'How secondary sanctions work',
+      nodes: [
+        { label: "US sanctions Iran's oil exports", sectors: [], color: '#ef4444' },
+        { label: 'Chinese refiner wants to buy Iranian crude', sectors: [], color: '#f59e0b' },
+        { label: 'Chinese bank processes the payment', sectors: [], color: '#eab308' },
+        {
+          label: 'US threatens to cut Chinese bank off from USD/SWIFT',
+          sectors: [],
+          color: '#3b82f6',
+        },
+        {
+          label: 'Chinese bank refuses the transaction (compliance)',
+          sectors: [],
+          color: '#10b981',
+        },
+      ],
+    },
+    realWorld:
+      'Secondary sanctions are why Iranian oil exports dropped from 2.5 million barrels/day to under 500,000 even though China and India wanted to keep buying. The threat of losing access to the US dollar clearing system forces foreign banks to comply with American sanctions, even against their own commercial interests.',
+    courseId: 'geopolitics-101-2',
+    courseTitle: 'Sanctions & Market Impact',
+  },
+
+  'force-majeure-cascade': {
+    id: 'force-majeure-cascade',
+    term: 'Force Majeure Cascade',
+    definition:
+      'A chain reaction in commodity markets triggered when a major producer declares force majeure — a legal clause excusing non-delivery due to extraordinary circumstances (war, natural disaster, embargo). When one supplier invokes force majeure, buyers scramble to replace contracted volumes on the spot market, spiking prices. This forces downstream buyers (refiners, manufacturers) to invoke their own force majeure clauses, cascading disruption through the entire supply chain.',
+    template: 'schema',
+    templateData: {
+      title: 'Force majeure cascade in commodity markets',
+      nodes: [
+        { label: "Producer declares force majeure (can't deliver)", sectors: [], color: '#ef4444' },
+        { label: 'Buyer seeks replacement on spot market', sectors: [], color: '#f59e0b' },
+        { label: 'Spot prices spike on sudden demand', sectors: [], color: '#eab308' },
+        { label: 'Refiner/manufacturer passes cost through', sectors: [], color: '#10b981' },
+        { label: 'End consumer prices rise (food, fuel, goods)', sectors: [], color: '#3b82f6' },
+        { label: 'Insurance markets reprice country risk', sectors: [], color: '#64748b' },
+      ],
+    },
+    realWorld:
+      'The Iran conflict triggered force majeure declarations across Middle Eastern oil and gas contracts. When a single LNG producer in Qatar declares force majeure on a 20-year supply contract, the buyer (often a Japanese or Korean utility) must immediately source replacement cargoes on the spot market — at 2-4× the contracted price.',
+    courseId: 'commodities-101-2',
+    courseTitle: 'Commodity Price Dynamics',
+  },
+
+  'enterprise-value-decomposition': {
+    id: 'enterprise-value-decomposition',
+    term: 'Enterprise Value Decomposition',
+    definition:
+      "Breaking a company's total valuation into the implicit assumptions the market is pricing in. For a $5 trillion company like NVIDIA, decomposition asks: what revenue growth rate, margin profile, and terminal multiple does the stock price require to be justified? If NVIDIA needs to sustain 40% revenue growth for 5+ years to justify its valuation, any deceleration reprices the entire company.",
+    template: 'formula',
+    templateData: {
+      formula: 'EV = Σ [FCF_t / (1 + WACC)^t] + Terminal Value',
+      example: {
+        title: 'NVIDIA implied assumptions (May 2026)',
+        substitution:
+          '$5.34T EV implies: ~$200B revenue by 2028, ~55% FCF margins, 30× terminal multiple — or ~40% annual revenue CAGR for 5 years',
+      },
+    },
+    realWorld:
+      "At $5.34 trillion, NVIDIA's stock price embeds an extraordinary set of assumptions. Decomposing the enterprise value reveals that the market is pricing in AI infrastructure spending roughly doubling every 2-3 years through 2030. If hyperscaler capex merely grows at 20% instead of 40%, NVIDIA's valuation could compress by 40-50%.",
+    courseId: 'valuation-101-4',
+    courseTitle: 'DCF & Reverse Engineering Valuations',
+  },
+
+  'tensor-core-parallelism': {
+    id: 'tensor-core-parallelism',
+    term: 'Tensor Core Parallelism',
+    definition:
+      "The architectural innovation that makes NVIDIA GPUs dominant in AI: specialized processing units called Tensor Cores that perform matrix multiplication — the core mathematical operation in neural networks — in a single clock cycle. A single H100 GPU contains 528 Tensor Cores, each capable of performing 256 FP16 multiply-accumulate operations per clock. This massive parallelism (vs. a CPU's 8-64 cores) is why GPUs train AI models 100-1,000× faster than CPUs.",
+    template: 'comparison',
+    templateData: {
+      title: 'Why GPUs dominate AI workloads',
+      headers: ['Architecture', 'Cores', 'Matrix ops/second', 'AI training speed'],
+      rows: [
+        { label: 'CPU (Intel Xeon)', cells: ['32-64 cores', '~1 TFLOPS', 'Baseline (1×)'] },
+        {
+          label: 'GPU H100',
+          cells: ['16,896 CUDA + 528 Tensor', '~990 TFLOPS', '~100-500× faster'],
+        },
+        {
+          label: 'GPU B200 (Blackwell)',
+          cells: ['~21,000 CUDA + Tensor', '~4,500 TFLOPS', '~400-2,000× faster'],
+        },
+      ],
+      footnote:
+        "Tensor Cores are NVIDIA's key differentiator — they're purpose-built for the linear algebra that AI requires.",
+    },
+    realWorld:
+      'When NVIDIA sells a $30,000+ H100 GPU to a hyperscaler, the buyer is paying for Tensor Core parallelism — the ability to perform trillions of matrix multiplications per second. This is why NVIDIA commands 80-90% market share: their Tensor Cores, combined with the CUDA software ecosystem, deliver AI training performance that no competitor matches at scale.',
+    courseId: 'tech-4',
+    courseTitle: 'AI Hardware Basics',
+  },
+
+  'maritime-epidemiological-investigation': {
+    id: 'maritime-epidemiological-investigation',
+    term: 'Maritime Epidemiological Investigation',
+    definition:
+      "The specialized process of investigating disease outbreaks aboard ships, which presents unique challenges: a closed population in a confined space, multiple port exposures across jurisdictions, passengers dispersing globally upon disembarkation, and limited onboard diagnostic capabilities. Maritime outbreaks fall under International Health Regulations and require coordination between the flag state (ship's registry), port states (where it docked), and the WHO.",
+    template: 'schema',
+    templateData: {
+      title: 'MV Hondius investigation complexity',
+      nodes: [
+        { label: '147 passengers from 23 countries', sectors: [], color: '#ef4444' },
+        { label: 'Multiple port stops across 4 countries', sectors: [], color: '#f59e0b' },
+        { label: 'Medical evacuations to South Africa', sectors: [], color: '#10b981' },
+        { label: 'Flag state: Netherlands', sectors: [], color: '#3b82f6' },
+        { label: '5+ national health authorities coordinating', sectors: [], color: '#a855f7' },
+      ],
+    },
+    realWorld:
+      "The MV Hondius outbreak is a worst-case scenario for maritime epidemiology: a novel pathogen on an expedition vessel visiting remote locations with no hospital infrastructure. Passengers scattered to 23 countries before the pathogen was even identified. Each country's health surveillance system must independently trace and monitor its returning nationals.",
+    courseId: 'health-101-7',
+    courseTitle: 'Outbreak Response Methods',
+  },
+
+  'prodromal-phase': {
+    id: 'prodromal-phase',
+    term: 'Prodromal Phase',
+    definition:
+      'The early symptomatic period of hantavirus infection (3-5 days) characterized by nonspecific symptoms — fever, myalgia, fatigue, nausea — that mimic influenza or altitude sickness. The prodromal phase is diagnostically treacherous because patients appear to have a common illness. By the time HPS-specific symptoms appear (sudden respiratory distress, pulmonary edema), the disease has progressed to the cardiopulmonary phase where the fatality rate exceeds 38%.',
+    template: 'timeline',
+    templateData: {
+      title: 'Hantavirus disease progression',
+      events: [
+        { year: 'Day 0-14', label: 'Incubation — no symptoms, virus replicating' },
+        {
+          year: 'Day 14-19',
+          label: 'Prodromal phase — fever, muscle aches, fatigue (looks like flu)',
+        },
+        {
+          year: 'Day 19-24',
+          label: 'Cardiopulmonary phase — sudden respiratory failure, pulmonary edema',
+        },
+        { year: 'Day 24+', label: 'Recovery or death — ~38% case fatality rate' },
+      ],
+    },
+    realWorld:
+      'On the MV Hondius, the first patient developed what appeared to be flu symptoms — fever and muscle aches. During the prodromal phase, hantavirus is clinically indistinguishable from influenza, altitude sickness, or seasickness. This is why initial testing focused on common pathogens (COVID, influenza, legionella), all of which came back negative, delaying the correct diagnosis by critical days.',
+    courseId: 'health-101-6',
+    courseTitle: 'Epidemiology Basics',
+  },
+
+  'yield-ramp-parity': {
+    id: 'yield-ramp-parity',
+    term: 'Yield Ramp Parity',
+    definition:
+      'The critical milestone where a new semiconductor fab achieves manufacturing yields (percentage of usable chips per wafer) comparable to established fabs. TSMC\'s Taiwan fabs typically achieve 90%+ yields within 6-12 months of production start. New overseas fabs (Arizona, Japan, Germany) face a "yield gap" — they may take 18-36 months to match Taiwan yields due to workforce inexperience, equipment calibration differences, and supply chain immaturity.',
+    template: 'comparison',
+    templateData: {
+      title: 'Yield ramp timelines',
+      headers: ['Fab location', 'Process', 'Yield target', 'Timeline to 90%+ yield'],
+      rows: [
+        { label: 'TSMC Taiwan (mature)', cells: ['N3/N2', '90%+', '6-12 months (benchmark)'] },
+        {
+          label: 'TSMC Arizona Fab 1',
+          cells: ['N4', '~80-85% (current)', '24-36 months (ongoing)'],
+        },
+        { label: 'Intel Ohio', cells: ['Intel 18A', 'Unknown', '2026+ (not yet producing)'] },
+        {
+          label: 'Samsung Taylor TX',
+          cells: ['4nm', 'Below target', 'Delayed — workforce issues'],
+        },
+      ],
+      footnote:
+        'Until overseas fabs achieve yield parity, they cannot compete on cost with Taiwan production.',
+    },
+    realWorld:
+      "Yield ramp parity is the real test of semiconductor reshoring — not whether you can build a $20 billion fab, but whether it can produce chips as efficiently as Taiwan. If TSMC Arizona achieves only 80% yield vs Taiwan's 95%, every chip costs 19% more to produce. That cost gap determines whether reshoring is viable or just expensive symbolism.",
+    courseId: 'tech-fundamentals-8',
+    courseTitle: 'Semiconductor Manufacturing',
+  },
+
+  'profit-repatriation-leakage': {
+    id: 'profit-repatriation-leakage',
+    term: 'Profit Repatriation Leakage',
+    definition:
+      'The economic phenomenon where multinational corporations generate revenue in African markets but book profits, pay taxes, and distribute dividends in their home jurisdiction (typically London, Paris, or Zurich). This "leakage" means that African GDP benefits from employment and local spending, but the equity value creation — share price appreciation and dividends — accrues to foreign shareholders. An estimated 60-70% of corporate profits generated in sub-Saharan Africa are repatriated to headquarters outside the continent.',
+    template: 'schema',
+    templateData: {
+      title: 'How profit repatriation leakage works',
+      nodes: [
+        {
+          label: 'Multinational operates in Nigeria, Kenya, South Africa',
+          sectors: [],
+          color: '#f59e0b',
+        },
+        {
+          label: 'Revenue generated locally — wages, taxes paid locally',
+          sectors: [],
+          color: '#10b981',
+        },
+        {
+          label: 'Profits transferred to HQ (London, Paris, Zurich)',
+          sectors: [],
+          color: '#3b82f6',
+        },
+        { label: 'Dividends paid to foreign shareholders', sectors: [], color: '#a855f7' },
+        {
+          label: 'Equity value listed on LSE/Euronext, not JSE/NSE',
+          sectors: [],
+          color: '#ef4444',
+        },
+      ],
+    },
+    realWorld:
+      'The 54 companies headquartered outside Africa but generating $1B+ from African operations represent the scale of profit repatriation leakage. Unilever sells soap in Lagos, Total pumps oil in Luanda, Vodafone runs cell towers in Accra — but the share price appreciation and dividends flow to shareholders in London, Paris, and Amsterdam.',
+    courseId: 'global-3',
+    courseTitle: 'Foreign Direct Investment',
   },
 };
 

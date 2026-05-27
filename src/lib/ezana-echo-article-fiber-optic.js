@@ -504,11 +504,11 @@ export const fiberOpticArticle = {
     },
     {
       type: 'paragraph',
-      text: 'The pattern is striking. From 2004 to 2017, the index declined almost continuously — a long deflationary grind driven by manufacturing scale-up in China, overcapacity from the dot-com overbuild, and steady efficiency gains in glass fiber production. Prices fell from the 100 baseline to roughly 83 by mid-2016. Then something changed. Starting in late 2017, the index reversed sharply — climbing from 83 to a peak near 98 by mid-2019. That spike aligned with the first wave of 5G network buildouts and hyperscale data center expansion. Carriers and cloud providers were pulling fiber at a pace the [[kw:supply-chain]]supply chain[[/kw]] had not anticipated.',
+      text: 'The pattern is striking. From 2004 to 2017, the index declined almost continuously — a long deflationary grind driven by manufacturing scale-up in China, overcapacity from the dot-com overbuild, and steady efficiency gains in glass fiber production. Prices fell from the 100 baseline to roughly 83 by mid-2016. Then something changed. Starting in late 2017, the index reversed sharply — climbing from 83 to a peak near 98 by mid-2019. That spike aligned with the first wave of 5G network buildouts and hyperscale data center expansion. Carriers and cloud providers were pulling fiber at a pace the [[kw:glass-preform-oligopoly]]supply chain[[/kw]] had not anticipated.',
     },
     {
       type: 'paragraph',
-      text: 'COVID disrupted the trajectory briefly, pushing the index back down to the mid-80s as construction slowed and supply chains seized. But the structural demand story never broke. By late 2022, prices were climbing again — and the current reading near 87 sits in a range that suggests the market is in early-cycle recovery, not late-cycle froth. The AI-driven buildout has not yet fully hit the PPI. When Meta, Microsoft, and Amazon start pulling cable at the volumes their [[kw:capex]]capex[[/kw]] budgets imply, this index is going to move.',
+      text: 'COVID disrupted the trajectory briefly, pushing the index back down to the mid-80s as construction slowed and supply chains seized. But the structural demand story never broke. By late 2022, prices were climbing again — and the current reading near 87 sits in a range that suggests the market is in early-cycle recovery, not late-cycle froth. The AI-driven buildout has not yet fully hit the PPI. When Meta, Microsoft, and Amazon start pulling cable at the volumes their [[kw:hyperscaler-pull-through]]capex budgets[[/kw]] budgets imply, this index is going to move.',
     },
 
     {
@@ -555,7 +555,7 @@ export const fiberOpticArticle = {
     },
     {
       type: 'paragraph',
-      text: "Corning Incorporated has been making glass since 1851. They manufactured the glass envelope for Thomas Edison's first practical lightbulb. They developed the cathode ray tubes that powered a half-century of television. They invented the Gorilla Glass that protects a billion smartphone screens. And now, at the age of 175, they find themselves at the center of the single most capital-intensive infrastructure buildout in human history: the AI [[kw:data-center]]data center[[/kw]].",
+      text: "Corning Incorporated has been making glass since 1851. They manufactured the glass envelope for Thomas Edison's first practical lightbulb. They developed the cathode ray tubes that powered a half-century of television. They invented the Gorilla Glass that protects a billion smartphone screens. And now, at the age of 175, they find themselves at the center of the single most capital-intensive infrastructure buildout in human history: the AI [[kw:ai-supercluster]]AI data center[[/kw]].",
     },
     {
       type: 'callout',

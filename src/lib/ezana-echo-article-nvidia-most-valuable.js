@@ -17,7 +17,7 @@ export const nvidiaSecondMostValuableArticle = {
   contentBlocks: [
     {
       type: 'paragraph',
-      text: "Nvidia is now the second most valuable asset on Earth. At a [[kw:market-capitalization]]market capitalization[[/kw]] of $5.34 trillion, the chipmaker has surpassed not only every publicly traded company except — briefly and intermittently — Apple, but also silver as a global store of value. Only gold, at $31.19 trillion, sits above it. The ranking is remarkable not just for the number but for the speed: Nvidia's market cap was below $1 trillion as recently as May 2023. In three years, the company has added more value than the entire GDP of Japan.",
+      text: "Nvidia is now the second most valuable asset on Earth. At a [[kw:enterprise-value-decomposition]]market capitalization[[/kw]] of $5.34 trillion, the chipmaker has surpassed not only every publicly traded company except — briefly and intermittently — Apple, but also silver as a global store of value. Only gold, at $31.19 trillion, sits above it. The ranking is remarkable not just for the number but for the speed: Nvidia's market cap was below $1 trillion as recently as May 2023. In three years, the company has added more value than the entire GDP of Japan.",
     },
     {
       type: 'stat-grid',
@@ -56,7 +56,7 @@ export const nvidiaSecondMostValuableArticle = {
     },
     {
       type: 'paragraph',
-      text: "What makes this ranking structurally different from prior reshuffles — Apple overtaking Exxon in 2012, Microsoft overtaking Apple in 2021 — is that Nvidia is not a consumer-facing company. Its revenue comes almost entirely from selling [[kw:gpu-accelerator]]GPUs[[/kw]] to [[kw:hyperscalers]]hyperscalers[[/kw]] (Microsoft Azure, Google Cloud, Amazon AWS, Meta) and [[kw:sovereign-ai]]sovereign AI programs[[/kw]]. The end customers are data centers, not individuals. This means Nvidia's valuation is a direct market bet on enterprise AI infrastructure spend sustaining its current trajectory — roughly $300 billion per year across the hyperscaler complex, growing at 40–60% annually.",
+      text: "What makes this ranking structurally different from prior reshuffles — Apple overtaking Exxon in 2012, Microsoft overtaking Apple in 2021 — is that Nvidia is not a consumer-facing company. Its revenue comes almost entirely from selling [[kw:tensor-core-parallelism]]GPUs[[/kw]] to [[kw:hyperscalers]]hyperscalers[[/kw]] (Microsoft Azure, Google Cloud, Amazon AWS, Meta) and [[kw:sovereign-ai]]sovereign AI programs[[/kw]]. The end customers are data centers, not individuals. This means Nvidia's valuation is a direct market bet on enterprise AI infrastructure spend sustaining its current trajectory — roughly $300 billion per year across the hyperscaler complex, growing at 40–60% annually.",
     },
     { type: 'heading', text: 'The GPU monopoly: why Nvidia and not AMD', level: 2 },
     {

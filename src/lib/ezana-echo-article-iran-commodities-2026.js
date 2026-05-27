@@ -78,7 +78,7 @@ export const iranWarCommoditiesArticle2026 = {
     },
     {
       type: 'paragraph',
-      text: "The supply side is what makes tungsten especially exposed. China produces roughly 80% of the world's tungsten and operates [[kw:sanctions]]sanctions[[/kw]]-style export restrictions that predate the current conflict. The remaining global supply trickles in from Vietnam, Russia, and North Korea — none of which are politically aligned in a way that lets Western buyers easily diversify. About 27% of US tungsten imports in 2024 came directly from China. Ramping up domestic production would take years even with aggressive policy support. Investors looking for exposure are mostly limited to the small number of listed tungsten miners (Almonty Industries on the TSX) and rare-earth metals ETFs that hold them as a basket position.",
+      text: "The supply side is what makes tungsten especially exposed. China produces roughly 80% of the world's tungsten and operates [[kw:secondary-sanctions]]sanctions-style export restrictions[[/kw]]-style export restrictions that predate the current conflict. The remaining global supply trickles in from Vietnam, Russia, and North Korea — none of which are politically aligned in a way that lets Western buyers easily diversify. About 27% of US tungsten imports in 2024 came directly from China. Ramping up domestic production would take years even with aggressive policy support. Investors looking for exposure are mostly limited to the small number of listed tungsten miners (Almonty Industries on the TSX) and rare-earth metals ETFs that hold them as a basket position.",
     },
     { type: 'heading', text: 'Industrial metals: divergence within the complex', level: 2 },
     {
@@ -180,7 +180,7 @@ export const iranWarCommoditiesArticle2026 = {
     },
     {
       type: 'paragraph',
-      text: 'The conventional analytical framework — supply, demand, inventories, seasonality — is not sufficient for the current market. Three forces are now interacting: direct [[kw:supply-disruption]]supply disruption[[/kw]] (especially in energy), cost transmission (energy costs flowing into metals and agriculture), and financial amplification (positioning, dollar dynamics, and policy expectations). Each of these moves on its own timeline, and the cross-market linkages are tighter than they have been in any commodity cycle since 2008. That makes single-commodity bets riskier than they look on paper, and basket exposure — or paired trades that hedge one leg of the disruption — more attractive.',
+      text: 'The conventional analytical framework — supply, demand, inventories, seasonality — is not sufficient for the current market. Three forces are now interacting: direct [[kw:force-majeure-cascade]]supply disruption[[/kw]] (especially in energy), cost transmission (energy costs flowing into metals and agriculture), and financial amplification (positioning, dollar dynamics, and policy expectations). Each of these moves on its own timeline, and the cross-market linkages are tighter than they have been in any commodity cycle since 2008. That makes single-commodity bets riskier than they look on paper, and basket exposure — or paired trades that hedge one leg of the disruption — more attractive.',
     },
     {
       type: 'paragraph',

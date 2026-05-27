@@ -115,7 +115,7 @@ export const africaBillionCompaniesArticle = {
     { type: 'heading', text: 'The 54 without a local headquarters', level: 2 },
     {
       type: 'paragraph',
-      text: "Perhaps the most revealing number in the dataset is 54 — the count of companies generating over $1 billion in revenue from African operations but headquartered outside the continent. These are the Unilevers, Totals, Glencores, and Vodafones that operate as [[kw:foreign-direct-investment]]foreign direct investment[[/kw]] across multiple African markets but domicile their corporate entities — and book their profits — in London, Paris, Zurich, or The Hague. This dynamic has significant implications: it means a substantial share of Africa's corporate value creation is captured in foreign equity markets, not African ones.",
+      text: "Perhaps the most revealing number in the dataset is 54 — the count of companies generating over $1 billion in revenue from African operations but headquartered outside the continent. These are the Unilevers, Totals, Glencores, and Vodafones that operate as [[kw:profit-repatriation-leakage]]foreign direct investment[[/kw]] across multiple African markets but domicile their corporate entities — and book their profits — in London, Paris, Zurich, or The Hague. This dynamic has significant implications: it means a substantial share of Africa's corporate value creation is captured in foreign equity markets, not African ones.",
     },
     {
       type: 'paragraph',

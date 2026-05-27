@@ -211,7 +211,7 @@ export const semiconductorArticle = {
     { type: 'heading', text: 'What Investors Should Watch', level: 2 },
     {
       type: 'paragraph',
-      text: "Five catalysts will shape the semiconductor investment landscape over the next 12-18 months. First, the TSMC Arizona yield ramp — if yields approach Taiwan levels, it validates [[kw:onshoring]]onshoring[[/kw]] as viable. Second, China's SMIC progress at 7nm and below — any breakthrough accelerates the timeline for Chinese chip independence. Third, Intel's foundry pivot — the IFS (Intel Foundry Services) order book will signal whether the IDM 2.0 thesis has legs. Fourth, AI capex cycles — Nvidia's revenue is a direct function of hyperscale data center spending by Meta, Microsoft, Amazon, and Google. Fifth, geopolitical escalation across the Taiwan Strait — any increase in military posturing reprices the entire sector's risk premium overnight.",
+      text: "Five catalysts will shape the semiconductor investment landscape over the next 12-18 months. First, the TSMC Arizona yield ramp — if yields approach Taiwan levels, it validates [[kw:yield-ramp-parity]]onshoring[[/kw]] as viable. Second, China's SMIC progress at 7nm and below — any breakthrough accelerates the timeline for Chinese chip independence. Third, Intel's foundry pivot — the IFS (Intel Foundry Services) order book will signal whether the IDM 2.0 thesis has legs. Fourth, AI capex cycles — Nvidia's revenue is a direct function of hyperscale data center spending by Meta, Microsoft, Amazon, and Google. Fifth, geopolitical escalation across the Taiwan Strait — any increase in military posturing reprices the entire sector's risk premium overnight.",
     },
   ],
   author: 'Ezana Finance Editorial',

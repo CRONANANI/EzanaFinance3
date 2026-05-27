@@ -142,7 +142,7 @@ export const hantavirusArticle = {
     { type: 'heading', text: 'The MV Hondius Timeline: How An Outbreak Unfolds At Sea', level: 2 },
     {
       type: 'paragraph',
-      text: 'The cruise ship outbreak is unprecedented for hantavirus. The MV Hondius departed from Ushuaia — deep in Andes virus territory — and visited Antarctica, South Georgia, and remote Atlantic islands before the first passenger fell ill. The [[kw:incubation-period]]incubation period[[/kw]] for hantavirus ranges from 1 to 8 weeks, which means passengers could have been infected before boarding, at any port of call, or onboard from contaminated surfaces.',
+      text: 'The cruise ship outbreak is unprecedented for hantavirus. The MV Hondius departed from Ushuaia — deep in Andes virus territory — and visited Antarctica, South Georgia, and remote Atlantic islands before the first passenger fell ill. The [[kw:prodromal-phase]]incubation period[[/kw]] for hantavirus ranges from 1 to 8 weeks, which means passengers could have been infected before boarding, at any port of call, or onboard from contaminated surfaces.',
     },
     {
       type: 'paragraph',
@@ -150,7 +150,7 @@ export const hantavirusArticle = {
     },
     {
       type: 'paragraph',
-      text: 'The WHO assessed global risk as low but initiated [[kw:contact-tracing]]contact tracing[[/kw]] for passengers who had disembarked at various ports and for fellow travelers on the medical evacuation flight to Johannesburg. PCR testing confirmed hantavirus in two patients; serology and full genome sequencing are ongoing.',
+      text: 'The WHO assessed global risk as low but initiated [[kw:maritime-epidemiological-investigation]]contact tracing[[/kw]] for passengers who had disembarked at various ports and for fellow travelers on the medical evacuation flight to Johannesburg. PCR testing confirmed hantavirus in two patients; serology and full genome sequencing are ongoing.',
     },
 
     { type: 'heading', text: 'No Vaccine. No Treatment. A Market Gap.', level: 2 },
