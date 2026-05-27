@@ -52,49 +52,49 @@
   -webkit-font-smoothing: antialiased;
 }
 
-/* ── Dark mode overrides ── */
+/* ── Dark mode overrides — uniform #0b0d10 (matches index strip) ── */
 body:not(.light-mode) .bs-shell {
-  --bs-bg-light: var(--bg-primary, #0a0e13);
-  --bs-text-dark: var(--text-primary, #f0f6fc);
-  --bs-text-body: var(--text-secondary, #e2e8f0);
-  --bs-text-label: var(--text-faint, #6b7280);
-  --bs-text-label-caps: var(--text-muted, #8b949e);
-  --bs-border-rule: rgba(16, 185, 129, 0.1);
-  --bs-border-subtle: rgba(16, 185, 129, 0.06);
-  --bs-border-dotted: rgba(16, 185, 129, 0.08);
-  --bs-hover-bg: rgba(16, 185, 129, 0.04);
-  --bs-green: var(--positive, #10b981);
-  --bs-red: var(--negative, #ef4444);
+  --bs-bg-light: #0b0d10;
+  --bs-text-dark: #f0f6fc;
+  --bs-text-body: #e2e8f0;
+  --bs-text-label: #6b7280;
+  --bs-text-label-caps: #8b949e;
+  --bs-border-rule: rgba(255, 255, 255, 0.06);
+  --bs-border-subtle: rgba(255, 255, 255, 0.04);
+  --bs-border-dotted: rgba(255, 255, 255, 0.06);
+  --bs-hover-bg: rgba(255, 255, 255, 0.03);
+  --bs-green: #34d399;
+  --bs-red: #f87171;
 
-  --bs-bg-cream: rgba(16, 185, 129, 0.03);
-  --bs-cream-border: rgba(16, 185, 129, 0.08);
-  --bs-cream-card-bg: rgba(16, 185, 129, 0.04);
-  --bs-cream-event-hover: rgba(16, 185, 129, 0.15);
-  --bs-cream-flag-bg: var(--emerald, #10b981);
-  --bs-cream-flag-text: #ffffff;
-  --bs-cream-today-bg: var(--emerald, #10b981);
-  --bs-cream-today-text: #ffffff;
+  --bs-bg-cream: #0b0d10;
+  --bs-cream-border: rgba(255, 255, 255, 0.06);
+  --bs-cream-card-bg: rgba(255, 255, 255, 0.03);
+  --bs-cream-event-hover: rgba(255, 255, 255, 0.08);
+  --bs-cream-flag-bg: #34d399;
+  --bs-cream-flag-text: #0b0d10;
+  --bs-cream-today-bg: #34d399;
+  --bs-cream-today-text: #0b0d10;
 
-  --bs-bg-dark: #06090d;
-  --bs-dark-text: var(--text-secondary, #e2e8f0);
-  --bs-dark-label: var(--text-muted, #8b949e);
-  --bs-dark-border: rgba(16, 185, 129, 0.08);
+  --bs-bg-dark: #0b0d10;
+  --bs-dark-text: #e2e8f0;
+  --bs-dark-label: #8b949e;
+  --bs-dark-border: rgba(255, 255, 255, 0.06);
   --bs-dark-green: #34d399;
   --bs-dark-red: #f87171;
 
-  --bs-chart-grid: rgba(16, 185, 129, 0.06);
-  --bs-chart-port-color: var(--emerald, #10b981);
+  --bs-chart-grid: rgba(255, 255, 255, 0.04);
+  --bs-chart-port-color: #34d399;
 
-  --bs-seg-bg: rgba(16, 185, 129, 0.08);
+  --bs-seg-bg: rgba(255, 255, 255, 0.06);
   --bs-seg-btn-bg: transparent;
-  --bs-seg-btn-text: var(--text-muted, #8b949e);
-  --bs-seg-active-bg: var(--emerald, #10b981);
-  --bs-seg-active-text: #ffffff;
+  --bs-seg-btn-text: #8b949e;
+  --bs-seg-active-bg: #34d399;
+  --bs-seg-active-text: #0b0d10;
 
-  --bs-elo-track-bg: rgba(16, 185, 129, 0.1);
+  --bs-elo-track-bg: rgba(255, 255, 255, 0.06);
 
-  background: var(--bs-bg-light);
-  color: var(--bs-text-dark);
+  background: #0b0d10;
+  color: #f0f6fc;
 }
 
 /* ── Bands ── */
@@ -1013,4 +1013,209 @@ body:not(.light-mode) .bs-shell {
   .bs-hero-stats {
     grid-template-columns: repeat(2, 1fr);
   }
+}
+
+/* ── Live chart (HeroSparkline) ── */
+.bs-chart-wide {
+  min-height: 140px;
+}
+.bs-chart-wide .db-hero-chart {
+  width: 100%;
+  align-items: stretch;
+}
+.bs-chart-wide .db-sparkline-svg {
+  width: 100%;
+  height: 140px;
+}
+.bs-chart-wide .db-chart-axis {
+  color: var(--bs-text-label-caps);
+}
+
+/* ── Watchlist panel ── */
+.bs-watchlist-panel {
+  margin-top: 28px;
+}
+.bs-watchlist-select {
+  background: var(--bs-hover-bg);
+  border: 1px solid var(--bs-border-rule);
+  border-radius: 4px;
+  color: var(--bs-text-dark);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.bs-watchlist-row {
+  display: grid;
+  grid-template-columns: 60px 1fr auto auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px dotted var(--bs-border-dotted);
+  font-size: 13px;
+}
+.bs-watchlist-ticker {
+  font-weight: 700;
+  color: var(--bs-text-dark);
+}
+.bs-watchlist-name {
+  color: var(--bs-text-body);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bs-watchlist-price {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--bs-text-dark);
+  font-weight: 500;
+}
+.bs-watchlist-chg {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  font-size: 12px;
+}
+.bs-watchlist-empty {
+  font-size: 12px;
+  color: var(--bs-text-label);
+  padding: 12px 0;
+}
+
+/* ── Pagination ── */
+.bs-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 16px;
+  font-size: 12px;
+  color: var(--bs-text-label);
+}
+.bs-pagination button {
+  background: var(--bs-seg-btn-bg, transparent);
+  border: 1px solid var(--bs-border-rule);
+  border-radius: 4px;
+  color: var(--bs-text-dark);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 12px;
+  cursor: pointer;
+  font-family: inherit;
+  transition:
+    background 0.12s,
+    border-color 0.12s;
+}
+.bs-pagination button:hover:not(:disabled) {
+  border-color: var(--bs-green);
+}
+.bs-pagination button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+/* ── Sector breakdown ── */
+.bs-sector-panel {
+  margin-top: 28px;
+}
+.bs-sector-row {
+  display: grid;
+  grid-template-columns: 1fr 80px 48px;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px dotted var(--bs-border-dotted);
+  font-size: 12px;
+}
+.bs-sector-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 99px;
+  display: inline-block;
+  margin-right: 8px;
+}
+.bs-sector-name {
+  color: var(--bs-text-dark);
+  font-weight: 500;
+}
+.bs-sector-bar {
+  height: 4px;
+  background: var(--bs-elo-track-bg);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.bs-sector-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+}
+.bs-sector-pct {
+  text-align: right;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--bs-text-label);
+}
+
+/* ── Profits bars ── */
+.bs-profits-panel {
+  margin-top: 28px;
+}
+.bs-profits-bar-row {
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 0;
+  font-size: 11px;
+}
+.bs-profits-sym {
+  font-weight: 700;
+  color: var(--bs-text-dark);
+}
+.bs-profits-track {
+  height: 5px;
+  background: var(--bs-elo-track-bg);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.bs-profits-fill {
+  height: 100%;
+  border-radius: 99px;
+}
+.bs-profits-val {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+/* ── Loading skeleton ── */
+.bs-skeleton {
+  background: var(--bs-border-subtle);
+  border-radius: 4px;
+  animation: bs-shimmer 1.5s ease-in-out infinite;
+}
+@keyframes bs-shimmer {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.15;
+  }
+}
+.bs-skeleton-line {
+  height: 14px;
+  width: 80%;
+  margin: 8px 0;
+}
+.bs-skeleton-value {
+  height: 24px;
+  width: 120px;
+  margin: 4px 0;
+}
+.bs-holdings-empty {
+  font-size: 13px;
+  color: var(--bs-text-label);
+  padding: 16px 0;
 }
