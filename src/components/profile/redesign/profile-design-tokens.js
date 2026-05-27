@@ -5,36 +5,36 @@
 export { TIERS, TIER_LIST, tierForRating, getTier } from '@/lib/elo-tier-colors';
 
 export const page = {
-  bg: '#fafafa',
-  surface: '#ffffff',
-  surfaceAlt: '#f7f7f8',
-  surfaceMuted: '#fafafa',
-  ink: '#0a0a0a',
-  inkSoft: '#525252',
-  inkMuted: '#a3a3a3',
-  border: '#ededed',
-  borderStrong: '#e0e0e0',
+  bg: 'var(--app-bg, #fafafa)',
+  surface: 'var(--surface-card, #ffffff)',
+  surfaceAlt: 'var(--bg-tertiary, #f7f7f8)',
+  surfaceMuted: 'var(--app-bg, #fafafa)',
+  ink: 'var(--text-primary, #0a0a0a)',
+  inkSoft: 'var(--text-secondary, #525252)',
+  inkMuted: 'var(--text-muted, #a3a3a3)',
+  border: 'var(--border-primary, #ededed)',
+  borderStrong: 'var(--border-hover, #e0e0e0)',
 };
 
 export const brand = {
-  base: '#16a34a',
-  dark: '#15803d',
-  soft: '#f0fdf4',
-  ring: '#bbf7d0',
+  base: 'var(--emerald, #16a34a)',
+  dark: 'var(--emerald-hover, #15803d)',
+  soft: 'var(--emerald-bg, #f0fdf4)',
+  ring: 'var(--emerald-border, #bbf7d0)',
 };
 
 export const status = {
-  danger: '#dc2626',
-  warn: '#b45309',
-  info: '#0284c7',
+  danger: 'var(--negative, #dc2626)',
+  warn: 'var(--warning, #b45309)',
+  info: 'var(--info, #0284c7)',
 };
 
 export const delta = {
-  pos: '#15803d',
-  posDot: '#16a34a',
-  neg: '#dc2626',
-  negDot: '#dc2626',
-  neutral: '#a3a3a3',
+  pos: 'var(--positive, #15803d)',
+  posDot: 'var(--positive, #16a34a)',
+  neg: 'var(--negative, #dc2626)',
+  negDot: 'var(--negative, #dc2626)',
+  neutral: 'var(--text-muted, #a3a3a3)',
 };
 
 export const categoryAccents = {
@@ -70,11 +70,11 @@ export const shape = {
     button: 10,
     pill: 999,
   },
-  border: { width: '1px', color: page.border },
+  border: { width: '1px', color: 'var(--border-primary, #ededed)' },
   shadow: {
-    card: '0 1px 2px rgba(15, 23, 42, 0.04)',
-    hero: '0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px -16px rgba(15, 23, 42, 0.08)',
-    button: '0 1px 2px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255,255,255,0.08)',
+    card: 'var(--shadow-sm, 0 1px 2px rgba(15, 23, 42, 0.04))',
+    hero: 'var(--shadow-md, 0 1px 2px rgba(15, 23, 42, 0.04))',
+    button: 'var(--shadow-sm, 0 1px 2px rgba(15, 23, 42, 0.08))',
     none: 'none',
   },
 };

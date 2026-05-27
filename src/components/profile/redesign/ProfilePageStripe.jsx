@@ -433,13 +433,23 @@ export function ProfilePageStripe({ username }) {
       <div className="profile-stripe-wrap">
         <div className="profile-stripe-body">
           <div className="profile-stripe-left">
-            <div style={{ height: 160, background: '#f7f7f8', borderRadius: 12 }} />
-            <div style={{ height: 240, background: '#f7f7f8', borderRadius: 12 }} />
-            <div style={{ height: 200, background: '#f7f7f8', borderRadius: 12 }} />
+            <div
+              style={{ height: 160, background: 'var(--bg-tertiary, #f7f7f8)', borderRadius: 12 }}
+            />
+            <div
+              style={{ height: 240, background: 'var(--bg-tertiary, #f7f7f8)', borderRadius: 12 }}
+            />
+            <div
+              style={{ height: 200, background: 'var(--bg-tertiary, #f7f7f8)', borderRadius: 12 }}
+            />
           </div>
           <div className="profile-stripe-right">
-            <div style={{ height: 280, background: '#f7f7f8', borderRadius: 12 }} />
-            <div style={{ height: 240, background: '#f7f7f8', borderRadius: 12 }} />
+            <div
+              style={{ height: 280, background: 'var(--bg-tertiary, #f7f7f8)', borderRadius: 12 }}
+            />
+            <div
+              style={{ height: 240, background: 'var(--bg-tertiary, #f7f7f8)', borderRadius: 12 }}
+            />
           </div>
         </div>
       </div>
@@ -453,7 +463,7 @@ export function ProfilePageStripe({ username }) {
           <h2 style={{ fontSize: 20, fontWeight: 600 }}>Profile not found</h2>
           <Link
             href="/community"
-            style={{ color: '#15803d', marginTop: 12, display: 'inline-block' }}
+            style={{ color: 'var(--emerald, #15803d)', marginTop: 12, display: 'inline-block' }}
           >
             Back to Community
           </Link>

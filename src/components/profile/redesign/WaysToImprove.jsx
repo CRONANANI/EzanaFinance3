@@ -18,7 +18,7 @@ export function WaysToImprove({ quests = [] }) {
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-        <span style={{ fontSize: 12, color: '#b45309' }} aria-hidden>
+        <span style={{ fontSize: 12, color: 'var(--warning, #b45309)' }} aria-hidden>
           💡
         </span>
         <Caps>Ways to Improve</Caps>

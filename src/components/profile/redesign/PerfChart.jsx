@@ -202,14 +202,19 @@ export function PerfChart({ performance, range, onRangeChange, isLive = false, s
         {top25.length > 0 && (
           <path
             d={toPath(top25)}
-            stroke="#94a3b8"
+            stroke="var(--text-faint, #94a3b8)"
             strokeWidth="1.5"
             strokeDasharray="4 3"
             fill="none"
           />
         )}
         {median.length > 0 && (
-          <path d={toPath(median)} stroke="#cbd5e1" strokeWidth="1.5" fill="none" />
+          <path
+            d={toPath(median)}
+            stroke="var(--text-ghost, #cbd5e1)"
+            strokeWidth="1.5"
+            fill="none"
+          />
         )}
         {you.length > 0 && (
           <>
@@ -222,7 +227,14 @@ export function PerfChart({ performance, range, onRangeChange, isLive = false, s
               strokeLinecap="round"
               strokeLinejoin="round"
             />
-            <circle cx={endX} cy={endY} r="4" fill={brand.base} stroke="#fff" strokeWidth="1.5" />
+            <circle
+              cx={endX}
+              cy={endY}
+              r="4"
+              fill={brand.base}
+              stroke="var(--app-bg, #fff)"
+              strokeWidth="1.5"
+            />
           </>
         )}
       </svg>
@@ -237,7 +249,14 @@ export function PerfChart({ performance, range, onRangeChange, isLive = false, s
           </NumberText>
         </span>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: page.inkSoft }}>
-          <span style={{ width: 12, height: 2, background: '#cbd5e1', borderRadius: 1 }} />
+          <span
+            style={{
+              width: 12,
+              height: 2,
+              background: 'var(--text-ghost, #cbd5e1)',
+              borderRadius: 1,
+            }}
+          />
           Median{' '}
           <NumberText size={11} weight={500} color={page.inkSoft}>
             {lastMedian >= 0 ? '+' : ''}
@@ -250,7 +269,8 @@ export function PerfChart({ performance, range, onRangeChange, isLive = false, s
               width: 12,
               height: 2,
               borderRadius: 1,
-              backgroundImage: 'linear-gradient(90deg, #94a3b8 50%, transparent 50%)',
+              backgroundImage:
+                'linear-gradient(90deg, var(--text-faint, #94a3b8) 50%, transparent 50%)',
               backgroundSize: '4px 2px',
             }}
           />

@@ -42,9 +42,9 @@ export function Achievements({ achievements = [] }) {
               width: 22,
               height: 22,
               borderRadius: shape.radius.chip,
-              background: '#fef3c7',
-              color: '#92400e',
-              border: '1px solid #fde68a',
+              background: 'var(--warning-bg, #fef3c7)',
+              color: 'var(--warning, #92400e)',
+              border: '1px solid var(--warning-bg, #fde68a)',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -74,7 +74,9 @@ export function Achievements({ achievements = [] }) {
             {earnedCount} / 9 EARNED
           </span>
         </div>
-        <span style={{ fontSize: 12, fontWeight: 600, color: '#15803d' }}>View all →</span>
+        <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--emerald, #15803d)' }}>
+          View all →
+        </span>
       </div>
       <div
         className="profile-stripe-achievements-grid"

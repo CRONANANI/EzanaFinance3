@@ -2,9 +2,9 @@
 
 .profile-stripe-wrap {
   font-family: var(--font-sans, 'Inter', -apple-system, sans-serif);
-  background: #fafafa;
+  background: transparent;
   min-height: 100vh;
-  color: #0a0a0a;
+  color: var(--text-primary, #0a0a0a);
 }
 
 .profile-stripe-wrap *,
@@ -69,7 +69,7 @@
     padding-left: 0 !important;
     margin-top: 16px;
     padding-top: 16px;
-    border-top: 1px solid #ededed;
+    border-top: 1px solid var(--border-primary, #ededed);
   }
   .profile-stripe-perfstats {
     grid-template-columns: repeat(2, 1fr) !important;
