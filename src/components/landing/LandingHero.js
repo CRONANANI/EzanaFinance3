@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { AnimatedWaitlistForm } from '@/components/landing/AnimatedWaitlistForm';
 import { GlobeWithNotificationCards } from '@/components/landing/GlobeWithNotificationCards';
 import { AnimatedWords } from '@/components/ui/animated-words';
+import TrueFocus from '@/components/ui/TrueFocus';
 import { FallingPattern } from '@/components/ui/falling-pattern';
 import HeroLightning from '@/components/ui/HeroLightning';
 import AuroraShaderLayer from '@/components/ui/AuroraShaderLayer';
@@ -154,7 +155,19 @@ export function LandingHero() {
         <div className="hero-content-column">
           <div className="hero-content">
             <h1 className="hero-tagline">
-              <AnimatedWords text="Your network is your net worth" baseDelay={160} staggerMs={40} />
+              <TrueFocus
+                groups={[
+                  { words: ['Your', 'network'] },
+                  { words: ['is'], static: true },
+                  { words: ['your', 'net', 'worth'] },
+                ]}
+                manualMode
+                blurAmount={5}
+                borderColor="#10b981"
+                glowColor="rgba(16, 185, 129, 0.6)"
+                animationDuration={0.5}
+                pauseBetweenAnimations={1.5}
+              />
             </h1>
             <div className="hero-subtitle hero-subtitle--lead">
               <AnimatedWords

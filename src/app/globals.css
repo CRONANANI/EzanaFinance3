@@ -297,7 +297,9 @@ body.light-mode {
   background-clip: unset !important;
   text-shadow: 0 0 24px rgba(16, 185, 129, 0.3);
   white-space: normal;
-  display: block;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
 @media (max-width: 480px) {
