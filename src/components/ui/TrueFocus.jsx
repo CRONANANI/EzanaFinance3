@@ -24,8 +24,8 @@ const TrueFocus = ({
   manualMode = true,
 }) => {
   const focusableGroups = groups.filter((g) => !g.static);
-  const [activeGroupIndex, setActiveGroupIndex] = useState(null);
-  const [hasInteracted, setHasInteracted] = useState(false);
+  const [activeGroupIndex, setActiveGroupIndex] = useState(0);
+  const [hasInteracted, setHasInteracted] = useState(true);
   const containerRef = useRef(null);
   const groupRefs = useRef([]);
   const [focusRect, setFocusRect] = useState({ x: 0, y: 0, width: 0, height: 0 });

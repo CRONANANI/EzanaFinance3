@@ -162,7 +162,7 @@ export function LandingHero() {
                   { words: ['your', 'net', 'worth'] },
                 ]}
                 manualMode
-                blurAmount={5}
+                blurAmount={10}
                 borderColor="#10b981"
                 glowColor="rgba(16, 185, 129, 0.6)"
                 animationDuration={0.5}
