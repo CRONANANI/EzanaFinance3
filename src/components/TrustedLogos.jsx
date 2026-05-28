@@ -4,10 +4,6 @@
  * Replaces the old placeholder rectangle cards with real
  * publication logos in a smooth infinite-scroll carousel.
  *
- * Logos: Financial Times, Reuters, Washington Post,
- *        Wall Street Journal, Fox Business, QUIC, Western Investment Club,
- *        McGill Investment Club, JMIS
- *
  * Drop the logo PNGs into /public/logos/
  */
 
@@ -17,10 +13,8 @@ import Image from 'next/image';
 import './trusted-logos.css';
 
 const LOGOS = [
-  { name: 'Financial Times', src: '/logos/financial-times.png', width: 80, height: 80 },
   { name: 'Reuters', src: '/logos/reuters.png', width: 200, height: 51 },
   { name: 'The Washington Post', src: '/logos/washington-post.png', width: 200, height: 30 },
-  { name: 'The Wall Street Journal', src: '/logos/wall-street-journal.png', width: 140, height: 55 },
   { name: 'Fox Business', src: '/logos/fox-business.png', width: 130, height: 55 },
   {
     name: "Queen's University Investment Counsel (QUIC)",
@@ -33,13 +27,6 @@ const LOGOS = [
     src: '/logos/western-investment-club.png',
     width: 280,
     height: 48,
-  },
-  {
-    name: 'McGill Investment Club',
-    src: '/logos/mcgill-investment-club.png',
-    width: 260,
-    height: 52,
-    embedLightBg: true,
   },
   {
     name: 'JMIS',
@@ -56,7 +43,9 @@ export function TrustedLogos() {
   return (
     <section className="tl-section">
       <h2 className="tl-heading">Trusted by Industry Leaders</h2>
-      <p className="tl-subheading">Featured in the world&apos;s most respected financial publications</p>
+      <p className="tl-subheading">
+        Featured in the world&apos;s most respected financial publications
+      </p>
 
       <div className="tl-carousel-mask">
         <div className="tl-carousel-track">

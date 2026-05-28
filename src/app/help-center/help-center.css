@@ -19,8 +19,19 @@
 /* ── Page shell ─────────────────────────────────────────────────────────── */
 .hc-page {
   min-height: 100vh;
-  background: var(--bg-primary);
+  background: transparent;
   color: var(--text-primary);
+  font-family: var(--font-sans);
+}
+
+.hc-page h1,
+.hc-page h2,
+.hc-page h3,
+.hc-page p,
+.hc-page span,
+.hc-page button,
+.hc-page a,
+.hc-page input {
   font-family: var(--font-sans);
 }
 
@@ -43,11 +54,11 @@
 }
 
 .hc-section-alt {
-  background: var(--bg-secondary);
+  background: transparent;
 }
 
 .hc-footer-band {
-  background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+  background: transparent;
   border-top: 1px solid var(--border-primary);
 }
 

@@ -76,23 +76,23 @@ Isichenko's advice applies directly: "due to being widely followed, and therefor
           'According to Isichenko, what makes cross-sectional fundamental analysis challenging?',
         options: [
           'Companies report at different frequencies',
-          'The capital structure of different industries is not the same \u2014 direct ratio comparison across sectors is misleading',
           'Financial statements are always accurate',
+          'The capital structure of different industries is not the same — direct ratio comparison across sectors is misleading',
           'All companies use the same accounting standards',
         ],
-        correctIndex: 1,
+        correctIndex: 2,
         explanation:
-          'Isichenko Ch.2.1.3 warns that "cross-sectional application of accounting data would benefit from understanding differences between industries" \u2014 banks and manufacturers have fundamentally different capital structures.',
+          'Isichenko Ch.2.1.3 warns that "cross-sectional application of accounting data would benefit from understanding differences between industries" — banks and manufacturers have fundamentally different capital structures.',
       },
       {
         question: 'Why is free cash flow often more reliable than reported earnings?',
         options: [
+          "Cash either arrives or it doesn't — it is harder to manipulate through accounting choices than accrual-based earnings",
           'Free cash flow is always larger',
-          "Cash either arrives or it doesn't \u2014 it is harder to manipulate through accounting choices than accrual-based earnings",
           'The SEC verifies FCF but not earnings',
           'FCF includes stock-based compensation',
         ],
-        correctIndex: 1,
+        correctIndex: 0,
         explanation:
           'Per Khraisha, the cash flow statement reveals whether the firm generates "enough cash to carry out its operations." Accounting choices affect earnings but not cash.',
       },
@@ -100,11 +100,11 @@ Isichenko's advice applies directly: "due to being widely followed, and therefor
         question: 'What does Isichenko mean by "crowding" in the context of valuation factors?',
         options: [
           'Physical overcrowding on trading floors',
-          'When many investors follow the same factors, the edge erodes and the trade becomes a risk factor',
           'When market cap gets too large',
           'When too many analysts cover a stock',
+          'When many investors follow the same factors, the edge erodes and the trade becomes a risk factor',
         ],
-        correctIndex: 1,
+        correctIndex: 3,
         explanation:
           'Isichenko Ch.4.7: widely followed factors like value and momentum become risk factors because crowded positions unwind violently.',
       },
@@ -118,17 +118,17 @@ Isichenko's advice applies directly: "due to being widely followed, and therefor
         ],
         correctIndex: 1,
         explanation:
-          "Kanungo's probabilistic framework emphasizes every prediction should output a distribution \u2014 ignoring uncertainty leads to overconfidence.",
+          "Kanungo's probabilistic framework emphasizes every prediction should output a distribution — ignoring uncertainty leads to overconfidence.",
       },
       {
         question: 'What does Isichenko say about analyst estimates (Ch.2.1.4)?',
         options: [
-          'They are always accurate',
           'Their revisions carry predictive power for stock returns, but the data is complicated by varying coverage and conflicts of interest',
+          'They are always accurate',
           'They should be ignored entirely',
           'Only sell-side analysts matter',
         ],
-        correctIndex: 1,
+        correctIndex: 0,
         explanation:
           'Isichenko: "analyst estimates and their revisions carry a predictive power for stock returns either directly or via statistics such as the variance of analysts\' opinions."',
       },
@@ -219,23 +219,23 @@ The best technical traders win only 40-60% of the time. They profit because winn
           'According to Isichenko Ch.2.2.1, what drives mean reversion in stock residual returns?',
         options: [
           'Government intervention',
-          'Herding behavior \u2014 stocks deviate from the mean due to overreaction, then revert',
           'Random chance with no mechanism',
+          'Herding behavior — stocks deviate from the mean due to overreaction, then revert',
           'Dividend payments',
         ],
-        correctIndex: 1,
+        correctIndex: 2,
         explanation:
-          'Isichenko: "The story of mean reversion is herding" \u2014 stocks move with the market and experience residual motion that reverts.',
+          'Isichenko: "The story of mean reversion is herding" — stocks move with the market and experience residual motion that reverts.',
       },
       {
         question: 'What does Isichenko attribute momentum to (Ch.2.2.2)?',
         options: [
-          'Insider trading',
           'Delayed information propagation and behavioral effects',
+          'Insider trading',
           'Market manipulation',
           'Seasonal patterns',
         ],
-        correctIndex: 1,
+        correctIndex: 0,
         explanation:
           'Isichenko: "Momentum has been attributed to delayed information propagation and behavioral effects."',
       },
@@ -243,19 +243,19 @@ The best technical traders win only 40-60% of the time. They profit because winn
         question: 'What does Isichenko (Ch.7.2) warn about backtesting?',
         options: [
           'Backtesting is always accurate',
-          'The more strategies you test, the more likely you find false positives (overfitting)',
           'Only forward testing matters',
           'Backtesting should never be used',
+          'The more strategies you test, the more likely you find false positives (overfitting)',
         ],
-        correctIndex: 1,
+        correctIndex: 3,
         explanation:
-          'Ch.7.2 "Simulation and overfitting" \u2014 extensive testing increases the risk of discovering patterns that are noise, not signal.',
+          'Ch.7.2 "Simulation and overfitting" — extensive testing increases the risk of discovering patterns that are noise, not signal.',
       },
       {
         question: 'Hilpisch (Ch.10) introduces what approach to backtesting?',
         options: [
           'Manual paper trading only',
-          'Vectorized backtesting \u2014 processing entire time series at once for speed',
+          'Vectorized backtesting — processing entire time series at once for speed',
           'Asking experts for opinions',
           'Only using monthly data',
         ],
@@ -267,14 +267,14 @@ The best technical traders win only 40-60% of the time. They profit because winn
         question:
           'Using the Kelly criterion (Isichenko Ch.6.9), what determines optimal position size?',
         options: [
-          'The stock price',
           'The edge (win probability and payoff) relative to the variance of outcomes',
+          'The stock price',
           'How many other traders are in the position',
           'The time of day',
         ],
-        correctIndex: 1,
+        correctIndex: 0,
         explanation:
-          'Kelly sizes positions based on edge relative to variance: \u03c6* = p - (1-p)/R. Larger edge with less uncertainty justifies bigger positions.',
+          'Kelly sizes positions based on edge relative to variance: φ* = p - (1-p)/R. Larger edge with less uncertainty justifies bigger positions.',
       },
     ],
   },

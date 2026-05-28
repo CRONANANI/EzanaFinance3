@@ -1,5 +1,6 @@
 import COURSE_CONTENT from './course-content';
 import QUIZ_BANK from './course-quiz-bank';
+import { balanceQuizQuestion } from './quiz-balance';
 import { transformCourseContent } from './section-modules-transform';
 import COURSE_CONTENT_BRONZE_REST_MODULES from './course-content-bronze-rest.modules.json';
 import COURSE_CONTENT_CRYPTO_BRONZE_MODULES from './course-content-crypto-bronze.modules.json';
@@ -489,7 +490,17 @@ export function buildPlaceholderContent(course) {
 function buildTopicQuiz(course, seed) {
   // Use per-course quiz bank if available
   if (QUIZ_BANK[course.id] && QUIZ_BANK[course.id].length >= 10) {
-    return QUIZ_BANK[course.id].map((q, qIdx) => shuffleOptionsDeterministic(q, seed + qIdx));
+    return QUIZ_BANK[course.id].map((q, qIdx) =>
+      balanceQuizQuestion(
+        {
+          question: q.question,
+          options: q.options,
+          correctIndex: q.correct ?? q.correctIndex ?? 0,
+          explanation: q.explanation,
+        },
+        qIdx,
+      ),
+    );
   }
 
   const track = course.track;
@@ -634,7 +645,7 @@ function buildTopicQuiz(course, seed) {
     },
   ];
 
-  return sourceQuestions.map((q, qIdx) => shuffleOptionsDeterministic(q, seed + qIdx));
+  return sourceQuestions.map((q, qIdx) => balanceQuizQuestion(q, qIdx));
 }
 
 function shuffleOptionsDeterministic(question, seed) {
@@ -680,14 +691,14 @@ function finalizeQuiz(quiz, course) {
     return buildTopicQuiz(course, seed);
   }
   return quiz.map((q, i) =>
-    shuffleOptionsDeterministic(
+    balanceQuizQuestion(
       {
         question: q.question,
         options: q.options,
-        correct: q.correct ?? q.correctIndex ?? 0,
+        correctIndex: q.correct ?? q.correctIndex ?? 0,
         explanation: q.explanation,
       },
-      seed + i,
+      i,
     ),
   );
 }

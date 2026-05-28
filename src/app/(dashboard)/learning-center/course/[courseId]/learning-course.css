@@ -513,13 +513,13 @@ body.light-mode .lc3-review-explanation {
 }
 
 .lc-edit-hero {
-  background: linear-gradient(180deg, var(--bg-primary) 0%, rgba(16, 185, 129, 0.04) 100%);
+  background: transparent;
   border-bottom: 1px solid var(--border-primary);
   padding: 10px 56px 12px;
   margin: -24px -24px 0;
 }
 body.light-mode .lc-edit-hero {
-  background: linear-gradient(180deg, #ffffff 0%, #faf7f1 100%);
+  background: transparent;
 }
 .lc-edit-backlink {
   display: inline-flex;
@@ -563,7 +563,12 @@ body.light-mode .lc-edit-hero {
   min-width: 0;
 }
 .lc-edit-subdeck {
-  display: none;
+  display: block;
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  max-width: 720px;
 }
 .lc-edit-meta {
   display: inline-flex;
