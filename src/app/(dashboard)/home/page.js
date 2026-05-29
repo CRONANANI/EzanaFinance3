@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
 import { useOrg } from '@/contexts/OrgContext';
 import { HeroSparkline } from '@/components/dashboard/HeroSparkline';
+import { TickerPerformanceChart } from '@/components/home/TickerPerformanceChart';
+import { tierForRating } from '@/lib/elo-tier-colors';
 import { usePlaidPortfolioSummary } from '@/hooks/usePlaidPortfolioSummary';
 import { usePortfolioValueSeries } from '@/hooks/usePortfolioValueSeries';
 import { useMockPortfolio } from '@/hooks/useMockPortfolio';
@@ -185,7 +187,9 @@ function BandHeader({ number, label, meta, dark = false }) {
         <span className={`bs-band-num ${dark ? 'bs-band-num--dark' : ''}`}>{number}</span>
         <h2 className={`bs-band-label ${dark ? 'bs-band-label--dark' : ''}`}>{label}</h2>
       </div>
-      <span className={`bs-band-meta ${dark ? 'bs-band-meta--dark' : ''}`}>{meta}</span>
+      {meta ? (
+        <span className={`bs-band-meta ${dark ? 'bs-band-meta--dark' : ''}`}>{meta}</span>
+      ) : null}
     </div>
   );
 }
@@ -255,6 +259,14 @@ export default function HomePage() {
   const [losers, setLosers] = useState([]);
   const [congressTrades, setCongressTrades] = useState([]);
   const [opportunities, setOpportunities] = useState([]);
+  const [tickerItems, setTickerItems] = useState(TICKER_ITEMS);
+  const [pulseRange, setPulseRange] = useState('1D');
+  const [tickerModal, setTickerModal] = useState(null);
+  const [tickerModalRange, setTickerModalRange] = useState('1M');
+  const [streakDays, setStreakDays] = useState(0);
+  const [eloRating, setEloRating] = useState(0);
+  const [eloTier, setEloTier] = useState('Novice');
+  const [streakMultiplier, setStreakMultiplier] = useState(false);
 
   const { watchlists: userWatchlists } = useWatchlists();
   const [selectedWatchlistId, setSelectedWatchlistId] = useState(null);
@@ -481,7 +493,8 @@ export default function HomePage() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch('/api/fmp/sector-performance');
+        // TODO: backend range support — re-fetch when FMP accepts range param
+        const res = await fetch(`/api/fmp/sector-performance?range=${pulseRange}`);
         if (!res.ok) return;
         const data = await res.json();
         const sectors = (data.sectors || data || [])
@@ -506,27 +519,27 @@ export default function HomePage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [pulseRange]);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch('/api/fmp/movers');
+        const res = await fetch('/api/alpha/movers?limit=5');
         if (!res.ok) return;
         const data = await res.json();
         if (!cancelled) {
           setGainers(
             (data.gainers || []).slice(0, 3).map((g) => ({
               sym: g.ticker || g.symbol,
-              pct: g.changesPercentage ?? g.changePct ?? 0,
+              pct: g.changePercent ?? g.changesPercentage ?? g.changePct ?? 0,
               chg: g.change ? `${g.change >= 0 ? '+' : ''}${g.change.toFixed(2)}` : '—',
             })),
           );
           setLosers(
             (data.losers || []).slice(0, 3).map((l) => ({
               sym: l.ticker || l.symbol,
-              pct: -Math.abs(l.changesPercentage ?? l.changePct ?? 0),
+              pct: -Math.abs(l.changePercent ?? l.changesPercentage ?? l.changePct ?? 0),
               chg: l.change ? `${l.change.toFixed(2)}` : '—',
             })),
           );
@@ -583,6 +596,7 @@ export default function HomePage() {
               sym: a.ticker || a.tickers?.[0] || '—',
               title: a.title || a.headline || '',
               src: a.source || a.publisher || '',
+              url: a.url || a.link || a.articleUrl || '',
               when: a.publishedDate
                 ? new Date(a.publishedDate).toLocaleTimeString('en-US', {
                     hour: 'numeric',
@@ -645,12 +659,54 @@ export default function HomePage() {
     };
   }, [normalizedHoldings.length, userWatchlists]);
 
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    fetch('/api/leaderboard/me')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (cancelled || !d || d.error) return;
+        setStreakDays(d.streakDays ?? 0);
+        setEloRating(d.rating ?? 0);
+        setEloTier(tierForRating(d.rating ?? 0).label);
+        setStreakMultiplier(Boolean(d.multiplier_active));
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const res = await fetch('/api/alpha/news?limit=12');
+        if (!res.ok) return;
+        const data = await res.json();
+        const items = (data.feed || data.articles || data || []).slice(0, 12).map((a) => ({
+          tag: (a.source || a.topics?.[0] || 'NEWS').toString().toUpperCase().slice(0, 10),
+          text: a.title || a.headline || '',
+        }));
+        if (!cancelled && items.length) setTickerItems(items);
+      } catch {
+        /* keep fallback */
+      }
+    };
+    load();
+    const id = setInterval(load, 120000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, []);
+
   return (
     <div className="bs-shell">
       {/* ═══ TICKER MARQUEE ═══ */}
       <div className="bs-ticker">
         <div className="bs-ticker-inner">
-          {TICKER_ITEMS.concat(TICKER_ITEMS).map((t, i) => (
+          {tickerItems.concat(tickerItems).map((t, i) => (
             <span key={i} className="bs-ticker-item">
               <span className="bs-ticker-tag">{t.tag}</span>
               <span className="bs-ticker-text">{t.text}</span>
@@ -668,20 +724,32 @@ export default function HomePage() {
                 {formatBriefLabel()} · {formatLongDate()}
               </div>
               <h1 className="bs-hero-greet">
-                {getGreeting()},<br />
-                {firstName}.
+                {getGreeting()}, {firstName}.
               </h1>
               <p className="bs-hero-lede">
                 Markets closed higher. Your portfolio outpaced the S&amp;P 500 by{' '}
-                <strong className="bs-strong">1.24 points</strong> today, led by{' '}
-                <strong className="bs-strong">TSLA</strong> and{' '}
-                <strong className="bs-strong">AVGO</strong>. Watch the{' '}
-                <strong className="bs-strong">PCE print</strong> Thursday.
+                <strong className="bs-strong">1.24%</strong> today, led by{' '}
+                <button
+                  type="button"
+                  className="bs-ticker-link"
+                  onClick={() => setTickerModal('TSLA')}
+                >
+                  TSLA
+                </button>{' '}
+                and{' '}
+                <button
+                  type="button"
+                  className="bs-ticker-link"
+                  onClick={() => setTickerModal('AVGO')}
+                >
+                  AVGO
+                </button>
+                . Watch the <strong className="bs-strong">PCE print</strong> Thursday.
               </p>
             </div>
             <div className="bs-hero-r">
               <div className="bs-section-label">
-                {isOrgUser && orgData?.name ? orgData.name : 'Maca'} portfolio
+                {isOrgUser && orgData?.name ? `${orgData.name} portfolio` : 'My Portfolio'}
               </div>
               <div className="bs-hero-num">{fmtMoney(displayValue)}</div>
               <div className="bs-hero-delta-row">
@@ -705,6 +773,41 @@ export default function HomePage() {
                     <div className="bs-hero-stat-val">{v}</div>
                   </div>
                 ))}
+              </div>
+              <div className="bs-hero-progress">
+                <div className="bs-prog-card bs-prog-card--compact">
+                  <div className="bs-prog-label">
+                    Day streak
+                    {streakMultiplier ? (
+                      <span className="bs-streak-mult"> · 1.5× ELO active</span>
+                    ) : null}
+                  </div>
+                  <div className="bs-prog-num">
+                    {streakDays}
+                    <span className="bs-prog-slash">/30</span>
+                  </div>
+                  <div className="bs-streak-bars">
+                    {Array.from({ length: 30 }).map((_, i) => (
+                      <span
+                        key={i}
+                        className={`bs-streak-bar ${i < streakDays ? 'bs-streak-bar--filled' : ''}`}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <div className="bs-prog-card bs-prog-card--compact">
+                  <div className="bs-prog-label">ELO rating · {eloTier}</div>
+                  <div className="bs-prog-num">
+                    {eloRating.toLocaleString()}
+                    <span className="bs-prog-slash">/10,000</span>
+                  </div>
+                  <div className="bs-elo-track">
+                    <div
+                      className="bs-elo-fill"
+                      style={{ width: `${Math.min(100, (eloRating / 10000) * 100)}%` }}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -766,7 +869,7 @@ export default function HomePage() {
                   style={{ background: 'var(--bs-chart-port-color)' }}
                 />
                 <span className="bs-aside-label">
-                  {isOrgUser && orgData?.name ? orgData.name : 'Maca'}
+                  {isOrgUser && orgData?.name ? orgData.name : 'My Portfolio'}
                 </span>
                 <span className="bs-aside-val">
                   {valueWindowFromApi ? fmtPct(valueWindowFromApi.changePct) : '—'}
@@ -924,42 +1027,6 @@ export default function HomePage() {
               </div>
             </div>
             <div className="bs-pos-r">
-              {/* Streak card */}
-              <div className="bs-prog-card">
-                <div className="bs-prog-label">Day streak</div>
-                <div className="bs-prog-num">
-                  9<span className="bs-prog-slash">/30</span>
-                </div>
-                <div className="bs-streak-bars">
-                  {Array.from({ length: 30 }).map((_, i) => (
-                    <span
-                      key={i}
-                      className={`bs-streak-bar ${i < 9 ? 'bs-streak-bar--filled' : ''}`}
-                    />
-                  ))}
-                </div>
-                <div className="bs-prog-foot">
-                  Active investor — 21 sessions remain in the May challenge.
-                </div>
-              </div>
-              {/* ELO card */}
-              <div className="bs-prog-card">
-                <div className="bs-prog-label">ELO rating · Novice</div>
-                <div className="bs-prog-num">
-                  275<span className="bs-prog-slash">/10,000</span>
-                </div>
-                <div className="bs-elo-track">
-                  <div className="bs-elo-fill" style={{ width: '2.75%' }} />
-                </div>
-                <div className="bs-elo-marks">
-                  <span>Novice</span>
-                  <span>Apprentice</span>
-                  <span>Journeyman</span>
-                  <span>Expert</span>
-                  <span>Master</span>
-                </div>
-                <div className="bs-prog-foot">275 into Novice. 725 to Apprentice.</div>
-              </div>
               {sectorRows.length > 0 && (
                 <div className="bs-sector-panel">
                   <div className="bs-prog-label">Sector breakdown</div>
@@ -1030,10 +1097,22 @@ export default function HomePage() {
       <section className="bs-band bs-band--dark">
         <div className="bs-page-inner">
           <BandHeader number="III" label="Markets pulse" meta="S&P 500 GICS · today" dark />
+          <div className="bs-pulse-range-toggle">
+            {['1D', '1W', '1M', 'YTD'].map((r) => (
+              <button
+                key={r}
+                type="button"
+                className={`bs-seg ${pulseRange === r ? 'bs-seg--active' : ''}`}
+                onClick={() => setPulseRange(r)}
+              >
+                {r}
+              </button>
+            ))}
+          </div>
           <div className="bs-pulse-row">
             <div className="bs-pulse-col">
               <div className="bs-pulse-head-dark">Leaders</div>
-              {(sectorData.top.length ? sectorData.top : [{ name: 'Loading…', chg: 0 }]).map(
+              {(sectorData.top.length ? sectorData.top : [{ name: 'No sector data', chg: 0 }]).map(
                 (s) => (
                   <div key={s.name} className="bs-pulse-line">
                     <span className="bs-pulse-name">{s.name}</span>
@@ -1054,23 +1133,24 @@ export default function HomePage() {
             <div className="bs-pulse-divider" />
             <div className="bs-pulse-col">
               <div className="bs-pulse-head-dark">Laggards</div>
-              {(sectorData.bottom.length ? sectorData.bottom : [{ name: 'Loading…', chg: 0 }]).map(
-                (s) => (
-                  <div key={s.name} className="bs-pulse-line">
-                    <span className="bs-pulse-name">{s.name}</span>
-                    <div className="bs-pulse-bar">
-                      <div
-                        className="bs-pulse-bar-fill bs-pulse-bar-fill--down"
-                        style={{ width: `${Math.min((Math.abs(s.chg) / 2) * 100, 100)}%` }}
-                      />
-                    </div>
-                    <span className="bs-pulse-pct bs-pulse-pct--down">
-                      {s.chg >= 0 ? '+' : ''}
-                      {s.chg.toFixed(2)}%
-                    </span>
+              {(sectorData.bottom.length
+                ? sectorData.bottom
+                : [{ name: 'No sector data', chg: 0 }]
+              ).map((s) => (
+                <div key={s.name} className="bs-pulse-line">
+                  <span className="bs-pulse-name">{s.name}</span>
+                  <div className="bs-pulse-bar">
+                    <div
+                      className="bs-pulse-bar-fill bs-pulse-bar-fill--down"
+                      style={{ width: `${Math.min((Math.abs(s.chg) / 2) * 100, 100)}%` }}
+                    />
                   </div>
-                ),
-              )}
+                  <span className="bs-pulse-pct bs-pulse-pct--down">
+                    {s.chg >= 0 ? '+' : ''}
+                    {s.chg.toFixed(2)}%
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -1113,7 +1193,7 @@ export default function HomePage() {
       {/* ═══ BAND V — INTELLIGENCE ═══ */}
       <section className="bs-band bs-band--light">
         <div className="bs-page-inner">
-          <BandHeader number="V" label="Intelligence" meta="Opportunities · disclosures · movers" />
+          <BandHeader number="V" label="Intelligence" />
           <div className="bs-intel-grid">
             {/* Column A — Market opportunities */}
             <div className="bs-intel-col">
@@ -1123,16 +1203,25 @@ export default function HomePage() {
               </div>
               {(opportunities.length
                 ? opportunities
-                : [{ sym: '—', title: 'Loading headlines…', src: '', when: '' }]
+                : [{ sym: '—', title: 'Loading headlines…', src: '', when: '', url: '' }]
               ).map((o, i) => (
-                <div key={`${o.sym}-${i}`} className="bs-opp-row">
+                <a
+                  key={`${o.sym}-${i}`}
+                  href={o.url || '#'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bs-opp-row bs-opp-row--link"
+                  onClick={(e) => {
+                    if (!o.url) e.preventDefault();
+                  }}
+                >
                   <div className="bs-opp-rule">
                     <span className="bs-opp-sym">{o.sym}</span>
                     <span className="bs-opp-when">{o.when}</span>
                   </div>
                   <div className="bs-opp-title">{o.title}</div>
                   <div className="bs-opp-src">{o.src}</div>
-                </div>
+                </a>
               ))}
             </div>
 
@@ -1229,6 +1318,36 @@ export default function HomePage() {
           </div>
         </div>
       </div>
+
+      {tickerModal && (
+        <div className="bs-ticker-modal-overlay" onClick={() => setTickerModal(null)}>
+          <div className="bs-ticker-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="bs-ticker-modal-head">
+              <span className="bs-ticker-modal-sym">{tickerModal}</span>
+              <button
+                type="button"
+                className="bs-ticker-modal-close"
+                onClick={() => setTickerModal(null)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="bs-ticker-modal-ranges">
+              {['1D', '1W', '1M', '3M', '6M', '1Y', '5Y', 'ALL'].map((r) => (
+                <button
+                  key={r}
+                  type="button"
+                  className={`bs-seg ${tickerModalRange === r ? 'bs-seg--active' : ''}`}
+                  onClick={() => setTickerModalRange(r)}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
+            <TickerPerformanceChart symbol={tickerModal} range={tickerModalRange} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

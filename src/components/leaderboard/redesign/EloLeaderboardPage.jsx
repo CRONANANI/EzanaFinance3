@@ -9,6 +9,7 @@ import { FilterBar } from './FilterBar';
 import { StatsStrip } from './StatsStrip';
 import { LeaderboardTable } from './LeaderboardTable';
 import { LeaderboardSkeleton } from './LeaderboardSkeleton';
+import { EarnXpModal } from './EarnXpModal';
 import { EloThemeProvider, useEloTheme } from './EloThemeContext';
 import { MOCK_LEAGUE, MOCK_STATS, MOCK_QUESTS } from './mock-data';
 import './elo-redesign.css';
@@ -50,6 +51,7 @@ function EloLeaderboardContent() {
   const [totalTraders, setTotalTraders] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [earnXpOpen, setEarnXpOpen] = useState(false);
 
   const activeTierLabel = activeTier === 'all' ? 'All tiers' : getTier(activeTier).label;
 
@@ -106,8 +108,10 @@ function EloLeaderboardContent() {
     }
 
     load();
+    const refreshId = setInterval(load, 45000);
     return () => {
       cancelled = true;
+      clearInterval(refreshId);
     };
   }, [activeTier, query]);
 
@@ -130,9 +134,11 @@ function EloLeaderboardContent() {
       filtered = filtered.filter((u) => u.name.toLowerCase().includes(q));
     }
 
+    const rangeSortKey =
+      range === '1W' ? 'delta7d' : range === '1M' || range === '3M' ? 'delta30d' : 'rating';
     const sortKey =
       { rating: 'rating', d7: 'delta7d', d30: 'delta30d', peak: 'peak', rank: 'rank' }[sort] ||
-      'rating';
+      rangeSortKey;
 
     const sorted = [...filtered].sort((a, b) => {
       const av = a[sortKey] ?? 0;
@@ -141,7 +147,7 @@ function EloLeaderboardContent() {
     });
 
     return sorted.map((u, i) => ({ ...u, rank: i + 1 }));
-  }, [users, query, sort, sortDir]);
+  }, [users, query, sort, sortDir, range]);
 
   if (loading && users.length === 0) {
     return <LeaderboardSkeleton />;
@@ -211,14 +217,36 @@ function EloLeaderboardContent() {
 
       <StatsStrip stats={stats} />
 
-      <FilterBar
-        query={query}
-        onQueryChange={setQuery}
-        range={range}
-        onRangeChange={setRange}
-        activeTier={activeTier}
-        onTierChange={setActiveTier}
-      />
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
+        <FilterBar
+          query={query}
+          onQueryChange={setQuery}
+          range={range}
+          onRangeChange={setRange}
+          activeTier={activeTier}
+          onTierChange={setActiveTier}
+        />
+        <button
+          type="button"
+          onClick={() => setEarnXpOpen(true)}
+          style={{
+            marginLeft: 'auto',
+            padding: '8px 14px',
+            borderRadius: 8,
+            border: `1px solid ${page.border}`,
+            background: page.surface,
+            color: page.ink,
+            fontWeight: 600,
+            fontSize: 13,
+            cursor: 'pointer',
+            fontFamily: 'var(--font-sans)',
+          }}
+        >
+          Earn XP
+        </button>
+      </div>
+
+      <EarnXpModal open={earnXpOpen} onClose={() => setEarnXpOpen(false)} />
 
       <LeaderboardTable
         rows={rows}

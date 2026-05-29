@@ -1219,3 +1219,106 @@ body:not(.light-mode) .bs-shell {
   color: var(--bs-text-label);
   padding: 16px 0;
 }
+
+.bs-ticker-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 700;
+  color: var(--bs-green);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.bs-ticker-link:hover {
+  opacity: 0.8;
+}
+
+.bs-ticker-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.bs-ticker-modal {
+  background: var(--bs-bg-light);
+  border: 1px solid var(--bs-border-rule);
+  border-radius: 12px;
+  padding: 20px;
+  max-width: 600px;
+  width: 100%;
+  box-shadow: var(--shadow-lg, 0 20px 60px rgba(0, 0, 0, 0.45));
+}
+.bs-ticker-modal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.bs-ticker-modal-sym {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--bs-text-dark);
+}
+.bs-ticker-modal-close {
+  background: none;
+  border: none;
+  font-size: 28px;
+  line-height: 1;
+  color: var(--bs-text-label);
+  cursor: pointer;
+}
+.bs-ticker-modal-ranges {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.bs-ticker-modal-loading {
+  padding: 60px 0;
+  text-align: center;
+  color: var(--bs-text-label);
+}
+
+.bs-hero-progress {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 18px;
+}
+.bs-prog-card--compact {
+  padding: 12px 14px;
+}
+.bs-streak-mult {
+  color: var(--emerald);
+  font-weight: 600;
+}
+@media (max-width: 768px) {
+  .bs-hero-progress {
+    grid-template-columns: 1fr;
+  }
+}
+
+.bs-pulse-range-toggle {
+  display: flex;
+  gap: 4px;
+  margin: -8px 0 18px;
+}
+
+.bs-opp-row--link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+.bs-opp-row--link:hover {
+  background: var(--bs-hover-bg);
+}

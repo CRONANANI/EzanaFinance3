@@ -1,0 +1,73 @@
+.comp-panel {
+  padding: 20px;
+  margin-bottom: 20px;
+  font-family: var(--font-sans);
+}
+.comp-header {
+  margin-bottom: 16px;
+}
+.comp-title {
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.comp-subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.comp-section h3 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin: 16px 0 8px;
+}
+.comp-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.comp-card {
+  padding: 12px 14px;
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  background: var(--surface-card, transparent);
+}
+.comp-card-title {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.comp-card-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.comp-card-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 8px 0 0;
+}
+.comp-prizes {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+.comp-prize-elo {
+  color: var(--emerald);
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+.comp-empty {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.comp-footnote {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 16px;
+}

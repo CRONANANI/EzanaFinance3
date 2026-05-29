@@ -16,6 +16,7 @@ export function Hero({
   const sectionTitle = sections?.[currentSectionIdx]?.title;
   const chapterNum = currentSectionIdx + 1;
   const chapterTotal = sections?.length ?? course.totalSections ?? 0;
+  const levelClass = `lc-edit-level lc-edit-level--${(course.level || '').toLowerCase()}`;
 
   return (
     <header className="lc-edit-hero">
@@ -23,13 +24,11 @@ export function Hero({
         ← Learning Center
       </Link>
 
-      <div className="lc-edit-hero-row">
+      <div className="lc-edit-hero-left">
         <nav className="lc-edit-breadcrumb" aria-label="breadcrumb">
           <span>{trackLabel}</span>
           <span className="lc-edit-bc-sep">›</span>
-          <span>{levelLabel}</span>
-          <span className="lc-edit-bc-sep">›</span>
-          <span>{course.title}</span>
+          <span className={levelClass}>{levelLabel}</span>
         </nav>
 
         <h1 className="lc-edit-h1">{sectionTitle || course.title}</h1>

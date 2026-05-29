@@ -15,6 +15,7 @@ import { YourCommunityCard } from './YourCommunityCard';
 import { EventCalendar } from './EventCalendar';
 import { TrendingNarratives } from './TrendingNarratives';
 import { CopyInbox } from './CopyInbox';
+import { CompetitionsPanel } from '@/components/community/competitions/CompetitionsPanel';
 import { useEvolutionaryData } from './useEvolutionaryData';
 
 const SKILL_ORDER = ['Novice', 'Apprentice', 'Journeyman', 'Master', 'Oracle'];
@@ -122,6 +123,8 @@ export function HubEvolutionary() {
     >
       <div style={{ padding: '20px 28px', maxWidth: 1320, margin: '0 auto' }}>
         <CommunityQuickNav profileHref={profileHref} />
+
+        <CompetitionsPanel />
 
         <PulseHero pulse={pulse} activeTicker={activeTicker} setActiveTicker={setActiveTicker} />
 

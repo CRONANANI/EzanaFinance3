@@ -515,7 +515,7 @@ body.light-mode .lc3-review-explanation {
 .lc-edit-hero {
   background: transparent;
   border-bottom: 1px solid var(--border-primary);
-  padding: 10px 56px 12px;
+  padding: 24px 56px 16px;
   margin: -24px -24px 0;
 }
 body.light-mode .lc-edit-hero {
@@ -598,15 +598,56 @@ body.light-mode .lc-edit-hero {
   position: relative;
   gap: 0;
 }
+.lc-edit-hero-left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 6px;
+}
+.lc-edit-level {
+  font-weight: 700;
+}
+.lc-edit-level--bronze,
+.lc-edit-level--basic {
+  color: #cd7f32;
+}
+.lc-edit-level--silver,
+.lc-edit-level--intermediate {
+  color: var(--text-secondary);
+}
+.lc-edit-level--gold,
+.lc-edit-level--advanced {
+  color: var(--gold, #d4a853);
+}
+.lc-edit-level--platinum,
+.lc-edit-level--expert {
+  color: #5fb0c9;
+}
+
 .lc-edit-stepper::before {
   content: '';
   position: absolute;
   top: 7px;
   left: 7px;
   right: 7px;
-  height: 2px;
+  height: 4px;
   background: var(--border-primary);
+  border-radius: 999px;
   z-index: 0;
+}
+.lc-edit-stepper-progress {
+  position: absolute;
+  top: 7px;
+  left: 7px;
+  height: 4px;
+  background: #ffffff;
+  border-radius: 999px;
+  z-index: 0;
+  pointer-events: none;
+}
+body.light-mode .lc-edit-stepper-progress {
+  background: var(--emerald);
 }
 .lc-edit-step {
   flex: 1;
@@ -640,9 +681,14 @@ body.light-mode .lc-edit-hero {
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
 }
 .lc-edit-step.is-done .lc-edit-step-node {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: var(--bg-primary);
+}
+body.light-mode .lc-edit-step.is-done .lc-edit-step-node {
   background: var(--emerald);
   border-color: var(--emerald);
-  color: white;
+  color: #ffffff;
 }
 .lc-edit-step-label {
   display: none;

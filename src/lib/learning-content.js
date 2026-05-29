@@ -1,6 +1,7 @@
 import COURSE_CONTENT from './course-content';
 import QUIZ_BANK from './course-quiz-bank';
 import { balanceQuizQuestion } from './quiz-balance';
+import { COURSE_KEYWORDS } from './course-keyword-taxonomy';
 import { transformCourseContent } from './section-modules-transform';
 import COURSE_CONTENT_BRONZE_REST_MODULES from './course-content-bronze-rest.modules.json';
 import COURSE_CONTENT_CRYPTO_BRONZE_MODULES from './course-content-crypto-bronze.modules.json';
@@ -314,8 +315,11 @@ const TEXTBOOK_PARAGRAPHS = {
    VISUAL GENERATION — track and topic-aware
    ═══════════════════════════════════════════════════════════════ */
 
+const RISK_RETURN_COURSE_IDS = new Set(['stocks-intermediate-7']);
+
 function generateVisual(course, sectionIndex) {
   if (sectionIndex !== 1) return null;
+  if (!RISK_RETURN_COURSE_IDS.has(course.id)) return null;
 
   const TRACK_VISUALS = {
     stocks: {
@@ -418,13 +422,48 @@ function findMatchingParagraphs(course) {
   return null;
 }
 
-function extractKeyTerms(title, seed) {
-  const words = title
+function keywordCountForLevel(level) {
+  switch ((level || '').toLowerCase()) {
+    case 'bronze':
+    case 'basic':
+      return 8;
+    case 'silver':
+    case 'intermediate':
+      return 7;
+    case 'gold':
+    case 'advanced':
+      return 6;
+    case 'platinum':
+    case 'expert':
+      return 5;
+    default:
+      return 6;
+  }
+}
+
+/** @param {object} course @param {{ knowledgeScore?: string } | null} [persona] */
+function extractKeyTerms(course, persona = null) {
+  const count = keywordCountForLevel(course.level);
+  let curated = COURSE_KEYWORDS[course.id];
+  if (curated?.length) {
+    if (persona?.knowledgeScore === 'advanced' && curated.length > 5) {
+      curated = curated.slice(0, Math.max(5, count - 1));
+    } else if (persona?.knowledgeScore === 'novice') {
+      curated = curated.slice(0, Math.min(curated.length, count + 1));
+    }
+    return curated.slice(0, Math.max(5, count));
+  }
+  const words = (course.title || '')
     .replace(/[^a-zA-Z0-9 ]/g, '')
     .split(/\s+/)
-    .filter((w) => w.length > 3);
-  const pick = [...new Set(words)].slice(0, 4);
-  return pick.length >= 2 ? pick : ['analysis', 'risk', 'strategy', 'framework'].slice(0, 3);
+    .filter(
+      (w) =>
+        w.length > 4 &&
+        !['trading', 'fundamentals', 'introduction', 'basics', 'advanced'].includes(
+          w.toLowerCase(),
+        ),
+    );
+  return [...new Set(words)].slice(0, Math.max(5, count));
 }
 
 export function buildPlaceholderContent(course) {
@@ -450,11 +489,18 @@ export function buildPlaceholderContent(course) {
       risk: 'risk management',
     }[track] || 'financial markets';
 
+  const RELEVANT_MISTAKES_COURSES = new Set(['stocks-advanced-5']);
+
+  const commonMistakesSection = {
+    title: 'Common Mistakes and Pitfalls',
+    content: `At the ${level} level, the most dangerous mistakes are subtle:\n\n**Overfitting**: The more strategies you test, the more likely you find false positives. Cross-validation and out-of-sample testing are essential — you must not fool yourself.\n\n**Ignoring base rates**: Most active strategies don't outperform their benchmark after costs. Even sophisticated models rarely exceed ~75% directional accuracy. Starting from this baseline prevents overconfidence.\n\n**Survivorship bias**: You see the winners but not the graveyard. For every successful example in ${trackNoun}, dozens of failed attempts received no attention.\n\n**Crowding**: Widely followed signals stop working because too many traders act on them simultaneously. When everyone does the same thing, the edge disappears and the trade becomes a risk factor.\n\nThe antidote: systematic process, written rules, and honest evaluation of results versus expectations.`,
+  };
+
   const sections = [
     {
       title: `Introduction to ${title}`,
       content: `This lesson covers **${title}** — ${desc}. ${levelDesc ? `This is ${level}-level material designed ${levelDesc}.` : ''}\n\n${matchedParas ? matchedParas[0] : `Understanding ${title.toLowerCase()} is essential for any serious practitioner of ${trackNoun}. The concepts here build on your foundational knowledge and introduce frameworks used by professional analysts and portfolio managers.`}\n\nAs you work through the material, connect these ideas to your existing knowledge. The most powerful learning happens at the intersection of new concepts and practical experience.`,
-      keyTerms: extractKeyTerms(title, seed),
+      keyTerms: extractKeyTerms(course),
     },
     {
       title: 'Core Framework and Principles',
@@ -474,10 +520,7 @@ export function buildPlaceholderContent(course) {
       callout:
         'Paper trading validates your process before you risk real capital. If paper results differ significantly from backtests, investigate before deploying.',
     },
-    {
-      title: 'Common Mistakes and Pitfalls',
-      content: `At the ${level} level, the most dangerous mistakes are subtle:\n\n**Overfitting**: The more strategies you test, the more likely you find false positives. Cross-validation and out-of-sample testing are essential — you must not fool yourself.\n\n**Ignoring base rates**: Most active strategies don't outperform their benchmark after costs. Even sophisticated models rarely exceed ~75% directional accuracy. Starting from this baseline prevents overconfidence.\n\n**Survivorship bias**: You see the winners but not the graveyard. For every successful example in ${trackNoun}, dozens of failed attempts received no attention.\n\n**Crowding**: Widely followed signals stop working because too many traders act on them simultaneously. When everyone does the same thing, the edge disappears and the trade becomes a risk factor.\n\nThe antidote: systematic process, written rules, and honest evaluation of results versus expectations.`,
-    },
+    ...(RELEVANT_MISTAKES_COURSES.has(course.id) ? [commonMistakesSection] : []),
     {
       title: 'Bringing It All Together',
       content: `The key takeaway: success in ${title.toLowerCase()} requires combining analytical skill with disciplined execution.\n\nThree forecast-development fundamentals: use point-in-time data (no lookahead), match your analysis horizon to your trading horizon, and account for transaction costs. Without these basics, any apparent edge is likely data mining.\n\nA probabilistic perspective ties it together: every forecast should be accompanied by a confidence level. A high-conviction call with narrow uncertainty justifies a larger position; a low-conviction view with wide uncertainty should be sized small or skipped.\n\nNext steps: apply one concept from this lesson to a real-world example this week. Track your reasoning and review the outcome after a defined period. Repetition turns knowledge into skill.\n\nBefore taking the quiz, review the key terms from section one and make sure you can explain each in your own words. If you can teach the concept, you truly understand it.`,
