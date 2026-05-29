@@ -6,6 +6,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { useOrg } from '@/contexts/OrgContext';
 import { HeroSparkline } from '@/components/dashboard/HeroSparkline';
 import { TickerPerformanceChart } from '@/components/home/TickerPerformanceChart';
+import { AddPortfolioModal } from '@/components/home/AddPortfolioModal';
 import { useElo } from '@/hooks/useElo';
 import { usePlaidPortfolioSummary } from '@/hooks/usePlaidPortfolioSummary';
 import { usePortfolioValueSeries } from '@/hooks/usePortfolioValueSeries';
@@ -240,7 +241,11 @@ function MiniCalendar() {
 export default function HomePage() {
   const { user } = useAuth();
   const { isOrgUser, orgData } = useOrg();
-  const { connected: plaidConnected, summary: plaidSummary } = usePlaidPortfolioSummary();
+  const {
+    connected: plaidConnected,
+    summary: plaidSummary,
+    refresh: refreshPlaidSummary,
+  } = usePlaidPortfolioSummary();
   const [timeframe, setTimeframe] = useState('5D');
   const seriesRange = portfolioSeriesRange(timeframe);
   const {
@@ -267,6 +272,7 @@ export default function HomePage() {
   const [tickerModalRange, setTickerModalRange] = useState('1M');
   const [streakDays, setStreakDays] = useState(0);
   const [streakMultiplier, setStreakMultiplier] = useState(false);
+  const [addPortfolioOpen, setAddPortfolioOpen] = useState(false);
   const { rating: eloRating, tierLabel: eloTier } = useElo(user?.id);
 
   const { watchlists: userWatchlists } = useWatchlists();
@@ -750,8 +756,17 @@ export default function HomePage() {
               </p>
             </div>
             <div className="bs-hero-r">
-              <div className="bs-section-label">
-                {isOrgUser && orgData?.name ? `${orgData.name} portfolio` : 'My Portfolio'}
+              <div className="bs-hero-r-head">
+                <div className="bs-section-label">
+                  {isOrgUser && orgData?.name ? `${orgData.name} portfolio` : 'My Portfolio'}
+                </div>
+                <button
+                  type="button"
+                  className="bs-add-portfolio-btn"
+                  onClick={() => setAddPortfolioOpen(true)}
+                >
+                  + Add Portfolio
+                </button>
               </div>
               <div className="bs-hero-num">{fmtMoney(displayValue)}</div>
               <div className="bs-hero-delta-row">
@@ -1322,6 +1337,15 @@ export default function HomePage() {
           </div>
         </div>
       </div>
+
+      <AddPortfolioModal
+        open={addPortfolioOpen}
+        onClose={() => setAddPortfolioOpen(false)}
+        onConnected={() => {
+          setAddPortfolioOpen(false);
+          refreshPlaidSummary();
+        }}
+      />
 
       {tickerModal && (
         <div className="bs-ticker-modal-overlay" onClick={() => setTickerModal(null)}>

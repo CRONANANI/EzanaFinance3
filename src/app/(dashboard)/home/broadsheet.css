@@ -219,6 +219,31 @@ body:not(.light-mode) .bs-shell {
   border-left: 1px solid var(--bs-border-rule);
   padding-left: 48px;
 }
+.bs-hero-r-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.bs-add-portfolio-btn {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border: 1px solid var(--emerald);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--emerald);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+.bs-add-portfolio-btn:hover {
+  background: var(--emerald);
+  color: #fff;
+}
 .bs-eyebrow {
   font-size: 11px;
   color: var(--bs-text-label);
