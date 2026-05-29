@@ -61,6 +61,30 @@ body.light-mode {
   text-align: center;
 }
 
+/* Landing hero decorative layers must never intercept clicks (WebGL canvases
+   capture pointer events by default and can swallow navbar / CTA clicks). */
+.landing-page .hero-aurora-bg,
+.landing-page .hero-aurora-shader-back,
+.landing-page .hero-aurora-shader-front,
+.landing-page .hero-lightning-strike,
+.landing-page .hero-lightning-canvas,
+.landing-page .card-preview.globe-preview,
+.landing-page .globe-with-cards-wrapper,
+.landing-page .globe-container,
+.landing-page .globe-container canvas,
+.landing-page .globe-notification-cards,
+.landing-page .hero-aurora-bg canvas,
+.landing-page .hero-cybercore-root > canvas {
+  pointer-events: none !important;
+}
+
+.landing-page .hero-content a,
+.landing-page .hero-content button,
+.landing-page .hero-waitlist,
+.landing-page .hero-waitlist * {
+  pointer-events: auto;
+}
+
 /* Aurora beams + grid background — spans full hero, globe in front */
 .landing-page .hero-cybercore-root {
   position: relative;
@@ -1043,12 +1067,23 @@ html:has(.landing-page) body:not(.light-mode) {
   position: sticky;
   top: 0;
   z-index: 1000;
+  isolation: isolate;
+  pointer-events: auto;
   /* Match landing page / html:has(.landing-page) body background (var(--nav-bg-solid)) */
   background: var(--nav-bg-solid) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   border-bottom: none !important;
   transition: all 0.3s ease;
+}
+
+.navbar .nav-container,
+.navbar .nav-container-centered,
+.navbar .nav-link,
+.navbar .nav-link-text,
+.navbar .nav-brand,
+.navbar .logo {
+  pointer-events: auto;
 }
 
 /* Add shadow when scrolled */
