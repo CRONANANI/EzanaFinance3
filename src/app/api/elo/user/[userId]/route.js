@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getUserEloState } from '@/lib/elo';
+import { getUserEloState, reconcileLearningElo } from '@/lib/elo';
 import { getUserClient } from '@/lib/supabase';
 import { isValidUuid } from '@/lib/uuid';
 
@@ -32,6 +32,8 @@ export async function GET(_request, { params }) {
     if (!isValidUuid(userId)) {
       return NextResponse.json({ error: 'Invalid user id' }, { status: 400 });
     }
+
+    await reconcileLearningElo(userId);
 
     const state = await getUserEloState(userId, 30);
     if (!state) {

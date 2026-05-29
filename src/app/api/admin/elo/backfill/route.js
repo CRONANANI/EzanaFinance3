@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
-import { awardELO } from '@/lib/elo';
+import { awardELO, ELO_PER_COURSE_LEVEL, LEVEL_TO_TIER_NAME } from '@/lib/elo';
 import { getCourseById } from '@/lib/learning-curriculum';
 
 export const dynamic = 'force-dynamic';
@@ -8,20 +8,6 @@ export const runtime = 'nodejs';
 export const maxDuration = 300;
 
 const ADMIN_SECRET = process.env.ADMIN_LOCK_SECRET;
-
-const ELO_PER_COURSE_LEVEL = {
-  basic: 10,
-  intermediate: 20,
-  advanced: 35,
-  expert: 55,
-};
-
-const LEVEL_TO_TIER_NAME = {
-  basic: 'bronze',
-  intermediate: 'silver',
-  advanced: 'gold',
-  expert: 'platinum',
-};
 
 /** @type {string} */
 const BACKFILL_MARKER = '__ELO_BACKFILL_COMPLETE__';

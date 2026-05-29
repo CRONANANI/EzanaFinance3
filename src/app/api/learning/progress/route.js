@@ -2,33 +2,7 @@ import { NextResponse } from 'next/server';
 import { getUserClient, getAdminClient } from '@/lib/supabase';
 import { awardXP } from '@/lib/rewards';
 import { getCourseById, getCoursesByTrack, LEVEL_KEYS } from '@/lib/learning-curriculum';
-import { awardELO } from '@/lib/elo';
-
-/**
- * ELO award per course completion, mapped from the course's level.
- *
- * Graduated 4-tier scale:
- *   Bronze (basic):        10 × 32 =   320
- *   Silver (intermediate): 20 × 32 =   640
- *   Gold (advanced):       35 × 32 = 1,120
- *   Platinum (expert):     55 × 24 = 1,320
- *   Grand total possible: 3,400 ELO
- *
- * Duplicated in admin/elo/backfill and elo/me — keep all three in sync.
- */
-const ELO_PER_COURSE_LEVEL = {
-  basic: 10,
-  intermediate: 20,
-  advanced: 35,
-  expert: 55,
-};
-
-const LEVEL_TO_TIER_NAME = {
-  basic: 'bronze',
-  intermediate: 'silver',
-  advanced: 'gold',
-  expert: 'platinum',
-};
+import { awardELO, ELO_PER_COURSE_LEVEL, LEVEL_TO_TIER_NAME, QUIZ_PASS_THRESHOLD } from '@/lib/elo';
 import { getCourseContent } from '@/lib/learning-content';
 import {
   buildProgressMap,
@@ -44,9 +18,6 @@ import {
 export const dynamic = 'force-dynamic';
 
 const admin = getAdminClient();
-
-// Every question must be answered correctly to pass.
-const PASS_PCT = 100;
 
 function labelForLevelBadgeKey(key) {
   const m = typeof key === 'string' ? key.match(/_level_(.+)$/) : null;
@@ -261,7 +232,8 @@ export async function POST(request) {
       });
 
       const scorePct = Math.round((correct / total) * 100);
-      const passed = correct === total;
+      const passed = scorePct >= QUIZ_PASS_THRESHOLD;
+      const perfect = correct === total;
 
       const { data: existing } = await supabase
         .from('user_course_progress')
@@ -401,7 +373,8 @@ export async function POST(request) {
         incorrectIndices,
         details,
         passed,
-        passThreshold: PASS_PCT,
+        perfect,
+        passThreshold: QUIZ_PASS_THRESHOLD,
         quiz,
         badges,
         ...(eloChanged ? { eloChanged: true, eloDelta, newRating, oldRating, newTier } : {}),

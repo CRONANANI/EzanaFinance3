@@ -13,7 +13,20 @@ export function useElo(userId) {
   const [rating, setRating] = useState(0);
   const [tier, setTier] = useState('novice');
   const [peak, setPeak] = useState(0);
+  const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const applyState = useCallback((data) => {
+    const elo = data?.elo;
+    if (elo) {
+      setRating(elo.current_rating ?? 0);
+      setTier(elo.tier || 'novice');
+      setPeak(elo.peak_rating ?? 0);
+    }
+    if (Array.isArray(data?.transactions)) {
+      setTransactions(data.transactions);
+    }
+  }, []);
 
   const applyRow = useCallback((elo) => {
     if (!elo) return;
@@ -31,13 +44,13 @@ export function useElo(userId) {
       const res = await fetch(`/api/elo/user/${userId}`);
       if (!res.ok) return;
       const data = await res.json();
-      applyRow(data.elo);
+      applyState(data);
     } catch {
       /* ignore */
     } finally {
       setLoading(false);
     }
-  }, [userId, applyRow]);
+  }, [userId, applyState]);
 
   useEffect(() => {
     setLoading(true);
@@ -80,6 +93,7 @@ export function useElo(userId) {
     tier,
     tierLabel: getTierLabel(tier),
     peak,
+    transactions,
     loading,
     refetch,
   };

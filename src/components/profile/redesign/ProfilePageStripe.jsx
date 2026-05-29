@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
 import { useMockPortfolio } from '@/hooks/useMockPortfolio';
+import { useElo } from '@/hooks/useElo';
 import { supabase } from '@/lib/supabase-browser';
 import { useProfileActivity } from '@/hooks/useProfileActivity';
 import { useAchievements } from '@/hooks/useAchievements';
@@ -46,6 +47,12 @@ export function ProfilePageStripe({ username }) {
 
   const mock = useMockPortfolio();
   const activity = useProfileActivity();
+  const {
+    rating: eloRating,
+    tier: eloTier,
+    peak: eloPeak,
+    transactions: eloTransactions,
+  } = useElo(profile?.id);
 
   const useLiveHoldings =
     !!plaidHoldingsPayload?.connected && (plaidHoldingsPayload?.aggregated?.length ?? 0) > 0;
@@ -267,17 +274,6 @@ export function ProfilePageStripe({ username }) {
         setTrades(tr || []);
       }
 
-      try {
-        const eloRes = await fetch(`/api/elo/user/${prof.id}`);
-        if (eloRes.ok) {
-          setEloState(await eloRes.json());
-        } else {
-          setEloState(null);
-        }
-      } catch {
-        setEloState(null);
-      }
-
       if (viewerIsOwner) {
         try {
           const meRes = await fetch('/api/leaderboard/me');
@@ -350,6 +346,21 @@ export function ProfilePageStripe({ username }) {
       cancelled = true;
     };
   }, [chartRange]);
+
+  const eloState = useMemo(
+    () =>
+      profile
+        ? {
+            elo: {
+              current_rating: eloRating,
+              tier: eloTier,
+              peak_rating: eloPeak,
+            },
+            transactions: eloTransactions,
+          }
+        : null,
+    [profile, eloRating, eloTier, eloPeak, eloTransactions],
+  );
 
   const profileUser = useMemo(
     () =>

@@ -19,6 +19,25 @@
  *   - 'admin'        — manual adjustments by you (corrections, awards)
  */
 import { getAdminClient } from '@/lib/supabase';
+import { getCourseById } from '@/lib/learning-curriculum';
+
+/** Minimum quiz score (percent) that counts as completing a course for ELO/badges. */
+export const QUIZ_PASS_THRESHOLD = 70;
+
+/** ELO award per course completion by curriculum level. */
+export const ELO_PER_COURSE_LEVEL = {
+  basic: 10,
+  intermediate: 20,
+  advanced: 35,
+  expert: 55,
+};
+
+export const LEVEL_TO_TIER_NAME = {
+  basic: 'bronze',
+  intermediate: 'silver',
+  advanced: 'gold',
+  expert: 'platinum',
+};
 
 /** ELO tier bands. Lower bound is the minimum rating for the tier. */
 export const ELO_TIERS = [
@@ -225,4 +244,59 @@ export async function getUserEloState(userId, transactionLimit = 50) {
     console.error('[elo] getUserEloState: unexpected error:', err);
     return null;
   }
+}
+
+/**
+ * Reconcile learning ELO: award once per completed course not yet credited.
+ * Idempotent — dedupes by elo_transactions.metadata.course_id (learning category).
+ *
+ * @param {string} userId
+ * @returns {Promise<{ credited: number, totalDelta: number }>}
+ */
+export async function reconcileLearningElo(userId) {
+  if (!userId) return { credited: 0, totalDelta: 0 };
+  const supabase = getAdminClient();
+
+  const { data: progress, error: pErr } = await supabase
+    .from('user_course_progress')
+    .select('course_id, quiz_passed, quiz_score, status')
+    .eq('user_id', userId);
+  if (pErr || !progress) return { credited: 0, totalDelta: 0 };
+
+  const completed = progress.filter(
+    (p) =>
+      p.quiz_passed === true ||
+      (typeof p.quiz_score === 'number' && p.quiz_score >= QUIZ_PASS_THRESHOLD),
+  );
+  if (completed.length === 0) return { credited: 0, totalDelta: 0 };
+
+  const { data: txs } = await supabase
+    .from('elo_transactions')
+    .select('metadata')
+    .eq('user_id', userId)
+    .eq('category', 'learning');
+  const creditedCourseIds = new Set((txs || []).map((t) => t?.metadata?.course_id).filter(Boolean));
+
+  let credited = 0;
+  let totalDelta = 0;
+  for (const p of completed) {
+    if (creditedCourseIds.has(p.course_id)) continue;
+    const course = getCourseById(p.course_id);
+    if (!course) continue;
+    const points = ELO_PER_COURSE_LEVEL[course.level] || 10;
+    const tierName = LEVEL_TO_TIER_NAME[course.level] || 'bronze';
+    const res = await awardELO(
+      userId,
+      points,
+      `Completed ${tierName} course: ${course.title}`,
+      'learning',
+      { course_id: p.course_id, level: course.level, tier: tierName, reconciled: true },
+    );
+    if (res) {
+      credited += 1;
+      totalDelta += res.newRating - res.oldRating;
+      creditedCourseIds.add(p.course_id);
+    }
+  }
+  return { credited, totalDelta };
 }
