@@ -39,7 +39,6 @@ export function ProfilePageStripe({ username }) {
   const [trades, setTrades] = useState([]);
   const [privacyBlocked, setPrivacyBlocked] = useState(false);
   const [plaidHoldingsPayload, setPlaidHoldingsPayload] = useState(null);
-  const [eloState, setEloState] = useState(null);
   const [meData, setMeData] = useState(null);
   const [totalTraders, setTotalTraders] = useState(0);
   const [chartRange, setChartRange] = useState('1M');
