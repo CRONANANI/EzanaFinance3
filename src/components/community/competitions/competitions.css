@@ -71,3 +71,23 @@
   color: var(--text-faint);
   margin-top: 16px;
 }
+.comp-join-btn {
+  margin-top: 10px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--border-primary);
+  border-radius: 6px;
+  background: var(--emerald, #0e7c4f);
+  color: #fff;
+  cursor: pointer;
+}
+.comp-join-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.comp-error {
+  font-size: 13px;
+  color: #dc2626;
+  margin-bottom: 8px;
+}

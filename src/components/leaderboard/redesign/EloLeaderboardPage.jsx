@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useEloLiveRefetch } from '@/hooks/useEloLiveRefetch';
 import { getTier } from '@/lib/elo-tier-colors';
 import { LeagueHeader } from './LeagueHeader';
 import { HeroCard } from './HeroCard';
@@ -55,65 +56,70 @@ function EloLeaderboardContent() {
 
   const activeTierLabel = activeTier === 'all' ? 'All tiers' : getTier(activeTier).label;
 
+  const loadLeaderboard = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    const tierParam = activeTier !== 'all' ? `&tier=${activeTier}` : '';
+    const searchParam = query.trim() ? `&search=${encodeURIComponent(query.trim())}` : '';
+
+    try {
+      const [eloRes, meRes, leagueRes, statsRes, questsRes] = await Promise.all([
+        fetch(`/api/leaderboard/elo?limit=${PAGE_LIMIT}${tierParam}${searchParam}`),
+        fetch('/api/leaderboard/me'),
+        fetch('/api/leaderboard/league'),
+        fetch('/api/leaderboard/stats'),
+        fetch('/api/quests/daily'),
+      ]);
+
+      const [eloData, meData, leagueData, statsData, questsData] = await Promise.all([
+        eloRes.json(),
+        meRes.ok ? meRes.json() : null,
+        leagueRes.json(),
+        statsRes.json(),
+        questsRes.json(),
+      ]);
+
+      if (eloData.error) throw new Error(eloData.error);
+
+      setUsers((eloData.rows || []).map(normalizeUser));
+      setTotalTraders(eloData.pagination?.total ?? statsData?.totalTraders ?? 0);
+      if (meData && !meData.error) setMe(normalizeUser(meData));
+      if (leagueData && !leagueData.error) setLeague(leagueData);
+      if (statsData && !statsData.error) {
+        setStats(statsData);
+        if (!eloData.pagination?.total) setTotalTraders(statsData.totalTraders ?? 0);
+      }
+      if (questsData?.quests) {
+        setQuests(questsData.quests);
+        setRefreshesAt(questsData.refreshesIn || '—');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load leaderboard');
+    } finally {
+      setLoading(false);
+    }
+  }, [activeTier, query]);
+
+  useEloLiveRefetch(loadLeaderboard);
+
   useEffect(() => {
     let cancelled = false;
 
     async function load() {
-      setLoading(true);
-      setError(null);
-
-      const tierParam = activeTier !== 'all' ? `&tier=${activeTier}` : '';
-      const searchParam = query.trim() ? `&search=${encodeURIComponent(query.trim())}` : '';
-
-      try {
-        const [eloRes, meRes, leagueRes, statsRes, questsRes] = await Promise.all([
-          fetch(`/api/leaderboard/elo?limit=${PAGE_LIMIT}${tierParam}${searchParam}`),
-          fetch('/api/leaderboard/me'),
-          fetch('/api/leaderboard/league'),
-          fetch('/api/leaderboard/stats'),
-          fetch('/api/quests/daily'),
-        ]);
-
-        if (cancelled) return;
-
-        const [eloData, meData, leagueData, statsData, questsData] = await Promise.all([
-          eloRes.json(),
-          meRes.ok ? meRes.json() : null,
-          leagueRes.json(),
-          statsRes.json(),
-          questsRes.json(),
-        ]);
-
-        if (eloData.error) throw new Error(eloData.error);
-
-        setUsers((eloData.rows || []).map(normalizeUser));
-        setTotalTraders(eloData.pagination?.total ?? statsData?.totalTraders ?? 0);
-        if (meData && !meData.error) setMe(normalizeUser(meData));
-        if (leagueData && !leagueData.error) setLeague(leagueData);
-        if (statsData && !statsData.error) {
-          setStats(statsData);
-          if (!eloData.pagination?.total) setTotalTraders(statsData.totalTraders ?? 0);
-        }
-        if (questsData?.quests) {
-          setQuests(questsData.quests);
-          setRefreshesAt(questsData.refreshesIn || '—');
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Failed to load leaderboard');
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
+      await loadLeaderboard();
+      if (cancelled) return;
     }
 
     load();
-    const refreshId = setInterval(load, 45000);
+    const refreshId = setInterval(() => {
+      if (!cancelled) loadLeaderboard();
+    }, 45000);
     return () => {
       cancelled = true;
       clearInterval(refreshId);
     };
-  }, [activeTier, query]);
+  }, [loadLeaderboard]);
 
   const onSortChange = useCallback(
     (key) => {

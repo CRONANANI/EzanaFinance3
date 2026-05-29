@@ -6,7 +6,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { useOrg } from '@/contexts/OrgContext';
 import { HeroSparkline } from '@/components/dashboard/HeroSparkline';
 import { TickerPerformanceChart } from '@/components/home/TickerPerformanceChart';
-import { tierForRating } from '@/lib/elo-tier-colors';
+import { useElo } from '@/hooks/useElo';
 import { usePlaidPortfolioSummary } from '@/hooks/usePlaidPortfolioSummary';
 import { usePortfolioValueSeries } from '@/hooks/usePortfolioValueSeries';
 import { useMockPortfolio } from '@/hooks/useMockPortfolio';
@@ -255,6 +255,8 @@ export default function HomePage() {
 
   const [indices, setIndices] = useState([]);
   const [sectorData, setSectorData] = useState({ top: [], bottom: [] });
+  const [sectorLoaded, setSectorLoaded] = useState(false);
+  const [sectorEmpty, setSectorEmpty] = useState(false);
   const [gainers, setGainers] = useState([]);
   const [losers, setLosers] = useState([]);
   const [congressTrades, setCongressTrades] = useState([]);
@@ -264,9 +266,8 @@ export default function HomePage() {
   const [tickerModal, setTickerModal] = useState(null);
   const [tickerModalRange, setTickerModalRange] = useState('1M');
   const [streakDays, setStreakDays] = useState(0);
-  const [eloRating, setEloRating] = useState(0);
-  const [eloTier, setEloTier] = useState('Novice');
   const [streakMultiplier, setStreakMultiplier] = useState(false);
+  const { rating: eloRating, tierLabel: eloTier } = useElo(user?.id);
 
   const { watchlists: userWatchlists } = useWatchlists();
   const [selectedWatchlistId, setSelectedWatchlistId] = useState(null);
@@ -438,20 +439,18 @@ export default function HomePage() {
     let cancelled = false;
     const load = async () => {
       try {
-        const res = await fetch(
-          '/api/market/batch-quotes?symbols=%5EGSPC,%5EIXIC,%5ERUT,%5EDJI,%5EVIX,CL=F,%5ETNX',
-        );
+        const res = await fetch('/api/market/batch-quotes?symbols=SPY,QQQ,IWM,DIA,VIXY,USO,IEF');
         if (!res.ok) return;
         const data = await res.json();
         const quotes = data.quotes || {};
         const map = [
-          { sym: 'S&P 500', key: '^GSPC' },
-          { sym: 'NASDAQ', key: '^IXIC' },
-          { sym: 'Russell 2K', key: '^RUT' },
-          { sym: 'Dow Jones', key: '^DJI' },
-          { sym: 'VIX', key: '^VIX' },
-          { sym: 'WTI', key: 'CL=F' },
-          { sym: '10Y', key: '^TNX' },
+          { sym: 'S&P 500', key: 'SPY' },
+          { sym: 'NASDAQ', key: 'QQQ' },
+          { sym: 'Russell 2K', key: 'IWM' },
+          { sym: 'Dow Jones', key: 'DIA' },
+          { sym: 'VIX', key: 'VIXY' },
+          { sym: 'WTI', key: 'USO' },
+          { sym: '10Y', key: 'IEF' },
         ];
         if (!cancelled) {
           setIndices(
@@ -462,15 +461,10 @@ export default function HomePage() {
               const chgPct = q.changePercent ?? q.regularMarketChangePercent ?? 0;
               return {
                 sym: m.sym,
-                last:
-                  m.key === 'CL=F'
-                    ? `$${price.toFixed(2)}`
-                    : m.key === '^TNX'
-                      ? `${price.toFixed(2)}%`
-                      : price.toLocaleString('en-US', {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        }),
+                last: price.toLocaleString('en-US', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                }),
                 chg: `${chgPct >= 0 ? '+' : ''}${chgPct.toFixed(2)}%`,
                 up: chgPct >= 0,
               };
@@ -491,29 +485,38 @@ export default function HomePage() {
 
   useEffect(() => {
     let cancelled = false;
+    setSectorLoaded(false);
     (async () => {
       try {
-        // TODO: backend range support — re-fetch when FMP accepts range param
         const res = await fetch(`/api/fmp/sector-performance?range=${pulseRange}`);
         if (!res.ok) return;
-        const data = await res.json();
-        const sectors = (data.sectors || data || [])
-          .map((s) => ({
-            name: s.sector || s.name,
-            chg: s.changesPercentage ?? s.change ?? 0,
-          }))
+        const json = await res.json();
+        const rows = json?.sectors?.data ?? json?.data ?? [];
+        const degraded = Boolean(json?.sectors?.degraded);
+        const sectors = rows
+          .map((s) => ({ name: s.name || s.sector, chg: Number(s.changePct ?? 0) }))
           .sort((a, b) => b.chg - a.chg);
         if (!cancelled) {
-          setSectorData({
-            top: sectors.filter((s) => s.chg > 0).slice(0, 3),
-            bottom: sectors
-              .filter((s) => s.chg <= 0)
-              .slice(-5)
-              .reverse(),
-          });
+          const empty = degraded || sectors.length === 0;
+          setSectorEmpty(empty);
+          setSectorData(
+            empty
+              ? { top: [], bottom: [] }
+              : {
+                  top: sectors.filter((s) => s.chg > 0).slice(0, 3),
+                  bottom: sectors
+                    .filter((s) => s.chg <= 0)
+                    .slice(-5)
+                    .reverse(),
+                },
+          );
+          setSectorLoaded(true);
         }
       } catch {
-        /* ignore */
+        if (!cancelled) {
+          setSectorEmpty(true);
+          setSectorLoaded(true);
+        }
       }
     })();
     return () => {
@@ -525,22 +528,23 @@ export default function HomePage() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch('/api/alpha/movers?limit=5');
+        const res = await fetch('/api/fmp/movers?limit=3');
         if (!res.ok) return;
         const data = await res.json();
+        const toPct = (s) => parseFloat(String(s).replace(/[+%]/g, '')) || 0;
         if (!cancelled) {
           setGainers(
             (data.gainers || []).slice(0, 3).map((g) => ({
-              sym: g.ticker || g.symbol,
-              pct: g.changePercent ?? g.changesPercentage ?? g.changePct ?? 0,
-              chg: g.change ? `${g.change >= 0 ? '+' : ''}${g.change.toFixed(2)}` : '—',
+              sym: g.ticker,
+              pct: toPct(g.change),
+              chg: g.dollarChange ?? g.change ?? '—',
             })),
           );
           setLosers(
             (data.losers || []).slice(0, 3).map((l) => ({
-              sym: l.ticker || l.symbol,
-              pct: -Math.abs(l.changePercent ?? l.changesPercentage ?? l.changePct ?? 0),
-              chg: l.change ? `${l.change.toFixed(2)}` : '—',
+              sym: l.ticker,
+              pct: toPct(l.change),
+              chg: l.dollarChange ?? l.change ?? '—',
             })),
           );
         }
@@ -592,13 +596,13 @@ export default function HomePage() {
         const data = await res.json();
         if (!cancelled) {
           setOpportunities(
-            (data.articles || data.news || data || []).slice(0, 5).map((a) => ({
-              sym: a.ticker || a.tickers?.[0] || '—',
+            (data.news || []).slice(0, 5).map((a) => ({
+              sym: '',
               title: a.title || a.headline || '',
-              src: a.source || a.publisher || '',
-              url: a.url || a.link || a.articleUrl || '',
-              when: a.publishedDate
-                ? new Date(a.publishedDate).toLocaleTimeString('en-US', {
+              src: a.source || '',
+              url: a.url || '#',
+              when: a.datetime
+                ? new Date(a.datetime).toLocaleTimeString('en-US', {
                     hour: 'numeric',
                     minute: '2-digit',
                   })
@@ -667,8 +671,6 @@ export default function HomePage() {
       .then((d) => {
         if (cancelled || !d || d.error) return;
         setStreakDays(d.streakDays ?? 0);
-        setEloRating(d.rating ?? 0);
-        setEloTier(tierForRating(d.rating ?? 0).label);
         setStreakMultiplier(Boolean(d.multiplier_active));
       })
       .catch(() => {});
@@ -681,11 +683,11 @@ export default function HomePage() {
     let cancelled = false;
     const load = async () => {
       try {
-        const res = await fetch('/api/alpha/news?limit=12');
+        const res = await fetch('/api/market-data/news?limit=12');
         if (!res.ok) return;
         const data = await res.json();
-        const items = (data.feed || data.articles || data || []).slice(0, 12).map((a) => ({
-          tag: (a.source || a.topics?.[0] || 'NEWS').toString().toUpperCase().slice(0, 10),
+        const items = (data.news || []).slice(0, 12).map((a) => ({
+          tag: (a.source || 'NEWS').toString().toUpperCase().slice(0, 10),
           text: a.title || a.headline || '',
         }));
         if (!cancelled && items.length) setTickerItems(items);
@@ -1110,9 +1112,12 @@ export default function HomePage() {
             ))}
           </div>
           <div className="bs-pulse-row">
+            {sectorLoaded && sectorEmpty ? (
+              <p className="bs-pulse-empty">No sector data yet</p>
+            ) : null}
             <div className="bs-pulse-col">
               <div className="bs-pulse-head-dark">Leaders</div>
-              {(sectorData.top.length ? sectorData.top : [{ name: 'No sector data', chg: 0 }]).map(
+              {(sectorData.top.length ? sectorData.top : [{ name: 'Loading…', chg: 0 }]).map(
                 (s) => (
                   <div key={s.name} className="bs-pulse-line">
                     <span className="bs-pulse-name">{s.name}</span>
@@ -1133,24 +1138,23 @@ export default function HomePage() {
             <div className="bs-pulse-divider" />
             <div className="bs-pulse-col">
               <div className="bs-pulse-head-dark">Laggards</div>
-              {(sectorData.bottom.length
-                ? sectorData.bottom
-                : [{ name: 'No sector data', chg: 0 }]
-              ).map((s) => (
-                <div key={s.name} className="bs-pulse-line">
-                  <span className="bs-pulse-name">{s.name}</span>
-                  <div className="bs-pulse-bar">
-                    <div
-                      className="bs-pulse-bar-fill bs-pulse-bar-fill--down"
-                      style={{ width: `${Math.min((Math.abs(s.chg) / 2) * 100, 100)}%` }}
-                    />
+              {(sectorData.bottom.length ? sectorData.bottom : [{ name: 'Loading…', chg: 0 }]).map(
+                (s) => (
+                  <div key={s.name} className="bs-pulse-line">
+                    <span className="bs-pulse-name">{s.name}</span>
+                    <div className="bs-pulse-bar">
+                      <div
+                        className="bs-pulse-bar-fill bs-pulse-bar-fill--down"
+                        style={{ width: `${Math.min((Math.abs(s.chg) / 2) * 100, 100)}%` }}
+                      />
+                    </div>
+                    <span className="bs-pulse-pct bs-pulse-pct--down">
+                      {s.chg >= 0 ? '+' : ''}
+                      {s.chg.toFixed(2)}%
+                    </span>
                   </div>
-                  <span className="bs-pulse-pct bs-pulse-pct--down">
-                    {s.chg >= 0 ? '+' : ''}
-                    {s.chg.toFixed(2)}%
-                  </span>
-                </div>
-              ))}
+                ),
+              )}
             </div>
           </div>
         </div>
