@@ -870,6 +870,8 @@ html:has(.landing-page) body:not(.light-mode) {
 .navbar .nav-container-centered .logo {
   flex-shrink: 0;
   margin-right: auto;
+  position: relative;
+  z-index: 2;
 }
 
 /* Nav menu centered absolutely so it sits in the true center of the bar */
@@ -883,12 +885,28 @@ html:has(.landing-page) body:not(.light-mode) {
   list-style: none;
   margin: 0;
   padding: 0;
+  /* The centered absolute box is wide and transparent; without this it
+     overlaps and swallows clicks meant for the right-side sign-in links. */
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Re-enable interaction only on the real links, not the empty gaps. */
+.navbar .nav-container-centered .nav-menu .nav-item,
+.navbar .nav-container-centered .nav-menu .nav-link {
+  pointer-events: auto;
 }
 
 /* Sign In button pushed to far right edge, aligned with page content margins */
 .navbar .nav-container-centered .nav-sign-in-wrap {
   flex-shrink: 0;
   margin-left: auto;
+  position: relative;
+  z-index: 2;
+}
+
+.navbar .nav-container-centered .nav-sign-in-wrap .nav-link-text {
+  pointer-events: auto;
 }
 
 /* Dashboard nav: brand logo — same visual size as landing (.navbar) nav */
