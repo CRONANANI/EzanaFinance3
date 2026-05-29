@@ -2318,3 +2318,92 @@ body.light-mode .signin-dark-lock textarea {
   caret-color: #f1f5f9;
   transition: background-color 5000s ease-in-out 0s;
 }
+
+/* ════════════════════════════════════════════════════════════
+   HARD GUARANTEE: landing navbar is always clickable.
+   This block stays at the bottom of globals.css and uses the
+   most aggressive valid CSS to ensure no future change (or any
+   stray decorative layer) can intercept clicks meant for the
+   navbar's links. If something else needs the area, it must be
+   below z-index: 1000 OR have pointer-events: none.
+   ════════════════════════════════════════════════════════════ */
+
+/* Navbar itself: top of the stacking order on the landing page. */
+.landing-page ~ * .navbar-sticky,
+.landing-page .navbar,
+.landing-page .navbar-sticky,
+html:has(.landing-page) .navbar,
+html:has(.landing-page) .navbar-sticky {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 2147483000 !important; /* near max int — beats every other layer */
+  isolation: isolate !important;
+  pointer-events: auto !important;
+}
+
+/* Every link / button / clickable element inside the landing nav. */
+.landing-page .navbar a,
+.landing-page .navbar button,
+.landing-page .navbar [role='button'],
+.landing-page .navbar .nav-link,
+.landing-page .navbar .nav-link-text,
+.landing-page .navbar .nav-brand,
+.landing-page .navbar .nav-home-btn,
+.landing-page .navbar .logo,
+.landing-page .navbar .nav-container,
+.landing-page .navbar .nav-container-centered,
+.landing-page .navbar .nav-menu,
+.landing-page .navbar .nav-menu .nav-item,
+.landing-page .navbar .nav-sign-in-wrap,
+html:has(.landing-page) .navbar a,
+html:has(.landing-page) .navbar button,
+html:has(.landing-page) .navbar .nav-link {
+  pointer-events: auto !important;
+  cursor: pointer;
+}
+
+/* Decorative hero layers — ANY canvas anywhere inside the hero, plus the
+   known decorative containers — must never intercept clicks. The selector
+   below is intentionally over-broad so a future renaming or a new
+   decorative canvas can't reintroduce the bug. */
+.landing-page .hero-section canvas,
+.landing-page #heroSection canvas,
+.landing-page .hero-cybercore-root canvas,
+.landing-page .main-content.hero-section canvas,
+.landing-page .lightning-container,
+.landing-page .hero-aurora-bg,
+.landing-page .hero-aurora-bg *,
+.landing-page .hero-aurora-shader-back,
+.landing-page .hero-aurora-shader-front,
+.landing-page .hero-lightning-strike,
+.landing-page .hero-lightning-strike *,
+.landing-page .hero-lightning-canvas,
+.landing-page .hero-lightning-canvas *,
+.landing-page .card-preview.globe-preview,
+.landing-page .card-preview.globe-preview > *:not(.globe-cards-left):not(.globe-cards-right),
+.landing-page .globe-with-cards-wrapper,
+.landing-page .globe-container,
+.landing-page .globe-container *,
+.landing-page .globe-notification-cards {
+  pointer-events: none !important;
+}
+
+/* Re-enable pointer events on genuinely interactive hero content
+   (waitlist form, ticker links, anything explicitly marked). */
+.landing-page .hero-content a,
+.landing-page .hero-content button,
+.landing-page .hero-waitlist,
+.landing-page .hero-waitlist *,
+.landing-page .bs-ticker-link,
+.landing-page [data-interactive='true'] {
+  pointer-events: auto !important;
+}
+
+/* The hero <main> wrapper must not itself capture clicks outside its
+   interactive children. Force a lower stacking order than the nav. */
+.landing-page .main-content.hero-section,
+.landing-page #heroSection,
+.landing-page .hero-cybercore-root {
+  z-index: 10 !important;
+  isolation: isolate;
+}
