@@ -18,11 +18,24 @@ const ResourcesSection = dynamic(
     import('@/components/landing/ResourcesSection').then((m) => ({ default: m.ResourcesSection })),
   { loading: () => null },
 );
-const Faq1 = dynamic(() => import('@/components/ui/faq1').then((m) => ({ default: m.Faq1 })), {
-  loading: () => null,
-});
+const Faq1 = dynamic(
+  () =>
+    import('@/components/ui/faq1')
+      .then((m) => ({ default: m.Faq1 }))
+      .catch((err) => {
+        console.error('[landing] Faq1 failed to load:', err);
+        return { default: () => null };
+      }),
+  { loading: () => null },
+);
 const FooterSection = dynamic(
-  () => import('@/components/ui/footer-section').then((m) => ({ default: m.FooterSection })),
+  () =>
+    import('@/components/ui/footer-section')
+      .then((m) => ({ default: m.FooterSection }))
+      .catch((err) => {
+        console.error('[landing] FooterSection failed to load:', err);
+        return { default: () => null };
+      }),
   { loading: () => null },
 );
 const ContactSupportDialog = dynamic(

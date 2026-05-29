@@ -738,9 +738,9 @@ html:has(.landing-page) body:not(.light-mode) {
   background-color: #0a0e13 !important;
 }
 
-/* Below-fold sections: skip rendering work until near viewport (keeps hero fast) */
-.landing-page #features-section-container,
-.landing-page .faq-section-wrapper {
+/* Below-fold sections: skip rendering work until near viewport (keeps hero fast).
+   FAQ/footer are excluded — content-visibility:auto can defer or zero-size them. */
+.landing-page #features-section-container {
   content-visibility: auto;
   contain-intrinsic-size: auto 520px;
 }
@@ -2052,6 +2052,25 @@ html:has(.landing-page) .navbar .logo,
 .landing-page footer {
   background: #0a0e13 !important;
   border-top-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* FAQ + footer must always paint and receive clicks (never hidden by overlays/CSS). */
+.landing-page .landing-faq-section,
+.landing-page .faq-section-wrapper,
+.landing-page > footer {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  height: auto !important;
+  min-height: 0;
+  content-visibility: visible;
+  contain-intrinsic-size: auto;
+  position: relative;
+  z-index: 2;
+}
+
+.landing-page .faq-section-wrapper {
+  padding: 80px 2rem;
 }
 
 .landing-page .hero-cybercore-root {
