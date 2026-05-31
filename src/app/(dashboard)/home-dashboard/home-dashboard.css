@@ -1165,84 +1165,324 @@ body.light-mode .db-profits-legend-scroll .db-profits-legend-item {
   }
 }
 
-/* ══════════════════════════════
-   LIGHT MODE
-   ══════════════════════════════ */
-body.light-mode .db-greeting {
-  color: #111827;
+/* ══════════════════════════════════════════════════════════════
+   LIGHT MODE — Comprehensive override
+   Page bg is #ffffff (from layout.css --app-bg).
+   Cards are white with subtle gray borders.
+   All text colors contrast against white surfaces.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Page-level custom properties ── */
+body.light-mode .db-page {
+  --db-muted: #64748b;
+  --db-muted-soft: #64748b;
+  --db-muted-ink: #475569;
+  --home-muted: #64748b;
+  --home-muted-soft: #64748b;
+  --home-muted-ink: #475569;
+  --home-heading: #0f172a;
+  --home-body-secondary: #475569;
+  --home-row-text: #1e293b;
 }
-body.light-mode .db-greeting-sub {
-  color: var(--db-muted);
+
+/* ── Greeting ── */
+body.light-mode .db-greeting {
+  color: #0f172a;
 }
 body.light-mode .db-greeting-highlight {
   color: #059669;
 }
 
+/* ── Shared card shell ── */
 body.light-mode .db-card {
-  background: #fff;
-  border-color: rgba(0, 0, 0, 0.06);
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.08);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 body.light-mode .db-card-header {
-  border-bottom-color: rgba(0, 0, 0, 0.04);
+  border-bottom-color: rgba(0, 0, 0, 0.06);
 }
 body.light-mode .db-card-header h3 {
-  color: #111827;
+  color: #0f172a;
 }
 
+/* ── Icon buttons ── */
+body.light-mode .db-icon-btn {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+body.light-mode .db-icon-btn:hover {
+  color: #059669;
+  border-color: rgba(5, 150, 105, 0.3);
+}
+
+/* ── Timeframe buttons ── */
+body.light-mode .db-tf-btn,
+body.light-mode .db-tf-btn-sm {
+  border-color: rgba(0, 0, 0, 0.1);
+}
+body.light-mode .db-tf-btn:hover,
+body.light-mode .db-tf-btn-sm:hover {
+  color: #0f172a;
+  background: rgba(0, 0, 0, 0.03);
+}
+body.light-mode .db-tf-btn.active,
+body.light-mode .db-tf-btn-sm.active {
+  background: #059669;
+  color: #fff;
+  border-color: #059669;
+}
+
+/* ── Hero card (portfolio value) ── */
 body.light-mode .db-hero-card {
-  background: #fff;
-  border-color: rgba(0, 0, 0, 0.06);
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.08);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 body.light-mode .db-hero-value {
-  color: #111827;
+  color: #0f172a;
 }
 body.light-mode .db-hero-stat-value {
-  color: #111827;
+  color: #0f172a;
+}
+body.light-mode .db-hero-label i {
+  color: #059669;
+}
+body.light-mode .db-hero-stat-label i {
+  color: #059669;
+}
+body.light-mode .db-hero-change.positive {
+  color: #059669;
+}
+body.light-mode .db-hero-change.negative {
+  color: #dc2626;
+}
+body.light-mode .db-hero-stats {
+  border-top-color: rgba(0, 0, 0, 0.06);
 }
 
-body.light-mode .db-holding-card {
-  background: rgba(0, 0, 0, 0.01);
-  border-color: rgba(0, 0, 0, 0.06);
-}
-body.light-mode .db-holding-card:hover {
-  background: rgba(0, 0, 0, 0.02);
-}
+/* ── Holdings cards ── */
 body.light-mode .db-holding-value {
-  color: #111827;
+  color: #0f172a;
 }
-body.light-mode .db-holding-per-share {
-  color: var(--db-muted);
+body.light-mode .db-holding-change.positive {
+  color: #059669;
+}
+body.light-mode .db-holding-change.negative {
+  color: #dc2626;
+}
+body.light-mode .db-holding-view-details {
+  color: #059669;
+}
+body.light-mode .db-holdings-nav-btn {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.08);
+  color: #64748b;
+}
+body.light-mode .db-holdings-nav-btn:hover {
+  background: rgba(5, 150, 105, 0.08);
+  color: #059669;
 }
 
+/* ── Watchlist ── */
 body.light-mode .db-watchlist-ticker {
-  color: #111827;
+  color: #0f172a;
 }
 body.light-mode .db-watchlist-price {
-  color: #111827;
+  color: #0f172a;
+}
+body.light-mode .db-watchlist-change.positive {
+  color: #059669;
+}
+body.light-mode .db-watchlist-change.negative {
+  color: #dc2626;
+}
+body.light-mode .db-watchlist-item {
+  border-bottom-color: rgba(0, 0, 0, 0.04);
+}
+body.light-mode .db-watchlist-item:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+body.light-mode .db-watchlist-avatar {
+  background: rgba(5, 150, 105, 0.08);
+  color: #059669;
 }
 
-body.light-mode .db-sector-name {
-  color: #111827;
+/* ── Profits card (donut) ── */
+body.light-mode .db-profits-summary-value {
+  color: #0f172a;
+}
+body.light-mode .db-profits-summary-label {
+  color: #64748b;
+}
+body.light-mode .db-profits-bar-symbol {
+  color: #0f172a;
+}
+body.light-mode .db-profits-bar-track {
+  background: rgba(0, 0, 0, 0.05);
+}
+body.light-mode .db-profits-bar-value {
+  color: #1e293b;
+}
+body.light-mode .db-profits-chart-wrap {
+  background: transparent;
+}
+body.light-mode .db-profits-legend-scroll .db-profits-legend-item {
+  color: #1e293b;
+}
+
+/* ── Sector distribution ── */
+body.light-mode .db-sector-name,
+body.light-mode .db-sector-legend-name {
+  color: #0f172a;
 }
 body.light-mode .db-sector-detail {
-  color: var(--db-muted);
+  color: #64748b;
 }
 body.light-mode .db-sector-value {
-  color: #111827;
+  color: #0f172a;
 }
-body.light-mode .db-tx-name {
-  color: #111827;
+body.light-mode .db-sector-total {
+  color: #0f172a;
 }
-
+body.light-mode .db-sector-legend-pct,
 body.light-mode .db-legend-pct {
   color: #374151;
 }
+body.light-mode .db-legend-amt {
+  color: #64748b;
+}
+body.light-mode .db-sector-item--clickable:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+body.light-mode .db-sector-item--clickable.is-expanded {
+  background: rgba(0, 0, 0, 0.03);
+}
+body.light-mode .db-sector-drawer {
+  background: rgba(5, 150, 105, 0.04);
+  border-left-color: #059669;
+}
+body.light-mode .db-sector-drawer-empty {
+  color: #94a3b8;
+}
+body.light-mode .db-sector-drawer-item {
+  border-bottom-color: rgba(0, 0, 0, 0.04);
+}
+body.light-mode .db-sector-holding-symbol {
+  color: #0f172a;
+}
+body.light-mode .db-sector-holding-value,
+body.light-mode .db-sector-holding-qty {
+  color: #475569;
+}
+body.light-mode .db-sector-legend-item:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
 
-body.light-mode .db-tf-btn:hover,
-body.light-mode .db-tf-btn-sm:hover {
-  color: #111827;
+/* ── Sector pie tooltip (light) ── */
+body.light-mode .db-sector-pie-tooltip {
+  background: #ffffff;
+  color: #0f172a;
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+body.light-mode .db-sector-pie-tooltip-value {
+  color: #059669;
+}
+body.light-mode .db-sector-pie-tooltip-pct {
+  color: #64748b;
+}
+
+/* ── Transactions ── */
+body.light-mode .db-tx-name {
+  color: #0f172a;
+}
+body.light-mode .db-tx-company {
+  color: #475569;
+}
+body.light-mode .db-tx-date,
+body.light-mode .db-tx-id {
+  color: #94a3b8;
+}
+body.light-mode .db-tx-avatar {
+  background: rgba(0, 0, 0, 0.04);
+  color: #475569;
+}
+body.light-mode .db-tx-item {
+  border-bottom-color: rgba(0, 0, 0, 0.04);
+}
+body.light-mode .db-tx-item:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+body.light-mode .db-tx-table-header {
+  color: #94a3b8;
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+}
+body.light-mode .db-tx-scroll {
+  background: transparent;
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+/* ── Skeleton loading ── */
+body.light-mode .db-skel-card {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+body.light-mode .db-skel-bar {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+/* ── Empty states ── */
+body.light-mode .db-holdings-empty,
+body.light-mode .db-watchlist-empty,
+body.light-mode .db-sector-empty,
+body.light-mode .db-profits-empty {
+  color: #94a3b8;
+}
+
+/* ── Holdings badge (worst performer) ── */
+body.light-mode .db-holding-worst-badge {
+  background: rgba(220, 38, 38, 0.06);
+  color: #dc2626;
+  border-color: rgba(220, 38, 38, 0.15);
+}
+
+/* ── Portfolio grid ── */
+body.light-mode .db-portfolio-grid {
+  gap: 0.75rem;
+}
+
+/* ── Hero card title / link ── */
+body.light-mode .db-hero-card-title,
+body.light-mode .db-hero-card-header h3 {
+  color: #0f172a;
+}
+body.light-mode .db-hero-card-title-link {
+  color: #059669;
+}
+body.light-mode .db-hero-card-title-icon {
+  color: #059669;
+}
+
+/* ── Positive/negative semantic colors (light mode uses deeper shades for contrast) ── */
+body.light-mode .positive {
+  color: #059669;
+}
+body.light-mode .negative {
+  color: #dc2626;
+}
+
+/* ── Hero timeframe pill ── */
+body.light-mode .db-hero-tf-pill {
+  background: rgba(0, 0, 0, 0.04);
+  color: #475569;
+  border-color: rgba(0, 0, 0, 0.08);
+}
+body.light-mode .db-hero-tf-pill.active {
+  background: #059669;
+  color: #fff;
+  border-color: #059669;
 }
 
 /* ── Sector Distribution drawer (click-to-expand) ── */
@@ -1584,12 +1824,6 @@ body.light-mode .db-sector-legend-pct {
 
 .db-skel-card--short {
   min-height: 392px;
-}
-
-body.light-mode .db-skel-card {
-  background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.06);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .db-skel-bar {
