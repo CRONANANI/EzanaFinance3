@@ -26,12 +26,6 @@ const CATEGORY_GRADIENTS = {
   crypto: '#1b3a5a',
 };
 
-const SPARKLINE_PATHS = [
-  'M0,60 L40,50 L80,55 L120,40 L160,45 L200,30 L240,35 L280,20 L320,25 L360,12 L400,8',
-  'M0,50 L40,48 L80,40 L120,42 L160,30 L200,32 L240,22 L280,28 L320,18 L360,22 L400,10',
-  'M0,40 L40,55 L80,45 L120,50 L160,35 L200,42 L240,30 L280,38 L320,25 L360,30 L400,18',
-];
-
 function AuthorAvatar({ name, size = 'md' }) {
   const initials = name
     .split(' ')
@@ -184,7 +178,6 @@ export default function EzanaEchoPage() {
             )}
             <Link href={`/ezana-echo/${featured.id}`} className="echo-v3-hero-card">
               <div className="echo-v3-hero-img">
-                <div className="echo-v3-hero-img-grid" />
                 {featured.heroImage?.src && (
                   <img
                     src={featured.heroImage.src}
@@ -199,40 +192,6 @@ export default function EzanaEchoPage() {
                   {featured.category.charAt(0).toUpperCase() + featured.category.slice(1)} · Feature
                 </span>
                 {isAdmin && <span className="echo-v3-hero-archive-chip">Archive</span>}
-                <svg
-                  viewBox="0 0 600 400"
-                  preserveAspectRatio="none"
-                  className="echo-v3-hero-chart-svg"
-                >
-                  <defs>
-                    <linearGradient id="heroAreaFill" x1="0" x2="0" y1="0" y2="1">
-                      <stop offset="0%" stopColor="var(--emerald)" stopOpacity="0.55" />
-                      <stop offset="100%" stopColor="var(--emerald)" stopOpacity="0" />
-                    </linearGradient>
-                  </defs>
-                  {[80, 160, 240, 320].map((y) => (
-                    <line key={y} x1="0" y1={y} x2="600" y2={y} stroke="rgba(255,255,255,0.04)" />
-                  ))}
-                  <path
-                    d="M0,360 C80,330 130,300 200,290 C260,282 310,275 360,250 C420,225 460,200 520,170 L600,150 L600,400 L0,400 Z"
-                    fill="url(#heroAreaFill)"
-                  />
-                  <path
-                    d="M0,360 C80,330 130,300 200,290 C260,282 310,275 360,250 C420,225 460,200 520,170 L600,150"
-                    stroke="var(--emerald)"
-                    strokeWidth="2"
-                    fill="none"
-                  />
-                  <path
-                    d="M0,380 C80,375 150,360 220,345 C280,332 340,320 410,295 C470,275 520,250 600,210"
-                    stroke="var(--gold)"
-                    strokeWidth="1.5"
-                    fill="none"
-                    strokeDasharray="4 6"
-                  />
-                  <circle cx="600" cy="150" r="4" fill="var(--emerald)" />
-                  <circle cx="600" cy="150" r="9" fill="var(--emerald)" opacity="0.25" />
-                </svg>
               </div>
 
               <div className="echo-v3-hero-body">
@@ -331,7 +290,7 @@ export default function EzanaEchoPage() {
         )}
 
         <div className="echo-v3-grid">
-          {gridArticles.slice(0, 9).map((article, idx) => (
+          {gridArticles.slice(0, 9).map((article) => (
             <div key={article.id} className="echo-v3-card-wrap">
               {isAdmin && (
                 <button
@@ -371,28 +330,6 @@ export default function EzanaEchoPage() {
                   {isAdmin && archivedSet.has(article.id) && (
                     <span className="echo-v3-card-archive-chip">Archive</span>
                   )}
-                  <svg
-                    viewBox="0 0 400 80"
-                    preserveAspectRatio="none"
-                    className="echo-v3-card-sparkline"
-                  >
-                    <defs>
-                      <linearGradient id={`spark${idx}`} x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0%" stopColor="var(--emerald)" stopOpacity="0.35" />
-                        <stop offset="100%" stopColor="var(--emerald)" stopOpacity="0" />
-                      </linearGradient>
-                    </defs>
-                    <path
-                      d={`${SPARKLINE_PATHS[idx % SPARKLINE_PATHS.length]} L400,80 L0,80 Z`}
-                      fill={`url(#spark${idx})`}
-                    />
-                    <path
-                      d={SPARKLINE_PATHS[idx % SPARKLINE_PATHS.length]}
-                      stroke="var(--emerald)"
-                      strokeWidth="1.5"
-                      fill="none"
-                    />
-                  </svg>
                 </div>
 
                 <div className="echo-v3-card-body">
