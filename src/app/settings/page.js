@@ -23,8 +23,11 @@ import {
 import { usePartner } from '@/contexts/PartnerContext';
 import { useUserSettings } from '@/contexts/SettingsContext';
 import { useOrg } from '@/contexts/OrgContext';
+import { SettingsLedger } from '@/components/settings/ledger/SettingsLedger';
 import './settings.css';
 import './settings-partner.css';
+
+const USE_LEDGER = process.env.NEXT_PUBLIC_SETTINGS_LEDGER !== '0';
 
 const SETTINGS_TABS = [
   { key: 'my-details', label: 'My details', icon: 'bi-person', desc: 'Name, avatar, contact info' },
@@ -216,6 +219,9 @@ function SettingsInner() {
   const handleTabChange = (key) => {
     setActiveTab(key);
     setMobileNavOpen(false);
+    if (USE_LEDGER) {
+      router.push(`/settings?tab=${key}`, { scroll: false });
+    }
   };
 
   const handleSave = async () => {
@@ -231,14 +237,37 @@ function SettingsInner() {
   };
 
   if (loading) {
-    return (
-      <div className="settings-page">
-        <div
-          style={{ padding: '3rem 1.5rem', textAlign: 'center', color: 'rgba(255,255,255,0.6)' }}
-        >
-          Loading settings…
-        </div>
+    const loadingEl = (
+      <div style={{ padding: '3rem 1.5rem', textAlign: 'center', color: 'var(--muted, #6b7280)' }}>
+        Loading settings…
       </div>
+    );
+    if (USE_LEDGER) {
+      return <div className="settings-ledger">{loadingEl}</div>;
+    }
+    return <div className="settings-page">{loadingEl}</div>;
+  }
+
+  if (USE_LEDGER) {
+    const ledgerSavePanels = new Set(['my-details', 'appearance']);
+    return (
+      <SettingsLedger
+        panelProps={panelProps}
+        activeTab={activeTab}
+        setActiveTab={handleTabChange}
+        saveStatus={{
+          state: saving ? 'saving' : saved ? 'saved' : 'idle',
+          savedAgo: saved ? 'just now' : undefined,
+        }}
+        partnersTabAllowed={partnersTabAllowed}
+        orgTabAllowed={isOrgUser && orgRole === 'executive'}
+        backLabel={backLabel}
+        backHref={backPath}
+        error={error}
+        onSave={handleSave}
+        saving={saving}
+        hideGlobalSave={ledgerSavePanels.has(activeTab)}
+      />
     );
   }
 

@@ -8,12 +8,23 @@ const ThemeContext = createContext(null);
 const COOKIE_NAME = 'ezana.theme';
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // 1 year
 
+function resolveSystemTheme() {
+  if (typeof window === 'undefined') return 'light';
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function resolveAppliedTheme(theme) {
+  if (theme === 'system') return resolveSystemTheme();
+  return theme === 'dark' ? 'dark' : 'light';
+}
+
 /** Apply theme classes/styles to <html> and <body> immediately. */
 function applyTheme(theme) {
+  const applied = resolveAppliedTheme(theme);
   const root = document.documentElement;
   const body = document.body;
   root.style.colorScheme = 'light';
-  if (theme === 'light') {
+  if (applied === 'light') {
     root.classList.add('light-mode');
     if (body) body.classList.add('light-mode');
     root.classList.remove('dark');
@@ -82,7 +93,8 @@ function isMarketingBrandLockedDarkPath(pathname) {
 
 export function ThemeProvider({ initialTheme = 'light', children }) {
   const pathname = usePathname();
-  const safeInitial = initialTheme === 'dark' ? 'dark' : 'light';
+  const safeInitial =
+    initialTheme === 'dark' ? 'dark' : initialTheme === 'system' ? 'system' : 'light';
   const [theme, setThemeState] = useState(safeInitial);
 
   // Keep <html>/<body> in sync whenever the theme or route changes.
@@ -93,6 +105,14 @@ export function ThemeProvider({ initialTheme = 'light', children }) {
     }
     applyTheme(theme);
   }, [theme, pathname]);
+
+  useEffect(() => {
+    if (theme !== 'system' || typeof window === 'undefined') return;
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const onChange = () => applyTheme('system');
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, [theme]);
 
   /* Sync the ezana.theme cookie to the server-resolved theme on every
      hydration. This eliminates the "stale cookie" trap that caused the
@@ -117,9 +137,10 @@ export function ThemeProvider({ initialTheme = 'light', children }) {
   }, []);
 
   const setTheme = useCallback((next, options = {}) => {
-    const normalized = next === 'dark' ? 'dark' : 'light';
+    const normalized = next === 'dark' ? 'dark' : next === 'system' ? 'system' : 'light';
     const { persist = false } = options;
     setThemeState(normalized);
+    applyTheme(normalized);
     if (persist) {
       writeThemeCookie(normalized);
       persistToServer(normalized);
@@ -131,7 +152,9 @@ export function ThemeProvider({ initialTheme = 'light', children }) {
      setTheme(next, { persist: false }). */
   const toggleTheme = useCallback(() => {
     setThemeState((prev) => {
-      const next = prev === 'dark' ? 'light' : 'dark';
+      const applied = resolveAppliedTheme(prev);
+      const next = applied === 'dark' ? 'light' : 'dark';
+      applyTheme(next);
       writeThemeCookie(next);
       persistToServer(next);
       return next;

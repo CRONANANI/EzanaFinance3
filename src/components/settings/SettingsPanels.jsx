@@ -1508,7 +1508,7 @@ export function ApiPanel({ onSave }) {
   );
 }
 
-function DeleteAccountModal({ onClose, onDeleted }) {
+export function DeleteAccountModal({ onClose, onDeleted }) {
   const [confirmText, setConfirmText] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
