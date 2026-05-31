@@ -30,16 +30,14 @@ import { useOrg } from '@/contexts/OrgContext';
    below the ticker header, so deferring it keeps the critical path lean and
    lets the browser paint the header/metrics faster. Fixed-height skeleton
    keeps CLS at zero. */
-const StockPriceChart = dynamic(
-  () => import('@/components/research/StockPriceChart'),
-  {
-    ssr: false,
-    loading: () => <div style={{ height: 216 }} aria-hidden />,
-  }
-);
+const StockPriceChart = dynamic(() => import('@/components/research/StockPriceChart'), {
+  ssr: false,
+  loading: () => <div style={{ height: 216 }} aria-hidden />,
+});
 const OrgSendToTeamModal = dynamic(
-  () => import('@/components/org/OrgSendToTeamModal').then((m) => ({ default: m.OrgSendToTeamModal })),
-  { ssr: false, loading: () => null }
+  () =>
+    import('@/components/org/OrgSendToTeamModal').then((m) => ({ default: m.OrgSendToTeamModal })),
+  { ssr: false, loading: () => null },
 );
 
 import '../../../../app-legacy/assets/css/theme.css';
@@ -69,11 +67,7 @@ function ResearchPageHeader({ view, setView }) {
             : 'Analyze the market as a whole and stress-test portfolios across regimes.'}
         </p>
       </div>
-      <div
-        role="tablist"
-        aria-label="Research view"
-        className="cpr-view-toggle"
-      >
+      <div role="tablist" aria-label="Research view" className="cpr-view-toggle">
         <button
           type="button"
           role="tab"
@@ -121,7 +115,13 @@ function CompanyResearchPageInner() {
   );
   const { completeTask } = useChecklist();
   const [selectedStock, setSelectedStock] = useState(null);
-  const [stats, setStats] = useState({ mcap: '--', pe: '--', divYield: '--', eps: '--', capType: '--' });
+  const [stats, setStats] = useState({
+    mcap: '--',
+    pe: '--',
+    divYield: '--',
+    eps: '--',
+    capType: '--',
+  });
   const [livePrice, setLivePrice] = useState(null);
   const [viewMode, setViewMode] = useState('heatmap');
   const [activeModel, setActiveModel] = useState(null);
@@ -133,14 +133,17 @@ function CompanyResearchPageInner() {
 
   const researchCourses = useMemo(() => {
     const stocks = getCoursesByTrack('stocks');
-    const relevant = stocks.filter(c =>
-      c.title.includes('Fundamental Analysis') ||
-      c.title.includes('Financial Statements') ||
-      c.title.includes('Sector Analysis') ||
-      c.title.includes('Earnings Season')
+    const relevant = stocks.filter(
+      (c) =>
+        c.title.includes('Fundamental Analysis') ||
+        c.title.includes('Financial Statements') ||
+        c.title.includes('Sector Analysis') ||
+        c.title.includes('Earnings Season'),
     );
     if (relevant.length < 4) {
-      const fill = stocks.filter(c => c.level === 'basic' && !relevant.find(r => r.id === c.id));
+      const fill = stocks.filter(
+        (c) => c.level === 'basic' && !relevant.find((r) => r.id === c.id),
+      );
       return [...relevant, ...fill].slice(0, 4);
     }
     return relevant.slice(0, 4);
@@ -156,7 +159,7 @@ function CompanyResearchPageInner() {
   const showSuggestions = suggestions.length > 0;
 
   useEffect(() => {
-    const q = searchParams.get('q') || searchParams.get('ticker');
+    const q = searchParams.get('q') || searchParams.get('ticker') || searchParams.get('symbol');
     if (q && q.trim()) {
       const sym = q.trim().toUpperCase();
       setSelectedStock(sym);
@@ -184,10 +187,10 @@ function CompanyResearchPageInner() {
           return;
         }
         setStats({
-          mcap:    data.mcap    || '--',
-          pe:      data.pe      || '--',
+          mcap: data.mcap || '--',
+          pe: data.pe || '--',
           divYield: data.divYield || '--',
-          eps:     data.eps     || '--',
+          eps: data.eps || '--',
           capType: data.capType || '--',
         });
         if (data.price != null) setLivePrice(data.price);
@@ -201,7 +204,8 @@ function CompanyResearchPageInner() {
   const companyMetaLine = useMemo(() => {
     const parts = [];
     if (stats.capType && stats.capType !== '--') parts.push(stats.capType);
-    if (stats.mcap && stats.mcap !== '--' && stats.mcap !== '…') parts.push(`Market Cap: ${stats.mcap}`);
+    if (stats.mcap && stats.mcap !== '--' && stats.mcap !== '…')
+      parts.push(`Market Cap: ${stats.mcap}`);
     return parts.join(' · ') || selectedStock || '—';
   }, [stats.mcap, stats.capType, selectedStock]);
 
@@ -211,34 +215,46 @@ function CompanyResearchPageInner() {
     }
   }, [selectedStock, stats.mcap, completeTask]);
 
-  const handleSelectStock = useCallback((item, opts) => {
-    const sym = (typeof item === 'string' ? item : item?.symbol)?.toUpperCase?.() ?? item?.symbol;
-    setSelectedStock(sym);
-    setViewMode('stock');
-    setQuery('');
-    clearSuggestions();
-    completeTask('research_1');
-    if (opts?.fromPeer) completeTask('research_3');
-  }, [setQuery, clearSuggestions, completeTask]);
+  const handleSelectStock = useCallback(
+    (item, opts) => {
+      const sym = (typeof item === 'string' ? item : item?.symbol)?.toUpperCase?.() ?? item?.symbol;
+      setSelectedStock(sym);
+      setViewMode('stock');
+      setQuery('');
+      clearSuggestions();
+      completeTask('research_1');
+      if (opts?.fromPeer) completeTask('research_3');
+    },
+    [setQuery, clearSuggestions, completeTask],
+  );
 
-  const handleSearchInput = useCallback((eOrValue) => {
-    const q = typeof eOrValue === 'string' ? eOrValue : eOrValue?.target?.value ?? '';
-    setQuery(q);
-  }, [setQuery]);
+  const handleSearchInput = useCallback(
+    (eOrValue) => {
+      const q = typeof eOrValue === 'string' ? eOrValue : (eOrValue?.target?.value ?? '');
+      setQuery(q);
+    },
+    [setQuery],
+  );
 
-  const handleSelectSuggestion = useCallback((item) => {
-    clearSuggestions();
-    setQuery('');
-    handleSelectStock(item.symbol);
-  }, [handleSelectStock, setQuery, clearSuggestions]);
+  const handleSelectSuggestion = useCallback(
+    (item) => {
+      clearSuggestions();
+      setQuery('');
+      handleSelectStock(item.symbol);
+    },
+    [handleSelectStock, setQuery, clearSuggestions],
+  );
 
-  const handleModelClick = useCallback((modelId) => {
-    if (activeModel === modelId) {
-      setActiveModel(null);
-    } else {
-      setActiveModel(modelId);
-    }
-  }, [activeModel]);
+  const handleModelClick = useCallback(
+    (modelId) => {
+      if (activeModel === modelId) {
+        setActiveModel(null);
+      } else {
+        setActiveModel(modelId);
+      }
+    },
+    [activeModel],
+  );
 
   const handleCloseAnalysis = useCallback(() => {
     setActiveModel(null);
@@ -246,7 +262,18 @@ function CompanyResearchPageInner() {
 
   /** DCF & Earnings (custom interactive) — gold accent on tiles (see company-research-theme.css). */
   const PREMIUM_MODEL_IDS = useMemo(
-    () => new Set(['grpv', 'dcf', 'earnings', 'comps', 'threestatement', 'lbo', 'ma', 'risk', 'montecarlo']),
+    () =>
+      new Set([
+        'grpv',
+        'dcf',
+        'earnings',
+        'comps',
+        'threestatement',
+        'lbo',
+        'ma',
+        'risk',
+        'montecarlo',
+      ]),
     [],
   );
 
@@ -361,7 +388,11 @@ function CompanyResearchPageInner() {
   return (
     <div className="dashboard-page-inset cr-page">
       <ResearchPageHeader view={view} setView={setView} />
-      <div className="company-search-wrapper relative" ref={searchRef} data-task-target="research-search-bar">
+      <div
+        className="company-search-wrapper relative"
+        ref={searchRef}
+        data-task-target="research-search-bar"
+      >
         <AnimatedGlowingSearchBar
           value={query}
           onChange={handleSearchInput}
@@ -420,10 +451,16 @@ function CompanyResearchPageInner() {
                 <div className="chart-header compact">
                   <div className="chart-title-area">
                     <h2 className="chart-title">Stock Market Heatmap</h2>
-                    <span className="heatmap-subtitle">S&amp;P 500 · Performance YTD % · Tile size by return magnitude</span>
+                    <span className="heatmap-subtitle">
+                      S&amp;P 500 · Performance YTD % · Tile size by return magnitude
+                    </span>
                   </div>
                 </div>
-                <div className="heatmap-container" id="heatmapContainer" data-task-target="research-company-card">
+                <div
+                  className="heatmap-container"
+                  id="heatmapContainer"
+                  data-task-target="research-company-card"
+                >
                   <StockHeatmap onSelectStock={handleSelectStock} />
                 </div>
               </div>
@@ -443,7 +480,15 @@ function CompanyResearchPageInner() {
                         {selectedStock}
                       </span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginLeft: 'auto' }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        flexWrap: 'wrap',
+                        marginLeft: 'auto',
+                      }}
+                    >
                       {isOrgUser && hasPermission('send_to_team') && (
                         <button
                           type="button"
@@ -514,7 +559,10 @@ function CompanyResearchPageInner() {
           )}
 
           {selectedStock && activeModel && (
-            <section className="model-detail-section cr-model-detail-below-chart" id="modelDetailSection">
+            <section
+              className="model-detail-section cr-model-detail-below-chart"
+              id="modelDetailSection"
+            >
               <AIAnalysisPanel
                 modelId={activeModel}
                 symbol={selectedStock}
@@ -527,7 +575,10 @@ function CompanyResearchPageInner() {
 
       {/* Heatmap: user opened a model before selecting a ticker */}
       {activeModel && !selectedStock && (
-        <section className="model-detail-section cr-model-detail-no-ticker" id="modelDetailSectionHeatmap">
+        <section
+          className="model-detail-section cr-model-detail-no-ticker"
+          id="modelDetailSectionHeatmap"
+        >
           <div className="component-card model-detail-card">
             <div className="card-header">
               <h3>{CAROUSEL_MODELS.find((m) => m.id === activeModel)?.name || 'Analysis'}</h3>
@@ -536,7 +587,15 @@ function CompanyResearchPageInner() {
               </button>
             </div>
             <div className="card-body" style={{ padding: '3rem 1rem', textAlign: 'center' }}>
-              <i className="bi bi-search" style={{ fontSize: '2rem', color: '#6b7280', display: 'block', marginBottom: '1rem' }} />
+              <i
+                className="bi bi-search"
+                style={{
+                  fontSize: '2rem',
+                  color: '#6b7280',
+                  display: 'block',
+                  marginBottom: '1rem',
+                }}
+              />
               <p style={{ color: '#8b949e', fontSize: '0.9375rem' }}>
                 Search for a company or select a stock from the heatmap above to run this analysis.
               </p>
@@ -562,7 +621,10 @@ function CompanyResearchPageInner() {
               <EarningsCard symbol={selectedStock} />
             </PinnableCard>
             <PinnableCard cardId="competitors-card" section="research">
-              <CompetitorsCard symbol={selectedStock} onSelectPeer={(peer) => handleSelectStock(peer, { fromPeer: true })} />
+              <CompetitorsCard
+                symbol={selectedStock}
+                onSelectPeer={(peer) => handleSelectStock(peer, { fromPeer: true })}
+              />
             </PinnableCard>
           </div>
         </section>
@@ -603,13 +665,34 @@ function CompanyResearchPageInner() {
               boxShadow: '0 24px 64px rgba(0, 0, 0, 0.25)',
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '1rem',
+              }}
+            >
               <div>
-                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: 'var(--home-heading, #111827)' }}>
+                <h3
+                  style={{
+                    margin: 0,
+                    fontSize: '1rem',
+                    fontWeight: 800,
+                    color: 'var(--home-heading, #111827)',
+                  }}
+                >
                   Add to Watchlist
                 </h3>
-                <p style={{ margin: '3px 0 0', fontSize: '0.75rem', color: 'var(--home-muted, #6b7280)' }}>
-                  Adding <strong style={{ color: '#10b981' }}>{selectedStock}</strong> — select a watchlist
+                <p
+                  style={{
+                    margin: '3px 0 0',
+                    fontSize: '0.75rem',
+                    color: 'var(--home-muted, #6b7280)',
+                  }}
+                >
+                  Adding <strong style={{ color: '#10b981' }}>{selectedStock}</strong> — select a
+                  watchlist
                 </p>
               </div>
               <button
@@ -655,9 +738,7 @@ function CompanyResearchPageInner() {
                       border: done
                         ? '1px solid rgba(16, 185, 129, 0.35)'
                         : '1px solid rgba(0, 0, 0, 0.08)',
-                      background: done
-                        ? 'rgba(16, 185, 129, 0.06)'
-                        : 'rgba(0, 0, 0, 0.02)',
+                      background: done ? 'rgba(16, 185, 129, 0.06)' : 'rgba(0, 0, 0, 0.02)',
                       cursor: done ? 'default' : 'pointer',
                       textAlign: 'left',
                       fontFamily: 'var(--font-sans)',
@@ -665,10 +746,23 @@ function CompanyResearchPageInner() {
                     }}
                   >
                     <div>
-                      <p style={{ margin: 0, fontSize: '0.875rem', fontWeight: 700, color: 'var(--home-heading, #111827)' }}>
+                      <p
+                        style={{
+                          margin: 0,
+                          fontSize: '0.875rem',
+                          fontWeight: 700,
+                          color: 'var(--home-heading, #111827)',
+                        }}
+                      >
                         {wl.label}
                       </p>
-                      <p style={{ margin: 0, fontSize: '0.6875rem', color: 'var(--home-muted, #6b7280)' }}>
+                      <p
+                        style={{
+                          margin: 0,
+                          fontSize: '0.6875rem',
+                          color: 'var(--home-muted, #6b7280)',
+                        }}
+                      >
                         {wl.stocks.length} stocks
                       </p>
                     </div>
@@ -742,7 +836,22 @@ function CompanyResearchPageInner() {
 
 export default function CompanyResearchPage() {
   return (
-    <Suspense fallback={<div className="dashboard-page-inset" style={{ minHeight: '40vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8b949e' }}>Loading…</div>}>
+    <Suspense
+      fallback={
+        <div
+          className="dashboard-page-inset"
+          style={{
+            minHeight: '40vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#8b949e',
+          }}
+        >
+          Loading…
+        </div>
+      }
+    >
       <CompanyResearchPageInner />
     </Suspense>
   );

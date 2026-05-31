@@ -1073,7 +1073,7 @@ export default function HomePage() {
             watchPriceItems.push({
               tag: s.ticker,
               text: `${px.toLocaleString('en-US', { minimumFractionDigits: 2 })}  ${ch >= 0 ? '+' : ''}${ch.toFixed(2)}%`,
-              url: `/company-research?symbol=${s.ticker}`,
+              url: `/company-research?q=${encodeURIComponent(s.ticker)}`,
             });
           }
         }
@@ -1778,7 +1778,7 @@ export default function HomePage() {
                 {(gainers.length ? gainers : [{ sym: '—', pct: 0 }]).slice(0, 3).map((g, i) => (
                   <Link
                     key={`eg-${g.sym}-${i}`}
-                    href={`/company-research?symbol=${g.sym}`}
+                    href={`/company-research?q=${encodeURIComponent(g.sym)}`}
                     className="bs-mover-row bs-mover-row--link"
                   >
                     <span className="bs-mover-sym">{g.sym}</span>
@@ -1797,7 +1797,7 @@ export default function HomePage() {
                 {(losers.length ? losers : [{ sym: '—', pct: 0 }]).slice(0, 3).map((l, i) => (
                   <Link
                     key={`el-${l.sym}-${i}`}
-                    href={`/company-research?symbol=${l.sym}`}
+                    href={`/company-research?q=${encodeURIComponent(l.sym)}`}
                     className="bs-mover-row bs-mover-row--link"
                   >
                     <span className="bs-mover-sym">{l.sym}</span>
