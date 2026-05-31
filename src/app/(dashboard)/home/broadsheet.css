@@ -6,44 +6,44 @@
   --bs-text-body: #374151;
   --bs-text-label: #6b7280;
   --bs-text-label-caps: #94928a;
-  --bs-border-rule: #d8d4c1;
-  --bs-border-subtle: #ece8d8;
-  --bs-border-dotted: #d8d4c1;
-  --bs-hover-bg: #f8f5e8;
-  --bs-green: #0e7c4f;
-  --bs-red: #a8261d;
+  --bs-border-rule: rgba(0, 0, 0, 0.1);
+  --bs-border-subtle: rgba(0, 0, 0, 0.06);
+  --bs-border-dotted: rgba(0, 0, 0, 0.1);
+  --bs-hover-bg: rgba(0, 0, 0, 0.02);
+  --bs-green: #059669;
+  --bs-red: #dc2626;
 
-  /* Cream-band colors (schedule section) */
-  --bs-bg-cream: #f5f1e6;
-  --bs-cream-border: #e6e2d1;
-  --bs-cream-card-bg: #ffffff;
-  --bs-cream-event-hover: #94928a;
-  --bs-cream-flag-bg: #0b0d10;
+  /* Cream-band colors — in light mode, cream bands are white like everything else */
+  --bs-bg-cream: #ffffff;
+  --bs-cream-border: rgba(0, 0, 0, 0.08);
+  --bs-cream-card-bg: #f9fafb;
+  --bs-cream-event-hover: rgba(0, 0, 0, 0.08);
+  --bs-cream-flag-bg: #0f172a;
   --bs-cream-flag-text: #ffffff;
-  --bs-cream-today-bg: #0b0d10;
+  --bs-cream-today-bg: #0f172a;
   --bs-cream-today-text: #ffffff;
 
-  /* Dark-band colors (ticker, index strip, pulse, colophon) */
-  --bs-bg-dark: #0b0d10;
-  --bs-dark-text: #e6e8eb;
-  --bs-dark-label: #9ca3af;
-  --bs-dark-border: #1c2128;
-  --bs-dark-green: #34d399;
-  --bs-dark-red: #f87171;
+  /* Dark-band colors — in light mode, "dark" bands are also white */
+  --bs-bg-dark: #ffffff;
+  --bs-dark-text: #0f172a;
+  --bs-dark-label: #64748b;
+  --bs-dark-border: rgba(0, 0, 0, 0.08);
+  --bs-dark-green: #059669;
+  --bs-dark-red: #dc2626;
 
   /* Chart gridlines */
-  --bs-chart-grid: #e6e2d1;
-  --bs-chart-port-color: #0b0d10;
+  --bs-chart-grid: rgba(0, 0, 0, 0.08);
+  --bs-chart-port-color: #0f172a;
 
   /* Segmented control */
-  --bs-seg-bg: #d8d4c1;
+  --bs-seg-bg: rgba(0, 0, 0, 0.08);
   --bs-seg-btn-bg: #ffffff;
   --bs-seg-btn-text: #6b7280;
-  --bs-seg-active-bg: #0b0d10;
+  --bs-seg-active-bg: #0f172a;
   --bs-seg-active-text: #ffffff;
 
   /* Progress card */
-  --bs-elo-track-bg: #e6e2d1;
+  --bs-elo-track-bg: rgba(0, 0, 0, 0.08);
 
   font-family: var(--font-sans, 'Plus Jakarta Sans', system-ui, sans-serif);
   background: var(--bs-bg-light);
@@ -123,9 +123,10 @@ body:not(.light-mode) .bs-shell {
 /* ── Ticker marquee (always dark) ── */
 .bs-ticker {
   background: var(--bs-bg-dark);
-  color: #e5e7eb;
+  color: var(--bs-dark-text);
   overflow: hidden;
   font-size: 12px;
+  border-bottom: 1px solid var(--bs-dark-border);
 }
 .bs-ticker-inner {
   display: flex;
@@ -195,7 +196,7 @@ body:not(.light-mode) .bs-shell {
   letter-spacing: -0.025em;
 }
 .bs-band-label--dark {
-  color: #fff;
+  color: var(--bs-dark-text);
 }
 .bs-band-meta {
   font-size: 12px;
@@ -360,7 +361,7 @@ body:not(.light-mode) .bs-shell {
 }
 .bs-index-last {
   font-size: 17px;
-  color: #fff;
+  color: var(--bs-dark-text);
   font-weight: 600;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
@@ -623,7 +624,7 @@ body:not(.light-mode) .bs-shell {
 .bs-pulse-empty {
   grid-column: 1 / -1;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--bs-dark-label);
   margin: 0 0 12px;
 }
 .bs-pulse-divider {
@@ -944,6 +945,11 @@ body:not(.light-mode) .bs-shell {
   text-transform: uppercase;
   font-weight: 600;
   padding: 20px 0;
+}
+
+/* ── Light mode: subtle band separators since all bands are now white ── */
+body.light-mode .bs-band + .bs-band {
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 /* ═══ RESPONSIVE ═══ */
