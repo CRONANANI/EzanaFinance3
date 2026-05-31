@@ -62,6 +62,34 @@ function indexColor(sym) {
   return INDEX_COLORS[sym] || '#6b7280';
 }
 
+const INDEX_API_KEYS = {
+  'S&P 500': 'spx',
+  NASDAQ: 'ixic',
+  'Russell 2K': 'rut',
+  'Dow Jones': 'dji',
+  VIX: 'vix',
+  WTI: 'wti',
+  '10Y': 'tnx',
+};
+
+function indexHistoryPeriod(tf) {
+  return tf === '5D' ? '7D' : tf;
+}
+
+function formatTickByRange(at, range) {
+  const d = new Date(at);
+  if (range === '1D') {
+    return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  }
+  if (range === '5D' || range === '1M') {
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+  if (range === '3M' || range === '6M') {
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+  return d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+}
+
 const TICKER_ITEMS = [
   { tag: 'LIVE', text: 'JT CLOSED 20,371.81  +0.61%' },
   { tag: 'FLOWS', text: 'Equities +$2.1B · IG credit tight 2bps · HY issuance light' },
@@ -289,6 +317,8 @@ export default function HomePage() {
   const [opportunities, setOpportunities] = useState([]);
   const [tickerItems, setTickerItems] = useState(TICKER_ITEMS);
   const [activeIndices, setActiveIndices] = useState(new Set());
+  const [indexSeries, setIndexSeries] = useState({});
+  const [indexSeriesLoading, setIndexSeriesLoading] = useState(false);
   const [commodityMovers, setCommodityMovers] = useState([]);
   const [cryptoMovers, setCryptoMovers] = useState([]);
   const [moversTab, setMoversTab] = useState('equities');
@@ -334,6 +364,33 @@ export default function HomePage() {
     if (Math.abs((lastPt?.value ?? 0) - currentValue) < 0.01) return pts;
     return [...pts.slice(0, -1), { ...lastPt, value: currentValue }];
   }, [valueSeriesDisplayPoints, currentValue]);
+
+  const combinedChartData = useMemo(() => {
+    const portfolioPts = (sparklinePoints || []).map((p) => ({
+      at: p.at,
+      label: new Date(p.at).getTime(),
+      value: p.value,
+    }));
+    const portfolioBase = portfolioPts[0]?.value || 0;
+    const out = portfolioPts.map((p) => ({
+      ...p,
+      portfolio: portfolioBase > 0 ? ((p.value - portfolioBase) / portfolioBase) * 100 : 0,
+    }));
+
+    for (const label of activeIndices) {
+      const apiKey = INDEX_API_KEYS[label];
+      if (!apiKey) continue;
+      const series = indexSeries[apiKey] || [];
+      if (!series.length) continue;
+      const lookup = new Map(series.map((pt) => [pt.ymd || pt.date, pt.pct]));
+      for (const row of out) {
+        const dateKey = new Date(row.at).toISOString().slice(0, 10);
+        const pct = lookup.get(dateKey);
+        if (typeof pct === 'number') row[apiKey] = pct;
+      }
+    }
+    return out;
+  }, [sparklinePoints, activeIndices, indexSeries]);
 
   /* Existing holdings normalization (preserve from current page.js) */
   const useLiveHoldings =
@@ -465,6 +522,29 @@ export default function HomePage() {
   useEffect(() => {
     setHoldingsPage(0);
   }, [timeframe, normalizedHoldings.length]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const period = indexHistoryPeriod(timeframe);
+    setIndexSeriesLoading(true);
+    fetch(`/api/market/index-history?period=${period}`, { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json) => {
+        if (cancelled || !json?.indices) return;
+        const out = {};
+        for (const [k, v] of Object.entries(json.indices)) {
+          out[k] = Array.isArray(v?.series) ? v.series : [];
+        }
+        setIndexSeries(out);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setIndexSeriesLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [timeframe]);
 
   useEffect(() => {
     let cancelled = false;
@@ -923,6 +1003,41 @@ export default function HomePage() {
                 </button>
                 . Watch the <strong className="bs-strong">PCE print</strong> Thursday.
               </p>
+              <div className="bs-hero-progress">
+                <div className="bs-prog-card bs-prog-card--compact">
+                  <div className="bs-prog-label">
+                    Day streak
+                    {streakMultiplier ? (
+                      <span className="bs-streak-mult"> · 1.5× ELO active</span>
+                    ) : null}
+                  </div>
+                  <div className="bs-prog-num">
+                    {streakDays}
+                    <span className="bs-prog-slash">/30</span>
+                  </div>
+                  <div className="bs-streak-bars">
+                    {Array.from({ length: 30 }).map((_, i) => (
+                      <span
+                        key={i}
+                        className={`bs-streak-bar ${i < streakDays ? 'bs-streak-bar--filled' : ''}`}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <div className="bs-prog-card bs-prog-card--compact">
+                  <div className="bs-prog-label">ELO rating · {eloTier}</div>
+                  <div className="bs-prog-num">
+                    {eloRating.toLocaleString()}
+                    <span className="bs-prog-slash">/10,000</span>
+                  </div>
+                  <div className="bs-elo-track">
+                    <div
+                      className="bs-elo-fill"
+                      style={{ width: `${Math.min(100, (eloRating / 10000) * 100)}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
             <div className="bs-hero-r">
               <div className="bs-hero-r-head">
@@ -960,41 +1075,6 @@ export default function HomePage() {
                   </div>
                 ))}
               </div>
-              <div className="bs-hero-progress">
-                <div className="bs-prog-card bs-prog-card--compact">
-                  <div className="bs-prog-label">
-                    Day streak
-                    {streakMultiplier ? (
-                      <span className="bs-streak-mult"> · 1.5× ELO active</span>
-                    ) : null}
-                  </div>
-                  <div className="bs-prog-num">
-                    {streakDays}
-                    <span className="bs-prog-slash">/30</span>
-                  </div>
-                  <div className="bs-streak-bars">
-                    {Array.from({ length: 30 }).map((_, i) => (
-                      <span
-                        key={i}
-                        className={`bs-streak-bar ${i < streakDays ? 'bs-streak-bar--filled' : ''}`}
-                      />
-                    ))}
-                  </div>
-                </div>
-                <div className="bs-prog-card bs-prog-card--compact">
-                  <div className="bs-prog-label">ELO rating · {eloTier}</div>
-                  <div className="bs-prog-num">
-                    {eloRating.toLocaleString()}
-                    <span className="bs-prog-slash">/10,000</span>
-                  </div>
-                  <div className="bs-elo-track">
-                    <div
-                      className="bs-elo-fill"
-                      style={{ width: `${Math.min(100, (eloRating / 10000) * 100)}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -1004,140 +1084,8 @@ export default function HomePage() {
       <section className="bs-band bs-band--cream">
         <div className="bs-page-inner">
           <BandHeader number="I" label="Lately on Ezana" meta="Performance · trailing seven days" />
-          <div className="bs-chart-row">
-            <div className="bs-chart-wide">
-              {valueSeriesLoading ? (
-                <div className="bs-chart-loading">Loading chart…</div>
-              ) : sparklinePoints?.length > 1 ? (
-                <ResponsiveContainer width="100%" height={280}>
-                  <AreaChart
-                    data={sparklinePoints.map((p) => ({
-                      at: p.at,
-                      value: p.value,
-                      label: new Date(p.at).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                      }),
-                    }))}
-                  >
-                    <defs>
-                      <linearGradient id="portfolioFill" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="var(--bs-green)" stopOpacity={0.25} />
-                        <stop offset="100%" stopColor="var(--bs-green)" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      stroke="var(--bs-border-subtle)"
-                      vertical={false}
-                    />
-                    <XAxis
-                      dataKey="label"
-                      tick={{ fill: 'var(--bs-text-label)', fontSize: 11 }}
-                      axisLine={{ stroke: 'var(--bs-border-rule)' }}
-                      tickLine={false}
-                      interval="preserveStartEnd"
-                      minTickGap={60}
-                    />
-                    <YAxis
-                      tick={{ fill: 'var(--bs-text-label)', fontSize: 11 }}
-                      axisLine={false}
-                      tickLine={false}
-                      tickFormatter={(v) => {
-                        if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
-                        if (v >= 1_000) return `$${(v / 1_000).toFixed(0)}K`;
-                        return `$${v.toFixed(0)}`;
-                      }}
-                      width={65}
-                      domain={['auto', 'auto']}
-                    />
-                    <Tooltip
-                      content={({ active, payload }) => {
-                        if (!active || !payload?.length) return null;
-                        const p = payload[0].payload;
-                        return (
-                          <div className="bs-chart-tooltip">
-                            <div className="bs-chart-tooltip-date">
-                              {new Date(p.at).toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric',
-                              })}
-                            </div>
-                            <div className="bs-chart-tooltip-val">{fmtMoney(p.value)}</div>
-                          </div>
-                        );
-                      }}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="value"
-                      stroke="var(--bs-green)"
-                      strokeWidth={2}
-                      fill="url(#portfolioFill)"
-                      isAnimationActive
-                      animationDuration={800}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="bs-chart-loading">No data for this range</div>
-              )}
-            </div>
-            <div className="bs-chart-aside">
-              <div className="bs-aside-head">Portfolio</div>
-              <div className="bs-aside-row">
-                <span
-                  className="bs-aside-dot"
-                  style={{ background: 'var(--bs-chart-port-color)' }}
-                />
-                <span className="bs-aside-label">
-                  {isOrgUser && orgData?.name ? orgData.name : 'My Portfolio'}
-                </span>
-                <span className="bs-aside-val">
-                  {valueWindowFromApi ? fmtPct(valueWindowFromApi.changePct) : '—'}
-                </span>
-              </div>
-
-              <div className="bs-aside-head" style={{ marginTop: 18 }}>
-                Indices
-              </div>
-              {indices.map((idx) => {
-                const isOn = activeIndices.has(idx.sym);
-                return (
-                  <button
-                    key={idx.sym}
-                    type="button"
-                    className={`bs-aside-row bs-aside-row--toggle ${isOn ? 'bs-aside-row--active' : ''}`}
-                    onClick={() =>
-                      setActiveIndices((prev) => {
-                        const next = new Set(prev);
-                        if (next.has(idx.sym)) next.delete(idx.sym);
-                        else next.add(idx.sym);
-                        return next;
-                      })
-                    }
-                  >
-                    <span
-                      className="bs-aside-dot"
-                      style={{
-                        background: isOn ? indexColor(idx.sym) : 'var(--bs-border-rule)',
-                      }}
-                    />
-                    <span className="bs-aside-label">{idx.sym}</span>
-                    <span
-                      className="bs-aside-val"
-                      style={{ color: idx.up ? 'var(--bs-green)' : 'var(--bs-red)' }}
-                    >
-                      {idx.chg}
-                    </span>
-                  </button>
-                );
-              })}
-
-              <div className="bs-aside-head" style={{ marginTop: 18 }}>
-                Range
-              </div>
+          <div className="bs-chart-block">
+            <div className="bs-chart-range-row">
               <div className="bs-seg-group">
                 {RANGE_BUTTONS.map((r) => (
                   <button
@@ -1150,6 +1098,134 @@ export default function HomePage() {
                   </button>
                 ))}
               </div>
+            </div>
+
+            <div className="bs-chart-wide">
+              {valueSeriesLoading || indexSeriesLoading ? (
+                <div className="bs-chart-loading">Loading chart…</div>
+              ) : combinedChartData.length > 1 ? (
+                <ResponsiveContainer width="100%" height={200}>
+                  <AreaChart data={combinedChartData}>
+                    <defs>
+                      <linearGradient id="portfolioFill" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="var(--bs-green)" stopOpacity={0.25} />
+                        <stop offset="100%" stopColor="var(--bs-green)" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="var(--bs-border-subtle)"
+                      vertical={false}
+                    />
+                    <XAxis
+                      dataKey="at"
+                      tick={{ fill: 'var(--bs-text-label)', fontSize: 11 }}
+                      axisLine={{ stroke: 'var(--bs-border-rule)' }}
+                      tickLine={false}
+                      interval="preserveStartEnd"
+                      minTickGap={60}
+                      tickFormatter={(at) => formatTickByRange(at, timeframe)}
+                    />
+                    <YAxis
+                      tick={{ fill: 'var(--bs-text-label)', fontSize: 11 }}
+                      axisLine={false}
+                      tickLine={false}
+                      tickFormatter={(v) => (v >= 0 ? '+' : '') + v.toFixed(1) + '%'}
+                      width={55}
+                      domain={['auto', 'auto']}
+                    />
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (!active || !payload?.length) return null;
+                        const p = payload[0].payload;
+                        return (
+                          <div className="bs-chart-tooltip">
+                            <div className="bs-chart-tooltip-date">
+                              {formatTickByRange(p.at, timeframe)}
+                            </div>
+                            {payload.map((entry) => (
+                              <div
+                                key={entry.dataKey}
+                                className="bs-chart-tooltip-val"
+                                style={{ color: entry.stroke }}
+                              >
+                                {entry.name}:{' '}
+                                {(entry.value >= 0 ? '+' : '') + entry.value.toFixed(2)}%
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="portfolio"
+                      name="Portfolio"
+                      stroke="var(--bs-green)"
+                      strokeWidth={2}
+                      fill="url(#portfolioFill)"
+                      isAnimationActive
+                      animationDuration={400}
+                    />
+                    {Array.from(activeIndices).map((label) => {
+                      const apiKey = INDEX_API_KEYS[label];
+                      if (!apiKey) return null;
+                      return (
+                        <Area
+                          key={apiKey}
+                          type="monotone"
+                          dataKey={apiKey}
+                          name={label}
+                          stroke={indexColor(label)}
+                          strokeWidth={1.5}
+                          fill="transparent"
+                          isAnimationActive={false}
+                          connectNulls
+                        />
+                      );
+                    })}
+                  </AreaChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="bs-chart-loading">No data for this range</div>
+              )}
+            </div>
+
+            <div className="bs-index-strip">
+              {indices.map((idx) => {
+                const isOn = activeIndices.has(idx.sym);
+                return (
+                  <button
+                    key={idx.sym}
+                    type="button"
+                    className={`bs-index-chip ${isOn ? 'bs-index-chip--active' : ''}`}
+                    onClick={() =>
+                      setActiveIndices((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(idx.sym)) next.delete(idx.sym);
+                        else next.add(idx.sym);
+                        return next;
+                      })
+                    }
+                  >
+                    <span
+                      className="bs-index-chip-dot"
+                      style={{
+                        background: isOn ? indexColor(idx.sym) : 'var(--bs-border-rule)',
+                      }}
+                    />
+                    <span>{idx.sym}</span>
+                    <span
+                      className="bs-index-chip-pct"
+                      style={{
+                        color: isOn ? 'inherit' : idx.up ? 'var(--bs-green)' : 'var(--bs-red)',
+                      }}
+                    >
+                      {idx.chg}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
