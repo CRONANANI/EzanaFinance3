@@ -298,14 +298,14 @@ export function Navbar() {
               </a>
             </li>
             <li className="nav-item">
-              <Link href="/pricing" className="nav-link">
+              <a href="/pricing" className="nav-link">
                 Pricing
-              </Link>
+              </a>
             </li>
             <li className="nav-item">
-              <Link href="/ezana-echo" className="nav-link">
+              <a href="/ezana-echo" className="nav-link">
                 Ezana Echo
-              </Link>
+              </a>
             </li>
             <li className="nav-item">
               <a href="/#faq" className="nav-link">
@@ -313,20 +313,20 @@ export function Navbar() {
               </a>
             </li>
             <li className="nav-item">
-              <Link href="/help-center" className="nav-link">
+              <a href="/help-center" className="nav-link">
                 Help Center
-              </Link>
+              </a>
             </li>
           </ul>
 
           {/* Desktop sign-in — hidden on mobile via CSS */}
           <div className="nav-sign-in-wrap">
-            <Link href="/auth/login" className="nav-link nav-link-text">
+            <a href="/auth/login" className="nav-link nav-link-text">
               Login
-            </Link>
-            <Link href="/auth/partner/apply" className="nav-link nav-link-text">
+            </a>
+            <a href="/auth/partner/apply" className="nav-link nav-link-text">
               Become a Partner
-            </Link>
+            </a>
           </div>
 
           {/* ═══ MOBILE MENU — completely separate element, only rendered on mobile ═══ */}
@@ -335,22 +335,22 @@ export function Navbar() {
               <div className="mobile-nav-menu" onClick={(e) => e.stopPropagation()}>
                 {/* Auth buttons at top */}
                 <div className="mobile-nav-auth">
-                  <Link
+                  <a
                     href="/auth/login"
                     className="mobile-nav-auth-btn mobile-nav-login"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <i className="bi bi-person" />
                     <span>Login</span>
-                  </Link>
-                  <Link
+                  </a>
+                  <a
                     href="/auth/partner/apply"
                     className="mobile-nav-auth-btn mobile-nav-partner"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <i className="bi bi-briefcase" />
                     <span>Become a Partner</span>
-                  </Link>
+                  </a>
                 </div>
 
                 <div className="mobile-nav-divider" />
@@ -375,7 +375,7 @@ export function Navbar() {
                     <span>Resources</span>
                     <i className="bi bi-chevron-right mobile-nav-chevron" />
                   </a>
-                  <Link
+                  <a
                     href="/pricing"
                     className="mobile-nav-link"
                     onClick={() => setMobileMenuOpen(false)}
@@ -383,8 +383,8 @@ export function Navbar() {
                     <i className="bi bi-tag" />
                     <span>Pricing</span>
                     <i className="bi bi-chevron-right mobile-nav-chevron" />
-                  </Link>
-                  <Link
+                  </a>
+                  <a
                     href="/ezana-echo"
                     className="mobile-nav-link"
                     onClick={() => setMobileMenuOpen(false)}
@@ -392,7 +392,7 @@ export function Navbar() {
                     <i className="bi bi-newspaper" />
                     <span>Ezana Echo</span>
                     <i className="bi bi-chevron-right mobile-nav-chevron" />
-                  </Link>
+                  </a>
                   <a
                     href="/#faq"
                     className="mobile-nav-link"
@@ -402,7 +402,7 @@ export function Navbar() {
                     <span>FAQ</span>
                     <i className="bi bi-chevron-right mobile-nav-chevron" />
                   </a>
-                  <Link
+                  <a
                     href="/help-center"
                     className="mobile-nav-link"
                     onClick={() => setMobileMenuOpen(false)}
@@ -410,7 +410,7 @@ export function Navbar() {
                     <i className="bi bi-life-preserver" />
                     <span>Help Center</span>
                     <i className="bi bi-chevron-right mobile-nav-chevron" />
-                  </Link>
+                  </a>
                 </div>
 
                 <div className="mobile-nav-divider" />

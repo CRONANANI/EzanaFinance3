@@ -664,6 +664,15 @@ body.light-mode {
   .navbar .mobile-hamburger {
     display: flex;
   }
+
+  /* Hide desktop nav links and sign-in on mobile — users use the hamburger menu */
+  .navbar .nav-container-centered .nav-menu-desktop {
+    display: none;
+  }
+
+  .navbar .nav-container-centered .nav-sign-in-wrap {
+    display: none;
+  }
 }
 
 /* ── Nav auth buttons: gap between Login and Become a Partner ── */
@@ -711,6 +720,7 @@ body.light-mode .nav-logo-img {
 @layer base {
   html {
     background-color: var(--nav-bg-solid);
+    scroll-behavior: smooth;
   }
   html.light-mode {
     background-color: var(--nav-bg-solid);
@@ -1760,12 +1770,8 @@ body.light-mode select option {
   }
 }
 
-/* "Help Center" dropped in the compact desktop range to free horizontal room. */
-@media (min-width: 769px) and (max-width: 1279px) {
-  .navbar .nav-container-centered .nav-menu .nav-item:has(a[href='/help-center']) {
-    display: none;
-  }
-}
+/* Help Center link — always visible in desktop nav (removed the 769-1279px hide rule
+   that was making it inaccessible on compact desktops and tablets). */
 
 /* ════════════════════════════════════════════════════════════
    NOTIFICATION CARDS — Tablet landscape / foldable (1024-1366px)
