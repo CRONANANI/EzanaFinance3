@@ -1,15 +1,10 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Facebook, Instagram, Linkedin, Send } from "lucide-react";
+import * as React from 'react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Facebook, Instagram, Linkedin, Send } from 'lucide-react';
 
 export function FooterSection({ onContactClick }) {
   const handleNewsletterSubmit = (e) => {
@@ -63,10 +58,7 @@ export function FooterSection({ onContactClick }) {
               <a href="#faq" className="block transition-colors hover:text-primary">
                 FAQ
               </a>
-              <Link
-                href="/help-center"
-                className="block transition-colors hover:text-primary"
-              >
+              <Link href="/help-center" className="block transition-colors hover:text-primary">
                 Help Center
               </Link>
               <a
@@ -91,7 +83,12 @@ export function FooterSection({ onContactClick }) {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button variant="outline" size="icon" className="rounded-full" asChild>
-                      <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                      <a
+                        href="https://facebook.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Facebook"
+                      >
                         <Facebook className="h-4 w-4" />
                       </a>
                     </Button>
@@ -103,7 +100,12 @@ export function FooterSection({ onContactClick }) {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button variant="outline" size="icon" className="rounded-full" asChild>
-                      <a href="https://x.com/EzanaWorld" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)">
+                      <a
+                        href="https://x.com/EzanaWorld"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="X (Twitter)"
+                      >
                         <i className="bi bi-twitter-x" />
                       </a>
                     </Button>
@@ -115,7 +117,12 @@ export function FooterSection({ onContactClick }) {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button variant="outline" size="icon" className="rounded-full" asChild>
-                      <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                      <a
+                        href="https://instagram.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Instagram"
+                      >
                         <Instagram className="h-4 w-4" />
                       </a>
                     </Button>
@@ -127,7 +134,12 @@ export function FooterSection({ onContactClick }) {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button variant="outline" size="icon" className="rounded-full" asChild>
-                      <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                      <a
+                        href="https://linkedin.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="LinkedIn"
+                      >
                         <Linkedin className="h-4 w-4" />
                       </a>
                     </Button>
@@ -151,12 +163,23 @@ export function FooterSection({ onContactClick }) {
             <Link href="/privacy-policy" className="transition-colors hover:text-primary">
               Privacy Policy
             </Link>
-            <a href="#" className="transition-colors hover:text-primary">
+            <Link href="/terms-of-service" className="transition-colors hover:text-primary">
               Terms of Service
-            </a>
-            <a href="#" className="transition-colors hover:text-primary">
+            </Link>
+            <Link href="/accessibility" className="transition-colors hover:text-primary">
+              Accessibility
+            </Link>
+            <button
+              type="button"
+              className="transition-colors hover:text-primary cursor-pointer bg-transparent border-0 p-0 text-inherit font-inherit text-sm"
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  window.dispatchEvent(new Event('ezana:open-cookie-settings'));
+                }
+              }}
+            >
               Cookie Settings
-            </a>
+            </button>
           </nav>
         </div>
       </div>

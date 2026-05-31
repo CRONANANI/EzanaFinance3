@@ -3,47 +3,24 @@
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { LandingHero } from '@/components/landing/LandingHero';
+import { FeaturesSection } from '@/components/landing/FeaturesSection';
+import { ResourcesSection } from '@/components/landing/ResourcesSection';
+import { Faq1 } from '@/components/ui/faq1';
+import { FooterSection } from '@/components/ui/footer-section';
+import { CookieConsentBanner } from '@/components/landing/CookieConsentBanner';
+import { AnalyticsGate } from '@/components/landing/AnalyticsGate';
+import { LandingErrorBoundary } from '@/components/landing/LandingErrorBoundary';
 
 const TrustedLogos = dynamic(
   () => import('@/components/TrustedLogos').then((m) => ({ default: m.TrustedLogos })),
-  { loading: () => null },
-);
-const FeaturesSection = dynamic(
-  () =>
-    import('@/components/landing/FeaturesSection').then((m) => ({ default: m.FeaturesSection })),
-  { loading: () => null },
-);
-const ResourcesSection = dynamic(
-  () =>
-    import('@/components/landing/ResourcesSection').then((m) => ({ default: m.ResourcesSection })),
-  { loading: () => null },
-);
-const Faq1 = dynamic(
-  () =>
-    import('@/components/ui/faq1')
-      .then((m) => ({ default: m.Faq1 }))
-      .catch((err) => {
-        console.error('[landing] Faq1 failed to load:', err);
-        return { default: () => null };
-      }),
-  { loading: () => null },
-);
-const FooterSection = dynamic(
-  () =>
-    import('@/components/ui/footer-section')
-      .then((m) => ({ default: m.FooterSection }))
-      .catch((err) => {
-        console.error('[landing] FooterSection failed to load:', err);
-        return { default: () => null };
-      }),
-  { loading: () => null },
+  { ssr: true, loading: () => null },
 );
 const ContactSupportDialog = dynamic(
   () =>
     import('@/components/ui/contact-support-dialog').then((m) => ({
       default: m.ContactSupportDialog,
     })),
-  { loading: () => null },
+  { ssr: false, loading: () => null },
 );
 
 export default function HomePage() {
@@ -55,20 +32,33 @@ export default function HomePage() {
         <LandingHero />
       </main>
 
-      <TrustedLogos />
+      <LandingErrorBoundary name="TrustedLogos">
+        <TrustedLogos />
+      </LandingErrorBoundary>
 
-      <div id="features-section-container">
-        <FeaturesSection />
-      </div>
+      <LandingErrorBoundary name="FeaturesSection">
+        <div id="features-section-container">
+          <FeaturesSection />
+        </div>
+      </LandingErrorBoundary>
 
-      <ResourcesSection />
+      <LandingErrorBoundary name="ResourcesSection">
+        <ResourcesSection />
+      </LandingErrorBoundary>
 
-      <section id="faq" className="faq-section-wrapper">
-        <Faq1 heading="FAQ" onContactClick={() => setSupportOpen(true)} />
-      </section>
+      <LandingErrorBoundary name="Faq1">
+        <section id="faq" className="faq-section-wrapper">
+          <Faq1 heading="FAQ" onContactClick={() => setSupportOpen(true)} />
+        </section>
+      </LandingErrorBoundary>
 
-      <FooterSection onContactClick={() => setSupportOpen(true)} />
+      <LandingErrorBoundary name="FooterSection">
+        <FooterSection onContactClick={() => setSupportOpen(true)} />
+      </LandingErrorBoundary>
+
       <ContactSupportDialog open={supportOpen} onOpenChange={setSupportOpen} />
+      <CookieConsentBanner />
+      <AnalyticsGate />
     </div>
   );
 }

@@ -2060,16 +2060,22 @@ html:has(.landing-page) .navbar .logo,
   border-top-color: rgba(255, 255, 255, 0.06) !important;
 }
 
-/* FAQ + footer must always paint and receive clicks (never hidden by overlays/CSS). */
-.landing-page .landing-faq-section,
+/* All post-hero landing sections must paint regardless of content-visibility
+   optimization or any future overlay. Prevents the "everything after
+   Features disappears" bug. */
+.landing-page > section,
+.landing-page > main,
+.landing-page > div.landing-page-section,
+.landing-page #features-section-container,
 .landing-page .faq-section-wrapper,
-.landing-page > footer {
-  display: block !important;
+.landing-page > footer,
+.landing-page .landing-faq-section {
+  content-visibility: visible !important;
   visibility: visible !important;
   opacity: 1 !important;
+  display: block !important;
   height: auto !important;
   min-height: 0;
-  content-visibility: visible;
   contain-intrinsic-size: auto;
   position: relative;
   z-index: 2;
