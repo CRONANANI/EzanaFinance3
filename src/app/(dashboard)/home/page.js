@@ -4,7 +4,15 @@ import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
 import { useOrg } from '@/contexts/OrgContext';
-import { HeroSparkline } from '@/components/dashboard/HeroSparkline';
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import { TickerPerformanceChart } from '@/components/home/TickerPerformanceChart';
 import { AddPortfolioModal } from '@/components/home/AddPortfolioModal';
 import { useElo } from '@/hooks/useElo';
@@ -39,6 +47,19 @@ const SECTOR_COLORS = {
 function sectorColor(sectorName) {
   if (!sectorName) return '#6b7280';
   return SECTOR_COLORS[sectorName] ?? '#6b7280';
+}
+
+const INDEX_COLORS = {
+  'S&P 500': '#94928a',
+  NASDAQ: '#0e7c4f',
+  'Russell 2K': '#7c3aed',
+  'Dow Jones': '#d97706',
+  VIX: '#ec4899',
+  WTI: '#f97316',
+  '10Y': '#06b6d4',
+};
+function indexColor(sym) {
+  return INDEX_COLORS[sym] || '#6b7280';
 }
 
 const TICKER_ITEMS = [
@@ -267,6 +288,10 @@ export default function HomePage() {
   const [congressTrades, setCongressTrades] = useState([]);
   const [opportunities, setOpportunities] = useState([]);
   const [tickerItems, setTickerItems] = useState(TICKER_ITEMS);
+  const [activeIndices, setActiveIndices] = useState(new Set());
+  const [commodityMovers, setCommodityMovers] = useState([]);
+  const [cryptoMovers, setCryptoMovers] = useState([]);
+  const [moversTab, setMoversTab] = useState('equities');
   const [pulseRange, setPulseRange] = useState('1D');
   const [tickerModal, setTickerModal] = useState(null);
   const [tickerModalRange, setTickerModalRange] = useState('1M');
@@ -534,7 +559,10 @@ export default function HomePage() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch('/api/fmp/movers?limit=3');
+        let res = await fetch('/api/alpha/movers?limit=3');
+        if (!res.ok) {
+          res = await fetch('/api/fmp/movers?limit=3');
+        }
         if (!res.ok) return;
         const data = await res.json();
         const toPct = (s) => parseFloat(String(s).replace(/[+%]/g, '')) || 0;
@@ -597,7 +625,13 @@ export default function HomePage() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch('/api/market-data/news?limit=5');
+        const wlTickers = userWatchlists
+          .flatMap((w) => (w.stocks || []).map((s) => s.ticker))
+          .filter(Boolean)
+          .slice(0, 10)
+          .join(',');
+        const tickerParam = wlTickers ? `&tickers=${wlTickers}` : '';
+        const res = await fetch(`/api/market-data/news?limit=5${tickerParam}`);
         if (!res.ok) return;
         const data = await res.json();
         if (!cancelled) {
@@ -615,6 +649,95 @@ export default function HomePage() {
                 : '',
             })),
           );
+        }
+      } catch {
+        /* ignore */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [userWatchlists]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const symbols = 'GC=F,CL=F,NG=F,SI=F,HG=F';
+        const res = await fetch(`/api/market/batch-quotes?symbols=${encodeURIComponent(symbols)}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const quotes = data.quotes || {};
+        const names = {
+          'GC=F': 'Gold',
+          'CL=F': 'Crude Oil',
+          'NG=F': 'Nat Gas',
+          'SI=F': 'Silver',
+          'HG=F': 'Copper',
+        };
+        if (!cancelled) {
+          setCommodityMovers(
+            Object.entries(quotes)
+              .map(([sym, q]) => ({
+                sym: names[sym] || sym,
+                pct: q.changePercent ?? 0,
+                price: q.price ?? 0,
+              }))
+              .sort((a, b) => Math.abs(b.pct) - Math.abs(a.pct)),
+          );
+        }
+      } catch {
+        /* ignore */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/market-data/quotes');
+        if (!res.ok) return;
+        const data = await res.json();
+        const allQuotes = data.quotes || [];
+        const cryptoNames = { BTC: 'Bitcoin', ETH: 'Ethereum' };
+        const cryptoQuotes = allQuotes
+          .filter((q) => cryptoNames[q.symbol])
+          .map((q) => ({
+            sym: cryptoNames[q.symbol] || q.symbol,
+            pct: q.change ?? 0,
+            price: parseFloat(String(q.price).replace(/,/g, '')) || 0,
+          }));
+        try {
+          const extraRes = await fetch(
+            '/api/market/batch-quotes?symbols=BINANCE:SOLUSDT,BINANCE:XRPUSDT,BINANCE:ADAUSDT',
+          );
+          if (extraRes.ok) {
+            const extraData = await extraRes.json();
+            const extraQuotes = extraData.quotes || {};
+            const extraNames = {
+              'BINANCE:SOLUSDT': 'Solana',
+              'BINANCE:XRPUSDT': 'XRP',
+              'BINANCE:ADAUSDT': 'Cardano',
+            };
+            for (const [sym, q] of Object.entries(extraQuotes)) {
+              if (q.price > 0) {
+                cryptoQuotes.push({
+                  sym: extraNames[sym] || sym,
+                  pct: q.changePercent ?? 0,
+                  price: q.price ?? 0,
+                });
+              }
+            }
+          }
+        } catch {
+          /* extra crypto symbols are optional */
+        }
+        if (!cancelled) {
+          setCryptoMovers(cryptoQuotes.sort((a, b) => Math.abs(b.pct) - Math.abs(a.pct)));
         }
       } catch {
         /* ignore */
@@ -689,14 +812,51 @@ export default function HomePage() {
     let cancelled = false;
     const load = async () => {
       try {
-        const res = await fetch('/api/market-data/news?limit=12');
+        const wlTickers = userWatchlists
+          .flatMap((w) => (w.stocks || []).map((s) => s.ticker))
+          .filter(Boolean)
+          .slice(0, 20)
+          .join(',');
+        const tickerParam = wlTickers ? `&tickers=${wlTickers}` : '';
+        const res = await fetch(`/api/market-data/news?limit=12${tickerParam}`);
         if (!res.ok) return;
         const data = await res.json();
-        const items = (data.news || []).slice(0, 12).map((a) => ({
+        const newsItems = (data.news || []).slice(0, 12).map((a) => ({
           tag: (a.source || 'NEWS').toString().toUpperCase().slice(0, 10),
           text: a.title || a.headline || '',
+          url: a.url || '',
         }));
-        if (!cancelled && items.length) setTickerItems(items);
+
+        const watchPriceItems = [];
+        for (const wl of userWatchlists) {
+          for (const s of (wl.stocks || []).slice(0, 8)) {
+            const q = liveQuotes[s.ticker];
+            if (!q) continue;
+            const px = q.price ?? 0;
+            const ch = q.changePercent ?? 0;
+            watchPriceItems.push({
+              tag: s.ticker,
+              text: `${px.toLocaleString('en-US', { minimumFractionDigits: 2 })}  ${ch >= 0 ? '+' : ''}${ch.toFixed(2)}%`,
+              url: `/company-research?symbol=${s.ticker}`,
+            });
+          }
+        }
+
+        const indexPriceItems = indices.map((idx) => ({
+          tag: idx.sym,
+          text: `${idx.last}  ${idx.chg}`,
+          url: '',
+        }));
+
+        const merged = [];
+        const allPrices = [...indexPriceItems, ...watchPriceItems];
+        const maxLen = Math.max(newsItems.length, allPrices.length);
+        for (let i = 0; i < maxLen; i++) {
+          if (i < newsItems.length) merged.push(newsItems[i]);
+          if (i < allPrices.length) merged.push(allPrices[i]);
+        }
+
+        if (!cancelled && merged.length) setTickerItems(merged);
       } catch {
         /* keep fallback */
       }
@@ -707,7 +867,7 @@ export default function HomePage() {
       cancelled = true;
       clearInterval(id);
     };
-  }, []);
+  }, [liveQuotes, indices, userWatchlists]);
 
   return (
     <div className="bs-shell">
@@ -715,10 +875,19 @@ export default function HomePage() {
       <div className="bs-ticker">
         <div className="bs-ticker-inner">
           {tickerItems.concat(tickerItems).map((t, i) => (
-            <span key={i} className="bs-ticker-item">
+            <a
+              key={i}
+              href={t.url || '#'}
+              target={t.url ? '_blank' : undefined}
+              rel={t.url ? 'noopener noreferrer' : undefined}
+              className="bs-ticker-item"
+              onClick={(e) => {
+                if (!t.url) e.preventDefault();
+              }}
+            >
               <span className="bs-ticker-tag">{t.tag}</span>
               <span className="bs-ticker-text">{t.text}</span>
-            </span>
+            </a>
           ))}
         </div>
       </div>
@@ -831,52 +1000,89 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══ INDEX STRIP ═══ */}
-      <div className="bs-band bs-band--dark">
-        <div className="bs-page-inner bs-page-inner--tight">
-          <div className="bs-index-strip">
-            {indices.length === 0
-              ? Array.from({ length: 7 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className={`bs-index-cell ${i > 0 ? 'bs-index-cell--bordered' : ''}`}
-                  >
-                    <div className="bs-skeleton bs-skeleton-line" />
-                    <div className="bs-skeleton bs-skeleton-value" />
-                  </div>
-                ))
-              : indices.map((idx, i) => (
-                  <div
-                    key={idx.sym}
-                    className={`bs-index-cell ${i > 0 ? 'bs-index-cell--bordered' : ''}`}
-                  >
-                    <div className="bs-index-sym">{idx.sym}</div>
-                    <div className="bs-index-last">{idx.last}</div>
-                    <div
-                      className={`bs-index-chg ${idx.up ? 'bs-index-chg--up' : 'bs-index-chg--down'}`}
-                    >
-                      {idx.chg}
-                    </div>
-                  </div>
-                ))}
-          </div>
-        </div>
-      </div>
-
       {/* ═══ BAND I — LATELY ON EZANA ═══ */}
       <section className="bs-band bs-band--cream">
         <div className="bs-page-inner">
           <BandHeader number="I" label="Lately on Ezana" meta="Performance · trailing seven days" />
           <div className="bs-chart-row">
             <div className="bs-chart-wide">
-              <HeroSparkline
-                portfolioValue={currentValue != null ? currentValue : undefined}
-                changePct={useMock ? mock.totalPnlPct : undefined}
-                seriesPoints={sparklinePoints}
-                range={seriesRange}
-                isLoading={valueSeriesLoading}
-                loadError={valueSeriesError}
-              />
+              {valueSeriesLoading ? (
+                <div className="bs-chart-loading">Loading chart…</div>
+              ) : sparklinePoints?.length > 1 ? (
+                <ResponsiveContainer width="100%" height={280}>
+                  <AreaChart
+                    data={sparklinePoints.map((p) => ({
+                      at: p.at,
+                      value: p.value,
+                      label: new Date(p.at).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                      }),
+                    }))}
+                  >
+                    <defs>
+                      <linearGradient id="portfolioFill" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="var(--bs-green)" stopOpacity={0.25} />
+                        <stop offset="100%" stopColor="var(--bs-green)" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="var(--bs-border-subtle)"
+                      vertical={false}
+                    />
+                    <XAxis
+                      dataKey="label"
+                      tick={{ fill: 'var(--bs-text-label)', fontSize: 11 }}
+                      axisLine={{ stroke: 'var(--bs-border-rule)' }}
+                      tickLine={false}
+                      interval="preserveStartEnd"
+                      minTickGap={60}
+                    />
+                    <YAxis
+                      tick={{ fill: 'var(--bs-text-label)', fontSize: 11 }}
+                      axisLine={false}
+                      tickLine={false}
+                      tickFormatter={(v) => {
+                        if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
+                        if (v >= 1_000) return `$${(v / 1_000).toFixed(0)}K`;
+                        return `$${v.toFixed(0)}`;
+                      }}
+                      width={65}
+                      domain={['auto', 'auto']}
+                    />
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (!active || !payload?.length) return null;
+                        const p = payload[0].payload;
+                        return (
+                          <div className="bs-chart-tooltip">
+                            <div className="bs-chart-tooltip-date">
+                              {new Date(p.at).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric',
+                              })}
+                            </div>
+                            <div className="bs-chart-tooltip-val">{fmtMoney(p.value)}</div>
+                          </div>
+                        );
+                      }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="value"
+                      stroke="var(--bs-green)"
+                      strokeWidth={2}
+                      fill="url(#portfolioFill)"
+                      isAnimationActive
+                      animationDuration={800}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="bs-chart-loading">No data for this range</div>
+              )}
             </div>
             <div className="bs-chart-aside">
               <div className="bs-aside-head">Portfolio</div>
@@ -892,6 +1098,43 @@ export default function HomePage() {
                   {valueWindowFromApi ? fmtPct(valueWindowFromApi.changePct) : '—'}
                 </span>
               </div>
+
+              <div className="bs-aside-head" style={{ marginTop: 18 }}>
+                Indices
+              </div>
+              {indices.map((idx) => {
+                const isOn = activeIndices.has(idx.sym);
+                return (
+                  <button
+                    key={idx.sym}
+                    type="button"
+                    className={`bs-aside-row bs-aside-row--toggle ${isOn ? 'bs-aside-row--active' : ''}`}
+                    onClick={() =>
+                      setActiveIndices((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(idx.sym)) next.delete(idx.sym);
+                        else next.add(idx.sym);
+                        return next;
+                      })
+                    }
+                  >
+                    <span
+                      className="bs-aside-dot"
+                      style={{
+                        background: isOn ? indexColor(idx.sym) : 'var(--bs-border-rule)',
+                      }}
+                    />
+                    <span className="bs-aside-label">{idx.sym}</span>
+                    <span
+                      className="bs-aside-val"
+                      style={{ color: idx.up ? 'var(--bs-green)' : 'var(--bs-red)' }}
+                    >
+                      {idx.chg}
+                    </span>
+                  </button>
+                );
+              })}
+
               <div className="bs-aside-head" style={{ marginTop: 18 }}>
                 Range
               </div>
@@ -1132,44 +1375,50 @@ export default function HomePage() {
             ) : null}
             <div className="bs-pulse-col">
               <div className="bs-pulse-head-dark">Leaders</div>
-              {(sectorData.top.length ? sectorData.top : [{ name: 'Loading…', chg: 0 }]).map(
-                (s) => (
-                  <div key={s.name} className="bs-pulse-line">
-                    <span className="bs-pulse-name">{s.name}</span>
-                    <div className="bs-pulse-bar">
-                      <div
-                        className="bs-pulse-bar-fill bs-pulse-bar-fill--up"
-                        style={{ width: `${Math.min((Math.abs(s.chg) / 2) * 100, 100)}%` }}
-                      />
-                    </div>
-                    <span className="bs-pulse-pct bs-pulse-pct--up">
-                      {s.chg >= 0 ? '+' : ''}
-                      {s.chg.toFixed(2)}%
-                    </span>
+              {(sectorData.top.length
+                ? sectorData.top
+                : sectorLoaded
+                  ? []
+                  : [{ name: 'Loading…', chg: 0 }]
+              ).map((s) => (
+                <div key={s.name} className="bs-pulse-line">
+                  <span className="bs-pulse-name">{s.name}</span>
+                  <div className="bs-pulse-bar">
+                    <div
+                      className="bs-pulse-bar-fill bs-pulse-bar-fill--up"
+                      style={{ width: `${Math.min((Math.abs(s.chg) / 2) * 100, 100)}%` }}
+                    />
                   </div>
-                ),
-              )}
+                  <span className="bs-pulse-pct bs-pulse-pct--up">
+                    {s.chg >= 0 ? '+' : ''}
+                    {s.chg.toFixed(2)}%
+                  </span>
+                </div>
+              ))}
             </div>
             <div className="bs-pulse-divider" />
             <div className="bs-pulse-col">
               <div className="bs-pulse-head-dark">Laggards</div>
-              {(sectorData.bottom.length ? sectorData.bottom : [{ name: 'Loading…', chg: 0 }]).map(
-                (s) => (
-                  <div key={s.name} className="bs-pulse-line">
-                    <span className="bs-pulse-name">{s.name}</span>
-                    <div className="bs-pulse-bar">
-                      <div
-                        className="bs-pulse-bar-fill bs-pulse-bar-fill--down"
-                        style={{ width: `${Math.min((Math.abs(s.chg) / 2) * 100, 100)}%` }}
-                      />
-                    </div>
-                    <span className="bs-pulse-pct bs-pulse-pct--down">
-                      {s.chg >= 0 ? '+' : ''}
-                      {s.chg.toFixed(2)}%
-                    </span>
+              {(sectorData.bottom.length
+                ? sectorData.bottom
+                : sectorLoaded
+                  ? []
+                  : [{ name: 'Loading…', chg: 0 }]
+              ).map((s) => (
+                <div key={s.name} className="bs-pulse-line">
+                  <span className="bs-pulse-name">{s.name}</span>
+                  <div className="bs-pulse-bar">
+                    <div
+                      className="bs-pulse-bar-fill bs-pulse-bar-fill--down"
+                      style={{ width: `${Math.min((Math.abs(s.chg) / 2) * 100, 100)}%` }}
+                    />
                   </div>
-                ),
-              )}
+                  <span className="bs-pulse-pct bs-pulse-pct--down">
+                    {s.chg >= 0 ? '+' : ''}
+                    {s.chg.toFixed(2)}%
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -1278,42 +1527,146 @@ export default function HomePage() {
             <div className="bs-intel-col">
               <div className="bs-sub-head">
                 <h3 className="bs-sub-title">Top movers today</h3>
-                <span className="bs-sub-meta">U.S. equities</span>
               </div>
-              <div className="bs-mover-head">Gainers</div>
-              {(gainers.length ? gainers : [{ sym: '—', pct: 0, chg: '—' }]).map((g, i) => (
-                <div key={g.sym} className="bs-mover-row">
-                  <span className="bs-mover-sym">{g.sym}</span>
-                  <span className="bs-mover-pct bs-mover-pct--up">
-                    {g.pct >= 0 ? '+' : ''}
-                    {g.pct.toFixed(2)}%
-                  </span>
-                  <Spark
-                    values={genSeries(91 + i * 7, 24, 0.8, 1.0)}
-                    color="var(--bs-green)"
-                    w={56}
-                    h={20}
-                  />
-                </div>
-              ))}
-              <div className="bs-mover-head" style={{ marginTop: 14 }}>
-                Losers
+              <div className="bs-movers-tabs">
+                {[
+                  { id: 'equities', label: 'Equities' },
+                  { id: 'commodities', label: 'Commodities' },
+                  { id: 'alternatives', label: 'Alternatives' },
+                ].map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    className={`bs-movers-tab ${moversTab === t.id ? 'bs-movers-tab--active' : ''}`}
+                    onClick={() => setMoversTab(t.id)}
+                  >
+                    {t.label}
+                  </button>
+                ))}
               </div>
-              {(losers.length ? losers : [{ sym: '—', pct: 0, chg: '—' }]).map((l, i) => (
-                <div key={l.sym} className="bs-mover-row">
-                  <span className="bs-mover-sym">{l.sym}</span>
-                  <span className="bs-mover-pct bs-mover-pct--down">
-                    {l.pct >= 0 ? '+' : ''}
-                    {l.pct.toFixed(2)}%
-                  </span>
-                  <Spark
-                    values={genSeries(31 + i * 9, 24, -0.6, 1.0)}
-                    color="var(--bs-red)"
-                    w={56}
-                    h={20}
-                  />
-                </div>
-              ))}
+
+              {moversTab === 'equities' && (
+                <>
+                  <div className="bs-mover-head">Gainers</div>
+                  {(gainers.length ? gainers : [{ sym: '—', pct: 0 }]).map((g, i) => (
+                    <Link
+                      key={g.sym}
+                      href={`/company-research?symbol=${g.sym}`}
+                      className="bs-mover-row bs-mover-row--link"
+                    >
+                      <span className="bs-mover-sym">{g.sym}</span>
+                      <span className="bs-mover-pct bs-mover-pct--up">+{g.pct.toFixed(2)}%</span>
+                      <Spark
+                        values={genSeries(91 + i * 7, 24, 0.8, 1.0)}
+                        color="var(--bs-green)"
+                        w={56}
+                        h={20}
+                      />
+                    </Link>
+                  ))}
+                  <div className="bs-mover-head" style={{ marginTop: 14 }}>
+                    Losers
+                  </div>
+                  {(losers.length ? losers : [{ sym: '—', pct: 0 }]).map((l, i) => (
+                    <Link
+                      key={l.sym}
+                      href={`/company-research?symbol=${l.sym}`}
+                      className="bs-mover-row bs-mover-row--link"
+                    >
+                      <span className="bs-mover-sym">{l.sym}</span>
+                      <span className="bs-mover-pct bs-mover-pct--down">{l.pct.toFixed(2)}%</span>
+                      <Spark
+                        values={genSeries(31 + i * 9, 24, -0.6, 1.0)}
+                        color="var(--bs-red)"
+                        w={56}
+                        h={20}
+                      />
+                    </Link>
+                  ))}
+                </>
+              )}
+
+              {moversTab === 'commodities' && (
+                <>
+                  {commodityMovers.length === 0 ? (
+                    <p className="bs-mover-empty">Loading commodity data…</p>
+                  ) : (
+                    commodityMovers.map((c, i) => (
+                      <Link
+                        key={c.sym}
+                        href="/watchlist"
+                        className="bs-mover-row bs-mover-row--link"
+                      >
+                        <span className="bs-mover-sym">{c.sym}</span>
+                        <span
+                          className={`bs-mover-pct ${c.pct >= 0 ? 'bs-mover-pct--up' : 'bs-mover-pct--down'}`}
+                        >
+                          {c.pct >= 0 ? '+' : ''}
+                          {c.pct.toFixed(2)}%
+                        </span>
+                        <Spark
+                          values={genSeries(41 + i * 13, 24, c.pct >= 0 ? 0.5 : -0.5, 1.0)}
+                          color={c.pct >= 0 ? 'var(--bs-green)' : 'var(--bs-red)'}
+                          w={56}
+                          h={20}
+                        />
+                      </Link>
+                    ))
+                  )}
+                </>
+              )}
+
+              {moversTab === 'alternatives' && (
+                <>
+                  <div className="bs-mover-head">Crypto</div>
+                  {cryptoMovers.length === 0 ? (
+                    <p className="bs-mover-empty">Loading crypto data…</p>
+                  ) : (
+                    cryptoMovers.slice(0, 5).map((c, i) => (
+                      <Link
+                        key={c.sym}
+                        href="/watchlist"
+                        className="bs-mover-row bs-mover-row--link"
+                      >
+                        <span className="bs-mover-sym">{c.sym}</span>
+                        <span
+                          className={`bs-mover-pct ${c.pct >= 0 ? 'bs-mover-pct--up' : 'bs-mover-pct--down'}`}
+                        >
+                          {c.pct >= 0 ? '+' : ''}
+                          {c.pct.toFixed(2)}%
+                        </span>
+                        <Spark
+                          values={genSeries(51 + i * 5, 24, c.pct >= 0 ? 0.6 : -0.4, 1.2)}
+                          color={c.pct >= 0 ? 'var(--bs-green)' : 'var(--bs-red)'}
+                          w={56}
+                          h={20}
+                        />
+                      </Link>
+                    ))
+                  )}
+                  <div className="bs-mover-head" style={{ marginTop: 14 }}>
+                    Politicians
+                  </div>
+                  {(congressTrades.length
+                    ? congressTrades.slice(0, 3)
+                    : [{ rep: '—', sym: '—', side: 'BUY' }]
+                  ).map((c, i) => (
+                    <Link
+                      key={`${c.sym}-${i}`}
+                      href="/inside-the-capitol"
+                      className="bs-mover-row bs-mover-row--link"
+                    >
+                      <span className="bs-mover-sym">{c.sym}</span>
+                      <span
+                        className={`bs-mover-pct ${c.side === 'BUY' ? 'bs-mover-pct--up' : 'bs-mover-pct--down'}`}
+                      >
+                        {c.side}
+                      </span>
+                      <span className="bs-mover-rep">{c.rep?.split(' ').pop()}</span>
+                    </Link>
+                  ))}
+                </>
+              )}
             </div>
           </div>
         </div>
