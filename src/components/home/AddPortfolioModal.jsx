@@ -2,35 +2,78 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import Image from 'next/image';
-import { usePlaidLink } from 'react-plaid-link';
 import { supabase } from '@/lib/supabase-browser';
 import './add-portfolio-modal.css';
 
 const EZANA_LOGO = '/ezana-nav-logo.png';
 
 const BROKERAGES = [
-  { id: 'moomoo', name: 'moomoo', logo: '/logos/brokerages/moomoo.png' },
-  { id: 'wealthsimple', name: 'Wealthsimple', logo: '/logos/brokerages/wealthsimple.png' },
-  { id: 'questrade', name: 'Questrade', logo: '/logos/brokerages/questrade.png' },
-  { id: 'td', name: 'TD Direct Investing', logo: '/logos/brokerages/td.png' },
-  { id: 'rbc', name: 'RBC Direct Investing', logo: '/logos/brokerages/rbc.png' },
   {
-    id: 'national-bank',
-    name: 'National Bank Direct Brokerage',
-    logo: '/logos/brokerages/national-bank.png',
+    id: 'WEALTHSIMPLE',
+    name: 'Wealthsimple',
+    logo: '/logos/brokerages/wealthsimple.png',
+    region: 'CA',
   },
-  { id: 'webull', name: 'Webull', logo: '/logos/brokerages/webull.png' },
-  { id: 'bmo', name: 'BMO InvestorLine', logo: '/logos/brokerages/bmo.png' },
-  { id: 'cibc', name: "CIBC Investor's Edge", logo: '/logos/brokerages/cibc.png' },
-  { id: 'scotia', name: 'Scotia iTRADE', logo: '/logos/brokerages/scotia.png' },
-  { id: 'desjardins', name: 'Desjardins', logo: '/logos/brokerages/desjardins.png' },
-  { id: 'qtrade', name: 'Qtrade', logo: '/logos/brokerages/qtrade.png' },
-  { id: 'ci', name: 'CI Direct Investing', logo: '/logos/brokerages/ci.png' },
-  { id: 'canaccord', name: 'Canaccord Genuity', logo: '/logos/brokerages/canaccord.png' },
-  { id: 'fidelity', name: 'Fidelity Investments', logo: '/logos/brokerages/fidelity.png' },
-  { id: 'schwab', name: 'Charles Schwab', logo: '/logos/brokerages/schwab.png' },
-  { id: 'public', name: 'Public', logo: '/logos/brokerages/public.png' },
-  { id: 'etrade', name: 'E*TRADE', logo: '/logos/brokerages/etrade.png' },
+  { id: 'QUESTRADE', name: 'Questrade', logo: '/logos/brokerages/questrade.png', region: 'CA' },
+  { id: 'WEBULL_CA', name: 'Webull (Canada)', logo: '/logos/brokerages/webull.png', region: 'CA' },
+  { id: 'SCHWAB', name: 'Charles Schwab', logo: '/logos/brokerages/schwab.png', region: 'US' },
+  { id: 'ETRADE', name: 'E*TRADE', logo: '/logos/brokerages/etrade.png', region: 'US' },
+  { id: 'PUBLIC', name: 'Public', logo: '/logos/brokerages/public.png', region: 'US' },
+  { id: 'WEBULL_US', name: 'Webull (US)', logo: '/logos/brokerages/webull.png', region: 'US' },
+  { id: 'TASTYTRADE', name: 'Tastytrade', logo: '/logos/brokerages/tastytrade.png', region: 'US' },
+  {
+    id: 'TRADESTATION',
+    name: 'TradeStation',
+    logo: '/logos/brokerages/tradestation.png',
+    region: 'US',
+  },
+  { id: 'TRADIER', name: 'Tradier', logo: '/logos/brokerages/tradier.png', region: 'US' },
+  { id: 'MOOMOO', name: 'moomoo', logo: '/logos/brokerages/moomoo.png', region: 'US' },
+  { id: 'ALPACA', name: 'Alpaca', logo: '/logos/brokerages/alpaca.png', region: 'US' },
+  {
+    id: 'ALPACA_PAPER',
+    name: 'Alpaca Paper',
+    logo: '/logos/brokerages/alpaca.png',
+    region: 'US',
+    paper: true,
+  },
+  {
+    id: 'TRADESTATION_PAPER',
+    name: 'TradeStation Paper',
+    logo: '/logos/brokerages/tradestation.png',
+    region: 'US',
+    paper: true,
+  },
+  { id: 'TRADING212', name: 'Trading 212', logo: '/logos/brokerages/trading212.png', region: 'UK' },
+  {
+    id: 'TRADING212_PRACTICE',
+    name: 'Trading 212 Practice',
+    logo: '/logos/brokerages/trading212.png',
+    region: 'UK',
+    paper: true,
+  },
+  { id: 'STAKE_AU', name: 'Stake (Australia)', logo: '/logos/brokerages/stake.png', region: 'AU' },
+  {
+    id: 'KRAKEN',
+    name: 'Kraken',
+    logo: '/logos/brokerages/kraken.png',
+    region: 'INTL',
+    kind: 'crypto',
+  },
+  {
+    id: 'COINBASE',
+    name: 'Coinbase',
+    logo: '/logos/brokerages/coinbase.png',
+    region: 'INTL',
+    kind: 'crypto',
+  },
+  {
+    id: 'BINANCE',
+    name: 'Binance',
+    logo: '/logos/brokerages/binance.png',
+    region: 'INTL',
+    kind: 'crypto',
+  },
 ];
 
 function BrokerLogo({ broker, size = 48 }) {
@@ -55,7 +98,6 @@ function BrokerLogo({ broker, size = 48 }) {
 export function AddPortfolioModal({ open, onClose, onConnected }) {
   const [step, setStep] = useState('grid');
   const [selected, setSelected] = useState(null);
-  const [linkToken, setLinkToken] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -71,74 +113,9 @@ export function AddPortfolioModal({ open, onClose, onConnected }) {
       setStep('grid');
       setSelected(null);
       setError(null);
-      setLinkToken(null);
+      setLoading(false);
     }
   }, [open]);
-
-  useEffect(() => {
-    if (step !== 'disclosure' || linkToken) return;
-    (async () => {
-      try {
-        const token = await getToken();
-        if (!token) {
-          setError('Please sign in to connect a brokerage.');
-          return;
-        }
-        const res = await fetch('/api/plaid/create-link-token', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!res.ok) throw new Error('Failed to initialize connection');
-        const data = await res.json();
-        setLinkToken(data.link_token);
-      } catch {
-        setError('Failed to initialize connection. Please try again.');
-      }
-    })();
-  }, [step, linkToken, getToken]);
-
-  const handlePlaidSuccess = useCallback(
-    async (public_token, metadata) => {
-      setLoading(true);
-      setError(null);
-      try {
-        const token = await getToken();
-        if (!token) throw new Error('Not authenticated');
-        const res = await fetch('/api/plaid/exchange-token', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            public_token,
-            metadata,
-            brokerageHint: selected?.name,
-          }),
-        });
-        if (!res.ok) throw new Error('Failed to connect account');
-        const data = await res.json();
-        onConnected?.(data);
-        onClose?.();
-      } catch {
-        setError('Failed to connect account. Please try again.');
-      } finally {
-        setLoading(false);
-      }
-    },
-    [getToken, selected, onConnected, onClose],
-  );
-
-  const { open: openPlaid, ready: plaidReady } = usePlaidLink({
-    token: linkToken,
-    onSuccess: handlePlaidSuccess,
-    onExit: (err) => {
-      if (err) setError('Connection was cancelled or failed.');
-    },
-  });
 
   if (!open) return null;
 
@@ -148,13 +125,34 @@ export function AddPortfolioModal({ open, onClose, onConnected }) {
   };
 
   const handleManual = () => {
-    // TODO: manual entry flow
     onConnected?.({ manual: true });
     onClose?.();
   };
 
-  const handleContinue = () => {
-    if (plaidReady) openPlaid();
+  const handleContinue = async () => {
+    if (!selected) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const token = await getToken();
+      if (!token) throw new Error('Please sign in to connect a brokerage.');
+      const res = await fetch('/api/snaptrade/connect-url', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ broker: selected.id, connectionType: 'read' }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.redirectURI) {
+        throw new Error(data?.error || 'Failed to start connection');
+      }
+      window.location.href = data.redirectURI;
+    } catch (e) {
+      setError(e?.message || 'Failed to start the connection. Please try again.');
+      setLoading(false);
+    }
   };
 
   return (
@@ -176,6 +174,8 @@ export function AddPortfolioModal({ open, onClose, onConnected }) {
                 onClick={() => pickBroker(b)}
               >
                 <BrokerLogo broker={b} size={160} />
+                {b.paper ? <span className="apm-broker-tag">Paper</span> : null}
+                {b.region ? <span className="apm-broker-region">{b.region}</span> : null}
               </button>
             ))}
           </div>
@@ -227,10 +227,11 @@ export function AddPortfolioModal({ open, onClose, onConnected }) {
               <i className="bi bi-lock" />
             </div>
             <div>
-              <div className="apm-disc-block-title">Connect securely</div>
+              <div className="apm-disc-block-title">Connect securely via SnapTrade</div>
               <p className="apm-disc-block-text">
-                We use bank-grade encryption to manage the connection between Ezana and your
-                institution, ensuring reliable, read-only data transmission.
+                We use SnapTrade — an SOC 2 Type II certified connectivity provider — to handle the
+                OAuth handshake with {selected?.name || 'your brokerage'}. Ezana never sees your
+                login credentials.
               </p>
             </div>
           </div>
@@ -249,9 +250,9 @@ export function AddPortfolioModal({ open, onClose, onConnected }) {
             type="button"
             className="apm-continue-btn"
             onClick={handleContinue}
-            disabled={!plaidReady || loading}
+            disabled={loading}
           >
-            {loading ? 'Connecting…' : 'Continue'}
+            {loading ? 'Opening secure portal…' : 'Continue'}
           </button>
 
           <button type="button" className="apm-back-link" onClick={() => setStep('grid')}>

@@ -44,6 +44,29 @@ export async function GET(req) {
       return t.toISOString().slice(0, 10);
     })();
 
+    const { data: balanceRows } = await supabaseAdmin
+      .from('portfolio_balance_snapshots')
+      .select('snapshot_date, total_value')
+      .eq('user_id', user.id)
+      .gte('snapshot_date', fromDate)
+      .order('snapshot_date', { ascending: true });
+
+    if (balanceRows?.length) {
+      const byDate = new Map();
+      for (const r of balanceRows) {
+        const k = r.snapshot_date;
+        byDate.set(k, (byDate.get(k) || 0) + Number(r.total_value || 0));
+      }
+      const points = Array.from(byDate.entries())
+        .sort(([a], [b]) => (a < b ? -1 : 1))
+        .map(([date, value]) => ({ at: `${date}T00:00:00.000Z`, value }));
+      if (points.length) {
+        const last = { ...points[points.length - 1], value: endValue };
+        points[points.length - 1] = last;
+        return NextResponse.json({ range, points, source: 'snaptrade_snapshots' });
+      }
+    }
+
     const { data: rows, error: dbError } = await supabaseAdmin
       .from('portfolio_daily_returns')
       .select('date, total_value, cum_return_pct')
@@ -53,7 +76,11 @@ export async function GET(req) {
 
     if (dbError) {
       const code = /** @type {any} */ (dbError).code;
-      if (code === 'PGRST205' || code === '42P01' || /relation.*does not exist/i.test(String(dbError.message || ''))) {
+      if (
+        code === 'PGRST205' ||
+        code === '42P01' ||
+        /relation.*does not exist/i.test(String(dbError.message || ''))
+      ) {
         const points = buildSyntheticValuePoints(endValue, range, HERO_DATA[range].change);
         return NextResponse.json({ range, points, source: 'synthetic' });
       }
@@ -117,6 +144,26 @@ export async function GET(req) {
  * @returns {Promise<number>}
  */
 async function getPortfolioEndValue(userId) {
+  const today = new Date().toISOString().slice(0, 10);
+  const { data: balanceToday } = await supabaseAdmin
+    .from('portfolio_balance_snapshots')
+    .select('total_value')
+    .eq('user_id', userId)
+    .eq('snapshot_date', today);
+  if (balanceToday?.length) {
+    const sum = balanceToday.reduce((s, r) => s + (Number(r.total_value) || 0), 0);
+    if (sum > 0) return sum;
+  }
+
+  const { data: snapAccounts } = await supabaseAdmin
+    .from('snaptrade_accounts')
+    .select('balance_total')
+    .eq('user_id', userId);
+  if (snapAccounts?.length) {
+    const sum = snapAccounts.reduce((s, a) => s + (Number(a.balance_total) || 0), 0);
+    if (sum > 0) return sum;
+  }
+
   const { data: holdings, error: hErr } = await supabaseAdmin
     .from('plaid_holdings')
     .select('value, institution_value')
@@ -157,7 +204,8 @@ async function getPortfolioEndValue(userId) {
   let sum = 0;
   for (const p of Object.values(positions)) {
     const q = Number(/** @type {any} */ (p)?.shares ?? /** @type {any} */ (p)?.qty ?? 0) || 0;
-    const pr = Number(/** @type {any} */ (p)?.currentPrice ?? /** @type {any} */ (p)?.price ?? 0) || 0;
+    const pr =
+      Number(/** @type {any} */ (p)?.currentPrice ?? /** @type {any} */ (p)?.price ?? 0) || 0;
     sum += q * pr;
   }
   return Math.max(0, cash + sum);

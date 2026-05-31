@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { alpacaRequest } from '@/lib/alpaca';
+import { runSnapTradeDailySync } from '@/lib/snaptrade';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -143,12 +144,20 @@ async function run(request) {
     }
   }
 
+  let snaptradeStats = { accountsProcessed: 0, snapshotted: 0, activitiesSynced: 0, errors: 0 };
+  try {
+    snaptradeStats = await runSnapTradeDailySync(supabase);
+  } catch (e) {
+    console.error('[cron/portfolio-snapshot] snaptrade', e);
+  }
+
   return NextResponse.json({
     success: true,
     date: today,
     processed,
     totalUsers: users.length,
     errors: errors.slice(0, 10),
+    snaptrade: snaptradeStats,
   });
 }
 

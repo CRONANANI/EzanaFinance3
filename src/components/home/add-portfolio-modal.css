@@ -74,6 +74,7 @@ body:not(.light-mode) .apm-card {
 }
 
 .apm-broker-tile {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -102,6 +103,30 @@ body:not(.light-mode) .apm-broker-tile {
 .apm-broker-tile--active {
   border-color: var(--emerald);
   background: var(--emerald-bg);
+}
+
+.apm-broker-tag,
+.apm-broker-region {
+  position: absolute;
+  top: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 2px 5px;
+  border-radius: 3px;
+  line-height: 1.2;
+}
+
+.apm-broker-tag {
+  left: 6px;
+  background: rgba(14, 124, 79, 0.12);
+  color: #0e7c4f;
+}
+
+.apm-broker-region {
+  right: 6px;
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--text-muted, #6b7280);
 }
 
 .apm-broker-logo {

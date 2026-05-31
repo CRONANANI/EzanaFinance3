@@ -996,13 +996,26 @@ export default function HomePage() {
     };
   }, [moversWindow]);
 
-  /* Fetch Plaid holdings if connected */
   useEffect(() => {
-    if (!plaidConnected) return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('connected') === '1') {
+      fetch('/api/portfolio/holdings', { cache: 'no-store' })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (d) setPlaidHoldingsPayload(d);
+        });
+      refreshPlaidSummary();
+      window.history.replaceState({}, '', '/home');
+    }
+  }, [refreshPlaidSummary]);
+
+  /* Fetch unified holdings (SnapTrade preferred, Plaid fallback) */
+  useEffect(() => {
+    if (!user) return;
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch('/api/plaid/holdings');
+        const res = await fetch('/api/portfolio/holdings', { cache: 'no-store' });
         if (!res.ok) return;
         const data = await res.json();
         if (!cancelled) setPlaidHoldingsPayload(data);
@@ -1013,7 +1026,7 @@ export default function HomePage() {
     return () => {
       cancelled = true;
     };
-  }, [plaidConnected]);
+  }, [user]);
 
   /* Live quotes: portfolio holdings + watchlist */
   useEffect(() => {
