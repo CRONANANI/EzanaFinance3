@@ -13,6 +13,11 @@
   box-shadow: 0 18px 48px rgba(0, 0, 0, 0.18);
   padding: 22px 24px;
   font-family: var(--font-sans, 'Plus Jakarta Sans', system-ui, sans-serif);
+  pointer-events: auto;
+}
+.cookie-banner::before,
+.cookie-banner::after {
+  content: none;
 }
 body:not(.light-mode) .cookie-banner {
   background: #111418;

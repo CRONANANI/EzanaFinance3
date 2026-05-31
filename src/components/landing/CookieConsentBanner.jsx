@@ -58,6 +58,29 @@ export function CookieConsentBanner() {
     return () => window.removeEventListener('ezana:open-cookie-settings', handler);
   }, []);
 
+  useEffect(() => {
+    if (!visible) {
+      document.documentElement.style.removeProperty('--cookie-banner-height');
+      return;
+    }
+    const update = () => {
+      const el = document.querySelector('.cookie-banner');
+      if (!el) return;
+      const h = Math.ceil(el.getBoundingClientRect().height) + 24 + 24;
+      document.documentElement.style.setProperty('--cookie-banner-height', `${h}px`);
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    const el = document.querySelector('.cookie-banner');
+    if (el) ro.observe(el);
+    window.addEventListener('resize', update);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', update);
+      document.documentElement.style.removeProperty('--cookie-banner-height');
+    };
+  }, [visible, showCustomize]);
+
   const acceptAll = useCallback(() => {
     writeConsent({ analytics: true, marketing: true, preferences: true });
     setVisible(false);

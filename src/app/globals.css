@@ -2364,7 +2364,6 @@ html:has(.landing-page) .navbar-sticky {
 .landing-page .navbar .logo,
 .landing-page .navbar .nav-container,
 .landing-page .navbar .nav-container-centered,
-.landing-page .navbar .nav-menu,
 .landing-page .navbar .nav-menu .nav-item,
 .landing-page .navbar .nav-sign-in-wrap,
 html:has(.landing-page) .navbar a,
@@ -2418,4 +2417,32 @@ html:has(.landing-page) .navbar .nav-link {
 .landing-page .hero-cybercore-root {
   z-index: 10 !important;
   isolation: isolate;
+}
+
+/* When the cookie banner is open, push the page bottom up so the footer
+   scrolls above the banner instead of sitting underneath it. The variable
+   is set by CookieConsentBanner.jsx; when the banner is closed the variable
+   is removed and this padding becomes 0. */
+.landing-page {
+  padding-bottom: var(--cookie-banner-height, 0px);
+}
+
+/* The centered <ul class="nav-menu"> is wide and absolute-positioned —
+   without this rule, its empty bounding box swallows clicks meant for the
+   right-side nav items (Pricing, Ezana Echo, FAQ, Help Center) and the
+   sign-in wrap (Login, Become a Partner). The bare <ul> must never capture
+   clicks; only its children (.nav-item / .nav-link) do. */
+.landing-page .navbar .nav-container-centered .nav-menu,
+html:has(.landing-page) .navbar .nav-container-centered .nav-menu {
+  pointer-events: none !important;
+}
+.landing-page .navbar .nav-container-centered .nav-menu .nav-item,
+.landing-page .navbar .nav-container-centered .nav-menu .nav-link,
+html:has(.landing-page) .navbar .nav-container-centered .nav-menu .nav-item,
+html:has(.landing-page) .navbar .nav-container-centered .nav-menu .nav-link {
+  pointer-events: auto !important;
+}
+
+.navbar .nav-container-centered .nav-sign-in-wrap {
+  z-index: 10 !important;
 }
