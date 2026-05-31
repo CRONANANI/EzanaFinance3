@@ -5,6 +5,7 @@ import {
   getSnapTradeCreds,
   snapshotAccount,
   backfillAccountActivities,
+  readSnapTradeError,
 } from '@/lib/snaptrade';
 
 export const dynamic = 'force-dynamic';
@@ -108,9 +109,10 @@ export async function POST(request) {
       accounts: accounts.length,
     });
   } catch (err) {
-    console.error('[snaptrade/sync-connections]', err);
+    const info = readSnapTradeError(err);
+    console.error('[snaptrade/sync-connections]', info);
     return NextResponse.json(
-      { error: err?.response?.data?.detail || err?.message || 'Sync failed' },
+      { error: 'Something went wrong.', code: 'snaptrade_failed' },
       { status: 502 },
     );
   }

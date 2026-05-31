@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireUser } from '@/lib/supabase';
-import { getSnapTradeClient, ensureSnapTradeUser } from '@/lib/snaptrade';
+import { getSnapTradeClient, ensureSnapTradeUser, readSnapTradeError } from '@/lib/snaptrade';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -9,9 +9,8 @@ export const runtime = 'nodejs';
  * POST /api/snaptrade/connect-url
  *
  * Strategy: try the requested broker hint first. If SnapTrade returns 400
- * (usually a bad slug — broker slug ≠ display name), retry without the hint
- * so the user lands on the broker picker inside SnapTrade. Always returns
- * a structured { error, code } payload — never bubbles raw SDK messages.
+ * (usually a bad slug), retry without the hint so the user lands on the
+ * brokerage picker inside SnapTrade.
  */
 export async function POST(request) {
   let user;
@@ -28,16 +27,21 @@ export async function POST(request) {
     body = {};
   }
   const broker = body.broker;
-  const connectionType = body.connectionType === 'trade' ? 'trade' : 'read';
+  const connectionType =
+    body.connectionType === 'trade'
+      ? 'trade'
+      : body.connectionType === 'read'
+        ? 'read'
+        : 'trade-if-available';
 
   let creds;
   try {
     creds = await ensureSnapTradeUser(user.id);
   } catch (err) {
+    const info = readSnapTradeError(err);
     console.error('[snaptrade/connect-url] ensureUser failed', {
       userId: user.id,
-      status: err?.response?.status,
-      data: err?.response?.data,
+      ...info,
       message: err?.message,
     });
     return NextResponse.json(
@@ -50,56 +54,61 @@ export async function POST(request) {
   const origin = request.nextUrl.origin;
   const customRedirect = `${origin}/portfolio/connect-callback`;
 
-  try {
-    const res = await snaptrade.authentication.loginSnapTradeUser({
+  async function tryLogin({ withBroker }) {
+    return snaptrade.authentication.loginSnapTradeUser({
       userId: creds.userId,
       userSecret: creds.userSecret,
-      broker: broker || undefined,
+      broker: withBroker ? broker : undefined,
       immediateRedirect: false,
       customRedirect,
       connectionType,
     });
-    return NextResponse.json({
-      redirectURI: res.data.redirectURI,
-      sessionId: res.data.sessionId,
-    });
-  } catch (err) {
-    const status = err?.response?.status;
-    const detail = err?.response?.data?.detail;
-    console.error('[snaptrade/connect-url] first attempt failed', {
-      broker,
-      status,
-      detail,
-      requestId: err?.response?.headers?.['x-request-id'],
-    });
+  }
 
-    if (status === 400 && broker) {
+  try {
+    const res = await tryLogin({ withBroker: !!broker });
+    const redirectURI = res?.data?.redirectURI;
+    if (!redirectURI) {
+      console.error('[snaptrade/connect-url] no redirectURI in success response', res?.data);
+      return NextResponse.json(
+        { error: 'Could not open the connection portal.', code: 'portal_unavailable' },
+        { status: 502 },
+      );
+    }
+    return NextResponse.json({ redirectURI, sessionId: res.data.sessionId });
+  } catch (err) {
+    const info = readSnapTradeError(err);
+    console.error('[snaptrade/connect-url] first attempt failed', { broker, ...info });
+
+    if (info.status === 400 && broker) {
       try {
-        const res = await snaptrade.authentication.loginSnapTradeUser({
-          userId: creds.userId,
-          userSecret: creds.userSecret,
-          immediateRedirect: false,
-          customRedirect,
-          connectionType,
-        });
-        console.warn(
-          '[snaptrade/connect-url] slug rejected, succeeded without it. Update slug for:',
-          broker,
-        );
-        return NextResponse.json({
-          redirectURI: res.data.redirectURI,
-          sessionId: res.data.sessionId,
-          _note: 'broker_slug_unsupported_fell_back_to_picker',
-        });
+        const res = await tryLogin({ withBroker: false });
+        const redirectURI = res?.data?.redirectURI;
+        if (redirectURI) {
+          console.warn(
+            '[snaptrade/connect-url] slug rejected, succeeded without it. Update slug for:',
+            broker,
+          );
+          return NextResponse.json({
+            redirectURI,
+            sessionId: res.data.sessionId,
+            _note: 'broker_slug_unsupported_fell_back_to_picker',
+          });
+        }
       } catch (retryErr) {
-        console.error('[snaptrade/connect-url] retry without broker also failed', {
-          status: retryErr?.response?.status,
-          detail: retryErr?.response?.data?.detail,
-        });
+        const retryInfo = readSnapTradeError(retryErr);
+        console.error('[snaptrade/connect-url] retry without broker also failed', retryInfo);
+        return NextResponse.json(
+          {
+            error: 'Could not open the connection portal.',
+            code: 'portal_unavailable',
+          },
+          { status: 502 },
+        );
       }
     }
 
-    if (status === 429) {
+    if (info.status === 429) {
       return NextResponse.json(
         {
           error: 'Too many requests right now. Please wait a moment and try again.',
@@ -108,7 +117,7 @@ export async function POST(request) {
         { status: 429 },
       );
     }
-    if (status === 401 || status === 403) {
+    if (info.status === 401 || info.status === 403) {
       return NextResponse.json(
         { error: 'Authentication issue. Please try again.', code: 'auth_failed' },
         { status: 502 },

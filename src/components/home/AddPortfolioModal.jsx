@@ -82,7 +82,7 @@ export function AddPortfolioModal({ open, onClose, onConnected }) {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ broker: selected.id, connectionType: 'read' }),
+        body: JSON.stringify({ broker: selected.id }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.redirectURI) {

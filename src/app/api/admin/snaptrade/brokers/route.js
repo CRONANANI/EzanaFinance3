@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireUser } from '@/lib/supabase';
-import { getSnapTradeClient } from '@/lib/snaptrade';
+import { getSnapTradeClient, readSnapTradeError } from '@/lib/snaptrade';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -8,9 +8,9 @@ export const runtime = 'nodejs';
 /**
  * GET /api/admin/snaptrade/brokers
  *
- * Dumps SnapTrade's canonical broker list with their slug values. Use this
- * once to identify which slugs in BROKERAGES are wrong and update the
- * registry. Admin-only.
+ * Dumps SnapTrade's canonical broker list with the slug values we should use
+ * in BROKERAGES. Hit this once after deploying and copy the real slugs into
+ * src/components/home/AddPortfolioModal.jsx.
  */
 export async function GET(request) {
   try {
@@ -22,17 +22,23 @@ export async function GET(request) {
   const snaptrade = getSnapTradeClient();
   try {
     const res = await snaptrade.referenceData.listAllBrokerages();
-    const brokers = (res.data || []).map((b) => ({
+    const brokerages = (res.data || []).map((b) => ({
       slug: b.slug,
       name: b.name,
       display_name: b.display_name,
       enabled: b.enabled,
       maintenance_mode: b.maintenance_mode,
       url: b.url,
+      allows_trading: b.allows_trading,
     }));
-    return NextResponse.json({ count: brokers.length, brokers });
+    brokerages.sort((a, b) => {
+      if (a.enabled !== b.enabled) return a.enabled ? -1 : 1;
+      return (a.display_name || a.name || a.slug).localeCompare(b.display_name || b.name || b.slug);
+    });
+    return NextResponse.json({ count: brokerages.length, brokerages });
   } catch (err) {
-    console.error('[admin/snaptrade/brokers]', err);
+    const info = readSnapTradeError(err);
+    console.error('[admin/snaptrade/brokers]', info);
     return NextResponse.json({ error: 'Failed to list brokerages' }, { status: 502 });
   }
 }

@@ -14,6 +14,38 @@ export function getSnapTradeClient() {
   return _client;
 }
 
+/**
+ * Extract the relevant fields off a SnapTrade SDK error.
+ * The SDK's SnaptradeError class has flat top-level properties
+ * (`status`, `responseBody`, etc.), not the axios `err.response.*` shape.
+ */
+export function readSnapTradeError(err) {
+  const status =
+    typeof err?.status === 'number'
+      ? err.status
+      : typeof err?.response?.status === 'number'
+        ? err.response.status
+        : undefined;
+  const body = err?.responseBody ?? err?.response?.data ?? null;
+  let detail = null;
+  if (body && typeof body === 'object') {
+    detail = body.detail || body.message || body.error || null;
+  } else if (typeof body === 'string') {
+    detail = body.slice(0, 500);
+  }
+  return {
+    status,
+    detail,
+    body,
+    code: err?.code,
+    statusText: err?.statusText,
+    url: err?.url,
+    requestId:
+      err?.response?.headers?.['x-request-id'] ||
+      (typeof err?.headers === 'object' ? err.headers['x-request-id'] : undefined),
+  };
+}
+
 export async function ensureSnapTradeUser(ezanaUserId) {
   const supabase = getAdminClient();
 

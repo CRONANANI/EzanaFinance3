@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireUser, getAdminClient } from '@/lib/supabase';
-import { getSnapTradeClient, getSnapTradeCreds } from '@/lib/snaptrade';
+import { getSnapTradeClient, getSnapTradeCreds, readSnapTradeError } from '@/lib/snaptrade';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -37,7 +37,11 @@ export async function DELETE(request, { params }) {
     await supabase.from('snaptrade_connections').delete().eq('id', conn.id);
     return NextResponse.json({ deleted: true });
   } catch (err) {
-    console.error('[snaptrade/connections DELETE]', err);
-    return NextResponse.json({ error: err?.message || 'Delete failed' }, { status: 502 });
+    const info = readSnapTradeError(err);
+    console.error('[snaptrade/connections DELETE]', info);
+    return NextResponse.json(
+      { error: 'Something went wrong.', code: 'snaptrade_failed' },
+      { status: 502 },
+    );
   }
 }

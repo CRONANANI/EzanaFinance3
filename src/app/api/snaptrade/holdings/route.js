@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireUser, getAdminClient } from '@/lib/supabase';
-import { getSnapTradeClient, getSnapTradeCreds } from '@/lib/snaptrade';
+import { getSnapTradeClient, getSnapTradeCreds, readSnapTradeError } from '@/lib/snaptrade';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -39,7 +39,8 @@ export async function GET(request) {
           });
           return res.data || [];
         } catch (e) {
-          console.warn('[snaptrade/holdings] positions failed', a.snaptrade_account_id, e?.message);
+          const info = readSnapTradeError(e);
+          console.warn('[snaptrade/holdings] positions failed', a.snaptrade_account_id, info);
           return [];
         }
       }),
@@ -97,7 +98,11 @@ export async function GET(request) {
       },
     });
   } catch (err) {
-    console.error('[snaptrade/holdings]', err);
-    return NextResponse.json({ error: err?.message || 'Failed to load holdings' }, { status: 502 });
+    const info = readSnapTradeError(err);
+    console.error('[snaptrade/holdings]', info);
+    return NextResponse.json(
+      { error: 'Something went wrong.', code: 'snaptrade_failed' },
+      { status: 502 },
+    );
   }
 }
