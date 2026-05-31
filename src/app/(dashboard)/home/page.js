@@ -321,8 +321,8 @@ export default function HomePage() {
   const [indexSeriesLoading, setIndexSeriesLoading] = useState(false);
   const [commodityMovers, setCommodityMovers] = useState([]);
   const [cryptoMovers, setCryptoMovers] = useState([]);
-  const [moversTab, setMoversTab] = useState('equities');
   const [pulseRange, setPulseRange] = useState('1D');
+  const [sectorDrilldown, setSectorDrilldown] = useState(null);
   const [tickerModal, setTickerModal] = useState(null);
   const [tickerModalRange, setTickerModalRange] = useState('1M');
   const [streakDays, setStreakDays] = useState(0);
@@ -431,6 +431,11 @@ export default function HomePage() {
     }
     return [];
   }, [useMock, mock.enrichedPositions, useLiveHoldings, plaidHoldingsPayload, liveQuotes]);
+
+  const sectorDrilldownHoldings = useMemo(() => {
+    if (!sectorDrilldown) return [];
+    return normalizedHoldings.filter((h) => (h.sector || 'Other') === sectorDrilldown);
+  }, [sectorDrilldown, normalizedHoldings]);
 
   const holdingsPageCount = Math.max(1, Math.ceil(normalizedHoldings.length / HOLDINGS_PAGE_SIZE));
   const pagedHoldings = useMemo(
@@ -547,6 +552,31 @@ export default function HomePage() {
   }, [timeframe]);
 
   useEffect(() => {
+    if (!indexSeries || Object.keys(indexSeries).length === 0) return;
+    setIndices((prev) =>
+      prev.map((row) => {
+        if (row.sym !== 'WTI' && row.sym !== '10Y') return row;
+        const apiKey = INDEX_API_KEYS[row.sym];
+        const series = indexSeries[apiKey];
+        if (!series || !series.length) return row;
+        const last = series[series.length - 1];
+        const first = series[0];
+        const lastPrice = last?.close ?? 0;
+        const pct = (last?.pct ?? 0) - (first?.pct ?? 0);
+        return {
+          ...row,
+          last: lastPrice.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          }),
+          chg: `${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%`,
+          up: pct >= 0,
+        };
+      }),
+    );
+  }, [indexSeries]);
+
+  useEffect(() => {
     let cancelled = false;
     const load = async () => {
       try {
@@ -614,7 +644,7 @@ export default function HomePage() {
             empty
               ? { top: [], bottom: [] }
               : {
-                  top: sectors.filter((s) => s.chg > 0).slice(0, 3),
+                  top: sectors.filter((s) => s.chg > 0).slice(0, 5),
                   bottom: sectors
                     .filter((s) => s.chg <= 0)
                     .slice(-5)
@@ -1317,6 +1347,74 @@ export default function HomePage() {
                   </button>
                 </div>
               )}
+            </div>
+            <div className="bs-pos-r">
+              {sectorRows.length > 0 && (
+                <div className="bs-sector-panel">
+                  <div className="bs-prog-label">Sector breakdown</div>
+                  {sectorRows.slice(0, 5).map((s) => (
+                    <button
+                      key={s.name}
+                      type="button"
+                      className="bs-sector-row bs-sector-row--btn"
+                      onClick={() => setSectorDrilldown(s.name)}
+                    >
+                      <span className="bs-sector-name">
+                        <span className="bs-sector-dot" style={{ background: s.color }} />
+                        {s.name}
+                      </span>
+                      <div className="bs-sector-bar">
+                        <div
+                          className="bs-sector-bar-fill"
+                          style={{ width: `${s.pct}%`, background: s.color }}
+                        />
+                      </div>
+                      <span className="bs-sector-pct">{s.pct}%</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+              {profitBars.length > 0 && (
+                <div className="bs-profits-panel">
+                  <div className="bs-prog-label">Position P&amp;L</div>
+                  {(() => {
+                    const maxMag =
+                      profitBars.reduce(
+                        (m, r) =>
+                          Math.max(
+                            m,
+                            typeof r.pnl === 'number' ? Math.abs(r.pnl) : r.weightPct || 0,
+                          ),
+                        0,
+                      ) || 1;
+                    return profitBars.map((r) => {
+                      const mag = typeof r.pnl === 'number' ? Math.abs(r.pnl) : r.weightPct || 0;
+                      const positive = typeof r.pnl === 'number' ? r.pnl >= 0 : true;
+                      const barColor =
+                        typeof r.pnl === 'number' ? (positive ? '#34d399' : '#f87171') : r.color;
+                      return (
+                        <div key={r.symbol} className="bs-profits-bar-row">
+                          <span className="bs-profits-sym">{r.symbol}</span>
+                          <div className="bs-profits-track">
+                            <div
+                              className="bs-profits-fill"
+                              style={{
+                                width: `${(mag / maxMag) * 100}%`,
+                                background: barColor,
+                              }}
+                            />
+                          </div>
+                          <span className="bs-profits-val" style={{ color: barColor }}>
+                            {typeof r.pnl === 'number'
+                              ? `${positive ? '+' : '-'}$${Math.abs(r.pnl).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
+                              : `${(r.weightPct || 0).toFixed(0)}%`}
+                          </span>
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
+              )}
               <div className="bs-watchlist-panel">
                 <div className="bs-sub-head">
                   <h3 className="bs-sub-title">Watchlist</h3>
@@ -1362,69 +1460,6 @@ export default function HomePage() {
                 )}
               </div>
             </div>
-            <div className="bs-pos-r">
-              {sectorRows.length > 0 && (
-                <div className="bs-sector-panel">
-                  <div className="bs-prog-label">Sector breakdown</div>
-                  {sectorRows.slice(0, 5).map((s) => (
-                    <div key={s.name} className="bs-sector-row">
-                      <span className="bs-sector-name">
-                        <span className="bs-sector-dot" style={{ background: s.color }} />
-                        {s.name}
-                      </span>
-                      <div className="bs-sector-bar">
-                        <div
-                          className="bs-sector-bar-fill"
-                          style={{ width: `${s.pct}%`, background: s.color }}
-                        />
-                      </div>
-                      <span className="bs-sector-pct">{s.pct}%</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {profitBars.length > 0 && (
-                <div className="bs-profits-panel">
-                  <div className="bs-prog-label">Position P&amp;L</div>
-                  {(() => {
-                    const maxMag =
-                      profitBars.reduce(
-                        (m, r) =>
-                          Math.max(
-                            m,
-                            typeof r.pnl === 'number' ? Math.abs(r.pnl) : r.weightPct || 0,
-                          ),
-                        0,
-                      ) || 1;
-                    return profitBars.map((r) => {
-                      const mag = typeof r.pnl === 'number' ? Math.abs(r.pnl) : r.weightPct || 0;
-                      const positive = typeof r.pnl === 'number' ? r.pnl >= 0 : true;
-                      const barColor =
-                        typeof r.pnl === 'number' ? (positive ? '#34d399' : '#f87171') : r.color;
-                      return (
-                        <div key={r.symbol} className="bs-profits-bar-row">
-                          <span className="bs-profits-sym">{r.symbol}</span>
-                          <div className="bs-profits-track">
-                            <div
-                              className="bs-profits-fill"
-                              style={{
-                                width: `${(mag / maxMag) * 100}%`,
-                                background: barColor,
-                              }}
-                            />
-                          </div>
-                          <span className="bs-profits-val" style={{ color: barColor }}>
-                            {typeof r.pnl === 'number'
-                              ? `${positive ? '+' : '-'}$${Math.abs(r.pnl).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
-                              : `${(r.weightPct || 0).toFixed(0)}%`}
-                          </span>
-                        </div>
-                      );
-                    });
-                  })()}
-                </div>
-              )}
-            </div>
           </div>
         </div>
       </section>
@@ -1433,17 +1468,19 @@ export default function HomePage() {
       <section className="bs-band bs-band--dark">
         <div className="bs-page-inner">
           <BandHeader number="III" label="Markets pulse" meta="S&P 500 GICS · today" dark />
-          <div className="bs-pulse-range-toggle">
-            {['1D', '1W', '1M', 'YTD'].map((r) => (
-              <button
-                key={r}
-                type="button"
-                className={`bs-seg ${pulseRange === r ? 'bs-seg--active' : ''}`}
-                onClick={() => setPulseRange(r)}
-              >
-                {r}
-              </button>
-            ))}
+          <div className="bs-chart-range-row">
+            <div className="bs-seg-group">
+              {['1D', '1W', '1M', 'YTD'].map((r) => (
+                <button
+                  key={r}
+                  type="button"
+                  className={`bs-seg ${pulseRange === r ? 'bs-seg--active' : ''}`}
+                  onClick={() => setPulseRange(r)}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
           </div>
           <div className="bs-pulse-row">
             {sectorLoaded && sectorEmpty ? (
@@ -1604,145 +1641,97 @@ export default function HomePage() {
               <div className="bs-sub-head">
                 <h3 className="bs-sub-title">Top movers today</h3>
               </div>
-              <div className="bs-movers-tabs">
-                {[
-                  { id: 'equities', label: 'Equities' },
-                  { id: 'commodities', label: 'Commodities' },
-                  { id: 'alternatives', label: 'Alternatives' },
-                ].map((t) => (
-                  <button
-                    key={t.id}
-                    type="button"
-                    className={`bs-movers-tab ${moversTab === t.id ? 'bs-movers-tab--active' : ''}`}
-                    onClick={() => setMoversTab(t.id)}
+
+              <div className="bs-mover-group">
+                <div className="bs-mover-group-head">Equities</div>
+                <div className="bs-mover-head">Gainers</div>
+                {(gainers.length ? gainers : [{ sym: '—', pct: 0 }]).slice(0, 3).map((g, i) => (
+                  <Link
+                    key={g.sym}
+                    href={`/company-research?symbol=${g.sym}`}
+                    className="bs-mover-row bs-mover-row--link"
                   >
-                    {t.label}
-                  </button>
+                    <span className="bs-mover-sym">{g.sym}</span>
+                    <span className="bs-mover-pct bs-mover-pct--up">+{g.pct.toFixed(2)}%</span>
+                    <Spark
+                      values={genSeries(91 + i * 7, 24, 0.8, 1.0)}
+                      color="var(--bs-green)"
+                      w={56}
+                      h={20}
+                    />
+                  </Link>
+                ))}
+                <div className="bs-mover-head" style={{ marginTop: 10 }}>
+                  Losers
+                </div>
+                {(losers.length ? losers : [{ sym: '—', pct: 0 }]).slice(0, 3).map((l, i) => (
+                  <Link
+                    key={l.sym}
+                    href={`/company-research?symbol=${l.sym}`}
+                    className="bs-mover-row bs-mover-row--link"
+                  >
+                    <span className="bs-mover-sym">{l.sym}</span>
+                    <span className="bs-mover-pct bs-mover-pct--down">{l.pct.toFixed(2)}%</span>
+                    <Spark
+                      values={genSeries(31 + i * 9, 24, -0.6, 1.0)}
+                      color="var(--bs-red)"
+                      w={56}
+                      h={20}
+                    />
+                  </Link>
                 ))}
               </div>
 
-              {moversTab === 'equities' && (
-                <>
-                  <div className="bs-mover-head">Gainers</div>
-                  {(gainers.length ? gainers : [{ sym: '—', pct: 0 }]).map((g, i) => (
-                    <Link
-                      key={g.sym}
-                      href={`/company-research?symbol=${g.sym}`}
-                      className="bs-mover-row bs-mover-row--link"
-                    >
-                      <span className="bs-mover-sym">{g.sym}</span>
-                      <span className="bs-mover-pct bs-mover-pct--up">+{g.pct.toFixed(2)}%</span>
-                      <Spark
-                        values={genSeries(91 + i * 7, 24, 0.8, 1.0)}
-                        color="var(--bs-green)"
-                        w={56}
-                        h={20}
-                      />
-                    </Link>
-                  ))}
-                  <div className="bs-mover-head" style={{ marginTop: 14 }}>
-                    Losers
-                  </div>
-                  {(losers.length ? losers : [{ sym: '—', pct: 0 }]).map((l, i) => (
-                    <Link
-                      key={l.sym}
-                      href={`/company-research?symbol=${l.sym}`}
-                      className="bs-mover-row bs-mover-row--link"
-                    >
-                      <span className="bs-mover-sym">{l.sym}</span>
-                      <span className="bs-mover-pct bs-mover-pct--down">{l.pct.toFixed(2)}%</span>
-                      <Spark
-                        values={genSeries(31 + i * 9, 24, -0.6, 1.0)}
-                        color="var(--bs-red)"
-                        w={56}
-                        h={20}
-                      />
-                    </Link>
-                  ))}
-                </>
-              )}
-
-              {moversTab === 'commodities' && (
-                <>
-                  {commodityMovers.length === 0 ? (
-                    <p className="bs-mover-empty">Loading commodity data…</p>
-                  ) : (
-                    commodityMovers.map((c, i) => (
-                      <Link
-                        key={c.sym}
-                        href="/watchlist"
-                        className="bs-mover-row bs-mover-row--link"
-                      >
-                        <span className="bs-mover-sym">{c.sym}</span>
-                        <span
-                          className={`bs-mover-pct ${c.pct >= 0 ? 'bs-mover-pct--up' : 'bs-mover-pct--down'}`}
-                        >
-                          {c.pct >= 0 ? '+' : ''}
-                          {c.pct.toFixed(2)}%
-                        </span>
-                        <Spark
-                          values={genSeries(41 + i * 13, 24, c.pct >= 0 ? 0.5 : -0.5, 1.0)}
-                          color={c.pct >= 0 ? 'var(--bs-green)' : 'var(--bs-red)'}
-                          w={56}
-                          h={20}
-                        />
-                      </Link>
-                    ))
-                  )}
-                </>
-              )}
-
-              {moversTab === 'alternatives' && (
-                <>
-                  <div className="bs-mover-head">Crypto</div>
-                  {cryptoMovers.length === 0 ? (
-                    <p className="bs-mover-empty">Loading crypto data…</p>
-                  ) : (
-                    cryptoMovers.slice(0, 5).map((c, i) => (
-                      <Link
-                        key={c.sym}
-                        href="/watchlist"
-                        className="bs-mover-row bs-mover-row--link"
-                      >
-                        <span className="bs-mover-sym">{c.sym}</span>
-                        <span
-                          className={`bs-mover-pct ${c.pct >= 0 ? 'bs-mover-pct--up' : 'bs-mover-pct--down'}`}
-                        >
-                          {c.pct >= 0 ? '+' : ''}
-                          {c.pct.toFixed(2)}%
-                        </span>
-                        <Spark
-                          values={genSeries(51 + i * 5, 24, c.pct >= 0 ? 0.6 : -0.4, 1.2)}
-                          color={c.pct >= 0 ? 'var(--bs-green)' : 'var(--bs-red)'}
-                          w={56}
-                          h={20}
-                        />
-                      </Link>
-                    ))
-                  )}
-                  <div className="bs-mover-head" style={{ marginTop: 14 }}>
-                    Politicians
-                  </div>
-                  {(congressTrades.length
-                    ? congressTrades.slice(0, 3)
-                    : [{ rep: '—', sym: '—', side: 'BUY' }]
-                  ).map((c, i) => (
-                    <Link
-                      key={`${c.sym}-${i}`}
-                      href="/inside-the-capitol"
-                      className="bs-mover-row bs-mover-row--link"
-                    >
+              <div className="bs-mover-group">
+                <div className="bs-mover-group-head">Commodities</div>
+                {commodityMovers.length === 0 ? (
+                  <p className="bs-mover-empty">Loading commodity data…</p>
+                ) : (
+                  commodityMovers.slice(0, 4).map((c, i) => (
+                    <Link key={c.sym} href="/watchlist" className="bs-mover-row bs-mover-row--link">
                       <span className="bs-mover-sym">{c.sym}</span>
                       <span
-                        className={`bs-mover-pct ${c.side === 'BUY' ? 'bs-mover-pct--up' : 'bs-mover-pct--down'}`}
+                        className={`bs-mover-pct ${c.pct >= 0 ? 'bs-mover-pct--up' : 'bs-mover-pct--down'}`}
                       >
-                        {c.side}
+                        {c.pct >= 0 ? '+' : ''}
+                        {c.pct.toFixed(2)}%
                       </span>
-                      <span className="bs-mover-rep">{c.rep?.split(' ').pop()}</span>
+                      <Spark
+                        values={genSeries(41 + i * 13, 24, c.pct >= 0 ? 0.5 : -0.5, 1.0)}
+                        color={c.pct >= 0 ? 'var(--bs-green)' : 'var(--bs-red)'}
+                        w={56}
+                        h={20}
+                      />
                     </Link>
-                  ))}
-                </>
-              )}
+                  ))
+                )}
+              </div>
+
+              <div className="bs-mover-group">
+                <div className="bs-mover-group-head">Alternatives</div>
+                <div className="bs-mover-head">Crypto</div>
+                {cryptoMovers.length === 0 ? (
+                  <p className="bs-mover-empty">Loading crypto data…</p>
+                ) : (
+                  cryptoMovers.slice(0, 3).map((c, i) => (
+                    <Link key={c.sym} href="/watchlist" className="bs-mover-row bs-mover-row--link">
+                      <span className="bs-mover-sym">{c.sym}</span>
+                      <span
+                        className={`bs-mover-pct ${c.pct >= 0 ? 'bs-mover-pct--up' : 'bs-mover-pct--down'}`}
+                      >
+                        {c.pct >= 0 ? '+' : ''}
+                        {c.pct.toFixed(2)}%
+                      </span>
+                      <Spark
+                        values={genSeries(51 + i * 5, 24, c.pct >= 0 ? 0.6 : -0.4, 1.2)}
+                        color={c.pct >= 0 ? 'var(--bs-green)' : 'var(--bs-red)'}
+                        w={56}
+                        h={20}
+                      />
+                    </Link>
+                  ))
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -1766,6 +1755,64 @@ export default function HomePage() {
           </div>
         </div>
       </div>
+
+      {sectorDrilldown && (
+        <div className="bs-sector-modal-overlay" onClick={() => setSectorDrilldown(null)}>
+          <div className="bs-sector-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="bs-sector-modal-head">
+              <div>
+                <div className="bs-sector-modal-eyebrow">Sector breakdown</div>
+                <div className="bs-sector-modal-title">{sectorDrilldown}</div>
+              </div>
+              <button
+                type="button"
+                className="bs-sector-modal-close"
+                onClick={() => setSectorDrilldown(null)}
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </div>
+            {sectorDrilldownHoldings.length === 0 ? (
+              <p className="bs-sector-modal-empty">No holdings in this sector.</p>
+            ) : (
+              <table className="bs-sector-modal-table">
+                <thead>
+                  <tr>
+                    <th className="bs-th bs-th--l">Symbol</th>
+                    <th className="bs-th bs-th--l">Name</th>
+                    <th className="bs-th bs-th--r">Day</th>
+                    <th className="bs-th bs-th--r">Value</th>
+                    <th className="bs-th bs-th--r">Weight</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sectorDrilldownHoldings.map((h) => {
+                    const q = liveQuotes[h.ticker];
+                    const ch = q?.changePercent ?? h.change ?? 0;
+                    const weight =
+                      totalPortfolioValue > 0 ? (h.positionValue / totalPortfolioValue) * 100 : 0;
+                    const up = ch >= 0;
+                    return (
+                      <tr key={h.ticker} className="bs-tr">
+                        <td className="bs-td-sym">{h.ticker}</td>
+                        <td className="bs-td-name">{h.name}</td>
+                        <td className={`bs-td-r ${up ? 'bs-td-r--up' : 'bs-td-r--down'}`}>
+                          {fmtPct(ch)}
+                        </td>
+                        <td className="bs-td-r">
+                          ${h.positionValue.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                        </td>
+                        <td className="bs-td-r">{weight.toFixed(1)}%</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+      )}
 
       <AddPortfolioModal
         open={addPortfolioOpen}
