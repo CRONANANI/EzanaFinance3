@@ -12,6 +12,30 @@ export const dynamic = 'force-dynamic';
 
 const TIER_KEYS = ['novice', 'apprentice', 'strategist', 'tactician', 'master', 'grandmaster'];
 
+function utcYmd(d) {
+  return d.toISOString().split('T')[0];
+}
+function addUtcDays(date, delta) {
+  const x = new Date(date);
+  x.setUTCDate(x.getUTCDate() + delta);
+  return x;
+}
+function computeStreakFromDates(dateSet) {
+  let streakDays = 0;
+  let d = new Date();
+  let key = utcYmd(d);
+  if (!dateSet.has(key)) {
+    d = addUtcDays(d, -1);
+    key = utcYmd(d);
+  }
+  while (dateSet.has(key)) {
+    streakDays += 1;
+    d = addUtcDays(d, -1);
+    key = utcYmd(d);
+  }
+  return streakDays;
+}
+
 export async function GET(request) {
   let user;
   try {
@@ -34,7 +58,7 @@ export async function GET(request) {
 
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
-  const [{ count: higherCount }, { data: profile }, { data: txs }, { data: streakRow }] =
+  const [{ count: higherCount }, { data: profile }, { data: txs }, { data: loginRows }] =
     await Promise.all([
       supabase
         .from('user_elo')
@@ -52,11 +76,19 @@ export async function GET(request) {
         .gte('created_at', thirtyDaysAgo)
         .order('created_at', { ascending: true }),
       supabase
-        .from('user_learning_streaks')
-        .select('current_streak')
+        .from('user_login_history')
+        .select('login_date')
         .eq('user_id', user.id)
-        .maybeSingle(),
+        .gte('login_date', utcYmd(addUtcDays(new Date(), -30)))
+        .order('login_date', { ascending: false }),
     ]);
+
+  const loginDateSet = new Set(
+    (loginRows || []).map((r) =>
+      typeof r.login_date === 'string' ? r.login_date : utcYmd(new Date(r.login_date)),
+    ),
+  );
+  const computedStreakDays = computeStreakFromDates(loginDateSet);
 
   const globalRank = (higherCount ?? 0) + 1;
   const displayName = (profile?.full_name || profile?.username || 'Member').trim();
@@ -93,6 +125,6 @@ export async function GET(request) {
     active: humanizeLastActive(eloRow.last_activity_at),
     nextTier,
     progressToNext,
-    streakDays: streakRow?.current_streak ?? 0,
+    streakDays: computedStreakDays,
   });
 }

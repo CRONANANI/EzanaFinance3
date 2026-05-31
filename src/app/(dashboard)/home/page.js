@@ -20,6 +20,7 @@ import { usePlaidPortfolioSummary } from '@/hooks/usePlaidPortfolioSummary';
 import { usePortfolioValueSeries } from '@/hooks/usePortfolioValueSeries';
 import { useMockPortfolio } from '@/hooks/useMockPortfolio';
 import { useWatchlists } from '@/hooks/useWatchlists';
+import { useLoginHistory } from '@/hooks/useLoginHistory';
 import './broadsheet.css';
 
 const HOLDINGS_PAGE_SIZE = 9;
@@ -253,7 +254,18 @@ function Spark({ values, w = 96, h = 28, color, fill = false, strokeWidth = 1.5 
 }
 
 /* Band header component (Bands I-V) */
-function BandHeader({ number, label, meta, dark = false }) {
+function BandHeader({ number, label, meta, dark = false, centered = false }) {
+  if (centered) {
+    return (
+      <div className={`bs-band-head bs-band-head--centered ${dark ? 'bs-band-head--dark' : ''}`}>
+        <span className={`bs-band-num ${dark ? 'bs-band-num--dark' : ''}`}>{number}</span>
+        <h2 className={`bs-band-label ${dark ? 'bs-band-label--dark' : ''}`}>{label}</h2>
+        {meta ? (
+          <span className={`bs-band-meta ${dark ? 'bs-band-meta--dark' : ''}`}>{meta}</span>
+        ) : null}
+      </div>
+    );
+  }
   return (
     <div className={`bs-band-head ${dark ? 'bs-band-head--dark' : ''}`}>
       <div className="bs-band-head-left">
@@ -348,7 +360,7 @@ export default function HomePage() {
   const [sectorDrilldown, setSectorDrilldown] = useState(null);
   const [tickerModal, setTickerModal] = useState(null);
   const [tickerModalRange, setTickerModalRange] = useState('1M');
-  const [streakDays, setStreakDays] = useState(0);
+  const { streakDays } = useLoginHistory(30);
   const [streakMultiplier, setStreakMultiplier] = useState(false);
   const [addPortfolioOpen, setAddPortfolioOpen] = useState(false);
   const { rating: eloRating, tierLabel: eloTier } = useElo(user?.id);
@@ -1035,7 +1047,6 @@ export default function HomePage() {
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
         if (cancelled || !d || d.error) return;
-        setStreakDays(d.streakDays ?? 0);
         setStreakMultiplier(Boolean(d.multiplier_active));
       })
       .catch(() => {});
@@ -1239,7 +1250,12 @@ export default function HomePage() {
       {/* ═══ BAND I — LATELY ON EZANA ═══ */}
       <section className="bs-band bs-band--cream">
         <div className="bs-page-inner">
-          <BandHeader number="I" label="Lately on Ezana" meta="Performance · trailing seven days" />
+          <BandHeader
+            number="I"
+            label="Lately on Ezana"
+            meta="Performance · trailing seven days"
+            centered
+          />
           <div className="bs-chart-block">
             <div className="bs-chart-range-row">
               <div className="bs-seg-group">
