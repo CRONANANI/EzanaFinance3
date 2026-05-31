@@ -3,96 +3,36 @@
 import { useState, useCallback, useEffect } from 'react';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase-browser';
+import { BrandMark, brandColor } from './brokerage-brand-marks';
 import './add-portfolio-modal.css';
 
 const EZANA_LOGO = '/ezana-nav-logo.png';
 
 const BROKERAGES = [
-  {
-    id: 'WEALTHSIMPLE',
-    name: 'Wealthsimple',
-    logo: '/logos/brokerages/wealthsimple.png',
-    region: 'CA',
-  },
-  { id: 'QUESTRADE', name: 'Questrade', logo: '/logos/brokerages/questrade.png', region: 'CA' },
-  { id: 'WEBULL_CA', name: 'Webull (Canada)', logo: '/logos/brokerages/webull.png', region: 'CA' },
-  { id: 'SCHWAB', name: 'Charles Schwab', logo: '/logos/brokerages/schwab.png', region: 'US' },
-  { id: 'ETRADE', name: 'E*TRADE', logo: '/logos/brokerages/etrade.png', region: 'US' },
-  { id: 'PUBLIC', name: 'Public', logo: '/logos/brokerages/public.png', region: 'US' },
-  { id: 'WEBULL_US', name: 'Webull (US)', logo: '/logos/brokerages/webull.png', region: 'US' },
-  { id: 'TASTYTRADE', name: 'Tastytrade', logo: '/logos/brokerages/tastytrade.png', region: 'US' },
-  {
-    id: 'TRADESTATION',
-    name: 'TradeStation',
-    logo: '/logos/brokerages/tradestation.png',
-    region: 'US',
-  },
-  { id: 'TRADIER', name: 'Tradier', logo: '/logos/brokerages/tradier.png', region: 'US' },
-  { id: 'MOOMOO', name: 'moomoo', logo: '/logos/brokerages/moomoo.png', region: 'US' },
-  { id: 'ALPACA', name: 'Alpaca', logo: '/logos/brokerages/alpaca.png', region: 'US' },
-  {
-    id: 'ALPACA_PAPER',
-    name: 'Alpaca Paper',
-    logo: '/logos/brokerages/alpaca.png',
-    region: 'US',
-    paper: true,
-  },
-  {
-    id: 'TRADESTATION_PAPER',
-    name: 'TradeStation Paper',
-    logo: '/logos/brokerages/tradestation.png',
-    region: 'US',
-    paper: true,
-  },
-  { id: 'TRADING212', name: 'Trading 212', logo: '/logos/brokerages/trading212.png', region: 'UK' },
-  {
-    id: 'TRADING212_PRACTICE',
-    name: 'Trading 212 Practice',
-    logo: '/logos/brokerages/trading212.png',
-    region: 'UK',
-    paper: true,
-  },
-  { id: 'STAKE_AU', name: 'Stake (Australia)', logo: '/logos/brokerages/stake.png', region: 'AU' },
-  {
-    id: 'KRAKEN',
-    name: 'Kraken',
-    logo: '/logos/brokerages/kraken.png',
-    region: 'INTL',
-    kind: 'crypto',
-  },
-  {
-    id: 'COINBASE',
-    name: 'Coinbase',
-    logo: '/logos/brokerages/coinbase.png',
-    region: 'INTL',
-    kind: 'crypto',
-  },
-  {
-    id: 'BINANCE',
-    name: 'Binance',
-    logo: '/logos/brokerages/binance.png',
-    region: 'INTL',
-    kind: 'crypto',
-  },
+  { id: 'WEALTHSIMPLE', name: 'Wealthsimple', region: 'CA' },
+  { id: 'QUESTRADE', name: 'Questrade', region: 'CA' },
+  { id: 'WEBULL_CA', name: 'Webull (Canada)', region: 'CA' },
+  { id: 'SCHWAB', name: 'Charles Schwab', region: 'US' },
+  { id: 'ETRADE', name: 'E*TRADE', region: 'US' },
+  { id: 'PUBLIC', name: 'Public', region: 'US' },
+  { id: 'WEBULL_US', name: 'Webull (US)', region: 'US' },
+  { id: 'TASTYTRADE', name: 'Tastytrade', region: 'US' },
+  { id: 'TRADESTATION', name: 'TradeStation', region: 'US' },
+  { id: 'TRADIER', name: 'Tradier', region: 'US' },
+  { id: 'MOOMOO', name: 'moomoo', region: 'US' },
+  { id: 'ALPACA', name: 'Alpaca', region: 'US' },
+  { id: 'ALPACA_PAPER', name: 'Alpaca Paper', region: 'US', paper: true },
+  { id: 'TRADESTATION_PAPER', name: 'TradeStation Paper', region: 'US', paper: true },
+  { id: 'TRADING212', name: 'Trading 212', region: 'UK' },
+  { id: 'TRADING212_PRACTICE', name: 'Trading 212 Practice', region: 'UK', paper: true },
+  { id: 'STAKE_AU', name: 'Stake (Australia)', region: 'AU' },
+  { id: 'KRAKEN', name: 'Kraken', region: 'INTL', kind: 'crypto' },
+  { id: 'COINBASE', name: 'Coinbase', region: 'INTL', kind: 'crypto' },
+  { id: 'BINANCE', name: 'Binance', region: 'INTL', kind: 'crypto' },
 ];
 
-function BrokerLogo({ broker, size = 48 }) {
-  const [failed, setFailed] = useState(false);
-
-  if (failed) {
-    return <span className="apm-broker-fallback">{broker.name}</span>;
-  }
-
-  return (
-    <Image
-      src={broker.logo}
-      alt={broker.name}
-      width={size === 48 ? 48 : 160}
-      height={size === 48 ? 48 : 48}
-      className="apm-broker-logo"
-      onError={() => setFailed(true)}
-    />
-  );
+function BrokerLogo({ broker, size = 56 }) {
+  return <BrandMark id={broker.id} size={size} />;
 }
 
 export function AddPortfolioModal({ open, onClose, onConnected }) {
@@ -144,13 +84,26 @@ export function AddPortfolioModal({ open, onClose, onConnected }) {
         },
         body: JSON.stringify({ broker: selected.id, connectionType: 'read' }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.redirectURI) {
-        throw new Error(data?.error || 'Failed to start connection');
+        const code = data?.code;
+        if (code === 'broker_not_supported') {
+          throw new Error(
+            `${selected.name} isn't available right now. Please pick a different brokerage.`,
+          );
+        }
+        if (code === 'auth_required') {
+          throw new Error('Your session expired. Please sign in again.');
+        }
+        throw new Error("We couldn't open the connection portal. Please try again in a moment.");
       }
       window.location.href = data.redirectURI;
     } catch (e) {
-      setError(e?.message || 'Failed to start the connection. Please try again.');
+      const safe =
+        e?.message && e.message.length < 200 && !e.message.includes('status code')
+          ? e.message
+          : "We couldn't open the connection portal. Please try again in a moment.";
+      setError(safe);
       setLoading(false);
     }
   };
@@ -172,8 +125,10 @@ export function AddPortfolioModal({ open, onClose, onConnected }) {
                 type="button"
                 className={`apm-broker-tile ${selected?.id === b.id ? 'apm-broker-tile--active' : ''}`}
                 onClick={() => pickBroker(b)}
+                style={{ '--brand-accent': brandColor(b.id) }}
               >
-                <BrokerLogo broker={b} size={160} />
+                <BrokerLogo broker={b} size={56} />
+                <span className="apm-broker-name">{b.name}</span>
                 {b.paper ? <span className="apm-broker-tag">Paper</span> : null}
                 {b.region ? <span className="apm-broker-region">{b.region}</span> : null}
               </button>
