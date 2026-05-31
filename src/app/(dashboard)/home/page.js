@@ -162,6 +162,29 @@ function getGreeting() {
   return 'Good evening';
 }
 
+/** 'daily' on weekdays, 'weekly' on Sat/Sun (America/New_York). */
+function getMoversWindow() {
+  const nyParts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York',
+    weekday: 'short',
+  }).formatToParts(new Date());
+  const day = nyParts.find((p) => p.type === 'weekday')?.value;
+  return day === 'Sat' || day === 'Sun' ? 'weekly' : 'daily';
+}
+
+function weeklyPctFromCandles(candles) {
+  if (!candles?.length || candles.length < 2) return null;
+  const first = Number(candles[0]?.close ?? candles[0]?.c ?? candles[0]?.price ?? 0);
+  const last = Number(
+    candles[candles.length - 1]?.close ??
+      candles[candles.length - 1]?.c ??
+      candles[candles.length - 1]?.price ??
+      0,
+  );
+  if (first <= 0) return null;
+  return { pct: ((last - first) / first) * 100, price: last };
+}
+
 function formatLongDate() {
   return new Date().toLocaleDateString('en-US', {
     weekday: 'long',
@@ -509,6 +532,39 @@ export default function HomePage() {
     }));
   }, [activeWatchlist]);
 
+  const commodityGainers = useMemo(
+    () =>
+      [...commodityMovers]
+        .filter((c) => c.pct > 0)
+        .sort((a, b) => b.pct - a.pct)
+        .slice(0, 3),
+    [commodityMovers],
+  );
+  const commodityLosers = useMemo(
+    () =>
+      [...commodityMovers]
+        .filter((c) => c.pct < 0)
+        .sort((a, b) => a.pct - b.pct)
+        .slice(0, 3),
+    [commodityMovers],
+  );
+  const cryptoGainers = useMemo(
+    () =>
+      [...cryptoMovers]
+        .filter((c) => c.pct > 0)
+        .sort((a, b) => b.pct - a.pct)
+        .slice(0, 3),
+    [cryptoMovers],
+  );
+  const cryptoLosers = useMemo(
+    () =>
+      [...cryptoMovers]
+        .filter((c) => c.pct < 0)
+        .sort((a, b) => a.pct - b.pct)
+        .slice(0, 3),
+    [cryptoMovers],
+  );
+
   const firstName =
     user?.user_metadata?.full_name?.split(' ')[0] ||
     user?.user_metadata?.name?.split(' ')[0] ||
@@ -517,6 +573,9 @@ export default function HomePage() {
   const displayValue = Number.isFinite(currentValue) ? currentValue : 0;
   const changePct = valueWindowFromApi?.changePct ?? 0;
   const changeAbs = valueWindowFromApi?.changeAbs ?? 0;
+
+  const moversWindow = getMoversWindow();
+  const moversTitle = moversWindow === 'weekly' ? 'Top movers this week' : 'Top movers today';
 
   useEffect(() => {
     if (userWatchlists.length > 0 && !selectedWatchlistId) {
@@ -773,28 +832,57 @@ export default function HomePage() {
     let cancelled = false;
     (async () => {
       try {
-        const symbols = 'GC=F,CL=F,NG=F,SI=F,HG=F';
-        const res = await fetch(`/api/market/batch-quotes?symbols=${encodeURIComponent(symbols)}`);
-        if (!res.ok) return;
-        const data = await res.json();
-        const quotes = data.quotes || {};
-        const names = {
-          'GC=F': 'Gold',
-          'CL=F': 'Crude Oil',
-          'NG=F': 'Nat Gas',
-          'SI=F': 'Silver',
-          'HG=F': 'Copper',
-        };
-        if (!cancelled) {
-          setCommodityMovers(
-            Object.entries(quotes)
-              .map(([sym, q]) => ({
-                sym: names[sym] || sym,
-                pct: q.changePercent ?? 0,
-                price: q.price ?? 0,
-              }))
-              .sort((a, b) => Math.abs(b.pct) - Math.abs(a.pct)),
+        const COMMODITIES = [
+          { sym: 'GC=F', name: 'Gold' },
+          { sym: 'CL=F', name: 'Crude Oil' },
+          { sym: 'NG=F', name: 'Nat Gas' },
+          { sym: 'SI=F', name: 'Silver' },
+          { sym: 'HG=F', name: 'Copper' },
+          { sym: 'PL=F', name: 'Platinum' },
+          { sym: 'PA=F', name: 'Palladium' },
+          { sym: 'ZC=F', name: 'Corn' },
+          { sym: 'ZS=F', name: 'Soybeans' },
+          { sym: 'ZW=F', name: 'Wheat' },
+        ];
+
+        if (moversWindow === 'daily') {
+          const res = await fetch(
+            `/api/market/batch-quotes?symbols=${encodeURIComponent(COMMODITIES.map((c) => c.sym).join(','))}`,
           );
+          if (!res.ok) return;
+          const data = await res.json();
+          const quotes = data.quotes || {};
+          if (!cancelled) {
+            setCommodityMovers(
+              COMMODITIES.map((c) => {
+                const q = quotes[c.sym];
+                return {
+                  sym: c.name,
+                  pct: q?.changePercent ?? 0,
+                  price: q?.price ?? 0,
+                };
+              }).filter((r) => r.price > 0),
+            );
+          }
+        } else {
+          const results = await Promise.all(
+            COMMODITIES.map(async (c) => {
+              try {
+                const r = await fetch(
+                  `/api/market-data/stock-candles?symbol=${encodeURIComponent(c.sym)}&range=1W`,
+                );
+                if (!r.ok) return null;
+                const j = await r.json();
+                const row = weeklyPctFromCandles(j.candles || j.points || []);
+                return row ? { sym: c.name, ...row } : null;
+              } catch {
+                return null;
+              }
+            }),
+          );
+          if (!cancelled) {
+            setCommodityMovers(results.filter(Boolean));
+          }
         }
       } catch {
         /* ignore */
@@ -803,51 +891,89 @@ export default function HomePage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [moversWindow]);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch('/api/market-data/quotes');
-        if (!res.ok) return;
-        const data = await res.json();
-        const allQuotes = data.quotes || [];
-        const cryptoNames = { BTC: 'Bitcoin', ETH: 'Ethereum' };
-        const cryptoQuotes = allQuotes
-          .filter((q) => cryptoNames[q.symbol])
-          .map((q) => ({
-            sym: cryptoNames[q.symbol] || q.symbol,
-            pct: q.change ?? 0,
-            price: parseFloat(String(q.price).replace(/,/g, '')) || 0,
-          }));
-        try {
-          const extraRes = await fetch(
-            '/api/market/batch-quotes?symbols=BINANCE:SOLUSDT,BINANCE:XRPUSDT,BINANCE:ADAUSDT',
+        const CRYPTOS = [
+          { sym: 'BTCUSD', name: 'Bitcoin', candle: 'BTCUSD' },
+          { sym: 'ETHUSD', name: 'Ethereum', candle: 'ETHUSD' },
+          { sym: 'SOL', name: 'Solana', candle: 'BINANCE:SOLUSDT' },
+          { sym: 'XRP', name: 'XRP', candle: 'BINANCE:XRPUSDT' },
+          { sym: 'ADA', name: 'Cardano', candle: 'BINANCE:ADAUSDT' },
+          { sym: 'AVAX', name: 'Avalanche', candle: 'BINANCE:AVAXUSDT' },
+          { sym: 'DOT', name: 'Polkadot', candle: 'BINANCE:DOTUSDT' },
+          { sym: 'LINK', name: 'Chainlink', candle: 'BINANCE:LINKUSDT' },
+        ];
+
+        if (moversWindow === 'daily') {
+          const res = await fetch('/api/market-data/quotes');
+          if (!res.ok) return;
+          const data = await res.json();
+          const allQuotes = data.quotes || [];
+          const byName = Object.fromEntries(
+            CRYPTOS.filter((c) => c.sym === 'BTCUSD' || c.sym === 'ETHUSD').map((c) => [
+              c.sym.replace('USD', ''),
+              c.name,
+            ]),
           );
-          if (extraRes.ok) {
-            const extraData = await extraRes.json();
-            const extraQuotes = extraData.quotes || {};
-            const extraNames = {
-              'BINANCE:SOLUSDT': 'Solana',
-              'BINANCE:XRPUSDT': 'XRP',
-              'BINANCE:ADAUSDT': 'Cardano',
-            };
-            for (const [sym, q] of Object.entries(extraQuotes)) {
-              if (q.price > 0) {
-                cryptoQuotes.push({
-                  sym: extraNames[sym] || sym,
-                  pct: q.changePercent ?? 0,
-                  price: q.price ?? 0,
-                });
+          const mapped = allQuotes
+            .filter((q) => byName[q.symbol])
+            .map((q) => ({
+              sym: byName[q.symbol] || q.symbol,
+              pct: q.change ?? 0,
+              price: parseFloat(String(q.price).replace(/,/g, '')) || 0,
+            }));
+          try {
+            const extraRes = await fetch(
+              '/api/market/batch-quotes?symbols=BINANCE:SOLUSDT,BINANCE:XRPUSDT,BINANCE:ADAUSDT,BINANCE:AVAXUSDT,BINANCE:DOTUSDT,BINANCE:LINKUSDT',
+            );
+            if (extraRes.ok) {
+              const extraData = await extraRes.json();
+              const extraQuotes = extraData.quotes || {};
+              const extraNames = {
+                'BINANCE:SOLUSDT': 'Solana',
+                'BINANCE:XRPUSDT': 'XRP',
+                'BINANCE:ADAUSDT': 'Cardano',
+                'BINANCE:AVAXUSDT': 'Avalanche',
+                'BINANCE:DOTUSDT': 'Polkadot',
+                'BINANCE:LINKUSDT': 'Chainlink',
+              };
+              for (const [sym, q] of Object.entries(extraQuotes)) {
+                if (q.price > 0) {
+                  mapped.push({
+                    sym: extraNames[sym] || sym,
+                    pct: q.changePercent ?? 0,
+                    price: q.price ?? 0,
+                  });
+                }
               }
             }
+          } catch {
+            /* optional */
           }
-        } catch {
-          /* extra crypto symbols are optional */
-        }
-        if (!cancelled) {
-          setCryptoMovers(cryptoQuotes.sort((a, b) => Math.abs(b.pct) - Math.abs(a.pct)));
+          if (!cancelled) setCryptoMovers(mapped);
+        } else {
+          const results = await Promise.all(
+            CRYPTOS.map(async (c) => {
+              try {
+                const r = await fetch(
+                  `/api/market-data/stock-candles?symbol=${encodeURIComponent(c.candle)}&range=1W`,
+                );
+                if (!r.ok) return null;
+                const j = await r.json();
+                const row = weeklyPctFromCandles(j.candles || j.points || []);
+                return row ? { sym: c.name, ...row } : null;
+              } catch {
+                return null;
+              }
+            }),
+          );
+          if (!cancelled) {
+            setCryptoMovers(results.filter(Boolean));
+          }
         }
       } catch {
         /* ignore */
@@ -856,7 +982,7 @@ export default function HomePage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [moversWindow]);
 
   /* Fetch Plaid holdings if connected */
   useEffect(() => {
@@ -1635,19 +1761,23 @@ export default function HomePage() {
                 </div>
               ))}
             </div>
+          </div>
 
-            {/* Column C — Top movers */}
-            <div className="bs-intel-col">
-              <div className="bs-sub-head">
-                <h3 className="bs-sub-title">Top movers today</h3>
-              </div>
+          <div className="bs-movers-row">
+            <div className="bs-sub-head">
+              <h3 className="bs-sub-title">{moversTitle}</h3>
+              <span className="bs-sub-meta">
+                {moversWindow === 'weekly' ? 'Week ending Friday close' : 'Current session'}
+              </span>
+            </div>
 
-              <div className="bs-mover-group">
+            <div className="bs-movers-grid">
+              <div className="bs-movers-col">
                 <div className="bs-mover-group-head">Equities</div>
                 <div className="bs-mover-head">Gainers</div>
                 {(gainers.length ? gainers : [{ sym: '—', pct: 0 }]).slice(0, 3).map((g, i) => (
                   <Link
-                    key={g.sym}
+                    key={`eg-${g.sym}-${i}`}
                     href={`/company-research?symbol=${g.sym}`}
                     className="bs-mover-row bs-mover-row--link"
                   >
@@ -1666,7 +1796,7 @@ export default function HomePage() {
                 </div>
                 {(losers.length ? losers : [{ sym: '—', pct: 0 }]).slice(0, 3).map((l, i) => (
                   <Link
-                    key={l.sym}
+                    key={`el-${l.sym}-${i}`}
                     href={`/company-research?symbol=${l.sym}`}
                     className="bs-mover-row bs-mover-row--link"
                   >
@@ -1682,23 +1812,46 @@ export default function HomePage() {
                 ))}
               </div>
 
-              <div className="bs-mover-group">
+              <div className="bs-movers-col">
                 <div className="bs-mover-group-head">Commodities</div>
-                {commodityMovers.length === 0 ? (
-                  <p className="bs-mover-empty">Loading commodity data…</p>
+                <div className="bs-mover-head">Gainers</div>
+                {commodityGainers.length === 0 ? (
+                  <p className="bs-mover-empty">No gainers</p>
                 ) : (
-                  commodityMovers.slice(0, 4).map((c, i) => (
-                    <Link key={c.sym} href="/watchlist" className="bs-mover-row bs-mover-row--link">
+                  commodityGainers.map((c, i) => (
+                    <Link
+                      key={`cg-${c.sym}`}
+                      href="/watchlist"
+                      className="bs-mover-row bs-mover-row--link"
+                    >
                       <span className="bs-mover-sym">{c.sym}</span>
-                      <span
-                        className={`bs-mover-pct ${c.pct >= 0 ? 'bs-mover-pct--up' : 'bs-mover-pct--down'}`}
-                      >
-                        {c.pct >= 0 ? '+' : ''}
-                        {c.pct.toFixed(2)}%
-                      </span>
+                      <span className="bs-mover-pct bs-mover-pct--up">+{c.pct.toFixed(2)}%</span>
                       <Spark
-                        values={genSeries(41 + i * 13, 24, c.pct >= 0 ? 0.5 : -0.5, 1.0)}
-                        color={c.pct >= 0 ? 'var(--bs-green)' : 'var(--bs-red)'}
+                        values={genSeries(41 + i * 13, 24, 0.5, 1.0)}
+                        color="var(--bs-green)"
+                        w={56}
+                        h={20}
+                      />
+                    </Link>
+                  ))
+                )}
+                <div className="bs-mover-head" style={{ marginTop: 10 }}>
+                  Losers
+                </div>
+                {commodityLosers.length === 0 ? (
+                  <p className="bs-mover-empty">No losers</p>
+                ) : (
+                  commodityLosers.map((c, i) => (
+                    <Link
+                      key={`cl-${c.sym}`}
+                      href="/watchlist"
+                      className="bs-mover-row bs-mover-row--link"
+                    >
+                      <span className="bs-mover-sym">{c.sym}</span>
+                      <span className="bs-mover-pct bs-mover-pct--down">{c.pct.toFixed(2)}%</span>
+                      <Spark
+                        values={genSeries(141 + i * 13, 24, -0.5, 1.0)}
+                        color="var(--bs-red)"
                         w={56}
                         h={20}
                       />
@@ -1707,24 +1860,46 @@ export default function HomePage() {
                 )}
               </div>
 
-              <div className="bs-mover-group">
+              <div className="bs-movers-col">
                 <div className="bs-mover-group-head">Alternatives</div>
-                <div className="bs-mover-head">Crypto</div>
-                {cryptoMovers.length === 0 ? (
-                  <p className="bs-mover-empty">Loading crypto data…</p>
+                <div className="bs-mover-head">Gainers</div>
+                {cryptoGainers.length === 0 ? (
+                  <p className="bs-mover-empty">No gainers</p>
                 ) : (
-                  cryptoMovers.slice(0, 3).map((c, i) => (
-                    <Link key={c.sym} href="/watchlist" className="bs-mover-row bs-mover-row--link">
+                  cryptoGainers.map((c, i) => (
+                    <Link
+                      key={`ag-${c.sym}`}
+                      href="/watchlist"
+                      className="bs-mover-row bs-mover-row--link"
+                    >
                       <span className="bs-mover-sym">{c.sym}</span>
-                      <span
-                        className={`bs-mover-pct ${c.pct >= 0 ? 'bs-mover-pct--up' : 'bs-mover-pct--down'}`}
-                      >
-                        {c.pct >= 0 ? '+' : ''}
-                        {c.pct.toFixed(2)}%
-                      </span>
+                      <span className="bs-mover-pct bs-mover-pct--up">+{c.pct.toFixed(2)}%</span>
                       <Spark
-                        values={genSeries(51 + i * 5, 24, c.pct >= 0 ? 0.6 : -0.4, 1.2)}
-                        color={c.pct >= 0 ? 'var(--bs-green)' : 'var(--bs-red)'}
+                        values={genSeries(51 + i * 5, 24, 0.6, 1.2)}
+                        color="var(--bs-green)"
+                        w={56}
+                        h={20}
+                      />
+                    </Link>
+                  ))
+                )}
+                <div className="bs-mover-head" style={{ marginTop: 10 }}>
+                  Losers
+                </div>
+                {cryptoLosers.length === 0 ? (
+                  <p className="bs-mover-empty">No losers</p>
+                ) : (
+                  cryptoLosers.map((c, i) => (
+                    <Link
+                      key={`al-${c.sym}`}
+                      href="/watchlist"
+                      className="bs-mover-row bs-mover-row--link"
+                    >
+                      <span className="bs-mover-sym">{c.sym}</span>
+                      <span className="bs-mover-pct bs-mover-pct--down">{c.pct.toFixed(2)}%</span>
+                      <Spark
+                        values={genSeries(151 + i * 5, 24, -0.4, 1.2)}
+                        color="var(--bs-red)"
                         w={56}
                         h={20}
                       />

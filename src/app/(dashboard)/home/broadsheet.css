@@ -847,8 +847,9 @@ body:not(.light-mode) .bs-shell {
 /* ── Intelligence (V) ── */
 .bs-intel-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 48px;
+  margin-bottom: 40px;
 }
 .bs-opp-row {
   padding: 14px 0;
@@ -1680,4 +1681,31 @@ body.light-mode .bs-band + .bs-band {
   display: inline-flex;
   grid-template-columns: none;
   gap: 1px;
+}
+
+/* ── Top movers — full-width row below Intelligence grid ── */
+.bs-movers-row {
+  padding-top: 32px;
+  border-top: 1px solid var(--bs-border-rule);
+}
+.bs-movers-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 48px;
+  margin-top: 16px;
+}
+.bs-movers-col {
+  min-width: 0;
+}
+@media (max-width: 1100px) {
+  .bs-movers-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 32px;
+  }
+}
+@media (max-width: 680px) {
+  .bs-movers-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
 }
