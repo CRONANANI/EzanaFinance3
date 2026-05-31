@@ -150,10 +150,6 @@ export default function EzanaEchoPage() {
       <section className="echo-v3-hero-band">
         <div className="echo-v3-page-head">
           <div className="echo-v3-page-head-left">
-            <span className="echo-v3-eyebrow">
-              <span className="echo-v3-eyebrow-dot" />
-              Research · Featured today
-            </span>
             <h1 className="echo-v3-h1">
               Markets, decoded for builders
               <br />
