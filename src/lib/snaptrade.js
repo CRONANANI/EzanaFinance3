@@ -309,3 +309,49 @@ export async function runSnapTradeDailySync(supabase) {
     ...stats,
   };
 }
+
+/**
+ * Pull SnapTrade's canonical brokerage list and upsert it into our cache.
+ * Idempotent — safe to call repeatedly. Returns { upserted, total }.
+ */
+export async function refreshBrokerageCache() {
+  const snaptrade = getSnapTradeClient();
+  const supabase = getAdminClient();
+
+  const res = await snaptrade.referenceData.listAllBrokerages();
+  const brokerages = res?.data || [];
+
+  if (!Array.isArray(brokerages) || brokerages.length === 0) {
+    return { upserted: 0, total: 0 };
+  }
+
+  const rows = brokerages
+    .map((b) => {
+      if (!b?.slug) return null;
+      return {
+        slug: b.slug,
+        name: b.name || b.slug,
+        display_name: b.display_name || b.name || b.slug,
+        url: b.url || null,
+        logo_url: b.aws_s3_logo_url || b.logo_url || null,
+        square_logo_url: b.aws_s3_square_logo_url || b.square_logo_url || null,
+        enabled: b.enabled !== false,
+        maintenance_mode: !!b.maintenance_mode,
+        allows_trading: !!b.allows_trading,
+        allows_fractional_units: b.allows_fractional_units ?? null,
+        open_url: b.open_url || null,
+        brokerage_type: b.brokerage_type?.name || b.brokerage_type || null,
+        updated_at: new Date().toISOString(),
+      };
+    })
+    .filter(Boolean);
+
+  const { error } = await supabase
+    .from('snaptrade_brokerages_cache')
+    .upsert(rows, { onConflict: 'slug' });
+  if (error) {
+    console.error('[refreshBrokerageCache] upsert failed', error);
+    throw error;
+  }
+  return { upserted: rows.length, total: brokerages.length };
+}

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { alpacaRequest } from '@/lib/alpaca';
-import { runSnapTradeDailySync } from '@/lib/snaptrade';
+import { runSnapTradeDailySync, refreshBrokerageCache } from '@/lib/snaptrade';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -90,6 +90,16 @@ async function run(request) {
     return NextResponse.json({ error: 'Server misconfigured' }, { status: 503 });
   }
   const today = new Date().toISOString().slice(0, 10);
+
+  try {
+    const cacheResult = await refreshBrokerageCache();
+    console.log('[cron/portfolio-snapshot] brokerage cache refreshed', cacheResult);
+  } catch (e) {
+    console.warn(
+      '[cron/portfolio-snapshot] brokerage cache refresh failed (non-fatal)',
+      e?.message,
+    );
+  }
 
   const { data: users, error: userErr } = await supabase.from('user_elo').select('user_id');
   if (userErr || !users) {

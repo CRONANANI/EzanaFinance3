@@ -8,31 +8,34 @@ import './add-portfolio-modal.css';
 
 const EZANA_LOGO = '/ezana-nav-logo.png';
 
-const BROKERAGES = [
-  { id: 'WEALTHSIMPLE', name: 'Wealthsimple', region: 'CA' },
-  { id: 'QUESTRADE', name: 'Questrade', region: 'CA' },
-  { id: 'WEBULL_CA', name: 'Webull (Canada)', region: 'CA' },
-  { id: 'SCHWAB', name: 'Charles Schwab', region: 'US' },
-  { id: 'ETRADE', name: 'E*TRADE', region: 'US' },
-  { id: 'PUBLIC', name: 'Public', region: 'US' },
-  { id: 'WEBULL_US', name: 'Webull (US)', region: 'US' },
-  { id: 'TASTYTRADE', name: 'Tastytrade', region: 'US' },
-  { id: 'TRADESTATION', name: 'TradeStation', region: 'US' },
-  { id: 'TRADIER', name: 'Tradier', region: 'US' },
-  { id: 'MOOMOO', name: 'moomoo', region: 'US' },
-  { id: 'ALPACA', name: 'Alpaca', region: 'US' },
-  { id: 'ALPACA_PAPER', name: 'Alpaca Paper', region: 'US', paper: true },
-  { id: 'TRADESTATION_PAPER', name: 'TradeStation Paper', region: 'US', paper: true },
-  { id: 'TRADING212', name: 'Trading 212', region: 'UK' },
-  { id: 'TRADING212_PRACTICE', name: 'Trading 212 Practice', region: 'UK', paper: true },
-  { id: 'STAKE_AU', name: 'Stake (Australia)', region: 'AU' },
-  { id: 'KRAKEN', name: 'Kraken', region: 'INTL', kind: 'crypto' },
-  { id: 'COINBASE', name: 'Coinbase', region: 'INTL', kind: 'crypto' },
-  { id: 'BINANCE', name: 'Binance', region: 'INTL', kind: 'crypto' },
-];
-
 function BrokerLogo({ broker, size = 56 }) {
-  return <BrandMark id={broker.id} size={size} />;
+  const [imgFailed, setImgFailed] = useState(false);
+  const logoUrl = broker.square_logo_url || broker.logo_url;
+  if (!logoUrl || imgFailed) {
+    return <BrandMark id={broker.slug} size={size} />;
+  }
+  return (
+    <img
+      src={logoUrl}
+      alt={broker.display_name || broker.name}
+      width={size}
+      height={size}
+      className="apm-broker-logo-img"
+      onError={() => setImgFailed(true)}
+      loading="lazy"
+    />
+  );
+}
+
+function isPaper(broker) {
+  const slug = (broker.slug || '').toLowerCase();
+  const name = (broker.display_name || broker.name || '').toLowerCase();
+  return (
+    slug.includes('paper') ||
+    slug.includes('practice') ||
+    name.includes('paper') ||
+    name.includes('practice')
+  );
 }
 
 export function AddPortfolioModal({ open, onClose, onConnected }) {
@@ -40,6 +43,8 @@ export function AddPortfolioModal({ open, onClose, onConnected }) {
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [brokerages, setBrokerages] = useState([]);
+  const [loadingList, setLoadingList] = useState(true);
 
   const getToken = useCallback(async () => {
     const {
@@ -49,12 +54,28 @@ export function AddPortfolioModal({ open, onClose, onConnected }) {
   }, []);
 
   useEffect(() => {
-    if (open) {
-      setStep('grid');
-      setSelected(null);
-      setError(null);
-      setLoading(false);
-    }
+    if (!open) return;
+    setStep('grid');
+    setSelected(null);
+    setError(null);
+    setLoading(false);
+    setLoadingList(true);
+    let cancelled = false;
+    fetch('/api/snaptrade/brokerages', { credentials: 'include' })
+      .then((r) => (r.ok ? r.json() : { brokerages: [] }))
+      .then((data) => {
+        if (cancelled) return;
+        setBrokerages(data?.brokerages || []);
+      })
+      .catch(() => {
+        if (!cancelled) setBrokerages([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingList(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [open]);
 
   if (!open) return null;
@@ -82,14 +103,14 @@ export function AddPortfolioModal({ open, onClose, onConnected }) {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ broker: selected.id }),
+        body: JSON.stringify({ broker: selected.slug, connectionType: 'trade-if-available' }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.redirectURI) {
         const code = data?.code;
         if (code === 'broker_not_supported') {
           throw new Error(
-            `${selected.name} isn't available right now. Please pick a different brokerage.`,
+            `${selected.display_name || selected.name} isn't available right now. Please pick a different brokerage.`,
           );
         }
         if (code === 'auth_required') {
@@ -118,29 +139,43 @@ export function AddPortfolioModal({ open, onClose, onConnected }) {
             </button>
             <h2 className="apm-grid-title">Connect your brokerage</h2>
           </div>
-          <div className="apm-broker-grid">
-            {BROKERAGES.map((b) => (
-              <button
-                key={b.id}
-                type="button"
-                className={`apm-broker-tile ${selected?.id === b.id ? 'apm-broker-tile--active' : ''}`}
-                onClick={() => pickBroker(b)}
-                style={{ '--brand-accent': brandColor(b.id) }}
-              >
-                <BrokerLogo broker={b} size={56} />
-                <span className="apm-broker-name">{b.name}</span>
-                {b.paper ? <span className="apm-broker-tag">Paper</span> : null}
-                {b.region ? <span className="apm-broker-region">{b.region}</span> : null}
-              </button>
-            ))}
-          </div>
+
+          {loadingList ? (
+            <div className="apm-broker-grid-loading">Loading brokerages…</div>
+          ) : brokerages.length === 0 ? (
+            <div className="apm-broker-grid-loading">
+              We couldn&apos;t load the brokerage list. Please refresh and try again.
+            </div>
+          ) : (
+            <div className="apm-broker-grid">
+              {brokerages.map((b) => {
+                const paper = isPaper(b);
+                return (
+                  <button
+                    key={b.slug}
+                    type="button"
+                    className={`apm-broker-tile ${selected?.slug === b.slug ? 'apm-broker-tile--active' : ''}`}
+                    onClick={() => pickBroker(b)}
+                    style={{ '--brand-accent': brandColor(b.slug) }}
+                    title={b.display_name || b.name}
+                  >
+                    <div className="apm-broker-logo-wrap">
+                      <BrokerLogo broker={b} size={64} />
+                    </div>
+                    {paper ? <span className="apm-broker-tag">Paper</span> : null}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
           <button type="button" className="apm-manual-btn" onClick={handleManual}>
             Add investments manually
           </button>
         </div>
       )}
 
-      {step === 'disclosure' && (
+      {step === 'disclosure' && selected && (
         <div className="apm-card apm-card--disclosure" onClick={(e) => e.stopPropagation()}>
           <button
             type="button"
@@ -157,12 +192,12 @@ export function AddPortfolioModal({ open, onClose, onConnected }) {
             </span>
             <span className="apm-disc-arrow">⇄</span>
             <span className="apm-disc-logo apm-disc-logo--broker">
-              {selected ? <BrokerLogo broker={selected} size={48} /> : null}
+              <BrokerLogo broker={selected} size={48} />
             </span>
           </div>
 
           <h2 className="apm-disc-title">
-            Ezana connects securely to your {selected?.name || 'brokerage'} account
+            Ezana connects securely to your {selected.display_name || selected.name} account
           </h2>
 
           <div className="apm-disc-block">
@@ -185,7 +220,7 @@ export function AddPortfolioModal({ open, onClose, onConnected }) {
               <div className="apm-disc-block-title">Connect securely via SnapTrade</div>
               <p className="apm-disc-block-text">
                 We use SnapTrade — an SOC 2 Type II certified connectivity provider — to handle the
-                OAuth handshake with {selected?.name || 'your brokerage'}. Ezana never sees your
+                OAuth handshake with {selected.display_name || selected.name}. Ezana never sees your
                 login credentials.
               </p>
             </div>
