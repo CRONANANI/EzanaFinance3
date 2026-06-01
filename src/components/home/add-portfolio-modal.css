@@ -76,10 +76,12 @@ body:not(.light-mode) .apm-card {
 .apm-broker-tile {
   position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  min-height: 110px;
-  padding: 18px;
+  justify-content: flex-start;
+  gap: 8px;
+  min-height: 124px;
+  padding: 14px 12px 12px;
   border: 1px solid var(--border, #e5e7eb);
   border-radius: 10px;
   background: var(--background, #ffffff);
@@ -107,7 +109,7 @@ body:not(.light-mode) .apm-card {
   align-items: center;
   justify-content: center;
   width: 100%;
-  height: 64px;
+  height: 56px;
 }
 
 .apm-broker-logo-img {
@@ -116,6 +118,19 @@ body:not(.light-mode) .apm-card {
   width: auto;
   height: auto;
   object-fit: contain;
+}
+
+.apm-broker-name {
+  width: 100%;
+  font-size: 12.5px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--text-primary, #111);
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -0.005em;
 }
 
 .apm-broker-tag {
@@ -316,14 +331,17 @@ body:not(.light-mode) .apm-broker-logo-img {
   color: var(--emerald);
 }
 
-@media (max-width: 600px) {
+@media (max-width: 640px) {
   .apm-broker-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
   }
   .apm-broker-tile {
-    min-height: 90px;
-    padding: 14px;
+    min-height: 116px;
+    padding: 12px 10px 10px;
+  }
+  .apm-broker-name {
+    font-size: 11.5px;
   }
 }
 

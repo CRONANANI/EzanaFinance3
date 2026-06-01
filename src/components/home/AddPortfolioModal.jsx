@@ -174,7 +174,11 @@ export function AddPortfolioModal({ open, onClose, onConnected }) {
             <input
               type="text"
               className="apm-search"
-              placeholder="Search 5,000+ institutions…"
+              placeholder={
+                institutions.length > 100
+                  ? `Search ${institutions.length.toLocaleString()} institutions…`
+                  : 'Search institutions…'
+              }
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -203,15 +207,17 @@ export function AddPortfolioModal({ open, onClose, onConnected }) {
                       style={{ '--brand-accent': brandColor(inst.snaptradeSlug || inst.id) }}
                       title={`${inst.displayName}${readOnly ? ' (read-only)' : ''}`}
                     >
-                      <div className="apm-broker-logo-wrap">
-                        <InstitutionLogo inst={inst} size={64} />
-                      </div>
-                      {inst.providers.length === 2 && (
+                      {inst.providers.length === 2 ? (
                         <span className="apm-broker-tag apm-broker-tag--multi">2 providers</span>
-                      )}
-                      {readOnly && inst.providers.length !== 2 && (
+                      ) : readOnly ? (
                         <span className="apm-broker-tag apm-broker-tag--readonly">Read-only</span>
-                      )}
+                      ) : null}
+                      <div className="apm-broker-logo-wrap">
+                        <InstitutionLogo inst={inst} size={56} />
+                      </div>
+                      <div className="apm-broker-name" title={inst.displayName}>
+                        {inst.displayName}
+                      </div>
                     </button>
                   );
                 })}
