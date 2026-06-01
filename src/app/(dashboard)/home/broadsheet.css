@@ -468,29 +468,33 @@ body:not(.light-mode) .bs-shell {
   font-weight: 600;
 }
 .bs-seg-group {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 1px;
+  display: inline-flex;
+  gap: 6px;
   background: var(--bs-seg-bg);
-  padding: 1px;
-  border-radius: 4px;
+  padding: 4px;
+  border-radius: 8px;
 }
 .bs-seg {
   background: var(--bs-seg-btn-bg);
   border: none;
   color: var(--bs-seg-btn-text);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 500;
-  padding: 5px 0;
+  padding: 7px 14px;
+  min-width: 44px;
   cursor: pointer;
-  border-radius: 3px;
+  border-radius: 6px;
   font-family: inherit;
   transition: all 0.12s;
+  letter-spacing: 0.01em;
+}
+.bs-seg:hover {
+  color: var(--bs-seg-active-text);
 }
 .bs-seg--active {
   background: var(--bs-seg-active-bg);
   color: var(--bs-seg-active-text);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 /* ── Positions (II) ── */
@@ -945,6 +949,11 @@ body:not(.light-mode) .bs-shell {
 }
 .bs-cong-side--sell {
   color: var(--bs-red);
+}
+.bs-cong-side--lobby {
+  color: var(--bs-amber, #d4a853);
+  background: rgba(212, 168, 83, 0.12);
+  border: 1px solid rgba(212, 168, 83, 0.25);
 }
 .bs-cong-size {
   color: var(--bs-text-label);
@@ -1704,8 +1713,7 @@ body.light-mode .bs-band + .bs-band {
 }
 .bs-chart-range-row .bs-seg-group {
   display: inline-flex;
-  grid-template-columns: none;
-  gap: 1px;
+  gap: 6px;
 }
 
 /* ── Top movers — full-width row below Intelligence grid ── */

@@ -703,8 +703,12 @@ export default function HomePage() {
         const res = await fetch(`/api/fmp/sector-performance?range=${pulseRange}`);
         if (!res.ok) return;
         const json = await res.json();
-        const rows = json?.sectors?.data ?? json?.data ?? [];
-        const degraded = Boolean(json?.sectors?.degraded);
+        const rows = Array.isArray(json?.sectors)
+          ? json.sectors
+          : Array.isArray(json?.data)
+            ? json.data
+            : [];
+        const degraded = Boolean(json?.degraded);
         const sectors = rows
           .map((s) => ({ name: s.name || s.sector, chg: Number(s.changePct ?? 0) }))
           .sort((a, b) => b.chg - a.chg);
@@ -776,12 +780,18 @@ export default function HomePage() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch('/api/fmp/congress-latest');
-        if (!res.ok) return;
-        const data = await res.json();
-        if (!cancelled) {
-          setCongressTrades(
-            (data.trades || data || []).slice(0, 5).map((t) => ({
+        const [tradesRes, lobbyingRes] = await Promise.allSettled([
+          fetch('/api/fmp/congress-latest', { cache: 'no-store' }),
+          fetch('/api/quiver/lobbying', { cache: 'no-store' }),
+        ]);
+
+        const tradeRows = [];
+        if (tradesRes.status === 'fulfilled' && tradesRes.value.ok) {
+          const tradesData = await tradesRes.value.json();
+          const trades = tradesData.trades || tradesData || [];
+          for (const t of Array.isArray(trades) ? trades.slice(0, 4) : []) {
+            tradeRows.push({
+              kind: 'trade',
               rep: t.representative || t.name || '—',
               cham: t.chamber || t.house || 'Congress',
               when: t.transactionDate || t.date || '—',
@@ -790,11 +800,44 @@ export default function HomePage() {
                 ? 'BUY'
                 : 'SELL',
               size: t.amount || t.range || '—',
-            })),
-          );
+              ts: t.transactionDate ? new Date(t.transactionDate).getTime() : 0,
+            });
+          }
+        }
+
+        const lobbyingRows = [];
+        if (lobbyingRes.status === 'fulfilled' && lobbyingRes.value.ok) {
+          const lobbyingData = await lobbyingRes.value.json();
+          const items = Array.isArray(lobbyingData) ? lobbyingData : [];
+          for (const l of items.slice(0, 4)) {
+            const amount = Number(l.Amount);
+            const amountFmt = Number.isFinite(amount)
+              ? amount >= 1_000_000
+                ? `$${(amount / 1_000_000).toFixed(1)}M`
+                : amount >= 1_000
+                  ? `$${(amount / 1_000).toFixed(0)}K`
+                  : `$${amount.toLocaleString()}`
+              : '—';
+            lobbyingRows.push({
+              kind: 'lobbying',
+              rep: l.Client || l.Registrant || '—',
+              cham: 'Lobbying',
+              when: l.Date || '—',
+              sym: (l.Ticker || '').toUpperCase() || '—',
+              side: 'LOBBY',
+              size: amountFmt,
+              ts: l.Date ? new Date(l.Date).getTime() : 0,
+            });
+          }
+        }
+
+        const merged = [...tradeRows, ...lobbyingRows].sort((a, b) => b.ts - a.ts).slice(0, 6);
+
+        if (!cancelled) {
+          setCongressTrades(merged);
         }
       } catch {
-        /* ignore */
+        /* ignore — fallback empty-state placeholder will render */
       }
     })();
     return () => {
@@ -806,39 +849,61 @@ export default function HomePage() {
     let cancelled = false;
     (async () => {
       try {
-        const wlTickers = userWatchlists
-          .flatMap((w) => (w.stocks || []).map((s) => s.ticker))
-          .filter(Boolean)
-          .slice(0, 10)
-          .join(',');
-        const tickerParam = wlTickers ? `&tickers=${wlTickers}` : '';
-        const res = await fetch(`/api/market-data/news?limit=5${tickerParam}`);
+        const holdingTickers = (normalizedHoldings || [])
+          .map((h) => (h.ticker || '').toUpperCase())
+          .filter(Boolean);
+        const watchlistTickers = (userWatchlists || [])
+          .flatMap((w) => (w.stocks || []).map((s) => (s.ticker || '').toUpperCase()))
+          .filter(Boolean);
+        const userTickers = new Set([...holdingTickers, ...watchlistTickers]);
+
+        const res = await fetch('/api/isr/feed?window=24h&minSeverity=Low', {
+          cache: 'no-store',
+        });
         if (!res.ok) return;
         const data = await res.json();
+        const allEvents = Array.isArray(data?.events) ? data.events : [];
+
+        const SEVERITY_RANK = { Critical: 3, High: 2, Medium: 1, Low: 0 };
+        const scored = allEvents.map((e) => {
+          const impacted = Array.isArray(e.impactedSymbols)
+            ? e.impactedSymbols.map((s) => String(s).toUpperCase())
+            : [];
+          const matchedTicker = impacted.find((s) => userTickers.has(s));
+          return {
+            event: e,
+            relevance: matchedTicker ? 1 : 0,
+            matchedTicker: matchedTicker || impacted[0] || '',
+            severity: SEVERITY_RANK[e.severity] ?? 0,
+            ts: e.publishedAt ? new Date(e.publishedAt).getTime() : 0,
+          };
+        });
+        scored.sort((a, b) => b.relevance - a.relevance || b.severity - a.severity || b.ts - a.ts);
+
+        const top = scored.slice(0, 5).map(({ event, matchedTicker }) => ({
+          sym: matchedTicker || '',
+          title: event.headline || '',
+          src: event.source || '',
+          url: event.url || '#',
+          when: event.publishedAt
+            ? new Date(event.publishedAt).toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+              })
+            : '',
+        }));
+
         if (!cancelled) {
-          setOpportunities(
-            (data.news || []).slice(0, 5).map((a) => ({
-              sym: '',
-              title: a.title || a.headline || '',
-              src: a.source || '',
-              url: a.url || '#',
-              when: a.datetime
-                ? new Date(a.datetime).toLocaleTimeString('en-US', {
-                    hour: 'numeric',
-                    minute: '2-digit',
-                  })
-                : '',
-            })),
-          );
+          setOpportunities(top);
         }
       } catch {
-        /* ignore */
+        /* ignore — empty state will render */
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [userWatchlists]);
+  }, [normalizedHoldings, userWatchlists]);
 
   useEffect(() => {
     let cancelled = false;
@@ -1715,7 +1780,13 @@ export default function HomePage() {
                   <div className="bs-cong-right">
                     <div className="bs-cong-sym">{c.sym}</div>
                     <div
-                      className={`bs-cong-side ${c.side === 'BUY' ? 'bs-cong-side--buy' : 'bs-cong-side--sell'}`}
+                      className={`bs-cong-side ${
+                        c.side === 'BUY'
+                          ? 'bs-cong-side--buy'
+                          : c.side === 'LOBBY'
+                            ? 'bs-cong-side--lobby'
+                            : 'bs-cong-side--sell'
+                      }`}
                     >
                       {c.side}
                     </div>
