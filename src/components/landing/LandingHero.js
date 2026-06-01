@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { AnimatedWaitlistForm } from '@/components/landing/AnimatedWaitlistForm';
 import { GlobeWithNotificationCards } from '@/components/landing/GlobeWithNotificationCards';
 import { AnimatedWords } from '@/components/ui/animated-words';
 import TrueFocus from '@/components/ui/TrueFocus';
@@ -13,12 +12,11 @@ import { LAND_GEOJSON_URL } from '@/components/ui/interactive-globe';
 /**
  * Landing hero sequence (after navbar paints from layout):
  * 1) Headline + subtitle lines (word animation)
- * 2) Waitlist CTA
- * 3) Falling pattern + globe fade in together (globe loads in background while copy runs)
+ * 2) Falling pattern + globe fade in together (globe loads in background while copy runs)
  */
 const RUN_ANIM_MS = 100;
-/** When CTA copy can finish animating; hero background mounts after this (no pattern before CTA). */
-const CTA_PHASE_MS = 2550;
+/** When hero copy finishes animating; hero background mounts after this. */
+const CTA_PHASE_MS = 2000;
 
 /** Canvas size (square) for InteractiveGlobe — must match .globe-container CSS to avoid mobile crop/clipping. */
 function useHeroGlobeSize() {
