@@ -26,10 +26,14 @@
   box-shadow: 0 10px 30px -10px rgba(13, 24, 33, 0.18);
   padding: 16px 20px;
   font-family: var(--font-sans, 'Plus Jakarta Sans', system-ui, sans-serif);
-  pointer-events: auto;
 
-  /* Center everything inside */
+  /* Outer box renders glass but does not capture clicks; children do. */
+  pointer-events: none;
+
   text-align: center;
+}
+.cookie-banner > * {
+  pointer-events: auto;
 }
 .cookie-banner::before,
 .cookie-banner::after {

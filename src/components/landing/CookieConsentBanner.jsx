@@ -63,18 +63,28 @@ export function CookieConsentBanner() {
       document.documentElement.style.removeProperty('--cookie-banner-height');
       return;
     }
+    const COMFORTABLE_CLEARANCE_PX = 80;
+
     const update = () => {
       const el = document.querySelector('.cookie-banner');
       if (!el) return;
-      const h = Math.ceil(el.getBoundingClientRect().height) + 24 + 24;
-      document.documentElement.style.setProperty('--cookie-banner-height', `${h}px`);
+      const rect = el.getBoundingClientRect();
+      const viewportH = window.innerHeight || document.documentElement.clientHeight;
+      const fromBottom = Math.max(0, viewportH - rect.top);
+      const reserve = Math.ceil(fromBottom + COMFORTABLE_CLEARANCE_PX);
+      document.documentElement.style.setProperty('--cookie-banner-height', `${reserve}px`);
     };
+
     update();
+    const raf = requestAnimationFrame(update);
+
     const ro = new ResizeObserver(update);
     const el = document.querySelector('.cookie-banner');
     if (el) ro.observe(el);
     window.addEventListener('resize', update);
+
     return () => {
+      cancelAnimationFrame(raf);
       ro.disconnect();
       window.removeEventListener('resize', update);
       document.documentElement.style.removeProperty('--cookie-banner-height');
