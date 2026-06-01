@@ -181,9 +181,6 @@ export function LandingHero() {
                 staggerMs={22}
               />
             </p>
-            <div className="hero-waitlist animate-in" data-delay="1880">
-              <AnimatedWaitlistForm />
-            </div>
           </div>
         </div>
         <div

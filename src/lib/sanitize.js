@@ -99,3 +99,36 @@ export function sanitizeAIOutput(text) {
     .replace(/javascript:/gi, '')
     .replace(/data:text\/html/gi, '');
 }
+
+/**
+ * Generic input sanitizer — alias for sanitizeText with optional max-length.
+ * Several API routes (community/posts, messages) import this name.
+ */
+export function sanitizeInput(input, maxLength = 5000) {
+  return sanitizeText(input, maxLength);
+}
+
+/**
+ * Recursively sanitize every string-valued field in an object. Pass through
+ * primitives unchanged. Used by partner-application/submit and partner/profile
+ * to scrub form-submitted JSON before persisting.
+ *
+ * @param {unknown} value
+ * @param {number} [maxFieldLength=5000]
+ */
+export function sanitizeObject(value, maxFieldLength = 5000) {
+  if (value == null) return value;
+  if (typeof value === 'string') return sanitizeText(value, maxFieldLength);
+  if (typeof value === 'number' || typeof value === 'boolean') return value;
+  if (Array.isArray(value)) {
+    return value.map((v) => sanitizeObject(v, maxFieldLength));
+  }
+  if (typeof value === 'object') {
+    const out = {};
+    for (const [k, v] of Object.entries(value)) {
+      out[k] = sanitizeObject(v, maxFieldLength);
+    }
+    return out;
+  }
+  return value;
+}
