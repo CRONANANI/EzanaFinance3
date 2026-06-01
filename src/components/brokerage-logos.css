@@ -78,10 +78,9 @@
 }
 
 .bl-logo-img {
-  opacity: 0.55;
-  filter: grayscale(100%) brightness(1.8);
+  opacity: 0.85;
   transition: all 0.3s ease;
-  max-height: 60px;
+  max-height: 56px;
   max-width: 200px;
   width: auto;
   height: auto;
@@ -89,7 +88,7 @@
 
 .bl-logo-item:hover .bl-logo-img {
   opacity: 1;
-  filter: grayscale(0%) brightness(1);
+  transform: scale(1.05);
 }
 
 @media (max-width: 768px) {
@@ -120,10 +119,8 @@ body.light-mode .bl-heading {
   color: #111827;
 }
 body.light-mode .bl-logo-img {
-  opacity: 0.4;
-  filter: grayscale(100%) brightness(0.4);
+  opacity: 0.75;
 }
 body.light-mode .bl-logo-item:hover .bl-logo-img {
-  opacity: 0.9;
-  filter: grayscale(0%) brightness(1);
+  opacity: 1;
 }
