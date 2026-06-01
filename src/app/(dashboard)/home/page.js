@@ -173,6 +173,22 @@ function getMoversWindow() {
   return day === 'Sat' || day === 'Sun' ? 'weekly' : 'daily';
 }
 
+/**
+ * Commodities shown in the home Top Movers — must match the watchlist page's
+ * COMMODITIES_ONLY constant so both surfaces show the same instruments.
+ */
+const HOME_COMMODITIES = [
+  { name: 'Gold', batchSym: 'GC=F', candleSym: 'GCUSD' },
+  { name: 'Silver', batchSym: 'SI=F', candleSym: 'SIUSD' },
+  { name: 'Platinum', batchSym: 'PL=F', candleSym: 'PLUSD' },
+  { name: 'Palladium', batchSym: 'PA=F', candleSym: 'PAUSD' },
+  { name: 'Copper', batchSym: 'HG=F', candleSym: 'HGUSD' },
+  { name: 'Oil (WTI)', batchSym: 'CL=F', candleSym: 'CLUSD' },
+  { name: 'Nat Gas', batchSym: 'NG=F', candleSym: 'NGUSD' },
+  { name: 'Wheat', batchSym: 'ZW=F', candleSym: 'ZWUSD' },
+  { name: 'Corn', batchSym: 'ZC=F', candleSym: 'ZCUSD' },
+];
+
 function weeklyPctFromCandles(candles) {
   if (!candles?.length || candles.length < 2) return null;
   const first = Number(candles[0]?.close ?? candles[0]?.c ?? candles[0]?.price ?? 0);
@@ -910,30 +926,36 @@ export default function HomePage() {
     (async () => {
       try {
         if (moversWindow === 'daily') {
-          const res = await fetch('/api/fmp/commodities');
+          const batchSyms = HOME_COMMODITIES.map((c) => c.batchSym).join(',');
+          const res = await fetch(
+            `/api/market/batch-quotes?symbols=${encodeURIComponent(batchSyms)}`,
+          );
           if (!res.ok) return;
           const data = await res.json();
-          const rows = (data.quotes || []).map((q) => ({
-            sym: q.name,
-            pct: Number(q.changePercent) || 0,
-            price: Number(q.price) || 0,
-          }));
+          const quotes = data?.quotes || {};
+          const rows = HOME_COMMODITIES.map((c) => {
+            const q = quotes[c.batchSym];
+            if (!q) return null;
+            const pct = Number(q.changePercent);
+            if (!Number.isFinite(pct)) return null;
+            return {
+              sym: c.name,
+              pct,
+              price: Number(q.price) || 0,
+            };
+          }).filter(Boolean);
           if (!cancelled) setCommodityMovers(rows);
         } else {
-          const list = await fetch('/api/fmp/commodities').then((r) =>
-            r.ok ? r.json() : { quotes: [] },
-          );
-          const symbols = (list.quotes || []).map((q) => ({ sym: q.symbol, name: q.name }));
           const results = await Promise.all(
-            symbols.map(async (s) => {
+            HOME_COMMODITIES.map(async (c) => {
               try {
                 const r = await fetch(
-                  `/api/market-data/stock-candles?symbol=${encodeURIComponent(s.sym)}&range=1W`,
+                  `/api/market-data/stock-candles?symbol=${encodeURIComponent(c.candleSym)}&range=1W`,
                 );
                 if (!r.ok) return null;
                 const j = await r.json();
                 const row = weeklyPctFromCandles(j.candles || j.points || []);
-                return row ? { sym: s.name, ...row } : null;
+                return row ? { sym: c.name, ...row } : null;
               } catch {
                 return null;
               }
@@ -942,7 +964,7 @@ export default function HomePage() {
           if (!cancelled) setCommodityMovers(results.filter(Boolean));
         }
       } catch {
-        /* ignore */
+        /* ignore — empty state will render */
       }
     })();
     return () => {
