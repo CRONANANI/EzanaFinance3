@@ -844,57 +844,37 @@ export default function HomePage() {
     let cancelled = false;
     (async () => {
       try {
-        const COMMODITIES = [
-          { sym: 'GC=F', name: 'Gold' },
-          { sym: 'CL=F', name: 'Crude Oil' },
-          { sym: 'NG=F', name: 'Nat Gas' },
-          { sym: 'SI=F', name: 'Silver' },
-          { sym: 'HG=F', name: 'Copper' },
-          { sym: 'PL=F', name: 'Platinum' },
-          { sym: 'PA=F', name: 'Palladium' },
-          { sym: 'ZC=F', name: 'Corn' },
-          { sym: 'ZS=F', name: 'Soybeans' },
-          { sym: 'ZW=F', name: 'Wheat' },
-        ];
-
         if (moversWindow === 'daily') {
-          const res = await fetch(
-            `/api/market/batch-quotes?symbols=${encodeURIComponent(COMMODITIES.map((c) => c.sym).join(','))}`,
-          );
+          const res = await fetch('/api/fmp/commodities');
           if (!res.ok) return;
           const data = await res.json();
-          const quotes = data.quotes || {};
-          if (!cancelled) {
-            setCommodityMovers(
-              COMMODITIES.map((c) => {
-                const q = quotes[c.sym];
-                return {
-                  sym: c.name,
-                  pct: q?.changePercent ?? 0,
-                  price: q?.price ?? 0,
-                };
-              }).filter((r) => r.price > 0),
-            );
-          }
+          const rows = (data.quotes || []).map((q) => ({
+            sym: q.name,
+            pct: Number(q.changePercent) || 0,
+            price: Number(q.price) || 0,
+          }));
+          if (!cancelled) setCommodityMovers(rows);
         } else {
+          const list = await fetch('/api/fmp/commodities').then((r) =>
+            r.ok ? r.json() : { quotes: [] },
+          );
+          const symbols = (list.quotes || []).map((q) => ({ sym: q.symbol, name: q.name }));
           const results = await Promise.all(
-            COMMODITIES.map(async (c) => {
+            symbols.map(async (s) => {
               try {
                 const r = await fetch(
-                  `/api/market-data/stock-candles?symbol=${encodeURIComponent(c.sym)}&range=1W`,
+                  `/api/market-data/stock-candles?symbol=${encodeURIComponent(s.sym)}&range=1W`,
                 );
                 if (!r.ok) return null;
                 const j = await r.json();
                 const row = weeklyPctFromCandles(j.candles || j.points || []);
-                return row ? { sym: c.name, ...row } : null;
+                return row ? { sym: s.name, ...row } : null;
               } catch {
                 return null;
               }
             }),
           );
-          if (!cancelled) {
-            setCommodityMovers(results.filter(Boolean));
-          }
+          if (!cancelled) setCommodityMovers(results.filter(Boolean));
         }
       } catch {
         /* ignore */
@@ -909,83 +889,37 @@ export default function HomePage() {
     let cancelled = false;
     (async () => {
       try {
-        const CRYPTOS = [
-          { sym: 'BTCUSD', name: 'Bitcoin', candle: 'BTCUSD' },
-          { sym: 'ETHUSD', name: 'Ethereum', candle: 'ETHUSD' },
-          { sym: 'SOL', name: 'Solana', candle: 'BINANCE:SOLUSDT' },
-          { sym: 'XRP', name: 'XRP', candle: 'BINANCE:XRPUSDT' },
-          { sym: 'ADA', name: 'Cardano', candle: 'BINANCE:ADAUSDT' },
-          { sym: 'AVAX', name: 'Avalanche', candle: 'BINANCE:AVAXUSDT' },
-          { sym: 'DOT', name: 'Polkadot', candle: 'BINANCE:DOTUSDT' },
-          { sym: 'LINK', name: 'Chainlink', candle: 'BINANCE:LINKUSDT' },
-        ];
-
         if (moversWindow === 'daily') {
-          const res = await fetch('/api/market-data/quotes');
+          const res = await fetch('/api/fmp/crypto');
           if (!res.ok) return;
           const data = await res.json();
-          const allQuotes = data.quotes || [];
-          const byName = Object.fromEntries(
-            CRYPTOS.filter((c) => c.sym === 'BTCUSD' || c.sym === 'ETHUSD').map((c) => [
-              c.sym.replace('USD', ''),
-              c.name,
-            ]),
-          );
-          const mapped = allQuotes
-            .filter((q) => byName[q.symbol])
-            .map((q) => ({
-              sym: byName[q.symbol] || q.symbol,
-              pct: q.change ?? 0,
-              price: parseFloat(String(q.price).replace(/,/g, '')) || 0,
-            }));
-          try {
-            const extraRes = await fetch(
-              '/api/market/batch-quotes?symbols=BINANCE:SOLUSDT,BINANCE:XRPUSDT,BINANCE:ADAUSDT,BINANCE:AVAXUSDT,BINANCE:DOTUSDT,BINANCE:LINKUSDT',
-            );
-            if (extraRes.ok) {
-              const extraData = await extraRes.json();
-              const extraQuotes = extraData.quotes || {};
-              const extraNames = {
-                'BINANCE:SOLUSDT': 'Solana',
-                'BINANCE:XRPUSDT': 'XRP',
-                'BINANCE:ADAUSDT': 'Cardano',
-                'BINANCE:AVAXUSDT': 'Avalanche',
-                'BINANCE:DOTUSDT': 'Polkadot',
-                'BINANCE:LINKUSDT': 'Chainlink',
-              };
-              for (const [sym, q] of Object.entries(extraQuotes)) {
-                if (q.price > 0) {
-                  mapped.push({
-                    sym: extraNames[sym] || sym,
-                    pct: q.changePercent ?? 0,
-                    price: q.price ?? 0,
-                  });
-                }
-              }
-            }
-          } catch {
-            /* optional */
-          }
-          if (!cancelled) setCryptoMovers(mapped);
+          const rows = (data.quotes || []).map((q) => ({
+            sym: q.name,
+            pct: Number(q.changePercent) || 0,
+            price: Number(q.price) || 0,
+          }));
+          if (!cancelled) setCryptoMovers(rows);
         } else {
+          const list = await fetch('/api/fmp/crypto').then((r) =>
+            r.ok ? r.json() : { quotes: [] },
+          );
+          const symbols = (list.quotes || []).map((q) => ({ sym: q.symbol, name: q.name }));
           const results = await Promise.all(
-            CRYPTOS.map(async (c) => {
+            symbols.map(async (s) => {
               try {
                 const r = await fetch(
-                  `/api/market-data/stock-candles?symbol=${encodeURIComponent(c.candle)}&range=1W`,
+                  `/api/market-data/stock-candles?symbol=${encodeURIComponent(s.sym)}&range=1W`,
                 );
                 if (!r.ok) return null;
                 const j = await r.json();
                 const row = weeklyPctFromCandles(j.candles || j.points || []);
-                return row ? { sym: c.name, ...row } : null;
+                return row ? { sym: s.name, ...row } : null;
               } catch {
                 return null;
               }
             }),
           );
-          if (!cancelled) {
-            setCryptoMovers(results.filter(Boolean));
-          }
+          if (!cancelled) setCryptoMovers(results.filter(Boolean));
         }
       } catch {
         /* ignore */

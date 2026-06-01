@@ -113,7 +113,7 @@ body:not(.light-mode) .bs-shell {
 }
 
 .bs-page-inner {
-  padding: 32px 56px;
+  padding: 22px 56px;
   max-width: 100%;
 }
 .bs-page-inner--tight {
@@ -174,8 +174,8 @@ body:not(.light-mode) .bs-shell {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  padding-bottom: 22px;
-  margin-bottom: 28px;
+  padding-bottom: 14px;
+  margin-bottom: 20px;
   border-bottom: 1px solid var(--bs-border-rule);
 }
 .bs-band-head.bs-band-head--centered {
@@ -184,9 +184,9 @@ body:not(.light-mode) .bs-shell {
   align-items: center;
   justify-content: center;
   text-align: center;
-  gap: 6px;
-  padding-bottom: 22px;
-  margin-bottom: 28px;
+  gap: 4px;
+  padding-bottom: 14px;
+  margin-bottom: 20px;
   border-bottom: 1px solid var(--bs-border-rule);
 }
 .bs-band-head.bs-band-head--centered .bs-band-num {
@@ -207,7 +207,7 @@ body:not(.light-mode) .bs-shell {
   gap: 18px;
 }
 .bs-band-num {
-  font-size: 14px;
+  font-size: 11px;
   color: var(--bs-text-label-caps);
   letter-spacing: 0.18em;
   font-weight: 700;
@@ -217,18 +217,18 @@ body:not(.light-mode) .bs-shell {
 }
 .bs-band-label {
   margin: 0;
-  font-size: 36px;
-  font-weight: 600;
+  font-size: 24px;
+  font-weight: 700;
   color: var(--bs-text-dark);
-  letter-spacing: -0.025em;
+  letter-spacing: -0.02em;
 }
 .bs-band-label--dark {
   color: var(--bs-dark-text);
 }
 .bs-band-meta {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--bs-text-label);
-  letter-spacing: 0.12em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   font-weight: 600;
 }
@@ -286,25 +286,25 @@ body:not(.light-mode) .bs-shell {
   color: #fff;
 }
 .bs-eyebrow {
-  font-size: 11px;
+  font-size: 9.5px;
   color: var(--bs-text-label);
   letter-spacing: 0.16em;
   text-transform: uppercase;
   font-weight: 700;
 }
 .bs-hero-greet {
-  margin: 10px 0 14px;
-  font-size: clamp(32px, 4.5vw, 56px);
-  font-weight: 600;
+  margin: 6px 0 8px;
+  font-size: clamp(24px, 2.6vw, 30px);
+  font-weight: 700;
   color: var(--bs-text-dark);
-  letter-spacing: -0.04em;
-  line-height: 1;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
 }
 .bs-hero-lede {
   margin: 0;
-  font-size: 15px;
+  font-size: 13px;
   color: var(--bs-text-body);
-  line-height: 1.5;
+  line-height: 1.55;
   max-width: 460px;
   text-wrap: pretty;
 }
@@ -313,31 +313,31 @@ body:not(.light-mode) .bs-shell {
   color: var(--bs-text-dark);
 }
 .bs-section-label {
-  font-size: 11px;
+  font-size: 9.5px;
   color: var(--bs-text-label);
   letter-spacing: 0.16em;
   text-transform: uppercase;
   font-weight: 700;
 }
 .bs-hero-num {
-  font-size: clamp(28px, 4vw, 48px);
-  font-weight: 600;
-  letter-spacing: -0.04em;
-  margin-top: 6px;
+  font-size: clamp(28px, 3.2vw, 36px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-top: 4px;
   font-family: var(--font-mono, 'JetBrains Mono', monospace);
   font-variant-numeric: tabular-nums;
   color: var(--bs-text-dark);
-  line-height: 1;
+  line-height: 1.05;
 }
 .bs-hero-delta-row {
   display: flex;
   align-items: baseline;
-  gap: 16px;
-  margin-top: 10px;
+  gap: 12px;
+  margin-top: 6px;
 }
 .bs-hero-pos {
   color: var(--bs-green);
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 600;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
@@ -347,14 +347,15 @@ body:not(.light-mode) .bs-shell {
 }
 .bs-hero-abs {
   color: var(--bs-text-label);
-  font-size: 14px;
+  font-size: 12px;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 .bs-hero-stats {
-  margin-top: 18px;
+  margin-top: 12px;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
   border-top: 1px solid var(--bs-border-rule);
   border-bottom: 1px solid var(--bs-border-rule);
 }
@@ -366,14 +367,15 @@ body:not(.light-mode) .bs-shell {
   border-right: none;
 }
 .bs-hero-stat-label {
-  font-size: 10px;
+  font-size: 9.5px;
   color: var(--bs-text-label);
   letter-spacing: 0.14em;
   font-weight: 700;
   text-transform: uppercase;
+  margin-bottom: 2px;
 }
 .bs-hero-stat-val {
-  font-size: 20px;
+  font-size: 15px;
   color: var(--bs-text-dark);
   font-weight: 600;
   margin-top: 4px;
@@ -598,25 +600,27 @@ body:not(.light-mode) .bs-shell {
 
 /* Progress cards */
 .bs-prog-label {
-  font-size: 11px;
+  font-size: 9.5px;
   color: var(--bs-text-label);
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 10px;
 }
 .bs-prog-num {
-  font-size: 44px;
-  font-weight: 600;
+  font-size: 22px;
+  font-weight: 700;
   color: var(--bs-text-dark);
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.03em;
-  line-height: 1;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  margin-top: 4px;
 }
 .bs-prog-slash {
-  color: var(--bs-text-label-caps);
-  font-weight: 400;
+  font-size: 14px;
+  color: var(--bs-text-label);
+  font-weight: 500;
 }
 .bs-prog-foot {
   margin-top: 10px;
@@ -1484,7 +1488,7 @@ body.light-mode .bs-band + .bs-band {
   gap: 12px;
 }
 .bs-prog-card--compact {
-  padding: 12px 14px;
+  padding: 10px 12px;
 }
 .bs-streak-mult {
   color: var(--emerald);
