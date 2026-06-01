@@ -1145,10 +1145,10 @@ body.light-mode .bs-band + .bs-band {
     padding-top: 32px;
   }
   .bs-hero-greet {
-    font-size: 44px;
+    font-size: 28px;
   }
   .bs-hero-num {
-    font-size: 36px;
+    font-size: 32px;
   }
   .bs-index-strip {
     display: flex;
@@ -1191,7 +1191,7 @@ body.light-mode .bs-band + .bs-band {
     gap: 4px;
   }
   .bs-band-label {
-    font-size: 28px;
+    font-size: 22px;
   }
 }
 
