@@ -38,20 +38,6 @@ function isPaper(broker) {
   );
 }
 
-/**
- * Detects brokers that SnapTrade only supports in read-only mode. Crypto
- * exchanges (Coinbase, Gemini, Kraken, Binance.US) plus a handful of
- * read-only data partners can't use the `trade-if-available` connection
- * type — they return 400 on login if we send trade flags.
- */
-function isReadOnlyBroker(broker) {
-  if (!broker) return false;
-  const type = String(broker.brokerage_type || '').toLowerCase();
-  if (type.includes('crypto') || type.includes('exchange')) return true;
-  if (broker.allows_trading === false) return true;
-  return false;
-}
-
 export function AddPortfolioModal({ open, onClose, onConnected }) {
   const [step, setStep] = useState('grid');
   const [selected, setSelected] = useState(null);
@@ -111,15 +97,18 @@ export function AddPortfolioModal({ open, onClose, onConnected }) {
     try {
       const token = await getToken();
       if (!token) throw new Error('Please sign in to connect a brokerage.');
-      const connectionType = isReadOnlyBroker(selected) ? 'read' : 'trade-if-available';
-
       const res = await fetch('/api/snaptrade/connect-url', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ broker: selected.slug, connectionType }),
+        body: JSON.stringify({
+          broker: selected.slug,
+          allowsTrading: selected.allows_trading,
+          brokerageType: selected.brokerage_type,
+          connectionType: undefined,
+        }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.redirectURI) {
@@ -177,6 +166,11 @@ export function AddPortfolioModal({ open, onClose, onConnected }) {
             <div className="apm-broker-grid">
               {brokerages.map((b) => {
                 const paper = isPaper(b);
+                const type = String(b.brokerage_type || '').toLowerCase();
+                const readOnly =
+                  b.allows_trading === false ||
+                  type.includes('crypto') ||
+                  type.includes('exchange');
                 return (
                   <button
                     key={b.slug}
@@ -184,12 +178,15 @@ export function AddPortfolioModal({ open, onClose, onConnected }) {
                     className={`apm-broker-tile ${selected?.slug === b.slug ? 'apm-broker-tile--active' : ''}`}
                     onClick={() => pickBroker(b)}
                     style={{ '--brand-accent': brandColor(b.slug) }}
-                    title={b.display_name || b.name}
+                    title={`${b.display_name || b.name}${readOnly ? ' (read-only)' : ''}`}
                   >
                     <div className="apm-broker-logo-wrap">
                       <BrokerLogo broker={b} size={64} />
                     </div>
                     {paper ? <span className="apm-broker-tag">Paper</span> : null}
+                    {readOnly && !paper ? (
+                      <span className="apm-broker-tag apm-broker-tag--readonly">Read-only</span>
+                    ) : null}
                   </button>
                 );
               })}
@@ -252,6 +249,41 @@ export function AddPortfolioModal({ open, onClose, onConnected }) {
               </p>
             </div>
           </div>
+
+          {(() => {
+            const type = String(selected.brokerage_type || '').toLowerCase();
+            const isReadOnly =
+              selected.allows_trading === false ||
+              type.includes('crypto') ||
+              type.includes('exchange');
+            return (
+              <div className="apm-disc-block">
+                <div className="apm-disc-icon">
+                  <i className={isReadOnly ? 'bi bi-eye' : 'bi bi-arrow-left-right'} />
+                </div>
+                <div>
+                  <div className="apm-disc-block-title">
+                    {isReadOnly ? 'Read-only access' : 'Trading and portfolio access'}
+                  </div>
+                  <p className="apm-disc-block-text">
+                    {isReadOnly ? (
+                      <>
+                        {selected.display_name || selected.name} connects in read-only mode. We can
+                        show your holdings, balances, and recent activity — but cannot place trades
+                        from Ezana.
+                      </>
+                    ) : (
+                      <>
+                        {selected.display_name || selected.name} supports both portfolio sync and
+                        order placement through SnapTrade. You can place trades from Ezana once
+                        connected.
+                      </>
+                    )}
+                  </p>
+                </div>
+              </div>
+            );
+          })()}
 
           {error ? <p className="apm-disc-error">{error}</p> : null}
 

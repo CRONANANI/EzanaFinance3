@@ -6,10 +6,38 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 /**
+ * Decide the optimal connection type for a given broker based on its
+ * SnapTrade-side capability flags.
+ */
+function pickConnectionType({ allowsTrading, brokerageType }) {
+  if (allowsTrading === false) return 'read';
+  const t = String(brokerageType || '').toLowerCase();
+  if (t.includes('crypto') || t.includes('exchange')) return 'read';
+  return 'trade-if-available';
+}
+
+/**
+ * Generate the attempt plan for a given broker. Each entry is a
+ * { broker, connectionType } pair tried in order until one succeeds.
+ */
+function buildPlan(broker, optimal) {
+  const candidates = [
+    { broker, connectionType: optimal },
+    ...(optimal === 'trade-if-available' ? [{ broker, connectionType: 'trade' }] : []),
+    ...(optimal !== 'read' ? [{ broker, connectionType: 'read' }] : []),
+    { broker: undefined, connectionType: 'read' },
+  ];
+  const seen = new Set();
+  return candidates.filter((c) => {
+    const key = `${c.broker ?? ''}|${c.connectionType}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+/**
  * POST /api/snaptrade/connect-url
- *
- * Strategy: try broker + requested connection type, then read-only fallbacks,
- * then SnapTrade's brokerage picker without a broker hint.
  */
 export async function POST(request) {
   let user;
@@ -25,13 +53,18 @@ export async function POST(request) {
   } catch {
     body = {};
   }
-  const broker = body.broker;
-  const requestedConnectionType =
+  const broker = body.broker || undefined;
+  const allowsTrading = body.allowsTrading;
+  const brokerageType = body.brokerageType;
+  const overrideConnectionType =
     body.connectionType === 'trade'
       ? 'trade'
       : body.connectionType === 'read'
         ? 'read'
-        : 'trade-if-available';
+        : body.connectionType === 'trade-if-available'
+          ? 'trade-if-available'
+          : undefined;
+  const optimal = overrideConnectionType ?? pickConnectionType({ allowsTrading, brokerageType });
 
   let creds;
   try {
@@ -74,25 +107,25 @@ export async function POST(request) {
     } catch (err) {
       const info = readSnapTradeError(err);
       attempts.push({ ...opts, status: info.status, detail: info.detail });
-      return { ok: false, info };
+      return {
+        ok: false,
+        hardStop: info.status === 401 || info.status === 403 || info.status === 429,
+        info,
+      };
     }
   };
 
-  const plan = [
-    { broker, connectionType: requestedConnectionType },
-    ...(requestedConnectionType !== 'read' ? [{ broker, connectionType: 'read' }] : []),
-    { broker: undefined, connectionType: 'read' },
-  ].filter((step) => step.broker !== undefined || step.connectionType);
+  const plan = buildPlan(broker, optimal);
 
   for (const step of plan) {
     const result = await tryLogin(step);
     if (result.ok) {
       const usedBroker = step.broker || null;
       const usedConn = step.connectionType;
-      if (usedBroker !== broker || usedConn !== requestedConnectionType) {
+      if (usedBroker !== broker || usedConn !== optimal) {
         console.warn('[snaptrade/connect-url] fell back to', {
           requestedBroker: broker,
-          requestedConnectionType,
+          optimalConnectionType: optimal,
           usedBroker,
           usedConnectionType: usedConn,
           attempts,
@@ -103,11 +136,17 @@ export async function POST(request) {
         sessionId: result.sessionId,
         _usedBroker: usedBroker,
         _usedConnectionType: usedConn,
+        _pivoted: usedBroker !== broker || usedConn !== optimal,
       });
     }
+    if (result.hardStop) break;
   }
 
-  console.error('[snaptrade/connect-url] all attempts failed', { broker, attempts });
+  console.error('[snaptrade/connect-url] all attempts failed', {
+    broker,
+    optimal,
+    attempts,
+  });
 
   const last = attempts[attempts.length - 1] || {};
   if (last.status === 429) {
@@ -121,7 +160,11 @@ export async function POST(request) {
   }
   if (last.status === 401 || last.status === 403) {
     return NextResponse.json(
-      { error: 'Authentication issue with our connection provider.', code: 'auth_failed' },
+      {
+        error: 'Authentication issue with our connection provider.',
+        code: 'auth_failed',
+        detail: last.detail || undefined,
+      },
       { status: 502 },
     );
   }

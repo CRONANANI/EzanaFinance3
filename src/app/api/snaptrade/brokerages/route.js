@@ -37,7 +37,7 @@ export async function GET() {
     rows = refreshed.data || [];
   }
 
-  const usable = rows.filter((b) => b.enabled && !b.maintenance_mode);
+  const usable = rows.filter((b) => b.enabled && !b.maintenance_mode && b.brokerage_type !== null);
 
   return NextResponse.json({ brokerages: usable, count: usable.length });
 }

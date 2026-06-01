@@ -132,6 +132,12 @@ body:not(.light-mode) .apm-card {
   color: #047857;
 }
 
+.apm-broker-tag--readonly {
+  background: rgba(212, 168, 83, 0.12);
+  color: var(--bs-amber, #b08038);
+  border: 1px solid rgba(212, 168, 83, 0.28);
+}
+
 .apm-broker-grid-loading {
   padding: 60px 20px;
   text-align: center;
