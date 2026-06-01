@@ -82,7 +82,21 @@ export async function POST(request) {
     );
   }
 
-  const snaptrade = getSnapTradeClient();
+  let snaptrade;
+  try {
+    snaptrade = getSnapTradeClient();
+  } catch (err) {
+    console.error('[snaptrade/connect-url] client init failed', err?.message);
+    return NextResponse.json(
+      {
+        error:
+          'Brokerage connections are not configured. Contact support and reference: SNAPTRADE_CREDS_MISSING.',
+        code: 'snaptrade_not_configured',
+        detail: err?.message || 'SnapTrade credentials missing in environment',
+      },
+      { status: 503 },
+    );
+  }
   const origin = request.nextUrl.origin;
   const customRedirect = `${origin}/portfolio/connect-callback`;
 
@@ -106,7 +120,17 @@ export async function POST(request) {
       return { ok: false };
     } catch (err) {
       const info = readSnapTradeError(err);
-      attempts.push({ ...opts, status: info.status, detail: info.detail });
+      const networkMessage =
+        !info.status && err?.message
+          ? `${err.code || 'NETWORK'}: ${err.message}${err.cause?.message ? ` (${err.cause.message})` : ''}`
+          : null;
+      attempts.push({
+        ...opts,
+        status: info.status,
+        detail: info.detail || networkMessage,
+        rawCode: err?.code,
+        rawMessage: err?.message,
+      });
       return {
         ok: false,
         hardStop: info.status === 401 || info.status === 403 || info.status === 429,
@@ -149,6 +173,7 @@ export async function POST(request) {
   });
 
   const last = attempts[attempts.length - 1] || {};
+
   if (last.status === 429) {
     return NextResponse.json(
       {
@@ -163,7 +188,9 @@ export async function POST(request) {
       {
         error: 'Authentication issue with our connection provider.',
         code: 'auth_failed',
-        detail: last.detail || undefined,
+        detail:
+          last.detail ||
+          'SnapTrade rejected the request — check SNAPTRADE_CONSUMER_KEY or IP allowlist',
       },
       { status: 502 },
     );
@@ -178,11 +205,28 @@ export async function POST(request) {
       { status: 400 },
     );
   }
+
+  if (!last.status) {
+    const networkDetail =
+      last.detail ||
+      (attempts[0] && (attempts[0].detail || attempts[0].message)) ||
+      'No response from SnapTrade. Check that the production server can reach api.snaptrade.com and that any IP allowlist permits it.';
+    return NextResponse.json(
+      {
+        error: 'Could not reach our connection provider.',
+        code: 'network_unreachable',
+        detail: networkDetail,
+      },
+      { status: 502 },
+    );
+  }
+
   return NextResponse.json(
     {
       error: 'Could not open the connection portal.',
       code: 'portal_unavailable',
-      detail: last.detail || undefined,
+      detail: last.detail || `SnapTrade returned ${last.status} with no message`,
+      _attempts: attempts.length,
     },
     { status: 502 },
   );

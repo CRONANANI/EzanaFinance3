@@ -127,6 +127,25 @@ export function AddPortfolioModal({ open, onClose, onConnected }) {
         if (code === 'rate_limited') {
           throw new Error('Too many requests. Wait a moment and try again.');
         }
+        if (code === 'snaptrade_not_configured') {
+          throw new Error(
+            'Brokerage connections are not configured on this deployment. Contact support — reference: SNAPTRADE_CREDS_MISSING.',
+          );
+        }
+        if (code === 'network_unreachable') {
+          throw new Error(
+            detail
+              ? `Could not reach our connection provider: ${String(detail).slice(0, 140)}`
+              : 'Could not reach our connection provider. This is usually a temporary network issue with SnapTrade — try again in a few minutes.',
+          );
+        }
+        if (code === 'auth_failed') {
+          throw new Error(
+            detail
+              ? `Connection provider rejected the request: ${String(detail).slice(0, 140)}`
+              : 'Connection provider rejected the request. This usually means our SnapTrade credentials need attention — contact support.',
+          );
+        }
         const baseMsg = "We couldn't open the connection portal.";
         if (detail) {
           const trimmed = String(detail).slice(0, 140);
@@ -137,7 +156,7 @@ export function AddPortfolioModal({ open, onClose, onConnected }) {
       window.location.href = data.redirectURI;
     } catch (e) {
       const safe =
-        e?.message && e.message.length < 200 && !e.message.includes('status code')
+        e?.message && e.message.length < 280
           ? e.message
           : "We couldn't open the connection portal. Please try again in a moment.";
       setError(safe);
