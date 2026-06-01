@@ -11,11 +11,9 @@ import { CookieConsentBanner } from '@/components/landing/CookieConsentBanner';
 import { AnalyticsGate } from '@/components/landing/AnalyticsGate';
 import { LandingErrorBoundary } from '@/components/landing/LandingErrorBoundary';
 import { FooterClickDebug } from '@/components/landing/footer-click-debug';
+import { TrustedLogos } from '@/components/TrustedLogos';
+import { BrokerageLogos } from '@/components/BrokerageLogos';
 
-const TrustedLogos = dynamic(
-  () => import('@/components/TrustedLogos').then((m) => ({ default: m.TrustedLogos })),
-  { ssr: true, loading: () => null },
-);
 const ContactSupportDialog = dynamic(
   () =>
     import('@/components/ui/contact-support-dialog').then((m) => ({
@@ -35,6 +33,10 @@ export default function HomePage() {
 
       <LandingErrorBoundary name="TrustedLogos">
         <TrustedLogos />
+      </LandingErrorBoundary>
+
+      <LandingErrorBoundary name="BrokerageLogos">
+        <BrokerageLogos />
       </LandingErrorBoundary>
 
       <LandingErrorBoundary name="FeaturesSection">
