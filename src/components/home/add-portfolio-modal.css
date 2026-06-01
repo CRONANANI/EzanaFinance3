@@ -174,6 +174,10 @@ body:not(.light-mode) .apm-broker-logo-img {
   filter: brightness(0.95);
 }
 
+body:not(.light-mode) .apm-broker-name {
+  color: rgba(255, 255, 255, 0.92);
+}
+
 .apm-manual-btn {
   margin: 4px 20px 0;
   padding: 14px;
