@@ -1,49 +1,202 @@
 'use client';
 
 /**
- * Inline SVG brand marks for each SnapTrade-supported brokerage. We render
- * these directly instead of loading PNG files so the modal never shows a
- * broken-image state and the marks scale crisply at any tile size.
+ * Inline SVG brand marks for brokerages and Plaid institutions surfaced in
+ * the Add Portfolio modal. Rendering inline (vs. loading PNGs) guarantees
+ * zero broken-image states, crisp scaling at any tile size, and works offline.
  *
- * Each entry returns a React node. The accentColor is the brokerage's primary
- * brand color (used as a thin rail along the top of each tile).
- *
- * Logos are simplified single-color marks — recognizable brand cues without
- * pixel-perfect logo cloning. If a brokerage objects, swap to an empty mark
- * (their wordmark below covers identification).
+ * Resolution path: an institution → resolveBrandKey(inst) → switch case →
+ * SVG. If no case matches, the default branch renders a first-letter mark
+ * inside a colored square — still recognizable, no gray void.
  */
 
 const COLORS = {
-  WEALTHSIMPLE: '#2D5BFF',
+  // Crypto exchanges
+  COINBASE: '#0052FF',
+  BINANCE: '#F0B90B',
+  KRAKEN: '#5741D9',
+  // Canadian
+  WEALTHSIMPLE: '#000000',
   QUESTRADE: '#005DAA',
   WEBULL_CA: '#1E5BFF',
-  WEBULL_US: '#1E5BFF',
+  // US brokers
   SCHWAB: '#00A0DF',
   ETRADE: '#6633CC',
+  ETRADE_PAPER: '#6633CC',
   PUBLIC: '#000000',
   TASTYTRADE: '#00C805',
   TRADESTATION: '#00B050',
+  TRADESTATION_PAPER: '#00B050',
   TRADIER: '#13294B',
   MOOMOO: '#FF6F2C',
   ALPACA: '#FFD43B',
   ALPACA_PAPER: '#FFD43B',
-  TRADESTATION_PAPER: '#00B050',
   TRADING212: '#00AA5B',
   TRADING212_PRACTICE: '#00AA5B',
+  WEBULL_US: '#1E5BFF',
+  FIDELITY: '#368727',
+  ROBINHOOD: '#00C805',
+  TD_AMERITRADE: '#5C9F44',
+  IBKR: '#D81C2F',
+  MERRILL: '#012169',
+  US_BANK: '#0F2F7A',
+  VANGUARD: '#C8102E',
+  WEALTHFRONT: '#0E5CFF',
+  BETTERMENT: '#F8C026',
+  SOFI: '#0066FF',
+  M1: '#000000',
+  ACORNS: '#00A862',
+  // Retirement / 401k (Plaid-only)
+  EMPOWER: '#005EB8',
+  EMPOWER_FCU: '#1B7E36',
+  VOYA: '#FF671F',
+  PRINCIPAL: '#0033A0',
+  TIAA: '#003C71',
+  // Australian / international
   STAKE_AU: '#00C19F',
-  KRAKEN: '#5741D9',
-  COINBASE: '#0052FF',
-  BINANCE: '#F0B90B',
 };
 
-export function brandColor(id) {
-  return COLORS[id] || '#6b7280';
+export function brandColor(input) {
+  const key = typeof input === 'string' ? input : resolveBrandKey(input);
+  return COLORS[key] || '#6b7280';
 }
 
-/** Tiny abstract mark, sized to fit a 56px square. The wordmark below it
- *  carries identification; this is the visual hook. */
-export function BrandMark({ id, size = 56 }) {
-  const color = brandColor(id);
+/**
+ * Canonical brand-key resolver. Accepts a full institution object or any
+ * string-ish input. Returns the key used by the switch below. Normalizes
+ * casing, strips punctuation, handles common SnapTrade slug variants and
+ * Plaid display-name aliases.
+ *
+ * The matching is intentionally generous: 'Charles Schwab & Co.', 'Schwab',
+ * 'CHARLES-SCHWAB', and the SnapTrade slug 'SCHWAB' all resolve to 'SCHWAB'.
+ */
+export function resolveBrandKey(input) {
+  if (!input) return '';
+
+  // String input (legacy callers)
+  const raw = typeof input === 'string' ? input : null;
+  const slug = raw || input.snaptradeSlug || input.snaptrade_slug || input.slug || '';
+  const name = raw || input.displayName || input.display_name || input.name || '';
+
+  // Try SnapTrade slug first — already uppercase
+  const slugNorm = String(slug)
+    .toUpperCase()
+    .replace(/[^A-Z0-9_]/g, '_')
+    .replace(/_+/g, '_');
+  if (slugNorm && COLORS[slugNorm]) return slugNorm;
+
+  // SnapTrade variants of WEBULL — handle WEBULL_USA, WEBULL_CA, WEBULL
+  if (/^WEBULL/.test(slugNorm)) {
+    if (slugNorm.includes('CA')) return 'WEBULL_CA';
+    return 'WEBULL_US';
+  }
+
+  // Normalize name for alias lookup
+  const lower = String(name).toLowerCase();
+
+  // Order matters — most specific match first
+  // (Empower Federal Credit Union is a different company from Empower Retirement
+  // — we resolve to different keys for them.)
+  if (lower.includes('empower') && (lower.includes('credit union') || lower.includes('fcu')))
+    return 'EMPOWER_FCU';
+  if (lower.includes('empower')) return 'EMPOWER';
+  if (lower.includes('schwab')) return 'SCHWAB';
+  if (lower.includes('merrill')) return 'MERRILL';
+  if (lower.includes('interactive brokers') || lower.includes('ibkr')) return 'IBKR';
+  if (lower.includes('vanguard')) return 'VANGUARD';
+  if (lower.includes('wealthfront')) return 'WEALTHFRONT';
+  if (lower.includes('betterment')) return 'BETTERMENT';
+  if (lower.includes('us bank') || lower.includes('u.s. bank')) return 'US_BANK';
+  if (lower.includes('fidelity netbenefits')) return 'FIDELITY';
+  if (lower.includes('fidelity')) return 'FIDELITY';
+  if (lower.includes('robinhood')) return 'ROBINHOOD';
+  if (lower.includes('td ameritrade') || lower.includes('td direct')) return 'TD_AMERITRADE';
+  if (lower.includes('etrade') || lower.includes('e*trade') || lower.includes('e trade'))
+    return 'ETRADE';
+  if (lower.includes('coinbase')) return 'COINBASE';
+  if (lower.includes('binance')) return 'BINANCE';
+  if (lower.includes('kraken')) return 'KRAKEN';
+  if (lower.includes('wealthsimple')) return 'WEALTHSIMPLE';
+  if (lower.includes('questrade')) return 'QUESTRADE';
+  if (lower.includes('webull') && (lower.includes('canada') || lower.includes(' ca')))
+    return 'WEBULL_CA';
+  if (lower.includes('webull')) return 'WEBULL_US';
+  if (lower.includes('public.com') || /\bpublic\b/.test(lower)) return 'PUBLIC';
+  if (lower.includes('tastytrade') || lower.includes('tasty trade')) return 'TASTYTRADE';
+  if (lower.includes('tradestation')) return 'TRADESTATION';
+  if (lower.includes('tradier')) return 'TRADIER';
+  if (lower.includes('moomoo')) return 'MOOMOO';
+  if (lower.includes('alpaca')) return 'ALPACA';
+  if (lower.includes('trading 212') || lower.includes('trading212')) return 'TRADING212';
+  if (lower.includes('voya')) return 'VOYA';
+  if (lower.includes('principal')) return 'PRINCIPAL';
+  if (lower.includes('tiaa')) return 'TIAA';
+  if (lower.includes('sofi')) return 'SOFI';
+  if (lower.includes('m1 ')) return 'M1';
+  if (lower.includes('acorns')) return 'ACORNS';
+  if (lower.includes('stake')) return 'STAKE_AU';
+
+  return slugNorm || '';
+}
+
+/**
+ * Default letter-mark fallback for institutions that don't match any
+ * brand. Generates a deterministic color from the name so the same
+ * institution always gets the same color (no flicker on re-render).
+ */
+function LetterMark({ name, size }) {
+  const initial =
+    String(name || '?')
+      .trim()
+      .charAt(0)
+      .toUpperCase() || '?';
+  // Hash the name to one of 8 muted brand-safe colors
+  const palette = [
+    '#3b5b8b',
+    '#5b7a9a',
+    '#4a6b54',
+    '#8a6a3e',
+    '#7a4e60',
+    '#4f5d6f',
+    '#6a5c8e',
+    '#5e7868',
+  ];
+  let hash = 0;
+  for (let i = 0; i < (name || '').length; i++)
+    hash = (hash * 31 + (name || '').charCodeAt(i)) >>> 0;
+  const color = palette[hash % palette.length];
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 56 56"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <rect width="56" height="56" rx="10" fill={color} />
+      <text
+        x="28"
+        y="38"
+        textAnchor="middle"
+        fontFamily="'Plus Jakarta Sans', sans-serif"
+        fontWeight="700"
+        fontSize="28"
+        fill="#ffffff"
+      >
+        {initial}
+      </text>
+    </svg>
+  );
+}
+
+/**
+ * Inline SVG brand mark. Pass either the canonical key as `id` or a full
+ * institution as `inst`. If both are present, `id` wins (legacy callers).
+ */
+export function BrandMark({ id, inst, size = 56, name }) {
+  const key = id || resolveBrandKey(inst);
+  const color = brandColor(key);
+  const displayName = name || inst?.displayName || inst?.display_name || inst?.name || key;
   const common = {
     width: size,
     height: size,
@@ -52,7 +205,7 @@ export function BrandMark({ id, size = 56 }) {
     'aria-hidden': true,
   };
 
-  switch (id) {
+  switch (key) {
     case 'COINBASE':
       return (
         <svg {...common}>
@@ -89,9 +242,291 @@ export function BrandMark({ id, size = 56 }) {
         </svg>
       );
 
+    case 'SCHWAB':
+      return (
+        <svg {...common}>
+          <rect width="56" height="56" rx="10" fill={color} />
+          <text
+            x="28"
+            y="38"
+            textAnchor="middle"
+            fontFamily="'Plus Jakarta Sans', sans-serif"
+            fontWeight="800"
+            fontSize="28"
+            fill="#fff"
+          >
+            cs
+          </text>
+        </svg>
+      );
+
+    case 'MERRILL':
+      return (
+        <svg {...common}>
+          <rect width="56" height="56" rx="10" fill={color} />
+          {/* Stylized bull silhouette */}
+          <path
+            d="M14 36 Q14 28 22 28 L22 24 Q22 20 26 20 L30 20 Q34 20 34 24 L34 28 Q42 28 42 36 L42 40 L36 40 L36 36 L32 36 L32 40 L24 40 L24 36 L20 36 L20 40 L14 40 Z M24 18 Q26 16 28 16 Q30 16 32 18 L30 20 L26 20 Z"
+            fill="#fff"
+          />
+        </svg>
+      );
+
+    case 'IBKR':
+      return (
+        <svg {...common}>
+          <rect width="56" height="56" rx="10" fill={color} />
+          <path d="M16 14 L40 14 L28 30 Z" fill="#fff" />
+          <circle cx="28" cy="38" r="5" fill="#fff" />
+        </svg>
+      );
+
+    case 'US_BANK':
+      return (
+        <svg {...common}>
+          <rect width="56" height="56" rx="10" fill={color} />
+          <path d="M14 16 L42 16 L42 32 Q42 40 28 44 Q14 40 14 32 Z" fill="#C8102E" />
+          <text
+            x="28"
+            y="32"
+            textAnchor="middle"
+            fontFamily="'Plus Jakarta Sans', sans-serif"
+            fontWeight="800"
+            fontSize="14"
+            fill="#fff"
+          >
+            us
+          </text>
+        </svg>
+      );
+
+    case 'VANGUARD':
+      return (
+        <svg {...common}>
+          <rect width="56" height="56" rx="10" fill={color} />
+          <path
+            d="M14 18 L28 42 L42 18"
+            stroke="#fff"
+            strokeWidth="5"
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      );
+
+    case 'WEALTHFRONT':
+      return (
+        <svg {...common}>
+          <rect width="56" height="56" rx="10" fill={color} />
+          <path
+            d="M12 18 L20 38 L28 22 L36 38 L44 18"
+            stroke="#fff"
+            strokeWidth="4"
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      );
+
+    case 'BETTERMENT':
+      return (
+        <svg {...common}>
+          <rect width="56" height="56" rx="10" fill={color} />
+          <text
+            x="28"
+            y="40"
+            textAnchor="middle"
+            fontFamily="'Plus Jakarta Sans', sans-serif"
+            fontWeight="800"
+            fontSize="34"
+            fill="#000"
+          >
+            b
+          </text>
+        </svg>
+      );
+
+    case 'EMPOWER':
+      return (
+        <svg {...common}>
+          <rect width="56" height="56" rx="10" fill={color} />
+          <path
+            d="M16 16 L40 16 L40 22 L22 22 L22 26 L36 26 L36 32 L22 32 L22 36 L40 36 L40 42 L16 42 Z"
+            fill="#fff"
+          />
+        </svg>
+      );
+
+    case 'EMPOWER_FCU':
+      return (
+        <svg {...common}>
+          <rect width="56" height="56" rx="10" fill={color} />
+          <path
+            d="M16 16 L40 16 L40 22 L22 22 L22 26 L36 26 L36 32 L22 32 L22 36 L40 36 L40 42 L16 42 Z"
+            fill="#fff"
+          />
+          <circle cx="44" cy="14" r="6" fill="#fff" />
+          <text
+            x="44"
+            y="17"
+            textAnchor="middle"
+            fontFamily="'Plus Jakarta Sans', sans-serif"
+            fontWeight="700"
+            fontSize="8"
+            fill={color}
+          >
+            FCU
+          </text>
+        </svg>
+      );
+
+    case 'FIDELITY':
+      return (
+        <svg {...common}>
+          <rect width="56" height="56" rx="10" fill={color} />
+          <path d="M14 22 L28 14 L42 22 L42 30 Q42 38 28 44 Q14 38 14 30 Z" fill="#fff" />
+          <text
+            x="28"
+            y="34"
+            textAnchor="middle"
+            fontFamily="'Plus Jakarta Sans', sans-serif"
+            fontWeight="800"
+            fontSize="16"
+            fill={color}
+          >
+            F
+          </text>
+        </svg>
+      );
+
+    case 'ROBINHOOD':
+      return (
+        <svg {...common}>
+          <rect width="56" height="56" rx="10" fill="#000" />
+          <path
+            d="M28 12 Q24 22 24 28 Q24 36 28 44 Q32 36 32 28 Q32 22 28 12 Z M20 22 L36 22"
+            stroke={color}
+            strokeWidth="3"
+            fill="none"
+            strokeLinecap="round"
+          />
+        </svg>
+      );
+
+    case 'TD_AMERITRADE':
+      return (
+        <svg {...common}>
+          <rect width="56" height="56" rx="10" fill={color} />
+          <text
+            x="28"
+            y="38"
+            textAnchor="middle"
+            fontFamily="'Plus Jakarta Sans', sans-serif"
+            fontWeight="800"
+            fontSize="22"
+            fill="#fff"
+          >
+            TD
+          </text>
+        </svg>
+      );
+
+    case 'SOFI':
+      return (
+        <svg {...common}>
+          <rect width="56" height="56" rx="10" fill={color} />
+          <text
+            x="28"
+            y="38"
+            textAnchor="middle"
+            fontFamily="'Plus Jakarta Sans', sans-serif"
+            fontWeight="800"
+            fontSize="20"
+            fill="#fff"
+          >
+            SoFi
+          </text>
+        </svg>
+      );
+
+    case 'M1':
+      return (
+        <svg {...common}>
+          <rect width="56" height="56" rx="10" fill={color} />
+          <text
+            x="28"
+            y="38"
+            textAnchor="middle"
+            fontFamily="'Plus Jakarta Sans', sans-serif"
+            fontWeight="800"
+            fontSize="24"
+            fill="#fff"
+          >
+            M1
+          </text>
+        </svg>
+      );
+
+    case 'ACORNS':
+      return (
+        <svg {...common}>
+          <rect width="56" height="56" rx="10" fill={color} />
+          <ellipse cx="28" cy="32" rx="10" ry="13" fill="#fff" />
+          <path d="M22 18 Q28 16 34 18 L34 22 Q28 20 22 22 Z" fill="#fff" />
+        </svg>
+      );
+
+    case 'VOYA':
+      return (
+        <svg {...common}>
+          <rect width="56" height="56" rx="10" fill={color} />
+          <text
+            x="28"
+            y="38"
+            textAnchor="middle"
+            fontFamily="'Plus Jakarta Sans', sans-serif"
+            fontWeight="800"
+            fontSize="24"
+            fill="#fff"
+          >
+            v
+          </text>
+        </svg>
+      );
+
+    case 'PRINCIPAL':
+      return (
+        <svg {...common}>
+          <rect width="56" height="56" rx="10" fill={color} />
+          <path d="M16 14 L28 14 L36 22 L36 28 L28 36 L16 36 Z" fill="#fff" />
+          <rect x="16" y="36" width="6" height="8" fill="#fff" />
+        </svg>
+      );
+
+    case 'TIAA':
+      return (
+        <svg {...common}>
+          <rect width="56" height="56" rx="10" fill={color} />
+          <text
+            x="28"
+            y="38"
+            textAnchor="middle"
+            fontFamily="'Plus Jakarta Sans', sans-serif"
+            fontWeight="800"
+            fontSize="18"
+            fill="#fff"
+          >
+            TIAA
+          </text>
+        </svg>
+      );
+
     case 'WEALTHSIMPLE':
       return (
         <svg {...common}>
+          <rect width="56" height="56" rx="10" fill="#fff" />
           <path d="M6 32 Q14 16 28 28 T50 22 L50 38 Q42 50 28 38 T6 44 Z" fill={color} />
         </svg>
       );
@@ -99,15 +534,14 @@ export function BrandMark({ id, size = 56 }) {
     case 'QUESTRADE':
       return (
         <svg {...common}>
-          <circle cx="28" cy="26" r="18" fill="none" stroke={color} strokeWidth="6" />
-          <rect
-            x="34"
-            y="34"
-            width="14"
-            height="6"
-            rx="2"
-            transform="rotate(45 41 37)"
-            fill={color}
+          <rect width="56" height="56" rx="10" fill={color} />
+          <path
+            d="M28 14 L40 36 L34 36 L28 26 L22 36 L16 36 Z M30 36 L38 44 L44 40"
+            stroke="#fff"
+            strokeWidth="3"
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           />
         </svg>
       );
@@ -117,34 +551,26 @@ export function BrandMark({ id, size = 56 }) {
       return (
         <svg {...common}>
           <rect width="56" height="56" rx="10" fill={color} />
-          <path d="M16 22 L22 16 L34 16 L40 22 L40 36 L34 42 L22 42 L16 36 Z" fill="#fff" />
-          <circle cx="24" cy="28" r="2" fill={color} />
-          <circle cx="32" cy="28" r="2" fill={color} />
-        </svg>
-      );
-
-    case 'SCHWAB':
-      return (
-        <svg {...common}>
-          <rect width="56" height="56" rx="10" fill={color} />
           <path
-            d="M38 18 Q28 14 22 20 Q18 26 28 28 Q38 30 34 36 Q28 42 18 38"
+            d="M10 22 L18 38 L24 26 L30 38 L36 26 L42 38 L50 22"
             stroke="#fff"
-            strokeWidth="4.5"
+            strokeWidth="3.5"
             fill="none"
             strokeLinecap="round"
+            strokeLinejoin="round"
           />
         </svg>
       );
 
     case 'ETRADE':
+    case 'ETRADE_PAPER':
       return (
         <svg {...common}>
           <rect width="56" height="56" rx="10" fill={color} />
           <path
             d="M18 16 L38 16 M18 28 L34 28 M18 40 L38 40 M18 16 L18 40"
             stroke="#fff"
-            strokeWidth="4.5"
+            strokeWidth="4"
             fill="none"
             strokeLinecap="round"
           />
@@ -154,14 +580,14 @@ export function BrandMark({ id, size = 56 }) {
     case 'PUBLIC':
       return (
         <svg {...common}>
-          <rect width="56" height="56" rx="28" fill={color} />
+          <rect width="56" height="56" rx="10" fill={color} />
+          <circle cx="28" cy="20" r="6" stroke="#fff" strokeWidth="3" fill="none" />
           <path
-            d="M20 14 L20 42 M20 14 L32 14 Q40 14 40 22 Q40 30 32 30 L20 30"
+            d="M14 44 Q14 32 28 32 Q42 32 42 44"
             stroke="#fff"
-            strokeWidth="4.5"
+            strokeWidth="3"
             fill="none"
             strokeLinecap="round"
-            strokeLinejoin="round"
           />
         </svg>
       );
@@ -170,12 +596,7 @@ export function BrandMark({ id, size = 56 }) {
       return (
         <svg {...common}>
           <rect width="56" height="56" rx="10" fill={color} />
-          <path
-            d="M14 18 L42 18 M28 18 L28 44"
-            stroke="#fff"
-            strokeWidth="5"
-            strokeLinecap="round"
-          />
+          <path d="M14 26 L28 14 L42 26 L42 42 L14 42 Z" fill="#fff" />
         </svg>
       );
 
@@ -185,9 +606,9 @@ export function BrandMark({ id, size = 56 }) {
         <svg {...common}>
           <rect width="56" height="56" rx="10" fill={color} />
           <path
-            d="M14 40 L22 32 L30 36 L42 18 M36 18 L42 18 L42 24"
+            d="M14 30 L22 22 L30 32 L42 18"
             stroke="#fff"
-            strokeWidth="3.5"
+            strokeWidth="4"
             fill="none"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -200,12 +621,13 @@ export function BrandMark({ id, size = 56 }) {
         <svg {...common}>
           <rect width="56" height="56" rx="10" fill={color} />
           <path
-            d="M14 18 L42 18 M28 18 L28 42"
+            d="M16 18 L28 30 L40 18 M16 38 L28 30 L40 38"
             stroke="#fff"
-            strokeWidth="5"
+            strokeWidth="3.5"
+            fill="none"
             strokeLinecap="round"
+            strokeLinejoin="round"
           />
-          <circle cx="28" cy="42" r="3" fill="#fff" />
         </svg>
       );
 
@@ -213,10 +635,15 @@ export function BrandMark({ id, size = 56 }) {
       return (
         <svg {...common}>
           <rect width="56" height="56" rx="10" fill={color} />
-          <ellipse cx="28" cy="34" rx="14" ry="10" fill="#fff" />
-          <circle cx="22" cy="32" r="2" fill={color} />
-          <circle cx="34" cy="32" r="2" fill={color} />
-          <ellipse cx="28" cy="38" rx="3" ry="2" fill={color} />
+          <circle cx="20" cy="28" r="4" fill="#fff" />
+          <circle cx="36" cy="28" r="4" fill="#fff" />
+          <path
+            d="M20 36 Q28 42 36 36"
+            stroke="#fff"
+            strokeWidth="3"
+            fill="none"
+            strokeLinecap="round"
+          />
         </svg>
       );
 
@@ -226,9 +653,11 @@ export function BrandMark({ id, size = 56 }) {
         <svg {...common}>
           <rect width="56" height="56" rx="10" fill={color} />
           <path
-            d="M22 14 Q26 10 28 14 L28 22 L36 22 Q42 24 42 32 L42 42 L34 42 L34 32 L22 32 L22 42 L14 42 L14 28 Q14 22 22 22 Z"
+            d="M22 14 L24 18 L28 16 L32 18 L34 14 L36 22 L36 36 Q36 42 28 42 Q20 42 20 36 L20 22 Z"
             fill="#000"
           />
+          <ellipse cx="24" cy="28" rx="1.5" ry="2" fill="#fff" />
+          <ellipse cx="32" cy="28" rx="1.5" ry="2" fill="#fff" />
         </svg>
       );
 
@@ -239,14 +668,14 @@ export function BrandMark({ id, size = 56 }) {
           <rect width="56" height="56" rx="10" fill={color} />
           <text
             x="28"
-            y="36"
+            y="40"
             textAnchor="middle"
-            fontSize="20"
+            fontFamily="'Plus Jakarta Sans', sans-serif"
             fontWeight="800"
+            fontSize="28"
             fill="#fff"
-            fontFamily="ui-sans-serif, system-ui, sans-serif"
           >
-            212
+            2
           </text>
         </svg>
       );
@@ -256,9 +685,9 @@ export function BrandMark({ id, size = 56 }) {
         <svg {...common}>
           <rect width="56" height="56" rx="10" fill={color} />
           <path
-            d="M40 18 L24 18 Q18 18 18 24 Q18 28 24 28 L32 28 Q38 28 38 34 Q38 40 32 40 L16 40"
+            d="M16 14 Q14 22 22 24 Q28 26 28 30 Q28 34 22 34 Q14 34 14 42 M40 14 L40 42"
             stroke="#fff"
-            strokeWidth="4.5"
+            strokeWidth="3.5"
             fill="none"
             strokeLinecap="round"
           />
@@ -266,11 +695,6 @@ export function BrandMark({ id, size = 56 }) {
       );
 
     default:
-      return (
-        <svg {...common}>
-          <rect width="56" height="56" rx="10" fill={color} />
-          <circle cx="28" cy="28" r="10" fill="#fff" />
-        </svg>
-      );
+      return <LetterMark name={displayName} size={size} />;
   }
 }

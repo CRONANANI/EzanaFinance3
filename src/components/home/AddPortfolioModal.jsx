@@ -4,7 +4,8 @@ import { useState, useCallback, useEffect } from 'react';
 import Script from 'next/script';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase-browser';
-import { BrandMark, brandColor } from './brokerage-brand-marks';
+import { BrandMark, brandColor, resolveBrandKey } from './brokerage-brand-marks';
+import { CountryFlag, inferCountry } from './brokerage-country-flags';
 import './add-portfolio-modal.css';
 
 const EZANA_LOGO = '/ezana-nav-logo.png';
@@ -14,7 +15,7 @@ function InstitutionLogo({ inst, size = 56 }) {
   const [imgFailed, setImgFailed] = useState(false);
   const logoUrl = inst.logoUrl;
   if (!logoUrl || imgFailed) {
-    return <BrandMark id={inst.snaptradeSlug || inst.displayName} size={size} />;
+    return <BrandMark inst={inst} size={size} />;
   }
   return (
     <img
@@ -198,19 +199,25 @@ export function AddPortfolioModal({ open, onClose, onConnected }) {
                     inst.snaptradeAllowsTrading === false ||
                     inst.category === 'crypto_exchange' ||
                     (!inst.snaptradeSlug && inst.plaidInstitutionId);
+                  const country = inferCountry(inst);
                   return (
                     <button
                       key={inst.id}
                       type="button"
                       className={`apm-broker-tile ${selected?.id === inst.id ? 'apm-broker-tile--active' : ''}`}
                       onClick={() => pickInstitution(inst)}
-                      style={{ '--brand-accent': brandColor(inst.snaptradeSlug || inst.id) }}
-                      title={`${inst.displayName}${readOnly ? ' (read-only)' : ''}`}
+                      style={{ '--brand-accent': brandColor(resolveBrandKey(inst)) }}
+                      title={`${inst.displayName}${readOnly ? ' (read-only)' : ''}${country ? ` · ${country}` : ''}`}
                     >
                       {inst.providers.length === 2 ? (
                         <span className="apm-broker-tag apm-broker-tag--multi">2 providers</span>
                       ) : readOnly ? (
                         <span className="apm-broker-tag apm-broker-tag--readonly">Read-only</span>
+                      ) : null}
+                      {country ? (
+                        <span className="apm-broker-flag-wrap">
+                          <CountryFlag code={country} size={18} />
+                        </span>
                       ) : null}
                       <div className="apm-broker-logo-wrap">
                         <InstitutionLogo inst={inst} size={56} />

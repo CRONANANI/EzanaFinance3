@@ -153,6 +153,13 @@ body:not(.light-mode) .apm-card {
   border: 1px solid rgba(212, 168, 83, 0.28);
 }
 
+.apm-broker-flag-wrap {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+}
+
 .apm-broker-grid-loading {
   padding: 60px 20px;
   text-align: center;
