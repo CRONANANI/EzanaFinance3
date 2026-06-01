@@ -157,18 +157,18 @@ export function FooterSection({ onContactClick }) {
             © {new Date().getFullYear()} Ezana Finance. All rights reserved.
           </p>
           <nav className="flex flex-wrap justify-center gap-4 text-sm md:justify-end">
-            <Link href="/help-center" className="transition-colors hover:text-primary">
+            <a href="/help-center" className="transition-colors hover:text-primary">
               Help Center
-            </Link>
-            <Link href="/privacy-policy" className="transition-colors hover:text-primary">
+            </a>
+            <a href="/privacy-policy" className="transition-colors hover:text-primary">
               Privacy Policy
-            </Link>
-            <Link href="/terms-of-service" className="transition-colors hover:text-primary">
+            </a>
+            <a href="/terms-of-service" className="transition-colors hover:text-primary">
               Terms of Service
-            </Link>
-            <Link href="/accessibility" className="transition-colors hover:text-primary">
+            </a>
+            <a href="/accessibility" className="transition-colors hover:text-primary">
               Accessibility
-            </Link>
+            </a>
             <button
               type="button"
               className="transition-colors hover:text-primary cursor-pointer bg-transparent border-0 p-0 text-inherit font-inherit text-sm"

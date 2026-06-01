@@ -52,6 +52,9 @@ const nextConfig = {
       'date-fns',
     ],
   },
+  outputFileTracingIncludes: {
+    '/privacy-policy': ['./src/app/privacy-policy/privacy-policy-source.html'],
+  },
   async redirects() {
     return [
       { source: '/commodities-research', destination: '/alternative-markets', permanent: true },
