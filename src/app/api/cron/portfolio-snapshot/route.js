@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { alpacaRequest } from '@/lib/alpaca';
 import { runSnapTradeDailySync, refreshBrokerageCache } from '@/lib/snaptrade';
+import { refreshInstitutionRegistry } from '@/lib/portfolio/institution-registry';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -97,6 +98,16 @@ async function run(request) {
   } catch (e) {
     console.warn(
       '[cron/portfolio-snapshot] brokerage cache refresh failed (non-fatal)',
+      e?.message,
+    );
+  }
+
+  try {
+    const registryStats = await refreshInstitutionRegistry();
+    console.log('[cron/portfolio-snapshot] institution registry refreshed', registryStats);
+  } catch (e) {
+    console.warn(
+      '[cron/portfolio-snapshot] institution registry refresh failed (non-fatal)',
       e?.message,
     );
   }

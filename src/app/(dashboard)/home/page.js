@@ -476,6 +476,7 @@ export default function HomePage() {
             positionValue,
             change: ch,
             sector: h.sector || 'Other',
+            freshness: h.freshness || 'realtime',
           };
         })
         .sort((a, b) => b.positionValue - a.positionValue);
@@ -1480,7 +1481,14 @@ export default function HomePage() {
                       const up = ch >= 0;
                       return (
                         <tr key={h.ticker} className="bs-tr">
-                          <td className="bs-td-sym">{h.ticker}</td>
+                          <td className="bs-td-sym">
+                            {h.ticker}
+                            {h.freshness === 'end_of_day' && (
+                              <span className="hpg-eod-badge" title="End-of-day data (via Plaid)">
+                                EOD
+                              </span>
+                            )}
+                          </td>
                           <td className="bs-td-name">{h.name}</td>
                           <td className={`bs-td-r ${up ? 'bs-td-r--up' : 'bs-td-r--down'}`}>
                             {fmtPct(ch)}

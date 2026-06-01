@@ -1,23 +1,25 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
+import Script from 'next/script';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase-browser';
 import { BrandMark, brandColor } from './brokerage-brand-marks';
 import './add-portfolio-modal.css';
 
 const EZANA_LOGO = '/ezana-nav-logo.png';
+const PLAID_LINK_SCRIPT = 'https://cdn.plaid.com/link/v2/stable/link-initialize.js';
 
-function BrokerLogo({ broker, size = 56 }) {
+function InstitutionLogo({ inst, size = 56 }) {
   const [imgFailed, setImgFailed] = useState(false);
-  const logoUrl = broker.square_logo_url || broker.logo_url;
+  const logoUrl = inst.logoUrl;
   if (!logoUrl || imgFailed) {
-    return <BrandMark id={broker.slug} size={size} />;
+    return <BrandMark id={inst.snaptradeSlug || inst.displayName} size={size} />;
   }
   return (
     <img
       src={logoUrl}
-      alt={broker.display_name || broker.name}
+      alt={inst.displayName}
       width={size}
       height={size}
       className="apm-broker-logo-img"
@@ -27,24 +29,15 @@ function BrokerLogo({ broker, size = 56 }) {
   );
 }
 
-function isPaper(broker) {
-  const slug = (broker.slug || '').toLowerCase();
-  const name = (broker.display_name || broker.name || '').toLowerCase();
-  return (
-    slug.includes('paper') ||
-    slug.includes('practice') ||
-    name.includes('paper') ||
-    name.includes('practice')
-  );
-}
-
 export function AddPortfolioModal({ open, onClose, onConnected }) {
   const [step, setStep] = useState('grid');
   const [selected, setSelected] = useState(null);
+  const [chosenProvider, setChosenProvider] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [brokerages, setBrokerages] = useState([]);
+  const [institutions, setInstitutions] = useState([]);
   const [loadingList, setLoadingList] = useState(true);
+  const [search, setSearch] = useState('');
 
   const getToken = useCallback(async () => {
     const {
@@ -57,18 +50,20 @@ export function AddPortfolioModal({ open, onClose, onConnected }) {
     if (!open) return;
     setStep('grid');
     setSelected(null);
+    setChosenProvider(null);
     setError(null);
     setLoading(false);
+    setSearch('');
     setLoadingList(true);
     let cancelled = false;
-    fetch('/api/snaptrade/brokerages', { credentials: 'include' })
-      .then((r) => (r.ok ? r.json() : { brokerages: [] }))
+    fetch('/api/institutions/list', { credentials: 'include' })
+      .then((r) => (r.ok ? r.json() : { institutions: [] }))
       .then((data) => {
         if (cancelled) return;
-        setBrokerages(data?.brokerages || []);
+        setInstitutions(data?.institutions || []);
       })
       .catch(() => {
-        if (!cancelled) setBrokerages([]);
+        if (!cancelled) setInstitutions([]);
       })
       .finally(() => {
         if (!cancelled) setLoadingList(false);
@@ -80,8 +75,19 @@ export function AddPortfolioModal({ open, onClose, onConnected }) {
 
   if (!open) return null;
 
-  const pickBroker = (b) => {
-    setSelected(b);
+  const pickInstitution = (inst) => {
+    setSelected(inst);
+    setError(null);
+    if (inst.providers.length === 1) {
+      setChosenProvider(inst.providers[0]);
+      setStep('disclosure');
+    } else {
+      setStep('provider-choice');
+    }
+  };
+
+  const pickProvider = (provider) => {
+    setChosenProvider(provider);
     setStep('disclosure');
   };
 
@@ -91,76 +97,52 @@ export function AddPortfolioModal({ open, onClose, onConnected }) {
   };
 
   const handleContinue = async () => {
-    if (!selected) return;
+    if (!selected || !chosenProvider) return;
     setLoading(true);
     setError(null);
     try {
       const token = await getToken();
       if (!token) throw new Error('Please sign in to connect a brokerage.');
-      const res = await fetch('/api/snaptrade/connect-url', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          broker: selected.slug,
-          allowsTrading: selected.allows_trading,
-          brokerageType: selected.brokerage_type,
-          connectionType: undefined,
-        }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok || !data.redirectURI) {
-        const code = data?.code;
-        const detail = data?.detail;
-        if (code === 'broker_not_supported') {
-          throw new Error(
-            detail
-              ? `${selected.display_name || selected.name} isn't available right now: ${detail}`
-              : `${selected.display_name || selected.name} isn't available right now. Please pick a different brokerage.`,
-          );
+
+      if (chosenProvider === 'snaptrade') {
+        const res = await fetch('/api/snaptrade/connect-url', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            broker: selected.snaptradeSlug,
+            allowsTrading: selected.snaptradeAllowsTrading,
+            brokerageType: selected.snaptradeBrokerageType,
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.redirectURI) {
+          throw new Error(formatSnapTradeError(data, selected));
         }
-        if (code === 'auth_required') {
-          throw new Error('Your session expired. Please sign in again.');
-        }
-        if (code === 'rate_limited') {
-          throw new Error('Too many requests. Wait a moment and try again.');
-        }
-        if (code === 'snaptrade_not_configured') {
-          throw new Error(
-            'Brokerage connections are not configured on this deployment. Contact support — reference: SNAPTRADE_CREDS_MISSING.',
-          );
-        }
-        if (code === 'network_unreachable') {
-          throw new Error(
-            detail
-              ? `Could not reach our connection provider: ${String(detail).slice(0, 140)}`
-              : 'Could not reach our connection provider. This is usually a temporary network issue with SnapTrade — try again in a few minutes.',
-          );
-        }
-        if (code === 'auth_failed') {
-          throw new Error(
-            detail
-              ? `Connection provider rejected the request: ${String(detail).slice(0, 140)}`
-              : 'Connection provider rejected the request. This usually means our SnapTrade credentials need attention — contact support.',
-          );
-        }
-        if (code === 'init_failed') {
-          throw new Error(
-            detail
-              ? `Could not initialize your secure connection: ${String(detail).slice(0, 140)}`
-              : 'Could not initialize your secure connection. Contact support.',
-          );
-        }
-        const baseMsg = "We couldn't open the connection portal.";
-        if (detail) {
-          const trimmed = String(detail).slice(0, 140);
-          throw new Error(`${baseMsg} (${trimmed})`);
-        }
-        throw new Error(`${baseMsg} Please try again in a moment.`);
+        window.location.href = data.redirectURI;
+        return;
       }
-      window.location.href = data.redirectURI;
+
+      if (chosenProvider === 'plaid') {
+        await launchPlaidLink({
+          token,
+          institutionId: selected.plaidInstitutionId,
+          institutionName: selected.displayName,
+          onSuccess: () => {
+            onConnected?.({ provider: 'plaid', institution: selected.displayName });
+            onClose?.();
+          },
+          onError: (msg) => {
+            setError(msg);
+            setLoading(false);
+          },
+        });
+        return;
+      }
+
+      throw new Error('Unsupported provider.');
     } catch (e) {
       const safe =
         e?.message && e.message.length < 280
@@ -171,170 +153,348 @@ export function AddPortfolioModal({ open, onClose, onConnected }) {
     }
   };
 
+  const filteredInstitutions = institutions.filter((inst) => {
+    if (!search) return true;
+    return inst.displayName.toLowerCase().includes(search.toLowerCase());
+  });
+
   return (
-    <div className="apm-overlay" onClick={onClose}>
-      {step === 'grid' && (
-        <div className="apm-card apm-card--grid" onClick={(e) => e.stopPropagation()}>
-          <div className="apm-grid-head">
+    <>
+      <Script src={PLAID_LINK_SCRIPT} strategy="lazyOnload" />
+      <div className="apm-overlay" onClick={onClose}>
+        {step === 'grid' && (
+          <div className="apm-card apm-card--grid" onClick={(e) => e.stopPropagation()}>
+            <div className="apm-grid-head">
+              <button type="button" className="apm-close" onClick={onClose} aria-label="Close">
+                ×
+              </button>
+              <h2 className="apm-grid-title">Connect your brokerage</h2>
+            </div>
+
+            <input
+              type="text"
+              className="apm-search"
+              placeholder="Search 5,000+ institutions…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+
+            {loadingList ? (
+              <div className="apm-broker-grid-loading">Loading institutions…</div>
+            ) : filteredInstitutions.length === 0 ? (
+              <div className="apm-broker-grid-loading">
+                {search
+                  ? `No institutions match "${search}".`
+                  : "We couldn't load institutions. Please refresh and try again."}
+              </div>
+            ) : (
+              <div className="apm-broker-grid">
+                {filteredInstitutions.slice(0, 60).map((inst) => {
+                  const readOnly =
+                    inst.snaptradeAllowsTrading === false ||
+                    inst.category === 'crypto_exchange' ||
+                    (!inst.snaptradeSlug && inst.plaidInstitutionId);
+                  return (
+                    <button
+                      key={inst.id}
+                      type="button"
+                      className={`apm-broker-tile ${selected?.id === inst.id ? 'apm-broker-tile--active' : ''}`}
+                      onClick={() => pickInstitution(inst)}
+                      style={{ '--brand-accent': brandColor(inst.snaptradeSlug || inst.id) }}
+                      title={`${inst.displayName}${readOnly ? ' (read-only)' : ''}`}
+                    >
+                      <div className="apm-broker-logo-wrap">
+                        <InstitutionLogo inst={inst} size={64} />
+                      </div>
+                      {inst.providers.length === 2 && (
+                        <span className="apm-broker-tag apm-broker-tag--multi">2 providers</span>
+                      )}
+                      {readOnly && inst.providers.length !== 2 && (
+                        <span className="apm-broker-tag apm-broker-tag--readonly">Read-only</span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            <button type="button" className="apm-manual-btn" onClick={handleManual}>
+              Add investments manually
+            </button>
+          </div>
+        )}
+
+        {step === 'provider-choice' && selected && (
+          <div className="apm-card apm-card--choice" onClick={(e) => e.stopPropagation()}>
             <button type="button" className="apm-close" onClick={onClose} aria-label="Close">
               ×
             </button>
-            <h2 className="apm-grid-title">Connect your brokerage</h2>
-          </div>
+            <h2 className="apm-disc-title">
+              How would you like to connect {selected.displayName}?
+            </h2>
+            <p className="apm-choice-sub">
+              Both work. Pick the support team you&apos;d rather work with if something goes wrong.
+            </p>
 
-          {loadingList ? (
-            <div className="apm-broker-grid-loading">Loading brokerages…</div>
-          ) : brokerages.length === 0 ? (
-            <div className="apm-broker-grid-loading">
-              We couldn&apos;t load the brokerage list. Please refresh and try again.
-            </div>
-          ) : (
-            <div className="apm-broker-grid">
-              {brokerages.map((b) => {
-                const paper = isPaper(b);
-                const type = String(b.brokerage_type || '').toLowerCase();
-                const readOnly =
-                  b.allows_trading === false ||
-                  type.includes('crypto') ||
-                  type.includes('exchange');
-                return (
-                  <button
-                    key={b.slug}
-                    type="button"
-                    className={`apm-broker-tile ${selected?.slug === b.slug ? 'apm-broker-tile--active' : ''}`}
-                    onClick={() => pickBroker(b)}
-                    style={{ '--brand-accent': brandColor(b.slug) }}
-                    title={`${b.display_name || b.name}${readOnly ? ' (read-only)' : ''}`}
-                  >
-                    <div className="apm-broker-logo-wrap">
-                      <BrokerLogo broker={b} size={64} />
-                    </div>
-                    {paper ? <span className="apm-broker-tag">Paper</span> : null}
-                    {readOnly && !paper ? (
-                      <span className="apm-broker-tag apm-broker-tag--readonly">Read-only</span>
-                    ) : null}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-
-          <button type="button" className="apm-manual-btn" onClick={handleManual}>
-            Add investments manually
-          </button>
-        </div>
-      )}
-
-      {step === 'disclosure' && selected && (
-        <div className="apm-card apm-card--disclosure" onClick={(e) => e.stopPropagation()}>
-          <button
-            type="button"
-            className="apm-close apm-close--disclosure"
-            onClick={onClose}
-            aria-label="Close"
-          >
-            ×
-          </button>
-
-          <div className="apm-disc-logos">
-            <span className="apm-disc-logo apm-disc-logo--ezana">
-              <Image src={EZANA_LOGO} alt="Ezana" width={48} height={48} />
-            </span>
-            <span className="apm-disc-arrow">⇄</span>
-            <span className="apm-disc-logo apm-disc-logo--broker">
-              <BrokerLogo broker={selected} size={48} />
-            </span>
-          </div>
-
-          <h2 className="apm-disc-title">
-            Ezana connects securely to your {selected.display_name || selected.name} account
-          </h2>
-
-          <div className="apm-disc-block">
-            <div className="apm-disc-icon">
-              <i className="bi bi-key" />
-            </div>
-            <div>
-              <div className="apm-disc-block-title">Your data belongs to you</div>
-              <p className="apm-disc-block-text">
-                Ezana never sells your personal information and only uses it with your permission.
-              </p>
-            </div>
-          </div>
-
-          <div className="apm-disc-block">
-            <div className="apm-disc-icon">
-              <i className="bi bi-lock" />
-            </div>
-            <div>
-              <div className="apm-disc-block-title">Connect securely via SnapTrade</div>
-              <p className="apm-disc-block-text">
-                We use SnapTrade — an SOC 2 Type II certified connectivity provider — to handle the
-                OAuth handshake with {selected.display_name || selected.name}. Ezana never sees your
-                login credentials.
-              </p>
-            </div>
-          </div>
-
-          {(() => {
-            const type = String(selected.brokerage_type || '').toLowerCase();
-            const isReadOnly =
-              selected.allows_trading === false ||
-              type.includes('crypto') ||
-              type.includes('exchange');
-            return (
-              <div className="apm-disc-block">
-                <div className="apm-disc-icon">
-                  <i className={isReadOnly ? 'bi bi-eye' : 'bi bi-arrow-left-right'} />
-                </div>
-                <div>
-                  <div className="apm-disc-block-title">
-                    {isReadOnly ? 'Read-only access' : 'Trading and portfolio access'}
-                  </div>
-                  <p className="apm-disc-block-text">
-                    {isReadOnly ? (
-                      <>
-                        {selected.display_name || selected.name} connects in read-only mode. We can
-                        show your holdings, balances, and recent activity — but cannot place trades
-                        from Ezana.
-                      </>
-                    ) : (
-                      <>
-                        {selected.display_name || selected.name} supports both portfolio sync and
-                        order placement through SnapTrade. You can place trades from Ezana once
-                        connected.
-                      </>
-                    )}
-                  </p>
-                </div>
+            <button
+              type="button"
+              className="apm-provider-btn"
+              onClick={() => pickProvider('snaptrade')}
+            >
+              <div className="apm-provider-btn-head">
+                <strong>SnapTrade</strong>
+                <span className="apm-provider-btn-tag">Recommended</span>
               </div>
-            );
-          })()}
+              <p>
+                {selected.snaptradeAllowsTrading
+                  ? 'Place trades from Ezana. Holdings update multiple times per day.'
+                  : 'Read-only holdings. Updates throughout the day.'}
+              </p>
+            </button>
 
-          {error ? <p className="apm-disc-error">{error}</p> : null}
+            <button
+              type="button"
+              className="apm-provider-btn"
+              onClick={() => pickProvider('plaid')}
+            >
+              <div className="apm-provider-btn-head">
+                <strong>Plaid</strong>
+              </div>
+              <p>
+                Read-only holdings, updated once per day (end-of-day). Useful if you already trust
+                Plaid from other apps.
+              </p>
+            </button>
 
-          <p className="apm-disc-terms">
-            By continuing, you agree to the{' '}
-            <a href="/legal/terms" target="_blank" rel="noopener noreferrer">
-              Ezana Terms &amp; Conditions
-            </a>
-            .
-          </p>
+            <button type="button" className="apm-back-link" onClick={() => setStep('grid')}>
+              ← Choose a different institution
+            </button>
+          </div>
+        )}
 
-          <button
-            type="button"
-            className="apm-continue-btn"
-            onClick={handleContinue}
-            disabled={loading}
-          >
-            {loading ? 'Opening secure portal…' : 'Continue'}
-          </button>
+        {step === 'disclosure' && selected && chosenProvider && (
+          <div className="apm-card apm-card--disclosure" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              className="apm-close apm-close--disclosure"
+              onClick={onClose}
+              aria-label="Close"
+            >
+              ×
+            </button>
+            <div className="apm-disc-logos">
+              <span className="apm-disc-logo apm-disc-logo--ezana">
+                <Image src={EZANA_LOGO} alt="Ezana" width={48} height={48} />
+              </span>
+              <span className="apm-disc-arrow">⇄</span>
+              <span className="apm-disc-logo apm-disc-logo--broker">
+                <InstitutionLogo inst={selected} size={48} />
+              </span>
+            </div>
 
-          <button type="button" className="apm-back-link" onClick={() => setStep('grid')}>
-            ← Choose a different brokerage
-          </button>
+            <h2 className="apm-disc-title">
+              Ezana connects securely to your {selected.displayName} account
+            </h2>
+
+            <div className="apm-disc-block">
+              <div className="apm-disc-icon">
+                <i className="bi bi-key" />
+              </div>
+              <div>
+                <div className="apm-disc-block-title">Your data belongs to you</div>
+                <p className="apm-disc-block-text">
+                  Ezana never sells your personal information and only uses it with your permission.
+                </p>
+              </div>
+            </div>
+
+            <div className="apm-disc-block">
+              <div className="apm-disc-icon">
+                <i className="bi bi-lock" />
+              </div>
+              <div>
+                <div className="apm-disc-block-title">
+                  {chosenProvider === 'snaptrade'
+                    ? 'Connect securely via SnapTrade'
+                    : 'Connect securely via Plaid'}
+                </div>
+                <p className="apm-disc-block-text">
+                  {chosenProvider === 'snaptrade'
+                    ? 'We use SnapTrade — an SOC 2 Type II certified connectivity provider — to handle the OAuth handshake. Ezana never sees your login credentials.'
+                    : 'We use Plaid — used by 8,000+ financial apps including Venmo and Robinhood — to securely connect your account. Ezana never sees your login credentials.'}
+                </p>
+              </div>
+            </div>
+
+            <AccessLevelBlock provider={chosenProvider} selected={selected} />
+
+            {error ? <p className="apm-disc-error">{error}</p> : null}
+
+            <p className="apm-disc-terms">
+              By continuing, you agree to the{' '}
+              <a href="/legal/terms" target="_blank" rel="noopener noreferrer">
+                Ezana Terms &amp; Conditions
+              </a>
+              .
+            </p>
+
+            <button
+              type="button"
+              className="apm-continue-btn"
+              onClick={handleContinue}
+              disabled={loading}
+            >
+              {loading ? 'Opening secure portal…' : 'Continue'}
+            </button>
+
+            <button
+              type="button"
+              className="apm-back-link"
+              onClick={() => {
+                if (selected.providers.length > 1) setStep('provider-choice');
+                else setStep('grid');
+              }}
+            >
+              ← Back
+            </button>
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
+function AccessLevelBlock({ provider, selected }) {
+  const snaptradeReadOnly =
+    selected.snaptradeAllowsTrading === false ||
+    selected.snaptradeBrokerageType?.toLowerCase().includes('crypto') ||
+    selected.snaptradeBrokerageType?.toLowerCase().includes('exchange');
+
+  const trading = provider === 'snaptrade' && !snaptradeReadOnly;
+
+  return (
+    <div className="apm-disc-block">
+      <div className="apm-disc-icon">
+        <i className={trading ? 'bi bi-arrow-left-right' : 'bi bi-eye'} />
+      </div>
+      <div>
+        <div className="apm-disc-block-title">
+          {trading ? 'Trading and portfolio access' : 'Read-only access'}
         </div>
-      )}
+        <p className="apm-disc-block-text">
+          {trading
+            ? `${selected.displayName} via SnapTrade supports both portfolio sync and order placement. You can place trades from Ezana once connected.`
+            : `${selected.displayName} via ${provider === 'snaptrade' ? 'SnapTrade' : 'Plaid'} connects in read-only mode. We can show your holdings, balances, and recent activity — but cannot place trades from Ezana.`}
+        </p>
+      </div>
     </div>
   );
+}
+
+function formatSnapTradeError(data, selected) {
+  const code = data?.code;
+  const detail = data?.detail;
+  if (code === 'cross_provider_conflict') {
+    return `${selected.displayName} is already connected via another provider. Disconnect that one in Settings before switching.`;
+  }
+  if (code === 'broker_not_supported') {
+    return detail
+      ? `${selected.displayName} isn't available right now: ${detail}`
+      : `${selected.displayName} isn't available right now. Please pick a different institution.`;
+  }
+  if (code === 'rate_limited') return 'Too many requests. Wait a moment and try again.';
+  if (code === 'snaptrade_not_configured') {
+    return 'Brokerage connections are not configured. Contact support — reference: SNAPTRADE_CREDS_MISSING.';
+  }
+  if (code === 'network_unreachable') {
+    return detail
+      ? `Could not reach our connection provider: ${String(detail).slice(0, 140)}`
+      : 'Could not reach our connection provider.';
+  }
+  if (code === 'auth_failed') {
+    return detail
+      ? `Connection provider rejected the request: ${String(detail).slice(0, 140)}`
+      : 'Connection provider rejected the request.';
+  }
+  if (code === 'init_failed') {
+    return detail
+      ? `Could not initialize your secure connection: ${String(detail).slice(0, 140)}`
+      : 'Could not initialize your secure connection.';
+  }
+  if (detail) return `We couldn't open the connection portal. (${String(detail).slice(0, 140)})`;
+  return "We couldn't open the connection portal. Please try again in a moment.";
+}
+
+async function launchPlaidLink({ token, institutionId, institutionName, onSuccess, onError }) {
+  if (typeof window.Plaid === 'undefined') {
+    await new Promise((resolve) => {
+      const interval = setInterval(() => {
+        if (window.Plaid) {
+          clearInterval(interval);
+          resolve();
+        }
+      }, 100);
+      setTimeout(() => {
+        clearInterval(interval);
+        resolve();
+      }, 5000);
+    });
+  }
+  if (typeof window.Plaid === 'undefined') {
+    onError('Plaid is still loading. Please try again in a moment.');
+    return;
+  }
+
+  const tokenRes = await fetch('/api/plaid/create-link-token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ institutionId }),
+  });
+  const tokenData = await tokenRes.json().catch(() => ({}));
+  if (!tokenData.link_token) {
+    onError(
+      `Could not start Plaid connection: ${tokenData?.details || tokenData?.error || 'unknown error'}`,
+    );
+    return;
+  }
+
+  const handler = window.Plaid.create({
+    token: tokenData.link_token,
+    onSuccess: async (public_token) => {
+      try {
+        const exRes = await fetch('/api/plaid/exchange-token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ public_token, institutionName, institutionId }),
+        });
+        const exData = await exRes.json().catch(() => ({}));
+        if (exRes.status === 409 && exData.code === 'cross_provider_conflict') {
+          onError(
+            `${institutionName} is already connected via SnapTrade. Disconnect that one in Settings before switching to Plaid.`,
+          );
+          return;
+        }
+        if (!exRes.ok) {
+          onError(exData?.error || 'Failed to complete Plaid connection.');
+          return;
+        }
+        onSuccess?.();
+      } catch (e) {
+        onError(`Connection completed but sync failed: ${e.message}`);
+      }
+    },
+    onExit: (err) => {
+      if (err) {
+        onError(
+          `Plaid Link exited with error: ${err.error_message || err.display_message || 'unknown'}`,
+        );
+      }
+    },
+  });
+
+  if (institutionId) {
+    handler.open({ institution_id: institutionId });
+  } else {
+    handler.open();
+  }
 }

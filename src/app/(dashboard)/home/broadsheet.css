@@ -1424,6 +1424,20 @@ body.light-mode .bs-band + .bs-band {
   padding: 16px 0;
 }
 
+.hpg-eod-badge {
+  display: inline-block;
+  margin-left: 0.5em;
+  padding: 0.05em 0.4em;
+  font-size: 0.65em;
+  font-weight: 700;
+  color: var(--bs-amber, #b08038);
+  background: rgba(212, 168, 83, 0.12);
+  border: 1px solid rgba(212, 168, 83, 0.28);
+  border-radius: 4px;
+  vertical-align: middle;
+  font-family: var(--font-mono);
+}
+
 .bs-ticker-link {
   background: none;
   border: none;

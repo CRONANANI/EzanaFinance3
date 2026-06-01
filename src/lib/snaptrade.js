@@ -1,5 +1,10 @@
 import { Snaptrade } from 'snaptrade-typescript-sdk';
 import { getAdminClient } from '@/lib/supabase';
+import {
+  upsertSnapTradeAccount,
+  upsertSnapTradePositions,
+  upsertSnapTradeTransactions,
+} from '@/lib/portfolio/adapters/snaptrade';
 
 let _client = null;
 
@@ -118,6 +123,57 @@ export async function ensureSnapTradeUser(ezanaUserId) {
   }
 }
 
+async function resolveSnaptradeSlug(institutionName) {
+  if (!institutionName) return null;
+  const supabase = getAdminClient();
+  const { data } = await supabase
+    .from('snaptrade_brokerages_cache')
+    .select('slug, display_name, name')
+    .or(`display_name.eq.${institutionName},name.eq.${institutionName}`)
+    .limit(1)
+    .maybeSingle();
+  return data?.slug || null;
+}
+
+async function syncSnapTradeAccountToUnified(snaptradeAccount, positions, activities) {
+  const slug = await resolveSnaptradeSlug(snaptradeAccount.institution_name);
+  const unified = await upsertSnapTradeAccount({
+    userId: snaptradeAccount.user_id,
+    snapAccount: {
+      snapTradeAccountId: snaptradeAccount.snaptrade_account_id,
+      accountNumber: snaptradeAccount.account_number,
+      accountName: snaptradeAccount.account_name,
+      institutionName: snaptradeAccount.institution_name || 'Brokerage',
+      institutionSlug: slug,
+      accountCategory: snaptradeAccount.account_category,
+      rawType: snaptradeAccount.raw_type,
+      balanceTotal: snaptradeAccount.balance_total,
+      balanceCash: null,
+      balanceCurrency: snaptradeAccount.balance_currency,
+      isPaper: snaptradeAccount.is_paper,
+      status: snaptradeAccount.status,
+    },
+  });
+
+  const today = new Date().toISOString().split('T')[0];
+  if (positions?.length) {
+    await upsertSnapTradePositions({
+      userId: snaptradeAccount.user_id,
+      accountId: unified.id,
+      positions,
+      snapshotDate: today,
+    });
+  }
+  if (activities?.length) {
+    await upsertSnapTradeTransactions({
+      userId: snaptradeAccount.user_id,
+      accountId: unified.id,
+      activities,
+    });
+  }
+  return unified;
+}
+
 export async function getSnapTradeCreds(ezanaUserId) {
   const supabase = getAdminClient();
   const { data } = await supabase
@@ -203,6 +259,13 @@ export async function snapshotAccount(snaptradeAccount, creds) {
     { onConflict: 'account_id' },
   );
 
+  try {
+    await syncSnapTradeAccountToUnified(snaptradeAccount, positions, null);
+  } catch (e) {
+    if (e.code !== 'cross_provider_conflict') throw e;
+    console.warn('[snaptrade] unified sync skipped (cross-provider conflict)', snaptradeAccount.id);
+  }
+
   return { positions: positions.length, balanceCaptured: !!detail?.balance?.total };
 }
 
@@ -234,6 +297,7 @@ export async function backfillAccountActivities(snaptradeAccount, creds, opts = 
   }
 
   let inserted = 0;
+  const collectedActivities = [];
   let offset = 0;
   const limit = 1000;
 
@@ -249,6 +313,7 @@ export async function backfillAccountActivities(snaptradeAccount, creds, opts = 
     });
     const activities = res.data?.data || res.data || [];
     if (!activities.length) break;
+    collectedActivities.push(...activities);
 
     const rows = activities
       .map((a) => {
@@ -310,6 +375,13 @@ export async function backfillAccountActivities(snaptradeAccount, creds, opts = 
     onConflict: 'account_id',
   });
 
+  try {
+    await syncSnapTradeAccountToUnified(snaptradeAccount, null, collectedActivities);
+  } catch (e) {
+    if (e.code !== 'cross_provider_conflict') throw e;
+    console.warn('[snaptrade] unified activity sync skipped (conflict)', snaptradeAccount.id);
+  }
+
   return { inserted, fromDate, toDate };
 }
 
@@ -317,7 +389,9 @@ export async function backfillAccountActivities(snaptradeAccount, creds, opts = 
 export async function runSnapTradeDailySync(supabase) {
   const { data: accounts } = await supabase
     .from('snaptrade_accounts')
-    .select('id, user_id, snaptrade_account_id')
+    .select(
+      'id, user_id, snaptrade_account_id, account_number, account_name, institution_name, account_category, raw_type, balance_total, balance_currency, is_paper, status',
+    )
     .order('user_id');
 
   if (!accounts?.length) {
