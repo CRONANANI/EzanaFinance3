@@ -77,7 +77,11 @@ export async function POST(request) {
       message: err?.message,
     });
     return NextResponse.json(
-      { error: 'Could not initialize your secure connection.', code: 'init_failed' },
+      {
+        error: 'Could not initialize your secure connection.',
+        code: 'init_failed',
+        detail: info.detail || err?.message || 'Unknown SnapTrade init failure',
+      },
       { status: 502 },
     );
   }

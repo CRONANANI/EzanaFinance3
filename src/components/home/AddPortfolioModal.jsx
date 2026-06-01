@@ -146,6 +146,13 @@ export function AddPortfolioModal({ open, onClose, onConnected }) {
               : 'Connection provider rejected the request. This usually means our SnapTrade credentials need attention — contact support.',
           );
         }
+        if (code === 'init_failed') {
+          throw new Error(
+            detail
+              ? `Could not initialize your secure connection: ${String(detail).slice(0, 140)}`
+              : 'Could not initialize your secure connection. Contact support.',
+          );
+        }
         const baseMsg = "We couldn't open the connection portal.";
         if (detail) {
           const trimmed = String(detail).slice(0, 140);

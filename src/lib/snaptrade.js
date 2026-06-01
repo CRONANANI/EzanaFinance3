@@ -60,21 +60,62 @@ export async function ensureSnapTradeUser(ezanaUserId) {
 
   const snaptrade = getSnapTradeClient();
   const snapUserId = `ezana_${ezanaUserId}`;
-  const res = await snaptrade.authentication.registerSnapTradeUser({ userId: snapUserId });
-  const userSecret = res.data?.userSecret;
-  if (!userSecret) throw new Error('SnapTrade did not return a userSecret');
 
-  await supabase.from('snaptrade_users').upsert(
-    {
-      user_id: ezanaUserId,
-      snaptrade_user_id: snapUserId,
-      user_secret: userSecret,
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: 'user_id' },
-  );
+  const persist = async (userSecret) => {
+    await supabase.from('snaptrade_users').upsert(
+      {
+        user_id: ezanaUserId,
+        snaptrade_user_id: snapUserId,
+        user_secret: userSecret,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'user_id' },
+    );
+  };
 
-  return { userId: snapUserId, userSecret };
+  const registerAndSave = async () => {
+    const res = await snaptrade.authentication.registerSnapTradeUser({ userId: snapUserId });
+    const userSecret = res.data?.userSecret;
+    if (!userSecret) throw new Error('SnapTrade did not return a userSecret');
+    await persist(userSecret);
+    return userSecret;
+  };
+
+  try {
+    const userSecret = await registerAndSave();
+    return { userId: snapUserId, userSecret };
+  } catch (err) {
+    const info = readSnapTradeError(err);
+    const isAlreadyExists =
+      info.status === 400 &&
+      typeof info.detail === 'string' &&
+      info.detail.toLowerCase().includes('already exist');
+
+    if (!isAlreadyExists) {
+      throw err;
+    }
+
+    console.warn('[ensureSnapTradeUser] orphaned SnapTrade user detected, recovering', {
+      ezanaUserId,
+      snapUserId,
+    });
+
+    try {
+      await snaptrade.authentication.deleteSnapTradeUser({ userId: snapUserId });
+    } catch (deleteErr) {
+      const dInfo = readSnapTradeError(deleteErr);
+      console.warn('[ensureSnapTradeUser] delete of orphan failed (continuing)', {
+        snapUserId,
+        status: dInfo.status,
+        detail: dInfo.detail,
+      });
+    }
+
+    await new Promise((r) => setTimeout(r, 750));
+
+    const userSecret = await registerAndSave();
+    return { userId: snapUserId, userSecret };
+  }
 }
 
 export async function getSnapTradeCreds(ezanaUserId) {
