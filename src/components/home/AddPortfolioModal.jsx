@@ -38,6 +38,20 @@ function isPaper(broker) {
   );
 }
 
+/**
+ * Detects brokers that SnapTrade only supports in read-only mode. Crypto
+ * exchanges (Coinbase, Gemini, Kraken, Binance.US) plus a handful of
+ * read-only data partners can't use the `trade-if-available` connection
+ * type — they return 400 on login if we send trade flags.
+ */
+function isReadOnlyBroker(broker) {
+  if (!broker) return false;
+  const type = String(broker.brokerage_type || '').toLowerCase();
+  if (type.includes('crypto') || type.includes('exchange')) return true;
+  if (broker.allows_trading === false) return true;
+  return false;
+}
+
 export function AddPortfolioModal({ open, onClose, onConnected }) {
   const [step, setStep] = useState('grid');
   const [selected, setSelected] = useState(null);
@@ -97,26 +111,39 @@ export function AddPortfolioModal({ open, onClose, onConnected }) {
     try {
       const token = await getToken();
       if (!token) throw new Error('Please sign in to connect a brokerage.');
+      const connectionType = isReadOnlyBroker(selected) ? 'read' : 'trade-if-available';
+
       const res = await fetch('/api/snaptrade/connect-url', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ broker: selected.slug, connectionType: 'trade-if-available' }),
+        body: JSON.stringify({ broker: selected.slug, connectionType }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.redirectURI) {
         const code = data?.code;
+        const detail = data?.detail;
         if (code === 'broker_not_supported') {
           throw new Error(
-            `${selected.display_name || selected.name} isn't available right now. Please pick a different brokerage.`,
+            detail
+              ? `${selected.display_name || selected.name} isn't available right now: ${detail}`
+              : `${selected.display_name || selected.name} isn't available right now. Please pick a different brokerage.`,
           );
         }
         if (code === 'auth_required') {
           throw new Error('Your session expired. Please sign in again.');
         }
-        throw new Error("We couldn't open the connection portal. Please try again in a moment.");
+        if (code === 'rate_limited') {
+          throw new Error('Too many requests. Wait a moment and try again.');
+        }
+        const baseMsg = "We couldn't open the connection portal.";
+        if (detail) {
+          const trimmed = String(detail).slice(0, 140);
+          throw new Error(`${baseMsg} (${trimmed})`);
+        }
+        throw new Error(`${baseMsg} Please try again in a moment.`);
       }
       window.location.href = data.redirectURI;
     } catch (e) {

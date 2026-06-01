@@ -8,9 +8,8 @@ export const runtime = 'nodejs';
 /**
  * POST /api/snaptrade/connect-url
  *
- * Strategy: try the requested broker hint first. If SnapTrade returns 400
- * (usually a bad slug), retry without the hint so the user lands on the
- * brokerage picker inside SnapTrade.
+ * Strategy: try broker + requested connection type, then read-only fallbacks,
+ * then SnapTrade's brokerage picker without a broker hint.
  */
 export async function POST(request) {
   let user;
@@ -27,7 +26,7 @@ export async function POST(request) {
     body = {};
   }
   const broker = body.broker;
-  const connectionType =
+  const requestedConnectionType =
     body.connectionType === 'trade'
       ? 'trade'
       : body.connectionType === 'read'
@@ -54,78 +53,94 @@ export async function POST(request) {
   const origin = request.nextUrl.origin;
   const customRedirect = `${origin}/portfolio/connect-callback`;
 
-  async function tryLogin({ withBroker }) {
-    return snaptrade.authentication.loginSnapTradeUser({
+  const attempts = [];
+  const tryLogin = async (opts) => {
+    const params = {
       userId: creds.userId,
       userSecret: creds.userSecret,
-      broker: withBroker ? broker : undefined,
+      broker: opts.broker || undefined,
       immediateRedirect: false,
       customRedirect,
-      connectionType,
-    });
+      connectionType: opts.connectionType,
+    };
+    try {
+      const res = await snaptrade.authentication.loginSnapTradeUser(params);
+      const redirectURI = res?.data?.redirectURI;
+      if (redirectURI) {
+        return { ok: true, redirectURI, sessionId: res.data.sessionId };
+      }
+      attempts.push({ ...opts, noRedirectURI: true });
+      return { ok: false };
+    } catch (err) {
+      const info = readSnapTradeError(err);
+      attempts.push({ ...opts, status: info.status, detail: info.detail });
+      return { ok: false, info };
+    }
+  };
+
+  const plan = [
+    { broker, connectionType: requestedConnectionType },
+    ...(requestedConnectionType !== 'read' ? [{ broker, connectionType: 'read' }] : []),
+    { broker: undefined, connectionType: 'read' },
+  ].filter((step) => step.broker !== undefined || step.connectionType);
+
+  for (const step of plan) {
+    const result = await tryLogin(step);
+    if (result.ok) {
+      const usedBroker = step.broker || null;
+      const usedConn = step.connectionType;
+      if (usedBroker !== broker || usedConn !== requestedConnectionType) {
+        console.warn('[snaptrade/connect-url] fell back to', {
+          requestedBroker: broker,
+          requestedConnectionType,
+          usedBroker,
+          usedConnectionType: usedConn,
+          attempts,
+        });
+      }
+      return NextResponse.json({
+        redirectURI: result.redirectURI,
+        sessionId: result.sessionId,
+        _usedBroker: usedBroker,
+        _usedConnectionType: usedConn,
+      });
+    }
   }
 
-  try {
-    const res = await tryLogin({ withBroker: !!broker });
-    const redirectURI = res?.data?.redirectURI;
-    if (!redirectURI) {
-      console.error('[snaptrade/connect-url] no redirectURI in success response', res?.data);
-      return NextResponse.json(
-        { error: 'Could not open the connection portal.', code: 'portal_unavailable' },
-        { status: 502 },
-      );
-    }
-    return NextResponse.json({ redirectURI, sessionId: res.data.sessionId });
-  } catch (err) {
-    const info = readSnapTradeError(err);
-    console.error('[snaptrade/connect-url] first attempt failed', { broker, ...info });
+  console.error('[snaptrade/connect-url] all attempts failed', { broker, attempts });
 
-    if (info.status === 400 && broker) {
-      try {
-        const res = await tryLogin({ withBroker: false });
-        const redirectURI = res?.data?.redirectURI;
-        if (redirectURI) {
-          console.warn(
-            '[snaptrade/connect-url] slug rejected, succeeded without it. Update slug for:',
-            broker,
-          );
-          return NextResponse.json({
-            redirectURI,
-            sessionId: res.data.sessionId,
-            _note: 'broker_slug_unsupported_fell_back_to_picker',
-          });
-        }
-      } catch (retryErr) {
-        const retryInfo = readSnapTradeError(retryErr);
-        console.error('[snaptrade/connect-url] retry without broker also failed', retryInfo);
-        return NextResponse.json(
-          {
-            error: 'Could not open the connection portal.',
-            code: 'portal_unavailable',
-          },
-          { status: 502 },
-        );
-      }
-    }
-
-    if (info.status === 429) {
-      return NextResponse.json(
-        {
-          error: 'Too many requests right now. Please wait a moment and try again.',
-          code: 'rate_limited',
-        },
-        { status: 429 },
-      );
-    }
-    if (info.status === 401 || info.status === 403) {
-      return NextResponse.json(
-        { error: 'Authentication issue. Please try again.', code: 'auth_failed' },
-        { status: 502 },
-      );
-    }
+  const last = attempts[attempts.length - 1] || {};
+  if (last.status === 429) {
     return NextResponse.json(
-      { error: 'Could not open the connection portal.', code: 'portal_unavailable' },
+      {
+        error: 'Too many requests right now. Please wait a moment and try again.',
+        code: 'rate_limited',
+      },
+      { status: 429 },
+    );
+  }
+  if (last.status === 401 || last.status === 403) {
+    return NextResponse.json(
+      { error: 'Authentication issue with our connection provider.', code: 'auth_failed' },
       { status: 502 },
     );
   }
+  if (last.status === 400 && broker) {
+    return NextResponse.json(
+      {
+        error: `${broker} isn't available right now. Please pick a different brokerage.`,
+        code: 'broker_not_supported',
+        detail: last.detail || undefined,
+      },
+      { status: 400 },
+    );
+  }
+  return NextResponse.json(
+    {
+      error: 'Could not open the connection portal.',
+      code: 'portal_unavailable',
+      detail: last.detail || undefined,
+    },
+    { status: 502 },
+  );
 }
