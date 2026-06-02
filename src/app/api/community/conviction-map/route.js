@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getAdminClient } from '@/lib/supabase';
+import { getAdminClient, getCurrentUser } from '@/lib/supabase';
+import { isDemoViewer, DEMO_CONVICTION_MAP } from '@/lib/community/demo-data';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,8 +19,11 @@ function primarySymbol(post) {
   return null;
 }
 
-export async function GET() {
+export async function GET(request) {
   try {
+    const user = await getCurrentUser(request);
+    if (isDemoViewer(user)) return NextResponse.json(DEMO_CONVICTION_MAP);
+
     const admin = getAdminClient();
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 

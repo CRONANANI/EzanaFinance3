@@ -1,7 +1,22 @@
 import { NextResponse } from 'next/server';
 import { requireUser } from '@/lib/supabase';
+import { isDemoViewer, DEMO_POSTS_BY_ID } from '@/lib/community/demo-data';
 
 export const dynamic = 'force-dynamic';
+
+function demoConvictionStats(postIds) {
+  const stats = {};
+  for (const id of postIds) {
+    const post = DEMO_POSTS_BY_ID[id];
+    if (!post) continue;
+    stats[id] = {
+      my_conviction: null,
+      avg_conviction: post.avg_conviction ?? null,
+      conviction_count: post.conviction_count ?? 0,
+    };
+  }
+  return stats;
+}
 
 /**
  * GET /api/community/posts/conviction?postIds=id1,id2,id3
@@ -23,11 +38,25 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Too many postIds (max 100)' }, { status: 400 });
     }
 
+    const demoIds = postIds.filter((id) => id.startsWith('demo-'));
+    const realIds = postIds.filter((id) => !id.startsWith('demo-'));
+
+    const stats = isDemoViewer(user) ? demoConvictionStats(demoIds) : {};
+
+    if (realIds.length === 0) {
+      for (const id of postIds) {
+        if (!stats[id]) {
+          stats[id] = { my_conviction: null, avg_conviction: null, conviction_count: 0 };
+        }
+      }
+      return NextResponse.json({ stats });
+    }
+
     const { data: myConvictions, error: myErr } = await client
       .from('post_convictions')
       .select('post_id, conviction_pct')
       .eq('user_id', user.id)
-      .in('post_id', postIds);
+      .in('post_id', realIds);
 
     if (myErr) {
       return NextResponse.json({ error: myErr.message }, { status: 500 });
@@ -36,15 +65,14 @@ export async function GET(request) {
     const { data: aggStats, error: aggErr } = await client
       .from('post_conviction_stats')
       .select('post_id, conviction_count, avg_conviction')
-      .in('post_id', postIds);
+      .in('post_id', realIds);
 
     if (aggErr) {
       return NextResponse.json({ error: aggErr.message }, { status: 500 });
     }
 
-    const stats = {};
-    for (const id of postIds) {
-      stats[id] = { my_conviction: null, avg_conviction: null, conviction_count: 0 };
+    for (const id of realIds) {
+      stats[id] = stats[id] || { my_conviction: null, avg_conviction: null, conviction_count: 0 };
     }
     for (const row of myConvictions || []) {
       if (!stats[row.post_id]) {
@@ -58,6 +86,12 @@ export async function GET(request) {
       }
       stats[row.post_id].avg_conviction = row.avg_conviction;
       stats[row.post_id].conviction_count = row.conviction_count;
+    }
+
+    for (const id of postIds) {
+      if (!stats[id]) {
+        stats[id] = { my_conviction: null, avg_conviction: null, conviction_count: 0 };
+      }
     }
 
     return NextResponse.json({ stats });
@@ -82,6 +116,17 @@ export async function POST(request) {
     }
     if (!Number.isFinite(conviction) || conviction < 0 || conviction > 100) {
       return NextResponse.json({ error: 'conviction must be 0-100' }, { status: 400 });
+    }
+
+    if (isDemoViewer(user) && postId.startsWith('demo-')) {
+      const post = DEMO_POSTS_BY_ID[postId];
+      const pct = Math.round(conviction);
+      return NextResponse.json({
+        ok: true,
+        my_conviction: pct,
+        avg_conviction: post?.avg_conviction ?? pct,
+        conviction_count: post?.conviction_count ?? 1,
+      });
     }
 
     const pct = Math.round(conviction);
@@ -129,6 +174,10 @@ export async function DELETE(request) {
 
     if (!postId) {
       return NextResponse.json({ error: 'postId required' }, { status: 400 });
+    }
+
+    if (isDemoViewer(user) && postId.startsWith('demo-')) {
+      return NextResponse.json({ ok: true });
     }
 
     const { error } = await client

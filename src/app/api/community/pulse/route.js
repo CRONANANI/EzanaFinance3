@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getAdminClient } from '@/lib/supabase';
+import { getAdminClient, getCurrentUser } from '@/lib/supabase';
+import { isDemoViewer, DEMO_PULSE } from '@/lib/community/demo-data';
 
 export const dynamic = 'force-dynamic';
 
@@ -118,8 +119,11 @@ function computePulseFromPosts(postsArr) {
   };
 }
 
-export async function GET() {
+export async function GET(request) {
   try {
+    const user = await getCurrentUser(request);
+    if (isDemoViewer(user)) return NextResponse.json(DEMO_PULSE);
+
     const admin = getAdminClient();
 
     const { data: snap } = await admin

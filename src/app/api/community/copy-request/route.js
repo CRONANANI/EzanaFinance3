@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireUser, getAdminClient } from '@/lib/supabase';
 import { awardELO } from '@/lib/elo';
+import { isDemoViewer, DEMO_COPY_REQUESTS } from '@/lib/community/demo-data';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -14,6 +15,10 @@ const ANNUAL_REQUEST_ELO_CAP = 500;
 export async function GET(request) {
   try {
     const { user, client: supabase } = await requireUser(request);
+
+    if (isDemoViewer(user)) {
+      return NextResponse.json(DEMO_COPY_REQUESTS);
+    }
 
     const [incomingResult, outgoingResult] = await Promise.all([
       supabase
@@ -278,6 +283,12 @@ export async function PATCH(request) {
     }
 
     const { user, client: supabase } = await requireUser(request);
+
+    if (isDemoViewer(user) && requestId.startsWith('demo-')) {
+      const newStatus =
+        action === 'approve' ? 'approved' : action === 'reject' ? 'rejected' : 'withdrawn';
+      return NextResponse.json({ success: true, status: newStatus });
+    }
 
     const { data: req, error: fetchErr } = await supabase
       .from('copy_requests')

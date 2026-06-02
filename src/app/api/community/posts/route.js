@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { requireUser, getCurrentUser, getUserClient, getAdminClient } from '@/lib/supabase';
 import { awardXP } from '@/lib/rewards';
 import { sanitizeInput } from '@/lib/sanitize';
+import { withDemoPosts } from '@/lib/community/demo-data';
 
 export const dynamic = 'force-dynamic';
 
@@ -138,7 +139,7 @@ async function buildEnrichedResponse(supabase, user, list) {
     my_vote: votedMap[post.id] ?? null,
   }));
 
-  return NextResponse.json({ posts: enrichedPosts });
+  return NextResponse.json({ posts: withDemoPosts(user, enrichedPosts) });
 }
 
 export async function GET(request) {
@@ -196,7 +197,7 @@ export async function GET(request) {
 
       const ids = (legendaryProfiles || []).map((p) => p.id);
       if (!ids.length) {
-        return NextResponse.json({ posts: [] });
+        return NextResponse.json({ posts: withDemoPosts(user, []) });
       }
 
       const { data: posts, error } = await supabase
@@ -263,7 +264,7 @@ export async function GET(request) {
       const followingIds = followingRows?.map((f) => f.following_id) || [];
       if (followingIds.length === 0) {
         return NextResponse.json({
-          posts: [],
+          posts: withDemoPosts(user, []),
           message: 'Follow users to see their posts',
         });
       }
@@ -279,7 +280,7 @@ export async function GET(request) {
       const mutualIds = [...followingSet].filter((id) => followerSet.has(id));
       if (mutualIds.length === 0) {
         return NextResponse.json({
-          posts: [],
+          posts: withDemoPosts(user, []),
           message: 'No posts from friends yet',
         });
       }
