@@ -1,8 +1,14 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { CountUpStat } from '@/components/ui/CountUpStat';
+
+const LandingPortfolioChart = dynamic(() => import('./LandingPortfolioChart'), {
+  ssr: false,
+  loading: () => <div className="lpc-chart-wrap" />,
+});
 
 const PORTFOLIO_METRICS = {
   '1D': [
@@ -493,37 +499,37 @@ export function FeaturesSection() {
   const FEATURE_CARDS = [
     {
       title: 'Congressional Trading',
-      desc: 'Track real-time congressional stock trades with alerts, filters, and portfolio analysis. See exactly what politicians are buying and selling.',
+      desc: 'Real-time trades from all 535 members of Congress — with filing dates, disclosure lag, and politician-level history.',
       href: '/auth/login',
       icon: 'bi-building',
     },
     {
       title: 'Portfolio Analytics',
-      desc: 'Real-time portfolio tracking with P&L, risk scoring, dividend tracking, and benchmark comparison against S&P 500 and NASDAQ.',
+      desc: 'Institutional-grade performance, risk scoring, and allocation analysis across every account you connect.',
       href: '/auth/login',
       icon: 'bi-graph-up-arrow',
     },
     {
       title: 'Market Intelligence',
-      desc: 'Government contracts, lobbying activity, and patent momentum data correlated with stock movements for insider-level insights.',
+      desc: 'Geopolitical analysis, sector rotation, and market-moving signals — surfaced before they reach the mainstream.',
       href: '/auth/login',
       icon: 'bi-activity',
     },
     {
-      title: 'Real-Time Alerts',
-      desc: 'Instant notifications when politicians you follow make trades or when your portfolio triggers risk alerts and price targets.',
+      title: 'Real-time Alerts',
+      desc: 'Instant notifications the moment a trade, filing, or event touches a position you hold.',
       href: '/auth/login',
       icon: 'bi-bell',
     },
     {
       title: 'Community Insights',
-      desc: "Connect with investors following similar strategies. Share analysis, discuss trades, and learn from the community's collective intelligence.",
+      desc: 'High-conviction research from a ranked community of serious investors — signal, not noise.',
       href: '/auth/login',
       icon: 'bi-people',
     },
     {
       title: 'Advanced Analytics',
-      desc: 'Professional-grade metrics including Sharpe ratio, beta analysis, volatility scoring, and sector exposure with export capabilities.',
+      desc: 'Backtest strategies, measure Sharpe and beta, and model sector exposure with quantitative depth.',
       href: '/auth/login',
       icon: 'bi-bar-chart',
     },
@@ -534,10 +540,11 @@ export function FeaturesSection() {
       <div className="features-container">
         {/* Feature Cards Grid - Uniform Dimensions */}
         <div className="features-grid-header">
-          <h2>Why Ezana Finance</h2>
+          <p className="eyebrow lf-mono">Why Ezana Finance</p>
+          <h2>Built for investors who demand more</h2>
           <p className="section-subtitle">
-            Professional-grade tools designed for serious investors who want transparency and
-            intelligence.
+            Professional-grade tools that put institutional intelligence — and the transparency to
+            trust it — in your hands.
           </p>
         </div>
         <div className="features-grid">
@@ -548,21 +555,8 @@ export function FeaturesSection() {
               </div>
               <h3 className="feature-card-title">{card.title}</h3>
               <p className="feature-card-description">{card.desc}</p>
-              <Link href={card.href} className="feature-card-link">
-                Explore
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
+              <Link href={card.href} className="feature-card-link lf-mono">
+                Explore →
               </Link>
             </div>
           ))}
@@ -590,39 +584,18 @@ export function FeaturesSection() {
                     </div>
                   </div>
                   <div className="portfolio-value">
-                    <div className="value-amount">$127,843.52</div>
+                    <div className="value-amount lf-mono">$127,843.52</div>
                     <div className="value-change positive">
                       <i className="bi bi-arrow-up" />
-                      <span>+$2,847.31 (+2.28%)</span>
+                      <span className="lf-mono">+$2,847.31 (+2.28%)</span>
                     </div>
                   </div>
-                  <div className="mini-chart">
-                    <svg width="100%" height="120" viewBox="0 0 400 120" aria-hidden="true">
-                      <defs>
-                        <linearGradient id="chartGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                          <stop offset="0%" style={{ stopColor: '#10b981', stopOpacity: 0.3 }} />
-                          <stop offset="100%" style={{ stopColor: '#10b981', stopOpacity: 0 }} />
-                        </linearGradient>
-                      </defs>
-                      <path
-                        className="chart-line"
-                        d="M 0 80 L 50 70 L 100 65 L 150 55 L 200 50 L 250 45 L 300 35 L 350 30 L 400 20"
-                        fill="none"
-                        stroke="#10b981"
-                        strokeWidth="2"
-                      />
-                      <path
-                        className="chart-area"
-                        d="M 0 80 L 50 70 L 100 65 L 150 55 L 200 50 L 250 45 L 300 35 L 350 30 L 400 20 L 400 120 L 0 120 Z"
-                        fill="url(#chartGradient)"
-                      />
-                    </svg>
-                  </div>
+                  <LandingPortfolioChart range={portfolioRange} />
                   <div className="metrics-mini-grid">
                     {portfolioMetrics.map((m, i) => (
                       <div key={i} className="metric-mini">
-                        <span className="metric-label">{m.label}</span>
-                        <span className="metric-value">
+                        <span className="metric-label lf-mono">{m.label}</span>
+                        <span className="metric-value lf-mono">
                           {m.value}
                           {m.unit ? <span className="metric-unit">{m.unit}</span> : null}
                         </span>
@@ -633,28 +606,29 @@ export function FeaturesSection() {
               </div>
             </div>
             <div className="feature-description">
+              <p className="feature-eyebrow lf-mono">Portfolio Analytics</p>
               <h2 className="feature-title">Professional-grade portfolio analytics</h2>
               <p className="feature-text">
-                Track your investments with institutional-quality tools. Get real-time performance
-                metrics, automated risk assessment, dividend tracking, and sophisticated asset
-                allocation analysis—all in one elegant dashboard.
+                Every account you own, measured with the tools institutions use. Real-time
+                performance, automated risk scoring, dividend tracking, and allocation analysis —
+                unified in a single dashboard.
               </p>
               <div className="feature-stats">
                 <div className="stat-item">
-                  <CountUpStat value="Sub-100ms" className="stat-value" />
-                  <span className="stat-label">Response Time</span>
+                  <CountUpStat value="Sub-100ms" className="stat-value lf-mono" />
+                  <span className="stat-label lf-mono">Response time</span>
                 </div>
                 <div className="stat-item">
-                  <CountUpStat value="10+" className="stat-value" />
-                  <span className="stat-label">Asset Classes</span>
+                  <CountUpStat value="10+" className="stat-value lf-mono" />
+                  <span className="stat-label lf-mono">Asset classes</span>
                 </div>
                 <div className="stat-item">
-                  <CountUpStat value="24/7" className="stat-value" />
-                  <span className="stat-label">Market Data</span>
+                  <CountUpStat value="24/7" className="stat-value lf-mono" />
+                  <span className="stat-label lf-mono">Market data</span>
                 </div>
               </div>
               <Link href="/auth/login" className="feature-cta">
-                <span>See Portfolio Tools</span>
+                <span>Sync Portfolio Data</span>
                 <i className="bi bi-arrow-right" />
               </Link>
             </div>
@@ -668,9 +642,6 @@ export function FeaturesSection() {
               <div className="visual-container congress-visual">
                 <div className="ledger-header">
                   <h4>Congressional Trading Ledger</h4>
-                  <span className="live-badge">
-                    <span className="pulse-dot" /> Live
-                  </span>
                 </div>
 
                 <div className="ledger-filters">
@@ -711,39 +682,39 @@ export function FeaturesSection() {
                           </span>
                           <span className="chamber-badge">{trade.chamber}</span>
                         </span>
-                        <span className="col-ticker">{trade.ticker}</span>
-                        <span className="col-amount">{trade.amount}</span>
-                        <span className="col-time">{trade.time}</span>
+                        <span className="col-ticker lf-mono">{trade.ticker}</span>
+                        <span className="col-amount lf-mono">{trade.amount}</span>
+                        <span className="col-time lf-mono">{trade.time}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
                 <div className="ledger-footer">
-                  <span className="trade-count">{congressTrades.length} trades</span>
+                  <span className="trade-count lf-mono">{congressTrades.length} trades</span>
                   <span className="view-more">View all trades →</span>
                 </div>
               </div>
             </div>
             <div className="feature-description">
+              <p className="feature-eyebrow lf-mono">Congressional Trading</p>
               <h2 className="feature-title">Track congressional trades in real-time</h2>
               <p className="feature-text">
-                Monitor stock purchases and sales by members of Congress with advanced filtering,
-                real-time alerts, and detailed portfolio analysis. Follow specific politicians and
-                never miss a trade that could move the market.
+                Every purchase and sale disclosed by Congress, filterable down to the politician.
+                Follow the names that move markets and get alerted the moment a new filing lands.
               </p>
               <div className="feature-stats">
                 <div className="stat-item">
-                  <CountUpStat value="15,000+" className="stat-value" />
-                  <span className="stat-label">Trades Tracked</span>
+                  <CountUpStat value="15,000+" className="stat-value lf-mono" />
+                  <span className="stat-label lf-mono">Trades tracked</span>
                 </div>
                 <div className="stat-item">
-                  <CountUpStat value="535" className="stat-value" />
-                  <span className="stat-label">Congress Members</span>
+                  <CountUpStat value="535" className="stat-value lf-mono" />
+                  <span className="stat-label lf-mono">Congress members</span>
                 </div>
                 <div className="stat-item">
-                  <CountUpStat value="Real-time" className="stat-value" />
-                  <span className="stat-label">Updates</span>
+                  <CountUpStat value="Real-time" className="stat-value lf-mono" />
+                  <span className="stat-label lf-mono">Updates</span>
                 </div>
               </div>
               <Link href="/auth/login" className="feature-cta">
@@ -786,9 +757,9 @@ export function FeaturesSection() {
                         <div className="intel-content">
                           <div className="intel-title">{item.agency}</div>
                           <div className="intel-company">{item.company}</div>
-                          <div className="intel-amount">{item.amount}</div>
+                          <div className="intel-amount lf-mono">{item.amount}</div>
                           <div className="intel-meta">
-                            <span className="intel-date">{item.date}</span>
+                            <span className="intel-date lf-mono">{item.date}</span>
                             <span className={`intel-impact ${item.impact}`}>
                               {item.impact === 'high' ? 'High' : 'Medium'} Impact
                             </span>
@@ -801,28 +772,28 @@ export function FeaturesSection() {
               </div>
             </div>
             <div className="feature-description">
+              <p className="feature-eyebrow lf-mono">Market Intelligence</p>
               <h2 className="feature-title">Uncover market-moving intelligence</h2>
               <p className="feature-text">
-                Access critical data that institutional investors use: government contract awards,
-                lobbying expenditures, and patent filings. Identify opportunities before they become
-                mainstream news and stay ahead of market movements.
+                The data institutions act on — contract awards, lobbying spend, and patent filings —
+                surfaced and connected to tickers before it becomes mainstream news.
               </p>
               <div className="feature-stats">
                 <div className="stat-item">
-                  <CountUpStat value="5,000+" className="stat-value" />
-                  <span className="stat-label">Contracts/Year</span>
+                  <CountUpStat value="5,000+" className="stat-value lf-mono" />
+                  <span className="stat-label lf-mono">Contracts/yr</span>
                 </div>
                 <div className="stat-item">
-                  <CountUpStat value="$3.7B" className="stat-value" />
-                  <span className="stat-label">Lobbying Tracked</span>
+                  <CountUpStat value="$3.7B" className="stat-value lf-mono" />
+                  <span className="stat-label lf-mono">Lobbying tracked</span>
                 </div>
                 <div className="stat-item">
-                  <CountUpStat value="100K+" className="stat-value" />
-                  <span className="stat-label">Patents Filed</span>
+                  <CountUpStat value="100K+" className="stat-value lf-mono" />
+                  <span className="stat-label lf-mono">Patents filed</span>
                 </div>
               </div>
               <Link href="#resources" className="feature-cta">
-                <span>Discover Market Intelligence</span>
+                <span>Government Intelligence</span>
                 <i className="bi bi-arrow-right" />
               </Link>
             </div>
@@ -870,13 +841,13 @@ export function FeaturesSection() {
                           <p>{post.content}</p>
                         </div>
                         <div className="post-stats">
-                          <span className="stat">
+                          <span className="stat lf-mono">
                             <i className="bi bi-hand-thumbs-up" /> {post.stats.likes}
                           </span>
-                          <span className="stat">
+                          <span className="stat lf-mono">
                             <i className="bi bi-chat" /> {post.stats.comments}
                           </span>
-                          <span className="stat">
+                          <span className="stat lf-mono">
                             <i className="bi bi-bookmark" /> {post.stats.bookmarks}
                           </span>
                         </div>
@@ -887,24 +858,25 @@ export function FeaturesSection() {
               </div>
             </div>
             <div className="feature-description">
+              <p className="feature-eyebrow lf-mono">Community</p>
               <h2 className="feature-title">Learn from collective intelligence</h2>
               <p className="feature-text">
-                Join a thriving community of informed investors. Share research, discuss strategies,
-                and learn from collective market intelligence. Build your reputation and connect
-                with traders who share your investment philosophy.
+                Share research, debate theses, and learn from a ranked community of serious
+                investors. Conviction is staked, skill is earned — your network becomes your net
+                worth.
               </p>
               <div className="feature-stats">
                 <div className="stat-item">
-                  <CountUpStat value="10,000+" className="stat-value" />
-                  <span className="stat-label">Active Users</span>
+                  <CountUpStat value="10,000+" className="stat-value lf-mono" />
+                  <span className="stat-label lf-mono">Active members</span>
                 </div>
                 <div className="stat-item">
-                  <CountUpStat value="50K+" className="stat-value" />
-                  <span className="stat-label">Shared Insights</span>
+                  <CountUpStat value="50K+" className="stat-value lf-mono" />
+                  <span className="stat-label lf-mono">Shared insights</span>
                 </div>
                 <div className="stat-item">
-                  <CountUpStat value="Daily" className="stat-value" />
-                  <span className="stat-label">Discussions</span>
+                  <CountUpStat value="Daily" className="stat-value lf-mono" />
+                  <span className="stat-label lf-mono">Discussions</span>
                 </div>
               </div>
               <Link href="#heroSection" className="feature-cta">

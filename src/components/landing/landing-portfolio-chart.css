@@ -1,0 +1,61 @@
+.lpc-chart-wrap {
+  width: 100%;
+  height: 120px;
+  flex: 1 1 auto;
+  min-height: 120px;
+  max-height: 140px;
+  border-radius: 8px;
+  background: rgba(17, 24, 39, 0.3);
+  padding: 0.5rem 0.25rem 0;
+  overflow: hidden;
+}
+
+.lpc-axis-tick {
+  fill: var(--text-secondary, #e2e8f0);
+  opacity: 0.85;
+}
+
+body.light-mode .landing-page .lpc-axis-tick {
+  fill: var(--text-secondary, #1e293b);
+}
+
+.lpc-tooltip {
+  background: var(--bg-secondary, #0d1117);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.lpc-tooltip-date {
+  font-size: 0.6875rem;
+  color: var(--text-muted, #8b949e);
+  margin-bottom: 0.2rem;
+}
+
+.lpc-tooltip-value {
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: var(--text-primary, #f0f6fc);
+  font-variant-numeric: tabular-nums;
+}
+
+body.light-mode .landing-page .lpc-chart-wrap {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-secondary);
+}
+
+body.light-mode .landing-page .lpc-tooltip {
+  background: #ffffff;
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+body.light-mode .landing-page .lpc-tooltip-value {
+  color: #0f172a;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lpc-chart-wrap .recharts-area-area {
+    animation: none !important;
+  }
+}

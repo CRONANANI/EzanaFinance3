@@ -153,6 +153,11 @@ body.light-mode .landing-page .features-section .features-grid-header .section-s
   color: var(--text-muted);
 }
 
+body.light-mode .landing-page .features-section .eyebrow,
+body.light-mode .landing-page .features-section .feature-eyebrow {
+  color: var(--emerald-text);
+}
+
 body.light-mode .landing-page .feature-card {
   background: var(--surface-card);
   border-color: var(--border-primary);
@@ -170,6 +175,10 @@ body.light-mode .landing-page .feature-card-title {
 
 body.light-mode .landing-page .feature-card-description {
   color: var(--text-secondary);
+}
+
+body.light-mode .landing-page .feature-stats .stat-item {
+  border-right-color: var(--border-secondary);
 }
 
 body.light-mode .landing-page .feature-card-link {
@@ -226,13 +235,21 @@ body.light-mode .landing-page .stat-item .stat-label {
   color: var(--text-faint);
 }
 
-body.light-mode .landing-page .visual-container:not(.portfolio-visual):not(.congress-visual):not(.intelligence-visual):not(.community-visual) {
+body.light-mode
+  .landing-page
+  .visual-container:not(.portfolio-visual):not(.congress-visual):not(.intelligence-visual):not(
+    .community-visual
+  ) {
   background: var(--surface-card);
   border-color: var(--border-primary);
   box-shadow: var(--shadow-md);
 }
 
-body.light-mode .landing-page .visual-container:not(.portfolio-visual):not(.congress-visual):not(.intelligence-visual):not(.community-visual):hover {
+body.light-mode
+  .landing-page
+  .visual-container:not(.portfolio-visual):not(.congress-visual):not(.intelligence-visual):not(
+    .community-visual
+  ):hover {
   border-color: var(--border-hover);
   box-shadow: var(--shadow-lg);
 }
@@ -257,19 +274,28 @@ body.light-mode .landing-page .metric-unit {
   color: var(--text-muted);
 }
 
-body.light-mode .landing-page .time-btn {
+body.light-mode .landing-page .time-range {
   background: var(--bg-tertiary);
-  border-color: var(--border-primary);
+  border-color: var(--border-secondary);
+}
+
+body.light-mode .landing-page .time-btn {
+  background: transparent;
+  border: none;
   color: var(--text-muted);
 }
 
-body.light-mode .landing-page .time-btn.active {
-  background: var(--emerald-bg);
-  border-color: var(--emerald);
+body.light-mode .landing-page .time-btn:hover {
   color: var(--emerald-text);
 }
 
-body.light-mode .landing-page .mini-chart,
+body.light-mode .landing-page .time-btn.active {
+  background: rgba(16, 185, 129, 0.1);
+  border: none;
+  color: var(--emerald-text);
+}
+
+body.light-mode .landing-page .lpc-chart-wrap,
 body.light-mode .landing-page .metric-mini {
   background: var(--bg-tertiary);
   border-color: var(--border-secondary);
