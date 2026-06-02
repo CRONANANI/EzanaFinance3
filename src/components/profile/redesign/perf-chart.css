@@ -1,0 +1,127 @@
+.perf-chart-wrap {
+  width: 100%;
+  height: 240px;
+}
+
+.perf-axis-tick {
+  fill: var(--text-secondary, #e2e8f0);
+  opacity: 0.85;
+}
+
+body.light-mode .perf-axis-tick {
+  fill: var(--text-secondary, #1e293b);
+}
+
+.perf-tooltip {
+  background: var(--bg-secondary, #0d1117);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+}
+
+.perf-tooltip-date {
+  font-size: 0.6875rem;
+  color: var(--text-muted, #8b949e);
+  margin-bottom: 0.35rem;
+}
+
+.perf-tooltip-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary, #e2e8f0);
+  line-height: 1.5;
+}
+
+.perf-tooltip-row b {
+  margin-left: auto;
+  font-weight: 700;
+  color: var(--text-primary, #f0f6fc);
+  font-variant-numeric: tabular-nums;
+}
+
+.perf-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.perf-dot.you {
+  background: #10b981;
+}
+
+.perf-dot.median {
+  background: var(--text-ghost, #cbd5e1);
+}
+
+.perf-dot.top25 {
+  border-radius: 0;
+  background-image: linear-gradient(90deg, var(--text-faint, #94a3b8) 50%, transparent 50%);
+  background-size: 4px 2px;
+  background-repeat: repeat-x;
+  background-color: transparent;
+  height: 2px;
+  margin-top: 3px;
+  margin-bottom: 3px;
+}
+
+.perf-range-pills {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.perf-range-pill {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: transparent;
+  color: var(--text-muted, #8b949e);
+  cursor: pointer;
+  transition: all 150ms ease;
+  font-family: var(--font-mono, monospace);
+}
+
+.perf-range-pill:hover {
+  border-color: rgba(16, 185, 129, 0.3);
+  color: var(--text-secondary, #e2e8f0);
+}
+
+.perf-range-pill.is-active {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #10b981;
+}
+
+.perf-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 240px;
+  color: var(--text-muted, #8b949e);
+  font-size: 0.875rem;
+  text-align: center;
+  padding: 0 1.5rem;
+}
+
+body.light-mode .perf-range-pill {
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+body.light-mode .perf-tooltip {
+  background: #ffffff;
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+body.light-mode .perf-tooltip-row b {
+  color: #0f172a;
+}
+
+body.light-mode .perf-tooltip-row {
+  color: var(--text-secondary, #475569);
+}

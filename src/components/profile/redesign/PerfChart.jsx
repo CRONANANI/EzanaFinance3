@@ -1,85 +1,76 @@
 'use client';
 
 import { useMemo } from 'react';
+import {
+  AreaChart,
+  Area,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+} from 'recharts';
 import { NumberText } from './NumberText';
 import { page, brand, shape, density, type as typeTokens } from './profile-design-tokens';
+import './perf-chart.css';
 
 const RANGES = ['1W', '1M', '3M', 'YTD'];
 
-export function PerfChart({ performance, range, onRangeChange, isLive = false, sourceLabel }) {
-  const W = 880;
-  const H = 240;
-  const padL = 36;
-  const padR = 8;
-  const padT = 12;
-  const padB = 28;
-  const innerW = W - padL - padR;
-  const innerH = H - padT - padB;
+function PerfTooltip({ active, payload }) {
+  if (!active || !payload?.length) return null;
+  const row = payload[0].payload;
+  const fmt = (v) => (v == null ? '—' : `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`);
+  return (
+    <div className="perf-tooltip">
+      <div className="perf-tooltip-date">
+        {new Date(row.at).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        })}
+      </div>
+      <div className="perf-tooltip-row">
+        <span className="perf-dot you" />
+        You <b>{fmt(row.you)}</b>
+      </div>
+      <div className="perf-tooltip-row">
+        <span className="perf-dot median" />
+        Median {fmt(row.median)}
+      </div>
+      <div className="perf-tooltip-row">
+        <span className="perf-dot top25" />
+        Top 25% {fmt(row.top25)}
+      </div>
+    </div>
+  );
+}
 
+export function PerfChart({ performance, range, onRangeChange, isLive = false, sourceLabel }) {
   const { you = [], median = [], top25 = [], dates = [] } = performance || {};
 
-  const allValues = [...you, ...median, ...top25];
-  const yMax = allValues.length > 0 ? Math.max(...allValues, 0.5) : 1;
-  const yMin = allValues.length > 0 ? Math.min(...allValues, 0) : 0;
-  const rangeVal = yMax - yMin || 1;
-
-  function xPos(i, len) {
-    return padL + (i / Math.max(1, len - 1)) * innerW;
-  }
-  function yPos(v) {
-    return padT + innerH - ((v - yMin) / rangeVal) * innerH;
-  }
-
-  function toPath(arr) {
-    if (arr.length === 0) return '';
-    return arr
-      .map(
-        (v, i) => `${i === 0 ? 'M' : 'L'} ${xPos(i, arr.length).toFixed(1)} ${yPos(v).toFixed(1)}`,
-      )
-      .join(' ');
-  }
-
-  function toAreaPath(arr) {
-    if (arr.length === 0) return '';
-    const line = toPath(arr);
-    return `${line} L ${xPos(arr.length - 1, arr.length).toFixed(1)} ${(padT + innerH).toFixed(1)} L ${padL.toFixed(1)} ${(padT + innerH).toFixed(1)} Z`;
-  }
-
-  const yLabels = useMemo(() => {
-    const steps = 4;
-    const arr = [];
-    for (let i = 0; i < steps; i++) {
-      const v = yMin + (rangeVal * i) / (steps - 1);
-      arr.push({ v, y: yPos(v) });
-    }
-    return arr;
-  }, [yMin, rangeVal, padT, innerH]);
-
-  const xLabels = useMemo(() => {
-    if (!dates || dates.length === 0) return [];
-    const steps = 6;
-    const arr = [];
-    for (let i = 0; i < steps; i++) {
-      const idx = Math.round((i / (steps - 1)) * (dates.length - 1));
-      if (dates[idx]) {
-        const d = new Date(dates[idx]);
-        arr.push({
-          label: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-          x: xPos(idx, dates.length),
-        });
-      }
-    }
-    return arr;
-  }, [dates, padL, innerW]);
+  const chartData = useMemo(
+    () =>
+      (dates || []).map((iso, i) => ({
+        at: iso,
+        label: new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        you: you[i] ?? null,
+        median: median[i] ?? null,
+        top25: top25[i] ?? null,
+      })),
+    [dates, you, median, top25],
+  );
 
   const lastYou = you.length > 0 ? you[you.length - 1] : 0;
   const lastMedian = median.length > 0 ? median[median.length - 1] : 0;
   const lastTop25 = top25.length > 0 ? top25[top25.length - 1] : 0;
 
-  const endX = you.length > 0 ? xPos(you.length - 1, you.length) : 0;
-  const endY = you.length > 0 ? yPos(lastYou) : 0;
+  const youUp = lastYou >= 0;
+  const youColor = youUp ? '#10b981' : '#ef4444';
+  const youGradientId = youUp ? 'perf-grad-up' : 'perf-grad-down';
 
   const badgeLabel = isLive ? 'LIVE' : sourceLabel || 'PAPER';
+  const hasEnoughData = chartData.length >= 2;
 
   return (
     <div
@@ -135,113 +126,103 @@ export function PerfChart({ performance, range, onRangeChange, isLive = false, s
             <span style={{ width: 5, height: 5, borderRadius: '50%', background: brand.base }} />
             {badgeLabel}
           </span>
-          <div
-            style={{
-              display: 'inline-flex',
-              background: page.surface,
-              border: `1px solid ${page.border}`,
-              borderRadius: shape.radius.button,
-              overflow: 'hidden',
-            }}
-          >
-            {RANGES.map((r, i) => {
-              const active = r === range;
-              return (
-                <button
-                  key={r}
-                  type="button"
-                  onClick={() => onRangeChange(r)}
-                  style={{
-                    background: active ? page.surfaceAlt : 'transparent',
-                    color: active ? page.ink : page.inkSoft,
-                    border: 'none',
-                    borderLeft: i > 0 ? `1px solid ${page.border}` : 'none',
-                    padding: '4px 10px',
-                    fontSize: 11,
-                    fontWeight: 600,
-                    fontFamily: typeTokens.sans,
-                    cursor: 'pointer',
-                  }}
-                >
-                  {r}
-                </button>
-              );
-            })}
+          <div className="perf-range-pills">
+            {RANGES.map((r) => (
+              <button
+                key={r}
+                type="button"
+                className={`perf-range-pill ${r === range ? 'is-active' : ''}`}
+                onClick={() => onRangeChange(r)}
+              >
+                {r}
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
-      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block' }}>
-        <defs>
-          <linearGradient id="perfChartYouFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={brand.base} stopOpacity="0.16" />
-            <stop offset="100%" stopColor={brand.base} stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        {yLabels.map((yl, i) => (
-          <g key={i}>
-            <text x={padL - 6} y={yl.y + 3} textAnchor="end" fontSize="10" fill={page.inkMuted}>
-              {yl.v.toFixed(1)}%
-            </text>
-            <line
-              x1={padL}
-              y1={yl.y}
-              x2={W - padR}
-              y2={yl.y}
-              stroke={page.border}
-              strokeDasharray="2 3"
-            />
-          </g>
-        ))}
-        {xLabels.map((xl, i) => (
-          <text key={i} x={xl.x} y={H - 8} textAnchor="middle" fontSize="9.5" fill={page.inkMuted}>
-            {xl.label}
-          </text>
-        ))}
-
-        {top25.length > 0 && (
-          <path
-            d={toPath(top25)}
-            stroke="var(--text-faint, #94a3b8)"
-            strokeWidth="1.5"
-            strokeDasharray="4 3"
-            fill="none"
-          />
-        )}
-        {median.length > 0 && (
-          <path
-            d={toPath(median)}
-            stroke="var(--text-ghost, #cbd5e1)"
-            strokeWidth="1.5"
-            fill="none"
-          />
-        )}
-        {you.length > 0 && (
-          <>
-            <path d={toAreaPath(you)} fill="url(#perfChartYouFill)" />
-            <path
-              d={toPath(you)}
-              stroke={brand.base}
-              strokeWidth="2.5"
-              fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <circle
-              cx={endX}
-              cy={endY}
-              r="4"
-              fill={brand.base}
-              stroke="var(--app-bg, #fff)"
-              strokeWidth="1.5"
-            />
-          </>
-        )}
-      </svg>
+      {hasEnoughData ? (
+        <div className="perf-chart-wrap">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={chartData} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="perf-grad-up" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#10b981" stopOpacity={0.4} />
+                  <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="perf-grad-down" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#ef4444" stopOpacity={0.4} />
+                  <stop offset="100%" stopColor="#ef4444" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid stroke="rgba(255,255,255,0.04)" vertical={false} />
+              <XAxis
+                dataKey="label"
+                tick={{
+                  className: 'perf-axis-tick',
+                  fontSize: 10,
+                  fontFamily: 'var(--font-mono, monospace)',
+                }}
+                axisLine={false}
+                tickLine={false}
+                interval="preserveStartEnd"
+                minTickGap={50}
+              />
+              <YAxis
+                tick={{
+                  className: 'perf-axis-tick',
+                  fontSize: 10,
+                  fontFamily: 'var(--font-mono, monospace)',
+                }}
+                axisLine={false}
+                tickLine={false}
+                width={44}
+                tickFormatter={(v) => `${v.toFixed(1)}%`}
+                domain={['auto', 'auto']}
+              />
+              <Tooltip
+                content={<PerfTooltip />}
+                cursor={{ stroke: 'rgba(16,185,129,0.3)', strokeDasharray: '3 3' }}
+              />
+              <Line
+                type="monotone"
+                dataKey="top25"
+                stroke="var(--text-faint, #94a3b8)"
+                strokeWidth={1.5}
+                strokeDasharray="4 3"
+                dot={false}
+                connectNulls
+                isAnimationActive={false}
+              />
+              <Line
+                type="monotone"
+                dataKey="median"
+                stroke="var(--text-ghost, #cbd5e1)"
+                strokeWidth={1.5}
+                dot={false}
+                connectNulls
+                isAnimationActive={false}
+              />
+              <Area
+                type="monotone"
+                dataKey="you"
+                stroke={youColor}
+                strokeWidth={2.5}
+                fill={`url(#${youGradientId})`}
+                dot={false}
+                activeDot={{ r: 4 }}
+                connectNulls
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      ) : (
+        <div className="perf-empty">Not enough history yet to chart performance.</div>
+      )}
 
       <div style={{ display: 'flex', gap: 16, marginTop: 6, fontSize: 11 }}>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: page.inkSoft }}>
-          <span style={{ width: 12, height: 2, background: brand.base, borderRadius: 1 }} />
+          <span style={{ width: 12, height: 2, background: youColor, borderRadius: 1 }} />
           You{' '}
           <NumberText size={11} weight={600}>
             {lastYou >= 0 ? '+' : ''}
