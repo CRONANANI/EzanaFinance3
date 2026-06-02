@@ -30,9 +30,11 @@ export const plaidClient = new PlaidApi(configuration);
 // Used in API routes to insert/update Plaid data for any user
 export const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
 );
 
 // ── Config ──
 export const PLAID_PRODUCTS = ['investments', 'transactions'];
 export const PLAID_COUNTRY_CODES = ['US'];
+export const PLAID_REDIRECT_URI = process.env.PLAID_REDIRECT_URI || null;
+export const PLAID_WEBHOOK_URL = process.env.PLAID_WEBHOOK_URL || null;

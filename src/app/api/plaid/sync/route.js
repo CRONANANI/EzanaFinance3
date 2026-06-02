@@ -4,13 +4,9 @@
  * unified layer (and the legacy tables for backwards compat).
  */
 import { NextResponse } from 'next/server';
-import { plaidClient, supabaseAdmin } from '@/lib/plaid';
+import { supabaseAdmin } from '@/lib/plaid';
 import { getAuthUser } from '@/lib/auth-helpers';
-import {
-  upsertPlaidAccount,
-  upsertPlaidPositions,
-  upsertPlaidTransactions,
-} from '@/lib/portfolio/adapters/plaid';
+import { syncPlaidItem } from '@/lib/plaid-sync';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,7 +17,7 @@ export async function POST(request) {
 
     const { data: items } = await supabaseAdmin
       .from('plaid_items')
-      .select('id, access_token, institution_id, institution_name')
+      .select('id, item_id, access_token, institution_id, institution_name')
       .eq('user_id', user.id)
       .eq('status', 'active');
 
@@ -29,75 +25,20 @@ export async function POST(request) {
       return NextResponse.json({ synced: 0, message: 'No connected Plaid institutions' });
     }
 
-    const today = new Date().toISOString().slice(0, 10);
-    const ninetyDaysAgo = new Date(Date.now() - 90 * 86400000).toISOString().slice(0, 10);
     let totalAccounts = 0;
     const errors = [];
 
     for (const item of items) {
       try {
-        const acctRes = await plaidClient.accountsGet({ access_token: item.access_token });
-
-        let holdings = [];
-        let securitiesByID = {};
-        try {
-          const hRes = await plaidClient.investmentsHoldingsGet({
-            access_token: item.access_token,
-          });
-          holdings = hRes.data.holdings || [];
-          for (const s of hRes.data.securities || []) securitiesByID[s.security_id] = s;
-        } catch {
-          /* investments not supported */
-        }
-
-        const transactionsByAccount = {};
-        try {
-          const tRes = await plaidClient.investmentsTransactionsGet({
-            access_token: item.access_token,
-            start_date: ninetyDaysAgo,
-            end_date: today,
-          });
-          for (const t of tRes.data.investment_transactions || []) {
-            const sec = (tRes.data.securities || []).find((s) => s.security_id === t.security_id);
-            t.security = sec || null;
-            if (!transactionsByAccount[t.account_id]) transactionsByAccount[t.account_id] = [];
-            transactionsByAccount[t.account_id].push(t);
-          }
-        } catch {
-          /* transactions not supported */
-        }
-
-        for (const a of acctRes.data.accounts) {
-          if (!['investment', 'brokerage'].includes(a.type) && !a.subtype?.includes('401'))
-            continue;
-          const unifiedAccount = await upsertPlaidAccount({
-            userId: user.id,
-            plaidAccount: a,
-            institutionName: item.institution_name,
-            plaidInstitutionId: item.institution_id,
-          });
-          totalAccounts++;
-
-          const accountHoldings = holdings.filter((h) => h.account_id === a.account_id);
-          if (accountHoldings.length > 0) {
-            await upsertPlaidPositions({
-              userId: user.id,
-              accountId: unifiedAccount.id,
-              holdings: accountHoldings,
-              securitiesByID,
-              snapshotDate: today,
-            });
-          }
-
-          const accountTxns = transactionsByAccount[a.account_id] || [];
-          if (accountTxns.length > 0) {
-            await upsertPlaidTransactions({
-              userId: user.id,
-              accountId: unifiedAccount.id,
-              transactions: accountTxns,
-            });
-          }
-        }
+        const result = await syncPlaidItem({
+          userId: user.id,
+          accessToken: item.access_token,
+          institutionId: item.institution_id,
+          institutionName: item.institution_name,
+          plaidItemDbId: item.id,
+          plaidItemId: item.item_id,
+        });
+        totalAccounts += result.syncedAccounts;
       } catch (err) {
         errors.push({ institution: item.institution_name, error: err.message });
       }

@@ -4,6 +4,16 @@ import { useState, useCallback, useEffect } from 'react';
 import { usePlaidLink } from 'react-plaid-link';
 import { supabase } from '@/lib/supabase-browser';
 
+const LINK_TOKEN_KEY = 'plaid_link_token';
+
+function clearStoredLinkToken() {
+  try {
+    localStorage.removeItem(LINK_TOKEN_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
 export function PlaidLinkButton({ onSuccess, className = '' }) {
   const [linkToken, setLinkToken] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -39,6 +49,11 @@ export function PlaidLinkButton({ onSuccess, className = '' }) {
 
         const data = await response.json();
         setLinkToken(data.link_token);
+        try {
+          localStorage.setItem(LINK_TOKEN_KEY, data.link_token);
+        } catch {
+          /* ignore */
+        }
       } catch (err) {
         console.error('Error fetching link token:', err);
         setError('Failed to initialize connection');
@@ -66,26 +81,38 @@ export function PlaidLinkButton({ onSuccess, className = '' }) {
           body: JSON.stringify({ public_token, metadata }),
         });
 
-        if (!response.ok) {
-          throw new Error('Failed to connect account');
+        const data = await response.json().catch(() => ({}));
+
+        if (response.status === 409 && data.code === 'cross_provider_conflict') {
+          clearStoredLinkToken();
+          setError(
+            'This account is already connected via another provider. Disconnect that one in Settings before switching.',
+          );
+          return;
         }
 
-        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.details || data.error || 'Failed to connect account');
+        }
+
+        clearStoredLinkToken();
 
         if (onSuccess) {
           onSuccess(data);
         }
       } catch (err) {
         console.error('Error exchanging token:', err);
+        clearStoredLinkToken();
         setError('Failed to connect account. Please try again.');
       } finally {
         setLoading(false);
       }
     },
-    [onSuccess],
+    [getToken, onSuccess],
   );
 
-  const handleOnExit = useCallback((err, metadata) => {
+  const handleOnExit = useCallback((err) => {
+    clearStoredLinkToken();
     if (err) {
       console.error('Plaid Link error:', err);
       setError('Connection was cancelled or failed');
