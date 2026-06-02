@@ -465,6 +465,7 @@ const COMMUNITY_DATA = {
 export function FeaturesSection() {
   const sectionRef = useRef(null);
   const [portfolioRange, setPortfolioRange] = useState('1W');
+  const [portfolioVisible, setPortfolioVisible] = useState(false);
   const [congressFilter, setCongressFilter] = useState('all');
   const [intelTab, setIntelTab] = useState('contracts');
   const [communityView, setCommunityView] = useState('trending');
@@ -476,7 +477,10 @@ export function FeaturesSection() {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) entry.target.classList.add('visible');
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            if (entry.target.dataset.feature === 'portfolio') setPortfolioVisible(true);
+          }
         });
       },
       { threshold: 0.2, rootMargin: '0px 0px -100px 0px' },
@@ -484,6 +488,7 @@ export function FeaturesSection() {
     blocks.forEach((block) => observer.observe(block));
     const fallback = setTimeout(() => {
       blocks.forEach((block) => block.classList.add('visible'));
+      setPortfolioVisible(true);
     }, 2500);
     return () => {
       observer.disconnect();
@@ -590,7 +595,11 @@ export function FeaturesSection() {
                       <span className="lf-mono">+$2,847.31 (+2.28%)</span>
                     </div>
                   </div>
-                  <LandingPortfolioChart range={portfolioRange} />
+                  {portfolioVisible ? (
+                    <LandingPortfolioChart range={portfolioRange} />
+                  ) : (
+                    <div className="lpc-chart-wrap" aria-hidden="true" />
+                  )}
                   <div className="metrics-mini-grid">
                     {portfolioMetrics.map((m, i) => (
                       <div key={i} className="metric-mini">
