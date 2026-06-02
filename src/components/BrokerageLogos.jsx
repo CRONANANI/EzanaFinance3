@@ -15,7 +15,7 @@ import './brokerage-logos.css';
 const BROKERAGE_LOGOS = [
   { name: 'Alpaca', src: '/brokerage-logos/alpaca.png', width: 80, height: 80 },
   { name: 'Binance', src: '/brokerage-logos/binance.png', width: 200, height: 40 },
-  { name: 'Coinbase', src: '/brokerage-logos/coinbase.png', width: 80, height: 80 },
+  { name: 'Coinbase', src: '/brokerage-logos/coinbase.png', width: 200, height: 56 },
   { name: 'Robinhood', src: '/brokerage-logos/robinhood.png', width: 200, height: 56 },
   { name: 'eToro', src: '/brokerage-logos/etoro.png', width: 200, height: 56 },
   { name: 'Questrade', src: '/brokerage-logos/questrade.png', width: 180, height: 56 },
@@ -32,7 +32,7 @@ const BROKERAGE_LOGOS = [
   { name: 'Vanguard', src: '/brokerage-logos/vanguard.png', width: 200, height: 56 },
   { name: 'US Bank', src: '/brokerage-logos/us-bank.png', width: 200, height: 56 },
   { name: 'Trading 212', src: '/brokerage-logos/trading212.png', width: 200, height: 56 },
-  { name: 'Charles Schwab', brandKey: 'SCHWAB' },
+  { name: 'Charles Schwab', src: '/brokerage-logos/charles-schwab.png', width: 80, height: 80 },
   { name: 'Merrill Lynch', brandKey: 'MERRILL' },
   { name: 'Public', brandKey: 'PUBLIC' },
   { name: 'Betterment', brandKey: 'BETTERMENT' },
@@ -75,8 +75,8 @@ export function BrokerageLogos() {
     <section className="bl-section">
       <h2 className="bl-heading">Connect Your Brokerage Account</h2>
       <p className="bl-subheading">
-        Securely link 80+ brokerages and crypto exchanges via SnapTrade — read holdings or place
-        trades from Ezana
+        Securely link 1000+ brokerages and crypto exchanges via SnapTrade &amp; Plaid, read holdings
+        or place trades from selective brokers from the Ezana platform
       </p>
 
       <div className="bl-carousel-mask">
