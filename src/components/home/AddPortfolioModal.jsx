@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { supabase } from '@/lib/supabase-browser';
 import { BrandMark, brandColor, resolveBrandKey } from './brokerage-brand-marks';
 import { CountryFlag, inferCountry } from './brokerage-country-flags';
+import { ProviderMark } from './provider-brand-marks';
 import './add-portfolio-modal.css';
 
 const EZANA_LOGO = '/ezana-nav-logo.png';
@@ -242,11 +243,20 @@ export function AddPortfolioModal({ open, onClose, onConnected }) {
             <button type="button" className="apm-close" onClick={onClose} aria-label="Close">
               ×
             </button>
-            <h2 className="apm-disc-title">
-              How would you like to connect {selected.displayName}?
-            </h2>
+
+            <div className="apm-choice-header">
+              <div className="apm-choice-broker-logo">
+                <InstitutionLogo inst={selected} size={72} />
+              </div>
+              <div className="apm-choice-broker-text">
+                <div className="apm-choice-eyebrow">Connect your account</div>
+                <h2 className="apm-choice-title">{selected.displayName}</h2>
+              </div>
+            </div>
+
             <p className="apm-choice-sub">
-              Both work. Pick the support team you&apos;d rather work with if something goes wrong.
+              Both providers connect your account securely. Pick the support team you&apos;d rather
+              work with if something goes wrong — you can disconnect and switch at any time.
             </p>
 
             <button
@@ -254,15 +264,23 @@ export function AddPortfolioModal({ open, onClose, onConnected }) {
               className="apm-provider-btn"
               onClick={() => pickProvider('snaptrade')}
             >
-              <div className="apm-provider-btn-head">
-                <strong>SnapTrade</strong>
-                <span className="apm-provider-btn-tag">Recommended</span>
+              <div className="apm-provider-btn-logo">
+                <ProviderMark provider="snaptrade" size={44} />
               </div>
-              <p>
-                {selected.snaptradeAllowsTrading
-                  ? 'Place trades from Ezana. Holdings update multiple times per day.'
-                  : 'Read-only holdings. Updates throughout the day.'}
-              </p>
+              <div className="apm-provider-btn-body">
+                <div className="apm-provider-btn-head">
+                  <strong>SnapTrade</strong>
+                  <span className="apm-provider-btn-tag">Recommended</span>
+                </div>
+                <p className="apm-provider-btn-desc">
+                  {selected.snaptradeAllowsTrading
+                    ? 'Place trades from Ezana. Holdings sync multiple times per day with near-real-time pricing. SOC 2 Type II certified.'
+                    : 'Read-only holdings with updates throughout the day. Faster sync than Plaid. SOC 2 Type II certified.'}
+                </p>
+              </div>
+              <div className="apm-provider-btn-arrow" aria-hidden>
+                →
+              </div>
             </button>
 
             <button
@@ -270,13 +288,22 @@ export function AddPortfolioModal({ open, onClose, onConnected }) {
               className="apm-provider-btn"
               onClick={() => pickProvider('plaid')}
             >
-              <div className="apm-provider-btn-head">
-                <strong>Plaid</strong>
+              <div className="apm-provider-btn-logo">
+                <ProviderMark provider="plaid" size={44} />
               </div>
-              <p>
-                Read-only holdings, updated once per day (end-of-day). Useful if you already trust
-                Plaid from other apps.
-              </p>
+              <div className="apm-provider-btn-body">
+                <div className="apm-provider-btn-head">
+                  <strong>Plaid</strong>
+                </div>
+                <p className="apm-provider-btn-desc">
+                  Read-only holdings, refreshed once per day (end-of-day data). Trusted by 8,000+
+                  financial apps including Venmo and Robinhood — useful if you already have Plaid
+                  connections elsewhere.
+                </p>
+              </div>
+              <div className="apm-provider-btn-arrow" aria-hidden>
+                →
+              </div>
             </button>
 
             <button type="button" className="apm-back-link" onClick={() => setStep('grid')}>

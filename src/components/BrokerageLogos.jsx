@@ -2,13 +2,14 @@
  * BrokerageLogos — "Connect Your Brokerage Account" section.
  *
  * Mirrors TrustedLogos carousel scaffolding but scrolls the opposite direction.
- * Logo files live in /public/brokerage-logos/.
+ * Logo files live in /public/brokerage-logos/; additional entries use inline SVG.
  */
 
 'use client';
 
 import { useState } from 'react';
 import Image from 'next/image';
+import { BrandMark } from '@/components/home/brokerage-brand-marks';
 import './brokerage-logos.css';
 
 const BROKERAGE_LOGOS = [
@@ -31,10 +32,25 @@ const BROKERAGE_LOGOS = [
   { name: 'Vanguard', src: '/brokerage-logos/vanguard.png', width: 200, height: 56 },
   { name: 'US Bank', src: '/brokerage-logos/us-bank.png', width: 200, height: 56 },
   { name: 'Trading 212', src: '/brokerage-logos/trading212.png', width: 200, height: 56 },
+  { name: 'Charles Schwab', brandKey: 'SCHWAB' },
+  { name: 'Merrill Lynch', brandKey: 'MERRILL' },
+  { name: 'Public', brandKey: 'PUBLIC' },
+  { name: 'Betterment', brandKey: 'BETTERMENT' },
+  { name: 'TIAA', brandKey: 'TIAA' },
 ];
 
 function LogoTile({ logo }) {
   const [failed, setFailed] = useState(false);
+
+  if (logo.brandKey) {
+    return (
+      <div className="bl-logo-item bl-logo-item--svg" title={logo.name}>
+        <BrandMark id={logo.brandKey} size={56} />
+        <div className="bl-logo-label">{logo.name}</div>
+      </div>
+    );
+  }
+
   if (failed) return null;
   return (
     <div className="bl-logo-item" title={logo.name}>

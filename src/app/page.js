@@ -11,7 +11,6 @@ import { CookieConsentBanner } from '@/components/landing/CookieConsentBanner';
 import { AnalyticsGate } from '@/components/landing/AnalyticsGate';
 import { LandingErrorBoundary } from '@/components/landing/LandingErrorBoundary';
 import { FooterClickDebug } from '@/components/landing/footer-click-debug';
-import { TrustedLogos } from '@/components/TrustedLogos';
 import { BrokerageLogos } from '@/components/BrokerageLogos';
 
 const ContactSupportDialog = dynamic(
@@ -30,10 +29,6 @@ export default function HomePage() {
       <main className="main-content hero-section" id="heroSection">
         <LandingHero />
       </main>
-
-      <LandingErrorBoundary name="TrustedLogos">
-        <TrustedLogos />
-      </LandingErrorBoundary>
 
       <LandingErrorBoundary name="BrokerageLogos">
         <BrokerageLogos />

@@ -380,55 +380,162 @@ body:not(.light-mode) .apm-broker-name {
 }
 
 .apm-card--choice {
-  max-width: 480px;
-}
-.apm-choice-sub {
-  font-size: 0.875rem;
-  color: var(--text-muted, #6b7280);
-  margin: 0 0 1.5rem;
-  text-align: center;
-}
-.apm-provider-btn {
-  display: block;
   width: 100%;
-  padding: 1rem 1.25rem;
-  margin: 0 0 0.75rem;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
+  max-width: 720px;
+  padding: 28px 32px 24px;
+}
+
+.apm-choice-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border-primary, rgba(255, 255, 255, 0.08));
+}
+
+.apm-choice-broker-logo {
+  flex-shrink: 0;
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: var(--bg-tertiary, rgba(255, 255, 255, 0.04));
+  overflow: hidden;
+}
+
+.apm-choice-broker-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.apm-choice-eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted, #6b7280);
+  margin-bottom: 4px;
+}
+
+.apm-choice-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary, inherit);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.apm-choice-sub {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-muted, #6b7280);
+  margin: 0 0 20px;
+  text-align: left;
+}
+
+.apm-provider-btn {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 18px 20px;
+  margin: 0 0 12px;
+  background: var(--surface-card, rgba(255, 255, 255, 0.03));
+  border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.08));
+  border-radius: 14px;
   color: inherit;
   text-align: left;
   cursor: pointer;
   transition: all 0.18s ease;
 }
+
 .apm-provider-btn:hover {
-  background: rgba(16, 185, 129, 0.06);
-  border-color: rgba(16, 185, 129, 0.3);
+  background: rgba(16, 185, 129, 0.04);
+  border-color: rgba(16, 185, 129, 0.35);
   transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
 }
+
+.apm-provider-btn:hover .apm-provider-btn-arrow {
+  color: var(--emerald);
+  transform: translateX(4px);
+}
+
+.apm-provider-btn-logo {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.apm-provider-btn-body {
+  flex: 1;
+  min-width: 0;
+}
+
 .apm-provider-btn-head {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.25rem;
+  gap: 8px;
+  margin-bottom: 6px;
 }
+
 .apm-provider-btn-head strong {
-  font-size: 1rem;
+  font-size: 16px;
   font-weight: 700;
+  color: var(--text-primary, inherit);
 }
+
 .apm-provider-btn-tag {
-  padding: 0.1em 0.5em;
-  font-size: 0.625rem;
+  padding: 2px 8px;
+  font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
   color: var(--emerald);
   background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.28);
   border-radius: 999px;
   letter-spacing: 0.05em;
 }
-.apm-provider-btn p {
-  font-size: 0.8125rem;
+
+.apm-provider-btn-desc {
+  font-size: 13px;
+  line-height: 1.5;
   color: var(--text-muted, #9ca3af);
   margin: 0;
-  line-height: 1.4;
+}
+
+.apm-provider-btn-arrow {
+  flex-shrink: 0;
+  font-size: 22px;
+  color: var(--text-muted, #6b7280);
+  transition: all 0.18s ease;
+  line-height: 1;
+}
+
+@media (max-width: 640px) {
+  .apm-card--choice {
+    padding: 20px 18px 18px;
+  }
+  .apm-choice-header {
+    gap: 12px;
+  }
+  .apm-choice-broker-logo {
+    width: 56px;
+    height: 56px;
+  }
+  .apm-choice-title {
+    font-size: 18px;
+  }
+  .apm-provider-btn {
+    padding: 14px 16px;
+    gap: 12px;
+  }
+  .apm-provider-btn-arrow {
+    display: none;
+  }
 }
