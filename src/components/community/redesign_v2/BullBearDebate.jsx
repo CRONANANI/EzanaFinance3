@@ -6,25 +6,20 @@ function TakeCard({ side, take, tone }) {
   const author = take?.author || {};
   return (
     <div
-      className={`evo-bull-bear-card evo-bull-bear-card--${side}`}
+      className={`ledger-card evo-bull-bear-card evo-bull-bear-card--${side}`}
       style={{
         flex: 1,
-        padding: 16,
         background: 'var(--bg-tertiary)',
-        border: `1px solid ${tone === 'bull' ? 'rgba(16,185,129,0.25)' : 'rgba(239,68,68,0.25)'}`,
+        border: '1px solid var(--border-primary)',
         borderRadius: 12,
         borderTopWidth: 3,
-        borderTopColor: tone === 'bull' ? 'var(--positive)' : 'var(--negative)',
+        borderTopColor: tone === 'bull' ? 'var(--emerald-ink)' : 'var(--negative)',
       }}
     >
       <div
+        className="cardhdr"
         style={{
-          fontSize: 10,
-          fontWeight: 700,
-          textTransform: 'uppercase',
-          letterSpacing: '0.08em',
-          color: tone === 'bull' ? 'var(--positive)' : 'var(--negative)',
-          marginBottom: 10,
+          color: tone === 'bull' ? 'var(--emerald-ink)' : 'var(--negative)',
         }}
       >
         {side === 'bull' ? 'Bull case' : 'Bear case'}
@@ -46,15 +41,15 @@ function TakeCard({ side, take, tone }) {
               {author.display_name || author.name || 'Member'}
             </span>
           </div>
-          <p style={{ margin: 0, fontSize: 13, lineHeight: 1.5, color: 'var(--text-secondary)' }}>
+          <p style={{ margin: 0, fontSize: 13, lineHeight: 1.5, color: 'var(--text-muted)' }}>
             {take.content || take.summary || take.text}
           </p>
           {take.conviction != null && (
-            <div
-              className="ez-mono"
-              style={{ marginTop: 10, fontSize: 11, color: 'var(--text-muted)' }}
-            >
-              Conviction: {take.conviction}%
+            <div style={{ marginTop: 10, fontSize: 11, color: 'var(--text-faint)' }}>
+              Conviction:{' '}
+              <span className="ez-mono" style={{ color: 'var(--text-muted)' }}>
+                {take.conviction}%
+              </span>
             </div>
           )}
         </>
@@ -72,17 +67,8 @@ export function BullBearDebate({ data }) {
 
   return (
     <div className="evo-bull-bear" style={{ marginBottom: 16 }}>
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: 10,
-        }}
-      >
-        <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>
-          Bull vs Bear — <span className="ez-mono">${data.ticker}</span>
-        </h3>
+      <div className="cardhdr" style={{ marginBottom: 10 }}>
+        Bull vs Bear — <span className="ez-mono">${data.ticker}</span>
       </div>
       <div style={{ display: 'flex', gap: 12 }}>
         <TakeCard side="bull" take={data.bull} tone="bull" />

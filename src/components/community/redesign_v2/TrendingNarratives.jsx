@@ -3,20 +3,16 @@
 export function TrendingNarratives({ narratives = [] }) {
   if (!narratives.length) {
     return (
-      <div className="ez-card evo-narratives" style={{ padding: 16, marginBottom: 14 }}>
-        <h3 style={{ margin: '0 0 8px', fontSize: 14, fontWeight: 700 }}>Trending narratives</h3>
+      <div className="ez-card ledger-card evo-narratives" style={{ marginBottom: 14 }}>
+        <div className="cardhdr">Trending narratives</div>
         <p style={{ margin: 0, fontSize: 12, color: 'var(--text-muted)' }}>No narratives yet.</p>
       </div>
     );
   }
 
   return (
-    <div className="ez-card evo-narratives" style={{ padding: 16, marginBottom: 14 }}>
-      <h3
-        style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}
-      >
-        Trending narratives
-      </h3>
+    <div className="ez-card ledger-card evo-narratives" style={{ marginBottom: 14 }}>
+      <div className="cardhdr">Trending narratives</div>
       <ul
         style={{
           listStyle: 'none',
@@ -44,7 +40,7 @@ export function TrendingNarratives({ narratives = [] }) {
                 </span>
                 <span
                   className="ez-mono"
-                  style={{ fontSize: 11, color: 'var(--emerald)', fontWeight: 700 }}
+                  style={{ fontSize: 11, color: 'var(--emerald-ink)', fontWeight: 700 }}
                 >
                   {strength}%
                 </span>
@@ -52,7 +48,7 @@ export function TrendingNarratives({ narratives = [] }) {
               <div
                 style={{
                   height: 4,
-                  background: 'var(--bg-tertiary)',
+                  background: 'var(--line-soft)',
                   borderRadius: 999,
                   overflow: 'hidden',
                 }}
@@ -62,7 +58,7 @@ export function TrendingNarratives({ narratives = [] }) {
                   style={{
                     height: '100%',
                     width: `${Math.min(100, strength)}%`,
-                    background: 'var(--emerald)',
+                    background: 'var(--emerald-ink)',
                     borderRadius: 999,
                   }}
                 />

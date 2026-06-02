@@ -26,21 +26,19 @@ export function CopyInbox({ requests = [], onAction }) {
   };
 
   return (
-    <div className="ez-card evo-copy-inbox" style={{ padding: 16, marginBottom: 14 }}>
+    <div className="ez-card ledger-card evo-copy-inbox" style={{ marginBottom: 14 }}>
       <div
+        className="cardhdr"
         style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          marginBottom: 12,
         }}
       >
-        <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>
-          Copy requests
-        </h3>
+        <span>Copy requests</span>
         {pending.length > 0 && (
           <span className="ez-pill ez-pill--warn" style={{ fontSize: 10 }}>
-            {pending.length} pending
+            <span className="ez-mono">{pending.length}</span> pending
           </span>
         )}
       </div>
@@ -65,7 +63,7 @@ export function CopyInbox({ requests = [], onAction }) {
                 padding: 12,
                 background: 'var(--bg-tertiary)',
                 borderRadius: 8,
-                border: '1px solid var(--border-secondary)',
+                border: '1px solid var(--border-primary)',
               }}
             >
               <Link

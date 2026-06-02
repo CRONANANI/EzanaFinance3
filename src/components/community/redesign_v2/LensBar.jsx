@@ -13,92 +13,44 @@ export function LensBar({
   onSkillFilterChange,
 }) {
   return (
-    <div
-      className="evo-lens-bar"
-      style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        alignItems: 'center',
-        gap: 12,
-        marginBottom: 16,
-        padding: '10px 12px',
-        background: 'var(--surface-card)',
-        border: '1px solid var(--border-primary)',
-        borderRadius: 12,
-      }}
-    >
+    <div className="lensbar">
       <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
         {LENSES.map((lens) => (
           <button
             key={lens}
             type="button"
             onClick={() => onLensChange?.(lens)}
-            className={activeLens === lens ? 'ez-pill' : 'ez-pill ez-pill--ghost'}
-            style={{
-              padding: '6px 12px',
-              fontSize: 12,
-              cursor: 'pointer',
-              background: activeLens === lens ? undefined : 'transparent',
-            }}
+            className={`lpill ${activeLens === lens ? 'on' : ''}`}
           >
             {lens}
           </button>
         ))}
       </div>
 
-      <div style={{ width: 1, height: 28, background: 'var(--border-secondary)' }} />
+      <div className="div" aria-hidden />
 
-      <label
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          fontSize: 12,
-          color: 'var(--text-muted)',
-        }}
-      >
-        Min conviction
-        <span
-          className="ez-mono"
-          style={{ fontWeight: 700, color: 'var(--text-primary)', minWidth: 36 }}
-        >
-          {convictionMin}%
-        </span>
+      <div className="lens-ctrl">
+        <label htmlFor="conviction-min">Min conviction</label>
+        <span className="ez-mono">{convictionMin}%</span>
         <input
+          id="conviction-min"
           type="range"
           min="0"
           max="100"
           value={convictionMin}
           onChange={(e) => onConvictionMinChange?.(+e.target.value)}
-          style={{ width: 100, accentColor: 'var(--emerald)' }}
         />
-      </label>
+      </div>
 
-      <div style={{ width: 1, height: 28, background: 'var(--border-secondary)' }} />
+      <div className="div" aria-hidden />
 
-      <label
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          fontSize: 12,
-          color: 'var(--text-muted)',
-        }}
-      >
-        Skill
+      <div className="lens-ctrl">
+        <label htmlFor="skill-filter">Skill</label>
         <select
+          id="skill-filter"
+          className="sel"
           value={skillFilter}
           onChange={(e) => onSkillFilterChange?.(e.target.value)}
-          style={{
-            background: 'var(--surface-input)',
-            border: '1px solid var(--border-input)',
-            color: 'var(--text-primary)',
-            fontSize: 12,
-            fontWeight: 500,
-            padding: '6px 10px',
-            borderRadius: 6,
-            cursor: 'pointer',
-          }}
         >
           {SKILL_OPTIONS.map((opt) => (
             <option key={opt} value={opt}>
@@ -106,7 +58,7 @@ export function LensBar({
             </option>
           ))}
         </select>
-      </label>
+      </div>
     </div>
   );
 }

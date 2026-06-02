@@ -1,13 +1,16 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { Avatar, VerifiedTick, SkillBadge } from './Atoms';
 import { getTierColor, getTierLabel } from '@/lib/elo-tier-colors';
 import { RichContent } from '../_legacy_v1/RichContent';
 import { MiniChart } from '../_legacy_v1/MiniChart';
 
-export function ConvictionLike({ post, onChange, compact = false }) {
+export const ConvictionLike = forwardRef(function ConvictionLike(
+  { post, onChange, compact = false },
+  ref,
+) {
   const [open, setOpen] = useState(false);
   const [conviction, setConviction] = useState(post.my_conviction ?? 50);
   const [liked, setLiked] = useState(post.liked_by_me || false);
@@ -48,8 +51,12 @@ export function ConvictionLike({ post, onChange, compact = false }) {
     }
   };
 
+  useImperativeHandle(ref, () => ({
+    openStake: () => setOpen(true),
+  }));
+
   const handleOpen = (e) => {
-    e.stopPropagation();
+    e?.stopPropagation?.();
     setOpen(true);
   };
 
@@ -209,9 +216,10 @@ export function ConvictionLike({ post, onChange, compact = false }) {
       )}
     </div>
   );
-}
+});
 
 export function EngagementBar({ post, variant = 'default', onConvictionChange }) {
+  const convictionRef = useRef(null);
   const [shareOpen, setShareOpen] = useState(false);
   const [saved, setSaved] = useState(post.saved_by_me || false);
   const [reposted, setReposted] = useState(false);
@@ -277,19 +285,10 @@ export function EngagementBar({ post, variant = 'default', onConvictionChange })
   );
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingTop: 12,
-        marginTop: 4,
-        borderTop: '1px solid var(--border-secondary)',
-      }}
-    >
+    <div className="eng">
       <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
         {variant === 'conviction' ? (
-          <ConvictionLike post={post} onChange={onConvictionChange} compact />
+          <ConvictionLike ref={convictionRef} post={post} onChange={onConvictionChange} compact />
         ) : (
           iconBtn(
             post.liked_by_me ? 'bi-heart-fill' : 'bi-heart',
@@ -384,6 +383,18 @@ export function EngagementBar({ post, variant = 'default', onConvictionChange })
               ))}
             </div>
           </>
+        )}
+        {variant === 'conviction' && (
+          <button
+            type="button"
+            className="stake"
+            onClick={(e) => {
+              e.stopPropagation();
+              convictionRef.current?.openStake?.();
+            }}
+          >
+            Stake conviction
+          </button>
         )}
         <button
           type="button"
@@ -679,8 +690,10 @@ export function PostHeader({ post, showSkill = true, onDelete }) {
     }
   };
 
+  const wins = post.conviction_wins ?? post.convictionWins ?? 0;
+
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 10 }}>
       <Avatar author={u} size={40} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
@@ -697,13 +710,15 @@ export function PostHeader({ post, showSkill = true, onDelete }) {
             </span>
           )}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
+        <div
+          style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2, flexWrap: 'wrap' }}
+        >
           {u.username && (
             <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>@{u.username}</span>
           )}
           <span style={{ color: 'var(--text-faint)', fontSize: 12 }}>·</span>
-          <span style={{ fontSize: 12, color: 'var(--text-muted)' }} className="ez-mono">
-            {post.timeAgo}
+          <span style={{ fontSize: 12, color: 'var(--text-faint)' }} className="ez-mono">
+            {wins} conv. wins
           </span>
           {showSkill && post.skillRating && (
             <>
@@ -713,6 +728,9 @@ export function PostHeader({ post, showSkill = true, onDelete }) {
           )}
         </div>
       </div>
+      <span className="post-ts ez-mono" title={post.timeAgo}>
+        {post.timeAgo || '—'}
+      </span>
       {isOwner && (
         <div ref={menuRef} style={{ position: 'relative', flexShrink: 0 }}>
           <button
@@ -790,7 +808,7 @@ export function PostCard({ post, variant = 'conviction-bar', onConvictionChange,
 
   return (
     <article
-      className="ez-card"
+      className="ez-card ledger-post"
       style={{
         padding,
         cursor: 'pointer',
@@ -872,62 +890,16 @@ export function PostCard({ post, variant = 'conviction-bar', onConvictionChange,
       {post.quotedPost && <QuotedPost quoted={post.quotedPost} />}
 
       {useConvictionBar && showConvictionBar && (
-        <div
-          style={{
-            margin: '10px 0 0',
-            padding: '8px 12px',
-            background: 'var(--bg-tertiary)',
-            borderRadius: 8,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-          }}
-        >
-          <span
-            style={{
-              fontSize: 10,
-              fontWeight: 700,
-              color: 'var(--text-muted)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.06em',
-            }}
-          >
-            Avg. conviction
-          </span>
-          <div
-            style={{
-              flex: 1,
-              height: 5,
-              background: 'var(--surface-card)',
-              borderRadius: 999,
-              overflow: 'hidden',
-            }}
-          >
-            <div
-              style={{
-                height: '100%',
-                width: `${convictionPct}%`,
-                background:
-                  convictionPct > 75
-                    ? 'var(--emerald)'
-                    : convictionPct > 50
-                      ? 'var(--info)'
-                      : 'var(--warning)',
-                borderRadius: 999,
-              }}
-            />
+        <div className="conv-block">
+          <div className="conv-label">Avg. conviction</div>
+          <div className="conv-pct ez-mono">{convictionPct}%</div>
+          <div className="conv-bar">
+            <div className="conv-bar-fill" style={{ width: `${convictionPct}%` }} />
           </div>
-          <span
-            className="ez-mono"
-            style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)' }}
-          >
-            {convictionPct}%
-          </span>
-          {(post.conviction_count ?? 0) > 0 && (
-            <span style={{ fontSize: 10, color: 'var(--text-faint)' }} className="ez-mono">
-              ({post.conviction_count})
-            </span>
-          )}
+          <div className="conv-hint">
+            ▸ Right-click to stake your conviction ·{' '}
+            <span className="ez-mono">{post.conviction_count ?? 0}</span> staked
+          </div>
         </div>
       )}
 

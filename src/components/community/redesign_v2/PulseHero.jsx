@@ -1,5 +1,7 @@
 'use client';
 
+import { SECTOR_COLORS } from '@/components/watchlist/asset-icons';
+
 function sentimentColor(value) {
   if (value > 30) return 'var(--positive)';
   if (value < -10) return 'var(--negative)';
@@ -11,6 +13,14 @@ function dialAngle(sentiment) {
   return -180 + ((clamped + 100) / 200) * 180;
 }
 
+function sentimentTag(value) {
+  if (value > 30) return 'Bullish';
+  if (value > 10) return 'Mildly bullish';
+  if (value < -10) return 'Cautious';
+  if (value < -30) return 'Bearish';
+  return 'Mixed';
+}
+
 export function PulseHero({ pulse, activeTicker, setActiveTicker }) {
   const p = pulse || {};
   const sentiment = p.netSentiment ?? 0;
@@ -19,17 +29,11 @@ export function PulseHero({ pulse, activeTicker, setActiveTicker }) {
   const sectors = (p.sectors || []).slice(0, 5);
 
   return (
-    <div className="ez-card evo-pulse-hero" style={{ padding: 20, marginBottom: 16 }}>
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '180px 1fr',
-          gap: 24,
-          alignItems: 'center',
-        }}
-      >
-        <div style={{ textAlign: 'center' }}>
-          <svg viewBox="0 0 200 110" width="180" height="100" aria-label="Community sentiment dial">
+    <>
+      <div className="pulse">
+        <div className="dial-wrap">
+          <div className="dial-label">Net sentiment</div>
+          <svg viewBox="0 0 200 110" width="170" height="82" aria-label="Community sentiment dial">
             <path
               d="M 20 100 A 80 80 0 0 1 180 100"
               fill="none"
@@ -59,160 +63,101 @@ export function PulseHero({ pulse, activeTicker, setActiveTicker }) {
               />
               <circle cx="100" cy="100" r="6" fill={color} />
             </g>
-            <text
-              x="18"
-              y="108"
-              fill="var(--text-faint)"
-              fontSize="10"
-              fontFamily="var(--font-mono)"
-            >
-              -100
-            </text>
-            <text
-              x="168"
-              y="108"
-              fill="var(--text-faint)"
-              fontSize="10"
-              fontFamily="var(--font-mono)"
-            >
-              +100
-            </text>
           </svg>
-          <div className="ez-mono" style={{ fontSize: 22, fontWeight: 800, color, marginTop: 4 }}>
+          <div className="dial-value" style={{ color }}>
             {sentiment > 0 ? '+' : ''}
             {sentiment}
           </div>
-          <div
-            style={{
-              fontSize: 11,
-              color: 'var(--text-muted)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.06em',
-            }}
-          >
-            Net sentiment
-          </div>
+          <div className="dial-tag">{sentimentTag(sentiment)}</div>
         </div>
 
-        <div>
-          <div
-            className="evo-pulse-stats"
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: 12,
-              marginBottom: 16,
-            }}
-          >
-            {[
-              { label: 'Posts / hr', value: p.postsLastHour ?? 0 },
-              { label: 'Active investors', value: p.activeInvestors ?? 0 },
-              { label: 'Discussions', value: p.discussionsCount ?? 0 },
-            ].map((stat) => (
-              <div
-                key={stat.label}
-                style={{
-                  padding: '10px 12px',
-                  background: 'var(--bg-tertiary)',
-                  borderRadius: 8,
-                  border: '1px solid var(--border-secondary)',
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: 10,
-                    color: 'var(--text-muted)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                  }}
-                >
-                  {stat.label}
+        <div className="pstat-row">
+          {[
+            { label: 'Posts / hr', value: p.postsLastHour ?? 0, icon: 'bi-lightning', delta: null },
+            {
+              label: 'Active investors',
+              value: p.activeInvestors ?? 0,
+              icon: 'bi-people',
+              delta: null,
+            },
+            {
+              label: 'Discussions',
+              value: p.discussionsCount ?? 0,
+              icon: 'bi-chat-dots',
+              delta: null,
+            },
+          ].map((stat) => (
+            <div key={stat.label} className="pstat">
+              <div className="pstat-label">
+                <i className={`bi ${stat.icon}`} style={{ fontSize: 11 }} aria-hidden />
+                {stat.label}
+              </div>
+              <div className="pstat-value">{stat.value}</div>
+              {stat.delta != null && (
+                <div className={`pstat-delta ${stat.delta >= 0 ? 'pos' : 'neg'}`}>
+                  {stat.delta >= 0 ? '+' : ''}
+                  {stat.delta}
                 </div>
-                <div
-                  className="ez-mono"
-                  style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}
-                >
-                  {stat.value}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {sectors.length > 0 && (
-            <div className="evo-sector-strip">
-              <div
-                style={{
-                  fontSize: 10,
-                  fontWeight: 700,
-                  color: 'var(--text-muted)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.06em',
-                  marginBottom: 8,
-                }}
-              >
-                Sector heat
-              </div>
-              <div style={{ display: 'flex', gap: 6 }}>
-                {sectors.map((s) => {
-                  const c =
-                    (s.sentiment ?? s.heat ?? 0) > 20
-                      ? 'var(--positive)'
-                      : (s.sentiment ?? s.heat ?? 0) < 0
-                        ? 'var(--negative)'
-                        : 'var(--warning)';
-                  const val = s.sentiment ?? s.heat ?? 0;
-                  return (
-                    <button
-                      key={s.name}
-                      type="button"
-                      className="evo-sector-chip"
-                      onClick={() => setActiveTicker?.(s.ticker || s.symbol || activeTicker)}
-                      style={{
-                        flex: 1,
-                        padding: '8px 6px',
-                        background: 'var(--bg-tertiary)',
-                        border: `1px solid ${c}`,
-                        borderRadius: 8,
-                        cursor: setActiveTicker ? 'pointer' : 'default',
-                        textAlign: 'left',
-                      }}
-                    >
-                      <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-muted)' }}>
-                        {s.name}
-                      </div>
-                      <div className="ez-mono" style={{ fontSize: 12, fontWeight: 700, color: c }}>
-                        {val > 0 ? '+' : ''}
-                        {val}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+              )}
             </div>
-          )}
-
-          {p.hottest && (
-            <div style={{ marginTop: 12, fontSize: 12, color: 'var(--text-muted)' }}>
-              Hottest ticker:{' '}
-              <button
-                type="button"
-                onClick={() => setActiveTicker?.(p.hottest)}
-                className="ez-mono"
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: 'var(--emerald)',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  padding: 0,
-                }}
-              >
-                ${p.hottest}
-              </button>
-            </div>
-          )}
+          ))}
         </div>
       </div>
-    </div>
+
+      {sectors.length > 0 && (
+        <div className="sectorstrip">
+          <span className="sectorstrip-label">Hot sectors</span>
+          {sectors.map((s) => {
+            const val = s.sentiment ?? s.heat ?? 0;
+            const pctColor =
+              val > 20 ? 'var(--positive)' : val < 0 ? 'var(--negative)' : 'var(--warning)';
+            const dotColor = SECTOR_COLORS[s.name]?.[0] || 'var(--text-faint)';
+            return (
+              <button
+                key={s.name}
+                type="button"
+                className="spill"
+                onClick={() => setActiveTicker?.(s.ticker || s.symbol || activeTicker)}
+              >
+                <span className="dot" style={{ background: dotColor }} />
+                <span>{s.name}</span>
+                <span className="spill-pct" style={{ color: pctColor }}>
+                  {val > 0 ? '+' : ''}
+                  {val}%
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {p.hottest && (
+        <div
+          style={{
+            padding: '10px 18px',
+            borderTop: '1px solid var(--line-soft)',
+            fontSize: 12,
+            color: 'var(--text-muted)',
+          }}
+        >
+          Hottest ticker:{' '}
+          <button
+            type="button"
+            onClick={() => setActiveTicker?.(p.hottest)}
+            className="ez-mono"
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: 'var(--emerald-ink)',
+              fontWeight: 700,
+              cursor: 'pointer',
+              padding: 0,
+            }}
+          >
+            ${p.hottest}
+          </button>
+        </div>
+      )}
+    </>
   );
 }

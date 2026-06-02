@@ -7,25 +7,23 @@ export function LegendaryTakes({ takes = [] }) {
 
   return (
     <div
-      className="ez-card evo-legendary-takes"
+      className="ez-card ledger-card evo-legendary-takes"
       style={{
-        padding: 16,
         borderColor: 'var(--gold-border)',
         boxShadow: '0 0 0 1px var(--gold-border)',
       }}
     >
       <div
+        className="cardhdr"
         style={{
           display: 'flex',
           alignItems: 'center',
           gap: 8,
-          marginBottom: 12,
+          color: 'var(--gold)',
         }}
       >
-        <i className="bi bi-stars" style={{ color: 'var(--gold)', fontSize: 14 }} />
-        <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--gold)' }}>
-          Legendary takes
-        </h3>
+        <i className="bi bi-stars" style={{ fontSize: 14 }} />
+        <span>Legendary takes</span>
       </div>
       <ul
         style={{
@@ -66,7 +64,7 @@ export function LegendaryTakes({ takes = [] }) {
                     className="ez-pill ez-pill--gold"
                     style={{ padding: '1px 6px', fontSize: 9 }}
                   >
-                    ${take.ticker}
+                    <span className="ez-mono">${take.ticker}</span>
                   </span>
                 )}
               </div>
@@ -75,7 +73,7 @@ export function LegendaryTakes({ takes = [] }) {
                   margin: 0,
                   fontSize: 12.5,
                   lineHeight: 1.45,
-                  color: 'var(--text-secondary)',
+                  color: 'var(--text-muted)',
                 }}
               >
                 {take.content || take.summary}

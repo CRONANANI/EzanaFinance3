@@ -31,7 +31,13 @@ function MetalBars({ tone = 'gold' }) {
 
   const gid = `mb-${tone}-${uid}`;
   return (
-    <svg viewBox={`0 0 ${SIZE} ${SIZE}`} xmlns="http://www.w3.org/2000/svg" width={SIZE} height={SIZE} aria-hidden>
+    <svg
+      viewBox={`0 0 ${SIZE} ${SIZE}`}
+      xmlns="http://www.w3.org/2000/svg"
+      width={SIZE}
+      height={SIZE}
+      aria-hidden
+    >
       <defs>
         <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={stops[0]} />
@@ -50,7 +56,13 @@ function MetalBars({ tone = 'gold' }) {
 function OilDrum() {
   const gid = `oil-grad-${svgIdSafe(React.useId())}`;
   return (
-    <svg viewBox={`0 0 ${SIZE} ${SIZE}`} xmlns="http://www.w3.org/2000/svg" width={SIZE} height={SIZE} aria-hidden>
+    <svg
+      viewBox={`0 0 ${SIZE} ${SIZE}`}
+      xmlns="http://www.w3.org/2000/svg"
+      width={SIZE}
+      height={SIZE}
+      aria-hidden
+    >
       <defs>
         <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#1f2937" />
@@ -72,7 +84,13 @@ function OilDrum() {
 function Flame() {
   const gid = `flame-grad-${svgIdSafe(React.useId())}`;
   return (
-    <svg viewBox={`0 0 ${SIZE} ${SIZE}`} xmlns="http://www.w3.org/2000/svg" width={SIZE} height={SIZE} aria-hidden>
+    <svg
+      viewBox={`0 0 ${SIZE} ${SIZE}`}
+      xmlns="http://www.w3.org/2000/svg"
+      width={SIZE}
+      height={SIZE}
+      aria-hidden
+    >
       <defs>
         <linearGradient id={gid} x1="0" y1="1" x2="0" y2="0">
           <stop offset="0%" stopColor="#dc2626" />
@@ -91,7 +109,13 @@ function Flame() {
 /** Wheat sheaf */
 function Wheat() {
   return (
-    <svg viewBox={`0 0 ${SIZE} ${SIZE}`} xmlns="http://www.w3.org/2000/svg" width={SIZE} height={SIZE} aria-hidden>
+    <svg
+      viewBox={`0 0 ${SIZE} ${SIZE}`}
+      xmlns="http://www.w3.org/2000/svg"
+      width={SIZE}
+      height={SIZE}
+      aria-hidden
+    >
       <g stroke="#a16207" strokeWidth="1" fill="#eab308">
         <path d="M12,3 L12,21" stroke="#a16207" strokeWidth="1.2" fill="none" />
         {[5, 8, 11, 14, 17].map((y, i) => (
@@ -110,12 +134,20 @@ function Corn() {
   const rows = [6, 9, 12, 15, 18];
   const cols = [10, 12, 14];
   return (
-    <svg viewBox={`0 0 ${SIZE} ${SIZE}`} xmlns="http://www.w3.org/2000/svg" width={SIZE} height={SIZE} aria-hidden>
+    <svg
+      viewBox={`0 0 ${SIZE} ${SIZE}`}
+      xmlns="http://www.w3.org/2000/svg"
+      width={SIZE}
+      height={SIZE}
+      aria-hidden
+    >
       <ellipse cx="12" cy="13" rx="4" ry="9" fill="#fbbf24" stroke="#92400e" strokeWidth="0.6" />
       <path d="M8,8 Q5,5 6,2 Q9,3 10,7 Z" fill="#84cc16" />
       <path d="M16,8 Q19,5 18,2 Q15,3 14,7 Z" fill="#84cc16" />
       {rows.flatMap((y) =>
-        cols.map((x) => <circle key={`${x}-${y}`} cx={x} cy={y} r="0.6" fill="#92400e" opacity="0.5" />)
+        cols.map((x) => (
+          <circle key={`${x}-${y}`} cx={x} cy={y} r="0.6" fill="#92400e" opacity="0.5" />
+        )),
       )}
     </svg>
   );
@@ -127,7 +159,15 @@ function BitcoinIcon() {
   return (
     <svg viewBox="0 0 24 24" width={SIZE} height={SIZE} aria-hidden>
       <circle cx="12" cy="12" r="11" fill="#f7931a" />
-      <text x="12" y="17" textAnchor="middle" fontSize="14" fontWeight="900" fill="#fff" fontFamily="Arial, sans-serif">
+      <text
+        x="12"
+        y="17"
+        textAnchor="middle"
+        fontSize="14"
+        fontWeight="900"
+        fill="#fff"
+        fontFamily="Arial, sans-serif"
+      >
         ₿
       </text>
     </svg>
@@ -186,7 +226,15 @@ function XrpIcon() {
   return (
     <svg viewBox="0 0 24 24" width={SIZE} height={SIZE} aria-hidden>
       <circle cx="12" cy="12" r="11" fill="#23292f" />
-      <text x="12" y="16" textAnchor="middle" fontSize="7" fontWeight="900" fill="#fff" fontFamily="Arial, sans-serif">
+      <text
+        x="12"
+        y="16"
+        textAnchor="middle"
+        fontSize="7"
+        fontWeight="900"
+        fill="#fff"
+        fontFamily="Arial, sans-serif"
+      >
         XRP
       </text>
     </svg>
@@ -231,7 +279,12 @@ function ChainlinkIcon() {
   return (
     <svg viewBox="0 0 24 24" width={SIZE} height={SIZE} aria-hidden>
       <circle cx="12" cy="12" r="11" fill="#2a5ada" />
-      <path d="M12,5 L17,9 L17,15 L12,19 L7,15 L7,9 Z" fill="none" stroke="#fff" strokeWidth="1.6" />
+      <path
+        d="M12,5 L17,9 L17,15 L12,19 L7,15 L7,9 Z"
+        fill="none"
+        stroke="#fff"
+        strokeWidth="1.6"
+      />
       <circle cx="12" cy="5" r="1.4" fill="#fff" />
     </svg>
   );
@@ -243,7 +296,15 @@ function GenericCryptoIcon({ ticker }) {
   return (
     <svg viewBox="0 0 24 24" width={SIZE} height={SIZE} aria-hidden>
       <circle cx="12" cy="12" r="11" fill="#475569" />
-      <text x="12" y="17" textAnchor="middle" fontSize="12" fontWeight="900" fill="#fff" fontFamily="Arial, sans-serif">
+      <text
+        x="12"
+        y="17"
+        textAnchor="middle"
+        fontSize="12"
+        fontWeight="900"
+        fill="#fff"
+        fontFamily="Arial, sans-serif"
+      >
         {initial}
       </text>
     </svg>
@@ -253,7 +314,7 @@ function GenericCryptoIcon({ ticker }) {
 /* ─── STOCK ICONS ─── */
 
 /** Sector → [topGradient, bottomGradient]. Matches dashboard holdings + sector pie. */
-const SECTOR_COLORS = {
+export const SECTOR_COLORS = {
   Technology: ['#3b82f6', '#2563eb'],
   Healthcare: ['#10b981', '#059669'],
   Finance: ['#a78bfa', '#7c3aed'],
@@ -277,22 +338,69 @@ const SECTOR_COLORS = {
 /** Ticker → sector lookup. Covers the most-watchlisted names; unknown tickers
  *  fall back to Technology (since most watchlist additions are tech). */
 const TICKER_SECTOR = {
-  AAPL: 'Technology', MSFT: 'Technology', NVDA: 'Technology', GOOGL: 'Technology', GOOG: 'Technology',
-  META: 'Technology', AMZN: 'Consumer Cyclical', TSLA: 'Consumer Cyclical', NFLX: 'Technology',
-  AVGO: 'Technology', AMD: 'Technology', INTC: 'Technology', CRM: 'Technology', ADBE: 'Technology',
-  ORCL: 'Technology', CSCO: 'Technology', QCOM: 'Technology', TXN: 'Technology',
-  JPM: 'Financial Services', GS: 'Financial Services', MS: 'Financial Services', BAC: 'Financial Services',
-  V: 'Financial Services', MA: 'Financial Services', WFC: 'Financial Services',
-  JNJ: 'Healthcare', PFE: 'Healthcare', UNH: 'Healthcare', LLY: 'Healthcare', MRK: 'Healthcare',
-  ABBV: 'Healthcare', TMO: 'Healthcare', ABT: 'Healthcare',
-  XOM: 'Energy', CVX: 'Energy', COP: 'Energy', SLB: 'Energy',
-  BA: 'Industrials', CAT: 'Industrials', UPS: 'Industrials', LMT: 'Industrials', GE: 'Industrials',
-  WMT: 'Consumer Defensive', COST: 'Consumer Defensive', PG: 'Consumer Defensive', KO: 'Consumer Defensive',
-  HD: 'Consumer Cyclical', NKE: 'Consumer Cyclical', MCD: 'Consumer Cyclical', SBUX: 'Consumer Cyclical',
-  DIS: 'Communication Services', CMCSA: 'Communication Services', T: 'Communication Services',
-  NEE: 'Utilities', DUK: 'Utilities', SO: 'Utilities',
-  BTC: 'Crypto', ETH: 'Crypto', SOL: 'Crypto',
-  SPY: 'ETF', QQQ: 'ETF', VTI: 'ETF', IWM: 'ETF',
+  AAPL: 'Technology',
+  MSFT: 'Technology',
+  NVDA: 'Technology',
+  GOOGL: 'Technology',
+  GOOG: 'Technology',
+  META: 'Technology',
+  AMZN: 'Consumer Cyclical',
+  TSLA: 'Consumer Cyclical',
+  NFLX: 'Technology',
+  AVGO: 'Technology',
+  AMD: 'Technology',
+  INTC: 'Technology',
+  CRM: 'Technology',
+  ADBE: 'Technology',
+  ORCL: 'Technology',
+  CSCO: 'Technology',
+  QCOM: 'Technology',
+  TXN: 'Technology',
+  JPM: 'Financial Services',
+  GS: 'Financial Services',
+  MS: 'Financial Services',
+  BAC: 'Financial Services',
+  V: 'Financial Services',
+  MA: 'Financial Services',
+  WFC: 'Financial Services',
+  JNJ: 'Healthcare',
+  PFE: 'Healthcare',
+  UNH: 'Healthcare',
+  LLY: 'Healthcare',
+  MRK: 'Healthcare',
+  ABBV: 'Healthcare',
+  TMO: 'Healthcare',
+  ABT: 'Healthcare',
+  XOM: 'Energy',
+  CVX: 'Energy',
+  COP: 'Energy',
+  SLB: 'Energy',
+  BA: 'Industrials',
+  CAT: 'Industrials',
+  UPS: 'Industrials',
+  LMT: 'Industrials',
+  GE: 'Industrials',
+  WMT: 'Consumer Defensive',
+  COST: 'Consumer Defensive',
+  PG: 'Consumer Defensive',
+  KO: 'Consumer Defensive',
+  HD: 'Consumer Cyclical',
+  NKE: 'Consumer Cyclical',
+  MCD: 'Consumer Cyclical',
+  SBUX: 'Consumer Cyclical',
+  DIS: 'Communication Services',
+  CMCSA: 'Communication Services',
+  T: 'Communication Services',
+  NEE: 'Utilities',
+  DUK: 'Utilities',
+  SO: 'Utilities',
+  BTC: 'Crypto',
+  ETH: 'Crypto',
+  SOL: 'Crypto',
+  SPY: 'ETF',
+  QQQ: 'ETF',
+  VTI: 'ETF',
+  IWM: 'ETF',
 };
 
 /** Sector-colored tile that shows the full ticker (up to 5 chars). */
@@ -352,9 +460,33 @@ function BondIcon({ ticker }) {
   return (
     <svg viewBox="0 0 24 24" width={SIZE} height={SIZE} aria-hidden>
       <rect width="24" height="24" rx="5" fill="#1e293b" />
-      <rect x="4" y="6" width="16" height="2" rx="1" fill={config.color} opacity={config.bars >= 1 ? 1 : 0.25} />
-      <rect x="4" y="11" width="16" height="2" rx="1" fill={config.color} opacity={config.bars >= 2 ? 1 : 0.25} />
-      <rect x="4" y="16" width="16" height="2" rx="1" fill={config.color} opacity={config.bars >= 3 ? 1 : 0.25} />
+      <rect
+        x="4"
+        y="6"
+        width="16"
+        height="2"
+        rx="1"
+        fill={config.color}
+        opacity={config.bars >= 1 ? 1 : 0.25}
+      />
+      <rect
+        x="4"
+        y="11"
+        width="16"
+        height="2"
+        rx="1"
+        fill={config.color}
+        opacity={config.bars >= 2 ? 1 : 0.25}
+      />
+      <rect
+        x="4"
+        y="16"
+        width="16"
+        height="2"
+        rx="1"
+        fill={config.color}
+        opacity={config.bars >= 3 ? 1 : 0.25}
+      />
     </svg>
   );
 }
@@ -384,7 +516,15 @@ function PoliticianIcon({ name, party }) {
         </linearGradient>
       </defs>
       <circle cx="12" cy="12" r="11" fill={`url(#${gid})`} />
-      <text x="12" y="16" textAnchor="middle" fontSize="9" fontWeight="900" fill="#fff" fontFamily="Arial, sans-serif">
+      <text
+        x="12"
+        y="16"
+        textAnchor="middle"
+        fontSize="9"
+        fontWeight="900"
+        fill="#fff"
+        fontFamily="Arial, sans-serif"
+      >
         {initials}
       </text>
     </svg>
@@ -396,7 +536,14 @@ function PoliticianIcon({ name, party }) {
 function IndexIcon() {
   return (
     <svg viewBox="0 0 24 24" width={SIZE} height={SIZE} aria-hidden>
-      <rect width="24" height="24" rx="5" fill="rgba(16,185,129,0.12)" stroke="rgba(16,185,129,0.4)" strokeWidth="0.5" />
+      <rect
+        width="24"
+        height="24"
+        rx="5"
+        fill="rgba(16,185,129,0.12)"
+        stroke="rgba(16,185,129,0.4)"
+        strokeWidth="0.5"
+      />
       <rect x="5" y="14" width="3" height="6" fill="#10b981" />
       <rect x="10" y="9" width="3" height="11" fill="#10b981" />
       <rect x="15" y="6" width="3" height="14" fill="#10b981" />

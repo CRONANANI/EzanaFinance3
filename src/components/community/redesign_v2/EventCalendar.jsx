@@ -19,20 +19,16 @@ export function EventCalendar({ events = [], onWatchToggle }) {
 
   if (!events.length) {
     return (
-      <div className="ez-card evo-event-calendar" style={{ padding: 16, marginBottom: 14 }}>
-        <h3 style={{ margin: '0 0 8px', fontSize: 14, fontWeight: 700 }}>Events</h3>
+      <div className="ez-card ledger-card evo-event-calendar" style={{ marginBottom: 14 }}>
+        <div className="cardhdr">Events</div>
         <p style={{ margin: 0, fontSize: 12, color: 'var(--text-muted)' }}>No upcoming events.</p>
       </div>
     );
   }
 
   return (
-    <div className="ez-card evo-event-calendar" style={{ padding: 16, marginBottom: 14 }}>
-      <h3
-        style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}
-      >
-        Event calendar
-      </h3>
+    <div className="ez-card ledger-card evo-event-calendar" style={{ marginBottom: 14 }}>
+      <div className="cardhdr">Event calendar</div>
       <ul
         style={{
           listStyle: 'none',
@@ -65,7 +61,7 @@ export function EventCalendar({ events = [], onWatchToggle }) {
                 padding: '10px 12px',
                 background: 'var(--bg-tertiary)',
                 borderRadius: 8,
-                border: '1px solid var(--border-secondary)',
+                border: '1px solid var(--border-primary)',
               }}
             >
               <div style={{ minWidth: 0 }}>
@@ -74,7 +70,7 @@ export function EventCalendar({ events = [], onWatchToggle }) {
                 </div>
                 <div
                   className="ez-mono"
-                  style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}
+                  style={{ fontSize: 11, color: 'var(--text-faint)', marginTop: 2 }}
                 >
                   {whenLabel}
                   {ev.ticker && ` · $${ev.ticker}`}

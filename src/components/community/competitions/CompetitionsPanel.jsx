@@ -23,7 +23,13 @@ function formatPrizes(c) {
   return parts.join(' · ');
 }
 
-export function CompetitionsPanel() {
+function formatPrizeShort(c) {
+  const cash = c.rules?.cashPrizes;
+  if (cash?.first) return `$${cash.first}`;
+  return `+${c.elo_top1pct_award} ELO`;
+}
+
+export function CompetitionsPanel({ variant = 'full' }) {
   const [competitions, setCompetitions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [joiningId, setJoiningId] = useState(null);
@@ -71,6 +77,61 @@ export function CompetitionsPanel() {
       setJoiningId(null);
     }
   };
+
+  const activeCount = grouped.active.length;
+
+  const slimRows = useMemo(() => {
+    const rows = [...grouped.active, ...grouped.upcoming].slice(0, 2);
+    return rows;
+  }, [grouped]);
+
+  if (variant === 'slim') {
+    return (
+      <section className="comp-panel comp-panel--slim ledger-card">
+        <header className="comp-slim-header">
+          <h2 className="comp-slim-title">Competitions</h2>
+          {activeCount > 0 && <span className="comp-slim-live ez-mono">{activeCount} live</span>}
+        </header>
+        {error ? <p className="comp-error">{error}</p> : null}
+        {loading ? (
+          <p className="comp-empty">Loading…</p>
+        ) : slimRows.length === 0 ? (
+          <p className="comp-empty">No active competitions.</p>
+        ) : (
+          <ul className="comp-slim-list">
+            {slimRows.map((c) => {
+              const joined = Boolean(c.userParticipation);
+              const canJoin = c.status === 'upcoming' || c.status === 'active';
+              const scope = formatScope(c.rules);
+              return (
+                <li key={c.id} className="comp-slim-row">
+                  <div className="comp-slim-row-body">
+                    <div className="comp-slim-name">{c.name}</div>
+                    <div className="comp-slim-meta ez-mono">
+                      {scope ? `${scope} · ` : ''}
+                      {new Date(c.starts_at).toLocaleDateString()}
+                    </div>
+                  </div>
+                  {canJoin && !joined ? (
+                    <button
+                      type="button"
+                      className="comp-slim-join"
+                      disabled={joiningId === c.id}
+                      onClick={() => handleJoin(c.id)}
+                    >
+                      {joiningId === c.id ? '…' : 'Join'}
+                    </button>
+                  ) : (
+                    <span className="comp-slim-prize ez-mono">{formatPrizeShort(c)}</span>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
+    );
+  }
 
   const renderList = (items, empty) =>
     items.length === 0 ? (

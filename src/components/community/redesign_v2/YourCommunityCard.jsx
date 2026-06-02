@@ -38,12 +38,8 @@ export function YourCommunityCard({ skillTier, convictionWins, followers }) {
   const progress = tierProgress(tier);
 
   return (
-    <div className="ez-card evo-your-community" style={{ padding: 16, marginBottom: 14 }}>
-      <h3
-        style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}
-      >
-        Your community
-      </h3>
+    <div className="ez-card ledger-card evo-your-community" style={{ marginBottom: 14 }}>
+      <div className="cardhdr">Your community</div>
 
       <div style={{ marginBottom: 14 }}>
         <div
@@ -96,7 +92,7 @@ export function YourCommunityCard({ skillTier, convictionWins, followers }) {
               background: 'var(--bg-tertiary)',
               borderRadius: 8,
               textAlign: 'center',
-              border: '1px solid var(--border-secondary)',
+              border: '1px solid var(--border-primary)',
             }}
           >
             <div
@@ -106,7 +102,7 @@ export function YourCommunityCard({ skillTier, convictionWins, followers }) {
               {stat.value}
               {stat.suffix || ''}
             </div>
-            <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
+            <div style={{ fontSize: 10, color: 'var(--text-faint)', marginTop: 2 }}>
               {stat.label}
             </div>
           </div>

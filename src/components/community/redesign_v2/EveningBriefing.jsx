@@ -32,50 +32,26 @@ export function EveningBriefing({ pulse, postCount, onDismiss }) {
   };
 
   return (
-    <div
-      className="ez-card evo-evening-briefing"
-      style={{
-        padding: 16,
-        marginBottom: 16,
-        background:
-          'linear-gradient(135deg, var(--emerald-bg-subtle) 0%, var(--surface-card) 100%)',
-        borderColor: 'var(--emerald-border)',
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start',
-          gap: 12,
-        }}
-      >
-        <div>
-          <div
+    <div className="briefing-strip evo-evening-briefing">
+      <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+        <div className="briefing-icon" aria-hidden>
+          <i className="bi bi-lightbulb" style={{ fontSize: 18 }} />
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div className="eyebrow">Evening briefing</div>
+          <h4
             style={{
-              fontSize: 10,
-              fontWeight: 700,
-              color: 'var(--emerald)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.08em',
-              marginBottom: 6,
-            }}
-          >
-            Evening briefing
-          </div>
-          <h3
-            style={{
-              margin: '0 0 6px',
+              margin: '4px 0 6px',
               fontSize: 16,
               fontWeight: 700,
               color: 'var(--text-primary)',
             }}
           >
             Markets feel {tone} today
-          </h3>
-          <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+          </h4>
+          <p style={{ margin: 0, fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.55 }}>
             Community sentiment is at{' '}
-            <span className="ez-mono" style={{ fontWeight: 700 }}>
+            <span className="ez-mono" style={{ fontWeight: 700, color: 'var(--emerald-ink)' }}>
               {sentiment > 0 ? '+' : ''}
               {sentiment}
             </span>

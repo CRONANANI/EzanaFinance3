@@ -45,7 +45,7 @@ function FeedSkeleton({ rows = 3 }) {
         <div
           key={i}
           className="ez-card ez-shimmer"
-          style={{ padding: 18, minHeight: 140, borderRadius: 12 }}
+          style={{ padding: 18, minHeight: 140, borderRadius: 14 }}
           aria-hidden
         />
       ))}
@@ -121,29 +121,17 @@ export function HubEvolutionary() {
       className="ezana-theme evo-hub dashboard-page-inset db-page"
       style={{ minHeight: '100%', background: 'var(--bg-primary)' }}
     >
-      <div style={{ padding: '20px 28px', maxWidth: 1320, margin: '0 auto' }}>
+      <header className="phead">
+        <div>
+          <div className="eyebrow">Collective intelligence</div>
+          <h1>Community</h1>
+          <p className="sub">Conviction-staked, ticker-anchored investor discourse</p>
+        </div>
         <CommunityQuickNav profileHref={profileHref} />
+      </header>
 
-        <CompetitionsPanel />
-
+      <section className="spine">
         <PulseHero pulse={pulse} activeTicker={activeTicker} setActiveTicker={setActiveTicker} />
-
-        <ConvictionMap
-          tickers={convictionTickers}
-          activeTicker={activeTicker}
-          onSelect={setActiveTicker}
-        />
-
-        {activeTicker && bullBear && <BullBearDebate data={bullBear} />}
-
-        {!briefingDismissed && (
-          <EveningBriefing
-            pulse={pulse}
-            postCount={filteredPosts.length}
-            onDismiss={() => setBriefingDismissed(true)}
-          />
-        )}
-
         <LensBar
           activeLens={activeLens}
           onLensChange={setActiveLens}
@@ -152,61 +140,74 @@ export function HubEvolutionary() {
           skillFilter={skillFilter}
           onSkillFilterChange={setSkillFilter}
         />
+      </section>
 
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 320px',
-            gap: 20,
-          }}
-        >
-          <div>
-            <EvoComposer
-              expanded={composerOpen}
-              onToggle={() => setComposerOpen((o) => !o)}
-              onPosted={refetch}
-              quotedPost={quotedPost}
-              onClearQuote={() => setQuotedPost(null)}
-            />
-
-            {error && (
-              <div style={{ color: 'var(--negative)', fontSize: 13, marginBottom: 12 }}>
-                {error}
-              </div>
-            )}
-
-            {loading ? (
-              <FeedSkeleton />
-            ) : (
-              <div data-feed-anchor style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                {filteredPosts.length === 0 && (
-                  <div
-                    className="ez-card"
-                    style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)' }}
-                  >
-                    No posts match your filters.
-                  </div>
-                )}
-                {filteredPosts.map((p) => (
-                  <PostCard
-                    key={p.id}
-                    post={p}
-                    onConvictionChange={(stats) => updatePostConviction(p.id, stats)}
-                    onDelete={removePost}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-
-          <aside style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-            <YourCommunityCard />
-            <EventCalendar events={events} onWatchToggle={handleEventWatch} />
-            <TrendingNarratives narratives={narratives} />
-            <LegendaryTakes takes={legendaryTakes} />
-            <CopyInbox requests={copyRequests} onAction={handleCopyAction} />
-          </aside>
+      <div className="cgrid">
+        <div className="ledger-yc-mobile">
+          <YourCommunityCard />
         </div>
+
+        <div className="col">
+          <ConvictionMap
+            tickers={convictionTickers}
+            activeTicker={activeTicker}
+            onSelect={setActiveTicker}
+          />
+
+          {activeTicker && bullBear && <BullBearDebate data={bullBear} />}
+
+          {!briefingDismissed && (
+            <EveningBriefing
+              pulse={pulse}
+              postCount={filteredPosts.length}
+              onDismiss={() => setBriefingDismissed(true)}
+            />
+          )}
+
+          <EvoComposer
+            expanded={composerOpen}
+            onToggle={() => setComposerOpen((o) => !o)}
+            onPosted={refetch}
+            quotedPost={quotedPost}
+            onClearQuote={() => setQuotedPost(null)}
+          />
+
+          {error && <div style={{ color: 'var(--negative)', fontSize: 13 }}>{error}</div>}
+
+          {loading ? (
+            <FeedSkeleton />
+          ) : (
+            <div data-feed-anchor style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {filteredPosts.length === 0 && (
+                <div
+                  className="ez-card ledger-card"
+                  style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)' }}
+                >
+                  No posts match your filters.
+                </div>
+              )}
+              {filteredPosts.map((p) => (
+                <PostCard
+                  key={p.id}
+                  post={p}
+                  onConvictionChange={(stats) => updatePostConviction(p.id, stats)}
+                  onDelete={removePost}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        <aside className="side">
+          <div className="ledger-yc-desktop">
+            <YourCommunityCard />
+          </div>
+          <CompetitionsPanel variant="slim" />
+          <EventCalendar events={events} onWatchToggle={handleEventWatch} />
+          <TrendingNarratives narratives={narratives} />
+          <LegendaryTakes takes={legendaryTakes} />
+          <CopyInbox requests={copyRequests} onAction={handleCopyAction} />
+        </aside>
       </div>
     </div>
   );
