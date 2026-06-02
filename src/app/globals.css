@@ -2000,11 +2000,11 @@ html:has(.landing-page) .navbar .logo,
 }
 
 .landing-page .features-section .features-grid-header h2 {
-  color: #f0f6fc !important;
-  background: linear-gradient(135deg, #ffffff 0%, #10b981 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #ffffff !important;
+  background: none !important;
+  -webkit-background-clip: border-box !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background-clip: border-box !important;
 }
 
 .landing-page .features-section .features-grid-header .section-subtitle {
