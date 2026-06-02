@@ -2,6 +2,41 @@
    FEATURES SECTION - MAIN STYLES
    ============================================ */
 
+.landing-page,
+.landing-page p,
+.landing-page span,
+.landing-page a,
+.landing-page button,
+.landing-page h1,
+.landing-page h2,
+.landing-page h3,
+.landing-page h4,
+.landing-page li {
+  font-family: var(--font-sans);
+}
+
+.landing-page .lf-mono,
+.landing-page .stat-value,
+.landing-page .metric-value,
+.landing-page .value-amount,
+.landing-page .col-ticker,
+.landing-page .col-amount,
+.landing-page .col-time,
+.landing-page .intel-amount,
+.landing-page .intel-date {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ===== UNIFORM FEATURE-CARD TYPE SCALE =====
+   Card title (h4 in each card header):           1.25rem / 600
+   Section/group label (uppercase eyebrows):      0.6875rem / 600
+   Primary data value (headline $ per card):     1.5rem / 700
+   Data row — primary (member, company, ticker):  0.8125rem / 500
+   Data row — secondary (amount, time, meta):     0.75rem / 400
+   Pills / filters / tabs / period buttons:       0.75rem / 600
+   ============================================ */
+
 /* Mono numerals + micro-labels (Bloomberg cue) */
 .lf-mono {
   font-family: var(--font-mono);
@@ -172,7 +207,7 @@
 }
 
 .feature-card-description {
-  font-size: 0.75rem;
+  font-size: 1.125rem;
   line-height: 1.5;
   color: #9ca3af;
   height: 3.4rem;
@@ -230,7 +265,7 @@
   }
 
   .feature-card-description {
-    font-size: 0.6875rem;
+    font-size: 1rem;
   }
 }
 
@@ -690,8 +725,8 @@
   border: 1px solid rgba(156, 163, 175, 0.1);
   border-radius: 20px;
   color: #9ca3af;
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: 0.75rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -752,7 +787,7 @@
   border-radius: 5px;
   color: var(--text-muted, #9ca3af);
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s ease, color 0.2s ease;
@@ -779,7 +814,7 @@
 }
 
 .value-amount {
-  font-size: 2.5rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: #ffffff;
   line-height: 1;
@@ -791,8 +826,8 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 1.125rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 400;
 }
 
 .value-change.positive {
@@ -870,7 +905,7 @@
 }
 
 .metric-label {
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   color: #6b7280;
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -879,8 +914,8 @@
 }
 
 .metric-value {
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: 0.8125rem;
+  font-weight: 500;
   color: #ffffff;
   line-height: 1.2;
   font-family: var(--font-mono);
@@ -888,7 +923,7 @@
 }
 
 .metric-unit {
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   font-weight: 400;
   color: #9ca3af;
 }
@@ -915,8 +950,8 @@
   background: transparent;
   border: none;
   color: #9ca3af;
-  font-size: 0.9375rem;
-  font-weight: 500;
+  font-size: 0.75rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
   position: relative;
@@ -1004,20 +1039,20 @@
 }
 
 .intel-title {
-  font-weight: 600;
+  font-weight: 500;
   color: #ffffff;
-  font-size: 0.9375rem;
+  font-size: 0.8125rem;
 }
 
 .intel-company {
   color: #10b981;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 500;
 }
 
 .intel-amount {
   color: #cbd5e1;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
@@ -1078,8 +1113,8 @@
   border: 1px solid rgba(16, 185, 129, 0.18);
   border-radius: 6px;
   color: #cbd5e1;
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: 0.75rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -1145,9 +1180,9 @@
 }
 
 .author-name {
-  font-weight: 600;
+  font-weight: 500;
   color: #ffffff;
-  font-size: 0.9375rem;
+  font-size: 0.8125rem;
 }
 
 .author-badge {
@@ -1174,7 +1209,7 @@
 
 .post-content p {
   color: #d1d5db;
-  font-size: 0.9375rem;
+  font-size: 0.8125rem;
   line-height: 1.6;
   margin: 0;
 }
@@ -1189,7 +1224,7 @@
   align-items: center;
   gap: 0.5rem;
   color: #94a3b8;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   cursor: pointer;
   transition: color 0.2s ease;
   font-family: var(--font-mono);
@@ -1266,7 +1301,7 @@
   }
 
   .value-amount {
-    font-size: 2rem;
+    font-size: 1.25rem;
   }
 }
 
@@ -1294,7 +1329,7 @@
 
   .time-btn {
     padding: 4px 7px;
-    font-size: 10px;
+    font-size: 0.6875rem;
   }
 }
 
@@ -1455,7 +1490,7 @@
 }
 
 .ledger-table-header span {
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: 600;
   color: #9ca3af;
   text-transform: uppercase;
@@ -1516,8 +1551,8 @@
 }
 
 .member-name {
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.8125rem;
+  font-weight: 500;
   color: #f8fafc;
   white-space: nowrap;
   overflow: hidden;
@@ -1557,15 +1592,16 @@
 }
 
 .col-ticker {
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.8125rem;
+  font-weight: 500;
   color: #10b981;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 
 .col-amount {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
+  font-weight: 400;
   color: #8b949e;
   white-space: nowrap;
   overflow: hidden;
@@ -1575,7 +1611,8 @@
 }
 
 .col-time {
-  font-size: 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 400;
   color: #6e7681;
   text-align: right;
   font-family: var(--font-mono);

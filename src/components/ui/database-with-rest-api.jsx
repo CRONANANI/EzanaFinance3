@@ -239,6 +239,16 @@ export default function DatabaseWithRestApi({
     },
   };
 
+  // Mirror-symmetric widths around the centered "institutional" card so edge-to-edge
+  // gaps are uniform: congress==community, 13f==analytics.
+  const BADGE_WIDTH = {
+    congress: 180,
+    '13f': 200,
+    institutional: 220,
+    analytics: 200,
+    community: 180,
+  };
+
   const sourceConfigs = [
     { id: 'congress', label: badgeTexts?.first || 'Congress' },
     { id: '13f', label: badgeTexts?.second || '13F' },
@@ -340,7 +350,6 @@ export default function DatabaseWithRestApi({
             from the button down onto the panel — a mouseleave only fires when the
             cursor exits the wrapper entirely. */}
         {sourceConfigs.map(({ id, label }) => {
-          const isWideCard = id === 'institutional' || id === 'analytics';
           const isHovered = hoveredSource === id;
           const detail = sourceDetails?.[id];
 
@@ -348,7 +357,7 @@ export default function DatabaseWithRestApi({
             <div
               key={id}
               className="absolute top-0 -translate-x-1/2"
-              style={{ left: sourcePositions[id].left }}
+              style={{ left: sourcePositions[id].left, width: BADGE_WIDTH[id] }}
               onMouseEnter={() => setHoveredSource(id)}
               onMouseLeave={() => setHoveredSource((prev) => (prev === id ? null : prev))}
             >
@@ -363,9 +372,8 @@ export default function DatabaseWithRestApi({
                 onFocus={() => setHoveredSource(id)}
                 onBlur={() => setHoveredSource((prev) => (prev === id ? null : prev))}
                 className={cn(
-                  'select-none cursor-help flex items-center justify-center gap-2 rounded-xl border px-4 py-3.5 overflow-hidden backdrop-blur-sm',
+                  'select-none cursor-help flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-3.5 overflow-hidden backdrop-blur-sm',
                   'transition-all duration-200 ease-out',
-                  isWideCard ? 'min-w-[200px] max-w-[240px]' : 'min-w-[100px] max-w-[180px]',
                   isHovered
                     ? 'bg-emerald-700 border-emerald-500 shadow-lg shadow-emerald-500/20'
                     : 'bg-[#0a0f0a]/95 hover:border-emerald-500/40',
@@ -385,11 +393,9 @@ export default function DatabaseWithRestApi({
                 />
                 <span
                   className={cn(
-                    'text-sm font-medium text-center leading-tight transition-colors duration-200',
+                    'min-w-0 break-words text-sm font-medium text-center leading-tight transition-colors duration-200',
                     isHovered ? 'text-white' : 'text-emerald-100',
-                    isWideCard ? 'whitespace-nowrap' : 'min-w-0 break-words',
                   )}
-                  style={isWideCard ? undefined : { maxWidth: '140px' }}
                 >
                   {label}
                 </span>
