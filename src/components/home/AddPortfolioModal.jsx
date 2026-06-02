@@ -532,9 +532,7 @@ async function launchPlaidLink({ token, institutionId, institutionName, onSucces
     },
   });
 
-  if (institutionId) {
-    handler.open({ institution_id: institutionId });
-  } else {
-    handler.open();
-  }
+  // Plaid.handler.open() takes no arguments. Institution pre-selection is handled
+  // server-side via institution_id on /link/token/create (restricted feature), not here.
+  handler.open();
 }
