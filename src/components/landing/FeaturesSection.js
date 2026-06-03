@@ -860,9 +860,6 @@ export function FeaturesSection() {
               </div>
               <h3 className="feature-card-title">{card.title}</h3>
               <p className="feature-card-description">{card.desc}</p>
-              <Link href={card.href} className="feature-card-link lf-mono">
-                Learn more →
-              </Link>
             </div>
           ))}
         </div>
@@ -936,7 +933,7 @@ export function FeaturesSection() {
                   <span className="stat-label lf-mono">Market data</span>
                 </div>
               </div>
-              <Link href="/auth/login" className="feature-cta">
+              <Link href="/brokerages-integrations" className="feature-cta">
                 <span>Sync Portfolio Data</span>
                 <i className="bi bi-arrow-right" />
               </Link>
@@ -1026,7 +1023,7 @@ export function FeaturesSection() {
                   <span className="stat-label lf-mono">Updates</span>
                 </div>
               </div>
-              <Link href="/auth/login" className="feature-cta">
+              <Link href="/datasets/political" className="feature-cta">
                 <span>Explore Congressional Trading</span>
                 <i className="bi bi-arrow-right" />
               </Link>
@@ -1101,7 +1098,7 @@ export function FeaturesSection() {
                   <span className="stat-label lf-mono">Patents filed</span>
                 </div>
               </div>
-              <Link href="#resources" className="feature-cta">
+              <Link href="/datasets/government" className="feature-cta">
                 <span>Government Intelligence</span>
                 <i className="bi bi-arrow-right" />
               </Link>

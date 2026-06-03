@@ -1,0 +1,346 @@
+/* Public marketing / explore pages (dark brand-locked via ThemeProvider) */
+
+.mkt-page {
+  min-height: 100vh;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.mkt-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.25rem 2rem;
+  border-bottom: 1px solid var(--border-secondary);
+}
+
+.mkt-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.mkt-back:hover {
+  color: var(--emerald-text);
+}
+
+.mkt-cta-top {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1.125rem;
+  border-radius: 8px;
+  background: var(--emerald);
+  color: #04130d;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: filter 0.2s ease;
+}
+
+.mkt-cta-top:hover {
+  filter: brightness(1.08);
+}
+
+.mkt-main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 3rem 2rem 4rem;
+}
+
+.mkt-hero {
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto 3rem;
+}
+
+.mkt-eyebrow {
+  margin: 0 0 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--emerald-text);
+}
+
+.mkt-h1 {
+  margin: 0 0 1rem;
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.mkt-lead {
+  margin: 0;
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  color: var(--text-body);
+}
+
+.mkt-section-title {
+  margin: 0 0 1.25rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.mkt-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 2.5rem;
+}
+
+.mkt-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 2.5rem;
+}
+
+.mkt-card {
+  background: #0d1117;
+  border: 1px solid var(--border-primary);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: var(--ledger-shadow);
+}
+
+body.light-mode .mkt-card {
+  background: var(--surface-card);
+}
+
+.mkt-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--emerald-text);
+}
+
+.mkt-card p {
+  margin: 0 0 0.75rem;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: var(--text-body);
+}
+
+.mkt-card p:last-child {
+  margin-bottom: 0;
+}
+
+.mkt-checklist {
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.mkt-checklist li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.mkt-checklist li svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.mkt-check-yes {
+  color: var(--emerald-text);
+}
+
+.mkt-check-no {
+  color: var(--text-faint);
+}
+
+.mkt-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+}
+
+.mkt-step {
+  text-align: center;
+  padding: 1.25rem 1rem;
+  border: 1px solid var(--border-secondary);
+  border-radius: 12px;
+  background: rgba(16, 185, 129, 0.04);
+}
+
+.mkt-step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-bottom: 0.75rem;
+  border-radius: 50%;
+  background: var(--emerald-bg);
+  color: var(--emerald-text);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.mkt-step h3 {
+  margin: 0 0 0.5rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.mkt-step p {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.mkt-note {
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-secondary);
+  background: rgba(16, 185, 129, 0.05);
+  margin-bottom: 2.5rem;
+}
+
+.mkt-note p {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.mkt-stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2rem;
+  margin: 2rem 0 2.5rem;
+}
+
+.mkt-stat {
+  text-align: center;
+}
+
+.mkt-stat-value {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+
+.mkt-stat-label {
+  display: block;
+  margin-top: 0.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.mkt-mono-metric {
+  margin-top: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--emerald-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.mkt-cta-block {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.mkt-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  background: var(--emerald);
+  color: #04130d;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: filter 0.2s ease;
+}
+
+.mkt-cta-btn:hover {
+  filter: brightness(1.08);
+}
+
+.mkt-datasets-subnav {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 2.5rem;
+  flex-wrap: wrap;
+}
+
+.mkt-datasets-subnav a {
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  border: 1px solid var(--border-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease,
+    background 0.2s ease;
+}
+
+.mkt-datasets-subnav a:hover {
+  color: var(--emerald-text);
+  border-color: var(--emerald-border);
+}
+
+.mkt-datasets-subnav a.mkt-subnav-active {
+  background: var(--emerald-bg);
+  border-color: var(--emerald-border);
+  color: var(--emerald-text);
+}
+
+@media (max-width: 900px) {
+  .mkt-grid-2,
+  .mkt-grid-3,
+  .mkt-steps {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .mkt-top,
+  .mkt-main {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}

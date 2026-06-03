@@ -1258,11 +1258,20 @@ html:has(.landing-page) body:not(.light-mode) {
 }
 
 .landing-faq-help-link a {
+  position: relative;
+  z-index: 1;
+  pointer-events: auto;
   font-size: 0.8125rem;
   color: var(--emerald-text);
   text-decoration: none;
   transition: color 0.2s;
   border-bottom: 1px solid transparent;
+}
+
+.landing-faq-help-link {
+  position: relative;
+  z-index: 1;
+  pointer-events: auto;
 }
 
 .landing-faq-help-link a:hover {

@@ -74,7 +74,6 @@ export function ResourcesSection() {
     <section className="resources-section" id="resources">
       <div className="resources-container">
         <div className="resources-header">
-          <p className="resources-eyebrow lf-mono">Data &amp; Resources</p>
           <h2>Data Sources &amp; Resources</h2>
           <p className="max-w-5xl mx-auto px-6">
             Every signal, traced to its source. Hover a category to see which providers and datasets

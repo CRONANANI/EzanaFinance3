@@ -56,7 +56,7 @@ const DEFAULT_ITEMS = [
 ];
 
 export function Faq1({ heading = 'Frequently asked', items = DEFAULT_ITEMS, onContactClick }) {
-  const [openId, setOpenId] = useState(items[0]?.id ?? null);
+  const [openId, setOpenId] = useState(null);
   const buttonRefs = useRef([]);
 
   const toggle = (id) => {

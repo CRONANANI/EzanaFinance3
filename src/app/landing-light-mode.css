@@ -414,7 +414,12 @@ body.light-mode .landing-page .resources-header h2 {
 }
 
 body.light-mode .landing-page .resources-header p {
-  color: var(--text-muted);
+  color: var(--text-primary);
+}
+
+body.light-mode .landing-page .resources-header h2 {
+  color: var(--emerald-text);
+  -webkit-text-fill-color: var(--emerald-text);
 }
 
 body.light-mode .landing-page .data-source-card {

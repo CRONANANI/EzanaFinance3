@@ -88,6 +88,8 @@ function isMarketingBrandLockedDarkPath(pathname) {
   if (pathname === '/') return true;
   if (pathname.startsWith('/pricing')) return true;
   if (pathname.startsWith('/help-center')) return true;
+  if (pathname.startsWith('/brokerages-integrations')) return true;
+  if (pathname.startsWith('/datasets')) return true;
   return false;
 }
 

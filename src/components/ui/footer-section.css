@@ -23,19 +23,29 @@ body.light-mode .landing-footer {
   padding-bottom: 48px;
 }
 
+.landing-footer-brand {
+  text-align: left;
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+}
+
 .landing-footer-brand-logo {
   display: inline-flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 0.75rem;
   margin-bottom: 1.25rem;
   text-decoration: none;
 }
 
 .landing-footer-brand-logo img {
-  width: 48px;
-  height: 48px;
+  width: auto;
+  height: auto;
+  max-width: 40px;
+  max-height: 34px;
   object-fit: contain;
-  transform: scaleX(-1);
+  transform: none;
 }
 
 .landing-footer-wordmark {
@@ -107,6 +117,16 @@ body.light-mode .landing-footer {
 
 .landing-footer-send:hover {
   filter: brightness(1.08);
+}
+
+.landing-footer-newsletter-msg {
+  margin: 0.5rem 0 0;
+  font-size: 0.78125rem;
+  color: var(--emerald-text);
+}
+
+.landing-footer-newsletter-msg--err {
+  color: var(--negative);
 }
 
 .landing-footer-col h4 {

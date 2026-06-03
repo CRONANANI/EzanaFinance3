@@ -158,6 +158,8 @@
   height: auto;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
   padding: 28px;
   background: #0d1117;
   border: 1px solid rgba(16, 185, 129, 0.12);
@@ -192,7 +194,7 @@ body.light-mode .landing-page .feature-card {
   background: rgba(16, 185, 129, 0.1);
   border: 1px solid rgba(16, 185, 129, 0.15);
   border-radius: 10px;
-  margin-bottom: 18px;
+  margin: 0 auto 18px;
   flex-shrink: 0;
 }
 
@@ -218,25 +220,8 @@ body.light-mode .landing-page .feature-card {
   line-height: 1.55;
   color: var(--text-body);
   flex-grow: 1;
-  margin: 0 0 1rem;
-}
-
-.feature-card-link {
-  margin-top: auto;
-  font-size: 0.6875rem;
-  font-weight: 600;
-  color: var(--emerald-text);
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  transition: color 0.3s ease, transform 0.3s ease;
-}
-
-.feature-card-link:hover {
-  color: #34d399;
-  transform: translateX(3px);
+  margin: 0;
+  text-align: center;
 }
 
 @media (max-width: 768px) {
