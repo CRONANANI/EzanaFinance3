@@ -25,6 +25,21 @@ export const CONGRESS_TRADES_ALL = [
     type: 'Purchase',
     amount: '$1K - $15K',
   },
+  {
+    id: 4,
+    name: 'Tommy Tuberville',
+    party: 'Republican',
+    ticker: 'AAPL',
+    type: 'Purchase',
+    amount: '$50K - $100K',
+  },
+];
+
+export const PORTFOLIO_BACK_METRICS = [
+  { label: 'Sharpe', value: '1.45' },
+  { label: 'Beta', value: '1.05' },
+  { label: 'Dividends', value: '$847/mo' },
+  { label: 'Risk', value: '6.2/10' },
 ];
 
 export const INTEL_DATA = {
@@ -39,6 +54,11 @@ export const INTEL_DATA = {
       company: 'SpaceX',
       amount: '$1.2B Contract Award',
     },
+    {
+      agency: 'Department of Energy',
+      company: 'Tesla',
+      amount: '$250M Contract Award',
+    },
   ],
   lobbying: [],
   patents: [],
@@ -52,6 +72,39 @@ export const COMMUNITY_TRENDING_POST = {
     'Just noticed a pattern in semiconductor congressional trades. NVDA purchases up 40% this week among tech committee members...',
   stats: { likes: 124, comments: 38, bookmarks: 56 },
 };
+
+export const COMMUNITY_BACK_POSTS = [
+  {
+    author: 'JD',
+    name: 'John Doe',
+    badge: 'Expert Trader',
+    content:
+      'NVDA purchases up 40% this week among tech-committee members. Watching the disclosure lag closely.',
+    stats: { likes: 124, comments: 38, bookmarks: 56 },
+  },
+  {
+    author: 'AS',
+    name: 'Alex Smith',
+    badge: 'Verified',
+    content:
+      'Defense contract awards tracking recent lobbying spend almost 1:1. Full thread in the app.',
+    stats: { likes: 89, comments: 22, bookmarks: 43 },
+  },
+];
+
+export const ALERTS_FEED = [
+  { icon: 'bi-graph-up-arrow', text: '$NVDA crossed your price target', time: '2m ago' },
+  { icon: 'bi-building', text: 'New Pelosi filing in a held position', time: '14m ago' },
+  { icon: 'bi-file-earmark-text', text: 'Lockheed $450M contract detected', time: '1h ago' },
+  { icon: 'bi-people', text: '3 traders you follow bought $MSFT', time: '3h ago' },
+];
+
+export const ALT_SIGNALS_FEED = [
+  { label: 'Satellite lot traffic', ticker: '$WMT', delta: '▲ 12%', up: true },
+  { label: 'App download velocity', ticker: '$UBER', delta: '▲ 8%', up: true },
+  { label: 'Card-spend trend', ticker: '$SBUX', delta: '▼ 5%', up: false },
+  { label: 'Web search interest', ticker: '$CMG', delta: '▲ 6%', up: true },
+];
 
 export const HOW_STEPS = [
   {

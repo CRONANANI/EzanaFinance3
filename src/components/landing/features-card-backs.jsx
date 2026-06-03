@@ -1,6 +1,13 @@
 'use client';
 
-import { CONGRESS_TRADES_ALL, INTEL_DATA, COMMUNITY_TRENDING_POST } from './features-landing-data';
+import {
+  CONGRESS_TRADES_ALL,
+  INTEL_DATA,
+  PORTFOLIO_BACK_METRICS,
+  COMMUNITY_BACK_POSTS,
+  ALERTS_FEED,
+  ALT_SIGNALS_FEED,
+} from './features-landing-data';
 
 const PORTFOLIO_SPARKLINE = (
   <svg className="fcb-sparkline" viewBox="0 0 240 60" aria-hidden>
@@ -26,20 +33,31 @@ const PORTFOLIO_SPARKLINE = (
 export function PortfolioBack() {
   return (
     <div className="fcb fcb-portfolio">
-      <div className="fcb-kicker lf-mono">PORTFOLIO</div>
+      <div className="fcb-head-row">
+        <span className="fcb-kicker lf-mono">PORTFOLIO</span>
+        <span className="fcb-head-sub lf-mono">1W</span>
+      </div>
       <div className="fcb-big lf-mono">$127,843.52</div>
       <div className="fcb-delta lf-mono positive">+$2,847.31 (+2.28%)</div>
       {PORTFOLIO_SPARKLINE}
-      <div className="fcb-chip lf-mono">Sharpe 1.45</div>
+      <div className="fcb-metric-grid">
+        {PORTFOLIO_BACK_METRICS.map((m) => (
+          <div key={m.label} className="fcb-metric">
+            <span className="fcb-metric-label lf-mono">{m.label}</span>
+            <span className="fcb-metric-value lf-mono">{m.value}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
 
 export function CongressBack() {
-  const rows = CONGRESS_TRADES_ALL.slice(0, 3);
+  const rows = CONGRESS_TRADES_ALL.slice(0, 4);
   return (
     <div className="fcb fcb-congress">
       <div className="fcb-row-head">
+        <span className="fcb-back-title">Congressional Ledger</span>
         <span className="fcb-live lf-mono">Live</span>
       </div>
       <div className="fcb-congress-rows">
@@ -58,14 +76,16 @@ export function CongressBack() {
           </div>
         ))}
       </div>
+      <div className="fcb-foot lf-mono">535 members tracked</div>
     </div>
   );
 }
 
 export function IntelligenceBack() {
-  const rows = INTEL_DATA.contracts.slice(0, 2);
+  const rows = INTEL_DATA.contracts.slice(0, 3);
   return (
     <div className="fcb fcb-intel">
+      <div className="fcb-back-title">Government Activity</div>
       <div className="fcb-tabs lf-mono">
         <span className="active">Contracts</span>
         <span>·</span>
@@ -94,37 +114,42 @@ export function IntelligenceBack() {
 }
 
 export function CommunityBack() {
-  const post = COMMUNITY_TRENDING_POST;
   return (
     <div className="fcb fcb-community">
-      <span className="fcb-pill trending">Trending</span>
-      <div className="fcb-post-head">
-        <div className="fcb-avatar">{post.author}</div>
-        <div>
-          <div className="fcb-post-name">{post.name}</div>
-          <span className="fcb-badge">Expert Trader</span>
-        </div>
+      <div className="fcb-row-head">
+        <span className="fcb-back-title">Community</span>
+        <span className="fcb-pill trending">Trending</span>
       </div>
-      <p className="fcb-post-body">{post.content}</p>
-      <div className="fcb-engage lf-mono">
-        {post.stats.likes} · {post.stats.comments} · {post.stats.bookmarks}
+      <div className="fcb-community-feed">
+        {COMMUNITY_BACK_POSTS.map((post, i) => (
+          <div key={i} className="fcb-community-item">
+            <div className="fcb-post-head">
+              <div className="fcb-avatar">{post.author}</div>
+              <div>
+                <div className="fcb-post-name">{post.name}</div>
+                <span className="fcb-badge">{post.badge}</span>
+              </div>
+            </div>
+            <p className="fcb-post-body">{post.content}</p>
+            <div className="fcb-engage lf-mono">
+              {post.stats.likes} · {post.stats.comments} · {post.stats.bookmarks}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
 }
 
-const ALERTS = [
-  { icon: 'bi-graph-up-arrow', text: '$NVDA crossed your price target', time: '2m ago' },
-  { icon: 'bi-building', text: 'New Pelosi filing in a held position', time: '14m ago' },
-  { icon: 'bi-file-earmark-text', text: 'Lockheed contract award detected', time: '1h ago' },
-];
-
 export function AlertsBack() {
   return (
     <div className="fcb fcb-alerts">
-      <div className="fcb-kicker lf-mono">ALERTS</div>
+      <div className="fcb-row-head">
+        <span className="fcb-back-title">Real-time Alerts</span>
+        <span className="fcb-live lf-mono">Live</span>
+      </div>
       <div className="fcb-alert-stack">
-        {ALERTS.map((a, i) => (
+        {ALERTS_FEED.map((a, i) => (
           <div key={i} className="fcb-alert-row">
             <i className={`bi ${a.icon}`} aria-hidden />
             <span className="fcb-alert-text">{a.text}</span>
@@ -132,22 +157,18 @@ export function AlertsBack() {
           </div>
         ))}
       </div>
+      <div className="fcb-foot lf-mono">Across all your positions</div>
     </div>
   );
 }
-
-const ALT_SIGNALS = [
-  { label: 'Satellite lot traffic', ticker: '$WMT', delta: '▲ 12%', up: true },
-  { label: 'App download velocity', ticker: '$UBER', delta: '▲ 8%', up: true },
-  { label: 'Card-spend trend', ticker: '$SBUX', delta: '▼ 5%', up: false },
-];
 
 export function AltAnalyticsBack() {
   return (
     <div className="fcb fcb-alt">
       <div className="fcb-kicker lf-mono">ALT-DATA SIGNALS</div>
+      <div className="fcb-head-sub-line">Tracked against the tickers they move</div>
       <div className="fcb-alt-rows">
-        {ALT_SIGNALS.map((s, i) => (
+        {ALT_SIGNALS_FEED.map((s, i) => (
           <div key={i} className="fcb-alt-row">
             <span className="fcb-alt-label">{s.label}</span>
             <span className="fcb-alt-ticker lf-mono">{s.ticker}</span>
@@ -155,6 +176,7 @@ export function AltAnalyticsBack() {
           </div>
         ))}
       </div>
+      <div className="fcb-foot lf-mono">Updated daily</div>
     </div>
   );
 }
