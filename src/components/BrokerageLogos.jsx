@@ -12,14 +12,32 @@ import './brokerage-logos.css';
 
 const BROKERAGE_LOGOS = [
   { name: 'Alpaca', src: '/brokerage-logos/alpaca.png', width: 80, height: 80 },
-  { name: 'Binance', src: '/brokerage-logos/binance.png', width: 200, height: 40 },
+  { name: 'Binance', src: '/brokerage-logos/binance.png', width: 200, height: 40, hideLabel: true },
   { name: 'Coinbase', src: '/brokerage-logos/coinbase.png', width: 200, height: 56 },
-  { name: 'Robinhood', src: '/brokerage-logos/robinhood.png', width: 200, height: 56 },
-  { name: 'eToro', src: '/brokerage-logos/etoro.png', width: 200, height: 56 },
+  {
+    name: 'Robinhood',
+    src: '/brokerage-logos/robinhood.png',
+    width: 200,
+    height: 56,
+    hideLabel: true,
+  },
+  { name: 'eToro', src: '/brokerage-logos/etoro.png', width: 200, height: 56, hideLabel: true },
   { name: 'Questrade', src: '/brokerage-logos/questrade.png', width: 180, height: 56 },
   { name: 'Tradier', src: '/brokerage-logos/tradier.png', width: 160, height: 50 },
-  { name: 'TD Ameritrade', src: '/brokerage-logos/td-ameritrade.png', width: 200, height: 56 },
-  { name: 'Wealthsimple', src: '/brokerage-logos/wealthsimple.png', width: 200, height: 40 },
+  {
+    name: 'TD Ameritrade',
+    src: '/brokerage-logos/td-ameritrade.png',
+    width: 200,
+    height: 56,
+    hideLabel: true,
+  },
+  {
+    name: 'Wealthsimple',
+    src: '/brokerage-logos/wealthsimple.png',
+    width: 200,
+    height: 40,
+    hideLabel: true,
+  },
   {
     name: 'Interactive Brokers',
     src: '/brokerage-logos/interactive-brokers.png',
@@ -27,8 +45,14 @@ const BROKERAGE_LOGOS = [
     height: 56,
   },
   { name: 'E*TRADE', src: '/brokerage-logos/etrade.png', width: 160, height: 56 },
-  { name: 'Vanguard', src: '/brokerage-logos/vanguard.png', width: 200, height: 56 },
-  { name: 'US Bank', src: '/brokerage-logos/us-bank.png', width: 200, height: 56 },
+  {
+    name: 'Vanguard',
+    src: '/brokerage-logos/vanguard.png',
+    width: 200,
+    height: 56,
+    hideLabel: true,
+  },
+  { name: 'US Bank', src: '/brokerage-logos/us-bank.png', width: 200, height: 56, hideLabel: true },
   { name: 'Trading 212', src: '/brokerage-logos/trading212.png', width: 200, height: 56 },
   { name: 'Charles Schwab', src: '/brokerage-logos/charles-schwab.png', width: 80, height: 80 },
   { name: 'Merrill Lynch', brandKey: 'MERRILL' },
@@ -59,7 +83,7 @@ function LogoTile({ logo }) {
           <BrandMark id={logo.brandKey} size={26} />
         ) : null}
       </div>
-      <span className="bl-logo-label">{logo.name}</span>
+      {!logo.hideLabel && <span className="bl-logo-label">{logo.name}</span>}
     </div>
   );
 }
