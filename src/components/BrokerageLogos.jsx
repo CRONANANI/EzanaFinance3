@@ -1,8 +1,6 @@
 /**
- * BrokerageLogos — "Connect Your Brokerage Account" section.
- *
- * Mirrors TrustedLogos carousel scaffolding but scrolls the opposite direction.
- * Logo files live in /public/brokerage-logos/; additional entries use inline SVG.
+ * BrokerageLogos — "Connect your brokerage account" section.
+ * Single-row marquee of uniform logo tiles.
  */
 
 'use client';
@@ -41,29 +39,27 @@ const BROKERAGE_LOGOS = [
 
 function LogoTile({ logo }) {
   const [failed, setFailed] = useState(false);
+  const showPng = logo.src && !failed;
 
-  if (logo.brandKey) {
-    return (
-      <div className="bl-logo-item bl-logo-item--svg" title={logo.name}>
-        <BrandMark id={logo.brandKey} size={56} />
-        <div className="bl-logo-label">{logo.name}</div>
-      </div>
-    );
-  }
-
-  if (failed) return null;
   return (
     <div className="bl-logo-item" title={logo.name}>
-      <Image
-        src={logo.src}
-        alt={logo.name}
-        width={logo.width}
-        height={logo.height}
-        className="bl-logo-img"
-        style={{ objectFit: 'contain' }}
-        onError={() => setFailed(true)}
-        loading="lazy"
-      />
+      <div className="bl-logo-slot">
+        {showPng ? (
+          <Image
+            src={logo.src}
+            alt=""
+            width={logo.width}
+            height={logo.height}
+            className="bl-logo-img"
+            style={{ objectFit: 'contain' }}
+            onError={() => setFailed(true)}
+            loading="lazy"
+          />
+        ) : logo.brandKey ? (
+          <BrandMark id={logo.brandKey} size={26} />
+        ) : null}
+      </div>
+      <span className="bl-logo-label">{logo.name}</span>
     </div>
   );
 }
@@ -72,11 +68,20 @@ export function BrokerageLogos() {
   const doubled = [...BROKERAGE_LOGOS, ...BROKERAGE_LOGOS];
 
   return (
-    <section className="bl-section">
-      <h2 className="bl-heading">Connect Your Brokerage Account</h2>
+    <section className="bl-section" aria-labelledby="bl-heading">
+      <p className="bl-eyebrow lf-mono">Connect your accounts</p>
+      <h2 id="bl-heading" className="bl-heading">
+        Connect your brokerage account
+      </h2>
       <p className="bl-subheading">
-        Securely link 1000+ brokerages and crypto exchanges via SnapTrade &amp; Plaid, read holdings
-        or place trades from selective brokers from the Ezana platform
+        Securely link 1,000+ brokerages and crypto exchanges via SnapTrade &amp; Plaid. Read
+        holdings or place trades from supported brokers — without leaving Ezana.
+      </p>
+      <p className="bl-status-pill lf-mono">
+        <span className="bl-status-dot" aria-hidden="true" />
+        <span>
+          <span className="bl-status-count">1,000+</span> brokerages &amp; exchanges supported
+        </span>
       </p>
 
       <div className="bl-carousel-mask">

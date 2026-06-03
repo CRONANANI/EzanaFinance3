@@ -861,7 +861,7 @@ export function FeaturesSection() {
               <h3 className="feature-card-title">{card.title}</h3>
               <p className="feature-card-description">{card.desc}</p>
               <Link href={card.href} className="feature-card-link lf-mono">
-                Explore →
+                Learn more →
               </Link>
             </div>
           ))}

@@ -406,10 +406,11 @@ body.light-mode .landing-page .resources-section {
 }
 
 body.light-mode .landing-page .resources-header h2 {
-  background: linear-gradient(135deg, #0f172a 0%, #059669 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--text-primary);
+  background: none;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: var(--text-primary);
+  background-clip: border-box;
 }
 
 body.light-mode .landing-page .resources-header p {

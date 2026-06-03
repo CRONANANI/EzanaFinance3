@@ -1,0 +1,56 @@
+/* Landing redesign — resources recolor only (layout unchanged) */
+
+.landing-page .resources-header .resources-eyebrow {
+  margin: 0 0 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--emerald-text);
+  text-align: center;
+}
+
+.landing-page .resources-header h2 {
+  color: var(--text-primary);
+  background: none;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: var(--text-primary);
+  background-clip: border-box;
+}
+
+.landing-page .resources-header p {
+  color: var(--text-muted);
+}
+
+.landing-page .landing-data-sources > h3 {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--emerald-text) !important;
+}
+
+.landing-page .landing-data-sources [role='button'] span {
+  color: var(--text-body) !important;
+}
+
+.landing-page .landing-data-sources [role='button']:hover span,
+.landing-page .landing-data-sources [role='button']:focus span {
+  color: #fff !important;
+}
+
+.landing-page .landing-data-sources [role='button'] svg {
+  color: var(--emerald-text) !important;
+}
+
+.landing-page .landing-data-sources [role='button']:hover svg,
+.landing-page .landing-data-sources [role='button']:focus svg {
+  color: #fff !important;
+}
+
+.landing-page .landing-data-hub {
+  color: var(--emerald-text) !important;
+  font-family: var(--font-mono);
+}

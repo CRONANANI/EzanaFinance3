@@ -1,6 +1,7 @@
 /* @import must come first - otherwise browsers ignore these stylesheets */
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap');
 @import './theme-variables.css';
+@import './landing-redesign.css';
 @import 'app-legacy/assets/css/theme-variables.css';
 @import 'app-legacy/components/navigation/unified-nav.css';
 @import 'app-legacy/assets/css/page-layout.css';
@@ -1124,11 +1125,22 @@ html:has(.landing-page) body:not(.light-mode) {
   width: 100%;
 }
 
+.landing-faq-eyebrow {
+  margin: 0 0 0.75rem;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--emerald-text);
+}
+
 .landing-faq-heading {
   text-align: center;
   font-size: 2rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-primary);
   margin: 0 0 1rem;
   letter-spacing: -0.01em;
 }
@@ -1161,7 +1173,7 @@ html:has(.landing-page) body:not(.light-mode) {
   font-weight: 600;
   font-size: 1rem;
   line-height: 1.45;
-  color: #e5e7eb;
+  color: var(--text-primary);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -1169,7 +1181,7 @@ html:has(.landing-page) body:not(.light-mode) {
 }
 
 .landing-faq-question:hover {
-  color: #fff;
+  color: var(--text-primary);
 }
 
 .landing-faq-question:focus-visible {
@@ -1213,9 +1225,9 @@ html:has(.landing-page) body:not(.light-mode) {
  * rotation animates naturally alongside the height transition below. */
 .landing-faq-icon--open {
   transform: translateY(-50%) rotate(45deg);
-  color: #10b981;
-  border-color: rgba(16, 185, 129, 0.6);
-  background: rgba(16, 185, 129, 0.08);
+  color: var(--emerald-text);
+  border-color: var(--emerald-border);
+  background: var(--emerald-bg);
 }
 
 /* Animated height container. The child .landing-faq-answer-inner is measured
@@ -1235,7 +1247,7 @@ html:has(.landing-page) body:not(.light-mode) {
   max-width: 640px;
   margin: 0 auto;
   font-size: 0.95rem;
-  color: #9ca3af;
+  color: var(--text-muted);
   line-height: 1.65;
   text-align: center;
 }
@@ -1247,15 +1259,15 @@ html:has(.landing-page) body:not(.light-mode) {
 
 .landing-faq-help-link a {
   font-size: 0.8125rem;
-  color: #9ca3af;
+  color: var(--emerald-text);
   text-decoration: none;
   transition: color 0.2s;
   border-bottom: 1px solid transparent;
 }
 
 .landing-faq-help-link a:hover {
-  color: #6366f1;
-  border-bottom-color: #6366f1;
+  color: var(--emerald);
+  border-bottom-color: var(--emerald-border);
 }
 
 .landing-faq-contact-box {
@@ -1269,13 +1281,13 @@ html:has(.landing-page) body:not(.light-mode) {
 .landing-faq-contact-title {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-primary);
   margin: 0 0 0.75rem;
 }
 
 .landing-faq-contact-text {
   font-size: 0.9rem;
-  color: #10b981;
+  color: var(--text-muted);
   margin: 0 0 1.5rem;
   line-height: 1.5;
 }

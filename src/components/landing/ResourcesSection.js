@@ -74,6 +74,7 @@ export function ResourcesSection() {
     <section className="resources-section" id="resources">
       <div className="resources-container">
         <div className="resources-header">
+          <p className="resources-eyebrow lf-mono">Data &amp; Resources</p>
           <h2>Data Sources &amp; Resources</h2>
           <p className="max-w-5xl mx-auto px-6">
             Every signal, traced to its source. Hover a category to see which providers and datasets
@@ -84,6 +85,7 @@ export function ResourcesSection() {
 
         <div className="flex justify-center p-4 w-full max-w-[1100px] mx-auto">
           <DatabaseWithRestApi
+            className="landing-data-sources"
             badgeTexts={{
               first: 'Congress',
               second: '13F Filings',

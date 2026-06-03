@@ -40,6 +40,7 @@
   --text-muted: #8b949e; /* De-emphasized text */
   --text-faint: #6b7280; /* Captions, meta, timestamps */
   --text-ghost: #4b5563; /* Placeholders, disabled */
+  --text-body: #cdd7e2; /* Body copy slightly dimmer than --text-secondary */
 
   /* ── Brand: Emerald (User) ── */
   --emerald: #10b981;
@@ -50,7 +51,7 @@
   --emerald-bg-subtle: rgba(16, 185, 129, 0.04);
   --emerald-border: rgba(16, 185, 129, 0.15);
   --emerald-glow: rgba(16, 185, 129, 0.25);
-  --emerald-text: #10b981;
+  --emerald-text: #34d399; /* Emerald that reads as text on dark */
 
   /* ── Brand: Gold (Partner) ── */
   --gold: #d4a853;
@@ -103,6 +104,7 @@
   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
   --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.45);
   --shadow-glow: 0 0 20px rgba(16, 185, 129, 0.15);
+  --ledger-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 18px 40px -24px rgba(0, 0, 0, 0.7);
 
   /* ── Navbar ── */
   --nav-bg: #0a0e13;
@@ -207,6 +209,7 @@ body.light-mode {
   --text-muted: #64748b;
   --text-faint: #94a3b8;
   --text-ghost: #cbd5e1;
+  --text-body: #334155;
 
   /* ── Brand: Emerald (User) — slightly deeper for contrast on white ── */
   --emerald: #059669;
@@ -217,7 +220,7 @@ body.light-mode {
   --emerald-bg-subtle: rgba(16, 185, 129, 0.03);
   --emerald-border: rgba(16, 185, 129, 0.2);
   --emerald-glow: rgba(16, 185, 129, 0.15);
-  --emerald-text: #059669;
+  --emerald-text: #047857;
 
   /* ── Brand: Gold (Partner) ── */
   --gold: #b8922f;
