@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useRef, useState, useEffect } from 'react';
 import {
   AreaChart,
   Area,
@@ -97,62 +97,82 @@ export default function LandingPortfolioChart({ range = '1W' }) {
   const lineColor = stats?.isPositive === false ? '#ef4444' : '#10b981';
   const gradientId = stats?.isPositive === false ? 'lpc-gradient-down' : 'lpc-gradient-up';
 
+  const wrapRef = useRef(null);
+  const [measuredWidth, setMeasuredWidth] = useState(0);
+
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const initial = el.getBoundingClientRect().width;
+    if (initial > 0) setMeasuredWidth(initial);
+    const ro = new ResizeObserver((entries) => {
+      const w = entries[0]?.contentRect?.width ?? 0;
+      if (w > 0) setMeasuredWidth(w);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const ready = measuredWidth > 0;
+
   return (
-    <div className="lpc-chart-wrap">
-      <ResponsiveContainer width="100%" height="100%" key={range}>
-        <AreaChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
-          <defs>
-            <linearGradient id="lpc-gradient-up" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#10b981" stopOpacity={0.4} />
-              <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
-            </linearGradient>
-            <linearGradient id="lpc-gradient-down" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#ef4444" stopOpacity={0.4} />
-              <stop offset="100%" stopColor="#ef4444" stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <CartesianGrid stroke="rgba(255,255,255,0.04)" vertical={false} />
-          <XAxis
-            dataKey="label"
-            tick={{
-              className: 'lpc-axis-tick lf-mono',
-              fontSize: 10,
-              fontFamily: 'var(--font-mono, monospace)',
-            }}
-            axisLine={false}
-            tickLine={false}
-            interval="preserveStartEnd"
-            minTickGap={40}
-          />
-          <YAxis
-            tick={{
-              className: 'lpc-axis-tick lf-mono',
-              fontSize: 10,
-              fontFamily: 'var(--font-mono, monospace)',
-            }}
-            axisLine={false}
-            tickLine={false}
-            width={44}
-            tickFormatter={(v) => formatUSD(v)}
-            domain={['auto', 'auto']}
-          />
-          <Tooltip
-            content={<CustomTooltip />}
-            cursor={{ stroke: 'rgba(16,185,129,0.3)', strokeDasharray: '3 3' }}
-          />
-          <Area
-            type="monotone"
-            dataKey="value"
-            stroke={lineColor}
-            strokeWidth={2}
-            fill={`url(#${gradientId})`}
-            isAnimationActive={
-              typeof window !== 'undefined' &&
-              !window.matchMedia('(prefers-reduced-motion: reduce)').matches
-            }
-          />
-        </AreaChart>
-      </ResponsiveContainer>
+    <div className="lpc-chart-wrap" ref={wrapRef}>
+      {ready && (
+        <ResponsiveContainer width="100%" height={130} debounce={50} key={`${range}-${ready}`}>
+          <AreaChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+            <defs>
+              <linearGradient id="lpc-gradient-up" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#10b981" stopOpacity={0.4} />
+                <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
+              </linearGradient>
+              <linearGradient id="lpc-gradient-down" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#ef4444" stopOpacity={0.4} />
+                <stop offset="100%" stopColor="#ef4444" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid stroke="rgba(255,255,255,0.04)" vertical={false} />
+            <XAxis
+              dataKey="label"
+              tick={{
+                className: 'lpc-axis-tick lf-mono',
+                fontSize: 10,
+                fontFamily: 'var(--font-mono, monospace)',
+              }}
+              axisLine={false}
+              tickLine={false}
+              interval="preserveStartEnd"
+              minTickGap={40}
+            />
+            <YAxis
+              tick={{
+                className: 'lpc-axis-tick lf-mono',
+                fontSize: 10,
+                fontFamily: 'var(--font-mono, monospace)',
+              }}
+              axisLine={false}
+              tickLine={false}
+              width={44}
+              tickFormatter={(v) => formatUSD(v)}
+              domain={['auto', 'auto']}
+            />
+            <Tooltip
+              content={<CustomTooltip />}
+              cursor={{ stroke: 'rgba(16,185,129,0.3)', strokeDasharray: '3 3' }}
+            />
+            <Area
+              type="monotone"
+              dataKey="value"
+              stroke={lineColor}
+              strokeWidth={2}
+              fill={`url(#${gradientId})`}
+              isAnimationActive={
+                typeof window !== 'undefined' &&
+                !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+              }
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      )}
     </div>
   );
 }
