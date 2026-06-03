@@ -2467,3 +2467,40 @@ html:has(.landing-page) .navbar .nav-container-centered .nav-menu .nav-link {
 .navbar .nav-container-centered .nav-sign-in-wrap {
   z-index: 10 !important;
 }
+
+/* ════════════════════════════════════════════════════════════
+   HARD GUARANTEE: landing footer links are always clickable.
+   Mirrors the navbar guarantee above. A sibling section's
+   decorative layer (large bounding box + pointer-events:auto)
+   was overlapping the footer and intercepting clicks meant for
+   the bottom-bar links (Help Center / Privacy / Terms /
+   Accessibility) and the footer columns. This forces the footer
+   into its own stacking context above those layers and ensures
+   its links receive pointer events.
+   ════════════════════════════════════════════════════════════ */
+.landing-page .landing-footer,
+html:has(.landing-page) .landing-footer {
+  position: relative !important;
+  z-index: 50 !important;
+  isolation: isolate !important;
+  pointer-events: auto !important;
+}
+
+.landing-page .landing-footer a,
+.landing-page .landing-footer button,
+.landing-page .landing-footer [role='button'],
+.landing-page .landing-footer input,
+.landing-page .landing-footer .landing-footer-legal a,
+.landing-page .landing-footer .landing-footer-links a,
+html:has(.landing-page) .landing-footer a,
+html:has(.landing-page) .landing-footer button {
+  position: relative;
+  z-index: 1;
+  pointer-events: auto !important;
+  cursor: pointer;
+}
+
+.landing-page .landing-footer .landing-footer-inner {
+  position: relative;
+  z-index: 1;
+}
