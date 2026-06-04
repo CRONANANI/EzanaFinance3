@@ -1,6 +1,7 @@
 'use client';
 
 import { Suspense } from 'react';
+import { ObsidianPanel } from './ObsidianPanel';
 import { SectorHeatmap } from './SectorHeatmap';
 import { StressTestCard } from './StressTestCard';
 import { MPTCard } from './MPTCard';
@@ -16,11 +17,14 @@ export function MarketPortfolioView({ section = 'industry' }) {
   return (
     <div className="mpv-root mpv-ledger">
       {section === 'industry' && (
-        <Suspense
-          fallback={<div className="shm-skeleton-tile" style={{ height: 200 }} aria-hidden />}
-        >
-          <SectorHeatmap />
-        </Suspense>
+        <>
+          <ObsidianPanel />
+          <Suspense
+            fallback={<div className="shm-skeleton-tile" style={{ height: 200 }} aria-hidden />}
+          >
+            <SectorHeatmap />
+          </Suspense>
+        </>
       )}
       {section === 'portfolio' && (
         <div className="mpv-grid">

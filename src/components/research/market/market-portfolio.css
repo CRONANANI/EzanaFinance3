@@ -1382,3 +1382,214 @@ body.light-mode .stc-tab-btn.is-active {
 .mc-lock-copy {
   color: var(--text-muted);
 }
+
+/* Obsidian — keyword industry analysis */
+.obsidian-card .mcs-body {
+  gap: 0.85rem;
+}
+
+.obsidian-search {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.obsidian-input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.obsidian-analyze-btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.obsidian-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.obsidian-chip {
+  appearance: none;
+  border: 1px solid var(--border-secondary);
+  background: var(--inset);
+  color: var(--text-secondary);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease,
+    background 0.15s ease;
+}
+
+.obsidian-chip:hover:not(:disabled) {
+  border-color: var(--emerald-border);
+  color: var(--emerald);
+  background: var(--emerald-bg);
+}
+
+.obsidian-chip:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.obsidian-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 0.5rem 0;
+}
+
+.obsidian-loading-spinner {
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--border-secondary);
+  border-top-color: var(--emerald);
+  border-radius: 50%;
+  animation: obsidian-spin 0.8s linear infinite;
+}
+
+@keyframes obsidian-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .obsidian-loading-spinner {
+    animation: none;
+    border-top-color: var(--emerald);
+  }
+}
+
+.obsidian-loading-text {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+.obsidian-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.obsidian-skeleton-line {
+  height: 10px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--inset), var(--border-secondary), var(--inset));
+  background-size: 200% 100%;
+  animation: shmShimmer 1.6s linear infinite;
+}
+
+.obsidian-error {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid var(--negative-border, rgba(239, 68, 68, 0.35));
+  background: var(--negative-bg);
+  color: var(--text-primary);
+}
+
+.obsidian-error p {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+.obsidian-error i {
+  color: var(--negative);
+}
+
+.obsidian-result {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.obsidian-report {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--inset);
+  border: 1px solid var(--border-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.obsidian-report h2 {
+  margin: 1rem 0 0.4rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--emerald);
+}
+
+.obsidian-report h2:first-child {
+  margin-top: 0;
+}
+
+.obsidian-report p {
+  margin: 0.35rem 0;
+  color: var(--text-secondary);
+}
+
+.obsidian-report strong {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.obsidian-report ul,
+.obsidian-report ol {
+  margin: 0.35rem 0 0.5rem;
+  padding-left: 1.15rem;
+  color: var(--text-secondary);
+}
+
+.obsidian-report li {
+  margin: 0.2rem 0;
+}
+
+.obsidian-report li::marker {
+  color: var(--text-faint);
+}
+
+.obsidian-report em {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.obsidian-report code {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+  padding: 1px 4px;
+  border-radius: 4px;
+}
+
+.obsidian-footer {
+  margin: 0;
+  font-size: 0.625rem;
+  color: var(--text-faint);
+  letter-spacing: 0.04em;
+}
+
+@media (max-width: 640px) {
+  .obsidian-search {
+    flex-direction: column;
+  }
+
+  .obsidian-analyze-btn {
+    align-self: flex-start;
+  }
+}
