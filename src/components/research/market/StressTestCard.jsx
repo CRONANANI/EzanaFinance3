@@ -38,11 +38,14 @@ export function StressTestCard() {
     if (mode === 'sensitivity') {
       return [
         { label: 'Scenario', value: 'Sector shock', format: undefined },
-        { label: 'Shock mag.', value: shockPct / 100, format: 'percent' },
+        {
+          label: 'Shock mag.',
+          value: shockPct / 100,
+          format: 'percent',
+          emphasis: 'negative',
+        },
         { label: 'Correlation', value: '0.45 est.', format: undefined },
-        { label: 'Time horizon', value: '1y', format: undefined },
-        { label: 'Liquidity', value: 'T+2', format: undefined },
-        { label: 'Sector', value: sector, format: undefined },
+        { label: 'Horizon', value: '1y', format: undefined },
       ];
     }
     const label = SCENARIOS.find((s) => s.id === scenarioId)?.label ?? scenarioId;
@@ -50,11 +53,9 @@ export function StressTestCard() {
       { label: 'Scenario', value: label, format: undefined },
       { label: 'Shock mag.', value: '—', format: undefined },
       { label: 'Correlation', value: '0.6 est.', format: undefined },
-      { label: 'Time horizon', value: '1y', format: undefined },
-      { label: 'Liquidity', value: 'T+2', format: undefined },
-      { label: 'Recovery', value: '24m est.', format: undefined },
+      { label: 'Horizon', value: '1y', format: undefined },
     ];
-  }, [mode, sector, shockPct, scenarioId]);
+  }, [mode, shockPct, scenarioId]);
 
   const tabControl = (
     <div className="stc-tabs" role="tablist" aria-label="Stress test mode">
@@ -86,12 +87,11 @@ export function StressTestCard() {
       description="Simulate shocks across your positions and hedge toward an all-weather mix"
       actions={tabControl}
     >
-      <ModelVariableStrip variables={stripVariables} className="mb-1" />
+      <ModelVariableStrip variables={stripVariables} />
       {isDemo && !isLoading && (
         <div className="stc-demo-banner">
-          <i className="bi bi-info-circle" />{' '}
-          Showing a sample portfolio. Connect a brokerage account to stress-test your real
-          positions.
+          <i className="bi bi-info-circle" /> Showing a sample portfolio. Connect a brokerage
+          account to stress-test your real positions.
         </div>
       )}
 
@@ -106,7 +106,9 @@ export function StressTestCard() {
                 onChange={(e) => setSector(e.target.value)}
               >
                 {GICS_SECTORS.map((s) => (
-                  <option key={s} value={s}>{s}</option>
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
                 ))}
               </select>
             </label>
@@ -123,7 +125,9 @@ export function StressTestCard() {
                   onChange={(e) => setShockPct(Number(e.target.value))}
                   className="stc-slider"
                 />
-                <span className="stc-slider-readout">{shockPct > 0 ? `+${shockPct}` : shockPct}%</span>
+                <span className="stc-slider-readout lf-mono">
+                  {shockPct > 0 ? `+${shockPct}` : shockPct}%
+                </span>
               </div>
             </label>
           </div>
@@ -156,11 +160,9 @@ export function StressTestCard() {
       )}
 
       {result && (
-        <div className="stc-result-card">
+        <div className="stc-result-card mpv-result">
           <span className="stc-result-label">Estimated portfolio impact</span>
-          <span
-            className={`stc-result-value ${result.deltaPct < 0 ? 'is-neg' : 'is-pos'}`}
-          >
+          <span className={`stc-result-value ${result.deltaPct < 0 ? 'is-neg' : 'is-pos'}`}>
             {result.deltaPct >= 0 ? '+' : ''}
             {result.deltaPct.toFixed(2)}% ({formatUsd(result.deltaUsd)})
           </span>
@@ -170,27 +172,29 @@ export function StressTestCard() {
               : `Simulated ${result.context.label}${result.windowLabel ? ` · ${result.windowLabel}` : ''}`}
           </span>
 
-          {result.kind === 'scenario' && Array.isArray(result.breakdown) && result.breakdown.length > 0 && (
-            <ul className="stc-breakdown" aria-label="Top affected positions">
-              {result.breakdown.slice(0, 4).map((row, idx) => (
-                <li key={`${row.symbol ?? row.sector}-${idx}`}>
-                  <span>
-                    <span className="stc-breakdown-sym">{row.symbol ?? row.sector}</span>{' '}
-                    <span style={{ color: 'var(--home-muted, #8b949e)' }}>· {row.sector}</span>
-                  </span>
-                  <span className={row.deltaUsd < 0 ? 'is-neg' : 'is-pos'}>
-                    {formatUsd(row.deltaUsd)} ({(row.beta * 100).toFixed(0)}%)
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
+          {result.kind === 'scenario' &&
+            Array.isArray(result.breakdown) &&
+            result.breakdown.length > 0 && (
+              <ul className="stc-breakdown" aria-label="Top affected positions">
+                {result.breakdown.slice(0, 4).map((row, idx) => (
+                  <li key={`${row.symbol ?? row.sector}-${idx}`}>
+                    <span>
+                      <span className="stc-breakdown-sym">{row.symbol ?? row.sector}</span>{' '}
+                      <span className="stc-breakdown-meta">· {row.sector}</span>
+                    </span>
+                    <span className={row.deltaUsd < 0 ? 'is-neg' : 'is-pos'}>
+                      {formatUsd(row.deltaUsd)} ({(row.beta * 100).toFixed(0)}%)
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
         </div>
       )}
 
-      <div className="stc-aw-box">
-        <div className="stc-aw-title">
-          <i className="bi bi-shield-check" />
+      <div className="stc-aw-box hedge-callout">
+        <div className="stc-aw-title hedge-callout-title">
+          <i className="bi bi-shield-check" aria-hidden />
           Hedge to All Weather
         </div>
         <p className="stc-aw-copy">

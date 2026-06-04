@@ -15,8 +15,10 @@ import './market-portfolio.css';
  */
 export function MarketPortfolioView() {
   return (
-    <div className="mpv-root">
-      <Suspense fallback={<div className="shm-skeleton-tile" style={{ height: 200 }} aria-hidden />}>
+    <div className="mpv-root mpv-ledger">
+      <Suspense
+        fallback={<div className="shm-skeleton-tile" style={{ height: 200 }} aria-hidden />}
+      >
         <SectorHeatmap />
       </Suspense>
       <div className="mpv-grid">

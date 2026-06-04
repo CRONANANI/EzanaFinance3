@@ -1,45 +1,28 @@
 /* =========================================================================
-   ModelCardShell — neutral card wrapper used across the Research page for
-   model / analysis cards (GARP/GRPV, DCF, Stress Test, MPT, etc.).
-
-   Design rationale:
-   - The card surface uses the same tokens (--surface-card, --border-primary)
-     as every other card in the app (Pricing, Dashboard, Community, etc.),
-     which in turn resolve to the same background color as the top nav bar
-     (--bg-primary). This keeps the Research page visually consistent with
-     the rest of the product in both light and dark mode.
-   - The icon pill remains emerald (the app's "primary" accent) because
-     every other card header on Dashboard / Home / Community uses the same
-     primary-on-subtle-primary treatment.
-   - Only the card *surface* was previously green-tinted; semantic greens
-     elsewhere (positive deltas, "all weather hedge" accent box, success
-     states) are unrelated and should not be touched.
+   ModelCardShell — Ledger card scaffold (Research model / analysis cards)
    ========================================================================= */
 
 .mcs-card {
   position: relative;
-  border: 1px solid var(--border-primary, rgba(16, 185, 129, 0.08));
-  background: var(--surface-card);
+  border: 1px solid var(--emerald-border);
   border-radius: 16px;
-  padding: 1rem;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.04));
-  transition:
-    border-color 0.18s ease,
-    box-shadow 0.18s ease;
-  /* Shorter card shell (~20% vs prior tall cards) with scroll in body */
-  max-height: min(70vh, 416px);
-  overflow: hidden;
+  box-shadow: var(--ledger-shadow);
+  background: var(--surface-card);
+  transition: border-color 0.18s ease;
+}
+
+body:not(.light-mode) .mcs-card {
+  background: #0d1218;
 }
 
 .mcs-card:hover {
-  border-color: var(--border-hover, rgba(16, 185, 129, 0.22));
-  box-shadow: var(--shadow-md, 0 4px 14px rgba(0, 0, 0, 0.06));
+  border-color: rgba(16, 185, 129, 0.2);
 }
 
-/* Header ------------------------------------------------------------------ */
 .mcs-header {
   display: flex;
   align-items: flex-start;
@@ -57,18 +40,16 @@
 
 .mcs-icon-pill {
   flex-shrink: 0;
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: 10px;
-  /* Subtle primary-tinted fill — matches the icon treatment used on every
-     other card header across the app (e.g. Dashboard KPI cards). */
-  background: var(--emerald-bg-subtle, rgba(16, 185, 129, 0.08));
-  border: 1px solid var(--emerald-border, rgba(16, 185, 129, 0.15));
-  color: var(--emerald-text, #10b981);
+  background: var(--emerald-bg);
+  border: 1px solid var(--emerald-border);
+  color: var(--emerald);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
+  font-size: 1.05rem;
 }
 
 .mcs-title-block {
@@ -87,17 +68,17 @@
 
 .mcs-title {
   margin: 0;
-  font-size: 0.9375rem;
-  font-weight: 800;
+  font-size: 1.03125rem;
+  font-weight: 700;
   letter-spacing: -0.01em;
-  color: var(--text-primary, var(--home-heading, #ffffff));
+  color: var(--text-primary);
   line-height: 1.2;
 }
 
 .mcs-desc {
   margin: 0;
   font-size: 0.75rem;
-  color: var(--text-muted, var(--home-muted, #8b949e));
+  color: var(--text-muted);
   line-height: 1.35;
 }
 
@@ -111,8 +92,8 @@
   letter-spacing: 0.05em;
   padding: 0.125rem 0.4rem;
   border-radius: 999px;
-  color: #f59e0b;
-  background: rgba(245, 158, 11, 0.1);
+  color: var(--warning);
+  background: var(--warning-bg);
   border: 1px solid rgba(245, 158, 11, 0.35);
 }
 
@@ -123,38 +104,28 @@
   gap: 0.375rem;
 }
 
-/* Body -------------------------------------------------------------------- */
 .mcs-body {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  overflow-y: auto;
   min-height: 0;
-  flex: 1 1 auto;
 }
 
-/* Light-mode tuning ------------------------------------------------------- */
 body.light-mode .mcs-card {
-  border-color: var(--border-primary, rgba(0, 0, 0, 0.08));
-  background: var(--surface-card, #ffffff);
-  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.05));
+  background: var(--surface-card);
+  border-color: var(--emerald-border);
 }
 
 body.light-mode .mcs-card:hover {
-  border-color: var(--border-hover, rgba(16, 185, 129, 0.25));
-  box-shadow: var(--shadow-md, 0 4px 14px rgba(0, 0, 0, 0.06));
+  border-color: rgba(16, 185, 129, 0.28);
 }
 
 body.light-mode .mcs-icon-pill {
-  background: var(--emerald-bg-subtle, rgba(16, 185, 129, 0.06));
-  border-color: var(--emerald-border, rgba(16, 185, 129, 0.2));
-  color: var(--emerald-text, #059669);
+  color: var(--emerald);
 }
 
-body.light-mode .mcs-title {
-  color: var(--text-primary, #111827);
-}
-
-body.light-mode .mcs-desc {
-  color: var(--text-muted, #6b7280);
+@media (prefers-reduced-motion: reduce) {
+  .mcs-card {
+    transition: none;
+  }
 }

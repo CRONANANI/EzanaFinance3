@@ -15,15 +15,22 @@ import { ModelVariableStrip } from '@/components/research/models/ModelVariableSt
  * TODO: swap the tilt for the actual Black-Litterman posterior formula once
  * a covariance matrix and market-cap weights are available.
  */
-const BASELINE = { 'US Large': 40, 'US Small': 10, 'Intl Dev': 15, 'EM': 10, Bonds: 20, 'REITs / Gold': 5 };
+const BASELINE = {
+  'US Large': 40,
+  'US Small': 10,
+  'Intl Dev': 15,
+  EM: 10,
+  Bonds: 20,
+  'REITs / Gold': 5,
+};
 
 const COLORS = {
-  'US Large': '#10b981',
-  'US Small': '#22d3ee',
-  'Intl Dev': '#3b82f6',
-  EM: '#8b5cf6',
-  Bonds: '#f59e0b',
-  'REITs / Gold': '#ef4444',
+  'US Large': 'var(--emerald)',
+  'US Small': 'var(--cyan)',
+  'Intl Dev': 'var(--blue)',
+  EM: 'var(--purple)',
+  Bonds: 'var(--warning)',
+  'REITs / Gold': 'var(--negative)',
 };
 
 function applyTilt(baseline, viewBullish, viewBearish, confidence) {
@@ -64,7 +71,12 @@ export function BlackLittermanCard() {
       { label: 'Confidence', value: confidence / 100, format: 'percent' },
       { label: 'Rebal. frequency', value: 'Monthly', format: undefined },
       { label: 'Asset count', value: 6, format: 'number' },
-      { label: 'Target return (tilt)', value: 0.07 + (confidence / 100) * 0.02, format: 'percent' },
+      {
+        label: 'Target',
+        value: 0.07 + (confidence / 100) * 0.02,
+        format: 'percent',
+        emphasis: true,
+      },
     ],
     [confidence],
   );
@@ -75,7 +87,7 @@ export function BlackLittermanCard() {
       title="Black-Litterman Model"
       description="Blend market equilibrium with your views to tilt your allocation"
     >
-      <ModelVariableStrip variables={stripVariables} className="mb-1" />
+      <ModelVariableStrip variables={stripVariables} />
       <div className="stc-field-row">
         <label className="stc-field">
           <span className="stc-field-label">Bullish on</span>
@@ -85,7 +97,9 @@ export function BlackLittermanCard() {
             onChange={(e) => setBullish(e.target.value)}
           >
             {options.map((o) => (
-              <option key={o} value={o}>{o}</option>
+              <option key={o} value={o}>
+                {o}
+              </option>
             ))}
           </select>
         </label>
@@ -97,7 +111,9 @@ export function BlackLittermanCard() {
             onChange={(e) => setBearish(e.target.value)}
           >
             {options.map((o) => (
-              <option key={o} value={o}>{o}</option>
+              <option key={o} value={o}>
+                {o}
+              </option>
             ))}
           </select>
         </label>
@@ -105,8 +121,7 @@ export function BlackLittermanCard() {
 
       <label className="stc-field">
         <span className="stc-field-label">
-          Confidence{' '}
-          <span style={{ color: '#10b981', fontWeight: 800 }}>{confidence}%</span>
+          Confidence <span className="stc-slider-readout lf-mono">{confidence}%</span>
         </span>
         <input
           type="range"
@@ -144,9 +159,9 @@ export function BlackLittermanCard() {
       </div>
 
       <p className="mpv-body-text">
-        Views shift the baseline by a weight proportional to confidence. A{' '}
-        <strong>bullish</strong> view adds weight; a <strong>bearish</strong> view removes it.
-        At 0% confidence you get the equilibrium mix back.
+        Views shift the baseline by a weight proportional to confidence. A <strong>bullish</strong>{' '}
+        view adds weight; a <strong>bearish</strong> view removes it. At 0% confidence you get the
+        equilibrium mix back.
       </p>
     </ModelCardShell>
   );

@@ -16,14 +16,14 @@ import { ModelVariableStrip } from '@/components/research/models/ModelVariableSt
  * once the covariance matrix + expected-return vectors are wired.
  */
 const CONSERVATIVE = { Stocks: 25, Bonds: 55, 'Real Estate': 10, Commodities: 5, Cash: 5 };
-const AGGRESSIVE   = { Stocks: 80, Bonds: 10, 'Real Estate': 5,  Commodities: 4, Cash: 1 };
+const AGGRESSIVE = { Stocks: 80, Bonds: 10, 'Real Estate': 5, Commodities: 4, Cash: 1 };
 
 const COLORS = {
-  Stocks: '#10b981',
-  Bonds: '#3b82f6',
-  'Real Estate': '#8b5cf6',
-  Commodities: '#f59e0b',
-  Cash: '#6b7280',
+  Stocks: 'var(--emerald)',
+  Bonds: 'var(--blue)',
+  'Real Estate': 'var(--purple)',
+  Commodities: 'var(--warning)',
+  Cash: 'var(--text-faint)',
 };
 
 function interpolate(risk) {
@@ -62,7 +62,12 @@ export function MPTCard() {
       { label: 'Risk tolerance', value: risk, format: 'number' },
       { label: 'Rebalance freq.', value: 'Monthly', format: undefined },
       { label: 'Asset classes', value: 5, format: 'number' },
-      { label: 'Implied return', value: 0.05 + (risk / 100) * 0.055, format: 'percent' },
+      {
+        label: 'Impl. return',
+        value: 0.05 + (risk / 100) * 0.055,
+        format: 'percent',
+        emphasis: true,
+      },
     ],
     [risk],
   );
@@ -73,11 +78,10 @@ export function MPTCard() {
       title="Modern Portfolio Theory (MPT)"
       description="Find the optimal asset mix along the efficient frontier"
     >
-      <ModelVariableStrip variables={stripVariables} className="mb-1" />
+      <ModelVariableStrip variables={stripVariables} />
       <label className="stc-field">
         <span className="stc-field-label">
-          Risk tolerance{' '}
-          <span style={{ color: '#10b981', fontWeight: 800 }}>{risk}/100</span>
+          Risk tolerance <span className="stc-slider-readout lf-mono">{risk}/100</span>
         </span>
         <div className="stc-slider-row">
           <input
@@ -92,11 +96,7 @@ export function MPTCard() {
         </div>
       </label>
 
-      <button
-        type="button"
-        className="stc-run-btn"
-        onClick={() => setShown(allocation)}
-      >
+      <button type="button" className="stc-run-btn" onClick={() => setShown(allocation)}>
         <i className="bi bi-lightning-charge" /> Run model
       </button>
 

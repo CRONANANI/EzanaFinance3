@@ -5,15 +5,6 @@ import { ModelCardShell } from '@/components/research/ModelCardShell';
 import { ModelVariableStrip } from '@/components/research/models/ModelVariableStrip';
 import { useProGate } from '@/components/upgrade/ProGateContext';
 
-/**
- * Minimal Monte Carlo goal-probability estimate using geometric-brownian-
- * motion-style path sampling. Each path compounds monthly with a random
- * normal return drawn from the annual mean/volatility. The probability
- * estimate is the fraction of terminal values that meet or exceed the goal.
- *
- * TODO: replace with a proper GBM + bootstrapped historical returns engine
- * and surface p10/p50/p90 fan charts.
- */
 function randomNormal() {
   const u = 1 - Math.random();
   const v = Math.random();
@@ -43,6 +34,54 @@ function simulate({ current, monthlyContrib, years, meanAnnual, volAnnual, goal,
   };
 }
 
+const FAN_PATH_MEDIAN =
+  'M0,72 C40,68 80,58 120,48 160,38 200,28 240,22 280,18 320,14 360,10 400,8 440,6 460,5';
+const FAN_PATH_UPPER =
+  'M0,48 C40,42 80,32 120,22 160,14 200,8 240,6 280,5 320,4 360,3 400,2 440,2 460,1';
+const FAN_PATH_LOWER =
+  'M0,88 C40,86 80,82 120,76 160,70 200,64 240,58 280,54 320,50 360,46 400,42 440,38 460,36';
+
+function MonteCarloFanChart() {
+  return (
+    <div className="mc-fan-wrap" aria-hidden>
+      <svg className="mc-fan-chart" viewBox="0 0 460 104" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="mc-fan-fill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--emerald)" stopOpacity="0.28" />
+            <stop offset="100%" stopColor="var(--emerald)" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path
+          d={`${FAN_PATH_LOWER} L460,104 L0,104 Z`}
+          fill="url(#mc-fan-fill)"
+          className="mc-fan-area"
+        />
+        <path
+          d={FAN_PATH_LOWER}
+          fill="none"
+          stroke="var(--emerald)"
+          strokeOpacity="0.2"
+          strokeWidth="1"
+        />
+        <path
+          d={FAN_PATH_UPPER}
+          fill="none"
+          stroke="var(--emerald)"
+          strokeOpacity="0.2"
+          strokeWidth="1"
+        />
+        <path
+          d={FAN_PATH_MEDIAN}
+          fill="none"
+          stroke="var(--emerald)"
+          strokeWidth="2"
+          className="mc-fan-median"
+        />
+      </svg>
+    </div>
+  );
+}
+
 export function MonteCarloCard() {
   const { openProGate } = useProGate();
 
@@ -68,26 +107,19 @@ export function MonteCarloCard() {
   const stripVariables = useMemo(
     () => [
       { label: 'Iterations', value: '2,000', format: undefined },
-      { label: 'Time horizon', value: `${years}y`, format: undefined },
+      { label: 'Horizon', value: `${years}y`, format: undefined },
       { label: 'Volatility', value: 0.18, format: 'percent' },
       { label: 'Drift', value: 0.07, format: 'percent' },
       {
-        label: 'Conf. (p hit)',
+        label: 'P(hit)',
         value: result != null && Number.isFinite(result.probability) ? result.probability : '—',
         format: result != null && Number.isFinite(result.probability) ? 'percent' : undefined,
-      },
-      {
-        label: 'Expected return',
-        value: 0.07,
-        format: 'percent',
+        emphasis: true,
       },
     ],
     [years, result],
   );
 
-  /* Monte Carlo paywall is currently disabled for development. The locked-
-     preview branch below is preserved for easy re-enable when the Pro gate
-     should resume. To restore: use the Pro-membership check instead of false. */
   // eslint-disable-next-line no-constant-condition -- dev toggle
   if (false) {
     return (
@@ -97,7 +129,7 @@ export function MonteCarloCard() {
         description="Probability of hitting your goal across thousands of simulated market paths"
         proBadge
       >
-        <ModelVariableStrip variables={stripVariables} className="mb-1" />
+        <ModelVariableStrip variables={stripVariables} />
         <div className="mc-lock-wrap">
           <div className="mc-lock-preview" aria-hidden="true">
             <div className="mc-lock-preview-bar" />
@@ -123,11 +155,6 @@ export function MonteCarloCard() {
     );
   }
 
-  /* Pre-existing violation: the Pro-gate paywall early-return sits above
-   * this useMemo so the hook order shifts when a user upgrades. Tracked
-   * in docs/REFACTOR_ROADMAP.md Phase 8 alongside the model-card
-   * decomposition. Fix is to lift the paywall check to the parent or
-   * split this component into a paywall wrapper + a content child. */
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const probabilityLabel = useMemo(() => {
     if (!result) return null;
@@ -145,7 +172,7 @@ export function MonteCarloCard() {
       description="Probability of hitting your goal across thousands of simulated market paths"
       proBadge
     >
-      <ModelVariableStrip variables={stripVariables} className="mb-1" />
+      <ModelVariableStrip variables={stripVariables} />
       <div className="stc-field-row">
         <label className="stc-field">
           <span className="stc-field-label">Starting balance ($)</span>
@@ -168,6 +195,8 @@ export function MonteCarloCard() {
           />
         </label>
       </div>
+
+      <MonteCarloFanChart />
 
       <div className="stc-field-row">
         <label className="stc-field">
@@ -194,20 +223,36 @@ export function MonteCarloCard() {
       </div>
 
       <button type="button" className="stc-run-btn" onClick={run}>
-        <i className="bi bi-shuffle" /> Run 2,000 simulations
+        <i className="bi bi-lightning-charge" aria-hidden /> Run 2,000 simulations
       </button>
 
       {result && (
-        <div className="stc-result-card">
-          <span className="stc-result-label">Probability of hitting goal</span>
-          <span className={`stc-result-value ${probabilityLabel.tone}`}>
-            {Math.round(result.probability * 100)}%
-          </span>
-          <span className="stc-result-detail">
-            {probabilityLabel.text} · Median terminal value ≈ $
-            {Math.round(result.median).toLocaleString()}
-          </span>
-        </div>
+        <>
+          <div className="mc-stat-strip lf-mono" aria-label="Simulation summary">
+            <span>
+              P(hit) <strong className="mc-stat-em">{Math.round(result.probability * 100)}%</strong>
+            </span>
+            <span>
+              Median <strong>${Math.round(result.median).toLocaleString()}</strong>
+            </span>
+            <span>
+              Goal <strong>${Number(goal).toLocaleString()}</strong>
+            </span>
+            <span>
+              Horizon <strong>{years}y</strong>
+            </span>
+          </div>
+          <div className="stc-result-card mpv-result">
+            <span className="stc-result-label">Probability of hitting goal</span>
+            <span className={`stc-result-value ${probabilityLabel.tone}`}>
+              {Math.round(result.probability * 100)}%
+            </span>
+            <span className="stc-result-detail">
+              {probabilityLabel.text} · Median terminal value ≈ $
+              {Math.round(result.median).toLocaleString()}
+            </span>
+          </div>
+        </>
       )}
     </ModelCardShell>
   );

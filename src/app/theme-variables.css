@@ -19,6 +19,7 @@
   --bg-primary: #0a0e13; /* Page background */
   --bg-secondary: #0a0e13; /* Cards match page (was #0d1117) */
   --bg-tertiary: #0a0e13; /* Nested elements match page (was #161b22) */
+  --inset: #0a0f15; /* Register / input / result fills — below page */
   --bg-overlay: rgba(0, 0, 0, 0.6); /* Modal/overlay backdrop */
 
   /* ── Card / Surface — transparent over the flat page bg ── */
@@ -104,7 +105,7 @@
   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
   --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.45);
   --shadow-glow: 0 0 20px rgba(16, 185, 129, 0.15);
-  --ledger-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 18px 40px -24px rgba(0, 0, 0, 0.7);
+  --ledger-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 14px 34px -18px rgba(0, 0, 0, 0.6);
 
   /* ── Navbar ── */
   --nav-bg: #0a0e13;
@@ -188,6 +189,7 @@ body.light-mode {
   --bg-primary: #ffffff;
   --bg-secondary: #ffffff;
   --bg-tertiary: #f1f5f9;
+  --inset: #f7faf9;
   --bg-overlay: rgba(0, 0, 0, 0.4);
 
   /* ── Card / Surface ── */

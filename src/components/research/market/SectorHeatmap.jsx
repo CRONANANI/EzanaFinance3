@@ -10,41 +10,6 @@ import { SectorDetailModal } from './SectorDetailModal';
 
 const RANGES = ['1D', '1W', '1M', 'YTD'];
 
-/**
- * Heatmap palette matching the company-side StockHeatmap's 11-tier gradient.
- * Sector moves are smaller magnitude than individual-stock moves (a stock
- * easily moves ±20% in a quarter; a sector rarely exceeds ±15%), so we
- * scale the threshold magnitudes down for sectors:
- *
- *   1D:  thresholds at fractions of a percent (sector daily moves are tiny)
- *   1W:  fractions of a percent
- *   1M:  full single-percentage thresholds
- *   YTD: scaled-up thresholds (long-period accumulated returns)
- *
- * Result: the visual saturation maps to "this sector outperformed for this
- * period" comparable to "this stock outperformed for this period" on the
- * company side, even though the absolute numbers differ.
- */
-function tintFor(changePct, range) {
-  // Scale factor — multiplies the StockHeatmap thresholds to sector-appropriate values.
-  // 1D and 1W use 0.2× (sectors move ~5x less than stocks at short scales).
-  // 1M uses 0.5× (sector monthly moves approach stock weekly moves).
-  // YTD uses 1× (sector full-year returns approach stock returns at this scale).
-  const scale = range === '1D' ? 0.2 : range === '1W' ? 0.2 : range === '1M' ? 0.5 : 1;
-  const c = Number.isFinite(changePct) ? changePct : 0;
-  if (c > 50 * scale) return 'linear-gradient(135deg, #059669, #047857)';
-  if (c > 20 * scale) return 'linear-gradient(135deg, #10b981, #059669)';
-  if (c > 10 * scale) return 'linear-gradient(135deg, #34d399, #10b981)';
-  if (c > 5 * scale) return 'linear-gradient(135deg, #4ade80, #22c55e)';
-  if (c > 2 * scale) return 'linear-gradient(135deg, #6ee7b7, #34d399)';
-  if (c > 0) return 'linear-gradient(135deg, #86efac, #4ade80)';
-  if (c > -2 * scale) return 'linear-gradient(135deg, #fca5a5, #f87171)';
-  if (c > -5 * scale) return 'linear-gradient(135deg, #f87171, #ef4444)';
-  if (c > -10 * scale) return 'linear-gradient(135deg, #ef4444, #dc2626)';
-  if (c > -20 * scale) return 'linear-gradient(135deg, #dc2626, #b91c1c)';
-  return 'linear-gradient(135deg, #b91c1c, #991b1b)';
-}
-
 function formatChange(value) {
   if (!Number.isFinite(value)) return '—';
   const sign = value > 0 ? '+' : '';
@@ -68,12 +33,42 @@ function describeRange(range, asOf) {
   return asOf ? `${base} · as of ${asOf}` : base;
 }
 
+function SectorRow({ row, maxAbs, isHighlighted, onClick, rowRef }) {
+  const pct = Number.isFinite(row.changePct) ? row.changePct : 0;
+  const isPos = pct >= 0;
+  const widthPct = maxAbs > 0 ? Math.min(50, (Math.abs(pct) / maxAbs) * 50) : 0;
+
+  return (
+    <button
+      type="button"
+      ref={rowRef}
+      className={`shm-sector-row ${isHighlighted ? 'shm-sector-row--highlighted' : ''}`}
+      onClick={() => onClick(row)}
+      aria-label={`Open ${row.name} sector details`}
+    >
+      <span className={`shm-sector-dot ${isPos ? 'is-pos' : 'is-neg'}`} aria-hidden />
+      <span className="shm-sector-name">{row.name}</span>
+      <span className="sbar" aria-hidden>
+        <span className="sbar-track">
+          {widthPct > 0 && (
+            <i
+              className={`sbar-fill ${isPos ? 'is-pos' : 'is-neg'}`}
+              style={isPos ? { width: `${widthPct}%` } : { width: `${widthPct}%` }}
+            />
+          )}
+        </span>
+      </span>
+      <span className={`shm-sector-pct lf-mono ${isPos ? 'pos' : 'neg'}`}>{formatChange(pct)}</span>
+    </button>
+  );
+}
+
 export function SectorHeatmap() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
   const targetSectorName = searchParams.get('sector');
-  const tileRefs = useRef({});
+  const rowRefs = useRef({});
   const [highlightedSector, setHighlightedSector] = useState(null);
 
   const [range, setRange] = useState('1D');
@@ -108,6 +103,17 @@ export function SectorHeatmap() {
     });
   }, [sectors]);
 
+  const maxAbs = useMemo(() => {
+    const vals = sorted.map((s) => Math.abs(s.changePct)).filter(Number.isFinite);
+    return vals.length ? Math.max(...vals) : 0;
+  }, [sorted]);
+
+  const { leftCol, rightCol } = useMemo(() => {
+    const left = sorted.slice(0, 6);
+    const right = sorted.slice(6);
+    return { leftCol: left, rightCol: right };
+  }, [sorted]);
+
   const modalRow = useMemo(
     () => (modalSector ? sorted.find((s) => s.sector === modalSector) : null),
     [sorted, modalSector],
@@ -121,7 +127,7 @@ export function SectorHeatmap() {
     return { range };
   }, [modalSector, modalRow, range]);
 
-  const handleTileClick = (row) => {
+  const handleRowClick = (row) => {
     setModalSector(row.sector);
     setModalTitle(row.name);
     const params = new URLSearchParams(searchParams.toString());
@@ -148,7 +154,7 @@ export function SectorHeatmap() {
       const { display } = resolveSectorQuery(raw);
       const label = display || raw;
       const normalized = label.toLowerCase();
-      const node = tileRefs.current[normalized];
+      const node = rowRefs.current[normalized];
       if (node) {
         node.scrollIntoView({ behavior: 'smooth', block: 'center' });
         setHighlightedSector(normalized);
@@ -170,18 +176,28 @@ export function SectorHeatmap() {
 
   const stripVariables = useMemo(
     () => [
-      { label: 'Time window', value: range, format: undefined },
+      { label: 'Window', value: range, format: undefined },
       { label: 'Sectors', value: sorted.length, format: 'number' },
       { label: 'As of', value: asOf || '—', format: undefined },
-      { label: 'Top move', value: best ? formatChange(best.changePct) : '—', format: undefined },
-      { label: 'Bottom move', value: worst ? formatChange(worst.changePct) : '—', format: undefined },
+      {
+        label: 'Top move',
+        value: best ? formatChange(best.changePct) : '—',
+        format: undefined,
+        emphasis: true,
+      },
+      {
+        label: 'Bottom move',
+        value: worst ? formatChange(worst.changePct) : '—',
+        format: undefined,
+        emphasis: 'negative',
+      },
       { label: 'Data quality', value: degraded ? 'Partial' : 'Full', format: undefined },
     ],
     [range, sorted.length, asOf, best, worst, degraded],
   );
 
   const rangeControl = (
-    <div className="shm-range-group" role="tablist" aria-label="Time range">
+    <div className="shm-range-group cr-seg-control" role="tablist" aria-label="Time range">
       {RANGES.map((r) => (
         <button
           key={r}
@@ -197,15 +213,34 @@ export function SectorHeatmap() {
     </div>
   );
 
+  const renderColumn = (rows) =>
+    rows.map((s) => {
+      const label = s.name || s.sector || '';
+      const sectorKey = label.toLowerCase();
+      const isHighlighted = highlightedSector === sectorKey;
+      return (
+        <SectorRow
+          key={s.sector || s.name}
+          row={s}
+          maxAbs={maxAbs}
+          isHighlighted={isHighlighted}
+          onClick={handleRowClick}
+          rowRef={(node) => {
+            if (node) rowRefs.current[sectorKey] = node;
+          }}
+        />
+      );
+    });
+
   return (
     <>
       <ModelCardShell
         icon="bi-grid-3x3-gap"
-        title="Sector performance"
+        title="Sector Performance"
         description={describeRange(range, asOf)}
         actions={rangeControl}
       >
-        <ModelVariableStrip variables={stripVariables} className="mb-1" />
+        <ModelVariableStrip variables={stripVariables} />
         {error && !isLoading && (
           <div className="shm-error" role="alert">
             <i className="bi bi-exclamation-triangle" />
@@ -223,53 +258,20 @@ export function SectorHeatmap() {
           </div>
         )}
 
-        <div className="shm-grid" aria-live="polite">
-          {isLoading
-            ? Array.from({ length: 11 }).map((_, i) => (
-                <div key={i} className="shm-skeleton-tile" aria-label="Loading sector" />
-              ))
-            : sorted.map((s) => {
-                const label = s.name || s.sector || '';
-                const sectorKey = label.toLowerCase();
-                const isHighlighted = highlightedSector === sectorKey;
-                return (
-                  <button
-                    type="button"
-                    ref={(node) => {
-                      if (node) tileRefs.current[sectorKey] = node;
-                    }}
-                    key={s.sector || s.name}
-                    className={`shm-tile shm-tile--clickable ${isHighlighted ? 'shm-tile--highlighted' : ''}`}
-                    style={{ background: tintFor(s.changePct, range) }}
-                    title={`Click to see ${s.name} details`}
-                    onClick={() => handleTileClick(s)}
-                    aria-label={`Open ${s.name} sector details`}
-                  >
-                    <div className="shm-tile-name">{s.name}</div>
-                    <div className="shm-tile-value">{formatChange(s.changePct)}</div>
-                  </button>
-                );
-              })}
+        <div className="shm-sector-list" aria-live="polite">
+          {isLoading ? (
+            <div className="shm-sector-list-skeleton" aria-label="Loading sectors">
+              {Array.from({ length: 11 }).map((_, i) => (
+                <div key={i} className="shm-skeleton-row" />
+              ))}
+            </div>
+          ) : (
+            <>
+              <div className="shm-sector-col">{renderColumn(leftCol)}</div>
+              <div className="shm-sector-col">{renderColumn(rightCol)}</div>
+            </>
+          )}
         </div>
-
-        {!isLoading && !error && best && worst && best !== worst && (
-          <div className="shm-summary">
-            <span className="shm-summary-item">
-              <span className="shm-summary-label">Top</span>
-              <span className="shm-summary-name shm-summary-name--up">{best.name}</span>
-              <span className="shm-summary-value shm-summary-value--up">
-                {formatChange(best.changePct)}
-              </span>
-            </span>
-            <span className="shm-summary-item">
-              <span className="shm-summary-label">Bottom</span>
-              <span className="shm-summary-name shm-summary-name--down">{worst.name}</span>
-              <span className="shm-summary-value shm-summary-value--down">
-                {formatChange(worst.changePct)}
-              </span>
-            </span>
-          </div>
-        )}
       </ModelCardShell>
 
       <SectorDetailModal
