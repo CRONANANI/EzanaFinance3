@@ -9,24 +9,27 @@ import { MonteCarloCard } from './MonteCarloCard';
 import './market-portfolio.css';
 
 /**
- * Market / Portfolio view — mirrors the Company view's outer layout:
- * a full-width top card (sector heatmap instead of a single-stock chart)
- * above a responsive 2-column grid of model cards.
+ * Industry / Portfolio research surfaces — split by `section` tab.
+ * Industry: sector heatmap. Portfolio: stress-test and optimization models.
  */
-export function MarketPortfolioView() {
+export function MarketPortfolioView({ section = 'industry' }) {
   return (
     <div className="mpv-root mpv-ledger">
-      <Suspense
-        fallback={<div className="shm-skeleton-tile" style={{ height: 200 }} aria-hidden />}
-      >
-        <SectorHeatmap />
-      </Suspense>
-      <div className="mpv-grid">
-        <StressTestCard />
-        <MPTCard />
-        <BlackLittermanCard />
-        <MonteCarloCard />
-      </div>
+      {section === 'industry' && (
+        <Suspense
+          fallback={<div className="shm-skeleton-tile" style={{ height: 200 }} aria-hidden />}
+        >
+          <SectorHeatmap />
+        </Suspense>
+      )}
+      {section === 'portfolio' && (
+        <div className="mpv-grid">
+          <StressTestCard />
+          <MPTCard />
+          <BlackLittermanCard />
+          <MonteCarloCard />
+        </div>
+      )}
     </div>
   );
 }

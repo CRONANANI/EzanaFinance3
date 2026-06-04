@@ -49,11 +49,15 @@
 /* Segmented toggle -------------------------------------------------------- */
 .cpr-view-toggle {
   display: inline-flex;
+  flex-wrap: wrap;
+  width: auto;
+  max-width: 100%;
   padding: 4px;
   border-radius: 10px;
   border: 1px solid rgba(16, 185, 129, 0.18);
   background: rgba(16, 185, 129, 0.04);
   flex-shrink: 0;
+  gap: 2px;
 }
 
 .cpr-view-toggle-btn {

@@ -64,7 +64,9 @@ function ResearchPageHeader({ view, setView }) {
         <p className="cpr-page-subtitle">
           {view === 'company'
             ? 'Deep dive on individual companies — fundamentals, valuation, and signals.'
-            : 'Analyze the market as a whole and stress-test portfolios across regimes.'}
+            : view === 'industry'
+              ? 'Sector and industry performance across the market.'
+              : 'Optimize and stress-test your portfolio across regimes.'}
         </p>
       </div>
       <div role="tablist" aria-label="Research view" className="cpr-view-toggle">
@@ -81,12 +83,22 @@ function ResearchPageHeader({ view, setView }) {
         <button
           type="button"
           role="tab"
-          aria-selected={view === 'market'}
-          onClick={() => setView('market')}
-          className={`cpr-view-toggle-btn ${view === 'market' ? 'is-active' : ''}`}
+          aria-selected={view === 'industry'}
+          onClick={() => setView('industry')}
+          className={`cpr-view-toggle-btn ${view === 'industry' ? 'is-active' : ''}`}
         >
-          <i className="bi bi-graph-up-arrow" />
-          Market / Portfolio
+          <i className="bi bi-grid-3x3-gap" />
+          Industry
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={view === 'portfolio'}
+          onClick={() => setView('portfolio')}
+          className={`cpr-view-toggle-btn ${view === 'portfolio' ? 'is-active' : ''}`}
+        >
+          <i className="bi bi-pie-chart" />
+          Portfolio
         </button>
       </div>
     </header>
@@ -99,7 +111,13 @@ function CompanyResearchPageInner() {
   const pathname = usePathname();
   const { isOrgUser, hasPermission } = useOrg();
   const [sendChartTicker, setSendChartTicker] = useState(null);
-  const view = searchParams.get('view') === 'market' ? 'market' : 'company';
+  const rawView = searchParams.get('view');
+  const view =
+    rawView === 'industry' || rawView === 'market'
+      ? 'industry'
+      : rawView === 'portfolio'
+        ? 'portfolio'
+        : 'company';
   const setView = useCallback(
     (next) => {
       const sp = new URLSearchParams(searchParams.toString());
@@ -376,11 +394,11 @@ function CompanyResearchPageInner() {
       );
     });
 
-  if (view === 'market') {
+  if (view === 'industry' || view === 'portfolio') {
     return (
       <div className="dashboard-page-inset cr-page">
         <ResearchPageHeader view={view} setView={setView} />
-        <MarketPortfolioView />
+        <MarketPortfolioView section={view} />
       </div>
     );
   }
