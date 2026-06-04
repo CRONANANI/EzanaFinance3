@@ -2,13 +2,20 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Facebook, Instagram, Linkedin, Send } from 'lucide-react';
 import { EzanaNavLogo } from '@/components/brand/EzanaNavLogo';
 import './footer-section.css';
 
 export function FooterSection({ onContactClick }) {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState('idle');
+
+  const go = (href) => (e) => {
+    e.preventDefault();
+    router.push(href);
+  };
 
   const handleNewsletterSubmit = async (e) => {
     e.preventDefault();
@@ -142,10 +149,18 @@ export function FooterSection({ onContactClick }) {
             © {new Date().getFullYear()} Ezana Finance. All rights reserved.
           </p>
           <nav className="landing-footer-legal" aria-label="Legal">
-            <Link href="/help-center">Help Center</Link>
-            <Link href="/privacy-policy">Privacy Policy</Link>
-            <Link href="/terms-of-service">Terms of Service</Link>
-            <Link href="/accessibility">Accessibility</Link>
+            <Link href="/help-center" onClick={go('/help-center')}>
+              Help Center
+            </Link>
+            <Link href="/privacy-policy" onClick={go('/privacy-policy')}>
+              Privacy Policy
+            </Link>
+            <Link href="/terms-of-service" onClick={go('/terms-of-service')}>
+              Terms of Service
+            </Link>
+            <Link href="/accessibility" onClick={go('/accessibility')}>
+              Accessibility
+            </Link>
             <button
               type="button"
               onClick={() => {

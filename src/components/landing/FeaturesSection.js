@@ -9,37 +9,31 @@ const FEATURE_CARDS = [
     key: 'congress',
     title: 'Congressional Trading',
     desc: 'Real-time trades from all 535 members of Congress — with filing dates, disclosure lag, and politician-level history.',
-    icon: 'bi-building',
   },
   {
     key: 'portfolio',
     title: 'Portfolio Analytics',
     desc: 'Institutional-grade performance, risk scoring, and allocation analysis across every account you connect.',
-    icon: 'bi-graph-up-arrow',
   },
   {
     key: 'intelligence',
     title: 'Market Intelligence',
     desc: 'Geopolitical analysis, sector rotation, and market-moving signals — surfaced before they reach the mainstream.',
-    icon: 'bi-activity',
   },
   {
     key: 'alerts',
     title: 'Real-time Alerts',
     desc: 'Instant notifications the moment a trade, filing, or event touches a position you hold.',
-    icon: 'bi-bell',
   },
   {
     key: 'community',
     title: 'Community Insights',
     desc: 'High-conviction research from a ranked community of serious investors — signal, not noise.',
-    icon: 'bi-people',
   },
   {
     key: 'alt',
     title: 'Alternative Analytics',
     desc: 'Alternative-data signals — satellite, app, and card-spend trends — mapped to the tickers they move.',
-    icon: 'bi-bezier2',
   },
 ];
 
@@ -80,11 +74,9 @@ export function FeaturesSection() {
             >
               <div className="flip-inner">
                 <div className="flip-front">
-                  <div className="feature-card-icon">
-                    <i className={`bi ${card.icon}`} />
-                  </div>
                   <h3 className="feature-card-title">{card.title}</h3>
                   <p className="feature-card-description">{card.desc}</p>
+                  <span className="flip-hint lf-mono">Hover to preview →</span>
                 </div>
                 <div className="flip-back">
                   <FeatureCardBack cardKey={card.key} />

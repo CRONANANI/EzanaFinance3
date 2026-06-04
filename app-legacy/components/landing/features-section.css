@@ -235,7 +235,7 @@ body.light-mode .landing-page .feature-card {
   border: none;
   padding: 0;
   box-shadow: none;
-  height: 230px;
+  height: 280px;
   cursor: pointer;
   outline: none;
 }
@@ -286,7 +286,25 @@ body.light-mode .landing-page .flip-back {
   align-items: center;
   text-align: center;
   justify-content: center;
-  gap: 6px;
+  gap: 10px;
+}
+
+.flip-hint {
+  margin-top: 6px;
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--emerald-text);
+  opacity: 0.75;
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
+}
+
+.flip-card:hover .flip-hint,
+.flip-card:focus-within .flip-hint,
+.flip-card.is-flipped .flip-hint {
+  opacity: 0;
 }
 
 .flip-back {
@@ -412,15 +430,15 @@ body.light-mode .landing-page .flip-back {
 
 .fcb-sparkline {
   width: 100%;
-  height: 30px;
+  height: 40px;
   flex-shrink: 0;
 }
 
 .fcb-metric-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 4px 12px;
-  margin-top: 8px;
+  gap: 6px 12px;
+  margin-top: auto;
 }
 
 .fcb-metric {
@@ -494,7 +512,7 @@ body.light-mode .landing-page .flip-back {
 .fcb-alt-rows {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  justify-content: space-between;
   flex: 1;
   min-height: 0;
 }
@@ -506,7 +524,7 @@ body.light-mode .landing-page .flip-back {
   display: grid;
   align-items: center;
   gap: 4px;
-  padding: 4px 0;
+  padding: 8px 0;
   border-bottom: 1px solid var(--border-secondary);
 }
 
@@ -875,7 +893,7 @@ body.light-mode .landing-page .flip-back {
 
 @media (max-width: 768px) {
   .flip-card {
-    height: 220px;
+    height: 260px;
   }
 
   .feature-card {

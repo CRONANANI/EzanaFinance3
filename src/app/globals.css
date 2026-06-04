@@ -2481,7 +2481,7 @@ html:has(.landing-page) .navbar .nav-container-centered .nav-menu .nav-link {
 .landing-page .landing-footer,
 html:has(.landing-page) .landing-footer {
   position: relative !important;
-  z-index: 50 !important;
+  z-index: 9500 !important;
   isolation: isolate !important;
   pointer-events: auto !important;
 }
