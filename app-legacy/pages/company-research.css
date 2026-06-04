@@ -575,13 +575,26 @@ body.light-mode .suggestion-item.highlighted {
 
 .models-carousel-container {
   flex: 1;
-  overflow: hidden;
+  overflow: visible;
+  display: flex;
+  justify-content: center;
 }
 
 .models-carousel-track {
   display: flex;
   gap: 0.5rem;
   transition: transform 0.5s ease;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.models-carousel-section .carousel-nav {
+  display: none;
+}
+
+.cr-models-above-chart.models-carousel-section,
+.cr-models-below-stock.models-carousel-section {
+  justify-content: center;
 }
 
 .model-metric-card {
@@ -1485,10 +1498,9 @@ body.light-mode .model-metric-card:hover {
 
 .cr-models-above-chart .models-carousel-container,
 .cr-models-below-stock .models-carousel-container {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(16, 185, 129, 0.42) rgba(16, 185, 129, 0.08);
+  overflow: visible;
+  display: flex;
+  justify-content: center;
 }
 
 .cr-models-above-chart .models-carousel-track,

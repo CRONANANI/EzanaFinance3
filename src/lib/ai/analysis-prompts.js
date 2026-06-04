@@ -36,7 +36,10 @@ When analyzing a stock, provide:
 - Entry price zones and stop-loss suggestions
 
 Format as a professional equity research screening report. Use clear headers, data tables where appropriate, and end with a summary recommendation. Be specific with numbers — reference actual financial data provided.`,
-    userPromptTemplate: (ticker, marketData) => `Analyze ${ticker} using the GRPV (Growth, Risk, Price, Value) framework.
+    userPromptTemplate: (
+      ticker,
+      marketData,
+    ) => `Analyze ${ticker} using the GRPV (Growth, Risk, Price, Value) framework.
 
 Here is the current market data:
 ${marketData}
@@ -220,7 +223,10 @@ When analyzing this stock as an acquisition target by a hypothetical strategic a
 - Verdict: is this deal accretive or dilutive Year 1? What's required for it to make sense strategically?
 
 Format as a corporate development memo with clean accretion/dilution math. Be specific about the assumptions and call out which inputs would flip the answer.`,
-    userPromptTemplate: (ticker, marketData) => `Run an M&A accretion/dilution analysis treating ${ticker} as an acquisition target.
+    userPromptTemplate: (
+      ticker,
+      marketData,
+    ) => `Run an M&A accretion/dilution analysis treating ${ticker} as an acquisition target.
 
 Here is the current market data:
 ${marketData}
@@ -290,7 +296,10 @@ When analyzing a stock, provide:
 - Risk recommendations: at current vol, what's a sensible position size and stop-loss?
 
 Format as a quant research note with a probability distribution table and clear ranges. Lead with probabilities, not point estimates. Reference the input parameters explicitly so readers can sanity-check.`,
-    userPromptTemplate: (ticker, marketData) => `Run a 10,000-path Monte Carlo simulation on ${ticker} over a 1-year horizon.
+    userPromptTemplate: (
+      ticker,
+      marketData,
+    ) => `Run a 10,000-path Monte Carlo simulation on ${ticker} over a 1-year horizon.
 
 Here is the current market data:
 ${marketData}
@@ -318,14 +327,10 @@ export function getAllModels() {
 export function getCarouselModels() {
   const order = [
     'grpv', // Flagship
-    'dcf', // Custom interactive (forward + reverse modes)
-    'earnings', // Custom interactive
-    'comps', // Peer benchmarking
-    'threestatement', // Integrated forecast
-    'lbo', // Private equity returns
-    'ma', // Corporate development
-    'risk', // Portfolio Risk Model (rebuilt)
-    'montecarlo', // Quant probability
+    'dcf', // DCF Valuation (forward + reverse)
+    'earnings', // Earnings Analysis
+    'comps', // Comparable Company Analysis
+    'threestatement', // 3 Statement Model
   ];
   return order.map((id) => ANALYSIS_MODELS[id]).filter(Boolean);
 }

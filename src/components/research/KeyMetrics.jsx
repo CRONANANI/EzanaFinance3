@@ -46,7 +46,7 @@ export function KeyMetrics({ symbol }) {
           style={{
             fontSize: '0.6875rem',
             fontFamily: 'var(--font-mono, monospace)',
-            color: '#6b7280',
+            color: 'var(--text-muted, #6b7280)',
           }}
         >
           <div className="w-4 h-4 border-2 border-emerald-500/50 border-t-emerald-500 rounded-full animate-spin" />
@@ -66,7 +66,7 @@ export function KeyMetrics({ symbol }) {
           style={{
             fontSize: '0.6875rem',
             fontFamily: 'var(--font-mono, monospace)',
-            color: '#6b7280',
+            color: 'var(--text-muted, #6b7280)',
           }}
         >
           Key metrics unavailable.
@@ -93,7 +93,7 @@ export function KeyMetrics({ symbol }) {
             fontSize: '0.8125rem',
             fontWeight: 800,
             fontFamily: 'var(--font-mono, monospace)',
-            color: 'var(--home-heading, #f0f6fc)',
+            color: 'var(--text-primary, #f0f6fc)',
             textTransform: 'uppercase',
             letterSpacing: '0.06em',
           }}
@@ -107,8 +107,8 @@ export function KeyMetrics({ symbol }) {
             <div
               key={key}
               style={{
-                background: 'rgba(10, 14, 19, 0.6)',
-                border: '1px solid rgba(16, 185, 129, 0.06)',
+                background: 'var(--bg-tertiary, rgba(10,14,19,0.6))',
+                border: '1px solid var(--border-secondary, rgba(16,185,129,0.06))',
                 borderRadius: 6,
                 padding: '0.5rem 0.625rem',
               }}
@@ -132,7 +132,7 @@ export function KeyMetrics({ symbol }) {
                   fontSize: '0.75rem',
                   fontWeight: 800,
                   fontFamily: 'var(--font-mono, monospace)',
-                  color: '#f0f6fc',
+                  color: 'var(--text-primary, #f0f6fc)',
                   letterSpacing: '0.02em',
                 }}
               >
