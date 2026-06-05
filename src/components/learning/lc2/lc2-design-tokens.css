@@ -56,7 +56,13 @@ body.light-mode .lc-page {
   --lc-ink: #0a0a0a;
   --lc-ink-2: #525252;
   --lc-ink-3: #737373;
-  --lc-ink-4: #a3a3a3;
+  --lc-ink-4: #6b7280;
+
+  /* Tier label/legend colors — dark-tuned metallics wash out on white */
+  --lc-bronze: #b45309;
+  --lc-silver: #475569;
+  --lc-gold: #a16207;
+  --lc-plat: #475569;
 
   --lc-shadow-card:
     inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 0 0 1px rgba(15, 23, 42, 0.06),

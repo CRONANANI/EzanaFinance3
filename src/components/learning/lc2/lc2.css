@@ -736,6 +736,10 @@ body.light-mode .lc-dq-start-btn {
   letter-spacing: 0.04em;
 }
 
+body.light-mode .lc-tt-head {
+  color: var(--lc-ink-2);
+}
+
 .lc-tt-row {
   padding-top: 18px;
   padding-bottom: 18px;
