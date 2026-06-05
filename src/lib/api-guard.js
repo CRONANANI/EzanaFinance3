@@ -1,11 +1,8 @@
 import { NextResponse } from 'next/server';
-import { rateLimiter } from './rate-limit';
+import { checkRateLimit } from './persistent-rate-limit';
 import { getAuthUser } from './auth-helpers';
 import { logger } from './logger';
 import { logSecurityEvent } from './security-audit';
-
-const limiter = rateLimiter({ interval: 60000, limit: 30 });
-const strictLimiter = rateLimiter({ interval: 60000, limit: 10 });
 
 export function withApiGuard(handler, options = {}) {
   const { requireAuth = true, strict = false, requiredRole = null } = options;
@@ -16,20 +13,32 @@ export function withApiGuard(handler, options = {}) {
         request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
         request.headers.get('x-real-ip') ||
         'unknown';
-      const activeLimiter = strict ? strictLimiter : limiter;
-      const { success, remaining } = activeLimiter.check(ip);
 
-      if (!success) {
-        let path = '';
-        try {
-          path = new URL(request.url).pathname;
-        } catch {
-          /* ignore */
-        }
+      let path = '';
+      try {
+        path = new URL(request.url).pathname;
+      } catch {
+        /* ignore */
+      }
+
+      const limit = strict ? 10 : 30;
+      const windowMs = 60000;
+      const bucketKey = `api:${ip}:${path}`;
+      const { allowed, remaining, resetAt } = await checkRateLimit(bucketKey, limit, windowMs);
+
+      if (!allowed) {
         void logSecurityEvent('rate_limit_hit', { ip, details: { path } });
+        const retryAfterSec = Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000));
         return NextResponse.json(
           { error: 'Too many requests. Please try again later.' },
-          { status: 429, headers: { 'Retry-After': '60', 'X-RateLimit-Remaining': '0' } },
+          {
+            status: 429,
+            headers: {
+              'Retry-After': String(retryAfterSec),
+              'X-RateLimit-Remaining': '0',
+              'X-RateLimit-Reset': resetAt.toISOString(),
+            },
+          },
         );
       }
 

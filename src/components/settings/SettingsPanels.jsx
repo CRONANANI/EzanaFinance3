@@ -10,6 +10,7 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { useAuth } from '@/components/AuthProvider';
 import { NotificationPreferences } from './NotificationPreferences';
 import { useBeginnerLevelContext } from '@/contexts/BeginnerLevelContext';
+import { MfaSetupPanel } from './MfaSetupPanel';
 
 /* ═══════════════════════════════════════════════════════════
    SETTINGS PANELS — 10 panels with full form fields
@@ -867,18 +868,7 @@ export function PasswordPanel({ onSave, settings, updateSetting }) {
             <input type="password" className="settings-input" placeholder="••••••••" />
           </div>
         </div>
-        <div className="settings-toggle-row">
-          <div className="settings-toggle-info">
-            <span className="settings-toggle-label">Two-factor authentication</span>
-            <span className="settings-toggle-desc">Add an extra layer of security</span>
-          </div>
-          <button
-            type="button"
-            className={`settings-switch ${settings?.security_two_factor ? 'on' : ''}`}
-            onClick={() => updateSetting('security_two_factor', !settings?.security_two_factor)}
-            aria-label="Toggle 2FA"
-          />
-        </div>
+        <MfaSetupPanel />
         <div className="settings-toggle-row">
           <div className="settings-toggle-info">
             <span className="settings-toggle-label">Login alerts</span>

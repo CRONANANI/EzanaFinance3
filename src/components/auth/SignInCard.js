@@ -15,6 +15,8 @@ const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [mfaRequired, setMfaRequired] = useState(false);
+  const [mfaCode, setMfaCode] = useState('');
   const router = useRouter();
   const destination = redirectTo || '/home';
 
@@ -28,48 +30,124 @@ const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
     }
   }, [oauthErrorMessage]);
 
-  const handleSignIn = async (e) => {
+  const completeLogin = async () => {
+    if (variant === 'partner') {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      let isPartner = !!user?.user_metadata?.partner_role;
+      if (!isPartner) {
+        const { data: partner } = await supabase
+          .from('partners')
+          .select('id')
+          .eq('user_id', user?.id)
+          .eq('status', 'active')
+          .single();
+        isPartner = !!partner;
+      }
+      if (!isPartner) {
+        await supabase.auth.signOut();
+        setError(
+          'This account is not registered as a partner. Contact partnersupport@ezana.world or apply to become a partner.',
+        );
+        return;
+      }
+      router.push('/partner-home');
+    } else {
+      router.push(destination);
+    }
+  };
+
+  const handleMfaVerify = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
 
     try {
+      const { data: factorsData, error: factorsErr } = await supabase.auth.mfa.listFactors();
+      if (factorsErr) {
+        setError(factorsErr.message);
+        return;
+      }
+      const totpFactor = factorsData?.totp?.find((f) => f.status === 'verified');
+      if (!totpFactor) {
+        setError('No verified authenticator found. Set up 2FA in Settings.');
+        return;
+      }
+
+      const { data: challenge, error: challengeErr } = await supabase.auth.mfa.challenge({
+        factorId: totpFactor.id,
+      });
+      if (challengeErr) {
+        setError(challengeErr.message);
+        return;
+      }
+
+      const { error: verifyErr } = await supabase.auth.mfa.verify({
+        factorId: totpFactor.id,
+        challengeId: challenge.id,
+        code: mfaCode,
+      });
+      if (verifyErr) {
+        setError('Invalid code. Please try again.');
+        return;
+      }
+
+      await completeLogin();
+    } catch {
+      setError('An unexpected error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSignIn = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+    setMfaRequired(false);
+
+    try {
+      const lockRes = await fetch('/api/auth/check-lockout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      if (lockRes.status === 423) {
+        const data = await lockRes.json();
+        setError(data.error);
+        return;
+      }
+
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
+      await fetch('/api/auth/record-attempt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, success: !signInError }),
+      }).catch(() => {});
+
       if (signInError) {
-        setError(signInError.message);
+        if (signInError.message?.toLowerCase().includes('disabled')) {
+          setError('This account has been locked. Contact support if you need help.');
+        } else {
+          setError('Invalid credentials. Please try again.');
+        }
         return;
       }
 
-      if (variant === 'partner') {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        let isPartner = !!user?.user_metadata?.partner_role;
-        if (!isPartner) {
-          const { data: partner } = await supabase
-            .from('partners')
-            .select('id')
-            .eq('user_id', user?.id)
-            .eq('status', 'active')
-            .single();
-          isPartner = !!partner;
-        }
-        if (!isPartner) {
-          await supabase.auth.signOut();
-          setError(
-            'This account is not registered as a partner. Contact partnersupport@ezana.world or apply to become a partner.',
-          );
-          return;
-        }
-        router.push('/partner-home');
-      } else {
-        router.push(destination);
+      const { data: aalData, error: aalErr } =
+        await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (!aalErr && aalData?.nextLevel === 'aal2' && aalData?.currentLevel !== 'aal2') {
+        setMfaRequired(true);
+        return;
       }
-    } catch (err) {
+
+      await completeLogin();
+    } catch {
       setError('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
@@ -166,45 +244,80 @@ const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
             )}
 
             {/* Sign In Form */}
-            <form onSubmit={handleSignIn} className="space-y-5">
-              <div>
-                <label htmlFor="email" className="mb-1 block text-sm font-medium text-slate-300">
-                  Email <span className="text-emerald-400">*</span>
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email address"
-                  required
-                  className="h-11 w-full rounded-lg border border-slate-700 bg-slate-800 px-4 text-slate-100 placeholder-slate-500 transition-all focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                />
-              </div>
+            <form onSubmit={mfaRequired ? handleMfaVerify : handleSignIn} className="space-y-5">
+              {!mfaRequired ? (
+                <>
+                  <div>
+                    <label
+                      htmlFor="email"
+                      className="mb-1 block text-sm font-medium text-slate-300"
+                    >
+                      Email <span className="text-emerald-400">*</span>
+                    </label>
+                    <input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Enter your email address"
+                      required
+                      className="h-11 w-full rounded-lg border border-slate-700 bg-slate-800 px-4 text-slate-100 placeholder-slate-500 transition-all focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    />
+                  </div>
 
-              <div>
-                <label htmlFor="password" className="mb-1 block text-sm font-medium text-slate-300">
-                  Password <span className="text-emerald-400">*</span>
-                </label>
-                <div className="relative">
-                  <input
-                    id="password"
-                    type={isPasswordVisible ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter your password"
-                    required
-                    className="h-11 w-full rounded-lg border border-slate-700 bg-slate-800 px-4 pr-12 text-slate-100 placeholder-slate-500 transition-all focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                  />
-                  <button
-                    type="button"
-                    className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 transition-colors hover:text-slate-200"
-                    onClick={() => setIsPasswordVisible(!isPasswordVisible)}
+                  <div>
+                    <label
+                      htmlFor="password"
+                      className="mb-1 block text-sm font-medium text-slate-300"
+                    >
+                      Password <span className="text-emerald-400">*</span>
+                    </label>
+                    <div className="relative">
+                      <input
+                        id="password"
+                        type={isPasswordVisible ? 'text' : 'password'}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Enter your password"
+                        required
+                        className="h-11 w-full rounded-lg border border-slate-700 bg-slate-800 px-4 pr-12 text-slate-100 placeholder-slate-500 transition-all focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                      />
+                      <button
+                        type="button"
+                        className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 transition-colors hover:text-slate-200"
+                        onClick={() => setIsPasswordVisible(!isPasswordVisible)}
+                      >
+                        {isPasswordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div>
+                  <p className="mb-3 text-sm text-slate-300">
+                    Enter the 6-digit code from your authenticator app.
+                  </p>
+                  <label
+                    htmlFor="mfa-code"
+                    className="mb-1 block text-sm font-medium text-slate-300"
                   >
-                    {isPasswordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
+                    Authentication code <span className="text-emerald-400">*</span>
+                  </label>
+                  <input
+                    id="mfa-code"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={6}
+                    value={mfaCode}
+                    onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, ''))}
+                    placeholder="000000"
+                    required
+                    autoComplete="one-time-code"
+                    className="h-11 w-full rounded-lg border border-slate-700 bg-slate-800 px-4 text-slate-100 placeholder-slate-500 transition-all focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  />
                 </div>
-              </div>
+              )}
 
               {/* Sign In Button */}
               <motion.div
@@ -250,7 +363,7 @@ const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
                       </>
                     ) : (
                       <>
-                        Sign in
+                        {mfaRequired ? 'Verify' : 'Sign in'}
                         <ArrowRight className="h-4 w-4 shrink-0" />
                       </>
                     )}
