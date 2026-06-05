@@ -12,6 +12,24 @@ function daysSince(iso) {
   return Math.max(0, Math.floor(ms / 86400000));
 }
 
+const lsKey = (uid) => `ezana_beginner_seen_${uid}`;
+
+function readLocalSeen(uid) {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(lsKey(uid)) || '[]'));
+  } catch {
+    return new Set();
+  }
+}
+
+function writeLocalSeen(uid, set) {
+  try {
+    localStorage.setItem(lsKey(uid), JSON.stringify([...set]));
+  } catch {
+    /* ignore */
+  }
+}
+
 async function loadBeginnerInputs(userId) {
   const results = await Promise.allSettled([
     supabase
@@ -74,8 +92,14 @@ export function useBeginnerLevel() {
   const [loading, setLoading] = useState(true);
   const [inputs, setInputs] = useState(null);
   const [seen, setSeen] = useState(new Set());
+  const seenRef = useRef(new Set());
+  const userIdRef = useRef(null);
   const prevBandRef = useRef(null);
   const inFlight = useRef(false);
+
+  useEffect(() => {
+    seenRef.current = seen;
+  }, [seen]);
 
   const refresh = useCallback(async () => {
     if (inFlight.current) return;
@@ -87,12 +111,24 @@ export function useBeginnerLevel() {
       if (!user) {
         setInputs(null);
         setSeen(new Set());
+        seenRef.current = new Set();
+        userIdRef.current = null;
         return;
       }
 
+      userIdRef.current = user.id;
+
       const data = await loadBeginnerInputs(user.id);
       setInputs(data);
-      setSeen(new Set(data.seenKeys));
+
+      const merged = new Set([
+        ...(data.seenKeys || []),
+        ...readLocalSeen(user.id),
+        ...seenRef.current,
+      ]);
+      seenRef.current = merged;
+      setSeen(merged);
+      writeLocalSeen(user.id, merged);
     } catch (err) {
       console.error('useBeginnerLevel:', err);
     } finally {
@@ -143,28 +179,51 @@ export function useBeginnerLevel() {
         "You've graduated from Beginner tips — they'll show less now. Re-enable anytime in Settings.",
       );
       void (async () => {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (!user) return;
-        const next = [...seen, 'graduation:toast'];
-        setSeen(new Set(next));
-        await supabase
-          .from('profiles')
-          .update({ beginner_seen: next, updated_at: new Date().toISOString() })
-          .eq('id', user.id);
+        const uid = userIdRef.current;
+        if (!uid || seenRef.current.has('graduation:toast')) return;
+
+        const next = new Set(seenRef.current);
+        next.add('graduation:toast');
+        seenRef.current = next;
+        setSeen(next);
+        writeLocalSeen(uid, next);
+
+        try {
+          await supabase
+            .from('profiles')
+            .update({
+              beginner_seen: [...next],
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', uid);
+        } catch (e) {
+          console.error('graduation toast markSeen failed (non-fatal):', e);
+        }
       })();
     }
     prevBandRef.current = band;
   }, [band, loading, inputs, seen, toast]);
 
-  const markSeen = useCallback(
-    async (key) => {
-      await markSeenInternal(key, seen, setSeen);
-      window.dispatchEvent(new Event('beginner-level-updated'));
-    },
-    [seen],
-  );
+  const markSeen = useCallback(async (key) => {
+    if (seenRef.current.has(key)) return;
+    const next = new Set(seenRef.current);
+    next.add(key);
+    seenRef.current = next;
+    setSeen(next);
+
+    const uid = userIdRef.current;
+    if (uid) {
+      writeLocalSeen(uid, next);
+      try {
+        await supabase
+          .from('profiles')
+          .update({ beginner_seen: [...next], updated_at: new Date().toISOString() })
+          .eq('id', uid);
+      } catch (e) {
+        console.error('markSeen DB write failed (non-fatal, LS holds):', e);
+      }
+    }
+  }, []);
 
   const setTipsPref = useCallback(
     async (pref) => {
@@ -187,12 +246,18 @@ export function useBeginnerLevel() {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) return false;
+
+    const uid = userIdRef.current || user.id;
+    seenRef.current = new Set();
+    setSeen(new Set());
+    writeLocalSeen(uid, new Set());
+
     const { error } = await supabase
       .from('profiles')
       .update({ beginner_seen: [], updated_at: new Date().toISOString() })
       .eq('id', user.id);
+
     if (!error) {
-      setSeen(new Set());
       await refresh();
       window.dispatchEvent(new Event('beginner-level-updated'));
     }
@@ -214,23 +279,4 @@ export function useBeginnerLevel() {
     hasPosted: inputs?.hasPosted ?? false,
     tipsPref: inputs?.tipsPref ?? 'auto',
   };
-}
-
-async function markSeenInternal(key, seen, setSeen) {
-  if (seen.has(key)) return;
-  try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const next = [...seen, key];
-    setSeen(new Set(next));
-    await supabase
-      .from('profiles')
-      .update({ beginner_seen: next, updated_at: new Date().toISOString() })
-      .eq('id', user.id);
-  } catch (e) {
-    console.error('markSeen failed (non-fatal):', e);
-  }
 }
