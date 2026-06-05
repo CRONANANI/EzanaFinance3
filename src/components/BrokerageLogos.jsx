@@ -22,8 +22,6 @@ const BROKERAGE_LOGOS = [
     hideLabel: true,
   },
   { name: 'eToro', src: '/brokerage-logos/etoro.png', width: 200, height: 56, hideLabel: true },
-  { name: 'Questrade', src: '/brokerage-logos/questrade.png', width: 180, height: 56 },
-  { name: 'Tradier', src: '/brokerage-logos/tradier.png', width: 160, height: 50 },
   {
     name: 'TD Ameritrade',
     src: '/brokerage-logos/td-ameritrade.png',
@@ -53,10 +51,7 @@ const BROKERAGE_LOGOS = [
     hideLabel: true,
   },
   { name: 'US Bank', src: '/brokerage-logos/us-bank.png', width: 200, height: 56, hideLabel: true },
-  { name: 'Trading 212', src: '/brokerage-logos/trading212.png', width: 200, height: 56 },
   { name: 'Charles Schwab', src: '/brokerage-logos/charles-schwab.png', width: 80, height: 80 },
-  { name: 'Merrill Lynch', brandKey: 'MERRILL' },
-  { name: 'Public', brandKey: 'PUBLIC' },
   { name: 'Betterment', brandKey: 'BETTERMENT' },
   { name: 'TIAA', brandKey: 'TIAA' },
 ];
