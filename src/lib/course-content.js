@@ -1307,6 +1307,14 @@ const STOCKS_BRONZE = {
         keyTerms: ['risk tolerance', 'asset allocation'],
       },
       {
+        title: 'Balanced perspective: funds vs. single stocks',
+        content:
+          'Broad index funds spread risk across hundreds of companies, so one company’s failure usually has limited impact on the whole fund — compared with a single stock, where outcomes can range from strong gains to a total loss. That is a mainstream, well-supported idea from sources like SEC Investor.gov on diversification. The tradeoff: you give up the chance of outsized single-stock wins. Diversification mainly reduces company-specific (unsystematic) risk; it does not remove market risk — diversified funds still fall in broad downturns. Some lower-volatility and REIT categories have historically shown smaller price swings than many individual stocks, but REITs are interest-rate sensitive (many REIT funds were notably weak in 2022), and low-volatility strategies often lag in strong bull markets. Lower volatility does not mean no risk or guaranteed returns. Over long horizons, diversification’s benefits are clearest — but short-term losses are still possible.',
+        callout:
+          'Educational only — not investment advice. All investing involves risk, including loss of principal.',
+        keyTerms: ['index fund', 'unsystematic risk', 'market risk', 'REIT'],
+      },
+      {
         title: 'Key takeaways',
         content:
           "Every investment carries risk — the question is not whether, but what kind. Diversification is the one free lunch in investing: spreading your holdings across assets that don't all move together reduces total risk without reducing expected return proportionally. Unsystematic risk (individual company problems) can be diversified away by owning many stocks. Systematic risk (broad market crashes) cannot, but can be dampened by diversifying across asset classes. The risk-reward tradeoff offers higher expected returns for higher risk on average over long horizons — but not guaranteed returns on any given day or year. And the most important part of risk management is honest self-assessment: the right risk level is the one you can actually stick with when markets are crashing, not the one that looks ideal in a spreadsheet. Risk is the price of admission to real returns, and thoughtful diversification is how you pay that price without handing over more than you can afford.",

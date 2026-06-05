@@ -1,29 +1,39 @@
 'use client';
 
-import { useState, useEffect, useLayoutEffect, useCallback, useRef, useMemo, Fragment, Suspense } from 'react';
+import {
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useCallback,
+  useRef,
+  useMemo,
+  Fragment,
+  Suspense,
+} from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { useMockPortfolio } from '@/hooks/useMockPortfolio';
 import { useCompanySearchFinnhub } from '@/hooks/useFinnhub';
+import { useChecklist } from '@/hooks/useChecklist';
 
 /* Both StockPriceChart (Recharts) and ResetPortfolioModal are not on the
    critical path for the mock-trading dashboard — the chart renders inside a
    tab panel, the modal only after a confirm click. Lazy chunks keep the
    initial 268 kB bundle smaller. */
-const StockPriceChart = dynamic(
-  () => import('@/components/research/StockPriceChart'),
-  { ssr: false, loading: () => <div style={{ height: 360 }} aria-hidden /> }
-);
-const MockPortfolioChart = dynamic(
-  () => import('@/components/trading/MockPortfolioChart'),
-  { ssr: false, loading: () => <div style={{ height: 320 }} aria-hidden /> }
-);
-const ResetPortfolioModal = dynamic(
-  () => import('@/components/trading/ResetPortfolioModal'),
-  { ssr: false, loading: () => null }
-);
+const StockPriceChart = dynamic(() => import('@/components/research/StockPriceChart'), {
+  ssr: false,
+  loading: () => <div style={{ height: 360 }} aria-hidden />,
+});
+const MockPortfolioChart = dynamic(() => import('@/components/trading/MockPortfolioChart'), {
+  ssr: false,
+  loading: () => <div style={{ height: 320 }} aria-hidden />,
+});
+const ResetPortfolioModal = dynamic(() => import('@/components/trading/ResetPortfolioModal'), {
+  ssr: false,
+  loading: () => null,
+});
 import '../../home-dashboard/home-dashboard.css';
 import './mock-trading.css';
 
@@ -100,7 +110,9 @@ function getLargestPositionByValue(positions, livePrices) {
   let bestVal = -Infinity;
   let bestSym = '';
   for (const pos of list) {
-    const sym = String(pos.symbol || '').trim().toUpperCase();
+    const sym = String(pos.symbol || '')
+      .trim()
+      .toUpperCase();
     const livePx = resolveLivePrice(livePrices[sym]);
     const px = livePx ?? pos.currentPrice ?? pos.avgCost;
     const val = Number(px) * Number(pos.qty);
@@ -121,6 +133,7 @@ const MOCK_QUOTE_CHUNK = 45;
 function MockTradingPageInner() {
   const { user } = useAuth();
   const searchParams = useSearchParams();
+  const { completeTask } = useChecklist();
   /* Portfolio state — backed by Supabase via useMockPortfolio */
   const { portfolio: portfolioFromHook, setPortfolio, syncing } = useMockPortfolio();
   const [dbTrades, setDbTrades] = useState([]);
@@ -237,7 +250,7 @@ function MockTradingPageInner() {
           },
         };
       },
-      { skipSync: true }
+      { skipSync: true },
     );
   }, [quoteData, selectedSymbol, setPortfolio]);
 
@@ -263,11 +276,7 @@ function MockTradingPageInner() {
         for (const [sym, pos] of Object.entries(prev.positions)) {
           const symUpper = String(sym).toUpperCase();
           const livePx = resolveLivePrice(livePrices[symUpper]);
-          if (
-            typeof livePx === 'number' &&
-            livePx > 0 &&
-            livePx !== pos.currentPrice
-          ) {
+          if (typeof livePx === 'number' && livePx > 0 && livePx !== pos.currentPrice) {
             nextPositions[sym] = { ...pos, currentPrice: livePx };
             anyChanged = true;
           } else {
@@ -279,7 +288,7 @@ function MockTradingPageInner() {
 
         return { ...prev, positions: nextPositions };
       },
-      { skipSync: true }
+      { skipSync: true },
     );
   }, [livePrices, setPortfolio]);
 
@@ -301,7 +310,7 @@ function MockTradingPageInner() {
       clearSuggestions();
       setAmount('');
     },
-    [clearSuggestions, setSearchQuery]
+    [clearSuggestions, setSearchQuery],
   );
 
   /** Enter a ticker directly (same behavior as Company Research search bar) */
@@ -409,6 +418,7 @@ function MockTradingPageInner() {
         total_amount: dollarAmount,
       });
       showToast(`✓ Bought ${fmtUSD(dollarAmount)} of ${selectedSymbol} @ ${fmtUSD(price)}`);
+      completeTask('action_2');
       setAmount('');
       return;
     }
@@ -459,6 +469,7 @@ function MockTradingPageInner() {
       total_amount: sellTotal,
     });
     showToast(`✓ Sold ${fmtUSD(sellTotal)} of ${selectedSymbol} @ ${fmtUSD(price)}`);
+    completeTask('action_2');
     setAmount('');
   };
 
@@ -533,7 +544,9 @@ function MockTradingPageInner() {
   const enrichedPositions = useMemo(() => {
     const list = Object.values(portfolio.positions || {});
     return list.map((pos) => {
-      const sym = String(pos.symbol || '').trim().toUpperCase();
+      const sym = String(pos.symbol || '')
+        .trim()
+        .toUpperCase();
       const livePx = resolveLivePrice(livePrices[sym]);
       const curPrice = livePx ?? pos.currentPrice ?? pos.avgCost;
       const pnl = (curPrice - pos.avgCost) * pos.qty;
@@ -565,9 +578,7 @@ function MockTradingPageInner() {
           const bDate = resolveOpenedAt(b, portfolio.history) || '';
           aVal = aDate;
           bVal = bDate;
-          return posSort.dir === 'asc'
-            ? aVal.localeCompare(bVal)
-            : bVal.localeCompare(aVal);
+          return posSort.dir === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
         }
         case 'qty':
           aVal = Number(a.qty) || 0;
@@ -578,15 +589,31 @@ function MockTradingPageInner() {
           bVal = Number(b.avgCost) || 0;
           break;
         case 'current': {
-          const aLive = resolveLivePrice(livePrices[String(a.symbol || '').trim().toUpperCase()]);
-          const bLive = resolveLivePrice(livePrices[String(b.symbol || '').trim().toUpperCase()]);
+          const aLive = resolveLivePrice(
+            livePrices[
+              String(a.symbol || '')
+                .trim()
+                .toUpperCase()
+            ],
+          );
+          const bLive = resolveLivePrice(
+            livePrices[
+              String(b.symbol || '')
+                .trim()
+                .toUpperCase()
+            ],
+          );
           aVal = aLive ?? a.currentPrice ?? a.avgCost ?? 0;
           bVal = bLive ?? b.currentPrice ?? b.avgCost ?? 0;
           break;
         }
         case 'pnl': {
-          const aSym = String(a.symbol || '').trim().toUpperCase();
-          const bSym = String(b.symbol || '').trim().toUpperCase();
+          const aSym = String(a.symbol || '')
+            .trim()
+            .toUpperCase();
+          const bSym = String(b.symbol || '')
+            .trim()
+            .toUpperCase();
           const aCur = resolveLivePrice(livePrices[aSym]) ?? a.currentPrice ?? a.avgCost;
           const bCur = resolveLivePrice(livePrices[bSym]) ?? b.currentPrice ?? b.avgCost;
           aVal = (aCur - a.avgCost) * a.qty;
@@ -594,8 +621,12 @@ function MockTradingPageInner() {
           break;
         }
         case 'value': {
-          const aSym = String(a.symbol || '').trim().toUpperCase();
-          const bSym = String(b.symbol || '').trim().toUpperCase();
+          const aSym = String(a.symbol || '')
+            .trim()
+            .toUpperCase();
+          const bSym = String(b.symbol || '')
+            .trim()
+            .toUpperCase();
           const aCur = resolveLivePrice(livePrices[aSym]) ?? a.currentPrice ?? a.avgCost;
           const bCur = resolveLivePrice(livePrices[bSym]) ?? b.currentPrice ?? b.avgCost;
           aVal = aCur * a.qty;
@@ -624,7 +655,9 @@ function MockTradingPageInner() {
   const openPositionSymbolsKey = useMemo(() => {
     const set = new Set();
     for (const p of Object.values(portfolio.positions || {})) {
-      const s = String(p.symbol || '').trim().toUpperCase();
+      const s = String(p.symbol || '')
+        .trim()
+        .toUpperCase();
       if (s) set.add(s);
     }
     return [...set].sort().join(',');
@@ -635,7 +668,9 @@ function MockTradingPageInner() {
   // selectedSymbol stays null until the user explicitly searches or clicks a position.
   // Clicking a position sets userExplicitChartPickRef=true via selectAsset(...).
   const totalPositionValue = positionsList.reduce((s, p) => {
-    const sym = String(p.symbol || '').trim().toUpperCase();
+    const sym = String(p.symbol || '')
+      .trim()
+      .toUpperCase();
     const livePx = resolveLivePrice(livePrices[sym]);
     const px = livePx ?? p.currentPrice ?? p.avgCost;
     return s + px * p.qty;
@@ -646,11 +681,17 @@ function MockTradingPageInner() {
   const totalPnlPct = effectiveStart > 0 ? (totalPortfolioValue / effectiveStart - 1) * 100 : 0;
 
   useEffect(() => {
-    const symbols = [...new Set(
-      Object.values(portfolio.positions || {})
-        .map((p) => String(p.symbol || '').trim().toUpperCase())
-        .filter(Boolean),
-    )].sort();
+    const symbols = [
+      ...new Set(
+        Object.values(portfolio.positions || {})
+          .map((p) =>
+            String(p.symbol || '')
+              .trim()
+              .toUpperCase(),
+          )
+          .filter(Boolean),
+      ),
+    ].sort();
 
     if (symbols.length === 0) {
       setLivePrices({});
@@ -758,8 +799,7 @@ function MockTradingPageInner() {
   const canSell = currentPosition && currentPosition.qty > 0;
 
   const quoteChange = quoteData?.change ?? 0;
-  const quoteChangePct =
-    quoteData?.changesPercentage ?? quoteData?.changePercentage ?? 0;
+  const quoteChangePct = quoteData?.changesPercentage ?? quoteData?.changePercentage ?? 0;
 
   return (
     <div className="mock-page dashboard-page-inset">
@@ -802,7 +842,14 @@ function MockTradingPageInner() {
                 fill="none"
                 style={{ animation: 'mock-portfolio-spin 0.9s linear infinite' }}
               >
-                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" opacity="0.25" />
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  opacity="0.25"
+                />
                 <path
                   d="M12 2a10 10 0 0 1 10 10"
                   stroke="#10b981"
@@ -813,11 +860,7 @@ function MockTradingPageInner() {
               Saving…
             </span>
           )}
-          <button
-            className="mock-reset-btn"
-            type="button"
-            onClick={() => setResetModalOpen(true)}
-          >
+          <button className="mock-reset-btn" type="button" onClick={() => setResetModalOpen(true)}>
             <i className="bi bi-arrow-counterclockwise" /> Reset Portfolio
           </button>
 
@@ -825,12 +868,15 @@ function MockTradingPageInner() {
             open={resetModalOpen}
             onClose={() => setResetModalOpen(false)}
             onConfirm={(startingAmount) => {
-              const fresh = { cash: startingAmount, positions: {}, history: [], startingCash: startingAmount };
+              const fresh = {
+                cash: startingAmount,
+                positions: {},
+                history: [],
+                startingCash: startingAmount,
+              };
               userExplicitChartPickRef.current = false;
               setPortfolio(fresh);
-              showToast(
-                `Portfolio reset to $${startingAmount.toLocaleString('en-US')}.`,
-              );
+              showToast(`Portfolio reset to $${startingAmount.toLocaleString('en-US')}.`);
             }}
             portfolio={{ ...portfolio, history: mergedActivity }}
             enrichedPositions={enrichedPositions}
@@ -958,7 +1004,12 @@ function MockTradingPageInner() {
                           style={{ cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
                         >
                           {col.label}{' '}
-                          <span style={{ fontSize: '0.6rem', opacity: posSort.key === col.key ? 1 : 0.3 }}>
+                          <span
+                            style={{
+                              fontSize: '0.6rem',
+                              opacity: posSort.key === col.key ? 1 : 0.3,
+                            }}
+                          >
                             {posSort.key === col.key ? (posSort.dir === 'desc' ? '▼' : '▲') : '▼'}
                           </span>
                         </th>
@@ -968,7 +1019,9 @@ function MockTradingPageInner() {
                   </thead>
                   <tbody>
                     {sortedPositions.map((pos) => {
-                      const sym = String(pos.symbol || '').trim().toUpperCase();
+                      const sym = String(pos.symbol || '')
+                        .trim()
+                        .toUpperCase();
                       const livePx = resolveLivePrice(livePrices[sym]);
                       const curPrice = livePx ?? pos.currentPrice ?? pos.avgCost;
                       const pnl = (curPrice - pos.avgCost) * pos.qty;
@@ -1086,8 +1139,8 @@ function MockTradingPageInner() {
                           {h.side === 'buy' ? 'Bought' : 'Sold'} {h.symbol}
                         </div>
                         <div className="mock-activity-meta">
-                          {h.qty < 1 ? h.qty.toFixed(4) : h.qty.toFixed(2)} shares @ {fmtUSD(h.price)}{' '}
-                          ·{' '}
+                          {h.qty < 1 ? h.qty.toFixed(4) : h.qty.toFixed(2)} shares @{' '}
+                          {fmtUSD(h.price)} ·{' '}
                           {new Date(h.ts).toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric',
@@ -1133,7 +1186,11 @@ function MockTradingPageInner() {
                   <div className="mock-search-results">
                     {searchLoading && (
                       <div
-                        style={{ padding: '0.75rem 0.875rem', color: '#6b7280', fontSize: '0.8125rem' }}
+                        style={{
+                          padding: '0.75rem 0.875rem',
+                          color: '#6b7280',
+                          fontSize: '0.8125rem',
+                        }}
                       >
                         Searching…
                       </div>
@@ -1142,9 +1199,7 @@ function MockTradingPageInner() {
                       <div
                         key={r.symbol}
                         className="mock-search-result-item"
-                        onMouseDown={() =>
-                          selectAsset(r.symbol, r.name, r.type)
-                        }
+                        onMouseDown={() => selectAsset(r.symbol, r.name, r.type)}
                         role="presentation"
                       >
                         <div>
@@ -1162,7 +1217,9 @@ function MockTradingPageInner() {
             <div className="mock-asset-selected">
               <div className="mock-asset-left">
                 <span className="mock-asset-ticker">{selectedSymbol || '—'}</span>
-                <span className="mock-asset-name">{selectedName || 'Search to select an asset'}</span>
+                <span className="mock-asset-name">
+                  {selectedName || 'Search to select an asset'}
+                </span>
               </div>
               <div className="mock-asset-right">
                 {quoteLoading ? (
@@ -1241,10 +1298,10 @@ function MockTradingPageInner() {
                               Math.round(
                                 currentPosition.qty *
                                   (currentPosition.currentPrice ?? currentPosition.avgCost) *
-                                  100
-                              ) / 100
+                                  100,
+                              ) / 100,
                             )
-                          : ''
+                          : '',
                     )
                   }
                 >
@@ -1294,6 +1351,7 @@ function MockTradingPageInner() {
             <button
               className={`mock-submit-btn ${side}`}
               type="button"
+              data-task-target="mock-trade-submit"
               onClick={executeTrade}
               disabled={
                 !selectedSymbol ||
@@ -1345,7 +1403,10 @@ export default function MockTradingPage() {
   return (
     <Suspense
       fallback={
-        <div className="mock-page dashboard-page-inset" style={{ padding: '2rem', color: '#94a3b8' }}>
+        <div
+          className="mock-page dashboard-page-inset"
+          style={{ padding: '2rem', color: '#94a3b8' }}
+        >
           Loading…
         </div>
       }

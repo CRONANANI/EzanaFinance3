@@ -2,6 +2,7 @@
 
 import { useStockMetric } from '@/hooks/useFinnhub';
 import { motion } from 'framer-motion';
+import { MetricInfo } from '@/components/beginner/MetricInfo';
 
 function fmt(v) {
   if (v == null || v === '' || v === undefined) return '--';
@@ -99,6 +100,7 @@ export function KeyMetrics({ symbol }) {
           }}
         >
           Key Financial Metrics
+          <MetricInfo term="pe" />
         </h3>
       </div>
       <div style={{ padding: '0.75rem 1rem' }}>

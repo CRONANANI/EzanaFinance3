@@ -11,6 +11,9 @@ import { supabase } from '@/lib/supabase-browser';
 import { useMockPortfolio } from '@/hooks/useMockPortfolio';
 import { useWatchlists } from '@/hooks/useWatchlists';
 import './home-dashboard.css';
+import { BeginnerSpotlight } from '@/components/beginner/BeginnerSpotlight';
+import { MetricInfo } from '@/components/beginner/MetricInfo';
+import '@/components/beginner/beginner.css';
 
 /** 9 holdings per page = 3 columns × 3 rows. Was 6 (3×2); tighter per-card
     sizing in home-dashboard.css keeps total height similar to before. */
@@ -1255,7 +1258,10 @@ export default function HomeDashboardPage() {
             {/* Sector / Industry Distribution — pie chart with hover tooltips */}
             <div className="db-card db-sector-card" data-dashboard-card>
               <div className="db-card-header">
-                <h3>{isTmtTeamMember ? 'Industry Distribution' : 'Sector Distribution'}</h3>
+                <h3>
+                  {isTmtTeamMember ? 'Industry Distribution' : 'Sector Distribution'}
+                  <MetricInfo term="allocation" />
+                </h3>
                 {sectorRows.length > 0 && (
                   <span className="db-sector-total" aria-hidden>
                     {sectorRows.length} {sectorRows.length === 1 ? 'sector' : 'sectors'}
@@ -1440,6 +1446,23 @@ export default function HomeDashboardPage() {
           </div>
         </>
       )}
+
+      <BeginnerSpotlight
+        pageKey="home-dashboard"
+        steps={[
+          {
+            targetSelector: '.db-hero-card',
+            message: 'Your portfolio snapshot — value, change, and sparkline over time.',
+            position: 'bottom',
+          },
+          {
+            targetSelector: '.db-sector-card',
+            message:
+              'Sector distribution shows how your holdings are spread — diversification at a glance.',
+            position: 'top',
+          },
+        ]}
+      />
     </div>
   );
 }

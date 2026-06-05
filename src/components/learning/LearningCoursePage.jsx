@@ -6,6 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { getCourseById, getLevelLabel, TRACKS } from '@/lib/learning-curriculum';
 import { getOrderedCoursesForTrack } from '@/lib/learning-progress-logic';
 import { emitEloChanged } from '@/lib/elo-events';
+import { useChecklist } from '@/hooks/useChecklist';
 import { Hero } from './chapter/Hero';
 import { EyebrowPill } from './chapter/EyebrowPill';
 import { SectionRenderer } from './chapter/SectionRenderer';
@@ -43,6 +44,7 @@ export function LearningCoursePage() {
   const [submitting, setSubmitting] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
   const [bookmarkBusy, setBookmarkBusy] = useState(false);
+  const { completeTask } = useChecklist();
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -63,6 +65,12 @@ export function LearningCoursePage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    if (!readAck) return;
+    if (courseId === 'stocks-basic-1') completeTask('learning_1');
+    if (courseId === 'stocks-basic-7') completeTask('learning_3');
+  }, [readAck, courseId, completeTask]);
 
   useEffect(() => {
     if (!courseId) return;
@@ -228,6 +236,7 @@ export function LearningCoursePage() {
       }
       setResult(json);
       setQuizMode(false);
+      if (json.passed) completeTask('learning_2');
       // Leaving retry mode — the next action (retry or back) resets it explicitly.
       setRetryIndices(null);
       await load();

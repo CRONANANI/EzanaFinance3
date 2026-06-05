@@ -17,6 +17,10 @@ import { PinnableCard } from '@/components/ui/PinnableCard';
 import { useCompanySearchFinnhub } from '@/hooks/useFinnhub';
 import { getCarouselModels } from '@/lib/ai/analysis-prompts';
 import { useChecklist } from '@/hooks/useChecklist';
+import { useBeginnerLevelOptional } from '@/contexts/BeginnerLevelContext';
+import { BeginnerSpotlight } from '@/components/beginner/BeginnerSpotlight';
+import { EducationTip } from '@/components/beginner/EducationTip';
+import '@/components/beginner/beginner.css';
 import { CoursePreviewSection } from '@/components/learning/CoursePreviewSection';
 import { getCoursesByTrack } from '@/lib/learning-curriculum';
 import { MOCK_WATCHLISTS } from '@/lib/mockWatchlists';
@@ -132,6 +136,12 @@ function CompanyResearchPageInner() {
     [pathname, router, searchParams],
   );
   const { completeTask } = useChecklist();
+  const beginner = useBeginnerLevelOptional();
+  const showBeginnerAnalysis =
+    beginner?.band === 'beginner' &&
+    beginner.analysesRun === 0 &&
+    !selectedStock &&
+    view === 'company';
   const [selectedStock, setSelectedStock] = useState(null);
   const [stats, setStats] = useState({
     mcap: '--',
@@ -343,10 +353,17 @@ function CompanyResearchPageInner() {
     [selectedStock, stats?.mcap],
   );
 
+  const handleStartAppleAnalysis = useCallback(() => {
+    handleSelectStock('AAPL');
+    setViewMode('stock');
+    setActiveModel('grpv');
+  }, [handleSelectStock]);
+
   const renderModelCards = (keyPrefix) =>
     CAROUSEL_MODELS.map((model) => {
       const isPremium = PREMIUM_MODEL_IDS.has(model.id);
       const isActive = activeModel === model.id;
+      const showModelTips = beginner?.showTips ?? false;
       const tileClass = [
         'model-metric-card',
         'model-card',
@@ -383,7 +400,15 @@ function CompanyResearchPageInner() {
             </div>
           )}
           <div className="model-metric-content">
-            <span className="model-metric-label cr-model-tile__title">{model.name}</span>
+            <span className="model-metric-label cr-model-tile__title">
+              {model.name}
+              {showModelTips && model.id === 'grpv' && (
+                <span className="beginner-model-chip">Start here</span>
+              )}
+              {showModelTips && model.id !== 'grpv' && isPremium && (
+                <span className="beginner-model-advanced">Advanced</span>
+              )}
+            </span>
           </div>
           {isPremium && (
             <span className="cr-model-premium-star" aria-hidden>
@@ -406,6 +431,18 @@ function CompanyResearchPageInner() {
   return (
     <div className="dashboard-page-inset cr-page">
       <ResearchPageHeader view={view} setView={setView} />
+      {showBeginnerAnalysis && (
+        <div className="beginner-first-analysis">
+          <p>
+            New here? Let&apos;s analyze Apple together — we&apos;ll walk you through the models and
+            key metrics.
+          </p>
+          <button type="button" onClick={handleStartAppleAnalysis}>
+            Analyze AAPL together →
+          </button>
+        </div>
+      )}
+
       <div
         className="company-search-wrapper relative"
         ref={searchRef}
@@ -585,6 +622,7 @@ function CompanyResearchPageInner() {
                 modelId={activeModel}
                 symbol={selectedStock}
                 onClose={handleCloseAnalysis}
+                showTips={beginner?.showTips}
               />
             </section>
           )}
@@ -621,6 +659,8 @@ function CompanyResearchPageInner() {
           </div>
         </section>
       )}
+
+      {selectedStock && view === 'company' && <EducationTip topic="diversification" />}
 
       {selectedStock && (
         <section className="research-cards-section cr-research-cards mt-8">
@@ -848,6 +888,27 @@ function CompanyResearchPageInner() {
           }}
         />
       )}
+
+      <BeginnerSpotlight
+        pageKey="company-research"
+        steps={[
+          {
+            targetSelector: '[data-task-target="research-search-bar"]',
+            message: 'Search any ticker here — try AAPL or your favorite company.',
+            position: 'bottom',
+          },
+          {
+            targetSelector: '[data-model="grpv"]',
+            message: 'Start with GRPV — our guided model for a quick fundamentals overview.',
+            position: 'bottom',
+          },
+          {
+            targetSelector: '[data-task-target="research-company-card"]',
+            message: 'Or click any tile in the heatmap to open a full company profile.',
+            position: 'right',
+          },
+        ]}
+      />
     </div>
   );
 }

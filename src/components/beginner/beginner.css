@@ -1,0 +1,321 @@
+.beginner-metric-info {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+.beginner-metric-info-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid var(--emerald-border, rgba(16, 185, 129, 0.35));
+  background: var(--emerald-bg, rgba(16, 185, 129, 0.1));
+  color: var(--emerald, #10b981);
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.beginner-metric-info-btn--pulse {
+  animation: beginner-metric-pulse 2s ease-in-out infinite;
+}
+
+@keyframes beginner-metric-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .beginner-metric-info-btn--pulse {
+    animation: none;
+  }
+}
+
+.beginner-metric-popover {
+  position: absolute;
+  z-index: 120;
+  max-width: 260px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-secondary, rgba(16, 185, 129, 0.15));
+  background: var(--bg-secondary, #131a28);
+  color: var(--text-secondary, #aeb7c5);
+  font-size: 0.75rem;
+  line-height: 1.45;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+body.light-mode .beginner-metric-popover {
+  background: #ffffff;
+  color: #525252;
+  border-color: rgba(15, 23, 42, 0.1);
+}
+
+.beginner-edu-card {
+  border-radius: 12px;
+  border: 1px solid var(--emerald-border, rgba(16, 185, 129, 0.2));
+  background: var(--emerald-bg, rgba(16, 185, 129, 0.06));
+  padding: 16px 18px;
+  margin-bottom: 16px;
+}
+
+.beginner-edu-card__eyebrow {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--emerald, #10b981);
+  margin-bottom: 6px;
+}
+
+.beginner-edu-card__title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary, #f5f7fa);
+  margin: 0 0 8px;
+}
+
+body.light-mode .beginner-edu-card__title {
+  color: #0a0a0a;
+}
+
+.beginner-edu-card__body {
+  font-size: 0.8rem;
+  color: var(--text-secondary, #aeb7c5);
+  line-height: 1.5;
+  margin: 0 0 8px;
+}
+
+body.light-mode .beginner-edu-card__body {
+  color: #525252;
+}
+
+.beginner-edu-card__tradeoff {
+  font-size: 0.75rem;
+  color: var(--text-muted, #6b7588);
+  font-style: italic;
+  margin: 0 0 10px;
+}
+
+.beginner-edu-card__disclaimer {
+  font-size: 0.65rem;
+  color: var(--text-muted, #6b7588);
+  margin: 0 0 10px;
+}
+
+.beginner-edu-card__actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.beginner-edu-card__link {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--emerald, #10b981);
+  text-decoration: none;
+}
+
+.beginner-edu-card__dismiss {
+  font-size: 0.75rem;
+  color: var(--text-muted, #6b7588);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.beginner-community-intro {
+  border-radius: 14px;
+  border: 1px solid var(--border-secondary, rgba(16, 185, 129, 0.12));
+  background: var(--bg-secondary, #0e1421);
+  padding: 18px 20px;
+  margin-bottom: 18px;
+}
+
+body.light-mode .beginner-community-intro {
+  background: #f9fafb;
+  border-color: rgba(15, 23, 42, 0.08);
+}
+
+.beginner-community-intro h3 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+  color: var(--text-primary, #f5f7fa);
+}
+
+body.light-mode .beginner-community-intro h3 {
+  color: #0a0a0a;
+}
+
+.beginner-community-intro p {
+  margin: 0 0 12px;
+  font-size: 0.85rem;
+  color: var(--text-secondary, #aeb7c5);
+  line-height: 1.5;
+}
+
+body.light-mode .beginner-community-intro p {
+  color: #525252;
+}
+
+.beginner-lc-banner {
+  border-radius: 12px;
+  border: 1px solid var(--lc-accent-ring, rgba(16, 185, 129, 0.3));
+  background: var(--lc-accent-soft, rgba(16, 185, 129, 0.1));
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.beginner-lc-banner__text {
+  font-size: 0.875rem;
+  color: var(--lc-ink, #f5f7fa);
+  margin: 0;
+}
+
+body.light-mode .beginner-lc-banner__text {
+  color: #0a0a0a;
+}
+
+.beginner-lc-banner__cta {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--lc-accent-deep, #047857);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.beginner-first-analysis {
+  border-radius: 12px;
+  border: 1px dashed var(--emerald-border, rgba(16, 185, 129, 0.35));
+  background: var(--emerald-bg, rgba(16, 185, 129, 0.06));
+  padding: 20px;
+  text-align: center;
+  margin: 16px 0;
+}
+
+.beginner-first-analysis p {
+  margin: 0 0 12px;
+  color: var(--text-secondary, #aeb7c5);
+  font-size: 0.9rem;
+}
+
+body.light-mode .beginner-first-analysis p {
+  color: #525252;
+}
+
+.beginner-first-analysis button {
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: none;
+  background: var(--emerald, #10b981);
+  color: #062117;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.beginner-model-chip {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: rgba(16, 185, 129, 0.2);
+  color: var(--emerald, #10b981);
+  vertical-align: middle;
+}
+
+.beginner-model-advanced {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  background: rgba(148, 163, 184, 0.15);
+  color: var(--text-muted, #6b7588);
+  vertical-align: middle;
+}
+
+.checklist-stage-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.checklist-stage-title {
+  color: #111827;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+:is(.dark, body:not(.light-mode)) .checklist-stage-title {
+  color: #e5e7eb;
+}
+
+.checklist-stage-lock {
+  font-size: 0.7rem;
+  color: #9ca3af;
+  margin-bottom: 8px;
+}
+
+.checklist-stage-bar {
+  background: #f3f4f6;
+  border-radius: 4px;
+  height: 4px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+:is(.dark, body:not(.light-mode)) .checklist-stage-bar {
+  background: #1f2937;
+}
+
+.checklist-stage-bar-fill {
+  background: #10b981;
+  height: 100%;
+  border-radius: 4px;
+}
+
+.checklist-reward-badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.12);
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.checklist-reward-badge--lg {
+  font-size: 0.7rem;
+  padding: 3px 8px;
+}

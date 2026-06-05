@@ -51,7 +51,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { ticker, model: modelId, investmentProfile } = body;
+    const { ticker, model: modelId, investmentProfile, simpleExplain } = body;
 
     if (!ticker) {
       return NextResponse.json({ error: 'ticker is required' }, { status: 400 });
@@ -94,11 +94,18 @@ export async function POST(request) {
     }
 
     // Call Anthropic API
+    let systemPrompt = modelConfig.systemPrompt;
+    if (simpleExplain) {
+      systemPrompt =
+        'Explain for a beginner: short, plain language, define any jargon inline, no buy/sell advice.\n\n' +
+        systemPrompt;
+    }
+
     const anthropic = new Anthropic({ apiKey });
     const response = await anthropic.messages.create({
       model: MODEL,
       max_tokens: 4000,
-      system: modelConfig.systemPrompt,
+      system: systemPrompt,
       messages: [{ role: 'user', content: userPrompt }],
     });
 

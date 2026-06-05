@@ -17,6 +17,9 @@ import { TrendingNarratives } from './TrendingNarratives';
 import { CopyInbox } from './CopyInbox';
 import { CompetitionsPanel } from '@/components/community/competitions/CompetitionsPanel';
 import { useEvolutionaryData } from './useEvolutionaryData';
+import { BeginnerCommunityIntro } from '@/components/beginner/BeginnerCommunityIntro';
+import { BeginnerSpotlight } from '@/components/beginner/BeginnerSpotlight';
+import '@/components/beginner/beginner.css';
 
 const SKILL_ORDER = ['Novice', 'Apprentice', 'Journeyman', 'Master', 'Oracle'];
 
@@ -130,6 +133,8 @@ export function HubEvolutionary() {
         <CommunityQuickNav profileHref={profileHref} />
       </header>
 
+      <BeginnerCommunityIntro />
+
       <section className="spine">
         <PulseHero pulse={pulse} activeTicker={activeTicker} setActiveTicker={setActiveTicker} />
         <LensBar
@@ -213,6 +218,22 @@ export function HubEvolutionary() {
           <CopyInbox requests={copyRequests} onAction={handleCopyAction} />
         </aside>
       </div>
+
+      <BeginnerSpotlight
+        pageKey="community"
+        steps={[
+          {
+            targetSelector: '[data-task-target="community-feed"]',
+            message: 'The feed is where members share ideas — browse before you post.',
+            position: 'top',
+          },
+          {
+            targetSelector: '[data-task-target="community-leaderboard"]',
+            message: 'The leaderboard ranks members by conviction-weighted performance.',
+            position: 'left',
+          },
+        ]}
+      />
     </div>
   );
 }

@@ -18,6 +18,10 @@ import { ModelVariableStrip } from '@/components/research/models/ModelVariableSt
 import { EarningsAnalysisCard } from '@/components/research/models/EarningsAnalysisCard';
 import { CompsAnalysisCard } from '@/components/research/models/CompsAnalysisCard';
 import DCFInteractiveModel from './dcf/DCFInteractiveModel';
+import { incrementAnalysesRun } from '@/lib/beginner-profile';
+import { useChecklist } from '@/hooks/useChecklist';
+
+const SIMPLE_EXPLAIN_KEY = 'ezana_simple_explain';
 
 function EarningsAnalysisPanel({ symbol, onClose }) {
   const panelRef = useRef(null);
@@ -36,7 +40,7 @@ function EarningsAnalysisPanel({ symbol, onClose }) {
  * Opens below the carousel when a model card is clicked.
  * Calls /api/ai-stock-analysis with the selected model and ticker.
  */
-export function AIAnalysisPanel({ modelId, symbol, onClose }) {
+export function AIAnalysisPanel({ modelId, symbol, onClose, showTips = false }) {
   if (modelId === 'dcf') {
     return <DCFInteractiveModel symbol={symbol} onClose={onClose} />;
   }
@@ -56,9 +60,31 @@ export function AIAnalysisPanel({ modelId, symbol, onClose }) {
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [simpleExplain, setSimpleExplain] = useState(false);
   const panelRef = useRef(null);
+  const { completeTask } = useChecklist();
 
   const modelConfig = getModelConfig(modelId);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const stored = window.localStorage.getItem(SIMPLE_EXPLAIN_KEY);
+    if (stored === 'true' || stored === 'false') {
+      setSimpleExplain(stored === 'true');
+    } else {
+      setSimpleExplain(!!showTips);
+    }
+  }, [showTips]);
+
+  const toggleSimpleExplain = () => {
+    setSimpleExplain((v) => {
+      const next = !v;
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(SIMPLE_EXPLAIN_KEY, String(next));
+      }
+      return next;
+    });
+  };
 
   const runAnalysis = useCallback(async () => {
     if (!symbol || !modelId) return;
@@ -70,7 +96,7 @@ export function AIAnalysisPanel({ modelId, symbol, onClose }) {
       const res = await fetch('/api/ai-stock-analysis', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ticker: symbol, model: modelId }),
+        body: JSON.stringify({ ticker: symbol, model: modelId, simpleExplain }),
       });
 
       if (!res.ok) {
@@ -80,18 +106,20 @@ export function AIAnalysisPanel({ modelId, symbol, onClose }) {
 
       const data = await res.json();
       setAnalysis(data);
+      void incrementAnalysesRun();
+      completeTask('action_1');
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  }, [symbol, modelId]);
+  }, [symbol, modelId, simpleExplain, completeTask]);
 
   useEffect(() => {
     if (symbol && modelId) {
       runAnalysis();
     }
-  }, [symbol, modelId, runAnalysis]);
+  }, [symbol, modelId, runAnalysis, simpleExplain]);
 
   useEffect(() => {
     if (panelRef.current) {
@@ -126,6 +154,19 @@ export function AIAnalysisPanel({ modelId, symbol, onClose }) {
             </div>
           </div>
           <div className="ai-analysis-header-right">
+            <button
+              type="button"
+              className={`ai-analysis-rerun ${simpleExplain ? 'is-active' : ''}`}
+              onClick={toggleSimpleExplain}
+              title="Explain results in plain language"
+              style={
+                simpleExplain
+                  ? { borderColor: 'rgba(16,185,129,0.5)', color: 'var(--emerald, #10b981)' }
+                  : undefined
+              }
+            >
+              <i className="bi bi-chat-left-text" /> Explain simply
+            </button>
             {analysis?.marketData && (
               <div className="ai-analysis-price-badge">
                 <span className="ai-price">${analysis.marketData.price?.toLocaleString()}</span>

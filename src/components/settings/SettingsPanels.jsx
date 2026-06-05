@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
@@ -9,10 +9,11 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useAuth } from '@/components/AuthProvider';
 import { NotificationPreferences } from './NotificationPreferences';
+import { useBeginnerLevelContext } from '@/contexts/BeginnerLevelContext';
 
-/* ═══════════════════════════════════════════════════════════
-   SETTINGS PANELS — 10 panels with full form fields
-   ═══════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   SETTINGS PANELS â€” 10 panels with full form fields
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 export function MyDetailsPanel({ onSave, settings, updateSetting }) {
   const { user } = useAuth();
@@ -51,7 +52,7 @@ export function MyDetailsPanel({ onSave, settings, updateSetting }) {
       }
 
       /*
-       * Path is `<uid>/avatar.<ext>` — no redundant `avatars/` prefix. The
+       * Path is `<uid>/avatar.<ext>` â€” no redundant `avatars/` prefix. The
        * storage RLS policy checks `(storage.foldername(name))[1]` against
        * `auth.uid()::text`, so the first path segment MUST be the user id
        * or INSERT/UPDATE will be blocked.
@@ -203,7 +204,7 @@ export function MyDetailsPanel({ onSave, settings, updateSetting }) {
             <input
               type="url"
               className="settings-input"
-              placeholder="https://…"
+              placeholder="https://â€¦"
               value={settings?.avatar_url || ''}
               onChange={(e) => updateSetting('avatar_url', e.target.value)}
             />
@@ -381,8 +382,8 @@ export function AppearancePanel({ settings, updateSetting, onSave }) {
               onChange={(e) => updateSetting('language', e.target.value)}
             >
               <option value="en">English</option>
-              <option value="es">Español</option>
-              <option value="fr">Français</option>
+              <option value="es">EspaÃ±ol</option>
+              <option value="fr">FranÃ§ais</option>
             </select>
           </div>
           <div className="settings-field">
@@ -393,11 +394,11 @@ export function AppearancePanel({ settings, updateSetting, onSave }) {
               onChange={(e) => updateSetting('currency', e.target.value)}
             >
               <option value="USD">USD ($)</option>
-              <option value="EUR">EUR (€)</option>
-              <option value="GBP">GBP (£)</option>
+              <option value="EUR">EUR (â‚¬)</option>
+              <option value="GBP">GBP (Â£)</option>
               <option value="CAD">CAD (C$)</option>
               <option value="AUD">AUD (A$)</option>
-              <option value="JPY">JPY (¥)</option>
+              <option value="JPY">JPY (Â¥)</option>
             </select>
           </div>
         </div>
@@ -415,7 +416,9 @@ export function ProfilePanel({ onSave, settings, updateSetting, saveSettings, sa
   const [username, setUsername] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [tipsBusy, setTipsBusy] = useState(false);
   const { isPartner } = usePartner();
+  const { tipsPref, setTipsPref, clearSeen, band, score } = useBeginnerLevelContext();
 
   const getToken = useCallback(async () => {
     const {
@@ -606,6 +609,48 @@ export function ProfilePanel({ onSave, settings, updateSetting, saveSettings, sa
           </div>
         </div>
         <h3 className="settings-section-title settings-section-title--spaced">
+          <i className="bi bi-lightbulb" /> Beginner guidance
+        </h3>
+        <div className="settings-row single">
+          <div className="settings-field">
+            <label className="settings-label">Beginner tips</label>
+            <select
+              className="settings-input"
+              value={tipsPref}
+              disabled={tipsBusy}
+              onChange={async (e) => {
+                setTipsBusy(true);
+                await setTipsPref(e.target.value);
+                setTipsBusy(false);
+              }}
+            >
+              <option value="auto">Auto (fade as you progress)</option>
+              <option value="on">Always on</option>
+              <option value="off">Off</option>
+            </select>
+            <span className="settings-field-hint">
+              Current level: {band} (score {score}/100). Tips show spotlights, explainers, and
+              educational cards — not investment advice.
+            </span>
+          </div>
+        </div>
+        <div className="settings-row single">
+          <button
+            type="button"
+            className="settings-btn settings-btn--secondary"
+            disabled={tipsBusy}
+            onClick={async () => {
+              setTipsBusy(true);
+              await clearSeen();
+              setSuccess('Beginner tips will show again on your next visit to each page.');
+              setTipsBusy(false);
+              setTimeout(() => setSuccess(''), 2500);
+            }}
+          >
+            Replay beginner tips
+          </button>
+        </div>
+        <h3 className="settings-section-title settings-section-title--spaced">
           <i className="bi bi-shield-lock" /> Privacy
         </h3>
         <div className="settings-toggle-row">
@@ -758,379 +803,13 @@ export function ProfilePanel({ onSave, settings, updateSetting, saveSettings, sa
   );
 }
 
-function passwordStrength(pwd) {
-  if (!pwd) return { score: 0, label: '', pct: 0 };
-  let score = 0;
-  if (pwd.length >= 8) score++;
-  if (pwd.length >= 12) score++;
-  if (/[a-z]/.test(pwd) && /[A-Z]/.test(pwd)) score++;
-  if (/\d/.test(pwd)) score++;
-  if (/[^a-zA-Z0-9]/.test(pwd)) score++;
-  const labels = ['', 'Weak', 'Fair', 'Good', 'Strong', 'Very Strong'];
-  const pcts = [0, 20, 40, 60, 80, 100];
-  return { score, label: labels[score], pct: pcts[score] };
-}
-
-export function PasswordPanel({ onSave, settings, updateSetting }) {
-  const [newPassword, setNewPassword] = useState('');
-  const strength = passwordStrength(newPassword);
-  return (
-    <div className="settings-panel">
-      <div className="settings-panel-header">
-        <h2 className="settings-panel-title">Password & Security</h2>
-        <p className="settings-panel-desc">Manage your password and security settings.</p>
-      </div>
-      <div className="settings-section">
-        <h3 className="settings-section-title">
-          <i className="bi bi-key" />
-          Change password
-        </h3>
-        <div className="settings-row single">
-          <div className="settings-field">
-            <label className="settings-label">Current password</label>
-            <input type="password" className="settings-input" placeholder="••••••••" />
-          </div>
-        </div>
-        <div className="settings-row">
-          <div className="settings-field">
-            <label className="settings-label">New password</label>
-            <input
-              type="password"
-              className="settings-input"
-              placeholder="••••••••"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-            />
-            {newPassword && (
-              <div className="settings-password-strength">
-                <div className="settings-strength-bar">
-                  <div
-                    className="settings-strength-fill"
-                    style={{
-                      width: `${strength.pct}%`,
-                      background:
-                        strength.pct < 40 ? '#ef4444' : strength.pct < 70 ? '#f59e0b' : '#10b981',
-                    }}
-                  />
-                </div>
-                <span className="settings-strength-label">{strength.label}</span>
-              </div>
-            )}
-          </div>
-          <div className="settings-field">
-            <label className="settings-label">Confirm new password</label>
-            <input type="password" className="settings-input" placeholder="••••••••" />
-          </div>
-        </div>
-        <div className="settings-toggle-row">
-          <div className="settings-toggle-info">
-            <span className="settings-toggle-label">Two-factor authentication</span>
-            <span className="settings-toggle-desc">Add an extra layer of security</span>
-          </div>
-          <button
-            type="button"
-            className={`settings-switch ${settings?.security_two_factor ? 'on' : ''}`}
-            onClick={() => updateSetting('security_two_factor', !settings?.security_two_factor)}
-            aria-label="Toggle 2FA"
-          />
-        </div>
-        <div className="settings-toggle-row">
-          <div className="settings-toggle-info">
-            <span className="settings-toggle-label">Login alerts</span>
-            <span className="settings-toggle-desc">Email when a new device signs in</span>
-          </div>
-          <button
-            type="button"
-            className={`settings-switch ${settings?.security_login_alerts ? 'on' : ''}`}
-            onClick={() => updateSetting('security_login_alerts', !settings?.security_login_alerts)}
-            aria-label="Toggle login alerts"
-          />
-        </div>
-        <h3 className="settings-section-title">
-          <i className="bi bi-laptop" />
-          Active sessions
-        </h3>
-        <table className="settings-table">
-          <thead>
-            <tr>
-              <th>Device</th>
-              <th>Location</th>
-              <th>Last active</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Chrome on Windows</td>
-              <td>New York, US</td>
-              <td>Just now</td>
-              <td>
-                <button
-                  type="button"
-                  className="settings-btn-danger"
-                  style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }}
-                >
-                  Revoke
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <div className="settings-btn-row">
-          <button type="button" className="settings-btn-primary" onClick={onSave}>
-            Update password
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export function FamilyPanel({ onSave }) {
-  return (
-    <div className="settings-panel">
-      <div className="settings-panel-header">
-        <h2 className="settings-panel-title">Family</h2>
-        <p className="settings-panel-desc">Manage linked family accounts and sharing.</p>
-      </div>
-      <div className="settings-section">
-        <div className="settings-info-card">
-          <strong>Member slots:</strong> 2 of 5 used
-        </div>
-        <h3 className="settings-section-title">
-          <i className="bi bi-people" />
-          Family members
-        </h3>
-        <table className="settings-table">
-          <thead>
-            <tr>
-              <th>Email</th>
-              <th>Role</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>jane@example.com</td>
-              <td>Viewer</td>
-              <td>
-                <button
-                  type="button"
-                  className="settings-btn-danger"
-                  style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }}
-                >
-                  Remove
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <h3 className="settings-section-title">
-          <i className="bi bi-person-plus" />
-          Invite member
-        </h3>
-        <div className="settings-row">
-          <div className="settings-field">
-            <label className="settings-label">Email</label>
-            <input type="email" className="settings-input" placeholder="family@example.com" />
-          </div>
-          <div className="settings-field">
-            <label className="settings-label">Role</label>
-            <select className="settings-input">
-              <option>Viewer</option>
-              <option>Editor</option>
-            </select>
-          </div>
-        </div>
-        <div className="settings-toggle-row">
-          <div className="settings-toggle-info">
-            <span className="settings-toggle-label">Share watchlist</span>
-            <span className="settings-toggle-desc">Allow family members to see your watchlist</span>
-          </div>
-          <button type="button" className="settings-switch on" aria-label="Toggle" />
-        </div>
-        <div className="settings-btn-row">
-          <button type="button" className="settings-btn-primary" onClick={onSave}>
-            Send invite
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export function PlanPanel({ onSave }) {
-  return (
-    <div className="settings-panel">
-      <div className="settings-panel-header">
-        <h2 className="settings-panel-title">Plan</h2>
-        <p className="settings-panel-desc">Manage your subscription and usage.</p>
-      </div>
-      <div className="settings-section">
-        <div className="settings-info-card">
-          <span className="settings-badge green">Current plan</span>
-          <strong style={{ marginLeft: '0.5rem' }}>Pro</strong>
-        </div>
-        <h3 className="settings-section-title">
-          <i className="bi bi-pie-chart" />
-          Usage
-        </h3>
-        <div className="settings-field">
-          <span className="settings-label">API calls this month</span>
-          <div className="settings-usage-bar">
-            <div className="settings-usage-fill" style={{ width: '65%' }} />
-          </div>
-          <div className="settings-usage-text">
-            <span>6,500</span>
-            <span>10,000 limit</span>
-          </div>
-        </div>
-        <div className="settings-plan-cards">
-          <div className="settings-plan-card">
-            <div className="settings-plan-name">Free</div>
-            <div className="settings-plan-price">
-              $0 <span>/month</span>
-            </div>
-            <div className="settings-plan-feature">
-              <i className="bi bi-check" />
-              Basic features
-            </div>
-            <div className="settings-plan-feature">
-              <i className="bi bi-check" />
-              1,000 API calls
-            </div>
-          </div>
-          <div className="settings-plan-card current">
-            <div className="settings-plan-name">Pro</div>
-            <div className="settings-plan-price">
-              $19 <span>/month</span>
-            </div>
-            <div className="settings-plan-feature">
-              <i className="bi bi-check" />
-              All features
-            </div>
-            <div className="settings-plan-feature">
-              <i className="bi bi-check" />
-              10,000 API calls
-            </div>
-          </div>
-          <div className="settings-plan-card">
-            <div className="settings-plan-name">Elite</div>
-            <div className="settings-plan-price">
-              $49 <span>/month</span>
-            </div>
-            <div className="settings-plan-feature">
-              <i className="bi bi-check" />
-              Priority support
-            </div>
-            <div className="settings-plan-feature">
-              <i className="bi bi-check" />
-              Unlimited API
-            </div>
-          </div>
-        </div>
-        <div className="settings-btn-row" style={{ flexWrap: 'wrap', gap: '0.5rem' }}>
-          <Link
-            href="/subscribe"
-            className="settings-btn-primary"
-            style={{
-              textAlign: 'center',
-              textDecoration: 'none',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            View plans &amp; checkout
-          </Link>
-          <ManageBillingButton className="settings-btn-secondary" label="Manage subscription" />
-          <button type="button" className="settings-btn-primary" onClick={onSave}>
-            Save
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export function BillingPanel({ onSave }) {
-  return (
-    <div className="settings-panel">
-      <div className="settings-panel-header">
-        <h2 className="settings-panel-title">Billing</h2>
-        <p className="settings-panel-desc">Payment methods and billing history.</p>
-      </div>
-      <div className="settings-section">
-        <h3 className="settings-section-title">
-          <i className="bi bi-credit-card" />
-          Payment method
-        </h3>
-        <div className="settings-info-card">
-          <strong>•••• •••• •••• 4242</strong> — Expires 12/26
-        </div>
-        <div
-          className="settings-btn-row"
-          style={{ flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}
-        >
-          <ManageBillingButton className="settings-btn-primary" label="Update payment method" />
-        </div>
-        <button type="button" className="settings-btn-secondary">
-          Add payment method
-        </button>
-        <h3 className="settings-section-title">
-          <i className="bi bi-geo-alt" />
-          Billing address
-        </h3>
-        <div className="settings-row single">
-          <div className="settings-field">
-            <label className="settings-label">Address</label>
-            <input type="text" className="settings-input" placeholder="123 Main St" />
-          </div>
-        </div>
-        <div className="settings-row">
-          <div className="settings-field">
-            <label className="settings-label">City</label>
-            <input type="text" className="settings-input" placeholder="New York" />
-          </div>
-          <div className="settings-field">
-            <label className="settings-label">ZIP</label>
-            <input type="text" className="settings-input" placeholder="10001" />
-          </div>
-        </div>
-        <h3 className="settings-section-title">
-          <i className="bi bi-receipt" />
-          Billing history
-        </h3>
-        <table className="settings-table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Description</th>
-              <th>Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Mar 1, 2025</td>
-              <td>Pro subscription</td>
-              <td>$19.00</td>
-            </tr>
-            <tr>
-              <td>Feb 1, 2025</td>
-              <td>Pro subscription</td>
-              <td>$19.00</td>
-            </tr>
-          </tbody>
-        </table>
-        <div className="settings-btn-row">
-          <button type="button" className="settings-btn-primary" onClick={onSave}>
-            Save changes
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
+export {
+  PasswordPanel,
+  FamilyPanel,
+  PlanPanel,
+  BillingPanel,
+  ApiPanel,
+} from './SettingsOverhaulPanels';
 
 export function EmailPanel({ onSave, settings, updateSetting }) {
   return (
@@ -1230,7 +909,7 @@ export function NotificationsPanel({ onSave, settings, updateSetting }) {
       if (!result.success) {
         if (result.error === 'Permission denied by browser') {
           setError(
-            'Your browser blocked notifications. Open the lock icon in the address bar → Site settings → Notifications → Allow, then try again.',
+            'Your browser blocked notifications. Open the lock icon in the address bar ΓåÆ Site settings ΓåÆ Notifications ΓåÆ Allow, then try again.',
           );
         } else {
           setError(result.error || 'Failed to enable notifications');
@@ -1266,7 +945,7 @@ export function NotificationsPanel({ onSave, settings, updateSetting }) {
       <div className="settings-panel-header">
         <h2 className="settings-panel-title">Notifications</h2>
         <p className="settings-panel-desc">
-          Manage how you hear from Ezana Finance. Desktop push can only be enabled here — we never
+          Manage how you hear from Ezana Finance. Desktop push can only be enabled here ΓÇö we never
           ask on sign-up or login.
         </p>
       </div>
@@ -1280,7 +959,7 @@ export function NotificationsPanel({ onSave, settings, updateSetting }) {
             <div className="settings-toggle-info">
               <span className="settings-toggle-label">Desktop notifications</span>
               <span className="settings-toggle-desc">
-                Receive push notifications in your browser for alerts and updates — even when this
+                Receive push notifications in your browser for alerts and updates ΓÇö even when this
                 site is in the background. The browser will ask for permission only when you turn
                 this on.
               </span>
@@ -1303,7 +982,7 @@ export function NotificationsPanel({ onSave, settings, updateSetting }) {
           {supported && (
             <p className={`settings-push-status ${isSubscribed ? 'is-on' : ''}`}>
               {loading || toggling
-                ? 'Checking…'
+                ? 'CheckingΓÇª'
                 : isSubscribed
                   ? 'Desktop notifications are enabled for this browser.'
                   : 'Desktop notifications are off.'}
@@ -1406,97 +1085,6 @@ export function IntegrationsPanel({ onSave }) {
               </button>
             </div>
           ))}
-        </div>
-        <div className="settings-btn-row">
-          <button type="button" className="settings-btn-primary" onClick={onSave}>
-            Save changes
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export function ApiPanel({ onSave }) {
-  const [keyVisible, setKeyVisible] = useState(false);
-  const apiKey = 'ez_live_sk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
-  return (
-    <div className="settings-panel">
-      <div className="settings-panel-header">
-        <h2 className="settings-panel-title">API</h2>
-        <p className="settings-panel-desc">API keys, usage, and webhook configuration.</p>
-      </div>
-      <div className="settings-section">
-        <h3 className="settings-section-title">
-          <i className="bi bi-key" />
-          API key
-        </h3>
-        <div className="settings-api-key">
-          <code>{keyVisible ? apiKey : '••••••••••••••••••••••••••••••••••••••••'}</code>
-          <div className="settings-api-key-actions">
-            <button
-              type="button"
-              className="settings-api-key-btn"
-              onClick={() => setKeyVisible(!keyVisible)}
-              title={keyVisible ? 'Hide' : 'Show'}
-            >
-              <i className={`bi bi-${keyVisible ? 'eye-slash' : 'eye'}`} />
-            </button>
-            <button
-              type="button"
-              className="settings-api-key-btn"
-              title="Copy"
-              onClick={() => navigator.clipboard.writeText(apiKey)}
-            >
-              <i className="bi bi-clipboard" />
-            </button>
-          </div>
-        </div>
-        <div className="settings-field">
-          <span className="settings-label">API usage this month</span>
-          <div className="settings-usage-bar">
-            <div className="settings-usage-fill" style={{ width: '42%' }} />
-          </div>
-          <div className="settings-usage-text">
-            <span>4,200</span>
-            <span>10,000 limit</span>
-          </div>
-        </div>
-        <h3 className="settings-section-title">
-          <i className="bi bi-link" />
-          Endpoints
-        </h3>
-        <table className="settings-table">
-          <thead>
-            <tr>
-              <th>Endpoint</th>
-              <th>Usage</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>GET /api/v1/trades</td>
-              <td>1,200</td>
-            </tr>
-            <tr>
-              <td>GET /api/v1/watchlist</td>
-              <td>800</td>
-            </tr>
-          </tbody>
-        </table>
-        <h3 className="settings-section-title">
-          <i className="bi bi-broadcast" />
-          Webhook
-        </h3>
-        <div className="settings-row single">
-          <div className="settings-field">
-            <label className="settings-label">Webhook URL</label>
-            <input
-              type="url"
-              className="settings-input"
-              placeholder="https://your-server.com/webhook"
-            />
-          </div>
         </div>
         <div className="settings-btn-row">
           <button type="button" className="settings-btn-primary" onClick={onSave}>

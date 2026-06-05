@@ -1,6 +1,63 @@
+export const CHECKLIST_STAGES = [
+  { id: 1, name: 'Learn the basics', rewardXp: 50 },
+  { id: 2, name: 'Explore the platform', rewardXp: 50 },
+  { id: 3, name: 'Take an action', rewardXp: 75 },
+  { id: 4, name: 'Join the community', rewardXp: 100 },
+];
+
 export const CHECKLIST_TASKS = {
+  learning_1: {
+    id: 'learning_1',
+    stage: 1,
+    section: 'learning',
+    sectionName: 'Learning Center',
+    title: 'Read your first lesson',
+    description: 'Complete "What Is the Stock Market?" in Stocks & Investing',
+    page: '/learning-center/course/stocks-basic-1',
+    guide: {
+      targetSelector: '[data-task-target="learning-module-card"]',
+      message: 'Open the first Bronze lesson and read through all sections.',
+      position: 'bottom',
+    },
+    completionTrigger: 'course-complete',
+    completionMessage: 'You read your first lesson!',
+  },
+  learning_2: {
+    id: 'learning_2',
+    stage: 1,
+    section: 'learning',
+    sectionName: 'Learning Center',
+    title: 'Take your first quiz',
+    description: 'Pass a lesson quiz to check your understanding',
+    page: '/learning-center/course/stocks-basic-1',
+    guide: {
+      targetSelector: '[data-task-target="learning-quiz-button"]',
+      message: 'Answer the questions, then click Submit Quiz.',
+      position: 'bottom',
+    },
+    completionTrigger: 'click',
+    completionMessage: 'You passed your first quiz!',
+  },
+  learning_3: {
+    id: 'learning_3',
+    stage: 1,
+    section: 'learning',
+    sectionName: 'Learning Center',
+    title: 'Read Risk & Diversification',
+    description: 'Complete "Risk vs Reward" — diversification basics',
+    page: '/learning-center/course/stocks-basic-7',
+    guide: {
+      targetSelector: '[data-task-target="learning-module-card"]',
+      message: 'Read the Risk vs Reward lesson through to the end.',
+      position: 'bottom',
+    },
+    completionTrigger: 'course-complete',
+    completionMessage: 'You learned about risk and diversification!',
+  },
+
   capitol_1: {
     id: 'capitol_1',
+    stage: 2,
     section: 'capitol',
     sectionName: 'Inside the Capitol',
     title: "View a congressman's trading activity",
@@ -17,6 +74,7 @@ export const CHECKLIST_TASKS = {
   },
   capitol_2: {
     id: 'capitol_2',
+    stage: 2,
     section: 'capitol',
     sectionName: 'Inside the Capitol',
     title: 'Filter trades by party',
@@ -32,6 +90,7 @@ export const CHECKLIST_TASKS = {
   },
   capitol_3: {
     id: 'capitol_3',
+    stage: 2,
     section: 'capitol',
     sectionName: 'Inside the Capitol',
     title: 'View a specific stock traded by Congress',
@@ -48,6 +107,7 @@ export const CHECKLIST_TASKS = {
 
   research_1: {
     id: 'research_1',
+    stage: 2,
     section: 'research',
     sectionName: 'Company Research',
     title: 'Search for a company',
@@ -64,6 +124,7 @@ export const CHECKLIST_TASKS = {
   },
   research_2: {
     id: 'research_2',
+    stage: 2,
     section: 'research',
     sectionName: 'Company Research',
     title: "View a company's financial overview",
@@ -79,6 +140,7 @@ export const CHECKLIST_TASKS = {
   },
   research_3: {
     id: 'research_3',
+    stage: 2,
     section: 'research',
     sectionName: 'Company Research',
     title: 'Compare two companies',
@@ -95,6 +157,7 @@ export const CHECKLIST_TASKS = {
 
   market_1: {
     id: 'market_1',
+    stage: 2,
     section: 'market',
     sectionName: 'Market Research',
     title: 'Look up a Polymarket trader',
@@ -110,6 +173,7 @@ export const CHECKLIST_TASKS = {
   },
   market_2: {
     id: 'market_2',
+    stage: 2,
     section: 'market',
     sectionName: 'Market Research',
     title: 'Browse live prediction markets',
@@ -125,6 +189,7 @@ export const CHECKLIST_TASKS = {
   },
   market_3: {
     id: 'market_3',
+    stage: 2,
     section: 'market',
     sectionName: 'Market Research',
     title: 'Check the sports odds board',
@@ -141,6 +206,7 @@ export const CHECKLIST_TASKS = {
 
   watchlist_1: {
     id: 'watchlist_1',
+    stage: 3,
     section: 'watchlist',
     sectionName: 'Watchlist',
     title: 'Add a stock to your watchlist',
@@ -156,6 +222,7 @@ export const CHECKLIST_TASKS = {
   },
   watchlist_2: {
     id: 'watchlist_2',
+    stage: 3,
     section: 'watchlist',
     sectionName: 'Watchlist',
     title: 'Create a custom watchlist',
@@ -169,9 +236,42 @@ export const CHECKLIST_TASKS = {
     completionTrigger: 'click',
     completionMessage: 'You created a custom watchlist!',
   },
+  action_1: {
+    id: 'action_1',
+    stage: 3,
+    section: 'action',
+    sectionName: 'Take Action',
+    title: 'Run a company analysis',
+    description: 'Select a stock and run any AI analysis model',
+    page: '/company-research',
+    guide: {
+      targetSelector: '[data-model="grpv"]',
+      message: 'Pick a stock, then click a model tile to run your first analysis.',
+      position: 'bottom',
+    },
+    completionTrigger: 'click',
+    completionMessage: 'You ran a company analysis!',
+  },
+  action_2: {
+    id: 'action_2',
+    stage: 3,
+    section: 'action',
+    sectionName: 'Take Action',
+    title: 'Place a mock trade',
+    description: 'Try a practice trade in Mock Trading',
+    page: '/trading/mock',
+    guide: {
+      targetSelector: '[data-task-target="mock-trade-submit"]',
+      message: 'Submit a buy or sell order in Mock Trading.',
+      position: 'top',
+    },
+    completionTrigger: 'click',
+    completionMessage: 'You placed a mock trade!',
+  },
 
   community_1: {
     id: 'community_1',
+    stage: 4,
     section: 'community',
     sectionName: 'Community',
     title: 'View the community feed',
@@ -187,6 +287,7 @@ export const CHECKLIST_TASKS = {
   },
   community_2: {
     id: 'community_2',
+    stage: 4,
     section: 'community',
     sectionName: 'Community',
     title: 'Explore a legendary investor profile',
@@ -202,6 +303,7 @@ export const CHECKLIST_TASKS = {
   },
   community_3: {
     id: 'community_3',
+    stage: 4,
     section: 'community',
     sectionName: 'Community',
     title: 'Check the leaderboard',
@@ -214,52 +316,6 @@ export const CHECKLIST_TASKS = {
     },
     completionTrigger: 'scroll-into-view',
     completionMessage: 'You checked the leaderboard!',
-  },
-
-  learning_1: {
-    id: 'learning_1',
-    section: 'learning',
-    sectionName: 'Learning Center',
-    title: 'Start a learning module',
-    description: 'Open any course or module in the Learning Center',
-    page: '/learning-center',
-    guide: {
-      targetSelector: '[data-task-target="learning-module-card"]',
-      message: 'Click any course card to open it.',
-      position: 'bottom',
-    },
-    completionTrigger: 'click',
-    completionMessage: 'You started a learning module!',
-  },
-  learning_2: {
-    id: 'learning_2',
-    section: 'learning',
-    sectionName: 'Learning Center',
-    title: 'Complete a quiz',
-    description: 'Finish a quiz at the end of a lesson',
-    page: '/learning-center/course/stocks-basic-1',
-    guide: {
-      targetSelector: '[data-task-target="learning-quiz-button"]',
-      message: 'Answer the questions, then click Submit Quiz.',
-      position: 'bottom',
-    },
-    completionTrigger: 'click',
-    completionMessage: 'You completed a quiz!',
-  },
-  learning_3: {
-    id: 'learning_3',
-    section: 'learning',
-    sectionName: 'Learning Center',
-    title: 'Bookmark a lesson',
-    description: 'Save a lesson to your bookmarks for later review',
-    page: '/learning-center/course/stocks-basic-1',
-    guide: {
-      targetSelector: '[data-task-target="learning-bookmark"]',
-      message: 'Open a lesson, then click Bookmark lesson.',
-      position: 'left',
-    },
-    completionTrigger: 'click',
-    completionMessage: 'You bookmarked a lesson!',
   },
 };
 
@@ -277,4 +333,32 @@ export function getTasksBySection() {
     grouped[task.section].tasks.push(task);
   });
   return grouped;
+}
+
+export function getTasksByStage() {
+  const grouped = {};
+  CHECKLIST_STAGES.forEach((stage) => {
+    grouped[stage.id] = {
+      ...stage,
+      tasks: [],
+    };
+  });
+  Object.values(CHECKLIST_TASKS).forEach((task) => {
+    const stageId = task.stage ?? 2;
+    if (!grouped[stageId]) {
+      grouped[stageId] = { id: stageId, name: `Stage ${stageId}`, tasks: [] };
+    }
+    grouped[stageId].tasks.push(task);
+  });
+  return grouped;
+}
+
+export function isStageUnlocked(stageId, progress) {
+  if (stageId <= 1) return true;
+  for (let s = 1; s < stageId; s++) {
+    const tasks = Object.values(CHECKLIST_TASKS).filter((t) => t.stage === s);
+    const allDone = tasks.every((t) => progress[t.id]);
+    if (!allDone) return false;
+  }
+  return true;
 }

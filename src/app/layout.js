@@ -14,6 +14,7 @@ import { PinnedCardsProvider } from '@/contexts/PinnedCardsContext';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { SettingsProvider } from '@/contexts/SettingsContext';
 import { ActiveTaskProvider } from '@/contexts/ActiveTaskContext';
+import { BeginnerLevelProvider } from '@/contexts/BeginnerLevelContext';
 import { ConditionalNavbar } from '@/components/Layout/ConditionalNavbar';
 import { PartnerChromeEffects } from '@/components/partner/PartnerChromeEffects';
 import { getServerTheme } from '@/lib/user-preferences/server';
@@ -202,13 +203,15 @@ export default async function RootLayout({ children }) {
                       <CongressProvider>
                         <PinnedCardsProvider>
                           <ToastProvider>
-                            <Suspense
-                              fallback={<nav className="main-nav" style={{ minHeight: 64 }} />}
-                            >
-                              <ConditionalNavbar />
-                            </Suspense>
-                            <PartnerChromeEffects />
-                            {children}
+                            <BeginnerLevelProvider>
+                              <Suspense
+                                fallback={<nav className="main-nav" style={{ minHeight: 64 }} />}
+                              >
+                                <ConditionalNavbar />
+                              </Suspense>
+                              <PartnerChromeEffects />
+                              {children}
+                            </BeginnerLevelProvider>
                           </ToastProvider>
                         </PinnedCardsProvider>
                       </CongressProvider>

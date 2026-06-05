@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { PinnableCard } from '@/components/ui/PinnableCard';
 import { CoursePreviewSection } from '@/components/learning/CoursePreviewSection';
 import { useChecklist } from '@/hooks/useChecklist';
+import { EducationTip } from '@/components/beginner/EducationTip';
 import { getCoursesForWatchlistPreview } from '@/lib/learning-curriculum';
 import { useOrg } from '@/contexts/OrgContext';
 import { MOCK_TEAM_PERFORMANCE } from '@/lib/orgMockData';
@@ -936,6 +937,7 @@ export default function WatchlistPage() {
 
   return (
     <div className="wl-page dashboard-page-inset">
+      <EducationTip topic="diversification" />
       {activeHolder && selected?.type === 'stock' && (
         <HolderPopup
           holder={activeHolder}

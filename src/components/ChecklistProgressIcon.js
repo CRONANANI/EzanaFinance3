@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useChecklist } from '@/hooks/useChecklist';
-import { getTasksBySection } from '@/config/checklist';
+import { getTasksByStage, isStageUnlocked, CHECKLIST_STAGES } from '@/config/checklist';
 import { useActiveTaskContext } from '@/contexts/ActiveTaskContext';
 
 export function ChecklistProgressIcon() {
@@ -11,7 +11,7 @@ export function ChecklistProgressIcon() {
   const { startTask } = useActiveTaskContext();
 
   const percentage = Math.round((completedCount / totalTasks) * 100);
-  const tasksBySection = getTasksBySection();
+  const tasksByStage = getTasksByStage();
 
   if (isComplete) return null;
 
@@ -58,58 +58,90 @@ export function ChecklistProgressIcon() {
               <div className="checklist-progress-bar-fill" style={{ width: `${percentage}%` }} />
             </div>
 
-            {Object.entries(tasksBySection).map(([section, { sectionName, tasks }]) => (
-              <div key={section} style={{ marginBottom: '1rem' }}>
-                <p className="checklist-section-label">{sectionName}</p>
-                {tasks.map((task) => {
-                  const done = !!progress[task.id];
-                  return (
-                    <div
-                      key={task.id}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          if (!done) startTask(task.id);
-                          setIsOpen(false);
-                        }
-                      }}
-                      onClick={() => {
-                        if (!done) startTask(task.id);
-                        setIsOpen(false);
-                      }}
-                      className={`checklist-task-row ${done ? 'checklist-task-row--done' : ''}`}
-                    >
-                      <div
-                        className={`checklist-checkbox ${done ? 'checklist-checkbox--done' : ''}`}
-                      >
-                        {done && (
-                          <svg
-                            width="12"
-                            height="12"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="#fff"
-                            strokeWidth="3"
-                            aria-hidden
+            {CHECKLIST_STAGES.map((stageMeta) => {
+              const stage = tasksByStage[stageMeta.id];
+              if (!stage?.tasks?.length) return null;
+              const unlocked = isStageUnlocked(stageMeta.id, progress);
+              const stageDone = stage.tasks.filter((t) => progress[t.id]).length;
+              const stagePct = Math.round((stageDone / stage.tasks.length) * 100);
+              const rewardClass =
+                stageMeta.id >= 3
+                  ? 'checklist-reward-badge checklist-reward-badge--lg'
+                  : 'checklist-reward-badge';
+
+              return (
+                <div key={stageMeta.id} style={{ marginBottom: '1.25rem' }}>
+                  <div className="checklist-stage-header">
+                    <p className="checklist-stage-title">
+                      Stage {stageMeta.id} — {stage.name}
+                    </p>
+                    <span className={rewardClass}>+{stageMeta.rewardXp} XP</span>
+                  </div>
+                  {!unlocked && (
+                    <p className="checklist-stage-lock">
+                      🔒 Complete Stage {stageMeta.id - 1} to unlock
+                    </p>
+                  )}
+                  {unlocked && (
+                    <>
+                      <div className="checklist-stage-bar">
+                        <div
+                          className="checklist-stage-bar-fill"
+                          style={{ width: `${stagePct}%` }}
+                        />
+                      </div>
+                      {stage.tasks.map((task) => {
+                        const done = !!progress[task.id];
+                        return (
+                          <div
+                            key={task.id}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                if (!done) startTask(task.id);
+                                setIsOpen(false);
+                              }
+                            }}
+                            onClick={() => {
+                              if (!done) startTask(task.id);
+                              setIsOpen(false);
+                            }}
+                            className={`checklist-task-row ${done ? 'checklist-task-row--done' : ''}`}
                           >
-                            <path d="M20 6L9 17l-5-5" />
-                          </svg>
-                        )}
-                      </div>
-                      <div>
-                        <p
-                          className={`checklist-task-title ${done ? 'checklist-task-title--done' : ''}`}
-                        >
-                          {task.title}
-                        </p>
-                        <p className="checklist-task-desc">{task.description}</p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
+                            <div
+                              className={`checklist-checkbox ${done ? 'checklist-checkbox--done' : ''}`}
+                            >
+                              {done && (
+                                <svg
+                                  width="12"
+                                  height="12"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="#fff"
+                                  strokeWidth="3"
+                                  aria-hidden
+                                >
+                                  <path d="M20 6L9 17l-5-5" />
+                                </svg>
+                              )}
+                            </div>
+                            <div>
+                              <p
+                                className={`checklist-task-title ${done ? 'checklist-task-title--done' : ''}`}
+                              >
+                                {task.title}
+                              </p>
+                              <p className="checklist-task-desc">{task.description}</p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </>
       )}

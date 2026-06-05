@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
 import { useOrg } from '@/contexts/OrgContext';
 import { TRACKS } from '@/lib/learning-curriculum';
@@ -32,6 +33,10 @@ import {
 } from './lcMappers';
 
 import './lc2.css';
+import { useBeginnerLevelOptional } from '@/contexts/BeginnerLevelContext';
+import { InvestingBasicsCard } from '@/components/beginner/InvestingBasicsCard';
+import { BeginnerSpotlight } from '@/components/beginner/BeginnerSpotlight';
+import '@/components/beginner/beginner.css';
 
 function computeNextBadgeRemaining(trackId, progressById) {
   const ordered = getOrderedCoursesForTrack(trackId);
@@ -73,6 +78,13 @@ export function LcPage() {
   const router = useRouter();
 
   const { data, loading, error, setMainTrack } = useLearningCenterData();
+  const beginner = useBeginnerLevelOptional();
+
+  useEffect(() => {
+    if (beginner?.band === 'beginner' && data?.mainTrack && data.mainTrack !== 'stocks') {
+      setMainTrack('stocks');
+    }
+  }, [beginner?.band, data?.mainTrack, setMainTrack]);
 
   const [selectedTrack, setSelectedTrack] = useState(null);
   const [selectedLevel, setSelectedLevel] = useState('basic');
@@ -184,6 +196,19 @@ export function LcPage() {
           onSavedClick={handleScrollToBookmarks}
         />
 
+        <InvestingBasicsCard />
+
+        {beginner?.band === 'beginner' && (
+          <div className="beginner-lc-banner">
+            <p className="beginner-lc-banner__text">
+              Recommended for you: start with <strong>Stocks &amp; Investing · Bronze</strong>
+            </p>
+            <Link href="/learning-center/course/stocks-basic-1" className="beginner-lc-banner__cta">
+              Start first lesson →
+            </Link>
+          </div>
+        )}
+
         <div className="lc-row-1">
           <LcEloHero {...heroData} stats={stats} />
           <LcDailyQuest
@@ -238,6 +263,22 @@ export function LcPage() {
           <LcSavedCourses count={data.bookmarks.length} />
           <LcUpNext lessons={upNextLessons} onLessonClick={handleLessonClick} />
         </div>
+
+        <BeginnerSpotlight
+          pageKey="learning-center"
+          steps={[
+            {
+              targetSelector: '[data-task-target="learning-module-card"]',
+              message: 'Your active path — click the next lesson to continue your track.',
+              position: 'bottom',
+            },
+            {
+              targetSelector: '.lc-track-towers',
+              message: 'Track Towers shows progress across every learning track by tier.',
+              position: 'top',
+            },
+          ]}
+        />
       </div>
     </div>
   );
