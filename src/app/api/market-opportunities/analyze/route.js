@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 import { createServerSupabase } from '@/lib/supabase-server';
 
 export const dynamic = 'force-dynamic';
@@ -252,50 +253,50 @@ function buildKpis(tickerStats, event) {
   return kpis.slice(0, 3);
 }
 
-export async function POST(request) {
-  const supabase = createServerSupabase();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+export const POST = withApiGuard(
+  async (request, user) => {
+    const supabase = createServerSupabase();
 
-  let riskProfile = 'Moderate';
-  if (user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('investor_profile, risk_category')
-      .eq('id', user.id)
-      .maybeSingle();
-    const fromProfile = profile?.risk_category || profile?.investor_profile?.risk || null;
-    riskProfile = normalizeRiskCategory(fromProfile || 'Moderate');
-  }
+    let riskProfile = 'Moderate';
+    if (user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('investor_profile, risk_category')
+        .eq('id', user.id)
+        .maybeSingle();
+      const fromProfile = profile?.risk_category || profile?.investor_profile?.risk || null;
+      riskProfile = normalizeRiskCategory(fromProfile || 'Moderate');
+    }
 
-  let body;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
-  }
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+    }
 
-  const event = body.event;
-  if (!event?.headline) {
-    return NextResponse.json({ error: 'Event required' }, { status: 400 });
-  }
+    const event = body.event;
+    if (!event?.headline) {
+      return NextResponse.json({ error: 'Event required' }, { status: 400 });
+    }
 
-  const [relatedNews, tickerStats] = await Promise.all([
-    fetchRelatedNews(event.ticker, event.headline),
-    fetchTickerStats(event.ticker),
-  ]);
+    const [relatedNews, tickerStats] = await Promise.all([
+      fetchRelatedNews(event.ticker, event.headline),
+      fetchTickerStats(event.ticker),
+    ]);
 
-  const aiAnalysis = await generateAiAnalysis(event, riskProfile, tickerStats);
-  const kpis = buildKpis(tickerStats, event);
+    const aiAnalysis = await generateAiAnalysis(event, riskProfile, tickerStats);
+    const kpis = buildKpis(tickerStats, event);
 
-  return NextResponse.json({
-    ok: true,
-    event,
-    riskProfile,
-    analysis: aiAnalysis,
-    relatedNews,
-    kpis,
-    tickerStats,
-  });
-}
+    return NextResponse.json({
+      ok: true,
+      event,
+      riskProfile,
+      analysis: aiAnalysis,
+      relatedNews,
+      kpis,
+      tickerStats,
+    });
+  },
+  { requireAuth: true },
+);

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 import { fetchAV } from '@/lib/alpha-vantage';
 
 export const dynamic = 'force-dynamic';
@@ -73,52 +74,61 @@ function computeSpreadStats(pricesA, pricesB) {
   };
 }
 
-export async function POST(request) {
-  try {
-    const body = await request.json();
-    const tickerA = (body.tickerA || '').toUpperCase().trim();
-    const tickerB = (body.tickerB || '').toUpperCase().trim();
-    const days = Math.min(Math.max(body.days || 252, 30), 500);
+export const POST = withApiGuard(
+  async (request, user) => {
+    try {
+      const body = await request.json();
+      const tickerA = (body.tickerA || '').toUpperCase().trim();
+      const tickerB = (body.tickerB || '').toUpperCase().trim();
+      const days = Math.min(Math.max(body.days || 252, 30), 500);
 
-    if (!tickerA || !tickerB) {
-      return NextResponse.json({ error: 'Two tickers required' }, { status: 400 });
+      if (!tickerA || !tickerB) {
+        return NextResponse.json({ error: 'Two tickers required' }, { status: 400 });
+      }
+
+      const [dataA, dataB] = await Promise.all([
+        fetchAV(
+          { function: 'TIME_SERIES_DAILY_ADJUSTED', symbol: tickerA, outputsize: 'full' },
+          600,
+        ),
+        fetchAV(
+          { function: 'TIME_SERIES_DAILY_ADJUSTED', symbol: tickerB, outputsize: 'full' },
+          600,
+        ),
+      ]);
+
+      const tsA = dataA?.['Time Series (Daily)'];
+      const tsB = dataB?.['Time Series (Daily)'];
+      if (!tsA || !tsB) {
+        return NextResponse.json({ error: 'Could not fetch price data' }, { status: 404 });
+      }
+
+      const datesA = new Set(Object.keys(tsA));
+      const datesB = new Set(Object.keys(tsB));
+      const commonDates = [...datesA]
+        .filter((d) => datesB.has(d))
+        .sort()
+        .slice(-days);
+
+      const pricesA = commonDates.map((d) =>
+        parseFloat(tsA[d]['5. adjusted close'] || tsA[d]['4. close']),
+      );
+      const pricesB = commonDates.map((d) =>
+        parseFloat(tsB[d]['5. adjusted close'] || tsB[d]['4. close']),
+      );
+
+      const stats = computeSpreadStats(pricesA, pricesB);
+      if (!stats) {
+        return NextResponse.json({ error: 'Insufficient overlapping data' }, { status: 404 });
+      }
+
+      return NextResponse.json(
+        { tickerA, tickerB, days: commonDates.length, ...stats },
+        { headers: { 'Cache-Control': 'public, s-maxage=600' } },
+      );
+    } catch (err) {
+      return NextResponse.json({ error: err?.message }, { status: 500 });
     }
-
-    const [dataA, dataB] = await Promise.all([
-      fetchAV({ function: 'TIME_SERIES_DAILY_ADJUSTED', symbol: tickerA, outputsize: 'full' }, 600),
-      fetchAV({ function: 'TIME_SERIES_DAILY_ADJUSTED', symbol: tickerB, outputsize: 'full' }, 600),
-    ]);
-
-    const tsA = dataA?.['Time Series (Daily)'];
-    const tsB = dataB?.['Time Series (Daily)'];
-    if (!tsA || !tsB) {
-      return NextResponse.json({ error: 'Could not fetch price data' }, { status: 404 });
-    }
-
-    const datesA = new Set(Object.keys(tsA));
-    const datesB = new Set(Object.keys(tsB));
-    const commonDates = [...datesA]
-      .filter((d) => datesB.has(d))
-      .sort()
-      .slice(-days);
-
-    const pricesA = commonDates.map((d) =>
-      parseFloat(tsA[d]['5. adjusted close'] || tsA[d]['4. close']),
-    );
-    const pricesB = commonDates.map((d) =>
-      parseFloat(tsB[d]['5. adjusted close'] || tsB[d]['4. close']),
-    );
-
-    const stats = computeSpreadStats(pricesA, pricesB);
-    if (!stats) {
-      return NextResponse.json({ error: 'Insufficient overlapping data' }, { status: 404 });
-    }
-
-    return NextResponse.json(
-      { tickerA, tickerB, days: commonDates.length, ...stats },
-      { headers: { 'Cache-Control': 'public, s-maxage=600' } },
-    );
-  } catch (err) {
-    return NextResponse.json({ error: err?.message }, { status: 500 });
-  }
-}
+  },
+  { requireAuth: true },
+);

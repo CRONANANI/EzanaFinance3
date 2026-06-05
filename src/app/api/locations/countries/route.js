@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 import { Country } from 'country-state-city';
 
 /* Returns the full list of ISO countries as [{ code, name }, ...].
@@ -6,17 +7,20 @@ import { Country } from 'country-state-city';
 export const dynamic = 'force-static';
 export const revalidate = 60 * 60 * 24 * 30; /* 30 days */
 
-export async function GET() {
-  const countries = Country.getAllCountries()
-    .map((c) => ({ code: c.isoCode, name: c.name, flag: c.flag }))
-    .sort((a, b) => a.name.localeCompare(b.name));
+export const GET = withApiGuard(
+  async (request, user) => {
+    const countries = Country.getAllCountries()
+      .map((c) => ({ code: c.isoCode, name: c.name, flag: c.flag }))
+      .sort((a, b) => a.name.localeCompare(b.name));
 
-  return NextResponse.json(
-    { countries },
-    {
-      headers: {
-        'Cache-Control': 'public, s-maxage=2592000, stale-while-revalidate=86400',
+    return NextResponse.json(
+      { countries },
+      {
+        headers: {
+          'Cache-Control': 'public, s-maxage=2592000, stale-while-revalidate=86400',
+        },
       },
-    },
-  );
-}
+    );
+  },
+  { requireAuth: false },
+);

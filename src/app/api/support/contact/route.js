@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 import { Resend } from 'resend';
 
 export const dynamic = 'force-dynamic';
@@ -32,7 +33,8 @@ function validate(body) {
   if (!TOPICS.has(topic)) errors.topic = 'Invalid topic';
 
   if (!message) errors.message = 'Message is required';
-  else if (message.length > MAX_MESSAGE) errors.message = `Message must be ${MAX_MESSAGE} characters or fewer`;
+  else if (message.length > MAX_MESSAGE)
+    errors.message = `Message must be ${MAX_MESSAGE} characters or fewer`;
 
   return { errors, data: { name, email, topic, message } };
 }
@@ -62,60 +64,61 @@ function renderHtmlBody({ name, email, topic, message }) {
   `;
 }
 
-export async function POST(request) {
-  try {
-    const raw = await request.json().catch(() => null);
-    if (!raw || typeof raw !== 'object') {
-      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
-    }
-
-    const { errors, data } = validate(raw);
-    if (Object.keys(errors).length > 0) {
-      return NextResponse.json({ error: 'Validation failed', errors }, { status: 400 });
-    }
-
-    const supportInbox = process.env.SUPPORT_INBOX || 'support@ezanafinance.com';
-    const fromEmail = process.env.RESEND_FROM_EMAIL || 'Ezana Contact <noreply@ezana.world>';
-
-    if (!process.env.RESEND_API_KEY) {
-      // Graceful dev fallback: log the message so local submissions still "work".
-      // In production, a missing RESEND_API_KEY is a real misconfiguration — log
-      // an error and return 503 so the client shows the inline error state with
-      // the fallback email fallback, rather than a misleading success.
-      if (process.env.NODE_ENV === 'production') {
-        console.error('[support/contact] RESEND_API_KEY is not set in production');
-        return NextResponse.json({ error: 'Email service not configured' }, { status: 503 });
+export const POST = withApiGuard(
+  async (request) => {
+    try {
+      const raw = await request.json().catch(() => null);
+      if (!raw || typeof raw !== 'object') {
+        return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
       }
-      console.warn('[support/contact] RESEND_API_KEY not set — logging locally only', {
-        ...data,
-        target: supportInbox,
+
+      const { errors, data } = validate(raw);
+      if (Object.keys(errors).length > 0) {
+        return NextResponse.json({ error: 'Validation failed', errors }, { status: 400 });
+      }
+
+      const supportInbox = process.env.SUPPORT_INBOX || 'support@ezanafinance.com';
+      const fromEmail = process.env.RESEND_FROM_EMAIL || 'Ezana Contact <noreply@ezana.world>';
+
+      if (!process.env.RESEND_API_KEY) {
+        // Graceful dev fallback: log the message so local submissions still "work".
+        // In production, a missing RESEND_API_KEY is a real misconfiguration — log
+        // an error and return 503 so the client shows the inline error state with
+        // the fallback email fallback, rather than a misleading success.
+        if (process.env.NODE_ENV === 'production') {
+          console.error('[support/contact] RESEND_API_KEY is not set in production');
+          return NextResponse.json({ error: 'Email service not configured' }, { status: 503 });
+        }
+        console.warn('[support/contact] RESEND_API_KEY not set — logging locally only', {
+          ...data,
+          target: supportInbox,
+        });
+        return NextResponse.json({ ok: true, delivered: false });
+      }
+
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      const topicLabel = TOPIC_LABELS[data.topic] || data.topic;
+
+      const { error: sendError } = await resend.emails.send({
+        from: fromEmail,
+        to: [supportInbox],
+        replyTo: data.email,
+        subject: `[${topicLabel}] ${data.name}`,
+        html: renderHtmlBody(data),
+        text:
+          `From: ${data.name} <${data.email}>\n` + `Topic: ${topicLabel}\n\n` + `${data.message}\n`,
       });
-      return NextResponse.json({ ok: true, delivered: false });
+
+      if (sendError) {
+        console.error('[support/contact] Resend error:', sendError);
+        return NextResponse.json({ error: 'Failed to send message' }, { status: 502 });
+      }
+
+      return NextResponse.json({ ok: true, delivered: true });
+    } catch (err) {
+      console.error('[support/contact] Unhandled error:', err);
+      return NextResponse.json({ error: 'Failed to send message' }, { status: 500 });
     }
-
-    const resend = new Resend(process.env.RESEND_API_KEY);
-    const topicLabel = TOPIC_LABELS[data.topic] || data.topic;
-
-    const { error: sendError } = await resend.emails.send({
-      from: fromEmail,
-      to: [supportInbox],
-      replyTo: data.email,
-      subject: `[${topicLabel}] ${data.name}`,
-      html: renderHtmlBody(data),
-      text:
-        `From: ${data.name} <${data.email}>\n` +
-        `Topic: ${topicLabel}\n\n` +
-        `${data.message}\n`,
-    });
-
-    if (sendError) {
-      console.error('[support/contact] Resend error:', sendError);
-      return NextResponse.json({ error: 'Failed to send message' }, { status: 502 });
-    }
-
-    return NextResponse.json({ ok: true, delivered: true });
-  } catch (err) {
-    console.error('[support/contact] Unhandled error:', err);
-    return NextResponse.json({ error: 'Failed to send message' }, { status: 500 });
-  }
-}
+  },
+  { requireAuth: false, strict: true },
+);

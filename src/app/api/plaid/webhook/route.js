@@ -14,10 +14,7 @@ import { verifyPlaidWebhook } from '@/lib/plaid-webhook-verify';
 
 export const dynamic = 'force-dynamic';
 
-const VERIFY_WEBHOOKS =
-  process.env.PLAID_VERIFY_WEBHOOKS === 'false'
-    ? false
-    : process.env.NODE_ENV === 'production' || process.env.PLAID_VERIFY_WEBHOOKS === 'true';
+const VERIFY_WEBHOOKS = process.env.NODE_ENV === 'production';
 
 export async function POST(request) {
   try {

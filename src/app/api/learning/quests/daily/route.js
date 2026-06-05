@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 import { getUserClient } from '@/lib/supabase';
 import { ALL_COURSES } from '@/lib/learning-curriculum';
 import {
@@ -63,62 +64,60 @@ function midnightTonightISO() {
   return d.toISOString();
 }
 
-export async function GET() {
-  try {
-    const supabase = getUserClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+export const GET = withApiGuard(
+  async (request, user, context) => {
+    try {
+      const supabase = getUserClient();
+      const today = todayISO();
 
-    const today = todayISO();
+      const { data: existing } = await supabase
+        .from('user_daily_quests')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('quest_date', today)
+        .maybeSingle();
 
-    const { data: existing } = await supabase
-      .from('user_daily_quests')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('quest_date', today)
-      .maybeSingle();
+      if (existing) {
+        return NextResponse.json({
+          primary: { course_id: existing.primary_course_id },
+          bonus: existing.bonus_quests,
+          resets_at: midnightTonightISO(),
+        });
+      }
 
-    if (existing) {
+      const { data: progress } = await supabase
+        .from('user_course_progress')
+        .select('*')
+        .eq('user_id', user.id);
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('user_settings')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      const mainTrack = profile?.user_settings?.learning_main_track || 'stocks';
+      const progressById = buildProgressMap(progress || []);
+      const primaryCourseId = pickPrimaryCourse(progressById, mainTrack);
+      const bonus = buildBonusQuests();
+
+      await supabase.from('user_daily_quests').upsert({
+        user_id: user.id,
+        quest_date: today,
+        primary_course_id: primaryCourseId,
+        bonus_quests: bonus,
+        updated_at: new Date().toISOString(),
+      });
+
       return NextResponse.json({
-        primary: { course_id: existing.primary_course_id },
-        bonus: existing.bonus_quests,
+        primary: { course_id: primaryCourseId },
+        bonus,
         resets_at: midnightTonightISO(),
       });
+    } catch (err) {
+      console.error('[learning/quests/daily]', err);
+      return NextResponse.json({ error: 'Failed to fetch quests' }, { status: 500 });
     }
-
-    const { data: progress } = await supabase
-      .from('user_course_progress')
-      .select('*')
-      .eq('user_id', user.id);
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('user_settings')
-      .eq('id', user.id)
-      .maybeSingle();
-
-    const mainTrack = profile?.user_settings?.learning_main_track || 'stocks';
-    const progressById = buildProgressMap(progress || []);
-    const primaryCourseId = pickPrimaryCourse(progressById, mainTrack);
-    const bonus = buildBonusQuests();
-
-    await supabase.from('user_daily_quests').upsert({
-      user_id: user.id,
-      quest_date: today,
-      primary_course_id: primaryCourseId,
-      bonus_quests: bonus,
-      updated_at: new Date().toISOString(),
-    });
-
-    return NextResponse.json({
-      primary: { course_id: primaryCourseId },
-      bonus,
-      resets_at: midnightTonightISO(),
-    });
-  } catch (err) {
-    console.error('[learning/quests/daily]', err);
-    return NextResponse.json({ error: 'Failed to fetch quests' }, { status: 500 });
-  }
-}
+  },
+  { requireAuth: true },
+);

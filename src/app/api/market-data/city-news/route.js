@@ -1,17 +1,49 @@
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 
 export const dynamic = 'force-dynamic';
-
 
 const FINNHUB_KEY = process.env.FINNHUB_API_KEY;
 const BASE = 'https://finnhub.io/api/v1';
 
 const CITY_KEYWORDS = {
-  'new-york': ['new york', 'nyc', 'wall street', 'nasdaq', 'nyse', 'fed ', 'federal reserve', 'us economy', 'us market', 'american', 'united states'],
+  'new-york': [
+    'new york',
+    'nyc',
+    'wall street',
+    'nasdaq',
+    'nyse',
+    'fed ',
+    'federal reserve',
+    'us economy',
+    'us market',
+    'american',
+    'united states',
+  ],
   toronto: ['toronto', 'canada', 'canadian', 'tsx', 'bank of canada', 'loonie'],
   'sao-paulo': ['brazil', 'brazilian', 'bovespa', 'sao paulo', 'são paulo', 'real ', 'bcb'],
-  london: ['london', 'uk ', 'united kingdom', 'britain', 'british', 'ftse', 'bank of england', 'boe', 'sterling', 'pound'],
-  frankfurt: ['frankfurt', 'german', 'germany', 'ecb', 'european central bank', 'dax', 'eurozone', 'euro '],
+  london: [
+    'london',
+    'uk ',
+    'united kingdom',
+    'britain',
+    'british',
+    'ftse',
+    'bank of england',
+    'boe',
+    'sterling',
+    'pound',
+  ],
+  frankfurt: [
+    'frankfurt',
+    'german',
+    'germany',
+    'ecb',
+    'european central bank',
+    'dax',
+    'eurozone',
+    'euro ',
+  ],
   dubai: ['dubai', 'uae', 'emirates', 'abu dhabi', 'opec', 'middle east', 'gulf', 'saudi'],
   mumbai: ['mumbai', 'india', 'indian', 'sensex', 'nifty', 'rbi', 'rupee'],
   singapore: ['singapore', 'sgx', 'mas ', 'asean'],
@@ -42,7 +74,16 @@ const CITY_KEYWORDS = {
   bogota: ['bogota', 'bogotá', 'colombia', 'colombian', 'peso', 'bvc', 'oil'],
   medellin: ['medellin', 'medellín', 'antioquia', 'colombia', 'colombian', 'innovation'],
   'buenos-aires': ['buenos aires', 'argentina', 'argentine', 'peso', 'milei', 'mercosur', 'byma'],
-  boston: ['boston', 'massachusetts', 'biotech', 'pharma', 'harvard', 'mit ', 'endowment', 'fidelity'],
+  boston: [
+    'boston',
+    'massachusetts',
+    'biotech',
+    'pharma',
+    'harvard',
+    'mit ',
+    'endowment',
+    'fidelity',
+  ],
 };
 
 const CITY_TICKERS = {
@@ -84,100 +125,114 @@ const CITY_TICKERS = {
   boston: ['MRNA', 'BIIB', 'AMGN', 'LLY'],
 };
 
-export async function GET(request) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const cityId = searchParams.get('city');
+export const GET = withApiGuard(
+  async (request) => {
+    try {
+      const { searchParams } = new URL(request.url);
+      const cityId = searchParams.get('city');
 
-    if (!cityId) return NextResponse.json({ error: 'city param required' }, { status: 400 });
+      if (!cityId) return NextResponse.json({ error: 'city param required' }, { status: 400 });
 
-    const tickers = CITY_TICKERS[cityId] || [];
+      const tickers = CITY_TICKERS[cityId] || [];
 
-    const today = new Date().toISOString().split('T')[0];
-    const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0];
+      const today = new Date().toISOString().split('T')[0];
+      const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0];
 
-    const [generalRes, ...companyResults] = await Promise.all([
-      fetch(`${BASE}/news?category=general&token=${FINNHUB_KEY}`),
-      ...tickers.slice(0, 3).map((ticker) =>
-        fetch(`${BASE}/company-news?symbol=${ticker}&from=${weekAgo}&to=${today}&token=${FINNHUB_KEY}`)
-      ),
-    ]);
+      const [generalRes, ...companyResults] = await Promise.all([
+        fetch(`${BASE}/news?category=general&token=${FINNHUB_KEY}`),
+        ...tickers
+          .slice(0, 3)
+          .map((ticker) =>
+            fetch(
+              `${BASE}/company-news?symbol=${ticker}&from=${weekAgo}&to=${today}&token=${FINNHUB_KEY}`,
+            ),
+          ),
+      ]);
 
-    const generalNews = await generalRes.json();
-    const companyNews = [];
-    for (const result of companyResults) {
-      const data = await result.json();
-      companyNews.push(...(Array.isArray(data) ? data : []).slice(0, 5));
-    }
-
-    const allNews = [...companyNews, ...(Array.isArray(generalNews) ? generalNews : []).slice(0, 10)];
-    const seen = new Set();
-    const unique = allNews.filter((n) => {
-      const key = n.headline || n.id;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
-
-    unique.sort((a, b) => (b.datetime || 0) - (a.datetime || 0));
-
-    const keywords = CITY_KEYWORDS[cityId] || [];
-    
-    // Strict relevance scoring — article must mention city/country/keywords
-    const scored = unique.map((article) => {
-      const headline = (article.headline || '').toLowerCase();
-      const summary = (article.summary || '').toLowerCase();
-      const related = (article.related || '').toLowerCase();
-      const fullText = `${headline} ${summary} ${related}`;
-      
-      let score = 0;
-      
-      // Higher score for keyword in headline (most relevant)
-      keywords.forEach(kw => {
-        if (headline.includes(kw)) score += 3;
-        else if (summary.includes(kw)) score += 1;
-        else if (related.includes(kw)) score += 1;
-      });
-      
-      return { ...article, relevanceScore: score };
-    }).filter(a => a.relevanceScore > 0) // ONLY articles with at least 1 keyword match
-      .sort((a, b) => b.relevanceScore - a.relevanceScore); // Most relevant first
-    
-    const finalNews = scored;
-
-    if (finalNews.length === 0) {
-      return NextResponse.json({
-        news: [{
-          id: 'no-news',
-          category: 'INFO',
-          title: `No recent news specifically about ${cityId.replace(/-/g, ' ')}`,
-          summary: 'Check back later for city-specific financial news updates.',
-          source: 'Ezana',
-          url: '#',
-          time: Math.floor(Date.now() / 1000),
-        }],
-      });
-    }
-
-    const formatted = finalNews.slice(0, 15).map((n) => ({
-      id: n.id || n.headline?.slice(0, 20),
-      category: (n.category || 'MARKETS').toUpperCase(),
-      title: n.headline || 'Market Update',
-      summary: n.summary,
-      source: n.source || 'Finnhub',
-      url: n.url || '#',
-      image: n.image,
-      time: n.datetime,
-      related: n.related,
-    }));
-
-    return NextResponse.json(
-      { news: formatted },
-      {
-        headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' },
+      const generalNews = await generalRes.json();
+      const companyNews = [];
+      for (const result of companyResults) {
+        const data = await result.json();
+        companyNews.push(...(Array.isArray(data) ? data : []).slice(0, 5));
       }
-    );
-  } catch (error) {
-    return NextResponse.json({ error: error.message, news: [] }, { status: 500 });
-  }
-}
+
+      const allNews = [
+        ...companyNews,
+        ...(Array.isArray(generalNews) ? generalNews : []).slice(0, 10),
+      ];
+      const seen = new Set();
+      const unique = allNews.filter((n) => {
+        const key = n.headline || n.id;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+
+      unique.sort((a, b) => (b.datetime || 0) - (a.datetime || 0));
+
+      const keywords = CITY_KEYWORDS[cityId] || [];
+
+      // Strict relevance scoring — article must mention city/country/keywords
+      const scored = unique
+        .map((article) => {
+          const headline = (article.headline || '').toLowerCase();
+          const summary = (article.summary || '').toLowerCase();
+          const related = (article.related || '').toLowerCase();
+          const fullText = `${headline} ${summary} ${related}`;
+
+          let score = 0;
+
+          // Higher score for keyword in headline (most relevant)
+          keywords.forEach((kw) => {
+            if (headline.includes(kw)) score += 3;
+            else if (summary.includes(kw)) score += 1;
+            else if (related.includes(kw)) score += 1;
+          });
+
+          return { ...article, relevanceScore: score };
+        })
+        .filter((a) => a.relevanceScore > 0) // ONLY articles with at least 1 keyword match
+        .sort((a, b) => b.relevanceScore - a.relevanceScore); // Most relevant first
+
+      const finalNews = scored;
+
+      if (finalNews.length === 0) {
+        return NextResponse.json({
+          news: [
+            {
+              id: 'no-news',
+              category: 'INFO',
+              title: `No recent news specifically about ${cityId.replace(/-/g, ' ')}`,
+              summary: 'Check back later for city-specific financial news updates.',
+              source: 'Ezana',
+              url: '#',
+              time: Math.floor(Date.now() / 1000),
+            },
+          ],
+        });
+      }
+
+      const formatted = finalNews.slice(0, 15).map((n) => ({
+        id: n.id || n.headline?.slice(0, 20),
+        category: (n.category || 'MARKETS').toUpperCase(),
+        title: n.headline || 'Market Update',
+        summary: n.summary,
+        source: n.source || 'Finnhub',
+        url: n.url || '#',
+        image: n.image,
+        time: n.datetime,
+        related: n.related,
+      }));
+
+      return NextResponse.json(
+        { news: formatted },
+        {
+          headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' },
+        },
+      );
+    } catch (error) {
+      return NextResponse.json({ error: error.message, news: [] }, { status: 500 });
+    }
+  },
+  { requireAuth: false },
+);

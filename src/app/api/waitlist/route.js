@@ -1,120 +1,123 @@
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 import { createServerSupabaseClient } from '@/lib/supabase-service-role';
 import { Resend } from 'resend';
 
 export const dynamic = 'force-dynamic';
 
+export const POST = withApiGuard(
+  async (request) => {
+    try {
+      const body = await request.json();
+      const { email, fullName, referralSource } = body;
 
-export async function POST(request) {
-  try {
-    const body = await request.json();
-    const { email, fullName, referralSource } = body;
-
-    // Validate email
-    if (!email || !email.includes('@')) {
-      return NextResponse.json(
-        { error: 'Please provide a valid email address' },
-        { status: 400 }
-      );
-    }
-
-    // Normalize email
-    const normalizedEmail = email.toLowerCase().trim();
-
-    // Initialize Supabase client
-    const supabase = createServerSupabaseClient();
-
-    // Check if email already exists
-    const { data: existingUser } = await supabase
-      .from('waitlist')
-      .select('email, legacy_number')
-      .eq('email', normalizedEmail)
-      .single();
-
-    if (existingUser) {
-      return NextResponse.json(
-        {
-          error: 'This email is already on the waitlist!',
-          legacyNumber: existingUser.legacy_number
-        },
-        { status: 409 }
-      );
-    }
-
-    // Get request headers for tracking
-    const forwardedFor = request.headers.get('x-forwarded-for');
-    const ipAddress = forwardedFor ? forwardedFor.split(',')[0].trim() : 'unknown';
-    const userAgent = request.headers.get('user-agent') || 'unknown';
-
-    // Insert email into waitlist table
-    const { data, error: insertError } = await supabase
-      .from('waitlist')
-      .insert([
-        {
-          email: normalizedEmail,
-          full_name: fullName || null,
-          referral_source: referralSource || 'landing_page',
-          ip_address: ipAddress,
-          user_agent: userAgent,
-          status: 'pending',
-          metadata: {
-            signup_page: 'main_landing',
-            signup_timestamp: new Date().toISOString(),
-          },
-        },
-      ])
-      .select()
-      .single();
-
-    if (insertError) {
-      console.error('Supabase insert error:', insertError);
-      return NextResponse.json(
-        { error: 'Failed to join waitlist. Please try again.' },
-        { status: 500 }
-      );
-    }
-
-    // Determine legacy status message
-    const isLegacy = data.legacy_user;
-    const legacyNumber = data.legacy_number;
-
-    // Send confirmation email using Resend - initialize lazily at request time
-    if (process.env.RESEND_API_KEY) {
-      try {
-        const resend = new Resend(process.env.RESEND_API_KEY);
-        await resend.emails.send({
-          from: 'Ezana Finance <waitlist@ezanafinance.com>',
-          to: normalizedEmail,
-          subject: isLegacy
-            ? `You're Legacy Member #${legacyNumber}! 🎉`
-            : "You're on the Ezana Finance Waitlist! 🎉",
-          html: generateWaitlistEmail(normalizedEmail, isLegacy, legacyNumber),
-        });
-      } catch (emailError) {
-        console.error('Email send error:', emailError);
-        // Don't fail the request if email fails - user is still on waitlist
+      // Validate email
+      if (!email || !email.includes('@')) {
+        return NextResponse.json(
+          { error: 'Please provide a valid email address' },
+          { status: 400 },
+        );
       }
-    }
 
-    return NextResponse.json(
-      {
-        success: true,
-        message: isLegacy
-          ? `Welcome, Legacy Member #${legacyNumber}! Check your email for confirmation.`
-          : "You're on the waitlist! Check your email for confirmation.",
-        legacyUser: isLegacy,
-        legacyNumber: legacyNumber,
-      },
-      { status: 201 }
-    );
-  } catch (error) {
-    console.error('Waitlist API error:', error);
-    return NextResponse.json(
-      { error: 'An unexpected error occurred. Please try again.' },
-      { status: 500 }
-    );
-  }
-}
+      // Normalize email
+      const normalizedEmail = email.toLowerCase().trim();
+
+      // Initialize Supabase client
+      const supabase = createServerSupabaseClient();
+
+      // Check if email already exists
+      const { data: existingUser } = await supabase
+        .from('waitlist')
+        .select('email, legacy_number')
+        .eq('email', normalizedEmail)
+        .single();
+
+      if (existingUser) {
+        return NextResponse.json(
+          {
+            error: 'This email is already on the waitlist!',
+            legacyNumber: existingUser.legacy_number,
+          },
+          { status: 409 },
+        );
+      }
+
+      // Get request headers for tracking
+      const forwardedFor = request.headers.get('x-forwarded-for');
+      const ipAddress = forwardedFor ? forwardedFor.split(',')[0].trim() : 'unknown';
+      const userAgent = request.headers.get('user-agent') || 'unknown';
+
+      // Insert email into waitlist table
+      const { data, error: insertError } = await supabase
+        .from('waitlist')
+        .insert([
+          {
+            email: normalizedEmail,
+            full_name: fullName || null,
+            referral_source: referralSource || 'landing_page',
+            ip_address: ipAddress,
+            user_agent: userAgent,
+            status: 'pending',
+            metadata: {
+              signup_page: 'main_landing',
+              signup_timestamp: new Date().toISOString(),
+            },
+          },
+        ])
+        .select()
+        .single();
+
+      if (insertError) {
+        console.error('Supabase insert error:', insertError);
+        return NextResponse.json(
+          { error: 'Failed to join waitlist. Please try again.' },
+          { status: 500 },
+        );
+      }
+
+      // Determine legacy status message
+      const isLegacy = data.legacy_user;
+      const legacyNumber = data.legacy_number;
+
+      // Send confirmation email using Resend - initialize lazily at request time
+      if (process.env.RESEND_API_KEY) {
+        try {
+          const resend = new Resend(process.env.RESEND_API_KEY);
+          await resend.emails.send({
+            from: 'Ezana Finance <waitlist@ezanafinance.com>',
+            to: normalizedEmail,
+            subject: isLegacy
+              ? `You're Legacy Member #${legacyNumber}! 🎉`
+              : "You're on the Ezana Finance Waitlist! 🎉",
+            html: generateWaitlistEmail(normalizedEmail, isLegacy, legacyNumber),
+          });
+        } catch (emailError) {
+          console.error('Email send error:', emailError);
+          // Don't fail the request if email fails - user is still on waitlist
+        }
+      }
+
+      return NextResponse.json(
+        {
+          success: true,
+          message: isLegacy
+            ? `Welcome, Legacy Member #${legacyNumber}! Check your email for confirmation.`
+            : "You're on the waitlist! Check your email for confirmation.",
+          legacyUser: isLegacy,
+          legacyNumber: legacyNumber,
+        },
+        { status: 201 },
+      );
+    } catch (error) {
+      console.error('Waitlist API error:', error);
+      return NextResponse.json(
+        { error: 'An unexpected error occurred. Please try again.' },
+        { status: 500 },
+      );
+    }
+  },
+  { requireAuth: false, strict: true },
+);
 
 // Email template generator function
 function generateWaitlistEmail(email, isLegacy, legacyNumber) {

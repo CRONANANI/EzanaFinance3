@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 
 export const dynamic = 'force-dynamic';
 
@@ -86,57 +87,60 @@ async function fetchSenateByName(firstName) {
   }
 }
 
-export async function GET(request) {
-  const FMP_KEY = getFmpKey();
-  if (!FMP_KEY) {
-    return NextResponse.json(
-      { error: 'FMP_API_KEY is not configured' },
-      {
-        status: 503,
-        headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' },
-      },
-    );
-  }
-
-  const { searchParams } = new URL(request.url);
-  const type = searchParams.get('type');
-  const name = searchParams.get('name');
-
-  try {
-    if (type === 'by-name' && name) {
-      // Single lookup by first name
-      const data = await fetchSenateByName(name);
-      return NextResponse.json(data);
+export const GET = withApiGuard(
+  async (request) => {
+    const FMP_KEY = getFmpKey();
+    if (!FMP_KEY) {
+      return NextResponse.json(
+        { error: 'FMP_API_KEY is not configured' },
+        {
+          status: 503,
+          headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' },
+        },
+      );
     }
 
-    // Default: fetch all tracked senators in parallel, merge, sort by most recent
-    const results = await Promise.all(UNIQUE_SENATE_NAMES.map(fetchSenateByName));
-    const merged = results
-      .flat()
-      .sort(
-        (a, b) =>
-          new Date(b.disclosureDate || b.transactionDate || 0) -
-          new Date(a.disclosureDate || a.transactionDate || 0),
+    const { searchParams } = new URL(request.url);
+    const type = searchParams.get('type');
+    const name = searchParams.get('name');
+
+    try {
+      if (type === 'by-name' && name) {
+        // Single lookup by first name
+        const data = await fetchSenateByName(name);
+        return NextResponse.json(data);
+      }
+
+      // Default: fetch all tracked senators in parallel, merge, sort by most recent
+      const results = await Promise.all(UNIQUE_SENATE_NAMES.map(fetchSenateByName));
+      const merged = results
+        .flat()
+        .sort(
+          (a, b) =>
+            new Date(b.disclosureDate || b.transactionDate || 0) -
+            new Date(a.disclosureDate || a.transactionDate || 0),
+        );
+
+      // Deduplicate by a composite key
+      const seen = new Set();
+      const deduped = merged.filter((t) => {
+        const key = `${t.symbol}-${t.transactionDate}-${t.firstName}-${t.lastName}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+
+      return NextResponse.json(deduped);
+    } catch (err) {
+      console.error('FMP senate route error:', err);
+      return NextResponse.json(
+        { error: err.message },
+        {
+          status: 500,
+          headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' },
+        },
       );
-
-    // Deduplicate by a composite key
-    const seen = new Set();
-    const deduped = merged.filter((t) => {
-      const key = `${t.symbol}-${t.transactionDate}-${t.firstName}-${t.lastName}`;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
-
-    return NextResponse.json(deduped);
-  } catch (err) {
-    console.error('FMP senate route error:', err);
-    return NextResponse.json(
-      { error: err.message },
-      {
-        status: 500,
-        headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' },
-      },
-    );
-  }
-}
+    }
+  },
+  { requireAuth: false },
+);

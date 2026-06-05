@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 import { getAuthUser } from '@/lib/auth-helpers';
 import { supabaseAdmin } from '@/lib/plaid';
 import { replayTradesToValueSeries, clipPointsToRange } from '@/lib/portfolio-trade-replay';
@@ -15,137 +16,135 @@ const DEFAULT_STARTING_CASH = 10000;
  * Returns the user's mock portfolio value over time, sourced primarily from
  * `mock_trades`. `mock_portfolios.portfolio` is a hint for current value only.
  */
-export async function GET(req) {
-  try {
-    const user = await getAuthUser(req);
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+export const GET = withApiGuard(
+  async (request, user, context) => {
+    try {
+      const requestedRange = req.nextUrl.searchParams.get('range');
+      const range = RANGES.has(requestedRange) ? requestedRange : 'ALL';
 
-    const requestedRange = req.nextUrl.searchParams.get('range');
-    const range = RANGES.has(requestedRange) ? requestedRange : 'ALL';
+      const { data: tradesRaw, error: tradesError } = await supabaseAdmin
+        .from('mock_trades')
+        .select('ticker, quantity, price, trade_type, total_amount, created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: true });
 
-    const { data: tradesRaw, error: tradesError } = await supabaseAdmin
-      .from('mock_trades')
-      .select('ticker, quantity, price, trade_type, total_amount, created_at')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: true });
-
-    if (tradesError) {
-      console.error('[mock-value-series] mock_trades query failed', tradesError);
-    }
-
-    const trades = Array.isArray(tradesRaw) ? tradesRaw : [];
-
-    const { data: portfolioRow } = await supabaseAdmin
-      .from('mock_portfolios')
-      .select('portfolio, updated_at')
-      .eq('user_id', user.id)
-      .maybeSingle();
-
-    const portfolio = portfolioRow?.portfolio || null;
-
-    if (trades.length === 0 && !portfolio) {
-      console.info('[mock-value-series] empty state — no trades, no portfolio', {
-        user_id: user.id,
-      });
-      return NextResponse.json({
-        range,
-        points: [],
-        source: 'no-portfolio',
-      });
-    }
-
-    if (trades.length === 0 && portfolio) {
-      const cash = Number(portfolio.cash) || DEFAULT_STARTING_CASH;
-      const createdAt = portfolioRow.updated_at || new Date().toISOString();
-      const startISO = new Date(createdAt).toISOString().slice(0, 10);
-      const endISO = new Date().toISOString().slice(0, 10);
-      console.info('[mock-value-series] flat line — has portfolio, no trades', {
-        user_id: user.id,
-        cash,
-      });
-      return NextResponse.json({
-        range,
-        points: [
-          { at: `${startISO}T16:00:00.000Z`, value: cash },
-          { at: `${endISO}T16:00:00.000Z`, value: cash },
-        ],
-        source: 'no-trades',
-        startedAt: createdAt,
-      });
-    }
-
-    const currentPositions = derivePositionsFromTrades(trades);
-    const currentPrices = await fetchCurrentPrices(Object.keys(currentPositions));
-
-    const currentCash = computeCashFromTrades(trades, DEFAULT_STARTING_CASH);
-    const positionsValue = Object.entries(currentPositions).reduce((sum, [ticker, qty]) => {
-      const px = Number(currentPrices[ticker] || 0);
-      return sum + qty * px;
-    }, 0);
-    const currentValue = Math.max(0, currentCash + positionsValue);
-
-    let effectiveCurrentValue = currentValue;
-    let valueSource = 'derived-from-trades';
-    if (positionsValue === 0 && Object.keys(currentPositions).length > 0 && portfolio) {
-      const jsonbValue = computeCurrentValueFromJsonb(portfolio);
-      if (jsonbValue > 0) {
-        effectiveCurrentValue = jsonbValue;
-        valueSource = 'jsonb-fallback';
+      if (tradesError) {
+        console.error('[mock-value-series] mock_trades query failed', tradesError);
       }
-    }
 
-    console.info('[mock-value-series] reconstructing', {
-      user_id: user.id,
-      trade_count: trades.length,
-      open_position_count: Object.keys(currentPositions).length,
-      current_cash: currentCash,
-      positions_value: positionsValue,
-      current_value: effectiveCurrentValue,
-      value_source: valueSource,
-    });
+      const trades = Array.isArray(tradesRaw) ? tradesRaw : [];
 
-    const firstTradeAt = trades[0].created_at;
-    const portfolioCreatedAt = portfolioRow?.updated_at || firstTradeAt;
-    const anchorDate =
-      new Date(firstTradeAt) < new Date(portfolioCreatedAt) ? firstTradeAt : portfolioCreatedAt;
+      const { data: portfolioRow } = await supabaseAdmin
+        .from('mock_portfolios')
+        .select('portfolio, updated_at')
+        .eq('user_id', user.id)
+        .maybeSingle();
 
-    const replay = await replayTradesToValueSeries({
-      trades,
-      currentCash,
-      currentValue: effectiveCurrentValue,
-      portfolioCreatedAt: anchorDate,
-      fetchHistoricalPrices: fetchBatchedHistoricalPrices,
-    });
+      const portfolio = portfolioRow?.portfolio || null;
 
-    const clipped = clipPointsToRange(replay.points, range);
+      if (trades.length === 0 && !portfolio) {
+        console.info('[mock-value-series] empty state — no trades, no portfolio', {
+          user_id: user.id,
+        });
+        return NextResponse.json({
+          range,
+          points: [],
+          source: 'no-portfolio',
+        });
+      }
 
-    if (clipped.length < 2 && replay.points.length >= 2) {
+      if (trades.length === 0 && portfolio) {
+        const cash = Number(portfolio.cash) || DEFAULT_STARTING_CASH;
+        const createdAt = portfolioRow.updated_at || new Date().toISOString();
+        const startISO = new Date(createdAt).toISOString().slice(0, 10);
+        const endISO = new Date().toISOString().slice(0, 10);
+        console.info('[mock-value-series] flat line — has portfolio, no trades', {
+          user_id: user.id,
+          cash,
+        });
+        return NextResponse.json({
+          range,
+          points: [
+            { at: `${startISO}T16:00:00.000Z`, value: cash },
+            { at: `${endISO}T16:00:00.000Z`, value: cash },
+          ],
+          source: 'no-trades',
+          startedAt: createdAt,
+        });
+      }
+
+      const currentPositions = derivePositionsFromTrades(trades);
+      const currentPrices = await fetchCurrentPrices(Object.keys(currentPositions));
+
+      const currentCash = computeCashFromTrades(trades, DEFAULT_STARTING_CASH);
+      const positionsValue = Object.entries(currentPositions).reduce((sum, [ticker, qty]) => {
+        const px = Number(currentPrices[ticker] || 0);
+        return sum + qty * px;
+      }, 0);
+      const currentValue = Math.max(0, currentCash + positionsValue);
+
+      let effectiveCurrentValue = currentValue;
+      let valueSource = 'derived-from-trades';
+      if (positionsValue === 0 && Object.keys(currentPositions).length > 0 && portfolio) {
+        const jsonbValue = computeCurrentValueFromJsonb(portfolio);
+        if (jsonbValue > 0) {
+          effectiveCurrentValue = jsonbValue;
+          valueSource = 'jsonb-fallback';
+        }
+      }
+
+      console.info('[mock-value-series] reconstructing', {
+        user_id: user.id,
+        trade_count: trades.length,
+        open_position_count: Object.keys(currentPositions).length,
+        current_cash: currentCash,
+        positions_value: positionsValue,
+        current_value: effectiveCurrentValue,
+        value_source: valueSource,
+      });
+
+      const firstTradeAt = trades[0].created_at;
+      const portfolioCreatedAt = portfolioRow?.updated_at || firstTradeAt;
+      const anchorDate =
+        new Date(firstTradeAt) < new Date(portfolioCreatedAt) ? firstTradeAt : portfolioCreatedAt;
+
+      const replay = await replayTradesToValueSeries({
+        trades,
+        currentCash,
+        currentValue: effectiveCurrentValue,
+        portfolioCreatedAt: anchorDate,
+        fetchHistoricalPrices: fetchBatchedHistoricalPrices,
+      });
+
+      const clipped = clipPointsToRange(replay.points, range);
+
+      if (clipped.length < 2 && replay.points.length >= 2) {
+        return NextResponse.json({
+          range: 'ALL',
+          requested_range: range,
+          points: replay.points,
+          source: replay.source,
+          startedAt: replay.startedAt,
+          note: `Less than ${range} of history available — showing all data since portfolio creation`,
+        });
+      }
+
       return NextResponse.json({
-        range: 'ALL',
-        requested_range: range,
-        points: replay.points,
+        range,
+        points: clipped,
         source: replay.source,
         startedAt: replay.startedAt,
-        note: `Less than ${range} of history available — showing all data since portfolio creation`,
       });
+    } catch (e) {
+      console.error('[mock-value-series] unexpected failure', {
+        message: e?.message,
+        stack: e?.stack,
+      });
+      return NextResponse.json({ error: e?.message ?? 'Unknown', points: [] }, { status: 500 });
     }
-
-    return NextResponse.json({
-      range,
-      points: clipped,
-      source: replay.source,
-      startedAt: replay.startedAt,
-    });
-  } catch (e) {
-    console.error('[mock-value-series] unexpected failure', {
-      message: e?.message,
-      stack: e?.stack,
-    });
-    return NextResponse.json({ error: e?.message ?? 'Unknown', points: [] }, { status: 500 });
-  }
-}
+  },
+  { requireAuth: true },
+);
 
 function derivePositionsFromTrades(trades) {
   const positions = {};

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 import { getAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
@@ -21,87 +22,90 @@ function mapRow(row) {
   };
 }
 
-export async function GET(request) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const raw = (searchParams.get('q') || '').trim();
-    if (raw.length < 2) {
-      return NextResponse.json({ users: [] });
-    }
+export const GET = withApiGuard(
+  async (request, user) => {
+    try {
+      const { searchParams } = new URL(request.url);
+      const raw = (searchParams.get('q') || '').trim();
+      if (raw.length < 2) {
+        return NextResponse.json({ users: [] });
+      }
 
-    const admin = getAdminClient();
-    const pattern = `%${raw}%`;
-    const cols = 'id, username, full_name, user_settings, is_partner, partner_type';
+      const admin = getAdminClient();
+      const pattern = `%${raw}%`;
+      const cols = 'id, username, full_name, user_settings, is_partner, partner_type';
 
-    // ── Search profiles by full_name ──
-    const { data: byFull, error: e1 } = await admin
-      .from('profiles')
-      .select(cols)
-      .ilike('full_name', pattern)
-      .limit(10);
-
-    if (e1) console.error('community search full_name', e1);
-
-    // ── Search profiles by display_name in user_settings ──
-    const { data: bySettings, error: e2 } = await admin
-      .from('profiles')
-      .select(cols)
-      .filter('user_settings->display_name', 'ilike', pattern)
-      .limit(10);
-
-    if (e2) console.error('community search display_name', e2);
-
-    // ── Search profiles by username ──
-    const { data: byUsername, error: e3 } = await admin
-      .from('profiles')
-      .select(cols)
-      .ilike('username', pattern)
-      .limit(10);
-
-    if (e3) console.error('community search username', e3);
-
-    // ── Search by email via profiles.email column ──
-    // The profiles table has an `email` column that is set during signup/verification.
-    let byEmail = [];
-    if (raw.includes('@') || raw.includes('.')) {
-      // Only search email if the query looks like it could be an email fragment
-      const { data: emailRows, error: e4 } = await admin
+      // ── Search profiles by full_name ──
+      const { data: byFull, error: e1 } = await admin
         .from('profiles')
-        .select(cols + ', email')
-        .ilike('email', pattern)
+        .select(cols)
+        .ilike('full_name', pattern)
         .limit(10);
 
-      if (e4) {
-        console.error('community search email', e4);
-      } else {
-        byEmail = (emailRows || []).map((r) => {
-          // Mask the email for privacy: show first 3 chars + domain
-          const email = r.email || '';
-          const [local, domain] = email.split('@');
-          const masked = local ? local.slice(0, 3) + '***@' + (domain || '') : '';
-          return { ...r, _email_hint: masked };
-        });
+      if (e1) console.error('community search full_name', e1);
+
+      // ── Search profiles by display_name in user_settings ──
+      const { data: bySettings, error: e2 } = await admin
+        .from('profiles')
+        .select(cols)
+        .filter('user_settings->display_name', 'ilike', pattern)
+        .limit(10);
+
+      if (e2) console.error('community search display_name', e2);
+
+      // ── Search profiles by username ──
+      const { data: byUsername, error: e3 } = await admin
+        .from('profiles')
+        .select(cols)
+        .ilike('username', pattern)
+        .limit(10);
+
+      if (e3) console.error('community search username', e3);
+
+      // ── Search by email via profiles.email column ──
+      // The profiles table has an `email` column that is set during signup/verification.
+      let byEmail = [];
+      if (raw.includes('@') || raw.includes('.')) {
+        // Only search email if the query looks like it could be an email fragment
+        const { data: emailRows, error: e4 } = await admin
+          .from('profiles')
+          .select(cols + ', email')
+          .ilike('email', pattern)
+          .limit(10);
+
+        if (e4) {
+          console.error('community search email', e4);
+        } else {
+          byEmail = (emailRows || []).map((r) => {
+            // Mask the email for privacy: show first 3 chars + domain
+            const email = r.email || '';
+            const [local, domain] = email.split('@');
+            const masked = local ? local.slice(0, 3) + '***@' + (domain || '') : '';
+            return { ...r, _email_hint: masked };
+          });
+        }
       }
-    }
 
-    // ── Merge and deduplicate ──
-    const seen = new Set();
-    const merged = [];
-    for (const row of [
-      ...(byFull || []),
-      ...(bySettings || []),
-      ...(byUsername || []),
-      ...byEmail,
-    ]) {
-      if (!row || seen.has(row.id)) continue;
-      seen.add(row.id);
-      merged.push(mapRow(row));
-      if (merged.length >= 15) break;
-    }
+      // ── Merge and deduplicate ──
+      const seen = new Set();
+      const merged = [];
+      for (const row of [
+        ...(byFull || []),
+        ...(bySettings || []),
+        ...(byUsername || []),
+        ...byEmail,
+      ]) {
+        if (!row || seen.has(row.id)) continue;
+        seen.add(row.id);
+        merged.push(mapRow(row));
+        if (merged.length >= 15) break;
+      }
 
-    return NextResponse.json({ users: merged });
-  } catch (e) {
-    console.error('community search', e);
-    return NextResponse.json({ error: e.message || 'Server error' }, { status: 500 });
-  }
-}
+      return NextResponse.json({ users: merged });
+    } catch (e) {
+      console.error('community search', e);
+      return NextResponse.json({ error: e.message || 'Server error' }, { status: 500 });
+    }
+  },
+  { requireAuth: true },
+);

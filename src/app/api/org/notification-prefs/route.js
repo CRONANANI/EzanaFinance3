@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 import { createServerSupabase } from '@/lib/supabase-server';
 
 export const dynamic = 'force-dynamic';
@@ -27,60 +28,63 @@ async function assertCanAccessPrefs(supabase, callerUserId, targetMemberId) {
 }
 
 /** GET /api/org/notification-prefs?member_id=X */
-export async function GET(request) {
-  const supabase = createServerSupabase();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ prefs: {} });
+export const GET = withApiGuard(
+  async (request, user) => {
+    const { searchParams } = new URL(request.url);
+    const memberId = searchParams.get('member_id');
+    if (!memberId) return NextResponse.json({ prefs: {} });
 
-  const { searchParams } = new URL(request.url);
-  const memberId = searchParams.get('member_id');
-  if (!memberId) return NextResponse.json({ prefs: {} });
+    const gate = await assertCanAccessPrefs(supabase, user.id, memberId);
+    if (!gate.ok) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
-  const gate = await assertCanAccessPrefs(supabase, user.id, memberId);
-  if (!gate.ok) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    const { data } = await supabase
+      .from('org_notification_preferences')
+      .select('notification_key, enabled, managed_by')
+      .eq('org_member_id', memberId);
 
-  const { data } = await supabase
-    .from('org_notification_preferences')
-    .select('notification_key, enabled, managed_by')
-    .eq('org_member_id', memberId);
-
-  const prefs = {};
-  for (const row of data || []) {
-    prefs[row.notification_key] = row.enabled;
-  }
-  return NextResponse.json({ prefs });
-}
+    const prefs = {};
+    for (const row of data || []) {
+      prefs[row.notification_key] = row.enabled;
+    }
+    return NextResponse.json({ prefs });
+  },
+  { requireAuth: true },
+);
 
 /** POST — upsert a single toggle */
-export async function POST(request) {
-  const supabase = createServerSupabase();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const body = await request.json();
-  const { target_member_id: targetMemberId, notification_key: notificationKey, enabled, managed_by: managedByBody } = body;
-
-  if (!targetMemberId || !notificationKey) {
-    return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
-  }
-
-  const gate = await assertCanAccessPrefs(supabase, user.id, targetMemberId);
-  if (!gate.ok) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-
-  const isSelf = gate.caller.id === targetMemberId;
-  const managedBy = isSelf ? null : (managedByBody || gate.caller.id);
-
-  const { error } = await supabase.from('org_notification_preferences').upsert(
-    {
-      org_member_id: targetMemberId,
+export const POST = withApiGuard(
+  async (request, user) => {
+    const body = await request.json();
+    const {
+      target_member_id: targetMemberId,
       notification_key: notificationKey,
-      enabled: !!enabled,
-      managed_by: managedBy,
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: 'org_member_id,notification_key' }
-  );
+      enabled,
+      managed_by: managedByBody,
+    } = body;
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ ok: true });
-}
+    if (!targetMemberId || !notificationKey) {
+      return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
+    }
+
+    const gate = await assertCanAccessPrefs(supabase, user.id, targetMemberId);
+    if (!gate.ok) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+
+    const isSelf = gate.caller.id === targetMemberId;
+    const managedBy = isSelf ? null : managedByBody || gate.caller.id;
+
+    const { error } = await supabase.from('org_notification_preferences').upsert(
+      {
+        org_member_id: targetMemberId,
+        notification_key: notificationKey,
+        enabled: !!enabled,
+        managed_by: managedBy,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'org_member_id,notification_key' },
+    );
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ ok: true });
+  },
+  { requireAuth: true },
+);

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 import { getAdminClient, getCurrentUser } from '@/lib/supabase';
 import { isDemoViewer, DEMO_PULSE } from '@/lib/community/demo-data';
 
@@ -119,53 +120,56 @@ function computePulseFromPosts(postsArr) {
   };
 }
 
-export async function GET(request) {
-  try {
-    const user = await getCurrentUser(request);
-    if (isDemoViewer(user)) return NextResponse.json(DEMO_PULSE);
+export const GET = withApiGuard(
+  async (request, user) => {
+    try {
+      const user = await getCurrentUser(request);
+      if (isDemoViewer(user)) return NextResponse.json(DEMO_PULSE);
 
-    const admin = getAdminClient();
+      const admin = getAdminClient();
 
-    const { data: snap } = await admin
-      .from('community_pulse_snapshots')
-      .select('*')
-      .order('computed_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+      const { data: snap } = await admin
+        .from('community_pulse_snapshots')
+        .select('*')
+        .order('computed_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-    const stale = !snap || Date.now() - new Date(snap.computed_at).getTime() > 10 * 60 * 1000;
+      const stale = !snap || Date.now() - new Date(snap.computed_at).getTime() > 10 * 60 * 1000;
 
-    if (!stale && snap) {
-      return NextResponse.json({
-        net_sentiment: snap.net_sentiment,
-        posts_last_hour: snap.posts_last_hour,
-        active_investors: snap.active_investors,
-        discussions_started: snap.discussions_started,
-        hottest_ticker: snap.hottest_ticker,
-        hottest_mentions: snap.hottest_mentions,
-        sectors: snap.sectors || [],
-      });
+      if (!stale && snap) {
+        return NextResponse.json({
+          net_sentiment: snap.net_sentiment,
+          posts_last_hour: snap.posts_last_hour,
+          active_investors: snap.active_investors,
+          discussions_started: snap.discussions_started,
+          hottest_ticker: snap.hottest_ticker,
+          hottest_mentions: snap.hottest_mentions,
+          sectors: snap.sectors || [],
+        });
+      }
+
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      const { data: posts } = await admin
+        .from('community_posts')
+        .select('id, user_id, content, mentioned_ticker, ticker_embed, created_at')
+        .gt('created_at', oneHourAgo)
+        .is('parent_post_id', null)
+        .limit(2000);
+
+      const fresh = computePulseFromPosts(posts || []);
+
+      admin
+        .from('community_pulse_snapshots')
+        .insert(fresh)
+        .then(() => {})
+        .catch(() => {});
+
+      return NextResponse.json(fresh);
+    } catch (err) {
+      console.error('[community/pulse]', err);
+      return NextResponse.json({ error: 'Failed to compute pulse' }, { status: 500 });
     }
-
-    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-    const { data: posts } = await admin
-      .from('community_posts')
-      .select('id, user_id, content, mentioned_ticker, ticker_embed, created_at')
-      .gt('created_at', oneHourAgo)
-      .is('parent_post_id', null)
-      .limit(2000);
-
-    const fresh = computePulseFromPosts(posts || []);
-
-    admin
-      .from('community_pulse_snapshots')
-      .insert(fresh)
-      .then(() => {})
-      .catch(() => {});
-
-    return NextResponse.json(fresh);
-  } catch (err) {
-    console.error('[community/pulse]', err);
-    return NextResponse.json({ error: 'Failed to compute pulse' }, { status: 500 });
-  }
-}
+  },
+  { requireAuth: true },
+);

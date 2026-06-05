@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 
 export const dynamic = 'force-dynamic';
 
@@ -134,168 +135,171 @@ function mapFmpArticle(article, category, idx) {
   };
 }
 
-export async function GET() {
-  try {
-    const today = new Date().toISOString().split('T')[0];
-    const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0];
-
-    const FMP_KEY = getFmpKey();
-    if (!FMP_KEY) {
-      console.warn(
-        '[economic-calendar] FMP_API_KEY not set — FMP news aggregation skipped, Finnhub still active.',
-      );
-    }
-
-    // FMP news: 4 endpoints in parallel, each capped at 50 articles.
-    // If no FMP key, substitute resolved nulls so Promise.all still completes.
-    const encKey = encodeURIComponent(FMP_KEY);
-    const fmpRequests = FMP_KEY
-      ? [
-          fetch(`${FMP_BASE}/news/general-latest?page=0&limit=50&apikey=${encKey}`, {
-            cache: 'no-store',
-          }),
-          fetch(`${FMP_BASE}/news/stock-latest?page=0&limit=50&apikey=${encKey}`, {
-            cache: 'no-store',
-          }),
-          fetch(`${FMP_BASE}/news/crypto-latest?page=0&limit=50&apikey=${encKey}`, {
-            cache: 'no-store',
-          }),
-          fetch(`${FMP_BASE}/news/forex-latest?page=0&limit=50&apikey=${encKey}`, {
-            cache: 'no-store',
-          }),
-        ]
-      : [
-          Promise.resolve(null),
-          Promise.resolve(null),
-          Promise.resolve(null),
-          Promise.resolve(null),
-        ];
-
-    // EXISTING Finnhub calls — kept unchanged. New FMP calls added alongside.
-    const [econRes, newsRes, fmpGeneralRes, fmpStockRes, fmpCryptoRes, fmpForexRes] =
-      await Promise.all([
-        fetch(`${BASE}/calendar/economic?from=${weekAgo}&to=${today}&token=${FINNHUB_KEY}`),
-        fetch(`${BASE}/news?category=general&token=${FINNHUB_KEY}`),
-        ...fmpRequests,
-      ]);
-
-    // EXISTING Finnhub parses — unchanged
-    const econData = await econRes.json();
-    const newsData = await newsRes.json();
-
-    // NEW FMP parses — defensive so any one source failing doesn't break the route
-    const fmpGeneral = fmpGeneralRes ? await safeJson(fmpGeneralRes) : [];
-    const fmpStock = fmpStockRes ? await safeJson(fmpStockRes) : [];
-    const fmpCrypto = fmpCryptoRes ? await safeJson(fmpCryptoRes) : [];
-    const fmpForex = fmpForexRes ? await safeJson(fmpForexRes) : [];
-
-    // ── Economic events (EXISTING — unchanged) ─────────────────────────────
-    const econEvents = (econData?.economicCalendar || []).slice(0, 20).map((e, i) => ({
-      id: `econ-${i}`,
-      type: 'economic',
-      title: e.event || 'Economic Event',
-      country: e.country || 'Global',
-      time: e.time || today,
-      impact: e.impact === 3 ? 'CRITICAL' : e.impact === 2 ? 'ELEVATED' : 'MODERATE',
-      actual: e.actual,
-      estimate: e.estimate,
-      previous: e.prev,
-      body: [
-        e.event,
-        e.actual != null ? `Actual: ${e.actual}` : null,
-        e.estimate != null ? `Estimate: ${e.estimate}` : null,
-        e.prev != null ? `Previous: ${e.prev}` : null,
-      ]
-        .filter(Boolean)
-        .join('. '),
-    }));
-
-    // ── Finnhub general news (EXISTING — unchanged) ────────────────────────
-    const newsEvents = (Array.isArray(newsData) ? newsData : []).slice(0, 30).map((n) => ({
-      id: `news-${n.id || n.headline?.slice(0, 10)}`,
-      type: 'news',
-      title: n.headline,
-      country: 'Global',
-      time: n.datetime ? new Date(n.datetime * 1000).toISOString() : new Date().toISOString(),
-      impact: 'MODERATE',
-      body: n.summary || n.headline,
-      source: n.source,
-      url: n.url,
-    }));
-
-    // ── FMP news from 4 sources (NEW — added alongside Finnhub news) ───────
-    const fmpNewsEvents = [
-      ...(Array.isArray(fmpGeneral)
-        ? fmpGeneral.map((a, i) => mapFmpArticle(a, 'general', i))
-        : []),
-      ...(Array.isArray(fmpStock) ? fmpStock.map((a, i) => mapFmpArticle(a, 'stock', i)) : []),
-      ...(Array.isArray(fmpCrypto) ? fmpCrypto.map((a, i) => mapFmpArticle(a, 'crypto', i)) : []),
-      ...(Array.isArray(fmpForex) ? fmpForex.map((a, i) => mapFmpArticle(a, 'forex', i)) : []),
-    ];
-
-    // Merge BOTH news sources, dedupe by URL (some stories syndicate across providers)
-    const allNews = [...newsEvents, ...fmpNewsEvents];
-    const seenUrls = new Set();
-    const dedupedNews = allNews.filter((item) => {
-      if (!item.url) return true;
-      if (seenUrls.has(item.url)) return false;
-      seenUrls.add(item.url);
-      return true;
-    });
-
-    let massiveCacheEvents = [];
+export const GET = withApiGuard(
+  async (request, user) => {
     try {
-      const { supabaseAdmin: admin } = await import('@/lib/plaid');
-      const { data } = await admin
-        .from('news_articles_cache')
-        .select('*')
-        .gte('published_utc', new Date(Date.now() - 24 * 3600000).toISOString())
-        .order('published_utc', { ascending: false })
-        .limit(80);
-      massiveCacheEvents = (data || []).map((row) => ({
-        id: `massive-${row.id}`,
-        type: 'news',
-        title: row.title,
-        country: row.region_label,
-        time: row.published_utc,
-        impact:
-          row.severity === 'Critical'
-            ? 'CRITICAL'
-            : row.severity === 'High'
-              ? 'ELEVATED'
-              : 'MODERATE',
-        body: row.description || row.title,
-        source: row.publisher_name || 'Massive',
-        url: row.article_url,
-        region: row.region,
-        topic: row.topic,
+      const today = new Date().toISOString().split('T')[0];
+      const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0];
+
+      const FMP_KEY = getFmpKey();
+      if (!FMP_KEY) {
+        console.warn(
+          '[economic-calendar] FMP_API_KEY not set — FMP news aggregation skipped, Finnhub still active.',
+        );
+      }
+
+      // FMP news: 4 endpoints in parallel, each capped at 50 articles.
+      // If no FMP key, substitute resolved nulls so Promise.all still completes.
+      const encKey = encodeURIComponent(FMP_KEY);
+      const fmpRequests = FMP_KEY
+        ? [
+            fetch(`${FMP_BASE}/news/general-latest?page=0&limit=50&apikey=${encKey}`, {
+              cache: 'no-store',
+            }),
+            fetch(`${FMP_BASE}/news/stock-latest?page=0&limit=50&apikey=${encKey}`, {
+              cache: 'no-store',
+            }),
+            fetch(`${FMP_BASE}/news/crypto-latest?page=0&limit=50&apikey=${encKey}`, {
+              cache: 'no-store',
+            }),
+            fetch(`${FMP_BASE}/news/forex-latest?page=0&limit=50&apikey=${encKey}`, {
+              cache: 'no-store',
+            }),
+          ]
+        : [
+            Promise.resolve(null),
+            Promise.resolve(null),
+            Promise.resolve(null),
+            Promise.resolve(null),
+          ];
+
+      // EXISTING Finnhub calls — kept unchanged. New FMP calls added alongside.
+      const [econRes, newsRes, fmpGeneralRes, fmpStockRes, fmpCryptoRes, fmpForexRes] =
+        await Promise.all([
+          fetch(`${BASE}/calendar/economic?from=${weekAgo}&to=${today}&token=${FINNHUB_KEY}`),
+          fetch(`${BASE}/news?category=general&token=${FINNHUB_KEY}`),
+          ...fmpRequests,
+        ]);
+
+      // EXISTING Finnhub parses — unchanged
+      const econData = await econRes.json();
+      const newsData = await newsRes.json();
+
+      // NEW FMP parses — defensive so any one source failing doesn't break the route
+      const fmpGeneral = fmpGeneralRes ? await safeJson(fmpGeneralRes) : [];
+      const fmpStock = fmpStockRes ? await safeJson(fmpStockRes) : [];
+      const fmpCrypto = fmpCryptoRes ? await safeJson(fmpCryptoRes) : [];
+      const fmpForex = fmpForexRes ? await safeJson(fmpForexRes) : [];
+
+      // ── Economic events (EXISTING — unchanged) ─────────────────────────────
+      const econEvents = (econData?.economicCalendar || []).slice(0, 20).map((e, i) => ({
+        id: `econ-${i}`,
+        type: 'economic',
+        title: e.event || 'Economic Event',
+        country: e.country || 'Global',
+        time: e.time || today,
+        impact: e.impact === 3 ? 'CRITICAL' : e.impact === 2 ? 'ELEVATED' : 'MODERATE',
+        actual: e.actual,
+        estimate: e.estimate,
+        previous: e.prev,
+        body: [
+          e.event,
+          e.actual != null ? `Actual: ${e.actual}` : null,
+          e.estimate != null ? `Estimate: ${e.estimate}` : null,
+          e.prev != null ? `Previous: ${e.prev}` : null,
+        ]
+          .filter(Boolean)
+          .join('. '),
       }));
-    } catch (e) {
-      console.error('[economic-calendar] Massive cache fetch failed:', e.message);
+
+      // ── Finnhub general news (EXISTING — unchanged) ────────────────────────
+      const newsEvents = (Array.isArray(newsData) ? newsData : []).slice(0, 30).map((n) => ({
+        id: `news-${n.id || n.headline?.slice(0, 10)}`,
+        type: 'news',
+        title: n.headline,
+        country: 'Global',
+        time: n.datetime ? new Date(n.datetime * 1000).toISOString() : new Date().toISOString(),
+        impact: 'MODERATE',
+        body: n.summary || n.headline,
+        source: n.source,
+        url: n.url,
+      }));
+
+      // ── FMP news from 4 sources (NEW — added alongside Finnhub news) ───────
+      const fmpNewsEvents = [
+        ...(Array.isArray(fmpGeneral)
+          ? fmpGeneral.map((a, i) => mapFmpArticle(a, 'general', i))
+          : []),
+        ...(Array.isArray(fmpStock) ? fmpStock.map((a, i) => mapFmpArticle(a, 'stock', i)) : []),
+        ...(Array.isArray(fmpCrypto) ? fmpCrypto.map((a, i) => mapFmpArticle(a, 'crypto', i)) : []),
+        ...(Array.isArray(fmpForex) ? fmpForex.map((a, i) => mapFmpArticle(a, 'forex', i)) : []),
+      ];
+
+      // Merge BOTH news sources, dedupe by URL (some stories syndicate across providers)
+      const allNews = [...newsEvents, ...fmpNewsEvents];
+      const seenUrls = new Set();
+      const dedupedNews = allNews.filter((item) => {
+        if (!item.url) return true;
+        if (seenUrls.has(item.url)) return false;
+        seenUrls.add(item.url);
+        return true;
+      });
+
+      let massiveCacheEvents = [];
+      try {
+        const { supabaseAdmin: admin } = await import('@/lib/plaid');
+        const { data } = await admin
+          .from('news_articles_cache')
+          .select('*')
+          .gte('published_utc', new Date(Date.now() - 24 * 3600000).toISOString())
+          .order('published_utc', { ascending: false })
+          .limit(80);
+        massiveCacheEvents = (data || []).map((row) => ({
+          id: `massive-${row.id}`,
+          type: 'news',
+          title: row.title,
+          country: row.region_label,
+          time: row.published_utc,
+          impact:
+            row.severity === 'Critical'
+              ? 'CRITICAL'
+              : row.severity === 'High'
+                ? 'ELEVATED'
+                : 'MODERATE',
+          body: row.description || row.title,
+          source: row.publisher_name || 'Massive',
+          url: row.article_url,
+          region: row.region,
+          topic: row.topic,
+        }));
+      } catch (e) {
+        console.error('[economic-calendar] Massive cache fetch failed:', e.message);
+      }
+
+      const allCandidates = [...econEvents, ...dedupedNews, ...massiveCacheEvents];
+      const seenUrlsAll = new Set();
+      const dedupedAll = allCandidates.filter((e) => {
+        const key = e.url || e.id;
+        if (seenUrlsAll.has(key)) return false;
+        seenUrlsAll.add(key);
+        return true;
+      });
+      const combined = dedupedAll.sort((a, b) => {
+        const tA = new Date(a.time).getTime() || 0;
+        const tB = new Date(b.time).getTime() || 0;
+        return tB - tA;
+      });
+
+      return NextResponse.json(
+        { events: combined.slice(0, 250) },
+        {
+          headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120' },
+        },
+      );
+    } catch (error) {
+      console.error('[economic-calendar]', error);
+      return NextResponse.json({ error: error.message, events: [] }, { status: 500 });
     }
-
-    const allCandidates = [...econEvents, ...dedupedNews, ...massiveCacheEvents];
-    const seenUrlsAll = new Set();
-    const dedupedAll = allCandidates.filter((e) => {
-      const key = e.url || e.id;
-      if (seenUrlsAll.has(key)) return false;
-      seenUrlsAll.add(key);
-      return true;
-    });
-    const combined = dedupedAll.sort((a, b) => {
-      const tA = new Date(a.time).getTime() || 0;
-      const tB = new Date(b.time).getTime() || 0;
-      return tB - tA;
-    });
-
-    return NextResponse.json(
-      { events: combined.slice(0, 250) },
-      {
-        headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120' },
-      },
-    );
-  } catch (error) {
-    console.error('[economic-calendar]', error);
-    return NextResponse.json({ error: error.message, events: [] }, { status: 500 });
-  }
-}
+  },
+  { requireAuth: false },
+);

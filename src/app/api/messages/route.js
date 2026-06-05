@@ -2,6 +2,7 @@
  * GET /api/messages — list conversations. POST /api/messages — send message (friend-gated).
  */
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 import { getCurrentUser, getAdminClient } from '@/lib/supabase';
 import { sanitizeInput } from '@/lib/sanitize';
 
@@ -31,250 +32,253 @@ function orderedPair(a, b) {
   return a < b ? [a, b] : [b, a];
 }
 
-export async function GET(request) {
-  try {
-    const user = await getCurrentUser(request);
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+export const GET = withApiGuard(
+  async (request, user) => {
+    try {
+      const { searchParams } = new URL(request.url);
+      const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '30', 10), 1), 100);
 
-    const { searchParams } = new URL(request.url);
-    const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '30', 10), 1), 100);
-
-    const { data: convos, error: convErr } = await admin
-      .from('conversations')
-      .select('id, participant_a, participant_b, last_message_at, created_at')
-      .or(`participant_a.eq.${user.id},participant_b.eq.${user.id}`)
-      .order('last_message_at', { ascending: false, nullsFirst: false })
-      .limit(limit);
-
-    if (convErr) {
-      console.error('[messages GET] conversations error:', convErr);
-      return NextResponse.json({ error: 'Failed to load conversations' }, { status: 500 });
-    }
-
-    if (!convos || convos.length === 0) {
-      return NextResponse.json({ conversations: [] });
-    }
-
-    const otherIds = convos.map((c) =>
-      c.participant_a === user.id ? c.participant_b : c.participant_a,
-    );
-    const uniqueOtherIds = [...new Set(otherIds)];
-
-    const { data: profiles } = await admin
-      .from('profiles')
-      .select('id, full_name, avatar_url, user_settings')
-      .in('id', uniqueOtherIds);
-
-    const profileMap = Object.fromEntries((profiles || []).map((p) => [p.id, p]));
-
-    const convoIds = convos.map((c) => c.id);
-
-    const { data: lastMsgs } = await admin
-      .from('messages')
-      .select('id, conversation_id, sender_id, content, created_at, read_at')
-      .in('conversation_id', convoIds)
-      .order('created_at', { ascending: false });
-
-    const lastMsgMap = new Map();
-    for (const msg of lastMsgs || []) {
-      if (!lastMsgMap.has(msg.conversation_id)) {
-        lastMsgMap.set(msg.conversation_id, msg);
-      }
-    }
-
-    const { data: unreadCounts } = await admin
-      .from('messages')
-      .select('conversation_id')
-      .in('conversation_id', convoIds)
-      .neq('sender_id', user.id)
-      .is('read_at', null);
-
-    const unreadMap = new Map();
-    for (const row of unreadCounts || []) {
-      unreadMap.set(row.conversation_id, (unreadMap.get(row.conversation_id) || 0) + 1);
-    }
-
-    const result = convos.map((c) => {
-      const otherId = c.participant_a === user.id ? c.participant_b : c.participant_a;
-      const prof = profileMap[otherId];
-      const displayName =
-        (prof?.full_name || prof?.user_settings?.display_name || '').trim() || 'Member';
-      const lastMsg = lastMsgMap.get(c.id);
-
-      return {
-        id: c.id,
-        other_user: {
-          id: otherId,
-          name: displayName,
-          avatar_url: prof?.avatar_url || null,
-        },
-        last_message: lastMsg
-          ? {
-              content:
-                lastMsg.content.length > 100
-                  ? `${lastMsg.content.slice(0, 100)}…`
-                  : lastMsg.content,
-              sender_id: lastMsg.sender_id,
-              created_at: lastMsg.created_at,
-              is_mine: lastMsg.sender_id === user.id,
-            }
-          : null,
-        unread_count: unreadMap.get(c.id) || 0,
-        last_message_at: c.last_message_at,
-        created_at: c.created_at,
-      };
-    });
-
-    return NextResponse.json({ conversations: result });
-  } catch (e) {
-    console.error('[messages GET] exception:', e?.message);
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
-  }
-}
-
-export async function POST(request) {
-  try {
-    const user = await getCurrentUser(request);
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const body = await request.json().catch(() => ({}));
-    const toUserId = typeof body?.to === 'string' ? body.to.trim() : '';
-    const content = sanitizeInput(typeof body?.content === 'string' ? body.content.trim() : '');
-
-    if (!toUserId) {
-      return NextResponse.json({ error: '"to" (recipient user_id) is required' }, { status: 400 });
-    }
-    if (toUserId === user.id) {
-      return NextResponse.json({ error: 'Cannot message yourself' }, { status: 400 });
-    }
-    if (!content) {
-      return NextResponse.json({ error: 'Message content is required' }, { status: 400 });
-    }
-    if (content.length > 5000) {
-      return NextResponse.json(
-        { error: 'Message too long (max 5000 characters)' },
-        { status: 400 },
-      );
-    }
-
-    const mutual = await areMutualFollows(user.id, toUserId);
-    if (!mutual) {
-      return NextResponse.json(
-        {
-          error: 'You can only message friends (mutual followers). Follow each other first.',
-        },
-        { status: 403 },
-      );
-    }
-
-    const [pA, pB] = orderedPair(user.id, toUserId);
-    const now = new Date().toISOString();
-
-    let { data: convo } = await admin
-      .from('conversations')
-      .select('id')
-      .eq('participant_a', pA)
-      .eq('participant_b', pB)
-      .maybeSingle();
-
-    if (!convo) {
-      const { data: newConvo, error: createErr } = await admin
+      const { data: convos, error: convErr } = await admin
         .from('conversations')
-        .insert({
-          participant_a: pA,
-          participant_b: pB,
-          last_message_at: now,
-        })
+        .select('id, participant_a, participant_b, last_message_at, created_at')
+        .or(`participant_a.eq.${user.id},participant_b.eq.${user.id}`)
+        .order('last_message_at', { ascending: false, nullsFirst: false })
+        .limit(limit);
+
+      if (convErr) {
+        console.error('[messages GET] conversations error:', convErr);
+        return NextResponse.json({ error: 'Failed to load conversations' }, { status: 500 });
+      }
+
+      if (!convos || convos.length === 0) {
+        return NextResponse.json({ conversations: [] });
+      }
+
+      const otherIds = convos.map((c) =>
+        c.participant_a === user.id ? c.participant_b : c.participant_a,
+      );
+      const uniqueOtherIds = [...new Set(otherIds)];
+
+      const { data: profiles } = await admin
+        .from('profiles')
+        .select('id, full_name, avatar_url, user_settings')
+        .in('id', uniqueOtherIds);
+
+      const profileMap = Object.fromEntries((profiles || []).map((p) => [p.id, p]));
+
+      const convoIds = convos.map((c) => c.id);
+
+      const { data: lastMsgs } = await admin
+        .from('messages')
+        .select('id, conversation_id, sender_id, content, created_at, read_at')
+        .in('conversation_id', convoIds)
+        .order('created_at', { ascending: false });
+
+      const lastMsgMap = new Map();
+      for (const msg of lastMsgs || []) {
+        if (!lastMsgMap.has(msg.conversation_id)) {
+          lastMsgMap.set(msg.conversation_id, msg);
+        }
+      }
+
+      const { data: unreadCounts } = await admin
+        .from('messages')
+        .select('conversation_id')
+        .in('conversation_id', convoIds)
+        .neq('sender_id', user.id)
+        .is('read_at', null);
+
+      const unreadMap = new Map();
+      for (const row of unreadCounts || []) {
+        unreadMap.set(row.conversation_id, (unreadMap.get(row.conversation_id) || 0) + 1);
+      }
+
+      const result = convos.map((c) => {
+        const otherId = c.participant_a === user.id ? c.participant_b : c.participant_a;
+        const prof = profileMap[otherId];
+        const displayName =
+          (prof?.full_name || prof?.user_settings?.display_name || '').trim() || 'Member';
+        const lastMsg = lastMsgMap.get(c.id);
+
+        return {
+          id: c.id,
+          other_user: {
+            id: otherId,
+            name: displayName,
+            avatar_url: prof?.avatar_url || null,
+          },
+          last_message: lastMsg
+            ? {
+                content:
+                  lastMsg.content.length > 100
+                    ? `${lastMsg.content.slice(0, 100)}…`
+                    : lastMsg.content,
+                sender_id: lastMsg.sender_id,
+                created_at: lastMsg.created_at,
+                is_mine: lastMsg.sender_id === user.id,
+              }
+            : null,
+          unread_count: unreadMap.get(c.id) || 0,
+          last_message_at: c.last_message_at,
+          created_at: c.created_at,
+        };
+      });
+
+      return NextResponse.json({ conversations: result });
+    } catch (e) {
+      console.error('[messages GET] exception:', e?.message);
+      return NextResponse.json({ error: 'Server error' }, { status: 500 });
+    }
+  },
+  { requireAuth: true },
+);
+
+export const POST = withApiGuard(
+  async (request, user) => {
+    try {
+      const body = await request.json().catch(() => ({}));
+      const toUserId = typeof body?.to === 'string' ? body.to.trim() : '';
+      const content = sanitizeInput(typeof body?.content === 'string' ? body.content.trim() : '');
+
+      if (!toUserId) {
+        return NextResponse.json(
+          { error: '"to" (recipient user_id) is required' },
+          { status: 400 },
+        );
+      }
+      if (toUserId === user.id) {
+        return NextResponse.json({ error: 'Cannot message yourself' }, { status: 400 });
+      }
+      if (!content) {
+        return NextResponse.json({ error: 'Message content is required' }, { status: 400 });
+      }
+      if (content.length > 5000) {
+        return NextResponse.json(
+          { error: 'Message too long (max 5000 characters)' },
+          { status: 400 },
+        );
+      }
+
+      const mutual = await areMutualFollows(user.id, toUserId);
+      if (!mutual) {
+        return NextResponse.json(
+          {
+            error: 'You can only message friends (mutual followers). Follow each other first.',
+          },
+          { status: 403 },
+        );
+      }
+
+      const [pA, pB] = orderedPair(user.id, toUserId);
+      const now = new Date().toISOString();
+
+      let { data: convo } = await admin
+        .from('conversations')
         .select('id')
+        .eq('participant_a', pA)
+        .eq('participant_b', pB)
+        .maybeSingle();
+
+      if (!convo) {
+        const { data: newConvo, error: createErr } = await admin
+          .from('conversations')
+          .insert({
+            participant_a: pA,
+            participant_b: pB,
+            last_message_at: now,
+          })
+          .select('id')
+          .single();
+
+        if (createErr) {
+          if (createErr.code === '23505') {
+            const { data: retry } = await admin
+              .from('conversations')
+              .select('id')
+              .eq('participant_a', pA)
+              .eq('participant_b', pB)
+              .maybeSingle();
+            convo = retry;
+          } else {
+            console.error('[messages POST] conversation create error:', createErr);
+            return NextResponse.json({ error: 'Failed to create conversation' }, { status: 500 });
+          }
+        } else {
+          convo = newConvo;
+        }
+      }
+
+      if (!convo?.id) {
+        return NextResponse.json({ error: 'Failed to resolve conversation' }, { status: 500 });
+      }
+
+      const { data: msg, error: msgErr } = await admin
+        .from('messages')
+        .insert({
+          conversation_id: convo.id,
+          sender_id: user.id,
+          content,
+        })
+        .select('id, conversation_id, sender_id, content, created_at, read_at')
         .single();
 
-      if (createErr) {
-        if (createErr.code === '23505') {
-          const { data: retry } = await admin
-            .from('conversations')
-            .select('id')
-            .eq('participant_a', pA)
-            .eq('participant_b', pB)
-            .maybeSingle();
-          convo = retry;
-        } else {
-          console.error('[messages POST] conversation create error:', createErr);
-          return NextResponse.json({ error: 'Failed to create conversation' }, { status: 500 });
-        }
-      } else {
-        convo = newConvo;
+      if (msgErr) {
+        console.error('[messages POST] message insert error:', msgErr);
+        return NextResponse.json({ error: 'Failed to send message' }, { status: 500 });
       }
-    }
 
-    if (!convo?.id) {
-      return NextResponse.json({ error: 'Failed to resolve conversation' }, { status: 500 });
-    }
+      await admin
+        .from('conversations')
+        .update({ last_message_at: msg.created_at })
+        .eq('id', convo.id);
 
-    const { data: msg, error: msgErr } = await admin
-      .from('messages')
-      .insert({
-        conversation_id: convo.id,
-        sender_id: user.id,
-        content,
-      })
-      .select('id, conversation_id, sender_id, content, created_at, read_at')
-      .single();
-
-    if (msgErr) {
-      console.error('[messages POST] message insert error:', msgErr);
-      return NextResponse.json({ error: 'Failed to send message' }, { status: 500 });
-    }
-
-    await admin
-      .from('conversations')
-      .update({ last_message_at: msg.created_at })
-      .eq('id', convo.id);
-
-    // ── Notify recipient of new message ──
-    try {
-      const { data: prefRow } = await admin
-        .from('user_interest_profiles')
-        .select('notification_prefs')
-        .eq('user_id', toUserId)
-        .maybeSingle();
-      const prefs = prefRow?.notification_prefs || {};
-      if (prefs.message_notifications !== false) {
-        let senderName = 'Someone';
-        const { data: senderProfile } = await admin
-          .from('profiles')
-          .select('full_name, user_settings')
-          .eq('id', user.id)
+      // ── Notify recipient of new message ──
+      try {
+        const { data: prefRow } = await admin
+          .from('user_interest_profiles')
+          .select('notification_prefs')
+          .eq('user_id', toUserId)
           .maybeSingle();
-        if (senderProfile) {
-          senderName =
-            (senderProfile.full_name || senderProfile.user_settings?.display_name || '').trim() ||
-            'Someone';
+        const prefs = prefRow?.notification_prefs || {};
+        if (prefs.message_notifications !== false) {
+          let senderName = 'Someone';
+          const { data: senderProfile } = await admin
+            .from('profiles')
+            .select('full_name, user_settings')
+            .eq('id', user.id)
+            .maybeSingle();
+          if (senderProfile) {
+            senderName =
+              (senderProfile.full_name || senderProfile.user_settings?.display_name || '').trim() ||
+              'Someone';
+          }
+
+          await admin.from('user_notifications').insert({
+            user_id: toUserId,
+            type: 'community',
+            title: `New message from ${senderName}`,
+            content: content.length > 80 ? `${content.slice(0, 80)}…` : content,
+          });
         }
-
-        await admin.from('user_notifications').insert({
-          user_id: toUserId,
-          type: 'community',
-          title: `New message from ${senderName}`,
-          content: content.length > 80 ? `${content.slice(0, 80)}…` : content,
-        });
+      } catch (notifErr) {
+        console.error('[messages POST] notification insert:', notifErr);
       }
-    } catch (notifErr) {
-      console.error('[messages POST] notification insert:', notifErr);
-    }
 
-    return NextResponse.json({
-      message: {
-        id: msg.id,
-        conversation_id: msg.conversation_id,
-        sender_id: msg.sender_id,
-        content: msg.content,
-        created_at: msg.created_at,
-        read_at: msg.read_at,
-        is_mine: true,
-      },
-    });
-  } catch (e) {
-    console.error('[messages POST] exception:', e?.message);
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
-  }
-}
+      return NextResponse.json({
+        message: {
+          id: msg.id,
+          conversation_id: msg.conversation_id,
+          sender_id: msg.sender_id,
+          content: msg.content,
+          created_at: msg.created_at,
+          read_at: msg.read_at,
+          is_mine: true,
+        },
+      });
+    } catch (e) {
+      console.error('[messages POST] exception:', e?.message);
+      return NextResponse.json({ error: 'Server error' }, { status: 500 });
+    }
+  },
+  { requireAuth: true },
+);

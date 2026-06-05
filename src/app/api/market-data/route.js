@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 import { fetchMarketData, formatMarketDataForPrompt } from '@/lib/ai/market-data';
 
 export const dynamic = 'force-dynamic';
@@ -9,43 +10,46 @@ function getFmpKey() {
   return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
 }
 
-export async function GET(request) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const ticker = searchParams.get('ticker');
+export const GET = withApiGuard(
+  async (request) => {
+    try {
+      const { searchParams } = new URL(request.url);
+      const ticker = searchParams.get('ticker');
 
-    if (!ticker) {
-      return NextResponse.json({ error: 'ticker query parameter is required' }, { status: 400 });
-    }
+      if (!ticker) {
+        return NextResponse.json({ error: 'ticker query parameter is required' }, { status: 400 });
+      }
 
-    if (!getFmpKey()) {
-      return NextResponse.json({ error: 'FMP_API_KEY is not configured' }, { status: 500 });
-    }
+      if (!getFmpKey()) {
+        return NextResponse.json({ error: 'FMP_API_KEY is not configured' }, { status: 500 });
+      }
 
-    const data = await fetchMarketData(ticker);
+      const data = await fetchMarketData(ticker);
 
-    if (!data?.quote) {
+      if (!data?.quote) {
+        return NextResponse.json(
+          { error: `No data found for ticker: ${ticker.toUpperCase()}` },
+          { status: 404 },
+        );
+      }
+
+      const format = searchParams.get('format');
+
+      if (format === 'prompt') {
+        return NextResponse.json({
+          ticker: data.ticker,
+          prompt: formatMarketDataForPrompt(data),
+        });
+      }
+
+      return NextResponse.json(data);
+    } catch (error) {
+      console.error('Market data error:', error);
       return NextResponse.json(
-        { error: `No data found for ticker: ${ticker.toUpperCase()}` },
-        { status: 404 },
+        { error: 'Internal server error', details: error?.message },
+        { status: 500 },
       );
     }
-
-    const format = searchParams.get('format');
-
-    if (format === 'prompt') {
-      return NextResponse.json({
-        ticker: data.ticker,
-        prompt: formatMarketDataForPrompt(data),
-      });
-    }
-
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error('Market data error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error', details: error?.message },
-      { status: 500 },
-    );
-  }
-}
+  },
+  { requireAuth: false },
+);

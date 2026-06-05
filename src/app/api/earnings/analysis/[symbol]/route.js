@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 import { supabaseAdmin } from '@/lib/plaid';
 import { fetchLastNTranscripts, fetchEarningsHistory } from '@/lib/earnings/fmp-client';
 import { analyzeTranscript, synthesize } from '@/lib/earnings/analyze';
@@ -242,145 +243,151 @@ async function persistSynthesis(symbol, year, quarter, synthesis) {
   }
 }
 
-export async function GET(_req, context) {
-  const raw = String(context?.params?.symbol ?? '')
-    .trim()
-    .toUpperCase();
-  const symbol = raw.replace(/\s+/g, '');
+export const GET = withApiGuard(
+  async (request, user, context) => {
+    const raw = String(context?.params?.symbol ?? '')
+      .trim()
+      .toUpperCase();
+    const symbol = raw.replace(/\s+/g, '');
 
-  if (!symbol || !/^[A-Z0-9.-]{1,15}$/.test(symbol)) {
-    return NextResponse.json({ error: 'Invalid symbol' }, { status: 400 });
-  }
-
-  // Only Alpha Vantage is needed for transcripts
-  const avKey = process.env.ALPHA_VANTAGE_API_KEY || '';
-  if (!avKey) {
-    console.error('[earnings/analysis] ALPHA_VANTAGE_API_KEY is not set');
-    return NextResponse.json(
-      {
-        error: 'Earnings analysis is not configured.',
-        detail:
-          'Set ALPHA_VANTAGE_API_KEY in Vercel environment variables (Production + Preview + Development).',
-      },
-      { status: 503 },
-    );
-  }
-
-  try {
-    console.log(`[earnings/analysis] ${symbol}: starting`);
-
-    const { transcripts } = await fetchLastNTranscripts(symbol, 4);
-
-    const earnings = await fetchEarningsHistory(symbol, 12).catch((err) => {
-      console.warn(`[earnings/analysis] ${symbol} earnings history failed:`, err?.message);
-      return [];
-    });
-
-    console.log(
-      `[earnings/analysis] ${symbol}: ${transcripts.length} transcripts, ${earnings.length} earnings rows`,
-    );
-
-    if (transcripts.length > 0) {
-      const t0 = transcripts[0];
-      console.log(`[earnings/analysis] ${symbol}: first transcript`, {
-        period: t0.period,
-        year: t0.year,
-        contentLength: t0.content?.length ?? 0,
-      });
+    if (!symbol || !/^[A-Z0-9.-]{1,15}$/.test(symbol)) {
+      return NextResponse.json({ error: 'Invalid symbol' }, { status: 400 });
     }
 
-    if (transcripts.length === 0) {
+    // Only Alpha Vantage is needed for transcripts
+    const avKey = process.env.ALPHA_VANTAGE_API_KEY || '';
+    if (!avKey) {
+      console.error('[earnings/analysis] ALPHA_VANTAGE_API_KEY is not set');
       return NextResponse.json(
         {
-          error: `No earnings call transcripts found for ${symbol}.`,
+          error: 'Earnings analysis is not configured.',
           detail:
-            'Alpha Vantage did not have transcripts for recent quarters of this ticker. ' +
-            'Coverage is best for large-cap US tickers (AAPL, MSFT, NVDA, TSLA). ' +
-            'Check Vercel function logs for "[earnings/av]" entries to debug.',
+            'Set ALPHA_VANTAGE_API_KEY in Vercel environment variables (Production + Preview + Development).',
         },
-        { status: 404 },
+        { status: 503 },
       );
     }
 
-    /** @type {Awaited<ReturnType<typeof getOrComputeAnalysis>>[]} */
-    const analyses = [];
-    for (const t of transcripts) {
-      try {
-        const row = await getOrComputeAnalysis(t, symbol);
-        if (row) analyses.push(row);
-      } catch (err) {
-        console.error(
-          `[earnings/analysis] ${symbol} analyze failed for period:`,
-          t?.period,
-          t?.year,
-          err,
+    try {
+      console.log(`[earnings/analysis] ${symbol}: starting`);
+
+      const { transcripts } = await fetchLastNTranscripts(symbol, 4);
+
+      const earnings = await fetchEarningsHistory(symbol, 12).catch((err) => {
+        console.warn(`[earnings/analysis] ${symbol} earnings history failed:`, err?.message);
+        return [];
+      });
+
+      console.log(
+        `[earnings/analysis] ${symbol}: ${transcripts.length} transcripts, ${earnings.length} earnings rows`,
+      );
+
+      if (transcripts.length > 0) {
+        const t0 = transcripts[0];
+        console.log(`[earnings/analysis] ${symbol}: first transcript`, {
+          period: t0.period,
+          year: t0.year,
+          contentLength: t0.content?.length ?? 0,
+        });
+      }
+
+      if (transcripts.length === 0) {
+        return NextResponse.json(
+          {
+            error: `No earnings call transcripts found for ${symbol}.`,
+            detail:
+              'Alpha Vantage did not have transcripts for recent quarters of this ticker. ' +
+              'Coverage is best for large-cap US tickers (AAPL, MSFT, NVDA, TSLA). ' +
+              'Check Vercel function logs for "[earnings/av]" entries to debug.',
+          },
+          { status: 404 },
         );
       }
-    }
 
-    if (analyses.length === 0) {
+      /** @type {Awaited<ReturnType<typeof getOrComputeAnalysis>>[]} */
+      const analyses = [];
+      for (const t of transcripts) {
+        try {
+          const row = await getOrComputeAnalysis(t, symbol);
+          if (row) analyses.push(row);
+        } catch (err) {
+          console.error(
+            `[earnings/analysis] ${symbol} analyze failed for period:`,
+            t?.period,
+            t?.year,
+            err,
+          );
+        }
+      }
+
+      if (analyses.length === 0) {
+        return NextResponse.json(
+          {
+            error: 'Transcripts were found but analysis could not be completed.',
+            detail: 'Check server logs for cache or parsing errors. Try again in a moment.',
+          },
+          { status: 500 },
+        );
+      }
+
+      const current = analyses[0];
+      const prior = analyses[1];
+
+      const matchedEarnings = findEarningsRowForQuarter(earnings, current.year, current.quarter);
+      const epsBeat =
+        matchedEarnings?.epsActual != null && matchedEarnings?.epsEstimated != null
+          ? matchedEarnings.epsActual >= matchedEarnings.epsEstimated
+          : null;
+
+      const synthesis = synthesize({
+        current: current.analysis,
+        prior: prior?.analysis,
+        epsBeat,
+        guidanceDirection: current.analysis.guidanceDirection || null,
+      });
+
+      await persistSynthesis(symbol, current.year, current.quarter, synthesis);
+
+      const priorTopics = prior?.analysis?.topTopics || null;
+      const topTopicsWithDelta = enrichTopicsWithDelta(
+        current.analysis.topTopics || [],
+        priorTopics,
+      );
+
+      return NextResponse.json({
+        symbol,
+        current: {
+          period: `Q${current.quarter} ${current.year}`,
+          callDate: current.callDate,
+          analysis: {
+            ...current.analysis,
+            topTopics: topTopicsWithDelta,
+          },
+        },
+        history: analyses.map((a) => ({
+          period: `Q${a.quarter} ${a.year}`,
+          callDate: a.callDate,
+          sentimentScore: a.analysis.sentimentScore,
+          qaSentiment: a.analysis.qaSentiment,
+          uncertaintyScore: a.analysis.uncertaintyScore,
+          qaEvasivenessScore: a.analysis.qaEvasivenessScore,
+          guidanceDirection: a.analysis.guidanceDirection || null,
+        })),
+        earningsHistory: earnings.slice(0, 8),
+        synthesis,
+      });
+    } catch (err) {
+      console.error(`[earnings/analysis] ${symbol} failed:`, err);
+      if (err?.stack) console.error(err.stack);
       return NextResponse.json(
         {
-          error: 'Transcripts were found but analysis could not be completed.',
-          detail: 'Check server logs for cache or parsing errors. Try again in a moment.',
+          error: err?.message ?? 'Unknown error',
+          symbol,
+          detail: process.env.NODE_ENV === 'development' ? err?.stack : undefined,
         },
         { status: 500 },
       );
     }
-
-    const current = analyses[0];
-    const prior = analyses[1];
-
-    const matchedEarnings = findEarningsRowForQuarter(earnings, current.year, current.quarter);
-    const epsBeat =
-      matchedEarnings?.epsActual != null && matchedEarnings?.epsEstimated != null
-        ? matchedEarnings.epsActual >= matchedEarnings.epsEstimated
-        : null;
-
-    const synthesis = synthesize({
-      current: current.analysis,
-      prior: prior?.analysis,
-      epsBeat,
-      guidanceDirection: current.analysis.guidanceDirection || null,
-    });
-
-    await persistSynthesis(symbol, current.year, current.quarter, synthesis);
-
-    const priorTopics = prior?.analysis?.topTopics || null;
-    const topTopicsWithDelta = enrichTopicsWithDelta(current.analysis.topTopics || [], priorTopics);
-
-    return NextResponse.json({
-      symbol,
-      current: {
-        period: `Q${current.quarter} ${current.year}`,
-        callDate: current.callDate,
-        analysis: {
-          ...current.analysis,
-          topTopics: topTopicsWithDelta,
-        },
-      },
-      history: analyses.map((a) => ({
-        period: `Q${a.quarter} ${a.year}`,
-        callDate: a.callDate,
-        sentimentScore: a.analysis.sentimentScore,
-        qaSentiment: a.analysis.qaSentiment,
-        uncertaintyScore: a.analysis.uncertaintyScore,
-        qaEvasivenessScore: a.analysis.qaEvasivenessScore,
-        guidanceDirection: a.analysis.guidanceDirection || null,
-      })),
-      earningsHistory: earnings.slice(0, 8),
-      synthesis,
-    });
-  } catch (err) {
-    console.error(`[earnings/analysis] ${symbol} failed:`, err);
-    if (err?.stack) console.error(err.stack);
-    return NextResponse.json(
-      {
-        error: err?.message ?? 'Unknown error',
-        symbol,
-        detail: process.env.NODE_ENV === 'development' ? err?.stack : undefined,
-      },
-      { status: 500 },
-    );
-  }
-}
+  },
+  { requireAuth: false },
+);

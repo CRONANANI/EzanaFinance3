@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,53 +19,56 @@ function getFmpKey() {
 /**
  * GET /api/learning/financial-statement?symbol=AAPL&statement=income&period=annual&limit=2
  */
-export async function GET(req) {
-  try {
-    const url = new URL(req.url);
-    const symbol = (url.searchParams.get('symbol') || '').toUpperCase().trim();
-    const statement = url.searchParams.get('statement') || 'income';
-    const period = url.searchParams.get('period') === 'quarter' ? 'quarter' : 'annual';
-    const limit = Math.min(4, Math.max(2, Number(url.searchParams.get('limit')) || 2));
+export const GET = withApiGuard(
+  async (request, user) => {
+    try {
+      const url = new URL(req.url);
+      const symbol = (url.searchParams.get('symbol') || '').toUpperCase().trim();
+      const statement = url.searchParams.get('statement') || 'income';
+      const period = url.searchParams.get('period') === 'quarter' ? 'quarter' : 'annual';
+      const limit = Math.min(4, Math.max(2, Number(url.searchParams.get('limit')) || 2));
 
-    if (!symbol || !VALID_STATEMENTS.includes(statement)) {
-      return NextResponse.json({ error: 'Invalid params' }, { status: 400 });
+      if (!symbol || !VALID_STATEMENTS.includes(statement)) {
+        return NextResponse.json({ error: 'Invalid params' }, { status: 400 });
+      }
+
+      const apiKey = getFmpKey();
+      if (!apiKey) {
+        return NextResponse.json({ error: 'FMP service unavailable' }, { status: 503 });
+      }
+
+      const path = STATEMENT_PATHS[statement];
+      const fmpUrl = `${FMP_BASE}/${path}/${symbol}?period=${period}&limit=${limit}&apikey=${apiKey}`;
+      const res = await fetch(fmpUrl, { cache: 'no-store' });
+      if (!res.ok) {
+        return NextResponse.json({ error: `FMP HTTP ${res.status}` }, { status: res.status });
+      }
+
+      const raw = await res.json();
+      if (!Array.isArray(raw) || raw.length === 0) {
+        return NextResponse.json({ error: 'No data returned' }, { status: 404 });
+      }
+
+      const periods = raw.slice(0, limit).map((p) => ({
+        label: period === 'annual' ? p.calendarYear : `${p.period} ${p.calendarYear}`,
+        date: p.date,
+      }));
+
+      const rows = buildRows(statement, raw);
+
+      return NextResponse.json({
+        symbol,
+        statement,
+        period,
+        periods,
+        rows,
+      });
+    } catch (err) {
+      return NextResponse.json({ error: err.message }, { status: 500 });
     }
-
-    const apiKey = getFmpKey();
-    if (!apiKey) {
-      return NextResponse.json({ error: 'FMP service unavailable' }, { status: 503 });
-    }
-
-    const path = STATEMENT_PATHS[statement];
-    const fmpUrl = `${FMP_BASE}/${path}/${symbol}?period=${period}&limit=${limit}&apikey=${apiKey}`;
-    const res = await fetch(fmpUrl, { cache: 'no-store' });
-    if (!res.ok) {
-      return NextResponse.json({ error: `FMP HTTP ${res.status}` }, { status: res.status });
-    }
-
-    const raw = await res.json();
-    if (!Array.isArray(raw) || raw.length === 0) {
-      return NextResponse.json({ error: 'No data returned' }, { status: 404 });
-    }
-
-    const periods = raw.slice(0, limit).map((p) => ({
-      label: period === 'annual' ? p.calendarYear : `${p.period} ${p.calendarYear}`,
-      date: p.date,
-    }));
-
-    const rows = buildRows(statement, raw);
-
-    return NextResponse.json({
-      symbol,
-      statement,
-      period,
-      periods,
-      rows,
-    });
-  } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
-  }
-}
+  },
+  { requireAuth: false },
+);
 
 function buildRows(statement, raw) {
   const layouts = {

@@ -7,6 +7,7 @@
  * Remove an item from a watchlist. ticker and type identify the row.
  */
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 import { getAuthContext } from '@/lib/auth-helpers';
 import { getAdminClient } from '@/lib/supabase';
 import { dbErrorResponse, exceptionResponse, validationResponse } from '@/lib/api-errors';
@@ -30,128 +31,136 @@ async function assertListOwnedByUser(supabase, listId, userId) {
   return !!data;
 }
 
-export async function POST(request, { params }) {
-  try {
-    const { user, supabase } = await getAuthContext(request);
-    if (!user || !supabase) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+export const POST = withApiGuard(
+  async (request, user, context) => {
+    const params = context?.params ?? {};
+    try {
+      const { supabase } = await getAuthContext(request);
+      if (!supabase) {
+        return NextResponse.json({ error: 'Server error' }, { status: 500 });
+      }
 
-    const { listId } = params;
-    if (!listId) return validationResponse('listId is required.');
+      const listId = params.listId;
+      if (!listId) return validationResponse('listId is required.');
 
-    const owned = await assertListOwnedByUser(supabase, listId, user.id);
-    if (!owned) {
-      return NextResponse.json({ error: 'List not found or not yours.' }, { status: 404 });
-    }
+      const owned = await assertListOwnedByUser(supabase, listId, user.id);
+      if (!owned) {
+        return NextResponse.json({ error: 'List not found or not yours.' }, { status: 404 });
+      }
 
-    const body = await request.json().catch(() => ({}));
-    const type = typeof body?.type === 'string' ? body.type.toLowerCase() : '';
-    const ticker = typeof body?.ticker === 'string' ? body.ticker.trim().toUpperCase() : '';
-    const name = typeof body?.name === 'string' ? body.name.trim() : null;
-    const sector = typeof body?.sector === 'string' ? body.sector.trim() : null;
-    const metadata = body?.metadata && typeof body.metadata === 'object' ? body.metadata : {};
+      const body = await request.json().catch(() => ({}));
+      const type = typeof body?.type === 'string' ? body.type.toLowerCase() : '';
+      const ticker = typeof body?.ticker === 'string' ? body.ticker.trim().toUpperCase() : '';
+      const name = typeof body?.name === 'string' ? body.name.trim() : null;
+      const sector = typeof body?.sector === 'string' ? body.sector.trim() : null;
+      const metadata = body?.metadata && typeof body.metadata === 'object' ? body.metadata : {};
 
-    if (!VALID_TYPES.has(type)) {
-      return validationResponse(`Invalid type. Must be one of: ${[...VALID_TYPES].join(', ')}.`);
-    }
-    if (!ticker) {
-      return validationResponse('ticker is required.');
-    }
+      if (!VALID_TYPES.has(type)) {
+        return validationResponse(`Invalid type. Must be one of: ${[...VALID_TYPES].join(', ')}.`);
+      }
+      if (!ticker) {
+        return validationResponse('ticker is required.');
+      }
 
-    // Upsert by unique (list_id, type, ticker) — idempotent add.
-    const { data, error } = await supabase
-      .from('user_watchlist_items')
-      .upsert(
-        { list_id: listId, user_id: user.id, type, ticker, name, sector, metadata },
-        { onConflict: 'list_id,type,ticker', ignoreDuplicates: false },
-      )
-      .select('id, list_id, type, ticker, name, sector, metadata, created_at')
-      .single();
+      // Upsert by unique (list_id, type, ticker) — idempotent add.
+      const { data, error } = await supabase
+        .from('user_watchlist_items')
+        .upsert(
+          { list_id: listId, user_id: user.id, type, ticker, name, sector, metadata },
+          { onConflict: 'list_id,type,ticker', ignoreDuplicates: false },
+        )
+        .select('id, list_id, type, ticker, name, sector, metadata, created_at')
+        .single();
 
-    if (error) {
-      return dbErrorResponse('watchlist items POST', error, {
-        fallback: 'Failed to add item to watchlist.',
+      if (error) {
+        return dbErrorResponse('watchlist items POST', error, {
+          fallback: 'Failed to add item to watchlist.',
+        });
+      }
+
+      const admin = getAdminClient();
+      await admin
+        .from('activity_breadcrumbs')
+        .insert({
+          user_id: user.id,
+          event_type: 'watchlist_add',
+          event_data: { ticker: data.ticker, watchlist_id: listId },
+        })
+        .catch(() => {});
+
+      return NextResponse.json({
+        item: {
+          id: data.id,
+          type: data.type,
+          ticker: data.ticker,
+          name: data.name || data.ticker,
+          sector: data.sector || '',
+          metadata: data.metadata || {},
+          price: 0,
+          change: 0,
+          changePct: 0,
+          marketCap: '—',
+          volume: '—',
+        },
       });
+    } catch (e) {
+      // assertListOwnedByUser may rethrow a Supabase error — treat it as a DB error.
+      if (e?.code) return dbErrorResponse('watchlist items POST ownership', e);
+      return exceptionResponse('watchlist items POST', e);
     }
+  },
+  { requireAuth: true },
+);
 
-    const admin = getAdminClient();
-    await admin
-      .from('activity_breadcrumbs')
-      .insert({
-        user_id: user.id,
-        event_type: 'watchlist_add',
-        event_data: { ticker: data.ticker, watchlist_id: listId },
-      })
-      .catch(() => {});
+export const DELETE = withApiGuard(
+  async (request, user, context) => {
+    const params = context?.params ?? {};
+    try {
+      const { supabase } = await getAuthContext(request);
+      if (!supabase) {
+        return NextResponse.json({ error: 'Server error' }, { status: 500 });
+      }
 
-    return NextResponse.json({
-      item: {
-        id: data.id,
-        type: data.type,
-        ticker: data.ticker,
-        name: data.name || data.ticker,
-        sector: data.sector || '',
-        metadata: data.metadata || {},
-        price: 0,
-        change: 0,
-        changePct: 0,
-        marketCap: '—',
-        volume: '—',
-      },
-    });
-  } catch (e) {
-    // assertListOwnedByUser may rethrow a Supabase error — treat it as a DB error.
-    if (e?.code) return dbErrorResponse('watchlist items POST ownership', e);
-    return exceptionResponse('watchlist items POST', e);
-  }
-}
+      const listId = params.listId;
+      if (!listId) return validationResponse('listId is required.');
 
-export async function DELETE(request, { params }) {
-  try {
-    const { user, supabase } = await getAuthContext(request);
-    if (!user || !supabase) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      const { searchParams } = new URL(request.url);
+      const ticker = (searchParams.get('ticker') || '').trim().toUpperCase();
+      const type = (searchParams.get('type') || '').toLowerCase();
+
+      if (!ticker) return validationResponse('ticker is required.');
+      if (!VALID_TYPES.has(type)) {
+        return validationResponse(`Invalid type. Must be one of: ${[...VALID_TYPES].join(', ')}.`);
+      }
+
+      const { error } = await supabase
+        .from('user_watchlist_items')
+        .delete()
+        .eq('list_id', listId)
+        .eq('user_id', user.id)
+        .eq('type', type)
+        .eq('ticker', ticker);
+
+      if (error) {
+        return dbErrorResponse('watchlist items DELETE', error, {
+          fallback: 'Failed to remove item from watchlist.',
+        });
+      }
+
+      const admin = getAdminClient();
+      await admin
+        .from('activity_breadcrumbs')
+        .insert({
+          user_id: user.id,
+          event_type: 'watchlist_remove',
+          event_data: { ticker, watchlist_id: listId },
+        })
+        .catch(() => {});
+
+      return NextResponse.json({ success: true });
+    } catch (e) {
+      return exceptionResponse('watchlist items DELETE', e);
     }
-
-    const { listId } = params;
-    if (!listId) return validationResponse('listId is required.');
-
-    const { searchParams } = new URL(request.url);
-    const ticker = (searchParams.get('ticker') || '').trim().toUpperCase();
-    const type = (searchParams.get('type') || '').toLowerCase();
-
-    if (!ticker) return validationResponse('ticker is required.');
-    if (!VALID_TYPES.has(type)) {
-      return validationResponse(`Invalid type. Must be one of: ${[...VALID_TYPES].join(', ')}.`);
-    }
-
-    const { error } = await supabase
-      .from('user_watchlist_items')
-      .delete()
-      .eq('list_id', listId)
-      .eq('user_id', user.id)
-      .eq('type', type)
-      .eq('ticker', ticker);
-
-    if (error) {
-      return dbErrorResponse('watchlist items DELETE', error, {
-        fallback: 'Failed to remove item from watchlist.',
-      });
-    }
-
-    const admin = getAdminClient();
-    await admin
-      .from('activity_breadcrumbs')
-      .insert({
-        user_id: user.id,
-        event_type: 'watchlist_remove',
-        event_data: { ticker, watchlist_id: listId },
-      })
-      .catch(() => {});
-
-    return NextResponse.json({ success: true });
-  } catch (e) {
-    return exceptionResponse('watchlist items DELETE', e);
-  }
-}
+  },
+  { requireAuth: true },
+);

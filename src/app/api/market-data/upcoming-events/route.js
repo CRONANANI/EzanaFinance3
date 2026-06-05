@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 import {
   FEED_KEYS,
   getEarningsEvents,
@@ -295,138 +296,141 @@ function hasRelevance(params) {
   );
 }
 
-export async function GET(request) {
-  try {
-    if (!getFmpKey()) {
+export const GET = withApiGuard(
+  async (request) => {
+    try {
+      if (!getFmpKey()) {
+        return NextResponse.json(
+          { events: [], errors: ['FMP_API_KEY is not configured on the server.'] },
+          { headers: CACHE_HEADERS },
+        );
+      }
+
+      const url = new URL(request.url);
+      const country = url.searchParams.get('country') || 'US';
+      const tickers = parseSet(url.searchParams.get('tickers'));
+      const politicians = canonicalPoliticianSet(
+        parseSet(url.searchParams.get('politicians'), { upper: false }),
+      );
+      const cryptos = parseSet(url.searchParams.get('cryptos'));
+      const commodities = parseSet(url.searchParams.get('commodities'));
+      const relevance = { tickers, politicians, cryptos, commodities };
+
+      // Skip relevance-gated feeds entirely if the user follows nothing of
+      // that kind — saves an FMP roundtrip and keeps the response tiny.
+      const loaders = [
+        {
+          key: 'earnings',
+          run: () => getEarningsEvents(Array.from(tickers)),
+          gated: tickers.size > 0,
+        },
+        { key: 'dividends', run: getDividendEvents, gated: tickers.size > 0 },
+        { key: 'ipos', run: getIpoEvents, gated: tickers.size > 0 },
+        // Economic is always shown for the user's country — not gated.
+        { key: 'economic', run: () => getEconomicEvents(country), gated: true },
+        {
+          key: 'inside-the-capitol',
+          run: getCongressTrades,
+          gated: politicians.size > 0,
+        },
+        { key: 'crypto', run: getCryptoEvents, gated: cryptos.size > 0 },
+        { key: 'commodity', run: getCommodityEvents, gated: commodities.size > 0 },
+      ];
+
+      const activeLoaders = loaders.filter((l) => l.gated);
+      const results = await Promise.allSettled(activeLoaders.map((l) => l.run()));
+
+      const norm = normalizers();
+      const errors = [];
+      const events = [];
+
+      results.forEach((r, idx) => {
+        const key = activeLoaders[idx].key;
+        if (r.status === 'fulfilled') {
+          const arr = Array.isArray(r.value) ? r.value : [];
+          for (let i = 0; i < arr.length; i += 1) {
+            const mapped = norm[key](arr[i], i);
+            if (!mapped) continue;
+
+            // Relevance gating per event. Economic always passes (country was
+            // already applied upstream). All other categories require the
+            // event's subject to be in the user's followed set.
+            if (key === 'earnings' || key === 'dividends' || key === 'ipos') {
+              if (!relevance.tickers.has(String(mapped.symbol || '').toUpperCase())) {
+                continue;
+              }
+            } else if (key === 'inside-the-capitol') {
+              const politicianKey = canonicalPoliticianKey(mapped.politician);
+              if (!relevance.politicians.has(politicianKey)) continue;
+            } else if (key === 'crypto') {
+              if (!relevance.cryptos.has(String(mapped.symbol || '').toUpperCase())) {
+                continue;
+              }
+            } else if (key === 'commodity') {
+              if (!relevance.commodities.has(String(mapped.symbol || '').toUpperCase())) {
+                continue;
+              }
+            }
+            events.push(mapped);
+          }
+        } else {
+          const msg = r.reason?.message || String(r.reason || 'unknown error');
+          errors.push(`${key}: ${msg}`);
+        }
+      });
+
+      // Defensive window filter — FMP sometimes echoes items just outside range.
+      const { from, to } = todayAndEndOfMonth();
+      const fromDate = parseLocalDate(from);
+      const toDate = parseLocalDate(to);
+      if (toDate) toDate.setHours(23, 59, 59, 999);
+
+      const inWindow = events.filter((ev) => withinWindow(ev, fromDate, toDate));
+
+      // Drop economic "Low" impact events — the card highlights market-moving
+      // items only. Everything else (earnings, dividends, congress, …) is
+      // already gated by the user's relevance set, so it all passes through.
+      const priority = inWindow.filter((ev) => {
+        if (ev.category !== 'economic') return true;
+        return ev.impact !== 'Low';
+      });
+
+      // Dedupe — the same event may be normalised from multiple sources (eg.
+      // an earnings date that's also in a politician's disclosed trades).
+      const byId = new Map();
+      for (const ev of priority) {
+        if (!byId.has(ev.id)) byId.set(ev.id, ev);
+      }
+
+      const sorted = Array.from(byId.values()).sort((a, b) => {
+        const da = parseLocalDate(a.fullDate)?.getTime() ?? 0;
+        const db = parseLocalDate(b.fullDate)?.getTime() ?? 0;
+        if (da !== db) return da - db;
+        return FEED_KEYS.indexOf(a.category) - FEED_KEYS.indexOf(b.category);
+      });
+
       return NextResponse.json(
-        { events: [], errors: ['FMP_API_KEY is not configured on the server.'] },
+        {
+          events: sorted,
+          errors,
+          window: { from, to },
+          relevance: {
+            tickers: tickers.size,
+            politicians: politicians.size,
+            cryptos: cryptos.size,
+            commodities: commodities.size,
+            country,
+            isEmpty: !hasRelevance(relevance),
+          },
+        },
         { headers: CACHE_HEADERS },
       );
+    } catch (error) {
+      return NextResponse.json(
+        { events: [], errors: [error.message || 'Server error'] },
+        { status: 500 },
+      );
     }
-
-    const url = new URL(request.url);
-    const country = url.searchParams.get('country') || 'US';
-    const tickers = parseSet(url.searchParams.get('tickers'));
-    const politicians = canonicalPoliticianSet(
-      parseSet(url.searchParams.get('politicians'), { upper: false }),
-    );
-    const cryptos = parseSet(url.searchParams.get('cryptos'));
-    const commodities = parseSet(url.searchParams.get('commodities'));
-    const relevance = { tickers, politicians, cryptos, commodities };
-
-    // Skip relevance-gated feeds entirely if the user follows nothing of
-    // that kind — saves an FMP roundtrip and keeps the response tiny.
-    const loaders = [
-      {
-        key: 'earnings',
-        run: () => getEarningsEvents(Array.from(tickers)),
-        gated: tickers.size > 0,
-      },
-      { key: 'dividends', run: getDividendEvents, gated: tickers.size > 0 },
-      { key: 'ipos', run: getIpoEvents, gated: tickers.size > 0 },
-      // Economic is always shown for the user's country — not gated.
-      { key: 'economic', run: () => getEconomicEvents(country), gated: true },
-      {
-        key: 'inside-the-capitol',
-        run: getCongressTrades,
-        gated: politicians.size > 0,
-      },
-      { key: 'crypto', run: getCryptoEvents, gated: cryptos.size > 0 },
-      { key: 'commodity', run: getCommodityEvents, gated: commodities.size > 0 },
-    ];
-
-    const activeLoaders = loaders.filter((l) => l.gated);
-    const results = await Promise.allSettled(activeLoaders.map((l) => l.run()));
-
-    const norm = normalizers();
-    const errors = [];
-    const events = [];
-
-    results.forEach((r, idx) => {
-      const key = activeLoaders[idx].key;
-      if (r.status === 'fulfilled') {
-        const arr = Array.isArray(r.value) ? r.value : [];
-        for (let i = 0; i < arr.length; i += 1) {
-          const mapped = norm[key](arr[i], i);
-          if (!mapped) continue;
-
-          // Relevance gating per event. Economic always passes (country was
-          // already applied upstream). All other categories require the
-          // event's subject to be in the user's followed set.
-          if (key === 'earnings' || key === 'dividends' || key === 'ipos') {
-            if (!relevance.tickers.has(String(mapped.symbol || '').toUpperCase())) {
-              continue;
-            }
-          } else if (key === 'inside-the-capitol') {
-            const politicianKey = canonicalPoliticianKey(mapped.politician);
-            if (!relevance.politicians.has(politicianKey)) continue;
-          } else if (key === 'crypto') {
-            if (!relevance.cryptos.has(String(mapped.symbol || '').toUpperCase())) {
-              continue;
-            }
-          } else if (key === 'commodity') {
-            if (!relevance.commodities.has(String(mapped.symbol || '').toUpperCase())) {
-              continue;
-            }
-          }
-          events.push(mapped);
-        }
-      } else {
-        const msg = r.reason?.message || String(r.reason || 'unknown error');
-        errors.push(`${key}: ${msg}`);
-      }
-    });
-
-    // Defensive window filter — FMP sometimes echoes items just outside range.
-    const { from, to } = todayAndEndOfMonth();
-    const fromDate = parseLocalDate(from);
-    const toDate = parseLocalDate(to);
-    if (toDate) toDate.setHours(23, 59, 59, 999);
-
-    const inWindow = events.filter((ev) => withinWindow(ev, fromDate, toDate));
-
-    // Drop economic "Low" impact events — the card highlights market-moving
-    // items only. Everything else (earnings, dividends, congress, …) is
-    // already gated by the user's relevance set, so it all passes through.
-    const priority = inWindow.filter((ev) => {
-      if (ev.category !== 'economic') return true;
-      return ev.impact !== 'Low';
-    });
-
-    // Dedupe — the same event may be normalised from multiple sources (eg.
-    // an earnings date that's also in a politician's disclosed trades).
-    const byId = new Map();
-    for (const ev of priority) {
-      if (!byId.has(ev.id)) byId.set(ev.id, ev);
-    }
-
-    const sorted = Array.from(byId.values()).sort((a, b) => {
-      const da = parseLocalDate(a.fullDate)?.getTime() ?? 0;
-      const db = parseLocalDate(b.fullDate)?.getTime() ?? 0;
-      if (da !== db) return da - db;
-      return FEED_KEYS.indexOf(a.category) - FEED_KEYS.indexOf(b.category);
-    });
-
-    return NextResponse.json(
-      {
-        events: sorted,
-        errors,
-        window: { from, to },
-        relevance: {
-          tickers: tickers.size,
-          politicians: politicians.size,
-          cryptos: cryptos.size,
-          commodities: commodities.size,
-          country,
-          isEmpty: !hasRelevance(relevance),
-        },
-      },
-      { headers: CACHE_HEADERS },
-    );
-  } catch (error) {
-    return NextResponse.json(
-      { events: [], errors: [error.message || 'Server error'] },
-      { status: 500 },
-    );
-  }
-}
+  },
+  { requireAuth: false },
+);

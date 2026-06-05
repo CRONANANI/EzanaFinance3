@@ -12,177 +12,170 @@
  * sees their own portfolio data regardless of RLS configuration.
  */
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 import { supabaseAdmin } from '@/lib/plaid';
-import { getAuthUser } from '@/lib/auth-helpers';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(request) {
-  try {
-    // Resolve the authenticated user from the request (cookies or bearer token)
-    const user = await getAuthUser(request);
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+export const GET = withApiGuard(
+  async (request, user) => {
+    try {
+      const userId = user.id;
+      console.log('[portfolio] Fetching portfolio for user:', userId);
+
+      // Fetch accounts — filtered by authenticated user
+      const { data: accounts, error: accountsError } = await supabaseAdmin
+        .from('plaid_accounts')
+        .select('*')
+        .eq('user_id', userId);
+
+      if (accountsError) {
+        console.error('[portfolio] Accounts error:', accountsError);
+        return NextResponse.json(
+          { error: 'Failed to fetch accounts', details: accountsError.message },
+          { status: 500 },
+        );
+      }
+
+      // Fetch holdings — filtered by authenticated user
+      const { data: holdings, error: holdingsError } = await supabaseAdmin
+        .from('plaid_holdings')
+        .select('*')
+        .eq('user_id', userId);
+
+      if (holdingsError) {
+        console.error('[portfolio] Holdings error:', holdingsError);
+        return NextResponse.json(
+          { error: 'Failed to fetch holdings', details: holdingsError.message },
+          { status: 500 },
+        );
+      }
+
+      // Fetch securities — this table appears to be a global reference table
+      // in the current schema (not user-scoped). Sync writes security metadata
+      // directly onto plaid_holdings rows, so this query is effectively legacy.
+      // Left unchanged for now to avoid changing behavior beyond the auth fix.
+      const { data: securities, error: securitiesError } = await supabaseAdmin
+        .from('plaid_securities')
+        .select('*');
+
+      if (securitiesError) {
+        console.error('[portfolio] Securities error:', securitiesError);
+      }
+
+      // Fetch transactions — filtered by authenticated user
+      const { data: transactions, error: transactionsError } = await supabaseAdmin
+        .from('plaid_transactions')
+        .select('*')
+        .eq('user_id', userId)
+        .order('transaction_date', { ascending: false })
+        .limit(50);
+
+      if (transactionsError) {
+        console.error('[portfolio] Transactions error:', transactionsError);
+      }
+
+      // If no data, return empty state
+      if (!accounts || accounts.length === 0) {
+        return NextResponse.json({
+          summary: {
+            totalValue: 0,
+            totalCostBasis: 0,
+            totalGainLoss: 0,
+            totalGainLossPercent: 0,
+            accountCount: 0,
+            holdingsCount: 0,
+          },
+          accounts: [],
+          holdings: [],
+          topPerformers: [],
+          worstPerformers: [],
+          allocation: {},
+          recentTransactions: [],
+          message: 'No portfolio data found',
+        });
+      }
+
+      // Calculate totals
+      const totalValue = holdings.reduce(
+        (sum, h) =>
+          sum + Number(h.quantity) * Number(h.institution_price || h.institution_value || 0),
+        0,
       );
-    }
 
-    const userId = user.id;
-    console.log('[portfolio] Fetching portfolio for user:', userId);
+      const totalCostBasis = holdings.reduce((sum, h) => sum + Number(h.cost_basis || 0), 0);
 
-    // Fetch accounts — filtered by authenticated user
-    const { data: accounts, error: accountsError } = await supabaseAdmin
-      .from('plaid_accounts')
-      .select('*')
-      .eq('user_id', userId);
+      const totalGainLoss = totalValue - totalCostBasis;
+      const totalGainLossPercent = totalCostBasis > 0 ? (totalGainLoss / totalCostBasis) * 100 : 0;
 
-    if (accountsError) {
-      console.error('[portfolio] Accounts error:', accountsError);
-      return NextResponse.json(
-        { error: 'Failed to fetch accounts', details: accountsError.message },
-        { status: 500 }
-      );
-    }
+      // Process holdings with gains
+      const holdingsWithGains = holdings.map((h) => {
+        const price = Number(h.institution_price || h.institution_value || 0);
+        const currentValue = Number(h.quantity) * price;
+        const costBasis = Number(h.cost_basis || 0);
+        const gainLoss = currentValue - costBasis;
+        const gainLossPercent = costBasis > 0 ? (gainLoss / costBasis) * 100 : 0;
 
-    // Fetch holdings — filtered by authenticated user
-    const { data: holdings, error: holdingsError } = await supabaseAdmin
-      .from('plaid_holdings')
-      .select('*')
-      .eq('user_id', userId);
+        return { ...h, currentValue, gainLoss, gainLossPercent };
+      });
 
-    if (holdingsError) {
-      console.error('[portfolio] Holdings error:', holdingsError);
-      return NextResponse.json(
-        { error: 'Failed to fetch holdings', details: holdingsError.message },
-        { status: 500 }
-      );
-    }
+      // Group by account (holdings.account_id may match account.id or account.account_id)
+      const holdingsByAccount = accounts.map((account) => {
+        const acctHoldings = holdingsWithGains.filter(
+          (h) => h.account_id === account.account_id || h.account_id === account.id,
+        );
+        const acctValue = acctHoldings.reduce((sum, h) => sum + h.currentValue, 0);
+        const acctCost = acctHoldings.reduce((sum, h) => sum + Number(h.cost_basis || 0), 0);
 
-    // Fetch securities — this table appears to be a global reference table
-    // in the current schema (not user-scoped). Sync writes security metadata
-    // directly onto plaid_holdings rows, so this query is effectively legacy.
-    // Left unchanged for now to avoid changing behavior beyond the auth fix.
-    const { data: securities, error: securitiesError } = await supabaseAdmin
-      .from('plaid_securities')
-      .select('*');
+        return {
+          ...account,
+          holdings: acctHoldings,
+          totalValue: acctValue,
+          totalCostBasis: acctCost,
+          gainLoss: acctValue - acctCost,
+          gainLossPercent: acctCost > 0 ? ((acctValue - acctCost) / acctCost) * 100 : 0,
+        };
+      });
 
-    if (securitiesError) {
-      console.error('[portfolio] Securities error:', securitiesError);
-    }
+      // Top performers
+      const topPerformers = [...holdingsWithGains]
+        .sort((a, b) => b.gainLossPercent - a.gainLossPercent)
+        .slice(0, 5);
 
-    // Fetch transactions — filtered by authenticated user
-    const { data: transactions, error: transactionsError } = await supabaseAdmin
-      .from('plaid_transactions')
-      .select('*')
-      .eq('user_id', userId)
-      .order('transaction_date', { ascending: false })
-      .limit(50);
+      // Asset allocation
+      const allocation = holdingsWithGains.reduce((acc, h) => {
+        const isETF = ['VTI', 'VXUS', 'BND', 'SPY', 'QQQ'].includes(h.ticker_symbol);
+        const label = isETF ? 'ETFs' : 'Stocks';
+        acc[label] = (acc[label] || 0) + h.currentValue;
+        return acc;
+      }, {});
 
-    if (transactionsError) {
-      console.error('[portfolio] Transactions error:', transactionsError);
-    }
-
-    // If no data, return empty state
-    if (!accounts || accounts.length === 0) {
       return NextResponse.json({
         summary: {
-          totalValue: 0,
-          totalCostBasis: 0,
-          totalGainLoss: 0,
-          totalGainLossPercent: 0,
-          accountCount: 0,
-          holdingsCount: 0,
+          totalValue,
+          totalCostBasis,
+          totalGainLoss,
+          totalGainLossPercent,
+          accountCount: accounts.length,
+          holdingsCount: holdings.length,
         },
-        accounts: [],
-        holdings: [],
-        topPerformers: [],
-        worstPerformers: [],
-        allocation: {},
-        recentTransactions: [],
-        message: 'No portfolio data found',
+        accounts: holdingsByAccount,
+        holdings: holdingsWithGains,
+        topPerformers,
+        worstPerformers: [...holdingsWithGains]
+          .sort((a, b) => a.gainLossPercent - b.gainLossPercent)
+          .slice(0, 5),
+        allocation,
+        recentTransactions: transactions || [],
+        securities: securities || [],
       });
-    }
-
-    // Calculate totals
-    const totalValue = holdings.reduce((sum, h) =>
-      sum + (Number(h.quantity) * Number(h.institution_price || h.institution_value || 0)), 0
-    );
-
-    const totalCostBasis = holdings.reduce((sum, h) =>
-      sum + Number(h.cost_basis || 0), 0
-    );
-
-    const totalGainLoss = totalValue - totalCostBasis;
-    const totalGainLossPercent = totalCostBasis > 0
-      ? (totalGainLoss / totalCostBasis * 100)
-      : 0;
-
-    // Process holdings with gains
-    const holdingsWithGains = holdings.map(h => {
-      const price = Number(h.institution_price || h.institution_value || 0);
-      const currentValue = Number(h.quantity) * price;
-      const costBasis = Number(h.cost_basis || 0);
-      const gainLoss = currentValue - costBasis;
-      const gainLossPercent = costBasis > 0 ? (gainLoss / costBasis * 100) : 0;
-
-      return { ...h, currentValue, gainLoss, gainLossPercent };
-    });
-
-    // Group by account (holdings.account_id may match account.id or account.account_id)
-    const holdingsByAccount = accounts.map(account => {
-      const acctHoldings = holdingsWithGains.filter(h =>
-        h.account_id === account.account_id || h.account_id === account.id
+    } catch (error) {
+      console.error('[portfolio] Portfolio API error:', error);
+      return NextResponse.json(
+        { error: 'Internal server error', message: error?.message },
+        { status: 500 },
       );
-      const acctValue = acctHoldings.reduce((sum, h) => sum + h.currentValue, 0);
-      const acctCost = acctHoldings.reduce((sum, h) => sum + Number(h.cost_basis || 0), 0);
-
-      return {
-        ...account,
-        holdings: acctHoldings,
-        totalValue: acctValue,
-        totalCostBasis: acctCost,
-        gainLoss: acctValue - acctCost,
-        gainLossPercent: acctCost > 0 ? ((acctValue - acctCost) / acctCost * 100) : 0,
-      };
-    });
-
-    // Top performers
-    const topPerformers = [...holdingsWithGains]
-      .sort((a, b) => b.gainLossPercent - a.gainLossPercent)
-      .slice(0, 5);
-
-    // Asset allocation
-    const allocation = holdingsWithGains.reduce((acc, h) => {
-      const isETF = ['VTI', 'VXUS', 'BND', 'SPY', 'QQQ'].includes(h.ticker_symbol);
-      const label = isETF ? 'ETFs' : 'Stocks';
-      acc[label] = (acc[label] || 0) + h.currentValue;
-      return acc;
-    }, {});
-
-    return NextResponse.json({
-      summary: {
-        totalValue,
-        totalCostBasis,
-        totalGainLoss,
-        totalGainLossPercent,
-        accountCount: accounts.length,
-        holdingsCount: holdings.length,
-      },
-      accounts: holdingsByAccount,
-      holdings: holdingsWithGains,
-      topPerformers,
-      worstPerformers: [...holdingsWithGains].sort((a, b) => a.gainLossPercent - b.gainLossPercent).slice(0, 5),
-      allocation,
-      recentTransactions: transactions || [],
-      securities: securities || [],
-    });
-
-  } catch (error) {
-    console.error('[portfolio] Portfolio API error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error', message: error?.message },
-      { status: 500 }
-    );
-  }
-}
+    }
+  },
+  { requireAuth: true },
+);

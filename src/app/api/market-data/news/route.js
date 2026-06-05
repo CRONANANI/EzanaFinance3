@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 import { fetchAV, getAlphaVantageApiKey } from '@/lib/alpha-vantage';
 
 export const dynamic = 'force-dynamic';
@@ -30,47 +31,50 @@ function mapSentimentToGeneric(article) {
   };
 }
 
-export async function GET(request) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const category = searchParams.get('category') || 'general';
+export const GET = withApiGuard(
+  async (request) => {
+    try {
+      const { searchParams } = new URL(request.url);
+      const category = searchParams.get('category') || 'general';
 
-    const tickersRaw = (searchParams.get('tickers') || '').trim();
-    if (tickersRaw && getAlphaVantageApiKey()) {
-      const tickers = tickersRaw
-        .split(',')
-        .map((s) => s.trim().toUpperCase())
-        .filter(Boolean)
-        .slice(0, 50)
-        .join(',');
-      if (tickers) {
-        try {
-          const limit = Math.min(200, Math.max(1, Number(searchParams.get('limit') || 50)));
-          const data = await fetchAV(
-            {
-              function: 'NEWS_SENTIMENT',
-              tickers,
-              limit: String(limit),
-              sort: 'LATEST',
-            },
-            300,
-          );
-          const feed = Array.isArray(data.feed) ? data.feed : [];
-          const news = feed.map(mapSentimentToGeneric);
-          return NextResponse.json({ news: news.slice(0, 50) });
-        } catch (e) {
-          console.warn('[market-data/news] Alpha Vantage failed, using Finnhub', e?.message || e);
+      const tickersRaw = (searchParams.get('tickers') || '').trim();
+      if (tickersRaw && getAlphaVantageApiKey()) {
+        const tickers = tickersRaw
+          .split(',')
+          .map((s) => s.trim().toUpperCase())
+          .filter(Boolean)
+          .slice(0, 50)
+          .join(',');
+        if (tickers) {
+          try {
+            const limit = Math.min(200, Math.max(1, Number(searchParams.get('limit') || 50)));
+            const data = await fetchAV(
+              {
+                function: 'NEWS_SENTIMENT',
+                tickers,
+                limit: String(limit),
+                sort: 'LATEST',
+              },
+              300,
+            );
+            const feed = Array.isArray(data.feed) ? data.feed : [];
+            const news = feed.map(mapSentimentToGeneric);
+            return NextResponse.json({ news: news.slice(0, 50) });
+          } catch (e) {
+            console.warn('[market-data/news] Alpha Vantage failed, using Finnhub', e?.message || e);
+          }
         }
       }
+
+      const res = await fetch(`${BASE}/news?category=${category}&token=${FINNHUB_KEY}`, {
+        next: { revalidate: 300 },
+      });
+      const data = await res.json();
+
+      return NextResponse.json({ news: (data || []).slice(0, 50) });
+    } catch (error) {
+      return NextResponse.json({ error: error.message, news: [] }, { status: 500 });
     }
-
-    const res = await fetch(`${BASE}/news?category=${category}&token=${FINNHUB_KEY}`, {
-      next: { revalidate: 300 },
-    });
-    const data = await res.json();
-
-    return NextResponse.json({ news: (data || []).slice(0, 50) });
-  } catch (error) {
-    return NextResponse.json({ error: error.message, news: [] }, { status: 500 });
-  }
-}
+  },
+  { requireAuth: false },
+);

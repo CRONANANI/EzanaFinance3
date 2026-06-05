@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 import { getAuthUser } from '@/lib/auth-helpers';
 import { supabaseAdmin } from '@/lib/plaid';
 import { fetchAV, getAlphaVantageApiKey, fetchAllBulkQuotesAlpha } from '@/lib/alpha-vantage';
@@ -146,179 +147,177 @@ function aggregateByYear(entries) {
  * Computes the user's mock portfolio performance for the requested period.
  * Returns % change from baseline for each aggregated data point.
  */
-export async function GET(request) {
-  try {
-    const user = await getAuthUser(request);
-    if (!user) {
-      return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
-    }
+export const GET = withApiGuard(
+  async (request, user) => {
+    try {
+      const { searchParams } = new URL(request.url);
+      const period = searchParams.get('period') || '7D';
+      const today = todayNy();
+      const startDate = period === '7D' ? startOfWeekNy() : getStartDate(period);
 
-    const { searchParams } = new URL(request.url);
-    const period = searchParams.get('period') || '7D';
-    const today = todayNy();
-    const startDate = period === '7D' ? startOfWeekNy() : getStartDate(period);
+      // Read portfolio
+      const { data: mockRow } = await supabaseAdmin
+        .from('mock_portfolios')
+        .select('portfolio')
+        .eq('user_id', user.id)
+        .maybeSingle();
 
-    // Read portfolio
-    const { data: mockRow } = await supabaseAdmin
-      .from('mock_portfolios')
-      .select('portfolio')
-      .eq('user_id', user.id)
-      .maybeSingle();
+      const portfolio = mockRow?.portfolio;
+      const positions = extractPositions(portfolio);
+      const cash = Number(portfolio?.cash ?? 0) || 0;
 
-    const portfolio = mockRow?.portfolio;
-    const positions = extractPositions(portfolio);
-    const cash = Number(portfolio?.cash ?? 0) || 0;
+      // Earliest buy per ticker from mock_trades (for positions missing openedAt)
+      const { data: trades } = await supabaseAdmin
+        .from('mock_trades')
+        .select('ticker, trade_type, created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: true });
 
-    // Earliest buy per ticker from mock_trades (for positions missing openedAt)
-    const { data: trades } = await supabaseAdmin
-      .from('mock_trades')
-      .select('ticker, trade_type, created_at')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: true });
-
-    const openedByTicker = {};
-    for (const t of trades || []) {
-      if (t.trade_type !== 'buy') continue;
-      const sym = String(t.ticker || '')
-        .toUpperCase()
-        .trim();
-      if (sym && !openedByTicker[sym]) openedByTicker[sym] = t.created_at;
-    }
-    for (const pos of positions) {
-      if (!pos.openedAt && openedByTicker[pos.ticker]) {
-        pos.openedAt = openedByTicker[pos.ticker];
+      const openedByTicker = {};
+      for (const t of trades || []) {
+        if (t.trade_type !== 'buy') continue;
+        const sym = String(t.ticker || '')
+          .toUpperCase()
+          .trim();
+        if (sym && !openedByTicker[sym]) openedByTicker[sym] = t.created_at;
       }
-    }
-
-    if (positions.length === 0) {
-      return NextResponse.json({ ok: true, series: [], source: 'empty', period });
-    }
-
-    const tickers = [...new Set(positions.map((p) => p.ticker))];
-
-    // Fetch historical + live prices in parallel
-    const [priceResults, currentQuotes] = await Promise.all([
-      Promise.all(tickers.map(async (t) => ({ ticker: t, prices: await fetchAvDailyPrices(t) }))),
-      fetchCurrentQuotes(tickers),
-    ]);
-
-    const priceMap = {};
-    for (const { ticker, prices } of priceResults) {
-      priceMap[ticker] = prices;
-    }
-
-    // Find the nearest trading date BEFORE the period start as baseline
-    let baselineDate = startDate;
-    for (const ticker of tickers) {
-      const dates = Object.keys(priceMap[ticker] || {}).sort();
-      const prior = dates.filter((d) => d < startDate);
-      if (prior.length > 0) {
-        const candidate = prior[prior.length - 1];
-        if (candidate < baselineDate || baselineDate === startDate) {
-          baselineDate = candidate;
-        }
-      }
-    }
-
-    // Collect all trading dates including the baseline date
-    const allDatesSet = new Set();
-    for (const ticker of tickers) {
-      for (const date of Object.keys(priceMap[ticker] || {})) {
-        if (date >= baselineDate && date <= today) allDatesSet.add(date);
-      }
-    }
-    // Always include today
-    allDatesSet.add(today);
-
-    const allDates = [...allDatesSet].sort();
-    if (allDates.length === 0) {
-      return NextResponse.json({ ok: true, series: [], source: 'empty', period });
-    }
-
-    // Compute portfolio value for each date
-    const dailyEntries = [];
-    for (const ymd of allDates) {
-      let dayTotal = cash;
-
       for (const pos of positions) {
-        // Skip positions that didn't exist yet on this date
-        if (pos.openedAt && ymd < pos.openedAt.slice(0, 10)) {
-          // Position not yet opened — use cash equivalent (avgCost × shares)
-          dayTotal += pos.shares * pos.avgCost;
-          continue;
+        if (!pos.openedAt && openedByTicker[pos.ticker]) {
+          pos.openedAt = openedByTicker[pos.ticker];
         }
-
-        let price;
-        if (ymd === today && currentQuotes[pos.ticker] != null) {
-          price = currentQuotes[pos.ticker];
-        } else if (priceMap[pos.ticker]?.[ymd] != null) {
-          price = priceMap[pos.ticker][ymd];
-        } else {
-          // Nearest prior date fallback
-          const dates = Object.keys(priceMap[pos.ticker] || {}).sort();
-          const closest = dates.filter((d) => d <= ymd).pop();
-          price = closest ? priceMap[pos.ticker][closest] : pos.avgCost;
-        }
-        dayTotal += pos.shares * price;
       }
 
-      const d = new Date(`${ymd}T12:00:00Z`);
-      dailyEntries.push({
-        ymd,
-        day: d.toLocaleDateString('en-US', { timeZone: 'America/New_York', weekday: 'short' }),
-        value: dayTotal,
+      if (positions.length === 0) {
+        return NextResponse.json({ ok: true, series: [], source: 'empty', period });
+      }
+
+      const tickers = [...new Set(positions.map((p) => p.ticker))];
+
+      // Fetch historical + live prices in parallel
+      const [priceResults, currentQuotes] = await Promise.all([
+        Promise.all(tickers.map(async (t) => ({ ticker: t, prices: await fetchAvDailyPrices(t) }))),
+        fetchCurrentQuotes(tickers),
+      ]);
+
+      const priceMap = {};
+      for (const { ticker, prices } of priceResults) {
+        priceMap[ticker] = prices;
+      }
+
+      // Find the nearest trading date BEFORE the period start as baseline
+      let baselineDate = startDate;
+      for (const ticker of tickers) {
+        const dates = Object.keys(priceMap[ticker] || {}).sort();
+        const prior = dates.filter((d) => d < startDate);
+        if (prior.length > 0) {
+          const candidate = prior[prior.length - 1];
+          if (candidate < baselineDate || baselineDate === startDate) {
+            baselineDate = candidate;
+          }
+        }
+      }
+
+      // Collect all trading dates including the baseline date
+      const allDatesSet = new Set();
+      for (const ticker of tickers) {
+        for (const date of Object.keys(priceMap[ticker] || {})) {
+          if (date >= baselineDate && date <= today) allDatesSet.add(date);
+        }
+      }
+      // Always include today
+      allDatesSet.add(today);
+
+      const allDates = [...allDatesSet].sort();
+      if (allDates.length === 0) {
+        return NextResponse.json({ ok: true, series: [], source: 'empty', period });
+      }
+
+      // Compute portfolio value for each date
+      const dailyEntries = [];
+      for (const ymd of allDates) {
+        let dayTotal = cash;
+
+        for (const pos of positions) {
+          // Skip positions that didn't exist yet on this date
+          if (pos.openedAt && ymd < pos.openedAt.slice(0, 10)) {
+            // Position not yet opened — use cash equivalent (avgCost × shares)
+            dayTotal += pos.shares * pos.avgCost;
+            continue;
+          }
+
+          let price;
+          if (ymd === today && currentQuotes[pos.ticker] != null) {
+            price = currentQuotes[pos.ticker];
+          } else if (priceMap[pos.ticker]?.[ymd] != null) {
+            price = priceMap[pos.ticker][ymd];
+          } else {
+            // Nearest prior date fallback
+            const dates = Object.keys(priceMap[pos.ticker] || {}).sort();
+            const closest = dates.filter((d) => d <= ymd).pop();
+            price = closest ? priceMap[pos.ticker][closest] : pos.avgCost;
+          }
+          dayTotal += pos.shares * price;
+        }
+
+        const d = new Date(`${ymd}T12:00:00Z`);
+        dailyEntries.push({
+          ymd,
+          day: d.toLocaleDateString('en-US', { timeZone: 'America/New_York', weekday: 'short' }),
+          value: dayTotal,
+        });
+      }
+
+      if (dailyEntries.length === 0) {
+        return NextResponse.json({ ok: true, series: [], source: 'empty', period });
+      }
+
+      // Aggregate based on period
+      let aggregated;
+      if (period === '1D') {
+        aggregated = dailyEntries.slice(-1);
+      } else if (period === '7D') {
+        // Last 5 trading days (Mon–Fri of current week)
+        const monday = startOfWeekNy();
+        const weekDays = dailyEntries.filter((e) => e.ymd >= monday);
+        aggregated = weekDays.slice(-5);
+      } else if (period === '1M') {
+        aggregated = aggregateByWeek(dailyEntries, 4);
+      } else if (period === '3M') {
+        aggregated = aggregateByMonth(dailyEntries).slice(-3);
+      } else if (period === '6M') {
+        aggregated = aggregateByMonth(dailyEntries).slice(-6);
+      } else if (period === '1Y') {
+        aggregated = aggregateByMonth(dailyEntries).slice(-12);
+      } else if (period === 'ALL') {
+        aggregated = aggregateByYear(dailyEntries);
+      } else {
+        aggregated = dailyEntries;
+      }
+
+      if (aggregated.length === 0) {
+        return NextResponse.json({ ok: true, series: [], source: 'empty', period });
+      }
+
+      // Use the value at the baseline date (before period start) as anchor
+      // This ensures the first point shows actual return from period start, not 0%
+      const baselineEntry = dailyEntries.find((e) => e.ymd <= startDate) || dailyEntries[0];
+      const baselineValue = baselineEntry.value;
+
+      const series = aggregated.map((e) => {
+        const pct = baselineValue > 0 ? ((e.value - baselineValue) / baselineValue) * 100 : 0;
+        return {
+          day: e.day,
+          ymd: e.ymd,
+          value: parseFloat(e.value.toFixed(2)),
+          pct: parseFloat(pct.toFixed(3)),
+        };
       });
+
+      return NextResponse.json({ ok: true, series, source: 'live_av', period });
+    } catch (e) {
+      console.error('[portfolio/week-series]', e);
+      return NextResponse.json({ ok: false, error: e.message }, { status: 500 });
     }
-
-    if (dailyEntries.length === 0) {
-      return NextResponse.json({ ok: true, series: [], source: 'empty', period });
-    }
-
-    // Aggregate based on period
-    let aggregated;
-    if (period === '1D') {
-      aggregated = dailyEntries.slice(-1);
-    } else if (period === '7D') {
-      // Last 5 trading days (Mon–Fri of current week)
-      const monday = startOfWeekNy();
-      const weekDays = dailyEntries.filter((e) => e.ymd >= monday);
-      aggregated = weekDays.slice(-5);
-    } else if (period === '1M') {
-      aggregated = aggregateByWeek(dailyEntries, 4);
-    } else if (period === '3M') {
-      aggregated = aggregateByMonth(dailyEntries).slice(-3);
-    } else if (period === '6M') {
-      aggregated = aggregateByMonth(dailyEntries).slice(-6);
-    } else if (period === '1Y') {
-      aggregated = aggregateByMonth(dailyEntries).slice(-12);
-    } else if (period === 'ALL') {
-      aggregated = aggregateByYear(dailyEntries);
-    } else {
-      aggregated = dailyEntries;
-    }
-
-    if (aggregated.length === 0) {
-      return NextResponse.json({ ok: true, series: [], source: 'empty', period });
-    }
-
-    // Use the value at the baseline date (before period start) as anchor
-    // This ensures the first point shows actual return from period start, not 0%
-    const baselineEntry = dailyEntries.find((e) => e.ymd <= startDate) || dailyEntries[0];
-    const baselineValue = baselineEntry.value;
-
-    const series = aggregated.map((e) => {
-      const pct = baselineValue > 0 ? ((e.value - baselineValue) / baselineValue) * 100 : 0;
-      return {
-        day: e.day,
-        ymd: e.ymd,
-        value: parseFloat(e.value.toFixed(2)),
-        pct: parseFloat(pct.toFixed(3)),
-      };
-    });
-
-    return NextResponse.json({ ok: true, series, source: 'live_av', period });
-  } catch (e) {
-    console.error('[portfolio/week-series]', e);
-    return NextResponse.json({ ok: false, error: e.message }, { status: 500 });
-  }
-}
+  },
+  { requireAuth: true },
+);

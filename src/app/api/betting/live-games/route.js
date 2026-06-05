@@ -20,6 +20,7 @@
  * local_start, start_time }.
  */
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 
 export const dynamic = 'force-dynamic';
 
@@ -39,27 +40,30 @@ async function fetchFromSportsApi(_league) {
   return [];
 }
 
-export async function GET(request) {
-  const { searchParams } = new URL(request.url);
-  const sport = (searchParams.get('sport') || 'NBA').toUpperCase();
+export const GET = withApiGuard(
+  async (request) => {
+    const { searchParams } = new URL(request.url);
+    const sport = (searchParams.get('sport') || 'NBA').toUpperCase();
 
-  try {
-    const games = await fetchFromSportsApi(LEAGUE_MAP[sport] || 'nba');
-    return NextResponse.json(
-      { ok: true, sport, games },
-      {
-        // Edge-cache for a minute; game data turns over fast during live play.
-        headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=30' },
-      },
-    );
-  } catch (err) {
-    console.error('[betting/live-games]', err);
-    return NextResponse.json(
-      { ok: false, error: err.message, games: [] },
-      {
-        status: 500,
-        headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' },
-      },
-    );
-  }
-}
+    try {
+      const games = await fetchFromSportsApi(LEAGUE_MAP[sport] || 'nba');
+      return NextResponse.json(
+        { ok: true, sport, games },
+        {
+          // Edge-cache for a minute; game data turns over fast during live play.
+          headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=30' },
+        },
+      );
+    } catch (err) {
+      console.error('[betting/live-games]', err);
+      return NextResponse.json(
+        { ok: false, error: err.message, games: [] },
+        {
+          status: 500,
+          headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' },
+        },
+      );
+    }
+  },
+  { requireAuth: false },
+);

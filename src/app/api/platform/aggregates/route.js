@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,25 +46,70 @@ function buildPlaceholderAggregates() {
     // Lookup tables — each row is [rawValue, percentile]. Used client-side
     // for an approximate percentile rank.
     percentileBreaks: {
-      totalReturn: [[-30, 5], [0, 25], [6, 50], [15, 75], [30, 90], [60, 99]],
-      vsSP500: [[-20, 5], [-5, 25], [0, 50], [5, 75], [15, 90], [30, 99]],
-      consistency: [[0, 5], [40, 25], [58, 50], [72, 75], [86, 90], [100, 99]],
-      diversification: [[0, 5], [30, 25], [55, 50], [75, 75], [90, 90], [100, 99]],
-      holdingDiscipline: [[0, 5], [15, 25], [62, 50], [150, 75], [365, 90], [1000, 99]],
-      contributionStreak: [[0, 10], [1, 30], [3, 50], [6, 75], [12, 90], [24, 99]],
+      totalReturn: [
+        [-30, 5],
+        [0, 25],
+        [6, 50],
+        [15, 75],
+        [30, 90],
+        [60, 99],
+      ],
+      vsSP500: [
+        [-20, 5],
+        [-5, 25],
+        [0, 50],
+        [5, 75],
+        [15, 90],
+        [30, 99],
+      ],
+      consistency: [
+        [0, 5],
+        [40, 25],
+        [58, 50],
+        [72, 75],
+        [86, 90],
+        [100, 99],
+      ],
+      diversification: [
+        [0, 5],
+        [30, 25],
+        [55, 50],
+        [75, 75],
+        [90, 90],
+        [100, 99],
+      ],
+      holdingDiscipline: [
+        [0, 5],
+        [15, 25],
+        [62, 50],
+        [150, 75],
+        [365, 90],
+        [1000, 99],
+      ],
+      contributionStreak: [
+        [0, 10],
+        [1, 30],
+        [3, 50],
+        [6, 75],
+        [12, 90],
+        [24, 99],
+      ],
     },
   };
 }
 
-export async function GET() {
-  const now = Date.now();
-  if (!cached || now - cachedAt > CACHE_TTL_MS) {
-    cached = buildPlaceholderAggregates();
-    cachedAt = now;
-  }
-  return NextResponse.json(cached, {
-    headers: {
-      'Cache-Control': 'public, max-age=900, s-maxage=900, stale-while-revalidate=300',
-    },
-  });
-}
+export const GET = withApiGuard(
+  async (request, user) => {
+    const now = Date.now();
+    if (!cached || now - cachedAt > CACHE_TTL_MS) {
+      cached = buildPlaceholderAggregates();
+      cachedAt = now;
+    }
+    return NextResponse.json(cached, {
+      headers: {
+        'Cache-Control': 'public, max-age=900, s-maxage=900, stale-while-revalidate=300',
+      },
+    });
+  },
+  { requireAuth: false },
+);

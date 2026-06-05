@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 import { getUserClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
@@ -6,10 +7,6 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   try {
     const supabase = getUserClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
     const { data: events } = await supabase
       .from('community_events')
       .select('*')
@@ -43,35 +40,33 @@ export async function GET() {
   }
 }
 
-export async function POST(request) {
-  try {
-    const supabase = getUserClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+export const POST = withApiGuard(
+  async (request, user) => {
+    try {
+      const supabase = getUserClient();
+      const body = await request.json().catch(() => null);
+      const eventId = body?.eventId || body?.event_id;
+      const action =
+        body?.action || (body?.watch === true ? 'watch' : body?.watch === false ? 'unwatch' : null);
 
-    const body = await request.json().catch(() => null);
-    const eventId = body?.eventId || body?.event_id;
-    const action =
-      body?.action || (body?.watch === true ? 'watch' : body?.watch === false ? 'unwatch' : null);
+      if (!eventId || !['watch', 'unwatch'].includes(action)) {
+        return NextResponse.json({ error: 'Invalid' }, { status: 400 });
+      }
 
-    if (!eventId || !['watch', 'unwatch'].includes(action)) {
-      return NextResponse.json({ error: 'Invalid' }, { status: 400 });
+      if (action === 'watch') {
+        await supabase.from('user_event_watches').upsert({ user_id: user.id, event_id: eventId });
+      } else {
+        await supabase
+          .from('user_event_watches')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('event_id', eventId);
+      }
+
+      return NextResponse.json({ ok: true });
+    } catch {
+      return NextResponse.json({ error: 'Failed' }, { status: 500 });
     }
-
-    if (action === 'watch') {
-      await supabase.from('user_event_watches').upsert({ user_id: user.id, event_id: eventId });
-    } else {
-      await supabase
-        .from('user_event_watches')
-        .delete()
-        .eq('user_id', user.id)
-        .eq('event_id', eventId);
-    }
-
-    return NextResponse.json({ ok: true });
-  } catch {
-    return NextResponse.json({ error: 'Failed' }, { status: 500 });
-  }
-}
+  },
+  { requireAuth: true },
+);

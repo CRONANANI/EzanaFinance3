@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 import { fetchAV, getAlphaVantageApiKey } from '@/lib/alpha-vantage';
 
 export const dynamic = 'force-dynamic';
@@ -837,96 +838,99 @@ function deriveVerdict(pd) {
   return { verdict: 'fairly_valued', label: 'Fairly Valued' };
 }
 
-export async function GET(_req, context) {
-  const symbol = String(context?.params?.symbol ?? '')
-    .trim()
-    .toUpperCase();
-  if (!symbol || !/^[A-Z0-9.-]{1,15}$/.test(symbol)) {
-    return NextResponse.json({ error: 'Invalid symbol' }, { status: 400 });
-  }
-
-  const fmpKey = getFmpKey();
-  if (!fmpKey) {
-    return NextResponse.json({ error: 'FMP_API_KEY not configured.' }, { status: 503 });
-  }
-
-  try {
-    console.log(`[comps] ${symbol}: starting`);
-
-    const peerSymbols = await findPeers(symbol, fmpKey);
-
-    if (peerSymbols.length === 0) {
-      return NextResponse.json(
-        { error: `Could not find any comparable companies for ${symbol}.` },
-        { status: 404 },
-      );
+export const GET = withApiGuard(
+  async (request, user, context) => {
+    const symbol = String(context?.params?.symbol ?? '')
+      .trim()
+      .toUpperCase();
+    if (!symbol || !/^[A-Z0-9.-]{1,15}$/.test(symbol)) {
+      return NextResponse.json({ error: 'Invalid symbol' }, { status: 400 });
     }
 
-    const target = await fetchTickerData(symbol, fmpKey);
-    if (target.price === null) {
-      return NextResponse.json(
-        { error: `Could not fetch market data for ${symbol}.` },
-        { status: 404 },
-      );
+    const fmpKey = getFmpKey();
+    if (!fmpKey) {
+      return NextResponse.json({ error: 'FMP_API_KEY not configured.' }, { status: 503 });
     }
 
-    const peers = [];
-    for (const peerSym of peerSymbols) {
-      if (peers.length >= 10) break;
-      await sleep(250);
-      try {
-        const peerData = await fetchTickerData(peerSym, fmpKey);
-        if (peerData.price !== null) peers.push(peerData);
-      } catch (err) {
-        console.warn(`[comps] ${peerSym}: failed:`, err?.message);
+    try {
+      console.log(`[comps] ${symbol}: starting`);
+
+      const peerSymbols = await findPeers(symbol, fmpKey);
+
+      if (peerSymbols.length === 0) {
+        return NextResponse.json(
+          { error: `Could not find any comparable companies for ${symbol}.` },
+          { status: 404 },
+        );
       }
-    }
 
-    if (peers.length === 0) {
+      const target = await fetchTickerData(symbol, fmpKey);
+      if (target.price === null) {
+        return NextResponse.json(
+          { error: `Could not fetch market data for ${symbol}.` },
+          { status: 404 },
+        );
+      }
+
+      const peers = [];
+      for (const peerSym of peerSymbols) {
+        if (peers.length >= 10) break;
+        await sleep(250);
+        try {
+          const peerData = await fetchTickerData(peerSym, fmpKey);
+          if (peerData.price !== null) peers.push(peerData);
+        } catch (err) {
+          console.warn(`[comps] ${peerSym}: failed:`, err?.message);
+        }
+      }
+
+      if (peers.length === 0) {
+        return NextResponse.json(
+          { error: `Could not fetch financial data for peers of ${symbol}.` },
+          { status: 404 },
+        );
+      }
+
+      const metricKeys = [
+        'pe',
+        'pb',
+        'ps',
+        'evRevenue',
+        'evEbitda',
+        'divYield',
+        'grossMargin',
+        'operatingMargin',
+        'netMargin',
+        'revenueGrowth',
+      ];
+      const peerStats = {};
+      for (const m of metricKeys) peerStats[m] = computeStats(peers, m);
+
+      const positions = {};
+      for (const m of metricKeys) positions[m] = classifyPosition(target[m], peerStats[m]);
+
+      const valuation = computeImpliedValuation(target, peerStats);
+      const verdict = deriveVerdict(valuation.premiumDiscount);
+
+      console.log(`[comps] ${symbol}: ${peers.length} peers, verdict=${verdict.verdict}`);
+
       return NextResponse.json(
-        { error: `Could not fetch financial data for peers of ${symbol}.` },
-        { status: 404 },
+        {
+          symbol,
+          target,
+          peers,
+          peerStats,
+          positions,
+          valuation,
+          verdict,
+          generatedAt: new Date().toISOString(),
+        },
+        { headers: { 'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=3600' } },
       );
+    } catch (err) {
+      console.error(`[comps] ${symbol} failed:`, err);
+      return NextResponse.json({ error: `Analysis failed: ${err?.message}` }, { status: 500 });
     }
-
-    const metricKeys = [
-      'pe',
-      'pb',
-      'ps',
-      'evRevenue',
-      'evEbitda',
-      'divYield',
-      'grossMargin',
-      'operatingMargin',
-      'netMargin',
-      'revenueGrowth',
-    ];
-    const peerStats = {};
-    for (const m of metricKeys) peerStats[m] = computeStats(peers, m);
-
-    const positions = {};
-    for (const m of metricKeys) positions[m] = classifyPosition(target[m], peerStats[m]);
-
-    const valuation = computeImpliedValuation(target, peerStats);
-    const verdict = deriveVerdict(valuation.premiumDiscount);
-
-    console.log(`[comps] ${symbol}: ${peers.length} peers, verdict=${verdict.verdict}`);
-
-    return NextResponse.json(
-      {
-        symbol,
-        target,
-        peers,
-        peerStats,
-        positions,
-        valuation,
-        verdict,
-        generatedAt: new Date().toISOString(),
-      },
-      { headers: { 'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=3600' } },
-    );
-  } catch (err) {
-    console.error(`[comps] ${symbol} failed:`, err);
-    return NextResponse.json({ error: `Analysis failed: ${err?.message}` }, { status: 500 });
-  }
-}
+  },
+  { requireAuth: false },
+);

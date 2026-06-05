@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 import {
   countryKeywords,
   layerKeywords,
@@ -29,47 +30,56 @@ const ALPHA_VANTAGE_BASE = 'https://www.alphavantage.co/query';
  * Articles are deduplicated by URL, then unified through the same
  * country-required + layer-scoring pipeline.
  */
-export async function GET(request) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const country = (searchParams.get('country') || '').trim();
-    const layersParam = (searchParams.get('layers') || '').trim();
-    const layers = layersParam
-      ? layersParam.split(',').map((s) => s.trim()).filter(Boolean)
-      : [];
+export const GET = withApiGuard(
+  async (request) => {
+    try {
+      const { searchParams } = new URL(request.url);
+      const country = (searchParams.get('country') || '').trim();
+      const layersParam = (searchParams.get('layers') || '').trim();
+      const layers = layersParam
+        ? layersParam
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [];
 
-    // Backward-compat: support old `q=` queries
-    if (!country) {
-      const q = (searchParams.get('q') || '').trim();
-      if (!q) {
-        return NextResponse.json({ error: 'country param required' }, { status: 400 });
+      // Backward-compat: support old `q=` queries
+      if (!country) {
+        const q = (searchParams.get('q') || '').trim();
+        if (!q) {
+          return NextResponse.json({ error: 'country param required' }, { status: 400 });
+        }
+        if (!FINNHUB_KEY && !ALPHA_VANTAGE_KEY) {
+          return NextResponse.json(
+            {
+              news: [],
+              error: 'No news API keys configured (FINNHUB_API_KEY or ALPHA_VANTAGE_API_KEY)',
+            },
+            { status: 503 },
+          );
+        }
+        const tokens = q.split(/\s+/);
+        return fetchAndFilter(tokens[0], []);
       }
+
       if (!FINNHUB_KEY && !ALPHA_VANTAGE_KEY) {
         return NextResponse.json(
           {
             news: [],
             error: 'No news API keys configured (FINNHUB_API_KEY or ALPHA_VANTAGE_API_KEY)',
           },
-          { status: 503 }
+          { status: 503 },
         );
       }
-      const tokens = q.split(/\s+/);
-      return fetchAndFilter(tokens[0], []);
-    }
 
-    if (!FINNHUB_KEY && !ALPHA_VANTAGE_KEY) {
-      return NextResponse.json(
-        { news: [], error: 'No news API keys configured (FINNHUB_API_KEY or ALPHA_VANTAGE_API_KEY)' },
-        { status: 503 }
-      );
+      return fetchAndFilter(country, layers);
+    } catch (error) {
+      console.error('[power-map-news] unexpected error:', error);
+      return NextResponse.json({ error: error.message, news: [] }, { status: 500 });
     }
-
-    return fetchAndFilter(country, layers);
-  } catch (error) {
-    console.error('[power-map-news] unexpected error:', error);
-    return NextResponse.json({ error: error.message, news: [] }, { status: 500 });
-  }
-}
+  },
+  { requireAuth: false },
+);
 
 // ─── Source 1: Finnhub general + forex ─────────────────────────────────────
 async function fetchFinnhubNews() {
@@ -77,25 +87,28 @@ async function fetchFinnhubNews() {
   try {
     const responses = await Promise.all([
       fetch(`${FINNHUB_BASE}/news?category=general&token=${FINNHUB_KEY}`).then((r) =>
-        r.ok ? r.json() : []
+        r.ok ? r.json() : [],
       ),
       fetch(`${FINNHUB_BASE}/news?category=forex&token=${FINNHUB_KEY}`).then((r) =>
-        r.ok ? r.json() : []
+        r.ok ? r.json() : [],
       ),
     ]);
 
-    return responses.flat().filter(Boolean).map((n) => ({
-      _source: 'finnhub',
-      id: n.id || n.headline?.slice(0, 24),
-      url: n.url || '#',
-      headline: n.headline || '',
-      summary: n.summary || '',
-      related: n.related || '',
-      datetime: n.datetime || 0, // Unix seconds
-      image: n.image,
-      source: n.source || 'Finnhub',
-      category: (n.category || 'MARKETS').toUpperCase(),
-    }));
+    return responses
+      .flat()
+      .filter(Boolean)
+      .map((n) => ({
+        _source: 'finnhub',
+        id: n.id || n.headline?.slice(0, 24),
+        url: n.url || '#',
+        headline: n.headline || '',
+        summary: n.summary || '',
+        related: n.related || '',
+        datetime: n.datetime || 0, // Unix seconds
+        image: n.image,
+        source: n.source || 'Finnhub',
+        category: (n.category || 'MARKETS').toUpperCase(),
+      }));
   } catch (err) {
     console.error('[power-map-news] finnhub fetch failed:', err);
     return [];
@@ -134,7 +147,10 @@ async function fetchAlphaVantageNews(country, layers) {
     const data = await res.json();
 
     if (data?.Information || data?.Note) {
-      console.warn('[power-map-news] alphavantage rate-limited or info:', data.Information || data.Note);
+      console.warn(
+        '[power-map-news] alphavantage rate-limited or info:',
+        data.Information || data.Note,
+      );
       return [];
     }
 
@@ -193,8 +209,7 @@ async function fetchAndFilter(country, layers) {
     return countryTerms.some((term) => haystack.includes(term));
   });
 
-  const lyrTerms =
-    layers.length > 0 ? [...new Set(layerKeywords(layers))] : [];
+  const lyrTerms = layers.length > 0 ? [...new Set(layerKeywords(layers))] : [];
 
   const scored = countryRelevant
     .map((article) => {
@@ -265,6 +280,6 @@ async function fetchAndFilter(country, layers) {
       headers: {
         'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=3600',
       },
-    }
+    },
   );
 }

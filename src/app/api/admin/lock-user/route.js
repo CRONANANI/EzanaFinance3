@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
+import { withApiGuard } from '@/lib/api-guard';
+import { requireAdminAccess } from '@/lib/admin-auth';
 import { logSecurityEvent } from '@/lib/security-audit';
 
 export const dynamic = 'force-dynamic';
@@ -23,109 +25,112 @@ const ADMIN_SECRET = process.env.ADMIN_LOCK_SECRET;
  * Authorization: Authorization: Bearer <ADMIN_LOCK_SECRET>
  * Body: { email, reason?, unlock?: boolean }
  */
-export async function POST(request) {
-  const authHeader = request.headers.get('authorization') || '';
-  const provided = authHeader.replace(/^Bearer\s+/i, '').trim();
-  if (!ADMIN_SECRET || provided !== ADMIN_SECRET) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+export const POST = withApiGuard(
+  async (request, user) => {
+    const forbidden = requireAdminAccess(request, user);
+    if (forbidden) return forbidden;
 
-  let body;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
-  }
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+    }
 
-  const email = (body?.email || '').trim().toLowerCase();
-  const reason = body?.reason || 'Account access has been suspended.';
-  const unlock = body?.unlock === true;
+    const email = (body?.email || '').trim().toLowerCase();
+    const reason = body?.reason || 'Account access has been suspended.';
+    const unlock = body?.unlock === true;
 
-  if (!email) {
-    return NextResponse.json({ error: 'email required' }, { status: 400 });
-  }
+    if (!email) {
+      return NextResponse.json({ error: 'email required' }, { status: 400 });
+    }
 
-  let admin;
-  try {
-    admin = getAdminClient();
-  } catch {
-    return NextResponse.json({ error: 'Service role not configured' }, { status: 500 });
-  }
+    let admin;
+    try {
+      admin = getAdminClient();
+    } catch {
+      return NextResponse.json({ error: 'Service role not configured' }, { status: 500 });
+    }
 
-  try {
-    let targetUser = null;
-    let page = 1;
-    const perPage = 1000;
+    try {
+      let targetUser = null;
+      let page = 1;
+      const perPage = 1000;
 
-    while (!targetUser && page <= 50) {
-      const { data: listData, error: listErr } = await admin.auth.admin.listUsers({
-        page,
-        perPage,
-      });
-      if (listErr) {
-        console.error('[admin/lock-user] listUsers failed:', listErr);
-        return NextResponse.json({ error: listErr.message }, { status: 500 });
+      while (!targetUser && page <= 50) {
+        const { data: listData, error: listErr } = await admin.auth.admin.listUsers({
+          page,
+          perPage,
+        });
+        if (listErr) {
+          console.error('[admin/lock-user] listUsers failed:', listErr);
+          return NextResponse.json({ error: listErr.message }, { status: 500 });
+        }
+        const users = listData?.users ?? [];
+        targetUser = users.find((u) => u.email?.toLowerCase() === email);
+        if (targetUser) break;
+        if (users.length < perPage) break;
+        page += 1;
       }
-      const users = listData?.users ?? [];
-      targetUser = users.find((u) => u.email?.toLowerCase() === email);
-      if (targetUser) break;
-      if (users.length < perPage) break;
-      page += 1;
-    }
 
-    if (!targetUser) {
-      return NextResponse.json({ error: `No user found with email ${email}` }, { status: 404 });
-    }
-
-    const userId = targetUser.id;
-
-    const updates = unlock
-      ? { is_disabled: false, disabled_reason: null, disabled_at: null }
-      : {
-          is_disabled: true,
-          disabled_reason: reason,
-          disabled_at: new Date().toISOString(),
-        };
-
-    const { error: profileErr } = await admin.from('profiles').update(updates).eq('id', userId);
-
-    if (profileErr) {
-      console.error('[admin/lock-user] profile update failed:', profileErr);
-      return NextResponse.json({ error: profileErr.message }, { status: 500 });
-    }
-
-    let revokedSessions = false;
-    if (!unlock) {
-      const { error: rpcErr } = await admin.rpc('revoke_auth_sessions_for_user', {
-        _user_id: userId,
-      });
-      if (rpcErr) {
-        console.warn('[admin/lock-user] revoke_auth_sessions_for_user failed (non-fatal):', rpcErr);
-      } else {
-        revokedSessions = true;
+      if (!targetUser) {
+        return NextResponse.json({ error: `No user found with email ${email}` }, { status: 404 });
       }
+
+      const userId = targetUser.id;
+
+      const updates = unlock
+        ? { is_disabled: false, disabled_reason: null, disabled_at: null }
+        : {
+            is_disabled: true,
+            disabled_reason: reason,
+            disabled_at: new Date().toISOString(),
+          };
+
+      const { error: profileErr } = await admin.from('profiles').update(updates).eq('id', userId);
+
+      if (profileErr) {
+        console.error('[admin/lock-user] profile update failed:', profileErr);
+        return NextResponse.json({ error: profileErr.message }, { status: 500 });
+      }
+
+      let revokedSessions = false;
+      if (!unlock) {
+        const { error: rpcErr } = await admin.rpc('revoke_auth_sessions_for_user', {
+          _user_id: userId,
+        });
+        if (rpcErr) {
+          console.warn(
+            '[admin/lock-user] revoke_auth_sessions_for_user failed (non-fatal):',
+            rpcErr,
+          );
+        } else {
+          revokedSessions = true;
+        }
+      }
+
+      const ip =
+        request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+        request.headers.get('x-real-ip') ||
+        null;
+      await logSecurityEvent(unlock ? 'account_unlocked' : 'account_locked', {
+        targetId: userId,
+        ip,
+        details: { email, reason: unlock ? null : reason },
+      });
+
+      return NextResponse.json({
+        success: true,
+        action: unlock ? 'unlocked' : 'locked',
+        userId,
+        email: targetUser.email,
+        revokedAllSessions: revokedSessions,
+        reason: unlock ? null : reason,
+      });
+    } catch (err) {
+      console.error('[admin/lock-user] unexpected error:', err);
+      return NextResponse.json({ error: err?.message || 'Unknown error' }, { status: 500 });
     }
-
-    const ip =
-      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-      request.headers.get('x-real-ip') ||
-      null;
-    await logSecurityEvent(unlock ? 'account_unlocked' : 'account_locked', {
-      targetId: userId,
-      ip,
-      details: { email, reason: unlock ? null : reason },
-    });
-
-    return NextResponse.json({
-      success: true,
-      action: unlock ? 'unlocked' : 'locked',
-      userId,
-      email: targetUser.email,
-      revokedAllSessions: revokedSessions,
-      reason: unlock ? null : reason,
-    });
-  } catch (err) {
-    console.error('[admin/lock-user] unexpected error:', err);
-    return NextResponse.json({ error: err?.message || 'Unknown error' }, { status: 500 });
-  }
-}
+  },
+  { requireAuth: true, strict: true },
+);

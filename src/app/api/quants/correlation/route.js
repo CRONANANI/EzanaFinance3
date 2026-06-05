@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 import { fetchAV } from '@/lib/alpha-vantage';
 
 export const dynamic = 'force-dynamic';
@@ -32,60 +33,63 @@ function pearsonCorrelation(x, y) {
   return denom > 0 ? parseFloat((num / denom).toFixed(4)) : 0;
 }
 
-export async function POST(request) {
-  try {
-    const body = await request.json();
-    const tickers = (body.tickers || [])
-      .map((t) => t.toUpperCase().trim())
-      .filter(Boolean)
-      .slice(0, 10);
-    const days = Math.min(Math.max(body.days || 90, 20), 365);
+export const POST = withApiGuard(
+  async (request, user) => {
+    try {
+      const body = await request.json();
+      const tickers = (body.tickers || [])
+        .map((t) => t.toUpperCase().trim())
+        .filter(Boolean)
+        .slice(0, 10);
+      const days = Math.min(Math.max(body.days || 90, 20), 365);
 
-    if (tickers.length < 2) {
-      return NextResponse.json({ error: 'At least 2 tickers required' }, { status: 400 });
-    }
-
-    const priceMap = {};
-    for (const ticker of tickers) {
-      try {
-        const data = await fetchAV(
-          { function: 'TIME_SERIES_DAILY_ADJUSTED', symbol: ticker, outputsize: 'compact' },
-          600,
-        );
-        const ts = data?.['Time Series (Daily)'];
-        if (!ts) continue;
-        const sorted = Object.entries(ts)
-          .sort(([a], [b]) => a.localeCompare(b))
-          .slice(-days);
-        priceMap[ticker] = sorted.map(([, v]) =>
-          parseFloat(v['5. adjusted close'] || v['4. close']),
-        );
-      } catch {
-        continue;
+      if (tickers.length < 2) {
+        return NextResponse.json({ error: 'At least 2 tickers required' }, { status: 400 });
       }
-    }
 
-    const validTickers = tickers.filter((t) => priceMap[t]?.length > 20);
-    if (validTickers.length < 2) {
-      return NextResponse.json({ error: 'Not enough valid price data' }, { status: 404 });
-    }
-
-    const returnsMap = {};
-    for (const t of validTickers) returnsMap[t] = computeReturns(priceMap[t]);
-
-    const matrix = {};
-    for (const a of validTickers) {
-      matrix[a] = {};
-      for (const b of validTickers) {
-        matrix[a][b] = a === b ? 1.0 : pearsonCorrelation(returnsMap[a], returnsMap[b]);
+      const priceMap = {};
+      for (const ticker of tickers) {
+        try {
+          const data = await fetchAV(
+            { function: 'TIME_SERIES_DAILY_ADJUSTED', symbol: ticker, outputsize: 'compact' },
+            600,
+          );
+          const ts = data?.['Time Series (Daily)'];
+          if (!ts) continue;
+          const sorted = Object.entries(ts)
+            .sort(([a], [b]) => a.localeCompare(b))
+            .slice(-days);
+          priceMap[ticker] = sorted.map(([, v]) =>
+            parseFloat(v['5. adjusted close'] || v['4. close']),
+          );
+        } catch {
+          continue;
+        }
       }
-    }
 
-    return NextResponse.json(
-      { tickers: validTickers, matrix, days },
-      { headers: { 'Cache-Control': 'public, s-maxage=600' } },
-    );
-  } catch (err) {
-    return NextResponse.json({ error: err?.message }, { status: 500 });
-  }
-}
+      const validTickers = tickers.filter((t) => priceMap[t]?.length > 20);
+      if (validTickers.length < 2) {
+        return NextResponse.json({ error: 'Not enough valid price data' }, { status: 404 });
+      }
+
+      const returnsMap = {};
+      for (const t of validTickers) returnsMap[t] = computeReturns(priceMap[t]);
+
+      const matrix = {};
+      for (const a of validTickers) {
+        matrix[a] = {};
+        for (const b of validTickers) {
+          matrix[a][b] = a === b ? 1.0 : pearsonCorrelation(returnsMap[a], returnsMap[b]);
+        }
+      }
+
+      return NextResponse.json(
+        { tickers: validTickers, matrix, days },
+        { headers: { 'Cache-Control': 'public, s-maxage=600' } },
+      );
+    } catch (err) {
+      return NextResponse.json({ error: err?.message }, { status: 500 });
+    }
+  },
+  { requireAuth: true },
+);

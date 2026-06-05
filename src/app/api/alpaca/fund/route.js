@@ -3,6 +3,7 @@
  * GET /api/alpaca/fund — Get ACH relationships and transfers
  */
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 import { alpacaRequest } from '@/lib/alpaca';
 import { getAdminClient, getCurrentUser } from '@/lib/supabase';
 
@@ -17,80 +18,82 @@ async function getAlpacaAccountId(supabaseAdmin, userId) {
   return data?.alpaca_account_id;
 }
 
-export async function POST(request) {
-  try {
-    const user = await getCurrentUser(request);
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const supabaseAdmin = getAdminClient();
+export const POST = withApiGuard(
+  async (request, user) => {
+    try {
+      const supabaseAdmin = getAdminClient();
 
-    const accountId = await getAlpacaAccountId(supabaseAdmin, user.id);
-    if (!accountId)
-      return NextResponse.json({ error: 'No brokerage account found' }, { status: 404 });
+      const accountId = await getAlpacaAccountId(supabaseAdmin, user.id);
+      if (!accountId)
+        return NextResponse.json({ error: 'No brokerage account found' }, { status: 404 });
 
-    const body = await request.json();
+      const body = await request.json();
 
-    if (body.action === 'link_bank') {
-      const relationship = await alpacaRequest(`/v1/accounts/${accountId}/ach_relationships`, {
-        method: 'POST',
-        body: JSON.stringify({
-          processor_token: body.processorToken,
-        }),
-      });
+      if (body.action === 'link_bank') {
+        const relationship = await alpacaRequest(`/v1/accounts/${accountId}/ach_relationships`, {
+          method: 'POST',
+          body: JSON.stringify({
+            processor_token: body.processorToken,
+          }),
+        });
 
-      return NextResponse.json({
-        success: true,
-        relationshipId: relationship.id,
-        status: relationship.status,
-        bankName: relationship.bank_name,
-        accountMask: relationship.account_mask || null,
-      });
+        return NextResponse.json({
+          success: true,
+          relationshipId: relationship.id,
+          status: relationship.status,
+          bankName: relationship.bank_name,
+          accountMask: relationship.account_mask || null,
+        });
+      }
+
+      if (body.action === 'transfer') {
+        const transfer = await alpacaRequest(`/v1/accounts/${accountId}/transfers`, {
+          method: 'POST',
+          body: JSON.stringify({
+            transfer_type: 'ach',
+            relationship_id: body.relationshipId,
+            amount: body.amount.toString(),
+            direction: body.direction || 'INCOMING',
+          }),
+        });
+
+        return NextResponse.json({
+          success: true,
+          transferId: transfer.id,
+          status: transfer.status,
+          amount: transfer.amount,
+          direction: transfer.direction,
+        });
+      }
+
+      return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+    } catch (error) {
+      console.error('[Alpaca] Funding error:', error);
+      return NextResponse.json(
+        { error: 'Funding operation failed', details: error.details || error.message },
+        { status: error.status || 500 },
+      );
     }
+  },
+  { requireAuth: true },
+);
 
-    if (body.action === 'transfer') {
-      const transfer = await alpacaRequest(`/v1/accounts/${accountId}/transfers`, {
-        method: 'POST',
-        body: JSON.stringify({
-          transfer_type: 'ach',
-          relationship_id: body.relationshipId,
-          amount: body.amount.toString(),
-          direction: body.direction || 'INCOMING',
-        }),
-      });
+export const GET = withApiGuard(
+  async (request, user) => {
+    try {
+      const supabaseAdmin = getAdminClient();
 
-      return NextResponse.json({
-        success: true,
-        transferId: transfer.id,
-        status: transfer.status,
-        amount: transfer.amount,
-        direction: transfer.direction,
-      });
+      const accountId = await getAlpacaAccountId(supabaseAdmin, user.id);
+      if (!accountId) return NextResponse.json({ error: 'No brokerage account' }, { status: 404 });
+
+      const relationships = await alpacaRequest(`/v1/accounts/${accountId}/ach_relationships`);
+      const transfers = await alpacaRequest(`/v1/accounts/${accountId}/transfers`);
+
+      return NextResponse.json({ relationships, transfers });
+    } catch (error) {
+      console.error('[Alpaca] Funding status error:', error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
-
-    return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
-  } catch (error) {
-    console.error('[Alpaca] Funding error:', error);
-    return NextResponse.json(
-      { error: 'Funding operation failed', details: error.details || error.message },
-      { status: error.status || 500 },
-    );
-  }
-}
-
-export async function GET(request) {
-  try {
-    const user = await getCurrentUser(request);
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const supabaseAdmin = getAdminClient();
-
-    const accountId = await getAlpacaAccountId(supabaseAdmin, user.id);
-    if (!accountId) return NextResponse.json({ error: 'No brokerage account' }, { status: 404 });
-
-    const relationships = await alpacaRequest(`/v1/accounts/${accountId}/ach_relationships`);
-    const transfers = await alpacaRequest(`/v1/accounts/${accountId}/transfers`);
-
-    return NextResponse.json({ relationships, transfers });
-  } catch (error) {
-    console.error('[Alpaca] Funding status error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-}
+  },
+  { requireAuth: true },
+);

@@ -15,7 +15,7 @@ const securityHeaders = [
     key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://cdn.vercel-insights.com https://vercel.live https://cdn.plaid.com",
+      "script-src 'self' 'unsafe-inline' https://js.stripe.com https://cdn.vercel-insights.com https://vercel.live https://cdn.plaid.com",
       "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com",
       "img-src 'self' data: blob: https: http:",
       "font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com",
@@ -79,11 +79,14 @@ const nextConfig = {
   },
   images: {
     formats: ['image/avif', 'image/webp'],
-    dangerouslyAllowSVG: true,
-    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    dangerouslyAllowSVG: false,
     remotePatterns: [
-      { protocol: 'https', hostname: '**', pathname: '/**' },
-      { protocol: 'http', hostname: '**', pathname: '/**' },
+      { protocol: 'https', hostname: '*.supabase.co', pathname: '/**' },
+      { protocol: 'https', hostname: 'financialmodelingprep.com', pathname: '/**' },
+      { protocol: 'https', hostname: '*.finnhub.io', pathname: '/**' },
+      { protocol: 'https', hostname: 'images.unsplash.com', pathname: '/**' },
+      { protocol: 'https', hostname: 'logo.clearbit.com', pathname: '/**' },
+      { protocol: 'https', hostname: 'cdn.plaid.com', pathname: '/**' },
     ],
   },
 };

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 import { getAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
@@ -73,42 +74,45 @@ function getPriority(displayName) {
   return Number.MAX_SAFE_INTEGER;
 }
 
-export async function GET() {
-  const supabase = getAdminClient();
-  const { data, error } = await supabase
-    .from('institution_registry')
-    .select(
-      'id, canonical_name, display_name, logo_url, square_logo_url, category, snaptrade_slug, snaptrade_brokerage_type, snaptrade_allows_trading, plaid_institution_id',
-    )
-    .eq('enabled', true)
-    .eq('maintenance_mode', false);
+export const GET = withApiGuard(
+  async (request, user) => {
+    const supabase = getAdminClient();
+    const { data, error } = await supabase
+      .from('institution_registry')
+      .select(
+        'id, canonical_name, display_name, logo_url, square_logo_url, category, snaptrade_slug, snaptrade_brokerage_type, snaptrade_allows_trading, plaid_institution_id',
+      )
+      .eq('enabled', true)
+      .eq('maintenance_mode', false);
 
-  if (error) {
-    console.error('[institutions/list]', error);
-    return NextResponse.json({ institutions: [] }, { status: 502 });
-  }
+    if (error) {
+      console.error('[institutions/list]', error);
+      return NextResponse.json({ institutions: [] }, { status: 502 });
+    }
 
-  const institutions = (data || []).map((r) => ({
-    id: r.id,
-    displayName: r.display_name,
-    logoUrl: r.square_logo_url || r.logo_url,
-    category: r.category,
-    snaptradeSlug: r.snaptrade_slug,
-    snaptradeBrokerageType: r.snaptrade_brokerage_type,
-    snaptradeAllowsTrading: r.snaptrade_allows_trading,
-    plaidInstitutionId: r.plaid_institution_id,
-    providers: [
-      r.snaptrade_slug ? 'snaptrade' : null,
-      r.plaid_institution_id ? 'plaid' : null,
-    ].filter(Boolean),
-  }));
+    const institutions = (data || []).map((r) => ({
+      id: r.id,
+      displayName: r.display_name,
+      logoUrl: r.square_logo_url || r.logo_url,
+      category: r.category,
+      snaptradeSlug: r.snaptrade_slug,
+      snaptradeBrokerageType: r.snaptrade_brokerage_type,
+      snaptradeAllowsTrading: r.snaptrade_allows_trading,
+      plaidInstitutionId: r.plaid_institution_id,
+      providers: [
+        r.snaptrade_slug ? 'snaptrade' : null,
+        r.plaid_institution_id ? 'plaid' : null,
+      ].filter(Boolean),
+    }));
 
-  institutions.sort((a, b) => {
-    const pa = getPriority(a.displayName);
-    const pb = getPriority(b.displayName);
-    if (pa !== pb) return pa - pb;
-    return a.displayName.localeCompare(b.displayName);
-  });
+    institutions.sort((a, b) => {
+      const pa = getPriority(a.displayName);
+      const pb = getPriority(b.displayName);
+      if (pa !== pb) return pa - pb;
+      return a.displayName.localeCompare(b.displayName);
+    });
 
-  return NextResponse.json({ institutions, count: institutions.length });
-}
+    return NextResponse.json({ institutions, count: institutions.length });
+  },
+  { requireAuth: false },
+);

@@ -23,6 +23,7 @@
  */
 
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 import { getServerSupabase } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
@@ -61,67 +62,64 @@ function isoDate(d) {
   return d.toISOString().slice(0, 10);
 }
 
-export async function GET(request) {
-  const url = new URL(request.url);
-  const raw = url.searchParams.get('window') ?? '1M';
-  const window = VALID_WINDOWS.has(raw) ? raw : '1M';
+export const GET = withApiGuard(
+  async (request) => {
+    const url = new URL(request.url);
+    const raw = url.searchParams.get('window') ?? '1M';
+    const window = VALID_WINDOWS.has(raw) ? raw : '1M';
 
-  const today = startOfUtcDay(new Date());
-  const windowStart =
-    window === '1W'
-      ? addDays(today, -7)
-      : window === '1M'
-        ? addDays(today, -30)
-        : window === '3M'
-          ? addDays(today, -90)
-          : startOfUtcYear(today);
+    const today = startOfUtcDay(new Date());
+    const windowStart =
+      window === '1W'
+        ? addDays(today, -7)
+        : window === '1M'
+          ? addDays(today, -30)
+          : window === '3M'
+            ? addDays(today, -90)
+            : startOfUtcYear(today);
 
-  try {
-    const supabase = getServerSupabase();
-    const { data, error } = await supabase
-      .from('platform_return_aggregates')
-      .select('date, sample_size, p50, p75')
-      .eq('window_key', window)
-      .gte('date', isoDate(windowStart))
-      .lte('date', isoDate(today))
-      .order('date', { ascending: true });
+    try {
+      const supabase = getServerSupabase();
+      const { data, error } = await supabase
+        .from('platform_return_aggregates')
+        .select('date, sample_size, p50, p75')
+        .eq('window_key', window)
+        .gte('date', isoDate(windowStart))
+        .lte('date', isoDate(today))
+        .order('date', { ascending: true });
 
-    if (error) {
-      const code = /** @type {any} */ (error).code;
-      if (code === 'PGRST205' || code === '42P01') {
-        return NextResponse.json(
-          { window, points: [] },
-          { headers: { 'Cache-Control': 'no-store' } },
-        );
+      if (error) {
+        const code = /** @type {any} */ (error).code;
+        if (code === 'PGRST205' || code === '42P01') {
+          return NextResponse.json(
+            { window, points: [] },
+            { headers: { 'Cache-Control': 'no-store' } },
+          );
+        }
+        return NextResponse.json({ error: error.message, window, points: [] }, { status: 500 });
       }
+
+      const points = (data ?? []).map((r) => ({
+        date: r.date,
+        platform: Number(r.p50),
+        cohort: Number(r.p75),
+        sampleSize: r.sample_size,
+      }));
+
       return NextResponse.json(
-        { error: error.message, window, points: [] },
-        { status: 500 },
-      );
-    }
-
-    const points = (data ?? []).map((r) => ({
-      date: r.date,
-      platform: Number(r.p50),
-      cohort: Number(r.p75),
-      sampleSize: r.sample_size,
-    }));
-
-    return NextResponse.json(
-      { window, points },
-      {
-        headers: {
-          // Aggregates only change once per day when the nightly job runs,
-          // so a short public cache is safe and keeps the profile page snappy.
-          'Cache-Control': 'public, max-age=300, s-maxage=900, stale-while-revalidate=3600',
+        { window, points },
+        {
+          headers: {
+            // Aggregates only change once per day when the nightly job runs,
+            // so a short public cache is safe and keeps the profile page snappy.
+            'Cache-Control': 'public, max-age=300, s-maxage=900, stale-while-revalidate=3600',
+          },
         },
-      },
-    );
-  } catch (err) {
-    console.error('[platform-aggregates] GET failed:', err);
-    return NextResponse.json(
-      { error: 'internal_error', window, points: [] },
-      { status: 500 },
-    );
-  }
-}
+      );
+    } catch (err) {
+      console.error('[platform-aggregates] GET failed:', err);
+      return NextResponse.json({ error: 'internal_error', window, points: [] }, { status: 500 });
+    }
+  },
+  { requireAuth: false },
+);

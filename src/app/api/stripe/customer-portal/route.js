@@ -1,69 +1,66 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 import { stripe } from '@/lib/services/stripe';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export async function POST(request) {
-  try {
-    if (!stripe) {
-      return NextResponse.json({ error: 'Stripe is not configured' }, { status: 503 });
-    }
+export const POST = withApiGuard(
+  async (request, user) => {
+    try {
+      if (!stripe) {
+        return NextResponse.json({ error: 'Stripe is not configured' }, { status: 503 });
+      }
 
-    const cookieStore = cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      {
-        cookies: {
-          getAll() {
-            return cookieStore.getAll();
-          },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              try {
-                cookieStore.set(name, value, options);
-              } catch {
-                // ignore
-              }
-            });
+      const cookieStore = cookies();
+      const supabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+        {
+          cookies: {
+            getAll() {
+              return cookieStore.getAll();
+            },
+            setAll(cookiesToSet) {
+              cookiesToSet.forEach(({ name, value, options }) => {
+                try {
+                  cookieStore.set(name, value, options);
+                } catch {
+                  // ignore
+                }
+              });
+            },
           },
         },
-      }
-    );
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('stripe_customer_id')
-      .eq('id', user.id)
-      .maybeSingle();
-
-    if (!profile?.stripe_customer_id) {
-      return NextResponse.json(
-        { error: 'No billing account found. Subscribe to a plan first.' },
-        { status: 400 }
       );
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('stripe_customer_id')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (!profile?.stripe_customer_id) {
+        return NextResponse.json(
+          { error: 'No billing account found. Subscribe to a plan first.' },
+          { status: 400 },
+        );
+      }
+
+      const origin = process.env.NEXT_PUBLIC_APP_URL || request.headers.get('origin');
+
+      const portalSession = await stripe.billingPortal.sessions.create({
+        customer: profile.stripe_customer_id,
+        return_url: `${origin}/settings`,
+      });
+
+      return NextResponse.json({ url: portalSession.url });
+    } catch (error) {
+      console.error('Portal session error:', error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
-
-    const origin = process.env.NEXT_PUBLIC_APP_URL || request.headers.get('origin');
-
-    const portalSession = await stripe.billingPortal.sessions.create({
-      customer: profile.stripe_customer_id,
-      return_url: `${origin}/settings`,
-    });
-
-    return NextResponse.json({ url: portalSession.url });
-  } catch (error) {
-    console.error('Portal session error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-}
+  },
+  { requireAuth: true },
+);

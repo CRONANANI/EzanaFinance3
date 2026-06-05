@@ -10,7 +10,7 @@ const strictLimiter = rateLimiter({ interval: 60000, limit: 10 });
 export function withApiGuard(handler, options = {}) {
   const { requireAuth = true, strict = false, requiredRole = null } = options;
 
-  return async (request) => {
+  return async (request, context) => {
     try {
       const ip =
         request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
@@ -48,7 +48,7 @@ export function withApiGuard(handler, options = {}) {
         }
       }
 
-      const response = await handler(request, user);
+      const response = await handler(request, user, context);
       const res = response instanceof NextResponse ? response : NextResponse.json(response);
       res.headers.set('X-RateLimit-Remaining', String(remaining));
       return res;

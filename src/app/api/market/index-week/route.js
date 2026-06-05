@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 
 export const dynamic = 'force-dynamic';
 
@@ -118,112 +119,115 @@ async function fetchWeeklyBars(symbol, slots) {
   return { closeMap, openMap };
 }
 
-export async function GET() {
-  const FMP_KEY = getFmpKey();
-  if (!FMP_KEY) {
-    const emptySlots = weekSlots();
-    return NextResponse.json(
-      {
-        ok: false,
-        error: 'no_key',
-        indices: {},
-        slots: emptySlots.map((s) => s.label),
-      },
-      {
-        headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' },
-      },
-    );
-  }
+export const GET = withApiGuard(
+  async (request, user) => {
+    const FMP_KEY = getFmpKey();
+    if (!FMP_KEY) {
+      const emptySlots = weekSlots();
+      return NextResponse.json(
+        {
+          ok: false,
+          error: 'no_key',
+          indices: {},
+          slots: emptySlots.map((s) => s.label),
+        },
+        {
+          headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' },
+        },
+      );
+    }
 
-  const slots = weekSlots();
-  const todayK = todayNy();
-  const mondayYmd = slots[0].ymd;
+    const slots = weekSlots();
+    const todayK = todayNy();
+    const mondayYmd = slots[0].ymd;
 
-  const [quotes, barResults] = await Promise.all([
-    Promise.all(INDEX_KEYS.map((k) => fetchQuote(INDICES[k].symbol))),
-    Promise.all(INDEX_KEYS.map((k) => fetchWeeklyBars(INDICES[k].symbol, slots))),
-  ]);
+    const [quotes, barResults] = await Promise.all([
+      Promise.all(INDEX_KEYS.map((k) => fetchQuote(INDICES[k].symbol))),
+      Promise.all(INDEX_KEYS.map((k) => fetchWeeklyBars(INDICES[k].symbol, slots))),
+    ]);
 
-  const indices = {};
-  const mondayOpens = {};
+    const indices = {};
+    const mondayOpens = {};
 
-  for (let i = 0; i < INDEX_KEYS.length; i++) {
-    const key = INDEX_KEYS[i];
-    const meta = INDICES[key];
-    const quote = quotes[i];
-    const { closeMap, openMap } = barResults[i];
+    for (let i = 0; i < INDEX_KEYS.length; i++) {
+      const key = INDEX_KEYS[i];
+      const meta = INDICES[key];
+      const quote = quotes[i];
+      const { closeMap, openMap } = barResults[i];
 
-    const mondayOpen = openMap.get(mondayYmd) ?? null;
-    const mondayClose = closeMap.get(mondayYmd) ?? null;
+      const mondayOpen = openMap.get(mondayYmd) ?? null;
+      const mondayClose = closeMap.get(mondayYmd) ?? null;
 
-    /* Fallback baseline from live quote when historical data isn't available yet
+      /* Fallback baseline from live quote when historical data isn't available yet
        (common on Monday morning before the historical endpoint publishes) */
-    const quoteOpen =
-      quote?.open != null && Number.isFinite(quote.open) && quote.open > 0 ? quote.open : null;
-    const quotePrevClose =
-      quote?.previousClose != null &&
-      Number.isFinite(quote.previousClose) &&
-      quote.previousClose > 0
-        ? quote.previousClose
-        : null;
+      const quoteOpen =
+        quote?.open != null && Number.isFinite(quote.open) && quote.open > 0 ? quote.open : null;
+      const quotePrevClose =
+        quote?.previousClose != null &&
+        Number.isFinite(quote.previousClose) &&
+        quote.previousClose > 0
+          ? quote.previousClose
+          : null;
 
-    const baseline =
-      mondayOpen != null && mondayOpen > 0
-        ? mondayOpen
-        : mondayClose != null && mondayClose > 0
-          ? mondayClose
-          : quoteOpen
-            ? quoteOpen
-            : quotePrevClose
-              ? quotePrevClose
-              : quote?.price != null && Number.isFinite(quote.price) && quote.price > 0
-                ? quote.price
-                : null;
+      const baseline =
+        mondayOpen != null && mondayOpen > 0
+          ? mondayOpen
+          : mondayClose != null && mondayClose > 0
+            ? mondayClose
+            : quoteOpen
+              ? quoteOpen
+              : quotePrevClose
+                ? quotePrevClose
+                : quote?.price != null && Number.isFinite(quote.price) && quote.price > 0
+                  ? quote.price
+                  : null;
 
-    mondayOpens[key] = baseline;
+      mondayOpens[key] = baseline;
 
-    const series = slots.map(({ label, ymd }) => {
-      let close = closeMap.get(ymd) ?? null;
-      if (close == null && ymd === todayK && quote?.price) {
-        close = quote.price;
-      }
-      return { day: label, ymd, close };
-    });
+      const series = slots.map(({ label, ymd }) => {
+        let close = closeMap.get(ymd) ?? null;
+        if (close == null && ymd === todayK && quote?.price) {
+          close = quote.price;
+        }
+        return { day: label, ymd, close };
+      });
 
-    const seriesWithPct = series.map((s) => {
-      if (s.close == null || baseline == null || baseline <= 0) {
-        return { day: s.day, ymd: s.ymd, close: s.close, pct: null };
-      }
-      if (s.ymd === mondayYmd) {
-        const dayOpen = openMap.get(mondayYmd);
-        if (dayOpen != null && dayOpen > 0) {
-          const pct = ((s.close - dayOpen) / dayOpen) * 100;
+      const seriesWithPct = series.map((s) => {
+        if (s.close == null || baseline == null || baseline <= 0) {
+          return { day: s.day, ymd: s.ymd, close: s.close, pct: null };
+        }
+        if (s.ymd === mondayYmd) {
+          const dayOpen = openMap.get(mondayYmd);
+          if (dayOpen != null && dayOpen > 0) {
+            const pct = ((s.close - dayOpen) / dayOpen) * 100;
+            return { day: s.day, ymd: s.ymd, close: s.close, pct: parseFloat(pct.toFixed(3)) };
+          }
+          const pct = ((s.close - baseline) / baseline) * 100;
           return { day: s.day, ymd: s.ymd, close: s.close, pct: parseFloat(pct.toFixed(3)) };
         }
         const pct = ((s.close - baseline) / baseline) * 100;
         return { day: s.day, ymd: s.ymd, close: s.close, pct: parseFloat(pct.toFixed(3)) };
-      }
-      const pct = ((s.close - baseline) / baseline) * 100;
-      return { day: s.day, ymd: s.ymd, close: s.close, pct: parseFloat(pct.toFixed(3)) };
+      });
+
+      const currentPrice = quote?.price ?? null;
+
+      indices[key] = {
+        key,
+        symbol: meta.symbol,
+        name: meta.name,
+        series: seriesWithPct,
+        currentPrice,
+      };
+    }
+
+    return NextResponse.json({
+      ok: true,
+      indices,
+      slots: slots.map((s) => s.label),
+      todayKey: todayK,
+      mondayYmd,
+      mondayOpens,
     });
-
-    const currentPrice = quote?.price ?? null;
-
-    indices[key] = {
-      key,
-      symbol: meta.symbol,
-      name: meta.name,
-      series: seriesWithPct,
-      currentPrice,
-    };
-  }
-
-  return NextResponse.json({
-    ok: true,
-    indices,
-    slots: slots.map((s) => s.label),
-    todayKey: todayK,
-    mondayYmd,
-    mondayOpens,
-  });
-}
+  },
+  { requireAuth: false },
+);

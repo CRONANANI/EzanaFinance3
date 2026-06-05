@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 import { City } from 'country-state-city';
 
 /* GET /api/locations/cities?country=US
@@ -10,34 +11,37 @@ import { City } from 'country-state-city';
    public Cache-Control headers and let the CDN handle re-use. */
 export const dynamic = 'force-dynamic';
 
-export async function GET(request) {
-  const url = new URL(request.url);
-  const country = (url.searchParams.get('country') || '').toUpperCase();
+export const GET = withApiGuard(
+  async (request) => {
+    const url = new URL(request.url);
+    const country = (url.searchParams.get('country') || '').toUpperCase();
 
-  if (!country) {
-    return NextResponse.json({ cities: [] });
-  }
+    if (!country) {
+      return NextResponse.json({ cities: [] });
+    }
 
-  const raw = City.getCitiesOfCountry(country) || [];
+    const raw = City.getCitiesOfCountry(country) || [];
 
-  /* Dedupe by city name (case-insensitive) so the dropdown isn't filled with
+    /* Dedupe by city name (case-insensitive) so the dropdown isn't filled with
      "Springfield (IL), Springfield (MA), Springfield (MO)…" duplicates. */
-  const seen = new Set();
-  const cities = [];
-  for (const c of raw) {
-    const key = c.name.trim().toLowerCase();
-    if (seen.has(key)) continue;
-    seen.add(key);
-    cities.push({ name: c.name, stateCode: c.stateCode || null });
-  }
-  cities.sort((a, b) => a.name.localeCompare(b.name));
+    const seen = new Set();
+    const cities = [];
+    for (const c of raw) {
+      const key = c.name.trim().toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      cities.push({ name: c.name, stateCode: c.stateCode || null });
+    }
+    cities.sort((a, b) => a.name.localeCompare(b.name));
 
-  return NextResponse.json(
-    { country, cities },
-    {
-      headers: {
-        'Cache-Control': 'public, s-maxage=2592000, stale-while-revalidate=86400',
+    return NextResponse.json(
+      { country, cities },
+      {
+        headers: {
+          'Cache-Control': 'public, s-maxage=2592000, stale-while-revalidate=86400',
+        },
       },
-    },
-  );
-}
+    );
+  },
+  { requireAuth: false },
+);

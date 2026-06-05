@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 import { getUserClient } from '@/lib/supabase';
 import { getCourseById } from '@/lib/learning-curriculum';
 
@@ -13,11 +14,6 @@ function rewardForLevel(level) {
 export async function GET() {
   try {
     const supabase = getUserClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
     const { data: rows } = await supabase
       .from('user_course_bookmarks')
       .select('course_id, created_at')
@@ -47,41 +43,39 @@ export async function GET() {
   }
 }
 
-export async function POST(request) {
-  try {
-    const supabase = getUserClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+export const POST = withApiGuard(
+  async (request, user) => {
+    try {
+      const supabase = getUserClient();
+      const body = await request.json().catch(() => null);
+      const courseId = body?.courseId?.trim();
+      const action = body?.action;
 
-    const body = await request.json().catch(() => null);
-    const courseId = body?.courseId?.trim();
-    const action = body?.action;
+      if (!courseId || !getCourseById(courseId)) {
+        return NextResponse.json({ error: 'Invalid courseId' }, { status: 400 });
+      }
+      if (!['add', 'remove'].includes(action)) {
+        return NextResponse.json({ error: 'action must be add|remove' }, { status: 400 });
+      }
 
-    if (!courseId || !getCourseById(courseId)) {
-      return NextResponse.json({ error: 'Invalid courseId' }, { status: 400 });
+      if (action === 'add') {
+        await supabase.from('user_course_bookmarks').upsert({
+          user_id: user.id,
+          course_id: courseId,
+        });
+      } else {
+        await supabase
+          .from('user_course_bookmarks')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('course_id', courseId);
+      }
+
+      return NextResponse.json({ ok: true });
+    } catch (err) {
+      console.error('[learning/bookmarks POST]', err);
+      return NextResponse.json({ error: 'Failed' }, { status: 500 });
     }
-    if (!['add', 'remove'].includes(action)) {
-      return NextResponse.json({ error: 'action must be add|remove' }, { status: 400 });
-    }
-
-    if (action === 'add') {
-      await supabase.from('user_course_bookmarks').upsert({
-        user_id: user.id,
-        course_id: courseId,
-      });
-    } else {
-      await supabase
-        .from('user_course_bookmarks')
-        .delete()
-        .eq('user_id', user.id)
-        .eq('course_id', courseId);
-    }
-
-    return NextResponse.json({ ok: true });
-  } catch (err) {
-    console.error('[learning/bookmarks POST]', err);
-    return NextResponse.json({ error: 'Failed' }, { status: 500 });
-  }
-}
+  },
+  { requireAuth: true },
+);

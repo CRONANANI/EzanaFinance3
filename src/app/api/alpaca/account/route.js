@@ -3,171 +3,174 @@
  * GET /api/alpaca/account — Check account status and balances
  */
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 import { alpacaRequest } from '@/lib/alpaca';
 import { getAdminClient, getCurrentUser } from '@/lib/supabase';
 import { awardELO } from '@/lib/elo';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(request) {
-  try {
-    const user = await getCurrentUser(request);
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const supabaseAdmin = getAdminClient();
-
-    const body = await request.json();
-    const {
-      firstName,
-      lastName,
-      dateOfBirth,
-      taxId,
-      phone,
-      streetAddress,
-      city,
-      state,
-      postalCode,
-      fundingSource,
-    } = body;
-
-    const account = await alpacaRequest('/v1/accounts', {
-      method: 'POST',
-      body: JSON.stringify({
-        contact: {
-          email_address: user.email,
-          phone_number: phone,
-          street_address: [streetAddress],
-          city: city,
-          state: state,
-          postal_code: postalCode,
-          country: 'USA',
-        },
-        identity: {
-          given_name: firstName,
-          family_name: lastName,
-          date_of_birth: dateOfBirth,
-          tax_id: taxId,
-          tax_id_type: 'USA_SSN',
-          country_of_citizenship: 'USA',
-          country_of_birth: 'USA',
-          country_of_tax_residence: 'USA',
-          funding_source: [fundingSource || 'employment_income'],
-        },
-        disclosures: {
-          is_control_person: false,
-          is_affiliated_exchange_or_finra: false,
-          is_politically_exposed: false,
-          immediate_family_exposed: false,
-        },
-        agreements: [
-          {
-            agreement: 'margin_agreement',
-            signed_at: new Date().toISOString(),
-            ip_address: request.headers.get('x-forwarded-for') || '0.0.0.0',
-          },
-          {
-            agreement: 'account_agreement',
-            signed_at: new Date().toISOString(),
-            ip_address: request.headers.get('x-forwarded-for') || '0.0.0.0',
-          },
-          {
-            agreement: 'customer_agreement',
-            signed_at: new Date().toISOString(),
-            ip_address: request.headers.get('x-forwarded-for') || '0.0.0.0',
-          },
-        ],
-      }),
-    });
-
-    const { error: upsertErr } = await supabaseAdmin.from('alpaca_accounts').upsert(
-      {
-        user_id: user.id,
-        alpaca_account_id: account.id,
-        account_status: account.status,
-        first_name: firstName,
-        last_name: lastName,
-        created_at: new Date().toISOString(),
-      },
-      { onConflict: 'user_id' },
-    );
-
-    if (upsertErr) {
-      console.error('[Alpaca] alpaca_accounts upsert:', upsertErr);
-      return NextResponse.json({ error: upsertErr.message }, { status: 500 });
-    }
-
+export const POST = withApiGuard(
+  async (request, user) => {
     try {
-      const { data: existing } = await supabaseAdmin
-        .from('elo_transactions')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('category', 'activity')
-        .eq('reason', 'Linked real brokerage account')
-        .maybeSingle();
+      const supabaseAdmin = getAdminClient();
 
-      if (!existing) {
-        await awardELO(user.id, 75, 'Linked real brokerage account', 'activity', {
-          event: 'alpaca_account_linked',
-          provider: 'alpaca',
-        });
+      const body = await request.json();
+      const {
+        firstName,
+        lastName,
+        dateOfBirth,
+        taxId,
+        phone,
+        streetAddress,
+        city,
+        state,
+        postalCode,
+        fundingSource,
+      } = body;
+
+      const account = await alpacaRequest('/v1/accounts', {
+        method: 'POST',
+        body: JSON.stringify({
+          contact: {
+            email_address: user.email,
+            phone_number: phone,
+            street_address: [streetAddress],
+            city: city,
+            state: state,
+            postal_code: postalCode,
+            country: 'USA',
+          },
+          identity: {
+            given_name: firstName,
+            family_name: lastName,
+            date_of_birth: dateOfBirth,
+            tax_id: taxId,
+            tax_id_type: 'USA_SSN',
+            country_of_citizenship: 'USA',
+            country_of_birth: 'USA',
+            country_of_tax_residence: 'USA',
+            funding_source: [fundingSource || 'employment_income'],
+          },
+          disclosures: {
+            is_control_person: false,
+            is_affiliated_exchange_or_finra: false,
+            is_politically_exposed: false,
+            immediate_family_exposed: false,
+          },
+          agreements: [
+            {
+              agreement: 'margin_agreement',
+              signed_at: new Date().toISOString(),
+              ip_address: request.headers.get('x-forwarded-for') || '0.0.0.0',
+            },
+            {
+              agreement: 'account_agreement',
+              signed_at: new Date().toISOString(),
+              ip_address: request.headers.get('x-forwarded-for') || '0.0.0.0',
+            },
+            {
+              agreement: 'customer_agreement',
+              signed_at: new Date().toISOString(),
+              ip_address: request.headers.get('x-forwarded-for') || '0.0.0.0',
+            },
+          ],
+        }),
+      });
+
+      const { error: upsertErr } = await supabaseAdmin.from('alpaca_accounts').upsert(
+        {
+          user_id: user.id,
+          alpaca_account_id: account.id,
+          account_status: account.status,
+          first_name: firstName,
+          last_name: lastName,
+          created_at: new Date().toISOString(),
+        },
+        { onConflict: 'user_id' },
+      );
+
+      if (upsertErr) {
+        console.error('[Alpaca] alpaca_accounts upsert:', upsertErr);
+        return NextResponse.json({ error: upsertErr.message }, { status: 500 });
       }
-    } catch (eloErr) {
-      console.error('[alpaca/account] awardELO failed (non-fatal):', eloErr);
+
+      try {
+        const { data: existing } = await supabaseAdmin
+          .from('elo_transactions')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('category', 'activity')
+          .eq('reason', 'Linked real brokerage account')
+          .maybeSingle();
+
+        if (!existing) {
+          await awardELO(user.id, 75, 'Linked real brokerage account', 'activity', {
+            event: 'alpaca_account_linked',
+            provider: 'alpaca',
+          });
+        }
+      } catch (eloErr) {
+        console.error('[alpaca/account] awardELO failed (non-fatal):', eloErr);
+      }
+
+      return NextResponse.json({
+        success: true,
+        accountId: account.id,
+        status: account.status,
+      });
+    } catch (error) {
+      console.error('[Alpaca] Account creation error:', error);
+      return NextResponse.json(
+        { error: 'Account creation failed', details: error.details || error.message },
+        { status: error.status || 500 },
+      );
     }
+  },
+  { requireAuth: true },
+);
 
-    return NextResponse.json({
-      success: true,
-      accountId: account.id,
-      status: account.status,
-    });
-  } catch (error) {
-    console.error('[Alpaca] Account creation error:', error);
-    return NextResponse.json(
-      { error: 'Account creation failed', details: error.details || error.message },
-      { status: error.status || 500 },
-    );
-  }
-}
+export const GET = withApiGuard(
+  async (request, user) => {
+    try {
+      const supabaseAdmin = getAdminClient();
 
-export async function GET(request) {
-  try {
-    const user = await getCurrentUser(request);
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const supabaseAdmin = getAdminClient();
-
-    const { data: record } = await supabaseAdmin
-      .from('alpaca_accounts')
-      .select('alpaca_account_id, account_status')
-      .eq('user_id', user.id)
-      .single();
-
-    if (!record) {
-      return NextResponse.json({ hasAccount: false });
-    }
-
-    const account = await alpacaRequest(`/v1/accounts/${record.alpaca_account_id}`);
-
-    if (account.status !== record.account_status) {
-      await supabaseAdmin
+      const { data: record } = await supabaseAdmin
         .from('alpaca_accounts')
-        .update({ account_status: account.status })
-        .eq('user_id', user.id);
-    }
+        .select('alpaca_account_id, account_status')
+        .eq('user_id', user.id)
+        .single();
 
-    return NextResponse.json({
-      hasAccount: true,
-      accountId: account.id,
-      status: account.status,
-      currency: account.currency,
-      buyingPower: account.buying_power,
-      cash: account.cash,
-      portfolioValue: account.portfolio_value,
-      equity: account.equity,
-    });
-  } catch (error) {
-    console.error('[Alpaca] Account check error:', error);
-    return NextResponse.json(
-      { error: 'Failed to check account', details: error.message },
-      { status: 500 },
-    );
-  }
-}
+      if (!record) {
+        return NextResponse.json({ hasAccount: false });
+      }
+
+      const account = await alpacaRequest(`/v1/accounts/${record.alpaca_account_id}`);
+
+      if (account.status !== record.account_status) {
+        await supabaseAdmin
+          .from('alpaca_accounts')
+          .update({ account_status: account.status })
+          .eq('user_id', user.id);
+      }
+
+      return NextResponse.json({
+        hasAccount: true,
+        accountId: account.id,
+        status: account.status,
+        currency: account.currency,
+        buyingPower: account.buying_power,
+        cash: account.cash,
+        portfolioValue: account.portfolio_value,
+        equity: account.equity,
+      });
+    } catch (error) {
+      console.error('[Alpaca] Account check error:', error);
+      return NextResponse.json(
+        { error: 'Failed to check account', details: error.message },
+        { status: 500 },
+      );
+    }
+  },
+  { requireAuth: true },
+);

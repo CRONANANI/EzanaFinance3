@@ -14,16 +14,10 @@
  * 500        — unexpected DB / runtime error (real cause in `detail` in dev)
  */
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 import { getAuthContext } from '@/lib/auth-helpers';
-import {
-  dbErrorResponse,
-  exceptionResponse,
-  validationResponse,
-} from '@/lib/api-errors';
-import {
-  computeNextPosition,
-  POSITION_STEP,
-} from '@/lib/watchlists/position';
+import { dbErrorResponse, exceptionResponse, validationResponse } from '@/lib/api-errors';
+import { computeNextPosition, POSITION_STEP } from '@/lib/watchlists/position';
 
 export const dynamic = 'force-dynamic';
 
@@ -61,74 +55,77 @@ async function ensureDefaultList(supabase, userId) {
   }
 }
 
-export async function GET(request) {
-  try {
-    const { user, supabase } = await getAuthContext(request);
-    if (!user || !supabase) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+export const GET = withApiGuard(
+  async (request, user) => {
+    try {
+      const { supabase } = await getAuthContext(request);
+      if (!supabase) {
+        return NextResponse.json({ error: 'Server error' }, { status: 500 });
+      }
 
-    await ensureDefaultList(supabase, user.id);
+      await ensureDefaultList(supabase, user.id);
 
-    const { data: lists, error: listsErr } = await supabase
-      .from('user_watchlists')
-      .select('id, label, sort_order, created_at, updated_at')
-      .eq('user_id', user.id)
-      .order('sort_order', { ascending: true })
-      .order('created_at', { ascending: true });
-
-    if (listsErr) {
-      return dbErrorResponse('watchlists GET lists', listsErr, {
-        fallback: 'Failed to fetch watchlists.',
-      });
-    }
-
-    const listIds = (lists || []).map((l) => l.id);
-    let items = [];
-    if (listIds.length > 0) {
-      const { data: itemRows, error: itemsErr } = await supabase
-        .from('user_watchlist_items')
-        .select('id, list_id, type, ticker, name, sector, metadata, created_at')
+      const { data: lists, error: listsErr } = await supabase
+        .from('user_watchlists')
+        .select('id, label, sort_order, created_at, updated_at')
         .eq('user_id', user.id)
-        .in('list_id', listIds)
+        .order('sort_order', { ascending: true })
         .order('created_at', { ascending: true });
 
-      if (itemsErr) {
-        console.error('[watchlists GET] items error:', itemsErr);
-      } else {
-        items = itemRows || [];
+      if (listsErr) {
+        return dbErrorResponse('watchlists GET lists', listsErr, {
+          fallback: 'Failed to fetch watchlists.',
+        });
       }
+
+      const listIds = (lists || []).map((l) => l.id);
+      let items = [];
+      if (listIds.length > 0) {
+        const { data: itemRows, error: itemsErr } = await supabase
+          .from('user_watchlist_items')
+          .select('id, list_id, type, ticker, name, sector, metadata, created_at')
+          .eq('user_id', user.id)
+          .in('list_id', listIds)
+          .order('created_at', { ascending: true });
+
+        if (itemsErr) {
+          console.error('[watchlists GET] items error:', itemsErr);
+        } else {
+          items = itemRows || [];
+        }
+      }
+
+      const itemsByList = new Map();
+      for (const item of items) {
+        if (!itemsByList.has(item.list_id)) itemsByList.set(item.list_id, []);
+        itemsByList.get(item.list_id).push({
+          id: item.id,
+          type: item.type,
+          ticker: item.ticker,
+          name: item.name || item.ticker,
+          sector: item.sector || '',
+          metadata: item.metadata || {},
+          price: 0,
+          change: 0,
+          changePct: 0,
+          marketCap: '—',
+          volume: '—',
+        });
+      }
+
+      const result = (lists || []).map((l) => ({
+        id: l.id,
+        label: l.label,
+        stocks: itemsByList.get(l.id) || [],
+      }));
+
+      return NextResponse.json({ watchlists: result });
+    } catch (e) {
+      return exceptionResponse('watchlists GET', e);
     }
-
-    const itemsByList = new Map();
-    for (const item of items) {
-      if (!itemsByList.has(item.list_id)) itemsByList.set(item.list_id, []);
-      itemsByList.get(item.list_id).push({
-        id: item.id,
-        type: item.type,
-        ticker: item.ticker,
-        name: item.name || item.ticker,
-        sector: item.sector || '',
-        metadata: item.metadata || {},
-        price: 0,
-        change: 0,
-        changePct: 0,
-        marketCap: '—',
-        volume: '—',
-      });
-    }
-
-    const result = (lists || []).map((l) => ({
-      id: l.id,
-      label: l.label,
-      stocks: itemsByList.get(l.id) || [],
-    }));
-
-    return NextResponse.json({ watchlists: result });
-  } catch (e) {
-    return exceptionResponse('watchlists GET', e);
-  }
-}
+  },
+  { requireAuth: true },
+);
 
 /**
  * Read all existing sort_order values for a user. Returns an empty array on
@@ -152,70 +149,74 @@ async function readUserPositions(supabase, userId) {
   return Array.isArray(data) ? data.map((r) => r.sort_order) : [];
 }
 
-export async function POST(request) {
-  try {
-    const { user, supabase } = await getAuthContext(request);
-    if (!user || !supabase) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const body = await request.json().catch(() => ({}));
-    const label = typeof body?.label === 'string' ? body.label.trim() : '';
-    if (!label) {
-      return validationResponse('Label is required.');
-    }
-    if (label.length > MAX_LABEL) {
-      return validationResponse(`Label too long (max ${MAX_LABEL} characters).`);
-    }
-
-    // Retry loop — if a future (user_id, sort_order) unique index is ever
-    // added, two concurrent inserts could compute the same position. We
-    // recompute up to MAX_POSITION_RETRIES times before giving up. Duplicate
-    // name (unique (user_id, label)) is handled separately below with a 409.
-    let attempt = 0;
-    while (attempt <= MAX_POSITION_RETRIES) {
-      const positions = await readUserPositions(supabase, user.id);
-      const nextSort =
-        computeNextPosition(positions) + attempt * POSITION_STEP;
-
-      const { data: created, error } = await supabase
-        .from('user_watchlists')
-        .insert({ user_id: user.id, label, sort_order: nextSort })
-        .select('id, label, sort_order, created_at, updated_at')
-        .single();
-
-      if (!error) {
-        return NextResponse.json(
-          { watchlist: { id: created.id, label: created.label, stocks: [] } },
-          { status: 201 }
-        );
+export const POST = withApiGuard(
+  async (request, user) => {
+    try {
+      const { supabase } = await getAuthContext(request);
+      if (!supabase) {
+        return NextResponse.json({ error: 'Server error' }, { status: 500 });
       }
 
-      // Detect a (user_id, sort_order) collision specifically — keep
-      // retrying. Any other unique violation (e.g. duplicate label) or any
-      // other DB error stops the loop and bubbles the real cause up.
-      const isPositionCollision =
-        error.code === '23505' &&
-        typeof error.message === 'string' &&
-        /sort_order/i.test(error.message);
-
-      if (isPositionCollision && attempt < MAX_POSITION_RETRIES) {
-        attempt += 1;
-        continue;
+      const body = await request.json().catch(() => ({}));
+      const label = typeof body?.label === 'string' ? body.label.trim() : '';
+      if (!label) {
+        return validationResponse('Label is required.');
+      }
+      if (label.length > MAX_LABEL) {
+        return validationResponse(`Label too long (max ${MAX_LABEL} characters).`);
       }
 
-      return dbErrorResponse('watchlists POST insert', error, {
-        uniqueViolation: 'You already have a watchlist with that name.',
-        fallback: 'Failed to create watchlist.',
-      });
-    }
+      // Retry loop — if a future (user_id, sort_order) unique index is ever
+      // added, two concurrent inserts could compute the same position. We
+      // recompute up to MAX_POSITION_RETRIES times before giving up. Duplicate
+      // name (unique (user_id, label)) is handled separately below with a 409.
+      let attempt = 0;
+      while (attempt <= MAX_POSITION_RETRIES) {
+        const positions = await readUserPositions(supabase, user.id);
+        const nextSort = computeNextPosition(positions) + attempt * POSITION_STEP;
 
-    // Exhausted retries — extremely unlikely path.
-    return NextResponse.json(
-      { error: 'Could not assign a watchlist position after several attempts. Please try again.' },
-      { status: 503 }
-    );
-  } catch (e) {
-    return exceptionResponse('watchlists POST', e);
-  }
-}
+        const { data: created, error } = await supabase
+          .from('user_watchlists')
+          .insert({ user_id: user.id, label, sort_order: nextSort })
+          .select('id, label, sort_order, created_at, updated_at')
+          .single();
+
+        if (!error) {
+          return NextResponse.json(
+            { watchlist: { id: created.id, label: created.label, stocks: [] } },
+            { status: 201 },
+          );
+        }
+
+        // Detect a (user_id, sort_order) collision specifically — keep
+        // retrying. Any other unique violation (e.g. duplicate label) or any
+        // other DB error stops the loop and bubbles the real cause up.
+        const isPositionCollision =
+          error.code === '23505' &&
+          typeof error.message === 'string' &&
+          /sort_order/i.test(error.message);
+
+        if (isPositionCollision && attempt < MAX_POSITION_RETRIES) {
+          attempt += 1;
+          continue;
+        }
+
+        return dbErrorResponse('watchlists POST insert', error, {
+          uniqueViolation: 'You already have a watchlist with that name.',
+          fallback: 'Failed to create watchlist.',
+        });
+      }
+
+      // Exhausted retries — extremely unlikely path.
+      return NextResponse.json(
+        {
+          error: 'Could not assign a watchlist position after several attempts. Please try again.',
+        },
+        { status: 503 },
+      );
+    } catch (e) {
+      return exceptionResponse('watchlists POST', e);
+    }
+  },
+  { requireAuth: true },
+);

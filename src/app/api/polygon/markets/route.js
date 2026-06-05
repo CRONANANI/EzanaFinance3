@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,7 +35,7 @@ async function fetchPolymarkets(limit = 6) {
   try {
     const res = await fetch(
       `${POLYMARKET_GAMMA}/markets?limit=${limit}&active=true&closed=false&order=volume&ascending=false`,
-      { cache: 'no-store' }
+      { cache: 'no-store' },
     );
     if (!res.ok) return [];
     const data = await res.json();
@@ -45,21 +46,24 @@ async function fetchPolymarkets(limit = 6) {
   }
 }
 
-export async function GET(request) {
-  const { searchParams } = new URL(request.url);
-  const source = searchParams.get('source') || 'polymarket';
-  const search = searchParams.get('search') || '';
-  const limit = parseInt(searchParams.get('limit') || '6', 10);
+export const GET = withApiGuard(
+  async (request) => {
+    const { searchParams } = new URL(request.url);
+    const source = searchParams.get('source') || 'polymarket';
+    const search = searchParams.get('search') || '';
+    const limit = parseInt(searchParams.get('limit') || '6', 10);
 
-  try {
-    if (source === 'kalshi') {
-      const markets = await fetchKalshiMarkets(search, limit);
-      return NextResponse.json({ markets, source: 'kalshi' });
+    try {
+      if (source === 'kalshi') {
+        const markets = await fetchKalshiMarkets(search, limit);
+        return NextResponse.json({ markets, source: 'kalshi' });
+      }
+      const markets = await fetchPolymarkets(limit);
+      return NextResponse.json({ markets, source: 'polymarket' });
+    } catch (err) {
+      console.error('[polygon/markets]', err.message);
+      return NextResponse.json({ markets: [], error: err.message });
     }
-    const markets = await fetchPolymarkets(limit);
-    return NextResponse.json({ markets, source: 'polymarket' });
-  } catch (err) {
-    console.error('[polygon/markets]', err.message);
-    return NextResponse.json({ markets: [], error: err.message });
-  }
-}
+  },
+  { requireAuth: false },
+);

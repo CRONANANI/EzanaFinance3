@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 import { createServerSupabase } from '@/lib/supabase-server';
 
 export const dynamic = 'force-dynamic';
@@ -145,83 +146,83 @@ function mapFmpArticle(e) {
   return { headline, summary, ticker, publishedAt, source, url };
 }
 
-export async function GET() {
-  const supabase = createServerSupabase();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+export const GET = withApiGuard(
+  async (request, user) => {
+    const supabase = createServerSupabase();
 
-  let role = 'analyst';
-  let riskCategory = 'Moderate';
-  let mgmtProfile = {};
+    let role = 'analyst';
+    let riskCategory = 'Moderate';
+    let mgmtProfile = {};
 
-  if (user) {
-    const [orgRes, profileRes] = await Promise.all([
-      supabase
-        .from('org_members')
-        .select('role')
-        .eq('user_id', user.id)
-        .eq('is_active', true)
-        .limit(1)
-        .maybeSingle(),
-      supabase
-        .from('profiles')
-        .select('investor_profile, risk_category')
-        .eq('id', user.id)
-        .maybeSingle(),
-    ]);
+    if (user) {
+      const [orgRes, profileRes] = await Promise.all([
+        supabase
+          .from('org_members')
+          .select('role')
+          .eq('user_id', user.id)
+          .eq('is_active', true)
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from('profiles')
+          .select('investor_profile, risk_category')
+          .eq('id', user.id)
+          .maybeSingle(),
+      ]);
 
-    const orgMember = orgRes.data;
-    const profile = profileRes.data;
+      const orgMember = orgRes.data;
+      const profile = profileRes.data;
 
-    role = normalizeOrgRole(orgMember?.role || 'analyst');
-    riskCategory =
-      profile?.risk_category ||
-      profile?.investor_profile?.risk?.replace('-Oriented', '') ||
-      'Moderate';
-    mgmtProfile = profile?.investor_profile?.management || {};
-  }
-
-  const FMP_KEY = getFmpKey();
-  let events = [];
-  if (FMP_KEY) {
-    try {
-      const res = await fetch(
-        `${FMP_BASE}/news/stock-latest?page=0&limit=50&apikey=${encodeURIComponent(FMP_KEY)}`,
-        { cache: 'no-store' },
-      );
-      if (res.ok) {
-        const d = await res.json();
-        events = Array.isArray(d) ? d : [];
-      }
-    } catch {
-      /* empty */
+      role = normalizeOrgRole(orgMember?.role || 'analyst');
+      riskCategory =
+        profile?.risk_category ||
+        profile?.investor_profile?.risk?.replace('-Oriented', '') ||
+        'Moderate';
+      mgmtProfile = profile?.investor_profile?.management || {};
     }
-  }
 
-  const classified = events
-    .map(mapFmpArticle)
-    .filter((e) => e.headline && e.summary)
-    .map((e) => ({
-      id: `${e.ticker || 'mkt'}-${e.publishedAt || Date.now()}-${e.headline.slice(0, 24)}`,
-      headline: e.headline,
-      summary: e.summary.slice(0, 200),
-      ticker: e.ticker,
-      source: e.source,
-      publishedAt: e.publishedAt,
-      url: e.url,
-      type: classifyEvent(e.headline, e.summary),
-      relevance: roleRelevanceScore(e.headline, e.summary, role),
-    }))
-    .sort((a, b) => b.relevance - a.relevance);
+    const FMP_KEY = getFmpKey();
+    let events = [];
+    if (FMP_KEY) {
+      try {
+        const res = await fetch(
+          `${FMP_BASE}/news/stock-latest?page=0&limit=50&apikey=${encodeURIComponent(FMP_KEY)}`,
+          { cache: 'no-store' },
+        );
+        if (res.ok) {
+          const d = await res.json();
+          events = Array.isArray(d) ? d : [];
+        }
+      } catch {
+        /* empty */
+      }
+    }
 
-  return NextResponse.json({
-    ok: true,
-    role,
-    roleLabel: ROLE_THEMES[role]?.label || 'General',
-    riskCategory,
-    managementProfile: mgmtProfile,
-    windfalls: classified.filter((e) => e.type === 'windfall').slice(0, 5),
-    banes: classified.filter((e) => e.type === 'bane').slice(0, 5),
-  });
-}
+    const classified = events
+      .map(mapFmpArticle)
+      .filter((e) => e.headline && e.summary)
+      .map((e) => ({
+        id: `${e.ticker || 'mkt'}-${e.publishedAt || Date.now()}-${e.headline.slice(0, 24)}`,
+        headline: e.headline,
+        summary: e.summary.slice(0, 200),
+        ticker: e.ticker,
+        source: e.source,
+        publishedAt: e.publishedAt,
+        url: e.url,
+        type: classifyEvent(e.headline, e.summary),
+        relevance: roleRelevanceScore(e.headline, e.summary, role),
+      }))
+      .sort((a, b) => b.relevance - a.relevance);
+
+    return NextResponse.json({
+      ok: true,
+      role,
+      roleLabel: ROLE_THEMES[role]?.label || 'General',
+      riskCategory,
+      managementProfile: mgmtProfile,
+      windfalls: classified.filter((e) => e.type === 'windfall').slice(0, 5),
+      banes: classified.filter((e) => e.type === 'bane').slice(0, 5),
+    });
+  },
+  { requireAuth: true },
+);

@@ -7,6 +7,7 @@
  * Mark all unread messages in this conversation as read (for the current user).
  */
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 import { getCurrentUser, getAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
@@ -25,111 +26,111 @@ async function verifyParticipant(conversationId, userId) {
   return data;
 }
 
-export async function GET(request, { params }) {
-  try {
-    const user = await getCurrentUser(request);
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+export const GET = withApiGuard(
+  async (request, user, context) => {
+    try {
+      const { conversationId } = params;
+      if (!conversationId) {
+        return NextResponse.json({ error: 'conversationId required' }, { status: 400 });
+      }
 
-    const { conversationId } = params;
-    if (!conversationId) {
-      return NextResponse.json({ error: 'conversationId required' }, { status: 400 });
+      const convo = await verifyParticipant(conversationId, user.id);
+      if (!convo) {
+        return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
+      }
+
+      const { searchParams } = new URL(request.url);
+      const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '50', 10), 1), 200);
+      const before = searchParams.get('before');
+
+      let query = admin
+        .from('messages')
+        .select('id, conversation_id, sender_id, content, created_at, read_at')
+        .eq('conversation_id', conversationId)
+        .order('created_at', { ascending: false })
+        .limit(limit);
+
+      if (before) {
+        query = query.lt('created_at', before);
+      }
+
+      const { data: messages, error } = await query;
+
+      if (error) {
+        console.error('[messages/[id] GET] error:', error);
+        return NextResponse.json({ error: 'Failed to load messages' }, { status: 500 });
+      }
+
+      const otherId = convo.participant_a === user.id ? convo.participant_b : convo.participant_a;
+
+      const { data: otherProfile } = await admin
+        .from('profiles')
+        .select('id, full_name, avatar_url, user_settings')
+        .eq('id', otherId)
+        .maybeSingle();
+
+      const otherName =
+        (otherProfile?.full_name || otherProfile?.user_settings?.display_name || '').trim() ||
+        'Member';
+
+      const formatted = (messages || []).map((m) => ({
+        id: m.id,
+        sender_id: m.sender_id,
+        content: m.content,
+        created_at: m.created_at,
+        read_at: m.read_at,
+        is_mine: m.sender_id === user.id,
+      }));
+
+      return NextResponse.json({
+        conversation_id: conversationId,
+        other_user: { id: otherId, name: otherName, avatar_url: otherProfile?.avatar_url || null },
+        messages: formatted,
+        has_more: formatted.length === limit,
+      });
+    } catch (e) {
+      console.error('[messages/[id] GET] exception:', e?.message);
+      return NextResponse.json({ error: 'Server error' }, { status: 500 });
     }
+  },
+  { requireAuth: true },
+);
 
-    const convo = await verifyParticipant(conversationId, user.id);
-    if (!convo) {
-      return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
+export const PATCH = withApiGuard(
+  async (request, user, context) => {
+    try {
+      const { conversationId } = params;
+      if (!conversationId) {
+        return NextResponse.json({ error: 'conversationId required' }, { status: 400 });
+      }
+
+      const convo = await verifyParticipant(conversationId, user.id);
+      if (!convo) {
+        return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
+      }
+
+      const now = new Date().toISOString();
+
+      const { data: updated, error } = await admin
+        .from('messages')
+        .update({ read_at: now })
+        .eq('conversation_id', conversationId)
+        .neq('sender_id', user.id)
+        .is('read_at', null)
+        .select('id');
+
+      if (error) {
+        console.error('[messages/[id] PATCH] error:', error);
+        return NextResponse.json({ error: 'Failed to mark as read' }, { status: 500 });
+      }
+
+      return NextResponse.json({
+        marked_read: (updated || []).length,
+      });
+    } catch (e) {
+      console.error('[messages/[id] PATCH] exception:', e?.message);
+      return NextResponse.json({ error: 'Server error' }, { status: 500 });
     }
-
-    const { searchParams } = new URL(request.url);
-    const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '50', 10), 1), 200);
-    const before = searchParams.get('before');
-
-    let query = admin
-      .from('messages')
-      .select('id, conversation_id, sender_id, content, created_at, read_at')
-      .eq('conversation_id', conversationId)
-      .order('created_at', { ascending: false })
-      .limit(limit);
-
-    if (before) {
-      query = query.lt('created_at', before);
-    }
-
-    const { data: messages, error } = await query;
-
-    if (error) {
-      console.error('[messages/[id] GET] error:', error);
-      return NextResponse.json({ error: 'Failed to load messages' }, { status: 500 });
-    }
-
-    const otherId = convo.participant_a === user.id ? convo.participant_b : convo.participant_a;
-
-    const { data: otherProfile } = await admin
-      .from('profiles')
-      .select('id, full_name, avatar_url, user_settings')
-      .eq('id', otherId)
-      .maybeSingle();
-
-    const otherName =
-      (otherProfile?.full_name || otherProfile?.user_settings?.display_name || '').trim() ||
-      'Member';
-
-    const formatted = (messages || []).map((m) => ({
-      id: m.id,
-      sender_id: m.sender_id,
-      content: m.content,
-      created_at: m.created_at,
-      read_at: m.read_at,
-      is_mine: m.sender_id === user.id,
-    }));
-
-    return NextResponse.json({
-      conversation_id: conversationId,
-      other_user: { id: otherId, name: otherName, avatar_url: otherProfile?.avatar_url || null },
-      messages: formatted,
-      has_more: formatted.length === limit,
-    });
-  } catch (e) {
-    console.error('[messages/[id] GET] exception:', e?.message);
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
-  }
-}
-
-export async function PATCH(request, { params }) {
-  try {
-    const user = await getCurrentUser(request);
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const { conversationId } = params;
-    if (!conversationId) {
-      return NextResponse.json({ error: 'conversationId required' }, { status: 400 });
-    }
-
-    const convo = await verifyParticipant(conversationId, user.id);
-    if (!convo) {
-      return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
-    }
-
-    const now = new Date().toISOString();
-
-    const { data: updated, error } = await admin
-      .from('messages')
-      .update({ read_at: now })
-      .eq('conversation_id', conversationId)
-      .neq('sender_id', user.id)
-      .is('read_at', null)
-      .select('id');
-
-    if (error) {
-      console.error('[messages/[id] PATCH] error:', error);
-      return NextResponse.json({ error: 'Failed to mark as read' }, { status: 500 });
-    }
-
-    return NextResponse.json({
-      marked_read: (updated || []).length,
-    });
-  } catch (e) {
-    console.error('[messages/[id] PATCH] exception:', e?.message);
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
-  }
-}
+  },
+  { requireAuth: true },
+);

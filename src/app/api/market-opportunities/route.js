@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 import { createServerSupabase } from '@/lib/supabase-server';
 
 export const dynamic = 'force-dynamic';
@@ -145,64 +146,62 @@ function mapFmpArticle(e) {
   return { headline, summary, ticker, publishedAt, source, url };
 }
 
-export async function GET() {
-  const supabase = createServerSupabase();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+export const GET = withApiGuard(
+  async (request, user, context) => {
+    let riskCategory = 'Moderate';
+    if (user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('investor_profile, risk_category')
+        .eq('id', user.id)
+        .maybeSingle();
 
-  let riskCategory = 'Moderate';
-  if (user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('investor_profile, risk_category')
-      .eq('id', user.id)
-      .maybeSingle();
-
-    const fromProfile = profile?.risk_category || profile?.investor_profile?.risk || null;
-    riskCategory = normalizeRiskCategory(fromProfile || 'Moderate');
-  }
-
-  const FMP_KEY = getFmpKey();
-  let events = [];
-  if (FMP_KEY) {
-    try {
-      const res = await fetch(
-        `${FMP_BASE}/news/stock-latest?page=0&limit=40&apikey=${encodeURIComponent(FMP_KEY)}`,
-        { cache: 'no-store' },
-      );
-      if (res.ok) {
-        const data = await res.json();
-        events = Array.isArray(data) ? data : [];
-      }
-    } catch {
-      /* fallback to empty */
+      const fromProfile = profile?.risk_category || profile?.investor_profile?.risk || null;
+      riskCategory = normalizeRiskCategory(fromProfile || 'Moderate');
     }
-  }
 
-  const classified = events
-    .map(mapFmpArticle)
-    .filter((e) => e.headline && e.summary)
-    .map((e) => ({
-      id: `${e.ticker || 'mkt'}-${e.publishedAt || Date.now()}-${e.headline.slice(0, 24)}`,
-      headline: e.headline,
-      summary: e.summary.slice(0, 200),
-      ticker: e.ticker,
-      source: e.source,
-      publishedAt: e.publishedAt,
-      url: e.url,
-      type: classifyEvent(e.headline, e.summary),
-      relevance: relevanceScore(e.headline, e.summary, riskCategory),
-    }))
-    .sort((a, b) => b.relevance - a.relevance);
+    const FMP_KEY = getFmpKey();
+    let events = [];
+    if (FMP_KEY) {
+      try {
+        const res = await fetch(
+          `${FMP_BASE}/news/stock-latest?page=0&limit=40&apikey=${encodeURIComponent(FMP_KEY)}`,
+          { cache: 'no-store' },
+        );
+        if (res.ok) {
+          const data = await res.json();
+          events = Array.isArray(data) ? data : [];
+        }
+      } catch {
+        /* fallback to empty */
+      }
+    }
 
-  const windfalls = classified.filter((e) => e.type === 'windfall').slice(0, 5);
-  const banes = classified.filter((e) => e.type === 'bane').slice(0, 5);
+    const classified = events
+      .map(mapFmpArticle)
+      .filter((e) => e.headline && e.summary)
+      .map((e) => ({
+        id: `${e.ticker || 'mkt'}-${e.publishedAt || Date.now()}-${e.headline.slice(0, 24)}`,
+        headline: e.headline,
+        summary: e.summary.slice(0, 200),
+        ticker: e.ticker,
+        source: e.source,
+        publishedAt: e.publishedAt,
+        url: e.url,
+        type: classifyEvent(e.headline, e.summary),
+        relevance: relevanceScore(e.headline, e.summary, riskCategory),
+      }))
+      .sort((a, b) => b.relevance - a.relevance);
 
-  return NextResponse.json({
-    ok: true,
-    riskCategory,
-    windfalls,
-    banes,
-  });
-}
+    const windfalls = classified.filter((e) => e.type === 'windfall').slice(0, 5);
+    const banes = classified.filter((e) => e.type === 'bane').slice(0, 5);
+
+    return NextResponse.json({
+      ok: true,
+      riskCategory,
+      windfalls,
+      banes,
+    });
+  },
+  { requireAuth: true },
+);

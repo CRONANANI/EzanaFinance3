@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 import { supabaseAdmin } from '@/lib/plaid';
 
 export const dynamic = 'force-dynamic';
@@ -121,49 +122,52 @@ function normalizeAvArticle(article) {
  *
  * Fetches NEWS_SENTIMENT and upserts into news_articles_cache (alongside Massive).
  */
-export async function GET() {
-  const AV_KEY = getAvKey();
-  if (!AV_KEY) {
-    return NextResponse.json({ fetched: false, reason: 'no_av_key' });
-  }
-
-  try {
-    const url = `${AV_BASE}?function=NEWS_SENTIMENT&limit=50&sort=LATEST&apikey=${encodeURIComponent(AV_KEY)}`;
-    const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) {
-      return NextResponse.json({ fetched: false, reason: `av_http_${res.status}` });
-    }
-    const data = await res.json();
-
-    if (data['Note'] || data['Information'] || data['Error Message']) {
-      return NextResponse.json({ fetched: false, reason: 'av_rate_limit' });
+export const GET = withApiGuard(
+  async (request, user) => {
+    const AV_KEY = getAvKey();
+    if (!AV_KEY) {
+      return NextResponse.json({ fetched: false, reason: 'no_av_key' });
     }
 
-    const feed = data.feed || [];
-    if (!feed.length) {
-      return NextResponse.json({ fetched: true, inserted: 0, total: 0 });
-    }
-
-    const normalized = feed.filter((a) => a.url && a.title).map(normalizeAvArticle);
-
-    if (normalized.length > 0) {
-      const { error: upsertErr } = await supabaseAdmin
-        .from('news_articles_cache')
-        .upsert(normalized, { onConflict: 'id', ignoreDuplicates: true });
-
-      if (upsertErr) {
-        console.error('[av-news-poll] upsert error:', upsertErr.message);
-        return NextResponse.json({ fetched: true, inserted: 0, error: upsertErr.message });
+    try {
+      const url = `${AV_BASE}?function=NEWS_SENTIMENT&limit=50&sort=LATEST&apikey=${encodeURIComponent(AV_KEY)}`;
+      const res = await fetch(url, { cache: 'no-store' });
+      if (!res.ok) {
+        return NextResponse.json({ fetched: false, reason: `av_http_${res.status}` });
       }
-    }
+      const data = await res.json();
 
-    return NextResponse.json({
-      fetched: true,
-      inserted: normalized.length,
-      total: feed.length,
-    });
-  } catch (err) {
-    console.error('[av-news-poll] error:', err.message);
-    return NextResponse.json({ fetched: false, error: err.message }, { status: 500 });
-  }
-}
+      if (data['Note'] || data['Information'] || data['Error Message']) {
+        return NextResponse.json({ fetched: false, reason: 'av_rate_limit' });
+      }
+
+      const feed = data.feed || [];
+      if (!feed.length) {
+        return NextResponse.json({ fetched: true, inserted: 0, total: 0 });
+      }
+
+      const normalized = feed.filter((a) => a.url && a.title).map(normalizeAvArticle);
+
+      if (normalized.length > 0) {
+        const { error: upsertErr } = await supabaseAdmin
+          .from('news_articles_cache')
+          .upsert(normalized, { onConflict: 'id', ignoreDuplicates: true });
+
+        if (upsertErr) {
+          console.error('[av-news-poll] upsert error:', upsertErr.message);
+          return NextResponse.json({ fetched: true, inserted: 0, error: upsertErr.message });
+        }
+      }
+
+      return NextResponse.json({
+        fetched: true,
+        inserted: normalized.length,
+        total: feed.length,
+      });
+    } catch (err) {
+      console.error('[av-news-poll] error:', err.message);
+      return NextResponse.json({ fetched: false, error: err.message }, { status: 500 });
+    }
+  },
+  { requireAuth: false },
+);

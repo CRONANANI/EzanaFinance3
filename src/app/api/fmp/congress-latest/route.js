@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 
 export const dynamic = 'force-dynamic';
 
@@ -95,41 +96,46 @@ function mapTradeRaw(t) {
   };
 }
 
-export async function GET(request) {
-  if (!getFmpKey()) {
-    return NextResponse.json({ trades: [] });
-  }
+export const GET = withApiGuard(
+  async (request) => {
+    if (!getFmpKey()) {
+      return NextResponse.json({ trades: [] });
+    }
 
-  const url = request ? new URL(request.url) : null;
-  const raw = url?.searchParams.get('raw') === '1';
-  const rawLimit = raw
-    ? Math.min(500, Math.max(50, Number.parseInt(url.searchParams.get('limit') || '400', 10)))
-    : 8;
+    const url = request ? new URL(request.url) : null;
+    const raw = url?.searchParams.get('raw') === '1';
+    const rawLimit = raw
+      ? Math.min(500, Math.max(50, Number.parseInt(url.searchParams.get('limit') || '400', 10)))
+      : 8;
 
-  const [house, senate] = await Promise.all([fetchLatest('house'), fetchLatest('senate')]);
+    const [house, senate] = await Promise.all([fetchLatest('house'), fetchLatest('senate')]);
 
-  const merged = [...house, ...senate]
-    .filter((t) => t.symbol && (t.firstName || t.representative || t.senator))
-    .sort((a, b) => {
-      const tb = new Date(b.disclosureDate || b.transactionDate || 0).getTime();
-      const ta = new Date(a.disclosureDate || a.transactionDate || 0).getTime();
-      return tb - ta;
+    const merged = [...house, ...senate]
+      .filter((t) => t.symbol && (t.firstName || t.representative || t.senator))
+      .sort((a, b) => {
+        const tb = new Date(b.disclosureDate || b.transactionDate || 0).getTime();
+        const ta = new Date(a.disclosureDate || a.transactionDate || 0).getTime();
+        return tb - ta;
+      });
+
+    const seen = new Set();
+    const deduped = merged.filter((t) => {
+      const name = t.firstName
+        ? `${t.firstName} ${t.lastName}`
+        : t.representative || t.senator || '';
+      const key = `${t.symbol}-${t.transactionDate}-${name}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
     });
 
-  const seen = new Set();
-  const deduped = merged.filter((t) => {
-    const name = t.firstName ? `${t.firstName} ${t.lastName}` : t.representative || t.senator || '';
-    const key = `${t.symbol}-${t.transactionDate}-${name}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
+    if (raw) {
+      const trades = deduped.slice(0, rawLimit).map(mapTradeRaw);
+      return NextResponse.json({ trades });
+    }
 
-  if (raw) {
-    const trades = deduped.slice(0, rawLimit).map(mapTradeRaw);
+    const trades = deduped.slice(0, 8).map(mapTradeForUi);
     return NextResponse.json({ trades });
-  }
-
-  const trades = deduped.slice(0, 8).map(mapTradeForUi);
-  return NextResponse.json({ trades });
-}
+  },
+  { requireAuth: false },
+);

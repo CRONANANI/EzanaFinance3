@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 
 import {
   DISPLAY_TO_CANONICAL,
@@ -381,54 +382,57 @@ async function fetchSectorNews(rawSectorParam, canonicalSector) {
   }
 }
 
-export async function GET(request) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const sectorParam = (searchParams.get('sector') || '').trim();
-    const rangeParam = (searchParams.get('range') || '1D').trim().toUpperCase();
+export const GET = withApiGuard(
+  async (request) => {
+    try {
+      const { searchParams } = new URL(request.url);
+      const sectorParam = (searchParams.get('sector') || '').trim();
+      const rangeParam = (searchParams.get('range') || '1D').trim().toUpperCase();
 
-    if (!sectorParam) {
-      return NextResponse.json({ error: 'sector param required' }, { status: 400 });
+      if (!sectorParam) {
+        return NextResponse.json({ error: 'sector param required' }, { status: 400 });
+      }
+
+      const range = VALID_RANGES.has(rangeParam) ? rangeParam : '1D';
+      const canonicalSector = toCanonicalSector(sectorParam);
+      const { display: sectorDisplay } = resolveSectorQuery(sectorParam);
+
+      console.log(
+        `[sector-detail] sector="${sectorParam}" → canonical="${canonicalSector}" range="${range}"`,
+      );
+
+      const [topPerformers, news] = await Promise.all([
+        fetchTopPerformers(canonicalSector, range),
+        fetchSectorNews(sectorParam, canonicalSector),
+      ]);
+
+      return NextResponse.json(
+        {
+          sector: sectorParam,
+          canonicalSector,
+          sectorDisplay: sectorDisplay || sectorParam,
+          range,
+          topPerformers,
+          news,
+          diagnostics: {
+            topPerformersCount: topPerformers.length,
+            newsCount: news.length,
+            fmpAvailable: Boolean(getFmpKey()),
+            finnhubAvailable: Boolean(FINNHUB_KEY),
+            sectorMappedFrom: sectorParam !== canonicalSector ? sectorParam : null,
+          },
+        },
+        {
+          headers: {
+            'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+          },
+        },
+      );
+    } catch (error) {
+      console.error('[sector-detail] unexpected error:', error);
+      const message = error instanceof Error ? error.message : String(error);
+      return NextResponse.json({ error: message, topPerformers: [], news: [] }, { status: 500 });
     }
-
-    const range = VALID_RANGES.has(rangeParam) ? rangeParam : '1D';
-    const canonicalSector = toCanonicalSector(sectorParam);
-    const { display: sectorDisplay } = resolveSectorQuery(sectorParam);
-
-    console.log(
-      `[sector-detail] sector="${sectorParam}" → canonical="${canonicalSector}" range="${range}"`,
-    );
-
-    const [topPerformers, news] = await Promise.all([
-      fetchTopPerformers(canonicalSector, range),
-      fetchSectorNews(sectorParam, canonicalSector),
-    ]);
-
-    return NextResponse.json(
-      {
-        sector: sectorParam,
-        canonicalSector,
-        sectorDisplay: sectorDisplay || sectorParam,
-        range,
-        topPerformers,
-        news,
-        diagnostics: {
-          topPerformersCount: topPerformers.length,
-          newsCount: news.length,
-          fmpAvailable: Boolean(getFmpKey()),
-          finnhubAvailable: Boolean(FINNHUB_KEY),
-          sectorMappedFrom: sectorParam !== canonicalSector ? sectorParam : null,
-        },
-      },
-      {
-        headers: {
-          'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
-        },
-      },
-    );
-  } catch (error) {
-    console.error('[sector-detail] unexpected error:', error);
-    const message = error instanceof Error ? error.message : String(error);
-    return NextResponse.json({ error: message, topPerformers: [], news: [] }, { status: 500 });
-  }
-}
+  },
+  { requireAuth: false },
+);

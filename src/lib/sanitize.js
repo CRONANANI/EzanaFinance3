@@ -7,6 +7,19 @@
  */
 
 /**
+ * Escape HTML entities to prevent stored XSS.
+ */
+export function escapeHtml(str) {
+  if (typeof str !== 'string') return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
+
+/**
  * Strip HTML tags and encode entities to prevent stored XSS.
  * Use this on ANY user-provided text before writing to the database.
  */
