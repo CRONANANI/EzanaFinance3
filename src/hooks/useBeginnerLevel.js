@@ -13,7 +13,7 @@ function daysSince(iso) {
 }
 
 async function loadBeginnerInputs(userId) {
-  const [profileRes, rewardsRes, lessonsRes, watchlistRes, postsRes] = await Promise.all([
+  const results = await Promise.allSettled([
     supabase
       .from('profiles')
       .select(
@@ -38,27 +38,34 @@ async function loadBeginnerInputs(userId) {
       .eq('user_id', userId),
   ]);
 
-  const profile = profileRes.data;
-  const completedTasks = Object.values(profile?.checklist_progress || {}).filter(Boolean).length;
+  const val = (i) => (results[i].status === 'fulfilled' ? results[i].value : null);
+  const profileRes = val(0);
+  const rewardsRes = val(1);
+  const lessonsRes = val(2);
+  const watchlistRes = val(3);
+  const postsRes = val(4);
+
+  const profile = profileRes?.data || {};
+  const completedTasks = Object.values(profile.checklist_progress || {}).filter(Boolean).length;
   const checklistPct = TOTAL_TASKS > 0 ? completedTasks / TOTAL_TASKS : 0;
-  const experienceLevel = profile?.investor_profile?.level || 'Beginner';
+  const experienceLevel = profile.investor_profile?.level || 'Beginner';
   const lessonsCompleted =
-    profile?.lessons_completed_count ??
-    (Array.isArray(lessonsRes.data) ? lessonsRes.data.length : 0);
+    profile.lessons_completed_count ??
+    (Array.isArray(lessonsRes?.data) ? lessonsRes.data.length : 0);
 
   return {
     experienceLevel,
-    totalXp: rewardsRes.data?.total_xp ?? 0,
-    tier: rewardsRes.data?.tier ?? null,
+    totalXp: rewardsRes?.data?.total_xp ?? 0,
+    tier: rewardsRes?.data?.tier ?? null,
     checklistPct,
-    accountAgeDays: daysSince(profile?.created_at),
+    accountAgeDays: daysSince(profile.created_at),
     lessonsCompleted,
-    analysesRun: profile?.analyses_run ?? 0,
-    hasWatchlist: (watchlistRes.count ?? 0) > 0,
-    hasPosted: (postsRes.count ?? 0) > 0,
-    tipsPref: profile?.beginner_tips_pref || 'auto',
-    seenKeys: Array.isArray(profile?.beginner_seen) ? profile.beginner_seen : [],
-    investorProfile: profile?.investor_profile ?? null,
+    analysesRun: profile.analyses_run ?? 0,
+    hasWatchlist: (watchlistRes?.count ?? 0) > 0,
+    hasPosted: (postsRes?.count ?? 0) > 0,
+    tipsPref: profile.beginner_tips_pref || 'auto',
+    seenKeys: Array.isArray(profile.beginner_seen) ? profile.beginner_seen : [],
+    investorProfile: profile.investor_profile ?? null,
   };
 }
 
@@ -68,8 +75,11 @@ export function useBeginnerLevel() {
   const [inputs, setInputs] = useState(null);
   const [seen, setSeen] = useState(new Set());
   const prevBandRef = useRef(null);
+  const inFlight = useRef(false);
 
   const refresh = useCallback(async () => {
+    if (inFlight.current) return;
+    inFlight.current = true;
     try {
       const {
         data: { user },
@@ -87,6 +97,7 @@ export function useBeginnerLevel() {
       console.error('useBeginnerLevel:', err);
     } finally {
       setLoading(false);
+      inFlight.current = false;
     }
   }, []);
 
@@ -207,15 +218,19 @@ export function useBeginnerLevel() {
 
 async function markSeenInternal(key, seen, setSeen) {
   if (seen.has(key)) return;
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return;
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
 
-  const next = [...seen, key];
-  setSeen(new Set(next));
-  await supabase
-    .from('profiles')
-    .update({ beginner_seen: next, updated_at: new Date().toISOString() })
-    .eq('id', user.id);
+    const next = [...seen, key];
+    setSeen(new Set(next));
+    await supabase
+      .from('profiles')
+      .update({ beginner_seen: next, updated_at: new Date().toISOString() })
+      .eq('id', user.id);
+  } catch (e) {
+    console.error('markSeen failed (non-fatal):', e);
+  }
 }

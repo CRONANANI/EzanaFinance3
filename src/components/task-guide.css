@@ -5,6 +5,7 @@
   z-index: 9990;
   border: none;
   cursor: default;
+  pointer-events: none;
 }
 
 .task-guide-tooltip {
@@ -113,6 +114,9 @@
 }
 
 .task-guide-target-highlight {
+  position: relative;
+  z-index: 9995 !important;
+  pointer-events: auto !important;
   box-shadow:
     0 0 0 3px rgba(16, 185, 129, 0.5),
     0 0 20px rgba(16, 185, 129, 0.25) !important;

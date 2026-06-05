@@ -47,7 +47,7 @@ export function TaskGuide({ targetSelector, message, position = 'top', onDismiss
       if (pos === 'static') {
         target.style.position = 'relative';
       }
-      target.style.zIndex = '100';
+      target.style.zIndex = '9995';
       target.classList.add('task-guide-target-highlight');
       measure();
       target.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -111,12 +111,7 @@ export function TaskGuide({ targetSelector, message, position = 'top', onDismiss
 
   return (
     <>
-      <button
-        type="button"
-        aria-label="Dismiss guide"
-        onClick={onDismiss}
-        className="task-guide-backdrop"
-      />
+      <div className="task-guide-backdrop" aria-hidden />
 
       <div className="task-guide-tooltip" style={getTooltipStyle()}>
         <div className={`task-guide-bubble task-guide-bubble--${position}`}>
