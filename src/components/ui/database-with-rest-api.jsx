@@ -356,7 +356,7 @@ export default function DatabaseWithRestApi({
           return (
             <div
               key={id}
-              className="absolute top-0 -translate-x-1/2"
+              className={cn('absolute top-0 -translate-x-1/2', isHovered ? 'z-40' : 'z-10')}
               style={{ left: sourcePositions[id].left, width: BADGE_WIDTH[id] }}
               onMouseEnter={() => setHoveredSource(id)}
               onMouseLeave={() => setHoveredSource((prev) => (prev === id ? null : prev))}

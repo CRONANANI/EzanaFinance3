@@ -133,5 +133,5 @@ export const METRICS_BAND = [
   { v: '535', l: 'Congress members tracked' },
   { v: '15,000+', l: 'Congressional trades' },
   { v: '1,000+', l: 'Brokerages supported' },
-  { v: '10,000+', l: 'Community members' },
+  { v: '50M+', l: 'Data points aggregated' },
 ];
