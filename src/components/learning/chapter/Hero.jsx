@@ -12,6 +12,8 @@ export function Hero({
   currentSectionIdx,
   completedSet,
   onSectionJump,
+  bookmarked = false,
+  onBookmark,
 }) {
   const sectionTitle = sections?.[currentSectionIdx]?.title;
   const chapterNum = currentSectionIdx + 1;
@@ -25,6 +27,18 @@ export function Hero({
       </Link>
 
       <div className="lc-edit-hero-left">
+        {onBookmark && (
+          <button
+            type="button"
+            className="lc-edit-bookmark-btn"
+            data-task-target="learning-bookmark"
+            onClick={onBookmark}
+            aria-pressed={bookmarked}
+          >
+            <i className={`bi ${bookmarked ? 'bi-bookmark-fill' : 'bi-bookmark'}`} aria-hidden />
+            {bookmarked ? 'Bookmarked' : 'Bookmark lesson'}
+          </button>
+        )}
         <nav className="lc-edit-breadcrumb" aria-label="breadcrumb">
           <span>{trackLabel}</span>
           <span className="lc-edit-bc-sep">›</span>

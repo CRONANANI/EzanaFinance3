@@ -162,9 +162,12 @@ export function ChecklistProgressIcon() {
         :is(.dark, body:not(.light-mode)) .checklist-dropdown-title { color: #fff; }
 
         .checklist-dropdown-subtitle {
-          color: #6b7280;
+          color: #4b5563;
           font-size: 0.8rem;
           margin-bottom: 1rem;
+        }
+        :is(.dark, body:not(.light-mode)) .checklist-dropdown-subtitle {
+          color: #9ca3af;
         }
 
         .checklist-progress-bar-track {
@@ -184,12 +187,15 @@ export function ChecklistProgressIcon() {
         }
 
         .checklist-section-label {
-          color: #9ca3af;
+          color: #6b7280;
           font-size: 0.7rem;
           font-weight: 600;
           text-transform: uppercase;
           letter-spacing: 0.5px;
           margin-bottom: 6px;
+        }
+        :is(.dark, body:not(.light-mode)) .checklist-section-label {
+          color: #9ca3af;
         }
 
         .checklist-task-row {
@@ -230,14 +236,21 @@ export function ChecklistProgressIcon() {
           margin-bottom: 2px;
         }
         :is(.dark, body:not(.light-mode)) .checklist-task-title { color: #f0f6fc; }
-        .checklist-task-title--done { text-decoration: line-through; color: #9ca3af; }
-        :is(.dark, body:not(.light-mode)) .checklist-task-title--done { color: #4b5563; }
+        .checklist-task-title--done {
+          text-decoration: line-through;
+          color: #9ca3af;
+        }
+        :is(.dark, body:not(.light-mode)) .checklist-task-title--done {
+          color: #6b7280;
+        }
 
         .checklist-task-desc {
-          color: #6b7280;
+          color: #4b5563;
           font-size: 0.75rem;
         }
-        :is(.dark, body:not(.light-mode)) .checklist-task-desc { color: #4b5563; }
+        :is(.dark, body:not(.light-mode)) .checklist-task-desc {
+          color: #b0bac5;
+        }
       `}</style>
     </div>
   );

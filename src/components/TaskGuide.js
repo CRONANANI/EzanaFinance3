@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import './task-guide.css';
 
 /**
  * Pointing arrow + instruction anchored to a target (fixed viewport coords).
@@ -42,12 +43,12 @@ export function TaskGuide({ targetSelector, message, position = 'top', onDismiss
       }
       if (cancelled) return;
       targetRef.current = target;
-      target.style.position = target.style.position || 'relative';
+      const pos = window.getComputedStyle(target).position;
+      if (pos === 'static') {
+        target.style.position = 'relative';
+      }
       target.style.zIndex = '100';
-      target.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.5), 0 0 20px rgba(16, 185, 129, 0.2)';
-      target.style.borderRadius = target.style.borderRadius || '8px';
-      target.style.transition = 'box-shadow 0.3s ease';
-
+      target.classList.add('task-guide-target-highlight');
       measure();
       target.scrollIntoView({ behavior: 'smooth', block: 'center' });
     };
@@ -66,7 +67,7 @@ export function TaskGuide({ targetSelector, message, position = 'top', onDismiss
       window.removeEventListener('resize', onScrollOrResize);
       const el = targetRef.current;
       if (el) {
-        el.style.boxShadow = '';
+        el.classList.remove('task-guide-target-highlight');
         el.style.zIndex = '';
       }
     };
@@ -78,12 +79,6 @@ export function TaskGuide({ targetSelector, message, position = 'top', onDismiss
 
   const getTooltipStyle = () => {
     switch (position) {
-      case 'top':
-        return {
-          left: coords.centerX,
-          top: coords.top - gap,
-          transform: 'translate(-50%, -100%)',
-        };
       case 'bottom':
         return {
           left: coords.centerX,
@@ -102,6 +97,7 @@ export function TaskGuide({ targetSelector, message, position = 'top', onDismiss
           top: coords.centerY,
           transform: 'translate(0, -50%)',
         };
+      case 'top':
       default:
         return {
           left: coords.centerX,
@@ -111,29 +107,7 @@ export function TaskGuide({ targetSelector, message, position = 'top', onDismiss
     }
   };
 
-  const getArrowRotation = () => {
-    switch (position) {
-      case 'top':
-        return '180deg';
-      case 'bottom':
-        return '0deg';
-      case 'left':
-        return '90deg';
-      case 'right':
-        return '-90deg';
-      default:
-        return '180deg';
-    }
-  };
-
-  const arrowPos =
-    position === 'top'
-      ? { bottom: '-10px', left: '50%', marginLeft: '-8px' }
-      : position === 'bottom'
-        ? { top: '-10px', left: '50%', marginLeft: '-8px' }
-        : position === 'left'
-          ? { right: '-10px', top: '50%', marginTop: '-5px' }
-          : { left: '-14px', top: '50%', marginTop: '-5px' };
+  const arrowClass = `task-guide-arrow task-guide-arrow--${position}`;
 
   return (
     <>
@@ -141,64 +115,18 @@ export function TaskGuide({ targetSelector, message, position = 'top', onDismiss
         type="button"
         aria-label="Dismiss guide"
         onClick={onDismiss}
-        style={{
-          position: 'fixed',
-          inset: 0,
-          background: 'rgba(0,0,0,0.45)',
-          zIndex: 9990,
-          border: 'none',
-          cursor: 'default',
-        }}
+        className="task-guide-backdrop"
       />
 
-      <div
-        style={{
-          position: 'fixed',
-          ...getTooltipStyle(),
-          zIndex: 9999,
-          pointerEvents: 'auto',
-        }}
-      >
-        <div
-          style={{
-            background: '#111',
-            border: '1px solid #10b981',
-            borderRadius: '12px',
-            padding: '14px 18px',
-            maxWidth: '280px',
-            boxShadow: '0 8px 32px rgba(16, 185, 129, 0.15)',
-          }}
-        >
-          <p style={{ color: '#fff', fontSize: '0.9rem', lineHeight: '1.5', marginBottom: '10px' }}>{message}</p>
-          <button
-            type="button"
-            onClick={onDismiss}
-            style={{
-              background: 'none',
-              border: '1px solid #333',
-              borderRadius: '6px',
-              color: '#888',
-              fontSize: '0.75rem',
-              padding: '4px 12px',
-              cursor: 'pointer',
-            }}
-          >
+      <div className="task-guide-tooltip" style={getTooltipStyle()}>
+        <div className={`task-guide-bubble task-guide-bubble--${position}`}>
+          <span className="task-guide-eyebrow lf-mono">DO THIS</span>
+          <p className="task-guide-message">{message}</p>
+          <button type="button" className="task-guide-dismiss" onClick={onDismiss}>
             Dismiss
           </button>
         </div>
-
-        <div
-          style={{
-            width: 0,
-            height: 0,
-            borderLeft: '8px solid transparent',
-            borderRight: '8px solid transparent',
-            borderTop: '10px solid #10b981',
-            position: 'absolute',
-            transform: `rotate(${getArrowRotation()})`,
-            ...arrowPos,
-          }}
-        />
+        <div className={arrowClass} aria-hidden />
       </div>
     </>
   );

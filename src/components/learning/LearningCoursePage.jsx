@@ -41,6 +41,8 @@ export function LearningCoursePage() {
   const [confirmed, setConfirmed] = useState(false);
   const [result, setResult] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [bookmarked, setBookmarked] = useState(false);
+  const [bookmarkBusy, setBookmarkBusy] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -61,6 +63,38 @@ export function LearningCoursePage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    if (!courseId) return;
+    let cancelled = false;
+    fetch('/api/learning/bookmarks')
+      .then((r) => (r.ok ? r.json() : { bookmarks: [] }))
+      .then((data) => {
+        if (cancelled) return;
+        const ids = (data.bookmarks || []).map((b) => b.course_id);
+        setBookmarked(ids.includes(courseId));
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [courseId]);
+
+  const toggleBookmark = useCallback(async () => {
+    if (!courseId || bookmarkBusy) return;
+    setBookmarkBusy(true);
+    const next = !bookmarked;
+    try {
+      const res = await fetch('/api/learning/bookmarks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ courseId, action: next ? 'add' : 'remove' }),
+      });
+      if (res.ok) setBookmarked(next);
+    } finally {
+      setBookmarkBusy(false);
+    }
+  }, [courseId, bookmarked, bookmarkBusy]);
 
   useEffect(() => {
     if (!payload?.unlocked || startedRef.current) return;
@@ -373,6 +407,8 @@ export function LearningCoursePage() {
                   currentSectionIdx={currentSection}
                   completedSet={completedSet}
                   onSectionJump={handleSectionJump}
+                  bookmarked={bookmarked}
+                  onBookmark={toggleBookmark}
                 />
 
                 <div className="lc3-bar lc-edit-progress-bar">

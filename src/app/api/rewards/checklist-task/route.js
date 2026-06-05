@@ -5,7 +5,7 @@ import { awardXP } from '@/lib/rewards';
 
 export const dynamic = 'force-dynamic';
 
-/** Idempotent: one 20 XP award per checklist task per user */
+/** Idempotent: one 50 XP award per checklist task per user */
 export async function POST(request) {
   try {
     const body = await request.json();
@@ -34,7 +34,7 @@ export async function POST(request) {
       return NextResponse.json({ ok: true, skipped: true });
     }
 
-    await awardXP(user.id, 20, reason, 'engagement');
+    await awardXP(user.id, 50, reason, 'engagement');
     return NextResponse.json({ ok: true });
   } catch (e) {
     console.error('checklist-task XP:', e);

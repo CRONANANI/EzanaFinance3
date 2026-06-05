@@ -495,17 +495,18 @@ function PolymarketSection() {
             const vol = m.volume
               ? `$${Number(m.volume).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
               : null;
-            return (
-              <div
-                key={m.id || m.conditionId || i}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.75rem',
-                  padding: '0.65rem 0',
-                  borderBottom: '1px solid rgba(99,102,241,0.06)',
-                }}
-              >
+            const rowStyle = {
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem',
+              padding: '0.65rem 0',
+              borderBottom: '1px solid rgba(99,102,241,0.06)',
+              width: i === 0 ? '100%' : undefined,
+              textAlign: 'left',
+              fontFamily: 'inherit',
+            };
+            const rowContent = (
+              <>
                 <div
                   style={{
                     width: 8,
@@ -570,6 +571,29 @@ function PolymarketSection() {
                     </p>
                   </div>
                 )}
+              </>
+            );
+            if (i === 0) {
+              return (
+                <button
+                  key={m.id || m.conditionId || i}
+                  type="button"
+                  data-task-target="prediction-market-item"
+                  style={{
+                    ...rowStyle,
+                    background: 'transparent',
+                    border: 'none',
+                    borderBottom: '1px solid rgba(99,102,241,0.06)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {rowContent}
+                </button>
+              );
+            }
+            return (
+              <div key={m.id || m.conditionId || i} style={rowStyle}>
+                {rowContent}
               </div>
             );
           })}
@@ -596,6 +620,7 @@ function PolymarketSection() {
             <i className="bi bi-search" style={{ color: 'var(--bm-subtle)', fontSize: '0.8rem' }} />
             <input
               type="text"
+              data-task-target="polymarket-search"
               placeholder="Search by wallet address or username…"
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
@@ -1223,7 +1248,7 @@ export default function BettingMarketsPage() {
           </div>
         </div>
 
-        <div cardId="betting-ev-finder" className="db-card">
+        <div cardId="betting-ev-finder" className="db-card" data-task-target="sports-odds-board">
           <div className="db-card-header">
             <h3>Expected Value Opportunities</h3>
             <button type="button" className="db-icon-btn" aria-label="Expand">

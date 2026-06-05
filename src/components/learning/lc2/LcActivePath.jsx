@@ -74,6 +74,7 @@ export function LcActivePath({
               key={c.id}
               type="button"
               className="lc-lesson-node"
+              data-task-target={i === 0 ? 'learning-module-card' : undefined}
               onClick={() => onLessonClick?.(c.id)}
               style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
               aria-label={`Lesson ${i + 1}: ${c.title}`}

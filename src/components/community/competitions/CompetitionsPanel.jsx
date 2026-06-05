@@ -87,7 +87,10 @@ export function CompetitionsPanel({ variant = 'full' }) {
 
   if (variant === 'slim') {
     return (
-      <section className="comp-panel comp-panel--slim ledger-card">
+      <section
+        className="comp-panel comp-panel--slim ledger-card"
+        data-task-target="community-leaderboard"
+      >
         <header className="comp-slim-header">
           <h2 className="comp-slim-title">Competitions</h2>
           {activeCount > 0 && <span className="comp-slim-live ez-mono">{activeCount} live</span>}

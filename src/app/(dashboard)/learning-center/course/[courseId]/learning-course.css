@@ -605,6 +605,28 @@ body.light-mode .lc-edit-hero {
   gap: 6px;
   margin-top: 6px;
 }
+
+.lc-edit-bookmark-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--emerald-border, rgba(16, 185, 129, 0.25));
+  background: var(--emerald-bg, rgba(16, 185, 129, 0.08));
+  color: var(--emerald-text, var(--emerald, #10b981));
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.lc-edit-bookmark-btn:hover {
+  filter: brightness(1.06);
+}
+
+body.light-mode .lc-edit-bookmark-btn {
+  color: var(--emerald, #059669);
+}
 .lc-edit-level {
   font-weight: 700;
 }

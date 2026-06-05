@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { Avatar } from './Atoms';
 
 export function LegendaryTakes({ takes = [] }) {
@@ -36,17 +37,14 @@ export function LegendaryTakes({ takes = [] }) {
         }}
       >
         {takes.map((take, i) => {
-          const author = take.author || {};
-          return (
-            <li
-              key={take.id || i}
-              style={{
-                padding: 12,
-                background: 'var(--gold-bg)',
-                border: '1px solid var(--gold-border)',
-                borderRadius: 10,
-              }}
-            >
+          const author = take.author || take.user || {};
+          const profileHref = author.username
+            ? `/community/profile/${author.username}`
+            : author.id
+              ? `/community/profile/${author.id}`
+              : null;
+          const inner = (
+            <>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                 <Avatar
                   author={{
@@ -76,8 +74,44 @@ export function LegendaryTakes({ takes = [] }) {
                   color: 'var(--text-muted)',
                 }}
               >
-                {take.content || take.summary}
+                {take.content || take.summary || take.take}
               </p>
+            </>
+          );
+
+          if (i === 0 && profileHref) {
+            return (
+              <li key={take.id || take.post_id || i}>
+                <Link
+                  href={profileHref}
+                  data-task-target="legendary-investor-card"
+                  style={{
+                    display: 'block',
+                    padding: 12,
+                    background: 'var(--gold-bg)',
+                    border: '1px solid var(--gold-border)',
+                    borderRadius: 10,
+                    textDecoration: 'none',
+                    color: 'inherit',
+                  }}
+                >
+                  {inner}
+                </Link>
+              </li>
+            );
+          }
+
+          return (
+            <li
+              key={take.id || take.post_id || i}
+              style={{
+                padding: 12,
+                background: 'var(--gold-bg)',
+                border: '1px solid var(--gold-border)',
+                borderRadius: 10,
+              }}
+            >
+              {inner}
             </li>
           );
         })}

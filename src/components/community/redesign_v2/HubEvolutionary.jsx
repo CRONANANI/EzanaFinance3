@@ -177,7 +177,11 @@ export function HubEvolutionary() {
           {loading ? (
             <FeedSkeleton />
           ) : (
-            <div data-feed-anchor style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div
+              data-feed-anchor
+              data-task-target="community-feed"
+              style={{ display: 'flex', flexDirection: 'column', gap: 14 }}
+            >
               {filteredPosts.length === 0 && (
                 <div
                   className="ez-card ledger-card"
