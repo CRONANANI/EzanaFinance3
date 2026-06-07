@@ -65,7 +65,7 @@ function MobileDataSourcesFlow({ sourceConfigs, sourceDetails, circleText, accen
         {sourceConfigs.map(({ id, label }, i) => {
           const isActive = activeSource === id;
           const isFifth = i === 4;
-          const longLabel = id === 'institutional' || id === 'analytics';
+          const longLabel = id === 'whispers';
           return (
             <div key={id} className={cn('min-w-0', isFifth && 'col-span-2 flex justify-center')}>
               <button
@@ -207,31 +207,31 @@ export default function DatabaseWithRestApi({
   // Paths converge to center (550, 227) - Ezana hub
   // Vertical segments reduced ~50%: badges at y=55, curves start at y=117 (was 180)
   const sourcePositions = {
-    congress: {
+    capitol: {
       left: '10%',
       fullPath: 'M 110 55 L 110 117 Q 110 157 170 157 L 530 157 Q 550 157 550 187 L 550 227',
       pathStart: 'M 110 55 L 110 85',
       pathEnd: 'M 110 95 L 110 117 Q 110 157 170 157 L 530 157 Q 550 157 550 187 L 550 227',
     },
-    '13f': {
+    titans: {
       left: '30%',
       fullPath: 'M 330 55 L 330 117 Q 330 147 390 147 L 530 147 Q 550 147 550 177 L 550 227',
       pathStart: 'M 330 55 L 330 85',
       pathEnd: 'M 330 95 L 330 117 Q 330 147 390 147 L 530 147 Q 550 147 550 177 L 550 227',
     },
-    institutional: {
+    eyes: {
       left: '50%',
       fullPath: 'M 550 55 L 550 227',
       pathStart: 'M 550 55 L 550 85',
       pathEnd: 'M 550 95 L 550 227',
     },
-    analytics: {
+    whispers: {
       left: '70%',
       fullPath: 'M 770 55 L 770 117 Q 770 147 710 147 L 570 147 Q 550 147 550 177 L 550 227',
       pathStart: 'M 770 55 L 770 85',
       pathEnd: 'M 770 95 L 770 117 Q 770 147 710 147 L 570 147 Q 550 147 550 177 L 550 227',
     },
-    community: {
+    hive: {
       left: '90%',
       fullPath: 'M 990 55 L 990 117 Q 990 157 930 157 L 570 157 Q 550 157 550 187 L 550 227',
       pathStart: 'M 990 55 L 990 85',
@@ -242,19 +242,19 @@ export default function DatabaseWithRestApi({
   // Mirror-symmetric widths around the centered "institutional" card so edge-to-edge
   // gaps are uniform: congress==community, 13f==analytics.
   const BADGE_WIDTH = {
-    congress: 180,
-    '13f': 200,
-    institutional: 220,
-    analytics: 200,
-    community: 180,
+    capitol: 180,
+    titans: 200,
+    eyes: 220,
+    whispers: 200,
+    hive: 180,
   };
 
   const sourceConfigs = [
-    { id: 'congress', label: badgeTexts?.first || 'Congress' },
-    { id: '13f', label: badgeTexts?.second || '13F' },
-    { id: 'institutional', label: badgeTexts?.third || 'Institutional' },
-    { id: 'analytics', label: badgeTexts?.fourth || 'Alternative Analytics' },
-    { id: 'community', label: badgeTexts?.fifth || 'Community' },
+    { id: 'capitol', label: badgeTexts?.first || 'Capitol Watch' },
+    { id: 'titans', label: badgeTexts?.second || 'Titans Shadow' },
+    { id: 'eyes', label: badgeTexts?.third || 'Eyes Above' },
+    { id: 'whispers', label: badgeTexts?.fourth || 'Consumer Whispers' },
+    { id: 'hive', label: badgeTexts?.fifth || 'The Hive' },
   ];
 
   return (

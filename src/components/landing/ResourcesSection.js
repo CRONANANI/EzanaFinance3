@@ -129,9 +129,9 @@ export function ResourcesSection() {
         <div className="resources-header">
           <h2>Data Sources &amp; Resources</h2>
           <p className="max-w-5xl mx-auto px-6">
-            Every signal, traced to its source. Hover a category to see which providers and datasets
-            power it — from SEC EDGAR filings and Polymarket prediction odds to the World Bank,
-            GDELT, and our own platform signals.
+            Five streams of intelligence. Watch your politicians trade. Follow the giants of
+            finance. See the economy from above. Catch shifts in consumer behaviour. Tap into
+            collective wisdom. Hover any category to see the data sources that power it.
           </p>
         </div>
 
@@ -145,7 +145,7 @@ export function ResourcesSection() {
               fourth: 'Consumer Whispers',
               fifth: 'The Hive',
             }}
-            title="Institutional-grade data from verified sources"
+            title="Five intelligence streams, one unified dashboard"
             circleText="Ezana"
             lightColor="#10b981"
             sourceDetails={sourceDetails}
