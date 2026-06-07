@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Facebook, Instagram, Linkedin, Send } from 'lucide-react';
@@ -9,6 +9,7 @@ import './footer-section.css';
 
 export function FooterSection({ onContactClick }) {
   const router = useRouter();
+  const footerRef = useRef(null);
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState('idle');
 
@@ -16,6 +17,67 @@ export function FooterSection({ onContactClick }) {
     e.preventDefault();
     router.push(href);
   };
+
+  useEffect(() => {
+    const footer = footerRef.current;
+    if (!footer) return;
+    const links = footer.querySelectorAll(
+      '.landing-footer-legal a, .landing-footer-legal button, .landing-footer-links a',
+    );
+    const fixers = [];
+    links.forEach((link) => {
+      const r = link.getBoundingClientRect();
+      if (r.width === 0) return;
+      const cx = r.left + r.width / 2;
+      const cy = r.top + r.height / 2;
+      const top = document.elementFromPoint(cx, cy);
+      if (top && !link.contains(top) && top !== link) {
+        let el = top;
+        while (el && el !== document.body) {
+          if (footer.contains(el)) break;
+          const cs = getComputedStyle(el);
+          if (cs.pointerEvents !== 'none') {
+            el.dataset._footerClickFix = '1';
+            const prev = el.style.pointerEvents;
+            el.style.pointerEvents = 'none';
+            fixers.push(() => {
+              el.style.pointerEvents = prev;
+            });
+          }
+          el = el.parentElement;
+        }
+      }
+    });
+    return () => fixers.forEach((fn) => fn());
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    if (!params.has('debug') || params.get('debug') !== 'footer') return;
+    window.debugFooterClicks = () => {
+      const footer = footerRef.current;
+      if (!footer) {
+        console.log('Footer not mounted');
+        return;
+      }
+      const links = footer.querySelectorAll(
+        '.landing-footer-legal a, .landing-footer-legal button, .landing-footer-links a',
+      );
+      links.forEach((link) => {
+        const r = link.getBoundingClientRect();
+        if (r.width === 0) return;
+        const cx = r.left + r.width / 2;
+        const cy = r.top + r.height / 2;
+        const top = document.elementFromPoint(cx, cy);
+        if (top && (link.contains(top) || top === link)) {
+          console.log(`clickable ✓  ${link.textContent.trim()}`);
+        } else {
+          console.log(`BLOCKED ✗  ${link.textContent.trim()} — covered by:`, top);
+        }
+      });
+    };
+  }, []);
 
   const handleNewsletterSubmit = async (e) => {
     e.preventDefault();
@@ -35,7 +97,7 @@ export function FooterSection({ onContactClick }) {
   };
 
   return (
-    <footer className="landing-footer">
+    <footer className="landing-footer" ref={footerRef}>
       <div className="landing-footer-inner">
         <div className="landing-footer-grid">
           <div className="landing-footer-brand">
