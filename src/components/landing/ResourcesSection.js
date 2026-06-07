@@ -4,62 +4,115 @@ import DatabaseWithRestApi from '@/components/ui/database-with-rest-api';
 
 const DATA_SOURCES = [
   {
-    id: 'congress',
-    label: 'Congress',
-    tagline: 'Political trading and legislative signals',
+    id: 'capitol',
+    label: 'Capitol Watch',
+    tagline: "Follow your politicians' investment activity",
     sources: [
-      { name: 'Quiver Quantitative', description: 'Congressional trading disclosures' },
-      { name: 'House Financial Disclosures', description: 'Official US House filings' },
-      { name: 'Senate Financial Disclosures', description: 'Official US Senate filings' },
-      { name: 'OpenSecrets', description: 'Campaign finance and lobbying context' },
-    ],
-  },
-  {
-    id: '13f',
-    label: '13F Filings',
-    tagline: 'Institutional positions disclosed quarterly',
-    sources: [
-      { name: 'SEC EDGAR', description: '13F, 13D, and 13G filings direct from the source' },
       {
-        name: 'WhaleWisdom',
-        description: 'Institutional holder consolidation and change detection',
+        name: 'US House Financial Disclosures',
+        description: 'Official House member insider trades and holdings',
       },
-      { name: 'Financial Modeling Prep', description: 'Normalized institutional holdings feed' },
-    ],
-  },
-  {
-    id: 'institutional',
-    label: 'Institutional Portfolios',
-    tagline: 'Fund composition and manager behavior',
-    sources: [
-      { name: 'Financial Modeling Prep', description: 'Fund holdings and manager profiles' },
-      { name: 'Morningstar API', description: 'Fund composition and performance' },
-      { name: 'SEC EDGAR', description: 'Fund disclosures and prospectuses' },
-    ],
-  },
-  {
-    id: 'analytics',
-    label: 'Alternative Analytics',
-    tagline: 'Markets, macro, and prediction data',
-    sources: [
-      { name: 'Polymarket', description: 'Prediction market odds and live bets' },
-      { name: 'GDELT Project', description: 'Geolocated global news and event data' },
-      { name: 'World Bank Open Data API', description: 'Macroeconomic indicators' },
-      { name: 'IMF Data API', description: 'Fiscal and financial stability data' },
       {
-        name: 'Financial Modeling Prep',
-        description: 'Sector performance, earnings, dividends, IPOs, economic calendar',
+        name: 'US Senate Financial Disclosures',
+        description: 'Official Senate member insider trades and holdings',
+      },
+      {
+        name: 'Campaign Finance Records',
+        description: 'Federal Election Commission contribution and spending data',
+      },
+      {
+        name: 'Lobbying Activity Data',
+        description: 'Lobbying Disclosure Act filings tracking influence efforts',
       },
     ],
   },
   {
-    id: 'community',
-    label: 'Community',
-    tagline: 'Retail sentiment and platform activity',
+    id: 'titans',
+    label: 'Titans Shadow',
+    tagline: 'Keep up with the giants of finance',
     sources: [
-      { name: 'Ezana Platform', description: 'User-generated watchlists, discussions, and posts' },
-      { name: 'Reddit API', description: 'Relevant investing subreddit signals' },
-      { name: 'StockTwits', description: 'Retail sentiment streams' },
+      {
+        name: '13F Filings',
+        description: 'SEC quarterly institutional investor holdings and changes',
+      },
+      {
+        name: '13D / 13G Filings',
+        description: 'SEC filings for significant investor positions and stakes',
+      },
+      {
+        name: 'Fund Holdings Data',
+        description: 'Institutional fund composition and manager positioning',
+      },
+      {
+        name: 'SEC EDGAR',
+        description: 'Fund prospectuses, disclosures, and institutional reports',
+      },
+    ],
+  },
+  {
+    id: 'eyes',
+    label: 'Eyes Above',
+    tagline: 'Watch the economy from above',
+    sources: [
+      {
+        name: 'Satellite Imagery',
+        description: 'High-resolution geospatial monitoring of physical assets',
+      },
+      {
+        name: 'Parking Lot Occupancy Data',
+        description: 'Real-time foot traffic and commercial activity tracking',
+      },
+      {
+        name: 'Commercial Real Estate Activity',
+        description: 'Property-level economic signals and utilization',
+      },
+      {
+        name: 'Supply Chain Monitoring',
+        description: 'Warehouse and logistics activity verification',
+      },
+    ],
+  },
+  {
+    id: 'whispers',
+    label: 'Consumer Whispers',
+    tagline: 'Catch signals from shifts in consumer behaviour',
+    sources: [
+      {
+        name: 'Search Interest Data',
+        description: 'Google Trends demand signals and keyword volume tracking',
+      },
+      {
+        name: 'Web Traffic Analytics',
+        description: 'Similarweb audience trends and traffic patterns',
+      },
+      {
+        name: 'App Download Velocity',
+        description: 'Application growth and adoption rate tracking',
+      },
+      {
+        name: 'Consumer Spending Trends',
+        description: 'Transaction data and consumer behavior patterns',
+      },
+    ],
+  },
+  {
+    id: 'hive',
+    label: 'The Hive',
+    tagline: 'Tap into the collective wisdom',
+    sources: [
+      { name: 'Prediction Market Odds', description: 'Real-money market consensus and forecasts' },
+      {
+        name: 'Platform Community Signals',
+        description: 'Ezana user watchlists, discussions, and posts',
+      },
+      {
+        name: 'Retail Sentiment Data',
+        description: 'Reddit, StockTwits, and social media investor activity',
+      },
+      {
+        name: 'Crowdsourced Intelligence',
+        description: 'Aggregate positioning and conviction levels',
+      },
     ],
   },
 ];
@@ -86,11 +139,11 @@ export function ResourcesSection() {
           <DatabaseWithRestApi
             className="landing-data-sources"
             badgeTexts={{
-              first: 'Congress',
-              second: '13F Filings',
-              third: 'Institutional Portfolios',
-              fourth: 'Alternative Analytics',
-              fifth: 'Community',
+              first: 'Capitol Watch',
+              second: 'Titans Shadow',
+              third: 'Eyes Above',
+              fourth: 'Consumer Whispers',
+              fifth: 'The Hive',
             }}
             title="Institutional-grade data from verified sources"
             circleText="Ezana"
