@@ -58,7 +58,6 @@ export function CongressBack() {
     <div className="fcb fcb-congress">
       <div className="fcb-row-head">
         <span className="fcb-back-title">Congressional Ledger</span>
-        <span className="fcb-live lf-mono">Live</span>
       </div>
       <div className="fcb-congress-rows">
         {rows.map((t) => (
@@ -118,7 +117,6 @@ export function CommunityBack() {
     <div className="fcb fcb-community">
       <div className="fcb-row-head">
         <span className="fcb-back-title">Community</span>
-        <span className="fcb-pill trending">Trending</span>
       </div>
       <div className="fcb-community-feed">
         {COMMUNITY_BACK_POSTS.map((post, i) => (
@@ -146,7 +144,6 @@ export function AlertsBack() {
     <div className="fcb fcb-alerts">
       <div className="fcb-row-head">
         <span className="fcb-back-title">Real-time Alerts</span>
-        <span className="fcb-live lf-mono">Live</span>
       </div>
       <div className="fcb-alert-stack">
         {ALERTS_FEED.map((a, i) => (
