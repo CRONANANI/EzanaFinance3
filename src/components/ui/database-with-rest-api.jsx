@@ -52,7 +52,7 @@ function MobileConnectorBeam({ heightPx = 48, accentColor = '#10b981' }) {
 }
 
 /**
- * Mobile (&lt;lg): 2×2 grid + full-width third row (5th source), vertical beams,
+ * Mobile (&lt;lg): 2-column grid, vertical beams,
  * tap a source to expand “Powered by” (touch has no hover).
  */
 function MobileDataSourcesFlow({ sourceConfigs, sourceDetails, circleText, accentColor }) {
@@ -64,17 +64,17 @@ function MobileDataSourcesFlow({ sourceConfigs, sourceDetails, circleText, accen
       <div className="grid w-full min-w-0 grid-cols-2 gap-3">
         {sourceConfigs.map(({ id, label }, i) => {
           const isActive = activeSource === id;
-          const isFifth = i === 4;
-          const longLabel = id === 'whispers';
+          const isLastOdd = i === sourceConfigs.length - 1 && sourceConfigs.length % 2 === 1;
+          const longLabel = id === 'whispers' || id === 'lighthouse' || id === 'regulatory';
           return (
-            <div key={id} className={cn('min-w-0', isFifth && 'col-span-2 flex justify-center')}>
+            <div key={id} className={cn('min-w-0', isLastOdd && 'col-span-2 flex justify-center')}>
               <button
                 type="button"
                 onClick={() => setActiveSource((prev) => (prev === id ? null : id))}
                 aria-expanded={isActive}
                 className={cn(
                   'flex min-h-10 w-full min-w-0 max-w-full items-center justify-center gap-1.5 rounded-full border px-2 py-2 text-center transition-all duration-200 sm:px-2.5 sm:py-2.5',
-                  isFifth && 'max-w-[calc(50%-0.375rem)]',
+                  isLastOdd && 'max-w-[calc(50%-0.375rem)]',
                   isActive
                     ? 'border-emerald-500 bg-emerald-700 text-white shadow-lg shadow-emerald-500/20'
                     : 'border-emerald-500/40 bg-[#0a0f0a]/95 text-emerald-100',
@@ -205,56 +205,70 @@ export default function DatabaseWithRestApi({
   const [hoveredSource, setHoveredSource] = useState(null);
 
   // Paths converge to center (550, 227) - Ezana hub
-  // Vertical segments reduced ~50%: badges at y=55, curves start at y=117 (was 180)
+  // 7 cards distributed evenly across the width
   const sourcePositions = {
     capitol: {
-      left: '10%',
-      fullPath: 'M 110 55 L 110 117 Q 110 157 170 157 L 530 157 Q 550 157 550 187 L 550 227',
-      pathStart: 'M 110 55 L 110 85',
-      pathEnd: 'M 110 95 L 110 117 Q 110 157 170 157 L 530 157 Q 550 157 550 187 L 550 227',
+      left: '7.5%',
+      fullPath: 'M 82 55 L 82 117 Q 82 157 142 157 L 530 157 Q 550 157 550 187 L 550 227',
+      pathStart: 'M 82 55 L 82 85',
+      pathEnd: 'M 82 95 L 82 117 Q 82 157 142 157 L 530 157 Q 550 157 550 187 L 550 227',
     },
     titans: {
-      left: '30%',
-      fullPath: 'M 330 55 L 330 117 Q 330 147 390 147 L 530 147 Q 550 147 550 177 L 550 227',
-      pathStart: 'M 330 55 L 330 85',
-      pathEnd: 'M 330 95 L 330 117 Q 330 147 390 147 L 530 147 Q 550 147 550 177 L 550 227',
+      left: '21.5%',
+      fullPath: 'M 236 55 L 236 117 Q 236 147 296 147 L 530 147 Q 550 147 550 177 L 550 227',
+      pathStart: 'M 236 55 L 236 85',
+      pathEnd: 'M 236 95 L 236 117 Q 236 147 296 147 L 530 147 Q 550 147 550 177 L 550 227',
     },
     eyes: {
+      left: '35.5%',
+      fullPath: 'M 390 55 L 390 117 Q 390 137 430 137 L 530 137 Q 550 137 550 167 L 550 227',
+      pathStart: 'M 390 55 L 390 85',
+      pathEnd: 'M 390 95 L 390 117 Q 390 137 430 137 L 530 137 Q 550 137 550 167 L 550 227',
+    },
+    lighthouse: {
       left: '50%',
       fullPath: 'M 550 55 L 550 227',
       pathStart: 'M 550 55 L 550 85',
       pathEnd: 'M 550 95 L 550 227',
     },
     whispers: {
-      left: '70%',
-      fullPath: 'M 770 55 L 770 117 Q 770 147 710 147 L 570 147 Q 550 147 550 177 L 550 227',
-      pathStart: 'M 770 55 L 770 85',
-      pathEnd: 'M 770 95 L 770 117 Q 770 147 710 147 L 570 147 Q 550 147 550 177 L 550 227',
+      left: '64.5%',
+      fullPath: 'M 710 55 L 710 117 Q 710 137 670 137 L 570 137 Q 550 137 550 167 L 550 227',
+      pathStart: 'M 710 55 L 710 85',
+      pathEnd: 'M 710 95 L 710 117 Q 710 137 670 137 L 570 137 Q 550 137 550 167 L 550 227',
     },
     hive: {
-      left: '90%',
-      fullPath: 'M 990 55 L 990 117 Q 990 157 930 157 L 570 157 Q 550 157 550 187 L 550 227',
-      pathStart: 'M 990 55 L 990 85',
-      pathEnd: 'M 990 95 L 990 117 Q 990 157 930 157 L 570 157 Q 550 157 550 187 L 550 227',
+      left: '78.5%',
+      fullPath: 'M 864 55 L 864 117 Q 864 147 804 147 L 570 147 Q 550 147 550 177 L 550 227',
+      pathStart: 'M 864 55 L 864 85',
+      pathEnd: 'M 864 95 L 864 117 Q 864 147 804 147 L 570 147 Q 550 147 550 177 L 550 227',
+    },
+    regulatory: {
+      left: '92.5%',
+      fullPath: 'M 1018 55 L 1018 117 Q 1018 157 958 157 L 570 157 Q 550 157 550 187 L 550 227',
+      pathStart: 'M 1018 55 L 1018 85',
+      pathEnd: 'M 1018 95 L 1018 117 Q 1018 157 958 157 L 570 157 Q 550 157 550 187 L 550 227',
     },
   };
 
-  // Mirror-symmetric widths around the centered "institutional" card so edge-to-edge
-  // gaps are uniform: congress==community, 13f==analytics.
   const BADGE_WIDTH = {
-    capitol: 180,
-    titans: 200,
-    eyes: 220,
-    whispers: 200,
-    hive: 180,
+    capitol: 155,
+    titans: 155,
+    eyes: 145,
+    lighthouse: 195,
+    whispers: 170,
+    hive: 145,
+    regulatory: 165,
   };
 
   const sourceConfigs = [
     { id: 'capitol', label: badgeTexts?.first || 'Capitol Watch' },
     { id: 'titans', label: badgeTexts?.second || 'Titans Shadow' },
     { id: 'eyes', label: badgeTexts?.third || 'Eyes Above' },
+    { id: 'lighthouse', label: badgeTexts?.sixth || 'Global Empire Lighthouse' },
     { id: 'whispers', label: badgeTexts?.fourth || 'Consumer Whispers' },
     { id: 'hive', label: badgeTexts?.fifth || 'The Hive' },
+    { id: 'regulatory', label: badgeTexts?.seventh || 'Regulatory Winds' },
   ];
 
   return (

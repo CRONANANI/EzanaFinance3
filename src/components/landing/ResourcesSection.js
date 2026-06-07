@@ -56,11 +56,8 @@ const DATA_SOURCES = [
     sources: [
       {
         name: 'Satellite Imagery',
-        description: 'High-resolution geospatial monitoring of physical assets',
-      },
-      {
-        name: 'Parking Lot Occupancy Data',
-        description: 'Real-time foot traffic and commercial activity tracking',
+        description:
+          'High-resolution geospatial monitoring including parking lot occupancy, foot traffic, and infrastructure utilization',
       },
       {
         name: 'Commercial Real Estate Activity',
@@ -68,7 +65,7 @@ const DATA_SOURCES = [
       },
       {
         name: 'Supply Chain Monitoring',
-        description: 'Warehouse and logistics activity verification',
+        description: 'Warehouse and logistics activity verification across global networks',
       },
     ],
   },
@@ -115,6 +112,53 @@ const DATA_SOURCES = [
       },
     ],
   },
+  {
+    id: 'lighthouse',
+    label: 'Global Empire Lighthouse',
+    tagline: 'Track shifts in global power and trade',
+    sources: [
+      {
+        name: 'World Bank Economic Indicators',
+        description: 'Global GDP, growth rates, and economic health metrics',
+      },
+      {
+        name: 'Geopolitical Risk Indices',
+        description: 'Geopolitical tension tracking and political stability data',
+      },
+      {
+        name: 'Sanctions & Trade Policy Tracking',
+        description: 'Government policy changes and international trade restrictions',
+      },
+      {
+        name: 'GDELT Global Events Database',
+        description: 'Global news events and geopolitical developments in real-time',
+      },
+    ],
+  },
+  {
+    id: 'regulatory',
+    label: 'Regulatory Winds',
+    tagline: 'Anticipate regulatory and legal catalysts before they hit',
+    sources: [
+      {
+        name: 'Lawsuits & Legal Proceedings',
+        description: 'Class action suits, litigation tracking, and legal settlements',
+      },
+      {
+        name: 'New Laws & Policy Legislation',
+        description: 'Congressional bills, new legislation, and policy changes',
+      },
+      {
+        name: 'Regulatory Investigations & Enforcement',
+        description:
+          'SEC enforcement actions, FTC investigations, and regulatory agency enforcement',
+      },
+      {
+        name: 'Government Agency Rulings & Decisions',
+        description: 'FDA approvals/denials, EPA rulings, and major agency decisions',
+      },
+    ],
+  },
 ];
 
 export function ResourcesSection() {
@@ -129,9 +173,10 @@ export function ResourcesSection() {
         <div className="resources-header">
           <h2>Data Sources &amp; Resources</h2>
           <p className="max-w-5xl mx-auto px-6">
-            Five streams of intelligence. Watch your politicians trade. Follow the giants of
+            Seven streams of intelligence. Watch your politicians trade. Follow the giants of
             finance. See the economy from above. Catch shifts in consumer behaviour. Tap into
-            collective wisdom. Hover any category to see the data sources that power it.
+            collective wisdom. Track global power shifts. Anticipate regulatory catalysts. Hover any
+            category to see the data sources that power it.
           </p>
         </div>
 
@@ -144,8 +189,10 @@ export function ResourcesSection() {
               third: 'Eyes Above',
               fourth: 'Consumer Whispers',
               fifth: 'The Hive',
+              sixth: 'Global Empire Lighthouse',
+              seventh: 'Regulatory Winds',
             }}
-            title="Five intelligence streams, one unified dashboard"
+            title="Seven intelligence streams, one unified dashboard"
             circleText="Ezana"
             lightColor="#10b981"
             sourceDetails={sourceDetails}
