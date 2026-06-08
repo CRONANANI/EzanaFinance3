@@ -1,14 +1,9 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard, safeErrorResponse } from '@/lib/api-guard';
 import { getAdminClient } from '@/lib/supabase';
+import { likeContains } from '@/lib/search';
 
 export const dynamic = 'force-dynamic';
-
-// Escape LIKE/ILIKE metacharacters so a user can't inject wildcards (`%`, `_`)
-// to match all rows or perform single-char fuzzing against the profiles table.
-function escapeLike(s) {
-  return s.replace(/[\\%_]/g, (c) => `\\${c}`);
-}
 
 function mapRow(row) {
   const s = row.user_settings || {};
@@ -38,7 +33,8 @@ export const GET = withApiGuard(
       }
 
       const admin = getAdminClient();
-      const pattern = `%${escapeLike(raw)}%`;
+      // Trigram GIN indexes (idx_profiles_*_trgm) accelerate this ILIKE search.
+      const pattern = likeContains(raw);
       const cols = 'id, username, full_name, user_settings, is_partner, partner_type';
 
       // ── Search profiles by full_name ──
