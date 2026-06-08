@@ -316,37 +316,54 @@ export default function DatabaseWithRestApi({
           {sourceConfigs.map(({ id }, index) => {
             const pos = sourcePositions[id];
             const isActive = hoveredSource === id;
-            const strokeColor = isActive ? 'rgba(16,185,129,0.8)' : 'rgba(16,185,129,0.25)';
-            const strokeWidth = isActive ? '2.5' : '2';
+            const activeColor = 'rgba(16,185,129,0.8)';
+            const inactiveColor = 'rgba(16,185,129,0.25)';
+            const activeWidth = '2.5';
+            const inactiveWidth = '2';
+            const pathTransition =
+              'opacity 200ms ease-in-out, stroke 200ms ease-in-out, stroke-width 200ms ease-in-out';
 
             return (
               <g key={id}>
-                {isActive ? (
-                  <>
-                    <path
-                      d={pos.pathStart}
-                      stroke={strokeColor}
-                      strokeWidth={strokeWidth}
-                      fill="none"
-                      strokeLinecap="round"
-                    />
-                    <path
-                      d={pos.pathEnd}
-                      stroke={strokeColor}
-                      strokeWidth={strokeWidth}
-                      fill="none"
-                      strokeLinecap="round"
-                    />
-                  </>
-                ) : (
-                  <path
-                    d={pos.fullPath}
-                    stroke={strokeColor}
-                    strokeWidth={strokeWidth}
-                    fill="none"
-                    strokeLinecap="round"
-                  />
-                )}
+                <path
+                  d={pos.fullPath}
+                  stroke={isActive ? activeColor : inactiveColor}
+                  strokeWidth={isActive ? activeWidth : inactiveWidth}
+                  fill="none"
+                  strokeLinecap="round"
+                  style={{
+                    opacity: isActive ? 0 : 1,
+                    transition: pathTransition,
+                    pointerEvents: 'none',
+                    willChange: 'opacity',
+                  }}
+                />
+                <path
+                  d={pos.pathStart}
+                  stroke={isActive ? activeColor : inactiveColor}
+                  strokeWidth={isActive ? activeWidth : inactiveWidth}
+                  fill="none"
+                  strokeLinecap="round"
+                  style={{
+                    opacity: isActive ? 1 : 0,
+                    transition: pathTransition,
+                    pointerEvents: 'none',
+                    willChange: 'opacity',
+                  }}
+                />
+                <path
+                  d={pos.pathEnd}
+                  stroke={isActive ? activeColor : inactiveColor}
+                  strokeWidth={isActive ? activeWidth : inactiveWidth}
+                  fill="none"
+                  strokeLinecap="round"
+                  style={{
+                    opacity: isActive ? 1 : 0,
+                    transition: pathTransition,
+                    pointerEvents: 'none',
+                    willChange: 'opacity',
+                  }}
+                />
                 <motion.circle
                   r="4"
                   fill={accentColor}
