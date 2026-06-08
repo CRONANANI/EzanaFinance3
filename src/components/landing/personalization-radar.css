@@ -14,6 +14,12 @@
   }
 }
 
+/* Each dot group is moved every frame via a transform; hint the compositor so
+   the motion stays smooth and decoupled from the SVG repaint. */
+.radar-blip-group {
+  will-change: transform;
+}
+
 .radar-blip-pulse {
   animation: radar-blip 2.6s ease-out infinite;
   transform-box: fill-box;

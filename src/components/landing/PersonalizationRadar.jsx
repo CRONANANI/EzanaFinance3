@@ -205,8 +205,14 @@ export default function PersonalizationRadar({ sourceDetails }) {
   const accentColor = '#10b981';
   const [hoveredDim, setHoveredDim] = useState(null);
   const polyYouRef = useRef(null);
-  const blipRefs = useRef([]);
-  const pulseRefs = useRef([]);
+  const blipGroupRefs = useRef([]);
+  // Stable ref callbacks (created once) so hover-driven re-renders don't detach
+  // and reattach the animated nodes — that churn caused the dots to jump/restart.
+  const blipGroupRefCbs = useRef(
+    DIMS.map((_, i) => (el) => {
+      blipGroupRefs.current[i] = el;
+    }),
+  );
   const stateRef = useRef(null);
   const rafRef = useRef(null);
 
@@ -243,16 +249,12 @@ export default function PersonalizationRadar({ sourceDetails }) {
         const r = RMIN + w * (RMAX - RMIN);
         const x = CX + r * Math.cos(s.a);
         const y = CY + r * Math.sin(s.a);
-        const blip = blipRefs.current[i];
-        const pulse = pulseRefs.current[i];
-        if (blip) {
-          blip.setAttribute('cx', x.toFixed(1));
-          blip.setAttribute('cy', y.toFixed(1));
-        }
-        if (pulse) {
-          pulse.setAttribute('cx', x.toFixed(1));
-          pulse.setAttribute('cy', y.toFixed(1));
-        }
+        // Move the whole dot group with a single transform (GPU-composited via
+        // will-change) instead of mutating cx/cy on two circles each frame. This
+        // keeps the pulse ring's CSS scale animation from re-resolving its origin
+        // every frame, which was the source of the flicker.
+        const g = blipGroupRefs.current[i];
+        if (g) g.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)})`);
         pts.push(`${x.toFixed(1)},${y.toFixed(1)}`);
       }
       if (polyYouRef.current) polyYouRef.current.setAttribute('points', pts.join(' '));
@@ -455,29 +457,26 @@ export default function PersonalizationRadar({ sourceDetails }) {
               strokeLinejoin="round"
             />
 
-            {/* Blips + pulse rings */}
+            {/* Blips + pulse rings — each group is positioned via a single
+                transform updated by the RAF loop; the circles sit at the group's
+                local origin so the pulse's scale animation never fights position
+                updates. */}
             {DIMS.map((d, i) => {
               const a = ang(i);
               const r = RMIN + d.w * (RMAX - RMIN);
               const ix = CX + r * Math.cos(a);
               const iy = CY + r * Math.sin(a);
               return (
-                <g key={`blip-${i}`}>
+                <g
+                  key={`blip-${i}`}
+                  ref={blipGroupRefCbs.current[i]}
+                  className="radar-blip-group"
+                  transform={`translate(${ix.toFixed(1)} ${iy.toFixed(1)})`}
+                >
+                  <circle cx="0" cy="0" r="4.5" fill="#10b981" />
                   <circle
-                    ref={(el) => {
-                      blipRefs.current[i] = el;
-                    }}
-                    cx={ix}
-                    cy={iy}
-                    r="4.5"
-                    fill="#10b981"
-                  />
-                  <circle
-                    ref={(el) => {
-                      pulseRefs.current[i] = el;
-                    }}
-                    cx={ix}
-                    cy={iy}
+                    cx="0"
+                    cy="0"
                     r="5"
                     fill="none"
                     stroke="#10b981"
