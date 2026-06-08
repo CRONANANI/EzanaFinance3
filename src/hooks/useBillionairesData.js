@@ -15,6 +15,7 @@ export function useBillionairesData() {
   useEffect(() => {
     if (fetched.current) return;
     fetched.current = true;
+    let cancelled = false;
 
     async function load() {
       setLoading(true);
@@ -22,6 +23,7 @@ export function useBillionairesData() {
         const res = await fetch('/api/market-data/billionaires');
         if (!res.ok) throw new Error(`API ${res.status}`);
         const data = await res.json();
+        if (cancelled) return;
         if (!data.byCountry?.length) throw new Error('Empty byCountry');
 
         const maxCount = Math.max(...data.byCountry.map((c) => c.count), 1);
@@ -33,17 +35,22 @@ export function useBillionairesData() {
           scoreMap[entry.iso] = Math.round(Math.max(5, logScore * 100));
         }
 
-        setScores(scoreMap);
+        if (!cancelled) setScores(scoreMap);
       } catch (err) {
         console.error('[useBillionairesData]', err);
-        setError(err.message);
-        setScores(FALLBACK_BILLIONAIRE_SCORES);
+        if (!cancelled) {
+          setError(err.message);
+          setScores(FALLBACK_BILLIONAIRE_SCORES);
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
 
     load();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return { scores, loading, error };

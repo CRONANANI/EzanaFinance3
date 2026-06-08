@@ -710,23 +710,45 @@ export function LatelyOnEzana({ compact = false, marketChartOnly = false }) {
 
   const fetchData = useCallback((p) => {
     setIndexPayload(null);
+
+    const timeoutId = setTimeout(() => {
+      setIndexPayload({
+        ok: false,
+        error: 'timeout',
+        indices: {},
+      });
+    }, 10000);
+
     fetch(`/api/market/index-history?period=${encodeURIComponent(p)}`, {
       credentials: 'same-origin',
     })
       .then(async (r) => {
+        clearTimeout(timeoutId);
         let data = {};
         try {
           data = await r.json();
-        } catch {
+        } catch (e) {
+          console.error('[LatelyOnEzana] JSON parse error:', e);
           data = {};
         }
         if (!r.ok) {
+          console.warn(`[LatelyOnEzana] API ${r.status}`);
           return { ok: false, error: 'fetch_failed', indices: {} };
         }
         return data;
       })
-      .then((data) => setIndexPayload(data))
-      .catch(() => setIndexPayload({ ok: false, error: 'fetch_failed', indices: {} }));
+      .then((data) => {
+        if (data && data.indices) {
+          setIndexPayload(data);
+        } else {
+          setIndexPayload({ ok: false, error: 'invalid_data', indices: {} });
+        }
+      })
+      .catch((err) => {
+        clearTimeout(timeoutId);
+        console.error('[LatelyOnEzana] Fetch error:', err);
+        setIndexPayload({ ok: false, error: 'fetch_failed', indices: {} });
+      });
   }, []);
 
   useEffect(() => {

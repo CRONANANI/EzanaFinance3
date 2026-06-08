@@ -14,43 +14,59 @@ export default function OnboardingPage() {
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
+
     (async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
-        router.replace('/auth/login');
-        return;
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (cancelled) return;
+        if (!user) {
+          router.replace('/auth/login');
+          return;
+        }
+
+        /* Check if already completed */
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('investor_questionnaire_completed')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (cancelled) return;
+        if (profile?.investor_questionnaire_completed) {
+          router.replace('/home');
+          return;
+        }
+
+        /* Check if org member */
+        const { data: orgMember } = await supabase
+          .from('org_members')
+          .select('role')
+          .eq('user_id', user.id)
+          .eq('is_active', true)
+          .limit(1)
+          .maybeSingle();
+
+        if (cancelled) return;
+        if (orgMember?.role) {
+          setOrgRole(orgMember.role);
+        }
+
+        setUserId(user.id);
+        setChecking(false);
+      } catch (err) {
+        console.error('[onboarding] setup failed:', err);
+        if (!cancelled) {
+          router.replace('/auth/login');
+        }
       }
-
-      /* Check if already completed */
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('investor_questionnaire_completed')
-        .eq('id', user.id)
-        .maybeSingle();
-
-      if (profile?.investor_questionnaire_completed) {
-        router.replace('/home');
-        return;
-      }
-
-      /* Check if org member */
-      const { data: orgMember } = await supabase
-        .from('org_members')
-        .select('role')
-        .eq('user_id', user.id)
-        .eq('is_active', true)
-        .limit(1)
-        .maybeSingle();
-
-      if (orgMember?.role) {
-        setOrgRole(orgMember.role);
-      }
-
-      setUserId(user.id);
-      setChecking(false);
     })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [router]);
 
   const handleComplete = async () => {

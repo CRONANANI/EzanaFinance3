@@ -53,8 +53,14 @@ export function useElo(userId) {
   }, [userId, applyState]);
 
   useEffect(() => {
+    let cancelled = false;
     setLoading(true);
-    refetch();
+    refetch().finally(() => {
+      if (cancelled) return;
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [refetch]);
 
   useEffect(() => {
