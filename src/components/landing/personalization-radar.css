@@ -1,0 +1,79 @@
+/* Personalization Radar — animation styles */
+
+.radar-sweep1 {
+  transform-origin: 560px 360px;
+  animation: radar-spin 11s linear infinite;
+}
+.radar-sweep2 {
+  transform-origin: 560px 360px;
+  animation: radar-spin 15s linear infinite reverse;
+}
+@keyframes radar-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.radar-blip-pulse {
+  animation: radar-blip 2.6s ease-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes radar-blip {
+  0% {
+    opacity: 0.85;
+    r: 5px;
+  }
+  70% {
+    opacity: 0;
+    r: 16px;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.radar-hub-ring {
+  animation: radar-hub-pulse 3.4s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes radar-hub-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.07);
+  }
+}
+
+.radar-hub-label {
+  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-size: 15px;
+  font-weight: 800;
+  fill: #f0f6fc;
+}
+
+.radar-ax-name {
+  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-size: 11.5px;
+  font-weight: 600;
+  fill: #f0f6fc;
+  transition: fill 0.15s ease;
+}
+.radar-ax-name:hover,
+.radar-ax-name--active {
+  fill: #10b981;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .radar-sweep1,
+  .radar-sweep2,
+  .radar-blip-pulse,
+  .radar-hub-ring {
+    animation: none;
+  }
+}

@@ -1,6 +1,6 @@
 'use client';
 
-import DatabaseWithRestApi from '@/components/ui/database-with-rest-api';
+import PersonalizationRadar from '@/components/landing/PersonalizationRadar';
 
 const DATA_SOURCES = [
   {
@@ -171,32 +171,19 @@ export function ResourcesSection() {
     <section className="resources-section" id="resources">
       <div className="resources-container">
         <div className="resources-header">
-          <h2>Data Sources &amp; Resources</h2>
-          <p className="max-w-5xl mx-auto px-6">
-            Seven streams of intelligence. Watch your politicians trade. Follow the giants of
-            finance. See the economy from above. Catch shifts in consumer behaviour. Tap into
-            collective wisdom. Track global power shifts. Anticipate regulatory catalysts. Hover any
-            category to see the data sources that power it.
+          <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-400 mb-3">
+            Data &amp; Resources
+          </div>
+          <h2>Seven dimensions, weighted to you.</h2>
+          <p className="max-w-[600px] mx-auto px-6 text-sm text-[#8b949e] leading-relaxed mt-3">
+            Ezana never stops studying your activity, risk tolerance and interests &mdash;
+            continuously retuning how much each domain weighs. The further a dimension drifts from
+            the core, the more it shapes the news in your dashboard right now.
           </p>
         </div>
 
-        <div className="flex justify-center p-4 w-full max-w-[1100px] mx-auto">
-          <DatabaseWithRestApi
-            className="landing-data-sources"
-            badgeTexts={{
-              first: 'Capitol Watch',
-              second: 'Titans Shadow',
-              third: 'Eyes Above',
-              fourth: 'Consumer Whispers',
-              fifth: 'The Hive',
-              sixth: 'Global Empire Lighthouse',
-              seventh: 'Regulatory Winds',
-            }}
-            title="Seven intelligence streams, one unified dashboard"
-            circleText="Ezana"
-            lightColor="#10b981"
-            sourceDetails={sourceDetails}
-          />
+        <div className="w-full max-w-[1100px] mx-auto mt-1">
+          <PersonalizationRadar sourceDetails={sourceDetails} />
         </div>
       </div>
     </section>
