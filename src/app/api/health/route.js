@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
+import { requireAdminAccess } from '@/lib/admin-auth';
 import { supabaseAdmin } from '@/lib/plaid';
 
 export const dynamic = 'force-dynamic';
 
 export const GET = withApiGuard(
   async (request, user) => {
+    // Detailed per-service breakdown is operator-only; anonymous callers get a
+    // coarse status + HTTP code (enough for uptime monitors), no recon detail.
+    const authed = requireAdminAccess(request, user) === null;
     const checks = { status: 'ok', timestamp: new Date().toISOString(), services: {} };
 
     try {
@@ -31,7 +35,14 @@ export const GET = withApiGuard(
     const allHealthy = healthChecks.length === 0 || healthChecks.every((s) => s === 'healthy');
     checks.status = allHealthy ? 'ok' : 'degraded';
 
-    return NextResponse.json(checks, { status: allHealthy ? 200 : 503 });
+    const httpStatus = allHealthy ? 200 : 503;
+    if (!authed) {
+      return NextResponse.json(
+        { status: checks.status, timestamp: checks.timestamp },
+        { status: httpStatus },
+      );
+    }
+    return NextResponse.json(checks, { status: httpStatus });
   },
   { requireAuth: false },
 );

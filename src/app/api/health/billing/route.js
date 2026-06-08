@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
+import { requireAdminAccess } from '@/lib/admin-auth';
 import { stripe } from '@/lib/services/stripe';
 import { PLANS } from '@/config/pricing';
 
@@ -8,6 +9,9 @@ export const dynamic = 'force-dynamic';
 
 export const GET = withApiGuard(
   async (request, user) => {
+    // Configuration detail (test/live mode, price IDs, Stripe errors) is
+    // operator-only — anonymous callers get just the overall status.
+    const authed = requireAdminAccess(request, user) === null;
     const checks = {
       stripe_secret_key: !!process.env.STRIPE_SECRET_KEY,
       stripe_publishable_key: !!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
@@ -48,6 +52,9 @@ export const GET = withApiGuard(
     const status =
       checks.stripe_secret_key && checks.stripe_reachable && allPlansValid ? 'healthy' : 'degraded';
 
+    if (!authed) {
+      return NextResponse.json({ status });
+    }
     return NextResponse.json({ status, checks });
   },
   { requireAuth: false },

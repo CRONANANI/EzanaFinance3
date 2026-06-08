@@ -11,6 +11,7 @@ import {
   createServerSupabaseClient,
   isServerSupabaseConfigured,
 } from '@/lib/supabase-service-role';
+import { requireAdminAccess } from '@/lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -20,8 +21,15 @@ function getFmpKey() {
   return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
 }
 
-export async function GET() {
+export async function GET(request) {
+  // Counts + which keys are configured are operator-only recon detail; gate
+  // them behind the admin/cron bearer. Anonymous callers get just the status.
+  const authed = requireAdminAccess(request, null) === null;
+
   if (!isServerSupabaseConfigured()) {
+    if (!authed) {
+      return NextResponse.json({ status: 'misconfigured' }, { status: 503 });
+    }
     return NextResponse.json(
       {
         status: 'misconfigured',
@@ -58,14 +66,7 @@ export async function GET() {
     if (tradesErr || perfErr) {
       const err = tradesErr || perfErr;
       console.error('[health/politicians] DB error:', err);
-      return NextResponse.json(
-        {
-          status: 'error',
-          error: err.message,
-          code: err.code,
-        },
-        { status: 500 },
-      );
+      return NextResponse.json({ status: 'error' }, { status: 500 });
     }
     if (latestErr) {
       console.error('[health/politicians] latest row error:', latestErr);
@@ -75,6 +76,9 @@ export async function GET() {
     const pc = perfCount ?? 0;
     const healthy = tc > 0 && pc > 0;
 
+    if (!authed) {
+      return NextResponse.json({ status: healthy ? 'healthy' : 'missing_data' });
+    }
     return NextResponse.json({
       status: healthy ? 'healthy' : 'missing_data',
       congressional_trades_count: tc,
@@ -85,12 +89,6 @@ export async function GET() {
     });
   } catch (e) {
     console.error('[health/politicians] unexpected:', e);
-    return NextResponse.json(
-      {
-        status: 'error',
-        error: e instanceof Error ? e.message : String(e),
-      },
-      { status: 500 },
-    );
+    return NextResponse.json({ status: 'error' }, { status: 500 });
   }
 }

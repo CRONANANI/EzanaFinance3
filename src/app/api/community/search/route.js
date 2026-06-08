@@ -1,8 +1,14 @@
 import { NextResponse } from 'next/server';
-import { withApiGuard } from '@/lib/api-guard';
+import { withApiGuard, safeErrorResponse } from '@/lib/api-guard';
 import { getAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
+
+// Escape LIKE/ILIKE metacharacters so a user can't inject wildcards (`%`, `_`)
+// to match all rows or perform single-char fuzzing against the profiles table.
+function escapeLike(s) {
+  return s.replace(/[\\%_]/g, (c) => `\\${c}`);
+}
 
 function mapRow(row) {
   const s = row.user_settings || {};
@@ -32,7 +38,7 @@ export const GET = withApiGuard(
       }
 
       const admin = getAdminClient();
-      const pattern = `%${raw}%`;
+      const pattern = `%${escapeLike(raw)}%`;
       const cols = 'id, username, full_name, user_settings, is_partner, partner_type';
 
       // ── Search profiles by full_name ──
@@ -103,8 +109,7 @@ export const GET = withApiGuard(
 
       return NextResponse.json({ users: merged });
     } catch (e) {
-      console.error('community search', e);
-      return NextResponse.json({ error: e.message || 'Server error' }, { status: 500 });
+      return safeErrorResponse(e, { context: 'community search' });
     }
   },
   { requireAuth: true },

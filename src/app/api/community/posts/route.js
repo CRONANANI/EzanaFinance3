@@ -10,6 +10,39 @@ const admin = getAdminClient();
 
 const LIMIT = 20;
 
+// Posted images must come from our own Supabase Storage (the composer uploads to
+// the `community-images` bucket and stores its public URL). Restricting to the
+// project host blocks arbitrary external URLs that could be used as tracking
+// pixels or to serve offensive content to other members. Additional trusted
+// image hosts can be added via the ALLOWED_IMAGE_HOSTS env (comma-separated).
+function allowedImageHosts() {
+  const hosts = new Set();
+  try {
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      hosts.add(new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).host.toLowerCase());
+    }
+  } catch {
+    /* ignore malformed env */
+  }
+  for (const h of (process.env.ALLOWED_IMAGE_HOSTS || '').split(',')) {
+    const host = h.trim().toLowerCase();
+    if (host) hosts.add(host);
+  }
+  return hosts;
+}
+
+function sanitizeImageUrl(raw) {
+  if (typeof raw !== 'string' || !raw) return null;
+  let url;
+  try {
+    url = new URL(raw);
+  } catch {
+    return null;
+  }
+  if (url.protocol !== 'https:') return null;
+  return allowedImageHosts().has(url.host.toLowerCase()) ? url.toString() : null;
+}
+
 function mapAuthor(prof, viewerId) {
   if (!prof) return null;
   const settings = prof.user_settings || {};
@@ -170,7 +203,7 @@ export async function GET(request) {
 
       if (error) {
         console.error('Fetch signal posts error:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: 'Server error' }, { status: 500 });
       }
 
       const ids = (batch || []).map((p) => p.id);
@@ -210,7 +243,7 @@ export async function GET(request) {
 
       if (error) {
         console.error('Fetch legendary posts error:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: 'Server error' }, { status: 500 });
       }
 
       const filtered = await applySkillFilter(posts || [], minSkill);
@@ -228,7 +261,7 @@ export async function GET(request) {
 
       if (error) {
         console.error('Fetch discussions error:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: 'Server error' }, { status: 500 });
       }
 
       const filtered = await applySkillFilter(posts || [], minSkill);
@@ -245,7 +278,7 @@ export async function GET(request) {
 
       if (error) {
         console.error('Fetch posts error:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: 'Server error' }, { status: 500 });
       }
 
       const sorted = [...(batch || [])].sort((a, b) => engagementScore(b) - engagementScore(a));
@@ -305,7 +338,7 @@ export async function GET(request) {
 
     if (error) {
       console.error('Fetch posts error:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: 'Server error' }, { status: 500 });
     }
 
     const list = posts || [];
@@ -313,7 +346,7 @@ export async function GET(request) {
     return await buildEnrichedResponse(supabase, user, filtered);
   } catch (error) {
     console.error('GET posts:', error);
-    return NextResponse.json({ error: error.message || 'Server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
 
@@ -329,10 +362,7 @@ export async function POST(request) {
         ? body.parent_post_id
         : null;
 
-    const image_url =
-      typeof body.image_url === 'string' && body.image_url.startsWith('http')
-        ? body.image_url
-        : null;
+    const image_url = sanitizeImageUrl(body.image_url);
 
     let poll_data = null;
     if (body.poll_data && typeof body.poll_data === 'object') {
@@ -438,7 +468,7 @@ export async function POST(request) {
 
     if (error) {
       console.error('Insert post error:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: 'Server error' }, { status: 500 });
     }
 
     try {
@@ -515,7 +545,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     console.error('POST posts:', error);
-    return NextResponse.json({ error: error.message || 'Server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
 
@@ -638,6 +668,6 @@ export async function DELETE(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     console.error('DELETE posts:', error);
-    return NextResponse.json({ error: error.message || 'Server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }

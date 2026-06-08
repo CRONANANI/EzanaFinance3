@@ -1,9 +1,11 @@
 // Server-only. Mock community data shown ONLY to investor-demo accounts.
 // Never written to the database — injected at the API layer for the demo viewer only.
 
-const DEFAULT_DEMO_EMAILS = ['axmabeto@gmail.com', 'isabel.lim546@gmail.com'];
+// Demo viewers are configured via the COMMUNITY_DEMO_EMAILS env var (set in
+// Vercel). No emails are hardcoded here so personal addresses never land in the
+// repo; when the env var is unset, no account is treated as a demo viewer.
 export const DEMO_EMAILS = new Set(
-  (process.env.COMMUNITY_DEMO_EMAILS || DEFAULT_DEMO_EMAILS.join(','))
+  (process.env.COMMUNITY_DEMO_EMAILS || '')
     .split(',')
     .map((e) => e.trim().toLowerCase())
     .filter(Boolean),

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
+import { requireAdminAccess } from '@/lib/admin-auth';
 import { supabaseAdmin } from '@/lib/plaid';
 
 export const dynamic = 'force-dynamic';
@@ -18,6 +19,9 @@ function getAvKey() {
  */
 export const GET = withApiGuard(
   async (request, user) => {
+    // Diagnostic detail (which keys are configured, service-role status, probe
+    // results) is operator-only — anonymous callers get just the status.
+    const authed = requireAdminAccess(request, user) === null;
     const fmpKey = getFmpKey();
     const avKey = getAvKey();
 
@@ -120,6 +124,9 @@ export const GET = withApiGuard(
       degradedReasons.push('Supabase URL or SUPABASE_SERVICE_ROLE_KEY missing');
     }
 
+    if (!authed) {
+      return NextResponse.json({ status: healthy ? 'healthy' : 'degraded' });
+    }
     return NextResponse.json({
       status: healthy ? 'healthy' : 'degraded',
       degradedReasons: healthy ? [] : degradedReasons,

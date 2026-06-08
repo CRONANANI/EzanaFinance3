@@ -1,8 +1,37 @@
 import { NextResponse } from 'next/server';
-import { withApiGuard } from '@/lib/api-guard';
+import { withApiGuard, safeErrorResponse } from '@/lib/api-guard';
 import { supabaseAdmin } from '@/lib/plaid';
 
 export const dynamic = 'force-dynamic';
+
+// Identity / financial documents: accept PDFs and common image formats only,
+// capped at 10MB. Extension + MIME are both validated so an attacker can't
+// upload executable/HTML/SVG content that the storage bucket might later serve
+// inline (stored XSS) or oversized files (storage abuse / DoS).
+const MAX_FILE_BYTES = 10 * 1024 * 1024;
+const ALLOWED_EXT = new Set(['pdf', 'jpg', 'jpeg', 'png', 'webp', 'heic']);
+const ALLOWED_MIME = new Set([
+  'application/pdf',
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/heic',
+]);
+
+/** Returns { ext } on success or { error } describing the rejection. */
+function validateUpload(file, label) {
+  if (file.size > MAX_FILE_BYTES) {
+    return { error: `${label} exceeds the 10MB size limit` };
+  }
+  const ext = (file.name.split('.').pop() || '').toLowerCase();
+  if (!ALLOWED_EXT.has(ext)) {
+    return { error: `${label} must be a PDF, JPG, PNG, WEBP, or HEIC file` };
+  }
+  if (file.type && !ALLOWED_MIME.has(file.type)) {
+    return { error: `${label} has an unsupported file type` };
+  }
+  return { ext };
+}
 
 export const POST = withApiGuard(
   async (request) => {
@@ -27,20 +56,25 @@ export const POST = withApiGuard(
       const updates = {};
 
       if (idDocument && idDocument.size > 0) {
-        const idExt = idDocument.name.split('.').pop() || 'pdf';
-        const idPath = `partner-applications/${app.id}/id-document.${idExt}`;
+        const check = validateUpload(idDocument, 'ID document');
+        if (check.error) return NextResponse.json({ error: check.error }, { status: 400 });
+        const idPath = `partner-applications/${app.id}/id-document.${check.ext}`;
         const { error: idErr } = await supabaseAdmin.storage
           .from('documents')
-          .upload(idPath, idDocument, { upsert: true });
+          .upload(idPath, idDocument, { upsert: true, contentType: idDocument.type || undefined });
         if (!idErr) updates.id_document_url = idPath;
       }
 
       if (financialDocument && financialDocument.size > 0) {
-        const finExt = financialDocument.name.split('.').pop() || 'pdf';
-        const finPath = `partner-applications/${app.id}/financial-document.${finExt}`;
+        const check = validateUpload(financialDocument, 'Financial document');
+        if (check.error) return NextResponse.json({ error: check.error }, { status: 400 });
+        const finPath = `partner-applications/${app.id}/financial-document.${check.ext}`;
         const { error: finErr } = await supabaseAdmin.storage
           .from('documents')
-          .upload(finPath, financialDocument, { upsert: true });
+          .upload(finPath, financialDocument, {
+            upsert: true,
+            contentType: financialDocument.type || undefined,
+          });
         if (!finErr) updates.financial_document_url = finPath;
       }
 
@@ -63,8 +97,7 @@ export const POST = withApiGuard(
         message: 'Documents submitted. Your application is now under review.',
       });
     } catch (error) {
-      console.error('[Partner Application] Documents upload error:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return safeErrorResponse(error, { context: '[Partner Application] Documents upload' });
     }
   },
   { requireAuth: false, strict: true },

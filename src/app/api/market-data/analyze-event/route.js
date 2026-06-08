@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient, requireUser } from '@/lib/supabase';
+import { assertPublicHttpUrl } from '@/lib/url-guard';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,6 +14,13 @@ const MAX_HOLDINGS = 25; // cap holdings list length
  */
 async function tryFetchArticle(url) {
   if (!url || typeof url !== 'string') return null;
+  // SSRF guard: only fetch public http(s) URLs. Reject internal / private
+  // targets (cloud metadata, loopback, RFC1918) before making the request.
+  try {
+    await assertPublicHttpUrl(url);
+  } catch {
+    return null;
+  }
   try {
     const res = await fetch(url, {
       method: 'GET',
@@ -240,7 +248,7 @@ export async function POST(request) {
   } catch (error) {
     console.error('[analyze-event]', error);
     return NextResponse.json(
-      { error: error.message, analysis: 'Analysis failed. Please try again.' },
+      { error: 'Analysis failed.', analysis: 'Analysis failed. Please try again.' },
       { status: 500 },
     );
   }

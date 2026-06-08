@@ -4,6 +4,27 @@ import { getAuthUser } from './auth-helpers';
 import { logger } from './logger';
 import { logSecurityEvent } from './security-audit';
 
+/**
+ * Build an error response without leaking internal details to the client.
+ * The real error is logged server-side; the client receives a generic message
+ * (the raw message is only included when NODE_ENV !== 'production', to aid
+ * local debugging). Use this instead of `NextResponse.json({ error: e.message })`.
+ *
+ * @param {unknown} error
+ * @param {object} [opts]
+ * @param {number} [opts.status=500]
+ * @param {string} [opts.message='Internal server error']
+ * @param {string} [opts.context]
+ */
+export function safeErrorResponse(error, opts = {}) {
+  const { status = 500, message = 'Internal server error', context } = opts;
+  const detail = error instanceof Error ? error.message : String(error ?? '');
+  logger.error(context || 'API Error', { error: detail, stack: error?.stack });
+  const body = { error: message };
+  if (process.env.NODE_ENV !== 'production' && detail) body.detail = detail;
+  return NextResponse.json(body, { status });
+}
+
 export function withApiGuard(handler, options = {}) {
   const { requireAuth = true, strict = false, requiredRole = null } = options;
 

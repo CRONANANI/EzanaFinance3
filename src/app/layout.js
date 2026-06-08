@@ -43,6 +43,10 @@ export default async function RootLayout({ children }) {
      main content rendered light. */
   const initialTheme = await getServerTheme();
   const isDark = initialTheme === 'dark';
+  /* Defense-in-depth: this value is interpolated into an inline <script> below,
+     so collapse it to a known-safe literal ('dark' | 'light') to make script
+     injection impossible even if getServerTheme ever returns untrusted data. */
+  const safeInitialTheme = initialTheme === 'dark' ? 'dark' : 'light';
 
   /* Read the request pathname forwarded by middleware so we can pre-apply
      route-scoped body classes (`dashboard-page`, `route-regular-dashboard`,
@@ -97,7 +101,7 @@ export default async function RootLayout({ children }) {
             __html: `
         (function() {
           try {
-            var serverTheme = '${initialTheme}';
+            var serverTheme = '${safeInitialTheme}';
             var theme = (serverTheme === 'dark' || serverTheme === 'light') ? serverTheme : null;
             if (!theme) {
               var cookieMatch = document.cookie.match(/(?:^|;\\s*)ezana\\.theme=([^;]+)/);
