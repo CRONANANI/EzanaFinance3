@@ -575,26 +575,11 @@ export default function PersonalizationRadar({ sourceDetails }) {
         </div>
 
         {/* WiFi arcs + Personalized Intelligence Dashboard pill */}
-        <div className="flex flex-col items-center mt-1">
-          <div className="text-emerald-500 mb-3.5">
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M12 5v14M19 12l-7 7-7-7" />
-            </svg>
-          </div>
-
+        <div className="flex flex-col items-center -mt-2">
           <div className="flex flex-col items-center" aria-hidden>
-            <svg width="100" height="50" viewBox="0 0 100 50" className="overflow-visible">
+            <svg width="140" height="70" viewBox="0 0 140 70" className="overflow-visible">
               <motion.path
-                d="M 40 20 Q 50 10 60 20"
+                d="M 56 28 Q 70 14 84 28"
                 fill="none"
                 stroke="#10b981"
                 strokeWidth="5"
@@ -603,7 +588,7 @@ export default function PersonalizationRadar({ sourceDetails }) {
                 transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
               />
               <motion.path
-                d="M 28 32 Q 50 8 72 32"
+                d="M 39 45 Q 70 11 101 45"
                 fill="none"
                 stroke="#10b981"
                 strokeWidth="5"
@@ -612,7 +597,7 @@ export default function PersonalizationRadar({ sourceDetails }) {
                 transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut', delay: 0.2 }}
               />
               <motion.path
-                d="M 16 44 Q 50 6 84 44"
+                d="M 22 62 Q 70 8 118 62"
                 fill="none"
                 stroke="#10b981"
                 strokeWidth="5"
@@ -623,7 +608,7 @@ export default function PersonalizationRadar({ sourceDetails }) {
             </svg>
           </div>
 
-          <div className="relative mt-3.5">
+          <div className="relative mt-2">
             <motion.div
               className="absolute -inset-1 rounded-xl blur-md"
               style={{

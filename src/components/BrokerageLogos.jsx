@@ -96,12 +96,6 @@ export function BrokerageLogos() {
         Securely link 1,000+ brokerages and crypto exchanges via SnapTrade &amp; Plaid. Read
         holdings or place trades from supported brokers — without leaving Ezana.
       </p>
-      <p className="bl-status-pill lf-mono">
-        <span className="bl-status-dot" aria-hidden="true" />
-        <span>
-          <span className="bl-status-count">1,000+</span> brokerages &amp; exchanges supported
-        </span>
-      </p>
 
       <div className="bl-carousel-mask">
         <div className="bl-carousel-track">

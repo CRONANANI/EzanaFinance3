@@ -18,18 +18,20 @@
   animation: radar-blip 2.6s ease-out infinite;
   transform-box: fill-box;
   transform-origin: center;
+  will-change: transform, opacity;
 }
 @keyframes radar-blip {
   0% {
     opacity: 0.85;
-    r: 5px;
+    transform: scale(1);
   }
   70% {
     opacity: 0;
-    r: 16px;
+    transform: scale(3.2);
   }
   100% {
     opacity: 0;
+    transform: scale(3.2);
   }
 }
 
