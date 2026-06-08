@@ -288,7 +288,10 @@ export default function DatabaseWithRestApi({
         />
       </div>
 
-      <div className="relative hidden w-full lg:block" style={{ minHeight: '420px' }}>
+      <div
+        className="relative hidden w-full lg:block"
+        style={{ minHeight: '420px', transform: 'scale(0.8)', transformOrigin: 'top center' }}
+      >
         {/* SVG Connection Lines — now keyed off hoveredSource instead of a click-selected source */}
         <svg
           className="absolute inset-0 w-full h-full pointer-events-none"
@@ -339,21 +342,28 @@ export default function DatabaseWithRestApi({
                     strokeLinecap="round"
                   />
                 )}
-                <circle r="4" fill={accentColor} filter="url(#glow)" opacity="0.8">
+                <motion.circle
+                  r="4"
+                  fill={accentColor}
+                  filter="url(#glow)"
+                  animate={{ opacity: [0, 0.8, 0.8, 0] }}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
+                    delay: index * 0.5,
+                  }}
+                >
                   <animateMotion
                     dur="3s"
                     repeatCount="indefinite"
                     begin={`${index * 0.5}s`}
-                    path={pos.fullPath}
+                    path={isActive ? pos.pathStart : pos.fullPath}
+                    keyPoints="0;1"
+                    keyTimes="0;1"
+                    calcMode="linear"
                   />
-                  <animate
-                    attributeName="opacity"
-                    values="0;0.8;0.8;0"
-                    dur="3s"
-                    repeatCount="indefinite"
-                    begin={`${index * 0.5}s`}
-                  />
-                </circle>
+                </motion.circle>
               </g>
             );
           })}
