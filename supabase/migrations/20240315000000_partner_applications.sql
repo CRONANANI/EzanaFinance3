@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS partner_applications (
   -- Professional background
   partner_type TEXT NOT NULL,
   years_experience INTEGER,
-  current_role TEXT,
+  "current_role" TEXT,
   company_name TEXT,
   linkedin_url TEXT,
   website_url TEXT,
