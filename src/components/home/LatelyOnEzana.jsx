@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useEffect, useCallback } from 'react';
 import { TrendingUp } from 'lucide-react';
-import { TimeRangeSelector } from '@/components/ui/TimeRangeSelector';
+import { DateSelector } from '@/components/ui/DateSelector';
 import {
   CartesianGrid,
   Line,
@@ -19,7 +19,7 @@ const TABS = [
   { key: 'activity', label: 'Platform Activity' },
 ];
 
-const PERIOD_OPTIONS = ['1D', '7D', '1M', '3M', '6M', '1Y', 'ALL'];
+const PERIOD_OPTIONS = ['1D', '7D', '1M', '3M', '6M', '1Y', '3Y', '5Y', 'ALL'];
 
 function periodToLabel(period) {
   const labels = {
@@ -29,6 +29,8 @@ function periodToLabel(period) {
     '3M': 'Past 3 Months',
     '6M': 'Past 6 Months',
     '1Y': 'Past Year',
+    '3Y': 'Past 3 Years',
+    '5Y': 'Past 5 Years',
     ALL: 'All Time',
   };
   return labels[period] || period;
@@ -123,7 +125,13 @@ function pearson(xs, ys) {
   return num / den;
 }
 
-function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false, period = '7D' }) {
+function MarketPerformanceTab({
+  compact = false,
+  indexPayload,
+  chartOnly = false,
+  period = '7D',
+  showPortfolio = true,
+}) {
   const loading = indexPayload === null;
   const failed = !loading && (!indexPayload?.ok || !indexPayload?.indices);
 
@@ -158,6 +166,12 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
     tnx: false,
     portfolio: true,
   });
+
+  useEffect(() => {
+    setVisibleSeries((prev) =>
+      prev.portfolio === showPortfolio ? prev : { ...prev, portfolio: showPortfolio },
+    );
+  }, [showPortfolio]);
 
   const [hoveredKey, setHoveredKey] = useState(null);
 
@@ -707,6 +721,7 @@ export function LatelyOnEzana({ compact = false, marketChartOnly = false }) {
   const [activeTab, setActiveTab] = useState('market');
   const [period, setPeriod] = useState('7D');
   const [indexPayload, setIndexPayload] = useState(null);
+  const [showPortfolio, setShowPortfolio] = useState(true);
 
   const fetchData = useCallback((p) => {
     setIndexPayload(null);
@@ -786,13 +801,40 @@ export function LatelyOnEzana({ compact = false, marketChartOnly = false }) {
           </h3>
           <span className="hts-week-date-range">{periodToLabel(period)}</span>
         </div>
-        <TimeRangeSelector
-          ranges={PERIOD_OPTIONS}
-          value={period}
-          onChange={handlePeriodChange}
-          size="xs"
-          inactiveTextColor="var(--home-muted)"
-        />
+        <div
+          style={{
+            display: 'flex',
+            gap: '0.75rem',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => setShowPortfolio((p) => !p)}
+            style={{
+              padding: '0.2rem 0.5rem',
+              borderRadius: 5,
+              border: `1px solid ${showPortfolio ? 'rgba(16,185,129,0.4)' : 'var(--border-primary, rgba(128,128,128,0.2))'}`,
+              background: showPortfolio ? 'rgba(16,185,129,0.1)' : 'transparent',
+              color: showPortfolio ? '#10b981' : 'var(--text-muted, #8b949e)',
+              fontSize: '0.55rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all 0.15s',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            My Portfolio
+          </button>
+          <DateSelector
+            ranges={PERIOD_OPTIONS}
+            value={period}
+            onChange={handlePeriodChange}
+            size="xs"
+            inactiveTextColor="var(--home-muted)"
+          />
+        </div>
       </div>
       <div
         className={`hts-card-body hts-week-card-body${compact ? ' hts-week-card-body--compact' : ''}`}
@@ -826,6 +868,7 @@ export function LatelyOnEzana({ compact = false, marketChartOnly = false }) {
               indexPayload={indexPayload}
               chartOnly={marketChartOnly}
               period={period}
+              showPortfolio={showPortfolio}
             />
           )}
           {activeTab === 'activity' && <PlatformActivityTab />}
