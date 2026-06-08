@@ -77,20 +77,48 @@ export const GET = withApiGuard(
 
           const admin = getAdminClient();
 
-          const [{ data: profiles, error: profErr }, { data: mockRows }, { data: snapshots }] =
-            await Promise.all([
-              admin
-                .from('profiles')
-                .select('id, username, full_name, user_settings')
-                .order('created_at', { ascending: false })
-                .limit(800),
-              admin.from('mock_portfolios').select('user_id, portfolio'),
+          // Read model first: precomputed snapshot returns from the materialized
+          // view. If it isn't present yet (migration not applied), fall back to a
+          // live snapshot scan so behaviour is identical either way.
+          let mvReturns = null;
+          try {
+            const { data: mvRows, error: mvErr } = await admin
+              .from('mv_portfolio_leaderboard')
+              .select('user_id, return_pct')
+              .eq('period', period);
+            if (!mvErr && Array.isArray(mvRows)) {
+              mvReturns = new Map(
+                mvRows
+                  .filter((r) => r.return_pct != null)
+                  .map((r) => [r.user_id, Number(r.return_pct)]),
+              );
+            }
+          } catch {
+            mvReturns = null;
+          }
+
+          const queries = [
+            admin
+              .from('profiles')
+              .select('id, username, full_name, user_settings')
+              .order('created_at', { ascending: false })
+              .limit(800),
+            admin.from('mock_portfolios').select('user_id, portfolio'),
+          ];
+          // Only pull raw snapshots when the read model wasn't available.
+          if (!mvReturns) {
+            queries.push(
               admin
                 .from('portfolio_value_snapshots')
                 .select('user_id, snapshot_date, total_value')
                 .gte('snapshot_date', fromDate)
                 .order('snapshot_date', { ascending: true }),
-            ]);
+            );
+          }
+
+          const results = await Promise.all(queries);
+          const { data: profiles, error: profErr } = results[0];
+          const { data: mockRows } = results[1];
 
           // Don't cache a failed read — surface the error so the outer handler
           // returns an (uncached) empty result and we retry next request.
@@ -98,11 +126,27 @@ export const GET = withApiGuard(
 
           const mockByUser = new Map((mockRows || []).map((r) => [r.user_id, r.portfolio]));
 
-          const snapsByUser = new Map();
-          for (const row of snapshots || []) {
-            const uid = row.user_id;
-            if (!snapsByUser.has(uid)) snapsByUser.set(uid, []);
-            snapsByUser.get(uid).push(row);
+          // Resolve a user's snapshot-based return: from the read model when
+          // present, else computed from the raw snapshot rows.
+          let snapshotReturn;
+          if (mvReturns) {
+            snapshotReturn = (uid) => (mvReturns.has(uid) ? mvReturns.get(uid) : null);
+          } else {
+            const snapsByUser = new Map();
+            for (const row of results[2]?.data || []) {
+              const uid = row.user_id;
+              if (!snapsByUser.has(uid)) snapsByUser.set(uid, []);
+              snapsByUser.get(uid).push(row);
+            }
+            snapshotReturn = (uid) => {
+              const userSnaps = snapsByUser.get(uid);
+              if (userSnaps && userSnaps.length >= 2) {
+                const startVal = Number(userSnaps[0].total_value);
+                const endVal = Number(userSnaps[userSnaps.length - 1].total_value);
+                if (startVal > 0 && endVal > 0) return computeReturnPct(startVal, endVal);
+              }
+              return null;
+            };
           }
 
           const ranked = (profiles || [])
@@ -110,16 +154,7 @@ export const GET = withApiGuard(
               const s = row.user_settings || {};
               if (s.privacy_show_on_leaderboard === false) return null;
 
-              let returnPct = null;
-              const userSnaps = snapsByUser.get(row.id);
-              if (userSnaps && userSnaps.length >= 2) {
-                const startVal = Number(userSnaps[0].total_value);
-                const endVal = Number(userSnaps[userSnaps.length - 1].total_value);
-                if (startVal > 0 && endVal > 0) {
-                  returnPct = computeReturnPct(startVal, endVal);
-                }
-              }
-
+              let returnPct = snapshotReturn(row.id);
               if (returnPct == null) {
                 returnPct = returnFromMockPortfolio(mockByUser.get(row.id));
               }

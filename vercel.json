@@ -72,6 +72,10 @@
     {
       "path": "/api/cron/compute-community-pulse",
       "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/refresh-materialized-views",
+      "schedule": "*/10 * * * *"
     }
   ]
 }
