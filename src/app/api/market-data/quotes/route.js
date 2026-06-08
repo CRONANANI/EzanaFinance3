@@ -1,8 +1,13 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { fetchAllBulkQuotesAlpha, getAlphaVantageApiKey, fetchAV } from '@/lib/alpha-vantage';
+import { cacheGetOrSet } from '@/lib/cache';
 
 export const dynamic = 'force-dynamic';
+
+// Same payload for everyone; refresh at most once per minute. Caching here also
+// protects the upstream AlphaVantage/Finnhub quotas from request bursts.
+const QUOTES_TTL_SECONDS = 60;
 
 async function fetchFinnhubQuote(symbol, apiKey) {
   try {
@@ -173,20 +178,17 @@ async function handleGet() {
     }
   }
 
-  return NextResponse.json(
-    {
-      quotes: allQuotes.filter((q) => q.price !== '—'),
-    },
-    {
-      headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120' },
-    },
-  );
+  return allQuotes.filter((q) => q.price !== '—');
 }
 
 export const GET = withApiGuard(
   async () => {
     try {
-      return await handleGet();
+      const quotes = await cacheGetOrSet('market-data:quotes', QUOTES_TTL_SECONDS, handleGet);
+      return NextResponse.json(
+        { quotes },
+        { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120' } },
+      );
     } catch (err) {
       console.error('[market-data/quotes]', err);
       return NextResponse.json({ quotes: [] }, { status: 500 });

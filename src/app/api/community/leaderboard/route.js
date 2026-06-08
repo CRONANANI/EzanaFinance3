@@ -2,8 +2,15 @@ import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { getAdminClient } from '@/lib/supabase';
 import { computeReturnPct } from '@/lib/elo-portfolio-perf';
+import { cacheGetOrSet } from '@/lib/cache';
 
 export const dynamic = 'force-dynamic';
+
+// The leaderboard is identical for every viewer of a given period+limit and is
+// expensive to compute (scans profiles + portfolios + snapshots), so cache the
+// computed result. 90s keeps it fresh-enough while collapsing bursts of reads
+// into a single DB pass. (Phase 2 will back this with a materialized view.)
+const LEADERBOARD_TTL_SECONDS = 90;
 
 function periodToDays(period) {
   return { daily: 1, weekly: 7, monthly: 30, yearly: 365 }[period] || 7;
@@ -60,75 +67,83 @@ export const GET = withApiGuard(
       const { searchParams } = new URL(request.url);
       const limit = Math.min(100, Math.max(5, parseInt(searchParams.get('limit') || '50', 10)));
       const period = searchParams.get('period') || 'weekly';
-      const days = periodToDays(period);
-      const fromDate = isoDaysAgo(days + 2);
 
-      const admin = getAdminClient();
+      const payload = await cacheGetOrSet(
+        `community:leaderboard:${period}:${limit}`,
+        LEADERBOARD_TTL_SECONDS,
+        async () => {
+          const days = periodToDays(period);
+          const fromDate = isoDaysAgo(days + 2);
 
-      const [{ data: profiles, error: profErr }, { data: mockRows }, { data: snapshots }] =
-        await Promise.all([
-          admin
-            .from('profiles')
-            .select('id, username, full_name, user_settings')
-            .order('created_at', { ascending: false })
-            .limit(800),
-          admin.from('mock_portfolios').select('user_id, portfolio'),
-          admin
-            .from('portfolio_value_snapshots')
-            .select('user_id, snapshot_date, total_value')
-            .gte('snapshot_date', fromDate)
-            .order('snapshot_date', { ascending: true }),
-        ]);
+          const admin = getAdminClient();
 
-      if (profErr) {
-        console.error('[leaderboard] profile fetch error:', profErr.message);
-        return NextResponse.json({ period, users: [] });
-      }
+          const [{ data: profiles, error: profErr }, { data: mockRows }, { data: snapshots }] =
+            await Promise.all([
+              admin
+                .from('profiles')
+                .select('id, username, full_name, user_settings')
+                .order('created_at', { ascending: false })
+                .limit(800),
+              admin.from('mock_portfolios').select('user_id, portfolio'),
+              admin
+                .from('portfolio_value_snapshots')
+                .select('user_id, snapshot_date, total_value')
+                .gte('snapshot_date', fromDate)
+                .order('snapshot_date', { ascending: true }),
+            ]);
 
-      const mockByUser = new Map((mockRows || []).map((r) => [r.user_id, r.portfolio]));
+          // Don't cache a failed read — surface the error so the outer handler
+          // returns an (uncached) empty result and we retry next request.
+          if (profErr) throw new Error(`profile fetch: ${profErr.message}`);
 
-      const snapsByUser = new Map();
-      for (const row of snapshots || []) {
-        const uid = row.user_id;
-        if (!snapsByUser.has(uid)) snapsByUser.set(uid, []);
-        snapsByUser.get(uid).push(row);
-      }
+          const mockByUser = new Map((mockRows || []).map((r) => [r.user_id, r.portfolio]));
 
-      const ranked = (profiles || [])
-        .map((row) => {
-          const s = row.user_settings || {};
-          if (s.privacy_show_on_leaderboard === false) return null;
-
-          let returnPct = null;
-          const userSnaps = snapsByUser.get(row.id);
-          if (userSnaps && userSnaps.length >= 2) {
-            const startVal = Number(userSnaps[0].total_value);
-            const endVal = Number(userSnaps[userSnaps.length - 1].total_value);
-            if (startVal > 0 && endVal > 0) {
-              returnPct = computeReturnPct(startVal, endVal);
-            }
+          const snapsByUser = new Map();
+          for (const row of snapshots || []) {
+            const uid = row.user_id;
+            if (!snapsByUser.has(uid)) snapsByUser.set(uid, []);
+            snapsByUser.get(uid).push(row);
           }
 
-          if (returnPct == null) {
-            returnPct = returnFromMockPortfolio(mockByUser.get(row.id));
-          }
+          const ranked = (profiles || [])
+            .map((row) => {
+              const s = row.user_settings || {};
+              if (s.privacy_show_on_leaderboard === false) return null;
 
-          if (returnPct == null) return null;
+              let returnPct = null;
+              const userSnaps = snapsByUser.get(row.id);
+              if (userSnaps && userSnaps.length >= 2) {
+                const startVal = Number(userSnaps[0].total_value);
+                const endVal = Number(userSnaps[userSnaps.length - 1].total_value);
+                if (startVal > 0 && endVal > 0) {
+                  returnPct = computeReturnPct(startVal, endVal);
+                }
+              }
 
-          const name = (row.full_name || s.display_name || '').trim() || 'Member';
-          return {
-            id: row.id,
-            username: row.username || '',
-            name,
-            return: Math.round(returnPct * 100) / 100,
-          };
-        })
-        .filter(Boolean)
-        .sort((a, b) => (b.return ?? 0) - (a.return ?? 0))
-        .slice(0, limit)
-        .map((row, i) => ({ ...row, rank: i + 1 }));
+              if (returnPct == null) {
+                returnPct = returnFromMockPortfolio(mockByUser.get(row.id));
+              }
 
-      return NextResponse.json({ period, users: ranked });
+              if (returnPct == null) return null;
+
+              const name = (row.full_name || s.display_name || '').trim() || 'Member';
+              return {
+                id: row.id,
+                username: row.username || '',
+                name,
+                return: Math.round(returnPct * 100) / 100,
+              };
+            })
+            .filter(Boolean)
+            .sort((a, b) => (b.return ?? 0) - (a.return ?? 0))
+            .slice(0, limit)
+            .map((row, i) => ({ ...row, rank: i + 1 }));
+
+          return { period, users: ranked };
+        },
+      );
+
+      return NextResponse.json(payload);
     } catch (err) {
       console.error('[leaderboard] unexpected error:', err);
       return NextResponse.json({ period: 'weekly', users: [] }, { status: 500 });
