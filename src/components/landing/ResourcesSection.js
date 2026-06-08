@@ -174,8 +174,11 @@ export function ResourcesSection() {
           <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-400 mb-3">
             Data &amp; Resources
           </div>
-          <h2>Seven dimensions, weighted to you.</h2>
-          <p className="max-w-[600px] mx-auto px-6 text-sm text-[#8b949e] leading-relaxed mt-3">
+          <h2 style={{ color: '#f0f6fc' }}>Seven dimensions, weighted to you.</h2>
+          <p
+            className="max-w-[600px] mx-auto px-6 text-sm leading-relaxed mt-3"
+            style={{ color: '#9ca3af' }}
+          >
             Ezana never stops studying your activity, risk tolerance and interests &mdash;
             continuously retuning how much each domain weighs. The further a dimension drifts from
             the core, the more it shapes the news in your dashboard right now.

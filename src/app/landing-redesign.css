@@ -1,16 +1,16 @@
 /* Landing redesign — resources recolor only (layout unchanged) */
 
 .landing-page .resources-header h2 {
-  color: var(--emerald-text);
+  color: #f0f6fc;
   background: none;
   -webkit-background-clip: border-box;
-  -webkit-text-fill-color: var(--emerald-text);
+  -webkit-text-fill-color: #f0f6fc;
   background-clip: border-box;
   text-align: center;
 }
 
 .landing-page .resources-header p {
-  color: var(--text-primary);
+  color: #9ca3af;
 }
 
 .landing-page .landing-data-sources > h3 {

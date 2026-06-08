@@ -29,7 +29,7 @@ function ang(i) {
 }
 
 function easeInOut(t) {
-  return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
 function basePoints() {
@@ -225,7 +225,7 @@ export default function PersonalizationRadar({ sourceDetails }) {
     function repick(s, now) {
       s.start = s.cur;
       s.target = 0.16 + Math.random() * 0.82;
-      s.dur = 1100 + Math.random() * 2400;
+      s.dur = 2800 + Math.random() * 3200;
       s.t0 = now;
     }
 
@@ -300,6 +300,24 @@ export default function PersonalizationRadar({ sourceDetails }) {
 
       {/* Desktop radar */}
       <div className="hidden lg:block">
+        {/* Legend */}
+        <div className="flex justify-center gap-5 mb-4">
+          <span className="flex items-center gap-1.5 font-mono text-[10.5px] text-[#8b949e]">
+            <span
+              className="inline-block w-3.5 h-2 rounded-sm"
+              style={{ background: 'rgba(16,185,129,.5)', border: '1px solid #10b981' }}
+            />
+            Your weighting
+          </span>
+          <span className="flex items-center gap-1.5 font-mono text-[10.5px] text-[#8b949e]">
+            <span
+              className="inline-block w-3.5 h-2 rounded-sm"
+              style={{ background: 'transparent', border: '1px dashed #6b7280' }}
+            />
+            Average user
+          </span>
+        </div>
+
         <div className="relative w-full max-w-[1100px] mx-auto">
           <svg
             viewBox="0 0 1120 760"
@@ -554,24 +572,6 @@ export default function PersonalizationRadar({ sourceDetails }) {
               </ul>
             </div>
           )}
-        </div>
-
-        {/* Legend */}
-        <div className="flex justify-center gap-5 mt-3.5">
-          <span className="flex items-center gap-1.5 font-mono text-[10.5px] text-[#8b949e]">
-            <span
-              className="inline-block w-3.5 h-2 rounded-sm"
-              style={{ background: 'rgba(16,185,129,.5)', border: '1px solid #10b981' }}
-            />
-            Your weighting
-          </span>
-          <span className="flex items-center gap-1.5 font-mono text-[10.5px] text-[#8b949e]">
-            <span
-              className="inline-block w-3.5 h-2 rounded-sm"
-              style={{ background: 'transparent', border: '1px dashed #6b7280' }}
-            />
-            Average user
-          </span>
         </div>
 
         {/* WiFi arcs + Personalized Intelligence Dashboard pill */}
