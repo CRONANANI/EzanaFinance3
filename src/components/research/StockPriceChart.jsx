@@ -215,9 +215,11 @@ export default function StockPriceChart({
 
   const firstPrice = candles[0]?.price;
   const lastPrice = candles[candles.length - 1]?.price;
-  const isPositive = lastPrice != null && firstPrice != null ? lastPrice >= firstPrice : true;
+  const displayPrice = livePrice ?? lastPrice;
+  const refPrice = displayPrice ?? lastPrice;
+  const isPositive = refPrice != null && firstPrice != null ? refPrice >= firstPrice : true;
   const pctChange =
-    firstPrice && lastPrice ? (((lastPrice - firstPrice) / firstPrice) * 100).toFixed(2) : null;
+    firstPrice && refPrice ? (((refPrice - firstPrice) / firstPrice) * 100).toFixed(2) : null;
   const lineColour = isPositive ? '#10b981' : '#ef4444';
   const gradientId = `grad-${symbol?.replace(/[^a-zA-Z0-9]/g, '')}`;
   const minPrice = candles.length ? Math.min(...candles.map((c) => (c.low ?? c.price) * 0.998)) : 0;

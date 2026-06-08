@@ -367,7 +367,7 @@ export default function HomePage() {
   const [congressTrades, setCongressTrades] = useState([]);
   const [opportunities, setOpportunities] = useState([]);
   const [tickerItems, setTickerItems] = useState(TICKER_ITEMS);
-  const [activeIndices, setActiveIndices] = useState(new Set());
+  const [activeIndices, setActiveIndices] = useState(new Set(['S&P 500']));
   const [indexSeries, setIndexSeries] = useState({});
   const [indexSeriesLoading, setIndexSeriesLoading] = useState(false);
   const [commodityMovers, setCommodityMovers] = useState([]);
@@ -423,10 +423,30 @@ export default function HomePage() {
       value: p.value,
     }));
     const portfolioBase = portfolioPts[0]?.value || 0;
-    const out = portfolioPts.map((p) => ({
-      ...p,
-      portfolio: portfolioBase > 0 ? ((p.value - portfolioBase) / portfolioBase) * 100 : 0,
-    }));
+
+    let out;
+    if (portfolioPts.length > 0) {
+      out = portfolioPts.map((p) => ({
+        ...p,
+        portfolio: portfolioBase > 0 ? ((p.value - portfolioBase) / portfolioBase) * 100 : 0,
+      }));
+    } else {
+      const dateSet = new Set();
+      for (const label of activeIndices) {
+        const apiKey = INDEX_API_KEYS[label];
+        if (!apiKey) continue;
+        const series = indexSeries[apiKey] || [];
+        for (const pt of series) {
+          const ymd = pt.ymd || pt.date;
+          if (ymd) dateSet.add(ymd);
+        }
+      }
+      const sortedDates = [...dateSet].sort();
+      out = sortedDates.map((ymd) => ({
+        at: new Date(ymd + 'T12:00:00Z').toISOString(),
+        label: new Date(ymd + 'T12:00:00Z').getTime(),
+      }));
+    }
 
     for (const label of activeIndices) {
       const apiKey = INDEX_API_KEYS[label];
@@ -643,7 +663,6 @@ export default function HomePage() {
     if (!indexSeries || Object.keys(indexSeries).length === 0) return;
     setIndices((prev) =>
       prev.map((row) => {
-        if (row.sym !== 'WTI' && row.sym !== '10Y') return row;
         const apiKey = INDEX_API_KEYS[row.sym];
         const series = indexSeries[apiKey];
         if (!series || !series.length) return row;
@@ -1288,7 +1307,7 @@ export default function HomePage() {
           <BandHeader
             number="I"
             label="Lately on Ezana"
-            meta="Performance · trailing seven days"
+            meta={`Performance · ${timeframe === '1D' ? 'today' : timeframe === '5D' ? 'trailing five days' : timeframe === '1M' ? 'past month' : timeframe === '3M' ? 'past 3 months' : timeframe === '6M' ? 'past 6 months' : timeframe === '1Y' ? 'past year' : 'all time'}`}
             centered
           />
           <div className="bs-chart-block">
@@ -1651,7 +1670,12 @@ export default function HomePage() {
       {/* ═══ BAND III — MARKETS PULSE (dark) ═══ */}
       <section className="bs-band bs-band--dark">
         <div className="bs-page-inner">
-          <BandHeader number="III" label="Markets pulse" meta="S&P 500 GICS · today" dark />
+          <BandHeader
+            number="III"
+            label="Markets pulse"
+            meta={`S&P 500 GICS · ${pulseRange === '1D' ? 'today' : pulseRange === '1W' ? 'past week' : pulseRange === '1M' ? 'past month' : 'year to date'}`}
+            dark
+          />
           <div className="bs-chart-range-row">
             <div className="bs-seg-group">
               {['1D', '1W', '1M', 'YTD'].map((r) => (
