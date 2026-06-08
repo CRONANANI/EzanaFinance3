@@ -390,7 +390,7 @@ export function OrgQuestionnaire({ userId, role, onComplete }) {
       const riskCategory = profile.risk.replace('-Oriented', '');
       const stored = { ...clean, [META_ROLE_KEY]: normalizedRole };
       try {
-        await supabase
+        const { error } = await supabase
           .from('profiles')
           .update({
             investor_questionnaire: stored,
@@ -400,8 +400,12 @@ export function OrgQuestionnaire({ userId, role, onComplete }) {
             risk_category: riskCategory,
           })
           .eq('id', userId);
-      } catch {
-        /* best-effort */
+        // Surface failures: if this update fails (e.g. a missing column), the
+        // completion flag never persists and the user gets bounced back to
+        // onboarding — previously this was swallowed silently.
+        if (error) console.error('[OrgQuestionnaire] finalize profile failed:', error.message);
+      } catch (e) {
+        console.error('[OrgQuestionnaire] finalize profile threw:', e?.message);
       }
       setDone(true);
     },
@@ -551,10 +555,7 @@ export function OrgQuestionnaire({ userId, role, onComplete }) {
             {normalizedRole === 'executive' && profile.management.management_style && (
               <div className="iq-result-stat">
                 <span className="iq-result-label">Management Style</span>
-                <span
-                  className="iq-result-value"
-                  style={{ fontSize: '0.875rem', textTransform: 'capitalize' }}
-                >
+                <span className="iq-result-value" style={{ textTransform: 'capitalize' }}>
                   {String(profile.management.management_style).replace(/_/g, ' ')}
                 </span>
               </div>
@@ -562,10 +563,7 @@ export function OrgQuestionnaire({ userId, role, onComplete }) {
             {normalizedRole === 'portfolio_manager' && profile.management.strategy_approach && (
               <div className="iq-result-stat">
                 <span className="iq-result-label">Strategy Approach</span>
-                <span
-                  className="iq-result-value"
-                  style={{ fontSize: '0.875rem', textTransform: 'capitalize' }}
-                >
+                <span className="iq-result-value" style={{ textTransform: 'capitalize' }}>
                   {profile.management.strategy_approach}
                 </span>
               </div>
