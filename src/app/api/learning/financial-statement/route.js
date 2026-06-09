@@ -22,7 +22,7 @@ function getFmpKey() {
 export const GET = withApiGuard(
   async (request, user) => {
     try {
-      const url = new URL(req.url);
+      const url = new URL(request.url);
       const symbol = (url.searchParams.get('symbol') || '').toUpperCase().trim();
       const statement = url.searchParams.get('statement') || 'income';
       const period = url.searchParams.get('period') === 'quarter' ? 'quarter' : 'annual';

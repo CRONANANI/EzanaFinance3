@@ -21,6 +21,7 @@ function periodToDays(period) {
     '1Y': 365,
     '3Y': 1095,
     '5Y': 1825,
+    '10Y': 3650,
     ALL: 7300,
   };
   return map[period] || 7;
@@ -217,7 +218,7 @@ function buildSeries(points, period) {
   } else if (period === '3M' || period === '6M' || period === '1Y') {
     const n = period === '3M' ? 3 : period === '6M' ? 6 : 12;
     aggregated = aggregateByMonth(filtered).slice(-n);
-  } else if (period === '3Y' || period === '5Y') {
+  } else if (period === '3Y' || period === '5Y' || period === '10Y') {
     aggregated = aggregateByMonth(filtered);
   } else if (period === 'ALL') {
     aggregated = aggregateByYear(filtered);

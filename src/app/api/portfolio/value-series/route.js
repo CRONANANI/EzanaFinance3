@@ -15,8 +15,10 @@ const RANGES = new Set(['1D', '7D', '1M', '3M', '6M', '1Y', 'ALL']);
 export const GET = withApiGuard(
   async (request, user, context) => {
     try {
-      const range = RANGES.has(req.nextUrl.searchParams.get('range'))
-        ? /** @type {'1D'|'7D'|'1M'|'3M'|'6M'|'1Y'|'ALL'} */ (req.nextUrl.searchParams.get('range'))
+      const range = RANGES.has(request.nextUrl.searchParams.get('range'))
+        ? /** @type {'1D'|'7D'|'1M'|'3M'|'6M'|'1Y'|'ALL'} */ (
+            request.nextUrl.searchParams.get('range')
+          )
         : '1M';
 
       const endValue = await getPortfolioEndValue(user.id);

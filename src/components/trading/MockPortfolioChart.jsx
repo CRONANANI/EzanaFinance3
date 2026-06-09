@@ -13,7 +13,7 @@ import {
 import { DateSelector } from '@/components/ui/DateSelector';
 import './mock-portfolio-chart.css';
 
-const RANGES = ['ALL', '1M', '6M', '1Y'];
+const RANGES = ['1M', '6M', '1Y', '3Y', '5Y', '10Y', 'ALL'];
 
 function formatUSD(v) {
   if (!Number.isFinite(v)) return '$0';
@@ -48,7 +48,8 @@ function CustomTooltip({ active, payload }) {
 }
 
 export default function MockPortfolioChart() {
-  const [range, setRange] = useState('ALL');
+  const [range, setRange] = useState('ALL'); // 'ALL' = since inception (default)
+  const [customRange, setCustomRange] = useState(null);
   const [data, setData] = useState({ points: [], source: 'loading' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -58,7 +59,14 @@ export default function MockPortfolioChart() {
     setLoading(true);
     setError(null);
 
-    fetch(`/api/portfolio/mock-value-series?range=${range}`, { cache: 'no-store' })
+    const url =
+      range === 'CUSTOM' && customRange?.start && customRange?.end
+        ? `/api/portfolio/mock-value-series?range=ALL&from=${encodeURIComponent(
+            customRange.start.toISOString(),
+          )}&to=${encodeURIComponent(customRange.end.toISOString())}`
+        : `/api/portfolio/mock-value-series?range=${range}`;
+
+    fetch(url, { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
         if (cancelled) return;
@@ -85,7 +93,7 @@ export default function MockPortfolioChart() {
     return () => {
       cancelled = true;
     };
-  }, [range]);
+  }, [range, customRange]);
 
   const chartData = useMemo(() => {
     return (data.points || []).map((p) => ({
@@ -123,7 +131,20 @@ export default function MockPortfolioChart() {
             </div>
           )}
         </div>
-        <DateSelector ranges={RANGES} value={range} onChange={setRange} size="xs" />
+        <DateSelector
+          ranges={RANGES}
+          value={range}
+          onChange={setRange}
+          size="xs"
+          variant="default"
+          showCustomDateButton={true}
+          onCustomDateChange={(custom) => {
+            if (custom?.start && custom?.end) {
+              setRange('CUSTOM');
+              setCustomRange(custom);
+            }
+          }}
+        />
       </div>
 
       {loading && <div className="mpc-loading">Loading portfolio history…</div>}

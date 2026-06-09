@@ -14,7 +14,7 @@ import {
 } from 'recharts';
 import { DateSelector } from '@/components/ui/DateSelector';
 
-const RANGES = ['1D', '1W', '1M', '3M', '6M', '1Y', '3Y', '5Y', 'ALL'];
+const RANGES = ['1D', '1W', '1M', '3M', '6M', '1Y', '3Y', '5Y', '10Y', 'ALL'];
 
 function CustomTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;

@@ -19,7 +19,7 @@ const TABS = [
   { key: 'activity', label: 'Platform Activity' },
 ];
 
-const PERIOD_OPTIONS = ['1D', '7D', '1M', '3M', '6M', '1Y', '3Y', '5Y', 'ALL'];
+const PERIOD_OPTIONS = ['1D', '7D', '1M', '3M', '6M', '1Y', '3Y', '5Y', '10Y', 'ALL'];
 
 function periodToLabel(period) {
   const labels = {
@@ -31,6 +31,7 @@ function periodToLabel(period) {
     '1Y': 'Past Year',
     '3Y': 'Past 3 Years',
     '5Y': 'Past 5 Years',
+    '10Y': 'Past 10 Years',
     ALL: 'All Time',
   };
   return labels[period] || period;

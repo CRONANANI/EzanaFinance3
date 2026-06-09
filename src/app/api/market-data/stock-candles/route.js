@@ -23,6 +23,7 @@ const RANGE_DAYS = {
   '1Y': 370,
   '3Y': 1100,
   '5Y': 1830,
+  '10Y': 3660,
   ALL: 7300, // ~20 years — FMP returns what it has
 };
 
@@ -35,7 +36,7 @@ function makeLabel(dateStr, range) {
   if (range === '1D' || range === '1W') {
     return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
   }
-  if (range === '3Y' || range === '5Y' || range === 'ALL') {
+  if (range === '3Y' || range === '5Y' || range === '10Y' || range === 'ALL') {
     return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
   }
   if (range === '1Y') {
@@ -109,7 +110,7 @@ export const GET = withApiGuard(
 
       // Long historical ranges: cache for 24hrs (data doesn't change)
       const cacheSeconds =
-        range === '1D' ? 900 : ['3Y', '5Y', 'ALL'].includes(range) ? 86400 : 3600;
+        range === '1D' ? 900 : ['3Y', '5Y', '10Y', 'ALL'].includes(range) ? 86400 : 3600;
       const res = await fetchWithRetry(url, FMP_KEY);
 
       if (!res.ok) {

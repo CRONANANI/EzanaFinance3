@@ -141,14 +141,30 @@ export async function replayTradesToValueSeries({
   };
 }
 
+// Number of trailing days each preset range covers. Unrecognized ranges
+// (including 'CUSTOM') fall through to no clipping, which safely returns the
+// full since-inception series.
+const RANGE_DAYS = {
+  '1D': 1,
+  '7D': 7,
+  '1M': 30,
+  '3M': 90,
+  '6M': 180,
+  '1Y': 365,
+  '3Y': 1095,
+  '5Y': 1825,
+  '10Y': 3650,
+};
+
 export function clipPointsToRange(points, range) {
   if (range === 'ALL' || !points || points.length === 0) return points;
 
+  const days = RANGE_DAYS[range];
+  if (!days) return points; // unknown range → no clipping (safe)
+
   const cutoff = new Date();
   cutoff.setHours(0, 0, 0, 0);
-  if (range === '1M') cutoff.setDate(cutoff.getDate() - 30);
-  else if (range === '6M') cutoff.setMonth(cutoff.getMonth() - 6);
-  else if (range === '1Y') cutoff.setDate(cutoff.getDate() - 365);
+  cutoff.setDate(cutoff.getDate() - days);
 
   return points.filter((p) => new Date(p.at).getTime() >= cutoff.getTime());
 }

@@ -55,7 +55,7 @@ function cacheRowToEvent(row) {
 export const GET = withApiGuard(
   async (request, user) => {
     try {
-      const url = new URL(req.url);
+      const url = new URL(request.url);
       const countriesRaw = url.searchParams.get('countries') || '';
       const countries = countriesRaw
         .split(',')

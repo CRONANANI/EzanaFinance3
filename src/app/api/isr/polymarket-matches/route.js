@@ -11,7 +11,7 @@ import { findMatchingMarket } from '@/lib/polymarket/match';
 export const POST = withApiGuard(
   async (request, user) => {
     try {
-      const body = await req.json();
+      const body = await request.json();
       const events = Array.isArray(body) ? body : Array.isArray(body?.events) ? body.events : [];
       if (events.length === 0) return NextResponse.json({});
 

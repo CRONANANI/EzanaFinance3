@@ -15,6 +15,7 @@ import {
 } from 'recharts';
 import { TickerPerformanceChart } from '@/components/home/TickerPerformanceChart';
 import { AddPortfolioModal } from '@/components/home/AddPortfolioModal';
+import { DateSelector } from '@/components/ui/DateSelector';
 import { useElo } from '@/hooks/useElo';
 import { usePlaidPortfolioSummary } from '@/hooks/usePlaidPortfolioSummary';
 import { usePortfolioValueSeries } from '@/hooks/usePortfolioValueSeries';
@@ -1312,18 +1313,12 @@ export default function HomePage() {
           />
           <div className="bs-chart-block">
             <div className="bs-chart-range-row">
-              <div className="bs-seg-group">
-                {RANGE_BUTTONS.map((r) => (
-                  <button
-                    key={r}
-                    type="button"
-                    className={`bs-seg ${timeframe === r ? 'bs-seg--active' : ''}`}
-                    onClick={() => setTimeframe(r)}
-                  >
-                    {r}
-                  </button>
-                ))}
-              </div>
+              <DateSelector
+                ranges={RANGE_BUTTONS}
+                value={timeframe}
+                onChange={setTimeframe}
+                size="sm"
+              />
             </div>
 
             <div className="bs-chart-wide">

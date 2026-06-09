@@ -7,19 +7,23 @@ import { fetchBatchedHistoricalPrices } from '@/lib/fmp-historical-batched';
 
 export const dynamic = 'force-dynamic';
 
-const RANGES = new Set(['1M', '6M', '1Y', 'ALL']);
+const RANGES = new Set(['1D', '7D', '1M', '3M', '6M', '1Y', '3Y', '5Y', '10Y', 'ALL']);
 const DEFAULT_STARTING_CASH = 10000;
 
 /**
- * GET /api/portfolio/mock-value-series?range=1M|6M|1Y|ALL
+ * GET /api/portfolio/mock-value-series?range=1D|7D|1M|3M|6M|1Y|3Y|5Y|10Y|ALL
  *
  * Returns the user's mock portfolio value over time, sourced primarily from
  * `mock_trades`. `mock_portfolios.portfolio` is a hint for current value only.
+ *
+ * A custom window can be requested with `?from=<ISO>&to=<ISO>` — when both are
+ * present the series is clipped to that explicit date range (the `range` param
+ * is ignored). Used by the "Custom" date picker in the unified DateSelector.
  */
 export const GET = withApiGuard(
   async (request, user, context) => {
     try {
-      const requestedRange = req.nextUrl.searchParams.get('range');
+      const requestedRange = request.nextUrl.searchParams.get('range');
       const range = RANGES.has(requestedRange) ? requestedRange : 'ALL';
 
       const { data: tradesRaw, error: tradesError } = await supabaseAdmin
@@ -116,21 +120,37 @@ export const GET = withApiGuard(
         fetchHistoricalPrices: fetchBatchedHistoricalPrices,
       });
 
-      const clipped = clipPointsToRange(replay.points, range);
+      // A custom window (?from=&to=) takes precedence over the preset `range`.
+      const fromParam = request.nextUrl.searchParams.get('from');
+      const toParam = request.nextUrl.searchParams.get('to');
+      const fromMs = fromParam ? Date.parse(fromParam) : NaN;
+      const toMs = toParam ? Date.parse(toParam) : NaN;
+      const isCustom = Number.isFinite(fromMs) && Number.isFinite(toMs);
+
+      const clipped = isCustom
+        ? replay.points.filter((p) => {
+            const t = new Date(p.at).getTime();
+            return t >= fromMs && t <= toMs;
+          })
+        : clipPointsToRange(replay.points, range);
+
+      const effectiveRange = isCustom ? 'CUSTOM' : range;
 
       if (clipped.length < 2 && replay.points.length >= 2) {
         return NextResponse.json({
           range: 'ALL',
-          requested_range: range,
+          requested_range: effectiveRange,
           points: replay.points,
           source: replay.source,
           startedAt: replay.startedAt,
-          note: `Less than ${range} of history available — showing all data since portfolio creation`,
+          note: isCustom
+            ? 'Not enough history in the selected window — showing all data since portfolio creation'
+            : `Less than ${range} of history available — showing all data since portfolio creation`,
         });
       }
 
       return NextResponse.json({
-        range,
+        range: effectiveRange,
         points: clipped,
         source: replay.source,
         startedAt: replay.startedAt,
