@@ -7,7 +7,7 @@ import { HERO_DATA } from '@/lib/dashboard-hero-data';
 
 export const dynamic = 'force-dynamic';
 
-const RANGES = new Set(['1D', '7D', '1M', '3M', '6M', '1Y', 'ALL']);
+const RANGES = new Set(['1D', '1W', '7D', '1M', '3M', '6M', '1Y', '3Y', '5Y', '10Y', 'ALL']);
 
 /**
  * @param {import('next/server').NextRequest} req
@@ -16,7 +16,7 @@ export const GET = withApiGuard(
   async (request, user, context) => {
     try {
       const range = RANGES.has(request.nextUrl.searchParams.get('range'))
-        ? /** @type {'1D'|'7D'|'1M'|'3M'|'6M'|'1Y'|'ALL'} */ (
+        ? /** @type {'1D'|'1W'|'7D'|'1M'|'3M'|'6M'|'1Y'|'3Y'|'5Y'|'10Y'|'ALL'} */ (
             request.nextUrl.searchParams.get('range')
           )
         : '1M';
@@ -34,11 +34,13 @@ export const GET = withApiGuard(
       const fromDate = (() => {
         const t = new Date();
         t.setHours(0, 0, 0, 0);
-        if (range === '7D') t.setDate(t.getDate() - 7);
+        if (range === '7D' || range === '1W') t.setDate(t.getDate() - 7);
         else if (range === '1M') t.setDate(t.getDate() - 30);
         else if (range === '3M') t.setDate(t.getDate() - 90);
         else if (range === '6M') t.setMonth(t.getMonth() - 6);
-        else if (range === 'ALL') t.setFullYear(t.getFullYear() - 10);
+        else if (range === '3Y') t.setFullYear(t.getFullYear() - 3);
+        else if (range === '5Y') t.setFullYear(t.getFullYear() - 5);
+        else if (range === '10Y' || range === 'ALL') t.setFullYear(t.getFullYear() - 10);
         else t.setDate(t.getDate() - 365);
         return t.toISOString().slice(0, 10);
       })();
@@ -80,7 +82,11 @@ export const GET = withApiGuard(
           code === '42P01' ||
           /relation.*does not exist/i.test(String(dbError.message || ''))
         ) {
-          const points = buildSyntheticValuePoints(endValue, range, HERO_DATA[range].change);
+          const points = buildSyntheticValuePoints(
+            endValue,
+            range,
+            (HERO_DATA[range] ?? HERO_DATA['1M']).change,
+          );
           return NextResponse.json({ range, points, source: 'synthetic' });
         }
         console.error('[value-series] DB', dbError);
@@ -92,7 +98,11 @@ export const GET = withApiGuard(
 
       const list = Array.isArray(rows) ? rows : [];
       if (list.length < 2) {
-        const points = buildSyntheticValuePoints(endValue, range, HERO_DATA[range].change);
+        const points = buildSyntheticValuePoints(
+          endValue,
+          range,
+          (HERO_DATA[range] ?? HERO_DATA['1M']).change,
+        );
         return NextResponse.json({ range, points, source: 'synthetic' });
       }
 
@@ -119,7 +129,11 @@ export const GET = withApiGuard(
           value: denom > 0 ? (endValue * (1 + cums[i] / 100)) / denom : endValue,
         }));
       } else {
-        const points0 = buildSyntheticValuePoints(endValue, range, HERO_DATA[range].change);
+        const points0 = buildSyntheticValuePoints(
+          endValue,
+          range,
+          (HERO_DATA[range] ?? HERO_DATA['1M']).change,
+        );
         return NextResponse.json({ range, points: points0, source: 'synthetic' });
       }
 

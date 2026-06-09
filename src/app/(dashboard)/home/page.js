@@ -83,7 +83,7 @@ function formatTickByRange(at, range) {
   if (range === '1D') {
     return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
   }
-  if (range === '5D' || range === '1M') {
+  if (range === '5D' || range === '1W' || range === '1M') {
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   }
   if (range === '3M' || range === '6M') {
@@ -137,10 +137,11 @@ const EVENTS = {
   ],
 };
 
-const RANGE_BUTTONS = ['1D', '5D', '1M', '3M', '6M', '1Y', 'ALL'];
+const RANGE_BUTTONS = ['1D', '1W', '1M', '3M', '6M', '1Y', '3Y', '5Y', '10Y', 'ALL'];
 
 function portfolioSeriesRange(tf) {
-  return tf === '5D' ? '7D' : tf;
+  if (tf === '5D') return '7D';
+  return tf;
 }
 
 const CAL_LEGEND = [
@@ -347,7 +348,7 @@ export default function HomePage() {
     summary: plaidSummary,
     refresh: refreshPlaidSummary,
   } = usePlaidPortfolioSummary();
-  const [timeframe, setTimeframe] = useState('5D');
+  const [timeframe, setTimeframe] = useState('1W');
   const seriesRange = portfolioSeriesRange(timeframe);
   const {
     points: valueSeriesDisplayPoints,
@@ -1317,7 +1318,7 @@ export default function HomePage() {
                 ranges={RANGE_BUTTONS}
                 value={timeframe}
                 onChange={setTimeframe}
-                size="sm"
+                size="lg"
               />
             </div>
 
@@ -1668,22 +1669,30 @@ export default function HomePage() {
           <BandHeader
             number="III"
             label="Markets pulse"
-            meta={`S&P 500 GICS · ${pulseRange === '1D' ? 'today' : pulseRange === '1W' ? 'past week' : pulseRange === '1M' ? 'past month' : 'year to date'}`}
+            meta={`S&P 500 GICS · ${
+              {
+                '1D': 'today',
+                '1W': 'past week',
+                '1M': 'past month',
+                '3M': 'past 3 months',
+                '6M': 'past 6 months',
+                '1Y': 'past year',
+                '3Y': 'past 3 years',
+                '5Y': 'past 5 years',
+                '10Y': 'past 10 years',
+                ALL: 'all time',
+                CUSTOM: 'custom range',
+              }[pulseRange] || 'recent'
+            }`}
             dark
           />
           <div className="bs-chart-range-row">
-            <div className="bs-seg-group">
-              {['1D', '1W', '1M', 'YTD'].map((r) => (
-                <button
-                  key={r}
-                  type="button"
-                  className={`bs-seg ${pulseRange === r ? 'bs-seg--active' : ''}`}
-                  onClick={() => setPulseRange(r)}
-                >
-                  {r}
-                </button>
-              ))}
-            </div>
+            <DateSelector
+              ranges={RANGE_BUTTONS}
+              value={pulseRange}
+              onChange={setPulseRange}
+              size="lg"
+            />
           </div>
           <div className="bs-pulse-row">
             {sectorLoaded && sectorEmpty ? (
@@ -2095,16 +2104,12 @@ export default function HomePage() {
               </button>
             </div>
             <div className="bs-ticker-modal-ranges">
-              {['1D', '1W', '1M', '3M', '6M', '1Y', '5Y', 'ALL'].map((r) => (
-                <button
-                  key={r}
-                  type="button"
-                  className={`bs-seg ${tickerModalRange === r ? 'bs-seg--active' : ''}`}
-                  onClick={() => setTickerModalRange(r)}
-                >
-                  {r}
-                </button>
-              ))}
+              <DateSelector
+                ranges={RANGE_BUTTONS}
+                value={tickerModalRange}
+                onChange={setTickerModalRange}
+                size="lg"
+              />
             </div>
             <TickerPerformanceChart symbol={tickerModal} range={tickerModalRange} />
           </div>

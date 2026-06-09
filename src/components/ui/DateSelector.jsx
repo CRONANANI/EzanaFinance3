@@ -42,6 +42,8 @@ export function DateSelector({
     xs: { padding: '0.11rem 0.26rem', fontSize: '0.41rem' },
     sm: { padding: '0.15rem 0.30rem', fontSize: '0.43rem' },
     md: { padding: '0.18rem 0.35rem', fontSize: '0.48rem' },
+    // 'lg' matches the dashboard "My Holdings" pill size (the platform reference size).
+    lg: { padding: '0.3rem 0.625rem', fontSize: '0.625rem' },
   };
   const sizes = sizeMap[size] || sizeMap.sm;
 

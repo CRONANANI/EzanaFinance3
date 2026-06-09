@@ -6,7 +6,7 @@
 
 import { HERO_DATA } from '@/lib/dashboard-hero-data';
 
-/** @typedef {'1D'|'7D'|'1M'|'3M'|'6M'|'1Y'|'ALL'} PortfolioRange */
+/** @typedef {'1D'|'1W'|'7D'|'1M'|'3M'|'6M'|'1Y'|'3Y'|'5Y'|'10Y'|'ALL'} PortfolioRange */
 
 /**
  * @param {number} endValue
@@ -22,6 +22,7 @@ export function buildSyntheticValuePoints(endValue, range, changePct) {
     switch (range) {
       case '1D':
         return 14;
+      case '1W':
       case '7D':
         return 8;
       case '1M':
@@ -69,7 +70,7 @@ function timestampForIndex(range, i, n, nowMs) {
     const span = 6.5 * 60 * 60 * 1000;
     return new Date(t0 + (n <= 1 ? 0 : (i / (n - 1)) * span)).toISOString();
   }
-  if (range === '7D') {
+  if (range === '7D' || range === '1W') {
     d.setDate(d.getDate() - (n - 1 - i));
     d.setHours(16, 0, 0, 0);
     return d.toISOString();
@@ -115,6 +116,7 @@ export function formatXAxisLabel(iso, range) {
   switch (range) {
     case '1D':
       return d.toLocaleTimeString([], { hour: 'numeric', hour12: true });
+    case '1W':
     case '7D':
     case '1M':
       return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
@@ -122,6 +124,9 @@ export function formatXAxisLabel(iso, range) {
     case '6M':
       return d.toLocaleDateString([], { month: 'short' });
     case '1Y':
+    case '3Y':
+    case '5Y':
+    case '10Y':
     case 'ALL':
       return d.toLocaleDateString([], { month: 'short', year: '2-digit' });
     default:
@@ -146,6 +151,7 @@ export function formatTooltipTimeLabel(iso, range) {
         minute: '2-digit',
       });
     case '1M':
+    case '1W':
     case '7D':
     case '3M':
     case '6M':
@@ -155,6 +161,9 @@ export function formatTooltipTimeLabel(iso, range) {
         year: 'numeric',
       });
     case '1Y':
+    case '3Y':
+    case '5Y':
+    case '10Y':
     case 'ALL':
       return d.toLocaleDateString([], {
         month: 'long',
@@ -174,12 +183,16 @@ export function minTickGapForRange(range) {
   switch (range) {
     case '1D':
       return 40;
+    case '1W':
     case '7D':
     case '1M':
     case '3M':
     case '6M':
       return 30;
     case '1Y':
+    case '3Y':
+    case '5Y':
+    case '10Y':
       return 40;
     case 'ALL':
       return 48;

@@ -14,6 +14,7 @@ function getFmpKey() {
 function periodToDays(period) {
   const map = {
     '1D': 1,
+    '1W': 7,
     '7D': 7,
     '1M': 30,
     '3M': 90,
@@ -204,7 +205,7 @@ function buildSeries(points, period) {
         close: last.close,
       },
     ];
-  } else if (period === '7D') {
+  } else if (period === '7D' || period === '1W') {
     aggregated = filtered.slice(-5).map((p) => {
       const d = new Date(`${p.date}T12:00:00Z`);
       return {

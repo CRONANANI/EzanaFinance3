@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
 import { useOrg } from '@/contexts/OrgContext';
 import { HeroSparkline } from '@/components/dashboard/HeroSparkline';
+import { DateSelector } from '@/components/ui/DateSelector';
 import { usePlaidPortfolioSummary } from '@/hooks/usePlaidPortfolioSummary';
 import { usePortfolioValueSeries } from '@/hooks/usePortfolioValueSeries';
 import { supabase } from '@/lib/supabase-browser';
@@ -18,6 +19,9 @@ import '@/components/beginner/beginner.css';
 /** 9 holdings per page = 3 columns × 3 rows. Was 6 (3×2); tighter per-card
     sizing in home-dashboard.css keeps total height similar to before. */
 const HOLDINGS_PAGE_SIZE = 9;
+
+/** Canonical date-range options shared by every dashboard date selector. */
+const DASH_RANGES = ['1D', '1W', '1M', '3M', '6M', '1Y', '3Y', '5Y', '10Y', 'ALL'];
 
 const HOLDING_PALETTE = [
   '#4285F4',
@@ -762,12 +766,26 @@ export default function HomeDashboardPage() {
 
           {/* ═══ HERO: Portfolio Value Card ═══ */}
           <div className="db-hero-card">
-            <div className="db-hero-card-header">
+            <div
+              className="db-hero-card-header"
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: '0.75rem',
+              }}
+            >
               <Link href="/trading/mock" className="db-hero-card-title-link">
                 <h3 className="db-hero-card-title">
                   Portfolio Snapshot <i className="bi bi-arrow-up-right db-hero-card-title-icon" />
                 </h3>
               </Link>
+              <DateSelector
+                ranges={DASH_RANGES}
+                value={timeframe}
+                onChange={setTimeframe}
+                size="lg"
+              />
             </div>
             <div className="db-hero-body">
               <div className="db-hero-left">
@@ -826,17 +844,6 @@ export default function HomeDashboardPage() {
                         </span>
                       )}
                     </span>
-                  </div>
-                  <div className="db-hero-timeframes">
-                    {['1D', '7D', '1M', '3M', '6M', '1Y', 'ALL'].map((tf) => (
-                      <button
-                        key={tf}
-                        className={`db-tf-btn ${timeframe === tf ? 'active' : ''}`}
-                        onClick={() => setTimeframe(tf)}
-                      >
-                        {tf}
-                      </button>
-                    ))}
                   </div>
                 </div>
 
@@ -943,17 +950,12 @@ export default function HomeDashboardPage() {
                   </button>
                 </div>
                 <div className="db-card-header-right">
-                  <div className="db-tf-group-sm">
-                    {['1D', '7D', '1M', '3M', '6M', '1Y', 'ALL'].map((tf) => (
-                      <button
-                        key={tf}
-                        className={`db-tf-btn-sm ${timeframe === tf ? 'active' : ''}`}
-                        onClick={() => setTimeframe(tf)}
-                      >
-                        {tf}
-                      </button>
-                    ))}
-                  </div>
+                  <DateSelector
+                    ranges={DASH_RANGES}
+                    value={timeframe}
+                    onChange={setTimeframe}
+                    size="lg"
+                  />
                   <button className="db-icon-btn" title="Export">
                     <i className="bi bi-box-arrow-up-right" />
                   </button>
