@@ -7,7 +7,7 @@ import { fetchBatchedHistoricalPrices } from '@/lib/fmp-historical-batched';
 
 export const dynamic = 'force-dynamic';
 
-const RANGES = new Set(['1D', '7D', '1M', '3M', '6M', '1Y', '3Y', '5Y', '10Y', 'ALL']);
+const RANGES = new Set(['1D', '1W', '7D', '1M', '3M', '6M', '1Y', '3Y', '5Y', '10Y', 'ALL']);
 const DEFAULT_STARTING_CASH = 10000;
 
 /**

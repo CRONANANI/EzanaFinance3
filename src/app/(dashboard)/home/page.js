@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { useOrg } from '@/contexts/OrgContext';
 import {
@@ -341,6 +342,7 @@ function MiniCalendar() {
 
 /* ═══ MAIN PAGE ═══ */
 export default function HomePage() {
+  const router = useRouter();
   const { user } = useAuth();
   const { isOrgUser, orgData } = useOrg();
   const {
@@ -1145,10 +1147,21 @@ export default function HomePage() {
           }
         }
 
+        const INDEX_TICKER_MAP = {
+          'S&P 500': 'SPY',
+          NASDAQ: 'QQQ',
+          'Russell 2K': 'IWM',
+          'Dow Jones': 'DIA',
+          VIX: 'VIXY',
+          WTI: 'USO',
+          '10Y': 'IEF',
+        };
         const indexPriceItems = indices.map((idx) => ({
           tag: idx.sym,
           text: `${idx.last}  ${idx.chg}`,
-          url: '',
+          url: INDEX_TICKER_MAP[idx.sym]
+            ? `/company-research?q=${encodeURIComponent(INDEX_TICKER_MAP[idx.sym])}`
+            : '',
         }));
 
         const merged = [];
@@ -1177,21 +1190,32 @@ export default function HomePage() {
       {/* ═══ TICKER MARQUEE ═══ */}
       <div className="bs-ticker">
         <div className="bs-ticker-inner">
-          {tickerItems.concat(tickerItems).map((t, i) => (
-            <a
-              key={i}
-              href={t.url || '#'}
-              target={t.url ? '_blank' : undefined}
-              rel={t.url ? 'noopener noreferrer' : undefined}
-              className="bs-ticker-item"
-              onClick={(e) => {
-                if (!t.url) e.preventDefault();
-              }}
-            >
-              <span className="bs-ticker-tag">{t.tag}</span>
-              <span className="bs-ticker-text">{t.text}</span>
-            </a>
-          ))}
+          {tickerItems.concat(tickerItems).map((t, i) => {
+            const isInternal = t.url && t.url.startsWith('/');
+            const isExternal = t.url && !t.url.startsWith('/');
+            return (
+              <a
+                key={i}
+                href={t.url || '#'}
+                target={isExternal ? '_blank' : undefined}
+                rel={isExternal ? 'noopener noreferrer' : undefined}
+                className="bs-ticker-item"
+                onClick={(e) => {
+                  if (!t.url) {
+                    e.preventDefault();
+                    return;
+                  }
+                  if (isInternal) {
+                    e.preventDefault();
+                    router.push(t.url);
+                  }
+                }}
+              >
+                <span className="bs-ticker-tag">{t.tag}</span>
+                <span className="bs-ticker-text">{t.text}</span>
+              </a>
+            );
+          })}
         </div>
       </div>
 

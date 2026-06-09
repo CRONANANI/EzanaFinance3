@@ -146,6 +146,7 @@ export async function replayTradesToValueSeries({
 // full since-inception series.
 const RANGE_DAYS = {
   '1D': 1,
+  '1W': 7,
   '7D': 7,
   '1M': 30,
   '3M': 90,
