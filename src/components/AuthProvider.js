@@ -10,10 +10,20 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        setUser(session?.user ?? null);
+      })
+      .catch((err) => {
+        /* A failed session read must not strand consumers on loading:true —
+           they would block (e.g. gated layouts) until a full reload. */
+        console.warn('[Auth] getSession failed:', err?.message || err);
+        setUser(null);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
 
     const {
       data: { subscription },
@@ -45,7 +55,15 @@ export function AuthProvider({ children }) {
           }),
         }).catch(() => {});
       }
-      setUser(session?.user ?? null);
+      /* Hourly TOKEN_REFRESHED events deliver a new `user` object identity
+         for the same user. Re-using the previous reference keeps every
+         downstream context (Partner, Org, …) from re-running its fetch
+         chain — and re-gating the page — on every token refresh. */
+      setUser((prev) =>
+        event === 'TOKEN_REFRESHED' && prev && session?.user && prev.id === session.user.id
+          ? prev
+          : (session?.user ?? null),
+      );
     });
 
     return () => subscription.unsubscribe();

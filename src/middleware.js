@@ -194,7 +194,9 @@ export async function middleware(request) {
   if (user && (onPartnerProtectedRoute || onUserProtectedRoute)) {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('email_verified, deleted_at, deletion_scheduled_for, is_disabled')
+      .select(
+        'email_verified, deleted_at, deletion_scheduled_for, is_disabled, investor_questionnaire_completed',
+      )
       .eq('id', user.id)
       .maybeSingle();
 
@@ -231,22 +233,15 @@ export async function middleware(request) {
       pathname === '/' || pathname === '/waitlist' || pathname.startsWith('/select-plan');
 
     if (
-      user &&
       !isOnboardingPage &&
       !isAuthPage &&
       !isApiRoute &&
       !isPublicRoute &&
-      !pathname.startsWith('/settings')
+      !pathname.startsWith('/settings') &&
+      profile &&
+      profile.investor_questionnaire_completed !== true
     ) {
-      const { data: onboardProfile } = await supabase
-        .from('profiles')
-        .select('investor_questionnaire_completed')
-        .eq('id', user.id)
-        .maybeSingle();
-
-      if (onboardProfile && onboardProfile.investor_questionnaire_completed !== true) {
-        return NextResponse.redirect(new URL('/onboarding', request.url));
-      }
+      return NextResponse.redirect(new URL('/onboarding', request.url));
     }
 
     if (!isTradingPublicPath) {
