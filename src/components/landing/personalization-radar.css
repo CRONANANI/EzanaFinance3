@@ -1,45 +1,12 @@
-/* Personalization Radar — animation styles */
+/* Personalization Radar — animation styles.
 
-.radar-sweep1 {
-  transform-origin: 560px 360px;
-  animation: radar-spin 11s linear infinite;
-}
-.radar-sweep2 {
-  transform-origin: 560px 360px;
-  animation: radar-spin 15s linear infinite reverse;
-}
-@keyframes radar-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Each dot group is moved every frame via a transform; hint the compositor so
-   the motion stays smooth and decoupled from the SVG repaint. */
-.radar-blip-group {
-  will-change: transform;
-}
-
-.radar-blip-pulse {
-  animation: radar-blip 2.6s ease-out infinite;
-  transform-box: fill-box;
-  transform-origin: center;
-  will-change: transform, opacity;
-}
-@keyframes radar-blip {
-  0% {
-    opacity: 0.85;
-    transform: scale(1);
-  }
-  70% {
-    opacity: 0;
-    transform: scale(3.2);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(3.2);
-  }
-}
+   The sweep wedges, vertex dots, pulse rings, and live polygon are ALL
+   animated from a single requestAnimationFrame loop in
+   PersonalizationRadar.jsx via SVG attributes. Do not reintroduce CSS
+   keyframes or will-change layer promotion for those parts: running them
+   on the compositor while the polygon/dots update on the main thread is
+   what caused the dot/edge flicker (the two pipelines drift under load
+   and paint mismatched frames). */
 
 .radar-hub-ring {
   animation: radar-hub-pulse 3.4s ease-in-out infinite;
@@ -78,9 +45,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .radar-sweep1,
-  .radar-sweep2,
-  .radar-blip-pulse,
   .radar-hub-ring {
     animation: none;
   }

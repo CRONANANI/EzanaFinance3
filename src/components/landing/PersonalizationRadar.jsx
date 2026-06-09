@@ -201,11 +201,26 @@ function MobileRadarFlow({ dims, sourceDetails, accentColor }) {
   );
 }
 
+/* Pulse-ring timing — mirrors the old CSS keyframes (2.6s loop, expand+fade
+   over the first 70%, then hidden) but computed inside the RAF loop so the
+   ring, the dot position, and the polygon all commit in the same paint. */
+const PULSE_PERIOD_S = 2.6;
+const PULSE_STAGGER_S = 0.34;
+const PULSE_VISIBLE_FRACTION = 0.7;
+const PULSE_MAX_SCALE = 3.2;
+const PULSE_BASE_R = 5;
+const PULSE_BASE_SW = 1.4;
+
+function easeOutCubic(t) {
+  return 1 - Math.pow(1 - t, 3);
+}
+
 export default function PersonalizationRadar({ sourceDetails }) {
   const accentColor = '#10b981';
   const [hoveredDim, setHoveredDim] = useState(null);
   const polyYouRef = useRef(null);
   const blipGroupRefs = useRef([]);
+  const blipPulseRefs = useRef([]);
   // Stable ref callbacks (created once) so hover-driven re-renders don't detach
   // and reattach the animated nodes — that churn caused the dots to jump/restart.
   const blipGroupRefCbs = useRef(
@@ -213,6 +228,14 @@ export default function PersonalizationRadar({ sourceDetails }) {
       blipGroupRefs.current[i] = el;
     }),
   );
+  const blipPulseRefCbs = useRef(
+    DIMS.map((_, i) => (el) => {
+      blipPulseRefs.current[i] = el;
+    }),
+  );
+  const sweep1Ref = useRef(null);
+  const sweep2Ref = useRef(null);
+  const svgWrapRef = useRef(null);
   const stateRef = useRef(null);
   const rafRef = useRef(null);
 
@@ -235,6 +258,13 @@ export default function PersonalizationRadar({ sourceDetails }) {
       s.t0 = now;
     }
 
+    /* Every animated piece of the radar — vertex positions, the polygon,
+       the pulse rings, and the sweep wedges — is written here in a single
+       pass, so each frame the SVG paints one internally consistent
+       snapshot. The previous version split this work across CSS compositor
+       animations (rings, sweeps) and JS attribute writes (dots, polygon);
+       under main-thread load the two pipelines drifted, which is what
+       showed up as flicker at a dot or along a polygon edge. */
     function render(now) {
       const pts = [];
       for (let i = 0; i < states.length; i++) {
@@ -249,31 +279,82 @@ export default function PersonalizationRadar({ sourceDetails }) {
         const r = RMIN + w * (RMAX - RMIN);
         const x = CX + r * Math.cos(s.a);
         const y = CY + r * Math.sin(s.a);
-        // Move the whole dot group with a single transform (GPU-composited via
-        // will-change) instead of mutating cx/cy on two circles each frame. This
-        // keeps the pulse ring's CSS scale animation from re-resolving its origin
-        // every frame, which was the source of the flicker.
         const g = blipGroupRefs.current[i];
         if (g) g.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)})`);
         pts.push(`${x.toFixed(1)},${y.toFixed(1)}`);
+
+        const ring = blipPulseRefs.current[i];
+        if (ring && !reduce) {
+          const phase = (now / 1000 / PULSE_PERIOD_S + (i * PULSE_STAGGER_S) / PULSE_PERIOD_S) % 1;
+          if (phase < PULSE_VISIBLE_FRACTION) {
+            const k = easeOutCubic(phase / PULSE_VISIBLE_FRACTION);
+            const scale = 1 + (PULSE_MAX_SCALE - 1) * k;
+            ring.setAttribute('r', (PULSE_BASE_R * scale).toFixed(2));
+            ring.setAttribute('stroke-width', (PULSE_BASE_SW * scale).toFixed(2));
+            ring.setAttribute('opacity', (0.85 * (1 - k)).toFixed(3));
+          } else {
+            ring.setAttribute('opacity', '0');
+          }
+        }
       }
       if (polyYouRef.current) polyYouRef.current.setAttribute('points', pts.join(' '));
+
+      if (!reduce) {
+        const a1 = ((now / 11000) * 360) % 360;
+        const a2 = 360 - (((now / 15000) * 360) % 360);
+        if (sweep1Ref.current)
+          sweep1Ref.current.setAttribute('transform', `rotate(${a1.toFixed(2)} ${CX} ${CY})`);
+        if (sweep2Ref.current)
+          sweep2Ref.current.setAttribute('transform', `rotate(${a2.toFixed(2)} ${CX} ${CY})`);
+      }
     }
 
     if (reduce) {
       render(0);
-    } else {
-      const t0 = performance.now();
-      states.forEach((s) => repick(s, t0));
-      function loop(now) {
-        render(now);
-        rafRef.current = requestAnimationFrame(loop);
-      }
+      return undefined;
+    }
+
+    const t0 = performance.now();
+    states.forEach((s) => repick(s, t0));
+
+    let running = false;
+    function loop(now) {
+      render(now);
       rafRef.current = requestAnimationFrame(loop);
+    }
+    function start() {
+      if (running) return;
+      running = true;
+      rafRef.current = requestAnimationFrame(loop);
+    }
+    function stop() {
+      if (!running) return;
+      running = false;
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    }
+
+    /* Only animate while the radar is actually on screen. The landing page
+       runs plenty of other animation; burning frames on an off-screen (or
+       display:none mobile) radar starves the rest and causes exactly the
+       kind of dropped frames being fixed here. Tween clocks are absolute,
+       so resuming after a pause picks new targets and continues smoothly. */
+    let observer = null;
+    if (typeof IntersectionObserver !== 'undefined' && svgWrapRef.current) {
+      observer = new IntersectionObserver(
+        (entries) => {
+          if (entries.some((e) => e.isIntersecting)) start();
+          else stop();
+        },
+        { rootMargin: '100px' },
+      );
+      observer.observe(svgWrapRef.current);
+    } else {
+      start();
     }
 
     return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      if (observer) observer.disconnect();
+      stop();
     };
   }, []);
 
@@ -320,7 +401,7 @@ export default function PersonalizationRadar({ sourceDetails }) {
           </span>
         </div>
 
-        <div className="relative w-full max-w-[1100px] mx-auto">
+        <div ref={svgWrapRef} className="relative w-full max-w-[1100px] mx-auto">
           <svg
             viewBox="0 0 1120 760"
             role="img"
@@ -405,8 +486,9 @@ export default function PersonalizationRadar({ sourceDetails }) {
               );
             })}
 
-            {/* Sweep wedges */}
-            <g className="radar-sweep1">
+            {/* Sweep wedges — rotated by the RAF loop in the same frame as
+                the polygon and dots so the whole SVG paints atomically. */}
+            <g ref={sweep1Ref}>
               <path
                 d={`M${CX} ${CY} L${CX} ${CY - RMAX} A${RMAX} ${RMAX} 0 0 1 ${CX + 228} ${CY - 202} Z`}
                 fill="url(#radar-sg)"
@@ -421,7 +503,7 @@ export default function PersonalizationRadar({ sourceDetails }) {
                 opacity="0.6"
               />
             </g>
-            <g className="radar-sweep2">
+            <g ref={sweep2Ref}>
               <path
                 d={`M${CX} ${CY} L${CX} ${CY - RMAX} A${RMAX} ${RMAX} 0 0 1 ${CX + 160} ${CY - 250} Z`}
                 fill="url(#radar-sg2)"
@@ -458,9 +540,9 @@ export default function PersonalizationRadar({ sourceDetails }) {
             />
 
             {/* Blips + pulse rings — each group is positioned via a single
-                transform updated by the RAF loop; the circles sit at the group's
-                local origin so the pulse's scale animation never fights position
-                updates. */}
+                transform, and the pulse ring's expansion/fade is driven by the
+                same RAF loop (r / stroke-width / opacity attributes), so the
+                ring can never desync from the dot it belongs to. */}
             {DIMS.map((d, i) => {
               const a = ang(i);
               const r = RMIN + d.w * (RMAX - RMIN);
@@ -470,19 +552,18 @@ export default function PersonalizationRadar({ sourceDetails }) {
                 <g
                   key={`blip-${i}`}
                   ref={blipGroupRefCbs.current[i]}
-                  className="radar-blip-group"
                   transform={`translate(${ix.toFixed(1)} ${iy.toFixed(1)})`}
                 >
                   <circle cx="0" cy="0" r="4.5" fill="#10b981" />
                   <circle
+                    ref={blipPulseRefCbs.current[i]}
                     cx="0"
                     cy="0"
                     r="5"
                     fill="none"
                     stroke="#10b981"
                     strokeWidth="1.4"
-                    className="radar-blip-pulse"
-                    style={{ animationDelay: `${-i * 0.34}s` }}
+                    opacity="0"
                   />
                 </g>
               );
