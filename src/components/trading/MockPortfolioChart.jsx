@@ -10,10 +10,10 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from 'recharts';
+import { DateSelector } from '@/components/ui/DateSelector';
 import './mock-portfolio-chart.css';
 
 const RANGES = ['ALL', '1M', '6M', '1Y'];
-const RANGE_LABELS = { ALL: 'Since start', '1M': '1M', '6M': '6M', '1Y': '1Y' };
 
 function formatUSD(v) {
   if (!Number.isFinite(v)) return '$0';
@@ -123,18 +123,7 @@ export default function MockPortfolioChart() {
             </div>
           )}
         </div>
-        <div className="mpc-range-pills">
-          {RANGES.map((r) => (
-            <button
-              key={r}
-              type="button"
-              className={`mpc-range-pill ${range === r ? 'is-active' : ''}`}
-              onClick={() => setRange(r)}
-            >
-              {RANGE_LABELS[r]}
-            </button>
-          ))}
-        </div>
+        <DateSelector ranges={RANGES} value={range} onChange={setRange} size="xs" />
       </div>
 
       {loading && <div className="mpc-loading">Loading portfolio history…</div>}

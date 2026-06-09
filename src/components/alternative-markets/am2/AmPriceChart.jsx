@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { AmSymbolChip } from './AmSymbolChip';
 import { AmPct } from './AmPct';
+import { DateSelector } from '@/components/ui/DateSelector';
 
 const TIMEFRAMES = ['1D', '5D', '1M', '3M', '6M', 'YTD', '1Y'];
 
@@ -41,20 +42,7 @@ export function AmPriceChart({
             <span>{deltaAbs} · 24h</span>
           </div>
         </div>
-        <div className="am2-seg" role="tablist" aria-label="Chart timeframe">
-          {TIMEFRAMES.map((t) => (
-            <button
-              key={t}
-              type="button"
-              role="tab"
-              aria-selected={tf === t}
-              className={`am2-seg-btn ${tf === t ? 'am2-seg-btn--active' : ''}`}
-              onClick={() => setTf(t)}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
+        <DateSelector ranges={TIMEFRAMES} value={tf} onChange={setTf} size="xs" />
       </div>
 
       <div className="am2-chart-area-wrap">

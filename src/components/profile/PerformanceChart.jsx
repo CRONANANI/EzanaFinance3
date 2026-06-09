@@ -11,6 +11,7 @@ import {
   Legend,
   CartesianGrid,
 } from 'recharts';
+import { DateSelector } from '@/components/ui/DateSelector';
 import './performance-chart.css';
 
 /**
@@ -39,10 +40,7 @@ import './performance-chart.css';
  *   userSeries?: Array<{ date: string, user: number }>,
  * }} props
  */
-export function PerformanceChart({
-  userSeriesFull = null,
-  userSeries = null,
-}) {
+export function PerformanceChart({ userSeriesFull = null, userSeries = null }) {
   const [range, setRange] = useState('1M');
   const [platformResp, setPlatformResp] = useState(null);
   const [platformLoading, setPlatformLoading] = useState(true);
@@ -122,20 +120,7 @@ export function PerformanceChart({
               : ''}
           </p>
         </div>
-        <div className="pc-range" role="tablist" aria-label="Select time range">
-          {RANGES.map((r) => (
-            <button
-              key={r}
-              type="button"
-              role="tab"
-              aria-selected={range === r}
-              className={`pc-range-btn ${range === r ? 'on' : ''}`}
-              onClick={() => setRange(r)}
-            >
-              {r}
-            </button>
-          ))}
-        </div>
+        <DateSelector ranges={RANGES} value={range} onChange={setRange} size="xs" />
       </div>
 
       <div className="pc-chart-wrap chart-viewport w-full min-w-0">
@@ -205,20 +190,16 @@ export function PerformanceChart({
         </ResponsiveContainer>
       </div>
 
-      {platformLoading && !hasPlatform && (
-        <p className="pc-note">Loading platform data…</p>
-      )}
+      {platformLoading && !hasPlatform && <p className="pc-note">Loading platform data…</p>}
       {!platformLoading && !hasPlatform && (
         <p className="pc-note">
-          Platform comparison not yet available — check back once nightly
-          aggregates have run.
+          Platform comparison not yet available — check back once nightly aggregates have run.
         </p>
       )}
       {typeof sampleSize === 'number' && sampleSize > 0 && sampleSize < 30 && (
         <p className="pc-warn">
-          Platform comparison is preliminary — based on {sampleSize} active
-          investor{sampleSize === 1 ? '' : 's'}. Results will stabilize as
-          more users join.
+          Platform comparison is preliminary — based on {sampleSize} active investor
+          {sampleSize === 1 ? '' : 's'}. Results will stabilize as more users join.
         </p>
       )}
     </div>

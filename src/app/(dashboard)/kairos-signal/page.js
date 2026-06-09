@@ -27,6 +27,7 @@ import '../../../../app-legacy/assets/css/pages-common.css';
 import './kairos-signal.css';
 import { KairosCorrelationsCard } from '@/components/kairos/KairosCorrelationsCard';
 import { KairosEventsCard } from '@/components/kairos/KairosEventsCard';
+import { DateSelector } from '@/components/ui/DateSelector';
 
 /* ── Region config ─────────────────────────────────────────── */
 const REGIONS = [
@@ -97,19 +98,16 @@ function RegionPicker({ value, onChange }) {
 }
 
 function TimeframePicker({ value, onChange }) {
+  const labels = TIMEFRAMES.map((tf) => tf.label);
+  const labelToId = Object.fromEntries(TIMEFRAMES.map((tf) => [tf.label, tf.id]));
+  const idToLabel = Object.fromEntries(TIMEFRAMES.map((tf) => [tf.id, tf.label]));
   return (
-    <div className="kairos-tf-group">
-      {TIMEFRAMES.map((tf) => (
-        <button
-          key={tf.id}
-          type="button"
-          className={`kairos-tf-btn${value === tf.id ? ' active' : ''}`}
-          onClick={() => onChange(tf.id)}
-        >
-          {tf.label}
-        </button>
-      ))}
-    </div>
+    <DateSelector
+      ranges={labels}
+      value={idToLabel[value] || value}
+      onChange={(label) => onChange(labelToId[label] || label)}
+      size="xs"
+    />
   );
 }
 

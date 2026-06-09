@@ -12,6 +12,7 @@ import {
   ReferenceLine,
   ReferenceArea,
 } from 'recharts';
+import { DateSelector } from '@/components/ui/DateSelector';
 
 const RANGES = ['1D', '1W', '1M', '3M', '6M', '1Y', '3Y', '5Y', 'ALL'];
 
@@ -285,40 +286,7 @@ export default function StockPriceChart({
         </div>
 
         {!hideRangeButtons && (
-          <div
-            style={{
-              display: 'flex',
-              gap: '2px',
-              background: 'var(--muted, rgba(255,255,255,0.04))',
-              borderRadius: '8px',
-              padding: '2px',
-              flexShrink: 0,
-            }}
-          >
-            {RANGES.map((r) => (
-              <button
-                key={r}
-                type="button"
-                onClick={() => setRange(r)}
-                style={{
-                  padding: '3px 8px',
-                  borderRadius: '6px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '0.62rem',
-                  fontWeight: 700,
-                  fontFamily: 'var(--font-mono, monospace)',
-                  letterSpacing: '0.03em',
-                  transition: 'all 0.12s ease',
-                  background: range === r ? lineColour : 'transparent',
-                  color: range === r ? '#fff' : 'var(--muted-foreground, #6b7280)',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {r}
-              </button>
-            ))}
-          </div>
+          <DateSelector ranges={RANGES} value={range} onChange={setRange} size="xs" />
         )}
       </div>
 

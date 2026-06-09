@@ -13,6 +13,7 @@ import {
 } from 'recharts';
 import { NumberText } from './NumberText';
 import { page, brand, shape, density, type as typeTokens } from './profile-design-tokens';
+import { DateSelector } from '@/components/ui/DateSelector';
 import './perf-chart.css';
 
 const RANGES = ['1W', '1M', '3M', 'YTD'];
@@ -126,18 +127,7 @@ export function PerfChart({ performance, range, onRangeChange, isLive = false, s
             <span style={{ width: 5, height: 5, borderRadius: '50%', background: brand.base }} />
             {badgeLabel}
           </span>
-          <div className="perf-range-pills">
-            {RANGES.map((r) => (
-              <button
-                key={r}
-                type="button"
-                className={`perf-range-pill ${r === range ? 'is-active' : ''}`}
-                onClick={() => onRangeChange(r)}
-              >
-                {r}
-              </button>
-            ))}
-          </div>
+          <DateSelector ranges={RANGES} value={range} onChange={onRangeChange} size="xs" />
         </div>
       </div>
 

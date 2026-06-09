@@ -12,6 +12,7 @@ import {
   ReferenceLine,
 } from 'recharts';
 import { COMPARISON_STRATEGIES } from '@/lib/for-the-quants-mock-data';
+import { DateSelector } from '@/components/ui/DateSelector';
 
 const DATE_RANGES = [
   { id: '1M', label: '1M', days: 22 },
@@ -103,19 +104,12 @@ export function StrategyComparisonCard() {
         <h3 className="ftq-section-title">
           <i className="bi bi-arrow-left-right" aria-hidden /> Strategy Comparison
         </h3>
-        <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center' }}>
-          {DATE_RANGES.map((d) => (
-            <button
-              key={d.id}
-              type="button"
-              className={`ftq-tab ${dateRange === d.id ? 'active' : ''}`}
-              onClick={() => setDateRange(d.id)}
-              style={{ padding: '0.2rem 0.45rem', fontSize: '0.65rem' }}
-            >
-              {d.label}
-            </button>
-          ))}
-        </div>
+        <DateSelector
+          ranges={DATE_RANGES.map((d) => d.id)}
+          value={dateRange}
+          onChange={setDateRange}
+          size="xs"
+        />
       </div>
       <div className="ftq-card-body-pad ftq-card-body-pad--flush-top">
         <div className="ftq-cmp-selectors">

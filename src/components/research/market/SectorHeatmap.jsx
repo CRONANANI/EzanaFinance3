@@ -7,6 +7,7 @@ import { ModelVariableStrip } from '@/components/research/models/ModelVariableSt
 import { useSectorPerformance } from '@/hooks/useSectorPerformance';
 import { resolveSectorQuery } from '@/lib/fmp/sector-performance';
 import { SectorDetailModal } from './SectorDetailModal';
+import { DateSelector } from '@/components/ui/DateSelector';
 
 const RANGES = ['1D', '1W', '1M', 'YTD'];
 
@@ -196,22 +197,7 @@ export function SectorHeatmap() {
     [range, sorted.length, asOf, best, worst, degraded],
   );
 
-  const rangeControl = (
-    <div className="shm-range-group cr-seg-control" role="tablist" aria-label="Time range">
-      {RANGES.map((r) => (
-        <button
-          key={r}
-          type="button"
-          role="tab"
-          aria-selected={range === r}
-          onClick={() => setRange(r)}
-          className={`shm-range-btn ${range === r ? 'is-active' : ''}`}
-        >
-          {r}
-        </button>
-      ))}
-    </div>
-  );
+  const rangeControl = <DateSelector ranges={RANGES} value={range} onChange={setRange} size="xs" />;
 
   const renderColumn = (rows) =>
     rows.map((s) => {

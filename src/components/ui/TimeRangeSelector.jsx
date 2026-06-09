@@ -1,22 +1,8 @@
 'use client';
 
 /**
- * TimeRangeSelector — shared, theme-aware time-range pill row.
- *
- * Used across home dashboard, watchlist, research/StockPriceChart,
- * SectorHeatmap, and marketing pages. Each call site passes its own
- * `ranges` array because the supported windows differ (e.g. some
- * components offer 1D/1W/1M/3M/6M/1Y/3Y/5Y/ALL, others only 1D/1W/1M/YTD).
- *
- * Props
- * - ranges:             string[]                          — labels to render
- * - value:              string                            — currently selected label
- * - onChange:           (range: string) => void
- * - size:               'xs' | 'sm'                       — defaults to 'sm'
- * - accentColor:        string                            — active pill color (defaults to emerald)
- * - inactiveTextColor:  string                            — text color for non-selected pills
- * - className:          string                            — optional wrapper class
- * - style:              CSSProperties                     — optional wrapper style override
+ * @deprecated Use DateSelector from '@/components/ui/DateSelector' instead.
+ * All components have been migrated to the unified DateSelector.
  */
 export function TimeRangeSelector({
   ranges,

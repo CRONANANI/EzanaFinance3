@@ -13,6 +13,7 @@ import {
 } from 'recharts';
 import { LATEST_BACKTESTS, LATEST_BACKTEST_BENCHMARK } from '@/lib/for-the-quants-mock-data';
 import { BacktestExplainer } from '@/components/quants/BacktestExplainer';
+import { DateSelector } from '@/components/ui/DateSelector';
 
 const PERIODS = [
   { id: '1M', label: '1M', days: 22 },
@@ -101,19 +102,12 @@ export function BacktestResultsCard() {
         <h3 className="ftq-section-title">
           <i className="bi bi-graph-up-arrow" aria-hidden /> Backtest Results
         </h3>
-        <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
-          {PERIODS.map((p) => (
-            <button
-              key={p.id}
-              type="button"
-              className={`ftq-tab ${period === p.id ? 'active' : ''}`}
-              onClick={() => setPeriod(p.id)}
-              style={{ padding: '0.2rem 0.5rem', fontSize: '0.65rem' }}
-            >
-              {p.label}
-            </button>
-          ))}
-        </div>
+        <DateSelector
+          ranges={PERIODS.map((p) => p.id)}
+          value={period}
+          onChange={setPeriod}
+          size="xs"
+        />
       </div>
       <div className="ftq-card-body-pad ftq-card-body-pad--flush-top">
         <div

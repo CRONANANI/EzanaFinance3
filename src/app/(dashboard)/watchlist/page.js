@@ -27,6 +27,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { DateSelector } from '@/components/ui/DateSelector';
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
 import '../../../../app-legacy/assets/css/pages-common.css';
@@ -1172,18 +1173,13 @@ export default function WatchlistPage() {
             </div>
           ) : (
             <>
-              <div className="wl-tr-row">
-                {TIME_RANGES.map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    className={`wl-tr ${timeRange === t ? 'on' : ''}`}
-                    onClick={() => setTimeRange(t)}
-                  >
-                    {t}
-                  </button>
-                ))}
-              </div>
+              <DateSelector
+                ranges={TIME_RANGES}
+                value={timeRange}
+                onChange={setTimeRange}
+                size="xs"
+                style={{ marginBottom: '0.5rem' }}
+              />
               <Chart item={selectedMerged} timeRange={timeRange} />
             </>
           )}

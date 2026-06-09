@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { TIER_LIST } from '@/lib/elo-tier-colors';
 import { type as typeTokens } from './elo-design-tokens';
 import { useEloTheme } from './EloThemeContext';
+import { DateSelector } from '@/components/ui/DateSelector';
 
 const TIME_RANGES = ['1W', '1M', '3M', 'YTD', 'All'];
 
@@ -134,41 +135,7 @@ export function FilterBar({
         </span>
       </div>
 
-      <div
-        style={{
-          display: 'flex',
-          background: page.surface,
-          border: `1px solid ${page.border}`,
-          borderRadius: shape.radius.button,
-          overflow: 'hidden',
-        }}
-      >
-        {TIME_RANGES.map((r, i) => {
-          const isActive = r === range;
-          return (
-            <button
-              key={r}
-              type="button"
-              onClick={() => onRangeChange(r)}
-              aria-pressed={isActive}
-              style={{
-                background: isActive ? page.surfaceAlt : 'transparent',
-                color: isActive ? page.ink : page.inkSoft,
-                border: 'none',
-                borderLeft: i > 0 ? `1px solid ${page.border}` : 'none',
-                padding: '6px 12px',
-                fontSize: 11,
-                fontWeight: 500,
-                fontFamily: typeTokens.mono,
-                cursor: 'pointer',
-                transition: 'background 120ms ease, color 120ms ease',
-              }}
-            >
-              {r}
-            </button>
-          );
-        })}
-      </div>
+      <DateSelector ranges={TIME_RANGES} value={range} onChange={onRangeChange} size="xs" />
 
       <div
         role="radiogroup"
