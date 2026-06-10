@@ -5,6 +5,7 @@ import { getModelConfig } from '@/lib/ai/analysis-prompts';
 import { fetchMarketData, formatMarketDataForPrompt } from '@/lib/ai/market-data';
 import { createServerSupabase } from '@/lib/supabase-server';
 import { sanitizeAIOutput } from '@/lib/sanitize';
+import { getClientIp } from '@/lib/client-ip';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,7 +26,7 @@ function checkAiRateLimit(ip) {
 export const POST = withApiGuard(
   async (request, user) => {
     try {
-      const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+      const ip = getClientIp(request);
       if (!checkAiRateLimit(ip)) {
         return NextResponse.json(
           { error: 'Rate limit exceeded. Try again in 60 seconds.' },

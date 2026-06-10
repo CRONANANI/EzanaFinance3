@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { checkRateLimit } from './persistent-rate-limit';
 import { getAuthUser } from './auth-helpers';
+import { getClientIp } from './client-ip';
 import { logger } from './logger';
 import { logSecurityEvent } from './security-audit';
 
@@ -30,10 +31,7 @@ export function withApiGuard(handler, options = {}) {
 
   return async (request, context) => {
     try {
-      const ip =
-        request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-        request.headers.get('x-real-ip') ||
-        'unknown';
+      const ip = getClientIp(request);
 
       let path = '';
       try {

@@ -4,28 +4,25 @@ import { logSecurityEvent } from './security-audit';
 const MAX_FAILED_ATTEMPTS = 10;
 const LOCKOUT_WINDOW_MINUTES = 60;
 
-async function findUserIdByEmail(admin, email) {
-  const normalized = email.toLowerCase();
-  let page = 1;
-  const perPage = 200;
-
-  while (page <= 50) {
-    const { data: listData, error: listErr } = await admin.auth.admin.listUsers({ page, perPage });
-    if (listErr) {
-      console.warn('[login-lockout] listUsers failed:', listErr.message);
-      return null;
-    }
-    const users = listData?.users ?? [];
-    const match = users.find((u) => u.email?.toLowerCase() === normalized);
-    if (match) return match.id;
-    if (users.length < perPage) break;
-    page += 1;
-  }
-  return null;
-}
-
 /**
- * Record a login attempt and check if the account should be locked.
+ * Record a login attempt and check if the account should be (temporarily)
+ * locked.
+ *
+ * SECURITY NOTE — why this no longer flips `profiles.is_disabled`:
+ *   This is reached from `/api/auth/record-attempt`, an UNAUTHENTICATED
+ *   endpoint whose `{ email, success }` is supplied by the caller. The old
+ *   implementation, on 10 failed attempts, set `profiles.is_disabled = true`
+ *   — a PERMANENT, admin-cleared flag that the middleware treats as a hard
+ *   account lock (force sign-out + redirect to /account-locked). That let an
+ *   unauthenticated attacker permanently lock any user out of their account
+ *   just by POSTing failed attempts for their email (an account-takeover-
+ *   adjacent denial of service).
+ *
+ *   The lockout is now purely the time-windowed `login_attempts` count, which
+ *   `isLockedOut()` / `/api/auth/check-lockout` already enforce and which
+ *   self-heals after LOCKOUT_WINDOW_MINUTES — matching the user-facing
+ *   "Try again in 1 hour" message. `profiles.is_disabled` is reserved for
+ *   deliberate administrative locks only.
  */
 export async function recordLoginAttempt(email, ip, success) {
   const admin = getAdminClient();
@@ -57,24 +54,16 @@ export async function recordLoginAttempt(email, ip, success) {
   const remaining = Math.max(0, MAX_FAILED_ATTEMPTS - failedCount);
 
   if (failedCount >= MAX_FAILED_ATTEMPTS) {
-    const userId = await findUserIdByEmail(admin, email);
-    if (userId) {
-      await admin
-        .from('profiles')
-        .update({
-          is_disabled: true,
-          disabled_reason: 'Too many failed login attempts',
-          disabled_at: new Date().toISOString(),
-        })
-        .eq('id', userId);
-    }
-
+    // Temporary, self-healing lockout only — see the SECURITY NOTE above.
+    // Do NOT set profiles.is_disabled here: this code path is driven by an
+    // unauthenticated, client-asserted endpoint.
     await logSecurityEvent('account_locked_brute_force', {
       ip,
       details: {
         email: email.toLowerCase(),
         failedAttempts: failedCount,
         windowMinutes: LOCKOUT_WINDOW_MINUTES,
+        lockoutType: 'temporary',
       },
     });
 

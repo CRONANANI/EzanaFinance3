@@ -7,6 +7,7 @@ import { withApiGuard } from '@/lib/api-guard';
 import { alpacaRequest } from '@/lib/alpaca';
 import { getAdminClient, getCurrentUser } from '@/lib/supabase';
 import { awardELO } from '@/lib/elo';
+import { getClientIp } from '@/lib/client-ip';
 
 export const dynamic = 'force-dynamic';
 
@@ -62,17 +63,17 @@ export const POST = withApiGuard(
             {
               agreement: 'margin_agreement',
               signed_at: new Date().toISOString(),
-              ip_address: request.headers.get('x-forwarded-for') || '0.0.0.0',
+              ip_address: getClientIp(request, '0.0.0.0'),
             },
             {
               agreement: 'account_agreement',
               signed_at: new Date().toISOString(),
-              ip_address: request.headers.get('x-forwarded-for') || '0.0.0.0',
+              ip_address: getClientIp(request, '0.0.0.0'),
             },
             {
               agreement: 'customer_agreement',
               signed_at: new Date().toISOString(),
-              ip_address: request.headers.get('x-forwarded-for') || '0.0.0.0',
+              ip_address: getClientIp(request, '0.0.0.0'),
             },
           ],
         }),

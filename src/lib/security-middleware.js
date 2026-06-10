@@ -4,6 +4,7 @@
  */
 
 import { NextResponse } from 'next/server';
+import { getClientIp } from './client-ip';
 
 const rateLimitMap = new Map();
 const WINDOW_MS = 60_000;
@@ -19,11 +20,7 @@ if (typeof globalThis !== 'undefined' && !globalThis.__secMwCleanup) {
 }
 
 function getIp(request) {
-  return (
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    request.headers.get('x-real-ip') ||
-    'unknown'
-  );
+  return getClientIp(request);
 }
 
 function checkRateLimit(ip, limit = 30) {

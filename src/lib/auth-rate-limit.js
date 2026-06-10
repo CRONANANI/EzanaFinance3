@@ -7,17 +7,10 @@
 
 import { NextResponse } from 'next/server';
 import { checkRateLimit, logSecurityEvent } from './persistent-rate-limit';
+import { getClientIp } from './client-ip';
 
 const AUTH_LIMIT = 5;
 const AUTH_WINDOW_MS = 15 * 60 * 1000;
-
-function getClientIp(request) {
-  return (
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    request.headers.get('x-real-ip') ||
-    'unknown'
-  );
-}
 
 /**
  * Check the auth rate limit. Returns:

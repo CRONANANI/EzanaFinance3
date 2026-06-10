@@ -3,6 +3,7 @@ import { getAdminClient } from '@/lib/supabase';
 import { withApiGuard } from '@/lib/api-guard';
 import { requireAdminAccess } from '@/lib/admin-auth';
 import { logSecurityEvent } from '@/lib/security-audit';
+import { getClientIp } from '@/lib/client-ip';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -109,10 +110,7 @@ export const POST = withApiGuard(
         }
       }
 
-      const ip =
-        request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-        request.headers.get('x-real-ip') ||
-        null;
+      const ip = getClientIp(request, null);
       await logSecurityEvent(unlock ? 'account_unlocked' : 'account_locked', {
         targetId: userId,
         ip,

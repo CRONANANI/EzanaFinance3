@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { createServerSupabase } from '@/lib/supabase-server';
 import { sanitizeAIOutput } from '@/lib/sanitize';
+import { getClientIp } from '@/lib/client-ip';
 import { OBSIDIAN_SYSTEM_PROMPT, buildObsidianUserPrompt } from '@/lib/ai/obsidian-prompt';
 
 /** Reuses ANTHROPIC_API_KEY (same as /api/ai-stock-analysis). */
@@ -31,7 +32,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const ip = getClientIp(request);
     if (!checkRate(ip)) {
       return NextResponse.json(
         { error: 'Rate limit exceeded. Try again in 60 seconds.' },

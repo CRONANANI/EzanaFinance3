@@ -5,6 +5,7 @@ import {
   PARTNER_DASHBOARD_ROUTES,
   USER_DASHBOARD_ROUTES,
 } from '@/lib/auth/protected-routes';
+import { getClientIp } from '@/lib/client-ip';
 
 const ALLOWED_ORIGINS = ['https://ezana.world', 'http://localhost:3000', 'http://127.0.0.1:3000'];
 
@@ -24,10 +25,7 @@ export async function middleware(request) {
     if (!shouldSkip) {
       try {
         const { checkRateLimit, logSecurityEvent } = await import('@/lib/persistent-rate-limit');
-        const ip =
-          request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-          request.headers.get('x-real-ip') ||
-          'unknown';
+        const ip = getClientIp(request);
         const result = await checkRateLimit(`global:${ip}`, 100, 60 * 1000);
 
         if (!result.allowed) {

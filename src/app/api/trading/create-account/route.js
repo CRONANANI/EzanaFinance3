@@ -5,6 +5,7 @@ import { cookies } from 'next/headers';
 import { alpaca } from '@/lib/alpaca';
 import { supabaseAdmin } from '@/lib/plaid';
 import { awardELO } from '@/lib/elo';
+import { getClientIp } from '@/lib/client-ip';
 
 export const dynamic = 'force-dynamic';
 
@@ -57,7 +58,7 @@ export const POST = withApiGuard(
         );
       }
 
-      const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || '0.0.0.0';
+      const ip = getClientIp(request, '0.0.0.0');
 
       const alpacaAccount = await alpaca.post('/v1/accounts', {
         contact: {

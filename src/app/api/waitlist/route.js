@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { createServerSupabaseClient } from '@/lib/supabase-service-role';
+import { getClientIp } from '@/lib/client-ip';
 import { Resend } from 'resend';
 
 export const dynamic = 'force-dynamic';
@@ -43,8 +44,7 @@ export const POST = withApiGuard(
       }
 
       // Get request headers for tracking
-      const forwardedFor = request.headers.get('x-forwarded-for');
-      const ipAddress = forwardedFor ? forwardedFor.split(',')[0].trim() : 'unknown';
+      const ipAddress = getClientIp(request);
       const userAgent = request.headers.get('user-agent') || 'unknown';
 
       // Insert email into waitlist table
