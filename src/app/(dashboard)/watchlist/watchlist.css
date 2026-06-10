@@ -360,79 +360,11 @@
   justify-content: flex-end;
   gap: 0.65rem 0.75rem;
 }
-/* Holders + alert: own row so bubbles are not clipped or squeezed beside price */
-.wl-price-right-cluster .wl-holders-block {
-  flex: 1 1 100%;
-  width: 100%;
-  max-width: 100%;
-  margin-left: 0;
-  justify-content: flex-end;
-}
 .wl-price-num-block {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 2px;
-}
-.wl-holder-bubbles {
-  display: grid;
-  /* 5 columns × 2 rows (or fewer rows if < 6 items). */
-  grid-template-columns: repeat(5, minmax(0, 28px));
-  grid-auto-flow: row;
-  gap: 5px;
-  max-width: 165px;
-  align-content: start;
-}
-
-.wl-holders-block {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.5rem;
-  margin-left: auto;
-}
-
-.wl-holder-chip--partner {
-  box-shadow:
-    0 0 0 2px #d4af37,
-    0 0 8px rgba(212, 175, 55, 0.35),
-    0 2px 6px rgba(0, 0, 0, 0.35),
-    inset 0 1px 1px rgba(255, 255, 255, 0.08);
-}
-
-.wl-holder-chip--partner:hover {
-  box-shadow:
-    0 0 0 2px #d4af37,
-    0 0 14px rgba(212, 175, 55, 0.55),
-    0 4px 10px rgba(0, 0, 0, 0.4),
-    inset 0 1px 1px rgba(255, 255, 255, 0.08);
-}
-
-.wl-holder-chip {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.55rem;
-  font-weight: 800;
-  color: #fff;
-  text-decoration: none;
-  background: linear-gradient(135deg, #1a1a2e, #2a2a3e);
-  box-shadow:
-    0 2px 6px rgba(0, 0, 0, 0.35),
-    inset 0 1px 1px rgba(255, 255, 255, 0.08);
-  border: none;
-  cursor: pointer;
-  font-family: inherit;
-  transition:
-    transform 0.15s,
-    box-shadow 0.15s;
-}
-.wl-holder-chip:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25);
 }
 .wl-price-alert-btn {
   align-self: flex-end;

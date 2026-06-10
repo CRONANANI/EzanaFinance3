@@ -14,7 +14,6 @@ import { useWatchlists } from '@/hooks/useWatchlists';
 import { getTickerMeta } from '@/lib/tickerSearchData';
 import { WatchlistSearch } from '@/components/watchlist/WatchlistSearch';
 import { NewWatchlistDialog } from '@/components/watchlist/NewWatchlistDialog';
-import { HolderPopup } from '@/components/watchlist/HolderPopup';
 import { getAssetIcon } from '@/components/watchlist/asset-icons';
 import { ChevronDown, Check } from 'lucide-react';
 import {
@@ -720,8 +719,6 @@ export default function WatchlistPage() {
   }, [watchlistsLoading, mockWatchlists, selectedWatchlistId]);
   const [wlDropdownOpen, setWlDropdownOpen] = useState(false);
   const wlDropdownRef = useRef(null);
-  const [activeHolder, setActiveHolder] = useState(null);
-  const [holderList, setHolderList] = useState([]);
   const [sendWatchlistTicker, setSendWatchlistTicker] = useState(null);
 
   const orgTeamId = useMemo(() => {
@@ -898,32 +895,6 @@ export default function WatchlistPage() {
 
   const isUp = portfolioReturn != null ? portfolioReturn >= 0 : (selectedMerged?.change ?? 0) >= 0;
 
-  useEffect(() => {
-    setActiveHolder(null);
-  }, [selected?.id, selected?.ticker]);
-
-  useEffect(() => {
-    if (selected?.type !== 'stock' || !selected.ticker) {
-      setHolderList([]);
-      return;
-    }
-    const tk = selected.ticker;
-    let cancelled = false;
-    fetch(`/api/watchlist/holders?ticker=${encodeURIComponent(tk)}&limit=10`, {
-      credentials: 'same-origin',
-    })
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
-      .then((d) => {
-        if (!cancelled) setHolderList(d.holders || []);
-      })
-      .catch(() => {
-        if (!cancelled) setHolderList([]);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [selected?.type, selected?.id, selected?.ticker]);
-
   const watchlistCourses = useMemo(() => getCoursesForWatchlistPreview(4), []);
 
   if (!selected) {
@@ -939,14 +910,6 @@ export default function WatchlistPage() {
   return (
     <div className="wl-page dashboard-page-inset">
       <EducationTip topic="diversification" />
-      {activeHolder && selected?.type === 'stock' && (
-        <HolderPopup
-          holder={activeHolder}
-          ticker={selected.ticker}
-          currentPrice={selectedMerged?.price ?? 0}
-          onClose={() => setActiveHolder(null)}
-        />
-      )}
 
       {/* ═══ ROW 1 with ASSET CLASS SWITCHER on the left ═══ */}
       <div className="wl-row-1">
@@ -1145,24 +1108,6 @@ export default function WatchlistPage() {
                 )}
               {(selected.type === 'politician' || selected.type === 'institution') && (
                 <div className="wl-portfolio-hint">Based on disclosed positions</div>
-              )}
-              {selected.type === 'stock' && holderList.length > 0 && (
-                <div className="wl-holders-block">
-                  <div className="wl-holder-bubbles" aria-label="Investors holding this stock">
-                    {holderList.map((h) => (
-                      <button
-                        key={h.userId + h.initials}
-                        type="button"
-                        onClick={() => setActiveHolder(h)}
-                        className={`wl-holder-chip ${h.partner ? 'wl-holder-chip--partner' : ''}`}
-                        title={`${h.name}${h.partner ? ' · Partner' : ''}`}
-                        aria-label={`View ${h.name}'s position`}
-                      >
-                        {h.initials}
-                      </button>
-                    ))}
-                  </div>
-                </div>
               )}
             </div>
           </div>
