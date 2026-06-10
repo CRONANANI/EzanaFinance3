@@ -15,6 +15,8 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { useMockPortfolio } from '@/hooks/useMockPortfolio';
+import { usePlaidPortfolioSummary } from '@/hooks/usePlaidPortfolioSummary';
+import { supabase } from '@/lib/supabase-browser';
 import { useCompanySearchFinnhub } from '@/hooks/useFinnhub';
 import { useChecklist } from '@/hooks/useChecklist';
 
@@ -137,6 +139,42 @@ function MockTradingPageInner() {
   /* Portfolio state — backed by Supabase via useMockPortfolio */
   const { portfolio: portfolioFromHook, setPortfolio, syncing } = useMockPortfolio();
   const [dbTrades, setDbTrades] = useState([]);
+
+  /* Connected brokerage (Plaid). When an account is linked, the performance
+     chart and the Open Positions card show the REAL brokerage portfolio;
+     the mock portfolio remains the source for trading (order form, cash,
+     reset) when no brokerage is connected. */
+  const { connected: brokerageConnected, summary: brokerageSummary } = usePlaidPortfolioSummary();
+  const [brokerageHoldings, setBrokerageHoldings] = useState(null);
+
+  useEffect(() => {
+    if (!user?.id || !brokerageConnected) {
+      setBrokerageHoldings(null);
+      return undefined;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (!session?.access_token) return;
+        const res = await fetch('/api/plaid/holdings', {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+          cache: 'no-store',
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!cancelled)
+          setBrokerageHoldings(Array.isArray(data?.aggregated) ? data.aggregated : []);
+      } catch {
+        if (!cancelled) setBrokerageHoldings(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, brokerageConnected]);
 
   const persistMockTrade = useCallback(
     async (payload) => {
@@ -563,7 +601,31 @@ function MockTradingPageInner() {
     });
   }, [portfolio.positions, portfolio.history, livePrices]);
 
-  const positionsList = Object.values(portfolio.positions || {});
+  /* Brokerage holdings mapped into the mock-position shape so the Open
+     Positions table (and its sorting) renders both sources identically. */
+  const brokeragePositionsList = useMemo(() => {
+    if (!brokerageConnected || !Array.isArray(brokerageHoldings)) return null;
+    return brokerageHoldings
+      .map((h) => {
+        const qty = Number(h.totalQuantity) || 0;
+        return {
+          symbol: String(h.ticker || '')
+            .trim()
+            .toUpperCase(),
+          name: h.name || h.ticker || '',
+          type: h.type || 'Stock',
+          qty,
+          avgCost: qty > 0 ? (Number(h.totalCostBasis) || 0) / qty : 0,
+          currentPrice: qty > 0 ? (Number(h.totalValue) || 0) / qty : Number(h.lastPrice) || 0,
+        };
+      })
+      .filter((p) => p.symbol && p.qty > 0);
+  }, [brokerageConnected, brokerageHoldings]);
+
+  const showBrokerage = brokerageConnected && brokeragePositionsList !== null;
+  const positionsList = showBrokerage
+    ? brokeragePositionsList
+    : Object.values(portfolio.positions || {});
 
   const sortedPositions = useMemo(() => {
     const list = [...positionsList];
@@ -675,10 +737,25 @@ function MockTradingPageInner() {
     const px = livePx ?? p.currentPrice ?? p.avgCost;
     return s + px * p.qty;
   }, 0);
-  const totalPortfolioValue = portfolio.cash + totalPositionValue;
+  /* Headline totals. Brokerage mode: the Plaid summary is the source of
+     truth (matches /home-dashboard "Current Value"). Mock mode: live
+     client-side total = cash + positions at live prices. The performance
+     chart is anchored to this same number so the two cards always agree. */
+  const totalPortfolioValue =
+    showBrokerage && brokerageSummary
+      ? Number(brokerageSummary.totalValue) || 0
+      : portfolio.cash + totalPositionValue;
   const effectiveStart = portfolio?.startingCash ?? STARTING_CASH;
-  const totalPnl = totalPortfolioValue - effectiveStart;
-  const totalPnlPct = effectiveStart > 0 ? (totalPortfolioValue / effectiveStart - 1) * 100 : 0;
+  const totalPnl =
+    showBrokerage && brokerageSummary
+      ? Number(brokerageSummary.totalGainLoss) || 0
+      : totalPortfolioValue - effectiveStart;
+  const totalPnlPct =
+    showBrokerage && brokerageSummary
+      ? Number(brokerageSummary.totalGainLossPercent) || 0
+      : effectiveStart > 0
+        ? (totalPortfolioValue / effectiveStart - 1) * 100
+        : 0;
 
   useEffect(() => {
     const symbols = [
@@ -888,12 +965,16 @@ function MockTradingPageInner() {
         <div className="mock-stat-card">
           <span className="mock-stat-label">Total Value</span>
           <span className="mock-stat-value">{fmtUSD(totalPortfolioValue)}</span>
-          <span className="mock-stat-sub">Cash + Positions</span>
+          <span className="mock-stat-sub">
+            {showBrokerage ? 'Brokerage holdings' : 'Cash + Positions'}
+          </span>
         </div>
         <div className="mock-stat-card">
           <span className="mock-stat-label">Cash Available</span>
           <span className="mock-stat-value">{fmtUSD(portfolio.cash)}</span>
-          <span className="mock-stat-sub">Ready to deploy</span>
+          <span className="mock-stat-sub">
+            {showBrokerage ? 'Mock trading cash' : 'Ready to deploy'}
+          </span>
         </div>
         <div className="mock-stat-card">
           <span className="mock-stat-label">Total P&amp;L</span>
@@ -902,10 +983,14 @@ function MockTradingPageInner() {
           </span>
           <span className="mock-stat-sub">
             {totalPnlPct >= 0 ? '+' : ''}
-            {totalPnlPct.toFixed(2)}% vs{' '}
-            {effectiveStart >= 1000
-              ? `$${(effectiveStart / 1000).toFixed(0)}K`
-              : `$${effectiveStart.toLocaleString('en-US')}`}
+            {totalPnlPct.toFixed(2)}%{' '}
+            {showBrokerage
+              ? 'vs cost basis'
+              : `vs ${
+                  effectiveStart >= 1000
+                    ? `$${(effectiveStart / 1000).toFixed(0)}K`
+                    : `$${effectiveStart.toLocaleString('en-US')}`
+                }`}
           </span>
         </div>
         <div className="mock-stat-card">
@@ -919,9 +1004,17 @@ function MockTradingPageInner() {
         <div className="mock-left-col">
           <div className="mock-card">
             <div className="mock-card-body" style={{ paddingTop: '1.125rem' }}>
-              {/* Default view: portfolio performance chart. Single-ticker chart only when
-                  user explicitly searches/picks a position. */}
-              {!selectedSymbol && <MockPortfolioChart />}
+              {/* Default view: portfolio performance chart — the connected
+                  brokerage account when one is linked, otherwise the mock
+                  portfolio. Anchored to the same live total as the Total
+                  Value card so the two always agree. Single-ticker chart
+                  only when the user explicitly searches/picks a position. */}
+              {!selectedSymbol && (
+                <MockPortfolioChart
+                  source={showBrokerage ? 'brokerage' : 'mock'}
+                  currentValue={totalPortfolioValue}
+                />
+              )}
 
               {selectedSymbol && (
                 <>
@@ -1014,7 +1107,7 @@ function MockTradingPageInner() {
                           </span>
                         </th>
                       ))}
-                      <th />
+                      {!showBrokerage && <th />}
                     </tr>
                   </thead>
                   <tbody>
@@ -1054,7 +1147,9 @@ function MockTradingPageInner() {
                                 whiteSpace: 'nowrap',
                               }}
                             >
-                              {formatOpenedDate(resolveOpenedAt(pos, portfolio.history))}
+                              {formatOpenedDate(
+                                showBrokerage ? null : resolveOpenedAt(pos, portfolio.history),
+                              )}
                             </td>
                             <td
                               style={{
@@ -1100,15 +1195,17 @@ function MockTradingPageInner() {
                             >
                               {fmtUSD(pos.qty * curPrice)}
                             </td>
-                            <td>
-                              <button
-                                className="mock-close-pos-btn"
-                                type="button"
-                                onClick={() => closePosition(pos.symbol)}
-                              >
-                                Close
-                              </button>
-                            </td>
+                            {!showBrokerage && (
+                              <td>
+                                <button
+                                  className="mock-close-pos-btn"
+                                  type="button"
+                                  onClick={() => closePosition(pos.symbol)}
+                                >
+                                  Close
+                                </button>
+                              </td>
+                            )}
                           </tr>
                         </Fragment>
                       );

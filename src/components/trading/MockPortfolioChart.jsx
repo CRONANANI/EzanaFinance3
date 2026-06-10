@@ -47,7 +47,20 @@ function CustomTooltip({ active, payload }) {
   );
 }
 
-export default function MockPortfolioChart() {
+/**
+ * Portfolio performance chart for the mock-trading page.
+ *
+ * @param {object} props
+ * @param {number|null} [props.currentValue] Live client-side portfolio total
+ *   (the same number the page's "Total Value" stat card shows). When provided,
+ *   the series' final point and the headline stat are anchored to it so the
+ *   chart can never disagree with the Total Value card — server-side series
+ *   reconstruction uses DB/vendor prices and can drift from the live total.
+ * @param {'mock'|'brokerage'} [props.source] 'brokerage' charts the connected
+ *   brokerage account (/api/portfolio/value-series) instead of the mock
+ *   portfolio series.
+ */
+export default function MockPortfolioChart({ currentValue = null, source = 'mock' }) {
   const [range, setRange] = useState('ALL'); // 'ALL' = since inception (default)
   const [customRange, setCustomRange] = useState(null);
   const [data, setData] = useState({ points: [], source: 'loading' });
@@ -60,11 +73,13 @@ export default function MockPortfolioChart() {
     setError(null);
 
     const url =
-      range === 'CUSTOM' && customRange?.start && customRange?.end
-        ? `/api/portfolio/mock-value-series?range=ALL&from=${encodeURIComponent(
-            customRange.start.toISOString(),
-          )}&to=${encodeURIComponent(customRange.end.toISOString())}`
-        : `/api/portfolio/mock-value-series?range=${range}`;
+      source === 'brokerage'
+        ? `/api/portfolio/value-series?range=${range === 'CUSTOM' ? 'ALL' : range}`
+        : range === 'CUSTOM' && customRange?.start && customRange?.end
+          ? `/api/portfolio/mock-value-series?range=ALL&from=${encodeURIComponent(
+              customRange.start.toISOString(),
+            )}&to=${encodeURIComponent(customRange.end.toISOString())}`
+          : `/api/portfolio/mock-value-series?range=${range}`;
 
     fetch(url, { cache: 'no-store' })
       .then((r) => r.json())
@@ -93,14 +108,52 @@ export default function MockPortfolioChart() {
     return () => {
       cancelled = true;
     };
-  }, [range, customRange]);
+  }, [range, customRange, source]);
+
+  /* Anchor the series to the live total and guarantee a drawable series.
+     - The last point is replaced with `currentValue` so the headline and the
+       line's endpoint always equal the Total Value card.
+     - If the server returned fewer than 2 points but we know the portfolio
+       has value (currentValue > 0), synthesize a flat line instead of
+       rendering nothing — an empty chart here reads as a bug to the user. */
+  const anchoredPoints = useMemo(() => {
+    const pts = [...(data.points || [])];
+    // A custom window that ends in the past must keep its historical end
+    // value — only windows that extend to "now" get anchored to the live total.
+    const windowEndsNow =
+      range !== 'CUSTOM' ||
+      !customRange?.end ||
+      Date.now() - customRange.end.getTime() < 24 * 60 * 60 * 1000;
+    const liveTotal =
+      windowEndsNow && Number.isFinite(currentValue) && currentValue > 0 ? currentValue : null;
+    const nowIso = new Date().toISOString();
+
+    if (liveTotal != null) {
+      if (pts.length === 0) {
+        if (
+          data.source !== 'no-portfolio' &&
+          data.source !== 'error' &&
+          data.source !== 'loading'
+        ) {
+          const startIso = data.startedAt || nowIso;
+          pts.push({ at: startIso, value: liveTotal }, { at: nowIso, value: liveTotal });
+        }
+      } else {
+        pts[pts.length - 1] = { ...pts[pts.length - 1], value: liveTotal };
+        if (pts.length === 1) pts.push({ at: nowIso, value: liveTotal });
+      }
+    } else if (pts.length === 1) {
+      pts.push({ at: nowIso, value: pts[0].value });
+    }
+    return pts;
+  }, [data.points, data.source, data.startedAt, currentValue, range, customRange]);
 
   const chartData = useMemo(() => {
-    return (data.points || []).map((p) => ({
+    return anchoredPoints.map((p) => ({
       ...p,
       label: formatDateLabel(p.at, range),
     }));
-  }, [data.points, range]);
+  }, [anchoredPoints, range]);
 
   // Compute summary stats
   const stats = useMemo(() => {
@@ -137,7 +190,7 @@ export default function MockPortfolioChart() {
           onChange={setRange}
           size="xs"
           variant="default"
-          showCustomDateButton={true}
+          showCustomDateButton={source !== 'brokerage'}
           onCustomDateChange={(custom) => {
             if (custom?.start && custom?.end) {
               setRange('CUSTOM');
@@ -161,8 +214,11 @@ export default function MockPortfolioChart() {
               'Your portfolio is empty. Add some starting cash to begin.'}
             {data.source === 'error' &&
               'Unable to load portfolio history. Please refresh the page.'}
-            {!['no-portfolio', 'no-trades', 'empty-portfolio', 'error'].includes(data.source) &&
-              'Start trading to see your portfolio performance over time.'}
+            {data.source === 'empty' &&
+              'No brokerage portfolio history yet — check back after your next account sync.'}
+            {!['no-portfolio', 'no-trades', 'empty-portfolio', 'empty', 'error'].includes(
+              data.source,
+            ) && 'Start trading to see your portfolio performance over time.'}
           </p>
         </div>
       )}

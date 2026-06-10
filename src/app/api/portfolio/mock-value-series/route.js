@@ -58,19 +58,26 @@ export const GET = withApiGuard(
       }
 
       if (trades.length === 0 && portfolio) {
-        const cash = Number(portfolio.cash) || DEFAULT_STARTING_CASH;
+        // The flat line must reflect the FULL portfolio value (cash + held
+        // positions from the JSONB snapshot), not cash alone — users whose
+        // positions live only in the snapshot (no mock_trades rows) were
+        // shown a chart value that disagreed with the Total Value card.
+        const flatValue =
+          computeCurrentValueFromJsonb(portfolio) ||
+          Number(portfolio.cash) ||
+          DEFAULT_STARTING_CASH;
         const createdAt = portfolioRow.updated_at || new Date().toISOString();
         const startISO = new Date(createdAt).toISOString().slice(0, 10);
         const endISO = new Date().toISOString().slice(0, 10);
         console.info('[mock-value-series] flat line — has portfolio, no trades', {
           user_id: user.id,
-          cash,
+          flat_value: flatValue,
         });
         return NextResponse.json({
           range,
           points: [
-            { at: `${startISO}T16:00:00.000Z`, value: cash },
-            { at: `${endISO}T16:00:00.000Z`, value: cash },
+            { at: `${startISO}T16:00:00.000Z`, value: flatValue },
+            { at: `${endISO}T16:00:00.000Z`, value: flatValue },
           ],
           source: 'no-trades',
           startedAt: createdAt,
@@ -119,6 +126,12 @@ export const GET = withApiGuard(
         portfolioCreatedAt: anchorDate,
         fetchHistoricalPrices: fetchBatchedHistoricalPrices,
       });
+
+      // A single point can't draw a line — pad to a flat 2-point series so
+      // the client always has something chartable.
+      if (replay.points.length === 1) {
+        replay.points.push({ at: new Date().toISOString(), value: replay.points[0].value });
+      }
 
       // A custom window (?from=&to=) takes precedence over the preset `range`.
       const fromParam = request.nextUrl.searchParams.get('from');
