@@ -12,48 +12,6 @@ const ALLOWED_ORIGINS = ['https://ezana.world', 'http://localhost:3000', 'http:/
 export async function middleware(request) {
   const pathname = request.nextUrl.pathname;
 
-  // Global rate limit: 100 req/min per IP on /api/* (excludes auth + webhooks)
-  if (pathname.startsWith('/api/') && !pathname.startsWith('/api/auth/')) {
-    const skipPaths = [
-      '/api/webhooks/',
-      '/api/stripe/webhook',
-      '/api/alpaca/webhook',
-      '/api/trading/webhook',
-    ];
-    const shouldSkip = skipPaths.some((s) => pathname.startsWith(s));
-
-    if (!shouldSkip) {
-      try {
-        const { checkRateLimit, logSecurityEvent } = await import('@/lib/persistent-rate-limit');
-        const ip = getClientIp(request);
-        const result = await checkRateLimit(`global:${ip}`, 100, 60 * 1000);
-
-        if (!result.allowed) {
-          await logSecurityEvent('global_rate_limit_hit', {
-            severity: 'warning',
-            ip,
-            endpoint: pathname,
-            details: { resetAt: result.resetAt.toISOString() },
-          });
-
-          return NextResponse.json(
-            { error: 'Too many requests. Please slow down.' },
-            {
-              status: 429,
-              headers: {
-                'Retry-After': String(Math.ceil((result.resetAt.getTime() - Date.now()) / 1000)),
-                'X-RateLimit-Limit': '100',
-                'X-RateLimit-Remaining': '0',
-              },
-            },
-          );
-        }
-      } catch (err) {
-        console.warn('[middleware-rate-limit] error:', err?.message);
-      }
-    }
-  }
-
   /* Forward the resolved pathname as a request header so server components
      (e.g. the root layout) can pre-compute route-scoped body classes
      server-side. Eliminates the class-application race on first paint that
@@ -93,6 +51,59 @@ export async function middleware(request) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  /* Global API rate limit — keyed PER USER when authenticated, else per IP.
+     A data-rich dashboard fires dozens of /api/* calls per page, so the old
+     flat "100/min per IP" tripped during normal navigation (every request in
+     the burst shares one IP bucket) and 429'd the very fetches the pages wait
+     on — producing the "stuck on a forever-loading screen" symptom. Keying by
+     user id gives each signed-in user a generous independent budget (and stops
+     users behind a shared office/NAT IP from throttling each other); anonymous
+     traffic keeps a tighter per-IP cap. Runs after getUser (which executes on
+     every request regardless) so bucketing by user id is free. Webhooks and
+     /api/auth/* are excluded; per-route limits in withApiGuard still apply. */
+  if (pathname.startsWith('/api/') && !pathname.startsWith('/api/auth/')) {
+    const skipPaths = [
+      '/api/webhooks/',
+      '/api/stripe/webhook',
+      '/api/alpaca/webhook',
+      '/api/trading/webhook',
+    ];
+    if (!skipPaths.some((s) => pathname.startsWith(s))) {
+      try {
+        const { checkRateLimit, logSecurityEvent } = await import('@/lib/persistent-rate-limit');
+        const ip = getClientIp(request);
+        const { key, limit } = user
+          ? { key: `global:user:${user.id}`, limit: 1000 }
+          : { key: `global:ip:${ip}`, limit: 150 };
+        const result = await checkRateLimit(key, limit, 60 * 1000);
+
+        if (!result.allowed) {
+          await logSecurityEvent('global_rate_limit_hit', {
+            severity: 'warning',
+            ip,
+            userId: user?.id || null,
+            endpoint: pathname,
+            details: { scope: user ? 'user' : 'ip', limit, resetAt: result.resetAt.toISOString() },
+          });
+
+          return NextResponse.json(
+            { error: 'Too many requests. Please slow down.' },
+            {
+              status: 429,
+              headers: {
+                'Retry-After': String(Math.ceil((result.resetAt.getTime() - Date.now()) / 1000)),
+                'X-RateLimit-Limit': String(limit),
+                'X-RateLimit-Remaining': '0',
+              },
+            },
+          );
+        }
+      } catch (err) {
+        console.warn('[middleware-rate-limit] error:', err?.message);
+      }
+    }
+  }
 
   /** OAuth / PKCE callback — session is established client-side; do not gate */
   if (pathname === '/auth/callback' || pathname.startsWith('/auth/callback/')) {

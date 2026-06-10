@@ -40,13 +40,30 @@ export function withApiGuard(handler, options = {}) {
         /* ignore */
       }
 
-      const limit = strict ? 10 : 30;
+      // Resolve the user BEFORE the rate-limit check on protected routes so the
+      // per-route limit can be keyed per user. Keying by IP alone meant every
+      // user behind a shared office/NAT IP shared one bucket per endpoint and
+      // throttled each other during normal use. getAuthUser already runs for
+      // protected routes, so this adds no cost.
+      let user = null;
+      if (requireAuth) {
+        user = await getAuthUser(request);
+        if (!user) {
+          return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+      }
+
+      const limit = strict ? 10 : 60;
       const windowMs = 60000;
-      const bucketKey = `api:${ip}:${path}`;
+      const bucketKey = user ? `api:u:${user.id}:${path}` : `api:ip:${ip}:${path}`;
       const { allowed, remaining, resetAt } = await checkRateLimit(bucketKey, limit, windowMs);
 
       if (!allowed) {
-        void logSecurityEvent('rate_limit_hit', { ip, details: { path } });
+        void logSecurityEvent('rate_limit_hit', {
+          ip,
+          userId: user?.id || null,
+          details: { path },
+        });
         const retryAfterSec = Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000));
         return NextResponse.json(
           { error: 'Too many requests. Please try again later.' },
@@ -59,14 +76,6 @@ export function withApiGuard(handler, options = {}) {
             },
           },
         );
-      }
-
-      let user = null;
-      if (requireAuth) {
-        user = await getAuthUser(request);
-        if (!user) {
-          return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
       }
 
       if (requiredRole && user) {
