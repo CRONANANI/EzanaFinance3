@@ -1,0 +1,243 @@
+/* ───────────────────────────────────────────────────────────────
+   Legal / policy pages — Terms of Service, Privacy Policy,
+   Accessibility.
+
+   Branded with the Ezana design tokens (theme-variables.css):
+   Plus Jakarta Sans typography, emerald accents, and theme-aware
+   text/background colours so the pages look on-brand in both dark
+   (default) and light mode. Measure and line-height are tuned for
+   comfortable long-form reading — paragraphs sit around 68ch wide
+   with generous 1.75 line-height so the text never feels cramped
+   or sparse.
+   ─────────────────────────────────────────────────────────────── */
+
+.legal-page {
+  min-height: 100vh;
+  background: var(--bg-primary);
+  color: var(--text-body);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.legal-container {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: clamp(48px, 8vw, 88px) 24px 96px;
+}
+
+/* ── Header ── */
+.legal-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--emerald-text);
+  margin: 0 0 14px;
+}
+
+.legal-title {
+  font-size: clamp(2rem, 4.5vw, 2.85rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.legal-meta {
+  margin: 16px 0 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.legal-lede {
+  max-width: 68ch;
+  margin: 22px 0 0;
+  font-size: 1.06rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+.legal-divider {
+  height: 1px;
+  border: 0;
+  background: var(--border-secondary);
+  margin: 40px 0 4px;
+}
+
+/* ── Sections ── */
+.legal-section {
+  margin-top: 44px;
+}
+
+.legal-section > h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--text-primary);
+  margin: 0 0 14px;
+}
+
+/* Body copy — generous measure + rhythm so paragraphs read cleanly.
+   Scoped to section content so it never overrides the header's own
+   paragraph classes (eyebrow / meta / lede). */
+.legal-section p {
+  max-width: 68ch;
+  font-size: 1rem;
+  line-height: 1.75;
+  color: var(--text-body);
+  margin: 0 0 16px;
+}
+
+.legal-section p:last-child {
+  margin-bottom: 0;
+}
+
+.legal-container strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* Links — emerald accent with a soft underline that brightens on hover */
+.legal-container a {
+  color: var(--emerald-text);
+  text-decoration: none;
+  border-bottom: 1px solid var(--emerald-border);
+  transition:
+    color 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.legal-container a:hover,
+.legal-container a:focus-visible {
+  color: var(--emerald);
+  border-bottom-color: var(--emerald);
+}
+
+/* Lists */
+.legal-section ul {
+  max-width: 68ch;
+  margin: 0 0 16px;
+  padding-left: 1.4rem;
+  list-style: disc;
+}
+
+.legal-section li {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--text-body);
+  margin-bottom: 9px;
+}
+
+.legal-section li:last-child {
+  margin-bottom: 0;
+}
+
+.legal-section li::marker {
+  color: var(--emerald-text);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PRIVACY POLICY — Termly export brand override
+
+   The privacy notice is an exported Termly document injected via
+   dangerouslySetInnerHTML. It ships hardcoded `font-family: Arial`,
+   grey/black colours and 14px sizing on both `[data-custom-class]`
+   hooks (with !important) and inline span styles. We override it
+   here, scoped under `.privacy-policy-termly` so the selectors carry
+   higher specificity than Termly's bare attribute rules and our
+   !important beats the (non-important) inline span styles.
+   ═══════════════════════════════════════════════════════════════ */
+
+.privacy-policy-page {
+  min-height: 100vh;
+  background: var(--bg-primary);
+  color: var(--text-body);
+  font-family: var(--font-sans);
+}
+
+/* Brand eyebrow sits above Termly's own title */
+.privacy-policy-header {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: clamp(48px, 8vw, 88px) 24px 0;
+}
+
+.privacy-policy-termly {
+  max-width: 760px !important;
+  margin: 0 auto !important;
+  padding: 10px 24px 96px !important;
+  font-family: var(--font-sans) !important;
+}
+
+/* Brand typography across the whole document */
+.privacy-policy-termly,
+.privacy-policy-termly * {
+  font-family: var(--font-sans) !important;
+}
+
+/* Uniform body colour + comfortable reading rhythm */
+.privacy-policy-termly p,
+.privacy-policy-termly li,
+.privacy-policy-termly span,
+.privacy-policy-termly bdt,
+.privacy-policy-termly td,
+.privacy-policy-termly div {
+  color: var(--text-body) !important;
+}
+
+.privacy-policy-termly [data-custom-class='body_text'],
+.privacy-policy-termly [data-custom-class='body_text'] * {
+  color: var(--text-body) !important;
+  font-size: 1rem !important;
+  line-height: 1.75 !important;
+}
+
+/* Title */
+.privacy-policy-termly [data-custom-class='title'],
+.privacy-policy-termly [data-custom-class='title'] * {
+  color: var(--text-primary) !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.02em !important;
+}
+
+/* Subtitle (last updated) */
+.privacy-policy-termly [data-custom-class='subtitle'],
+.privacy-policy-termly [data-custom-class='subtitle'] * {
+  color: var(--text-muted) !important;
+}
+
+/* Section headings */
+.privacy-policy-termly [data-custom-class='heading_1'],
+.privacy-policy-termly [data-custom-class='heading_1'] *,
+.privacy-policy-termly [data-custom-class='heading_2'],
+.privacy-policy-termly [data-custom-class='heading_2'] * {
+  color: var(--text-primary) !important;
+  letter-spacing: -0.01em !important;
+}
+
+.privacy-policy-termly [data-custom-class='heading_1'] {
+  margin-top: 2.4rem !important;
+}
+
+.privacy-policy-termly [data-custom-class='heading_2'] {
+  margin-top: 1.6rem !important;
+}
+
+/* Links — emerald accent (declared last so they win over the broad
+   span/div colour rule above at equal specificity) */
+.privacy-policy-termly [data-custom-class='link'],
+.privacy-policy-termly [data-custom-class='link'] *,
+.privacy-policy-termly a,
+.privacy-policy-termly a * {
+  color: var(--emerald-text) !important;
+  word-break: break-word !important;
+}
+
+/* Tables / dividers blend with the themed surface */
+.privacy-policy-termly table,
+.privacy-policy-termly td,
+.privacy-policy-termly th {
+  border-color: var(--border-secondary) !important;
+}

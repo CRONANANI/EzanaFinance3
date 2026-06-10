@@ -359,6 +359,59 @@ body.light-mode .force-dark-theme {
   --badge-ring: #0f1419;
 }
 
+/* ═══════════════════════════════════════════════════════════
+   FORCED DARK — Public legal / policy pages
+   (/privacy-policy, /terms-of-service, /accessibility)
+
+   These are reached from the landing footer and must always
+   present in the dark marketing aesthetic, regardless of the
+   user's light/dark toggle — visiting one should never look
+   like being signed into the app. The body class is applied
+   server-side by resolveRouteShellClasses (route-shell.js), so
+   there's no first-paint flash, and the `html:has(...)` variant
+   forces the dark tokens onto <html> too so no white frame peeks
+   behind the page or navbar.
+
+   This is a self-contained block (NOT folded into the
+   market-analysis force-dark scope) so it can carry the COMPLETE
+   token set these pages consume — including --text-body and the
+   emerald accents, which the market-analysis block omits — without
+   altering market-analysis behaviour. Declared after
+   `body.light-mode` with equal/greater specificity, so it wins.
+   ═══════════════════════════════════════════════════════════ */
+html:has(body.route-legal-dark),
+body.route-legal-dark {
+  color-scheme: dark;
+
+  --bg-primary: #0a0e13;
+  --bg-secondary: #0a0e13;
+  --bg-tertiary: #0a0e13;
+  --inset: #0a0f15;
+
+  --border-primary: rgba(16, 185, 129, 0.08);
+  --border-secondary: rgba(16, 185, 129, 0.06);
+  --border-hover: rgba(16, 185, 129, 0.2);
+  --border-focus: rgba(16, 185, 129, 0.4);
+
+  --text-primary: #f0f6fc;
+  --text-secondary: #e2e8f0;
+  --text-body: #cdd7e2;
+  --text-muted: #8b949e;
+  --text-faint: #6b7280;
+  --text-ghost: #4b5563;
+
+  --emerald: #10b981;
+  --emerald-hover: #059669;
+  --emerald-bg: rgba(16, 185, 129, 0.08);
+  --emerald-border: rgba(16, 185, 129, 0.15);
+  --emerald-text: #34d399;
+
+  --nav-bg: #0a0e13;
+  --nav-bg-solid: #0a0e13;
+  --nav-border: rgba(16, 185, 129, 0.08);
+  --app-bg: #0a0e13;
+}
+
 /* Partner app (shared routes + /partner-*): light mode uses gold accents instead of emerald */
 body.partner-app.light-mode {
   --border-hover: rgba(184, 146, 47, 0.28);

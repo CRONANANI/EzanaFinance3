@@ -29,13 +29,24 @@ export function Navbar() {
   const isAuthPage = pathname?.startsWith('/auth');
   const isHelpCenter = pathname?.startsWith('/help-center');
   const isPrivacyPolicy = pathname === '/privacy-policy';
+  const isTermsOfService = pathname === '/terms-of-service';
+  const isAccessibility = pathname === '/accessibility';
   const isEzanaEcho = pathname?.startsWith('/ezana-echo');
   // Echo articles are publicly readable — show the landing navbar to
   // unauthenticated visitors arriving from the landing page. Signed-in
   // users get the regular dashboard navbar so in-app navigation stays
   // consistent.
+  // Public legal pages (privacy / terms / accessibility) always use the
+  // marketing navbar — even for signed-in users — so reaching them from the
+  // landing footer never surfaces the logged-in app chrome.
   const showLandingNav =
-    isLanding || isHelpCenter || isPricing || isPrivacyPolicy || (isEzanaEcho && !isAuthenticated);
+    isLanding ||
+    isHelpCenter ||
+    isPricing ||
+    isPrivacyPolicy ||
+    isTermsOfService ||
+    isAccessibility ||
+    (isEzanaEcho && !isAuthenticated);
   const isResearchActive =
     pathname?.includes('/inside-the-capitol') ||
     pathname?.includes('/company-research') ||

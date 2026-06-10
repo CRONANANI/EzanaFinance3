@@ -1,4 +1,5 @@
 import { PRIVACY_POLICY_CSS, PRIVACY_POLICY_HTML } from './privacy-policy-content';
+import '../legal-pages.css';
 
 export const metadata = {
   title: 'Privacy Policy | Ezana Finance',
@@ -8,10 +9,16 @@ export const metadata = {
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="privacy-policy-page min-h-screen bg-white text-neutral-800">
+    <div className="privacy-policy-page legal-page">
+      {/* Termly's own styles first, then our brand override stylesheet
+          (imported above) wins via higher-specificity `.privacy-policy-termly`
+          selectors. */}
       <style dangerouslySetInnerHTML={{ __html: PRIVACY_POLICY_CSS }} />
+      <header className="privacy-policy-header">
+        <p className="legal-eyebrow">Legal</p>
+      </header>
       <main
-        className="privacy-policy-termly mx-auto max-w-4xl overflow-x-auto px-4 py-8 pb-16"
+        className="privacy-policy-termly overflow-x-auto"
         dangerouslySetInnerHTML={{ __html: PRIVACY_POLICY_HTML }}
       />
     </div>

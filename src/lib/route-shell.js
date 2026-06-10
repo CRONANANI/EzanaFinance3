@@ -31,6 +31,11 @@ const PARTNER_ROUTE_PREFIX = '/partner-';
 
 const MARKET_ANALYSIS_PATH = '/market-analysis';
 
+/* Public legal/policy pages reached from the landing footer. They render in
+   forced dark mode with the public marketing navbar — visiting one must never
+   look like being signed into the app. */
+const LEGAL_DARK_PATHS = ['/privacy-policy', '/terms-of-service', '/accessibility'];
+
 export function isDashboardRoute(pathname) {
   if (!pathname) return false;
   return matchesRoutePrefix(pathname, DASHBOARD_ROUTE_PREFIXES);
@@ -42,6 +47,10 @@ export function isPartnerChromeRoute(pathname) {
 
 export function isMarketAnalysisRoute(pathname) {
   return pathname === MARKET_ANALYSIS_PATH;
+}
+
+export function isLegalDarkRoute(pathname) {
+  return !!pathname && LEGAL_DARK_PATHS.includes(pathname);
 }
 
 /**
@@ -70,6 +79,9 @@ export function resolveRouteShellClasses(pathname) {
   }
   if (isMarketAnalysisRoute(pathname)) {
     classes.push('route-market-analysis');
+  }
+  if (isLegalDarkRoute(pathname)) {
+    classes.push('route-legal-dark');
   }
   return classes;
 }
