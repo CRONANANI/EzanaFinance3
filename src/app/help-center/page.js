@@ -28,7 +28,7 @@ export default function HelpCenterChoicePage() {
                 Portfolio tracking, congressional trades, brokerage connections, and account help
                 for individual investors
               </p>
-              <span className="hc-accent text-sm font-medium">Enter User Help Center</span>
+              <span className="hc-accent mt-auto text-sm font-medium">Enter User Help Center</span>
             </Link>
             <Link
               href="/help-center/partner"
@@ -40,20 +40,9 @@ export default function HelpCenterChoicePage() {
               <p className="hc-subtitle mb-4 text-center text-sm">
                 API access, program resources, affiliate tools, and partner dashboard help
               </p>
-              <span className="hc-accent text-sm font-medium">Enter Partner Help Center</span>
+              <span className="hc-accent mt-auto text-sm font-medium">Enter Partner Help Center</span>
             </Link>
           </div>
-          <p className="hc-faint mt-10 text-sm">
-            Not sure?{' '}
-            <Link href="/help-center/user" className="hc-link hover:underline">
-              User Support
-            </Link>{' '}
-            is for individual investors.{' '}
-            <Link href="/help-center/partner" className="hc-link hover:underline">
-              Partner Support
-            </Link>{' '}
-            is for affiliates and API partners.
-          </p>
         </div>
       </section>
       <section className="px-4 py-12">
