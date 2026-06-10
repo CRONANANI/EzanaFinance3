@@ -10,7 +10,6 @@ import { FooterSection } from '@/components/ui/footer-section';
 import { CookieConsentBanner } from '@/components/landing/CookieConsentBanner';
 import { AnalyticsGate } from '@/components/landing/AnalyticsGate';
 import { LandingErrorBoundary } from '@/components/landing/LandingErrorBoundary';
-import { FooterClickDebug } from '@/components/landing/footer-click-debug';
 import { BrokerageLogos } from '@/components/BrokerageLogos';
 
 const ContactSupportDialog = dynamic(
@@ -57,7 +56,6 @@ export default function HomePage() {
       <ContactSupportDialog open={supportOpen} onOpenChange={setSupportOpen} />
       <CookieConsentBanner />
       <AnalyticsGate />
-      <FooterClickDebug />
     </div>
   );
 }

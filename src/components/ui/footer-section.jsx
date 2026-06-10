@@ -1,83 +1,14 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Facebook, Instagram, Linkedin, Send } from 'lucide-react';
 import { EzanaNavLogo } from '@/components/brand/EzanaNavLogo';
 import './footer-section.css';
 
 export function FooterSection({ onContactClick }) {
-  const router = useRouter();
-  const footerRef = useRef(null);
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState('idle');
-
-  const go = (href) => (e) => {
-    e.preventDefault();
-    router.push(href);
-  };
-
-  useEffect(() => {
-    const footer = footerRef.current;
-    if (!footer) return;
-    const links = footer.querySelectorAll(
-      '.landing-footer-legal a, .landing-footer-legal button, .landing-footer-links a',
-    );
-    const fixers = [];
-    links.forEach((link) => {
-      const r = link.getBoundingClientRect();
-      if (r.width === 0) return;
-      const cx = r.left + r.width / 2;
-      const cy = r.top + r.height / 2;
-      const top = document.elementFromPoint(cx, cy);
-      if (top && !link.contains(top) && top !== link) {
-        let el = top;
-        while (el && el !== document.body) {
-          if (footer.contains(el)) break;
-          const cs = getComputedStyle(el);
-          if (cs.pointerEvents !== 'none') {
-            el.dataset._footerClickFix = '1';
-            const prev = el.style.pointerEvents;
-            el.style.pointerEvents = 'none';
-            fixers.push(() => {
-              el.style.pointerEvents = prev;
-            });
-          }
-          el = el.parentElement;
-        }
-      }
-    });
-    return () => fixers.forEach((fn) => fn());
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const params = new URLSearchParams(window.location.search);
-    if (!params.has('debug') || params.get('debug') !== 'footer') return;
-    window.debugFooterClicks = () => {
-      const footer = footerRef.current;
-      if (!footer) {
-        console.log('Footer not mounted');
-        return;
-      }
-      const links = footer.querySelectorAll(
-        '.landing-footer-legal a, .landing-footer-legal button, .landing-footer-links a',
-      );
-      links.forEach((link) => {
-        const r = link.getBoundingClientRect();
-        if (r.width === 0) return;
-        const cx = r.left + r.width / 2;
-        const cy = r.top + r.height / 2;
-        const top = document.elementFromPoint(cx, cy);
-        if (top && (link.contains(top) || top === link)) {
-          console.log(`clickable ✓  ${link.textContent.trim()}`);
-        } else {
-          console.log(`BLOCKED ✗  ${link.textContent.trim()} — covered by:`, top);
-        }
-      });
-    };
-  }, []);
 
   const handleNewsletterSubmit = async (e) => {
     e.preventDefault();
@@ -97,7 +28,7 @@ export function FooterSection({ onContactClick }) {
   };
 
   return (
-    <footer className="landing-footer" ref={footerRef}>
+    <footer className="landing-footer">
       <div className="landing-footer-inner">
         <div className="landing-footer-grid">
           <div className="landing-footer-brand">
@@ -211,20 +142,13 @@ export function FooterSection({ onContactClick }) {
             © {new Date().getFullYear()} Ezana Finance. All rights reserved.
           </p>
           <nav className="landing-footer-legal" aria-label="Legal">
-            <Link href="/help-center" onClick={go('/help-center')}>
-              Help Center
-            </Link>
-            <Link href="/privacy-policy" onClick={go('/privacy-policy')}>
-              Privacy Policy
-            </Link>
-            <Link href="/terms-of-service" onClick={go('/terms-of-service')}>
-              Terms of Service
-            </Link>
-            <Link href="/accessibility" onClick={go('/accessibility')}>
-              Accessibility
-            </Link>
+            <Link href="/help-center">Help Center</Link>
+            <Link href="/privacy-policy">Privacy Policy</Link>
+            <Link href="/terms-of-service">Terms of Service</Link>
+            <Link href="/accessibility">Accessibility</Link>
             <button
               type="button"
+              className="landing-footer-link-btn"
               onClick={() => {
                 if (typeof window !== 'undefined') {
                   window.dispatchEvent(new Event('ezana:open-cookie-settings'));
