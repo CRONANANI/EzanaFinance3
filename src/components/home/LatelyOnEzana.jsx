@@ -212,13 +212,24 @@ function MarketPerformanceTab({
     if (sorted.length === 0) return [];
 
     const portfolioSeries = portfolioPayload?.series || [];
-    const portfolioByYmd = {};
-    for (const pt of portfolioSeries) {
-      if (pt?.ymd && pt.pct != null) portfolioByYmd[pt.ymd] = pt.pct;
-    }
+    // Align the portfolio onto the index x-axis with a period-appropriate
+    // bucket so it matches for EVERY range. For multi-year ranges (3Y/5Y/10Y)
+    // the index x-axis labels are month names that repeat across years, and a
+    // label-based match would collapse e.g. three "Jan"s onto one point — so
+    // we key on the calendar bucket derived from the date instead.
+    const monthly = ['3M', '6M', '1Y', '3Y', '5Y', '10Y'].includes(period);
+    const yearly = period === 'ALL';
+    const bucketKey = (ymd) => (yearly ? ymd.slice(0, 4) : monthly ? ymd.slice(0, 7) : ymd);
+    // The weekday / "Week N" label fallback is only safe for sub-monthly ranges
+    // (1D/7D/1M); for monthly+ ranges those labels repeat across buckets.
+    const allowDayFallback = !monthly && !yearly;
+
+    const portfolioByBucket = new Map();
     const portfolioByDay = {};
     for (const pt of portfolioSeries) {
-      if (pt?.day && pt?.pct != null) portfolioByDay[pt.day] = pt.pct;
+      if (pt?.pct == null) continue;
+      if (pt.ymd) portfolioByBucket.set(bucketKey(pt.ymd), pt.pct);
+      if (pt.day) portfolioByDay[pt.day] = pt.pct;
     }
 
     const allDays = sorted.map((ymd) => {
@@ -227,7 +238,8 @@ function MarketPerformanceTab({
       MARKET_KEYS.forEach((k) => {
         out[k] = typeof base[k] === 'number' ? base[k] : null;
       });
-      out.portfolio = portfolioByYmd[ymd] ?? portfolioByDay[base.day] ?? null;
+      const bucketed = portfolioByBucket.get(bucketKey(ymd));
+      out.portfolio = bucketed ?? (allowDayFallback ? (portfolioByDay[base.day] ?? null) : null);
       return out;
     });
 
@@ -235,7 +247,7 @@ function MarketPerformanceTab({
       const hasAnyData = CHART_KEYS.some((k) => row[k] !== null && row[k] !== undefined);
       return hasAnyData;
     });
-  }, [indexPayload, portfolioPayload]);
+  }, [indexPayload, portfolioPayload, period]);
 
   const { yDomain, yTicks } = useMemo(() => {
     if (!chartData.length) return { yDomain: [-2.5, 2.5], yTicks: [-2, 0, 2] };

@@ -33,7 +33,21 @@ function startOfWeekNy() {
 }
 
 function periodToDays(period) {
-  return { '1D': 1, '7D': 7, '1M': 30, '3M': 90, '6M': 180, '1Y': 365, ALL: 7300 }[period] || 7;
+  return (
+    {
+      '1D': 1,
+      '1W': 7,
+      '7D': 7,
+      '1M': 30,
+      '3M': 90,
+      '6M': 180,
+      '1Y': 365,
+      '3Y': 1095,
+      '5Y': 1825,
+      '10Y': 3650,
+      ALL: 7300,
+    }[period] || 7
+  );
 }
 
 function getStartDate(period) {
@@ -288,6 +302,9 @@ export const GET = withApiGuard(
         aggregated = aggregateByMonth(dailyEntries).slice(-6);
       } else if (period === '1Y') {
         aggregated = aggregateByMonth(dailyEntries).slice(-12);
+      } else if (period === '3Y' || period === '5Y' || period === '10Y') {
+        // Match index-history: monthly points across the whole range.
+        aggregated = aggregateByMonth(dailyEntries);
       } else if (period === 'ALL') {
         aggregated = aggregateByYear(dailyEntries);
       } else {
