@@ -1862,9 +1862,26 @@ export function InteractiveGlobe({
     };
     document.addEventListener('visibilitychange', onVis);
 
+    /* Pause the (CPU-heavy ~700-dot 3D) globe while it's scrolled out of view.
+       It sits in the hero, so without this it keeps running — and starving the
+       frame budget — while the user is viewing sections further down the page
+       such as the radar. */
+    let onScreen = true;
+    let io = null;
+    const canvasEl = canvasRef.current;
+    if (canvasEl && typeof IntersectionObserver !== 'undefined') {
+      io = new IntersectionObserver(
+        (entries) => {
+          onScreen = entries.some((e) => e.isIntersecting);
+        },
+        { rootMargin: '120px' },
+      );
+      io.observe(canvasEl);
+    }
+
     const loop = (now) => {
       animRef.current = requestAnimationFrame(loop);
-      if (!visible) return;
+      if (!visible || !onScreen) return;
       const dt = now - lastTime;
       if (dt < TARGET_MS) return;
       lastTime = now - (dt % TARGET_MS);
@@ -1875,6 +1892,7 @@ export function InteractiveGlobe({
     return () => {
       cancelAnimationFrame(animRef.current);
       document.removeEventListener('visibilitychange', onVis);
+      if (io) io.disconnect();
     };
   }, [draw, loaded]);
 

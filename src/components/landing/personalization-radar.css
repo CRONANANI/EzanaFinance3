@@ -1,12 +1,14 @@
 /* Personalization Radar — styles for the DOM overlay (labels, hub text).
 
    The radar drawing itself (sweeps, polygons, dots, pulse rings, hub) is
-   rendered to a <canvas> by a single requestAnimationFrame loop in
-   PersonalizationRadar.jsx. Do not reintroduce CSS keyframes or SVG
-   elements for those parts: splitting the animation across pipelines
-   (CSS compositor vs JS attribute writes) is what caused the dot/edge
-   flicker, and per-frame SVG attribute mutation is what caused the jerky
-   dropped-frame motion. */
+   rendered to a <canvas> by the shared engine in radar-engine.js, driven from
+   a Web Worker (OffscreenCanvas) so the loop runs off the main thread and
+   isn't starved by the page's other heavy animations; PersonalizationRadar.jsx
+   falls back to a main-thread loop only where OffscreenCanvas is unavailable.
+   Do not reintroduce CSS keyframes or SVG elements for those parts: splitting
+   the animation across pipelines (CSS compositor vs JS attribute writes) is
+   what caused the dot/edge flicker, and per-frame SVG attribute mutation /
+   main-thread contention is what caused the jerky dropped-frame motion. */
 
 .radar-hub-label {
   position: absolute;

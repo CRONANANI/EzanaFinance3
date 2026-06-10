@@ -4,38 +4,21 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { User } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { createRadarScene, ang, CX, CY, RMAX, VB_W, VB_H } from './radar-engine';
 import './personalization-radar.css';
 
-const VB_W = 1120,
-  VB_H = 760;
-const CX = 560,
-  CY = 360,
-  RMIN = 84,
-  RMAX = 300;
-const N = 7;
-const BASE_WEIGHTS = [0.55, 0.5, 0.52, 0.5, 0.48, 0.5, 0.46];
-
+/* Label metadata only — the animated drawing (geometry, tweens, pulses) lives
+   in radar-engine.js so it can be shared by the render worker and the
+   main-thread fallback. Order MUST match DIM_WEIGHTS in radar-engine.js. */
 const DIMS = [
-  { id: 'capitol', nm: 'Capitol Watch', w: 0.94 },
-  { id: 'titans', nm: 'Titans Shadow', w: 0.62 },
-  { id: 'eyes', nm: 'Eyes Above', w: 0.8 },
-  { id: 'lighthouse', nm: 'Global Empire Lighthouse', w: 0.46 },
-  { id: 'whispers', nm: 'Consumer Whispers', w: 0.38 },
-  { id: 'hive', nm: 'The Hive', w: 0.72 },
-  { id: 'regulatory', nm: 'Regulatory Winds', w: 0.34 },
+  { id: 'capitol', nm: 'Capitol Watch' },
+  { id: 'titans', nm: 'Titans Shadow' },
+  { id: 'eyes', nm: 'Eyes Above' },
+  { id: 'lighthouse', nm: 'Global Empire Lighthouse' },
+  { id: 'whispers', nm: 'Consumer Whispers' },
+  { id: 'hive', nm: 'The Hive' },
+  { id: 'regulatory', nm: 'Regulatory Winds' },
 ];
-
-function ang(i) {
-  return ((-90 + (i * 360) / N) * Math.PI) / 180;
-}
-
-function easeInOut(t) {
-  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-}
-
-function easeOutCubic(t) {
-  return 1 - Math.pow(1 - t, 3);
-}
 
 function labelPos(i) {
   const a = ang(i);
@@ -46,24 +29,6 @@ function labelPos(i) {
     anchor: Math.abs(Math.cos(a)) < 0.25 ? 'middle' : Math.cos(a) > 0 ? 'start' : 'end',
   };
 }
-
-/* Pulse-ring timing (2.6s loop, expand+fade over the first 70%, hidden for
-   the rest), staggered 0.34s per dot. */
-const PULSE_PERIOD_MS = 2600;
-const PULSE_STAGGER_MS = 340;
-const PULSE_VISIBLE_FRACTION = 0.7;
-const PULSE_MAX_SCALE = 3.2;
-const PULSE_BASE_R = 5;
-const PULSE_BASE_SW = 1.4;
-
-/* Hub ring breathing (was the radar-hub-pulse CSS keyframes). */
-const HUB_PERIOD_MS = 3400;
-
-/* Cap the per-frame time step. When the browser drops frames (heavy page,
-   tab switch, scroll jank) the radar slows down for that instant instead of
-   teleporting dots to where they "should" be — a skipped frame can never
-   read as a jump. */
-const MAX_FRAME_MS = 64;
 
 function MobileRadarFlow({ dims, sourceDetails, accentColor }) {
   const [activeSource, setActiveSource] = useState(null);
@@ -217,40 +182,155 @@ function MobileRadarFlow({ dims, sourceDetails, accentColor }) {
 }
 
 /* ---------------------------------------------------------------------------
-   Canvas renderer.
+   Renderer wiring.
 
    The radar's animated layer (sweeps, polygons, dots, pulse rings, hub) is
-   drawn to a <canvas> in a single pass per frame. Earlier versions animated
-   these as SVG elements — first with CSS compositor animations (which drift
-   out of sync with JS-driven attribute writes and flicker), then with pure
-   attribute writes (which force per-frame SVG style/layout/repaint work that
-   drops frames and reads as jerky dots). Canvas sidesteps both failure
-   modes: no DOM mutation, no style recalc, no SVG layout — just one cheap,
-   atomic raster per frame, so the dots, edges, and rings always move
-   together and always smoothly.
+   drawn to a <canvas> by the shared engine in radar-engine.js. The landing
+   page also runs a full-screen WebGL aurora shader and a ~700-dot 3D globe,
+   so a main-thread render loop here gets starved of frames and the dots go
+   jerky. To make the motion smooth REGARDLESS of page load, the canvas is
+   handed to a Web Worker via OffscreenCanvas: the loop then runs on the
+   worker thread, which the main thread cannot starve. Where OffscreenCanvas
+   isn't supported we fall back to a main-thread loop (still correct, just
+   subject to contention — which the off-screen pausing of the hero loops
+   mitigates separately).
 
    Interactive parts (dimension labels, hover popups, hub label) stay in the
    DOM, positioned over the canvas with the same coordinate math.
 --------------------------------------------------------------------------- */
 
-function drawWedge(ctx, endX, endY, gradient, lineColor, lineWidth, lineAlpha) {
-  const endAngle = Math.atan2(endY, endX);
-  ctx.beginPath();
-  ctx.moveTo(0, 0);
-  ctx.lineTo(0, -RMAX);
-  ctx.arc(0, 0, RMAX, -Math.PI / 2, endAngle, false);
-  ctx.closePath();
-  ctx.fillStyle = gradient;
-  ctx.fill();
+const FALLBACK_FRAME_BUDGET_MS = 64;
 
-  ctx.beginPath();
-  ctx.moveTo(0, 0);
-  ctx.lineTo(0, -RMAX);
-  ctx.globalAlpha = lineAlpha;
-  ctx.strokeStyle = lineColor;
-  ctx.lineWidth = lineWidth;
-  ctx.stroke();
-  ctx.globalAlpha = 1;
+/** Worker-backed renderer: OffscreenCanvas animated on the worker thread. */
+function startWorkerRenderer(canvas, wrap, reduce) {
+  // Create the worker BEFORE transferring the canvas. If worker construction
+  // fails, the canvas is still intact and the caller can fall back to the
+  // main-thread renderer (a transferred canvas can no longer get a 2D
+  // context, so the order matters).
+  let worker;
+  try {
+    worker = new Worker(new URL('./radar.worker.js', import.meta.url));
+  } catch {
+    return null;
+  }
+
+  let offscreen;
+  try {
+    offscreen = canvas.transferControlToOffscreen();
+  } catch {
+    worker.terminate();
+    return null; // transfer unsupported — caller falls back (canvas untouched)
+  }
+
+  const dpr = () => window.devicePixelRatio || 1;
+  worker.postMessage(
+    { type: 'init', canvas: offscreen, cssWidth: wrap.clientWidth, dpr: dpr(), reduce },
+    [offscreen],
+  );
+
+  const ro = new ResizeObserver(() => {
+    worker.postMessage({ type: 'resize', cssWidth: wrap.clientWidth, dpr: dpr() });
+  });
+  ro.observe(wrap);
+
+  let observer = null;
+  if (!reduce && typeof IntersectionObserver !== 'undefined') {
+    observer = new IntersectionObserver(
+      (entries) => {
+        worker.postMessage({ type: 'running', running: entries.some((e) => e.isIntersecting) });
+      },
+      { rootMargin: '100px' },
+    );
+    observer.observe(wrap);
+  }
+
+  return () => {
+    if (observer) observer.disconnect();
+    ro.disconnect();
+    worker.terminate();
+  };
+}
+
+/** Main-thread fallback: same engine, driven by rAF on this thread. */
+function startMainThreadRenderer(canvas, wrap, reduce) {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return undefined;
+
+  const scene = createRadarScene({ reduce });
+  let scale = 1;
+  let rafId = null;
+
+  function resize() {
+    const ratio = window.devicePixelRatio || 1;
+    const w = Math.max(1, Math.round(wrap.clientWidth * ratio));
+    const h = Math.max(1, Math.round((w * VB_H) / VB_W));
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width = w;
+      canvas.height = h;
+    }
+    scale = w / VB_W;
+  }
+
+  resize();
+  scene.init(0);
+
+  if (reduce) {
+    scene.draw(ctx, 0, scale);
+    const roStatic = new ResizeObserver(() => {
+      resize();
+      scene.draw(ctx, 0, scale);
+    });
+    roStatic.observe(wrap);
+    return () => roStatic.disconnect();
+  }
+
+  let clock = 0;
+  let lastTs = null;
+  let running = false;
+
+  function loop(ts) {
+    if (lastTs !== null) clock += Math.min(ts - lastTs, FALLBACK_FRAME_BUDGET_MS);
+    lastTs = ts;
+    scene.draw(ctx, clock, scale);
+    rafId = requestAnimationFrame(loop);
+  }
+  function start() {
+    if (running) return;
+    running = true;
+    lastTs = null;
+    rafId = requestAnimationFrame(loop);
+  }
+  function stop() {
+    if (!running) return;
+    running = false;
+    if (rafId) cancelAnimationFrame(rafId);
+  }
+
+  const ro = new ResizeObserver(() => {
+    resize();
+    if (!running) scene.draw(ctx, clock, scale);
+  });
+  ro.observe(wrap);
+
+  let observer = null;
+  if (typeof IntersectionObserver !== 'undefined') {
+    observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) start();
+        else stop();
+      },
+      { rootMargin: '100px' },
+    );
+    observer.observe(wrap);
+  } else {
+    start();
+  }
+
+  return () => {
+    if (observer) observer.disconnect();
+    ro.disconnect();
+    stop();
+  };
 }
 
 export default function PersonalizationRadar({ sourceDetails }) {
@@ -258,266 +338,27 @@ export default function PersonalizationRadar({ sourceDetails }) {
   const [hoveredDim, setHoveredDim] = useState(null);
   const canvasRef = useRef(null);
   const wrapRef = useRef(null);
-  const rafRef = useRef(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     const wrap = wrapRef.current;
     if (!canvas || !wrap) return undefined;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return undefined;
 
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduce =
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
-    const states = DIMS.map((d, i) => ({
-      a: ang(i),
-      cur: d.w,
-      start: d.w,
-      target: d.w,
-      t0: 0,
-      dur: 1,
-    }));
+    // Prefer the worker (off the main thread → immune to page contention).
+    const supportsOffscreen =
+      typeof Worker !== 'undefined' && typeof canvas.transferControlToOffscreen === 'function';
 
-    function repick(s, now) {
-      s.start = s.cur;
-      s.target = 0.16 + Math.random() * 0.82;
-      s.dur = 2800 + Math.random() * 3200;
-      s.t0 = now;
+    if (supportsOffscreen) {
+      const dispose = startWorkerRenderer(canvas, wrap, reduce);
+      if (dispose) return dispose;
+      // Transfer failed (e.g. context already obtained) — fall through.
     }
 
-    const basePts = BASE_WEIGHTS.map((b, i) => {
-      const r = RMIN + b * (RMAX - RMIN);
-      const a = ang(i);
-      return [CX + r * Math.cos(a), CY + r * Math.sin(a)];
-    });
-
-    /* Gradients are defined in the wedges' local (unrotated) coordinate
-       space and the hub's fixed position, so they are created once. They
-       replicate the old SVG objectBoundingBox gradients. */
-    const sweepGrad1 = ctx.createLinearGradient(0, -RMAX, 228, -RMAX + 0.4 * RMAX);
-    sweepGrad1.addColorStop(0, 'rgba(16,185,129,0.26)');
-    sweepGrad1.addColorStop(1, 'rgba(16,185,129,0)');
-    const sweepGrad2 = ctx.createLinearGradient(0, -RMAX, 160, -RMAX + 0.4 * RMAX);
-    sweepGrad2.addColorStop(0, 'rgba(52,211,153,0.18)');
-    sweepGrad2.addColorStop(1, 'rgba(16,185,129,0)');
-    const hubGrad = ctx.createRadialGradient(CX, CY - 6.4, 0, CX, CY - 6.4, 48);
-    hubGrad.addColorStop(0, 'rgba(16,185,129,0.24)');
-    hubGrad.addColorStop(1, 'rgba(16,185,129,0)');
-
-    let scale = 1;
-    function resize() {
-      const dpr = window.devicePixelRatio || 1;
-      const w = Math.max(1, Math.round(wrap.clientWidth * dpr));
-      const h = Math.max(1, Math.round((w * VB_H) / VB_W));
-      if (canvas.width !== w || canvas.height !== h) {
-        canvas.width = w;
-        canvas.height = h;
-      }
-      scale = w / VB_W;
-    }
-
-    function render(clock) {
-      ctx.setTransform(scale, 0, 0, scale, 0, 0);
-      ctx.clearRect(0, 0, VB_W, VB_H);
-
-      /* Grid rings */
-      ctx.strokeStyle = 'rgba(255,255,255,0.07)';
-      ctx.lineWidth = 1;
-      for (const r of [100, 200, 300]) {
-        ctx.beginPath();
-        ctx.arc(CX, CY, r, 0, Math.PI * 2);
-        ctx.stroke();
-      }
-
-      /* Crosshair */
-      ctx.globalAlpha = 0.35;
-      ctx.beginPath();
-      ctx.moveTo(260, CY);
-      ctx.lineTo(860, CY);
-      ctx.moveTo(CX, 60);
-      ctx.lineTo(CX, 660);
-      ctx.stroke();
-
-      /* Axis spokes */
-      ctx.globalAlpha = 0.4;
-      ctx.beginPath();
-      for (let i = 0; i < N; i++) {
-        const a = ang(i);
-        ctx.moveTo(CX, CY);
-        ctx.lineTo(CX + RMAX * Math.cos(a), CY + RMAX * Math.sin(a));
-      }
-      ctx.stroke();
-      ctx.globalAlpha = 1;
-
-      /* Sweep wedges */
-      const a1 = reduce ? 0 : (clock / 11000) * Math.PI * 2;
-      const a2 = reduce ? 0 : -(clock / 15000) * Math.PI * 2;
-      ctx.save();
-      ctx.translate(CX, CY);
-      ctx.rotate(a1);
-      drawWedge(ctx, 228, -202, sweepGrad1, '#10b981', 1.6, 0.6);
-      ctx.restore();
-      ctx.save();
-      ctx.translate(CX, CY);
-      ctx.rotate(a2);
-      drawWedge(ctx, 160, -250, sweepGrad2, '#34d399', 1.2, 0.45);
-      ctx.restore();
-
-      /* Base polygon (average user) */
-      ctx.globalAlpha = 0.5;
-      ctx.beginPath();
-      basePts.forEach(([x, y], i) => (i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)));
-      ctx.closePath();
-      ctx.fillStyle = 'rgba(255,255,255,0.04)';
-      ctx.fill();
-      ctx.setLineDash([3, 5]);
-      ctx.strokeStyle = '#6b7280';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.globalAlpha = 1;
-
-      /* Live polygon + vertex positions */
-      const pts = [];
-      for (let i = 0; i < states.length; i++) {
-        const s = states[i];
-        let p = (clock - s.t0) / s.dur;
-        if (p >= 1) {
-          p = 1;
-          if (!reduce) repick(s, clock);
-        }
-        const w = s.start + (s.target - s.start) * easeInOut(Math.max(0, Math.min(p, 1)));
-        s.cur = w;
-        const r = RMIN + w * (RMAX - RMIN);
-        pts.push([CX + r * Math.cos(s.a), CY + r * Math.sin(s.a)]);
-      }
-
-      ctx.beginPath();
-      pts.forEach(([x, y], i) => (i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)));
-      ctx.closePath();
-      ctx.fillStyle = 'rgba(16,185,129,0.13)';
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(16,185,129,0.34)';
-      ctx.lineWidth = 1.3;
-      ctx.lineJoin = 'round';
-      ctx.stroke();
-
-      /* Blips + pulse rings */
-      for (let i = 0; i < pts.length; i++) {
-        const [x, y] = pts[i];
-        ctx.beginPath();
-        ctx.arc(x, y, 4.5, 0, Math.PI * 2);
-        ctx.fillStyle = '#10b981';
-        ctx.fill();
-
-        if (!reduce) {
-          const phase = ((clock + i * PULSE_STAGGER_MS) / PULSE_PERIOD_MS) % 1;
-          if (phase < PULSE_VISIBLE_FRACTION) {
-            const k = easeOutCubic(phase / PULSE_VISIBLE_FRACTION);
-            const ringScale = 1 + (PULSE_MAX_SCALE - 1) * k;
-            ctx.beginPath();
-            ctx.arc(x, y, PULSE_BASE_R * ringScale, 0, Math.PI * 2);
-            ctx.globalAlpha = 0.85 * (1 - k);
-            ctx.strokeStyle = '#10b981';
-            ctx.lineWidth = PULSE_BASE_SW * ringScale;
-            ctx.stroke();
-            ctx.globalAlpha = 1;
-          }
-        }
-      }
-
-      /* Hub — breathing outer ring, dark disc, soft glow */
-      const hubT = reduce
-        ? 0
-        : 0.5 - 0.5 * Math.cos(((clock % HUB_PERIOD_MS) / HUB_PERIOD_MS) * Math.PI * 2);
-      ctx.beginPath();
-      ctx.arc(CX, CY, 48 * (0.835 + 0.235 * hubT), 0, Math.PI * 2);
-      ctx.globalAlpha = 0.7 + 0.2 * hubT;
-      ctx.strokeStyle = '#10b981';
-      ctx.lineWidth = 1.4;
-      ctx.stroke();
-      ctx.globalAlpha = 1;
-
-      ctx.beginPath();
-      ctx.arc(CX, CY, 40, 0, Math.PI * 2);
-      ctx.fillStyle = '#0a0f15';
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(16,185,129,0.3)';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(CX, CY, 40, 0, Math.PI * 2);
-      ctx.fillStyle = hubGrad;
-      ctx.fill();
-    }
-
-    resize();
-
-    if (reduce) {
-      render(0);
-      const ro = new ResizeObserver(() => {
-        resize();
-        render(0);
-      });
-      ro.observe(wrap);
-      return () => ro.disconnect();
-    }
-
-    states.forEach((s) => repick(s, 0));
-
-    /* Monotonic animation clock: advances by the real frame delta, capped at
-       MAX_FRAME_MS, and simply stops while paused. Resuming (scroll back into
-       view, returning to the tab) continues from the exact pose it stopped
-       at — there is no absolute-time math that could snap dots forward. */
-    let clock = 0;
-    let lastTs = null;
-    let running = false;
-
-    function loop(ts) {
-      if (lastTs !== null) clock += Math.min(ts - lastTs, MAX_FRAME_MS);
-      lastTs = ts;
-      render(clock);
-      rafRef.current = requestAnimationFrame(loop);
-    }
-    function start() {
-      if (running) return;
-      running = true;
-      lastTs = null;
-      rafRef.current = requestAnimationFrame(loop);
-    }
-    function stop() {
-      if (!running) return;
-      running = false;
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    }
-
-    const ro = new ResizeObserver(() => {
-      resize();
-      if (!running) render(clock);
-    });
-    ro.observe(wrap);
-
-    /* Only animate while on screen (the canvas is display:none on mobile and
-       this also stops the loop entirely there). */
-    let observer = null;
-    if (typeof IntersectionObserver !== 'undefined') {
-      observer = new IntersectionObserver(
-        (entries) => {
-          if (entries.some((e) => e.isIntersecting)) start();
-          else stop();
-        },
-        { rootMargin: '100px' },
-      );
-      observer.observe(wrap);
-    } else {
-      start();
-    }
-
-    return () => {
-      if (observer) observer.disconnect();
-      ro.disconnect();
-      stop();
-    };
+    return startMainThreadRenderer(canvas, wrap, reduce);
   }, []);
 
   const hoveredDetail = hoveredDim !== null ? sourceDetails?.[DIMS[hoveredDim].id] : null;

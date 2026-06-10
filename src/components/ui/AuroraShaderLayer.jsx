@@ -156,10 +156,26 @@ export default function AuroraShaderLayer({
     };
     document.addEventListener('visibilitychange', handleVisibility);
 
+    /* Pause the full-screen WebGL shader while it's scrolled out of view. It
+       lives in the hero at the top of the page, so it would otherwise keep
+       burning GPU/CPU while the user is looking at sections further down
+       (e.g. the radar), contending for the frame budget. */
+    let isOnScreen = true;
+    let io = null;
+    if (typeof IntersectionObserver !== 'undefined') {
+      io = new IntersectionObserver(
+        (entries) => {
+          isOnScreen = entries.some((e) => e.isIntersecting);
+        },
+        { rootMargin: '120px' },
+      );
+      io.observe(container);
+    }
+
     const animate = (now) => {
       frameId = requestAnimationFrame(animate);
 
-      if (!isPageVisible) return;
+      if (!isPageVisible || !isOnScreen) return;
 
       const delta = now - lastFrameTime;
       if (delta < TARGET_INTERVAL) return;
@@ -183,6 +199,7 @@ export default function AuroraShaderLayer({
       cancelAnimationFrame(frameId);
       document.removeEventListener('visibilitychange', handleVisibility);
       window.removeEventListener('resize', handleResize);
+      if (io) io.disconnect();
       if (container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);
       }
