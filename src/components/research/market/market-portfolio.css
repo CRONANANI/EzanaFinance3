@@ -6,71 +6,34 @@
 
 /* Page header + toggle ---------------------------------------------------- */
 .cpr-page-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
   margin: 0 0 1.25rem;
 }
 
-.cpr-page-header-text {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  min-width: 0;
-}
-
-.cpr-page-eyebrow {
-  font-size: 0.625rem;
-  font-family: var(--font-mono);
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-weight: 700;
-  color: var(--emerald);
-}
-
-.cpr-page-title {
-  margin: 0;
-  font-size: 1.875rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  color: var(--text-primary);
-  line-height: 1.15;
-}
-
-.cpr-page-subtitle {
-  margin: 0;
-  font-size: 0.8125rem;
-  color: var(--text-muted);
-  max-width: 68ch;
-}
-
-/* Segmented toggle -------------------------------------------------------- */
+/* Segmented toggle — spans the full content width so it lines up edge-to-edge
+   with the Stock Market Heatmap card below it. */
 .cpr-view-toggle {
-  display: inline-flex;
-  flex-wrap: wrap;
-  width: auto;
-  max-width: 100%;
-  padding: 4px;
-  border-radius: 10px;
+  display: flex;
+  width: 100%;
+  padding: 5px;
+  border-radius: 12px;
   border: 1px solid rgba(16, 185, 129, 0.18);
   background: rgba(16, 185, 129, 0.04);
-  flex-shrink: 0;
-  gap: 2px;
+  gap: 3px;
 }
 
 .cpr-view-toggle-btn {
+  flex: 1 1 0;
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.4rem 0.85rem;
-  font-size: 0.8125rem;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1rem;
+  font-size: 1rem;
   font-weight: 700;
   color: var(--home-muted, #8b949e);
   background: transparent;
   border: none;
-  border-radius: 7px;
+  border-radius: 8px;
   cursor: pointer;
   transition:
     background 0.15s ease,
@@ -79,7 +42,7 @@
 }
 
 .cpr-view-toggle-btn i {
-  font-size: 0.875rem;
+  font-size: 1.0625rem;
 }
 
 .cpr-view-toggle-btn:hover {
@@ -110,15 +73,6 @@ body.light-mode .cpr-view-toggle-btn:hover {
 body.light-mode .cpr-view-toggle-btn.is-active {
   background: #10b981;
   color: #ffffff;
-}
-
-body.light-mode .cpr-page-title {
-  color: #111827;
-}
-
-body.light-mode .cpr-page-subtitle,
-body.light-mode .cpr-page-eyebrow {
-  color: #6b7280;
 }
 
 /* Market view root -------------------------------------------------------- */
