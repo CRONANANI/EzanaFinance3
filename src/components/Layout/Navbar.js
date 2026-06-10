@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { EzanaNavLogo } from '@/components/brand/EzanaNavLogo';
 import { useAuth } from '@/components/AuthProvider';
 import { useOrg } from '@/contexts/OrgContext';
@@ -17,7 +17,6 @@ import '@/components/ui/animated-nav.css';
 
 export function Navbar() {
   const pathname = usePathname();
-  const router = useRouter();
   const { isAuthenticated, user } = useAuth();
   const hasFullBetaAccess = hasBetaFullAccess(user);
   const { isOrgUser } = useOrg();
@@ -52,8 +51,15 @@ export function Navbar() {
   const isTradingActive = pathname?.includes('/trading') || pathname?.includes('/org-trading');
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push('/');
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      /* A failed sign-out (e.g. network) shouldn't trap the user in the app. */
+    }
+    // Hard navigation (not router.push) so the whole app reloads with a clean,
+    // signed-out state — clears in-memory auth/context and re-runs middleware —
+    // and lands the user on the login page.
+    window.location.href = '/auth/signin';
   };
 
   const userNavItems = [
