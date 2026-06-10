@@ -79,8 +79,10 @@
 }
 
 .mock-stat-card {
-  background: rgba(16, 185, 129, 0.03);
-  border: 1px solid rgba(16, 185, 129, 0.1);
+  /* Transparent + outlined, matching the Open Positions card (.mock-card):
+     --surface-card is transparent and --border-primary is the subtle outline. */
+  background: var(--surface-card);
+  border: 1px solid var(--border-primary);
   border-radius: 14px;
   padding: 1rem 1.125rem;
   display: flex;
