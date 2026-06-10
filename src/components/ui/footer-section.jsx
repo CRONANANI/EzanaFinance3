@@ -75,9 +75,9 @@ export function FooterSection({ onContactClick }) {
             <nav className="landing-footer-links" aria-label="Product">
               <a href="#heroSection">Home</a>
               <a href="#features">Features</a>
-              <Link href="/pricing">Pricing</Link>
+              <a href="/pricing">Pricing</a>
               <a href="#faq">FAQ</a>
-              <Link href="/help-center">Help Center</Link>
+              <a href="/help-center">Help Center</a>
               <button
                 type="button"
                 className="landing-footer-link-btn"
@@ -142,10 +142,10 @@ export function FooterSection({ onContactClick }) {
             © {new Date().getFullYear()} Ezana Finance. All rights reserved.
           </p>
           <nav className="landing-footer-legal" aria-label="Legal">
-            <Link href="/help-center">Help Center</Link>
-            <Link href="/privacy-policy">Privacy Policy</Link>
-            <Link href="/terms-of-service">Terms of Service</Link>
-            <Link href="/accessibility">Accessibility</Link>
+            <a href="/help-center">Help Center</a>
+            <a href="/privacy-policy">Privacy Policy</a>
+            <a href="/terms-of-service">Terms of Service</a>
+            <a href="/accessibility">Accessibility</a>
             <button
               type="button"
               className="landing-footer-link-btn"
