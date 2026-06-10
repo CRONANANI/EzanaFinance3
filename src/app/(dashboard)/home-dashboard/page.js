@@ -784,7 +784,7 @@ export default function HomeDashboardPage() {
                 ranges={DASH_RANGES}
                 value={timeframe}
                 onChange={setTimeframe}
-                size="lg"
+                size="xs"
               />
             </div>
             <div className="db-hero-body">
@@ -954,7 +954,7 @@ export default function HomeDashboardPage() {
                     ranges={DASH_RANGES}
                     value={timeframe}
                     onChange={setTimeframe}
-                    size="lg"
+                    size="xs"
                   />
                   <button className="db-icon-btn" title="Export">
                     <i className="bi bi-box-arrow-up-right" />

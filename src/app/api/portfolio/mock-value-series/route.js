@@ -87,21 +87,34 @@ export const GET = withApiGuard(
       const currentPositions = derivePositionsFromTrades(trades);
       const currentPrices = await fetchCurrentPrices(Object.keys(currentPositions));
 
-      const currentCash = computeCashFromTrades(trades, DEFAULT_STARTING_CASH);
+      // Real cash / starting cash come from the portfolio JSONB (the source of
+      // truth the client's "Total Value" is built from). Falling back to a
+      // $10k-default reconstruction is what corrupted portfolios reset to other
+      // amounts (e.g. $4.5M).
+      const jsonbCash = Number(portfolio?.cash);
+      const currentCash = Number.isFinite(jsonbCash)
+        ? Math.max(0, jsonbCash)
+        : computeCashFromTrades(trades, DEFAULT_STARTING_CASH);
+
+      const jsonbStartingCash = Number(portfolio?.startingCash);
+      const startingCash =
+        Number.isFinite(jsonbStartingCash) && jsonbStartingCash > 0 ? jsonbStartingCash : null;
+
       const positionsValue = Object.entries(currentPositions).reduce((sum, [ticker, qty]) => {
         const px = Number(currentPrices[ticker] || 0);
         return sum + qty * px;
       }, 0);
       const currentValue = Math.max(0, currentCash + positionsValue);
 
+      // Prefer the JSONB snapshot's value for the live anchor — it matches the
+      // client's Total Value card (cash + held positions) more faithfully than
+      // a trades-only derivation.
       let effectiveCurrentValue = currentValue;
       let valueSource = 'derived-from-trades';
-      if (positionsValue === 0 && Object.keys(currentPositions).length > 0 && portfolio) {
-        const jsonbValue = computeCurrentValueFromJsonb(portfolio);
-        if (jsonbValue > 0) {
-          effectiveCurrentValue = jsonbValue;
-          valueSource = 'jsonb-fallback';
-        }
+      const jsonbValue = computeCurrentValueFromJsonb(portfolio);
+      if (jsonbValue > 0) {
+        effectiveCurrentValue = jsonbValue;
+        valueSource = 'jsonb';
       }
 
       console.info('[mock-value-series] reconstructing', {
@@ -123,6 +136,7 @@ export const GET = withApiGuard(
         trades,
         currentCash,
         currentValue: effectiveCurrentValue,
+        startingCash,
         portfolioCreatedAt: anchorDate,
         fetchHistoricalPrices: fetchBatchedHistoricalPrices,
       });

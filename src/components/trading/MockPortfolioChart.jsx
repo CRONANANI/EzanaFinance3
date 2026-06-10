@@ -155,15 +155,19 @@ export default function MockPortfolioChart({ currentValue = null, source = 'mock
     }));
   }, [anchoredPoints, range]);
 
-  // Compute summary stats
+  // Compute summary stats. The headline value is the LIVE total when provided
+  // (the same number the page's "Total Value" card shows) so the two can never
+  // disagree; the change is measured from the series' first point to that live
+  // total over the selected window.
   const stats = useMemo(() => {
     if (chartData.length < 2) return null;
     const start = chartData[0].value;
-    const end = chartData[chartData.length - 1].value;
+    const liveEnd = Number.isFinite(currentValue) && currentValue > 0 ? currentValue : null;
+    const end = liveEnd ?? chartData[chartData.length - 1].value;
     const change = end - start;
     const changePct = start > 0 ? (change / start) * 100 : 0;
     return { start, end, change, changePct, isPositive: change >= 0 };
-  }, [chartData]);
+  }, [chartData, currentValue]);
 
   const isEmpty = !loading && chartData.length === 0;
   const lineColor = stats?.isPositive === false ? '#ef4444' : '#10b981';

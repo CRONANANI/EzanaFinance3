@@ -8,6 +8,7 @@ export async function replayTradesToValueSeries({
   trades,
   currentCash,
   currentValue,
+  startingCash,
   portfolioCreatedAt,
   fetchHistoricalPrices,
 }) {
@@ -66,8 +67,19 @@ export async function replayTradesToValueSeries({
     .filter((t) => t.trade_type === 'sell')
     .reduce((s, t) => s + Number(t.total_amount ?? t.quantity * t.price), 0);
 
-  let day0Cash = currentCash + totalBuysValue - totalSellsValue;
-  if (!Number.isFinite(day0Cash) || day0Cash < 0) day0Cash = currentCash;
+  // Day-0 cash is the cash on hand at inception, BEFORE any trades. Prefer the
+  // portfolio's known starting cash (from the reset / JSONB) — this is the only
+  // reliable anchor. Reconstructing it from `currentCash + buys − sells` breaks
+  // badly when `currentCash` was derived from a wrong default (e.g. a $10k
+  // assumption for a portfolio that was reset to $4.5M), which is what produced
+  // the nonsensical multi-million-dollar starting values.
+  let day0Cash;
+  if (Number.isFinite(startingCash) && startingCash > 0) {
+    day0Cash = startingCash;
+  } else {
+    day0Cash = currentCash + totalBuysValue - totalSellsValue;
+    if (!Number.isFinite(day0Cash) || day0Cash < 0) day0Cash = currentCash;
+  }
 
   let runningCash = day0Cash;
   let runningPositions = {};

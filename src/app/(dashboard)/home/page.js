@@ -1342,7 +1342,7 @@ export default function HomePage() {
                 ranges={RANGE_BUTTONS}
                 value={timeframe}
                 onChange={setTimeframe}
-                size="lg"
+                size="xs"
               />
             </div>
 
@@ -1715,7 +1715,7 @@ export default function HomePage() {
               ranges={RANGE_BUTTONS}
               value={pulseRange}
               onChange={setPulseRange}
-              size="lg"
+              size="xs"
             />
           </div>
           <div className="bs-pulse-row">
@@ -2132,7 +2132,7 @@ export default function HomePage() {
                 ranges={RANGE_BUTTONS}
                 value={tickerModalRange}
                 onChange={setTickerModalRange}
-                size="lg"
+                size="xs"
               />
             </div>
             <TickerPerformanceChart symbol={tickerModal} range={tickerModalRange} />
