@@ -1,51 +1,39 @@
-/* Personalization Radar — animation styles.
+/* Personalization Radar — styles for the DOM overlay (labels, hub text).
 
-   The sweep wedges, vertex dots, pulse rings, and live polygon are ALL
-   animated from a single requestAnimationFrame loop in
-   PersonalizationRadar.jsx via SVG attributes. Do not reintroduce CSS
-   keyframes or will-change layer promotion for those parts: running them
-   on the compositor while the polygon/dots update on the main thread is
-   what caused the dot/edge flicker (the two pipelines drift under load
-   and paint mismatched frames). */
-
-.radar-hub-ring {
-  animation: radar-hub-pulse 3.4s ease-in-out infinite;
-  transform-box: fill-box;
-  transform-origin: center;
-}
-@keyframes radar-hub-pulse {
-  0%,
-  100% {
-    opacity: 0.7;
-    transform: scale(0.835);
-  }
-  50% {
-    opacity: 0.9;
-    transform: scale(1.07);
-  }
-}
+   The radar drawing itself (sweeps, polygons, dots, pulse rings, hub) is
+   rendered to a <canvas> by a single requestAnimationFrame loop in
+   PersonalizationRadar.jsx. Do not reintroduce CSS keyframes or SVG
+   elements for those parts: splitting the animation across pipelines
+   (CSS compositor vs JS attribute writes) is what caused the dot/edge
+   flicker, and per-frame SVG attribute mutation is what caused the jerky
+   dropped-frame motion. */
 
 .radar-hub-label {
+  position: absolute;
+  transform: translate(-50%, -50%);
   font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
   font-size: 15px;
   font-weight: 800;
-  fill: #f0f6fc;
+  color: #f0f6fc;
+  pointer-events: none;
+  user-select: none;
 }
 
 .radar-ax-name {
+  position: absolute;
+  padding: 2px 4px;
+  background: none;
+  border: none;
   font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
   font-size: 13.5px;
   font-weight: 600;
-  fill: #f0f6fc;
-  transition: fill 0.15s ease;
+  line-height: 1.2;
+  color: #f0f6fc;
+  white-space: nowrap;
+  cursor: help;
+  transition: color 0.15s ease;
 }
 .radar-ax-name:hover,
 .radar-ax-name--active {
-  fill: #10b981;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .radar-hub-ring {
-    animation: none;
-  }
+  color: #10b981;
 }
