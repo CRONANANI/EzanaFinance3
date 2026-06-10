@@ -6,52 +6,34 @@ import { Plus } from 'lucide-react';
 
 const DEFAULT_ITEMS = [
   {
-    id: 'what-is-ezana',
-    question: 'What exactly does Ezana do?',
+    id: 'data-source-of-truth',
+    question: 'What’s the source of truth behind the alternative data — and how current is it?',
     answer:
-      "Ezana is a personal investment research platform that combines portfolio tracking, company and macro analysis, prediction market signals, and a learning center — all designed for everyday investors rather than professional traders. You can paper-trade, connect a real brokerage, follow politicians' trades, watch sectors and geopolitics, and compare yourself honestly against the broader platform.",
+      "Each signal traces to a primary source, not an aggregator's interpretation: House and Senate financial disclosures for congressional trades, SEC EDGAR for 13F/13D/13G filings, FEC records for campaign finance, GDELT for global event data, Polymarket for prediction-market odds, and the World Bank and IMF for macro indicators. Filings-based data refreshes as new disclosures are published; market and event data update on their providers' native cadence. Every data category on the landing page shows its underlying sources on hover, so you can audit where a number comes from before you trade on it.",
   },
   {
-    id: 'need-brokerage',
-    question: 'Do I need a brokerage account to use Ezana?',
+    id: 'congressional-edge',
+    question: 'Does following congressional or institutional trades actually produce an edge — or is it just interesting?',
     answer:
-      'No. Every feature works with a paper-trading portfolio you build inside Ezana. If you later connect a real brokerage, the platform automatically switches to using your live holdings — your watchlists, metrics, and analysis all carry over seamlessly.',
+      "It's a signal, not a guarantee, and we present it that way. Disclosure timing means you're never seeing a trade in real time — there's a legally mandated reporting lag — so this isn't front-running anyone. What it is: a structured view of how informed, access-rich actors are positioned, which historically has been hard for individuals to assemble. The value is in pattern recognition across many filings, cross-referenced with insider activity and institutional flows, not in blindly mirroring one politician's single trade.",
   },
   {
-    id: 'data-sources',
-    question: 'Where does Ezana get its data?',
+    id: 'paper-to-live',
+    question: 'What happens to my analysis and watchlists when I switch from paper trading to a connected brokerage?',
     answer:
-      "From the source providers you'd expect: Financial Modeling Prep for market and sector data, the World Bank and IMF for macro indicators, SEC EDGAR for filings, Polymarket for prediction market odds, GDELT for geolocated global news, and additional specialized providers for areas like congressional trading and institutional holdings. Every data category on the landing page shows its sources on hover.",
+      "Everything carries over. The paper portfolio exists so you can build conviction and test a process before real money is involved; when you connect a brokerage, the platform swaps in your live holdings and every watchlist, metric, alert, and piece of analysis you've built continues working against real positions. You don't rebuild anything, and you don't lose your history.",
   },
   {
-    id: 'peer-comparison',
-    question: 'How is my portfolio compared to other users?',
+    id: 'brokerage-boundary',
+    question: 'You connect to my brokerage — what can Ezana actually touch, and what can it never do?',
     answer:
-      "Your performance chart shows your cumulative return alongside the platform-wide median — what the typical Ezana user earned over the same window — plus the top 25% cohort line. All peer data is aggregated and anonymized; individual users' portfolios are never exposed. Comparisons are available across 1W, 1M, 3M, and YTD windows.",
+      "Brokerage connections run through regulated, read-only aggregators. Ezana can read positions and balances to power your analysis; it cannot move money, place trades on your live account, or access your login credentials — we never see or store them. Paper trading is the only place orders execute, and that's simulated by design. We also don't sell user data or run ads inside the product, so your holdings aren't a revenue stream for anyone but you.",
   },
   {
-    id: 'pricing',
-    question: 'Is the platform free?',
+    id: 'who-its-for',
+    question: 'Who is this actually built for — and who is it not for?',
     answer:
-      'The Starter tier is free forever and includes paper trading, core research, community access, and the Learning Center basics. Paid tiers unlock unlimited watchlists, real brokerage connections, and advanced analytics like stress testing, MPT, Black-Litterman, and Monte Carlo simulation. Every paid plan includes a 14-day free trial, no charge until the trial ends.',
-  },
-  {
-    id: 'cancel',
-    question: 'Can I cancel anytime?',
-    answer:
-      "Yes, from your account settings. Cancel during the trial and you're never charged. Cancel during a paid period and you keep access through the end of that period — no proration surprises, no retention gauntlets.",
-  },
-  {
-    id: 'security',
-    question: 'Is my financial data secure?',
-    answer:
-      "We never store your brokerage credentials. Live accounts connect through regulated read-only aggregators, all data in transit is encrypted, and we don't sell user data or serve ads inside the product. Aggregate peer comparisons pool data across users in a way that can't be reverse-engineered to identify individuals.",
-  },
-  {
-    id: 'achievements',
-    question: 'How do I earn badges and achievements?',
-    answer:
-      'By doing the things that make you a better investor over time — completing Learning Center courses, participating in community discussions, hitting portfolio milestones like diversification and contribution streaks. Badges appear on your profile, and earning them unlocks features and recognition across the community.',
+      "It's built for the investor who's outgrown a broker's basic dashboard and wants the data professionals use, but who isn't a day trader chasing momentum. If you want one-click meme-stock tips or a copy-trading autopilot, this isn't that. If you want to understand why a position makes sense — across fundamentals, institutional positioning, macro context, and your own risk tolerance — and to build a repeatable process, that's exactly who Ezana is for. The family-office tier extends the same toolkit to people managing larger, multi-account portfolios.",
   },
 ];
 

@@ -1,6 +1,8 @@
 /* Landing footer — 3-column handoff layout */
 
 .landing-footer {
+  position: relative;
+  z-index: 10;
   border-top: 1px solid var(--border-secondary);
   background: #090c11;
   color: var(--text-body);
@@ -249,4 +251,26 @@ body.light-mode .landing-footer {
   .landing-footer-legal {
     justify-content: center;
   }
+}
+
+/* Guarantee footer links/buttons are always clickable (defensive against overlays) */
+.landing-footer-bar {
+  position: relative;
+  z-index: 11;
+}
+
+.landing-footer-legal,
+.landing-footer-links {
+  position: relative;
+  z-index: 11;
+}
+
+.landing-footer-legal a,
+.landing-footer-legal button,
+.landing-footer-links a,
+.landing-footer-links button {
+  position: relative;
+  z-index: 11;
+  pointer-events: auto;
+  cursor: pointer;
 }

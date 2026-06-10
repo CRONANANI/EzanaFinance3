@@ -28,8 +28,17 @@ function ang(i) {
   return ((-90 + (i * 360) / N) * Math.PI) / 180;
 }
 
-function easeInOut(t) {
-  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+// weight(t): base + two slow sine layers. Because a sum of sines has continuous
+// velocity everywhere, a vertex can never jump, stutter, or snap direction the
+// way the old target-hopping animation did when it reached a target. The random
+// per-dimension frequencies/phases keep the seven points out of sync so the
+// shape keeps reforming. t is in seconds; frequencies in Hz.
+function weightAt(s, t) {
+  const w =
+    s.base +
+    s.a1 * Math.sin(2 * Math.PI * s.f1 * t + s.p1) +
+    s.a2 * Math.sin(2 * Math.PI * s.f2 * t + s.p2);
+  return Math.max(0.14, Math.min(0.98, w));
 }
 
 function basePoints() {
@@ -218,44 +227,39 @@ export default function PersonalizationRadar({ sourceDetails }) {
 
   useEffect(() => {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const states = DIMS.map((d) => ({
-      a: ang(DIMS.indexOf(d)),
-      cur: d.w,
-      start: d.w,
-      target: d.w,
-      t0: 0,
-      dur: 1,
+    // Layered-sine drift parameters, randomized once on mount (empty deps, so
+    // they never re-randomize on re-render). Each dimension drifts as the sum of
+    // a fast and a slow sine wave around its base weight — continuous motion that
+    // glides toward the hub and back out forever without ever hopping to a new
+    // random target (the old pattern, which snapped direction at every target).
+    const states = DIMS.map((d, i) => ({
+      a: ang(i),
+      base: d.w,
+      f1: 0.05 + Math.random() * 0.05,
+      p1: Math.random() * Math.PI * 2,
+      a1: 0.16 + Math.random() * 0.1,
+      f2: 0.011 + Math.random() * 0.013,
+      p2: Math.random() * Math.PI * 2,
+      a2: 0.1 + Math.random() * 0.08,
     }));
     stateRef.current = states;
 
-    function repick(s, now) {
-      s.start = s.cur;
-      s.target = 0.16 + Math.random() * 0.82;
-      s.dur = 2800 + Math.random() * 3200;
-      s.t0 = now;
-    }
-
-    function render(now) {
+    function render(t) {
       const pts = [];
       for (let i = 0; i < states.length; i++) {
         const s = states[i];
-        let p = (now - s.t0) / s.dur;
-        if (p >= 1) {
-          p = 1;
-          if (!reduce) repick(s, now);
-        }
-        const w = s.start + (s.target - s.start) * easeInOut(Math.max(0, Math.min(p, 1)));
-        s.cur = w;
+        const w = weightAt(s, t);
         const r = RMIN + w * (RMAX - RMIN);
         const x = CX + r * Math.cos(s.a);
         const y = CY + r * Math.sin(s.a);
         // Move the whole dot group with a single transform (GPU-composited via
         // will-change) instead of mutating cx/cy on two circles each frame. This
         // keeps the pulse ring's CSS scale animation from re-resolving its origin
-        // every frame, which was the source of the flicker.
+        // every frame. Full precision (toFixed(2)) — the old toFixed(1) made
+        // vertices step in 0.1px increments, a separate source of shimmer.
         const g = blipGroupRefs.current[i];
-        if (g) g.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)})`);
-        pts.push(`${x.toFixed(1)},${y.toFixed(1)}`);
+        if (g) g.setAttribute('transform', `translate(${x.toFixed(2)} ${y.toFixed(2)})`);
+        pts.push(`${x.toFixed(2)},${y.toFixed(2)}`);
       }
       if (polyYouRef.current) polyYouRef.current.setAttribute('points', pts.join(' '));
     }
@@ -264,9 +268,8 @@ export default function PersonalizationRadar({ sourceDetails }) {
       render(0);
     } else {
       const t0 = performance.now();
-      states.forEach((s) => repick(s, t0));
       function loop(now) {
-        render(now);
+        render((now - t0) / 1000);
         rafRef.current = requestAnimationFrame(loop);
       }
       rafRef.current = requestAnimationFrame(loop);
@@ -471,7 +474,7 @@ export default function PersonalizationRadar({ sourceDetails }) {
                   key={`blip-${i}`}
                   ref={blipGroupRefCbs.current[i]}
                   className="radar-blip-group"
-                  transform={`translate(${ix.toFixed(1)} ${iy.toFixed(1)})`}
+                  transform={`translate(${ix.toFixed(2)} ${iy.toFixed(2)})`}
                 >
                   <circle cx="0" cy="0" r="4.5" fill="#10b981" />
                   <circle
