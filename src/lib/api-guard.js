@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { checkRateLimit } from './persistent-rate-limit';
 import { getAuthUser } from './auth-helpers';
 import { getClientIp } from './client-ip';
+import { isAdminUser } from './admin-helpers';
 import { logger } from './logger';
 import { logSecurityEvent } from './security-audit';
 
@@ -79,8 +80,13 @@ export function withApiGuard(handler, options = {}) {
       }
 
       if (requiredRole && user) {
-        const role = user.user_metadata?.role || user.user_metadata?.partner_role;
-        if (role !== requiredRole && role !== 'admin') {
+        // Derive the role only from sources the user cannot forge. NEVER
+        // user_metadata — it is user-editable via auth.updateUser({ data }),
+        // so trusting it would let any user satisfy a requiredRole gate (and
+        // the `=== 'admin'` bypass) by self-assigning a role.
+        const trustedRole = user.app_metadata?.role || user.app_metadata?.partner_role || null;
+        const admin = isAdminUser(user) || trustedRole === 'admin';
+        if (trustedRole !== requiredRole && !admin) {
           return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
       }
