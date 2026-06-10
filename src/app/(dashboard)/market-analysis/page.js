@@ -1676,6 +1676,7 @@ export default function MarketAnalysisPage() {
   const [selectedDot, setSelectedDot] = useState(null);
   const [selectedPowerCountry, setSelectedPowerCountry] = useState(null);
   const [tickerData, setTickerData] = useState([]);
+  const [tickerNews, setTickerNews] = useState([]);
   const [liveMarkets, setLiveMarkets] = useState(null);
   const [liveCommodities, setLiveCommodities] = useState(null);
   const [liveCurrencies, setLiveCurrencies] = useState(null);
@@ -1960,17 +1961,40 @@ export default function MarketAnalysisPage() {
   }, [showGpmArrow, dismissArrow]);
 
   useEffect(() => {
+    const isReal = (p) => p != null && p !== '—' && p !== '';
+    // Merge BOTH quote sources so the ticker carries every asset class
+    // (indices, forex, crypto, commodities). /api/market-data/quotes is the
+    // reliable cached source (Finnhub equities + AV FX/crypto); quotes-live is
+    // an Alpha-Vantage augmenter that is often partially rate-limited (its
+    // missing items come back as "—"). Taking the union, preferring real
+    // prices, keeps the bar full instead of collapsing to a few indices.
     const fetchTicker = async () => {
       try {
-        let res = await fetch('/api/market-data/quotes-live', { cache: 'no-store' });
-        let data = res.ok ? await res.json() : {};
-        if (!res.ok || data.fallback || !Array.isArray(data.quotes) || data.quotes.length === 0) {
-          res = await fetch('/api/market-data/quotes', { cache: 'no-store' });
-          data = res.ok ? await res.json() : {};
+        const [cachedSettled, liveSettled] = await Promise.allSettled([
+          fetch('/api/market-data/quotes', { cache: 'no-store' }),
+          fetch('/api/market-data/quotes-live', { cache: 'no-store' }),
+        ]);
+
+        const bySymbol = new Map();
+        const ingest = (quotes) => {
+          for (const q of quotes || []) {
+            if (!q?.symbol || q.symbol === '—') continue;
+            const existing = bySymbol.get(q.symbol);
+            if (!existing || (!isReal(existing.price) && isReal(q.price))) {
+              bySymbol.set(q.symbol, q);
+            }
+          }
+        };
+
+        if (cachedSettled.status === 'fulfilled' && cachedSettled.value.ok) {
+          ingest((await cachedSettled.value.json())?.quotes);
         }
-        if (data.quotes) {
-          setTickerData(data.quotes.filter((q) => q.price !== '—'));
+        if (liveSettled.status === 'fulfilled' && liveSettled.value.ok) {
+          ingest((await liveSettled.value.json())?.quotes);
         }
+
+        const merged = [...bySymbol.values()].filter((q) => isReal(q.price));
+        if (merged.length) setTickerData(merged);
       } catch (err) {
         console.error('Ticker fetch failed:', err);
       }
@@ -1979,6 +2003,49 @@ export default function MarketAnalysisPage() {
     const interval = setInterval(fetchTicker, 60000);
     return () => clearInterval(interval);
   }, []);
+
+  // Headlines for the ticker — same chain-view source (ISR feed) the user can
+  // open; each carries a real article URL we link out to in a new tab.
+  useEffect(() => {
+    let cancelled = false;
+    const loadTickerNews = async () => {
+      try {
+        const res = await fetch('/api/isr/feed', { cache: 'no-store' });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled) return;
+        const items = (data.events || [])
+          .filter((e) => e?.headline && e?.url)
+          .slice(0, 14)
+          .map((e) => ({ headline: e.headline, url: e.url, source: e.source || '' }));
+        setTickerNews(items);
+      } catch {
+        /* ignore — prices still render */
+      }
+    };
+    loadTickerNews();
+    const interval = setInterval(loadTickerNews, 300_000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, []);
+
+  // Combined ticker stream: prices with a clickable news headline woven in
+  // every few quotes so the bar always shows markets AND news.
+  const tickerStream = useMemo(() => {
+    const prices = tickerData.map((item) => ({ kind: 'price', ...item }));
+    const news = tickerNews.map((n) => ({ kind: 'news', ...n }));
+    if (news.length === 0) return prices;
+    const out = [];
+    let ni = 0;
+    prices.forEach((p, i) => {
+      out.push(p);
+      if ((i + 1) % 4 === 0 && ni < news.length) out.push(news[ni++]);
+    });
+    while (ni < news.length) out.push(news[ni++]);
+    return out;
+  }, [tickerData, tickerNews]);
 
   useEffect(() => {
     async function fetchLiveLayers() {
@@ -2114,37 +2181,43 @@ export default function MarketAnalysisPage() {
           </span>
           <div className="ma-ticker-scroll">
             <div className="ma-ticker-content">
-              {tickerData.length === 0 && (
+              {tickerStream.length === 0 && (
                 <span className="ma-ticker-item">
                   <span className="ma-ticker-symbol" style={{ color: '#4b5563' }}>
                     LOADING MARKET DATA...
                   </span>
                 </span>
               )}
-              {tickerData.map((item, i) => (
-                <span key={i} className="ma-ticker-item">
-                  <span className="ma-ticker-symbol">{item.symbol}</span>
-                  <span
-                    className={`ma-ticker-value ${parseFloat(item.change) >= 0 ? 'up' : 'down'}`}
-                  >
-                    {item.price} {parseFloat(item.change) >= 0 ? '+' : ''}
-                    {item.change}%
-                  </span>
-                  <span className="ma-ticker-sep">•</span>
-                </span>
-              ))}
-              {tickerData.map((item, i) => (
-                <span key={`d-${i}`} className="ma-ticker-item">
-                  <span className="ma-ticker-symbol">{item.symbol}</span>
-                  <span
-                    className={`ma-ticker-value ${parseFloat(item.change) >= 0 ? 'up' : 'down'}`}
-                  >
-                    {item.price} {parseFloat(item.change) >= 0 ? '+' : ''}
-                    {item.change}%
-                  </span>
-                  <span className="ma-ticker-sep">•</span>
-                </span>
-              ))}
+              {/* Rendered twice back-to-back so the -50% marquee loops seamlessly. */}
+              {['a', 'b'].map((pass) =>
+                tickerStream.map((item, i) =>
+                  item.kind === 'news' ? (
+                    <a
+                      key={`${pass}-${i}`}
+                      className="ma-ticker-news"
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={item.source ? `${item.headline} — ${item.source}` : item.headline}
+                    >
+                      <span className="ma-ticker-news-badge">News</span>
+                      <span className="ma-ticker-news-headline">{item.headline}</span>
+                      <span className="ma-ticker-sep">•</span>
+                    </a>
+                  ) : (
+                    <span key={`${pass}-${i}`} className="ma-ticker-item">
+                      <span className="ma-ticker-symbol">{item.symbol}</span>
+                      <span
+                        className={`ma-ticker-value ${parseFloat(item.change) >= 0 ? 'up' : 'down'}`}
+                      >
+                        {item.price} {parseFloat(item.change) >= 0 ? '+' : ''}
+                        {item.change}%
+                      </span>
+                      <span className="ma-ticker-sep">•</span>
+                    </span>
+                  ),
+                ),
+              )}
             </div>
           </div>
         </div>

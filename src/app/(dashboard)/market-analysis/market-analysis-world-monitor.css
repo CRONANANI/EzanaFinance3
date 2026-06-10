@@ -818,7 +818,13 @@
 .ma-ticker-content {
   display: inline-flex;
   white-space: nowrap;
-  animation: ticker-slide 90s linear infinite;
+  animation: ticker-slide 60s linear infinite;
+}
+
+/* Pause the marquee on hover so the scrolling news headlines can actually be
+   clicked. */
+.ma-ticker-content:hover {
+  animation-play-state: paused;
 }
 
 @keyframes ticker-slide {
@@ -862,6 +868,54 @@
 .ma-ticker-sep {
   font-size: 0.3rem;
   color: #1e293b;
+}
+
+/* Clickable news headline interspersed in the ticker (opens article in a new
+   tab). */
+.ma-ticker-news {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0 0.625rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.ma-ticker-news-badge {
+  font-size: 0.4rem;
+  font-weight: 800;
+  font-family: var(--font-mono, monospace);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #0b1220;
+  background: #10b981;
+  padding: 1px 4px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.ma-ticker-news-headline {
+  font-size: 0.5rem;
+  font-weight: 600;
+  font-family: var(--font-mono, monospace);
+  color: #cbd5e1;
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ma-ticker-news:hover .ma-ticker-news-headline {
+  color: #fff;
+  text-decoration: underline;
+}
+
+body.light-mode .ma-ticker-news-headline {
+  color: #334155;
+}
+
+body.light-mode .ma-ticker-news:hover .ma-ticker-news-headline {
+  color: #0b1220;
 }
 
 body.light-mode .ma-ticker-bar {
