@@ -29,10 +29,6 @@ export function ang(i) {
   return ((-90 + (i * 360) / N) * Math.PI) / 180;
 }
 
-function easeInOut(t) {
-  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-}
-
 function easeOutCubic(t) {
   return 1 - Math.pow(1 - t, 3);
 }
@@ -80,14 +76,31 @@ function drawWedge(ctx, endX, endY, gradient, lineColor, lineWidth, lineAlpha) {
  *   (no motion: tweens, sweeps, pulses and hub breathing are frozen).
  */
 export function createRadarScene({ reduce = false } = {}) {
+  /* Vertex motion = layered sine drift (seeded once per scene).
+     Each dimension's weight is the sum of two slow sine waves, which has
+     continuous velocity everywhere — so a vertex physically cannot snap,
+     stutter or reverse sharply. This replaces the previous random
+     "target-hopping" tween, whose direction change at every reached target
+     produced the jerky/random movement. Random per-dimension frequencies and
+     phases keep the seven points out of sync so the shape constantly reforms. */
   const states = DIM_WEIGHTS.map((w, i) => ({
     a: ang(i),
-    cur: w,
-    start: w,
-    target: w,
-    t0: 0,
-    dur: 1,
+    base: w, // seed/home weight (0..1)
+    f1: 0.05 + Math.random() * 0.05, // fast layer 0.05–0.10 Hz
+    p1: Math.random() * Math.PI * 2,
+    a1: 0.16 + Math.random() * 0.1, // amplitude 0.16–0.26
+    f2: 0.011 + Math.random() * 0.013, // slow layer 0.011–0.024 Hz
+    p2: Math.random() * Math.PI * 2,
+    a2: 0.1 + Math.random() * 0.08, // amplitude 0.10–0.18
   }));
+
+  function weightAt(s, t) {
+    const w =
+      s.base +
+      s.a1 * Math.sin(2 * Math.PI * s.f1 * t + s.p1) +
+      s.a2 * Math.sin(2 * Math.PI * s.f2 * t + s.p2);
+    return Math.max(0.14, Math.min(0.98, w));
+  }
 
   const basePts = BASE_WEIGHTS.map((b, i) => {
     const r = RMIN + b * (RMAX - RMIN);
@@ -117,18 +130,10 @@ export function createRadarScene({ reduce = false } = {}) {
     hubGrad.addColorStop(1, 'rgba(16,185,129,0)');
   }
 
-  function repick(s, now) {
-    s.start = s.cur;
-    s.target = 0.16 + Math.random() * 0.82;
-    s.dur = 2800 + Math.random() * 3200;
-    s.t0 = now;
-  }
-
-  /** Seed the first set of tween targets at clock origin `now`. */
-  function init(now = 0) {
-    if (reduce) return;
-    for (const s of states) repick(s, now);
-  }
+  /* Kept for call-site compatibility (worker + main-thread fallback both call
+     it). Sine drift is fully seeded at scene creation, so there is nothing to
+     prime here. */
+  function init() {}
 
   function draw(ctx, clock, scale) {
     ensureGradients(ctx);
@@ -193,17 +198,14 @@ export function createRadarScene({ reduce = false } = {}) {
     ctx.setLineDash([]);
     ctx.globalAlpha = 1;
 
-    /* Live polygon + vertex positions */
+    /* Live polygon + vertex positions — layered sine drift, full precision
+       (no rounding, so edges glide instead of stepping). When reduced motion
+       is requested `clock` stays 0, giving a single static shape. */
+    const t = clock / 1000;
     const pts = [];
     for (let i = 0; i < states.length; i++) {
       const s = states[i];
-      let p = (clock - s.t0) / s.dur;
-      if (p >= 1) {
-        p = 1;
-        if (!reduce) repick(s, clock);
-      }
-      const w = s.start + (s.target - s.start) * easeInOut(Math.max(0, Math.min(p, 1)));
-      s.cur = w;
+      const w = weightAt(s, t);
       const r = RMIN + w * (RMAX - RMIN);
       pts.push([CX + r * Math.cos(s.a), CY + r * Math.sin(s.a)]);
     }
