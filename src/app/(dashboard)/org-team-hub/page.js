@@ -31,6 +31,7 @@ import { FilePreviewModal } from '@/components/file-preview/FilePreviewModal';
 import { ActivityDigest } from '@/components/org/social2/ActivityDigest';
 import { AcademicSummaryStrip } from '@/components/org/academic2/AcademicSummaryStrip';
 import { FundStatStrip } from '@/components/org/analytics2/FundStatStrip';
+import { OrgHubNav } from '@/components/org/OrgHubNav';
 import '../../../../app-legacy/assets/css/theme.css';
 import './team-hub.css';
 import '../org-trading/org-trading.css';
@@ -918,108 +919,7 @@ export default function OrgTeamHubPage() {
           className="th-hero-stats"
           style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}
         >
-          <a
-            href="/org-team-hub/org-chart"
-            className="th-upload-btn"
-            style={{ textDecoration: 'none' }}
-          >
-            <i className="bi bi-diagram-3" /> Org Chart
-          </a>
-          <a
-            href="/org-team-hub/pitches"
-            className="th-upload-btn"
-            style={{ textDecoration: 'none' }}
-          >
-            <i className="bi bi-kanban" /> Pitch Pipeline
-          </a>
-          <a
-            href="/org-team-hub/pitch-archive"
-            className="th-upload-btn"
-            style={{
-              textDecoration: 'none',
-              background: 'rgba(255,255,255,0.04)',
-              color: '#9ca3af',
-              borderColor: 'rgba(255,255,255,0.1)',
-            }}
-          >
-            <i className="bi bi-archive" /> Archive
-          </a>
-          <a
-            href="/org-team-hub/research-library"
-            className="th-upload-btn"
-            style={{ textDecoration: 'none' }}
-          >
-            <i className="bi bi-journal-text" /> Research Library
-          </a>
-          <a
-            href="/org-team-hub/recognition"
-            className="th-upload-btn"
-            style={{ textDecoration: 'none' }}
-          >
-            <i className="bi bi-award" /> Recognition
-          </a>
-          <a
-            href="/org-team-hub/meetings"
-            className="th-upload-btn"
-            style={{ textDecoration: 'none' }}
-          >
-            <i className="bi bi-camera-video" /> Meetings
-          </a>
-          {isExecutive && (
-            <a
-              href="/org-team-hub/cohorts"
-              className="th-upload-btn"
-              style={{ textDecoration: 'none' }}
-            >
-              <i className="bi bi-mortarboard" /> Cohorts
-            </a>
-          )}
-          <a
-            href="/org-team-hub/assignments"
-            className="th-upload-btn"
-            style={{ textDecoration: 'none' }}
-          >
-            <i className="bi bi-clipboard-check" /> Assignments
-          </a>
-          <a
-            href="/org-team-hub/grades"
-            className="th-upload-btn"
-            style={{ textDecoration: 'none' }}
-          >
-            <i className="bi bi-card-checklist" /> Grades
-          </a>
-          <a
-            href="/org-team-hub/competitions"
-            className="th-upload-btn"
-            style={{ textDecoration: 'none' }}
-          >
-            <i className="bi bi-trophy" /> Competitions
-          </a>
-          {(isExecutive || isPortfolioManager) && (
-            <a
-              href="/org-team-hub/compliance"
-              className="th-upload-btn"
-              style={{ textDecoration: 'none' }}
-            >
-              <i className="bi bi-shield-check" /> Compliance
-            </a>
-          )}
-          <a
-            href="/org-team-hub/fund-analytics"
-            className="th-upload-btn"
-            style={{ textDecoration: 'none' }}
-          >
-            <i className="bi bi-graph-up" /> Fund Analytics
-          </a>
-          {(isExecutive || isPortfolioManager) && (
-            <a
-              href="/org-team-hub/reports"
-              className="th-upload-btn"
-              style={{ textDecoration: 'none' }}
-            >
-              <i className="bi bi-file-earmark-bar-graph" /> Reports
-            </a>
-          )}
+          <OrgHubNav orgRole={orgRole} />
           <div className="th-hero-stat">
             <div className="th-hero-stat-value">{MOCK_MEMBERS.length}</div>
             <div className="th-hero-stat-label">Members</div>
