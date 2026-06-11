@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useToast } from '@/contexts/ToastContext';
 import { useTheme } from '@/components/ThemeProvider';
+import { AnalystScorecard } from '@/components/org/analytics2/AnalystScorecard';
 import {
   MOCK_TEAMS,
   getOrgMemberReportsTo,
@@ -69,6 +70,7 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId,
   const isDark = theme === 'dark';
   const [messageBody, setMessageBody] = useState('');
   const [sending, setSending] = useState(false);
+  const [showScorecard, setShowScorecard] = useState(false);
 
   const handleClose = useCallback(() => {
     setMessageBody('');
@@ -220,6 +222,34 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId,
         </div>
 
         <div style={{ padding: '1rem' }}>
+          {/^[0-9a-f-]{36}$/i.test(member.id || '') && (
+            <div style={{ marginBottom: '1rem' }}>
+              <button
+                type="button"
+                onClick={() => setShowScorecard((s) => !s)}
+                style={{
+                  font: 'inherit',
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                  padding: '0.45rem 0.85rem',
+                  borderRadius: 9,
+                  border: '1px solid rgba(16,185,129,0.4)',
+                  background: showScorecard ? '#10b981' : 'transparent',
+                  color: showScorecard ? '#04130d' : '#10b981',
+                  cursor: 'pointer',
+                }}
+              >
+                <i className="bi bi-clipboard-data" style={{ marginRight: 6 }} />
+                {showScorecard ? 'Hide scorecard' : 'View analyst scorecard'}
+              </button>
+              {showScorecard && (
+                <div style={{ marginTop: '0.85rem' }}>
+                  <AnalystScorecard memberId={member.id} embedded />
+                </div>
+              )}
+            </div>
+          )}
+
           <SectionTitle isDark={isDark}>Contact</SectionTitle>
           <p style={{ color: body, fontSize: '0.8125rem', margin: '0 0 1rem' }}>
             <i className="bi bi-envelope" style={{ marginRight: 6, opacity: 0.7 }} />

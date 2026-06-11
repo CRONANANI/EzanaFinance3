@@ -30,6 +30,7 @@ import {
 import { FilePreviewModal } from '@/components/file-preview/FilePreviewModal';
 import { ActivityDigest } from '@/components/org/social2/ActivityDigest';
 import { AcademicSummaryStrip } from '@/components/org/academic2/AcademicSummaryStrip';
+import { FundStatStrip } from '@/components/org/analytics2/FundStatStrip';
 import '../../../../app-legacy/assets/css/theme.css';
 import './team-hub.css';
 import '../org-trading/org-trading.css';
@@ -1003,6 +1004,22 @@ export default function OrgTeamHubPage() {
               <i className="bi bi-shield-check" /> Compliance
             </a>
           )}
+          <a
+            href="/org-team-hub/fund-analytics"
+            className="th-upload-btn"
+            style={{ textDecoration: 'none' }}
+          >
+            <i className="bi bi-graph-up" /> Fund Analytics
+          </a>
+          {(isExecutive || isPortfolioManager) && (
+            <a
+              href="/org-team-hub/reports"
+              className="th-upload-btn"
+              style={{ textDecoration: 'none' }}
+            >
+              <i className="bi bi-file-earmark-bar-graph" /> Reports
+            </a>
+          )}
           <div className="th-hero-stat">
             <div className="th-hero-stat-value">{MOCK_MEMBERS.length}</div>
             <div className="th-hero-stat-label">Members</div>
@@ -1020,6 +1037,7 @@ export default function OrgTeamHubPage() {
 
       {isExecutive && <TeamRankingRow />}
 
+      <FundStatStrip />
       <AcademicSummaryStrip />
 
       <div style={{ margin: '0 0 1.25rem' }}>
