@@ -212,7 +212,13 @@ function MobileRadarFlow({ dims, sourceDetails, accentColor }) {
 
 export default function PersonalizationRadar({ sourceDetails }) {
   const accentColor = '#10b981';
+  // `hoveredDim` is transient (mouse/focus over a dot or label); `pinnedDim`
+  // persists after a click so the description card stays open. The card shows
+  // whichever is active, with a pin taking precedence over a hover.
   const [hoveredDim, setHoveredDim] = useState(null);
+  const [pinnedDim, setPinnedDim] = useState(null);
+  const activeDim = pinnedDim !== null ? pinnedDim : hoveredDim;
+  const togglePin = (i) => setPinnedDim((prev) => (prev === i ? null : i));
   const polyYouRef = useRef(null);
   const blipGroupRefs = useRef([]);
   // Stable ref callbacks (created once) so hover-driven re-renders don't detach
@@ -280,11 +286,11 @@ export default function PersonalizationRadar({ sourceDetails }) {
     };
   }, []);
 
-  const hoveredDetail = hoveredDim !== null ? sourceDetails?.[DIMS[hoveredDim].id] : null;
+  const activeDetail = activeDim !== null ? sourceDetails?.[DIMS[activeDim].id] : null;
   const popupPos =
-    hoveredDim !== null
+    activeDim !== null
       ? (() => {
-          const a = ang(hoveredDim);
+          const a = ang(activeDim);
           const lr = RMAX + 30;
           const px = ((CX + lr * Math.cos(a)) / 1120) * 100;
           const py = ((CY + lr * Math.sin(a)) / 760) * 100;
@@ -329,6 +335,7 @@ export default function PersonalizationRadar({ sourceDetails }) {
             role="img"
             aria-label="Weighted radar chart of seven intelligence dimensions"
             className="block w-full h-auto overflow-visible"
+            onClick={() => setPinnedDim(null)}
           >
             <defs>
               <radialGradient id="radar-hg" cx="50%" cy="42%" r="60%">
@@ -469,14 +476,44 @@ export default function PersonalizationRadar({ sourceDetails }) {
               const r = RMIN + d.w * (RMAX - RMIN);
               const ix = CX + r * Math.cos(a);
               const iy = CY + r * Math.sin(a);
+              const isActive = activeDim === i;
               return (
                 <g
                   key={`blip-${i}`}
                   ref={blipGroupRefCbs.current[i]}
-                  className="radar-blip-group"
+                  className={cn('radar-blip-group', isActive && 'radar-blip-group--active')}
                   transform={`translate(${ix.toFixed(2)} ${iy.toFixed(2)})`}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${d.nm} — show data sources`}
+                  aria-expanded={isActive}
+                  style={{ cursor: 'pointer' }}
+                  onMouseEnter={() => setHoveredDim(i)}
+                  onMouseLeave={() => setHoveredDim(null)}
+                  onFocus={() => setHoveredDim(i)}
+                  onBlur={() => setHoveredDim(null)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    togglePin(i);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      togglePin(i);
+                    }
+                  }}
                 >
-                  <circle cx="0" cy="0" r="4.5" fill="#10b981" />
+                  {/* Invisible, larger hit target so the tiny dot is easy to
+                      hover/click; moves with the group's RAF transform. */}
+                  <circle
+                    cx="0"
+                    cy="0"
+                    r="16"
+                    fill="#fff"
+                    fillOpacity="0"
+                    style={{ pointerEvents: 'all' }}
+                  />
+                  <circle cx="0" cy="0" r={isActive ? 6 : 4.5} fill="#10b981" />
                   <circle
                     cx="0"
                     cy="0"
@@ -517,22 +554,26 @@ export default function PersonalizationRadar({ sourceDetails }) {
             {/* Dimension labels (interactive) */}
             {DIMS.map((d, i) => {
               const pos = labelPos(i);
-              const isHovered = hoveredDim === i;
+              const isActive = activeDim === i;
               return (
                 <text
                   key={`label-${i}`}
                   x={pos.x}
                   y={pos.y}
                   textAnchor={pos.anchor}
-                  className={cn('radar-ax-name', isHovered && 'radar-ax-name--active')}
+                  className={cn('radar-ax-name', isActive && 'radar-ax-name--active')}
                   onMouseEnter={() => setHoveredDim(i)}
                   onMouseLeave={() => setHoveredDim(null)}
-                  style={{ cursor: 'help' }}
+                  style={{ cursor: 'pointer' }}
                   role="button"
                   tabIndex={0}
-                  aria-expanded={isHovered}
+                  aria-expanded={isActive}
                   onFocus={() => setHoveredDim(i)}
                   onBlur={() => setHoveredDim(null)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    togglePin(i);
+                  }}
                 >
                   {d.nm}
                 </text>
@@ -540,8 +581,8 @@ export default function PersonalizationRadar({ sourceDetails }) {
             })}
           </svg>
 
-          {/* Hover popup card */}
-          {hoveredDim !== null && hoveredDetail && popupPos && (
+          {/* Dimension description card — shown on hover or click of a dot/label */}
+          {activeDim !== null && activeDetail && popupPos && (
             <div
               className="absolute z-50 rounded-xl border p-4 w-[280px] sm:w-[300px]"
               style={{
@@ -554,16 +595,16 @@ export default function PersonalizationRadar({ sourceDetails }) {
               }}
               role="tooltip"
             >
-              {hoveredDetail.tagline && (
+              {activeDetail.tagline && (
                 <div className="mb-3 text-center text-[11px] leading-snug text-emerald-200/80">
-                  {hoveredDetail.tagline}
+                  {activeDetail.tagline}
                 </div>
               )}
               <div className="mb-2 text-center text-[10px] font-semibold uppercase tracking-wide text-emerald-400/80">
                 Powered by
               </div>
               <ul className="space-y-3">
-                {hoveredDetail.sources?.map((src) => (
+                {activeDetail.sources?.map((src) => (
                   <li key={src.name} className="text-center">
                     <div className="text-xs font-semibold text-white">{src.name}</div>
                     <div className="mt-0.5 text-[11px] leading-snug text-emerald-100/70">

@@ -18,6 +18,15 @@
    the motion stays smooth and decoupled from the SVG repaint. */
 .radar-blip-group {
   will-change: transform;
+  outline: none;
+}
+
+/* Active dot (hovered, focused, or pinned) — emerald glow for clear feedback. */
+.radar-blip-group--active {
+  filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.9));
+}
+.radar-blip-group:focus-visible {
+  filter: drop-shadow(0 0 5px rgba(16, 185, 129, 0.85));
 }
 
 .radar-blip-pulse {
