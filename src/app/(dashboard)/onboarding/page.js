@@ -75,6 +75,12 @@ export default function OnboardingPage() {
         .from('profiles')
         .update({
           onboarding_completed: true,
+          // Set the questionnaire flag too: this is the flag the access gate
+          // (DashboardTrialShell + this page's own guard) checks. Marking
+          // onboarding complete without it left users — notably org members
+          // routed through OrgQuestionnaire — stuck in a redirect loop back to
+          // /onboarding, so their dashboard/org pages never loaded.
+          investor_questionnaire_completed: true,
           onboarding_step: 99,
           has_seen_tutorial: false,
         })
