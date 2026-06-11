@@ -127,7 +127,7 @@ function parsePercent(input) {
 }
 
 function requireApiKey() {
-  const key = process.env.FMP_API_KEY;
+  const key = process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY;
   if (!key) {
     throw new Error(
       'FMP_API_KEY is not set. Add it to .env.local and restart the dev server.',

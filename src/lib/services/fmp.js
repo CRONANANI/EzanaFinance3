@@ -5,12 +5,23 @@
 import { ApiCache } from '@/lib/api-cache';
 import { API_CONFIG } from '@/lib/api-config';
 
-function cfg() {
-  return API_CONFIG.fmp || {};
+// Read the key at REQUEST time (not from the frozen API_CONFIG snapshot) and
+// accept either env var name. API_CONFIG.fmp.key only reads NEXT_PUBLIC_FMP_API_KEY
+// and is frozen at module load, so a server-only FMP_API_KEY — or a key set or
+// rotated after cold start — never reached this service. That silently broke
+// every FmpAPI-backed surface (market-data hooks, company search, the org
+// pitch-hindsight engine) while route-level getFmpKey() callers kept working.
+function fmpKey() {
+  return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+}
+
+function fmpBase() {
+  return API_CONFIG.fmp?.base || 'https://financialmodelingprep.com/api';
 }
 
 function buildUrl(path, params = {}) {
-  const { base, key } = cfg();
+  const key = fmpKey();
+  const base = fmpBase();
   if (!base || !key) return null;
   const qs = new URLSearchParams({ ...params, apikey: key });
   return `${base}${path}?${qs}`;
