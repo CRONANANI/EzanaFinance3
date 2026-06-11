@@ -25,6 +25,20 @@ export async function getCurrentOrgMember(supabase) {
 }
 
 /**
+ * Server-side role gate for org write paths. Returns true only when the
+ * resolved member is an active member with one of the allowed roles. Hiding a
+ * button in the UI is never enough — every write route must call this before
+ * mutating, so an analyst hitting the endpoint directly is rejected.
+ *
+ * @param {{ role?: string, is_active?: boolean } | null | undefined} member
+ * @param {string[]} allowedRoles
+ */
+export function assertOrgRole(member, allowedRoles) {
+  if (!member || member.is_active === false) return false;
+  return allowedRoles.includes(member.role);
+}
+
+/**
  * Map mock council member id (e.g. m3) to real org_members.id in this org (display_name match).
  */
 export async function mockMemberIdToOrgMemberId(supabase, orgId, mockMemberId) {

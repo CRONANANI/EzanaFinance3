@@ -1,0 +1,459 @@
+/* ===========================================================================
+   Org Chart (Phase 1) — page-scoped styles. No global tokens are defined here;
+   everything resolves against the existing theme variables so the page is
+   legible in both light and dark mode.
+   =========================================================================== */
+
+.oc2-root {
+  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  color: var(--text-primary);
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+.oc2-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+.oc2-eyebrow {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--emerald-text, #10b981);
+  margin: 0 0 0.35rem;
+}
+.oc2-title {
+  font-size: clamp(1.4rem, 2.6vw, 2rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+/* ── Term & succession strip ────────────────────────────────────────────── */
+.oc2-term-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 1.5rem;
+  padding: 0.9rem 1.1rem;
+  margin-bottom: 1.25rem;
+  border: 1px solid var(--border-primary);
+  border-radius: 14px;
+  background: var(--surface-card, transparent);
+}
+.oc2-term-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.oc2-term-stat-value {
+  font-family: var(--font-mono, monospace);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+.oc2-term-stat-value.is-amber {
+  color: var(--warning, #d97706);
+}
+.oc2-term-stat-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+.oc2-term-vacant {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+.oc2-vacant-chip {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.18rem 0.55rem;
+  border-radius: 9999px;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: var(--warning, #d97706);
+}
+
+/* ── Tabs ───────────────────────────────────────────────────────────────── */
+.oc2-tabs {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid var(--border-primary);
+  background: var(--surface-card, transparent);
+  margin-bottom: 1.25rem;
+}
+.oc2-tab {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  padding: 0.45rem 1rem;
+  border-radius: 7px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.oc2-tab:hover {
+  color: var(--text-primary);
+}
+.oc2-tab.is-active {
+  background: var(--emerald, #10b981);
+  color: #04130d;
+}
+
+/* ── Faculty advisor lane ───────────────────────────────────────────────── */
+.oc2-advisor-lane {
+  margin-bottom: 1.5rem;
+}
+.oc2-advisor-lane-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--emerald-text, #10b981);
+  margin-bottom: 0.6rem;
+}
+.oc2-advisor-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.oc2-advisor-card {
+  position: relative;
+  min-width: 200px;
+  padding: 0.85rem 1rem;
+  border: 1.5px dashed var(--emerald-border, rgba(16, 185, 129, 0.4));
+  border-radius: 14px;
+  background: var(--emerald-bg-subtle, rgba(16, 185, 129, 0.04));
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+.oc2-advisor-card:hover {
+  border-color: var(--emerald, #10b981);
+  transform: translateY(-1px);
+}
+.oc2-advisor-badge {
+  position: absolute;
+  top: -9px;
+  left: 12px;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.12rem 0.5rem;
+  border-radius: 9999px;
+  background: var(--emerald, #10b981);
+  color: #04130d;
+}
+.oc2-advisor-supervises {
+  margin-top: 0.55rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.oc2-supervise-chip {
+  font-size: 0.66rem;
+  color: var(--text-muted);
+  padding: 0.12rem 0.45rem;
+  border: 1px dotted var(--emerald-border, rgba(16, 185, 129, 0.45));
+  border-radius: 9999px;
+}
+
+/* ── Tree (CSS-connector hierarchy) ─────────────────────────────────────── */
+.oc2-tree-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.5rem 0.25rem 1rem;
+}
+.oc2-tree {
+  display: inline-block;
+  min-width: 100%;
+  width: max-content;
+  text-align: center;
+}
+.oc2-tree ul {
+  display: flex;
+  justify-content: center;
+  position: relative;
+  padding: 22px 0 0;
+  margin: 0;
+  list-style: none;
+}
+.oc2-tree li {
+  list-style: none;
+  position: relative;
+  padding: 22px 10px 0;
+}
+/* Connector lines, drawn with borders between each child and its parent. */
+.oc2-tree li::before,
+.oc2-tree li::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 50%;
+  width: 50%;
+  height: 22px;
+  border-top: 1.5px solid var(--border-strong, rgba(127, 127, 127, 0.35));
+}
+.oc2-tree li::after {
+  right: auto;
+  left: 50%;
+  border-left: 1.5px solid var(--border-strong, rgba(127, 127, 127, 0.35));
+}
+.oc2-tree li:only-child::after,
+.oc2-tree li:only-child::before {
+  display: none;
+}
+.oc2-tree li:only-child {
+  padding-top: 0;
+}
+.oc2-tree li:first-child::before,
+.oc2-tree li:last-child::after {
+  border: 0 none;
+}
+.oc2-tree li:last-child::before {
+  border-right: 1.5px solid var(--border-strong, rgba(127, 127, 127, 0.35));
+  border-radius: 0 6px 0 0;
+}
+.oc2-tree li:first-child::after {
+  border-radius: 6px 0 0 0;
+}
+.oc2-tree ul ul::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 0;
+  height: 22px;
+  border-left: 1.5px solid var(--border-strong, rgba(127, 127, 127, 0.35));
+}
+/* The root row has no incoming connector. */
+.oc2-tree > ul {
+  padding-top: 0;
+}
+.oc2-tree > ul > li::before,
+.oc2-tree > ul > li::after {
+  border: 0 none;
+}
+
+/* ── Node ───────────────────────────────────────────────────────────────── */
+.oc2-node {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  width: 188px;
+  padding: 0.8rem 0.85rem;
+  border: 1px solid var(--border-primary);
+  border-radius: 14px;
+  background: var(--surface-card, var(--bg-secondary, #0d1218));
+  box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.15));
+  cursor: pointer;
+  text-align: center;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+  vertical-align: top;
+}
+.oc2-node:hover,
+.oc2-node:focus-visible {
+  border-color: var(--border-hover, rgba(16, 185, 129, 0.4));
+  box-shadow: var(--shadow-md, 0 4px 14px rgba(0, 0, 0, 0.25));
+  transform: translateY(-2px);
+  outline: none;
+}
+.oc2-node-name {
+  font-weight: 700;
+  font-size: 0.875rem;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+.oc2-node-title {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  line-height: 1.3;
+}
+.oc2-node-pill {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.12rem 0.5rem;
+  border-radius: 9999px;
+}
+.oc2-pill--executive {
+  background: rgba(16, 185, 129, 0.14);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: var(--emerald-text, #10b981);
+}
+.oc2-pill--portfolio_manager {
+  background: rgba(59, 130, 246, 0.14);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  color: #3b82f6;
+}
+.oc2-pill--analyst {
+  background: rgba(148, 163, 184, 0.16);
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  color: var(--text-muted, #94a3b8);
+}
+.oc2-node-sectors {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem;
+}
+.oc2-sector-tag {
+  font-size: 0.6rem;
+  padding: 0.08rem 0.4rem;
+  border-radius: 6px;
+  background: var(--surface-input, rgba(127, 127, 127, 0.08));
+  border: 1px solid var(--border-secondary);
+  color: var(--text-body, var(--text-secondary));
+}
+.oc2-node-grad {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 0.1rem 0.45rem;
+  border-radius: 9999px;
+  background: rgba(245, 158, 11, 0.14);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: var(--warning, #d97706);
+}
+
+/* ── Sector coverage map ────────────────────────────────────────────────── */
+.oc2-sector-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.9rem;
+}
+.oc2-sector-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border-primary);
+  border-radius: 14px;
+  background: var(--surface-card, transparent);
+  min-height: 120px;
+}
+.oc2-sector-card.is-gap {
+  border-color: rgba(245, 158, 11, 0.4);
+  background: rgba(245, 158, 11, 0.05);
+}
+.oc2-sector-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.oc2-sector-name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.oc2-gap-badge {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.12rem 0.5rem;
+  border-radius: 9999px;
+  background: rgba(245, 158, 11, 0.16);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  color: var(--warning, #d97706);
+}
+.oc2-sector-members {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.oc2-sector-member {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.74rem;
+  color: var(--text-body, var(--text-secondary));
+}
+.oc2-sector-member-role {
+  font-size: 0.6rem;
+  color: var(--text-faint);
+}
+.oc2-sector-empty {
+  font-size: 0.72rem;
+  color: var(--text-faint);
+  font-style: italic;
+}
+.oc2-assign-btn {
+  align-self: flex-start;
+  margin-top: auto;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.3rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid var(--emerald-border, rgba(16, 185, 129, 0.4));
+  background: transparent;
+  color: var(--emerald-text, #10b981);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.oc2-assign-btn:hover {
+  background: var(--emerald, #10b981);
+  color: #04130d;
+}
+.oc2-assign-row {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: auto;
+}
+.oc2-assign-select {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 0.7rem;
+  padding: 0.3rem 0.4rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-input, var(--border-primary));
+  background: var(--surface-input, var(--bg-secondary));
+  color: var(--text-primary);
+}
+
+/* ── States ─────────────────────────────────────────────────────────────── */
+.oc2-state {
+  padding: 2.5rem 1rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+.oc2-error {
+  color: var(--negative, #ef4444);
+}
+
+@media (max-width: 640px) {
+  .oc2-node {
+    width: 160px;
+  }
+}

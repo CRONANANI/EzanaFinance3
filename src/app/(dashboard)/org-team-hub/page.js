@@ -916,6 +916,13 @@ export default function OrgTeamHubPage() {
           style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}
         >
           <a
+            href="/org-team-hub/org-chart"
+            className="th-upload-btn"
+            style={{ textDecoration: 'none' }}
+          >
+            <i className="bi bi-diagram-3" /> Org Chart
+          </a>
+          <a
             href="/org-team-hub/pitches"
             className="th-upload-btn"
             style={{ textDecoration: 'none' }}
