@@ -62,17 +62,6 @@ const CAROUSEL_MODELS = getCarouselModels();
 function ResearchPageHeader({ view, setView }) {
   return (
     <header className="cpr-page-header">
-      <div className="cpr-page-header-text">
-        <span className="cpr-page-eyebrow">Research</span>
-        <h1 className="cpr-page-title">Company &amp; Portfolio Research</h1>
-        <p className="cpr-page-subtitle">
-          {view === 'company'
-            ? 'Deep dive on individual companies — fundamentals, valuation, and signals.'
-            : view === 'industry'
-              ? 'Sector and industry performance across the market.'
-              : 'Optimize and stress-test your portfolio across regimes.'}
-        </p>
-      </div>
       <div role="tablist" aria-label="Research view" className="cpr-view-toggle">
         <button
           type="button"

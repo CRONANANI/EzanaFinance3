@@ -6,11 +6,7 @@
 
 /* Page header + toggle ---------------------------------------------------- */
 .cpr-page-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
+  display: block;
   margin: 0 0 1.25rem;
 }
 
@@ -46,31 +42,32 @@
   max-width: 68ch;
 }
 
-/* Segmented toggle -------------------------------------------------------- */
+/* Segmented toggle — spans the full content width; buttons share it equally
+   with proportionately larger text/icons to match the wider control. ------ */
 .cpr-view-toggle {
-  display: inline-flex;
-  flex-wrap: wrap;
-  width: auto;
-  max-width: 100%;
-  padding: 4px;
-  border-radius: 10px;
+  display: flex;
+  width: 100%;
+  padding: 5px;
+  border-radius: 12px;
   border: 1px solid rgba(16, 185, 129, 0.18);
   background: rgba(16, 185, 129, 0.04);
-  flex-shrink: 0;
-  gap: 2px;
+  gap: 4px;
 }
 
 .cpr-view-toggle-btn {
+  flex: 1 1 0;
+  min-width: 0;
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.4rem 0.85rem;
-  font-size: 0.8125rem;
+  justify-content: center;
+  gap: 0.55rem;
+  padding: 0.7rem 1rem;
+  font-size: 1rem;
   font-weight: 700;
   color: var(--home-muted, #8b949e);
   background: transparent;
   border: none;
-  border-radius: 7px;
+  border-radius: 8px;
   cursor: pointer;
   transition:
     background 0.15s ease,
@@ -79,7 +76,7 @@
 }
 
 .cpr-view-toggle-btn i {
-  font-size: 0.875rem;
+  font-size: 1.1rem;
 }
 
 .cpr-view-toggle-btn:hover {
@@ -119,6 +116,20 @@ body.light-mode .cpr-page-title {
 body.light-mode .cpr-page-subtitle,
 body.light-mode .cpr-page-eyebrow {
   color: #6b7280;
+}
+
+/* Narrow screens: stack the icon over the label so three full-width tabs
+   never crowd or clip. */
+@media (max-width: 560px) {
+  .cpr-view-toggle-btn {
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.55rem 0.35rem;
+    font-size: 0.8125rem;
+  }
+  .cpr-view-toggle-btn i {
+    font-size: 1rem;
+  }
 }
 
 /* Market view root -------------------------------------------------------- */
