@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useOrg } from '@/contexts/OrgContext';
 import { PositionRow } from './PositionRow';
 import { FlagComposerModal } from './FlagComposerModal';
+import { PositionThread } from '@/components/org/social2/PositionThread';
 import {
   MOCK_TEAM_PERFORMANCE,
   MOCK_TMT_HOLDINGS,
@@ -68,6 +69,7 @@ export function TeamPortfolioView({ teamId: dbTeamId, memberRole, memberEmail })
   const { canFlagPositions, orgData } = useOrg();
   const [openFlagModal, setOpenFlagModal] = useState(null);
   const [flagsByTicker, setFlagsByTicker] = useState({});
+  const [discussTicker, setDiscussTicker] = useState(null);
 
   const orgTeams = orgData?.teams || [];
   const mockMember = getMemberByEmail(memberEmail);
@@ -189,6 +191,48 @@ export function TeamPortfolioView({ teamId: dbTeamId, memberRole, memberEmail })
           </tbody>
         </table>
       </div>
+
+      {/* Per-holding discussion — pick a position to open its Slack-style thread. */}
+      {myCoverage.length > 0 && (
+        <div className="ot-team-card" style={{ marginTop: '1.5rem' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '0.6rem',
+              marginBottom: '0.85rem',
+            }}
+          >
+            <div style={{ fontSize: '0.875rem', fontWeight: 700, color: '#f0f6fc' }}>
+              <i className="bi bi-chat-left-text" style={{ marginRight: '0.5rem', color: '#10b981' }} />
+              Discussion
+            </div>
+            <select
+              className="sc2-select"
+              style={{ maxWidth: 220 }}
+              value={discussTicker || ''}
+              onChange={(e) => setDiscussTicker(e.target.value || null)}
+              aria-label="Select a holding to discuss"
+            >
+              <option value="">Choose a holding…</option>
+              {myCoverage.map((h) => (
+                <option key={h.ticker} value={h.ticker}>
+                  {h.ticker}
+                </option>
+              ))}
+            </select>
+          </div>
+          {discussTicker ? (
+            <PositionThread ticker={discussTicker} />
+          ) : (
+            <p style={{ color: '#8b949e', fontSize: '0.82rem', margin: 0 }}>
+              Select a holding above to view and join its discussion thread.
+            </p>
+          )}
+        </div>
+      )}
 
       {memberRole === 'analyst' && otherHoldings.length > 0 && (
         <div className="ot-team-card" style={{ marginTop: '1.5rem', opacity: 0.65 }}>

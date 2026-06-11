@@ -32,6 +32,25 @@ export function OrgNotificationManager() {
   const [selectedMemberId, setSelectedMemberId] = useState(null);
   const [prefs, setPrefs] = useState({});
   const [orgPeers, setOrgPeers] = useState([]);
+  const [unseenMentions, setUnseenMentions] = useState(0);
+
+  // Unseen @mention count — surfaced as an indicator on the notifications card.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/org/mentions', { cache: 'no-store' });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!cancelled) setUnseenMentions(data.unseen || 0);
+      } catch {
+        /* non-fatal */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (!orgData?.org?.id) return undefined;
@@ -129,6 +148,25 @@ export function OrgNotificationManager() {
               : 'Manage your notification preferences.'}
           </p>
         </div>
+        {unseenMentions > 0 && (
+          <span
+            title={`${unseenMentions} unseen @mention${unseenMentions === 1 ? '' : 's'}`}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.3rem',
+              fontSize: '0.72rem',
+              fontWeight: 700,
+              padding: '0.2rem 0.55rem',
+              borderRadius: '9999px',
+              background: 'rgba(16,185,129,0.14)',
+              border: '1px solid rgba(16,185,129,0.4)',
+              color: '#10b981',
+            }}
+          >
+            <i className="bi bi-at" aria-hidden /> {unseenMentions}
+          </span>
+        )}
       </div>
 
       {canManageOthers && (

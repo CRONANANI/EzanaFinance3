@@ -28,6 +28,7 @@ import {
   MOCK_TEAM_PERFORMANCE,
 } from '@/lib/orgMockData';
 import { FilePreviewModal } from '@/components/file-preview/FilePreviewModal';
+import { ActivityDigest } from '@/components/org/social2/ActivityDigest';
 import '../../../../app-legacy/assets/css/theme.css';
 import './team-hub.css';
 import '../org-trading/org-trading.css';
@@ -941,6 +942,27 @@ export default function OrgTeamHubPage() {
           >
             <i className="bi bi-archive" /> Archive
           </a>
+          <a
+            href="/org-team-hub/research-library"
+            className="th-upload-btn"
+            style={{ textDecoration: 'none' }}
+          >
+            <i className="bi bi-journal-text" /> Research Library
+          </a>
+          <a
+            href="/org-team-hub/recognition"
+            className="th-upload-btn"
+            style={{ textDecoration: 'none' }}
+          >
+            <i className="bi bi-award" /> Recognition
+          </a>
+          <a
+            href="/org-team-hub/meetings"
+            className="th-upload-btn"
+            style={{ textDecoration: 'none' }}
+          >
+            <i className="bi bi-camera-video" /> Meetings
+          </a>
           <div className="th-hero-stat">
             <div className="th-hero-stat-value">{MOCK_MEMBERS.length}</div>
             <div className="th-hero-stat-label">Members</div>
@@ -957,6 +979,10 @@ export default function OrgTeamHubPage() {
       </div>
 
       {isExecutive && <TeamRankingRow />}
+
+      <div style={{ margin: '0 0 1.25rem' }}>
+        <ActivityDigest />
+      </div>
 
       <OrgChartCard onSelectMember={setProfileMember} />
 
