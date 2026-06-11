@@ -29,6 +29,7 @@ import {
 } from '@/lib/orgMockData';
 import { FilePreviewModal } from '@/components/file-preview/FilePreviewModal';
 import { ActivityDigest } from '@/components/org/social2/ActivityDigest';
+import { AcademicSummaryStrip } from '@/components/org/academic2/AcademicSummaryStrip';
 import '../../../../app-legacy/assets/css/theme.css';
 import './team-hub.css';
 import '../org-trading/org-trading.css';
@@ -963,6 +964,45 @@ export default function OrgTeamHubPage() {
           >
             <i className="bi bi-camera-video" /> Meetings
           </a>
+          {isExecutive && (
+            <a
+              href="/org-team-hub/cohorts"
+              className="th-upload-btn"
+              style={{ textDecoration: 'none' }}
+            >
+              <i className="bi bi-mortarboard" /> Cohorts
+            </a>
+          )}
+          <a
+            href="/org-team-hub/assignments"
+            className="th-upload-btn"
+            style={{ textDecoration: 'none' }}
+          >
+            <i className="bi bi-clipboard-check" /> Assignments
+          </a>
+          <a
+            href="/org-team-hub/grades"
+            className="th-upload-btn"
+            style={{ textDecoration: 'none' }}
+          >
+            <i className="bi bi-card-checklist" /> Grades
+          </a>
+          <a
+            href="/org-team-hub/competitions"
+            className="th-upload-btn"
+            style={{ textDecoration: 'none' }}
+          >
+            <i className="bi bi-trophy" /> Competitions
+          </a>
+          {(isExecutive || isPortfolioManager) && (
+            <a
+              href="/org-team-hub/compliance"
+              className="th-upload-btn"
+              style={{ textDecoration: 'none' }}
+            >
+              <i className="bi bi-shield-check" /> Compliance
+            </a>
+          )}
           <div className="th-hero-stat">
             <div className="th-hero-stat-value">{MOCK_MEMBERS.length}</div>
             <div className="th-hero-stat-label">Members</div>
@@ -979,6 +1019,8 @@ export default function OrgTeamHubPage() {
       </div>
 
       {isExecutive && <TeamRankingRow />}
+
+      <AcademicSummaryStrip />
 
       <div style={{ margin: '0 0 1.25rem' }}>
         <ActivityDigest />

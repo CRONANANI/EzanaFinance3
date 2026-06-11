@@ -1,0 +1,356 @@
+/* ===========================================================================
+   Org Academic / SMIF (Phase 3) — page-scoped styles, theme tokens only.
+   Text: Plus Jakarta Sans. Numbers: JetBrains Mono + tabular-nums.
+   =========================================================================== */
+
+.ac3-root {
+  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  color: var(--text-primary);
+}
+.ac3-num {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-variant-numeric: tabular-nums;
+}
+
+.ac3-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+.ac3-eyebrow {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--emerald-text, #10b981);
+  margin: 0 0 0.35rem;
+}
+.ac3-title {
+  font-size: clamp(1.35rem, 2.6vw, 1.9rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0;
+  color: var(--text-primary);
+}
+.ac3-sub {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 0.25rem 0 0;
+}
+
+.ac3-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.5rem 0.9rem;
+  border-radius: 9px;
+  border: 1px solid var(--border-primary);
+  background: var(--surface-card, transparent);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
+  text-decoration: none;
+}
+.ac3-btn:hover {
+  border-color: var(--border-hover, rgba(16, 185, 129, 0.4));
+  transform: translateY(-1px);
+}
+.ac3-btn--primary {
+  background: var(--emerald, #10b981);
+  border-color: var(--emerald, #10b981);
+  color: #04130d;
+}
+.ac3-btn--danger {
+  border-color: rgba(239, 68, 68, 0.4);
+  color: var(--negative, #ef4444);
+}
+.ac3-btn--ghost {
+  background: transparent;
+  color: var(--text-muted);
+}
+.ac3-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.ac3-card {
+  border: 1px solid var(--border-primary);
+  border-radius: 14px;
+  background: var(--surface-card, transparent);
+  padding: 1rem 1.1rem;
+}
+.ac3-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+.ac3-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  margin-bottom: 0.5rem;
+}
+.ac3-pill {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.12rem 0.5rem;
+  border-radius: 9999px;
+}
+.ac3-pill--current {
+  background: var(--emerald-bg, rgba(16, 185, 129, 0.14));
+  border: 1px solid var(--emerald-border, rgba(16, 185, 129, 0.4));
+  color: var(--emerald-text, #10b981);
+}
+.ac3-pill--archived {
+  background: rgba(99, 102, 241, 0.14);
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  color: #818cf8;
+}
+.ac3-pill--assigned {
+  background: rgba(148, 163, 184, 0.16);
+  border: 1px solid var(--border-secondary);
+  color: var(--text-muted);
+}
+.ac3-pill--submitted {
+  background: rgba(245, 158, 11, 0.14);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: var(--warning, #f59e0b);
+}
+.ac3-pill--graded {
+  background: var(--emerald-bg, rgba(16, 185, 129, 0.14));
+  border: 1px solid var(--emerald-border, rgba(16, 185, 129, 0.4));
+  color: var(--emerald-text, #10b981);
+}
+
+.ac3-meta {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+.ac3-strong {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* ── Table (gradebook / leaderboard) ────────────────────────────────────── */
+.ac3-table-wrap {
+  overflow-x: auto;
+}
+.ac3-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+.ac3-table th {
+  text-align: left;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid var(--border-primary);
+}
+.ac3-table td {
+  padding: 0.55rem 0.6rem;
+  border-bottom: 1px solid var(--border-secondary);
+  color: var(--text-body, var(--text-secondary));
+}
+.ac3-table tr.is-mine td {
+  background: var(--emerald-bg-subtle, rgba(16, 185, 129, 0.06));
+}
+.ac3-rank {
+  font-family: var(--font-mono, monospace);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.ac3-grade-input {
+  width: 64px;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.8rem;
+  padding: 0.3rem 0.4rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-input, var(--border-primary));
+  background: var(--surface-input, var(--bg-secondary));
+  color: var(--text-primary);
+  text-align: right;
+}
+
+/* ── Compliance status dots ─────────────────────────────────────────────── */
+.ac3-status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.ac3-ok {
+  background: var(--positive, #10b981);
+}
+.ac3-warn {
+  background: var(--warning, #f59e0b);
+}
+.ac3-bad {
+  background: var(--negative, #ef4444);
+}
+.ac3-pos {
+  color: var(--positive, #10b981);
+}
+.ac3-neg {
+  color: var(--negative, #ef4444);
+}
+
+/* ── IPS check banner ───────────────────────────────────────────────────── */
+.ac3-ips-banner {
+  border-radius: 10px;
+  padding: 0.7rem 0.85rem;
+  margin: 0.75rem 0;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+.ac3-ips-banner--block {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: var(--negative, #ef4444);
+}
+.ac3-ips-banner--warn {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: var(--warning, #d97706);
+}
+.ac3-ips-banner--ok {
+  background: var(--emerald-bg, rgba(16, 185, 129, 0.1));
+  border: 1px solid var(--emerald-border, rgba(16, 185, 129, 0.35));
+  color: var(--emerald-text, #10b981);
+}
+.ac3-ips-banner ul {
+  margin: 0.35rem 0 0;
+  padding-left: 1.1rem;
+}
+
+/* ── Modal ──────────────────────────────────────────────────────────────── */
+.ac3-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: var(--bg-overlay, rgba(0, 0, 0, 0.6));
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 5vh 1rem;
+  overflow-y: auto;
+}
+.ac3-modal {
+  width: 100%;
+  max-width: 520px;
+  background: var(--bg-secondary, #0d1218);
+  border: 1px solid var(--border-primary);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-xl, 0 20px 60px rgba(0, 0, 0, 0.45));
+}
+.ac3-modal-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  margin: 0 0 1rem;
+  color: var(--text-primary);
+}
+.ac3-field {
+  margin-bottom: 0.85rem;
+}
+.ac3-label {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.3rem;
+}
+.ac3-input,
+.ac3-textarea,
+.ac3-select {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: inherit;
+  font-size: 0.85rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 10px;
+  border: 1px solid var(--border-input, var(--border-primary));
+  background: var(--surface-input, var(--bg-primary));
+  color: var(--text-primary);
+}
+.ac3-textarea {
+  resize: vertical;
+  min-height: 90px;
+}
+.ac3-2col {
+  display: flex;
+  gap: 0.75rem;
+}
+.ac3-2col > * {
+  flex: 1 1 0;
+  min-width: 0;
+}
+.ac3-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-top: 1.1rem;
+}
+
+.ac3-tabs {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid var(--border-primary);
+  margin-bottom: 1.25rem;
+}
+.ac3-tab {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.45rem 1rem;
+  border-radius: 7px;
+  cursor: pointer;
+}
+.ac3-tab.is-active {
+  background: var(--emerald, #10b981);
+  color: #04130d;
+}
+
+.ac3-state {
+  padding: 2.5rem 1rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+.ac3-error {
+  color: var(--negative, #ef4444);
+}
+.ac3-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}

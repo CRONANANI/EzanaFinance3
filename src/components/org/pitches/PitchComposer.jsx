@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useOrg } from '@/contexts/OrgContext';
 import { getMemberByEmail, MOCK_TEAMS } from '@/lib/orgMockData';
+import { IPSCheckBanner } from '@/components/org/academic2/IPSCheckBanner';
 
 const STEPS = ['Identity', 'Thesis', 'Attachments', 'Review'];
 
@@ -28,6 +29,7 @@ export function PitchComposer({ open, onClose, onCreated }) {
   const [priorsAck, setPriorsAck] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [ipsResult, setIpsResult] = useState(null);
 
   useEffect(() => {
     if (!open) {
@@ -86,6 +88,30 @@ export function PitchComposer({ open, onClose, onCreated }) {
     setSubmitting(true);
     setError('');
     try {
+      // IPS guardrail — block hard violations, warn (but allow) soft ones.
+      try {
+        const ipsRes = await fetch('/api/org/ips/check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ticker,
+            side: pitchType === 'short' ? 'sell' : 'buy',
+            sizePct: parseFloat(expectedReturn) ? null : null,
+            source_type: 'pitch',
+            log: true,
+          }),
+        });
+        const ips = await ipsRes.json().catch(() => null);
+        setIpsResult(ips);
+        if (ips?.blocked) {
+          setError('This pitch breaches a hard IPS policy limit and cannot be submitted.');
+          setSubmitting(false);
+          return;
+        }
+      } catch {
+        /* never let the guardrail check itself block a legitimate submission */
+      }
+
       const res = await fetch('/api/org/pitches', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -353,6 +379,7 @@ export function PitchComposer({ open, onClose, onCreated }) {
             </button>
           )}
         </div>
+        <IPSCheckBanner result={ipsResult} />
       </div>
     </div>
   );
