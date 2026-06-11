@@ -49,8 +49,8 @@ const PLANS = [
     isFree: true,
     stripeKey: null,
     features: [
-      'Market news (delayed)',
-      '1 watchlist (3 slots)',
+      'Real-time market data',
+      '5 watchlists',
       'Community (read-only)',
       'Learning center basics',
       'Mock portfolio ($10K)',
@@ -69,8 +69,8 @@ const PLANS = [
     features: [
       'Congressional trade alerts (24hr delay)',
       'Basic portfolio dashboard',
-      'Market news feed',
-      '5 watchlist slots',
+      'Real-time market data',
+      'Unlimited watchlists',
       'Weekly market digest',
       'Community access (read only)',
       'Mobile app access',
@@ -149,16 +149,16 @@ const COMPARISON_FEATURES = [
       },
       {
         name: 'Real-time market data',
-        free: 'Delayed',
-        starter: 'Delayed',
+        free: true,
+        starter: true,
         advanced: true,
         family: true,
         enterprise: true,
       },
       {
         name: 'Watchlists',
-        free: '3 slots',
-        starter: '5 slots',
+        free: '5',
+        starter: 'Unlimited',
         advanced: 'Unlimited',
         family: 'Unlimited',
         enterprise: 'Unlimited',
@@ -594,7 +594,8 @@ export default function PricingPage() {
                     <span className="plan-price-amount">Free</span>
                   ) : (
                     <>
-                      <span className="plan-price-amount">${price}</span>
+                      <span className="plan-price-currency">$</span>
+                      <span className="plan-price-amount">{price}</span>
                       <span className="plan-price-interval">
                         /{billing === 'yearly' ? 'mo billed annually' : 'month'}
                       </span>
@@ -643,6 +644,46 @@ export default function PricingPage() {
               </div>
             );
           })}
+        </div>
+
+        {/* ── Partner plan — free to join, commission-based ─────────────── */}
+        <div className="pricing-partner-pill">
+          <div className="pricing-partner-info">
+            <span className="pricing-partner-eyebrow">Partner Program</span>
+            <h3 className="pricing-partner-name">Partner</h3>
+            <p className="pricing-partner-tagline">
+              For creators, traders, and financial professionals. Free to join — Ezana takes a
+              commission only when you earn, so your plan scales with what you make.
+            </p>
+            <div className="pricing-partner-price">
+              <span className="plan-price-amount">Free</span>
+              <span className="plan-price-interval">to join · commission-based</span>
+            </div>
+            <Link href="/auth/partner/apply" className="pricing-partner-cta">
+              Become a Partner <ArrowRight size={16} aria-hidden />
+            </Link>
+          </div>
+          <div className="pricing-partner-rates">
+            <div className="pricing-partner-rate">
+              <span className="pricing-partner-rate-value">70%</span>
+              <span className="pricing-partner-rate-label">course revenue share</span>
+            </div>
+            <div className="pricing-partner-rate">
+              <span className="pricing-partner-rate-value">$25</span>
+              <span className="pricing-partner-rate-label">per activated referral</span>
+            </div>
+            <div className="pricing-partner-rate">
+              <span className="pricing-partner-rate-value">
+                10%
+                <span className="pricing-partner-soon">Soon</span>
+              </span>
+              <span className="pricing-partner-rate-label">copy-trading profit share</span>
+            </div>
+            <div className="pricing-partner-rate">
+              <span className="pricing-partner-rate-value">Echo</span>
+              <span className="pricing-partner-rate-label">publish &amp; grow subscribers</span>
+            </div>
+          </div>
         </div>
 
         <div className="pricing-secure-row">

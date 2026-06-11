@@ -16,10 +16,12 @@ export default function PartnerApplyPage() {
         </div>
 
         <div className="partner-apply-grid">
-          <div className="partner-apply-card">
+          <div className="partner-apply-card partner-apply-card--soon">
+            <span className="partner-apply-soon-badge">Coming soon</span>
             <i className="bi bi-graph-up-arrow" />
             <h3>Copy Trading Revenue</h3>
             <p>Publish your trading strategies. Earn 10% of your copiers&apos; profits every month. More profitable trades = more copiers = more revenue.</p>
+            <p className="partner-apply-soon-note">Copy-trading commissions go live when brokerage trading launches on Ezana.</p>
           </div>
           <div className="partner-apply-card">
             <i className="bi bi-mortarboard" />
