@@ -52,8 +52,17 @@ export function AuthProvider({ children }) {
   }, []);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      /* ignore */
+    }
     setUser(null);
+    // Hard-navigate to the same login page the landing-page Login button opens,
+    // so every signOut path lands consistently signed-out.
+    if (typeof window !== 'undefined') {
+      window.location.href = '/auth/login';
+    }
   };
 
   const value = {

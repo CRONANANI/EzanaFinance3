@@ -69,8 +69,8 @@ export function Navbar() {
     }
     // Hard navigation (not router.push) so the whole app reloads with a clean,
     // signed-out state — clears in-memory auth/context and re-runs middleware —
-    // and lands the user on the login page.
-    window.location.href = '/auth/signin';
+    // and lands the user on the same login page the landing-page Login button opens.
+    window.location.href = '/auth/login';
   };
 
   const userNavItems = [

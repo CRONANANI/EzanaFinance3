@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { EzanaNavLogo } from '@/components/brand/EzanaNavLogo';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { supabase } from '@/lib/supabase-browser';
 import { AnimatedNav } from '@/components/ui/AnimatedNav';
 import '@/components/ui/animated-nav.css';
@@ -12,12 +12,17 @@ import { MobileAuthNavDrawer } from '@/components/Layout/MobileAuthNavDrawer';
 
 export function PartnerNavbar() {
   const pathname = usePathname();
-  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push('/');
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      /* A failed sign-out shouldn't trap the user in the app. */
+    }
+    // Hard navigation so the app reloads into a clean signed-out state and lands
+    // on the same login page the landing-page Login button opens.
+    window.location.href = '/auth/login';
   };
 
   const partnerNavItems = [
