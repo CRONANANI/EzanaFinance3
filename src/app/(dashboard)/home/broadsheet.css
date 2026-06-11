@@ -734,6 +734,55 @@ body:not(.light-mode) .bs-shell {
 }
 
 /* ── Schedule (IV — cream band) ── */
+/* Category filter chips */
+.bs-sched-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.bs-sched-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--bs-text-label);
+  background: var(--bs-cream-card-bg);
+  border: 1px solid var(--bs-cream-border);
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    color 0.12s,
+    border-color 0.12s,
+    background 0.12s;
+}
+.bs-sched-chip:hover {
+  color: var(--bs-text-dark);
+  border-color: var(--bs-cream-event-hover);
+}
+.bs-sched-chip.is-active {
+  color: var(--bs-cream-today-text);
+  background: var(--bs-cream-today-bg);
+  border-color: var(--bs-cream-today-bg);
+}
+.bs-sched-chip-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+.bs-sched-empty {
+  padding: 20px 16px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--bs-text-label);
+  background: var(--bs-cream-card-bg);
+  border: 1px dashed var(--bs-cream-border);
+}
+
 .bs-sched-row {
   display: grid;
   grid-template-columns: 1fr 280px;
@@ -842,6 +891,16 @@ body:not(.light-mode) .bs-shell {
 }
 .bs-cal-cell--empty {
   color: transparent;
+}
+/* Row of category-coloured dots pinned to the bottom of a calendar day. */
+.bs-cal-dots {
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 2px;
+  line-height: 0;
 }
 .bs-cal-dot {
   position: absolute;

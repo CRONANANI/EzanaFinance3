@@ -23,6 +23,8 @@ import { usePortfolioValueSeries } from '@/hooks/usePortfolioValueSeries';
 import { useMockPortfolio } from '@/hooks/useMockPortfolio';
 import { useWatchlists } from '@/hooks/useWatchlists';
 import { useLoginHistory } from '@/hooks/useLoginHistory';
+import { useUpcomingEvents, formatEventDay } from '@/hooks/useUpcomingEvents';
+import { useUserRelevanceSet } from '@/hooks/useUserRelevanceSet';
 import './broadsheet.css';
 
 const HOLDINGS_PAGE_SIZE = 9;
@@ -101,42 +103,47 @@ const TICKER_ITEMS = [
   { tag: 'FED WATCH', text: 'Speakers on deck — front-end yields tick higher into auction' },
 ];
 
-const EVENTS = {
-  TOMORROW: [
-    {
-      date: 'May 27',
-      title: 'API Crude Oil Stock Change (May/22)',
-      region: 'US',
-      kind: 'economic',
-    },
-    { date: 'May 27', title: 'Fed Cook Speech', region: 'US', kind: 'fed' },
-    { date: 'May 27', title: 'MBA 30-Year Mortgage Rate (May/22)', region: 'US', kind: 'economic' },
-    { date: 'May 27', title: 'Fed Logan Speech', region: 'US', kind: 'fed' },
-  ],
-  'THU MAY 28': [
-    {
-      date: 'May 28',
-      title: 'EIA Gasoline Stocks Change (May/22)',
-      region: 'US',
-      kind: 'economic',
-    },
-    {
-      date: 'May 28',
-      title: 'EIA Crude Oil Stocks Change (May/22)',
-      region: 'US',
-      kind: 'economic',
-    },
-    { date: 'May 28', title: 'New Home Sales (Apr)', region: 'US', kind: 'economic' },
-    { date: 'May 28', title: 'Fed Williams Speech', region: 'US', kind: 'fed' },
-    {
-      date: 'May 28',
-      title: 'PCE Price Index YoY (Apr)',
-      region: 'US',
-      kind: 'economic',
-      flag: 'HIGH',
-    },
-  ],
+/* Schedule (Band IV) category metadata — colours/labels mirror the
+   /api/market-data/upcoming-events feed so dots, chips and event accents
+   stay consistent. */
+const EVENT_CATEGORY_META = {
+  earnings: { label: 'Earnings', color: '#10b981' },
+  dividends: { label: 'Dividends', color: '#22c55e' },
+  ipos: { label: 'IPOs', color: '#a855f7' },
+  economic: { label: 'Economic', color: '#6366f1' },
+  fed: { label: 'Economic', color: '#3b82f6' },
+  'inside-the-capitol': { label: 'Capitol', color: '#f97316' },
+  crypto: { label: 'Crypto', color: '#fbbf24' },
+  commodity: { label: 'Commodities', color: '#84cc16' },
 };
+
+const EVENT_CATEGORY_FALLBACK_COLOR = '#94a3b8';
+
+function eventCategoryColor(category) {
+  return EVENT_CATEGORY_META[category]?.color ?? EVENT_CATEGORY_FALLBACK_COLOR;
+}
+
+/* Filter chips. Chips for categories with no events in the current window
+   are hidden at render time so the row never implies a feed that isn't there. */
+const SCHEDULE_FILTERS = [
+  { key: 'all', label: 'All' },
+  { key: 'earnings', label: 'Earnings' },
+  { key: 'dividends', label: 'Dividends' },
+  { key: 'ipos', label: 'IPOs' },
+  { key: 'economic', label: 'Economic' },
+  { key: 'inside-the-capitol', label: 'Capitol' },
+  { key: 'crypto', label: 'Crypto' },
+  { key: 'commodity', label: 'Commodities' },
+];
+
+/* Default calendar legend shown before any events load / when none are in window. */
+const DEFAULT_CAL_LEGEND = [
+  { key: 'earnings', label: 'Earnings', color: '#10b981' },
+  { key: 'dividends', label: 'Dividends', color: '#22c55e' },
+  { key: 'ipos', label: 'IPOs', color: '#a855f7' },
+  { key: 'economic', label: 'Economic', color: '#6366f1' },
+  { key: 'inside-the-capitol', label: 'Capitol', color: '#f97316' },
+];
 
 const RANGE_BUTTONS = ['1D', '1W', '1M', '3M', '6M', '1Y', '3Y', '5Y', '10Y', 'ALL'];
 
@@ -145,13 +152,6 @@ function portfolioSeriesRange(tf) {
   return tf;
 }
 
-const CAL_LEGEND = [
-  { label: 'Earnings', color: '#0e7c4f' },
-  { label: 'Dividends', color: '#0ea5e9' },
-  { label: 'IPOs', color: '#a855f7' },
-  { label: 'Economic', color: '#d97706' },
-  { label: 'Capitol', color: '#94a3b8' },
-];
 
 /* ═══ HELPERS ═══ */
 const fmtMoney = (n) =>
@@ -298,39 +298,48 @@ function BandHeader({ number, label, meta, dark = false, centered = false }) {
   );
 }
 
-/* Mini calendar component */
-function MiniCalendar() {
-  const weeks = [
-    [null, null, null, null, 1, 2, 3],
-    [4, 5, 6, 7, 8, 9, 10],
-    [11, 12, 13, 14, 15, 16, 17],
-    [18, 19, 20, 21, 22, 23, 24],
-    [25, 26, 27, 28, 29, 30, 31],
-  ];
-  const today = new Date().getDate();
-  const eventDays = new Set([27, 28, 29, 30]);
+/* Mini calendar — renders the current month with a coloured dot per event
+   category on each day that has events (respecting the active filter). */
+function MiniCalendar({ cells, dayToCategories, today, monthTitle, legend }) {
   return (
     <div className="bs-cal-box">
-      <div className="bs-cal-head">May 2026</div>
+      <div className="bs-cal-head">{monthTitle}</div>
       <div className="bs-cal-grid">
         {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map((d) => (
           <div key={d} className="bs-cal-dow">
             {d}
           </div>
         ))}
-        {weeks.flat().map((d, i) => (
-          <div
-            key={i}
-            className={`bs-cal-cell ${d === today ? 'bs-cal-cell--today' : ''} ${d === null ? 'bs-cal-cell--empty' : ''}`}
-          >
-            {d}
-            {eventDays.has(d) && <span className="bs-cal-dot" />}
-          </div>
-        ))}
+        {cells.map((d, i) => {
+          const cats = d != null ? dayToCategories[d] || [] : [];
+          return (
+            <div
+              key={i}
+              className={`bs-cal-cell ${d === today ? 'bs-cal-cell--today' : ''} ${d === null ? 'bs-cal-cell--empty' : ''}`}
+            >
+              {d}
+              {cats.length > 0 && (
+                <span className="bs-cal-dots">
+                  {cats.slice(0, 3).map((cat) => (
+                    <span
+                      key={cat}
+                      className="bs-cal-dot"
+                      style={{
+                        position: 'static',
+                        transform: 'none',
+                        background: eventCategoryColor(cat),
+                      }}
+                    />
+                  ))}
+                </span>
+              )}
+            </div>
+          );
+        })}
       </div>
       <div className="bs-cal-legend">
-        {CAL_LEGEND.map((c) => (
-          <div key={c.label} className="bs-cal-leg-item">
+        {legend.map((c) => (
+          <div key={c.key} className="bs-cal-leg-item">
             <span className="bs-cal-leg-dot" style={{ background: c.color }} />
             {c.label}
           </div>
@@ -352,6 +361,107 @@ export default function HomePage() {
   } = usePlaidPortfolioSummary();
   const [timeframe, setTimeframe] = useState('1W');
   const seriesRange = portfolioSeriesRange(timeframe);
+
+  // ─── Schedule (Band IV): live, now-anchored events ───────────────
+  // Personalised feed (today → end of month) from the shared upcoming-events
+  // route; replaces the old hardcoded May events + static calendar.
+  const scheduleRelevance = useUserRelevanceSet();
+  const { events: liveScheduleEvents, isLoading: scheduleLoading } = useUpcomingEvents({
+    relevance: scheduleRelevance,
+  });
+  const [eventFilter, setEventFilter] = useState('all');
+
+  const scheduleData = useMemo(() => {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = now.getMonth();
+    const daysInMonth = new Date(y, m + 1, 0).getDate();
+    // Monday-first grid (matches the Mo…Su day-of-week header).
+    const startOffset = (new Date(y, m, 1).getDay() + 6) % 7;
+    const cells = [];
+    for (let i = 0; i < startOffset; i++) cells.push(null);
+    for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+
+    const todayDay = now.getDate();
+    const todayMidnight = new Date(y, m, todayDay, 0, 0, 0);
+    // "Upcoming week" window for the event list — today through +7 days.
+    const weekEnd = new Date(y, m, todayDay + 7, 23, 59, 59);
+
+    const parseDay = (ev) => {
+      if (!ev?.fullDate) return null;
+      const [ey, em, ed] = String(ev.fullDate).slice(0, 10).split('-').map(Number);
+      if (!ey || !em || !ed) return null;
+      return new Date(ey, em - 1, ed);
+    };
+
+    // Defensive client-side window check — never paint a stale past date.
+    const inWindow = (liveScheduleEvents || []).filter((ev) => {
+      const d = parseDay(ev);
+      return d && d >= todayMidnight;
+    });
+
+    const matchesFilter = (ev) => eventFilter === 'all' || ev.category === eventFilter;
+
+    // Calendar dots: every day this month that has a (filter-matching) event,
+    // tagged with each distinct category so the dots are colour-coded.
+    const dayToCategories = {};
+    inWindow.filter(matchesFilter).forEach((ev) => {
+      const d = parseDay(ev);
+      if (!d || d.getMonth() !== m || d.getFullYear() !== y) return;
+      const day = d.getDate();
+      (dayToCategories[day] ??= []);
+      const cat = ev.category || ev.type;
+      if (cat && !dayToCategories[day].includes(cat)) dayToCategories[day].push(cat);
+    });
+
+    // Event list: filter-matching events within the next 7 days, grouped by day.
+    const groupMap = new Map();
+    for (const ev of inWindow) {
+      if (!matchesFilter(ev)) continue;
+      const d = parseDay(ev);
+      if (!d || d > weekEnd) continue;
+      const key = String(ev.fullDate).slice(0, 10);
+      if (!groupMap.has(key)) groupMap.set(key, []);
+      groupMap.get(key).push(ev);
+    }
+    const dayGroups = Array.from(groupMap.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([day, items]) => ({ day, label: formatEventDay(day), items }));
+
+    const categoriesWithEvents = new Set(inWindow.map((ev) => ev.category));
+    const legend = DEFAULT_CAL_LEGEND.filter((c) => categoriesWithEvents.has(c.key));
+
+    return {
+      cells,
+      today: todayDay,
+      monthTitle: new Date(y, m, 1).toLocaleDateString('en-US', {
+        month: 'long',
+        year: 'numeric',
+      }),
+      dayToCategories,
+      dayGroups,
+      categoriesWithEvents,
+      legend: legend.length ? legend : DEFAULT_CAL_LEGEND,
+      totalWeek: dayGroups.reduce((n, g) => n + g.items.length, 0),
+      totalWindow: inWindow.length,
+    };
+  }, [liveScheduleEvents, eventFilter]);
+
+  const availableScheduleFilters = useMemo(
+    () =>
+      SCHEDULE_FILTERS.filter(
+        (f) => f.key === 'all' || scheduleData.categoriesWithEvents.has(f.key),
+      ),
+    [scheduleData.categoriesWithEvents],
+  );
+
+  // If the active filter's category drops out of the window, snap back to All.
+  useEffect(() => {
+    if (eventFilter === 'all') return;
+    if (!availableScheduleFilters.some((f) => f.key === eventFilter)) {
+      setEventFilter('all');
+    }
+  }, [availableScheduleFilters, eventFilter]);
   const {
     points: valueSeriesDisplayPoints,
     dataForCurrentRange,
@@ -1777,31 +1887,86 @@ export default function HomePage() {
       <section className="bs-band bs-band--cream">
         <div className="bs-page-inner">
           <BandHeader number="IV" label="The schedule" meta="Events, releases &amp; filings" />
+          <div
+            className="bs-sched-filters"
+            role="tablist"
+            aria-label="Filter schedule by event category"
+          >
+            {availableScheduleFilters.map((f) => (
+              <button
+                key={f.key}
+                type="button"
+                role="tab"
+                aria-selected={eventFilter === f.key}
+                className={`bs-sched-chip${eventFilter === f.key ? ' is-active' : ''}`}
+                onClick={() => setEventFilter(f.key)}
+              >
+                {f.key !== 'all' && (
+                  <span
+                    className="bs-sched-chip-dot"
+                    style={{ background: eventCategoryColor(f.key) }}
+                  />
+                )}
+                {f.label}
+              </button>
+            ))}
+          </div>
           <div className="bs-sched-row">
             <div className="bs-sched-events">
-              {Object.entries(EVENTS).map(([day, list]) => (
-                <div key={day} className="bs-event-day-block">
-                  <div className="bs-event-day-head">
-                    <span className="bs-event-day-label">{day}</span>
-                    <span className="bs-event-day-count">{list.length} events</span>
-                  </div>
-                  <div className="bs-event-grid">
-                    {list.map((ev, i) => (
-                      <div key={i} className="bs-event-item">
-                        <div className="bs-event-date">{ev.date}</div>
-                        <div className="bs-event-title">{ev.title}</div>
-                        <div className="bs-event-meta-row">
-                          <span>{ev.region}</span>
-                          {ev.flag && <span className="bs-event-flag">{ev.flag}</span>}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+              {scheduleLoading && scheduleData.totalWindow === 0 ? (
+                <div className="bs-sched-empty">Loading upcoming events…</div>
+              ) : scheduleData.dayGroups.length === 0 ? (
+                <div className="bs-sched-empty">
+                  {scheduleData.totalWindow === 0
+                    ? 'No upcoming events in the next week. Economic releases for your region and events for the companies, politicians and assets you follow will appear here.'
+                    : `No ${(
+                        SCHEDULE_FILTERS.find((f) => f.key === eventFilter)?.label || ''
+                      ).toLowerCase()} events in the next week.`}
                 </div>
-              ))}
+              ) : (
+                scheduleData.dayGroups.map((group) => (
+                  <div key={group.day} className="bs-event-day-block">
+                    <div className="bs-event-day-head">
+                      <span className="bs-event-day-label">{group.label}</span>
+                      <span className="bs-event-day-count">
+                        {group.items.length} {group.items.length === 1 ? 'event' : 'events'}
+                      </span>
+                    </div>
+                    <div className="bs-event-grid">
+                      {group.items.map((ev) => (
+                        <div
+                          key={ev.id}
+                          className="bs-event-item"
+                          style={{ borderLeft: `2px solid ${ev.color || eventCategoryColor(ev.category)}` }}
+                          title={ev.subtitle || ev.title}
+                        >
+                          <div
+                            className="bs-event-date"
+                            style={{ color: ev.color || eventCategoryColor(ev.category) }}
+                          >
+                            {EVENT_CATEGORY_META[ev.category]?.label || ev.category}
+                            {ev.time ? ` · ${ev.time}` : ''}
+                          </div>
+                          <div className="bs-event-title">{ev.title}</div>
+                          <div className="bs-event-meta-row">
+                            <span>{ev.subtitle || ev.symbol || ''}</span>
+                            {ev.impact === 'High' && <span className="bs-event-flag">HIGH</span>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
             <div className="bs-sched-aside">
-              <MiniCalendar />
+              <MiniCalendar
+                cells={scheduleData.cells}
+                dayToCategories={scheduleData.dayToCategories}
+                today={scheduleData.today}
+                monthTitle={scheduleData.monthTitle}
+                legend={scheduleData.legend}
+              />
             </div>
           </div>
         </div>
