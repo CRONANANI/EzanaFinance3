@@ -3,7 +3,6 @@
  */
 
 import { ApiCache } from '@/lib/api-cache';
-import { API_CONFIG } from '@/lib/api-config';
 
 // Read the key at REQUEST time (not from the frozen API_CONFIG snapshot) and
 // accept either env var name. API_CONFIG.fmp.key only reads NEXT_PUBLIC_FMP_API_KEY
@@ -15,8 +14,11 @@ function fmpKey() {
   return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
 }
 
+// FMP deprecated the /api/v3 endpoints on 2025-08-31; accounts that subscribed
+// after the cutoff get a 403 on every /v3 call. All paths below target /stable,
+// so the base is the bare host and each path starts with /stable.
 function fmpBase() {
-  return API_CONFIG.fmp?.base || 'https://financialmodelingprep.com/api';
+  return 'https://financialmodelingprep.com';
 }
 
 function buildUrl(path, params = {}) {
@@ -57,104 +59,109 @@ const TTL = {
 
 export const FmpAPI = {
   async getCompanyProfile(symbol) {
-    const data = await fetchJson(`/v3/profile/${symbol}`, {}, `fmp:profile:${symbol}`, TTL.PROFILE);
+    const data = await fetchJson('/stable/profile', { symbol }, `fmp:profile:${symbol}`, TTL.PROFILE);
     return Array.isArray(data) && data.length ? data[0] : data;
   },
   async getStockPeers(symbol) {
-    const data = await fetchJson(`/v4/stock_peers`, { symbol }, `fmp:peers:${symbol}`, TTL.PEERS);
-    return Array.isArray(data) && data.length ? data[0].peersList || [] : [];
+    const data = await fetchJson('/stable/stock-peers', { symbol }, `fmp:peers:${symbol}`, TTL.PEERS);
+    // Stable returns a flat array of peer companies; v4 wrapped them in
+    // [{ peersList: [...] }]. Handle both and return an array of symbols.
+    if (!Array.isArray(data) || data.length === 0) return [];
+    if (Array.isArray(data[0]?.peersList)) return data[0].peersList;
+    return data.map((p) => p.symbol).filter(Boolean);
   },
   async getQuote(symbol) {
-    const data = await fetchJson(`/v3/quote/${symbol}`, {}, `fmp:quote:${symbol}`, TTL.QUOTE);
+    const data = await fetchJson('/stable/quote', { symbol }, `fmp:quote:${symbol}`, TTL.QUOTE);
     return Array.isArray(data) && data.length ? data[0] : data;
   },
   async getBatchQuote(symbols) {
     const list = Array.isArray(symbols) ? symbols.join(',') : symbols;
-    const data = await fetchJson(`/v3/quote/${list}`, {}, `fmp:batchquote:${list}`, TTL.QUOTE);
+    const data = await fetchJson('/stable/batch-quote', { symbols: list }, `fmp:batchquote:${list}`, TTL.QUOTE);
     return Array.isArray(data) ? data : [];
   },
   async getIncomeStatement(symbol, period = 'annual', limit = 5) {
     return fetchJson(
-      `/v3/income-statement/${symbol}`,
-      { period, limit },
+      '/stable/income-statement',
+      { symbol, period, limit },
       `fmp:income:${symbol}:${period}:${limit}`,
       TTL.FINANCIALS,
     );
   },
   async getBalanceSheet(symbol, period = 'annual', limit = 5) {
     return fetchJson(
-      `/v3/balance-sheet-statement/${symbol}`,
-      { period, limit },
+      '/stable/balance-sheet-statement',
+      { symbol, period, limit },
       `fmp:balance:${symbol}:${period}:${limit}`,
       TTL.FINANCIALS,
     );
   },
   async getCashFlow(symbol, period = 'annual', limit = 5) {
     return fetchJson(
-      `/v3/cash-flow-statement/${symbol}`,
-      { period, limit },
+      '/stable/cash-flow-statement',
+      { symbol, period, limit },
       `fmp:cashflow:${symbol}:${period}:${limit}`,
       TTL.FINANCIALS,
     );
   },
   async getKeyMetrics(symbol, period = 'annual', limit = 5) {
     return fetchJson(
-      `/v3/key-metrics/${symbol}`,
-      { period, limit },
+      '/stable/key-metrics',
+      { symbol, period, limit },
       `fmp:metrics:${symbol}:${period}:${limit}`,
       TTL.METRICS,
     );
   },
   async getFinancialRatios(symbol, period = 'annual', limit = 5) {
     return fetchJson(
-      `/v3/ratios/${symbol}`,
-      { period, limit },
+      '/stable/ratios',
+      { symbol, period, limit },
       `fmp:ratios:${symbol}:${period}:${limit}`,
       TTL.METRICS,
     );
   },
   async getDCF(symbol) {
     const data = await fetchJson(
-      `/v3/discounted-cash-flow/${symbol}`,
-      {},
+      '/stable/discounted-cash-flow',
+      { symbol },
       `fmp:dcf:${symbol}`,
       TTL.DCF,
     );
     return Array.isArray(data) && data.length ? data[0] : data;
   },
   async getRating(symbol) {
-    const data = await fetchJson(`/v3/rating/${symbol}`, {}, `fmp:rating:${symbol}`, TTL.ANALYST);
+    const data = await fetchJson('/stable/ratings-snapshot', { symbol }, `fmp:rating:${symbol}`, TTL.ANALYST);
     return Array.isArray(data) && data.length ? data[0] : null;
   },
   async getGainers() {
-    return fetchJson('/v3/stock_market/gainers', {}, 'fmp:gainers', TTL.MOVERS);
+    return fetchJson('/stable/biggest-gainers', {}, 'fmp:gainers', TTL.MOVERS);
   },
   async getLosers() {
-    return fetchJson('/v3/stock_market/losers', {}, 'fmp:losers', TTL.MOVERS);
+    return fetchJson('/stable/biggest-losers', {}, 'fmp:losers', TTL.MOVERS);
   },
   async getMostActive() {
-    return fetchJson('/v3/stock_market/actives', {}, 'fmp:actives', TTL.MOVERS);
+    return fetchJson('/stable/most-actives', {}, 'fmp:actives', TTL.MOVERS);
   },
   async getStockNews(tickers, limit = 20) {
     const params = { limit };
-    if (tickers) params.tickers = Array.isArray(tickers) ? tickers.join(',') : tickers;
+    if (tickers) params.symbols = Array.isArray(tickers) ? tickers.join(',') : tickers;
     return fetchJson(
-      '/v3/stock_news',
+      '/stable/news/stock',
       params,
-      `fmp:stocknews:${params.tickers || 'all'}:${limit}`,
+      `fmp:stocknews:${params.symbols || 'all'}:${limit}`,
       TTL.NEWS,
     );
   },
   async searchSymbol(query, limit = 10) {
-    return fetchJson('/v3/search', { query, limit }, `fmp:search:${query}`, TTL.SEARCH);
+    return fetchJson('/stable/search-symbol', { query, limit }, `fmp:search:${query}`, TTL.SEARCH);
   },
   async getHistoricalPrice(symbol) {
     const data = await fetchJson(
-      `/v3/historical-price-full/${symbol}`,
-      { serietype: 'line' },
+      '/stable/historical-price-eod/full',
+      { symbol },
       `fmp:histprice:${symbol}`,
       TTL.FINANCIALS,
     );
-    return data?.historical || [];
+    // Stable returns a flat array; v3 wrapped it in { historical: [...] }.
+    return Array.isArray(data) ? data : data?.historical || [];
   },
 };

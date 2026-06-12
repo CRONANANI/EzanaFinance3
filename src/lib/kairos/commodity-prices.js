@@ -16,7 +16,7 @@ export const TRACKED_COMMODITIES = [
   { symbol: 'CC=F', name: 'Cocoa' },
 ];
 
-const FMP_BASE = 'https://financialmodelingprep.com/api/v3';
+const FMP_BASE = 'https://financialmodelingprep.com/stable';
 
 function getFmpKey() {
   return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
@@ -115,12 +115,13 @@ async function fetchFromFmp(symbol, fromDate, toDate) {
   const key = getFmpKey();
   if (!key) throw new Error('FMP_API_KEY not set');
 
-  const url = `${FMP_BASE}/historical-price-full/${encodeURIComponent(symbol)}?from=${fromDate}&to=${toDate}&apikey=${key}`;
+  const url = `${FMP_BASE}/historical-price-eod/full?symbol=${encodeURIComponent(symbol)}&from=${fromDate}&to=${toDate}&apikey=${key}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`FMP HTTP ${res.status} for ${symbol}`);
 
   const json = await res.json();
-  const historical = json?.historical || [];
+  // Stable returns a flat array; v3 wrapped it in { historical: [...] }.
+  const historical = Array.isArray(json) ? json : json?.historical || [];
   return historical.map((row) => ({
     date: row.date,
     open: row.open,

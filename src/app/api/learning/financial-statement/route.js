@@ -3,7 +3,7 @@ import { withApiGuard } from '@/lib/api-guard';
 
 export const dynamic = 'force-dynamic';
 
-const FMP_BASE = 'https://financialmodelingprep.com/api/v3';
+const FMP_BASE = 'https://financialmodelingprep.com/stable';
 const VALID_STATEMENTS = ['income', 'balance', 'cashflow'];
 
 const STATEMENT_PATHS = {
@@ -38,7 +38,7 @@ export const GET = withApiGuard(
       }
 
       const path = STATEMENT_PATHS[statement];
-      const fmpUrl = `${FMP_BASE}/${path}/${symbol}?period=${period}&limit=${limit}&apikey=${apiKey}`;
+      const fmpUrl = `${FMP_BASE}/${path}?symbol=${encodeURIComponent(symbol)}&period=${period}&limit=${limit}&apikey=${apiKey}`;
       const res = await fetch(fmpUrl, { cache: 'no-store' });
       if (!res.ok) {
         return NextResponse.json({ error: `FMP HTTP ${res.status}` }, { status: res.status });

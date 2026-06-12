@@ -3,7 +3,7 @@ import { withApiGuard } from '@/lib/api-guard';
 
 export const dynamic = 'force-dynamic';
 
-const FMP_BASE = 'https://financialmodelingprep.com/api/v3';
+const FMP_BASE = 'https://financialmodelingprep.com/stable';
 
 function getFmpKey() {
   return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
@@ -30,8 +30,8 @@ export const GET = withApiGuard(
       }
 
       const [quoteRes, profileRes] = await Promise.all([
-        fetch(`${FMP_BASE}/quote/${symbol}?apikey=${apiKey}`, { cache: 'no-store' }),
-        fetch(`${FMP_BASE}/profile/${symbol}?apikey=${apiKey}`, { cache: 'no-store' }),
+        fetch(`${FMP_BASE}/quote?symbol=${encodeURIComponent(symbol)}&apikey=${apiKey}`, { cache: 'no-store' }),
+        fetch(`${FMP_BASE}/profile?symbol=${encodeURIComponent(symbol)}&apikey=${apiKey}`, { cache: 'no-store' }),
       ]);
 
       const [quoteArr, profileArr] = await Promise.all([

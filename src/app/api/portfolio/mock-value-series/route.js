@@ -202,7 +202,7 @@ async function fetchCurrentPrices(tickers) {
 
   try {
     const symbols = tickers.join(',');
-    const url = `https://financialmodelingprep.com/api/v3/quote/${symbols}?apikey=${apiKey}`;
+    const url = `https://financialmodelingprep.com/stable/batch-quote?symbols=${encodeURIComponent(symbols)}&apikey=${apiKey}`;
     const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) {
       console.warn('[mock-value-series] FMP quote failed', { status: res.status });
