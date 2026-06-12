@@ -77,13 +77,19 @@ export function Navbar() {
   };
 
   const userNavItems = [
-    {
-      id: 1,
-      title: 'Dashboard',
-      url: '/home-dashboard',
-      icon: 'bi-speedometer2',
-      isActive: pathname?.includes('home-dashboard'),
-    },
+    // Org (university) users use Team Hub as their dashboard, so they don't get
+    // the regular Dashboard item.
+    ...(isOrgUser
+      ? []
+      : [
+          {
+            id: 1,
+            title: 'Dashboard',
+            url: '/home-dashboard',
+            icon: 'bi-speedometer2',
+            isActive: pathname?.includes('home-dashboard'),
+          },
+        ]),
     {
       id: 2,
       title: 'Research',
@@ -192,17 +198,7 @@ export function Navbar() {
           url: '/trading/mock',
           icon: 'bi-controller',
         },
-        ...(isOrgUser
-          ? [
-              {
-                id: 33,
-                title: 'Council Trading',
-                description: 'Org mock portfolios & flags',
-                url: '/org-trading',
-                icon: 'bi-bank2',
-              },
-            ]
-          : []),
+        // Council Trading moved to the Team Hub dropdown for org users.
       ],
     },
     {
@@ -219,33 +215,39 @@ export function Navbar() {
             title: 'Team Hub',
             url: '/org-team-hub',
             icon: 'bi-building',
-            isActive: pathname?.includes('/org-team-hub'),
+            dropdown: true,
+            isActive: pathname?.includes('/org-team-hub') || pathname?.includes('/org-trading'),
             variant: 'purple',
-          },
-          {
-            id: 52,
-            title: 'Council Trading',
-            url: '/org-trading',
-            icon: 'bi-bank2',
-            isActive: pathname?.includes('/org-trading'),
-            variant: 'purple',
-          },
-          {
-            id: 53,
-            title: 'Pitch Pipeline',
-            url: '/org-team-hub/pitches',
-            icon: 'bi-kanban',
-            isActive:
-              pathname?.includes('/org-team-hub/pitches') && !pathname?.includes('/pitch-archive'),
-            variant: 'purple',
-          },
-          {
-            id: 54,
-            title: 'Pitch Archive',
-            url: '/org-team-hub/pitch-archive',
-            icon: 'bi-archive',
-            isActive: pathname?.includes('/pitch-archive'),
-            variant: 'purple',
+            items: [
+              {
+                id: 51,
+                title: 'Team Hub Home',
+                description: 'Fund overview, activity & analytics',
+                url: '/org-team-hub',
+                icon: 'bi-building',
+              },
+              {
+                id: 52,
+                title: 'Council Trading',
+                description: 'Org mock portfolios & position flags',
+                url: '/org-trading',
+                icon: 'bi-bank2',
+              },
+              {
+                id: 53,
+                title: 'Pitch Pipeline',
+                description: 'Active pitches through committee',
+                url: '/org-team-hub/pitches',
+                icon: 'bi-kanban',
+              },
+              {
+                id: 54,
+                title: 'Pitch Archive',
+                description: 'Decided pitches & hindsight',
+                url: '/org-team-hub/pitch-archive',
+                icon: 'bi-archive',
+              },
+            ],
           },
         ]
       : [

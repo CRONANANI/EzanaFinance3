@@ -32,6 +32,8 @@ import {
   HelpCircle,
   Building2,
   Network,
+  Kanban,
+  Archive,
   Terminal,
   Crown,
   CreditCard,
@@ -56,7 +58,17 @@ function buildNavGroups(isOrgUser) {
     label: 'Overview',
     items: [
       { label: 'Home', href: '/home', icon: Home, description: 'Main hub' },
-      { label: 'Dashboard', href: '/home-dashboard', icon: LayoutDashboard, description: 'Metrics & summary' },
+      // Org users use Team Hub as their dashboard — no separate Dashboard item.
+      ...(isOrgUser
+        ? []
+        : [
+            {
+              label: 'Dashboard',
+              href: '/home-dashboard',
+              icon: LayoutDashboard,
+              description: 'Metrics & summary',
+            },
+          ]),
       { label: 'Watchlist', href: '/watchlist', icon: Bookmark, description: 'Symbols & alerts' },
     ],
   };
@@ -67,16 +79,7 @@ function buildNavGroups(isOrgUser) {
       { label: 'Brokerage & trading', href: '/trading', icon: LineChart, description: 'Live account' },
       { label: 'Trading dashboard', href: '/trading/dashboard', icon: BarChart3, description: 'Orders & activity' },
       { label: 'Mock portfolio', href: '/trading/mock', icon: Gamepad2, description: 'Paper $100K' },
-      ...(isOrgUser
-        ? [
-            {
-              label: 'Council trading',
-              href: '/org-trading',
-              icon: Landmark,
-              description: 'Org portfolios & flags',
-            },
-          ]
-        : []),
+      // Council trading lives under the Team Hub group for org users.
       { label: 'Open account', href: '/trading/open-account', icon: Banknote, description: 'Start brokerage' },
     ],
   };
@@ -115,11 +118,13 @@ function buildNavGroups(isOrgUser) {
         ],
       }
     : {
-        label: 'Organization',
+        label: 'Team Hub',
         items: [
-          { label: 'Team hub', href: '/org-team-hub', icon: Building2, description: 'Council workspace' },
-          { label: 'Council trading', href: '/org-trading', icon: LineChart, description: 'Mock books & flags' },
-          { label: 'Hierarchy', href: '/org-team-hub/hierarchy', icon: Network, description: 'Structure' },
+          { label: 'Team hub home', href: '/org-team-hub', icon: Building2, description: 'Fund overview & analytics' },
+          { label: 'Council trading', href: '/org-trading', icon: Landmark, description: 'Mock books & flags' },
+          { label: 'Pitch pipeline', href: '/org-team-hub/pitches', icon: Kanban, description: 'Active committee pitches' },
+          { label: 'Pitch archive', href: '/org-team-hub/pitch-archive', icon: Archive, description: 'Decided pitches & hindsight' },
+          { label: 'Hierarchy', href: '/org-team-hub/hierarchy', icon: Network, description: 'Org structure' },
         ],
       };
 

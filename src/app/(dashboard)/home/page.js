@@ -353,7 +353,16 @@ function MiniCalendar({ cells, dayToCategories, today, monthTitle, legend }) {
 export default function HomePage() {
   const router = useRouter();
   const { user } = useAuth();
-  const { isOrgUser, orgData } = useOrg();
+  const { isOrgUser, orgData, isLoading: orgLoading } = useOrg();
+
+  // Org (university) users use Team Hub as their dashboard — send them there
+  // instead of the regular member home. Wait for org status to resolve so
+  // non-org users are never bounced.
+  useEffect(() => {
+    if (!orgLoading && isOrgUser) {
+      router.replace('/org-team-hub');
+    }
+  }, [orgLoading, isOrgUser, router]);
   const {
     connected: plaidConnected,
     summary: plaidSummary,

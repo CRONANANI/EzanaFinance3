@@ -26,7 +26,7 @@ export function AnimatedNav({
             >
               {item.dropdown ? (
                 <button
-                  className={`animated-nav-link ${item.isActive ? 'active' : ''} ${hovered === item.id ? 'hovered' : ''}`}
+                  className={`animated-nav-link ${item.isActive ? 'active' : ''} ${hovered === item.id ? 'hovered' : ''}${item.variant === 'purple' ? ' animated-nav-link--purple' : ''}`}
                   style={{ '--accent': accentColor }}
                 >
                   <i className={`bi ${item.icon}`} />

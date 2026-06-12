@@ -718,6 +718,31 @@ body.light-mode .nav-logo-img {
   }
 }
 
+/* Bell + checklist wrapper — keep both vertically centered with the logo */
+.nav-bell-checklist-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.nav-bell-checklist-wrap .nn-wrapper {
+  display: flex;
+  align-items: center;
+}
+.checklist-trigger-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  line-height: 1;
+  padding: 0.25rem 0.4rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+.checklist-trigger-btn svg {
+  display: block;
+  flex-shrink: 0;
+}
+
 /* Base theme defaults — light-mode class overrides surface color */
 @layer base {
   html {
