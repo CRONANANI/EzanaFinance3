@@ -77,10 +77,51 @@ export function Navbar() {
   };
 
   const userNavItems = [
-    // Org (university) users use Team Hub as their dashboard, so they don't get
-    // the regular Dashboard item.
+    // Org (university) users get the Team Hub dropdown as their leftmost item
+    // (it replaces Dashboard and sits to the left of Research). Regular users
+    // get the standard Dashboard item.
     ...(isOrgUser
-      ? []
+      ? [
+          {
+            id: 5,
+            title: 'Team Hub',
+            url: '/org-team-hub',
+            icon: 'bi-building',
+            dropdown: true,
+            isActive: pathname?.includes('/org-team-hub') || pathname?.includes('/org-trading'),
+            variant: 'purple',
+            items: [
+              {
+                id: 51,
+                title: 'Home',
+                description: 'Fund overview, activity & analytics',
+                url: '/org-team-hub',
+                icon: 'bi-building',
+              },
+              {
+                id: 52,
+                title: 'Council Trading',
+                description: 'Org mock portfolios & position flags',
+                url: '/org-trading',
+                icon: 'bi-bank2',
+              },
+              {
+                id: 53,
+                title: 'Pitch Pipeline',
+                description: 'Active pitches through committee',
+                url: '/org-team-hub/pitches',
+                icon: 'bi-kanban',
+              },
+              {
+                id: 54,
+                title: 'Pitch Archive',
+                description: 'Decided pitches & hindsight',
+                url: '/org-team-hub/pitch-archive',
+                icon: 'bi-archive',
+              },
+            ],
+          },
+        ]
       : [
           {
             id: 1,
@@ -208,48 +249,10 @@ export function Navbar() {
       icon: 'bi-bookmark',
       isActive: pathname?.includes('/watchlist'),
     },
+    // Team Hub (org users) now lives at the front of the nav, to the left of
+    // Research — so only the non-org Community item remains in this slot.
     ...(isOrgUser
-      ? [
-          {
-            id: 5,
-            title: 'Team Hub',
-            url: '/org-team-hub',
-            icon: 'bi-building',
-            dropdown: true,
-            isActive: pathname?.includes('/org-team-hub') || pathname?.includes('/org-trading'),
-            variant: 'purple',
-            items: [
-              {
-                id: 51,
-                title: 'Team Hub Home',
-                description: 'Fund overview, activity & analytics',
-                url: '/org-team-hub',
-                icon: 'bi-building',
-              },
-              {
-                id: 52,
-                title: 'Council Trading',
-                description: 'Org mock portfolios & position flags',
-                url: '/org-trading',
-                icon: 'bi-bank2',
-              },
-              {
-                id: 53,
-                title: 'Pitch Pipeline',
-                description: 'Active pitches through committee',
-                url: '/org-team-hub/pitches',
-                icon: 'bi-kanban',
-              },
-              {
-                id: 54,
-                title: 'Pitch Archive',
-                description: 'Decided pitches & hindsight',
-                url: '/org-team-hub/pitch-archive',
-                icon: 'bi-archive',
-              },
-            ],
-          },
-        ]
+      ? []
       : [
           {
             id: 5,
