@@ -61,16 +61,19 @@ export function Navbar() {
 
   const isTradingActive = pathname?.includes('/trading') || pathname?.includes('/org-trading');
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
+    // Best-effort client-side clear (fire-and-forget — never await, so a hung
+    // signOut network call can't block the redirect or trap the user).
     try {
-      await supabase.auth.signOut();
+      supabase.auth.signOut();
     } catch {
-      /* A failed sign-out (e.g. network) shouldn't trap the user in the app. */
+      /* ignore */
     }
-    // Hard navigation (not router.push) so the whole app reloads with a clean,
-    // signed-out state — clears in-memory auth/context and re-runs middleware —
-    // and lands the user on the same login page the landing-page Login button opens.
-    window.location.href = '/auth/login';
+    // Authoritative server sign-out: clears the session cookie on the response
+    // and redirects to the login chooser (/auth/login). Doing it server-side
+    // means a failed/hung client signOut can't leave the user half-logged-in.
+    // Covers regular users AND university orgs (both render this global Navbar).
+    window.location.href = '/api/auth/signout';
   };
 
   const userNavItems = [

@@ -51,17 +51,18 @@ export function AuthProvider({ children }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signOut = async () => {
+  const signOut = () => {
+    // Fire-and-forget client clear, then hand off to the authoritative server
+    // sign-out route (clears the session cookie + redirects to the login
+    // chooser). Never await the client signOut so it can't hang the redirect.
     try {
-      await supabase.auth.signOut();
+      supabase.auth.signOut();
     } catch {
       /* ignore */
     }
     setUser(null);
-    // Hard-navigate to the same login page the landing-page Login button opens,
-    // so every signOut path lands consistently signed-out.
     if (typeof window !== 'undefined') {
-      window.location.href = '/auth/login';
+      window.location.href = '/api/auth/signout';
     }
   };
 

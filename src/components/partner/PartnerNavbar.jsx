@@ -14,15 +14,16 @@ export function PartnerNavbar() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
+    // Best-effort client clear (fire-and-forget); never await so it can't hang.
     try {
-      await supabase.auth.signOut();
+      supabase.auth.signOut();
     } catch {
-      /* A failed sign-out shouldn't trap the user in the app. */
+      /* ignore */
     }
-    // Hard navigation so the app reloads into a clean signed-out state and lands
-    // on the same login page the landing-page Login button opens.
-    window.location.href = '/auth/login';
+    // Authoritative server sign-out → clears the session cookie and redirects to
+    // the login chooser, so partners land fully signed out.
+    window.location.href = '/api/auth/signout';
   };
 
   const partnerNavItems = [
