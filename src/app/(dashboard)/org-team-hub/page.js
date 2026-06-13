@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Users,
@@ -18,7 +18,6 @@ import {
   Archive,
   GraduationCap,
   Search,
-  MoreHorizontal,
   Pin,
   Flame,
   Clock,
@@ -45,8 +44,6 @@ const ACTIONS = [
   { id: 'reports', label: 'Reports', Icon: FileText, href: '/org-team-hub/reports' },
   { id: 'archive', label: 'Archive', Icon: Archive, href: '/org-team-hub/pitch-archive' },
 ];
-const DEFAULT_PINS = ['org', 'pitch', 'trading', 'analytics', 'assignments'];
-const PINS_STORAGE_PREFIX = 'ezana:teamhub:pins:';
 
 const ROLE_LABEL = {
   executive: 'Executive',
@@ -525,61 +522,16 @@ function Digest({ digest, loading }) {
   );
 }
 
-/* ── Shortcuts (pinned tiles + customizable popover) ──────────── */
-function Shortcuts({ userId }) {
+/* ── Shortcuts (all 14 destinations, compact grid) ────────────── */
+function Shortcuts() {
   const router = useRouter();
-  const [pinned, setPinned] = useState(DEFAULT_PINS);
-  const [open, setOpen] = useState(false);
-  const wrapRef = useRef(null);
-  const storageKey = PINS_STORAGE_PREFIX + (userId || 'anon');
-
-  // Hydrate pinned shortcuts from localStorage (per user).
-  useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(storageKey);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length) {
-          setPinned(parsed.filter((id) => ACTIONS.some((a) => a.id === id)).slice(0, 5));
-        }
-      }
-    } catch {
-      /* localStorage unavailable — keep defaults */
-    }
-  }, [storageKey]);
-
-  const persist = (next) => {
-    setPinned(next);
-    try {
-      window.localStorage.setItem(storageKey, JSON.stringify(next));
-    } catch {
-      /* ignore */
-    }
-  };
-
-  const toggle = (id) =>
-    persist(pinned.includes(id) ? pinned.filter((x) => x !== id) : [...pinned, id].slice(-5));
-
-  // Close the popover on outside click.
-  useEffect(() => {
-    if (!open) return undefined;
-    const onDoc = (e) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
-    };
-    document.addEventListener('mousedown', onDoc);
-    return () => document.removeEventListener('mousedown', onDoc);
-  }, [open]);
-
-  const pinnedActs = pinned.map((id) => ACTIONS.find((a) => a.id === id)).filter(Boolean);
-  const overflow = ACTIONS.filter((a) => !pinned.includes(a.id));
-
   return (
     <section className="thw-card thw-span4" aria-label="Shortcuts">
       <div className="thw-card-head">
         <span className="thw-card-title">
           <Pin size={15} strokeWidth={1.8} /> Shortcuts
         </span>
-        <span className="thw-section-meta">PINNED · {pinnedActs.length}</span>
+        <span className="thw-section-meta">ALL · {ACTIONS.length}</span>
       </div>
       <div className="thw-card-body" style={{ paddingTop: 12, paddingBottom: 14 }}>
         <div className="thw-cmd-search" aria-hidden="true">
@@ -587,7 +539,7 @@ function Shortcuts({ userId }) {
           <span className="thw-kbd">⌘K</span>
         </div>
         <div className="thw-tiles">
-          {pinnedActs.map((a) => {
+          {ACTIONS.map((a) => {
             const Icon = a.Icon;
             return (
               <button
@@ -596,51 +548,11 @@ function Shortcuts({ userId }) {
                 className="thw-tile"
                 onClick={() => router.push(a.href)}
               >
-                <Icon size={16} strokeWidth={1.8} />
+                <Icon size={14} strokeWidth={1.8} />
                 {a.label}
               </button>
             );
           })}
-          <div className="thw-pop-wrap" ref={wrapRef}>
-            <button
-              type="button"
-              className="thw-tile more"
-              onClick={() => setOpen((o) => !o)}
-              aria-expanded={open}
-              aria-haspopup="menu"
-              style={{ width: '100%' }}
-            >
-              <MoreHorizontal size={16} strokeWidth={1.8} />
-              More · {overflow.length}
-            </button>
-            {open && (
-              <div className="thw-pop" role="menu">
-                <div className="thw-pop-head">Pinned shortcuts — choose up to 5</div>
-                <div className="thw-pop-list">
-                  {ACTIONS.map((a) => {
-                    const Icon = a.Icon;
-                    const isPinned = pinned.includes(a.id);
-                    return (
-                      <button
-                        key={a.id}
-                        type="button"
-                        className={`thw-pop-item${isPinned ? ' is-pinned' : ''}`}
-                        onClick={() => toggle(a.id)}
-                        role="menuitemcheckbox"
-                        aria-checked={isPinned}
-                      >
-                        <Icon size={14} strokeWidth={1.8} />
-                        {a.label}
-                        <span className="thw-pop-pin">
-                          <Pin size={13} strokeWidth={1.8} />
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
         </div>
       </div>
     </section>
@@ -1028,7 +940,7 @@ export default function OrgTeamHubPage() {
 
       <div className="thw-bento">
         <Digest digest={digest} loading={loading} />
-        <Shortcuts userId={summary?.viewer?.userId || orgData?.member?.id} />
+        <Shortcuts />
         <TaskManagement
           tasksData={tasksData}
           loading={loading}

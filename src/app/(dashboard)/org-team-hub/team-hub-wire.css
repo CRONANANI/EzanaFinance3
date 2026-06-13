@@ -532,101 +532,39 @@ body.light-mode .thw-root {
   padding: 1px 6px;
   color: var(--text-faint);
 }
+/* All 14 destinations visible — compact inline tiles, 2 per row */
 .thw-tiles {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
   margin-top: 10px;
 }
 .thw-tile {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 9px;
-  padding: 11px 12px;
-  border-radius: 10px;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 9px;
+  border-radius: 8px;
   cursor: pointer;
   background: rgba(99, 102, 241, 0.1);
   border: 1px solid rgba(99, 102, 241, 0.22);
   color: var(--thw-indigo-text-hover);
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 600;
   text-align: left;
   font-family: var(--font-sans);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
   transition: background 0.12s ease-out;
+}
+.thw-tile svg {
+  flex-shrink: 0;
 }
 .thw-tile:hover {
   background: rgba(99, 102, 241, 0.18);
-}
-.thw-tile.more {
-  background: transparent;
-  border: 1px dashed var(--border-hover);
-  color: var(--text-muted);
-  font-weight: 500;
-}
-.thw-tile.more:hover {
-  background: rgba(99, 102, 241, 0.06);
-}
-.thw-pop-wrap {
-  position: relative;
-}
-.thw-pop {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  z-index: 60;
-  width: 300px;
-  max-width: calc(100vw - 48px);
-  padding: 8px;
-  background: var(--thw-deep);
-  border: 1px solid var(--border-hover);
-  border-radius: 12px;
-  box-shadow: var(--shadow-lg);
-}
-.thw-pop-head {
-  font-family: var(--font-mono);
-  font-size: 9.5px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--text-faint);
-  padding: 6px 8px 8px;
-}
-.thw-pop-list {
-  display: flex;
-  flex-direction: column;
-  max-height: 320px;
-  overflow-y: auto;
-}
-.thw-pop-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 7px 8px;
-  border-radius: 8px;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  font-size: 13px;
-  color: var(--text-secondary);
-  text-align: left;
-  font-family: var(--font-sans);
-}
-.thw-pop-item:hover {
-  background: rgba(99, 102, 241, 0.08);
-}
-.thw-pop-item .thw-pop-pin {
-  margin-left: auto;
-  color: var(--text-ghost);
-  display: flex;
-}
-.thw-pop-item:hover .thw-pop-pin {
-  color: var(--text-muted);
-}
-.thw-pop-item.is-pinned {
-  color: var(--text-primary);
-}
-.thw-pop-item.is-pinned .thw-pop-pin {
-  color: var(--thw-indigo-text);
 }
 
 /* Task management */

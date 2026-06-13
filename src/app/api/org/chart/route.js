@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { createServerSupabase } from '@/lib/supabase-server';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
+import { ORG_TIERS, tierOf, canEditMember, assignableTiers } from '@/lib/org-hierarchy';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -25,7 +26,7 @@ const GICS_SECTORS = [
 const MANAGER_ROLES = ['executive', 'portfolio_manager'];
 
 const MEMBER_FIELDS =
-  'id, user_id, display_name, title, role, sub_role, team_id, reports_to, term_start, term_end, is_graduating';
+  'id, user_id, display_name, title, role, sub_role, tier, team_id, reports_to, term_start, term_end, is_graduating';
 
 /* ── GET: flat member array + sector coverage + university name ──────────── */
 export const GET = withApiGuard(
@@ -67,20 +68,28 @@ export const GET = withApiGuard(
       sectorsByMember.get(row.member_id).push({ sector: row.sector, isPrimary: row.is_primary });
     }
 
+    // Hierarchical edit rights: flag each member the viewer may re-role.
+    const membersById = new Map((members || []).map((m) => [m.id, m]));
+    const viewerRow = membersById.get(member.id) || member;
     const shaped = (members || []).map((m) => ({
       ...m,
+      tier: tierOf(m).id,
       sectors: sectorsByMember.get(m.id) || [],
+      editable: canEditMember(viewerRow, m, membersById),
     }));
 
     return NextResponse.json({
       universityName: org?.university_name || org?.name || 'Organization',
       orgId,
       sectors: GICS_SECTORS,
+      tiers: ORG_TIERS,
       viewer: {
         memberId: member.id,
         role: member.role,
         subRole: member.sub_role,
+        tier: tierOf(viewerRow).id,
         canManage: MANAGER_ROLES.includes(member.role),
+        assignableTiers: assignableTiers(viewerRow),
       },
       members: shaped,
     });

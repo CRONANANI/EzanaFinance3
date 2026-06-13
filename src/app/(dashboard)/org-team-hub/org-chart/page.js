@@ -1,11 +1,16 @@
-import { OrgChartClient } from './OrgChartClient';
+import { Suspense } from 'react';
+import { OrgDirectoryClient } from './OrgDirectoryClient';
 
 export const metadata = {
-  title: 'Organization Chart | Ezana Finance',
+  title: 'Organization | Ezana Finance',
   description:
-    'Per-university investment council org chart with term tracking, sector coverage, and faculty advisor oversight.',
+    'Investment council directory — collapsible reporting tree, member profiles, desk stats, and hierarchical role management.',
 };
 
 export default function OrgChartPage() {
-  return <OrgChartClient />;
+  return (
+    <Suspense fallback={<div style={{ padding: '2rem', color: 'var(--text-muted)' }}>Loading organization…</div>}>
+      <OrgDirectoryClient />
+    </Suspense>
+  );
 }
