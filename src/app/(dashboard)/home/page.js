@@ -940,7 +940,7 @@ export default function HomePage() {
     (async () => {
       try {
         const [tradesRes, lobbyingRes] = await Promise.allSettled([
-          fetch('/api/fmp/congress-latest', { cache: 'no-store' }),
+          fetch('/api/fmp/congress-latest?raw=1&limit=12', { cache: 'no-store' }),
           fetch('/api/quiver/lobbying', { cache: 'no-store' }),
         ]);
 
@@ -948,18 +948,24 @@ export default function HomePage() {
         if (tradesRes.status === 'fulfilled' && tradesRes.value.ok) {
           const tradesData = await tradesRes.value.json();
           const trades = tradesData.trades || tradesData || [];
-          for (const t of Array.isArray(trades) ? trades.slice(0, 4) : []) {
+          for (const t of Array.isArray(trades) ? trades.slice(0, 6) : []) {
+            const typeStr = String(t.type || t.transactionType || '').toLowerCase();
+            const isBuy = typeStr.includes('purchase') || typeStr.includes('buy');
+            // Chamber comes from the raw route shape; fall back defensively.
+            const chamber = t.chamber || (t.senator ? 'Senate' : 'House');
+            const when = t.transactionDate || t.disclosureDate || '—';
             tradeRows.push({
               kind: 'trade',
               rep: t.representative || t.name || '—',
-              cham: t.chamber || t.house || 'Congress',
-              when: t.transactionDate || t.date || '—',
-              sym: t.ticker || t.symbol || '—',
-              side: (t.type || t.transactionType || '').toUpperCase().includes('PURCHASE')
-                ? 'BUY'
-                : 'SELL',
-              size: t.amount || t.range || '—',
-              ts: t.transactionDate ? new Date(t.transactionDate).getTime() : 0,
+              cham: chamber,
+              when:
+                when && when !== '—'
+                  ? new Date(when).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                  : '—',
+              sym: (t.ticker || t.symbol || '—').toUpperCase(),
+              side: isBuy ? 'BUY' : 'SELL',
+              size: t.amount || '—',
+              ts: when && when !== '—' ? new Date(when).getTime() : 0,
             });
           }
         }

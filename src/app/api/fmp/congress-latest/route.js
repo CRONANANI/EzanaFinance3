@@ -83,6 +83,9 @@ function mapTradeRaw(t) {
   return {
     ticker: (t.symbol || '').toUpperCase(),
     symbol: t.symbol,
+    // Senate source rows carry a `senator` field; house rows don't. This is
+    // the only place the chamber is knowable, so surface it in the raw shape.
+    chamber: t.senator ? 'Senate' : 'House',
     assetDescription: String(t.asset || t.companyName || t.assetDescription || '').trim(),
     representative: name,
     name,
