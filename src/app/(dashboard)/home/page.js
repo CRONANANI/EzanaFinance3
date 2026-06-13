@@ -24,6 +24,7 @@ import { useMockPortfolio } from '@/hooks/useMockPortfolio';
 import { useWatchlists } from '@/hooks/useWatchlists';
 import { useLoginHistory } from '@/hooks/useLoginHistory';
 import { useUpcomingEvents, formatEventDay } from '@/hooks/useUpcomingEvents';
+import { useEventContext } from '@/hooks/useEventContext';
 import { useUserRelevanceSet } from '@/hooks/useUserRelevanceSet';
 import './broadsheet.css';
 
@@ -455,6 +456,13 @@ export default function HomePage() {
       totalWindow: inWindow.length,
     };
   }, [liveScheduleEvents, eventFilter]);
+
+  // News-article / market-implications enrichment for the visible schedule.
+  const visibleScheduleEvents = useMemo(
+    () => scheduleData.dayGroups.flatMap((g) => g.items),
+    [scheduleData.dayGroups],
+  );
+  const { contextById } = useEventContext(visibleScheduleEvents);
 
   const availableScheduleFilters = useMemo(
     () =>
@@ -1967,6 +1975,40 @@ export default function HomePage() {
                             <span>{ev.subtitle || ev.symbol || ''}</span>
                             {ev.impact === 'High' && <span className="bs-event-flag">HIGH</span>}
                           </div>
+                          {(() => {
+                            const ctx = contextById[ev.id];
+                            if (!ctx) return null;
+                            if (ctx.article) {
+                              return (
+                                <a
+                                  href={ctx.article.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="bs-event-article"
+                                >
+                                  <span className="bs-event-article-icon">📰</span>
+                                  <span className="bs-event-article-text">
+                                    {ctx.article.headline}
+                                    <span className="bs-event-article-src">
+                                      {' '}
+                                      — {ctx.article.source}
+                                    </span>
+                                  </span>
+                                </a>
+                              );
+                            }
+                            if (ctx.blurb) {
+                              return (
+                                <div className="bs-event-implication">
+                                  <span className="bs-event-implication-label">
+                                    Market implications
+                                  </span>
+                                  <p className="bs-event-implication-text">{ctx.blurb}</p>
+                                </div>
+                              );
+                            }
+                            return null;
+                          })()}
                         </div>
                       ))}
                     </div>

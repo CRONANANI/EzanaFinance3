@@ -1815,3 +1815,48 @@ body.light-mode .bs-band + .bs-band {
     gap: 24px;
   }
 }
+
+/* ── Schedule event enrichment (news article / market-implications) ── */
+.bs-event-article {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--bs-border-rule);
+  text-decoration: none;
+  color: var(--bs-text-body);
+  font-size: 11px;
+  line-height: 1.35;
+  transition: color 0.15s ease;
+}
+.bs-event-article:hover {
+  color: var(--bs-green);
+}
+.bs-event-article-icon {
+  flex-shrink: 0;
+  font-size: 11px;
+}
+.bs-event-article-src {
+  color: var(--bs-text-label);
+}
+.bs-event-implication {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--bs-border-rule);
+}
+.bs-event-implication-label {
+  display: block;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--bs-text-label);
+  margin-bottom: 2px;
+  font-weight: 700;
+}
+.bs-event-implication-text {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--bs-text-body);
+}
