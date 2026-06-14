@@ -9,7 +9,7 @@ export default function OrgLoginPage({ searchParams }) {
   const redirectTo =
     typeof searchParams?.redirect === 'string' && searchParams.redirect.startsWith('/')
       ? searchParams.redirect
-      : '/home';
+      : '/org-team-hub';
 
   return (
     <div className="signin-dark-lock flex min-h-screen w-full items-center justify-center bg-[#0a0e13]">

@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase-browser';
 
-const OrgSignInCard = ({ redirectTo = '/home' }) => {
+const OrgSignInCard = ({ redirectTo = '/org-team-hub' }) => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

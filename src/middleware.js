@@ -148,6 +148,25 @@ export async function middleware(request) {
     return response;
   }
 
+  /* Org (university) members use Team Hub as their dashboard, never the regular
+     member home. Redirect them server-side so /home never renders for an org
+     user (avoids the regular-home flash before the client-side bounce). */
+  if (user && pathname === '/home') {
+    const { data: orgMember } = await supabase
+      .from('org_members')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('is_active', true)
+      .limit(1)
+      .maybeSingle();
+    if (orgMember) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/org-team-hub';
+      url.search = '';
+      return NextResponse.redirect(url);
+    }
+  }
+
   if (pathname === '/auth/verify-email' && !user) {
     const url = request.nextUrl.clone();
     url.pathname = '/auth/signin';
