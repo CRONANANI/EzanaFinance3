@@ -9,6 +9,7 @@ import { AuthProvider } from '@/components/AuthProvider';
 import { ProGateProvider } from '@/components/upgrade/ProGateContext';
 import { PartnerProvider } from '@/contexts/PartnerContext';
 import { OrgProvider } from '@/contexts/OrgContext';
+import { OrgThemeProvider } from '@/components/org/OrgThemeProvider';
 import { CongressProvider } from '@/contexts/CongressContext';
 import { PinnedCardsProvider } from '@/contexts/PinnedCardsContext';
 import { ToastProvider } from '@/contexts/ToastContext';
@@ -214,7 +215,7 @@ export default async function RootLayout({ children }) {
                                 <ConditionalNavbar />
                               </Suspense>
                               <PartnerChromeEffects />
-                              {children}
+                              <OrgThemeProvider>{children}</OrgThemeProvider>
                             </BeginnerLevelProvider>
                           </ToastProvider>
                         </PinnedCardsProvider>

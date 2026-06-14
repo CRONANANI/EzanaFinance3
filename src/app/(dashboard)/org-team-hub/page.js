@@ -863,7 +863,7 @@ function OrganizationCard({ organization, role, loading, onViewOrg }) {
 /* ── Page ─────────────────────────────────────────────────────── */
 export default function OrgTeamHubPage() {
   const router = useRouter();
-  const { isOrgUser, orgRole, orgData, isLoading } = useOrg();
+  const { isOrgUser, orgRole, orgData, isLoading, fundName, universityName } = useOrg();
   const { summary, digest, tasksData, loading, setTasksData } = useTeamHubData(
     Boolean(isOrgUser && !isLoading),
   );
@@ -923,7 +923,8 @@ export default function OrgTeamHubPage() {
   const perf = summary?.performance || null;
   const counts = summary?.counts || null;
   const strip = summary?.statStrip || null;
-  const orgName = summary?.org?.name || orgData?.org?.name || 'Investment Council';
+  const orgName = universityName || summary?.org?.name || orgData?.org?.name || 'Investment Council';
+  const fundLabel = fundName || `${orgName} Fund`;
   const roleLabel = summary?.viewer?.title || ROLE_LABEL[orgRole] || 'Member';
   const violations = strip?.openViolations ?? 0;
 
@@ -934,7 +935,7 @@ export default function OrgTeamHubPage() {
       <section className="thw-hero" aria-label="Fund overview">
         <div>
           <span className="thw-eyebrow">
-            Team Hub · {orgName} · {roleLabel}
+            <b className="thw-brand">{fundLabel}</b> · {orgName} · {roleLabel}
           </span>
           <div className="thw-display">
             {loading ? <Skel w={280} h={48} style={{ borderRadius: 10 }} /> : fmtMoney(perf?.total_value)}

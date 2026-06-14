@@ -27,14 +27,16 @@ const OrgSignInCard = ({ redirectTo = '/org-team-hub' }) => {
         return;
       }
 
-      // Domain-based org lookup (anon read via the shared browser client —
+      // Match the email domain against the org's ARRAY of allowed domains.
+      // Canadian schools use .ca and often student subdomains (e.g. mail.mcgill.ca),
+      // so one org has many domains. Anon read via the shared browser client —
       // do NOT create a second client here; multiple GoTrueClient instances
-      // deadlock the auth lock and hang the sign-in).
+      // deadlock the auth lock and hang the sign-in.
       let org = null;
       const { data: orgByDomain } = await supabase
         .from('organizations')
-        .select('id, name')
-        .eq('email_domain', domain)
+        .select('id, name, email_domains')
+        .contains('email_domains', [domain])
         .eq('is_active', true)
         .limit(1)
         .maybeSingle();
@@ -147,7 +149,7 @@ const OrgSignInCard = ({ redirectTo = '/org-team-hub' }) => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@university.edu"
+              placeholder="you@university.ca"
               required
               className="h-11 w-full rounded-lg border border-white/10 bg-[rgba(255,255,255,0.04)] px-4 text-[#f0f6fc] placeholder-[#6b7280] transition-all focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400"
             />

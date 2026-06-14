@@ -113,6 +113,23 @@ export function OrgProvider({ children }) {
     [effectivePermissions],
   );
 
+  // Per-university brand theme (data-driven). orgData.org carries the colors via
+  // `organizations (*)`. Falls back to Ezana emerald when not set.
+  const org = orgData?.org || null;
+  const orgTheme = useMemo(
+    () =>
+      org
+        ? {
+            primary: org.primary_color || '#10b981',
+            secondary: org.secondary_color || '#059669',
+            accent: org.accent_color || '#d4a853',
+          }
+        : null,
+    [org],
+  );
+  const fundName = org?.fund_display_name || null;
+  const universityName = org?.university_name || org?.name || null;
+
   const value = {
     isOrgUser,
     orgRole,
@@ -125,6 +142,10 @@ export function OrgProvider({ children }) {
     permissions: effectivePermissions,
     hasPermission,
     canFlagPositions: canFlagPositionsBool,
+    orgTheme,
+    fundName,
+    universityName,
+    logoUrl: org?.logo_url || null,
     refreshOrg: checkOrgStatus,
   };
 

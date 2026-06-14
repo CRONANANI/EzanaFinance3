@@ -118,7 +118,7 @@ body.light-mode .ox-root {
   color: var(--ox-faint);
 }
 .ox-eyebrow b {
-  color: var(--emerald);
+  color: var(--org-ink, var(--emerald));
   font-weight: 600;
 }
 .ox-h1 {
@@ -548,13 +548,13 @@ body.light-mode .ox-root {
   color: var(--ox-text-2);
 }
 .ox-fpill.active {
-  background: var(--emerald);
-  border-color: var(--emerald);
-  color: #06241a;
+  background: var(--org-primary, var(--emerald));
+  border-color: var(--org-primary, var(--emerald));
+  color: var(--org-on-primary, #06241a);
   font-weight: 700;
 }
 .ox-fpill.active .ox-dot {
-  background: #06241a;
+  background: var(--org-on-primary, #06241a);
 }
 
 .oxr-grid {
@@ -589,7 +589,7 @@ body.light-mode .ox-root {
   background: var(--warning);
 }
 .oxr-seg-rail.desk {
-  background: var(--emerald);
+  background: var(--org-primary, var(--emerald));
 }
 .oxr-seg-title {
   font-size: 14px;

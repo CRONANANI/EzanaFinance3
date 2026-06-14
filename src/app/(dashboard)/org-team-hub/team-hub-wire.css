@@ -173,6 +173,11 @@ body.light-mode .thw-root {
   font-weight: 700;
   color: var(--text-faint);
 }
+/* Fund name accent — themed to the university's brand color (data-driven). */
+.thw-brand {
+  color: var(--org-ink, var(--emerald));
+  font-weight: 700;
+}
 .thw-section-head {
   display: flex;
   justify-content: space-between;

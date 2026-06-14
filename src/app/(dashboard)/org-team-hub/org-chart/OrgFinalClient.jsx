@@ -73,7 +73,7 @@ function Skel({ w = 80, h = 14, style }) {
 export function OrgFinalClient() {
   const router = useRouter();
   const { toast } = useToast();
-  const { isOrgUser, isLoading } = useOrg();
+  const { isOrgUser, isLoading, fundName, universityName } = useOrg();
 
   const [chart, setChart] = useState(null);
   const [summary, setSummary] = useState(null);
@@ -431,7 +431,7 @@ export function OrgFinalClient() {
         {/* Centered brief */}
         <header className="ox2-brief">
           <div className="ox-eyebrow">
-            <b>TEAM HUB</b> › ORGANIZATION · {longDate()}
+            <b>{fundName || 'Team Hub'}</b> · {universityName || 'Organization'} · {longDate()}
           </div>
           <h1 className="ox-h1">The investment council.</h1>
           <p className="ox-prose">

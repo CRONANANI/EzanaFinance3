@@ -48,7 +48,10 @@ export function AnimatedNav({
                 <motion.div
                   layoutId="nav-cursor"
                   className="animated-nav-underline"
-                  style={{ background: item.variant === 'purple' ? '#6366f1' : accentColor }}
+                  style={{
+                    background:
+                      item.variant === 'purple' ? 'var(--org-primary, #6366f1)' : accentColor,
+                  }}
                 />
               )}
 
