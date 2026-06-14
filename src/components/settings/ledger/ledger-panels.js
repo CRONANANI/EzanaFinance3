@@ -10,6 +10,7 @@ import {
   ApiPanel,
 } from '@/components/settings/SettingsPanels';
 import { OrgSettingsPanel } from '@/components/settings/OrgSettingsPanel';
+import { MyRoleAccessPanel } from '@/components/settings/MyRoleAccessPanel';
 import { DataRequestPanel } from '@/components/settings/DataRequestPanel';
 import { PlatformChangelogPanel } from '@/components/settings/PlatformChangelogPanel';
 import { PartnerManagementPanel } from '@/components/settings/PartnerManagementPanel';
@@ -94,6 +95,11 @@ export const LEDGER_PAGE_META = {
     title: 'Organization',
     helper: 'Members, hierarchy, and permissions.',
   },
+  'my-role': {
+    eyebrow: '— Organization',
+    title: 'My role & access',
+    helper: 'Your role, team, and exactly what your council seat lets you do.',
+  },
 };
 
 export const LEDGER_PANEL_MAP = {
@@ -112,4 +118,5 @@ export const LEDGER_PANEL_MAP = {
   'platform-changelog': wrapLegacyPanel(PlatformChangelogPanel),
   partners: wrapLegacyPanel(PartnerManagementPanel),
   organization: wrapLegacyPanel(OrgSettingsPanel),
+  'my-role': wrapLegacyPanel(MyRoleAccessPanel),
 };

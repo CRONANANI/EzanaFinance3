@@ -17,6 +17,7 @@ import {
   Database,
   Clock,
   ArrowLeft,
+  BadgeCheck,
 } from 'lucide-react';
 
 const NAV_GROUPS = [
@@ -61,6 +62,7 @@ export function SettingsLedgerShell({
   onSelect,
   partnersTabAllowed,
   orgTabAllowed,
+  isOrgUser,
   pageTitle,
   pageEyebrow,
   pageHelper,
@@ -69,22 +71,32 @@ export function SettingsLedgerShell({
   backHref = '/home',
   children,
 }) {
-  const orgItems = orgTabAllowed
-    ? [
-        {
-          key: 'organization',
-          icon: Users,
-          label: 'Organization',
-          sub: 'Members & permissions',
-        },
-      ]
-    : [];
+  // orgTabAllowed === (org user AND executive). Org members below executive
+  // don't own the subscription, so the consumer billing/plan/family/api tabs
+  // are hidden for them.
+  const isExecutive = orgTabAllowed;
+  const hideForOrgNonExec =
+    isOrgUser && !isExecutive ? new Set(['plan', 'billing', 'family', 'api']) : null;
+
+  // Every org member gets a "My role & access" tab; executives also get the
+  // Organization admin tab.
+  const orgWorkspaceItems = [
+    ...(isOrgUser
+      ? [{ key: 'my-role', icon: BadgeCheck, label: 'My role & access', sub: 'Role, team & access' }]
+      : []),
+    ...(orgTabAllowed
+      ? [{ key: 'organization', icon: Users, label: 'Organization', sub: 'Members & permissions' }]
+      : []),
+  ];
 
   const groups = NAV_GROUPS.map((g) => ({
     ...g,
     items: [
-      ...g.items.filter((it) => !it.adminOnly || partnersTabAllowed),
-      ...(g.label === 'Workspace' ? orgItems : []),
+      ...g.items.filter(
+        (it) =>
+          (!it.adminOnly || partnersTabAllowed) && !(hideForOrgNonExec && hideForOrgNonExec.has(it.key)),
+      ),
+      ...(g.label === 'Workspace' ? orgWorkspaceItems : []),
     ],
   })).filter((g) => g.items.length > 0);
 

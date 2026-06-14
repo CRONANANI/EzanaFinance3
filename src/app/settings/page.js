@@ -17,6 +17,7 @@ import {
   PlatformChangelogPanel,
   ApiPanel,
   OrgSettingsPanel,
+  MyRoleAccessPanel,
   DataRequestPanel,
   PartnerManagementPanel,
 } from '@/components/settings';
@@ -69,6 +70,7 @@ const PANEL_MAP = {
   'platform-changelog': PlatformChangelogPanel,
   api: ApiPanel,
   organization: OrgSettingsPanel,
+  'my-role': MyRoleAccessPanel,
   'privacy-data': DataRequestPanel,
 };
 
@@ -79,7 +81,7 @@ function SettingsInner() {
   const [partnersTabAllowed, setPartnersTabAllowed] = useState(false);
   const router = useRouter();
   const { isPartner } = usePartner();
-  const { isOrgUser, orgRole } = useOrg();
+  const { isOrgUser, orgRole, isExecutive } = useOrg();
   const dashboardPath = isPartner ? '/partner-home' : '/home-dashboard';
 
   const [backLabel, setBackLabel] = useState('Dashboard');
@@ -185,22 +187,35 @@ function SettingsInner() {
           },
         ]
       : [];
-    const withPartners = SETTINGS_TABS.flatMap((tab) =>
+    // Org members below executive don't own the subscription — hide the
+    // consumer billing/plan/family/api tabs for them.
+    const hideForOrgNonExec =
+      isOrgUser && !isExecutive ? new Set(['plan', 'billing', 'family', 'api']) : null;
+    const base = hideForOrgNonExec
+      ? SETTINGS_TABS.filter((t) => !hideForOrgNonExec.has(t.key))
+      : SETTINGS_TABS;
+    const withPartners = base.flatMap((tab) =>
       tab.key === 'integrations' ? [tab, ...partnersTab] : [tab],
     );
-    if (isOrgUser && orgRole === 'executive') {
-      return [
-        ...withPartners,
-        {
-          key: 'organization',
-          label: 'Organization',
-          icon: 'bi-building',
-          desc: 'Manage members & permissions',
-        },
-      ];
+    const orgExtras = [];
+    if (isOrgUser) {
+      orgExtras.push({
+        key: 'my-role',
+        label: 'My role & access',
+        icon: 'bi-person-badge',
+        desc: 'Your role, team & permissions',
+      });
     }
-    return withPartners;
-  }, [isOrgUser, orgRole, partnersTabAllowed]);
+    if (isOrgUser && orgRole === 'executive') {
+      orgExtras.push({
+        key: 'organization',
+        label: 'Organization',
+        icon: 'bi-building',
+        desc: 'Manage members & permissions',
+      });
+    }
+    return [...withPartners, ...orgExtras];
+  }, [isOrgUser, orgRole, isExecutive, partnersTabAllowed]);
 
   useEffect(() => {
     if (!tabs.some((t) => t.key === activeTab)) {
@@ -261,6 +276,7 @@ function SettingsInner() {
         }}
         partnersTabAllowed={partnersTabAllowed}
         orgTabAllowed={isOrgUser && orgRole === 'executive'}
+        isOrgUser={isOrgUser}
         backLabel={backLabel}
         backHref={backPath}
         error={error}

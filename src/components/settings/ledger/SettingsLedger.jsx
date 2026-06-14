@@ -11,6 +11,7 @@ export function SettingsLedger({
   saveStatus,
   partnersTabAllowed,
   orgTabAllowed,
+  isOrgUser,
   backLabel,
   backHref,
   error,
@@ -31,6 +32,7 @@ export function SettingsLedger({
       onSelect={setActiveTab}
       partnersTabAllowed={partnersTabAllowed}
       orgTabAllowed={orgTabAllowed}
+      isOrgUser={isOrgUser}
       pageTitle={meta.title}
       pageEyebrow={meta.eyebrow}
       pageHelper={meta.helper}
