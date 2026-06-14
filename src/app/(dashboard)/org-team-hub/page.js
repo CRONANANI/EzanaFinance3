@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState, useCallback } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Users,
@@ -221,7 +221,22 @@ function buildChart(cur, prev) {
     prevLine: prev ? toPath(prev) : null,
     lastX: xAt(cur.length - 1, cur.length),
     lastY: yAt(cur[cur.length - 1]),
+    // Per-point viewBox coords for the hover crosshair / dot / tooltip.
+    points: cur.map((v, i) => ({ x: xAt(i, cur.length), y: yAt(v) })),
+    W,
+    H,
   };
+}
+
+function fmtTipDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(`${dateStr}T00:00:00Z`);
+  return d.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
 }
 
 function sliceSnapshots(snapshots, range) {
@@ -233,6 +248,8 @@ function sliceSnapshots(snapshots, range) {
 
 function FundChart({ snapshots, loading }) {
   const [range, setRange] = useState('YTD');
+  const [hover, setHover] = useState(null);
+  const chartRef = useRef(null);
 
   const live = Array.isArray(snapshots) && snapshots.length >= 3 ? snapshots : null;
   const view = useMemo(() => {
@@ -242,7 +259,12 @@ function FundChart({ snapshots, loading }) {
     const cur = pts.map((p) => p.value);
     const bench = pts.map((p) => p.benchmarkValue);
     const prev = bench.every((b) => b != null && Number.isFinite(b)) ? bench : null;
-    return { labels: pts.map((p) => monthLabel(p.date, withDay)), cur, prev };
+    return {
+      labels: pts.map((p) => monthLabel(p.date, withDay)),
+      dates: pts.map((p) => p.date),
+      cur,
+      prev,
+    };
   }, [live, range]);
 
   const months = useMemo(() => {
@@ -252,6 +274,27 @@ function FundChart({ snapshots, loading }) {
   }, [live]);
 
   const geom = useMemo(() => (view ? buildChart(view.cur, view.prev) : null), [view]);
+
+  // Reset the hover read-out whenever the range or underlying data changes.
+  useEffect(() => {
+    setHover(null);
+  }, [range, live]);
+
+  const updateHover = useCallback(
+    (clientX) => {
+      const el = chartRef.current;
+      if (clientX == null || !el || !view || view.cur.length === 0) return;
+      const rect = el.getBoundingClientRect();
+      if (rect.width === 0) return;
+      const fx = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+      setHover(Math.round(fx * (view.cur.length - 1)));
+    },
+    [view],
+  );
+
+  const hp = hover != null && geom && geom.points[hover] ? geom.points[hover] : null;
+  const leftPct = hp ? (hp.x / geom.W) * 100 : 0;
+  const topPct = hp ? (hp.y / geom.H) * 100 : 0;
 
   return (
     <div className="thw-chart-card">
@@ -272,9 +315,18 @@ function FundChart({ snapshots, loading }) {
           ))}
         </div>
       </div>
-      <div className="thw-chart">
+      <div
+        className="thw-chart"
+        ref={chartRef}
+        onMouseMove={(e) => updateHover(e.clientX)}
+        onMouseLeave={() => setHover(null)}
+        onTouchStart={(e) => updateHover(e.touches[0]?.clientX)}
+        onTouchMove={(e) => updateHover(e.touches[0]?.clientX)}
+        onTouchEnd={() => setHover(null)}
+      >
         {geom ? (
-          <svg viewBox="0 0 800 180" preserveAspectRatio="none" aria-hidden="true">
+          <>
+            <svg viewBox="0 0 800 180" preserveAspectRatio="none" aria-hidden="true">
             <defs>
               <linearGradient id="thw-fill" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="rgba(16,185,129,0.28)" />
@@ -297,7 +349,24 @@ function FundChart({ snapshots, loading }) {
             <path d={geom.area} fill="url(#thw-fill)" />
             <path d={geom.line} stroke="var(--emerald)" strokeWidth="2" fill="none" />
             <circle cx={geom.lastX} cy={geom.lastY} r="3.5" fill="var(--emerald)" />
-          </svg>
+            </svg>
+            {hp && (
+              <>
+                <div className="thw-chart-cross" style={{ left: `${leftPct}%` }} />
+                <div
+                  className="thw-chart-dot"
+                  style={{ left: `${leftPct}%`, top: `${topPct}%` }}
+                />
+                <div
+                  className="thw-chart-tip"
+                  style={{ left: `${Math.min(91, Math.max(9, leftPct))}%` }}
+                >
+                  <span className="thw-chart-tip-val">{fmtMoney(view.cur[hover])}</span>
+                  <span className="thw-chart-tip-date">{fmtTipDate(view.dates[hover])}</span>
+                </div>
+              </>
+            )}
+          </>
         ) : (
           <div style={{ padding: '14px 4px' }}>
             {loading ? (

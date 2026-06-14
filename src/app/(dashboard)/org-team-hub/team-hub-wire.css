@@ -48,6 +48,11 @@
   color: var(--text-secondary);
   letter-spacing: -0.008em;
   -webkit-font-smoothing: antialiased;
+  /* The full-bleed (negative side margins) can otherwise overhang by the
+     vertical scrollbar's width and add a stray horizontal scrollbar — the
+     "double scroll". `clip` removes it without creating a scroll container
+     (so it never adds an inner vertical scroll). */
+  overflow-x: clip;
 }
 
 /* ── Broadsheet palette — LIGHT (.light-mode) ── */
@@ -363,11 +368,61 @@ body.light-mode .thw-root {
 .thw-chart {
   height: 148px;
   margin-top: 12px;
+  position: relative;
+  cursor: crosshair;
 }
 .thw-chart svg {
   width: 100%;
   height: 100%;
   display: block;
+}
+/* Interactive hover read-out — crosshair + point + value/date tooltip */
+.thw-chart-cross {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--border-hover);
+  pointer-events: none;
+  transform: translateX(-0.5px);
+}
+.thw-chart-dot {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--emerald);
+  border: 2px solid var(--surface-card);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.thw-chart-tip {
+  position: absolute;
+  top: 2px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 4px 9px;
+  border-radius: 7px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-hover);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 2;
+}
+.thw-chart-tip-val {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.thw-chart-tip-date {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  color: var(--text-faint);
 }
 .thw-axis {
   display: flex;
