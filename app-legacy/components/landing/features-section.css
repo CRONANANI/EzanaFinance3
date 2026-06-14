@@ -235,7 +235,7 @@ body.light-mode .landing-page .feature-card {
   border: none;
   padding: 0;
   box-shadow: none;
-  height: 244px;
+  height: 340px;
   cursor: pointer;
   outline: none;
 }
@@ -328,7 +328,7 @@ body.light-mode .landing-page .flip-back {
 
 .flip-back {
   transform: rotateY(180deg);
-  padding: 14px 16px;
+  padding: 22px 22px;
   align-items: stretch;
   text-align: left;
 }
@@ -379,13 +379,13 @@ body.light-mode .landing-page .flip-back {
   height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  font-size: 0.8125rem;
+  gap: 12px;
+  font-size: 0.875rem;
   color: var(--text-body);
 }
 
 .fcb-kicker {
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -393,14 +393,14 @@ body.light-mode .landing-page .flip-back {
 }
 
 .fcb-big {
-  font-size: 1.375rem;
+  font-size: 1.75rem;
   font-weight: 700;
   color: var(--text-primary);
   line-height: 1.1;
 }
 
 .fcb-delta {
-  font-size: 0.6875rem;
+  font-size: 0.8125rem;
   font-weight: 600;
 }
 
@@ -415,7 +415,7 @@ body.light-mode .landing-page .flip-back {
 }
 
 .fcb-head-sub {
-  font-size: 0.5625rem;
+  font-size: 0.6875rem;
   color: var(--text-faint);
 }
 
@@ -427,36 +427,36 @@ body.light-mode .landing-page .flip-back {
 }
 
 .fcb-back-title {
-  font-size: 0.8125rem;
+  font-size: 1.0625rem;
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.01em;
 }
 
 .fcb-head-sub-line {
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
   margin-top: 2px;
 }
 
 .fcb-foot {
   margin-top: auto;
-  padding-top: 8px;
-  font-size: 0.5625rem;
+  padding-top: 10px;
+  font-size: 0.6875rem;
   color: var(--text-faint);
   letter-spacing: 0.04em;
 }
 
 .fcb-sparkline {
   width: 100%;
-  height: 40px;
+  height: 56px;
   flex-shrink: 0;
 }
 
 .fcb-metric-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px 14px;
+  gap: 10px 16px;
   margin-top: auto;
 }
 
@@ -469,14 +469,14 @@ body.light-mode .landing-page .flip-back {
 }
 
 .fcb-metric-label {
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   color: var(--text-faint);
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
 
 .fcb-metric-value {
-  font-size: 0.75rem;
+  font-size: 0.9375rem;
   font-weight: 600;
   color: var(--text-primary);
 }
@@ -501,10 +501,10 @@ body.light-mode .landing-page .flip-back {
 }
 
 .fcb-community-feed .fcb-post-body {
-  font-size: 0.6875rem;
-  line-height: 1.4;
+  font-size: 0.8125rem;
+  line-height: 1.45;
   color: var(--text-muted);
-  margin: 4px 0;
+  margin: 5px 0;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -543,9 +543,9 @@ body.light-mode .landing-page .flip-back {
 .fcb-alt-row {
   display: grid;
   align-items: center;
-  gap: 4px;
-  padding: 9px 0;
-  font-size: 0.78rem;
+  gap: 6px;
+  padding: 11px 0;
+  font-size: 0.875rem;
   border-bottom: 1px solid var(--border-secondary);
 }
 
@@ -576,7 +576,7 @@ body.light-mode .landing-page .flip-back {
 }
 
 .fcb-congress-name {
-  font-size: 0.6875rem;
+  font-size: 0.875rem;
   font-weight: 500;
   color: var(--text-primary);
   white-space: nowrap;
@@ -585,15 +585,15 @@ body.light-mode .landing-page .flip-back {
 }
 
 .fcb-congress-ticker {
-  font-size: 0.625rem;
+  font-size: 0.8125rem;
   color: var(--emerald-text);
   font-weight: 600;
 }
 
 .fcb-pill {
-  font-size: 0.5625rem;
+  font-size: 0.6875rem;
   font-weight: 600;
-  padding: 1px 5px;
+  padding: 2px 7px;
   border-radius: 4px;
   text-transform: uppercase;
 }
@@ -609,16 +609,16 @@ body.light-mode .landing-page .flip-back {
 }
 
 .fcb-congress-amt {
-  font-size: 0.5625rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
   text-align: right;
 }
 
 .fcb-tabs {
-  font-size: 0.5625rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
   display: flex;
-  gap: 4px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
@@ -628,35 +628,35 @@ body.light-mode .landing-page .flip-back {
 }
 
 .fcb-intel-row {
-  grid-template-columns: 24px 1fr auto;
+  grid-template-columns: 28px 1fr auto;
 }
 
 .fcb-intel-icon {
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 6px;
   background: var(--emerald-bg);
   color: var(--emerald-text);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
 }
 
 .fcb-intel-agency {
-  font-size: 0.625rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--text-primary);
-  line-height: 1.2;
+  line-height: 1.25;
 }
 
 .fcb-intel-co {
-  font-size: 0.5625rem;
+  font-size: 0.6875rem;
   color: var(--text-muted);
 }
 
 .fcb-intel-amt {
-  font-size: 0.5625rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
   text-align: right;
   white-space: nowrap;
@@ -669,37 +669,37 @@ body.light-mode .landing-page .flip-back {
 }
 
 .fcb-avatar {
-  width: 28px;
-  height: 28px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--emerald) 0%, var(--emerald-dark) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: #fff;
   flex-shrink: 0;
 }
 
 .fcb-post-name {
-  font-size: 0.6875rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--text-primary);
 }
 
 .fcb-badge {
-  font-size: 0.5rem;
+  font-size: 0.625rem;
   color: #fbbf24;
   background: rgba(251, 191, 36, 0.15);
-  padding: 1px 4px;
+  padding: 2px 6px;
   border-radius: 3px;
 }
 
 .fcb-post-body {
   margin: 0;
-  font-size: 0.625rem;
-  line-height: 1.4;
+  font-size: 0.8125rem;
+  line-height: 1.45;
   color: var(--text-muted);
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -709,32 +709,32 @@ body.light-mode .landing-page .flip-back {
 }
 
 .fcb-engage {
-  font-size: 0.5625rem;
+  font-size: 0.6875rem;
   color: var(--text-faint);
 }
 
 .fcb-alert-row {
-  grid-template-columns: 16px 1fr auto;
+  grid-template-columns: 18px 1fr auto;
   background: var(--bg-tertiary);
   border: 1px solid var(--border-secondary);
   border-radius: 6px;
-  padding: 6px 8px !important;
-  margin-bottom: 4px;
+  padding: 9px 11px !important;
+  margin-bottom: 5px;
 }
 
 .fcb-alert-row i {
   color: var(--emerald-text);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
 }
 
 .fcb-alert-text {
-  font-size: 0.5625rem;
+  font-size: 0.8125rem;
   color: var(--text-secondary);
-  line-height: 1.25;
+  line-height: 1.35;
 }
 
 .fcb-alert-time {
-  font-size: 0.5rem;
+  font-size: 0.6875rem;
   color: var(--text-faint);
 }
 
@@ -743,12 +743,12 @@ body.light-mode .landing-page .flip-back {
 }
 
 .fcb-alt-label {
-  font-size: 0.625rem;
+  font-size: 0.8125rem;
   color: var(--text-secondary);
 }
 
 .fcb-alt-ticker {
-  font-size: 0.625rem;
+  font-size: 0.8125rem;
   color: var(--emerald-text);
   font-weight: 600;
 }
