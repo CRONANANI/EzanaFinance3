@@ -1,0 +1,326 @@
+/* All selectors prefixed .apm-org-* — page-scoped. Theme tokens first, with
+   concrete fallbacks because this repo doesn't define --accent-emerald /
+   --border-color globally (org-trading.css follows the same fallback pattern). */
+
+.apm-org-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+  padding: 16px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.apm-org-card {
+  background: var(--bg-secondary, #0d1117);
+  border: 1px solid var(--border-color, rgba(99, 102, 241, 0.25));
+  border-radius: 12px;
+  width: min(640px, 100%);
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.apm-org-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border-color, rgba(99, 102, 241, 0.18));
+}
+.apm-org-header h2 {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary, #f0f6fc);
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+.apm-org-back {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--text-muted, #8b949e);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  font-family: inherit;
+}
+.apm-org-back:hover {
+  color: var(--accent-emerald, #10b981);
+}
+.apm-org-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted, #8b949e);
+  font-size: 16px;
+  padding: 6px;
+  border-radius: 6px;
+}
+.apm-org-close:hover {
+  background: var(--bg-tertiary, rgba(99, 102, 241, 0.1));
+  color: var(--text-primary, #f0f6fc);
+}
+
+.apm-org-body {
+  padding: 20px 22px;
+  overflow-y: auto;
+}
+
+.apm-org-mode-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+.apm-org-mode-tile {
+  background: var(--bg-tertiary, rgba(99, 102, 241, 0.06));
+  border: 1px solid var(--border-color, rgba(99, 102, 241, 0.2));
+  border-radius: 10px;
+  padding: 18px 14px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 120ms, transform 120ms;
+  font-family: inherit;
+  color: var(--text-primary, #f0f6fc);
+}
+.apm-org-mode-tile:hover {
+  border-color: var(--accent-emerald, #10b981);
+  transform: translateY(-1px);
+}
+.apm-org-mode-tile i {
+  font-size: 22px;
+  color: var(--accent-emerald, #10b981);
+  margin-bottom: 8px;
+  display: block;
+}
+.apm-org-mode-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary, #f0f6fc);
+  margin-bottom: 4px;
+}
+.apm-org-mode-desc {
+  font-size: 11px;
+  color: var(--text-muted, #8b949e);
+  line-height: 1.4;
+}
+
+.apm-org-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.apm-org-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.apm-org-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-muted, #8b949e);
+  font-weight: 500;
+}
+.apm-org-form label > span {
+  letter-spacing: 0.02em;
+}
+
+.apm-org-input {
+  background: var(--bg-primary, rgba(255, 255, 255, 0.04));
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  border-radius: 6px;
+  padding: 9px 11px;
+  font-size: 13px;
+  color: var(--text-primary, #f0f6fc);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.apm-org-input:focus {
+  outline: none;
+  border-color: var(--accent-emerald, #10b981);
+}
+.apm-org-mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.apm-org-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 8px;
+}
+.apm-org-btn {
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+}
+.apm-org-btn-primary {
+  background: var(--accent-emerald, #10b981);
+  color: #fff;
+}
+.apm-org-btn-primary:disabled {
+  background: var(--bg-tertiary, rgba(255, 255, 255, 0.08));
+  color: var(--text-muted, #8b949e);
+  cursor: not-allowed;
+}
+.apm-org-btn-ghost {
+  background: transparent;
+  color: var(--text-muted, #8b949e);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.15));
+}
+.apm-org-btn-ghost:hover {
+  color: var(--accent-emerald, #10b981);
+  border-color: var(--accent-emerald, #10b981);
+}
+
+.apm-org-csv-help {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  font-size: 12px;
+  color: var(--text-muted, #8b949e);
+  line-height: 1.5;
+}
+.apm-org-csv-help code {
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--bg-tertiary, rgba(99, 102, 241, 0.12));
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: var(--text-primary, #f0f6fc);
+  font-size: 11px;
+}
+.apm-org-file-zone {
+  border: 1px dashed var(--border-color, rgba(99, 102, 241, 0.3));
+  border-radius: 8px;
+  padding: 18px;
+  text-align: center;
+}
+.apm-org-file-name {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--accent-emerald, #10b981);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.apm-org-rowerrors {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 12px;
+  color: #fca5a5;
+}
+.apm-org-rowerrors-title {
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.apm-org-rowerrors ul {
+  margin: 0;
+  padding-left: 18px;
+}
+.apm-org-rowerrors li {
+  margin-top: 2px;
+}
+
+.apm-org-account-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.apm-org-account-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--bg-tertiary, rgba(99, 102, 241, 0.06));
+  border: 1px solid var(--border-color, rgba(99, 102, 241, 0.2));
+  border-radius: 8px;
+  cursor: pointer;
+}
+.apm-org-account-row.is-selected {
+  border-color: var(--accent-emerald, #10b981);
+  background: rgba(16, 185, 129, 0.05);
+}
+.apm-org-account-info {
+  flex: 1;
+}
+.apm-org-account-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary, #f0f6fc);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.apm-org-account-provider {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-emerald, #10b981);
+  background: rgba(16, 185, 129, 0.1);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+.apm-org-account-meta {
+  font-size: 11px;
+  color: var(--text-muted, #8b949e);
+  margin-top: 2px;
+}
+.apm-org-account-balance {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary, #f0f6fc);
+}
+
+.apm-org-error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  margin-top: 10px;
+}
+.apm-org-success {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: var(--accent-emerald, #10b981);
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  margin-top: 10px;
+}
+.apm-org-empty {
+  font-size: 13px;
+  color: var(--text-muted, #8b949e);
+  text-align: center;
+  padding: 20px 10px;
+  line-height: 1.6;
+}
+.apm-org-empty a {
+  color: var(--accent-emerald, #10b981);
+}
+
+@media (max-width: 600px) {
+  .apm-org-mode-grid {
+    grid-template-columns: 1fr;
+  }
+  .apm-org-row {
+    grid-template-columns: 1fr;
+  }
+}

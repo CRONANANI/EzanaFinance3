@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useOrg } from '@/contexts/OrgContext';
 import { PositionRow } from './PositionRow';
 import { FlagComposerModal } from './FlagComposerModal';
+import { AddPositionModal } from './add-position/AddPositionModal';
 import { PositionThread } from '@/components/org/social2/PositionThread';
 import {
   MOCK_TEAM_PERFORMANCE,
@@ -66,10 +67,11 @@ function flagsToTickerMap(flags, orgTeams, mockTeamKey) {
 }
 
 export function TeamPortfolioView({ teamId: dbTeamId, memberRole, memberEmail }) {
-  const { canFlagPositions, orgData } = useOrg();
+  const { canFlagPositions, canManagePositions, orgData } = useOrg();
   const [openFlagModal, setOpenFlagModal] = useState(null);
   const [flagsByTicker, setFlagsByTicker] = useState({});
   const [discussTicker, setDiscussTicker] = useState(null);
+  const [showAddPosition, setShowAddPosition] = useState(false);
 
   const orgTeams = orgData?.teams || [];
   const mockMember = getMemberByEmail(memberEmail);
@@ -129,6 +131,17 @@ export function TeamPortfolioView({ teamId: dbTeamId, memberRole, memberEmail })
               {team.change_pct >= 0 ? '+' : ''}
               {team.change_pct.toFixed(1)}% today
             </div>
+            {canManagePositions && (
+              <button
+                type="button"
+                className="ot-add-position-btn"
+                style={{ marginTop: '0.6rem' }}
+                onClick={() => setShowAddPosition(true)}
+              >
+                <i className="bi bi-plus-lg" />
+                <span>Add Position</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -280,6 +293,15 @@ export function TeamPortfolioView({ teamId: dbTeamId, memberRole, memberEmail })
           }}
         />
       )}
+
+      <AddPositionModal
+        open={showAddPosition}
+        onClose={() => setShowAddPosition(false)}
+        teamId={dbTeamId}
+        onAdded={() => {
+          /* Holdings are mock-backed today; refetch hook lands when wired to org_positions. */
+        }}
+      />
     </>
   );
 }

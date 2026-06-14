@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useEffect, useCallback, useMemo } 
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/lib/supabase-browser';
 import { getMemberPermissions } from '@/lib/orgMockData';
+import { getExtendedPermissions } from '@/lib/orgPermissionsExtended';
 
 const OrgContext = createContext(null);
 
@@ -100,7 +101,7 @@ export function OrgProvider({ children }) {
 
   const effectivePermissions = useMemo(() => {
     if (!orgData?.member) return getMemberPermissions(null, []);
-    return getMemberPermissions(orgData.member, permissionOverrides);
+    return getExtendedPermissions(orgData.member, permissionOverrides);
   }, [orgData?.member, permissionOverrides]);
 
   const hasPermission = useCallback(
@@ -142,6 +143,7 @@ export function OrgProvider({ children }) {
     permissions: effectivePermissions,
     hasPermission,
     canFlagPositions: canFlagPositionsBool,
+    canManagePositions: effectivePermissions.includes('manage_positions'),
     orgTheme,
     fundName,
     universityName,

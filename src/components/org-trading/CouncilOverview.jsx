@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useOrg } from '@/contexts/OrgContext';
 import { PositionRow } from './PositionRow';
 import { FlagComposerModal } from './FlagComposerModal';
+import { AddPositionModal } from './add-position/AddPositionModal';
 import {
   MOCK_TEAM_PERFORMANCE,
   MOCK_TMT_HOLDINGS,
@@ -59,10 +60,11 @@ function flagsToTickerMap(flags, orgTeams) {
 }
 
 export function CouncilOverview() {
-  const { orgData } = useOrg();
+  const { orgData, canManagePositions } = useOrg();
   const orgTeams = orgData?.teams || [];
   const [openFlagModal, setOpenFlagModal] = useState(null);
   const [flagsByTicker, setFlagsByTicker] = useState({});
+  const [showAddPosition, setShowAddPosition] = useState(false);
 
   const refreshFlags = useCallback(() => {
     fetch('/api/org-trading/flags?asRaiser=true&asRecipient=true&status=open')
@@ -77,6 +79,25 @@ export function CouncilOverview() {
 
   return (
     <>
+      {canManagePositions && (
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            marginBottom: '1rem',
+          }}
+        >
+          <button
+            type="button"
+            className="ot-add-position-btn"
+            onClick={() => setShowAddPosition(true)}
+          >
+            <i className="bi bi-plus-lg" />
+            <span>Add Position</span>
+          </button>
+        </div>
+      )}
+
       <div className="ot-council-grid">
         {MOCK_TEAM_PERFORMANCE.map((team) => {
           const holdings = buildTeamHoldings(team.team_id);
@@ -162,6 +183,15 @@ export function CouncilOverview() {
           }}
         />
       )}
+
+      <AddPositionModal
+        open={showAddPosition}
+        onClose={() => setShowAddPosition(false)}
+        teamId={null}
+        onAdded={() => {
+          /* Org-level position added; council holdings refetch lands with live wiring. */
+        }}
+      />
     </>
   );
 }

@@ -513,3 +513,27 @@
   margin: 0;
   white-space: pre-wrap;
 }
+
+/* Add Position CTA — gated on canManagePositions, mounted in the team header
+   (TeamPortfolioView) and above the council grid (CouncilOverview). */
+.ot-add-position-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--accent-emerald, #10b981);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  cursor: pointer;
+  transition: opacity 120ms;
+}
+.ot-add-position-btn:hover {
+  opacity: 0.9;
+}
+.ot-add-position-btn i {
+  font-size: 13px;
+}
