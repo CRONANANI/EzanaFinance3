@@ -27,12 +27,11 @@ const OrgSignInCard = ({ redirectTo = '/home' }) => {
         return;
       }
 
-      const { createClient } = await import('@/lib/supabase-browser');
-      const anonClient = createClient();
-
-      // Try domain-based org lookup first
+      // Domain-based org lookup (anon read via the shared browser client —
+      // do NOT create a second client here; multiple GoTrueClient instances
+      // deadlock the auth lock and hang the sign-in).
       let org = null;
-      const { data: orgByDomain } = await anonClient
+      const { data: orgByDomain } = await supabase
         .from('organizations')
         .select('id, name')
         .eq('email_domain', domain)
@@ -80,8 +79,6 @@ const OrgSignInCard = ({ redirectTo = '/home' }) => {
           }
         }
       }
-
-      console.log('[OrgLogin] Org resolved:', org);
 
       if (!org) {
         setError(

@@ -23,8 +23,14 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
-export function createClient() {
-  return createBrowserClient(supabaseUrl || '', supabaseAnonKey || '');
-}
-
+// Single shared browser client. Creating more than one GoTrueClient on the
+// same storage key makes Supabase's Web Locks auth lock deadlock, which hangs
+// signInWithPassword()/getUser() indefinitely (the login button gets stuck on
+// "Signing in…") — and the held lock survives client-side navigation, so it
+// also wedges every later sign-in in the same tab. The factory therefore
+// returns the one shared instance instead of constructing a new client.
 export const supabase = createBrowserClient(supabaseUrl || '', supabaseAnonKey || '');
+
+export function createClient() {
+  return supabase;
+}
