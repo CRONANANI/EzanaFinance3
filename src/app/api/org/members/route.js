@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { createServerSupabase } from '@/lib/supabase-server';
+import {
+  createServerSupabaseClient,
+  isServerSupabaseConfigured,
+} from '@/lib/supabase-service-role';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
+import { logOrgAction } from '@/lib/org-audit';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -119,6 +124,17 @@ export const PATCH = withApiGuard(
       .select('id, user_id, display_name, role, sub_role, tier, team_id, is_active, title')
       .single();
     if (updErr) return NextResponse.json({ error: updErr.message }, { status: 500 });
+
+    if (isServerSupabaseConfigured()) {
+      await logOrgAction(createServerSupabaseClient(), {
+        orgId: member.org_id,
+        actorId: member.user_id,
+        action: 'role' in update ? 'role_changed' : 'member_updated',
+        targetType: 'member',
+        targetId: targetId,
+        detail: update,
+      });
+    }
 
     return NextResponse.json({ member: updated });
   },

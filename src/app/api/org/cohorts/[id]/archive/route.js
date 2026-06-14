@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { createServerSupabase } from '@/lib/supabase-server';
+import {
+  createServerSupabaseClient,
+  isServerSupabaseConfigured,
+} from '@/lib/supabase-service-role';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
+import { logOrgAction } from '@/lib/org-audit';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -137,6 +142,17 @@ export const POST = withApiGuard(
           .eq('org_id', orgId);
         if (!gErr) graduatedCount = gradIds.length;
       }
+    }
+
+    if (isServerSupabaseConfigured()) {
+      await logOrgAction(createServerSupabaseClient(), {
+        orgId,
+        actorId: member.user_id,
+        action: 'cohort_archived',
+        targetType: 'cohort',
+        targetId: id,
+        detail: { name: cohort.name, graduated: graduatedCount },
+      });
     }
 
     return NextResponse.json({ cohort: updated, graduated: graduatedCount });

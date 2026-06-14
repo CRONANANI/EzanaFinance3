@@ -6,6 +6,7 @@ import {
   isServerSupabaseConfigured,
 } from '@/lib/supabase-service-role';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
+import { logOrgAction } from '@/lib/org-audit';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -96,6 +97,15 @@ export const POST = withApiGuard(
       .select('id, email, role, sub_role, team_id, cohort_id, token, status, created_at, expires_at')
       .single();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    await logOrgAction(service, {
+      orgId: member.org_id,
+      actorId: member.user_id,
+      action: 'member_invited',
+      targetType: 'invite',
+      targetId: invite.id,
+      detail: { email, role },
+    });
 
     return NextResponse.json({ invite }, { status: 201 });
   },

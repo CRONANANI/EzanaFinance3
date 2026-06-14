@@ -8,6 +8,9 @@ import { TeamsSectors } from './TeamsSectors';
 import { FundConfig } from './FundConfig';
 import { CohortSettings } from './CohortSettings';
 import { OrgBranding } from './OrgBranding';
+import { AuditLog } from './AuditLog';
+import { AdvisorControls } from './AdvisorControls';
+import { StudentDataSettings } from './StudentDataSettings';
 
 const SECTIONS = [
   { key: 'members', label: 'Members & Roles', Comp: OrgSettingsPanel },
@@ -16,6 +19,9 @@ const SECTIONS = [
   { key: 'fund', label: 'Fund Configuration', Comp: FundConfig },
   { key: 'cohorts', label: 'Cohorts', Comp: CohortSettings },
   { key: 'branding', label: 'Branding', Comp: OrgBranding },
+  { key: 'audit', label: 'Audit Log', Comp: AuditLog },
+  { key: 'advisor', label: 'Advisor Controls', Comp: AdvisorControls },
+  { key: 'data', label: 'Student Data', Comp: StudentDataSettings },
 ];
 
 export function OrgAdminPanel() {

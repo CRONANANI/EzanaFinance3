@@ -6,6 +6,7 @@ import {
   isServerSupabaseConfigured,
 } from '@/lib/supabase-service-role';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
+import { logOrgAction } from '@/lib/org-audit';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -86,6 +87,16 @@ export const PATCH = withApiGuard(
       .select('fund_display_name, benchmark_symbol, term_type, term_start, term_end, accent_color')
       .single();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    await logOrgAction(service, {
+      orgId: member.org_id,
+      actorId: member.user_id,
+      action: 'fund_config_updated',
+      targetType: 'org',
+      targetId: member.org_id,
+      detail: { fields: Object.keys(update).filter((k) => k !== 'org_id' && k !== 'updated_at') },
+    });
+
     return NextResponse.json({ config: data });
   },
   { requireAuth: true },

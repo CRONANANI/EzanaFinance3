@@ -2,13 +2,16 @@ import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { createServerSupabase } from '@/lib/supabase-server';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
+import { getGovernance } from '@/lib/org-governance';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 const WORK_TYPES = ['pitch', 'research_note', 'coverage', 'participation', 'overall'];
 
-/* GET /api/org/grades — RLS returns own grades for students, all for executives. */
+/* GET /api/org/grades — RLS returns own grades for students, all for executives.
+   Honors the governance flag `grading_visible_to_students`: when off, students
+   (non-executives) see no grades until an advisor re-enables visibility. */
 export const GET = withApiGuard(
   async () => {
     const supabase = createServerSupabase();
@@ -16,6 +19,19 @@ export const GET = withApiGuard(
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
 
     const canGrade = member.role === 'executive';
+
+    if (!canGrade) {
+      const gov = await getGovernance(supabase, member.org_id);
+      if (!gov.grading_visible_to_students) {
+        return NextResponse.json({
+          grades: [],
+          roster: [],
+          viewer: { userId: member.user_id, canGrade: false },
+          workTypes: WORK_TYPES,
+          gradingHidden: true,
+        });
+      }
+    }
 
     const { data, error } = await supabase
       .from('org_grades')

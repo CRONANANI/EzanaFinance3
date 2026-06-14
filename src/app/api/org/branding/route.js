@@ -6,6 +6,7 @@ import {
   isServerSupabaseConfigured,
 } from '@/lib/supabase-service-role';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
+import { logOrgAction } from '@/lib/org-audit';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -88,6 +89,15 @@ export const PATCH = withApiGuard(
         );
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    await logOrgAction(service, {
+      orgId: member.org_id,
+      actorId: member.user_id,
+      action: 'branding_updated',
+      targetType: 'org',
+      targetId: member.org_id,
+      detail: { logo_url: 'logo_url' in body, accent_color: 'accent_color' in body },
+    });
 
     return NextResponse.json({ ok: true });
   },

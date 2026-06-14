@@ -3,6 +3,7 @@ import { withApiGuard } from '@/lib/api-guard';
 import { createServerSupabase } from '@/lib/supabase-server';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 import { analystScorecard } from '@/lib/org-attribution';
+import { getGovernance } from '@/lib/org-governance';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -34,7 +35,14 @@ export const GET = withApiGuard(
     const isPmSameTeam =
       member.role === 'portfolio_manager' && target.team_id && target.team_id === member.team_id;
 
-    if (!isSelf && !isExec && !isPmSameTeam) {
+    let allowed = isSelf || isExec || isPmSameTeam;
+    // Governance: analysts may view peers' scorecards only when the advisor has
+    // enabled `students_see_peer_scorecards` (off by default for privacy).
+    if (!allowed) {
+      const gov = await getGovernance(supabase, member.org_id);
+      if (gov.students_see_peer_scorecards) allowed = true;
+    }
+    if (!allowed) {
       return NextResponse.json(
         { error: 'You can only view your own scorecard.' },
         { status: 403 },
