@@ -5,12 +5,12 @@ import {
   PlanPanel,
   BillingPanel,
   EmailPanel,
-  NotificationsPanel,
   IntegrationsPanel,
   ApiPanel,
 } from '@/components/settings/SettingsPanels';
-import { OrgSettingsPanel } from '@/components/settings/OrgSettingsPanel';
 import { MyRoleAccessPanel } from '@/components/settings/MyRoleAccessPanel';
+import { OrgAdminPanel } from '@/components/settings/org/OrgAdminPanel';
+import { NotificationsWithOrg } from '@/components/settings/org/NotificationsWithOrg';
 import { DataRequestPanel } from '@/components/settings/DataRequestPanel';
 import { PlatformChangelogPanel } from '@/components/settings/PlatformChangelogPanel';
 import { PartnerManagementPanel } from '@/components/settings/PartnerManagementPanel';
@@ -93,7 +93,7 @@ export const LEDGER_PAGE_META = {
   organization: {
     eyebrow: '— Workspace',
     title: 'Organization',
-    helper: 'Members, hierarchy, and permissions.',
+    helper: 'Members, invites, teams, fund configuration, cohorts, and branding.',
   },
   'my-role': {
     eyebrow: '— Organization',
@@ -111,12 +111,12 @@ export const LEDGER_PANEL_MAP = {
   plan: wrapLegacyPanel(PlanPanel),
   billing: wrapLegacyPanel(BillingPanel),
   email: wrapLegacyPanel(EmailPanel),
-  notifications: wrapLegacyPanel(NotificationsPanel),
+  notifications: wrapLegacyPanel(NotificationsWithOrg),
   integrations: wrapLegacyPanel(IntegrationsPanel),
   api: wrapLegacyPanel(ApiPanel),
   'privacy-data': wrapLegacyPanel(DataRequestPanel),
   'platform-changelog': wrapLegacyPanel(PlatformChangelogPanel),
   partners: wrapLegacyPanel(PartnerManagementPanel),
-  organization: wrapLegacyPanel(OrgSettingsPanel),
+  organization: wrapLegacyPanel(OrgAdminPanel),
   'my-role': wrapLegacyPanel(MyRoleAccessPanel),
 };
