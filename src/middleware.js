@@ -73,6 +73,20 @@ export async function middleware(request) {
     return NextResponse.next({ request: { headers: forwardedHeaders } });
   }
 
+  /* Next.js prefetches links on hover/viewport. Skip the auth + profile gating
+     (a getUser() network round-trip plus profile queries) for prefetch
+     requests: a prefetch must never redirect, and the real navigation re-runs
+     this middleware and enforces everything. Without this, hovering the nav
+     fires a burst of getUser()/DB calls — one per prefetched link — which makes
+     page-to-page switching feel slow. Page routes only; /api handled above. */
+  const isPrefetch =
+    request.headers.get('next-router-prefetch') === '1' ||
+    request.headers.get('purpose') === 'prefetch' ||
+    (request.headers.get('sec-purpose') || '').includes('prefetch');
+  if (isPrefetch && !pathname.startsWith('/api/')) {
+    return NextResponse.next({ request: { headers: forwardedHeaders } });
+  }
+
   let response = NextResponse.next({ request: { headers: forwardedHeaders } });
 
   const supabase = createServerClient(
@@ -213,7 +227,9 @@ export async function middleware(request) {
   if (user && (onPartnerProtectedRoute || onUserProtectedRoute)) {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('email_verified, deleted_at, deletion_scheduled_for, is_disabled')
+      .select(
+        'email_verified, deleted_at, deletion_scheduled_for, is_disabled, investor_questionnaire_completed',
+      )
       .eq('id', user.id)
       .maybeSingle();
 
@@ -249,23 +265,24 @@ export async function middleware(request) {
     const isPublicRoute =
       pathname === '/' || pathname === '/waitlist' || pathname.startsWith('/select-plan');
 
+    // Org (university) members use their own flow and never take the consumer
+    // investor questionnaire — exempt org routes from the onboarding gate.
+    // Reuses the `profile` already fetched above (no second query).
+    const isOrgRoute =
+      pathname.startsWith('/org-team-hub') || pathname.startsWith('/org-trading');
+
     if (
       user &&
       !isOnboardingPage &&
       !isAuthPage &&
       !isApiRoute &&
       !isPublicRoute &&
-      !pathname.startsWith('/settings')
+      !isOrgRoute &&
+      !pathname.startsWith('/settings') &&
+      profile &&
+      profile.investor_questionnaire_completed !== true
     ) {
-      const { data: onboardProfile } = await supabase
-        .from('profiles')
-        .select('investor_questionnaire_completed')
-        .eq('id', user.id)
-        .maybeSingle();
-
-      if (onboardProfile && onboardProfile.investor_questionnaire_completed !== true) {
-        return NextResponse.redirect(new URL('/onboarding', request.url));
-      }
+      return NextResponse.redirect(new URL('/onboarding', request.url));
     }
 
     if (!isTradingPublicPath) {
