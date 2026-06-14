@@ -1,30 +1,91 @@
 /* ════════════════════════════════════════════════════════════
-   TEAM HUB HOME — "Market Wire" (variation D) redesign
-   Recreated from the design handoff against the production Ezana
-   design tokens (src/app/theme-variables.css). All classes are
-   namespaced `thw-` to avoid collisions with global styles.
-   Accent mapping: indigo = Team Hub nav/actions · emerald =
-   performance/brand · amber = exec tier/recognition · red = urgent.
+   TEAM HUB HOME — restyled to match the regular home page's
+   "broadsheet" aesthetic (src/app/(dashboard)/home/broadsheet.css):
+   light/editorial surfaces, square cards with hairline borders,
+   green/red numerals, navy (light) / green (dark) accents, flat —
+   no rounded corners, no shadows. Class names are unchanged so the
+   page markup (page.js) is untouched; this file only re-skins.
+
+   We re-map the production theme tokens the page consumes to
+   broadsheet values, scoped to .thw-root, so both these classes and
+   the page's inline var(--…) styles adopt the broadsheet palette.
+   Default block = dark broadsheet (app default); .light-mode = light.
    ════════════════════════════════════════════════════════════ */
 
 .thw-root {
-  /* Bleed past the dashboard main's 2rem side / 1.5rem top / 3rem bottom
-     padding so the wire + hero borders run edge-to-edge, then re-introduce
-     the design's 36px gutters per-section below. */
+  /* Bleed past the dashboard main's padding so wire + hero rules run
+     edge-to-edge; sections re-introduce 36px gutters below. */
   margin: -1.5rem -2rem -3rem;
+  font-family: var(--font-sans);
+
+  /* ── Broadsheet palette — DARK (default) ── */
+  --bg-primary: #0b0d10;
+  --bg-deep: #0b0d10;
+  --text-primary: #f0f6fc;
+  --text-secondary: #e2e8f0;
+  --text-muted: #8b949e;
+  --text-faint: #6b7280;
+  --text-ghost: #565d66;
+  --surface-card: rgba(255, 255, 255, 0.03);
+  --surface-card-hover: rgba(255, 255, 255, 0.06);
+  --border-primary: rgba(255, 255, 255, 0.08);
+  --border-secondary: rgba(255, 255, 255, 0.05);
+  --border-hover: rgba(255, 255, 255, 0.16);
+  --border-input: rgba(255, 255, 255, 0.08);
+  --emerald: #34d399;
+  --emerald-bg: rgba(52, 211, 153, 0.1);
+  --emerald-border: rgba(52, 211, 153, 0.3);
+  --emerald-bg-subtle: rgba(52, 211, 153, 0.05);
+  --negative: #f87171;
+  --negative-bg: rgba(248, 113, 113, 0.1);
+  --warning: #d4a72c;
+  --warning-bg: rgba(212, 167, 44, 0.1);
+  --chart-axis: rgba(255, 255, 255, 0.22);
+  --shadow-sm: none;
+
+  /* Flat flag / segmented-active treatment (navy in light, green in dark). */
+  --thw-flag-bg: #34d399;
+  --thw-flag-text: #0b0d10;
+  --thw-accent: #34d399;
+  --thw-accent-text: #0b0d10;
+
   background: var(--bg-primary);
   color: var(--text-secondary);
-  font-family: var(--font-sans);
-  /* Local fallback for the one token missing from production theme. */
-  --thw-deep: var(--bg-deep, #0f1419);
-  --thw-indigo-text: #a5b4fc;
-  --thw-indigo-text-hover: #c7d2fe;
+  letter-spacing: -0.008em;
+  -webkit-font-smoothing: antialiased;
 }
+
+/* ── Broadsheet palette — LIGHT (.light-mode) ── */
 body.light-mode .thw-root {
-  --thw-deep: #f1f5f9;
-  --thw-indigo-text: #4f46e5;
-  --thw-indigo-text-hover: #4338ca;
+  --bg-primary: #ffffff;
+  --bg-deep: #ffffff;
+  --text-primary: #0b0d10;
+  --text-secondary: #374151;
+  --text-muted: #6b7280;
+  --text-faint: #94928a;
+  --text-ghost: #9aa0a6;
+  --surface-card: #f9fafb;
+  --surface-card-hover: #f3f4f6;
+  --border-primary: rgba(0, 0, 0, 0.1);
+  --border-secondary: rgba(0, 0, 0, 0.06);
+  --border-hover: rgba(0, 0, 0, 0.18);
+  --border-input: rgba(0, 0, 0, 0.12);
+  --emerald: #059669;
+  --emerald-bg: rgba(5, 150, 105, 0.08);
+  --emerald-border: rgba(5, 150, 105, 0.25);
+  --emerald-bg-subtle: rgba(5, 150, 105, 0.05);
+  --negative: #dc2626;
+  --negative-bg: rgba(220, 38, 38, 0.07);
+  --warning: #b45309;
+  --warning-bg: rgba(180, 83, 9, 0.08);
+  --chart-axis: rgba(0, 0, 0, 0.22);
+
+  --thw-flag-bg: #0f172a;
+  --thw-flag-text: #ffffff;
+  --thw-accent: #0f172a;
+  --thw-accent-text: #ffffff;
 }
+
 .thw-root * {
   box-sizing: border-box;
 }
@@ -40,7 +101,7 @@ body.light-mode .thw-root {
   overflow: hidden;
   display: flex;
   align-items: center;
-  background: var(--thw-deep);
+  background: var(--bg-deep);
   border-bottom: 1px solid var(--border-primary);
 }
 .thw-ticker-track {
@@ -81,16 +142,17 @@ body.light-mode .thw-root {
 .thw-tick .thw-lbl {
   font-size: 8.5px;
   letter-spacing: 0.13em;
-  font-weight: 600;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 .thw-lbl.em {
   color: var(--emerald);
 }
 .thw-lbl.in {
-  color: var(--thw-indigo-text);
+  color: var(--text-primary);
 }
 .thw-lbl.am {
-  color: var(--warning);
+  color: var(--text-muted);
 }
 .thw-lbl.rd {
   color: var(--negative);
@@ -102,25 +164,29 @@ body.light-mode .thw-root {
   color: var(--negative);
 }
 
-/* ── Shared: eyebrows, section heads, ticker chips ─────────── */
+/* ── Shared: eyebrows, section heads, ticker tags ──────────── */
 .thw-eyebrow {
   font-family: var(--font-mono);
   font-size: 11px;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  font-weight: 600;
-  color: var(--emerald);
+  font-weight: 700;
+  color: var(--text-faint);
 }
 .thw-section-head {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
   gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-primary);
 }
 .thw-section-meta {
   font-size: 10.5px;
   color: var(--text-faint);
   font-family: var(--font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 .thw-col-label {
   font-family: var(--font-mono);
@@ -133,16 +199,17 @@ body.light-mode .thw-root {
   align-items: center;
   gap: 6px;
 }
+/* Tickers render as bold editorial tags, not pills. */
 .thw-tkr {
   font-family: var(--font-mono);
   font-size: 9.5px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.05em;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: rgba(99, 102, 241, 0.12);
-  color: var(--thw-indigo-text);
-  border: 1px solid rgba(99, 102, 241, 0.25);
+  padding: 1px 5px;
+  border-radius: 0;
+  background: var(--surface-card);
+  color: var(--text-primary);
+  border: 1px solid var(--border-secondary);
   flex-shrink: 0;
 }
 .thw-tkr.em {
@@ -161,9 +228,9 @@ body.light-mode .thw-root {
   border: none;
   padding: 0;
   cursor: pointer;
-  color: var(--thw-indigo-text);
+  color: var(--text-primary);
   font-size: 12.5px;
-  font-weight: 500;
+  font-weight: 600;
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -171,7 +238,7 @@ body.light-mode .thw-root {
   transition: color 0.12s ease-out;
 }
 .thw-link:hover {
-  color: var(--thw-indigo-text-hover);
+  color: var(--emerald);
 }
 
 /* ── 3. Hero — fund value + chart ──────────────────────────── */
@@ -182,11 +249,7 @@ body.light-mode .thw-root {
   align-items: start;
   padding: 30px 36px 28px;
   border-bottom: 1px solid var(--border-primary);
-  background: radial-gradient(
-    ellipse 640px 260px at 14% 118%,
-    rgba(16, 185, 129, 0.07),
-    transparent
-  );
+  background: var(--bg-primary);
 }
 .thw-display {
   font-family: var(--font-mono);
@@ -221,7 +284,7 @@ body.light-mode .thw-root {
   display: flex;
   margin-top: 20px;
   border: 1px solid var(--border-primary);
-  border-radius: 10px;
+  border-radius: 0;
   overflow: hidden;
   width: fit-content;
   max-width: 100%;
@@ -258,10 +321,9 @@ body.light-mode .thw-root {
 
 .thw-chart-card {
   border: 1px solid var(--border-primary);
-  border-radius: 14px;
+  border-radius: 0;
   padding: 14px 18px 6px;
   background: var(--surface-card);
-  box-shadow: var(--shadow-sm);
 }
 .thw-chart-head {
   display: flex;
@@ -284,7 +346,7 @@ body.light-mode .thw-root {
   font-family: var(--font-mono);
   font-size: 10.5px;
   padding: 5px 10px;
-  border-radius: 6px;
+  border-radius: 0;
   background: transparent;
   color: var(--text-muted);
   border: 1px solid var(--border-primary);
@@ -299,9 +361,9 @@ body.light-mode .thw-root {
   border-color: var(--border-hover);
 }
 .thw-range.active {
-  color: var(--emerald);
-  background: var(--emerald-bg);
-  border-color: var(--emerald-border);
+  color: var(--thw-accent-text);
+  background: var(--thw-accent);
+  border-color: var(--thw-accent);
 }
 .thw-chart {
   height: 148px;
@@ -329,7 +391,7 @@ body.light-mode .thw-root {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   border: 1px solid var(--border-primary);
-  border-radius: 12px;
+  border-radius: 0;
   margin-top: 12px;
   overflow: hidden;
   background: var(--surface-card);
@@ -409,16 +471,13 @@ body.light-mode .thw-root {
 
 .thw-card {
   border: 1px solid var(--border-primary);
-  border-radius: 12px;
+  border-radius: 0;
   background: var(--surface-card);
-  box-shadow: var(--shadow-sm);
-  transition:
-    border-color 0.15s ease-out,
-    background 0.15s ease-out;
+  box-shadow: none;
+  transition: border-color 0.15s ease-out;
 }
 .thw-card:hover {
   border-color: var(--border-hover);
-  background: var(--surface-card-hover);
 }
 .thw-card-head {
   display: flex;
@@ -502,13 +561,13 @@ body.light-mode .thw-root {
   color: var(--negative);
 }
 
-/* Shortcuts (⌘K + pinned tiles + popover) */
+/* Shortcuts (⌘K bar + tiles) */
 .thw-cmd-search {
   display: flex;
   align-items: center;
   gap: 8px;
   border: 1px solid var(--border-input);
-  border-radius: 8px;
+  border-radius: 0;
   padding: 0 12px;
   height: 36px;
   color: var(--text-ghost);
@@ -528,11 +587,11 @@ body.light-mode .thw-root {
   font-family: var(--font-mono);
   font-size: 10px;
   border: 1px solid var(--border-primary);
-  border-radius: 4px;
+  border-radius: 0;
   padding: 1px 6px;
   color: var(--text-faint);
 }
-/* All 14 destinations visible — compact inline tiles, 2 per row */
+/* All 14 destinations visible — compact square cells, 2 per row */
 .thw-tiles {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -544,12 +603,12 @@ body.light-mode .thw-root {
   flex-direction: row;
   align-items: center;
   gap: 8px;
-  padding: 7px 9px;
-  border-radius: 8px;
+  padding: 8px 10px;
+  border-radius: 0;
   cursor: pointer;
-  background: rgba(99, 102, 241, 0.1);
-  border: 1px solid rgba(99, 102, 241, 0.22);
-  color: var(--thw-indigo-text-hover);
+  background: var(--surface-card);
+  border: 1px solid var(--border-primary);
+  color: var(--text-primary);
   font-size: 11px;
   font-weight: 600;
   text-align: left;
@@ -558,22 +617,26 @@ body.light-mode .thw-root {
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 0;
-  transition: background 0.12s ease-out;
+  transition:
+    background 0.12s ease-out,
+    border-color 0.12s ease-out;
 }
 .thw-tile svg {
   flex-shrink: 0;
+  color: var(--text-faint);
 }
 .thw-tile:hover {
-  background: rgba(99, 102, 241, 0.18);
+  background: var(--surface-card-hover);
+  border-color: var(--border-hover);
 }
 
-/* Task management */
+/* Task management — dotted-rule rows */
 .thw-task {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 0;
-  border-top: 1px solid var(--border-secondary);
+  padding: 11px 0;
+  border-top: 1px dotted var(--border-primary);
 }
 .thw-task:first-child {
   border-top: none;
@@ -604,15 +667,15 @@ body.light-mode .thw-root {
   text-decoration-color: var(--text-ghost);
 }
 
-/* Deadlines */
+/* Deadlines — editorial cards (urgency carried in red text/flag) */
 .thw-deadline {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid rgba(239, 68, 68, 0.18);
-  background: var(--negative-bg);
+  border-radius: 0;
+  border: 1px solid var(--border-primary);
+  background: var(--surface-card);
 }
 .thw-deadline + .thw-deadline {
   margin-top: 8px;
@@ -647,9 +710,9 @@ body.light-mode .thw-root {
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
-  border-radius: 10px;
-  border: 1px solid rgba(99, 102, 241, 0.22);
-  background: rgba(99, 102, 241, 0.06);
+  border-radius: 0;
+  border: 1px solid var(--border-primary);
+  background: var(--surface-card);
 }
 .thw-you-name {
   font-size: 13.5px;
@@ -658,7 +721,7 @@ body.light-mode .thw-root {
 }
 .thw-you-role {
   font-size: 11.5px;
-  color: var(--thw-indigo-text);
+  color: var(--text-muted);
   margin-top: 1px;
 }
 .thw-avatar {
@@ -670,20 +733,21 @@ body.light-mode .thw-root {
   font-weight: 700;
   flex-shrink: 0;
 }
+/* Neutral-in-palette tiers: leadership bold, PM muted, analyst green. */
 .thw-avatar.exec {
-  background: var(--warning-bg);
-  color: var(--warning);
-  border: 1.5px solid rgba(251, 191, 36, 0.5);
+  background: var(--surface-card);
+  color: var(--text-primary);
+  border: 1.5px solid var(--border-hover);
 }
 .thw-avatar.pm {
-  background: rgba(99, 102, 241, 0.12);
-  color: var(--thw-indigo-text);
-  border: 1.5px solid rgba(99, 102, 241, 0.45);
+  background: var(--surface-card);
+  color: var(--text-muted);
+  border: 1.5px solid var(--border-primary);
 }
 .thw-avatar.an {
   background: var(--emerald-bg);
   color: var(--emerald);
-  border: 1.5px solid rgba(16, 185, 129, 0.45);
+  border: 1.5px solid var(--emerald-border);
 }
 .thw-avatar-stack {
   display: flex;
@@ -696,17 +760,17 @@ body.light-mode .thw-root {
   margin-left: 0;
 }
 
-/* Status badges */
+/* Status badges — square editorial tags */
 .thw-badge {
   display: inline-flex;
   align-items: center;
   font-family: var(--font-mono);
-  font-size: 9.5px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  padding: 3px 8px;
-  border-radius: 999px;
+  padding: 2px 7px;
+  border-radius: 0;
   border: 1px solid transparent;
   white-space: nowrap;
 }
@@ -716,28 +780,28 @@ body.light-mode .thw-root {
   border-color: var(--emerald-border);
 }
 .thw-badge-warning {
-  background: var(--warning-bg);
-  color: var(--warning);
-  border-color: rgba(251, 191, 36, 0.25);
+  background: var(--surface-card);
+  color: var(--text-secondary);
+  border-color: var(--border-primary);
 }
 .thw-badge-negative {
   background: var(--negative-bg);
   color: var(--negative);
-  border-color: rgba(239, 68, 68, 0.25);
+  border-color: var(--negative);
 }
 .thw-badge-info {
-  background: rgba(59, 130, 246, 0.1);
-  color: var(--info, #3b82f6);
-  border-color: rgba(59, 130, 246, 0.25);
+  background: var(--thw-accent);
+  color: var(--thw-accent-text);
+  border-color: var(--thw-accent);
 }
-/* Clickable status badge (task progression) — keeps badge visuals on a button */
+/* Clickable status badge (task progression) */
 button.thw-badge-btn {
   cursor: pointer;
   font-family: var(--font-mono);
   transition: filter 0.12s ease-out;
 }
 button.thw-badge-btn:hover:not(:disabled) {
-  filter: brightness(1.25);
+  filter: brightness(1.15);
 }
 button.thw-badge-btn:disabled {
   cursor: default;
@@ -745,8 +809,8 @@ button.thw-badge-btn:disabled {
 
 /* ── Loading skeleton ──────────────────────────────────────── */
 .thw-skel {
-  background: var(--emerald-bg-subtle, rgba(16, 185, 129, 0.04));
-  border-radius: 8px;
+  background: var(--surface-card-hover);
+  border-radius: 0;
   animation: thw-pulse 1.3s ease-in-out infinite;
 }
 @keyframes thw-pulse {

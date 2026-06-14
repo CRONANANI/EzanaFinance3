@@ -1,16 +1,11 @@
-import { Suspense } from 'react';
-import { OrgDirectoryClient } from './OrgDirectoryClient';
+import { OrgFinalClient } from './OrgFinalClient';
 
 export const metadata = {
   title: 'Organization | Ezana Finance',
   description:
-    'Investment council directory — collapsible reporting tree, member profiles, desk stats, and hierarchical role management.',
+    'Investment council — chain of command and the full member roster, grouped by leadership and sector desk.',
 };
 
 export default function OrgChartPage() {
-  return (
-    <Suspense fallback={<div style={{ padding: '2rem', color: 'var(--text-muted)' }}>Loading organization…</div>}>
-      <OrgDirectoryClient />
-    </Suspense>
-  );
+  return <OrgFinalClient />;
 }
