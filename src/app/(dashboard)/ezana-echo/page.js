@@ -145,9 +145,7 @@ export default function EzanaEchoPage() {
         <div className="echo-v3-page-head">
           <div className="echo-v3-page-head-left">
             <h1 className="echo-v3-h1">
-              Markets, decoded for builders
-              <br />
-              and <span className="echo-v3-h1-accent">owners.</span>
+              Markets, <span className="echo-v3-h1-accent">made clear.</span>
             </h1>
             <p className="echo-v3-page-sub">
               Long-form analysis on the companies, commodities, and policies moving capital —
@@ -236,7 +234,7 @@ export default function EzanaEchoPage() {
       <section className="echo-v3-latest-section">
         <div className="echo-v3-section-head">
           <div>
-            <h3 className="echo-v3-sec-h">The latest</h3>
+            <h3 className="echo-v3-sec-h">Featured</h3>
             <p className="echo-v3-sec-sub">
               Financial news, analysis, and insights curated for Ezana investors.
             </p>

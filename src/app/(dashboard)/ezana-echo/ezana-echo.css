@@ -15,7 +15,8 @@
 
 /* ── Hero band ──────────────────────────────────────────── */
 .echo-v3-hero-band {
-  padding: 56px 48px 40px;
+  /* Tight top padding so the headline sits just under the nav (no big gap). */
+  padding: 20px 48px 36px;
   /* No tinted band or divider — blend into the page so the whole surface
      reads as one continuous color matching the top nav. */
   background: transparent;
@@ -28,7 +29,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 32px;
-  margin-bottom: 40px;
+  margin-bottom: 24px;
 }
 
 .echo-v3-page-head-left {
@@ -66,16 +67,17 @@
   box-shadow: 0 0 8px var(--emerald-glow);
 }
 
-/* H1 */
+/* H1 — kept to a single clean line on the editorial home page */
 .echo-v3-h1 {
   font-family: var(--font-sans);
   font-size: clamp(1.75rem, 4vw, 46px);
   font-weight: 700;
   letter-spacing: -0.025em;
-  line-height: 1.05;
-  margin: 0 0 12px;
+  line-height: 1.1;
+  margin: 0 0 10px;
   color: var(--text-primary);
-  max-width: 780px;
+  max-width: none;
+  white-space: nowrap;
 }
 
 .echo-v3-h1-accent {
@@ -748,7 +750,7 @@
 /* 1024–1279: compress hero */
 @media (max-width: 1279px) {
   .echo-v3-hero-band {
-    padding: 48px 40px 36px;
+    padding: 20px 40px 36px;
   }
 
   .echo-v3-latest-section {
@@ -771,7 +773,7 @@
   }
 
   .echo-v3-hero-band {
-    padding: 40px 32px 32px;
+    padding: 20px 32px 32px;
   }
 
   .echo-v3-latest-section {
@@ -801,7 +803,7 @@
 /* ≤767: single-column throughout */
 @media (max-width: 767px) {
   .echo-v3-hero-band {
-    padding: 32px 20px 24px;
+    padding: 16px 20px 24px;
   }
 
   .echo-v3-latest-section {
@@ -810,6 +812,7 @@
 
   .echo-v3-h1 {
     font-size: 28px;
+    white-space: normal;
   }
 
   .echo-v3-grid {
