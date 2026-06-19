@@ -604,11 +604,11 @@ export default function PricingPage() {
                 </div>
                 <p className="plan-annual-note">
                   {plan.isFree
-                    ? 'No credit card required'
+                    ? ''
                     : price === null
                       ? 'Tailored to your organization'
                       : billing === 'yearly'
-                        ? `Annual invoice of $${price * 12}`
+                        ? ''
                         : 'Billed monthly · cancel anytime'}
                 </p>
 
@@ -623,13 +623,9 @@ export default function PricingPage() {
                   <span>{ctaLabel}</span>
                   {!isPending ? <ArrowRight size={16} aria-hidden /> : null}
                 </button>
-                <p className="plan-finesub">
-                  {plan.isFree
-                    ? 'No credit card required'
-                    : isContact
-                      ? 'We reply within 1 business day'
-                      : 'Cancel anytime during trial · No charge'}
-                </p>
+                {isContact ? (
+                  <p className="plan-finesub">We reply within 1 business day</p>
+                ) : null}
 
                 <div className="plan-features-divider" />
                 <div className="plan-features-label">What&apos;s included</div>
