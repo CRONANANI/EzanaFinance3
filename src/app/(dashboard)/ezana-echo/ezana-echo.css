@@ -5,7 +5,8 @@
 
 /* ── Page wrapper ───────────────────────────────────────── */
 .echo-v3-page {
-  background: var(--bg-primary);
+  /* One continuous surface with the top navbar (same token it uses). */
+  background: var(--nav-bg-solid);
   color: var(--text-primary);
   font-family: var(--font-sans);
   font-size: 14px;
@@ -15,10 +16,9 @@
 /* ── Hero band ──────────────────────────────────────────── */
 .echo-v3-hero-band {
   padding: 56px 48px 40px;
-  background:
-    radial-gradient(1200px 540px at 110% -20%, var(--emerald-bg), transparent 60%),
-    radial-gradient(900px 460px at -10% 110%, var(--emerald-bg-subtle), transparent 60%);
-  border-bottom: 1px solid var(--border-secondary);
+  /* No tinted band or divider — blend into the page so the whole surface
+     reads as one continuous color matching the top nav. */
+  background: transparent;
   position: relative;
 }
 
@@ -158,7 +158,7 @@
 
 /* Hero image cell */
 .echo-v3-hero-img {
-  min-height: 480px;
+  min-height: 180px;
   position: relative;
   overflow: hidden;
   background: linear-gradient(160deg, #0e1a16 0%, #0f2a22 45%, #103a2c 100%);
@@ -229,9 +229,10 @@
 
 /* Hero body cell */
 .echo-v3-hero-body {
-  padding: 40px 40px 32px;
+  padding: 22px 32px;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   background: var(--bg-secondary);
 }
 
@@ -245,7 +246,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
   font-variant-numeric: tabular-nums;
 }
 
@@ -260,25 +261,33 @@
 
 .echo-v3-hero-title {
   font-family: var(--font-sans);
-  font-size: clamp(1.25rem, 3vw, 34px);
+  font-size: clamp(1.2rem, 2.6vw, 28px);
   font-weight: 700;
   letter-spacing: -0.022em;
-  line-height: 1.1;
-  margin: 0 0 16px;
+  line-height: 1.15;
+  margin: 0 0 10px;
   color: var(--text-primary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .echo-v3-hero-dek {
-  font-size: 15px;
-  line-height: 1.6;
+  font-size: 14px;
+  line-height: 1.55;
   color: var(--text-secondary);
-  margin: 0 0 28px;
+  margin: 0 0 14px;
   font-weight: 400;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-/* Stat grid */
+/* Stat grid — hidden on the slimmed featured pill (placeholder figures). */
 .echo-v3-hero-stats {
-  display: grid;
+  display: none;
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   margin-top: auto;
@@ -318,9 +327,9 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-top: 22px;
-  padding-top: 22px;
-  border-top: 1px solid var(--border-secondary);
+  margin-top: 14px;
+  padding-top: 0;
+  border-top: none;
 }
 
 .echo-v3-hero-author-name {
@@ -502,11 +511,15 @@
 .echo-v3-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+  /* Equal-width columns + equal-height rows so every card is identical in
+     both dimensions regardless of title/excerpt length. */
+  grid-auto-rows: 1fr;
   gap: 24px;
 }
 
 .echo-v3-card-wrap {
   position: relative;
+  height: 100%;
 }
 
 .echo-v3-card {
@@ -517,6 +530,7 @@
   box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
+  height: 100%;
   text-decoration: none;
   color: inherit;
   transition:
@@ -532,6 +546,7 @@
 /* Card image cell */
 .echo-v3-card-img {
   height: 220px;
+  flex-shrink: 0;
   position: relative;
   overflow: hidden;
   background: linear-gradient(160deg, #1b3a5a 0%, var(--bg-primary) 100%);
@@ -622,6 +637,10 @@
   line-height: 1.3;
   margin: 0 0 10px;
   color: var(--text-primary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .echo-v3-card-dek {
@@ -629,6 +648,10 @@
   color: var(--text-muted);
   line-height: 1.6;
   margin: 0 0 18px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .echo-v3-card-tags {
@@ -744,7 +767,7 @@
   }
 
   .echo-v3-hero-img {
-    min-height: 320px;
+    min-height: 160px;
   }
 
   .echo-v3-hero-band {

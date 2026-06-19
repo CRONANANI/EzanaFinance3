@@ -32,10 +32,11 @@ export function Navbar() {
   const isTermsOfService = pathname === '/terms-of-service';
   const isAccessibility = pathname === '/accessibility';
   const isEzanaEcho = pathname?.startsWith('/ezana-echo');
-  // Echo articles are publicly readable — show the landing navbar to
-  // unauthenticated visitors arriving from the landing page. Signed-in
-  // users get the regular dashboard navbar so in-app navigation stays
-  // consistent.
+  // Ezana Echo is a public reading destination reached from the landing page,
+  // so it ALWAYS renders the marketing navbar — never the authed global
+  // dashboard navbar. This guarantees a logged-out visitor can never see the
+  // logged-in app chrome on Echo, and removes any dependency on a possibly
+  // stale client-side session for the nav decision.
   // Public legal pages (privacy / terms / accessibility) always use the
   // marketing navbar — even for signed-in users — so reaching them from the
   // landing footer never surfaces the logged-in app chrome.
@@ -46,7 +47,7 @@ export function Navbar() {
     isPrivacyPolicy ||
     isTermsOfService ||
     isAccessibility ||
-    (isEzanaEcho && !isAuthenticated);
+    isEzanaEcho;
   const isResearchActive =
     pathname?.includes('/inside-the-capitol') ||
     pathname?.includes('/company-research') ||
