@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { CREATOR_TIER_LIST } from '@/lib/creator-tiers';
 import './partner-management-panel.css';
 
 export function PartnerManagementPanel() {
@@ -57,7 +58,40 @@ export function PartnerManagementPanel() {
         setError(data.error || 'Toggle failed');
         return;
       }
-      setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, is_partner: !currentValue } : u)));
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === userId
+            ? {
+                ...u,
+                is_partner: !currentValue,
+                creator_tier: !currentValue ? u.creator_tier || 'creator' : null,
+              }
+            : u,
+        ),
+      );
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setPendingUserId(null);
+    }
+  };
+
+  const setTier = async (userId, tier) => {
+    setPendingUserId(userId);
+    try {
+      const res = await fetch('/api/admin/users/partner-flag', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, isPartner: true, creatorTier: tier }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || 'Update failed');
+        return;
+      }
+      setUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, is_partner: true, creator_tier: tier } : u)),
+      );
     } catch (e) {
       setError(e.message);
     } finally {
@@ -81,12 +115,14 @@ export function PartnerManagementPanel() {
       <header className="pmp-header">
         <h2 className="pmp-title">Partner Management</h2>
         <p className="pmp-subtitle">
-          Toggle partner status on any user. Partners get a gold verified badge on profiles
-          and gold-ring styling on their initials in watchlist popups.
+          Toggle partner status on any user, then set their creator tier. Every partner is a
+          verified Creator; promote standout voices to Featured (discovery placement) or Signature
+          (marquee). The designation shows on their posts and profile across the community.
         </p>
         <div className="pmp-summary">
           <span className="pmp-summary-stat">
-            <strong>{partnerCount}</strong> {partnerCount === 1 ? 'partner' : 'partners'} in current view
+            <strong>{partnerCount}</strong> {partnerCount === 1 ? 'partner' : 'partners'} in current
+            view
           </span>
         </div>
       </header>
@@ -131,15 +167,42 @@ export function PartnerManagementPanel() {
                 </div>
               </div>
 
-              <button
-                type="button"
-                className={`pmp-toggle ${u.is_partner ? 'is-on' : ''}`}
-                onClick={() => togglePartner(u.id, u.is_partner)}
-                disabled={pendingUserId === u.id}
-                aria-label={`Toggle partner status for ${u.full_name || u.username}`}
-              >
-                <span className="pmp-toggle-knob" />
-              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                {u.is_partner && (
+                  <select
+                    className="pmp-tier-select"
+                    value={u.creator_tier || 'creator'}
+                    onChange={(e) => setTier(u.id, e.target.value)}
+                    disabled={pendingUserId === u.id}
+                    aria-label={`Creator tier for ${u.full_name || u.username}`}
+                    style={{
+                      background: 'var(--bg-tertiary, #161b22)',
+                      color: 'inherit',
+                      border: '1px solid var(--border-secondary, #30363d)',
+                      borderRadius: 8,
+                      padding: '4px 8px',
+                      fontSize: 12,
+                      fontFamily: 'inherit',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {CREATOR_TIER_LIST.map((t) => (
+                      <option key={t.key} value={t.key}>
+                        {t.label}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                <button
+                  type="button"
+                  className={`pmp-toggle ${u.is_partner ? 'is-on' : ''}`}
+                  onClick={() => togglePartner(u.id, u.is_partner)}
+                  disabled={pendingUserId === u.id}
+                  aria-label={`Toggle partner status for ${u.full_name || u.username}`}
+                >
+                  <span className="pmp-toggle-knob" />
+                </button>
+              </div>
             </li>
           ))}
         </ul>

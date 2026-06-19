@@ -3,7 +3,9 @@
 import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { Avatar, VerifiedTick, SkillBadge } from './Atoms';
+import { CreatorBadge } from './CreatorBadge';
 import { getTierColor, getTierLabel } from '@/lib/elo-tier-colors';
+import { getCreatorTier } from '@/lib/creator-tiers';
 import { RichContent } from '../_legacy_v1/RichContent';
 import { MiniChart } from '../_legacy_v1/MiniChart';
 
@@ -637,6 +639,14 @@ export function QuotedPost({ quoted }) {
         >
           {author.display_name}
         </span>
+        {author.isPartner && (
+          <CreatorBadge
+            tierKey={author.creatorTier}
+            type={author.partnerType}
+            size={11}
+            showLabel={false}
+          />
+        )}
         <span style={{ fontSize: 11, color: 'var(--text-faint)' }}>
           · {quoted.timeAgo || `${quoted.minsAgo ?? 0}m ago`}
         </span>
@@ -691,10 +701,11 @@ export function PostHeader({ post, showSkill = true, onDelete }) {
   };
 
   const wins = post.conviction_wins ?? post.convictionWins ?? 0;
+  const creatorTier = u.isPartner ? getCreatorTier(u.creatorTier) : null;
 
   return (
     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 10 }}>
-      <Avatar author={u} size={40} />
+      <Avatar author={u} size={40} ring={!!creatorTier} ringColor={creatorTier?.ring} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
           <span
@@ -703,11 +714,10 @@ export function PostHeader({ post, showSkill = true, onDelete }) {
           >
             {u.display_name || 'Member'}
           </span>
-          {u.isVerified && <VerifiedTick size={13} gold={u.isLegendary} />}
-          {u.isPartner && (
-            <span className="ez-pill ez-pill--gold" style={{ padding: '1px 7px', fontSize: 9 }}>
-              Partner
-            </span>
+          {creatorTier ? (
+            <CreatorBadge tier={creatorTier} type={u.partnerType} size={13} />
+          ) : (
+            u.isVerified && <VerifiedTick size={13} gold={u.isLegendary} />
           )}
         </div>
         <div

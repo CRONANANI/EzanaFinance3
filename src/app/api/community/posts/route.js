@@ -62,6 +62,9 @@ function mapAuthor(prof, viewerId) {
     display_name: settings.display_name || '',
     bio: settings.bio || '',
     avatar_url: settings.avatar_url || '',
+    isPartner: !!prof.is_partner,
+    partnerType: prof.partner_type || null,
+    creatorTier: prof.creator_tier || (prof.is_partner ? 'creator' : null),
   };
 }
 
@@ -127,7 +130,10 @@ async function buildEnrichedResponse(supabase, user, list) {
   let tierMap = {};
   if (userIds.length > 0) {
     const [{ data: profs }, { data: eloRows }] = await Promise.all([
-      admin.from('profiles').select('id, username, user_settings').in('id', userIds),
+      admin
+        .from('profiles')
+        .select('id, username, user_settings, is_partner, partner_type, creator_tier')
+        .in('id', userIds),
       admin.from('user_elo').select('user_id, tier').in('user_id', userIds),
     ]);
     profileMap = Object.fromEntries((profs || []).map((p) => [p.id, p]));
@@ -518,7 +524,7 @@ export async function POST(request) {
 
     const { data: prof } = await admin
       .from('profiles')
-      .select('id, username, user_settings')
+      .select('id, username, user_settings, is_partner, partner_type, creator_tier')
       .eq('id', user.id)
       .maybeSingle();
 

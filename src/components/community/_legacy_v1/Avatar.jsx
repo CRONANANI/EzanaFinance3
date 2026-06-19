@@ -2,11 +2,13 @@
 
 import { getInitials } from '@/lib/community-utils';
 
-export function Avatar({ author, size = 36, ring = false }) {
+export function Avatar({ author, size = 36, ring = false, ringColor }) {
   const displayName = author?.display_name || 'Member';
   const initials =
     author?.initials || getInitials(displayName, author?.username || author?.avatar_url);
   const [a, b] = author?.gradient || ['#10b981', '#047857'];
+  const ringTone = ringColor || 'var(--emerald)';
+  const ringShadow = ring ? `0 0 0 2px var(--bg-primary), 0 0 0 3.5px ${ringTone}` : 'none';
 
   if (author?.avatar_url) {
     return (
@@ -19,7 +21,7 @@ export function Avatar({ author, size = 36, ring = false }) {
           height: size,
           borderRadius: '50%',
           objectFit: 'cover',
-          boxShadow: ring ? '0 0 0 2px var(--bg-primary), 0 0 0 3.5px var(--emerald)' : 'none',
+          boxShadow: ringShadow,
         }}
       />
     );
@@ -33,7 +35,7 @@ export function Avatar({ author, size = 36, ring = false }) {
         height: size,
         background: `linear-gradient(135deg, ${a} 0%, ${b} 100%)`,
         fontSize: Math.max(10, size * 0.36),
-        boxShadow: ring ? '0 0 0 2px var(--bg-primary), 0 0 0 3.5px var(--emerald)' : 'none',
+        boxShadow: ringShadow,
       }}
     >
       {initials}

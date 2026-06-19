@@ -27,7 +27,7 @@ export async function GET(request) {
 
     let query = supabaseAdmin
       .from('profiles')
-      .select('id, username, full_name, is_partner, created_at')
+      .select('id, username, full_name, is_partner, creator_tier, created_at')
       .order('is_partner', { ascending: false })
       .order('created_at', { ascending: false })
       .limit(limit);

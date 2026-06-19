@@ -14,11 +14,11 @@ import { ProfileTradeNotes } from './ProfileTradeNotes';
 import CopyRequestButton from './CopyRequestButton';
 import { useProfileActivity } from '@/hooks/useProfileActivity';
 import { computeProfileMetrics } from '@/lib/profile-metrics';
+import { CreatorBadge } from '@/components/community/redesign_v2/CreatorBadge';
 import './copy-request-button.css';
 
-function badgePills(stats, isPartner) {
+function badgePills(stats) {
   const pills = [];
-  if (isPartner) pills.push({ label: '⚡ Partner', key: 'p' });
   if (stats.totalTrades >= 20) pills.push({ label: 'SERIAL TRADER', key: 's' });
   if (stats.winRate >= 65) pills.push({ label: '⚡ TOP 8', key: 't' });
   if (pills.length === 0) pills.push({ label: 'TRADER', key: 'd' });
@@ -511,7 +511,7 @@ export function ProfilePageClient({ username }) {
   }
 
   const display = profile.display_name || profile.full_name || profile.username;
-  const pills = badgePills(statsQuick, profile.is_partner);
+  const pills = badgePills(statsQuick);
 
   return (
     <div className="dashboard-page-inset db-page comm-profile-page font-sans">
@@ -534,7 +534,13 @@ export function ProfilePageClient({ username }) {
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
                       {profile.username || display}
                     </h1>
-                    {profile.is_partner && <span title="Partner">⚡</span>}
+                    {profile.is_partner && (
+                      <CreatorBadge
+                        tierKey={profile.creator_tier}
+                        type={profile.partner_type}
+                        size={16}
+                      />
+                    )}
                   </div>
                   <div className="mt-1 text-sm text-gray-500 dark:text-[#6b7280]">
                     {followerCount} {followerCount === 1 ? 'follower' : 'followers'}

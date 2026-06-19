@@ -28,7 +28,7 @@ export const GET = withApiGuard(
       const { data: profileRow, error } = await admin
         .from('profiles')
         .select(
-          'id, user_settings, email, full_name, is_partner, partner_type, partner_verified_at',
+          'id, user_settings, email, full_name, is_partner, partner_type, creator_tier, partner_verified_at',
         )
         .eq('id', userId)
         .maybeSingle();
@@ -126,6 +126,8 @@ export const GET = withApiGuard(
           avatar_url: settings.avatar_url || '',
           is_partner: profileRow.is_partner === true,
           partner_type: profileRow.partner_type || null,
+          creator_tier:
+            profileRow.creator_tier || (profileRow.is_partner === true ? 'creator' : null),
           partner_verified_at: profileRow.partner_verified_at || null,
           privacy_show_portfolio: settings.privacy_show_portfolio === true,
           privacy_show_trades: settings.privacy_show_trades === true,
