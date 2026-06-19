@@ -58,23 +58,27 @@ async function routeAfterSession(supabase, router, type, redirectParam) {
     return;
   }
 
-  if (type === 'partner') {
-    let isPartner = !!user.user_metadata?.partner_role;
-    if (!isPartner) {
-      const { data: partner } = await supabase
-        .from('partners')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('status', 'active')
-        .maybeSingle();
-      isPartner = !!partner;
-    }
-    if (isPartner) {
-      router.replace('/partner-home');
-      return;
-    }
+  // Resolve partner status for every flow so partners land in the partner
+  // experience even when they arrive through the standard (non-partner) sign-in.
+  let isPartner = !!user.user_metadata?.partner_role;
+  if (!isPartner) {
+    const { data: partner } = await supabase
+      .from('partners')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('status', 'active')
+      .maybeSingle();
+    isPartner = !!partner;
+  }
+
+  if (type === 'partner' && !isPartner) {
     await supabase.auth.signOut();
     router.replace('/auth/partner-denied');
+    return;
+  }
+
+  if (isPartner) {
+    router.replace(profile.onboarding_completed === true ? '/partner-home' : '/onboarding');
     return;
   }
 

@@ -31,31 +31,50 @@ const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
   }, [oauthErrorMessage]);
 
   const completeLogin = async () => {
-    if (variant === 'partner') {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      let isPartner = !!user?.user_metadata?.partner_role;
-      if (!isPartner) {
-        const { data: partner } = await supabase
-          .from('partners')
-          .select('id')
-          .eq('user_id', user?.id)
-          .eq('status', 'active')
-          .single();
-        isPartner = !!partner;
-      }
-      if (!isPartner) {
-        await supabase.auth.signOut();
-        setError(
-          'This account is not registered as a partner. Contact partnersupport@ezana.world or apply to become a partner.',
-        );
-        return;
-      }
-      router.push('/partner-home');
-    } else {
-      router.push(destination);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    // Resolve partner status — metadata fast-path, then the partners table.
+    let isPartner = !!user?.user_metadata?.partner_role;
+    if (!isPartner && user?.id) {
+      const { data: partner } = await supabase
+        .from('partners')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .maybeSingle();
+      isPartner = !!partner;
     }
+
+    // The dedicated partner login form rejects non-partner accounts.
+    if (variant === 'partner' && !isPartner) {
+      await supabase.auth.signOut();
+      setError(
+        'This account is not registered as a partner. Contact partnersupport@ezana.world or apply to become a partner.',
+      );
+      return;
+    }
+
+    // Partners always land in the partner experience — even when they sign in
+    // through the standard login form — so they're never dropped into the
+    // consumer dashboard. First-login partners (onboarding unfinished) see the
+    // partner onboarding questionnaire first.
+    if (isPartner) {
+      let onboarded = false;
+      if (user?.id) {
+        const { data: prof } = await supabase
+          .from('profiles')
+          .select('onboarding_completed')
+          .eq('id', user.id)
+          .maybeSingle();
+        onboarded = prof?.onboarding_completed === true;
+      }
+      router.push(onboarded ? '/partner-home' : '/onboarding');
+      return;
+    }
+
+    router.push(destination);
   };
 
   const handleMfaVerify = async (e) => {
