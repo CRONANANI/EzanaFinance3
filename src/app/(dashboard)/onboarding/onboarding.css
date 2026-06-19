@@ -985,3 +985,72 @@ body.light-mode .onboarding-org-role-badge {
     flex-direction: column;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Partner onboarding — the page is one continuous surface matching the global
+   nav, with the partner gold/champagne accent (#d4a853). Scoped to
+   .iq-container--partner so the investor & org questionnaires are untouched.
+   Surfaces and text use theme tokens so it reads correctly in light AND dark.
+   ───────────────────────────────────────────────────────────────────────── */
+.iq-container--partner {
+  background: var(--nav-bg-solid, #ffffff);
+}
+.iq-container--partner .iq-card {
+  background: var(--surface-card, #ffffff);
+  border-color: var(--border-primary, #e5e7eb);
+  color: var(--text-primary, #111827);
+}
+.iq-container--partner .iq-question,
+.iq-container--partner .iq-result-title {
+  color: var(--text-primary, #111827);
+}
+.iq-container--partner .iq-option-btn {
+  background: var(--surface-card-hover, #f9fafb);
+  border-color: var(--border-primary, #e5e7eb);
+  color: var(--text-primary, #1f2937);
+}
+.iq-container--partner .iq-option-label {
+  color: var(--text-secondary, #374151);
+}
+.iq-container--partner .iq-result-desc {
+  color: var(--text-muted, #6b7280);
+}
+
+/* Gold / champagne accent */
+.iq-container--partner .iq-logo,
+.iq-container--partner .iq-result-level-label {
+  color: #d4a853;
+}
+.iq-container--partner .iq-progress-fill {
+  background: linear-gradient(90deg, #e6c372, #d4a853);
+}
+.iq-container--partner .iq-category-pill {
+  color: #b8862f;
+  background: rgba(212, 168, 83, 0.1);
+  border-color: rgba(212, 168, 83, 0.3);
+}
+.iq-container--partner .iq-option-btn:hover {
+  border-color: #d4a853;
+  background: rgba(212, 168, 83, 0.06);
+}
+.iq-container--partner .iq-option-btn.is-selected {
+  background: rgba(212, 168, 83, 0.1);
+  border-color: #d4a853;
+  box-shadow: 0 0 0 2px rgba(212, 168, 83, 0.18);
+}
+.iq-container--partner .iq-option-radio {
+  color: #b8862f;
+}
+.iq-container--partner .iq-option-radio.is-selected {
+  border-color: #d4a853;
+  background: rgba(212, 168, 83, 0.22);
+}
+.iq-container--partner .iq-confirm-btn,
+.iq-container--partner .iq-cta-btn {
+  background: #d4a853;
+  color: #1a1206;
+}
+.iq-container--partner .iq-confirm-btn:hover,
+.iq-container--partner .iq-cta-btn:hover {
+  background: #c2953f;
+}
