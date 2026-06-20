@@ -13,6 +13,7 @@ import { LensBar } from './LensBar';
 import { PostCard } from './PostCard';
 import { YourCommunityCard } from './YourCommunityCard';
 import { FeaturedCreators } from './FeaturedCreators';
+import { OpenCalls } from './OpenCalls';
 import { EventCalendar } from './EventCalendar';
 import { TrendingNarratives } from './TrendingNarratives';
 import { CopyInbox } from './CopyInbox';
@@ -213,6 +214,7 @@ export function HubEvolutionary() {
             <YourCommunityCard />
           </div>
           <FeaturedCreators />
+          <OpenCalls />
           <CompetitionsPanel variant="slim" />
           <EventCalendar events={events} onWatchToggle={handleEventWatch} />
           <TrendingNarratives narratives={narratives} />

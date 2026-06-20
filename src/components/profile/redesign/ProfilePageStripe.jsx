@@ -12,6 +12,7 @@ import { computeProfileMetrics } from '@/lib/profile-metrics';
 
 import { ProfileNav } from './ProfileNav';
 import { IdentityHero } from './IdentityHero';
+import { CreatorTrackRecord } from './CreatorTrackRecord';
 import { PerfStats } from './PerfStats';
 import { Achievements } from './Achievements';
 import { PerfChart } from './PerfChart';
@@ -512,6 +513,12 @@ export function ProfilePageStripe({ username }) {
 
         <div className="profile-stripe-right">
           <EloRatingCard user={profileUser} />
+          {profile.is_partner && (
+            <CreatorTrackRecord
+              creatorId={profile.id}
+              canCreate={isOwn && profile.is_partner === true}
+            />
+          )}
           {isOwn && <WaysToImprove quests={quests} />}
           <TradeNotesPanel userId={profile.id} isOwn={isOwn} />
         </div>
