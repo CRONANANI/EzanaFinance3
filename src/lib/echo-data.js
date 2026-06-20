@@ -70,7 +70,56 @@ export async function getHubData() {
   return { articles, featured };
 }
 
-/** Full article by slug (any status). Side-effect free. */
+/** Co-authors credited on an article (by article DB id). */
+export async function getCoauthorsForArticle(articleDbId) {
+  const { data: links } = await admin
+    .from('echo_article_coauthors')
+    .select('user_id')
+    .eq('article_id', articleDbId);
+  const ids = (links || []).map((l) => l.user_id);
+  if (!ids.length) return [];
+  const { data: profs } = await admin
+    .from('profiles')
+    .select('id, username, full_name, user_settings')
+    .in('id', ids);
+  return (profs || []).map((p) => ({
+    id: p.id,
+    username: p.username || '',
+    name: p.user_settings?.display_name || p.full_name || 'Author',
+    avatar: p.user_settings?.avatar_url || null,
+  }));
+}
+
+/** Series summary + ordered parts, flagging the current article. */
+async function getSeriesSummary(seriesId, currentSlug) {
+  const { data: s } = await admin
+    .from('echo_series')
+    .select('id, title, slug, description')
+    .eq('id', seriesId)
+    .maybeSingle();
+  if (!s) return null;
+  const { data: parts } = await admin
+    .from('echo_articles')
+    .select('article_slug, article_title, series_order, published_at')
+    .eq('series_id', seriesId)
+    .eq('article_status', 'published')
+    .order('series_order', { ascending: true, nullsFirst: false })
+    .order('published_at', { ascending: true });
+  return {
+    id: s.id,
+    title: s.title,
+    slug: s.slug,
+    description: s.description,
+    parts: (parts || []).map((p) => ({
+      id: p.article_slug,
+      slug: p.article_slug,
+      title: p.article_title,
+      current: p.article_slug === currentSlug,
+    })),
+  };
+}
+
+/** Full article by slug (any status), with series + co-authors. Side-effect free. */
 export async function getArticleBySlug(slug) {
   await ensureCuratedSeeded(admin);
   const { data, error } = await admin
@@ -79,7 +128,36 @@ export async function getArticleBySlug(slug) {
     .eq('article_slug', slug)
     .maybeSingle();
   if (error || !data) return null;
-  return mapFull(data);
+  const article = mapFull(data);
+  article.coAuthors = await getCoauthorsForArticle(data.id);
+  article.series = data.series_id
+    ? await getSeriesSummary(data.series_id, data.article_slug)
+    : null;
+  return article;
+}
+
+/** A series and its published articles, by slug. */
+export async function getSeriesBySlug(slug) {
+  const { data: s } = await admin.from('echo_series').select('*').eq('slug', slug).maybeSingle();
+  if (!s) return null;
+  const { data: rows } = await admin
+    .from('echo_articles')
+    .select(`${CARD_COLS}, series_order`)
+    .eq('series_id', s.id)
+    .eq('article_status', 'published')
+    .order('series_order', { ascending: true, nullsFirst: false })
+    .order('published_at', { ascending: false });
+  return { series: s, articles: (rows || []).map(mapCard) };
+}
+
+/** Series owned by a user (for the editor's series picker). */
+export async function listSeriesByOwner(ownerId) {
+  const { data } = await admin
+    .from('echo_series')
+    .select('id, title, slug, description, cover_image_url, created_at')
+    .eq('owner_id', ownerId)
+    .order('created_at', { ascending: false });
+  return data || [];
 }
 
 /** Fire-and-forget view increment for a published article (by slug). */

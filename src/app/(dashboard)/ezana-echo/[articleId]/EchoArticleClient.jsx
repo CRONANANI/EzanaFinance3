@@ -2582,9 +2582,84 @@ export default function EchoArticleClient({
               )}
               <h1 className="echo-article-h1">{article.title}</h1>
               {article.excerpt && <p className="echo-article-deck">{article.excerpt}</p>}
+              {article.series && (
+                <div
+                  className="echo-article-series-banner"
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 6,
+                    margin: '10px 0',
+                    padding: '12px 14px',
+                    borderRadius: 10,
+                    border: '1px solid var(--border-secondary)',
+                    background: 'var(--bg-tertiary)',
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.06em',
+                      color: 'var(--text-muted)',
+                    }}
+                  >
+                    <i className="bi bi-collection" /> Part of a series · {article.series.title}
+                  </div>
+                  {article.series.parts?.length > 0 && (
+                    <ol
+                      style={{
+                        margin: 0,
+                        paddingLeft: 18,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 2,
+                      }}
+                    >
+                      {article.series.parts.map((p) => (
+                        <li key={p.id} style={{ fontSize: 13 }}>
+                          {p.current ? (
+                            <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
+                              {p.title}{' '}
+                              <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>
+                                (this article)
+                              </span>
+                            </span>
+                          ) : (
+                            <Link
+                              href={`/ezana-echo/${p.slug}`}
+                              style={{ color: 'var(--text-secondary)' }}
+                            >
+                              {p.title}
+                            </Link>
+                          )}
+                        </li>
+                      ))}
+                    </ol>
+                  )}
+                </div>
+              )}
               <div className="echo-article-byline">
                 <span className="echo-article-byline-author">
                   By <strong>{article.author}</strong>
+                  {article.coAuthors?.length > 0 && (
+                    <>
+                      {' & '}
+                      {article.coAuthors.map((c, i) => (
+                        <span key={c.id}>
+                          {i > 0 && ', '}
+                          {c.username ? (
+                            <Link href={`/profile/${c.username}`}>
+                              <strong>{c.name}</strong>
+                            </Link>
+                          ) : (
+                            <strong>{c.name}</strong>
+                          )}
+                        </span>
+                      ))}
+                    </>
+                  )}
                 </span>
                 <span className="echo-article-byline-divider" aria-hidden>
                   ·

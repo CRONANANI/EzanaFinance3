@@ -109,6 +109,8 @@ export const POST = withApiGuard(
 
     const body = await request.json();
     const { title, excerpt, body: articleBody, category, coverImageUrl, action } = body;
+    const seriesId = typeof body.seriesId === 'string' && body.seriesId ? body.seriesId : null;
+    const seriesOrder = Number.isInteger(body.seriesOrder) ? body.seriesOrder : null;
 
     if (!title || !articleBody) {
       return NextResponse.json({ error: 'Title and body are required' }, { status: 400 });
@@ -133,6 +135,8 @@ export const POST = withApiGuard(
         cover_image_url: coverImageUrl || null,
         article_status: status,
         read_time_minutes: readTime,
+        series_id: seriesId,
+        series_order: seriesOrder,
         submitted_at: action === 'submit' ? new Date().toISOString() : null,
       })
       .select()
@@ -165,6 +169,10 @@ export const PATCH = withApiGuard(
     }
     if (category) updates.article_category = category;
     if (coverImageUrl !== undefined) updates.cover_image_url = coverImageUrl;
+    if (body.seriesId !== undefined) updates.series_id = body.seriesId || null;
+    if (body.seriesOrder !== undefined) {
+      updates.series_order = Number.isInteger(body.seriesOrder) ? body.seriesOrder : null;
+    }
 
     if (action === 'submit') {
       updates.article_status = 'submitted';
