@@ -26,7 +26,7 @@ import { InteractiveChartCTAOverlay } from '@/components/echo/InteractiveChartCT
 import { EchoKeywordProvider, useKeywordPopup } from '@/components/echo/EchoKeywordContext';
 import { EchoKeywordPopup } from '@/components/echo/EchoKeywordPopup';
 import { parseKeywords } from '@/components/echo/parseKeywords';
-import { formatPublishedDate, getAllArticles, getRelatedArticles } from '@/lib/ezana-echo-mock';
+import { formatPublishedDate } from '@/lib/echo-format';
 import { createArticleTracker } from '@/lib/echo-article-tracker';
 import { useAnonymousEchoTracker } from '@/hooks/useAnonymousEchoTracker';
 import { getTag } from '@/lib/echo-tag-taxonomy';
@@ -2403,7 +2403,12 @@ function SectorDominanceChart({ title, caption, yLabel }) {
   );
 }
 
-export default function EchoArticleClient({ article, isArchived: initialArchived = false }) {
+export default function EchoArticleClient({
+  article,
+  relatedArticles = [],
+  moreArticles = [],
+  isArchived: initialArchived = false,
+}) {
   const { user, isAuthenticated } = useAuth();
   const isAdmin = isAdminUserClient(user);
   const [isArchived, setIsArchived] = useState(initialArchived);
@@ -2488,10 +2493,10 @@ export default function EchoArticleClient({ article, isArchived: initialArchived
     }
   }
 
-  const related = getRelatedArticles(article.category, article.id, 3);
+  const related = (relatedArticles || []).slice(0, 3);
   const fallback =
     related.length < 3
-      ? getAllArticles()
+      ? (moreArticles || [])
           .filter((a) => a.id !== article.id && !related.some((r) => r.id === a.id))
           .slice(0, 3 - related.length)
       : [];

@@ -3,7 +3,7 @@ import { withApiGuard } from '@/lib/api-guard';
 import { createServerSupabase } from '@/lib/supabase-server';
 import { isAdminUser } from '@/lib/admin-helpers';
 import { getArchivedArticleIds } from '@/lib/echo-article-status';
-import { getArticleById } from '@/lib/ezana-echo-mock';
+import { getArticleBySlug } from '@/lib/echo-data';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,9 +18,9 @@ export const GET = withApiGuard(
 
     try {
       const statuses = await getArchivedArticleIds();
-      const articles = statuses
-        .map((s) => {
-          const article = getArticleById(s.article_id);
+      const enriched = await Promise.all(
+        statuses.map(async (s) => {
+          const article = await getArticleBySlug(s.article_id);
           if (!article) return null;
           return {
             ...article,
@@ -28,8 +28,9 @@ export const GET = withApiGuard(
             archivedBy: s.archived_by_email,
             notes: s.notes,
           };
-        })
-        .filter(Boolean);
+        }),
+      );
+      const articles = enriched.filter(Boolean);
 
       return NextResponse.json({ articles });
     } catch (err) {

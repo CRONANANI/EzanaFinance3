@@ -4,7 +4,7 @@
  */
 
 import { getAdminClient } from '@/lib/supabase';
-import { getAllArticles } from '@/lib/ezana-echo-mock';
+import { getArticleBySlug } from '@/lib/echo-data';
 
 const REDDIT_API_BASE = 'https://oauth.reddit.com';
 const REDDIT_AUTH_URL = 'https://www.reddit.com/api/v1/access_token';
@@ -57,8 +57,7 @@ export async function getRedditAccessToken() {
 export async function loadArticleAndTargets({ articleId }) {
   if (!articleId) throw new Error('articleId is required');
 
-  const allArticles = getAllArticles();
-  const article = allArticles.find((a) => a.id === articleId);
+  const article = await getArticleBySlug(articleId);
   if (!article) {
     return { error: `Article '${articleId}' not found` };
   }

@@ -3,7 +3,7 @@ import { withApiGuard } from '@/lib/api-guard';
 import { createServerSupabase } from '@/lib/supabase-server';
 import { isAdminUser } from '@/lib/admin-helpers';
 import { archiveArticle, republishArticle } from '@/lib/echo-article-status';
-import { getArticleById } from '@/lib/ezana-echo-mock';
+import { getArticleBySlug } from '@/lib/echo-data';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,7 +26,7 @@ export const POST = withApiGuard(
     const articleId = typeof body?.articleId === 'string' ? body.articleId.trim() : '';
     if (!articleId) return NextResponse.json({ error: 'articleId required' }, { status: 400 });
 
-    const article = getArticleById(articleId);
+    const article = await getArticleBySlug(articleId);
     if (!article) return NextResponse.json({ error: 'Article not found' }, { status: 404 });
 
     const notes = typeof body?.notes === 'string' ? body.notes.slice(0, 500) : null;

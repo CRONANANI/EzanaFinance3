@@ -1,6 +1,6 @@
 'use client';
 
-import { formatPublishedDate } from '@/lib/ezana-echo-mock';
+import { formatPublishedDate } from '@/lib/echo-format';
 import { EchoFooterByline } from './EchoFooterByline';
 import { EchoFooterSentimentSection } from './EchoFooterSentimentSection';
 import { EchoFooterWorthIt } from './EchoFooterWorthIt';

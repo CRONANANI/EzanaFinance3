@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
-import { getAllArticles, getFeaturedArticle, formatPublishedShort } from '@/lib/ezana-echo-mock';
+import { formatPublishedShort } from '@/lib/echo-format';
 import { getTag } from '@/lib/echo-tag-taxonomy';
 import { useAuth } from '@/components/AuthProvider';
 import { isAdminUserClient } from '@/lib/admin-helpers-client';
@@ -109,12 +109,32 @@ export default function EzanaEchoPage() {
     }
   }
 
-  const rawArticles = useMemo(() => getAllArticles(), []);
+  const [rawArticles, setRawArticles] = useState([]);
+  const [featuredRaw, setFeaturedRaw] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/echo/hub', { cache: 'no-store' });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled) return;
+        setRawArticles(data.articles || []);
+        setFeaturedRaw(data.featured || null);
+      } catch {
+        /* ignore */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const allArticles = useMemo(
     () => rawArticles.filter((a) => !archivedSet.has(a.id)),
     [rawArticles, archivedSet],
   );
-  const featuredRaw = useMemo(() => getFeaturedArticle(), []);
   const featured = useMemo(
     () => (featuredRaw && !archivedSet.has(featuredRaw.id) ? featuredRaw : null),
     [featuredRaw, archivedSet],

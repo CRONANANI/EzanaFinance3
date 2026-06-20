@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { isAdminUserClient } from '@/lib/admin-helpers-client';
-import { formatPublishedShort } from '@/lib/ezana-echo-mock';
+import { formatPublishedShort } from '@/lib/echo-format';
 import '../ezana-echo.css';
 
 export default function ArchivedArticlesPage() {
