@@ -6,6 +6,7 @@ import { Avatar, VerifiedTick, SkillBadge } from './Atoms';
 import { CreatorBadge } from './CreatorBadge';
 import { getTierColor, getTierLabel } from '@/lib/elo-tier-colors';
 import { getCreatorTier } from '@/lib/creator-tiers';
+import { getPostType, STANDARD_DISCLAIMER } from '@/lib/post-types';
 import { RichContent } from '../_legacy_v1/RichContent';
 import { MiniChart } from '../_legacy_v1/MiniChart';
 
@@ -813,6 +814,7 @@ export function PostCard({ post, variant = 'conviction-bar', onConvictionChange,
   const useConvictionBar = variant === 'conviction-bar' || variant === 'default';
   const showConvictionBar = post.avg_conviction != null || (post.conviction_count ?? 0) > 0;
   const convictionPct = post.avg_conviction ?? 0;
+  const postType = getPostType(post.postType);
 
   const pollWithId = post.poll ? { ...post.poll, postId: post.id } : null;
 
@@ -854,6 +856,28 @@ export function PostCard({ post, variant = 'conviction-bar', onConvictionChange,
       )}
 
       <PostHeader post={post} onDelete={onDelete} />
+
+      {postType && (
+        <div
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 5,
+            marginBottom: 10,
+            padding: '3px 9px',
+            borderRadius: 999,
+            background: postType.soft,
+            color: postType.color,
+            fontSize: 10,
+            fontWeight: 800,
+            letterSpacing: '0.05em',
+            textTransform: 'uppercase',
+          }}
+        >
+          <i className={`bi ${postType.icon}`} style={{ fontSize: 11 }} />
+          {postType.label}
+        </div>
+      )}
 
       {post.title && (
         <h3
@@ -910,6 +934,28 @@ export function PostCard({ post, variant = 'conviction-bar', onConvictionChange,
             ▸ Right-click to stake your conviction ·{' '}
             <span className="ez-mono">{post.conviction_count ?? 0}</span> staked
           </div>
+        </div>
+      )}
+
+      {postType && (
+        <div
+          style={{
+            marginTop: 10,
+            paddingTop: 8,
+            borderTop: '1px dashed var(--border-secondary)',
+            fontSize: 10.5,
+            color: 'var(--text-faint)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            flexWrap: 'wrap',
+          }}
+        >
+          <i className="bi bi-info-circle" style={{ fontSize: 11 }} />
+          <span>
+            {STANDARD_DISCLAIMER}
+            {post.disclosure ? ` · ${post.disclosure}` : ''}
+          </span>
         </div>
       )}
 

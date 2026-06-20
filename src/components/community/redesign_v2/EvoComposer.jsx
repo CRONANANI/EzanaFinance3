@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/lib/supabase-browser';
 import { getInitials, extractTickerFromContent } from '@/lib/community-utils';
 import { TICKER_SEARCH_DATA } from '@/lib/tickerSearchData';
+import { POST_TYPE_LIST, STANDARD_DISCLAIMER } from '@/lib/post-types';
 import { Avatar } from './Atoms';
 
 const VALID_PERIODS = ['1D', '1W', '1M', '3M', '1Y'];
@@ -261,6 +262,29 @@ export function EvoComposer({
   const [quoteMode, setQuoteMode] = useState(!!quotedPost);
   const [postConviction, setPostConviction] = useState(0);
   const [posting, setPosting] = useState(false);
+  const [isPartner, setIsPartner] = useState(false);
+  const [postType, setPostType] = useState(null);
+  const [disclosure, setDisclosure] = useState('');
+
+  useEffect(() => {
+    if (!user?.id) {
+      setIsPartner(false);
+      return undefined;
+    }
+    let active = true;
+    supabase
+      .from('profiles')
+      .select('is_partner')
+      .eq('id', user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (active) setIsPartner(!!data?.is_partner);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [user?.id]);
 
   const author = {
     display_name: user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'You',
@@ -317,6 +341,8 @@ export function EvoComposer({
           ? { period: normalizePeriod(period), symbols: tickers.map((symbol) => ({ symbol })) }
           : null,
         quoted_post_id: quoteMode && quotedPost?.id ? quotedPost.id : undefined,
+        post_type: isPartner && postType ? postType : undefined,
+        disclosure: isPartner && postType && disclosure.trim() ? disclosure.trim() : undefined,
       };
 
       const res = await fetch('/api/community/posts', {
@@ -349,6 +375,8 @@ export function EvoComposer({
       setTickers([]);
       setPostConviction(0);
       setQuoteMode(false);
+      setPostType(null);
+      setDisclosure('');
       onClearQuote?.();
       await onPosted?.();
     } catch (err) {
@@ -411,6 +439,93 @@ export function EvoComposer({
               padding: 0,
             }}
           />
+
+          {isPartner && (
+            <div style={{ marginTop: 10 }}>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                <span
+                  style={{
+                    fontSize: 10,
+                    color: 'var(--text-faint)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    marginRight: 2,
+                  }}
+                >
+                  Format
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setPostType(null)}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 5,
+                    padding: '4px 10px',
+                    borderRadius: 999,
+                    fontSize: 11,
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    background: postType === null ? 'var(--surface-card-hover)' : 'transparent',
+                    border: `1px solid ${postType === null ? 'var(--border-primary)' : 'var(--border-secondary)'}`,
+                    color: postType === null ? 'var(--text-primary)' : 'var(--text-muted)',
+                  }}
+                >
+                  Standard
+                </button>
+                {POST_TYPE_LIST.map((t) => {
+                  const active = postType === t.key;
+                  return (
+                    <button
+                      key={t.key}
+                      type="button"
+                      onClick={() => setPostType(active ? null : t.key)}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 5,
+                        padding: '4px 10px',
+                        borderRadius: 999,
+                        fontSize: 11,
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        background: active ? t.soft : 'transparent',
+                        border: `1px solid ${active ? t.color : 'var(--border-secondary)'}`,
+                        color: active ? t.color : 'var(--text-muted)',
+                      }}
+                    >
+                      <i className={`bi ${t.icon}`} style={{ fontSize: 12 }} />
+                      {t.label}
+                    </button>
+                  );
+                })}
+              </div>
+              {postType && (
+                <div style={{ marginTop: 8 }}>
+                  <input
+                    type="text"
+                    value={disclosure}
+                    onChange={(e) => setDisclosure(e.target.value)}
+                    maxLength={200}
+                    placeholder="Position or sponsorship disclosure (optional) — e.g., Long $TSLA"
+                    style={{
+                      width: '100%',
+                      padding: '6px 10px',
+                      background: 'var(--surface-card)',
+                      border: '1px solid var(--border-input)',
+                      borderRadius: 6,
+                      color: 'var(--text-primary)',
+                      fontSize: 12,
+                    }}
+                  />
+                  <div style={{ fontSize: 10, color: 'var(--text-faint)', marginTop: 4 }}>
+                    <i className="bi bi-info-circle" /> {STANDARD_DISCLAIMER} is shown
+                    automatically.
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {quoteMode && quotedPost && (
             <div

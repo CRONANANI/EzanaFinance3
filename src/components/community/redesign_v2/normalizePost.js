@@ -85,6 +85,8 @@ export function normalizePost(p) {
     poll: normalizePoll(p.poll_data, p.my_vote, p.id),
     tickerEmbed: normalizeTickerEmbedForCard(p.ticker_embed),
     image_url: p.image_url ?? null,
+    postType: p.post_type ?? null,
+    disclosure: p.disclosure ?? null,
     isDiscussion: isDiscussionPost(content),
     skillRating: author.skill_rating ?? author.skillRating ?? null,
     title: p.title ?? null,

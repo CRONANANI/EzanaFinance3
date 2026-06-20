@@ -3,6 +3,7 @@ import { requireUser, getCurrentUser, getUserClient, getAdminClient } from '@/li
 import { awardXP } from '@/lib/rewards';
 import { sanitizeInput } from '@/lib/sanitize';
 import { withDemoPosts } from '@/lib/community/demo-data';
+import { ALLOWED_POST_TYPES } from '@/lib/post-types';
 
 export const dynamic = 'force-dynamic';
 
@@ -196,7 +197,7 @@ export async function GET(request) {
     const to = from + LIMIT - 1;
 
     const selectCols =
-      'id, user_id, content, mentioned_ticker, image_url, poll_data, ticker_embed, likes_count, comments_count, reposts_count, created_at';
+      'id, user_id, content, mentioned_ticker, image_url, poll_data, ticker_embed, post_type, disclosure, likes_count, comments_count, reposts_count, created_at';
 
     if (tab === 'signal') {
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -456,6 +457,29 @@ export async function POST(request) {
 
     const { user, client: supabase } = await requireUser(request);
 
+    // Partner-only post formats (Analyst Take / Trade Idea / Market Brief).
+    // Gated server-side: only a partner's top-level post may carry a post_type,
+    // and a disclosure is only stored alongside a valid type.
+    let post_type = null;
+    let disclosure = null;
+    if (
+      !isComment &&
+      typeof body.post_type === 'string' &&
+      ALLOWED_POST_TYPES.includes(body.post_type)
+    ) {
+      const { data: prof } = await admin
+        .from('profiles')
+        .select('is_partner')
+        .eq('id', user.id)
+        .maybeSingle();
+      if (prof?.is_partner) {
+        post_type = body.post_type;
+        if (typeof body.disclosure === 'string' && body.disclosure.trim()) {
+          disclosure = sanitizeInput(body.disclosure.trim()).slice(0, 200);
+        }
+      }
+    }
+
     const { data: post, error } = await supabase
       .from('community_posts')
       .insert({
@@ -466,9 +490,11 @@ export async function POST(request) {
         image_url: isComment ? null : image_url,
         poll_data: isComment ? null : poll_data,
         ticker_embed: isComment ? null : ticker_embed,
+        post_type,
+        disclosure,
       })
       .select(
-        'id, user_id, content, mentioned_ticker, image_url, poll_data, ticker_embed, likes_count, comments_count, reposts_count, created_at, parent_post_id',
+        'id, user_id, content, mentioned_ticker, image_url, poll_data, ticker_embed, post_type, disclosure, likes_count, comments_count, reposts_count, created_at, parent_post_id',
       )
       .single();
 
