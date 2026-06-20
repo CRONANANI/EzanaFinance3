@@ -8,6 +8,7 @@ import { NumberText } from './NumberText';
 import { Caps } from './Caps';
 import { getTier } from '@/lib/elo-tier-colors';
 import { TIER_LIST } from '@/lib/elo-tier-colors';
+import { CreatorBadge } from '@/components/community/redesign_v2/CreatorBadge';
 import { page, brand, shape, type as typeTokens, density } from './profile-design-tokens';
 
 function nextTier(tierKey) {
@@ -54,17 +55,22 @@ export function IdentityHero({ user }) {
           <TierChip tier={user.tier} />
           {user.rankPercentile != null && <TopPercentileChip pct={user.rankPercentile} />}
         </div>
-        <h1
-          style={{
-            margin: 0,
-            fontSize: 22,
-            fontWeight: 600,
-            letterSpacing: '-0.4px',
-            color: page.ink,
-          }}
-        >
-          {user.name}
-        </h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <h1
+            style={{
+              margin: 0,
+              fontSize: 22,
+              fontWeight: 600,
+              letterSpacing: '-0.4px',
+              color: page.ink,
+            }}
+          >
+            {user.name}
+          </h1>
+          {user.isPartner && (
+            <CreatorBadge tierKey={user.creatorTier} type={user.partnerType} size={16} />
+          )}
+        </div>
         <p style={{ margin: '4px 0 0', fontSize: 12, color: page.inkSoft }}>
           <NumberText size={12} weight={500}>
             {user.followerCount}

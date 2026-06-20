@@ -12,6 +12,7 @@ import { EvoComposer } from './EvoComposer';
 import { LensBar } from './LensBar';
 import { PostCard } from './PostCard';
 import { YourCommunityCard } from './YourCommunityCard';
+import { FeaturedCreators } from './FeaturedCreators';
 import { EventCalendar } from './EventCalendar';
 import { TrendingNarratives } from './TrendingNarratives';
 import { CopyInbox } from './CopyInbox';
@@ -211,6 +212,7 @@ export function HubEvolutionary() {
           <div className="ledger-yc-desktop">
             <YourCommunityCard />
           </div>
+          <FeaturedCreators />
           <CompetitionsPanel variant="slim" />
           <EventCalendar events={events} onWatchToggle={handleEventWatch} />
           <TrendingNarratives narratives={narratives} />
