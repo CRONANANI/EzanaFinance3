@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/lib/supabase-browser';
 import { ArticleEditor, WriterApplication } from '@/components/echo';
+import { CreatorVideoStudio } from '@/components/learning/video/CreatorVideoStudio';
 import '../partner.css';
 import '../ezana-echo/echo-publish.css';
 
@@ -141,6 +142,7 @@ export default function PartnerLearningPage() {
           <div className="ptr-tab-group">
             {[
               { key: 'courses', label: 'My Courses', icon: 'bi-journal-bookmark' },
+              { key: 'videos', label: 'Videos', icon: 'bi-camera-video' },
               { key: 'echo', label: 'Ezana Echo', icon: 'bi-newspaper' },
               { key: 'analytics', label: 'Analytics', icon: 'bi-bar-chart' },
               { key: 'reviews', label: 'Reviews', icon: 'bi-star' },
@@ -180,6 +182,14 @@ export default function PartnerLearningPage() {
           <span className="ptr-stat-mini-label">Completion Rate</span>
         </div>
       </div>
+
+      {activeView === 'videos' && (
+        <div className="ptr-content-area">
+          <div className="ptr-card" style={{ padding: 20 }}>
+            <CreatorVideoStudio />
+          </div>
+        </div>
+      )}
 
       {activeView === 'courses' && (
         <>

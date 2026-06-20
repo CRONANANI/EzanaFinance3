@@ -9,6 +9,7 @@ import { ContextTimeline } from './ContextTimeline';
 import { Callout } from './Callout';
 import { BodyText } from './BodyText';
 import { FinancialStatement } from './FinancialStatement';
+import { VideoModule } from './VideoModule';
 
 function Module({ module }) {
   switch (module.type) {
@@ -30,6 +31,8 @@ function Module({ module }) {
       return <Callout {...module} />;
     case 'financialStatement':
       return <FinancialStatement {...module} />;
+    case 'video':
+      return <VideoModule {...module} />;
     default:
       if (process.env.NODE_ENV !== 'production') {
         console.warn(`[SectionRenderer] Unknown module type: ${module.type}`);
