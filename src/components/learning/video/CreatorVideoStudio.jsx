@@ -3,26 +3,18 @@
 import { useEffect, useState } from 'react';
 import { MuxVideoPlayer } from './MuxVideoPlayer';
 import { VideoUploader } from './VideoUploader';
+import { Badge, Button, Card, NumericValue } from '@/components/ds';
 import { getVideoStatus, formatDuration } from '@/lib/video-format';
 
-function StatusChip({ status }) {
-  const s = getVideoStatus(status);
-  return (
-    <span
-      style={{
-        padding: '2px 8px',
-        borderRadius: 999,
-        fontSize: 10,
-        fontWeight: 800,
-        textTransform: 'uppercase',
-        letterSpacing: '0.05em',
-        color: s.color,
-        background: `${s.color}22`,
-      }}
-    >
-      {s.label}
-    </span>
-  );
+const STATUS_TONE = {
+  pending: 'info',
+  processing: 'warning',
+  ready: 'positive',
+  errored: 'negative',
+};
+
+function StatusBadge({ status }) {
+  return <Badge tone={STATUS_TONE[status] || 'neutral'}>{getVideoStatus(status).label}</Badge>;
 }
 
 /**
@@ -124,61 +116,43 @@ export function CreatorVideoStudio() {
               ? `{ "type": "video", "playbackId": "${v.playbackId}" }`
               : '';
             return (
-              <div
-                key={v.id}
-                style={{
-                  border: '1px solid var(--border-primary)',
-                  borderRadius: 12,
-                  padding: 14,
-                  background: 'var(--surface-card)',
-                }}
-              >
+              <Card key={v.id} pad>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
                   <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--text-primary)' }}>
                     {v.title}
                   </span>
-                  <StatusChip status={v.status} />
+                  <StatusBadge status={v.status} />
                   {v.duration ? (
-                    <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                    <NumericValue colorize="muted" style={{ fontSize: 12 }}>
                       {formatDuration(v.duration)}
-                    </span>
+                    </NumericValue>
                   ) : null}
-                  <button
-                    type="button"
-                    onClick={() => remove(v.id)}
-                    style={{
-                      marginLeft: 'auto',
-                      background: 'none',
-                      border: 'none',
-                      color: 'var(--text-muted)',
-                      cursor: 'pointer',
-                      fontSize: 13,
-                    }}
-                  >
-                    <i className="bi bi-trash" /> Delete
-                  </button>
+                  <span style={{ marginLeft: 'auto' }}>
+                    <Button variant="ghost" size="sm" icon="bi-trash" onClick={() => remove(v.id)}>
+                      Delete
+                    </Button>
+                  </span>
                 </div>
 
                 {v.status === 'ready' && v.playbackId ? (
                   <>
                     <MuxVideoPlayer playbackId={v.playbackId} />
                     <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
-                      <button
-                        type="button"
-                        className="ez-btn ez-btn--secondary"
-                        style={{ fontSize: 12 }}
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        icon="bi-clipboard"
                         onClick={() => copy(embed, `embed-${v.id}`)}
                       >
                         {copied === `embed-${v.id}` ? 'Copied!' : 'Copy lesson module'}
-                      </button>
-                      <button
-                        type="button"
-                        className="ez-btn ez-btn--ghost"
-                        style={{ fontSize: 12 }}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => copy(v.playbackId, `id-${v.id}`)}
                       >
                         {copied === `id-${v.id}` ? 'Copied!' : 'Copy playback ID'}
-                      </button>
+                      </Button>
                     </div>
                     <p style={{ margin: '8px 0 0', fontSize: 11, color: 'var(--text-faint)' }}>
                       Add a <code>video</code> module (<code>{embed}</code>) to a course lesson to
@@ -192,7 +166,7 @@ export function CreatorVideoStudio() {
                       : 'Processing… this can take a minute after upload.'}
                   </div>
                 )}
-              </div>
+              </Card>
             );
           })}
         </div>

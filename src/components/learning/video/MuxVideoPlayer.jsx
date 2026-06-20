@@ -58,7 +58,7 @@ export function MuxVideoPlayer({ playbackId, poster, className, style }) {
       style={{
         width: '100%',
         borderRadius: 12,
-        background: '#000',
+        background: 'black',
         aspectRatio: '16 / 9',
         ...style,
       }}

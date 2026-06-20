@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import { Button, Input } from '@/components/ds';
 
 function putWithProgress(url, file, onProgress) {
   return new Promise((resolve, reject) => {
@@ -107,20 +108,12 @@ export function VideoUploader({ onUploaded }) {
         gap: 10,
       }}
     >
-      <input
+      <Input
         type="text"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Video title"
         disabled={busy}
-        style={{
-          padding: '8px 10px',
-          borderRadius: 8,
-          border: '1px solid var(--border-input)',
-          background: 'var(--surface-input)',
-          color: 'var(--text-primary)',
-          fontSize: 14,
-        }}
       />
       <input
         ref={inputRef}
@@ -146,15 +139,16 @@ export function VideoUploader({ onUploaded }) {
       )}
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <button
-          type="button"
+        <Button
+          variant="primary"
+          size="sm"
           onClick={start}
-          disabled={busy || !file}
-          className="ez-btn ez-btn--primary"
-          style={{ fontSize: 13, opacity: busy || !file ? 0.6 : 1 }}
+          loading={busy}
+          disabled={!file}
+          icon="bi-cloud-arrow-up"
         >
           {busy ? phaseLabel : 'Upload video'}
-        </button>
+        </Button>
         {phase === 'done' && <span style={{ color: 'var(--emerald)', fontSize: 13 }}>✓ Added</span>}
         {error && <span style={{ color: 'var(--negative)', fontSize: 13 }}>{error}</span>}
       </div>
