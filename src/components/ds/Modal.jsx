@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useId } from 'react';
 import { createPortal } from 'react-dom';
 import { cx } from './tokens';
 import { Button } from './Button';
@@ -10,6 +10,7 @@ import { Button } from './Button';
  * and portals to <body>. Provide `footer` for action buttons.
  */
 export function Modal({ open, onClose, title, children, footer, size, className }) {
+  const titleId = useId();
   useEffect(() => {
     if (!open) return undefined;
     const onKey = (e) => {
@@ -39,11 +40,13 @@ export function Modal({ open, onClose, title, children, footer, size, className 
         style={size ? { maxWidth: size } : undefined}
         role="dialog"
         aria-modal="true"
-        aria-label={typeof title === 'string' ? title : undefined}
+        aria-labelledby={title ? titleId : undefined}
       >
         {title && (
           <div className="ds-modal-header">
-            <h2 className="ds-modal-title">{title}</h2>
+            <h2 className="ds-modal-title" id={titleId}>
+              {title}
+            </h2>
             <Button
               variant="ghost"
               size="sm"

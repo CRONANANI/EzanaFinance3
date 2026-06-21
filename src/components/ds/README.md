@@ -39,6 +39,21 @@ import { Button, Card, CardHeader, Input, NumericValue, Badge } from '@/componen
 | `Table` + `THead/TBody/TR/TH/TD`        | `numeric` per cell                                                                                | numeric cells right-align + mono                                                            |
 | `Skeleton`                              | `width`, `height`, `radius`                                                                       | shimmer, respects reduced-motion                                                            |
 
+## Accessible state + feedback
+
+| Component        | Purpose                                                                                                                                               |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Spinner`        | Loading spinner; `role="status"` + label. Respects reduced-motion.                                                                                    |
+| `Alert`          | Inline feedback; `tone` info/success/warning/error. Errors `role="alert"`, else `role="status"`/`aria-live`. Icon reinforces text (never color-only). |
+| `EmptyState`     | `icon` + `title` + `description` + `action` for "nothing here yet".                                                                                   |
+| `ErrorState`     | EmptyState tuned for failures; `role="alert"`.                                                                                                        |
+| `IconButton`     | Icon-only button that **requires** a `label` (warns in dev if missing).                                                                               |
+| `VisuallyHidden` | Screen-reader-only text (`.ds-sr-only`) — pair with color/icon status.                                                                                |
+
+Plus `.ds-sr-only` / `.ds-skip-link` utilities, and `Modal` exposes `aria-labelledby`.
+See `.claude/skills/a11y-review` and `docs/ACCESSIBILITY_AUDIT.md`. Gate with
+`npm run lint:a11y` (image alt + file-input labels).
+
 ## Token access layer (`token`)
 
 For the rare inline style that can't be a class:
