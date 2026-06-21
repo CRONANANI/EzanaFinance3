@@ -9,7 +9,7 @@ const HLS_CDN = 'https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js';
  * Plays a Mux video by playback id. Uses native HLS where available (Safari),
  * otherwise lazy-loads hls.js from a CDN — so there's no build-time dependency.
  */
-export function MuxVideoPlayer({ playbackId, poster, className, style }) {
+export function MuxVideoPlayer({ playbackId, poster, label = 'Video', className, style }) {
   const videoRef = useRef(null);
 
   useEffect(() => {
@@ -54,6 +54,7 @@ export function MuxVideoPlayer({ playbackId, poster, className, style }) {
       className={className}
       controls
       playsInline
+      aria-label={label}
       poster={poster || muxPosterUrl(playbackId)}
       style={{
         width: '100%',

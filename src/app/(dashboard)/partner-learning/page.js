@@ -139,7 +139,7 @@ export default function PartnerLearningPage() {
       <div className="ptr-page-header">
         <h1 className="ptr-page-title">Creator Studio</h1>
         <div className="ptr-page-header-right">
-          <div className="ptr-tab-group">
+          <div className="ptr-tab-group" role="tablist" aria-label="Creator Studio sections">
             {[
               { key: 'courses', label: 'My Courses', icon: 'bi-journal-bookmark' },
               { key: 'videos', label: 'Videos', icon: 'bi-camera-video' },
@@ -149,10 +149,13 @@ export default function PartnerLearningPage() {
             ].map((t) => (
               <button
                 key={t.key}
+                type="button"
+                role="tab"
+                aria-selected={activeView === t.key}
                 className={`ptr-tab ${activeView === t.key ? 'active' : ''}`}
                 onClick={() => setActiveView(t.key)}
               >
-                <i className={`bi ${t.icon}`} /> {t.label}
+                <i className={`bi ${t.icon}`} aria-hidden="true" /> {t.label}
               </button>
             ))}
           </div>

@@ -51,7 +51,7 @@ function ImageBody({ image, setImage }) {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={image.url}
-          alt=""
+          alt="Attachment preview"
           style={{
             maxWidth: '100%',
             maxHeight: 280,
@@ -586,6 +586,8 @@ export function EvoComposer({
               type="range"
               min="0"
               max="100"
+              aria-label="Your conviction percentage, 0 to 100"
+              aria-valuetext={`${postConviction}%`}
               value={postConviction}
               onChange={(e) => setPostConviction(+e.target.value)}
               disabled={!user}

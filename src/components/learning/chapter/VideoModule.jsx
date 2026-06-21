@@ -15,7 +15,7 @@ export function VideoModule({ playbackId, title, caption }) {
           {title}
         </div>
       )}
-      <MuxVideoPlayer playbackId={playbackId} />
+      <MuxVideoPlayer playbackId={playbackId} label={title || 'Lesson video'} />
       {caption && (
         <figcaption style={{ marginTop: 8, fontSize: 13, color: 'var(--text-muted)' }}>
           {caption}

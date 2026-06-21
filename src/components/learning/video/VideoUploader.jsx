@@ -119,13 +119,21 @@ export function VideoUploader({ onUploaded }) {
         ref={inputRef}
         type="file"
         accept="video/*"
+        aria-label="Select a video file to upload"
         disabled={busy}
         onChange={(e) => setFile(e.target.files?.[0] || null)}
         style={{ fontSize: 13, color: 'var(--text-secondary)' }}
       />
 
       {busy && (
-        <div style={{ height: 6, background: 'var(--bg-tertiary)', borderRadius: 999 }}>
+        <div
+          style={{ height: 6, background: 'var(--bg-tertiary)', borderRadius: 999 }}
+          role="progressbar"
+          aria-label="Upload progress"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={phase === 'uploading' ? progress : phase === 'processing' ? 100 : 0}
+        >
           <div
             style={{
               width: `${phase === 'uploading' ? progress : phase === 'processing' ? 100 : 10}%`,
