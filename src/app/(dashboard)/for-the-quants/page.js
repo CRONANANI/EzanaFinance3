@@ -31,6 +31,10 @@ import '../../../../app-legacy/assets/css/light-mode-fixes.css';
 import '../../../../app-legacy/pages/home-dashboard.css';
 import '../../../../app-legacy/components/learning/learning-opportunities.css';
 import './for-the-quants.css';
+import ProbabilityLatticeCard from './ProbabilityLatticeCard';
+import TailProbabilityRidgeCard from './TailProbabilityRidgeCard';
+import RelationshipGraphCard from './RelationshipGraphCard';
+import './simulation-visuals.css';
 
 function VolumeBars() {
   const heights = [40, 55, 35, 70, 45, 90, 65];
@@ -51,6 +55,7 @@ export default function ForTheQuantsPage() {
   const [pmQuery, setPmQuery] = useState('');
   const [leaderPeriod, setLeaderPeriod] = useState('month');
   const [indTab, setIndTab] = useState(INDICATOR_TABS[0]);
+  const [simSeed, setSimSeed] = useState(7); // re-roll → new simulated backtest run
 
   const handlePmLookup = () => {
     if (!pmQuery.trim()) return;
@@ -235,6 +240,24 @@ export default function ForTheQuantsPage() {
 
         <BacktestResultsCard />
       </div>
+
+      {/* ===== Strategy Simulation (animated) ===== */}
+      <section className="ftq-sim-section" aria-label="Strategy simulation visuals">
+        <div className="ftq-sim-section-head">
+          <h3 className="ftq-section-title">
+            <i className="bi bi-activity" aria-hidden />
+            Strategy Simulation
+          </h3>
+          <button type="button" className="ftq-btn-ghost" onClick={() => setSimSeed((s) => s + 1)}>
+            <i className="bi bi-shuffle" /> New run
+          </button>
+        </div>
+        <div className="ftq-sim-grid">
+          <ProbabilityLatticeCard seed={simSeed} />
+          <TailProbabilityRidgeCard seed={simSeed} />
+        </div>
+        <RelationshipGraphCard seed={simSeed} />
+      </section>
 
       <div className="ftq-row-50">
         <div className="db-card" id="ftq-leaderboard">

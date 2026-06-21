@@ -1,0 +1,185 @@
+/* For The Quants — Strategy Simulation visuals. Page-scoped, tokens only. */
+
+.ftq-sim-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.ftq-sim-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.ftq-sim-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+  .ftq-sim-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ftq-sim-card {
+  min-height: 360px;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 1.25rem;
+}
+
+.ftq-sim-card--wide {
+  width: 100%;
+}
+
+/* Card chrome (scoped to the simulation section so no global .ezana-* leaks). */
+.ftq-sim-card .ezana-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.ftq-sim-card .ezana-card-title {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+.ftq-sim-card .ezana-card-subtitle {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+  font-variant-numeric: tabular-nums;
+}
+.ftq-sim-card .ezana-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: var(--emerald-bg);
+  border: 1px solid var(--emerald-border);
+  color: var(--emerald);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* LIVE pill + pulsing dot */
+.ftq-sim-live {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+}
+
+.ftq-sim-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--emerald);
+  box-shadow: 0 0 6px var(--emerald-glow);
+  animation: ftq-sim-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes ftq-sim-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.7);
+  }
+}
+
+/* Body layouts */
+.ftq-sim-lattice-body {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 1rem;
+  flex: 1;
+  align-items: stretch;
+}
+
+.ftq-sim-graph-body {
+  display: grid;
+  grid-template-columns: 1fr 130px;
+  gap: 1rem;
+  flex: 1;
+}
+
+@media (max-width: 640px) {
+  .ftq-sim-lattice-body,
+  .ftq-sim-graph-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Stat rail */
+.ftq-sim-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  padding-top: 0.25rem;
+}
+
+.ftq-sim-rail--right {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.ftq-sim-stat-label {
+  font-family: var(--font-sans);
+  font-size: 0.62rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.ftq-sim-stat-value {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.ftq-sim-stat-value.is-pos {
+  color: var(--positive);
+}
+.ftq-sim-stat-value.is-neg {
+  color: var(--negative);
+}
+
+/* SVG canvas */
+.ftq-sim-svg {
+  width: 100%;
+  height: 100%;
+  min-height: 260px;
+  display: block;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-md);
+}
+
+/* Reduced motion: kill the dot pulse */
+@media (prefers-reduced-motion: reduce) {
+  .ftq-sim-dot {
+    animation: none;
+  }
+}
