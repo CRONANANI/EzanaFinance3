@@ -4,10 +4,10 @@
  */
 
 export const CALL_STATUS = {
-  open: { key: 'open', label: 'Open', color: '#38bdf8', soft: 'rgba(56,189,248,0.14)' },
-  hit: { key: 'hit', label: 'Hit', color: '#10b981', soft: 'rgba(16,185,129,0.14)' },
-  missed: { key: 'missed', label: 'Missed', color: '#ef4444', soft: 'rgba(239,68,68,0.14)' },
-  void: { key: 'void', label: 'Void', color: '#9ca3af', soft: 'rgba(156,163,175,0.14)' },
+  open: { key: 'open', label: 'Open', color: 'var(--info)', soft: 'var(--info-bg)' },
+  hit: { key: 'hit', label: 'Hit', color: 'var(--positive)', soft: 'var(--positive-bg)' },
+  missed: { key: 'missed', label: 'Missed', color: 'var(--negative)', soft: 'var(--negative-bg)' },
+  void: { key: 'void', label: 'Void', color: 'var(--text-muted)', soft: 'var(--bg-tertiary)' },
 };
 
 export const CALL_STATUS_LIST = [
@@ -21,8 +21,18 @@ export const CALL_STATUS_LIST = [
 export const RESOLVABLE_STATUSES = ['hit', 'missed', 'void'];
 
 export const DIRECTIONS = {
-  bullish: { key: 'bullish', label: 'Bullish', icon: 'bi-arrow-up-right', color: '#10b981' },
-  bearish: { key: 'bearish', label: 'Bearish', icon: 'bi-arrow-down-right', color: '#ef4444' },
+  bullish: {
+    key: 'bullish',
+    label: 'Bullish',
+    icon: 'bi-arrow-up-right',
+    color: 'var(--positive)',
+  },
+  bearish: {
+    key: 'bearish',
+    label: 'Bearish',
+    icon: 'bi-arrow-down-right',
+    color: 'var(--negative)',
+  },
 };
 
 export function getCallStatus(key) {

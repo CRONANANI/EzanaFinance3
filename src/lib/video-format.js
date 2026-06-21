@@ -1,10 +1,10 @@
 /** Client-safe helpers for Mux video (no server imports). */
 
 export const VIDEO_STATUS = {
-  pending: { label: 'Uploading', color: '#38bdf8' },
-  processing: { label: 'Processing', color: '#d4a853' },
-  ready: { label: 'Ready', color: '#10b981' },
-  errored: { label: 'Failed', color: '#ef4444' },
+  pending: { label: 'Uploading', color: 'var(--info)' },
+  processing: { label: 'Processing', color: 'var(--gold)' },
+  ready: { label: 'Ready', color: 'var(--positive)' },
+  errored: { label: 'Failed', color: 'var(--negative)' },
 };
 
 export function getVideoStatus(status) {
