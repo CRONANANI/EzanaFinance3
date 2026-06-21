@@ -2685,21 +2685,8 @@ export default function EchoArticleClient({
                   ))}
                 </div>
               )}
-              {article.heroImage && (
-                <figure className="echo-hero-image">
-                  <img
-                    src={article.heroImage.src}
-                    alt={article.heroImage.alt}
-                    className={`echo-hero-image-img${article.heroImage.kind === 'infographic' ? ' echo-hero-image-img--infographic' : ''}`}
-                    loading="eager"
-                  />
-                  {article.heroImage.caption && (
-                    <figcaption className="echo-hero-image-caption">
-                      {article.heroImage.caption}
-                    </figcaption>
-                  )}
-                </figure>
-              )}
+              {/* Hero image intentionally omitted on the article page — it is
+                  used only as the card / cover image on the Echo home page. */}
             </header>
 
             <div className="echo-article-body" ref={articleBodyRef}>

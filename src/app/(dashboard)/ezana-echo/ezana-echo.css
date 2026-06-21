@@ -509,10 +509,10 @@
   gap: 4px;
 }
 
-/* ── 3-column article grid ──────────────────────────────── */
+/* ── 4-column article grid ──────────────────────────────── */
 .echo-v3-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   /* Equal-width columns + equal-height rows so every card is identical in
      both dimensions regardless of title/excerpt length. */
   grid-auto-rows: 1fr;
@@ -545,9 +545,10 @@
   background: var(--surface-card-hover);
 }
 
-/* Card image cell */
+/* Card image cell — square so the photo reads clearly (was a short wide banner
+   that cropped faces and charts to a sliver). */
 .echo-v3-card-img {
-  height: 120px;
+  aspect-ratio: 1 / 1;
   flex-shrink: 0;
   position: relative;
   overflow: hidden;
@@ -560,6 +561,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
 }
 
 .echo-v3-card-badge {
@@ -758,6 +760,10 @@
 
   .echo-v3-latest-section {
     padding: 20px 40px 40px;
+  }
+
+  .echo-v3-grid {
+    grid-template-columns: repeat(3, 1fr);
   }
 
   .echo-v3-hero-stats {
