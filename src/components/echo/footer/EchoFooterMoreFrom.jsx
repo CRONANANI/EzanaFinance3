@@ -36,7 +36,7 @@ export function EchoFooterMoreFrom({ author }) {
         {initial}
       </div>
       <div>
-        <h4 className="echo-more-heading">More from {firstName}, every Friday.</h4>
+        <h4 className="echo-more-heading">More from {firstName}, every Friday and Monday.</h4>
         <p className="echo-more-body">
           The Ezana Echo. One markets read, written for people who&apos;d rather skip the noise.
           Unsubscribe anytime.
