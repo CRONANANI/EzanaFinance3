@@ -29,8 +29,10 @@ import { fiberOpticArticle } from './ezana-echo-article-fiber-optic.js';
 import { hantavirusArticle } from './ezana-echo-article-hantavirus.js';
 import { semiconductorArticle } from './ezana-echo-article-semiconductors.js';
 import { trumpPortfolio2026 } from './ezana-echo-article-trump-portfolio-2026.js';
+import { peterThiel2026 } from './ezana-echo-article-peter-thiel-2026.js';
 
 const ARTICLES = [
+  peterThiel2026,
   trumpPortfolio2026,
   nvidiaSecondMostValuableArticle,
   sectorDominanceArticle,
@@ -43,6 +45,11 @@ const ARTICLES = [
 
 export const ECHO_TRENDING = {
   mostRead: [
+    {
+      title: "Peter Thiel's Worldview, Decoded",
+      reads: 11200,
+      id: 'peter-thiel-worldview-2026',
+    },
     {
       title: "Inside Trump's Q1 2026 Trading Blitz",
       reads: 9800,
@@ -104,6 +111,29 @@ export const ECHO_TRENDING = {
 
 /** @type {Record<string, { id: string; author: { name: string; initials: string; id?: string }; content: string; createdAt: string }[]>} */
 export const ECHO_MOCK_COMMENTS_BY_ARTICLE = {
+  'peter-thiel-worldview-2026': [
+    {
+      id: 'c-thiel-1',
+      author: { name: 'Elena Vasquez', initials: 'EV' },
+      content:
+        'Appreciate that this quotes the 2009 essay directly instead of paraphrasing it. The "freedom and democracy" line lands very differently in his own words.',
+      createdAt: '2026-06-21T11:15:00Z',
+    },
+    {
+      id: 'c-thiel-2',
+      author: { name: 'Tobias Lindqvist', initials: 'TL' },
+      content:
+        'The "warns of surveillance, builds surveillance" tension is the whole story. PLTR is up on every defense headline and this explains why better than any sell-side note.',
+      createdAt: '2026-06-21T14:40:00Z',
+    },
+    {
+      id: 'c-thiel-3',
+      author: { name: 'Maya Okonkwo', initials: 'MO' },
+      content:
+        'Glad the chart is labeled as a share of the named set and not the full roster. Too many writeups would have faked a clean percentage there.',
+      createdAt: '2026-06-21T17:05:00Z',
+    },
+  ],
   'trump-portfolio-q1-2026': [
     {
       id: 'c-trump-1',

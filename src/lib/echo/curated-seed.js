@@ -16,8 +16,10 @@ import { fiberOpticArticle } from '@/lib/ezana-echo-article-fiber-optic.js';
 import { hantavirusArticle } from '@/lib/ezana-echo-article-hantavirus.js';
 import { semiconductorArticle } from '@/lib/ezana-echo-article-semiconductors.js';
 import { trumpPortfolio2026 } from '@/lib/ezana-echo-article-trump-portfolio-2026.js';
+import { peterThiel2026 } from '@/lib/ezana-echo-article-peter-thiel-2026.js';
 
 const SOURCE = [
+  peterThiel2026,
   trumpPortfolio2026,
   nvidiaSecondMostValuableArticle,
   sectorDominanceArticle,
@@ -30,6 +32,7 @@ const SOURCE = [
 
 // Seeded read counts for the curated set (so the trending widget has signal).
 const SEED_READS = {
+  'peter-thiel-worldview-2026': 11200,
   'trump-portfolio-q1-2026': 9800,
   'nvidia-worlds-second-most-valuable-asset-2026': 15200,
   'dominating-us-stock-market-sectors-through-the-times': 12400,
