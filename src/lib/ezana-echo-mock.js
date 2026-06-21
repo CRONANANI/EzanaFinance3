@@ -28,8 +28,10 @@ import { sectorDominanceArticle } from './ezana-echo-article-sector-dominance.js
 import { fiberOpticArticle } from './ezana-echo-article-fiber-optic.js';
 import { hantavirusArticle } from './ezana-echo-article-hantavirus.js';
 import { semiconductorArticle } from './ezana-echo-article-semiconductors.js';
+import { trumpPortfolio2026 } from './ezana-echo-article-trump-portfolio-2026.js';
 
 const ARTICLES = [
+  trumpPortfolio2026,
   nvidiaSecondMostValuableArticle,
   sectorDominanceArticle,
   iranWarCommoditiesArticle2026,
@@ -41,6 +43,11 @@ const ARTICLES = [
 
 export const ECHO_TRENDING = {
   mostRead: [
+    {
+      title: "Inside Trump's Q1 2026 Trading Blitz",
+      reads: 9800,
+      id: 'trump-portfolio-q1-2026',
+    },
     {
       title: "Nvidia Is the World's Second Most Valuable Asset",
       reads: 15200,
@@ -97,6 +104,22 @@ export const ECHO_TRENDING = {
 
 /** @type {Record<string, { id: string; author: { name: string; initials: string; id?: string }; content: string; createdAt: string }[]>} */
 export const ECHO_MOCK_COMMENTS_BY_ARTICLE = {
+  'trump-portfolio-q1-2026': [
+    {
+      id: 'c-trump-1',
+      author: { name: 'Dana Whitfield', initials: 'DW' },
+      content:
+        'The ranges-not-weights point is the part everyone misses. Good to see it called out instead of slapping fake percentages on a pie chart.',
+      createdAt: '2026-06-20T13:30:00Z',
+    },
+    {
+      id: 'c-trump-2',
+      author: { name: 'Andre Kessler', initials: 'AK' },
+      content:
+        'Would love a saved screen for the AI-chip basket mentioned here — NVDA/AMD/AVGO/INTC/MU/TXN. The disclosure-lag framing is exactly right.',
+      createdAt: '2026-06-20T16:05:00Z',
+    },
+  ],
   'dominating-us-stock-market-sectors-through-the-times': [
     {
       id: 'c-sector-1',
