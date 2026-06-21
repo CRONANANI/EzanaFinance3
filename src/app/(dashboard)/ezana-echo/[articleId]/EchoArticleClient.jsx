@@ -2559,6 +2559,8 @@ export default function EchoArticleClient({
                 <span className="echo-article-kicker-dot" aria-hidden />
                 {(article.category || 'markets').toUpperCase()}
               </div>
+              <h1 className="echo-article-h1">{article.title}</h1>
+              {article.excerpt && <p className="echo-article-deck">{article.excerpt}</p>}
               {article.tags && article.tags.length > 0 && (
                 <div className="echo-detail-tags echo-detail-tags-compact">
                   {article.tags.map((tagId) => {
@@ -2580,8 +2582,6 @@ export default function EchoArticleClient({
                   })}
                 </div>
               )}
-              <h1 className="echo-article-h1">{article.title}</h1>
-              {article.excerpt && <p className="echo-article-deck">{article.excerpt}</p>}
               {article.series && (
                 <div
                   className="echo-article-series-banner"
