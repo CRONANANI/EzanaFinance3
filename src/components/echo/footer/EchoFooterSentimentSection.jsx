@@ -13,8 +13,9 @@ export function EchoFooterSentimentSection({ articleId }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const [sentiment, setSentiment] = useState(72);
+  const [sentiment, setSentiment] = useState(50);
   const [voted, setVoted] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
   const [aggregateSignal, setAggregateSignal] = useState(50);
   const [voteCount, setVoteCount] = useState(0);
   const [distribution, setDistribution] = useState(() => new Array(21).fill(0));
@@ -108,14 +109,18 @@ export function EchoFooterSentimentSection({ articleId }) {
           sentiment={sentiment}
           onSentimentChange={(v) => {
             setSentiment(v);
+            setHasInteracted(true);
             if (voted) setVoted(false);
           }}
           isVoted={voted}
+          hint={!hasInteracted && !voted}
           disabled={false}
         />
         <button
           type="button"
-          className={`echo-slider-cast-btn ${voted ? 'is-voted' : ''}`}
+          className={`echo-slider-cast-btn ${voted ? 'is-voted' : ''} ${
+            hasInteracted && !voted && !submitting ? 'is-prompt' : ''
+          }`}
           onClick={handleSubmit}
           disabled={submitting}
         >

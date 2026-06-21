@@ -371,6 +371,68 @@ body.light-mode .echo-slider-cast-btn:hover {
   gap: 6px; /* was 8px */
 }
 
+/* ── Draggability hint: the white dot pulses + nudges left/right until the
+      reader first interacts, signalling it can be dragged ── */
+.echo-slider-thumb--hint {
+  animation: echo-thumb-nudge 1.8s ease-in-out infinite;
+}
+.echo-slider-thumb--hint::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid var(--text-primary);
+  opacity: 0;
+  animation: echo-thumb-pulse 1.8s ease-out infinite;
+}
+@keyframes echo-thumb-nudge {
+  0%,
+  100% {
+    transform: translate(-50%, -50%);
+  }
+  25% {
+    transform: translate(calc(-50% - 9px), -50%);
+  }
+  75% {
+    transform: translate(calc(-50% + 9px), -50%);
+  }
+}
+@keyframes echo-thumb-pulse {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(2.3);
+    opacity: 0;
+  }
+}
+
+/* ── Cast-vote prompt: once a selection is made, ripple the button so the
+      reader remembers to submit ── */
+.echo-slider-cast-btn.is-prompt {
+  animation: echo-cast-pulse 1.5s ease-out infinite;
+}
+@keyframes echo-cast-pulse {
+  0% {
+    box-shadow: 0 0 0 0 var(--echo-accent-ring);
+  }
+  70% {
+    box-shadow: 0 0 0 12px rgba(20, 184, 138, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(20, 184, 138, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .echo-slider-thumb--hint,
+  .echo-slider-thumb--hint::after,
+  .echo-slider-cast-btn.is-prompt {
+    animation: none;
+  }
+}
+
 /* ── Worth-it section ─────────────────────────────────────────── */
 
 .echo-footer-worthit {

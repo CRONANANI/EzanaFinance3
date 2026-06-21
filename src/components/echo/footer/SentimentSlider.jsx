@@ -2,7 +2,7 @@
 
 import { useRef } from 'react';
 
-export function SentimentSlider({ sentiment, onSentimentChange, isVoted, disabled }) {
+export function SentimentSlider({ sentiment, onSentimentChange, isVoted, hint, disabled }) {
   const inputRef = useRef(null);
 
   return (
@@ -28,7 +28,11 @@ export function SentimentSlider({ sentiment, onSentimentChange, isVoted, disable
         aria-label="Your sentiment, noise to signal"
         disabled={disabled}
       />
-      <div className="echo-slider-thumb" style={{ left: `${sentiment}%` }} aria-hidden />
+      <div
+        className={`echo-slider-thumb${hint ? ' echo-slider-thumb--hint' : ''}`}
+        style={{ left: `${sentiment}%` }}
+        aria-hidden
+      />
     </div>
   );
 }
