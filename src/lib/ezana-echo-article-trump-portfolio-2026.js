@@ -14,10 +14,10 @@ export const trumpPortfolio2026 = {
   excerpt:
     "Donald Trump's Q1 2026 ethics filing logged 3,642 securities transactions worth $220M-$750M across 1,026 firms — roughly 58 trades per market day. The data reveals a sharp rotation out of mega-cap software and into AI-chip and policy-linked names, and a case study in how disclosure asymmetry shapes retail edge.",
   heroImage: {
-    src: '/images/echo/trump-portfolio-2026.jpg',
-    alt: "Conceptual allocation wheel illustrating the companies most frequently traded in Donald Trump's Q1 2026 financial disclosure, including Nvidia, Tesla, Apple, Boeing, Palantir and JPMorgan.",
+    src: '/images/echo/trump-portfolio-2026.png',
+    alt: 'Photo-illustration of Donald Trump against a red background with a rising green stock-market arrow, evoking his high-frequency Q1 2026 trading activity.',
     caption:
-      'Illustrative allocation by company. Note: U.S. executive-branch disclosures report transaction value ranges and dates — not share counts or exact portfolio weights. Visual is a conceptual representation of the most frequently traded names, not a precise holdings breakdown.',
+      'Editorial illustration. The transaction figures in this article are drawn from Trump’s Q1 2026 OGE Form 278-T disclosures, which report value ranges and dates — not share counts or exact portfolio weights.',
   },
   category: 'markets',
   author: 'Ezana Finance Editorial',

@@ -23,10 +23,11 @@ export const peterThiel2026 = {
   excerpt:
     "A 2026 leak exposed Dialog, the invitation-only society Peter Thiel co-founded in 2006, listing ~222 elite registrants and session titles like 'Navigating WWIII' and 'Bring Back Nuclear.' Paired with his own published writing, the record offers a rare, sourced look at the philosophy of one of tech's most influential and least understood power brokers — and what it means for a younger generation.",
   heroImage: {
-    src: '/images/echo/peter-thiel-network-2026.jpg',
-    alt: 'Network diagram illustrating Peter Thiel at the center of connections to political, military, financial, and technology figures named in reporting on his Dialog society.',
+    src: '/images/echo/peter-thiel-network-2026.webp',
+    kind: 'infographic',
+    alt: 'Network diagram with Peter Thiel and Palantir at the center, linked by colored arrows to figures across Silicon Valley, Washington, and UK politics — including Mark Zuckerberg, Larry Ellison, Elon Musk, Sam Altman, Alex Karp, Donald Trump, JD Vance, Steve Bannon, and Nigel Farage.',
     caption:
-      'Thiel sits at the center of an unusually cross-sector network spanning government, finance, defense, and Silicon Valley. Diagram is an illustrative representation based on the June 2026 Dialog leak verified by WIRED; arrows denote reported association, not chains of command.',
+      'Thiel sits at the center of an unusually cross-sector network spanning Silicon Valley, Washington, and UK politics (graphic: The Nerve). Colored arrows denote the type of reported tie — major business relationship, personal relationship, or strategic association — not chains of command.',
   },
   category: 'analysis',
   author: 'Ezana Finance Editorial',
