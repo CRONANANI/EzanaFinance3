@@ -1963,6 +1963,72 @@ export const KEYWORDS = {
     courseId: 'geopolitics-101-1',
     courseTitle: 'Geopolitical Risk in Markets',
   },
+
+  'in-q-tel': {
+    id: 'in-q-tel',
+    term: 'In-Q-Tel',
+    definition:
+      'The not-for-profit strategic investor founded by the CIA in 1999 to back startups whose technology could serve U.S. intelligence. In-Q-Tel was an early funder reported behind Palantir — an illustration of how national-security capital can seed a company years before it ever reaches public markets.',
+    template: 'schema',
+    templateData: {
+      title: 'How In-Q-Tel works',
+      nodes: [
+        {
+          label: 'Intelligence community identifies a technology gap',
+          sectors: [],
+          color: '#ef4444',
+        },
+        { label: 'In-Q-Tel invests in a startup addressing it', sectors: [], color: '#f59e0b' },
+        {
+          label: 'Startup builds a dual-use (gov + commercial) product',
+          sectors: [],
+          color: '#10b981',
+        },
+        { label: 'Agencies become anchor customers', sectors: [], color: '#3b82f6' },
+      ],
+    },
+    realWorld:
+      'Palantir’s reported early In-Q-Tel backing helped it win the government contracts that became its core business — a head start most startups never get, and a reason its growth tracks defense and intelligence budgets.',
+    courseId: 'geopolitics-101-4',
+    courseTitle: 'Supply Chain Geopolitics',
+  },
+
+  'political-patronage': {
+    id: 'political-patronage',
+    term: 'Political Patronage',
+    definition:
+      'The practice of an established power-holder using money and access to identify, fund, and elevate political talent who will carry the patron’s priorities into office. Thiel’s backing of JD Vance — from a 2011 lecture to a record-setting 2022 Senate campaign — is a textbook case.',
+    template: 'timeline',
+    templateData: {
+      title: 'Thiel → Vance: patronage in action',
+      events: [
+        {
+          year: '2011',
+          label: 'Vance hears Thiel speak at Yale Law',
+          detail: 'Later calls the talk formative',
+        },
+        {
+          year: '2010s',
+          label: 'Vance works in Thiel’s orbit',
+          detail: 'Silicon Valley venture roles',
+        },
+        {
+          year: '2022',
+          label: '$15M+ to Vance’s Senate run',
+          detail: 'A record for a single race at the time',
+        },
+        {
+          year: '2024',
+          label: 'Vance on the presidential ticket',
+          detail: 'Thiel reportedly brokered the Trump introduction',
+        },
+      ],
+    },
+    realWorld:
+      'Thiel rarely runs for anything. His political method is patronage: back the right individual early and let proximity compound — mimetic theory applied to power.',
+    courseId: 'geopolitics-101-1',
+    courseTitle: 'Geopolitical Risk in Markets',
+  },
 };
 
 export function getKeywordById(id) {
