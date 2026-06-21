@@ -86,6 +86,32 @@ function toRow(a) {
   };
 }
 
+/**
+ * Editorial content for a curated row, WITHOUT engagement metrics or lifecycle
+ * fields. Used to reconcile edits to already-seeded articles (e.g. new inline
+ * keywords or copy fixes) on a fresh process. Partial upserts only touch the
+ * columns present here, so accumulated view_count/like_count and any admin
+ * archive state (article_status) are preserved.
+ */
+function toContentRow(a) {
+  return {
+    article_slug: a.id,
+    article_title: a.title,
+    article_excerpt: a.excerpt,
+    article_body: plainBody(a),
+    article_category: a.category || 'markets',
+    content_blocks: a.contentBlocks || null,
+    content_paragraphs: a.contentParagraphs || null,
+    hero_image: a.heroImage || null,
+    tags: a.tags || null,
+    tickers: a.tickers || null,
+    author_name: a.author || 'Ezana Finance Editorial',
+    is_featured: !!a.featured,
+    read_time_minutes: Number.isFinite(a.readTime) ? a.readTime : 1,
+    published_at: a.publishedAt || new Date().toISOString(),
+  };
+}
+
 let seedPromise = null;
 
 /**
@@ -100,13 +126,27 @@ export function ensureCuratedSeeded(admin) {
         .from('echo_articles')
         .select('id', { count: 'exact', head: true })
         .in('article_slug', CURATED_SLUGS);
-      if ((count ?? 0) >= CURATED_SLUGS.length) return;
 
-      const rows = SOURCE.map(toRow);
-      const { error } = await admin
+      // Phase 1 — seed any missing curated articles in full (with seeded reads).
+      if ((count ?? 0) < CURATED_SLUGS.length) {
+        const rows = SOURCE.map(toRow);
+        const { error } = await admin
+          .from('echo_articles')
+          .upsert(rows, { onConflict: 'article_slug' });
+        if (error) console.error('[echo] curated seed upsert failed:', error.message);
+      }
+
+      // Phase 2 — reconcile editorial content for already-seeded rows so copy
+      // edits (e.g. new inline keywords) reach the reader. Metric-safe: this
+      // payload omits view_count/like_count and article_status, so a partial
+      // upsert leaves engagement counts and admin archive state untouched.
+      const contentRows = SOURCE.map(toContentRow);
+      const { error: reconcileError } = await admin
         .from('echo_articles')
-        .upsert(rows, { onConflict: 'article_slug' });
-      if (error) console.error('[echo] curated seed upsert failed:', error.message);
+        .upsert(contentRows, { onConflict: 'article_slug' });
+      if (reconcileError) {
+        console.error('[echo] curated content reconcile failed:', reconcileError.message);
+      }
     } catch (e) {
       console.error('[echo] curated seed error:', e?.message || e);
       // allow a retry on a later request

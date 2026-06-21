@@ -1738,6 +1738,231 @@ export const KEYWORDS = {
     courseId: 'global-3',
     courseTitle: 'Foreign Direct Investment',
   },
+
+  /* ════════════════════════════════════════════════════════════════════════
+     Peter Thiel worldview article keywords
+     ════════════════════════════════════════════════════════════════════════ */
+
+  palantir: {
+    id: 'palantir',
+    term: 'Palantir Technologies (PLTR)',
+    definition:
+      'A data-analytics software company co-founded by Peter Thiel in 2003. Its platforms integrate and analyze large, fragmented datasets for government and commercial clients. Government and defense contracts have historically driven much of its growth, making it the clearest public-market expression of Thiel’s "state + data" thesis.',
+    template: 'comparison',
+    templateData: {
+      title: 'Palantir at a glance',
+      headers: ['Aspect', 'Detail'],
+      rows: [
+        { label: 'Founded', cells: ['2003 — Thiel, Karp, Lonsdale, Cohen, Stephens'] },
+        { label: 'Core platforms', cells: ['Gotham (gov), Foundry (commercial), AIP (AI)'] },
+        { label: 'Anchor customers', cells: ['US defense & intelligence, then enterprise'] },
+        { label: 'Why it matters', cells: ['A pure-play bet on state power fused with data'] },
+      ],
+      footnote:
+        'Palantir’s revenue mix has shifted toward commercial, but government remains a cornerstone of the business.',
+    },
+    realWorld:
+      "Palantir is where Thiel's worldview meets the market: the article notes its growth has tracked the same defense and intelligence priorities championed by figures in the Dialog network.",
+    courseId: 'geopolitics-101-4',
+    courseTitle: 'Supply Chain Geopolitics',
+  },
+
+  'paypal-mafia': {
+    id: 'paypal-mafia',
+    term: 'The PayPal Mafia',
+    definition:
+      'The informal network of PayPal’s early founders and employees who, after eBay acquired PayPal in 2002, went on to found or fund a remarkable share of Silicon Valley’s most valuable companies — concentrating influence among a small, interconnected group.',
+    template: 'schema',
+    templateData: {
+      title: 'Where the PayPal Mafia went next',
+      nodes: [
+        {
+          label: 'Peter Thiel',
+          sectors: ['Palantir', 'Founders Fund', 'Facebook (early)'],
+          color: '#8b5cf6',
+        },
+        { label: 'Elon Musk', sectors: ['Tesla', 'SpaceX'], color: '#3b82f6' },
+        { label: 'Reid Hoffman', sectors: ['LinkedIn'], color: '#10b981' },
+        { label: 'Hurley · Chen · Karim', sectors: ['YouTube'], color: '#ef4444' },
+      ],
+    },
+    realWorld:
+      'Thiel co-founded PayPal and seeded this network; its members’ companies now define social platforms, EVs, space launch, and defense data — a vivid example of how concentrated the founder class has become.',
+    courseId: 'market-history-2',
+    courseTitle: 'Market Bubbles & Crashes',
+  },
+
+  'regulatory-capture': {
+    id: 'regulatory-capture',
+    term: 'Regulatory Capture',
+    definition:
+      'When the agencies meant to regulate an industry come to serve that industry’s interests instead of the public’s — through shared personnel, social ties, information asymmetry, or revolving-door careers. It is the structural risk the Dialog leak crystallized.',
+    template: 'schema',
+    templateData: {
+      title: 'How capture tends to form',
+      nodes: [
+        { label: 'Shared private venues & social ties', sectors: [], color: '#ef4444' },
+        { label: 'Revolving door between government and industry', sectors: [], color: '#f59e0b' },
+        { label: 'Information asymmetry favors incumbents', sectors: [], color: '#eab308' },
+        { label: 'Rules quietly drift toward the regulated', sectors: [], color: '#10b981' },
+      ],
+    },
+    realWorld:
+      'The leak’s significance is structural: officials who write rules on financial data and defense procurement sharing an off-the-record venue with the executives whose firms those rules govern.',
+    courseId: 'policy-101-1',
+    courseTitle: 'Industrial Policy & Markets',
+  },
+
+  'mimetic-desire': {
+    id: 'mimetic-desire',
+    term: 'Mimetic Desire',
+    definition:
+      'René Girard’s theory that people desire things not intrinsically but by imitating what others desire. Because everyone converges on the same objects, mimetic desire breeds rivalry. Thiel studied under Girard at Stanford and built his investing philosophy — avoid competition, seek monopoly — directly on it.',
+    template: 'schema',
+    templateData: {
+      title: 'The mimetic loop',
+      nodes: [
+        { label: 'A model wants something', sectors: [], color: '#8b5cf6' },
+        { label: 'Others imitate the desire', sectors: [], color: '#3b82f6' },
+        { label: 'All now compete for the same object', sectors: [], color: '#f59e0b' },
+        { label: 'Rivalry escalates; value gets distorted', sectors: [], color: '#ef4444' },
+      ],
+    },
+    realWorld:
+      "Thiel's famous advice — avoid competition, build monopolies — is mimetic theory inverted: competition is mimetic rivalry, and escaping it is how he argues you create durable value.",
+    courseId: 'market-history-2',
+    courseTitle: 'Market Bubbles & Crashes',
+  },
+
+  seasteading: {
+    id: 'seasteading',
+    term: 'Seasteading',
+    definition:
+      'The idea of building permanent, autonomous settlements in international waters, beyond the jurisdiction of existing nation-states. Thiel was an early funder of the Seasteading Institute, framing it as a literal "exit" from conventional politics.',
+    template: 'schema',
+    templateData: {
+      title: 'The seasteading premise',
+      nodes: [
+        { label: 'International waters sit outside national law', sectors: [], color: '#3b82f6' },
+        { label: 'New jurisdictions compete for residents', sectors: [], color: '#10b981' },
+        { label: '“Exit” rather than reform from within', sectors: [], color: '#f59e0b' },
+        {
+          label: 'Critics cite weak accountability & capital flight',
+          sectors: [],
+          color: '#ef4444',
+        },
+      ],
+    },
+    realWorld:
+      "Seasteading is the literal expression of Thiel's 2009 call to seek 'an escape from politics in all its forms.'",
+    courseId: 'geopolitics-101-1',
+    courseTitle: 'Geopolitical Risk in Markets',
+  },
+
+  'great-stagnation': {
+    id: 'great-stagnation',
+    term: 'The Great Stagnation ("Bits, Not Atoms")',
+    definition:
+      'The thesis — associated with Thiel and economist Tyler Cowen — that outside computing and the internet, technological and productivity growth slowed sharply after roughly 1970: fast progress in "bits" (software) but stalled progress in "atoms" (energy, transit, biotech).',
+    template: 'timeline',
+    templateData: {
+      title: 'The "atoms vs bits" divergence',
+      events: [
+        {
+          year: '≤1970',
+          label: 'Broad-based progress',
+          detail: 'Energy, aviation, space, medicine all advancing',
+        },
+        {
+          year: '1970s–2000s',
+          label: 'Atoms slow',
+          detail: 'Transit, energy, construction costs flatten or rise',
+        },
+        {
+          year: '1990s–now',
+          label: 'Bits accelerate',
+          detail: 'Software, internet, mobile, and AI compound',
+        },
+        {
+          year: 'The debate',
+          label: 'What caused it?',
+          detail: 'Thiel: regulation. Critics: public R&D underinvestment',
+        },
+      ],
+    },
+    realWorld:
+      'If stagnation is caused by regulation, the remedy is concentrated private power; if by underinvestment, the remedy is public capacity. Your answer largely decides whether Thiel reads as a visionary or as someone rationalizing control.',
+    courseId: 'stocks-advanced-7',
+    courseTitle: 'Macroeconomics for Traders',
+  },
+
+  'surveillance-infrastructure': {
+    id: 'surveillance-infrastructure',
+    term: 'Surveillance Infrastructure',
+    definition:
+      'The data-collection and analytics systems — sensors, databases, and the software that fuses them — that let a state or firm monitor populations at scale. The same tools that power security and logistics can enable mass surveillance, which is why their concentration raises civil-liberties concerns.',
+    template: 'comparison',
+    templateData: {
+      title: 'Dual-use data analytics',
+      headers: ['Capability', 'Benign framing', 'Critical framing'],
+      rows: [
+        { label: 'Data fusion', cells: ['Faster decisions, fraud detection', 'Mass profiling'] },
+        { label: 'Gov deployment', cells: ['Defense, disaster response', 'Population monitoring'] },
+        { label: 'Concentration', cells: ['One trusted vendor', 'Single point of control'] },
+      ],
+      footnote:
+        'Thiel warns a centralized, all-seeing state is the ultimate danger — while Palantir builds tools such a state would use.',
+    },
+    realWorld:
+      'As the article puts it: the man warning that a surveillance superstate is the ultimate evil is among the people best positioned to build it.',
+    courseId: 'geopolitics-101-4',
+    courseTitle: 'Supply Chain Geopolitics',
+  },
+
+  'concentration-risk': {
+    id: 'concentration-risk',
+    term: 'Concentration Risk',
+    definition:
+      'The risk that arises when exposure is clustered in a few holdings, sectors, or — as here — decision-makers. Diversification reduces it; concentration amplifies both the upside and the damage from a single failure or shared blind spot.',
+    template: 'comparison',
+    templateData: {
+      title: 'Diversified vs concentrated exposure',
+      headers: ['Dimension', 'Diversified', 'Concentrated'],
+      rows: [
+        { label: 'Single-point failure', cells: ['Contained', 'Systemic'] },
+        { label: 'Outcomes', cells: ['Smoothed', 'Amplified'] },
+        { label: 'Governance', cells: ['Many actors', 'Few actors, shared ideology'] },
+      ],
+      footnote:
+        'The article’s concern is concentration of influence — a small, aligned network spanning platforms, defense, and appointments.',
+    },
+    realWorld:
+      'A remarkably small group, bound by shared ideology and personal ties, holds outsized influence over the platforms, defense systems, and political appointments that define the era.',
+    courseId: 'stocks-intermediate-4',
+    courseTitle: 'Sector Analysis',
+  },
+
+  'exit-vs-voice': {
+    id: 'exit-vs-voice',
+    term: 'Exit vs. Voice',
+    definition:
+      'Albert O. Hirschman’s framework: when an organization or state declines, members can use "voice" (stay and push for reform) or "exit" (leave). Thiel’s philosophy consistently favors exit — new jurisdictions, additional citizenships, and technologies that route around politics rather than reform it.',
+    template: 'comparison',
+    templateData: {
+      title: 'Two responses to decline',
+      headers: ['Response', 'What it means', "Thiel's pattern"],
+      rows: [
+        { label: 'Voice', cells: ['Reform from within', 'Largely skeptical'] },
+        { label: 'Exit', cells: ['Leave or build outside', 'Seasteading, passports, Argentina'] },
+      ],
+      footnote:
+        'For people who cannot "exit," the system Thiel hedges against is the only one they have.',
+    },
+    realWorld:
+      'The risks Thiel hedges against — runaway AI, instability — are precisely the ones his companies help accelerate. The young inherit the system; they do not get to escape it.',
+    courseId: 'geopolitics-101-1',
+    courseTitle: 'Geopolitical Risk in Markets',
+  },
 };
 
 export function getKeywordById(id) {
