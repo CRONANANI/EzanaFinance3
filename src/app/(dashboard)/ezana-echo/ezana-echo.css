@@ -16,7 +16,7 @@
 /* ── Hero band ──────────────────────────────────────────── */
 .echo-v3-hero-band {
   /* Tight top padding so the headline sits just under the nav (no big gap). */
-  padding: 20px 48px 36px;
+  padding: 12px 32px 18px;
   /* No tinted band or divider — blend into the page so the whole surface
      reads as one continuous color matching the top nav. */
   background: transparent;
@@ -29,7 +29,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 32px;
-  margin-bottom: 24px;
+  margin-bottom: 14px;
 }
 
 .echo-v3-page-head-left {
@@ -39,7 +39,7 @@
 
 .echo-v3-page-head-right {
   flex-shrink: 0;
-  padding-top: 32px;
+  padding-top: 4px;
 }
 
 /* Eyebrow pill */
@@ -70,11 +70,11 @@
 /* H1 — kept to a single clean line on the editorial home page */
 .echo-v3-h1 {
   font-family: var(--font-sans);
-  font-size: clamp(1.75rem, 4vw, 46px);
+  font-size: clamp(1.5rem, 2.8vw, 34px);
   font-weight: 700;
   letter-spacing: -0.025em;
   line-height: 1.1;
-  margin: 0 0 10px;
+  margin: 0 0 6px;
   color: var(--text-primary);
   max-width: none;
   white-space: nowrap;
@@ -85,11 +85,11 @@
 }
 
 .echo-v3-page-sub {
-  font-size: 16px;
+  font-size: 13.5px;
   color: var(--text-muted);
   max-width: 660px;
   margin: 0;
-  line-height: 1.55;
+  line-height: 1.45;
 }
 
 /* Archived button (gold accent) */
@@ -160,7 +160,7 @@
 
 /* Hero image cell */
 .echo-v3-hero-img {
-  min-height: 180px;
+  min-height: 150px;
   position: relative;
   overflow: hidden;
   background: linear-gradient(160deg, #0e1a16 0%, #0f2a22 45%, #103a2c 100%);
@@ -231,7 +231,7 @@
 
 /* Hero body cell */
 .echo-v3-hero-body {
-  padding: 22px 32px;
+  padding: 16px 28px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -263,11 +263,11 @@
 
 .echo-v3-hero-title {
   font-family: var(--font-sans);
-  font-size: clamp(1.2rem, 2.6vw, 28px);
+  font-size: clamp(1.1rem, 2.2vw, 24px);
   font-weight: 700;
   letter-spacing: -0.022em;
   line-height: 1.15;
-  margin: 0 0 10px;
+  margin: 0 0 6px;
   color: var(--text-primary);
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -279,10 +279,10 @@
   font-size: 14px;
   line-height: 1.55;
   color: var(--text-secondary);
-  margin: 0 0 14px;
+  margin: 0 0 10px;
   font-weight: 400;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -329,7 +329,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-top: 14px;
+  margin-top: 10px;
   padding-top: 0;
   border-top: none;
 }
@@ -374,24 +374,24 @@
 
 /* ── "The latest" section ───────────────────────────────── */
 .echo-v3-latest-section {
-  padding: 64px 48px 56px;
+  padding: 20px 32px 40px;
 }
 
 .echo-v3-section-head {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  margin-bottom: 36px;
+  margin-bottom: 16px;
   gap: 24px;
   flex-wrap: wrap;
 }
 
 .echo-v3-sec-h {
   font-family: var(--font-sans);
-  font-size: 30px;
+  font-size: 22px;
   font-weight: 700;
   letter-spacing: -0.02em;
-  margin: 0 0 8px;
+  margin: 0 0 4px;
   color: var(--text-primary);
 }
 
@@ -516,7 +516,7 @@
   /* Equal-width columns + equal-height rows so every card is identical in
      both dimensions regardless of title/excerpt length. */
   grid-auto-rows: 1fr;
-  gap: 24px;
+  gap: 16px;
 }
 
 .echo-v3-card-wrap {
@@ -547,7 +547,7 @@
 
 /* Card image cell */
 .echo-v3-card-img {
-  height: 220px;
+  height: 120px;
   flex-shrink: 0;
   position: relative;
   overflow: hidden;
@@ -610,7 +610,7 @@
 
 /* Card body */
 .echo-v3-card-body {
-  padding: 22px 22px 20px;
+  padding: 14px 16px 12px;
   background: var(--bg-secondary);
   display: flex;
   flex-direction: column;
@@ -624,7 +624,7 @@
   color: var(--text-muted);
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   font-variant-numeric: tabular-nums;
   display: flex;
   align-items: center;
@@ -633,11 +633,11 @@
 
 .echo-v3-card-title {
   font-family: var(--font-sans);
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 700;
   letter-spacing: -0.015em;
   line-height: 1.3;
-  margin: 0 0 10px;
+  margin: 0 0 6px;
   color: var(--text-primary);
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -646,18 +646,21 @@
 }
 
 .echo-v3-card-dek {
-  font-size: 13.5px;
+  font-size: 12.5px;
   color: var(--text-muted);
-  line-height: 1.6;
-  margin: 0 0 18px;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
+  line-height: 1.5;
+  margin: 0 0 10px;
+  /* Hidden on the compact home grid so 6 cards fit above the fold on desktop;
+     the full excerpt still shows on the featured card and the article page. */
+  display: none;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
 .echo-v3-card-tags {
-  display: flex;
+  /* Hidden on the compact home grid so more cards fit above the fold. */
+  display: none;
   gap: 6px;
   flex-wrap: wrap;
   margin-bottom: 20px;
@@ -683,9 +686,9 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding-top: 14px;
+  padding-top: 10px;
   border-top: 1px solid var(--border-secondary);
-  font-size: 12.5px;
+  font-size: 12px;
   color: var(--text-muted);
   margin-top: auto;
 }
@@ -722,7 +725,7 @@
 }
 
 .echo-v3-admin-archive-btn--card {
-  top: 222px;
+  top: 8px;
   right: 12px;
 }
 
@@ -750,11 +753,11 @@
 /* 1024–1279: compress hero */
 @media (max-width: 1279px) {
   .echo-v3-hero-band {
-    padding: 20px 40px 36px;
+    padding: 12px 40px 18px;
   }
 
   .echo-v3-latest-section {
-    padding: 48px 40px 48px;
+    padding: 20px 40px 40px;
   }
 
   .echo-v3-hero-stats {
@@ -773,11 +776,11 @@
   }
 
   .echo-v3-hero-band {
-    padding: 20px 32px 32px;
+    padding: 12px 32px 18px;
   }
 
   .echo-v3-latest-section {
-    padding: 40px 32px 40px;
+    padding: 18px 32px 36px;
   }
 
   .echo-v3-grid {
