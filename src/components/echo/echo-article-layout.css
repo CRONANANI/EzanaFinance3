@@ -2,9 +2,9 @@
 
 /* ----- width tokens (set on the article page root) ----- */
 .echo-article-page {
-  /* body column width; title band is 75% of this (25% tighter measure) */
+  /* body column width; title band is 1.5x this measure */
   --echo-body-max: 720px;
-  --echo-title-max: calc(var(--echo-body-max) * 0.75);
+  --echo-title-max: calc(var(--echo-body-max) * 1.5);
   --echo-sidebar-w: 260px;
   --echo-gutter: 2.5rem;
 }
@@ -77,7 +77,7 @@
 }
 
 .echo-title-divider {
-  max-width: var(--echo-body-max);
+  max-width: var(--echo-title-max);
   margin: 1.5rem auto 0;
   height: 1px;
   background: var(--border-secondary);
