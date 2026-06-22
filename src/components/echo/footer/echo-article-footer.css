@@ -457,12 +457,14 @@ body.light-mode .echo-slider-cast-btn:hover {
 .echo-worthit-tile {
   background: var(--bg-secondary, var(--bg-primary));
   border: 1px solid var(--border-primary);
-  border-radius: 10px; /* was 14px */
-  padding: 12px 10px; /* was 22px 14px */
+  border-radius: 999px; /* slim pill */
+  padding: 3px 14px; /* ~80% thinner than the old stacked tile */
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 6px; /* was 10px */
+  justify-content: center;
+  gap: 6px;
+  line-height: 1;
   cursor: pointer;
   font-family: inherit;
   transition:
@@ -480,10 +482,10 @@ body.light-mode .echo-slider-cast-btn:hover {
 }
 
 .echo-worthit-tile-icon-wrap {
-  width: 28px; /* was 42px */
-  height: 28px; /* was 42px */
+  width: auto;
+  height: auto;
   border-radius: 50%;
-  background: var(--bg-tertiary, var(--bg-secondary));
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -494,7 +496,7 @@ body.light-mode .echo-slider-cast-btn:hover {
 }
 
 .echo-worthit-tile-icon-wrap i {
-  font-size: 14px; /* was 20px */
+  font-size: 12px; /* was 20px */
 }
 
 .echo-worthit-tile-label {
@@ -505,6 +507,7 @@ body.light-mode .echo-slider-cast-btn:hover {
 }
 
 .echo-worthit-tile-sub {
+  display: none; /* hidden so the action buttons stay slim */
   font-size: 9px; /* was 11.5px */
   color: var(--text-muted);
   letter-spacing: 0.02em;
@@ -517,7 +520,7 @@ body.light-mode .echo-slider-cast-btn:hover {
 }
 
 .echo-worthit-tile.is-active .echo-worthit-tile-icon-wrap {
-  background: var(--bg-secondary, var(--bg-primary));
+  background: transparent;
   color: var(--echo-accent);
 }
 
