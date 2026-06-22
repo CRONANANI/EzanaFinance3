@@ -35,6 +35,13 @@ export const metadata = {
   title: 'Ezana Finance - Follow the moves that matter',
   description:
     'Track congressional trades, analyze market intelligence, and manage your portfolio with institutional-grade tools.',
+  icons: {
+    icon: [
+      { url: '/ezana-logo.svg', type: 'image/svg+xml' },
+      { url: '/ezana-logo.png', type: 'image/png' },
+    ],
+    apple: '/ezana-logo.png',
+  },
 };
 
 export default async function RootLayout({ children }) {
