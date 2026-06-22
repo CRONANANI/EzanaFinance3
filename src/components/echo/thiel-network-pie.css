@@ -1,0 +1,294 @@
+/* Interactive Thiel network pie — scoped .tnp-*. Tokens only, no hardcoded hex
+   (the single avatar-ink white is defined once as a scoped custom property). */
+
+/* Outer card chrome — .ezana-card is only themed under .ftq-sim-card elsewhere,
+   so the card skeleton is reproduced here scoped to this component. */
+.tnp-card {
+  --tnp-avatar-ink: #ffffff;
+  width: 100%;
+  background: var(--surface-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+}
+
+.tnp-card .ezana-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+}
+
+.tnp-card .ezana-card-title {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.tnp-card .ezana-card-subtitle {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+}
+
+.tnp-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.tnp-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.tnp-legend-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.tnp-legend-pct {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-left: 0.15rem;
+}
+
+.tnp-caption {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  color: var(--text-faint);
+  margin: 0 0 1rem;
+  line-height: 1.5;
+}
+
+.tnp-body {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (max-width: 720px) {
+  .tnp-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tnp-vizwrap {
+  display: flex;
+  justify-content: center;
+}
+
+.tnp-svg {
+  width: 100%;
+  max-width: 340px;
+  height: auto;
+}
+
+.tnp-node {
+  cursor: pointer;
+  outline: none;
+  transition: transform 0.15s ease;
+}
+.tnp-node:hover,
+.tnp-node:focus-visible {
+  transform: scale(1.08);
+}
+.tnp-node:focus-visible circle {
+  stroke: var(--border-focus);
+  stroke-width: 3;
+}
+
+/* Avatar initials drawn on the colored node — white reads on all sphere colors. */
+.tnp-node-initials {
+  fill: var(--tnp-avatar-ink);
+}
+
+/* ---- side detail card ---- */
+.tnp-detail {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  min-height: 320px;
+}
+
+.tnp-detail-head {
+  display: flex;
+  gap: 0.875rem;
+  align-items: flex-start;
+  padding-bottom: 0.875rem;
+  margin-bottom: 0.875rem;
+  border-bottom: 1px solid var(--border-secondary);
+}
+
+.tnp-detail-avatar {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  border: 2px solid var(--emerald);
+  overflow: hidden;
+  background: var(--surface-card);
+}
+.tnp-detail-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.tnp-detail-initials {
+  display: none; /* shown via JS fallback if image fails */
+  position: absolute;
+  inset: 0;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  background: var(--surface-card);
+}
+
+.tnp-detail-name {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.tnp-detail-role {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin: 0.1rem 0 0.4rem;
+}
+
+.tnp-tie-chip {
+  display: inline-block;
+  font-family: var(--font-sans);
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.15rem 0.5rem;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+}
+
+.tnp-detail-section {
+  margin-bottom: 0.875rem;
+}
+
+.tnp-detail-label {
+  font-family: var(--font-sans);
+  font-size: 0.62rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 0.3rem;
+}
+
+.tnp-detail-section p {
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.tnp-chiprow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.tnp-company-chip {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+  background: var(--emerald-bg-subtle);
+  border: 1px solid var(--emerald-border);
+  border-radius: var(--radius-sm);
+  padding: 0.15rem 0.45rem;
+}
+
+.tnp-headlines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.tnp-headlines li {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+.tnp-headline-date {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-faint);
+  margin-right: 0.4rem;
+}
+.tnp-headline-note {
+  font-family: var(--font-sans);
+  font-size: 0.66rem !important;
+  color: var(--text-faint) !important;
+  margin-top: 0.4rem !important;
+  font-style: italic;
+}
+
+.tnp-unpin {
+  margin-top: 0.5rem;
+  background: var(--surface-card);
+  color: var(--text-primary);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-md);
+  padding: 0.4rem 0.75rem;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+.tnp-unpin:hover {
+  border-color: var(--border-hover);
+  background: var(--surface-card-hover);
+}
+
+.tnp-empty {
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tnp-node {
+    transition: none;
+  }
+}

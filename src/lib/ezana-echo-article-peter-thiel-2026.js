@@ -138,16 +138,10 @@ export const peterThiel2026 = {
       text: "Thiel went public as Silicon Valley's most prominent Trump supporter at the 2016 Republican National Convention, an unusual stance in a heavily Democratic industry. After the election, he served as the tech sector's liaison to the incoming administration, working alongside the campaign's combative chief strategist Steve Bannon, who represented the populist-nationalist wing Thiel's money and ideas helped underwrite. The emblematic moment came on December 14, 2016, when Thiel sat beside Trump for a summit of technology leaders at Trump Tower — and brought allies Elon Musk and Alex Karp into the room, even though Tesla and Palantir were then far smaller than the Googles and Microsofts also present. That single image captures the thesis in miniature: the same small circle, formed years earlier, converting personal ties into institutional access at the highest level. Thiel's relationship to the broader Trump family extends to Donald Trump Jr., who has become a connective figure in the MAGA-aligned venture and political world Thiel helped finance.",
     },
     {
-      type: 'chart',
-      variant: 'horizontal-bar',
-      title: 'Thiel network: share of named figures by sphere (illustrative)',
+      type: 'network-pie',
+      title: 'Thiel network: figures by sphere',
       caption:
-        'Each sphere as a share of the named figures categorized from the attached network diagram and supporting public reporting (WIRED, Byline Times, The Register, Wikipedia). Categorization is editorial; several figures span multiple spheres, so shares reflect the shown set.',
-      data: [
-        { label: 'United Kingdom', value: 37.5 },
-        { label: 'Silicon Valley', value: 31.3 },
-        { label: 'Washington DC', value: 31.3 },
-      ],
+        'Hover or tap a face to see who they are, what they do in international markets, the companies they are involved in, and recent headlines. Categorization is editorial; several figures span multiple spheres. Avatars are licensed or illustrative; link colors denote relationship type, not chains of command.',
     },
     {
       type: 'heading',

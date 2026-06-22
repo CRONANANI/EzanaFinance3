@@ -1062,6 +1062,8 @@
   --echo-chart-red: #e85d4f;
   --echo-chart-orange: #f59e0b;
   --echo-chart-green: #10b981;
+  --echo-chart-blue: var(--blue);
+  --echo-chart-purple: var(--purple);
   --echo-chart-grid: rgba(120, 120, 120, 0.15);
   --echo-chart-annotation: rgba(120, 120, 120, 0.4);
 }

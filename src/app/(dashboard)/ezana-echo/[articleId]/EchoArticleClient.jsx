@@ -23,6 +23,7 @@ import { EchoSaveButton } from '@/components/echo/EchoSaveButton';
 import { EchoArticleFooter } from '@/components/echo/footer/EchoArticleFooter';
 import { EchoCtaCallout } from '@/components/echo/EchoCtaCallout';
 import { InteractiveChartCTAOverlay } from '@/components/echo/InteractiveChartCTAOverlay';
+import ThielNetworkPie from '@/components/echo/ThielNetworkPie';
 import { EchoKeywordProvider, useKeywordPopup } from '@/components/echo/EchoKeywordContext';
 import { EchoKeywordPopup } from '@/components/echo/EchoKeywordPopup';
 import { parseKeywords } from '@/components/echo/parseKeywords';
@@ -344,6 +345,9 @@ function ArticleBlock({ block }) {
 
     case 'cta-callout':
       return <EchoCtaCallout block={block} />;
+
+    case 'network-pie':
+      return <ThielNetworkPie title={block.title} caption={block.caption} />;
 
     default:
       return null;
