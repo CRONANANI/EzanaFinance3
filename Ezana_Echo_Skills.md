@@ -194,9 +194,11 @@ The Echo article page (`EchoArticleClient` / the article route) uses a three-zon
 
 ### Zone A — Title band (top, full attention)
 
-- The **title and subheading (excerpt) sit at the top of the page, directly below the global top navigation bar.** No large hero gap above the title.
-- The title band is horizontally **wider-margined than the body: its content max-width is ~25% narrower than the body column on each side is wide** — i.e., the title/subheading are inset further from the page edges than the body text. Concretely: if the body column is `--echo-body-max` wide, the title band uses `--echo-title-max = --echo-body-max * 0.75`, centered. This makes the title/subheading a tighter, more focused measure than the body.
-- Order within the band: category pill → title → subheading/excerpt → byline + date + read time. **The ticker buttons are NO LONGER here** (they move to the Metadata sidebar).
+- The **title and subheading (excerpt) sit at the very top of the page, tight to the global top navigation bar.** There is no category eyebrow and no large hero gap above the title — the back-link row and title band use minimal top padding so the headline reads immediately under the nav.
+- **No category pill.** The green category eyebrow (the colored dot + uppercase category word, e.g. "● COMPANIES") has been removed from the article header. Category is still stored on the article object and used for listings/filtering, but it is not rendered above the title.
+- The title band is **wider than the body**: its content max-width extends ~25% beyond each edge of the body column, i.e. `--echo-title-max = --echo-body-max * 1.5`, centered. So the title/subheading span a wider measure than the body text and read as a full-width headline; the divider matches the title-band width.
+- Order within the band: title → subheading/excerpt → byline (By {author} · {date} · {readTime} min read) → **Save button** → divider. **The ticker buttons are NOT here** (they live in the Metadata sidebar).
+- **Save button placement:** the Save control sits centered in the title band directly **above the horizontal divider line, just below the byline.** It is no longer in the top back-link row.
 
 ### Zone B — Metadata sidebar (left, sticky)
 

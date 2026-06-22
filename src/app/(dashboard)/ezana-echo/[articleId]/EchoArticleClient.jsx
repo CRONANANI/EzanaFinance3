@@ -2552,12 +2552,6 @@ export default function EchoArticleClient({
             <Link href="/ezana-echo" className="echo-back">
               <i className="bi bi-arrow-left" aria-hidden /> Back to Ezana Echo
             </Link>
-            <EchoSaveButton
-              articleId={article.id}
-              articleTags={articleTags}
-              placement="top"
-              articleTracker={articleTracker}
-            />
           </div>
 
           {isAdmin && (
@@ -2596,10 +2590,6 @@ export default function EchoArticleClient({
 
         {/* Zone A — title band, tight measure, directly under the nav */}
         <header className="echo-title-band">
-          <div className="echo-category-pill">
-            <span className="echo-category-dot" aria-hidden />
-            {(article.category || 'markets').toUpperCase()}
-          </div>
           <h1 className="echo-title">{article.title}</h1>
           {article.excerpt && <p className="echo-subheading">{article.excerpt}</p>}
           <div className="echo-byline">
@@ -2625,6 +2615,14 @@ export default function EchoArticleClient({
             {article.listMeta || formatPublishedDate(article.publishedAt)}
             {' · '}
             <span className="echo-readtime">{article.readTime} min read</span>
+          </div>
+          <div className="echo-title-save">
+            <EchoSaveButton
+              articleId={article.id}
+              articleTags={articleTags}
+              placement="top"
+              articleTracker={articleTracker}
+            />
           </div>
         </header>
 

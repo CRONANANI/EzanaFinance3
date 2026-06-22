@@ -9,39 +9,19 @@
   --echo-gutter: 2.5rem;
 }
 
-/* Top bar (back link + save + admin) aligned to the article grid width. */
+/* Top bar (back link + admin) aligned to the article grid width. */
 .echo-article-topbar {
   max-width: calc(var(--echo-sidebar-w) + var(--echo-gutter) + var(--echo-body-max));
   margin: 0 auto;
-  padding: 0.75rem 1rem 0;
+  padding: 0.25rem 1rem 0;
 }
 
 /* ===== Zone A — Title band, directly under top nav ===== */
 .echo-title-band {
   max-width: var(--echo-title-max);
   margin: 0 auto;
-  padding: 1.5rem 1rem 0; /* sits high, just below the nav */
+  padding: 0.25rem 1rem 0; /* sits high, tight to the nav */
   text-align: center;
-}
-
-.echo-title-band .echo-category-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-family: var(--font-sans);
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--emerald);
-  margin-bottom: 0.75rem;
-}
-
-.echo-category-pill .echo-category-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: currentColor;
 }
 
 .echo-title {
@@ -74,6 +54,13 @@
 .echo-byline .echo-readtime {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
+}
+
+/* Save button row — sits just above the divider, below the byline */
+.echo-title-save {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.25rem;
 }
 
 .echo-title-divider {
