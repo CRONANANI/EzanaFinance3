@@ -24,6 +24,7 @@ import { EchoArticleFooter } from '@/components/echo/footer/EchoArticleFooter';
 import { EchoCtaCallout } from '@/components/echo/EchoCtaCallout';
 import { InteractiveChartCTAOverlay } from '@/components/echo/InteractiveChartCTAOverlay';
 import ThielNetworkPie from '@/components/echo/ThielNetworkPie';
+import EchoMetadataSidebar from '@/components/echo/EchoMetadataSidebar';
 import { EchoKeywordProvider, useKeywordPopup } from '@/components/echo/EchoKeywordContext';
 import { EchoKeywordPopup } from '@/components/echo/EchoKeywordPopup';
 import { parseKeywords } from '@/components/echo/parseKeywords';
@@ -55,6 +56,7 @@ import '../../../../../app-legacy/assets/css/pages-common.css';
 import '../../../../../app-legacy/assets/css/light-mode-fixes.css';
 import '../../../../../app-legacy/pages/home-dashboard.css';
 import '../ezana-echo.css';
+import '@/components/echo/echo-article-layout.css';
 
 function getEraForYear(year) {
   return (
@@ -71,12 +73,45 @@ function ParagraphWithKeywords({ text }) {
     <p>
       {tokens.map((token, i) => {
         if (token.type === 'text') return <span key={i}>{token.content}</span>;
+
+        // Person mention — emphasized span + scroll anchor for the Metadata sidebar.
+        if (token.type === 'person') {
+          return (
+            <span
+              key={i}
+              id={`echo-anchor-person-${token.personId}`}
+              className="echo-person"
+              data-entity-type="person"
+              data-entity-id={token.personId}
+            >
+              {token.display}
+            </span>
+          );
+        }
+
+        // Term / keyword — green span + scroll anchor. Anchors every marked token;
+        // authors mark each id once (first mention) so anchor ids stay unique.
+        const anchorId = `echo-anchor-term-${token.keywordId}`;
         const keyword = getKeywordById(token.keywordId);
-        if (!keyword) return <span key={i}>{token.display}</span>;
+        if (!keyword) {
+          // Marked term with no popup entry yet: still green + a scroll target.
+          return (
+            <span
+              key={i}
+              id={anchorId}
+              className="echo-term"
+              data-entity-type="term"
+              data-entity-id={token.keywordId}
+            >
+              {token.display}
+            </span>
+          );
+        }
         const isActive = activeKeywordId === token.keywordId;
         return (
           <button
             key={i}
+            id={anchorId}
             type="button"
             className={`ekp-keyword-span ${isActive ? 'is-active' : ''}`}
             onClick={(e) => openKeyword(token.keywordId, e.currentTarget, keyword.term)}
@@ -2512,7 +2547,7 @@ export default function EchoArticleClient({
   return (
     <EchoKeywordProvider articleTracker={articleTracker}>
       <div className="echo-article-page">
-        <div className="echo-article-page-inset">
+        <div className="echo-article-topbar">
           <div className="echo-back-row">
             <Link href="/ezana-echo" className="echo-back">
               <i className="bi bi-arrow-left" aria-hidden /> Back to Ezana Echo
@@ -2525,179 +2560,180 @@ export default function EchoArticleClient({
             />
           </div>
 
-          <article className="echo-article-shell">
-            {isAdmin && (
-              <div className="echo-article-admin-bar">
-                {isArchived && (
-                  <span className="echo-article-archived-badge">
-                    <i className="bi bi-archive-fill" /> Archived (only admins can see this)
-                  </span>
+          {isAdmin && (
+            <div className="echo-article-admin-bar">
+              {isArchived && (
+                <span className="echo-article-archived-badge">
+                  <i className="bi bi-archive-fill" /> Archived (only admins can see this)
+                </span>
+              )}
+              <div className="echo-article-admin-actions">
+                {isArchived ? (
+                  <button
+                    type="button"
+                    className="echo-article-republish-btn"
+                    onClick={handleRepublish}
+                    disabled={busy}
+                  >
+                    <i className="bi bi-arrow-counterclockwise" />
+                    {busy ? 'Republishing…' : 'Republish'}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="echo-article-archive-btn"
+                    onClick={handleArchive}
+                    disabled={busy}
+                  >
+                    <i className="bi bi-archive" />
+                    {busy ? 'Archiving…' : 'Archive Article'}
+                  </button>
                 )}
-                <div className="echo-article-admin-actions">
-                  {isArchived ? (
-                    <button
-                      type="button"
-                      className="echo-article-republish-btn"
-                      onClick={handleRepublish}
-                      disabled={busy}
-                    >
-                      <i className="bi bi-arrow-counterclockwise" />
-                      {busy ? 'Republishing…' : 'Republish'}
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      className="echo-article-archive-btn"
-                      onClick={handleArchive}
-                      disabled={busy}
-                    >
-                      <i className="bi bi-archive" />
-                      {busy ? 'Archiving…' : 'Archive Article'}
-                    </button>
-                  )}
-                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Zone A — title band, tight measure, directly under the nav */}
+        <header className="echo-title-band">
+          <div className="echo-category-pill">
+            <span className="echo-category-dot" aria-hidden />
+            {(article.category || 'markets').toUpperCase()}
+          </div>
+          <h1 className="echo-title">{article.title}</h1>
+          {article.excerpt && <p className="echo-subheading">{article.excerpt}</p>}
+          <div className="echo-byline">
+            By <strong>{article.author}</strong>
+            {article.coAuthors?.length > 0 && (
+              <>
+                {' & '}
+                {article.coAuthors.map((c, i) => (
+                  <span key={c.id}>
+                    {i > 0 && ', '}
+                    {c.username ? (
+                      <Link href={`/profile/${c.username}`}>
+                        <strong>{c.name}</strong>
+                      </Link>
+                    ) : (
+                      <strong>{c.name}</strong>
+                    )}
+                  </span>
+                ))}
+              </>
+            )}
+            {' · '}
+            {article.listMeta || formatPublishedDate(article.publishedAt)}
+            {' · '}
+            <span className="echo-readtime">{article.readTime} min read</span>
+          </div>
+        </header>
+
+        <div className="echo-title-divider" />
+
+        {/* Zones B + C — metadata sidebar | article body */}
+        <div className="echo-article-grid">
+          <EchoMetadataSidebar
+            tickers={tickers}
+            people={article.entities?.people ?? []}
+            terms={article.entities?.terms ?? []}
+          />
+
+          <div className="echo-body-col">
+            {/* Invisible ticker scroll-targets (fallback: top of the body). */}
+            {tickers.length > 0 && (
+              <div className="echo-ticker-anchors" aria-hidden>
+                {tickers.map((t) => (
+                  <span key={t} id={`echo-anchor-ticker-${t}`} />
+                ))}
               </div>
             )}
-            <header className="echo-article-header">
-              <div className="echo-article-kicker">
-                <span className="echo-article-kicker-dot" aria-hidden />
-                {(article.category || 'markets').toUpperCase()}
-              </div>
-              <h1 className="echo-article-h1">{article.title}</h1>
-              {article.excerpt && <p className="echo-article-deck">{article.excerpt}</p>}
-              {article.tags && article.tags.length > 0 && (
-                <div className="echo-detail-tags echo-detail-tags-compact">
-                  {article.tags.map((tagId) => {
-                    const t = getTag(tagId);
-                    return (
-                      <Link
-                        key={tagId}
-                        href={`/ezana-echo?tag=${tagId}`}
-                        className="echo-article-tag-chip echo-article-tag-chip-compact"
-                        style={{
-                          background: t.color.bg,
-                          color: t.color.fg,
-                          border: `1px solid ${t.color.border}`,
-                        }}
-                      >
-                        {t.label}
-                      </Link>
-                    );
-                  })}
-                </div>
-              )}
-              {article.series && (
-                <div
-                  className="echo-article-series-banner"
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 6,
-                    margin: '10px 0',
-                    padding: '12px 14px',
-                    borderRadius: 10,
-                    border: '1px solid var(--border-secondary)',
-                    background: 'var(--bg-tertiary)',
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 700,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.06em',
-                      color: 'var(--text-muted)',
-                    }}
-                  >
-                    <i className="bi bi-collection" /> Part of a series · {article.series.title}
-                  </div>
-                  {article.series.parts?.length > 0 && (
-                    <ol
+
+            {article.tags && article.tags.length > 0 && (
+              <div className="echo-detail-tags echo-detail-tags-compact">
+                {article.tags.map((tagId) => {
+                  const t = getTag(tagId);
+                  return (
+                    <Link
+                      key={tagId}
+                      href={`/ezana-echo?tag=${tagId}`}
+                      className="echo-article-tag-chip echo-article-tag-chip-compact"
                       style={{
-                        margin: 0,
-                        paddingLeft: 18,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 2,
+                        background: t.color.bg,
+                        color: t.color.fg,
+                        border: `1px solid ${t.color.border}`,
                       }}
                     >
-                      {article.series.parts.map((p) => (
-                        <li key={p.id} style={{ fontSize: 13 }}>
-                          {p.current ? (
-                            <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
-                              {p.title}{' '}
-                              <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>
-                                (this article)
-                              </span>
-                            </span>
-                          ) : (
-                            <Link
-                              href={`/ezana-echo/${p.slug}`}
-                              style={{ color: 'var(--text-secondary)' }}
-                            >
-                              {p.title}
-                            </Link>
-                          )}
-                        </li>
-                      ))}
-                    </ol>
-                  )}
-                </div>
-              )}
-              <div className="echo-article-byline">
-                <span className="echo-article-byline-author">
-                  By <strong>{article.author}</strong>
-                  {article.coAuthors?.length > 0 && (
-                    <>
-                      {' & '}
-                      {article.coAuthors.map((c, i) => (
-                        <span key={c.id}>
-                          {i > 0 && ', '}
-                          {c.username ? (
-                            <Link href={`/profile/${c.username}`}>
-                              <strong>{c.name}</strong>
-                            </Link>
-                          ) : (
-                            <strong>{c.name}</strong>
-                          )}
-                        </span>
-                      ))}
-                    </>
-                  )}
-                </span>
-                <span className="echo-article-byline-divider" aria-hidden>
-                  ·
-                </span>
-                <span>{formatPublishedDate(article.publishedAt)}</span>
-                <span className="echo-article-byline-divider" aria-hidden>
-                  ·
-                </span>
-                <span>{article.readTime} min read</span>
-              </div>
-              {tickers.length > 0 && (
-                <div className="echo-ticker-row" role="list" aria-label="Related tickers">
-                  {tickers.map((t) => (
-                    <Link
-                      key={t}
-                      href={`/company-research?q=${encodeURIComponent(t)}`}
-                      className="echo-ticker"
-                      role="listitem"
-                    >
-                      <i className="bi bi-graph-up" aria-hidden />
-                      <span>{t}</span>
+                      {t.label}
                     </Link>
-                  ))}
-                </div>
-              )}
-              {/* Hero image intentionally omitted on the article page — it is
-                  used only as the card / cover image on the Echo home page. */}
-            </header>
+                  );
+                })}
+              </div>
+            )}
 
-            <div className="echo-article-body" ref={articleBodyRef}>
+            {article.series && (
+              <div
+                className="echo-article-series-banner"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 6,
+                  margin: '10px 0',
+                  padding: '12px 14px',
+                  borderRadius: 10,
+                  border: '1px solid var(--border-secondary)',
+                  background: 'var(--bg-tertiary)',
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.06em',
+                    color: 'var(--text-muted)',
+                  }}
+                >
+                  <i className="bi bi-collection" /> Part of a series · {article.series.title}
+                </div>
+                {article.series.parts?.length > 0 && (
+                  <ol
+                    style={{
+                      margin: 0,
+                      paddingLeft: 18,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 2,
+                    }}
+                  >
+                    {article.series.parts.map((p) => (
+                      <li key={p.id} style={{ fontSize: 13 }}>
+                        {p.current ? (
+                          <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
+                            {p.title}{' '}
+                            <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>
+                              (this article)
+                            </span>
+                          </span>
+                        ) : (
+                          <Link
+                            href={`/ezana-echo/${p.slug}`}
+                            style={{ color: 'var(--text-secondary)' }}
+                          >
+                            {p.title}
+                          </Link>
+                        )}
+                      </li>
+                    ))}
+                  </ol>
+                )}
+              </div>
+            )}
+
+            <article className="echo-article-body" ref={articleBodyRef}>
               {Array.isArray(blocks) && blocks.length > 0
                 ? blocks.map((block, i) => <ArticleBlock key={i} block={block} />)
                 : paragraphs.map((p, i) => <ParagraphWithKeywords key={i} text={p} />)}
-            </div>
+            </article>
 
             <EchoArticleFooter
               articleId={article.id}
@@ -2727,7 +2763,7 @@ export default function EchoArticleClient({
                 ))}
               </div>
             </section>
-          </article>
+          </div>
         </div>
       </div>
       <EchoKeywordPopup />

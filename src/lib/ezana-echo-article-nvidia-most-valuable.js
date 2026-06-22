@@ -65,7 +65,7 @@ export const nvidiaSecondMostValuableArticle = {
     },
     {
       type: 'paragraph',
-      text: "The moat is deepening, not narrowing. Nvidia's $26 billion R&D spend in fiscal 2026 exceeds AMD's entire revenue. The [[kw:blackwell-architecture]]Blackwell architecture[[/kw]], which began shipping at scale in Q1 2026, delivers 4x the training throughput of Hopper at comparable power — a step-function improvement that is pulling hyperscaler capex forward. When Jensen Huang says \"the more you buy, the more you save,\" the math actually works: Blackwell's performance-per-dollar improvement is large enough that customers save on electricity and cooling even after paying the premium.",
+      text: "The moat is deepening, not narrowing. Nvidia's $26 billion R&D spend in fiscal 2026 exceeds AMD's entire revenue. The [[kw:blackwell-architecture]]Blackwell architecture[[/kw]], which began shipping at scale in Q1 2026, delivers 4x the training throughput of Hopper at comparable power — a step-function improvement that is pulling hyperscaler capex forward. When [[person:jensen-huang]]Jensen Huang[[/person]] says \"the more you buy, the more you save,\" the math actually works: Blackwell's performance-per-dollar improvement is large enough that customers save on electricity and cooling even after paying the premium.",
     },
     {
       type: 'callout',
@@ -178,6 +178,22 @@ export const nvidiaSecondMostValuableArticle = {
   category: 'markets',
   tags: ['companies', 'technology', 'ai', 'semiconductors', 'markets'],
   tickers: ['NVDA', 'GOOG', 'AAPL', 'MSFT', 'AMZN', 'TSM', 'AVGO', 'GLD', 'SMH', 'SOXX'],
+  entities: {
+    people: [{ id: 'jensen-huang', label: 'Jensen Huang', role: 'Co-founder and CEO of Nvidia' }],
+    terms: [
+      { id: 'enterprise-value-decomposition', label: 'Enterprise Value Decomposition' },
+      { id: 'tensor-core-parallelism', label: 'Tensor Core Parallelism' },
+      { id: 'hyperscalers', label: 'Hyperscalers' },
+      { id: 'sovereign-ai', label: 'Sovereign AI' },
+      { id: 'cuda', label: 'CUDA' },
+      { id: 'blackwell-architecture', label: 'Blackwell Architecture' },
+      { id: 'gold-store-of-value', label: 'Gold as a Store of Value' },
+      { id: 'tsmc-foundry', label: 'TSMC Foundry Model' },
+      { id: 'inference-vs-training', label: 'Inference vs. Training' },
+      { id: 'capex-cycle', label: 'AI Capex Cycle' },
+      { id: 'mag-7', label: 'Magnificent 7' },
+    ],
+  },
   readTime: 11,
   publishedAt: '2026-05-19',
   featured: false,

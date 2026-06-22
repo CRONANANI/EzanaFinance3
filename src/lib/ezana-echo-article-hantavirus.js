@@ -91,6 +91,23 @@ export const HANTAVIRUS_STATE_DATA = [
 /* ── Article export ────────────────────────────────────────── */
 export const hantavirusArticle = {
   id: 'hantavirus-from-four-corners-to-open-sea',
+  entities: {
+    people: [],
+    terms: [
+      { id: 'who-notification', label: 'WHO Notification' },
+      { id: 'hantavirus-definition', label: 'Hantavirus' },
+      { id: 'andes-virus', label: 'Andes Virus' },
+      { id: 'nndss', label: 'NNDSS Surveillance System' },
+      { id: 'rodent-population-dynamics', label: 'Rodent Population Dynamics' },
+      { id: 'four-corners-region', label: 'Four Corners Region' },
+      { id: 'prodromal-phase', label: 'Incubation Period' },
+      { id: 'maritime-epidemiological-investigation', label: 'Contact Tracing' },
+      { id: 'ecmo', label: 'Extracorporeal Membrane Oxygenation (ECMO)' },
+      { id: 'pandemic-preparedness', label: 'Pandemic Preparedness' },
+      { id: 'ihr-notifications', label: 'IHR Notifications' },
+      { id: 'pcr-diagnostics', label: 'PCR Diagnostics' },
+    ],
+  },
   title: 'Hantavirus: From The Four Corners To The Open Sea',
   subtitle:
     'A 30-year-old virus reemerges on a cruise ship. The investment implications span biodefense, diagnostics, and travel.',

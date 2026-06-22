@@ -75,7 +75,7 @@ export const africaBillionCompaniesArticle = {
     { type: 'heading', text: 'Western Africa: Nigeria leads, but depth is shallow', level: 2 },
     {
       type: 'paragraph',
-      text: "Nigeria's 23 billion-dollar companies are concentrated in oil and gas (Nigerian National Petroleum Corporation, Dangote Refinery), banking (Zenith Bank, GTBank, First Bank), telecommunications (MTN Nigeria), and cement (Dangote Cement). Aliko Dangote's conglomerate is the single most important corporate entity in West Africa — the Dangote Refinery, which began operations in early 2025, is the largest single-train refinery in the world and is designed to eliminate Nigeria's paradoxical dependence on imported refined petroleum despite being a major crude producer.",
+      text: "Nigeria's 23 billion-dollar companies are concentrated in oil and gas (Nigerian National Petroleum Corporation, Dangote Refinery), banking (Zenith Bank, GTBank, First Bank), telecommunications (MTN Nigeria), and cement (Dangote Cement). [[person:aliko-dangote]]Aliko Dangote[[/person]]'s conglomerate is the single most important corporate entity in West Africa — the Dangote Refinery, which began operations in early 2025, is the largest single-train refinery in the world and is designed to eliminate Nigeria's paradoxical dependence on imported refined petroleum despite being a major crude producer.",
     },
     {
       type: 'paragraph',
@@ -167,6 +167,27 @@ export const africaBillionCompaniesArticle = {
   category: 'markets',
   tags: ['markets', 'emerging-markets', 'africa', 'companies'],
   tickers: ['EZA', 'AFK', 'FM', 'PROSY', 'MTNOY', 'SSL', 'GFI', 'HMY', 'BTI'],
+  entities: {
+    people: [
+      {
+        id: 'aliko-dangote',
+        label: 'Aliko Dangote',
+        role: 'Nigerian industrialist behind the Dangote conglomerate and refinery',
+      },
+    ],
+    terms: [
+      { id: 'frontier-markets', label: 'Frontier Market' },
+      { id: 'jse', label: 'Johannesburg Stock Exchange (JSE)' },
+      { id: 'extractive-industries', label: 'Extractive Industries' },
+      { id: 'imf-program', label: 'IMF Program' },
+      { id: 'phosphate-reserves', label: 'Phosphate Reserves' },
+      { id: 'm-pesa', label: 'M-Pesa' },
+      { id: 'profit-repatriation-leakage', label: 'Profit Repatriation Leakage' },
+      { id: 'leapfrog-development', label: 'Leapfrog Development' },
+      { id: 'demographic-dividend', label: 'Demographic Dividend' },
+      { id: 'currency-controls', label: 'Capital Controls' },
+    ],
+  },
   readTime: 10,
   publishedAt: '2026-05-19',
   featured: false,

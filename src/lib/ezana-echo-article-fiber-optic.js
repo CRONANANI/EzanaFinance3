@@ -477,7 +477,7 @@ export const fiberOpticArticle = {
   contentBlocks: [
     {
       type: 'paragraph',
-      text: 'Christopher Moltisanti pulls up to a construction site and sees spools of cable laid out across the dirt. He asks the only honest question in the room: "What is all that?" Benny Fazio, criminal mastermind prodigy of the Soprano family, barely looks up. "Fiber optic cable. High-speed internet access." And then Vito Spatafore, surveying the haul like a man who has seen the future, delivers the thesis of the decade: "Alotta money in this stuff."',
+      text: '[[person:christopher-moltisanti]]Christopher Moltisanti[[/person]] pulls up to a construction site and sees spools of cable laid out across the dirt. He asks the only honest question in the room: "What is all that?" [[person:benny-fazio]]Benny Fazio[[/person]], criminal mastermind prodigy of the Soprano family, barely looks up. "Fiber optic cable. High-speed internet access." And then [[person:vito-spatafore]]Vito Spatafore[[/person]], surveying the haul like a man who has seen the future, delivers the thesis of the decade: "Alotta money in this stuff."',
     },
     {
       type: 'paragraph',
@@ -555,7 +555,7 @@ export const fiberOpticArticle = {
     },
     {
       type: 'paragraph',
-      text: "Corning Incorporated has been making glass since 1851. They manufactured the glass envelope for Thomas Edison's first practical lightbulb. They developed the cathode ray tubes that powered a half-century of television. They invented the Gorilla Glass that protects a billion smartphone screens. And now, at the age of 175, they find themselves at the center of the single most capital-intensive infrastructure buildout in human history: the AI [[kw:ai-supercluster]]AI data center[[/kw]].",
+      text: "Corning Incorporated has been making glass since 1851. They manufactured the glass envelope for [[person:thomas-edison]]Thomas Edison[[/person]]'s first practical lightbulb. They developed the cathode ray tubes that powered a half-century of television. They invented the Gorilla Glass that protects a billion smartphone screens. And now, at the age of 175, they find themselves at the center of the single most capital-intensive infrastructure buildout in human history: the AI [[kw:ai-supercluster]]AI data center[[/kw]].",
     },
     {
       type: 'callout',
@@ -591,7 +591,7 @@ export const fiberOpticArticle = {
     },
     {
       type: 'paragraph',
-      text: "The scale of institutional commitment became clear in January 2026 when Meta Platforms signed a deal worth $6 billion over several years for Corning's optical fiber. Mark Zuckerberg's company is building AI data centers at a pace that would make a 1990s telecom executive weep. To meet Meta's demand alone, Corning broke ground on a brand-new manufacturing facility in March 2026 — a factory dedicated specifically to producing cables for one customer. When a single buyer justifies an entire factory, you are not in a cyclical business. You are in an arms race.",
+      text: "The scale of institutional commitment became clear in January 2026 when Meta Platforms signed a deal worth $6 billion over several years for Corning's optical fiber. [[person:mark-zuckerberg]]Mark Zuckerberg[[/person]]'s company is building AI data centers at a pace that would make a 1990s telecom executive weep. To meet Meta's demand alone, Corning broke ground on a brand-new manufacturing facility in March 2026 — a factory dedicated specifically to producing cables for one customer. When a single buyer justifies an entire factory, you are not in a cyclical business. You are in an arms race.",
     },
     {
       type: 'paragraph',
@@ -627,6 +627,47 @@ export const fiberOpticArticle = {
   category: 'companies',
   tags: ['markets', 'technology', 'ai', 'infrastructure', 'semiconductors'],
   tickers: ['GLW', 'COMM', 'COHR', 'META', 'NVDA', 'AVGO', 'MSFT', 'AMZN'],
+  entities: {
+    people: [
+      {
+        id: 'benny-fazio',
+        label: 'Benny Fazio',
+        role: 'Soprano family associate who identifies fiber optic cable (The Sopranos)',
+      },
+      {
+        id: 'christopher-moltisanti',
+        label: 'Christopher Moltisanti',
+        role: 'Soprano family member at the construction site (The Sopranos)',
+      },
+      {
+        id: 'vito-spatafore',
+        label: 'Vito Spatafore',
+        role: 'Soprano captain who calls the investment thesis (The Sopranos)',
+      },
+      {
+        id: 'thomas-edison',
+        label: 'Thomas Edison',
+        role: 'Inventor whose first lightbulb used a Corning glass envelope',
+      },
+      {
+        id: 'mark-zuckerberg',
+        label: 'Mark Zuckerberg',
+        role: 'CEO of Meta Platforms, a major Corning fiber customer',
+      },
+    ],
+    terms: [
+      { id: 'dot-com-bubble', label: 'Dot-Com Bubble' },
+      { id: 'producer-price-index', label: 'Producer Price Index' },
+      { id: 'glass-preform-oligopoly', label: 'Glass Preform Oligopoly' },
+      { id: 'hyperscaler-pull-through', label: 'Hyperscaler Pull-Through' },
+      { id: 'compound-annual-growth-rate', label: 'Compound Annual Growth Rate' },
+      { id: 'ai-supercluster', label: 'AI Supercluster' },
+      { id: 'multicore-fiber', label: 'Multicore Fiber (MCF)' },
+      { id: 'hyperscale', label: 'Hyperscale' },
+      { id: 'single-mode-vs-multi-mode', label: 'Single-Mode vs. Multi-Mode Fiber' },
+      { id: 'margin-of-safety', label: 'Margin of Safety' },
+    ],
+  },
   readTime: 14,
   publishedAt: '2026-05-02',
   featured: false,

@@ -139,7 +139,7 @@ export const sectorDominanceArticle = {
     },
     {
       type: 'paragraph',
-      text: "This concentration also reflected the economic theory of the early republic. Alexander Hamilton's vision of national finance — a [[kw:hamiltonian-finance]]Hamiltonian vision of national finance[[/kw]], federal debt assumption, and a domestic banking system — was the constitutional foundation on which American capital markets were built. The First Bank of the United States, chartered in 1791, was both a public institution and a publicly traded one, and its shares were among the most actively traded securities in the country. When its charter expired in 1811 and the Second Bank took its place in 1816, the pattern repeated. State-chartered banks proliferated in their wake, each issuing tradable shares that found their way onto the rosters of the regional exchanges that emerged in Philadelphia, Boston, and New York.",
+      text: "This concentration also reflected the economic theory of the early republic. [[person:alexander-hamilton]]Alexander Hamilton[[/person]]'s vision of national finance — a [[kw:hamiltonian-finance]]Hamiltonian vision of national finance[[/kw]], federal debt assumption, and a domestic banking system — was the constitutional foundation on which American capital markets were built. The First Bank of the United States, chartered in 1791, was both a public institution and a publicly traded one, and its shares were among the most actively traded securities in the country. When its charter expired in 1811 and the Second Bank took its place in 1816, the pattern repeated. State-chartered banks proliferated in their wake, each issuing tradable shares that found their way onto the rosters of the regional exchanges that emerged in Philadelphia, Boston, and New York.",
     },
     {
       type: 'paragraph',
@@ -147,7 +147,7 @@ export const sectorDominanceArticle = {
     },
     {
       type: 'paragraph',
-      text: "The era's dominance began to erode for two reasons. The first was technological: the rise of canal corporations in the 1820s and 1830s introduced large publicly traded enterprises that were not banks. The Erie Canal Company, chartered in 1817, demonstrated that infrastructure-scale capital could be raised from public investors. The second was political: Andrew Jackson's destruction of the Second Bank of the United States in 1836, followed by the wildcat banking era and the panic of 1837, fundamentally reshaped the relationship between government and finance. Bank stocks remained important, but they no longer commanded the field.",
+      text: "The era's dominance began to erode for two reasons. The first was technological: the rise of canal corporations in the 1820s and 1830s introduced large publicly traded enterprises that were not banks. The Erie Canal Company, chartered in 1817, demonstrated that infrastructure-scale capital could be raised from public investors. The second was political: [[person:andrew-jackson]]Andrew Jackson[[/person]]'s destruction of the Second Bank of the United States in 1836, followed by the wildcat banking era and the panic of 1837, fundamentally reshaped the relationship between government and finance. Bank stocks remained important, but they no longer commanded the field.",
     },
     {
       type: 'paragraph',
@@ -170,7 +170,7 @@ export const sectorDominanceArticle = {
     },
     {
       type: 'paragraph',
-      text: "Beyond the railroads themselves, an entire ecosystem of transport-related equities filled out the sector. Steamship companies, telegraph operators (which laid lines along rail rights-of-way and were initially considered transport-adjacent), refrigerated railcar manufacturers, sleeping-car companies like Pullman, and bridge builders all traded actively. Cornelius Vanderbilt, Jay Gould, Edward Harriman, James J. Hill, and J.P. Morgan are remembered today not as merchants or financiers but as railroad operators — because that's where the largest fortunes of the era were made.",
+      text: "Beyond the railroads themselves, an entire ecosystem of transport-related equities filled out the sector. Steamship companies, telegraph operators (which laid lines along rail rights-of-way and were initially considered transport-adjacent), refrigerated railcar manufacturers, sleeping-car companies like Pullman, and bridge builders all traded actively. [[person:cornelius-vanderbilt]]Cornelius Vanderbilt[[/person]], [[person:jay-gould]]Jay Gould[[/person]], [[person:edward-harriman]]Edward Harriman[[/person]], [[person:james-j-hill]]James J. Hill[[/person]], and [[person:jp-morgan]]J.P. Morgan[[/person]] are remembered today not as merchants or financiers but as railroad operators — because that's where the largest fortunes of the era were made.",
     },
     {
       type: 'paragraph',
@@ -259,6 +259,55 @@ export const sectorDominanceArticle = {
   category: 'markets',
   tags: ['markets', 'history', 'sector-rotation', 'technology', 'energy', 'macro'],
   tickers: ['SPY', 'XLK', 'XLE', 'XLF', 'XLI'],
+  entities: {
+    people: [
+      {
+        id: 'alexander-hamilton',
+        label: 'Alexander Hamilton',
+        role: 'First US Treasury Secretary and architect of national finance',
+      },
+      {
+        id: 'andrew-jackson',
+        label: 'Andrew Jackson',
+        role: 'Seventh US President who dismantled the Second Bank of the United States',
+      },
+      {
+        id: 'cornelius-vanderbilt',
+        label: 'Cornelius Vanderbilt',
+        role: 'Railroad and shipping magnate of the transport era',
+      },
+      {
+        id: 'jay-gould',
+        label: 'Jay Gould',
+        role: 'Railroad financier and speculator of the Gilded Age',
+      },
+      {
+        id: 'edward-harriman',
+        label: 'Edward Harriman',
+        role: 'Railroad executive who controlled Union Pacific',
+      },
+      {
+        id: 'james-j-hill',
+        label: 'James J. Hill',
+        role: 'Railroad builder behind the Great Northern Railway',
+      },
+      {
+        id: 'jp-morgan',
+        label: 'J.P. Morgan',
+        role: 'Banker and railroad financier of the late 19th century',
+      },
+    ],
+    terms: [
+      { id: 'buttonwood-agreement', label: 'Buttonwood Agreement' },
+      { id: 'hamiltonian-finance', label: 'Hamiltonian Finance' },
+      { id: 'antitrust', label: 'Antitrust' },
+      { id: 'marshall-plan-capital-formation', label: 'Marshall Plan Capital Formation' },
+      { id: 'coupon-clipping-era', label: 'Coupon-Clipping Era' },
+      { id: 'sector-rotation', label: 'Sector Rotation' },
+      { id: 'revenue-multiple-valuation', label: 'Revenue Multiple Valuation' },
+      { id: 'speculative-mania', label: 'Speculative Mania' },
+    ],
+  },
   readTime: 18,
   publishedAt: '2026-04-30',
   featured: true,

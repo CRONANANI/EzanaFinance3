@@ -22,6 +22,21 @@ export const trumpPortfolio2026 = {
   category: 'markets',
   author: 'Ezana Finance Editorial',
   tickers: ['NVDA', 'AMD', 'INTC', 'AVGO', 'DELL', 'ORCL', 'PLTR', 'BA', 'MSFT', 'AMZN'],
+  entities: {
+    people: [
+      {
+        id: 'donald-trump',
+        label: 'Donald Trump',
+        role: 'US President; subject of the Q1 2026 OGE disclosure',
+      },
+    ],
+    terms: [
+      { id: 'ai-capex-cycle', label: 'AI Capex Cycle' },
+      { id: 'buying-the-dip', label: 'Buying the Dip' },
+      { id: 'conflict-of-interest', label: 'Conflict of Interest' },
+      { id: 'information-latency', label: 'Information Latency' },
+    ],
+  },
   readTime: 11,
   publishedAt: '2026-06-20',
   listMeta: '20 Jun 2026',
@@ -32,7 +47,7 @@ export const trumpPortfolio2026 = {
   contentBlocks: [
     {
       type: 'paragraph',
-      text: "President Donald Trump's first-quarter 2026 ethics filing logged 3,642 securities transactions across 1,026 individual companies and funds — roughly 58 trades for every U.S. market day in the quarter. The two OGE Form 278-T reports, released by the Office of Government Ethics on May 14, disclosed a cumulative transaction value of between $220 million and $750 million, with 2,346 purchases outnumbering 1,296 sales by close to two to one. It marked a near-total reversal from the prior pattern: the previous disclosure listed just 191 transactions over the final two months of 2025, dominated by municipal and corporate bonds. The Q1 activity instead reads as a deliberate, high-frequency rotation into equities — concentrated heavily in AI infrastructure and policy-adjacent names.",
+      text: "President [[person:donald-trump]]Donald Trump[[/person]]'s first-quarter 2026 ethics filing logged 3,642 securities transactions across 1,026 individual companies and funds — roughly 58 trades for every U.S. market day in the quarter. The two OGE Form 278-T reports, released by the Office of Government Ethics on May 14, disclosed a cumulative transaction value of between $220 million and $750 million, with 2,346 purchases outnumbering 1,296 sales by close to two to one. It marked a near-total reversal from the prior pattern: the previous disclosure listed just 191 transactions over the final two months of 2025, dominated by municipal and corporate bonds. The Q1 activity instead reads as a deliberate, high-frequency rotation into equities — concentrated heavily in AI infrastructure and policy-adjacent names.",
     },
     {
       type: 'stat-grid',
@@ -78,7 +93,7 @@ export const trumpPortfolio2026 = {
     },
     {
       type: 'paragraph',
-      text: "The clearest theme in the filing is a concentrated push into semiconductor and AI-infrastructure names. Among roughly three dozen transactions valued between $1 million and $5 million each, the accounts bought securities tied to Nvidia, Broadcom, Microsoft, Adobe, Oracle, ServiceNow, Texas Instruments, and Dell. Smaller buy orders in the $500,000-to-$1 million band captured AMD, Intel, Micron, Goldman Sachs, and Alphabet. By Benzinga's reconstruction, Nvidia-linked purchases alone sat in an estimated $1.8 million to $6.6 million range across 15 separate transactions, while Oracle accounted for an estimated $2.2 million to $10.6 million. The thread connecting these names is custodial: GPUs, accelerators, and networking silicon are the physical substrate of the AI capex cycle, and the buying clustered precisely when the market was discounting it.",
+      text: "The clearest theme in the filing is a concentrated push into semiconductor and AI-infrastructure names. Among roughly three dozen transactions valued between $1 million and $5 million each, the accounts bought securities tied to Nvidia, Broadcom, Microsoft, Adobe, Oracle, ServiceNow, Texas Instruments, and Dell. Smaller buy orders in the $500,000-to-$1 million band captured AMD, Intel, Micron, Goldman Sachs, and Alphabet. By Benzinga's reconstruction, Nvidia-linked purchases alone sat in an estimated $1.8 million to $6.6 million range across 15 separate transactions, while Oracle accounted for an estimated $2.2 million to $10.6 million. The thread connecting these names is custodial: GPUs, accelerators, and networking silicon are the physical substrate of the [[kw:ai-capex-cycle]]AI capex cycle[[/kw]], and the buying clustered precisely when the market was discounting it.",
     },
     {
       type: 'chart',
@@ -99,7 +114,7 @@ export const trumpPortfolio2026 = {
     },
     {
       type: 'paragraph',
-      text: "Timing is what elevated the filing from routine to scrutinized. Multiple outlets noted that the heaviest buying coincided with the March market drawdown — the S&P 500 fell more than 8% into a late-March bottom before rallying roughly 19% to fresh highs. More than half of the quarter's transactions landed in March alone. Analysts who reviewed the documents characterized the approach as textbook 'buying the dip,' with accumulation in Oracle, Workday, and ServiceNow after those names sold off in February. Whether read as disciplined money-management or as something more, the pattern produced large paper gains: by mid-June reconstructions, several disclosed names — AMD, Intel, Marvell, Seagate among them — were up triple digits from the disclosed buy windows.",
+      text: "Timing is what elevated the filing from routine to scrutinized. Multiple outlets noted that the heaviest buying coincided with the March market drawdown — the S&P 500 fell more than 8% into a late-March bottom before rallying roughly 19% to fresh highs. More than half of the quarter's transactions landed in March alone. Analysts who reviewed the documents characterized the approach as textbook '[[kw:buying-the-dip]]buying the dip[[/kw]],' with accumulation in Oracle, Workday, and ServiceNow after those names sold off in February. Whether read as disciplined money-management or as something more, the pattern produced large paper gains: by mid-June reconstructions, several disclosed names — AMD, Intel, Marvell, Seagate among them — were up triple digits from the disclosed buy windows.",
     },
     {
       type: 'heading',
@@ -108,7 +123,7 @@ export const trumpPortfolio2026 = {
     },
     {
       type: 'paragraph',
-      text: "A second cluster is harder to separate from the office itself. The filing shows a new Dell position established on February 10 — weeks before Trump publicly praised Dell hardware at a White House event in early May. Intel purchases ramped from early March, following the federal government's late-2025 move to take a roughly 10% equity stake in the chipmaker. Boeing appeared across seven transactions, with timing that drew attention after the administration announced a Chinese order for 200 Boeing aircraft. Palantir, a direct beneficiary of federal defense and intelligence spending, also surfaced in the disclosures. None of this is illegal — sitting presidents are exempt from the conflict-of-interest statute that forces other federal officials to recuse — but ethics scholars and several members of Congress have argued the arrangement leaves the door open to the appearance, if not the substance, of self-dealing.",
+      text: "A second cluster is harder to separate from the office itself. The filing shows a new Dell position established on February 10 — weeks before Trump publicly praised Dell hardware at a White House event in early May. Intel purchases ramped from early March, following the federal government's late-2025 move to take a roughly 10% equity stake in the chipmaker. Boeing appeared across seven transactions, with timing that drew attention after the administration announced a Chinese order for 200 Boeing aircraft. Palantir, a direct beneficiary of federal defense and intelligence spending, also surfaced in the disclosures. None of this is illegal — sitting presidents are exempt from the [[kw:conflict-of-interest]]conflict-of-interest[[/kw]] statute that forces other federal officials to recuse — but ethics scholars and several members of Congress have argued the arrangement leaves the door open to the appearance, if not the substance, of self-dealing.",
     },
     {
       type: 'quote',
@@ -126,7 +141,7 @@ export const trumpPortfolio2026 = {
     },
     {
       type: 'paragraph',
-      text: 'The structural lesson for retail investors is about information latency. Congressional and executive disclosures are public, but they arrive on a 30-to-45-day lag and in deliberately coarse value bands — meaning by the time a filing is searchable, the catalyst that motivated the trade has usually played out. The edge, if one exists, is not in copying a six-week-old trade at post-rally prices; it is in pattern recognition across many filers over time. When AI-infrastructure names show up repeatedly across multiple political disclosures in the same window, that recurrence is a more durable signal than any single transaction.',
+      text: 'The structural lesson for retail investors is about [[kw:information-latency]]information latency[[/kw]]. Congressional and executive disclosures are public, but they arrive on a 30-to-45-day lag and in deliberately coarse value bands — meaning by the time a filing is searchable, the catalyst that motivated the trade has usually played out. The edge, if one exists, is not in copying a six-week-old trade at post-rally prices; it is in pattern recognition across many filers over time. When AI-infrastructure names show up repeatedly across multiple political disclosures in the same window, that recurrence is a more durable signal than any single transaction.',
     },
     {
       type: 'callout',

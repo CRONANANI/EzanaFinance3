@@ -1,0 +1,294 @@
+/* Ezana Echo — article layout + Metadata sidebar. Scoped .echo-* / .emeta-*. Tokens only. */
+
+/* ----- width tokens (set on the article page root) ----- */
+.echo-article-page {
+  /* body column width; title band is 75% of this (25% tighter measure) */
+  --echo-body-max: 720px;
+  --echo-title-max: calc(var(--echo-body-max) * 0.75);
+  --echo-sidebar-w: 260px;
+  --echo-gutter: 2.5rem;
+}
+
+/* Top bar (back link + save + admin) aligned to the article grid width. */
+.echo-article-topbar {
+  max-width: calc(var(--echo-sidebar-w) + var(--echo-gutter) + var(--echo-body-max));
+  margin: 0 auto;
+  padding: 0.75rem 1rem 0;
+}
+
+/* ===== Zone A — Title band, directly under top nav ===== */
+.echo-title-band {
+  max-width: var(--echo-title-max);
+  margin: 0 auto;
+  padding: 1.5rem 1rem 0; /* sits high, just below the nav */
+  text-align: center;
+}
+
+.echo-title-band .echo-category-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--emerald);
+  margin-bottom: 0.75rem;
+}
+
+.echo-category-pill .echo-category-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.echo-title {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: clamp(1.6rem, 3.4vw, 2.5rem);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  margin: 0 0 1rem;
+}
+
+.echo-subheading {
+  font-family: var(--font-sans);
+  font-size: clamp(0.95rem, 1.4vw, 1.15rem);
+  line-height: 1.55;
+  color: var(--text-muted);
+  margin: 0 0 1.25rem;
+}
+
+.echo-byline {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  color: var(--text-faint);
+}
+.echo-byline strong {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+.echo-byline .echo-readtime {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.echo-title-divider {
+  max-width: var(--echo-body-max);
+  margin: 1.5rem auto 0;
+  height: 1px;
+  background: var(--border-secondary);
+}
+
+/* ===== Three-zone grid: sidebar | body ===== */
+.echo-article-grid {
+  display: grid;
+  grid-template-columns: var(--echo-sidebar-w) minmax(0, var(--echo-body-max));
+  gap: var(--echo-gutter);
+  justify-content: center;
+  align-items: start;
+  padding: 2rem 1rem 4rem;
+}
+
+/* Invisible ticker scroll-targets parked at the top of the body. */
+.echo-ticker-anchors {
+  height: 0;
+  overflow: hidden;
+}
+
+/* ===== Zone B — Metadata sidebar (sticky, aligned under logo) ===== */
+.emeta-card {
+  position: sticky;
+  top: 1.5rem; /* aligns top edge just under the global nav / logo row */
+  padding: 1.25rem;
+  align-self: start;
+}
+
+.emeta-card-header {
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.875rem;
+  border-bottom: 1px solid var(--border-secondary);
+}
+
+.emeta-explainer-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.emeta-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+.emeta-title-icon {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.emeta-title:hover .emeta-title-icon {
+  color: var(--emerald);
+}
+
+.emeta-popover {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  z-index: 40;
+  width: 280px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 0.875rem 1rem;
+}
+.emeta-popover-head {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--text-primary);
+  margin-bottom: 0.4rem;
+}
+.emeta-popover-body {
+  font-family: var(--font-sans);
+  font-size: 0.76rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.emeta-group {
+  margin-bottom: 1rem;
+}
+.emeta-group:last-child {
+  margin-bottom: 0;
+}
+
+.emeta-group-label {
+  font-family: var(--font-sans);
+  font-size: 0.62rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.emeta-chiprow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.emeta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-input);
+  color: var(--text-secondary);
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.emeta-chip:hover {
+  border-color: var(--border-hover);
+  background: var(--surface-card-hover);
+}
+
+.emeta-chip--ticker {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--emerald);
+  border-color: var(--emerald-border);
+  background: var(--emerald-bg-subtle);
+}
+.emeta-chip-icon {
+  font-size: 0.7rem;
+}
+
+.emeta-chip--term {
+  color: var(--emerald);
+  border-color: var(--emerald-border);
+  background: var(--emerald-bg-subtle);
+}
+
+.emeta-empty {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+/* ===== Zone C — inline entity spans in the body ===== */
+.echo-term {
+  color: var(--emerald);
+  cursor: pointer;
+  border-bottom: 1px dashed var(--emerald-border);
+  transition: color 0.15s ease;
+}
+.echo-term:hover {
+  color: var(--emerald-hover);
+}
+
+.echo-person {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* scroll-target highlight pulse */
+.echo-anchor-pulse {
+  animation: echo-pulse 1.2s ease-out;
+  border-radius: var(--radius-sm);
+}
+@keyframes echo-pulse {
+  0% {
+    background: var(--emerald-bg-hover);
+    box-shadow: 0 0 0 4px var(--emerald-bg-subtle);
+  }
+  100% {
+    background: transparent;
+    box-shadow: none;
+  }
+}
+
+/* ===== Responsive: collapse sidebar to a top strip ===== */
+@media (max-width: 1024px) {
+  .echo-article-grid {
+    grid-template-columns: minmax(0, var(--echo-body-max));
+  }
+  .emeta-card {
+    position: static;
+    margin: 0 auto 1.5rem;
+    width: 100%;
+    max-width: var(--echo-body-max);
+  }
+  .echo-title-band {
+    max-width: var(--echo-body-max);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .echo-anchor-pulse {
+    animation: none;
+  }
+  .emeta-chip {
+    transition: none;
+  }
+}

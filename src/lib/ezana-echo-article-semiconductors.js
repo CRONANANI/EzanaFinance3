@@ -117,6 +117,39 @@ export const FOUNDRY_MARKET_SHARE = [
 /* ── Article export ────────────────────────────────────────── */
 export const semiconductorArticle = {
   id: 'silicon-shield-taiwan-semiconductor-dominance',
+  entities: {
+    people: [
+      {
+        id: 'morris-chang',
+        label: 'Morris Chang',
+        role: 'Founder of TSMC and inventor of the pure-play foundry model',
+      },
+      {
+        id: 'tsai-ing-wen',
+        label: 'Tsai Ing-wen',
+        role: "Former President of Taiwan who named the 'silicon shield' strategy",
+      },
+      {
+        id: 'elon-musk',
+        label: 'Elon Musk',
+        role: 'CEO of Tesla and SpaceX, backer of the Texas Terafab venture',
+      },
+    ],
+    terms: [
+      { id: 'nanometer-process', label: '2-Nanometer Scale' },
+      { id: 'chokepoint', label: 'Chokepoint' },
+      { id: 'pure-play-foundry', label: 'Pure-Play Foundry Model' },
+      { id: 'silicon-shield', label: 'Silicon Shield' },
+      { id: 'chips-act', label: 'CHIPS and Science Act' },
+      { id: 'made-in-china-2025', label: 'Made in China 2025' },
+      { id: 'two-nanometer', label: '2-Nanometer Process' },
+      { id: 'fabless-model', label: 'Fabless Model' },
+      { id: 'idm', label: 'Integrated Device Manufacturers (IDMs)' },
+      { id: 'idm-2-0', label: 'IDM 2.0 Strategy' },
+      { id: 'terafab', label: 'Terafab' },
+      { id: 'yield-ramp-parity', label: 'Onshoring Yield Parity' },
+    ],
+  },
   title: "The Silicon Shield: How One Island Controls The World's Chips",
   subtitle:
     "Taiwan's semiconductor dominance is a geopolitical weapon, a $5 trillion investment thesis, and the most consequential chokepoint in the global economy.",
@@ -147,7 +180,7 @@ export const semiconductorArticle = {
     },
     {
       type: 'paragraph',
-      text: 'The government established the Industrial Technology Research Institute (ITRI) in 1973, which acquired semiconductor process technology through licensing agreements with RCA and trained a generation of Taiwanese engineers. The pivotal moment came in 1987 when Morris Chang, a US-trained engineer who had spent decades at Texas Instruments, founded TSMC and invented the [[kw:pure-play-foundry]]pure-play foundry model[[/kw]].',
+      text: 'The government established the Industrial Technology Research Institute (ITRI) in 1973, which acquired semiconductor process technology through licensing agreements with RCA and trained a generation of Taiwanese engineers. The pivotal moment came in 1987 when [[person:morris-chang]]Morris Chang[[/person]], a US-trained engineer who had spent decades at Texas Instruments, founded TSMC and invented the [[kw:pure-play-foundry]]pure-play foundry model[[/kw]].',
     },
     {
       type: 'paragraph',
@@ -157,7 +190,7 @@ export const semiconductorArticle = {
     { type: 'heading', text: 'The Silicon Shield Thesis', level: 2 },
     {
       type: 'paragraph',
-      text: "Taiwan's semiconductor dominance serves a dual purpose beyond economics. Former President Tsai Ing-wen explicitly named this strategy in a 2021 Foreign Affairs article: the [[kw:silicon-shield]]\"silicon shield\"[[/kw]] — the argument that Taiwan's chip manufacturing is so critical to the global economy that any disruption from a Chinese invasion would trigger catastrophic consequences, compelling Taiwan's allies to intervene.",
+      text: "Taiwan's semiconductor dominance serves a dual purpose beyond economics. Former President [[person:tsai-ing-wen]]Tsai Ing-wen[[/person]] explicitly named this strategy in a 2021 Foreign Affairs article: the [[kw:silicon-shield]]\"silicon shield\"[[/kw]] — the argument that Taiwan's chip manufacturing is so critical to the global economy that any disruption from a Chinese invasion would trigger catastrophic consequences, compelling Taiwan's allies to intervene.",
     },
     {
       type: 'paragraph',
@@ -205,7 +238,7 @@ export const semiconductorArticle = {
     },
     {
       type: 'paragraph',
-      text: 'Elon Musk recently announced plans for advanced chip facilities in Texas — the so-called [[kw:terafab]]"Terafab"[[/kw]] venture for Tesla and SpaceX — consolidating every stage of semiconductor production under one roof at an estimated cost of $25 billion. Other companies investing in US chip fabrication include Micron, Texas Instruments, and Intel. The question is whether any of these efforts can match TSMC\'s yield rates, which reflect 37 years of continuous process optimization.',
+      text: '[[person:elon-musk]]Elon Musk[[/person]] recently announced plans for advanced chip facilities in Texas — the so-called [[kw:terafab]]"Terafab"[[/kw]] venture for Tesla and SpaceX — consolidating every stage of semiconductor production under one roof at an estimated cost of $25 billion. Other companies investing in US chip fabrication include Micron, Texas Instruments, and Intel. The question is whether any of these efforts can match TSMC\'s yield rates, which reflect 37 years of continuous process optimization.',
     },
 
     { type: 'heading', text: 'What Investors Should Watch', level: 2 },
