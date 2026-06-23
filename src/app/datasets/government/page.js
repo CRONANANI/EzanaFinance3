@@ -1,80 +1,58 @@
 'use client';
 
-import Link from 'next/link';
-import { ArrowRight, FileText, Megaphone, Lightbulb } from 'lucide-react';
+import { Building2, Search, Trophy } from 'lucide-react';
+import { DatasetDashboard } from '@/components/marketing/DatasetDashboard';
+import { Ticker, EntityName } from '@/components/marketing/DatasetTable';
+import { CONTRACT_AWARDS_SAMPLE, TOP_RECIPIENTS } from './government-sample';
 
-const DATASETS = [
-  {
-    icon: FileText,
-    title: 'Contracts',
-    desc: 'Federal contract awards by agency and recipient — amounts, award dates, and contracting context.',
-    source: 'Public federal procurement and contract award datasets.',
-    metric: '5,000+ awards / yr',
+const config = {
+  title: 'Government activity data',
+  lead: 'The data institutions act on — federal contract awards, lobbying spend, and patent filings — entity-resolved to public companies and connected to tickers.',
+  searches: [
+    {
+      id: 'recipient',
+      label: 'Recipient search',
+      placeholder: 'Search by company…',
+      icon: Building2,
+      keys: ['recipient', 'ticker'],
+    },
+    {
+      id: 'agency',
+      label: 'Agency search',
+      placeholder: 'Search by agency…',
+      icon: Search,
+      keys: ['agency'],
+    },
+  ],
+  highlight: {
+    badge: 'New',
+    icon: Trophy,
+    title: 'Top contract recipients this quarter',
+    desc: 'Public companies ranked by total disclosed federal award value — a read on which firms are winning government dollars right now.',
+    items: TOP_RECIPIENTS,
   },
-  {
-    icon: Megaphone,
-    title: 'Lobbying',
-    desc: 'Disclosed lobbying spend by organization and issue area, tied to registrants and clients.',
-    source: 'Public lobbying disclosure filings (LD-1 / LD-2 and related registers).',
-    metric: '$3.7B+ tracked',
+  table: {
+    caption: 'Recent federal contract awards',
+    columns: [
+      { key: 'recipient', label: 'Recipient', render: (v) => <EntityName>{v}</EntityName> },
+      { key: 'agency', label: 'Awarding agency' },
+      { key: 'ticker', label: 'Ticker', render: (v) => <Ticker symbol={v} /> },
+      { key: 'amount', label: 'Amount', align: 'right', mono: true },
+      { key: 'date', label: 'Award date', mono: true },
+    ],
+    rows: CONTRACT_AWARDS_SAMPLE,
   },
-  {
-    icon: Lightbulb,
-    title: 'Patents',
-    desc: 'Patent filings and grants by assignee, linked to public companies where possible.',
-    source: 'Public patent office publication and grant data.',
-    metric: '100K+ filings',
+  sampleNote: 'Sample of recent awards — full live dataset available in the app.',
+  source: {
+    title: 'How we source it',
+    body: [
+      'Aggregated from public federal procurement and contract-award datasets, public lobbying disclosure filings (LD-1 / LD-2), and patent office publication and grant data.',
+      'Records are normalized, entity-resolved to companies, and connected to tickers so contract, lobbying, and patent signals surface in Ezana before they reach mainstream coverage.',
+    ],
   },
-];
+  cta: { href: '/auth/login', label: 'Explore in the app' },
+};
 
 export default function GovernmentDatasetPage() {
-  return (
-    <>
-      <div className="mkt-hero">
-        <p className="mkt-eyebrow">Datasets</p>
-        <h1 className="mkt-h1">Government &amp; market intelligence data</h1>
-        <p className="mkt-lead">
-          The data institutions act on — federal contract awards, lobbying spend, and patent filings
-          — connected to tickers.
-        </p>
-      </div>
-
-      <div className="mkt-grid-3">
-        {DATASETS.map((ds) => {
-          const Icon = ds.icon;
-          return (
-            <article key={ds.title} className="mkt-card">
-              <div className="mkt-card-header">
-                <Icon size={20} aria-hidden />
-                {ds.title}
-              </div>
-              <p>{ds.desc}</p>
-              <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
-                <strong>How we source it:</strong> {ds.source}
-              </p>
-              <p className="mkt-mono-metric">{ds.metric}</p>
-            </article>
-          );
-        })}
-      </div>
-
-      <section style={{ marginBottom: '2.5rem' }}>
-        <h2 className="mkt-section-title">How we source it</h2>
-        <div className="mkt-card">
-          <p>
-            Aggregated from public government datasets, normalized, entity-resolved to companies,
-            and connected to tickers so signals surface in Ezana before they reach mainstream
-            coverage.
-          </p>
-        </div>
-      </section>
-
-      <div className="mkt-cta-block">
-        <Link href="/auth/login" className="mkt-cta-btn">
-          Explore in the app
-          <ArrowRight size={18} aria-hidden />
-        </Link>
-      </div>
-    </>
-  );
+  return <DatasetDashboard config={config} />;
 }

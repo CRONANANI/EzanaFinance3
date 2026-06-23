@@ -1,86 +1,58 @@
 'use client';
 
-import Link from 'next/link';
-import { ArrowRight, LineChart, BarChart3, Star, Activity } from 'lucide-react';
+import { Search, Activity } from 'lucide-react';
+import { DatasetDashboard } from '@/components/marketing/DatasetDashboard';
+import { Ticker, SentimentBadge, ReturnValue } from '@/components/marketing/DatasetTable';
+import { MARKETS_SNAPSHOT_SAMPLE, TOP_MOVERS } from './markets-sample';
 
-const DATASETS = [
-  {
-    icon: LineChart,
-    title: 'Prices & Quotes',
-    desc: 'Real-time and historical equity prices, intraday candles, and end-of-day series.',
-    source: 'Finnhub, Alpha Vantage, Alpaca market data.',
-    metric: 'Real-time',
-  },
-  {
-    icon: BarChart3,
-    title: 'Fundamentals',
-    desc: 'Income statement, balance sheet, and cash-flow metrics with ratios for screening.',
-    source: 'Financial Modeling Prep, Finnhub.',
-    metric: 'Quarterly · annual',
-  },
-  {
-    icon: Star,
-    title: 'Analyst Ratings',
-    desc: 'Buy/hold/sell ratings, price targets, and revisions aggregated across covering analysts.',
-    source: 'Financial Modeling Prep, Finnhub.',
-    metric: 'Updated daily',
-  },
-  {
+const config = {
+  title: 'Markets & equities data',
+  lead: 'The market core — prices, fundamentals, analyst ratings, and technical signals — aggregated from institutional-grade providers and normalized across tickers.',
+  searches: [
+    {
+      id: 'ticker',
+      label: 'Stock search',
+      placeholder: 'Search by ticker…',
+      icon: Search,
+      keys: ['ticker'],
+    },
+  ],
+  highlight: {
+    badge: 'New',
     icon: Activity,
-    title: 'Technical Signals',
-    desc: 'Moving averages, momentum, and volatility indicators computed from price history.',
-    source: 'Derived from Finnhub / Alpha Vantage price data.',
-    metric: 'Computed daily',
+    title: 'Top movers today',
+    desc: 'The largest intraday moves across the snapshot universe — a quick read on where the market is rotating.',
+    items: TOP_MOVERS,
   },
-];
+  table: {
+    caption: 'Quote & fundamentals snapshot',
+    columns: [
+      { key: 'ticker', label: 'Ticker', render: (v) => <Ticker symbol={v} /> },
+      { key: 'price', label: 'Price', align: 'right', mono: true },
+      {
+        key: 'change',
+        label: 'Change',
+        align: 'right',
+        mono: true,
+        render: (v) => <ReturnValue value={v} />,
+      },
+      { key: 'mktCap', label: 'Mkt cap', align: 'right', mono: true },
+      { key: 'pe', label: 'P/E', align: 'right', mono: true },
+      { key: 'rating', label: 'Analyst rating', render: (v) => <SentimentBadge value={v} /> },
+    ],
+    rows: MARKETS_SNAPSHOT_SAMPLE,
+  },
+  sampleNote: 'Sample snapshot — real-time quotes and fundamentals available in the app.',
+  source: {
+    title: 'How we source it',
+    body: [
+      'Aggregated from Finnhub, Financial Modeling Prep, Alpha Vantage, and Alpaca market data, reconciled into a single normalized view so prices, fundamentals, and ratings line up by ticker.',
+      'Technical signals are computed from the same price history, and analyst ratings are consolidated across covering analysts.',
+    ],
+  },
+  cta: { href: '/auth/login', label: 'Explore in the app' },
+};
 
 export default function MarketsDatasetPage() {
-  return (
-    <>
-      <div className="mkt-hero">
-        <p className="mkt-eyebrow">Datasets</p>
-        <h1 className="mkt-h1">Markets &amp; equities data</h1>
-        <p className="mkt-lead">
-          The market core — prices, fundamentals, analyst coverage, and technicals — aggregated from
-          institutional-grade providers and normalized across tickers.
-        </p>
-      </div>
-
-      <div className="mkt-grid-3">
-        {DATASETS.map((ds) => {
-          const Icon = ds.icon;
-          return (
-            <article key={ds.title} className="mkt-card">
-              <div className="mkt-card-header">
-                <Icon size={20} aria-hidden />
-                {ds.title}
-              </div>
-              <p>{ds.desc}</p>
-              <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
-                <strong>How we source it:</strong> {ds.source}
-              </p>
-              <p className="mkt-mono-metric">{ds.metric}</p>
-            </article>
-          );
-        })}
-      </div>
-
-      <section style={{ marginBottom: '2.5rem' }}>
-        <h2 className="mkt-section-title">How we source it</h2>
-        <div className="mkt-card">
-          <p>
-            Aggregated from Finnhub, Financial Modeling Prep, Alpha Vantage, and Alpaca, reconciled
-            into a single normalized view so prices, fundamentals, and ratings line up by ticker.
-          </p>
-        </div>
-      </section>
-
-      <div className="mkt-cta-block">
-        <Link href="/auth/login" className="mkt-cta-btn">
-          Explore in the app
-          <ArrowRight size={18} aria-hidden />
-        </Link>
-      </div>
-    </>
-  );
+  return <DatasetDashboard config={config} />;
 }

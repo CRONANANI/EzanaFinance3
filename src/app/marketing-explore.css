@@ -344,3 +344,308 @@ body.light-mode .mkt-card {
     padding-right: 1rem;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   DATASET DATA-DISPLAY DASHBOARDS (mkt-ds-*)
+   Page-scoped pieces for the /datasets dimension dashboards: search row,
+   highlight/leaderboard, and the branded data table. Tokens only — resolves
+   on the white/light theme and in dark mode alike.
+   ═══════════════════════════════════════════════════════════════════════ */
+.mkt-ds-section {
+  margin-bottom: 2.5rem;
+}
+
+/* search / filter row */
+.mkt-ds-search-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.mkt-ds-search {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.mkt-ds-search-label {
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.mkt-ds-search-field {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.75rem;
+  border: 1px solid var(--border-input);
+  border-radius: 10px;
+  background: var(--surface-input);
+  color: var(--text-muted);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.mkt-ds-search-field:focus-within {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--emerald-bg);
+}
+.mkt-ds-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 0.625rem 0;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  color: var(--text-primary);
+}
+.mkt-ds-input::placeholder {
+  color: var(--text-faint);
+}
+
+/* highlight / leaderboard callout */
+.mkt-ds-highlight {
+  margin-bottom: 2.5rem;
+}
+.mkt-ds-highlight-head {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin-bottom: 0.5rem;
+}
+.mkt-ds-badge-new {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--emerald-text);
+  background: var(--emerald-bg);
+  border: 1px solid var(--emerald-border);
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+}
+.mkt-ds-highlight-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.mkt-ds-highlight-title svg {
+  color: var(--emerald-text);
+}
+.mkt-ds-highlight-desc {
+  margin: 0 0 1rem;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+.mkt-ds-leader {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.mkt-ds-leader-row {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.625rem 0;
+  border-top: 1px solid var(--border-secondary);
+}
+.mkt-ds-leader-row:first-child {
+  border-top: none;
+}
+.mkt-ds-leader-rank {
+  flex-shrink: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: var(--emerald-bg);
+  color: var(--emerald-text);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.mkt-ds-leader-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  flex: 1;
+  min-width: 0;
+}
+.mkt-ds-leader-name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.mkt-ds-leader-meta {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-faint);
+}
+.mkt-ds-leader-value {
+  font-size: 0.9375rem;
+}
+
+/* honest sample label above the table */
+.mkt-ds-sample-note {
+  margin: 0 0 0.875rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-faint);
+}
+
+/* primary data table */
+.mkt-ds-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border-primary);
+  border-radius: 14px;
+  background: var(--surface-card);
+  box-shadow: var(--shadow-md);
+}
+body.light-mode .mkt-ds-table-wrap {
+  background: var(--surface-card);
+}
+.mkt-ds-table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  font-family: var(--font-sans);
+}
+.mkt-ds-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  background: var(--bg-tertiary);
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-primary);
+  white-space: nowrap;
+}
+.mkt-ds-table tbody td {
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-secondary);
+  white-space: nowrap;
+}
+.mkt-ds-table tbody tr:last-child td {
+  border-bottom: none;
+}
+.mkt-ds-table tbody tr:nth-child(even) {
+  background: var(--inset);
+}
+.mkt-ds-table tbody tr:hover {
+  background: var(--surface-card-hover);
+}
+.mkt-ds-empty {
+  text-align: center !important;
+  color: var(--text-faint);
+  padding: 1.5rem 1rem !important;
+  white-space: normal !important;
+}
+
+/* numeric / ticker / value cells */
+.mkt-ds-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+.mkt-ds-ticker {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.875rem;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+}
+.mkt-ds-muted {
+  color: var(--text-faint);
+}
+.mkt-ds-pos {
+  color: var(--positive);
+}
+.mkt-ds-neg {
+  color: var(--negative);
+}
+
+/* party + transaction badges */
+.mkt-ds-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.mkt-ds-badge.is-buy {
+  color: var(--positive);
+  background: var(--positive-bg);
+}
+.mkt-ds-badge.is-sell {
+  color: var(--negative);
+  background: var(--negative-bg);
+  border-color: var(--negative-border);
+}
+.mkt-ds-badge.is-dem {
+  color: var(--blue);
+  background: var(--blue-bg);
+}
+.mkt-ds-badge.is-rep {
+  color: var(--negative);
+  background: var(--negative-bg);
+}
+.mkt-ds-badge.is-ind {
+  color: var(--text-muted);
+  background: var(--bg-tertiary);
+}
+
+/* emphasized entity-name cell */
+.mkt-ds-entity {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* politician composite cell */
+.mkt-ds-pol {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+.mkt-ds-pol-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.mkt-ds-pol-meta {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-faint);
+}
+
+@media (max-width: 640px) {
+  .mkt-ds-search-row {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,93 +1,60 @@
 'use client';
 
-import Link from 'next/link';
-import { ArrowRight, Users, Building, FileText, PieChart, Scissors } from 'lucide-react';
+import { Building, Search, TrendingUp } from 'lucide-react';
+import { DatasetDashboard } from '@/components/marketing/DatasetDashboard';
+import { Ticker, EntityName, TxnBadge } from '@/components/marketing/DatasetTable';
+import { INSIDER_TRADES_SAMPLE, TOP_INSIDER_BUYS } from './sec-filings-sample';
 
-const DATASETS = [
-  {
-    icon: Users,
-    title: 'Insider Trading',
-    desc: 'Officer and director buys and sells (Forms 3, 4, 5), tied to the issuer and the insider role.',
-    source: 'SEC EDGAR insider transaction filings.',
-    metric: 'Daily filings',
+const config = {
+  title: 'SEC filings data',
+  lead: 'Insider transactions, institutional 13F holdings, executive compensation, and ETF holdings — parsed from EDGAR and normalized into one consistent schema.',
+  searches: [
+    {
+      id: 'company',
+      label: 'Company search',
+      placeholder: 'Search by ticker…',
+      icon: Building,
+      keys: ['ticker'],
+    },
+    {
+      id: 'insider',
+      label: 'Insider search',
+      placeholder: 'Search by name or role…',
+      icon: Search,
+      keys: ['insider', 'role'],
+    },
+  ],
+  highlight: {
+    badge: 'New',
+    icon: TrendingUp,
+    title: 'Largest insider buys (30 days)',
+    desc: 'Open-market purchases by officers and directors — the buys insiders make with their own money, ranked by dollar value.',
+    items: TOP_INSIDER_BUYS,
   },
-  {
-    icon: Building,
-    title: 'Institutional Holdings (13F)',
-    desc: 'Quarterly portfolios of large institutional managers — positions, changes, and concentration.',
-    source: 'SEC EDGAR Form 13F filings.',
-    metric: 'Quarterly · 13F',
+  table: {
+    caption: 'Recent insider transactions (Form 4)',
+    columns: [
+      { key: 'insider', label: 'Insider', render: (v) => <EntityName>{v}</EntityName> },
+      { key: 'ticker', label: 'Company', render: (v) => <Ticker symbol={v} /> },
+      { key: 'role', label: 'Role' },
+      { key: 'transaction', label: 'Transaction', render: (v) => <TxnBadge type={v} /> },
+      { key: 'shares', label: 'Shares', align: 'right', mono: true },
+      { key: 'value', label: 'Value', align: 'right', mono: true },
+      { key: 'date', label: 'Filed', mono: true },
+    ],
+    rows: INSIDER_TRADES_SAMPLE,
   },
-  {
-    icon: FileText,
-    title: 'Executive Compensation',
-    desc: 'Named-executive pay from proxy statements, normalized for cross-company comparison.',
-    source: 'SEC EDGAR (DEF 14A proxies), Financial Modeling Prep.',
-    metric: 'Annual · proxy',
+  sampleNote: 'Sample of recent filings — full live dataset available in the app.',
+  source: {
+    title: 'How we source it',
+    body: [
+      'Sourced directly from SEC EDGAR — Forms 3/4/5 for insider transactions, 13F filings for institutional holdings, and DEF 14A for executive compensation — supplemented by Financial Modeling Prep.',
+      'Filings are parsed, normalized, and linked to tickers. Disclosure timing follows SEC deadlines, so a small lag between transaction and filing is inherent to the data, not Ezana processing.',
+    ],
   },
-  {
-    icon: PieChart,
-    title: 'ETF Holdings',
-    desc: 'Constituent holdings and weights for ETFs, mapped to underlying tickers and sectors.',
-    source: 'Financial Modeling Prep, fund disclosure.',
-    metric: 'Refreshed daily',
-  },
-  {
-    icon: Scissors,
-    title: 'Corporate Actions',
-    desc: 'Stock splits, dividends, and other corporate events with effective dates.',
-    source: 'Financial Modeling Prep, SEC EDGAR.',
-    metric: 'As filed',
-  },
-];
+  cta: { href: '/auth/login', label: 'Explore in the app' },
+};
 
 export default function SecFilingsDatasetPage() {
-  return (
-    <>
-      <div className="mkt-hero">
-        <p className="mkt-eyebrow">Datasets</p>
-        <h1 className="mkt-h1">SEC filings &amp; disclosure data</h1>
-        <p className="mkt-lead">
-          What companies and insiders are required to disclose — insider trades, institutional
-          holdings, executive pay, and fund composition — connected to tickers.
-        </p>
-      </div>
-
-      <div className="mkt-grid-3">
-        {DATASETS.map((ds) => {
-          const Icon = ds.icon;
-          return (
-            <article key={ds.title} className="mkt-card">
-              <div className="mkt-card-header">
-                <Icon size={20} aria-hidden />
-                {ds.title}
-              </div>
-              <p>{ds.desc}</p>
-              <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
-                <strong>How we source it:</strong> {ds.source}
-              </p>
-              <p className="mkt-mono-metric">{ds.metric}</p>
-            </article>
-          );
-        })}
-      </div>
-
-      <section style={{ marginBottom: '2.5rem' }}>
-        <h2 className="mkt-section-title">How we source it</h2>
-        <div className="mkt-card">
-          <p>
-            Pulled directly from SEC EDGAR and licensed filing providers, parsed, entity-resolved to
-            companies, and connected to tickers so disclosures surface in Ezana as they land.
-          </p>
-        </div>
-      </section>
-
-      <div className="mkt-cta-block">
-        <Link href="/auth/login" className="mkt-cta-btn">
-          Explore in the app
-          <ArrowRight size={18} aria-hidden />
-        </Link>
-      </div>
-    </>
-  );
+  return <DatasetDashboard config={config} />;
 }

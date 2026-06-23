@@ -1,79 +1,64 @@
 'use client';
 
-import Link from 'next/link';
-import { ArrowRight, Globe, Landmark, Crown } from 'lucide-react';
+import { Search, Landmark } from 'lucide-react';
+import { DatasetDashboard } from '@/components/marketing/DatasetDashboard';
+import { Ticker, EntityName, ReturnValue } from '@/components/marketing/DatasetTable';
+import { WEALTH_SAMPLE, MACRO_SNAPSHOT } from './global-sample';
 
-const DATASETS = [
-  {
+const config = {
+  title: 'Global, macro & wealth data',
+  lead: 'The wider lens — macro indicators, global markets, and billionaire wealth tracking — connecting company-level signals to the forces moving whole economies.',
+  searches: [
+    {
+      id: 'name',
+      label: 'Person search',
+      placeholder: 'Search by name…',
+      icon: Search,
+      keys: ['name', 'ticker'],
+    },
+    {
+      id: 'country',
+      label: 'Country search',
+      placeholder: 'Search by country…',
+      icon: Landmark,
+      keys: ['country'],
+    },
+  ],
+  highlight: {
+    badge: 'New',
     icon: Landmark,
-    title: 'Macro Indicators',
-    desc: 'Country-level economic indicators — growth, inflation, trade, and development metrics.',
-    source: 'World Bank open data.',
-    metric: 'Annual series',
+    title: 'Macro snapshot',
+    desc: 'Headline economic indicators that frame the backdrop for every position — growth, inflation, and labor across major economies.',
+    items: MACRO_SNAPSHOT,
   },
-  {
-    icon: Globe,
-    title: 'Global Markets',
-    desc: 'Cross-border equity and index coverage to place US names in a global context.',
-    source: 'Finnhub, Financial Modeling Prep, Alpha Vantage.',
-    metric: 'Daily',
+  table: {
+    caption: 'Billionaire & wealth tracking',
+    columns: [
+      { key: 'name', label: 'Name', render: (v) => <EntityName>{v}</EntityName> },
+      { key: 'netWorth', label: 'Net worth', align: 'right', mono: true },
+      { key: 'ticker', label: 'Primary source', render: (v) => <Ticker symbol={v} /> },
+      { key: 'country', label: 'Country' },
+      {
+        key: 'ytd',
+        label: 'YTD',
+        align: 'right',
+        mono: true,
+        render: (v) => <ReturnValue value={v} />,
+      },
+    ],
+    rows: WEALTH_SAMPLE,
   },
-  {
-    icon: Crown,
-    title: 'Billionaire & Wealth Tracking',
-    desc: 'Tracked net worth and holdings of the world’s wealthiest, linked to public companies.',
-    source: 'Forbes billionaires data.',
-    metric: 'Refreshed periodically',
+  sampleNote: 'Sample of tracked wealth — full live dataset available in the app.',
+  source: {
+    title: 'How we source it',
+    body: [
+      'Macro series come from the World Bank, wealth data from Forbes billionaires data, and global market data from our licensed providers (Finnhub, Financial Modeling Prep, Alpha Vantage).',
+      'Each record is joined to the tickers and sectors it touches, so macro and wealth context sits alongside company-level signals.',
+    ],
   },
-];
+  cta: { href: '/auth/login', label: 'Explore in the app' },
+};
 
 export default function GlobalDatasetPage() {
-  return (
-    <>
-      <div className="mkt-hero">
-        <p className="mkt-eyebrow">Datasets</p>
-        <h1 className="mkt-h1">Global, macro &amp; wealth data</h1>
-        <p className="mkt-lead">
-          The wider lens — macro indicators, global markets, and wealth tracking — to connect
-          company-level signals to the forces moving whole economies.
-        </p>
-      </div>
-
-      <div className="mkt-grid-3">
-        {DATASETS.map((ds) => {
-          const Icon = ds.icon;
-          return (
-            <article key={ds.title} className="mkt-card">
-              <div className="mkt-card-header">
-                <Icon size={20} aria-hidden />
-                {ds.title}
-              </div>
-              <p>{ds.desc}</p>
-              <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
-                <strong>How we source it:</strong> {ds.source}
-              </p>
-              <p className="mkt-mono-metric">{ds.metric}</p>
-            </article>
-          );
-        })}
-      </div>
-
-      <section style={{ marginBottom: '2.5rem' }}>
-        <h2 className="mkt-section-title">How we source it</h2>
-        <div className="mkt-card">
-          <p>
-            Macro series come from the World Bank, wealth data from Forbes, and global market data
-            from our licensed providers — joined to the tickers and sectors they touch.
-          </p>
-        </div>
-      </section>
-
-      <div className="mkt-cta-block">
-        <Link href="/auth/login" className="mkt-cta-btn">
-          Explore in the app
-          <ArrowRight size={18} aria-hidden />
-        </Link>
-      </div>
-    </>
-  );
+  return <DatasetDashboard config={config} />;
 }

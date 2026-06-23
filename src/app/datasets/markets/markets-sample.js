@@ -1,0 +1,126 @@
+/**
+ * Representative SAMPLE data for the public Markets & Equities dataset page.
+ * Static, illustrative quote + fundamentals snapshot (ticker, price, change %,
+ * market cap, P/E, analyst rating). NOT live quotes — the page labels it as a
+ * sample and links into the app for real-time data.
+ */
+
+export const MARKETS_SNAPSHOT_SAMPLE = [
+  {
+    id: 'm1',
+    ticker: 'NVDA',
+    price: '$1,184.20',
+    change: 1.9,
+    mktCap: '$2.92T',
+    pe: '64.1',
+    rating: 'Buy',
+  },
+  {
+    id: 'm2',
+    ticker: 'AAPL',
+    price: '$214.05',
+    change: -0.6,
+    mktCap: '$3.27T',
+    pe: '33.4',
+    rating: 'Buy',
+  },
+  {
+    id: 'm3',
+    ticker: 'MSFT',
+    price: '$468.91',
+    change: 0.8,
+    mktCap: '$3.48T',
+    pe: '37.0',
+    rating: 'Buy',
+  },
+  {
+    id: 'm4',
+    ticker: 'TSLA',
+    price: '$182.47',
+    change: -2.4,
+    mktCap: '$582.0B',
+    pe: '52.8',
+    rating: 'Hold',
+  },
+  {
+    id: 'm5',
+    ticker: 'AMZN',
+    price: '$201.33',
+    change: 1.2,
+    mktCap: '$2.10T',
+    pe: '44.6',
+    rating: 'Buy',
+  },
+  {
+    id: 'm6',
+    ticker: 'META',
+    price: '$512.78',
+    change: 0.4,
+    mktCap: '$1.30T',
+    pe: '27.9',
+    rating: 'Buy',
+  },
+  {
+    id: 'm7',
+    ticker: 'GOOGL',
+    price: '$176.20',
+    change: -0.3,
+    mktCap: '$2.16T',
+    pe: '24.7',
+    rating: 'Buy',
+  },
+  {
+    id: 'm8',
+    ticker: 'AVGO',
+    price: '$1,642.10',
+    change: 2.7,
+    mktCap: '$764.0B',
+    pe: '58.2',
+    rating: 'Buy',
+  },
+  {
+    id: 'm9',
+    ticker: 'LLY',
+    price: '$884.50',
+    change: 0.9,
+    mktCap: '$840.0B',
+    pe: '116.3',
+    rating: 'Hold',
+  },
+  {
+    id: 'm10',
+    ticker: 'XOM',
+    price: '$112.64',
+    change: -1.1,
+    mktCap: '$498.0B',
+    pe: '13.8',
+    rating: 'Hold',
+  },
+  {
+    id: 'm11',
+    ticker: 'UNH',
+    price: '$498.20',
+    change: -3.2,
+    mktCap: '$458.0B',
+    pe: '17.9',
+    rating: 'Sell',
+  },
+  {
+    id: 'm12',
+    ticker: 'JPM',
+    price: '$214.88',
+    change: 0.5,
+    mktCap: '$612.0B',
+    pe: '12.4',
+    rating: 'Buy',
+  },
+];
+
+/** Sample top movers today (by absolute % change). */
+export const TOP_MOVERS = [
+  { name: 'AVGO', meta: 'Broadcom', value: '+2.7%', tone: 'pos' },
+  { name: 'NVDA', meta: 'NVIDIA', value: '+1.9%', tone: 'pos' },
+  { name: 'AMZN', meta: 'Amazon', value: '+1.2%', tone: 'pos' },
+  { name: 'TSLA', meta: 'Tesla', value: '-2.4%', tone: 'neg' },
+  { name: 'UNH', meta: 'UnitedHealth', value: '-3.2%', tone: 'neg' },
+];
