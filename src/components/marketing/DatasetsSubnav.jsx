@@ -4,8 +4,13 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const TABS = [
-  { href: '/datasets/political', label: 'Congressional trading' },
+  { href: '/datasets/political', label: 'Congressional & Political' },
   { href: '/datasets/government', label: 'Government activity' },
+  { href: '/datasets/sec-filings', label: 'SEC filings' },
+  { href: '/datasets/markets', label: 'Markets & equities' },
+  { href: '/datasets/alternative', label: 'Alternative signals' },
+  { href: '/datasets/prediction-markets', label: 'Prediction markets' },
+  { href: '/datasets/global', label: 'Global & macro' },
 ];
 
 export function DatasetsSubnav() {

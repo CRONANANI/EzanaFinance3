@@ -13,7 +13,81 @@ import { AnimatedNav } from '@/components/ui/AnimatedNav';
 import { MobileAuthNavDrawer } from '@/components/Layout/MobileAuthNavDrawer';
 import { useActivityTracker } from '@/hooks/useActivityTracker';
 import { isBetaLockedRoute, hasBetaFullAccess } from '@/lib/beta-locked-routes';
+import {
+  ChevronDown,
+  ArrowRight,
+  Landmark,
+  Building2,
+  FileText,
+  LineChart,
+  Radar,
+  Target,
+  Globe,
+} from 'lucide-react';
 import '@/components/ui/animated-nav.css';
+
+/* Landing-nav Datasets mega-menu — columns grouped by data dimension.
+   Each item links into the public /datasets section, where visitors see
+   what a dataset is and exactly where Ezana sources it. */
+const DATASET_MENU = [
+  {
+    heading: 'Politics & Government',
+    items: [
+      {
+        icon: Landmark,
+        label: 'Congressional & Political',
+        desc: 'Congress trades, politician search & fundraising',
+        href: '/datasets/political',
+      },
+      {
+        icon: Building2,
+        label: 'Government Activity',
+        desc: 'Federal contracts, lobbying & patents',
+        href: '/datasets/government',
+      },
+    ],
+  },
+  {
+    heading: 'Markets & Filings',
+    items: [
+      {
+        icon: FileText,
+        label: 'SEC Filings',
+        desc: 'Insider trades, 13F holdings & exec comp',
+        href: '/datasets/sec-filings',
+      },
+      {
+        icon: LineChart,
+        label: 'Markets & Equities',
+        desc: 'Prices, fundamentals & analyst ratings',
+        href: '/datasets/markets',
+      },
+    ],
+  },
+  {
+    heading: 'Signals & Beyond',
+    items: [
+      {
+        icon: Radar,
+        label: 'Consumer & Alternative Signals',
+        desc: 'On-air mentions & demand proxies',
+        href: '/datasets/alternative',
+      },
+      {
+        icon: Target,
+        label: 'Prediction Markets',
+        desc: 'Live event & election odds',
+        href: '/datasets/prediction-markets',
+      },
+      {
+        icon: Globe,
+        label: 'Global & Macro',
+        desc: 'Macro indicators, global markets & wealth',
+        href: '/datasets/global',
+      },
+    ],
+  },
+];
 
 export function Navbar() {
   const pathname = usePathname();
@@ -22,7 +96,9 @@ export function Navbar() {
   const { isOrgUser } = useOrg();
   useActivityTracker();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [datasetsOpen, setDatasetsOpen] = useState(false);
   const landingNavRef = useRef(null);
+  const datasetsRef = useRef(null);
   const isSettings = pathname?.startsWith('/settings');
   const isLanding = pathname === '/';
   const isPricing = pathname === '/pricing';
@@ -274,6 +350,7 @@ export function Navbar() {
 
   useEffect(() => {
     setMobileMenuOpen(false);
+    setDatasetsOpen(false);
   }, [pathname]);
 
   useEffect(() => {
@@ -287,6 +364,26 @@ export function Navbar() {
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, [showLandingNav, pathname]);
+
+  // Datasets mega-menu — close on Escape or any click/focus outside the
+  // dropdown. Listeners are only attached while the menu is open.
+  useEffect(() => {
+    if (!datasetsOpen) return undefined;
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') setDatasetsOpen(false);
+    };
+    const onPointerDown = (e) => {
+      if (datasetsRef.current && !datasetsRef.current.contains(e.target)) {
+        setDatasetsOpen(false);
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('mousedown', onPointerDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('mousedown', onPointerDown);
+    };
+  }, [datasetsOpen]);
 
   if (isAuthPage || isSettings) return null;
 
@@ -322,6 +419,63 @@ export function Navbar() {
               <a href="/#resources" className="nav-link">
                 Resources
               </a>
+            </li>
+            <li
+              className="nav-item nav-datasets"
+              ref={datasetsRef}
+              onMouseEnter={() => setDatasetsOpen(true)}
+              onMouseLeave={() => setDatasetsOpen(false)}
+            >
+              <button
+                type="button"
+                className="nav-link nav-datasets-trigger"
+                aria-haspopup="true"
+                aria-expanded={datasetsOpen}
+                onClick={() => setDatasetsOpen((open) => !open)}
+              >
+                Datasets
+                <ChevronDown
+                  size={14}
+                  aria-hidden
+                  className={`nav-datasets-caret${datasetsOpen ? ' is-open' : ''}`}
+                />
+              </button>
+              <div
+                className={`nav-datasets-mega${datasetsOpen ? ' is-open' : ''}`}
+                role="menu"
+                aria-label="Datasets"
+              >
+                <div className="nav-datasets-panel">
+                  <div className="nav-datasets-cols">
+                    {DATASET_MENU.map((col) => (
+                      <div key={col.heading} className="nav-datasets-col">
+                        <p className="nav-datasets-col-head">{col.heading}</p>
+                        {col.items.map((item) => {
+                          const Icon = item.icon;
+                          return (
+                            <Link
+                              key={item.href}
+                              href={item.href}
+                              className="nav-datasets-item"
+                              role="menuitem"
+                            >
+                              <Icon size={18} aria-hidden className="nav-datasets-item-icon" />
+                              <span className="nav-datasets-item-text">
+                                <span className="nav-datasets-item-label">{item.label}</span>
+                                <span className="nav-datasets-item-desc">{item.desc}</span>
+                              </span>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    ))}
+                  </div>
+                  <Link href="/datasets" className="nav-datasets-foot" role="menuitem">
+                    View all datasets
+                    <ArrowRight size={14} aria-hidden />
+                  </Link>
+                </div>
+              </div>
             </li>
             <li className="nav-item">
               <a href="/pricing" className="nav-link">
@@ -399,6 +553,15 @@ export function Navbar() {
                   >
                     <i className="bi bi-database" />
                     <span>Resources</span>
+                    <i className="bi bi-chevron-right mobile-nav-chevron" />
+                  </a>
+                  <a
+                    href="/datasets"
+                    className="mobile-nav-link"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <i className="bi bi-stack" />
+                    <span>Datasets</span>
                     <i className="bi bi-chevron-right mobile-nav-chevron" />
                   </a>
                   <a

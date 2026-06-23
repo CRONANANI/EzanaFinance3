@@ -2043,6 +2043,154 @@ html:has(.landing-page) .navbar .logo,
   filter: none;
 }
 
+/* ════════════════════════════════════════════════════════════
+   LANDING NAV — Datasets mega-menu
+   A multi-column dropdown grouped by data dimension, linking into
+   the public /datasets section. Mirrors the dark landing navbar;
+   every color is a theme token (no literal hex).
+   ════════════════════════════════════════════════════════════ */
+.navbar .nav-menu .nav-item.nav-datasets {
+  position: relative;
+}
+
+/* Trigger reads like a sibling .nav-link but is a real <button> so it
+   supports keyboard activation and aria-expanded. It inherits the
+   navbar .nav-link color rules (incl. the emerald hover) above. */
+.navbar .nav-datasets-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  line-height: inherit;
+  cursor: pointer;
+}
+
+.nav-datasets-caret {
+  transition: transform 0.18s ease;
+}
+.nav-datasets-caret.is-open {
+  transform: rotate(180deg);
+}
+
+/* Positioned wrapper — transparent, with top padding that keeps the
+   hover path continuous between the trigger and the visible panel. */
+.navbar .nav-datasets-mega {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: min(620px, 92vw);
+  padding-top: 0.6rem;
+  transform: translateX(-50%) translateY(-6px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 0.16s ease,
+    transform 0.16s ease,
+    visibility 0.16s;
+  z-index: 100;
+}
+.navbar .nav-datasets-mega.is-open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+
+.nav-datasets-panel {
+  background: var(--echo-surface-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  padding: 1.25rem 1.25rem 0.75rem;
+}
+
+.nav-datasets-cols {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem 1.25rem;
+}
+
+.nav-datasets-col-head {
+  margin: 0 0 0.35rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.navbar .nav-datasets-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: background 0.14s ease;
+}
+.navbar .nav-datasets-item:hover,
+.navbar .nav-datasets-item:focus-visible {
+  background: var(--emerald-bg);
+  outline: none;
+}
+
+.nav-datasets-item-icon {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+  color: var(--emerald-text);
+}
+
+.nav-datasets-item-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.nav-datasets-item-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.nav-datasets-item-desc {
+  font-size: 0.75rem;
+  line-height: 1.3;
+  color: var(--text-muted);
+}
+
+.navbar .nav-datasets-foot {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.65rem 0.6rem 0.4rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--emerald-text);
+  text-decoration: none;
+  border-top: 1px solid var(--border-strong);
+}
+.navbar .nav-datasets-foot:hover,
+.navbar .nav-datasets-foot:focus-visible {
+  color: var(--emerald);
+  outline: none;
+}
+
+/* On narrow desktops collapse to two columns so the panel never
+   exceeds the viewport. (Hidden entirely on mobile via .nav-menu-desktop.) */
+@media (max-width: 720px) {
+  .nav-datasets-cols {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 .landing-page .features-section {
   background: #0a0e13 !important;
 }
