@@ -1,203 +1,289 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
-import { GlobeWithNotificationCards } from '@/components/landing/GlobeWithNotificationCards';
-import { AnimatedWords } from '@/components/ui/animated-words';
-import TrueFocus from '@/components/ui/TrueFocus';
-import { FallingPattern } from '@/components/ui/falling-pattern';
-import HeroLightning from '@/components/ui/HeroLightning';
-import AuroraShaderLayer from '@/components/ui/AuroraShaderLayer';
-import { LAND_GEOJSON_URL } from '@/components/ui/interactive-globe';
+import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
+import { ArrowRight, BarChart3, CheckCircle2, Check } from 'lucide-react';
+import './landing-hero.css';
 
 /**
- * Landing hero sequence (after navbar paints from layout):
- * 1) Headline + subtitle lines (word animation)
- * 2) Falling pattern + globe fade in together (globe loads in background while copy runs)
+ * Landing hero — "Global Signal" (Column × Ezana hybrid).
+ *
+ * A full-bleed band: a dotted world map with animated emerald signal routes
+ * behind a left copy column (headline → lead → sub → CTAs → fine print) and a
+ * floating portfolio-intelligence card. The card content is illustrative
+ * marketing data, not a live fetch. The global navbar lives in the layout and
+ * is untouched.
  */
-const RUN_ANIM_MS = 100;
-/** When hero copy finishes animating; hero background mounts after this. */
-const CTA_PHASE_MS = 2000;
 
-/** Canvas size (square) for InteractiveGlobe — must match .globe-container CSS to avoid mobile crop/clipping. */
-function useHeroGlobeSize() {
-  const [size, setSize] = useState(400);
-  useEffect(() => {
-    const compute = () => {
-      const w = window.innerWidth;
+const TARGET = 124873.4;
+const fmtUSD = (n) =>
+  '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-      if (w < 360) {
-        setSize(180);
-        return;
-      }
+/* JSON snippet builders — `j` is a syntax-highlighted span, `t` is raw text.
+   Every space/newline is explicit so the rendered <pre> matches exactly. */
+const j = (c, t) => ({ c, t });
+const t = (text) => ({ t: text });
 
-      if (w < 480) {
-        setSize(220);
-        return;
-      }
+const SIGNALS = [
+  {
+    name: 'Consumer Whispers',
+    json: [
+      j('p', '{'),
+      t(' '),
+      j('k', '"signal"'),
+      t(': '),
+      j('s', '"consumer_spending"'),
+      t(',\n  '),
+      j('k', '"sector"'),
+      t(': '),
+      j('s', '"discretionary"'),
+      t(', '),
+      j('k', '"Δ30d"'),
+      t(': '),
+      j('n', '+6.2%'),
+      t(' '),
+      j('p', '}'),
+    ],
+  },
+  {
+    name: 'Capitol Watch',
+    json: [
+      j('p', '{'),
+      t(' '),
+      j('k', '"signal"'),
+      t(': '),
+      j('s', '"lobbying_activity"'),
+      t(',\n  '),
+      j('k', '"sector"'),
+      t(': '),
+      j('s', '"semiconductors"'),
+      t(', '),
+      j('k', '"spend_q"'),
+      t(': '),
+      j('s', '"$4.1M"'),
+      t(' '),
+      j('p', '}'),
+    ],
+  },
+  {
+    name: 'Titans Shadow',
+    json: [
+      j('p', '{'),
+      t(' '),
+      j('k', '"signal"'),
+      t(': '),
+      j('s', '"institutional_buy"'),
+      t(',\n  '),
+      j('k', '"filing"'),
+      t(': '),
+      j('s', '"13F"'),
+      t(', '),
+      j('k', '"Δposition"'),
+      t(': '),
+      j('n', '+1.2M'),
+      t(' '),
+      j('p', '}'),
+    ],
+  },
+];
 
-      if (w < 640) {
-        setSize(260);
-        return;
-      }
-
-      if (w < 768) {
-        setSize(320);
-        return;
-      }
-
-      if (w < 1024) {
-        setSize(380);
-        return;
-      }
-
-      const horizontalPad = 48;
-      setSize(Math.min(460, Math.max(280, w - horizontalPad)));
-    };
-    compute();
-    window.addEventListener('resize', compute);
-    return () => window.removeEventListener('resize', compute);
-  }, []);
-  return size;
-}
+/* Decorative dotted world map + signal routes. Rendered as raw markup so the
+   SMIL <animateMotion> comets and route gradient stay byte-identical to the
+   design source; all colors resolve from theme tokens via CSS classes. */
+const MAP_HTML = `
+  <img class="lp-map-img" src="/landing/world-dots.png" alt="" />
+  <svg class="lp-routes" viewBox="0 0 1840 820" preserveAspectRatio="none">
+    <defs>
+      <linearGradient id="lpRouteGrad" x1="0" y1="0" x2="1" y2="0">
+        <stop class="lp-grad-a" offset="0" />
+        <stop class="lp-grad-b" offset="1" />
+      </linearGradient>
+    </defs>
+    <path d="M 542 237 Q 700 120 920 172" fill="none" stroke="url(#lpRouteGrad)" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 9" />
+    <path d="M 920 172 Q 1120 230 1290 352" fill="none" stroke="url(#lpRouteGrad)" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 9" />
+    <circle r="4.5" class="lp-comet">
+      <animateMotion dur="3.4s" repeatCount="indefinite" keyPoints="0;1" keyTimes="0;1" calcMode="linear"
+        path="M 542 237 Q 700 120 920 172 Q 1120 230 1290 352" />
+    </circle>
+    <g class="lp-node">
+      <circle cx="542" cy="237" r="4" class="lp-node-dot" />
+      <circle cx="542" cy="237" r="4" stroke-width="1.5" class="lp-ping" />
+    </g>
+    <g class="lp-node">
+      <circle cx="920" cy="172" r="4" class="lp-node-dot" />
+      <circle cx="920" cy="172" r="4" stroke-width="1.5" class="lp-ping" style="animation-delay:1.1s" />
+    </g>
+    <g class="lp-node">
+      <circle cx="1290" cy="352" r="5" class="lp-node-dot" />
+      <circle cx="1290" cy="352" r="5" stroke-width="1.5" class="lp-ping" style="animation-delay:2s" />
+    </g>
+    <g class="lp-routes-extra">
+      <path d="M 682 624 Q 730 430 542 237" fill="none" stroke="url(#lpRouteGrad)" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 9" />
+      <path d="M 964 180 Q 718 116 472 230" fill="none" stroke="url(#lpRouteGrad)" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 9" />
+      <path d="M 1203 330 Q 840 168 472 230" fill="none" stroke="url(#lpRouteGrad)" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 9" />
+      <path d="M 1063 640 Q 660 560 294 254" fill="none" stroke="url(#lpRouteGrad)" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 9" />
+      <circle r="3.8" class="lp-comet"><animateMotion dur="4.6s" begin="0.4s" repeatCount="indefinite" path="M 682 624 Q 730 430 542 237" /></circle>
+      <circle r="3.8" class="lp-comet"><animateMotion dur="5.2s" begin="1.2s" repeatCount="indefinite" path="M 964 180 Q 718 116 472 230" /></circle>
+      <circle r="3.8" class="lp-comet"><animateMotion dur="6s" begin="0.8s" repeatCount="indefinite" path="M 1203 330 Q 840 168 472 230" /></circle>
+      <circle r="3.8" class="lp-comet"><animateMotion dur="5.6s" begin="2s" repeatCount="indefinite" path="M 1063 640 Q 660 560 294 254" /></circle>
+      <g class="lp-node"><circle cx="682" cy="624" r="3.5" class="lp-node-dot" /><circle cx="682" cy="624" r="3.5" stroke-width="1.5" class="lp-ping" style="animation-delay:.3s" /></g>
+      <g class="lp-node"><circle cx="964" cy="180" r="3.5" class="lp-node-dot" /><circle cx="964" cy="180" r="3.5" stroke-width="1.5" class="lp-ping" style="animation-delay:1.4s" /></g>
+      <g class="lp-node"><circle cx="1203" cy="330" r="3.5" class="lp-node-dot" /><circle cx="1203" cy="330" r="3.5" stroke-width="1.5" class="lp-ping" style="animation-delay:.9s" /></g>
+      <g class="lp-node"><circle cx="1063" cy="640" r="3.5" class="lp-node-dot" /><circle cx="1063" cy="640" r="3.5" stroke-width="1.5" class="lp-ping" style="animation-delay:1.8s" /></g>
+      <g class="lp-node"><circle cx="472" cy="230" r="4" class="lp-node-dot" /><circle cx="472" cy="230" r="4" stroke-width="1.5" class="lp-ping" style="animation-delay:1.1s" /></g>
+      <g class="lp-node"><circle cx="294" cy="254" r="4" class="lp-node-dot" /><circle cx="294" cy="254" r="4" stroke-width="1.5" class="lp-ping" style="animation-delay:2.3s" /></g>
+    </g>
+  </svg>
+  <div class="lp-map-fade"></div>
+`;
 
 export function LandingHero() {
-  const [ctaPhaseDone, setCtaPhaseDone] = useState(false);
-  const [globeReady, setGlobeReady] = useState(false);
-  const [reduceMotion, setReduceMotion] = useState(false);
-  const [cardTrigger, setCardTrigger] = useState({ side: null, nonce: 0 });
-  const globeSize = useHeroGlobeSize();
-
-  const onGlobeReady = useCallback(() => {
-    setGlobeReady(true);
-  }, []);
-
-  const onLightningStrike = useCallback((side) => {
-    setCardTrigger((prev) => ({ side, nonce: prev.nonce + 1 }));
-  }, []);
+  const [go, setGo] = useState(false);
+  const valueRef = useRef(null);
 
   useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setReduceMotion(mq.matches);
-    const handler = () => setReduceMotion(mq.matches);
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
-  }, []);
+    const reduce =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  useEffect(() => {
-    const link = document.createElement('link');
-    link.rel = 'preload';
-    link.as = 'fetch';
-    link.href = LAND_GEOJSON_URL;
-    link.crossOrigin = 'anonymous';
-    document.head.appendChild(link);
-    return () => {
-      if (link.parentNode) link.parentNode.removeChild(link);
-    };
-  }, []);
+    const raf = requestAnimationFrame(() => setGo(true));
 
-  useEffect(() => {
-    if (reduceMotion) {
-      setCtaPhaseDone(true);
-      return;
+    // Portfolio value count-up (86% → 100% of target). The DOM already ships
+    // the final value as text, so no-JS / reduced-motion users see it correct.
+    let frame;
+    let timer;
+    const el = valueRef.current;
+    if (el && !reduce) {
+      const dur = 1400;
+      const begin = TARGET * 0.86;
+      const run = (start) => {
+        const tick = (now) => {
+          const p = Math.min(1, (now - start) / dur);
+          const e = 1 - Math.pow(1 - p, 3);
+          el.textContent = fmtUSD(begin + (TARGET - begin) * e);
+          if (p < 1) frame = requestAnimationFrame(tick);
+          else el.textContent = fmtUSD(TARGET);
+        };
+        frame = requestAnimationFrame(tick);
+      };
+      timer = setTimeout(() => run(performance.now()), 350);
     }
-    const t = setTimeout(() => setCtaPhaseDone(true), CTA_PHASE_MS);
-    return () => clearTimeout(t);
-  }, [reduceMotion]);
 
-  const mountHeroBg = reduceMotion || ctaPhaseDone;
-  const showHeroVisual = reduceMotion ? ctaPhaseDone : ctaPhaseDone && globeReady;
-
-  useEffect(() => {
-    const timeouts = [];
-    const runAnimations = () => {
-      const elements = document.querySelectorAll('.word-animate, .animate-in');
-      elements.forEach((el) => {
-        const delay = parseInt(el.getAttribute('data-delay'), 10) || 0;
-        const t = setTimeout(() => {
-          if (el) el.style.animation = 'word-appear 0.4s ease-out forwards';
-        }, delay);
-        timeouts.push(t);
-      });
+    return () => {
+      cancelAnimationFrame(raf);
+      if (frame) cancelAnimationFrame(frame);
+      if (timer) clearTimeout(timer);
     };
-    timeouts.push(setTimeout(runAnimations, reduceMotion ? 0 : RUN_ANIM_MS));
-    return () => timeouts.forEach(clearTimeout);
-  }, [reduceMotion]);
+  }, []);
 
   return (
-    <div className="hero-cybercore-root" data-hero-dark>
-      {mountHeroBg && (
-        <div
-          className={`hero-aurora-bg ${showHeroVisual ? 'hero-aurora-bg--visible' : ''}`}
-          aria-hidden
-        >
-          <FallingPattern
-            color="#059669"
-            streakColor="rgba(5, 150, 105, 0.49)"
-            sparkleColor="rgba(5, 150, 105, 0.7)"
-            backgroundColor="#0a0e13"
-            duration={120}
-            blurIntensity="0em"
-            density={1.25}
-            className="h-full w-full"
-          />
-          <AuroraShaderLayer
-            className="hero-aurora-shader-back"
-            opacity={0.35}
-            speed={0.7}
-            tint="green"
-          />
-        </div>
-      )}
+    <div className={`lp-hero force-dark-theme${go ? ' lp-go' : ''}`}>
+      {/* Background: dotted world map + signal routes */}
+      <div className="lp-map" aria-hidden="true" dangerouslySetInnerHTML={{ __html: MAP_HTML }} />
 
-      <div className="content-container hero-container">
-        <div className="hero-content-column">
-          <div className="hero-content">
-            <h1 className="hero-tagline">
-              <TrueFocus
-                groups={[
-                  { words: ['Your', 'network'] },
-                  { words: ['is'], static: true },
-                  { words: ['your', 'net', 'worth'] },
-                ]}
-                manualMode
-                blurAmount={10}
-                borderColor="#10b981"
-                glowColor="rgba(16, 185, 129, 0.6)"
-                animationDuration={0.5}
-                pauseBetweenAnimations={1.5}
-              />
-            </h1>
-            <div className="hero-subtitle hero-subtitle--lead">
-              <AnimatedWords
-                text="Better data, Better decisions, Better Returns."
-                baseDelay={480}
-                staggerMs={20}
-              />
+      {/* Main band */}
+      <div className="lp-band">
+        <div className="lp-copy">
+          <h1 className="lp-title">
+            <span className="lp-line">
+              <span className="w">Your</span> <span className="w">network</span>
+            </span>
+            <span className="lp-line">
+              <span className="w">is</span> <span className="w lp-mark">your net worth</span>
+            </span>
+          </h1>
+
+          <p className="lp-lead">Better data. Better decisions. Better returns.</p>
+          <p className="lp-sub">
+            Ezana turns scattered market signals into one clear read on your portfolio — the
+            information edge once reserved for Wall Street, now built for you.
+          </p>
+
+          <div className="lp-actions">
+            <Link className="lp-btn-primary" href="/auth/signup">
+              Get started
+              <ArrowRight size={16} aria-hidden />
+            </Link>
+            <Link className="lp-btn-ghost" href="/datasets">
+              View datasets
+            </Link>
+          </div>
+
+          <p className="lp-note">Free to start · No brokerage required · Real-time disclosures</p>
+        </div>
+
+        {/* Floating intelligence card (illustrative marketing data) */}
+        <div className="lp-card" role="group" aria-label="Portfolio signal preview">
+          <div className="lp-card-head">
+            <div className="lp-card-id">
+              <span className="lp-flag">
+                <BarChart3 size={16} aria-hidden />
+              </span>
+              <div>
+                <div className="lp-card-name">Your portfolio</div>
+              </div>
             </div>
-            <p className="hero-subtitle hero-subtitle--secondary">
-              <AnimatedWords
-                text="Ezana brings Wall Street intelligence to your portfolio."
-                baseDelay={720}
-                staggerMs={22}
-              />
-            </p>
+            <div className="lp-card-tag">
+              <CheckCircle2 size={12} aria-hidden /> Synced
+            </div>
+          </div>
+
+          <div className="lp-card-value">
+            <div className="lp-bigval" ref={valueRef}>
+              {fmtUSD(TARGET)}
+            </div>
+            <div className="lp-delta">
+              +$2,418.09 <span>(+1.97%)</span>
+            </div>
+          </div>
+
+          <div className="lp-sentiment">
+            <div className="lp-sent-top">
+              <span className="lp-sent-label">Portfolio sentiment rating</span>
+              <span className="lp-sent-rating">
+                Bullish <b>78</b>
+                <span className="lp-sent-max">/100</span>
+              </span>
+            </div>
+            <div className="lp-sent-bar">
+              <i style={{ width: '78%' }} />
+            </div>
+          </div>
+
+          <div className="lp-why">Why — 3 of 7 sources parsed bullish</div>
+
+          <div className="lp-signals">
+            {SIGNALS.map((s) => (
+              <div className="lp-signal" key={s.name}>
+                <div className="lp-sig-head">
+                  <span className="lp-sig-name">{s.name}</span>
+                  <span className="lp-sig-tick">
+                    <Check size={11} aria-hidden />
+                    parsed
+                  </span>
+                </div>
+                <pre className="lp-sig-json">
+                  {s.json.map((seg, i) =>
+                    seg.c ? (
+                      <span key={i} className={seg.c}>
+                        {seg.t}
+                      </span>
+                    ) : (
+                      seg.t
+                    ),
+                  )}
+                </pre>
+              </div>
+            ))}
+          </div>
+
+          <div className="lp-card-foot">
+            Ezana sources data across&nbsp;
+            <Link className="lp-foot-link" href="/datasets">
+              7 dimensions
+            </Link>
           </div>
         </div>
-        <div
-          className={`card-preview globe-preview ${showHeroVisual ? 'globe-preview--visible' : ''}`}
-        >
-          <GlobeWithNotificationCards
-            size={globeSize}
-            onGlobeReady={onGlobeReady}
-            triggerSide={cardTrigger.side}
-            triggerNonce={cardTrigger.nonce}
-          />
-        </div>
-
-        {/* Front aurora removed — 15% opacity layer was invisible to most users
-            but doubled GPU shader cost. Back aurora (35% opacity) provides the effect. */}
-
-        <HeroLightning intervalMs={3300} onStrike={onLightningStrike} />
       </div>
     </div>
   );
