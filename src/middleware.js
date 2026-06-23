@@ -8,6 +8,11 @@ import {
 
 const ALLOWED_ORIGINS = ['https://ezana.world', 'http://localhost:3000', 'http://127.0.0.1:3000'];
 
+// MFA is enforced on every login for every user across all app versions.
+// Emergency global off-switch (operational only — NOT a per-user/device bypass):
+// set env MFA_ENFORCED=false to disable if a rollout issue locks users out.
+const MFA_ENFORCED = process.env.MFA_ENFORCED !== 'false';
+
 export async function middleware(request) {
   const pathname = request.nextUrl.pathname;
 
@@ -268,8 +273,7 @@ export async function middleware(request) {
     // Org (university) members use their own flow and never take the consumer
     // investor questionnaire — exempt org routes from the onboarding gate.
     // Reuses the `profile` already fetched above (no second query).
-    const isOrgRoute =
-      pathname.startsWith('/org-team-hub') || pathname.startsWith('/org-trading');
+    const isOrgRoute = pathname.startsWith('/org-team-hub') || pathname.startsWith('/org-trading');
 
     if (
       user &&
@@ -321,6 +325,49 @@ export async function middleware(request) {
           return redirectResponse;
         }
       }
+    }
+  }
+
+  // ── MFA gate — mandatory second factor on every login, all app versions ──
+  // Runs after the disabled / onboarding / email-verified gates above. Covers
+  // consumer + partner protected routes AND org routes (/org-trading is not in
+  // the dashboard-route lists, so it is included explicitly here). The MFA
+  // pages themselves are exempt so the user is never trapped.
+  const isMfaPage = pathname === '/auth/mfa' || pathname === '/auth/mfa-setup';
+  const onOrgRoute = pathname.startsWith('/org-team-hub') || pathname.startsWith('/org-trading');
+
+  if (
+    MFA_ENFORCED &&
+    user &&
+    (onUserProtectedRoute || onPartnerProtectedRoute || onOrgRoute) &&
+    !isMfaPage &&
+    !isTradingPublicPath &&
+    !pathname.startsWith('/auth') &&
+    !pathname.startsWith('/api')
+  ) {
+    try {
+      const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (aal) {
+        // Has a verified factor but hasn't stepped up this session → challenge.
+        if (aal.currentLevel !== 'aal2' && aal.nextLevel === 'aal2') {
+          const url = request.nextUrl.clone();
+          url.pathname = '/auth/mfa';
+          url.search = '';
+          url.searchParams.set('redirect', pathname);
+          return NextResponse.redirect(url);
+        }
+        // No verified factor → force enrollment before proceeding.
+        if (aal.currentLevel === 'aal1' && aal.nextLevel === 'aal1') {
+          const url = request.nextUrl.clone();
+          url.pathname = '/auth/mfa-setup';
+          url.search = '';
+          url.searchParams.set('redirect', pathname);
+          return NextResponse.redirect(url);
+        }
+      }
+    } catch (e) {
+      // Fail open on a transient AAL error so the app is never hard-locked.
+      console.warn('[middleware-mfa] AAL check failed:', e?.message);
     }
   }
 
