@@ -208,9 +208,17 @@ export function LandingHero() {
               Get started
               <ArrowRight size={16} aria-hidden />
             </Link>
-            <Link className="lp-btn-ghost" href="/datasets">
+            <button
+              type="button"
+              className="lp-btn-ghost"
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  window.dispatchEvent(new CustomEvent('ezana:open-datasets-menu'));
+                }
+              }}
+            >
               View datasets
-            </Link>
+            </button>
           </div>
 
           <p className="lp-note">Free to start · No brokerage required · Real-time disclosures</p>
@@ -254,7 +262,7 @@ export function LandingHero() {
             </div>
           </div>
 
-          <div className="lp-why">Why — 3 of 7 sources parsed bullish</div>
+          <div className="lp-why lp-why-alert">Windfalls to watch out for:</div>
 
           <div className="lp-signals">
             {SIGNALS.map((s) => (

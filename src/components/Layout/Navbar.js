@@ -18,73 +18,65 @@ import {
   ArrowRight,
   Landmark,
   Building2,
-  FileText,
   LineChart,
   Radar,
   Target,
   Globe,
+  Users,
+  TrendingUp,
+  Wallet,
+  ScrollText,
+  Banknote,
+  Vote,
+  Megaphone,
+  Lightbulb,
+  Briefcase,
+  BadgeDollarSign,
+  Fish,
+  PieChart,
 } from 'lucide-react';
 import '@/components/ui/animated-nav.css';
 
-/* Landing-nav Datasets mega-menu — columns grouped by data dimension.
-   Each item links into the public /datasets section, where visitors see
-   what a dataset is and exactly where Ezana sources it. */
+/* Landing-nav Datasets mega-menu — columns grouped by category. Each item
+   links into the public /datasets section (its parent dimension page), where
+   visitors see what a dataset is and exactly where Ezana sources it. */
 const DATASET_MENU = [
   {
-    heading: 'Politics & Government',
+    heading: 'Congressional & Political',
     items: [
-      {
-        icon: Landmark,
-        label: 'Congressional & Political',
-        desc: 'Congress trades, politician search & fundraising',
-        href: '/datasets/political',
-      },
-      {
-        icon: Building2,
-        label: 'Government Activity',
-        desc: 'Federal contracts, lobbying & patents',
-        href: '/datasets/government',
-      },
+      { icon: Users, label: 'Politician Search', href: '/datasets/political' },
+      { icon: Landmark, label: 'Congress Trading', href: '/datasets/political' },
+      { icon: TrendingUp, label: 'Donald Trump Trade Tracker', href: '/datasets/political' },
+      { icon: Wallet, label: 'Congress Live Net Worth', href: '/datasets/political' },
+      { icon: ScrollText, label: 'Legislation Search', href: '/datasets/political' },
+      { icon: Banknote, label: 'Election Fundraising', href: '/datasets/political' },
+      { icon: Vote, label: '2026 Midterm Elections', href: '/datasets/political' },
     ],
   },
   {
-    heading: 'Markets & Filings',
+    heading: 'Government Activity',
     items: [
-      {
-        icon: FileText,
-        label: 'SEC Filings',
-        desc: 'Insider trades, 13F holdings & exec comp',
-        href: '/datasets/sec-filings',
-      },
-      {
-        icon: LineChart,
-        label: 'Markets & Equities',
-        desc: 'Prices, fundamentals & analyst ratings',
-        href: '/datasets/markets',
-      },
+      { icon: Megaphone, label: 'Corporate Lobbying', href: '/datasets/government' },
+      { icon: Lightbulb, label: 'Patents', href: '/datasets/government' },
     ],
   },
   {
-    heading: 'Signals & Beyond',
+    heading: 'SEC & Institutional Filings',
     items: [
-      {
-        icon: Radar,
-        label: 'Consumer & Alternative Signals',
-        desc: 'On-air mentions & demand proxies',
-        href: '/datasets/alternative',
-      },
-      {
-        icon: Target,
-        label: 'Prediction Markets',
-        desc: 'Live event & election odds',
-        href: '/datasets/prediction-markets',
-      },
-      {
-        icon: Globe,
-        label: 'Global & Macro',
-        desc: 'Macro indicators, global markets & wealth',
-        href: '/datasets/global',
-      },
+      { icon: Briefcase, label: 'Insider Trading', href: '/datasets/sec-filings' },
+      { icon: BadgeDollarSign, label: 'Executive Compensation', href: '/datasets/sec-filings' },
+      { icon: Building2, label: 'Institutional Holdings', href: '/datasets/sec-filings' },
+      { icon: Fish, label: 'Whale Moves', href: '/datasets/sec-filings' },
+      { icon: PieChart, label: 'ETF Holdings', href: '/datasets/sec-filings' },
+    ],
+  },
+  {
+    heading: 'Markets & Signals',
+    items: [
+      { icon: LineChart, label: 'Markets & Equities', href: '/datasets/markets' },
+      { icon: Target, label: 'Prediction Markets', href: '/datasets/prediction-markets' },
+      { icon: Radar, label: 'Alternative Signals', href: '/datasets/alternative' },
+      { icon: Globe, label: 'Global & Macro', href: '/datasets/global' },
     ],
   },
 ];
@@ -385,6 +377,14 @@ export function Navbar() {
     };
   }, [datasetsOpen]);
 
+  // Let other surfaces (e.g. the landing hero's "View datasets" button) open
+  // the Datasets mega-menu instead of navigating away.
+  useEffect(() => {
+    const openDatasets = () => setDatasetsOpen(true);
+    window.addEventListener('ezana:open-datasets-menu', openDatasets);
+    return () => window.removeEventListener('ezana:open-datasets-menu', openDatasets);
+  }, []);
+
   if (isAuthPage || isSettings) return null;
 
   if (showLandingNav) {
@@ -454,16 +454,13 @@ export function Navbar() {
                           const Icon = item.icon;
                           return (
                             <Link
-                              key={item.href}
+                              key={item.label}
                               href={item.href}
                               className="nav-datasets-item"
                               role="menuitem"
                             >
-                              <Icon size={18} aria-hidden className="nav-datasets-item-icon" />
-                              <span className="nav-datasets-item-text">
-                                <span className="nav-datasets-item-label">{item.label}</span>
-                                <span className="nav-datasets-item-desc">{item.desc}</span>
-                              </span>
+                              <Icon size={16} aria-hidden className="nav-datasets-item-icon" />
+                              <span className="nav-datasets-item-label">{item.label}</span>
                             </Link>
                           );
                         })}

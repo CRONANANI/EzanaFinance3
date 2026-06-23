@@ -192,6 +192,7 @@
   border: 1px solid var(--border-input);
   border-radius: var(--radius-md);
   text-decoration: none;
+  cursor: pointer;
   transition:
     border-color 0.15s ease,
     background 0.15s ease;
@@ -359,6 +360,9 @@
   text-transform: uppercase;
   color: var(--text-faint);
   margin: 13px 0 8px;
+}
+.lp-why-alert {
+  color: var(--negative);
 }
 .lp-signals {
   display: flex;
