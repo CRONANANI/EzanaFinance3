@@ -100,6 +100,15 @@ export function Navbar() {
   const isTermsOfService = pathname === '/terms-of-service';
   const isAccessibility = pathname === '/accessibility';
   const isEzanaEcho = pathname?.startsWith('/ezana-echo');
+  // Public marketing pages that ship their own self-contained chrome via
+  // <MarketingPageShell> (its own header + "Back to home" / "Get started").
+  // The global app navbar must NEVER render on top of these — otherwise a
+  // visitor who still has a stale client session would see the logged-in app
+  // navigation bar on a fully public page (e.g. /datasets reached from the
+  // landing "View datasets"). Returning null here makes the nav decision
+  // independent of any client-side session, exactly like /auth and /settings.
+  const isMarketingShell =
+    pathname?.startsWith('/datasets') || pathname?.startsWith('/brokerages-integrations');
   // Ezana Echo is a public reading destination reached from the landing page,
   // so it ALWAYS renders the marketing navbar — never the authed global
   // dashboard navbar. This guarantees a logged-out visitor can never see the
@@ -385,7 +394,7 @@ export function Navbar() {
     return () => window.removeEventListener('ezana:open-datasets-menu', openDatasets);
   }, []);
 
-  if (isAuthPage || isSettings) return null;
+  if (isAuthPage || isSettings || isMarketingShell) return null;
 
   if (showLandingNav) {
     return (
