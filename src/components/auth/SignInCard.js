@@ -8,33 +8,9 @@ import AuthDotMap from './AuthDotMap';
 import { supabase } from '@/lib/supabase-browser';
 
 /**
- * Full-document navigation used to COMPLETE authentication. After mfa.verify()
- * elevates the session to aal2, the @supabase/ssr browser client writes that to
- * cookies asynchronously. A soft router.push() does no document load, so the
- * destination middleware reads the stale aal1 cookie, sees "needs step-up", and
- * bounces the user back — presenting as a permanent "Signing in…". A full load
- * (window.location.assign) makes the middleware read fresh cookies. We first
- * flush the session and confirm aal2 so the cookie is current before we leave.
+ * Bound a promise so a hung backend call can never stick the sign-in button.
+ * Used for the partner/profile lookups that decide where to route the user.
  */
-async function goHard(path) {
-  try {
-    await supabase.auth.getSession();
-    for (let i = 0; i < 10; i++) {
-      const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-      // Stop once stepped up to aal2, or when there's no step-up pending at all
-      // — a single-factor / non-MFA session reports currentLevel === nextLevel
-      // and exits immediately, adding no delay to ordinary logins.
-      if (aal?.currentLevel === 'aal2' || aal?.currentLevel === aal?.nextLevel) break;
-      await new Promise((r) => setTimeout(r, 150));
-    }
-  } catch {
-    /* navigate regardless */
-  }
-  window.location.assign(path);
-}
-
-/** Bound a promise so a hung backend call (e.g. the documented Web Locks
- *  deadlock on getUser) can never stick the sign-in button forever. */
 function withTimeout(promise, ms, label) {
   return Promise.race([
     promise,
@@ -51,6 +27,10 @@ const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
   const [error, setError] = useState('');
   const [mfaRequired, setMfaRequired] = useState(false);
   const [mfaCode, setMfaCode] = useState('');
+  // Where to send the user once MFA is verified — resolved at the password step
+  // (where auth calls are safe) so that after mfa.verify() we can navigate
+  // immediately with NO further Supabase auth calls (see handleMfaVerify).
+  const [pendingDestination, setPendingDestination] = useState(null);
   const destination = redirectTo || '/home';
 
   useEffect(() => {
@@ -63,24 +43,16 @@ const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
     }
   }, [oauthErrorMessage]);
 
-  const completeLogin = async () => {
-    // getUser() is the one call we must have. The codebase documents a Web
-    // Locks deadlock that can hang it indefinitely, so bound it — on timeout,
-    // surface an error and let the caller's finally re-enable the button.
-    let user;
-    try {
-      const {
-        data: { user: u },
-      } = await withTimeout(supabase.auth.getUser(), 10000, 'getUser');
-      user = u;
-    } catch {
-      setError('Sign-in is taking too long — please try again.');
-      return;
-    }
-
-    // Resolve partner status — metadata fast-path, then the partners table.
-    // The table lookup is best-effort: on timeout/error treat as non-partner
-    // and proceed, rather than letting a hung query block every login.
+  // Decide where to send the user after a successful login, given the `user`
+  // returned by signInWithPassword. Only DB lookups (partners/profiles) happen
+  // here — no Supabase *auth* calls — so it is safe to run both on the password
+  // step (before the MFA prompt) and on the non-MFA path. Returns either
+  // { path } to navigate to, or { reject: true } for a non-partner trying to
+  // use the dedicated partner login form.
+  const resolveDestination = async (user) => {
+    // Partner status — metadata fast-path, then the partners table. The table
+    // lookup is best-effort: on timeout/error treat as non-partner and proceed
+    // rather than letting a hung query block the login.
     let isPartner = !!user?.user_metadata?.partner_role;
     if (!isPartner && user?.id) {
       try {
@@ -102,11 +74,7 @@ const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
 
     // The dedicated partner login form rejects non-partner accounts.
     if (variant === 'partner' && !isPartner) {
-      await supabase.auth.signOut();
-      setError(
-        'This account is not registered as a partner. Contact partnersupport@ezana.world or apply to become a partner.',
-      );
-      return;
+      return { reject: true };
     }
 
     // Partners always land in the partner experience — even when they sign in
@@ -131,11 +99,10 @@ const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
           onboarded = false;
         }
       }
-      await goHard(onboarded ? '/partner-home' : '/onboarding');
-      return;
+      return { path: onboarded ? '/partner-home' : '/onboarding' };
     }
 
-    await goHard(destination);
+    return { path: destination };
   };
 
   const handleMfaVerify = async (e) => {
@@ -143,6 +110,7 @@ const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
     setIsLoading(true);
     setError('');
 
+    let navigating = false;
     try {
       const { data: factorsData, error: factorsErr } = await supabase.auth.mfa.listFactors();
       if (factorsErr) {
@@ -173,11 +141,18 @@ const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
         return;
       }
 
-      await completeLogin();
+      // Session is now aal2. Navigate IMMEDIATELY with a full document load and
+      // make NO further Supabase auth calls — extra auth calls right after
+      // mfa.verify() can deadlock the shared client's Web Lock and hang the
+      // button on "Signing in…" (this is exactly what MfaChallengeCard does,
+      // and why it works). The destination was resolved on the password step.
+      navigating = true;
+      window.location.assign(pendingDestination || destination);
     } catch {
       setError('An unexpected error occurred. Please try again.');
     } finally {
-      setIsLoading(false);
+      // Keep the spinner only while the full-load navigation is in flight.
+      if (!navigating) setIsLoading(false);
     }
   };
 
@@ -187,6 +162,7 @@ const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
     setError('');
     setMfaRequired(false);
 
+    let navigating = false;
     try {
       const lockRes = await fetch('/api/auth/check-lockout', {
         method: 'POST',
@@ -199,7 +175,7 @@ const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
         return;
       }
 
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -219,18 +195,35 @@ const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
         return;
       }
 
+      // Resolve the destination NOW (auth calls are still safe at this aal1
+      // step) using the user from the sign-in response — no extra getUser().
+      const user = signInData?.user;
+      const dest = await resolveDestination(user);
+      if (dest.reject) {
+        await supabase.auth.signOut();
+        setError(
+          'This account is not registered as a partner. Contact partnersupport@ezana.world or apply to become a partner.',
+        );
+        return;
+      }
+
       const { data: aalData, error: aalErr } =
         await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
       if (!aalErr && aalData?.nextLevel === 'aal2' && aalData?.currentLevel !== 'aal2') {
+        // Stash where to go, then prompt for the code. After mfa.verify() we
+        // navigate straight there with no further auth calls.
+        setPendingDestination(dest.path);
         setMfaRequired(true);
         return;
       }
 
-      await completeLogin();
+      // No MFA step-up required — go straight in with a full document load.
+      navigating = true;
+      window.location.assign(dest.path);
     } catch {
       setError('An unexpected error occurred. Please try again.');
     } finally {
-      setIsLoading(false);
+      if (!navigating) setIsLoading(false);
     }
   };
 
