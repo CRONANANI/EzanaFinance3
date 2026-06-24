@@ -4,9 +4,43 @@ import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, ArrowRight, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import AuthDotMap from './AuthDotMap';
 import { supabase } from '@/lib/supabase-browser';
+
+/**
+ * Full-document navigation used to COMPLETE authentication. After mfa.verify()
+ * elevates the session to aal2, the @supabase/ssr browser client writes that to
+ * cookies asynchronously. A soft router.push() does no document load, so the
+ * destination middleware reads the stale aal1 cookie, sees "needs step-up", and
+ * bounces the user back — presenting as a permanent "Signing in…". A full load
+ * (window.location.assign) makes the middleware read fresh cookies. We first
+ * flush the session and confirm aal2 so the cookie is current before we leave.
+ */
+async function goHard(path) {
+  try {
+    await supabase.auth.getSession();
+    for (let i = 0; i < 10; i++) {
+      const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      // Stop once stepped up to aal2, or when there's no step-up pending at all
+      // — a single-factor / non-MFA session reports currentLevel === nextLevel
+      // and exits immediately, adding no delay to ordinary logins.
+      if (aal?.currentLevel === 'aal2' || aal?.currentLevel === aal?.nextLevel) break;
+      await new Promise((r) => setTimeout(r, 150));
+    }
+  } catch {
+    /* navigate regardless */
+  }
+  window.location.assign(path);
+}
+
+/** Bound a promise so a hung backend call (e.g. the documented Web Locks
+ *  deadlock on getUser) can never stick the sign-in button forever. */
+function withTimeout(promise, ms, label) {
+  return Promise.race([
+    promise,
+    new Promise((_, rej) => setTimeout(() => rej(new Error(`${label} timed out`)), ms)),
+  ]);
+}
 
 const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -17,7 +51,6 @@ const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
   const [error, setError] = useState('');
   const [mfaRequired, setMfaRequired] = useState(false);
   const [mfaCode, setMfaCode] = useState('');
-  const router = useRouter();
   const destination = redirectTo || '/home';
 
   useEffect(() => {
@@ -31,20 +64,40 @@ const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
   }, [oauthErrorMessage]);
 
   const completeLogin = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    // getUser() is the one call we must have. The codebase documents a Web
+    // Locks deadlock that can hang it indefinitely, so bound it — on timeout,
+    // surface an error and let the caller's finally re-enable the button.
+    let user;
+    try {
+      const {
+        data: { user: u },
+      } = await withTimeout(supabase.auth.getUser(), 10000, 'getUser');
+      user = u;
+    } catch {
+      setError('Sign-in is taking too long — please try again.');
+      return;
+    }
 
     // Resolve partner status — metadata fast-path, then the partners table.
+    // The table lookup is best-effort: on timeout/error treat as non-partner
+    // and proceed, rather than letting a hung query block every login.
     let isPartner = !!user?.user_metadata?.partner_role;
     if (!isPartner && user?.id) {
-      const { data: partner } = await supabase
-        .from('partners')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('status', 'active')
-        .maybeSingle();
-      isPartner = !!partner;
+      try {
+        const { data: partner } = await withTimeout(
+          supabase
+            .from('partners')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('status', 'active')
+            .maybeSingle(),
+          10000,
+          'partners lookup',
+        );
+        isPartner = !!partner;
+      } catch {
+        isPartner = false;
+      }
     }
 
     // The dedicated partner login form rejects non-partner accounts.
@@ -63,18 +116,26 @@ const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
     if (isPartner) {
       let onboarded = false;
       if (user?.id) {
-        const { data: prof } = await supabase
-          .from('profiles')
-          .select('onboarding_completed')
-          .eq('id', user.id)
-          .maybeSingle();
-        onboarded = prof?.onboarding_completed === true;
+        try {
+          const { data: prof } = await withTimeout(
+            supabase
+              .from('profiles')
+              .select('onboarding_completed')
+              .eq('id', user.id)
+              .maybeSingle(),
+            10000,
+            'profile lookup',
+          );
+          onboarded = prof?.onboarding_completed === true;
+        } catch {
+          onboarded = false;
+        }
       }
-      router.push(onboarded ? '/partner-home' : '/onboarding');
+      await goHard(onboarded ? '/partner-home' : '/onboarding');
       return;
     }
 
-    router.push(destination);
+    await goHard(destination);
   };
 
   const handleMfaVerify = async (e) => {
