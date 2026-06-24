@@ -8,6 +8,7 @@ import { withApiGuard } from '@/lib/api-guard';
 import { supabaseAdmin } from '@/lib/plaid';
 import { getAuthUser } from '@/lib/auth-helpers';
 import { syncPlaidItem } from '@/lib/plaid-sync';
+import { decryptToken } from '@/lib/crypto/token-cipher';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,7 +32,7 @@ export const POST = withApiGuard(
         try {
           const result = await syncPlaidItem({
             userId: user.id,
-            accessToken: item.access_token,
+            accessToken: decryptToken(item.access_token),
             institutionId: item.institution_id,
             institutionName: item.institution_name,
             plaidItemDbId: item.id,

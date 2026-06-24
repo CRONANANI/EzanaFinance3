@@ -5,6 +5,7 @@ import {
   upsertSnapTradePositions,
   upsertSnapTradeTransactions,
 } from '@/lib/portfolio/adapters/snaptrade';
+import { encryptToken, decryptToken } from '@/lib/crypto/token-cipher';
 
 let _client = null;
 
@@ -60,7 +61,7 @@ export async function ensureSnapTradeUser(ezanaUserId) {
     .eq('user_id', ezanaUserId)
     .maybeSingle();
   if (existing) {
-    return { userId: existing.snaptrade_user_id, userSecret: existing.user_secret };
+    return { userId: existing.snaptrade_user_id, userSecret: decryptToken(existing.user_secret) };
   }
 
   const snaptrade = getSnapTradeClient();
@@ -71,7 +72,7 @@ export async function ensureSnapTradeUser(ezanaUserId) {
       {
         user_id: ezanaUserId,
         snaptrade_user_id: snapUserId,
-        user_secret: userSecret,
+        user_secret: encryptToken(userSecret),
         updated_at: new Date().toISOString(),
       },
       { onConflict: 'user_id' },
@@ -182,7 +183,7 @@ export async function getSnapTradeCreds(ezanaUserId) {
     .eq('user_id', ezanaUserId)
     .maybeSingle();
   if (!data) return null;
-  return { userId: data.snaptrade_user_id, userSecret: data.user_secret };
+  return { userId: data.snaptrade_user_id, userSecret: decryptToken(data.user_secret) };
 }
 
 export async function snapshotAccount(snaptradeAccount, creds) {

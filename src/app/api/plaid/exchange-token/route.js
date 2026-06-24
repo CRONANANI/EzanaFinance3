@@ -11,6 +11,7 @@ import {
   upsertPlaidPositions,
   upsertPlaidTransactions,
 } from '@/lib/portfolio/adapters/plaid';
+import { encryptToken } from '@/lib/crypto/token-cipher';
 
 export const dynamic = 'force-dynamic';
 
@@ -48,7 +49,9 @@ export const POST = withApiGuard(
           {
             user_id: user.id,
             item_id,
-            access_token,
+            // Encrypt the STORED copy only; the in-memory `access_token` above
+            // stays plaintext for the immediate Plaid calls in this request.
+            access_token: encryptToken(access_token),
             institution_id: institutionId,
             institution_name: institutionName,
             institution_logo: institutionLogo,

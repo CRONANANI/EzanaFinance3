@@ -14,6 +14,7 @@ import {
   PLAID_WEBHOOK_URL,
 } from '@/lib/plaid';
 import { getAuthUser } from '@/lib/auth-helpers';
+import { decryptToken } from '@/lib/crypto/token-cipher';
 
 export const dynamic = 'force-dynamic';
 
@@ -48,7 +49,7 @@ export const POST = withApiGuard(
         client_name: 'Ezana Finance',
         country_codes: PLAID_COUNTRY_CODES,
         language: 'en',
-        access_token: item.access_token,
+        access_token: decryptToken(item.access_token),
         ...(PLAID_REDIRECT_URI ? { redirect_uri: PLAID_REDIRECT_URI } : {}),
         ...(PLAID_WEBHOOK_URL ? { webhook: PLAID_WEBHOOK_URL } : {}),
       };

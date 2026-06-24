@@ -11,6 +11,7 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/plaid';
 import { syncPlaidItem } from '@/lib/plaid-sync';
 import { verifyPlaidWebhook } from '@/lib/plaid-webhook-verify';
+import { decryptToken } from '@/lib/crypto/token-cipher';
 
 export const dynamic = 'force-dynamic';
 
@@ -72,7 +73,7 @@ export async function POST(request) {
         try {
           await syncPlaidItem({
             userId: item.user_id,
-            accessToken: item.access_token,
+            accessToken: decryptToken(item.access_token),
             institutionId: item.institution_id,
             institutionName: item.institution_name,
             plaidItemDbId: item.id,

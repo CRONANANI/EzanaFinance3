@@ -2,6 +2,10 @@ const required = [
   'NEXT_PUBLIC_SUPABASE_URL',
   'NEXT_PUBLIC_SUPABASE_ANON_KEY',
   'SUPABASE_SERVICE_ROLE_KEY',
+  // Application-layer key for encrypting stored brokerage tokens (SnapTrade
+  // user_secret, Plaid access_token). Must be set before deploy — a missing
+  // key fails fast at boot rather than silently storing/serving plaintext.
+  'TOKEN_ENCRYPTION_KEY',
 ];
 
 const optional = [
