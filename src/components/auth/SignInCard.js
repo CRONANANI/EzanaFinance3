@@ -25,12 +25,6 @@ const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [mfaRequired, setMfaRequired] = useState(false);
-  const [mfaCode, setMfaCode] = useState('');
-  // Where to send the user once MFA is verified — resolved at the password step
-  // (where auth calls are safe) so that after mfa.verify() we can navigate
-  // immediately with NO further Supabase auth calls (see handleMfaVerify).
-  const [pendingDestination, setPendingDestination] = useState(null);
   const destination = redirectTo || '/home';
 
   useEffect(() => {
@@ -105,62 +99,10 @@ const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
     return { path: destination };
   };
 
-  const handleMfaVerify = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError('');
-
-    let navigating = false;
-    try {
-      const { data: factorsData, error: factorsErr } = await supabase.auth.mfa.listFactors();
-      if (factorsErr) {
-        setError(factorsErr.message);
-        return;
-      }
-      const totpFactor = factorsData?.totp?.find((f) => f.status === 'verified');
-      if (!totpFactor) {
-        setError('No verified authenticator found. Set up 2FA in Settings.');
-        return;
-      }
-
-      const { data: challenge, error: challengeErr } = await supabase.auth.mfa.challenge({
-        factorId: totpFactor.id,
-      });
-      if (challengeErr) {
-        setError(challengeErr.message);
-        return;
-      }
-
-      const { error: verifyErr } = await supabase.auth.mfa.verify({
-        factorId: totpFactor.id,
-        challengeId: challenge.id,
-        code: mfaCode,
-      });
-      if (verifyErr) {
-        setError('Invalid code. Please try again.');
-        return;
-      }
-
-      // Session is now aal2. Navigate IMMEDIATELY with a full document load and
-      // make NO further Supabase auth calls — extra auth calls right after
-      // mfa.verify() can deadlock the shared client's Web Lock and hang the
-      // button on "Signing in…" (this is exactly what MfaChallengeCard does,
-      // and why it works). The destination was resolved on the password step.
-      navigating = true;
-      window.location.assign(pendingDestination || destination);
-    } catch {
-      setError('An unexpected error occurred. Please try again.');
-    } finally {
-      // Keep the spinner only while the full-load navigation is in flight.
-      if (!navigating) setIsLoading(false);
-    }
-  };
-
   const handleSignIn = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
-    setMfaRequired(false);
 
     let navigating = false;
     try {
@@ -195,8 +137,8 @@ const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
         return;
       }
 
-      // Resolve the destination NOW (auth calls are still safe at this aal1
-      // step) using the user from the sign-in response — no extra getUser().
+      // Resolve where the user should land (partner routing) using the user
+      // from the sign-in response — no extra getUser().
       const user = signInData?.user;
       const dest = await resolveDestination(user);
       if (dest.reject) {
@@ -207,22 +149,18 @@ const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
         return;
       }
 
-      const { data: aalData, error: aalErr } =
-        await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-      if (!aalErr && aalData?.nextLevel === 'aal2' && aalData?.currentLevel !== 'aal2') {
-        // Stash where to go, then prompt for the code. After mfa.verify() we
-        // navigate straight there with no further auth calls.
-        setPendingDestination(dest.path);
-        setMfaRequired(true);
-        return;
-      }
-
-      // No MFA step-up required — go straight in with a full document load.
+      // Hard-navigate to the destination with a full document load. We do NOT
+      // do MFA inline here: if this account needs a second factor, the
+      // middleware redirects this request to /auth/mfa (or /auth/mfa-setup),
+      // where the dedicated step-up page handles it on a fresh page load. Doing
+      // the challenge/verify in this same page session deadlocks the shared
+      // Supabase auth Web Lock and hangs the button on "Signing in…".
       navigating = true;
       window.location.assign(dest.path);
     } catch {
       setError('An unexpected error occurred. Please try again.');
     } finally {
+      // Keep the spinner only while the full-load navigation is in flight.
       if (!navigating) setIsLoading(false);
     }
   };
@@ -317,80 +255,45 @@ const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
             )}
 
             {/* Sign In Form */}
-            <form onSubmit={mfaRequired ? handleMfaVerify : handleSignIn} className="space-y-5">
-              {!mfaRequired ? (
-                <>
-                  <div>
-                    <label
-                      htmlFor="email"
-                      className="mb-1 block text-sm font-medium text-slate-300"
-                    >
-                      Email <span className="text-emerald-400">*</span>
-                    </label>
-                    <input
-                      id="email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Enter your email address"
-                      required
-                      className="h-11 w-full rounded-lg border border-slate-700 bg-slate-800 px-4 text-slate-100 placeholder-slate-500 transition-all focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                    />
-                  </div>
+            <form onSubmit={handleSignIn} className="space-y-5">
+              <div>
+                <label htmlFor="email" className="mb-1 block text-sm font-medium text-slate-300">
+                  Email <span className="text-emerald-400">*</span>
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email address"
+                  required
+                  className="h-11 w-full rounded-lg border border-slate-700 bg-slate-800 px-4 text-slate-100 placeholder-slate-500 transition-all focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                />
+              </div>
 
-                  <div>
-                    <label
-                      htmlFor="password"
-                      className="mb-1 block text-sm font-medium text-slate-300"
-                    >
-                      Password <span className="text-emerald-400">*</span>
-                    </label>
-                    <div className="relative">
-                      <input
-                        id="password"
-                        type={isPasswordVisible ? 'text' : 'password'}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Enter your password"
-                        required
-                        className="h-11 w-full rounded-lg border border-slate-700 bg-slate-800 px-4 pr-12 text-slate-100 placeholder-slate-500 transition-all focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                      />
-                      <button
-                        type="button"
-                        className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 transition-colors hover:text-slate-200"
-                        onClick={() => setIsPasswordVisible(!isPasswordVisible)}
-                      >
-                        {isPasswordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div>
-                  <p className="mb-3 text-sm text-slate-300">
-                    Enter the 6-digit code from your authenticator app.
-                  </p>
-                  <label
-                    htmlFor="mfa-code"
-                    className="mb-1 block text-sm font-medium text-slate-300"
-                  >
-                    Authentication code <span className="text-emerald-400">*</span>
-                  </label>
+              <div>
+                <label htmlFor="password" className="mb-1 block text-sm font-medium text-slate-300">
+                  Password <span className="text-emerald-400">*</span>
+                </label>
+                <div className="relative">
                   <input
-                    id="mfa-code"
-                    type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    maxLength={6}
-                    value={mfaCode}
-                    onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, ''))}
-                    placeholder="000000"
+                    id="password"
+                    type={isPasswordVisible ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter your password"
                     required
-                    autoComplete="one-time-code"
-                    className="h-11 w-full rounded-lg border border-slate-700 bg-slate-800 px-4 text-slate-100 placeholder-slate-500 transition-all focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    className="h-11 w-full rounded-lg border border-slate-700 bg-slate-800 px-4 pr-12 text-slate-100 placeholder-slate-500 transition-all focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                   />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 transition-colors hover:text-slate-200"
+                    onClick={() => setIsPasswordVisible(!isPasswordVisible)}
+                  >
+                    {isPasswordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
                 </div>
-              )}
+              </div>
 
               {/* Sign In Button */}
               <motion.div
@@ -436,7 +339,7 @@ const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
                       </>
                     ) : (
                       <>
-                        {mfaRequired ? 'Verify' : 'Sign in'}
+                        Sign in
                         <ArrowRight className="h-4 w-4 shrink-0" />
                       </>
                     )}
