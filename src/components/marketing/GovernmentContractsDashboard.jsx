@@ -1,8 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import { Building2, Search, Trophy } from 'lucide-react';
 import { DatasetDashboard } from './DatasetDashboard';
 import { Ticker, EntityName } from './DatasetTable';
+import { AwardDetailModal } from './AwardDetailModal';
 
 /**
  * Client wrapper that builds the DatasetDashboard config for the federal
@@ -34,6 +36,10 @@ export function GovernmentContractsDashboard({
   liveNote = 'Live federal contract data via USAspending.gov (U.S. Treasury), updated daily.',
   sampleNote = 'Sample of recent awards — full live dataset available in the app.',
 }) {
+  // Award detail modal — only live rows (which carry an awardId) are clickable;
+  // the static sample fallback stays non-interactive.
+  const [activeAward, setActiveAward] = useState(null);
+
   const config = {
     title,
     lead,
@@ -80,7 +86,18 @@ export function GovernmentContractsDashboard({
     sampleNote: isLive ? liveNote : sampleNote,
     source,
     cta: { href: '/auth/login', label: 'Explore in the app' },
+    onRowClick: isLive
+      ? (row) => setActiveAward({ awardId: row.awardId, recipient: row.recipient })
+      : undefined,
+    getRowLabel: (row) => `View award details for ${row.recipient}`,
   };
 
-  return <DatasetDashboard config={config} />;
+  return (
+    <>
+      <DatasetDashboard config={config} />
+      {activeAward ? (
+        <AwardDetailModal award={activeAward} onClose={() => setActiveAward(null)} />
+      ) : null}
+    </>
+  );
 }

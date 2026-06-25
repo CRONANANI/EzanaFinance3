@@ -11,8 +11,17 @@
  *  - columns: [{ key, label, align?, mono?, render? }]
  *  - rows:    array of plain objects keyed by column.key
  *  - emptyText: shown when rows is empty (e.g. after a search filter)
+ *  - onRowClick(row): optional — when provided, rows that carry an `awardId`
+ *      become keyboard-accessible buttons (Enter/Space) that call it.
+ *  - getRowLabel(row): optional aria-label for a clickable row.
  */
-export function DatasetTable({ columns, rows, emptyText = 'No matching records.' }) {
+export function DatasetTable({
+  columns,
+  rows,
+  emptyText = 'No matching records.',
+  onRowClick,
+  getRowLabel,
+}) {
   return (
     <div className="mkt-ds-table-wrap" role="region" aria-label="Dataset table" tabIndex={0}>
       <table className="mkt-ds-table">
@@ -37,19 +46,43 @@ export function DatasetTable({ columns, rows, emptyText = 'No matching records.'
               </td>
             </tr>
           ) : (
-            rows.map((row, i) => (
-              <tr key={row.id ?? i}>
-                {columns.map((col) => (
-                  <td
-                    key={col.key}
-                    className={col.mono ? 'mkt-ds-mono' : undefined}
-                    style={col.align ? { textAlign: col.align } : undefined}
-                  >
-                    {col.render ? col.render(row[col.key], row) : row[col.key]}
-                  </td>
-                ))}
-              </tr>
-            ))
+            rows.map((row, i) => {
+              // Only rows with an awardId are interactive — the static sample
+              // fallback (no awardId) stays a plain, non-clickable row.
+              const clickable = typeof onRowClick === 'function' && !!row.awardId;
+              return (
+                <tr
+                  key={row.id ?? i}
+                  className={clickable ? 'mkt-ds-row-clickable' : undefined}
+                  tabIndex={clickable ? 0 : undefined}
+                  role={clickable ? 'button' : undefined}
+                  aria-label={
+                    clickable ? (getRowLabel ? getRowLabel(row) : 'View details') : undefined
+                  }
+                  onClick={clickable ? () => onRowClick(row) : undefined}
+                  onKeyDown={
+                    clickable
+                      ? (e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            onRowClick(row);
+                          }
+                        }
+                      : undefined
+                  }
+                >
+                  {columns.map((col) => (
+                    <td
+                      key={col.key}
+                      className={col.mono ? 'mkt-ds-mono' : undefined}
+                      style={col.align ? { textAlign: col.align } : undefined}
+                    >
+                      {col.render ? col.render(row[col.key], row) : row[col.key]}
+                    </td>
+                  ))}
+                </tr>
+              );
+            })
           )}
         </tbody>
       </table>

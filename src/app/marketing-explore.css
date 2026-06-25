@@ -681,3 +681,228 @@ body.light-mode .mkt-ds-table-wrap {
     grid-template-columns: 1fr;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   CLICKABLE CONTRACT ROWS + AWARD DETAIL MODAL (USAspending)
+   Tokens only — resolves on the light marketing theme. Amounts / dates /
+   codes use .mkt-ds-mono (JetBrains Mono) per the branding guide.
+   ═══════════════════════════════════════════════════════════════════════ */
+.mkt-ds-row-clickable {
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.mkt-ds-row-clickable:hover {
+  background: var(--emerald-bg-subtle, var(--emerald-bg));
+}
+.mkt-ds-row-clickable:focus-visible {
+  outline: 2px solid var(--emerald-border);
+  outline-offset: -2px;
+}
+
+.mkt-award-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 5vh 1rem 2rem;
+  background: var(--bg-overlay);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  overflow-y: auto;
+}
+
+.mkt-award-modal {
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-primary);
+  border-radius: 16px;
+  box-shadow: var(--shadow-xl);
+  padding: 1.75rem;
+  font-family: var(--font-sans);
+  color: var(--text-secondary);
+}
+
+.mkt-award-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  border: 1px solid var(--border-secondary);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+.mkt-award-close:hover {
+  color: var(--text-primary);
+  border-color: var(--border-hover);
+}
+
+.mkt-award-head {
+  padding-right: 2.5rem;
+  margin-bottom: 1.25rem;
+}
+.mkt-award-eyebrow {
+  margin: 0 0 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--emerald-text);
+}
+.mkt-award-title {
+  margin: 0 0 0.35rem;
+  font-size: 1.375rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--text-primary);
+}
+.mkt-award-id {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--text-faint);
+}
+
+.mkt-award-state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1.5rem 0;
+  color: var(--text-muted);
+}
+
+.mkt-award-desc {
+  margin: 0 0 1.25rem;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--text-body);
+}
+
+.mkt-award-section {
+  margin-bottom: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border-secondary);
+}
+.mkt-award-section-title {
+  margin: 0 0 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.mkt-award-facts {
+  margin: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+.mkt-award-fact {
+  display: grid;
+  grid-template-columns: 11rem 1fr;
+  gap: 1rem;
+  align-items: baseline;
+}
+.mkt-award-fact-label {
+  font-size: 0.8125rem;
+  color: var(--text-faint);
+}
+.mkt-award-fact-value {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+.mkt-award-fact-sub {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.75rem;
+  color: var(--text-faint);
+}
+
+.mkt-award-mods {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.mkt-award-mod {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-secondary);
+}
+.mkt-award-mod:last-child {
+  border-bottom: none;
+}
+.mkt-award-mod-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+.mkt-award-mod-num {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--text-faint);
+}
+.mkt-award-mod-type {
+  color: var(--text-muted);
+}
+.mkt-award-mod-amt {
+  font-size: 0.8125rem;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.mkt-award-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border-secondary);
+}
+.mkt-award-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  align-self: flex-start;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--emerald-text);
+  text-decoration: none;
+}
+.mkt-award-link:hover {
+  text-decoration: underline;
+}
+.mkt-award-source {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--text-faint);
+}
+
+@media (max-width: 640px) {
+  .mkt-award-fact {
+    grid-template-columns: 1fr;
+    gap: 0.15rem;
+  }
+}

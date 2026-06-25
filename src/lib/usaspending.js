@@ -89,15 +89,27 @@ export function currentFederalFiscalYear(now = new Date()) {
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
+/**
+ * Parse a leading YYYY-MM-DD out of a date string. Returns { y, mo, d } or null
+ * for anything missing or malformed — we NEVER fall back to an epoch/default
+ * date (a defaulted date is exactly how a bogus "Oct 15 1993"-style row appears).
+ */
+export function parseIsoYmd(input) {
+  if (!input) return null;
+  const m = String(input).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return null;
+  const y = Number(m[1]);
+  const mo = Number(m[2]);
+  const d = Number(m[3]);
+  if (mo < 1 || mo > 12 || d < 1 || d > 31) return null;
+  return { y, mo, d };
+}
+
 /** Format a YYYY-MM-DD (or longer ISO) string as "Mon D, YYYY" (e.g. Jun 9, 2026). */
 export function formatDisplayDate(input) {
-  if (!input) return EM_DASH;
-  const s = String(input);
-  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (!m) return s;
-  const [, y, mo, d] = m;
-  const month = MONTHS[Number(mo) - 1] || '';
-  return `${month} ${Number(d)}, ${y}`;
+  const parsed = parseIsoYmd(input);
+  if (!parsed) return EM_DASH;
+  return `${MONTHS[parsed.mo - 1]} ${parsed.d}, ${parsed.y}`;
 }
 
 /** Format a numeric USD amount as a compact mono string: $X.XXB / $X.XM / $X,XXX. */
@@ -141,13 +153,48 @@ function buildRequestBody({ recipient, agency, limit }) {
   };
 }
 
-function mapResults(results) {
-  const rows = results.map((r, i) => {
+// Sanity bounds. A single federal contract *action* sits comfortably below
+// these; values outside them (a "$48B award", a 1993 start date on a recent
+// awards view) are almost always a giant IDV ceiling or an old base date that
+// reads as fabricated — so we DROP those rows rather than display them. Better
+// to show fewer real rows than one bogus-looking one.
+const MAX_PLAUSIBLE_AWARD_AMOUNT = 50_000_000_000; // $50B
+const MIN_PLAUSIBLE_YEAR = 2000;
+
+/** True only if a result has a usable numeric amount and a recent, parseable date. */
+export function isPlausibleAward(r, nowYear = new Date().getUTCFullYear()) {
+  const amt = Number(r['Award Amount']);
+  if (!Number.isFinite(amt) || amt <= 0 || amt > MAX_PLAUSIBLE_AWARD_AMOUNT) return false;
+  const d = parseIsoYmd(r['Start Date']);
+  if (!d) return false;
+  if (d.y < MIN_PLAUSIBLE_YEAR || d.y > nowYear + 1) return false;
+  return true;
+}
+
+function mapResults(results, displayLimit) {
+  const nowYear = new Date().getUTCFullYear();
+
+  // Validate first — impossible/fabricated-looking rows never reach the UI.
+  const valid = results.filter((r) => isPlausibleAward(r, nowYear));
+  const dropped = results.length - valid.length;
+  if (dropped > 0) {
+    console.warn(
+      `[usaspending] dropped ${dropped} implausible award row(s) ` +
+        `(amount missing/>$50B, or date < ${MIN_PLAUSIBLE_YEAR}/unparseable)`,
+    );
+  }
+
+  const allRows = valid.map((r, i) => {
     const recipient = r['Recipient Name'] || 'Unknown recipient';
     const agency = r['Awarding Agency'] || EM_DASH;
     const amountNum = r['Award Amount'];
+    // generated_internal_id (e.g. "CONT_AWD_…") is the permanent
+    // generated_unique_award_id the award-profile endpoint accepts — prefer it
+    // over the numeric internal_id so detail links never break.
+    const awardId = r.generated_internal_id || (r.internal_id != null ? String(r.internal_id) : '');
     return {
-      id: r['Award ID'] || r.internal_id || `usa-${i}`,
+      id: awardId || r['Award ID'] || `usa-${i}`,
+      awardId,
       recipient,
       agency,
       ticker: tickerForRecipient(recipient),
@@ -157,11 +204,11 @@ function mapResults(results) {
     };
   });
 
-  // topRecipients — aggregate total award value per recipient, top 5. Mirrors
-  // the TOP_RECIPIENTS sample shape ({ name, meta, value }). No fabricated
-  // tickers: meta shows a real mapped symbol when we have one, else the agency.
+  // topRecipients — aggregate total award value per recipient over the full
+  // valid set, top 5. Mirrors the TOP_RECIPIENTS sample shape ({ name, meta,
+  // value }). No fabricated tickers: meta is a real mapped symbol or the agency.
   const byRecipient = new Map();
-  for (const r of rows) {
+  for (const r of allRows) {
     const cur = byRecipient.get(r.recipient) || {
       name: r.recipient,
       total: 0,
@@ -180,7 +227,7 @@ function mapResults(results) {
       value: formatAmount(x.total),
     }));
 
-  return { rows, topRecipients };
+  return { rows: allRows.slice(0, displayLimit), topRecipients };
 }
 
 /**
@@ -193,7 +240,12 @@ function mapResults(results) {
  * @returns {Promise<{ rows: object[], topRecipients: object[], error: string|null }>}
  */
 export async function getContractAwards({ recipient = '', agency = '', limit = 15 } = {}) {
-  const cacheKey = JSON.stringify({ recipient, agency, limit });
+  const displayLimit = Math.min(Math.max(Number(limit) || 15, 1), 100);
+  // Over-fetch a buffer: sanity validation drops the largest IDV ceilings and
+  // any pre-2000 base dates, which sort to the very top of "by award amount",
+  // so we ask for extra to still fill the table with `displayLimit` real rows.
+  const fetchLimit = Math.min(displayLimit * 2 + 10, 100);
+  const cacheKey = JSON.stringify({ recipient, agency, displayLimit });
   const cached = _memo.get(cacheKey);
   if (cached && Date.now() - cached.at < CACHE_TTL_MS) return cached.data;
 
@@ -203,7 +255,7 @@ export async function getContractAwards({ recipient = '', agency = '', limit = 1
     const res = await fetch(USA_SPENDING_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify(buildRequestBody({ recipient, agency, limit })),
+      body: JSON.stringify(buildRequestBody({ recipient, agency, limit: fetchLimit })),
       signal: controller.signal,
     });
     if (!res.ok) {
@@ -211,7 +263,7 @@ export async function getContractAwards({ recipient = '', agency = '', limit = 1
     }
     const json = await res.json();
     const results = Array.isArray(json?.results) ? json.results : [];
-    const data = { ...mapResults(results), error: null };
+    const data = { ...mapResults(results, displayLimit), error: null };
     // Only cache successful, non-empty responses so a transient failure can't
     // pin an empty result for an hour.
     if (data.rows.length > 0) _memo.set(cacheKey, { at: Date.now(), data });
@@ -222,6 +274,143 @@ export async function getContractAwards({ recipient = '', agency = '', limit = 1
       topRecipients: [],
       error:
         err?.name === 'AbortError' ? 'USAspending timeout' : err?.message || 'USAspending error',
+    };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   Per-award detail — powers the clickable award detail view.
+   ════════════════════════════════════════════════════════════════════════ */
+
+const AWARD_DETAIL_BASE = 'https://api.usaspending.gov/api/v2/awards/';
+const TRANSACTIONS_URL = 'https://api.usaspending.gov/api/v2/transactions/';
+// Official public award-profile page — the outbound "verify on USAspending" link.
+const USA_SPENDING_AWARD_PAGE = 'https://www.usaspending.gov/award/';
+
+const NOT_DISCLOSED = 'Not disclosed';
+
+const _awardMemo = new Map(); // awardId -> { at, data }
+
+function agencyNames(node) {
+  return { top: node?.toptier_agency?.name || null, sub: node?.subtier_agency?.name || null };
+}
+
+function placeString(loc) {
+  if (!loc) return null;
+  const city = loc.city_name || loc.city || null;
+  const state = loc.state_code || loc.state || null;
+  const parts = [city, state].filter(Boolean);
+  if (parts.length) return parts.join(', ');
+  return loc.country_name || null;
+}
+
+/** Best-effort modification history (POST /transactions/). Returns [] on any failure. */
+async function fetchTransactions(awardId, signal) {
+  try {
+    const res = await fetch(TRANSACTIONS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ award_id: awardId, limit: 20, sort: 'action_date', order: 'desc' }),
+      signal,
+    });
+    if (!res.ok) return [];
+    const json = await res.json();
+    const results = Array.isArray(json?.results) ? json.results : [];
+    return results.map((t, i) => ({
+      id: t.id ?? `txn-${i}`,
+      date: formatDisplayDate(t.action_date),
+      amount:
+        t.federal_action_obligation != null ? formatAmount(t.federal_action_obligation) : EM_DASH,
+      type: t.type_description || t.action_type_description || t.type || NOT_DISCLOSED,
+      modNumber: t.modification_number || null,
+      description: t.description || null,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Fetch one award's profile from USAspending and map it to a clean,
+ * display-ready object. Null fields become "—" / "Not disclosed" — we NEVER
+ * fabricate a value. Always resolves: on timeout / error returns
+ * `{ detail: null, error, usaspendingUrl }` so the UI shows a graceful empty
+ * state with the outbound verify link rather than a spinner-forever or a 500.
+ *
+ * @param {string} awardId generated_unique_award_id (e.g. "CONT_AWD_…")
+ */
+export async function getAwardDetail(awardId) {
+  if (!awardId) return { detail: null, error: 'Missing award id', usaspendingUrl: null };
+
+  const cached = _awardMemo.get(awardId);
+  if (cached && Date.now() - cached.at < CACHE_TTL_MS) return cached.data;
+
+  const usaspendingUrl = `${USA_SPENDING_AWARD_PAGE}${encodeURIComponent(awardId)}`;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${AWARD_DETAIL_BASE}${encodeURIComponent(awardId)}/`, {
+      method: 'GET',
+      headers: { Accept: 'application/json' },
+      signal: controller.signal,
+    });
+    if (!res.ok) return { detail: null, error: `USAspending ${res.status}`, usaspendingUrl };
+
+    const a = await res.json();
+    const contract = a.latest_transaction_contract_data || {};
+    const awarding = agencyNames(a.awarding_agency);
+    const funding = agencyNames(a.funding_agency);
+    const pop = a.period_of_performance || {};
+    const generatedId = a.generated_unique_award_id || awardId;
+
+    const detail = {
+      awardId: generatedId,
+      piid: a.piid || a.fain || a.uri || null,
+      recipientName: a.recipient?.recipient_name || NOT_DISCLOSED,
+      awardType: a.type_description || a.category || NOT_DISCLOSED,
+      description: a.description || NOT_DISCLOSED,
+      totalObligation: a.total_obligation != null ? formatAmount(a.total_obligation) : EM_DASH,
+      baseAndAllOptions:
+        a.base_and_all_options != null ? formatAmount(a.base_and_all_options) : EM_DASH,
+      dateSigned: formatDisplayDate(a.date_signed),
+      popStart: formatDisplayDate(pop.start_date),
+      popEnd: formatDisplayDate(pop.end_date || pop.potential_end_date),
+      awardingAgency: awarding.top || NOT_DISCLOSED,
+      awardingSubAgency: awarding.sub || null,
+      fundingAgency: funding.top || null,
+      fundingSubAgency: funding.sub || null,
+      // Flag a funding agency only when it genuinely differs from the awarder.
+      fundingDiffers: !!(funding.top && funding.top !== awarding.top),
+      naics: {
+        code: contract.naics || contract.naics_code || null,
+        description: contract.naics_description || null,
+      },
+      psc: {
+        code: contract.product_or_service_code || null,
+        description: contract.product_or_service_description || null,
+      },
+      businessCategories: Array.isArray(a.recipient?.business_categories)
+        ? a.recipient.business_categories
+        : [],
+      placeOfPerformance: placeString(a.place_of_performance),
+      parentAward: a.parent_award?.generated_unique_award_id
+        ? { id: a.parent_award.generated_unique_award_id, piid: a.parent_award.piid || null }
+        : null,
+      usaspendingUrl: `${USA_SPENDING_AWARD_PAGE}${encodeURIComponent(generatedId)}`,
+      modifications: await fetchTransactions(generatedId, controller.signal),
+    };
+
+    const data = { detail, error: null, usaspendingUrl: detail.usaspendingUrl };
+    _awardMemo.set(awardId, { at: Date.now(), data });
+    return data;
+  } catch (err) {
+    return {
+      detail: null,
+      error:
+        err?.name === 'AbortError' ? 'USAspending timeout' : err?.message || 'USAspending error',
+      usaspendingUrl,
     };
   } finally {
     clearTimeout(timer);

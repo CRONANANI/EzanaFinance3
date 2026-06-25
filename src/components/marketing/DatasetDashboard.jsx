@@ -26,6 +26,8 @@ export function DatasetDashboard({ config }) {
     sampleNote,
     source,
     cta,
+    onRowClick,
+    getRowLabel,
   } = config;
 
   const [terms, setTerms] = useState({});
@@ -114,7 +116,12 @@ export function DatasetDashboard({ config }) {
       <section className="mkt-ds-section">
         {table.caption ? <h2 className="mkt-section-title">{table.caption}</h2> : null}
         {sampleNote ? <p className="mkt-ds-sample-note">{sampleNote}</p> : null}
-        <DatasetTable columns={table.columns} rows={filteredRows} />
+        <DatasetTable
+          columns={table.columns}
+          rows={filteredRows}
+          onRowClick={onRowClick}
+          getRowLabel={getRowLabel}
+        />
         {tableLink ? (
           <p className="mkt-ds-table-link">
             <Link href={tableLink.href}>
