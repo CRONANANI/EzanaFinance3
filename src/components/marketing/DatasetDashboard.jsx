@@ -22,6 +22,7 @@ export function DatasetDashboard({ config }) {
     searches = [],
     highlight,
     table,
+    tableLink,
     sampleNote,
     source,
     cta,
@@ -114,6 +115,14 @@ export function DatasetDashboard({ config }) {
         {table.caption ? <h2 className="mkt-section-title">{table.caption}</h2> : null}
         {sampleNote ? <p className="mkt-ds-sample-note">{sampleNote}</p> : null}
         <DatasetTable columns={table.columns} rows={filteredRows} />
+        {tableLink ? (
+          <p className="mkt-ds-table-link">
+            <Link href={tableLink.href}>
+              {tableLink.label}
+              <ArrowRight size={15} aria-hidden />
+            </Link>
+          </p>
+        ) : null}
       </section>
 
       {source && (

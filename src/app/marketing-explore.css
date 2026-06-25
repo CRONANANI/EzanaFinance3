@@ -329,6 +329,19 @@ body.light-mode .mkt-card {
   color: var(--emerald-text);
 }
 
+/* Drill-down sub-tabs (e.g. Government activity → Government contracts). Sits
+   directly under the main dimension nav, visually subordinate (tucked closer,
+   slightly smaller) so it reads as a child of the active dimension, not an
+   8th top-level dimension. */
+.mkt-datasets-subnav-drill {
+  margin-top: -1.75rem;
+  margin-bottom: 2.5rem;
+}
+.mkt-datasets-subnav-drill a {
+  padding: 0.3rem 0.85rem;
+  font-size: 0.8125rem;
+}
+
 @media (max-width: 900px) {
   .mkt-grid-2,
   .mkt-grid-3,
@@ -503,6 +516,25 @@ body.light-mode .mkt-card {
   font-family: var(--font-mono);
   font-size: 0.75rem;
   color: var(--text-faint);
+}
+
+/* "View all contracts →" link below a table section */
+.mkt-ds-table-link {
+  margin: 1rem 0 0;
+  text-align: right;
+}
+.mkt-ds-table-link a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--emerald-text);
+  text-decoration: none;
+}
+.mkt-ds-table-link a:hover {
+  text-decoration: underline;
 }
 
 /* primary data table */

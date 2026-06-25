@@ -34,6 +34,7 @@ import {
   BadgeDollarSign,
   Fish,
   PieChart,
+  FileText,
 } from 'lucide-react';
 import '@/components/ui/animated-nav.css';
 
@@ -56,6 +57,8 @@ const DATASET_MENU = [
   {
     heading: 'Government Activity',
     items: [
+      // Flagship live-data government dataset (USAspending.gov) — first in the column.
+      { icon: FileText, label: 'Government Contracts', href: '/datasets/government/contracts' },
       { icon: Megaphone, label: 'Corporate Lobbying', href: '/datasets/government' },
       { icon: Lightbulb, label: 'Patents', href: '/datasets/government' },
     ],
