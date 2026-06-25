@@ -474,6 +474,22 @@ body.light-mode .mkt-card {
 .mkt-ds-leader-row:first-child {
   border-top: none;
 }
+/* Opt-in clickable recipient row → opens the shared detail popup. */
+.mkt-ds-leader-row--clickable {
+  cursor: pointer;
+  border-radius: 8px;
+  margin: 0 -0.5rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  transition: background 0.15s ease;
+}
+.mkt-ds-leader-row--clickable:hover {
+  background: var(--emerald-bg-subtle, var(--emerald-bg));
+}
+.mkt-ds-leader-row--clickable:focus-visible {
+  outline: 2px solid var(--emerald-border);
+  outline-offset: -2px;
+}
 .mkt-ds-leader-rank {
   flex-shrink: 0;
   width: 1.75rem;
@@ -872,6 +888,34 @@ body.light-mode .mkt-ds-table-wrap {
   font-size: 0.8125rem;
   color: var(--text-primary);
   white-space: nowrap;
+}
+
+/* A recipient's recent-award row rendered as a button that reopens the popup
+   on the clicked award. Inherits .mkt-award-mod layout. */
+.mkt-award-mod--btn {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border-secondary);
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+  border-radius: 6px;
+  transition: background 0.15s ease;
+}
+.mkt-award-mod--btn:hover:not(:disabled),
+.mkt-award-mod--btn:focus-visible:not(:disabled) {
+  background: var(--emerald-bg-subtle, var(--emerald-bg));
+  outline: none;
+}
+.mkt-award-mod--btn:disabled {
+  cursor: default;
+}
+
+.mkt-award-empty-note {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
 }
 
 .mkt-award-foot {

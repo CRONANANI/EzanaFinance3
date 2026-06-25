@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Building2, Search, Trophy } from 'lucide-react';
 import { DatasetDashboard } from './DatasetDashboard';
 import { Ticker, EntityName } from './DatasetTable';
-import { AwardDetailModal } from './AwardDetailModal';
+import { ContractDetailPopup } from './ContractDetailPopup';
 
 /**
  * Client wrapper that builds the DatasetDashboard config for the federal
@@ -39,9 +39,10 @@ export function GovernmentContractsDashboard({
   liveNote = 'Live federal contract data via USAspending.gov (U.S. Treasury), updated daily.',
   sampleNote = 'Sample of recent awards — full live dataset available in the app.',
 }) {
-  // Award detail modal — only live rows (which carry an awardId) are clickable;
-  // the static sample fallback stays non-interactive.
-  const [activeAward, setActiveAward] = useState(null);
+  // One shared detail popup serves BOTH the top-recipients list and the awards
+  // table. `activeDetail` is { kind: 'recipient' | 'award', data } | null. Only
+  // real data (hosted/live) is interactive; the static sample stays static.
+  const [activeDetail, setActiveDetail] = useState(null);
 
   const config = {
     title,
@@ -68,6 +69,9 @@ export function GovernmentContractsDashboard({
       title: highlightTitle,
       desc: highlightDesc,
       items: topRecipients,
+      // Opt-in: clicking a recipient opens the shared popup with their recent
+      // awards. Off in sample mode so the fallback stays static.
+      onItemClick: isLive ? (it) => setActiveDetail({ kind: 'recipient', data: it }) : undefined,
     },
     table: {
       caption: tableCaption,
@@ -90,7 +94,11 @@ export function GovernmentContractsDashboard({
     source,
     cta: { href: '/auth/login', label: 'Explore in the app' },
     onRowClick: isLive
-      ? (row) => setActiveAward({ awardId: row.awardId, recipient: row.recipient })
+      ? (row) =>
+          setActiveDetail({
+            kind: 'award',
+            data: { awardId: row.awardId, recipient: row.recipient },
+          })
       : undefined,
     getRowLabel: (row) => `View award details for ${row.recipient}`,
   };
@@ -98,8 +106,12 @@ export function GovernmentContractsDashboard({
   return (
     <>
       <DatasetDashboard config={config} />
-      {activeAward ? (
-        <AwardDetailModal award={activeAward} onClose={() => setActiveAward(null)} />
+      {activeDetail ? (
+        <ContractDetailPopup
+          detail={activeDetail}
+          onClose={() => setActiveDetail(null)}
+          onOpenAward={(awardData) => setActiveDetail({ kind: 'award', data: awardData })}
+        />
       ) : null}
     </>
   );

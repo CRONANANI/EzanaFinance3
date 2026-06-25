@@ -92,22 +92,45 @@ export function DatasetDashboard({ config }) {
           {highlight.desc ? <p className="mkt-ds-highlight-desc">{highlight.desc}</p> : null}
           {highlight.items ? (
             <ol className="mkt-ds-leader">
-              {highlight.items.map((it, i) => (
-                <li key={it.name ?? i} className="mkt-ds-leader-row">
-                  <span className="mkt-ds-leader-rank">{i + 1}</span>
-                  <span className="mkt-ds-leader-main">
-                    <span className="mkt-ds-leader-name">{it.name}</span>
-                    {it.meta ? <span className="mkt-ds-leader-meta">{it.meta}</span> : null}
-                  </span>
-                  <span
-                    className={`mkt-ds-leader-value mkt-ds-mono${
-                      it.tone === 'pos' ? ' mkt-ds-pos' : it.tone === 'neg' ? ' mkt-ds-neg' : ''
-                    }`}
+              {highlight.items.map((it, i) => {
+                // Opt-in: a `highlight.onItemClick` handler makes each row an
+                // accessible button that opens the shared detail popup. Pages
+                // that don't provide it keep static, non-interactive rows.
+                const clickable = typeof highlight.onItemClick === 'function';
+                return (
+                  <li
+                    key={it.name ?? i}
+                    className={`mkt-ds-leader-row${clickable ? ' mkt-ds-leader-row--clickable' : ''}`}
+                    role={clickable ? 'button' : undefined}
+                    tabIndex={clickable ? 0 : undefined}
+                    aria-label={clickable ? `View details for ${it.name}` : undefined}
+                    onClick={clickable ? () => highlight.onItemClick(it) : undefined}
+                    onKeyDown={
+                      clickable
+                        ? (e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              highlight.onItemClick(it);
+                            }
+                          }
+                        : undefined
+                    }
                   >
-                    {it.value}
-                  </span>
-                </li>
-              ))}
+                    <span className="mkt-ds-leader-rank">{i + 1}</span>
+                    <span className="mkt-ds-leader-main">
+                      <span className="mkt-ds-leader-name">{it.name}</span>
+                      {it.meta ? <span className="mkt-ds-leader-meta">{it.meta}</span> : null}
+                    </span>
+                    <span
+                      className={`mkt-ds-leader-value mkt-ds-mono${
+                        it.tone === 'pos' ? ' mkt-ds-pos' : it.tone === 'neg' ? ' mkt-ds-neg' : ''
+                      }`}
+                    >
+                      {it.value}
+                    </span>
+                  </li>
+                );
+              })}
             </ol>
           ) : null}
         </div>
