@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   Cookie consent banner — centered, compact, translucent.
+   Cookie consent banner — full-width, compact, translucent.
    Reads --cookie-banner-height set by CookieConsentBanner.jsx
    so the landing page can reserve scroll space underneath.
    ═══════════════════════════════════════════════════════════ */
@@ -10,13 +10,15 @@
   left: 20px;
   right: 20px;
   z-index: 9000;
-  max-width: 580px;
+  /* Span the full width of the page (small symmetric gutters via left/right). */
+  max-width: none;
   margin: 0 auto;
 
   /* Translucent surface — sits over the page, content stays legible
      thanks to the backdrop blur. Light mode = soft white; dark mode
-     = soft dark (handled below). */
-  background: rgba(255, 255, 255, 0.82);
+     = soft dark (handled below). 50% more transparent than before;
+     the text colors are unchanged so copy stays as dark as it was. */
+  background: rgba(255, 255, 255, 0.41);
   -webkit-backdrop-filter: blur(14px) saturate(140%);
   backdrop-filter: blur(14px) saturate(140%);
 
@@ -40,9 +42,9 @@
   content: none;
 }
 
-/* Dark mode — translucent dark surface */
+/* Dark mode — translucent dark surface (50% more transparent than before) */
 body:not(.light-mode) .cookie-banner {
-  background: rgba(17, 20, 24, 0.78);
+  background: rgba(17, 20, 24, 0.39);
   color: #f0f6fc;
   border-color: rgba(255, 255, 255, 0.1);
   box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
@@ -75,8 +77,8 @@ body:not(.light-mode) .cookie-banner {
   line-height: 1.45;
   margin: 0;
   color: var(--muted-foreground, #5b6470);
-  /* Wider cap so the copy flows across ~two lines now that the banner is shorter. */
-  max-width: 520px;
+  /* Wider cap so the copy flows across ~two lines on the now full-width banner. */
+  max-width: 1000px;
   margin-left: auto;
   margin-right: auto;
 }
