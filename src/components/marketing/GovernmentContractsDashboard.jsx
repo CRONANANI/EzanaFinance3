@@ -33,6 +33,9 @@ export function GovernmentContractsDashboard({
   tableCaption = 'Recent federal contract awards',
   tableLink,
   source,
+  // Explicit freshness/source line (hosted "synced …" / live / sample). When
+  // omitted, falls back to the live-vs-sample default below.
+  note,
   liveNote = 'Live federal contract data via USAspending.gov (U.S. Treasury), updated daily.',
   sampleNote = 'Sample of recent awards — full live dataset available in the app.',
 }) {
@@ -83,7 +86,7 @@ export function GovernmentContractsDashboard({
       rows,
     },
     tableLink,
-    sampleNote: isLive ? liveNote : sampleNote,
+    sampleNote: note ?? (isLive ? liveNote : sampleNote),
     source,
     cta: { href: '/auth/login', label: 'Explore in the app' },
     onRowClick: isLive
