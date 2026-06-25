@@ -2385,20 +2385,21 @@ html:has(.landing-page) .navbar.navbar-sticky,
    below handle user-agent paint that utilities cannot.
    ════════════════════════════════════════════════════════════════════════════ */
 
-/* Force dark color-scheme inside the wrapper (UA controls, scrollbars, etc.). */
+/* Light color-scheme inside the wrapper (UA controls, scrollbars, etc.). The
+   auth/sign-in flows render in light mode regardless of the user's theme. */
 .signin-dark-lock {
-  color-scheme: dark;
-  background-color: #0a0e13;
+  color-scheme: light;
+  background-color: #f8fafb;
 }
 
 body:has(.signin-dark-lock) {
-  background-color: #0a0e13 !important;
+  background-color: #f8fafb !important;
 }
 
 .signin-dark-lock input,
 .signin-dark-lock textarea,
 .signin-dark-lock select {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
@@ -2487,50 +2488,50 @@ body:has(.signin-dark-lock) {
   );
 }
 
-/* Defend against body.light-mode rules that try to darken descendant text
-   inside dark-locked auth/onboarding chrome. These overrides ensure that even
-   if the body is in light mode, every heading/label/paragraph inside the
-   sign-in wrapper remains readable against the forced dark background. */
+/* Keep auth/onboarding chrome readable as a LIGHT surface regardless of the
+   user's saved theme: dark text on the light card, for both light- and
+   dark-mode bodies. */
+.signin-dark-lock,
 body.light-mode .signin-dark-lock {
-  background-color: #0a0e13 !important;
-  color: #f0f6fc !important;
+  background-color: #f8fafb !important;
+  color: #0f172a !important;
 }
-body.light-mode .signin-dark-lock h1,
-body.light-mode .signin-dark-lock h2,
-body.light-mode .signin-dark-lock h3,
-body.light-mode .signin-dark-lock h4,
-body.light-mode .signin-dark-lock .auth-title,
-body.light-mode .signin-dark-lock .pauth-title {
-  color: #f0f6fc !important;
+.signin-dark-lock h1,
+.signin-dark-lock h2,
+.signin-dark-lock h3,
+.signin-dark-lock h4,
+.signin-dark-lock .auth-title,
+.signin-dark-lock .pauth-title {
+  color: #0f172a !important;
 }
-body.light-mode .signin-dark-lock p,
-body.light-mode .signin-dark-lock label,
-body.light-mode .signin-dark-lock .auth-subtitle,
-body.light-mode .signin-dark-lock .auth-label,
-body.light-mode .signin-dark-lock .auth-footer-text {
-  color: #c9d1d9 !important;
+.signin-dark-lock p,
+.signin-dark-lock label,
+.signin-dark-lock .auth-subtitle,
+.signin-dark-lock .auth-label,
+.signin-dark-lock .auth-footer-text {
+  color: #475569 !important;
 }
-body.light-mode .signin-dark-lock .auth-card,
-body.light-mode .signin-dark-lock .partner-auth-card,
-body.light-mode .signin-dark-lock .auth-page,
-body.light-mode .signin-dark-lock.auth-page {
-  background-color: #0d1117 !important;
+.signin-dark-lock .auth-card,
+.signin-dark-lock .partner-auth-card,
+.signin-dark-lock .auth-page,
+.signin-dark-lock.auth-page {
+  background-color: #ffffff !important;
 }
-body.light-mode .signin-dark-lock .auth-input,
-body.light-mode .signin-dark-lock input,
-body.light-mode .signin-dark-lock select,
-body.light-mode .signin-dark-lock textarea {
-  background-color: rgba(255, 255, 255, 0.04) !important;
-  color: #f0f6fc !important;
+.signin-dark-lock .auth-input,
+.signin-dark-lock input,
+.signin-dark-lock select,
+.signin-dark-lock textarea {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
 }
 
-/* Override autofill yellow/cream (Chrome/Safari) on saved credentials. */
+/* Override autofill yellow/cream (Chrome/Safari) on saved credentials — light. */
 .signin-dark-lock input:-webkit-autofill,
 .signin-dark-lock input:-webkit-autofill:hover,
 .signin-dark-lock input:-webkit-autofill:focus {
-  -webkit-text-fill-color: #f1f5f9; /* slate-100 */
-  -webkit-box-shadow: 0 0 0 1000px #1e293b inset; /* slate-800 fill */
-  caret-color: #f1f5f9;
+  -webkit-text-fill-color: #0f172a; /* slate-900 */
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset; /* white fill */
+  caret-color: #0f172a;
   transition: background-color 5000s ease-in-out 0s;
 }
 

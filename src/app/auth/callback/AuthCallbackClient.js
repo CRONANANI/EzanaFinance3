@@ -155,9 +155,9 @@ export default function AuthCallbackClient() {
   }, [router, searchParams]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#0a0f0a] px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#f8fafb] px-4">
       <div className="h-10 w-10 rounded-full border-2 border-emerald-500/30 border-t-emerald-500 animate-spin mb-4" />
-      <p className="text-sm text-gray-400">{message}</p>
+      <p className="text-sm text-slate-600">{message}</p>
     </div>
   );
 }

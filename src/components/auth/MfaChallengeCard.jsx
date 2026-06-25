@@ -82,13 +82,13 @@ export default function MfaChallengeCard({ redirectTo = '/home' }) {
   }
 
   return (
-    <div className="relative z-10 w-full max-w-md rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur">
+    <div className="relative z-10 w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/60">
       <div className="mb-5 flex flex-col items-center text-center">
-        <span className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-400">
+        <span className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600">
           <i className="bi bi-shield-lock text-xl" aria-hidden />
         </span>
-        <h1 className="text-xl font-semibold text-white">Verify it&rsquo;s you</h1>
-        <p className="mt-2 text-sm text-white/60">
+        <h1 className="text-xl font-semibold text-slate-900">Verify it&rsquo;s you</h1>
+        <p className="mt-2 text-sm text-slate-600">
           Enter the 6-digit code from your authenticator app to finish signing in.
         </p>
       </div>
@@ -106,11 +106,11 @@ export default function MfaChallengeCard({ redirectTo = '/home' }) {
           onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
           disabled={!ready || loading}
           aria-label="6-digit authentication code"
-          className="w-full rounded-lg border border-white/10 bg-black/20 px-4 py-3 text-center text-lg tracking-[0.4em] text-white outline-none focus:border-emerald-500"
+          className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-center text-lg tracking-[0.4em] text-slate-900 outline-none focus:border-emerald-500"
         />
 
         {error && (
-          <p className="text-sm text-red-400" role="alert">
+          <p className="text-sm text-red-600" role="alert">
             {error}
           </p>
         )}
@@ -127,7 +127,7 @@ export default function MfaChallengeCard({ redirectTo = '/home' }) {
       <button
         type="button"
         onClick={signOut}
-        className="mt-5 w-full text-center text-sm text-white/50 transition hover:text-white"
+        className="mt-5 w-full text-center text-sm text-slate-500 transition hover:text-slate-700"
       >
         Sign out
       </button>

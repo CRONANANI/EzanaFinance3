@@ -141,13 +141,15 @@ export default function VerifyEmailPage() {
         minHeight: '100vh',
         alignItems: 'center',
         justifyContent: 'center',
-        background: '#0a0e13',
+        background: '#f8fafb',
         padding: '1rem',
       }}
     >
       <div
         style={{
-          background: '#0d1117',
+          background: '#ffffff',
+          border: '1px solid #e2e8f0',
+          boxShadow: '0 10px 30px rgba(15, 23, 42, 0.08)',
           borderRadius: '16px',
           padding: '2.5rem',
           maxWidth: '420px',
@@ -155,10 +157,10 @@ export default function VerifyEmailPage() {
           textAlign: 'center',
         }}
       >
-        <h1 style={{ color: '#f0f6fc', fontSize: '1.5rem', marginBottom: '0.5rem' }}>
+        <h1 style={{ color: '#0f172a', fontSize: '1.5rem', marginBottom: '0.5rem' }}>
           Verify your email
         </h1>
-        <p style={{ color: '#a7b1bb', fontSize: '0.9rem', marginBottom: '2rem' }}>
+        <p style={{ color: '#475569', fontSize: '0.9rem', marginBottom: '2rem' }}>
           {maskedEmail
             ? `We sent a 6-digit code to ${maskedEmail}`
             : 'Sending verification code...'}
@@ -167,12 +169,12 @@ export default function VerifyEmailPage() {
         {error && (
           <div
             style={{
-              background: 'rgba(239, 68, 68, 0.1)',
+              background: 'rgba(239, 68, 68, 0.08)',
               border: '1px solid rgba(239, 68, 68, 0.3)',
               borderRadius: '8px',
               padding: '12px',
               marginBottom: '1.5rem',
-              color: '#f87171',
+              color: '#dc2626',
               fontSize: '0.85rem',
             }}
           >
@@ -183,12 +185,12 @@ export default function VerifyEmailPage() {
         {success && !error && (
           <div
             style={{
-              background: 'rgba(16, 185, 129, 0.1)',
+              background: 'rgba(16, 185, 129, 0.08)',
               border: '1px solid rgba(16, 185, 129, 0.3)',
               borderRadius: '8px',
               padding: '12px',
               marginBottom: '1.5rem',
-              color: '#34d399',
+              color: '#059669',
               fontSize: '0.85rem',
             }}
           >
@@ -219,17 +221,17 @@ export default function VerifyEmailPage() {
                 textAlign: 'center',
                 fontSize: '1.5rem',
                 fontWeight: 'bold',
-                background: 'rgba(255, 255, 255, 0.04)',
-                border: '2px solid rgba(255, 255, 255, 0.12)',
+                background: '#ffffff',
+                border: '2px solid #cbd5e1',
                 borderRadius: '10px',
-                color: '#f0f6fc',
+                color: '#0f172a',
                 outline: 'none',
               }}
               onFocus={(e) => {
                 e.target.style.borderColor = '#10b981';
               }}
               onBlur={(e) => {
-                e.target.style.borderColor = 'rgba(255, 255, 255, 0.12)';
+                e.target.style.borderColor = '#cbd5e1';
               }}
             />
           ))}
@@ -244,8 +246,8 @@ export default function VerifyEmailPage() {
             padding: '14px',
             borderRadius: '10px',
             border: 'none',
-            background: code.every((d) => d !== '') ? '#10b981' : 'rgba(255, 255, 255, 0.12)',
-            color: '#f0f6fc',
+            background: code.every((d) => d !== '') ? '#10b981' : '#e2e8f0',
+            color: code.every((d) => d !== '') ? '#ffffff' : '#64748b',
             fontSize: '1rem',
             fontWeight: '600',
             cursor: 'pointer',
@@ -256,7 +258,7 @@ export default function VerifyEmailPage() {
           {loading ? 'Verifying...' : 'Verify Email'}
         </button>
 
-        <p style={{ color: '#a7b1bb', fontSize: '0.85rem' }}>
+        <p style={{ color: '#475569', fontSize: '0.85rem' }}>
           Didn&apos;t receive the code?{' '}
           <button
             type="button"
@@ -265,7 +267,7 @@ export default function VerifyEmailPage() {
             style={{
               background: 'none',
               border: 'none',
-              color: cooldown > 0 ? '#6b7280' : '#10b981',
+              color: cooldown > 0 ? '#94a3b8' : '#059669',
               cursor: cooldown > 0 ? 'default' : 'pointer',
               textDecoration: 'underline',
               fontSize: '0.85rem',

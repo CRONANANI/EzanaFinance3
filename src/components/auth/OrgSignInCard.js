@@ -122,15 +122,15 @@ const OrgSignInCard = ({ redirectTo = '/org-team-hub' }) => {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-md overflow-hidden rounded-2xl border border-white/5 bg-[#0d1117] p-8 shadow-2xl shadow-black/40"
+        className="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/60"
       >
         <div className="mb-6 flex items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-indigo-700">
             <GraduationCap className="h-6 w-6 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-[#f0f6fc]">Organizational Login</h1>
-            <p className="text-sm text-[#a7b1bb]">University Investment Council</p>
+            <h1 className="text-2xl font-bold text-slate-900">Organizational Login</h1>
+            <p className="text-sm text-slate-600">University Investment Council</p>
           </div>
         </div>
 
@@ -142,7 +142,7 @@ const OrgSignInCard = ({ redirectTo = '/org-team-hub' }) => {
 
         <form onSubmit={handleSignIn} className="space-y-5">
           <div>
-            <label className="mb-1 block text-sm font-medium text-[#c9d1d9]">
+            <label className="mb-1 block text-sm font-medium text-slate-600">
               University Email <span className="text-indigo-400">*</span>
             </label>
             <input
@@ -151,15 +151,15 @@ const OrgSignInCard = ({ redirectTo = '/org-team-hub' }) => {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@university.ca"
               required
-              className="h-11 w-full rounded-lg border border-white/10 bg-[rgba(255,255,255,0.04)] px-4 text-[#f0f6fc] placeholder-[#6b7280] transition-all focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400"
+              className="h-11 w-full rounded-lg border border-slate-300 bg-white px-4 text-slate-900 placeholder-slate-400 transition-all focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400"
             />
-            <p className="mt-1 text-xs text-[#a7b1bb]">
+            <p className="mt-1 text-xs text-slate-600">
               Use your recognized university email address
             </p>
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-[#c9d1d9]">
+            <label className="mb-1 block text-sm font-medium text-slate-600">
               Password <span className="text-indigo-400">*</span>
             </label>
             <div className="relative">
@@ -169,11 +169,11 @@ const OrgSignInCard = ({ redirectTo = '/org-team-hub' }) => {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
                 required
-                className="h-11 w-full rounded-lg border border-white/10 bg-[rgba(255,255,255,0.04)] px-4 pr-12 text-[#f0f6fc] placeholder-[#6b7280] transition-all focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400"
+                className="h-11 w-full rounded-lg border border-slate-300 bg-white px-4 pr-12 text-slate-900 placeholder-slate-400 transition-all focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400"
               />
               <button
                 type="button"
-                className="absolute inset-y-0 right-0 flex items-center pr-4 text-[#9ca3af] hover:text-[#c9d1d9]"
+                className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-500 hover:text-slate-700"
                 onClick={() => setIsPasswordVisible(!isPasswordVisible)}
               >
                 {isPasswordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -205,7 +205,7 @@ const OrgSignInCard = ({ redirectTo = '/org-team-hub' }) => {
           </Link>
         </div>
 
-        <div className="mt-4 text-center text-xs text-[#a7b1bb]">
+        <div className="mt-4 text-center text-xs text-slate-600">
           Not a member? Contact your university investment council executive team or email{' '}
           <a
             href="mailto:orgsupport@ezana.world"

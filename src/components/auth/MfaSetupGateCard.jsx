@@ -106,19 +106,19 @@ export default function MfaSetupGateCard({ redirectTo = '/home' }) {
   }
 
   return (
-    <div className="relative z-10 w-full max-w-md rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur">
+    <div className="relative z-10 w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/60">
       <div className="mb-5 flex flex-col items-center text-center">
         <span className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-400">
           <i className="bi bi-shield-lock text-xl" aria-hidden />
         </span>
-        <h1 className="text-xl font-semibold text-white">Set up two-factor authentication</h1>
-        <p className="mt-2 text-sm text-white/60">
+        <h1 className="text-xl font-semibold text-slate-900">Set up two-factor authentication</h1>
+        <p className="mt-2 text-sm text-slate-600">
           Two-factor authentication is required to continue. Scan the QR code with an authenticator
           app (Google Authenticator, Authy, 1Password), then enter the 6-digit code.
         </p>
       </div>
 
-      {step === 'loading' && <p className="text-center text-sm text-white/50">Preparing setup…</p>}
+      {step === 'loading' && <p className="text-center text-sm text-slate-500">Preparing setup…</p>}
 
       {step === 'error' && (
         <div className="flex flex-col gap-4 text-center">
@@ -145,10 +145,10 @@ export default function MfaSetupGateCard({ redirectTo = '/home' }) {
                 className="h-44 w-44 rounded-lg bg-white p-2"
               />
               {secret && (
-                <p className="text-center text-xs text-white/50">
+                <p className="text-center text-xs text-slate-500">
                   Or enter this key manually:
                   <br />
-                  <code className="break-all font-mono text-white/70">{secret}</code>
+                  <code className="break-all font-mono text-slate-700">{secret}</code>
                 </p>
               )}
             </div>
@@ -165,7 +165,7 @@ export default function MfaSetupGateCard({ redirectTo = '/home' }) {
             onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
             disabled={loading}
             aria-label="6-digit authentication code"
-            className="w-full rounded-lg border border-white/10 bg-black/20 px-4 py-3 text-center text-lg tracking-[0.4em] text-white outline-none focus:border-emerald-500"
+            className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-center text-lg tracking-[0.4em] text-slate-900 outline-none focus:border-emerald-500"
           />
 
           {error && (
@@ -187,7 +187,7 @@ export default function MfaSetupGateCard({ redirectTo = '/home' }) {
       <button
         type="button"
         onClick={signOut}
-        className="mt-5 w-full text-center text-sm text-white/50 transition hover:text-white"
+        className="mt-5 w-full text-center text-sm text-slate-500 transition hover:text-slate-700"
       >
         Sign out
       </button>

@@ -18,7 +18,7 @@ export function SpiralPasswordField({ children, className = '' }) {
         transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
         aria-hidden
       />
-      <div className="relative rounded-[10px] bg-[#0d1117]">{children}</div>
+      <div className="relative rounded-[10px] bg-white">{children}</div>
     </div>
   );
 }

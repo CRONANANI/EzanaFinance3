@@ -105,7 +105,7 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="signin-dark-lock min-h-screen w-full flex items-center justify-center bg-[#0a0f0a]">
+    <div className="signin-dark-lock min-h-screen w-full flex items-center justify-center bg-[#f8fafb]">
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl" />
@@ -116,7 +116,7 @@ export default function SignUpPage() {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5 }}
-          className="w-full max-w-md overflow-hidden rounded-2xl bg-[#0d1117] border border-emerald-500/20 shadow-2xl shadow-emerald-500/10 p-8"
+          className="w-full max-w-md overflow-hidden rounded-2xl bg-white border border-emerald-500/20 shadow-xl shadow-slate-200/60 p-8"
         >
           <div className="flex items-center justify-center mb-8">
             <div className="h-12 w-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center">
@@ -125,11 +125,13 @@ export default function SignUpPage() {
             <span className="ml-3 text-xl font-bold text-emerald-500">Ezana Finance</span>
           </div>
 
-          <h1 className="text-2xl font-bold mb-1 text-white text-center">Create your account</h1>
-          <p className="text-gray-400 mb-8 text-center">Join thousands of informed investors</p>
+          <h1 className="text-2xl font-bold mb-1 text-slate-900 text-center">
+            Create your account
+          </h1>
+          <p className="text-slate-600 mb-8 text-center">Join thousands of informed investors</p>
 
           {error && (
-            <div className="mb-6 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+            <div className="mb-6 p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm">
               {error}
             </div>
           )}
@@ -138,8 +140,8 @@ export default function SignUpPage() {
             {/* First Name & Last Name side by side */}
             <div style={{ display: 'flex', gap: '12px' }}>
               <div style={{ flex: 1 }}>
-                <label className="block text-sm font-medium text-gray-300 mb-1">
-                  First Name <span className="text-emerald-500">*</span>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  First Name <span className="text-emerald-600">*</span>
                 </label>
                 <input
                   type="text"
@@ -147,12 +149,12 @@ export default function SignUpPage() {
                   onChange={(e) => setFirstName(e.target.value)}
                   placeholder="John"
                   required
-                  className="w-full h-11 rounded-lg border border-gray-700 bg-[#161b22] px-4 text-white placeholder-gray-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
+                  className="w-full h-11 rounded-lg border border-slate-300 bg-white px-4 text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
                 />
               </div>
               <div style={{ flex: 1 }}>
-                <label className="block text-sm font-medium text-gray-300 mb-1">
-                  Last Name <span className="text-emerald-500">*</span>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Last Name <span className="text-emerald-600">*</span>
                 </label>
                 <input
                   type="text"
@@ -160,15 +162,15 @@ export default function SignUpPage() {
                   onChange={(e) => setLastName(e.target.value)}
                   placeholder="Doe"
                   required
-                  className="w-full h-11 rounded-lg border border-gray-700 bg-[#161b22] px-4 text-white placeholder-gray-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
+                  className="w-full h-11 rounded-lg border border-slate-300 bg-white px-4 text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
                 />
               </div>
             </div>
 
             {/* Username */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
-                Username <span className="text-emerald-500">*</span>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Username <span className="text-emerald-600">*</span>
               </label>
               <input
                 type="text"
@@ -178,14 +180,14 @@ export default function SignUpPage() {
                 }
                 placeholder="johndoe"
                 required
-                className="w-full h-11 rounded-lg border border-gray-700 bg-[#161b22] px-4 text-white placeholder-gray-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
+                className="w-full h-11 rounded-lg border border-slate-300 bg-white px-4 text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
               />
-              <p className="text-gray-400 text-xs mt-1">Letters, numbers, and underscores only</p>
+              <p className="text-slate-500 text-xs mt-1">Letters, numbers, and underscores only</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
-                Email <span className="text-emerald-500">*</span>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Email <span className="text-emerald-600">*</span>
               </label>
               <input
                 type="email"
@@ -193,7 +195,7 @@ export default function SignUpPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email address"
                 required
-                className="w-full h-11 rounded-lg border border-gray-700 bg-[#161b22] px-4 text-white placeholder-gray-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
+                className="w-full h-11 rounded-lg border border-slate-300 bg-white px-4 text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
               />
             </div>
 
@@ -232,11 +234,11 @@ export default function SignUpPage() {
             </button>
           </form>
 
-          <div className="mt-8 text-center text-sm text-gray-400">
+          <div className="mt-8 text-center text-sm text-slate-600">
             Already have an account?{' '}
             <Link
               href="/auth/signin"
-              className="text-emerald-500 hover:text-emerald-400 font-medium"
+              className="text-emerald-600 hover:text-emerald-700 font-medium"
             >
               Sign in
             </Link>

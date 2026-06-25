@@ -248,14 +248,14 @@ export default function ResetPasswordPage() {
   // Loading state
   if (isCheckingSession) {
     return (
-      <div className="min-h-screen w-full flex items-center justify-center bg-[#0a0f0a]">
+      <div className="min-h-screen w-full flex items-center justify-center bg-[#f8fafb]">
         <div className="fixed inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl" />
           <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl" />
         </div>
         <div className="flex flex-col items-center gap-4 relative z-10">
           <div className="w-10 h-10 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
-          <p className="text-gray-400">Verifying reset link...</p>
+          <p className="text-slate-600">Verifying reset link...</p>
         </div>
       </div>
     );
@@ -264,7 +264,7 @@ export default function ResetPasswordPage() {
   // Success state
   if (success) {
     return (
-      <div className="min-h-screen w-full flex items-center justify-center bg-[#0a0f0a] p-4">
+      <div className="min-h-screen w-full flex items-center justify-center bg-[#f8fafb] p-4">
         <div className="fixed inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl" />
           <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl" />
@@ -272,16 +272,16 @@ export default function ResetPasswordPage() {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="max-w-md w-full bg-[#0d1117] border border-emerald-500/20 rounded-2xl p-8 text-center relative z-10"
+          className="max-w-md w-full bg-white border border-emerald-500/20 rounded-2xl p-8 text-center relative z-10 shadow-xl shadow-slate-200/60"
         >
-          <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Check className="w-8 h-8 text-emerald-500" />
+          <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Check className="w-8 h-8 text-emerald-600" />
           </div>
-          <h2 className="text-2xl font-bold text-white mb-2">Password Reset Successful!</h2>
-          <p className="text-gray-400 mb-6">
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">Password Reset Successful!</h2>
+          <p className="text-slate-600 mb-6">
             Your password has been updated. Redirecting to dashboard...
           </p>
-          <div className="flex items-center justify-center gap-2 text-emerald-500">
+          <div className="flex items-center justify-center gap-2 text-emerald-600">
             <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
             <span className="text-sm">Redirecting...</span>
           </div>
@@ -293,7 +293,7 @@ export default function ResetPasswordPage() {
   // Invalid session state
   if (!isValidSession) {
     return (
-      <div className="min-h-screen w-full flex items-center justify-center bg-[#0a0f0a] p-4">
+      <div className="min-h-screen w-full flex items-center justify-center bg-[#f8fafb] p-4">
         <div className="fixed inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl" />
           <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl" />
@@ -301,13 +301,13 @@ export default function ResetPasswordPage() {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="max-w-md w-full bg-[#0d1117] border border-red-500/20 rounded-2xl p-8 text-center relative z-10"
+          className="max-w-md w-full bg-white border border-red-200 rounded-2xl p-8 text-center relative z-10 shadow-xl shadow-slate-200/60"
         >
-          <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <AlertCircle className="w-8 h-8 text-red-500" />
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <AlertCircle className="w-8 h-8 text-red-600" />
           </div>
-          <h2 className="text-2xl font-bold text-white mb-2">Invalid Reset Link</h2>
-          <p className="text-gray-400 mb-6">
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">Invalid Reset Link</h2>
+          <p className="text-slate-600 mb-6">
             {error ||
               'This password reset link is invalid or has expired. Please request a new one.'}
           </p>
@@ -321,7 +321,7 @@ export default function ResetPasswordPage() {
           <div className="mt-4">
             <Link
               href="/auth/signin"
-              className="text-emerald-500 hover:text-emerald-400 text-sm transition-colors"
+              className="text-emerald-600 hover:text-emerald-700 text-sm transition-colors"
             >
               Back to Sign In
             </Link>
@@ -333,7 +333,7 @@ export default function ResetPasswordPage() {
 
   // Main reset password form
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-[#0a0f0a]">
+    <div className="min-h-screen w-full flex items-center justify-center bg-[#f8fafb]">
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl" />
@@ -344,20 +344,22 @@ export default function ResetPasswordPage() {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5 }}
-          className="w-full max-w-md overflow-hidden rounded-2xl bg-[#0d1117] border border-emerald-500/20 shadow-2xl shadow-emerald-500/10 p-8"
+          className="w-full max-w-md overflow-hidden rounded-2xl bg-white border border-emerald-500/20 shadow-xl shadow-slate-200/60 p-8"
         >
           <div className="flex items-center justify-center mb-8">
             <div className="h-12 w-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center">
               <TrendingUp className="text-white h-6 w-6" />
             </div>
-            <span className="ml-3 text-xl font-bold text-emerald-500">Ezana Finance</span>
+            <span className="ml-3 text-xl font-bold text-emerald-600">Ezana Finance</span>
           </div>
 
-          <h1 className="text-2xl font-bold mb-1 text-white text-center">Reset Your Password</h1>
-          <p className="text-gray-400 mb-8 text-center">Enter your new password below</p>
+          <h1 className="text-2xl font-bold mb-1 text-slate-900 text-center">
+            Reset Your Password
+          </h1>
+          <p className="text-slate-600 mb-8 text-center">Enter your new password below</p>
 
           {error && (
-            <div className="mb-6 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-center gap-2">
+            <div className="mb-6 p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm flex items-center gap-2">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
               {error}
             </div>
@@ -365,8 +367,8 @@ export default function ResetPasswordPage() {
 
           <form onSubmit={handleResetPassword} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
-                New Password <span className="text-emerald-500">*</span>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                New Password <span className="text-emerald-600">*</span>
               </label>
               <div className="relative">
                 <input
@@ -375,11 +377,11 @@ export default function ResetPasswordPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your new password"
                   required
-                  className="w-full h-11 rounded-lg border border-gray-700 bg-[#161b22] px-4 pr-12 text-white placeholder-gray-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
+                  className="w-full h-11 rounded-lg border border-slate-300 bg-white px-4 pr-12 text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 hover:text-gray-200 transition-colors"
+                  className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-slate-600 transition-colors"
                   onClick={() => setIsPasswordVisible(!isPasswordVisible)}
                 >
                   {isPasswordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -395,13 +397,13 @@ export default function ResetPasswordPage() {
                         className={`h-1 flex-1 rounded-full transition-all ${
                           i < passwordStrength
                             ? strengthColors[passwordStrength - 1]
-                            : 'bg-gray-700'
+                            : 'bg-slate-200'
                         }`}
                       />
                     ))}
                   </div>
                   <p
-                    className={`text-xs ${passwordStrength < 3 ? 'text-orange-400' : 'text-emerald-400'}`}
+                    className={`text-xs ${passwordStrength < 3 ? 'text-orange-600' : 'text-emerald-600'}`}
                   >
                     {strengthLabels[passwordStrength - 1] || 'Too short'}
                   </p>
@@ -418,12 +420,12 @@ export default function ResetPasswordPage() {
                   <div key={i} className="flex items-center gap-2 text-xs">
                     <div
                       className={`w-4 h-4 rounded-full flex items-center justify-center ${
-                        req.check ? 'bg-emerald-500/20' : 'bg-gray-700'
+                        req.check ? 'bg-emerald-100' : 'bg-slate-200'
                       }`}
                     >
-                      {req.check && <Check className="w-3 h-3 text-emerald-500" />}
+                      {req.check && <Check className="w-3 h-3 text-emerald-600" />}
                     </div>
-                    <span className={req.check ? 'text-emerald-400' : 'text-gray-400'}>
+                    <span className={req.check ? 'text-emerald-600' : 'text-slate-500'}>
                       {req.text}
                     </span>
                   </div>
@@ -432,8 +434,8 @@ export default function ResetPasswordPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
-                Confirm Password <span className="text-emerald-500">*</span>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Confirm Password <span className="text-emerald-600">*</span>
               </label>
               <div className="relative">
                 <input
@@ -442,27 +444,27 @@ export default function ResetPasswordPage() {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Confirm your new password"
                   required
-                  className={`w-full h-11 rounded-lg border bg-[#161b22] px-4 pr-12 text-white placeholder-gray-500 focus:outline-none focus:ring-1 transition-all ${
+                  className={`w-full h-11 rounded-lg border bg-white px-4 pr-12 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 transition-all ${
                     confirmPassword && confirmPassword !== password
                       ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
                       : confirmPassword && confirmPassword === password
                         ? 'border-emerald-500 focus:border-emerald-500 focus:ring-emerald-500'
-                        : 'border-gray-700 focus:border-emerald-500 focus:ring-emerald-500'
+                        : 'border-slate-300 focus:border-emerald-500 focus:ring-emerald-500'
                   }`}
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 hover:text-gray-200 transition-colors"
+                  className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-slate-600 transition-colors"
                   onClick={() => setIsConfirmPasswordVisible(!isConfirmPasswordVisible)}
                 >
                   {isConfirmPasswordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
               {confirmPassword && confirmPassword !== password && (
-                <p className="mt-1 text-xs text-red-400">Passwords do not match</p>
+                <p className="mt-1 text-xs text-red-600">Passwords do not match</p>
               )}
               {confirmPassword && confirmPassword === password && (
-                <p className="mt-1 text-xs text-emerald-400 flex items-center gap-1">
+                <p className="mt-1 text-xs text-emerald-600 flex items-center gap-1">
                   <Check className="w-3 h-3" /> Passwords match
                 </p>
               )}
@@ -508,7 +510,7 @@ export default function ResetPasswordPage() {
           <div className="mt-8 text-center">
             <Link
               href="/auth/signin"
-              className="text-emerald-500 hover:text-emerald-400 text-sm transition-colors"
+              className="text-emerald-600 hover:text-emerald-700 text-sm transition-colors"
             >
               Back to Sign In
             </Link>

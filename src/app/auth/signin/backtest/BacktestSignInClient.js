@@ -17,8 +17,8 @@ export function BacktestSignInClient() {
 
   if (loading || user) {
     return (
-      <div className="min-h-screen w-full flex items-center justify-center bg-[#0a0f0a]">
-        <div className="text-emerald-500">Redirecting...</div>
+      <div className="min-h-screen w-full flex items-center justify-center bg-[#f8fafb]">
+        <div className="text-emerald-600">Redirecting...</div>
       </div>
     );
   }
