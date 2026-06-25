@@ -77,13 +77,14 @@ function persistToServer(theme) {
  *                      (market-analysis forces dark). These must NOT overwrite
  *                      the user's saved preference.
  *
- * Marketing surfaces (`/`, `/pricing`, `/help-center`) are brand-locked dark at
- * the DOM level: we always apply the dark HTML/body treatment there while
- * leaving React `theme` state unchanged so dashboard pages still reflect the
- * user's preference after navigation. `/auth/*` is excluded so login/signup
- * keep the user's chosen theme.
+ * Marketing surfaces (`/`, `/pricing`, `/help-center`, `/datasets`,
+ * `/brokerages-integrations`) are brand-locked LIGHT at the DOM level: we always
+ * apply the light HTML/body treatment there regardless of the user's saved
+ * theme, while leaving React `theme` state unchanged so dashboard pages still
+ * reflect the user's preference after navigation. `/auth/*` is excluded so
+ * login/signup keep the user's chosen theme.
  */
-function isMarketingBrandLockedDarkPath(pathname) {
+function isMarketingBrandLockedLightPath(pathname) {
   if (!pathname) return false;
   if (pathname === '/') return true;
   if (pathname.startsWith('/pricing')) return true;
@@ -101,8 +102,8 @@ export function ThemeProvider({ initialTheme = 'light', children }) {
 
   // Keep <html>/<body> in sync whenever the theme or route changes.
   useEffect(() => {
-    if (isMarketingBrandLockedDarkPath(pathname)) {
-      applyTheme('dark');
+    if (isMarketingBrandLockedLightPath(pathname)) {
+      applyTheme('light');
       return;
     }
     applyTheme(theme);

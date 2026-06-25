@@ -66,11 +66,18 @@ export default async function RootLayout({ children }) {
   const pathname = headers().get('x-pathname') ?? '';
   const routeShellClasses = resolveRouteShellClasses(pathname);
 
-  /* Marketing landing page (/) renders dark by spec regardless of the
-     user's stored theme preference — match the blocking inline script
-     above so SSR class agrees with first-paint class. */
-  const isLandingRoute = pathname === '/' || pathname === '';
-  const effectiveIsDark = isDark || isLandingRoute;
+  /* Public marketing routes (/, /pricing, /help-center, /datasets,
+     /brokerages-integrations) render LIGHT by spec regardless of the user's
+     stored theme preference — match the blocking inline script below so the
+     SSR class agrees with the first-paint class (no dark flash). */
+  const isMarketingLightRoute =
+    pathname === '/' ||
+    pathname === '' ||
+    pathname.startsWith('/pricing') ||
+    pathname.startsWith('/help-center') ||
+    pathname.startsWith('/brokerages-integrations') ||
+    pathname.startsWith('/datasets');
+  const effectiveIsDark = isDark && !isMarketingLightRoute;
 
   const bodyClassName = ['app-body', effectiveIsDark ? null : 'light-mode', ...routeShellClasses]
     .filter(Boolean)
@@ -116,15 +123,19 @@ export default async function RootLayout({ children }) {
               var cookieTheme = cookieMatch ? cookieMatch[1] : null;
               theme = (cookieTheme === 'dark' || cookieTheme === 'light') ? cookieTheme : 'light';
             }
-            /* Marketing landing page (/) is dark-mode only — force it
-               before paint so the navbar doesn't briefly render with a
-               light background. Other public marketing routes that should
-               also be dark-only can be added here. */
-            var landingDarkRoutes = ['/'];
+            /* Public marketing routes are LIGHT-mode only — force light
+               before paint so the navbar/page don't briefly flash dark.
+               Matches isMarketingBrandLockedLightPath in ThemeProvider and
+               the SSR class in this layout. */
+            var marketingLightRoutes = ['/', '/pricing', '/help-center', '/brokerages-integrations', '/datasets'];
             try {
               var path = window.location.pathname || '/';
-              if (landingDarkRoutes.indexOf(path) !== -1) {
-                theme = 'dark';
+              for (var i = 0; i < marketingLightRoutes.length; i++) {
+                var r = marketingLightRoutes[i];
+                if (path === r || (r !== '/' && path.indexOf(r) === 0)) {
+                  theme = 'light';
+                  break;
+                }
               }
             } catch (e) { /* ignore */ }
             var root = document.documentElement;

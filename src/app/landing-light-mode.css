@@ -43,9 +43,13 @@ body.light-mode .landing-page .testimonials-carousel::after {
   background: linear-gradient(to left, var(--bg-primary) 0%, transparent 100%) !important;
 }
 
-/* ── Landing navbar — solid #f8fafb to match page (landing route forces light mode) ── */
+/* ── Marketing navbar — solid #f8fafb to match page (these routes force light) ── */
 body.light-mode:has(.landing-page) .navbar,
-body.light-mode:has(.landing-page) .navbar.navbar-sticky {
+body.light-mode:has(.landing-page) .navbar.navbar-sticky,
+body.light-mode:has(.pricing-page) .navbar,
+body.light-mode:has(.pricing-page) .navbar.navbar-sticky,
+body.light-mode:has(.help-center-page) .navbar,
+body.light-mode:has(.help-center-page) .navbar.navbar-sticky {
   background: #f8fafb !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
@@ -53,10 +57,36 @@ body.light-mode:has(.landing-page) .navbar.navbar-sticky {
   box-shadow: none !important;
 }
 
-body.light-mode:has(.landing-page) .navbar.navbar-sticky.scrolled {
+body.light-mode:has(.landing-page) .navbar.navbar-sticky.scrolled,
+body.light-mode:has(.pricing-page) .navbar.navbar-sticky.scrolled,
+body.light-mode:has(.help-center-page) .navbar.navbar-sticky.scrolled {
   background: #f8fafb !important;
   border-bottom: none !important;
   box-shadow: none !important;
+}
+
+/* The dark-navbar rules in globals.css force nav links to a light grey
+   (#d1d5db) that is invisible on the now-light marketing navbar. Override to
+   dark text with the emerald hover, for every marketing page class. */
+body.light-mode:has(.landing-page) .navbar .nav-link,
+body.light-mode:has(.landing-page) .navbar .nav-link-text,
+body.light-mode:has(.pricing-page) .navbar .nav-link,
+body.light-mode:has(.pricing-page) .navbar .nav-link-text,
+body.light-mode:has(.help-center-page) .navbar .nav-link,
+body.light-mode:has(.help-center-page) .navbar .nav-link-text {
+  color: var(--text-secondary) !important;
+}
+
+body.light-mode:has(.landing-page) .navbar .nav-link:hover,
+body.light-mode:has(.landing-page) .navbar .nav-link:focus-visible,
+body.light-mode:has(.landing-page) .navbar .nav-link-text:hover,
+body.light-mode:has(.pricing-page) .navbar .nav-link:hover,
+body.light-mode:has(.pricing-page) .navbar .nav-link:focus-visible,
+body.light-mode:has(.pricing-page) .navbar .nav-link-text:hover,
+body.light-mode:has(.help-center-page) .navbar .nav-link:hover,
+body.light-mode:has(.help-center-page) .navbar .nav-link:focus-visible,
+body.light-mode:has(.help-center-page) .navbar .nav-link-text:hover {
+  color: var(--emerald-text) !important;
 }
 
 /* Mobile slide-out menu — same surface as landing sections */

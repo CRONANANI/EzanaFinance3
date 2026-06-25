@@ -181,7 +181,7 @@ export function LandingHero() {
   }, []);
 
   return (
-    <div className={`lp-hero force-dark-theme${go ? ' lp-go' : ''}`}>
+    <div className={`lp-hero${go ? ' lp-go' : ''}`}>
       {/* Background: dotted world map + signal routes */}
       <div className="lp-map" aria-hidden="true" dangerouslySetInnerHTML={{ __html: MAP_HTML }} />
 
