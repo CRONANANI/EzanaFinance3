@@ -130,13 +130,6 @@ export function CookieConsentBanner() {
               <button
                 type="button"
                 className="cookie-banner-btn cookie-banner-btn--ghost"
-                onClick={() => setShowCustomize(true)}
-              >
-                Customize
-              </button>
-              <button
-                type="button"
-                className="cookie-banner-btn cookie-banner-btn--ghost"
                 onClick={rejectAll}
               >
                 Reject all
@@ -147,6 +140,13 @@ export function CookieConsentBanner() {
                 onClick={acceptAll}
               >
                 Accept all
+              </button>
+              <button
+                type="button"
+                className="cookie-banner-btn cookie-banner-btn--ghost"
+                onClick={() => setShowCustomize(true)}
+              >
+                Customize
               </button>
             </div>
           </>

@@ -24,7 +24,7 @@
   border: 1px solid rgba(13, 24, 33, 0.08);
   border-radius: 14px;
   box-shadow: 0 10px 30px -10px rgba(13, 24, 33, 0.18);
-  padding: 16px 20px;
+  padding: 8px 20px;
   font-family: var(--font-sans, 'Plus Jakarta Sans', system-ui, sans-serif);
 
   /* Outer box renders glass but does not capture clicks; children do. */
@@ -62,20 +62,21 @@ body:not(.light-mode) .cookie-banner {
 /* ── Text block ──────────────────────────────────────────── */
 .cookie-banner-text {
   text-align: center;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 .cookie-banner-title {
   font-size: 15px;
   font-weight: 600;
-  margin: 0 0 4px;
+  margin: 0 0 2px;
   letter-spacing: -0.01em;
 }
 .cookie-banner-body {
   font-size: 13px;
-  line-height: 1.5;
+  line-height: 1.45;
   margin: 0;
   color: var(--muted-foreground, #5b6470);
-  max-width: 440px;
+  /* Wider cap so the copy flows across ~two lines now that the banner is shorter. */
+  max-width: 520px;
   margin-left: auto;
   margin-right: auto;
 }

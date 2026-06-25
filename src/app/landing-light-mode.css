@@ -8,7 +8,10 @@ body.light-mode:has(.landing-page) {
 }
 
 body.light-mode .landing-page {
-  background: var(--bg-primary);
+  /* !important so the page wrapper itself is white and never shows through the
+     gaps/margins between sections as a dark band (globals.css hard-locks
+     .landing-page to #0a0e13 with !important). */
+  background: var(--bg-primary) !important;
   color: var(--text-secondary);
 }
 
@@ -19,6 +22,7 @@ body.light-mode .landing-page .features-section,
 body.light-mode .landing-page .resources-section,
 body.light-mode .landing-page .pricing-section,
 body.light-mode .landing-page .faq-section-wrapper,
+body.light-mode .landing-page .landing-faq-section,
 body.light-mode .landing-page .testimonials-section,
 body.light-mode .landing-page .testimonials-below-hero,
 body.light-mode .landing-page .data-partners-section {
@@ -43,14 +47,14 @@ body.light-mode .landing-page .testimonials-carousel::after {
   background: linear-gradient(to left, var(--bg-primary) 0%, transparent 100%) !important;
 }
 
-/* ── Marketing navbar — solid #f8fafb to match page (these routes force light) ── */
+/* ── Marketing navbar — same white as the hero (var(--bg-primary)); these routes force light ── */
 body.light-mode:has(.landing-page) .navbar,
 body.light-mode:has(.landing-page) .navbar.navbar-sticky,
 body.light-mode:has(.pricing-page) .navbar,
 body.light-mode:has(.pricing-page) .navbar.navbar-sticky,
 body.light-mode:has(.help-center-page) .navbar,
 body.light-mode:has(.help-center-page) .navbar.navbar-sticky {
-  background: #f8fafb !important;
+  background: var(--bg-primary) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   border-bottom: none !important;
@@ -60,7 +64,7 @@ body.light-mode:has(.help-center-page) .navbar.navbar-sticky {
 body.light-mode:has(.landing-page) .navbar.navbar-sticky.scrolled,
 body.light-mode:has(.pricing-page) .navbar.navbar-sticky.scrolled,
 body.light-mode:has(.help-center-page) .navbar.navbar-sticky.scrolled {
-  background: #f8fafb !important;
+  background: var(--bg-primary) !important;
   border-bottom: none !important;
   box-shadow: none !important;
 }
@@ -175,9 +179,9 @@ body.light-mode .landing-page .tl-subheading {
 body.light-mode .landing-page .features-section .features-grid-header h2 {
   background: none;
   -webkit-background-clip: border-box;
-  -webkit-text-fill-color: var(--text-primary, #0f172a);
+  -webkit-text-fill-color: var(--emerald) !important;
   background-clip: border-box;
-  color: var(--text-primary, #0f172a);
+  color: var(--emerald) !important;
 }
 
 body.light-mode .landing-page .features-section .features-grid-header .section-subtitle {
@@ -201,11 +205,11 @@ body.light-mode .landing-page .feature-card:hover {
 }
 
 body.light-mode .landing-page .feature-card-title {
-  color: var(--text-primary);
+  color: var(--emerald) !important;
 }
 
 body.light-mode .landing-page .feature-card-description {
-  color: var(--text-secondary);
+  color: var(--text-secondary) !important;
 }
 
 body.light-mode .landing-page .feature-stats .stat-item {

@@ -313,17 +313,17 @@ export default function PersonalizationRadar({ sourceDetails }) {
       <div className="hidden lg:block">
         {/* Legend */}
         <div className="flex justify-center gap-5 mb-4">
-          <span className="flex items-center gap-1.5 font-mono text-[10.5px] text-[#8b949e]">
+          <span className="flex items-center gap-1.5 font-mono text-[10.5px] text-[color:var(--text-muted)]">
             <span
               className="inline-block w-3.5 h-2 rounded-sm"
-              style={{ background: 'rgba(16,185,129,.5)', border: '1px solid #10b981' }}
+              style={{ background: 'rgba(16,185,129,.5)', border: '1px solid var(--emerald)' }}
             />
             Your weighting
           </span>
-          <span className="flex items-center gap-1.5 font-mono text-[10.5px] text-[#8b949e]">
+          <span className="flex items-center gap-1.5 font-mono text-[10.5px] text-[color:var(--text-muted)]">
             <span
               className="inline-block w-3.5 h-2 rounded-sm"
-              style={{ background: 'transparent', border: '1px dashed #6b7280' }}
+              style={{ background: 'transparent', border: '1px dashed var(--text-faint)' }}
             />
             Average user
           </span>
@@ -353,30 +353,9 @@ export default function PersonalizationRadar({ sourceDetails }) {
             </defs>
 
             {/* Rings */}
-            <circle
-              cx={CX}
-              cy={CY}
-              r={100}
-              fill="none"
-              stroke="rgba(255,255,255,.07)"
-              strokeWidth="1"
-            />
-            <circle
-              cx={CX}
-              cy={CY}
-              r={200}
-              fill="none"
-              stroke="rgba(255,255,255,.07)"
-              strokeWidth="1"
-            />
-            <circle
-              cx={CX}
-              cy={CY}
-              r={300}
-              fill="none"
-              stroke="rgba(255,255,255,.07)"
-              strokeWidth="1"
-            />
+            <circle cx={CX} cy={CY} r={100} fill="none" strokeWidth="1" className="radar-grid" />
+            <circle cx={CX} cy={CY} r={200} fill="none" strokeWidth="1" className="radar-grid" />
+            <circle cx={CX} cy={CY} r={300} fill="none" strokeWidth="1" className="radar-grid" />
 
             {/* Crosshair */}
             <line
@@ -384,18 +363,18 @@ export default function PersonalizationRadar({ sourceDetails }) {
               y1={CY}
               x2={860}
               y2={CY}
-              stroke="rgba(255,255,255,.07)"
               strokeWidth="1"
               opacity="0.35"
+              className="radar-grid"
             />
             <line
               x1={CX}
               y1={60}
               x2={CX}
               y2={660}
-              stroke="rgba(255,255,255,.07)"
               strokeWidth="1"
               opacity="0.35"
+              className="radar-grid"
             />
 
             {/* Axis spokes */}
@@ -408,9 +387,9 @@ export default function PersonalizationRadar({ sourceDetails }) {
                   y1={CY}
                   x2={CX + RMAX * Math.cos(a)}
                   y2={CY + RMAX * Math.sin(a)}
-                  stroke="rgba(255,255,255,.07)"
                   strokeWidth="1"
                   opacity="0.4"
+                  className="radar-grid"
                 />
               );
             })}
@@ -451,10 +430,10 @@ export default function PersonalizationRadar({ sourceDetails }) {
             <polygon
               points={basePoints()}
               fill="rgba(255,255,255,.04)"
-              stroke="#6b7280"
               strokeWidth="1"
               strokeDasharray="3 5"
               opacity="0.5"
+              className="radar-avg-poly"
             />
 
             {/* Live polygon */}

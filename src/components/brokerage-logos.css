@@ -6,7 +6,7 @@
   overflow: hidden;
   border-top: 1px solid var(--border-secondary);
   border-bottom: 1px solid var(--border-secondary);
-  background: var(--nav-bg-solid);
+  background: var(--bg-primary);
 }
 
 .bl-eyebrow {
@@ -112,7 +112,7 @@
   justify-content: center;
   gap: 4px;
   padding: 8px 10px;
-  background: #0d1117;
+  background: var(--bg-secondary);
   border: 1px solid var(--border-secondary);
   border-radius: 13px;
   transition:
@@ -156,6 +156,7 @@
 
 body.light-mode .bl-logo-item {
   background: var(--surface-card);
+  border-color: var(--border-primary);
 }
 
 body.light-mode .bl-heading {
