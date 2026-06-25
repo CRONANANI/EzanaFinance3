@@ -37,6 +37,7 @@ const COLORS = {
   FIDELITY: '#368727',
   ROBINHOOD: '#00C805',
   TD_AMERITRADE: '#5C9F44',
+  ETORO: '#54B948',
   IBKR: '#D81C2F',
   MERRILL: '#012169',
   US_BANK: '#0F2F7A',
@@ -113,6 +114,7 @@ export function resolveBrandKey(input) {
   if (lower.includes('td ameritrade') || lower.includes('td direct')) return 'TD_AMERITRADE';
   if (lower.includes('etrade') || lower.includes('e*trade') || lower.includes('e trade'))
     return 'ETRADE';
+  if (lower.includes('etoro')) return 'ETORO';
   if (lower.includes('coinbase')) return 'COINBASE';
   if (lower.includes('binance')) return 'BINANCE';
   if (lower.includes('kraken')) return 'KRAKEN';
@@ -429,6 +431,24 @@ export function BrandMark({ id, inst, size = 56, name }) {
             fill="#fff"
           >
             TD
+          </text>
+        </svg>
+      );
+
+    case 'ETORO':
+      return (
+        <svg {...common}>
+          <rect width="56" height="56" rx="10" fill={color} />
+          <text
+            x="28"
+            y="39"
+            textAnchor="middle"
+            fontFamily="'Plus Jakarta Sans', sans-serif"
+            fontWeight="800"
+            fontSize="30"
+            fill="#fff"
+          >
+            e
           </text>
         </svg>
       );

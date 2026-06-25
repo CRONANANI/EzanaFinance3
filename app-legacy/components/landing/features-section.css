@@ -125,7 +125,7 @@
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 18px;
   max-width: 1200px;
-  margin: 0 auto 6rem;
+  margin: 0 auto 4rem;
 }
 
 @media (min-width: 1024px) {
@@ -235,7 +235,7 @@ body.light-mode .landing-page .feature-card {
   border: none;
   padding: 0;
   box-shadow: none;
-  height: 340px;
+  height: 205px;
   cursor: pointer;
   outline: none;
 }
@@ -268,7 +268,7 @@ body.light-mode .landing-page .feature-card {
   -webkit-backface-visibility: hidden;
   display: flex;
   flex-direction: column;
-  padding: 24px;
+  padding: 18px;
   background: #0d1117;
   border: 1px solid rgba(16, 185, 129, 0.12);
   border-radius: 16px;
@@ -328,7 +328,7 @@ body.light-mode .landing-page .flip-back {
 
 .flip-back {
   transform: rotateY(180deg);
-  padding: 22px 22px;
+  padding: 16px 18px;
   align-items: stretch;
   text-align: left;
 }
@@ -379,7 +379,7 @@ body.light-mode .landing-page .flip-back {
   height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 7px;
   font-size: 0.875rem;
   color: var(--text-body);
 }
@@ -393,7 +393,7 @@ body.light-mode .landing-page .flip-back {
 }
 
 .fcb-big {
-  font-size: 1.75rem;
+  font-size: 1.4rem;
   font-weight: 700;
   color: var(--text-primary);
   line-height: 1.1;
@@ -441,7 +441,7 @@ body.light-mode .landing-page .flip-back {
 
 .fcb-foot {
   margin-top: auto;
-  padding-top: 10px;
+  padding-top: 5px;
   font-size: 0.6875rem;
   color: var(--text-faint);
   letter-spacing: 0.04em;
@@ -449,14 +449,14 @@ body.light-mode .landing-page .flip-back {
 
 .fcb-sparkline {
   width: 100%;
-  height: 56px;
+  height: 38px;
   flex-shrink: 0;
 }
 
 .fcb-metric-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px 16px;
+  gap: 6px 14px;
   margin-top: auto;
 }
 
@@ -544,7 +544,7 @@ body.light-mode .landing-page .flip-back {
   display: grid;
   align-items: center;
   gap: 6px;
-  padding: 11px 0;
+  padding: 5px 0;
   font-size: 0.875rem;
   border-bottom: 1px solid var(--border-secondary);
 }
@@ -914,7 +914,7 @@ body.light-mode .landing-page .flip-back {
 
 @media (max-width: 768px) {
   .flip-card {
-    height: 236px;
+    height: 175px;
   }
 
   .feature-card {

@@ -12,30 +12,17 @@ import './brokerage-logos.css';
 
 const BROKERAGE_LOGOS = [
   { name: 'Alpaca', src: '/brokerage-logos/alpaca.png', width: 80, height: 80 },
-  { name: 'Binance', src: '/brokerage-logos/binance.png', width: 200, height: 40, hideLabel: true },
+  { name: 'Binance', brandKey: 'BINANCE' },
   { name: 'Coinbase', src: '/brokerage-logos/coinbase.png', width: 200, height: 56 },
-  {
-    name: 'Robinhood',
-    src: '/brokerage-logos/robinhood.png',
-    width: 200,
-    height: 56,
-    hideLabel: true,
-  },
-  { name: 'eToro', src: '/brokerage-logos/etoro.png', width: 200, height: 56, hideLabel: true },
-  {
-    name: 'TD Ameritrade',
-    src: '/brokerage-logos/td-ameritrade.png',
-    width: 200,
-    height: 56,
-    hideLabel: true,
-  },
-  {
-    name: 'Wealthsimple',
-    src: '/brokerage-logos/wealthsimple.png',
-    width: 200,
-    height: 40,
-    hideLabel: true,
-  },
+  // Robinhood / eToro / TD Ameritrade / US Bank ship as wordmark PNGs baked for a
+  // dark background (their letter counters are filled black), so they showed as
+  // "black circles" on the light tiles. Use the inline SVG brand marks instead —
+  // theme-independent and never broken. Same for Wealthsimple (its PNG was a
+  // broken 2 KB file that rendered as an empty tile).
+  { name: 'Robinhood', brandKey: 'ROBINHOOD' },
+  { name: 'eToro', brandKey: 'ETORO' },
+  { name: 'TD Ameritrade', brandKey: 'TD_AMERITRADE' },
+  { name: 'Wealthsimple', brandKey: 'WEALTHSIMPLE' },
   {
     name: 'Interactive Brokers',
     src: '/brokerage-logos/interactive-brokers.png',
@@ -50,7 +37,7 @@ const BROKERAGE_LOGOS = [
     height: 56,
     hideLabel: true,
   },
-  { name: 'US Bank', src: '/brokerage-logos/us-bank.png', width: 200, height: 56, hideLabel: true },
+  { name: 'US Bank', brandKey: 'US_BANK' },
   { name: 'Charles Schwab', src: '/brokerage-logos/charles-schwab.png', width: 80, height: 80 },
   { name: 'Betterment', brandKey: 'BETTERMENT' },
   { name: 'TIAA', brandKey: 'TIAA' },

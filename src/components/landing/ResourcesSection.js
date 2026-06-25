@@ -171,10 +171,10 @@ export function ResourcesSection() {
     <section className="resources-section" id="resources">
       <div className="resources-container">
         <div className="resources-header">
-          <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-400 mb-3">
+          <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-[color:var(--emerald-text)] mb-3">
             Data &amp; Resources
           </div>
-          <h2 style={{ color: 'var(--text-primary)' }}>Seven dimensions, weighted to you.</h2>
+          <h2 style={{ color: 'var(--emerald)' }}>Seven dimensions, weighted to you.</h2>
           <p
             className="max-w-[600px] mx-auto px-6 text-sm leading-relaxed mt-3"
             style={{ color: 'var(--text-muted)' }}
