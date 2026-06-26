@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, BarChart3, CheckCircle2, Check } from 'lucide-react';
+import { ArrowRight, BarChart3, CheckCircle2 } from 'lucide-react';
 import { WorldMap } from '@/components/ui/world-map';
 import './landing-hero.css';
 
@@ -285,10 +285,6 @@ export function LandingHero() {
               <div className="lp-signal" key={s.name}>
                 <div className="lp-sig-head">
                   <span className="lp-sig-name">{s.name}</span>
-                  <span className="lp-sig-tick">
-                    <Check size={11} aria-hidden />
-                    parsed
-                  </span>
                 </div>
                 <pre className="lp-sig-json">
                   {s.json.map((seg, i) =>

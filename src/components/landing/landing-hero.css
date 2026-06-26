@@ -423,18 +423,6 @@
   text-transform: uppercase;
   color: var(--text-secondary);
 }
-.lp-sig-tick {
-  margin-left: auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  font-family: var(--font-mono);
-  font-size: 8.5px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--emerald);
-}
 .lp-sig-json {
   margin: 0;
   font-family: var(--font-mono);

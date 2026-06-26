@@ -12,7 +12,6 @@ const CX = 560,
   RMIN = 84,
   RMAX = 300;
 const N = 7;
-const BASE_WEIGHTS = [0.55, 0.5, 0.52, 0.5, 0.48, 0.5, 0.46];
 
 const DIMS = [
   { id: 'capitol', nm: 'Capitol Watch', w: 0.94 },
@@ -39,14 +38,6 @@ function weightAt(s, t) {
     s.a1 * Math.sin(2 * Math.PI * s.f1 * t + s.p1) +
     s.a2 * Math.sin(2 * Math.PI * s.f2 * t + s.p2);
   return Math.max(0.14, Math.min(0.98, w));
-}
-
-function basePoints() {
-  return BASE_WEIGHTS.map((b, i) => {
-    const r = RMIN + b * (RMAX - RMIN);
-    const a = ang(i);
-    return `${(CX + r * Math.cos(a)).toFixed(1)},${(CY + r * Math.sin(a)).toFixed(1)}`;
-  }).join(' ');
 }
 
 function labelPos(i) {
@@ -318,14 +309,7 @@ export default function PersonalizationRadar({ sourceDetails }) {
               className="inline-block w-3.5 h-2 rounded-sm"
               style={{ background: 'rgba(16,185,129,.5)', border: '1px solid var(--emerald)' }}
             />
-            Your weighting
-          </span>
-          <span className="flex items-center gap-1.5 font-mono text-[10.5px] text-[color:var(--text-muted)]">
-            <span
-              className="inline-block w-3.5 h-2 rounded-sm"
-              style={{ background: 'transparent', border: '1px dashed var(--text-faint)' }}
-            />
-            Average user
+            Your weighting, learned as you engage
           </span>
         </div>
 
@@ -425,16 +409,6 @@ export default function PersonalizationRadar({ sourceDetails }) {
                 opacity="0.45"
               />
             </g>
-
-            {/* Base polygon (average user) */}
-            <polygon
-              points={basePoints()}
-              fill="rgba(255,255,255,.04)"
-              strokeWidth="1"
-              strokeDasharray="3 5"
-              opacity="0.5"
-              className="radar-avg-poly"
-            />
 
             {/* Live polygon */}
             <polygon
