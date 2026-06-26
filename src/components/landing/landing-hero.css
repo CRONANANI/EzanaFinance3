@@ -35,6 +35,43 @@
   display: block;
   opacity: 0.92;
 }
+
+/* Hero dotted continents = the market-analysis <WorldMap>, sized to the exact
+   box the old world-dots.png occupied (1840×820 aspect) so the hero layout and
+   the routes overlay never shift. The market-analysis world-map CSS is NOT
+   loaded on the landing page, so the structural rules are declared here,
+   scoped to the hero. */
+.lp-map-worldmap {
+  width: 100%;
+  aspect-ratio: 1840 / 820;
+  opacity: 0.92;
+}
+.lp-map-worldmap .world-map-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+}
+.lp-map-worldmap .world-map-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.lp-map-worldmap .world-map-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+.lp-map-worldmap .world-map-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
 .lp-routes {
   position: absolute;
   inset: 0;

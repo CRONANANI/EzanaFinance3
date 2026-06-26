@@ -411,6 +411,12 @@ export type WorldMapHandle = {
 
 type WorldMapProps = {
   lineColor?: string;
+  /**
+   * Color of the base dotted-continent map. Defaults to white @ 25%
+   * (`#FFFFFF40`), the market-analysis look. The landing hero passes an
+   * emerald so the same real-continent shapes render emerald-on-dark.
+   */
+  dotColor?: string;
   onDotClick?: (center: FinancialCenter) => void;
   selectedPanelId?: string | null;
   /** Hide built-in +/−/reset (use external controls via ref). */
@@ -454,6 +460,7 @@ const ISR_SEVERITY_COLOR: Record<string, string> = {
 export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function WorldMap(
   {
     lineColor = '#10b981',
+    dotColor = '#FFFFFF40',
     onDotClick,
     selectedPanelId = null,
     hideControls = false,
@@ -492,7 +499,7 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
     const dm = m as unknown as DottedMapInternals;
     const svg = m.getSVG({
       radius: 0.18,
-      color: '#FFFFFF40',
+      color: dotColor,
       shape: 'circle',
       backgroundColor: 'transparent',
     });
@@ -506,7 +513,7 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
       return { x: p.x, y: p.y, lng, lat, idx };
     });
     return { map: m, svgMap: svg, width: dm.width, height: dm.height, baseDots: dots };
-  }, []);
+  }, [dotColor]);
 
   const [dotIsos, setDotIsos] = useState<(string | null)[] | null>(null);
 

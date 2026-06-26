@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, BarChart3, CheckCircle2, Check } from 'lucide-react';
+import { WorldMap } from '@/components/ui/world-map';
 import './landing-hero.css';
 
 /**
@@ -91,11 +92,13 @@ const SIGNALS = [
   },
 ];
 
-/* Decorative dotted world map + signal routes. Rendered as raw markup so the
-   SMIL <animateMotion> comets and route gradient stay byte-identical to the
-   design source; all colors resolve from theme tokens via CSS classes. */
-const MAP_HTML = `
-  <img class="lp-map-img" src="/landing/world-dots.png" alt="" />
+/* Decorative signal routes overlaid on the dotted world map. Rendered as raw
+   markup so the SMIL <animateMotion> comets and route gradient stay
+   byte-identical to the design source; all colors resolve from theme tokens
+   via CSS classes. The dotted continents themselves are now the
+   market-analysis <WorldMap> (real continent shapes), rendered below this
+   overlay — see the .lp-map block in LandingHero(). */
+const ROUTES_HTML = `
   <svg class="lp-routes" viewBox="0 0 1840 820" preserveAspectRatio="none">
     <defs>
       <linearGradient id="lpRouteGrad" x1="0" y1="0" x2="1" y2="0">
@@ -182,8 +185,21 @@ export function LandingHero() {
 
   return (
     <div className={`lp-hero${go ? ' lp-go' : ''}`}>
-      {/* Background: dotted world map + signal routes */}
-      <div className="lp-map" aria-hidden="true" dangerouslySetInnerHTML={{ __html: MAP_HTML }} />
+      {/* Background: dotted world map (market-analysis WorldMap, real
+          continents, emerald-on-dark) + signal-routes overlay. The wrapper
+          holds the exact footprint the old world-dots.png occupied
+          (1840×820 aspect) so the hero layout doesn't shift. */}
+      <div className="lp-map" aria-hidden="true">
+        <div className="lp-map-worldmap">
+          <WorldMap
+            lineColor="#10b981"
+            dotColor="rgba(16, 185, 129, 0.5)"
+            hideControls
+            hideFinancialDots
+          />
+        </div>
+        <div className="lp-map-layers" dangerouslySetInnerHTML={{ __html: ROUTES_HTML }} />
+      </div>
 
       {/* Main band */}
       <div className="lp-band">
