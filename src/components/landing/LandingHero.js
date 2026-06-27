@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, BarChart3, CheckCircle2 } from 'lucide-react';
 import { WorldMap } from '@/components/ui/world-map';
@@ -15,6 +15,16 @@ import './landing-hero.css';
  * marketing data, not a live fetch. The global navbar lives in the layout and
  * is untouched.
  */
+
+/* Hero headline, split into balanced .lp-line rows (each stays on one line on
+   desktop — see white-space:nowrap). Words are flattened to per-word .w spans
+   for the staggered rise animation; the emphasized tail carries `mark`. */
+const HEADLINE = [
+  { words: ['The', 'edge', 'delivered'] },
+  { words: ['to', 'the', 'informed', 'through'] },
+  { words: ['the', 'modern', "investor's"] },
+  { words: ['information stack'], mark: true },
+];
 
 const TARGET = 124873.4;
 const fmtUSD = (n) =>
@@ -205,12 +215,24 @@ export function LandingHero() {
       <div className="lp-band">
         <div className="lp-copy">
           <h1 className="lp-title">
-            <span className="lp-line">
-              <span className="w">Your</span> <span className="w">network</span>
-            </span>
-            <span className="lp-line">
-              <span className="w">is</span> <span className="w lp-mark">your net worth</span>
-            </span>
+            {(() => {
+              let i = 0;
+              return HEADLINE.map((line, li) => (
+                <span className="lp-line" key={li}>
+                  {line.words.map((word, wi) => {
+                    const idx = i++;
+                    return (
+                      <Fragment key={wi}>
+                        {wi > 0 && ' '}
+                        <span className={line.mark ? 'w lp-mark' : 'w'} style={{ '--i': idx }}>
+                          {word}
+                        </span>
+                      </Fragment>
+                    );
+                  })}
+                </span>
+              ));
+            })()}
           </h1>
 
           <p className="lp-lead">Better data. Better decisions. Better returns.</p>

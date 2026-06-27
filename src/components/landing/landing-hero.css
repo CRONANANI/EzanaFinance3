@@ -143,8 +143,8 @@
 
 .lp-title {
   font-family: var(--font-sans);
-  font-size: clamp(2.25rem, 4.6vw, 3.5rem);
-  line-height: 1.06;
+  font-size: clamp(2rem, 3.6vw, 3rem);
+  line-height: 1.08;
   font-weight: 500;
   letter-spacing: -0.02em;
   color: var(--text-primary);
@@ -477,20 +477,11 @@
     transform: translateY(0);
   }
 }
+/* Per-word staggered rise. Each .w carries an incremental --i index from the
+   JSX, so the stagger is word-count-agnostic (no hardcoded nth-child rules). */
 .lp-go .lp-title .w {
   animation: lp-rise 0.55s cubic-bezier(0.2, 0.7, 0.3, 1) both;
-}
-.lp-go .lp-title .lp-line:nth-child(1) .w:nth-child(1) {
-  animation-delay: 0.05s;
-}
-.lp-go .lp-title .lp-line:nth-child(1) .w:nth-child(2) {
-  animation-delay: 0.13s;
-}
-.lp-go .lp-title .lp-line:nth-child(2) .w:nth-child(1) {
-  animation-delay: 0.21s;
-}
-.lp-go .lp-title .lp-line:nth-child(2) .w:nth-child(2) {
-  animation-delay: 0.29s;
+  animation-delay: calc(var(--i, 0) * 0.05s);
 }
 
 /* ── Responsive ── */
@@ -506,6 +497,11 @@
 @media (max-width: 900px) {
   .lp-band {
     padding: 0 24px;
+  }
+  /* Longer headline: allow each line block to wrap on narrow screens so it
+     never overflows the viewport (overrides the desktop nowrap). */
+  .lp-line {
+    white-space: normal;
   }
   .lp-map-fade {
     background:
