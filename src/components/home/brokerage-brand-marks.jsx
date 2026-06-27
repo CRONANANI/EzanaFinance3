@@ -35,9 +35,9 @@ const COLORS = {
   TRADING212_PRACTICE: '#00AA5B',
   WEBULL_US: '#1E5BFF',
   FIDELITY: '#368727',
-  ROBINHOOD: '#00C805',
+  ROBINHOOD: '#16C98C',
   TD_AMERITRADE: '#5C9F44',
-  ETORO: '#54B948',
+  ETORO: '#35B82E',
   IBKR: '#D81C2F',
   MERRILL: '#012169',
   US_BANK: '#0F2F7A',
@@ -333,20 +333,11 @@ export function BrandMark({ id, inst, size = 56, name }) {
       );
 
     case 'BETTERMENT':
+      // Golden sunrise emblem: a near-full disc with a small upward notch cut
+      // into the base. Mark only (transparent), matching Betterment's logo.
       return (
         <svg {...common}>
-          <rect width="56" height="56" rx="10" fill={color} />
-          <text
-            x="28"
-            y="40"
-            textAnchor="middle"
-            fontFamily="'Plus Jakarta Sans', sans-serif"
-            fontWeight="800"
-            fontSize="34"
-            fill="#000"
-          >
-            b
-          </text>
+          <path d="M20.8 46 A21 21 0 1 1 35.2 46 L28 39 Z" fill={color} />
         </svg>
       );
 
@@ -404,15 +395,21 @@ export function BrandMark({ id, inst, size = 56, name }) {
       );
 
     case 'ROBINHOOD':
+      // Green feather angled bottom-left → top-right with a white shaft that
+      // resolves into an upward arrow. Mark only (transparent).
       return (
         <svg {...common}>
-          <rect width="56" height="56" rx="10" fill="#000" />
           <path
-            d="M28 12 Q24 22 24 28 Q24 36 28 44 Q32 36 32 28 Q32 22 28 12 Z M20 22 L36 22"
-            stroke={color}
-            strokeWidth="3"
+            d="M15 47 C16 35 21 24 31 15 C36 11 45 7 47 12 C49 17 44 27 35 35 C26 43 19 47 15 47 Z"
+            fill={color}
+          />
+          <path
+            d="M20 43 L40 16 M40 16 L31 17 M40 16 L40 25"
+            stroke="#fff"
+            strokeWidth="2.4"
             fill="none"
             strokeLinecap="round"
+            strokeLinejoin="round"
           />
         </svg>
       );
@@ -436,17 +433,20 @@ export function BrandMark({ id, inst, size = 56, name }) {
       );
 
     case 'ETORO':
+      // Bull mark: a lowercase "e" flanked by two upward horns. Mark only
+      // (transparent), matching eToro's green bull logo.
       return (
         <svg {...common}>
-          <rect width="56" height="56" rx="10" fill={color} />
+          <path d="M20 27 C13 21 9 14 8.5 7 C12 12 17 18 23.5 24 Z" fill={color} />
+          <path d="M36 27 C43 21 47 14 47.5 7 C44 12 39 18 32.5 24 Z" fill={color} />
           <text
             x="28"
-            y="39"
+            y="45"
             textAnchor="middle"
             fontFamily="'Plus Jakarta Sans', sans-serif"
             fontWeight="800"
-            fontSize="30"
-            fill="#fff"
+            fontSize="40"
+            fill={color}
           >
             e
           </text>
@@ -526,28 +526,60 @@ export function BrandMark({ id, inst, size = 56, name }) {
       );
 
     case 'TIAA':
+      // Blue gradient square "frame" (transparent center via even-odd fill) with
+      // a folded bottom-left corner — the TIAA icon. The "TIAA" wordmark itself
+      // is shown by the tile's text label.
       return (
         <svg {...common}>
-          <rect width="56" height="56" rx="10" fill={color} />
-          <text
-            x="28"
-            y="38"
-            textAnchor="middle"
-            fontFamily="'Plus Jakarta Sans', sans-serif"
-            fontWeight="800"
-            fontSize="18"
-            fill="#fff"
-          >
-            TIAA
-          </text>
+          <defs>
+            <linearGradient id="tiaaBlue" x1="0" y1="0" x2="0.35" y2="1">
+              <stop offset="0" stopColor="#55ACE0" />
+              <stop offset="1" stopColor="#004A92" />
+            </linearGradient>
+          </defs>
+          <path
+            fillRule="evenodd"
+            fill="url(#tiaaBlue)"
+            d="M12 18 a6 6 0 0 1 6 -6 h20 a6 6 0 0 1 6 6 v20 a6 6 0 0 1 -6 6 h-20 a6 6 0 0 1 -6 -6 z M22 22 h12 v12 h-12 z"
+          />
+          <path d="M12 33 L19 40 L12 40 Z" fill="#00366B" />
         </svg>
       );
 
     case 'WEALTHSIMPLE':
+      // Flat take on Wealthsimple's gold "W" coin: gradient disc, beaded rim,
+      // inner ring, serif W. (The source is a 3D render; this is a vector
+      // approximation that reads correctly at tile size on light or dark.)
       return (
         <svg {...common}>
-          <rect width="56" height="56" rx="10" fill="#fff" />
-          <path d="M6 32 Q14 16 28 28 T50 22 L50 38 Q42 50 28 38 T6 44 Z" fill={color} />
+          <defs>
+            <linearGradient id="wsGold" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#EACE72" />
+              <stop offset="1" stopColor="#B07F33" />
+            </linearGradient>
+          </defs>
+          <circle cx="28" cy="28" r="23" fill="url(#wsGold)" />
+          <circle
+            cx="28"
+            cy="28"
+            r="20"
+            fill="none"
+            stroke="#9a6f2c"
+            strokeWidth="1"
+            strokeDasharray="0.6 2.3"
+          />
+          <circle cx="28" cy="28" r="16.5" fill="none" stroke="#9a6f2c" strokeWidth="1" />
+          <text
+            x="28"
+            y="36"
+            textAnchor="middle"
+            fontFamily="Georgia, 'Times New Roman', serif"
+            fontWeight="700"
+            fontSize="20"
+            fill="#8a5e22"
+          >
+            W
+          </text>
         </svg>
       );
 

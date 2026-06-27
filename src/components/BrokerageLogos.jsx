@@ -14,26 +14,14 @@ const BROKERAGE_LOGOS = [
   { name: 'Alpaca', src: '/brokerage-logos/alpaca.png', width: 80, height: 80 },
   { name: 'Binance', brandKey: 'BINANCE' },
   { name: 'Coinbase', src: '/brokerage-logos/coinbase.png', width: 200, height: 56 },
-  // Robinhood / eToro / Wealthsimple use real transparent PNG logos. TD Ameritrade
-  // / US Bank still ship as wordmark PNGs baked for a dark background, so they use
-  // the inline SVG brand marks instead. Each PNG entry keeps `brandKey` as a
-  // graceful fallback: if the image fails to load, LogoTile renders the SVG mark.
-  {
-    name: 'Robinhood',
-    src: '/brokerage-logos/robinhood.png',
-    width: 80,
-    height: 80,
-    brandKey: 'ROBINHOOD',
-  },
-  { name: 'eToro', src: '/brokerage-logos/etoro.png', width: 80, height: 80, brandKey: 'ETORO' },
+  // Robinhood / eToro / Wealthsimple / Betterment / TIAA render as inline SVG brand
+  // marks (see brokerage-brand-marks.jsx) — theme-independent, crisp at any tile
+  // size, and never a broken-image state. TD Ameritrade / US Bank use the inline
+  // marks too (their wordmark PNGs were baked for a dark background).
+  { name: 'Robinhood', brandKey: 'ROBINHOOD' },
+  { name: 'eToro', brandKey: 'ETORO' },
   { name: 'TD Ameritrade', brandKey: 'TD_AMERITRADE' },
-  {
-    name: 'Wealthsimple',
-    src: '/brokerage-logos/wealthsimple.png',
-    width: 80,
-    height: 80,
-    brandKey: 'WEALTHSIMPLE',
-  },
+  { name: 'Wealthsimple', brandKey: 'WEALTHSIMPLE' },
   {
     name: 'Interactive Brokers',
     src: '/brokerage-logos/interactive-brokers.png',
@@ -50,14 +38,8 @@ const BROKERAGE_LOGOS = [
   },
   { name: 'US Bank', brandKey: 'US_BANK' },
   { name: 'Charles Schwab', src: '/brokerage-logos/charles-schwab.png', width: 80, height: 80 },
-  {
-    name: 'Betterment',
-    src: '/brokerage-logos/betterment.png',
-    width: 80,
-    height: 80,
-    brandKey: 'BETTERMENT',
-  },
-  { name: 'TIAA', src: '/brokerage-logos/tiaa.png', width: 80, height: 80, brandKey: 'TIAA' },
+  { name: 'Betterment', brandKey: 'BETTERMENT' },
+  { name: 'TIAA', brandKey: 'TIAA' },
 ];
 
 function LogoTile({ logo }) {
