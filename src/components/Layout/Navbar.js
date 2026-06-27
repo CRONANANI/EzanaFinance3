@@ -465,7 +465,7 @@ export function Navbar() {
                         {col.items.map((item) => {
                           const Icon = item.icon;
                           return (
-                            <Link
+                            <a
                               key={item.label}
                               href={item.href}
                               className="nav-datasets-item"
@@ -473,16 +473,16 @@ export function Navbar() {
                             >
                               <Icon size={16} aria-hidden className="nav-datasets-item-icon" />
                               <span className="nav-datasets-item-label">{item.label}</span>
-                            </Link>
+                            </a>
                           );
                         })}
                       </div>
                     ))}
                   </div>
-                  <Link href="/datasets" className="nav-datasets-foot" role="menuitem">
+                  <a href="/datasets" className="nav-datasets-foot" role="menuitem">
                     View all datasets
                     <ArrowRight size={14} aria-hidden />
-                  </Link>
+                  </a>
                 </div>
               </div>
             </li>

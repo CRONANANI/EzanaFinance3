@@ -452,7 +452,7 @@
   font-family: var(--font-mono);
   font-size: 9.5px;
   letter-spacing: 0.05em;
-  color: var(--text-ghost);
+  color: var(--text-body);
 }
 .lp-foot-link {
   color: var(--emerald);

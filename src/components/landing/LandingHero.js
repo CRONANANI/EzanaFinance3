@@ -1,7 +1,6 @@
 'use client';
 
 import { Fragment, useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
 import { ArrowRight, BarChart3, CheckCircle2 } from 'lucide-react';
 import { WorldMap } from '@/components/ui/world-map';
 import './landing-hero.css';
@@ -20,10 +19,10 @@ import './landing-hero.css';
    desktop — see white-space:nowrap). Words are flattened to per-word .w spans
    for the staggered rise animation; the emphasized tail carries `mark`. */
 const HEADLINE = [
-  { words: ['The', 'edge', 'delivered'] },
-  { words: ['to', 'the', 'informed', 'through'] },
-  { words: ['the', 'modern', "investor's"] },
-  { words: ['information stack'], mark: true },
+  { words: ['The', 'edge', 'belongs', 'to'] },
+  { words: ['the', 'informed,', 'where'] },
+  { words: ['knowledge', 'compounds'] },
+  { words: ['into opportunity'], mark: true },
 ];
 
 const TARGET = 124873.4;
@@ -242,10 +241,12 @@ export function LandingHero() {
           </p>
 
           <div className="lp-actions">
-            <Link className="lp-btn-primary" href="/auth/signup">
+            {/* Plain <a> (full-page nav) so the CTA reliably reaches the auth
+                flow — matches the navbar's other cross-section marketing links. */}
+            <a className="lp-btn-primary" href="/auth/signup">
               Get started
               <ArrowRight size={16} aria-hidden />
-            </Link>
+            </a>
             <button
               type="button"
               className="lp-btn-ghost"
@@ -325,9 +326,9 @@ export function LandingHero() {
 
           <div className="lp-card-foot">
             Ezana sources data across&nbsp;
-            <Link className="lp-foot-link" href="/datasets">
+            <a className="lp-foot-link" href="/datasets">
               7 dimensions
-            </Link>
+            </a>
           </div>
         </div>
       </div>
