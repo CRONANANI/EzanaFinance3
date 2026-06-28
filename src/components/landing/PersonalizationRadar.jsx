@@ -482,9 +482,11 @@ export default function PersonalizationRadar({ sourceDetails }) {
             })}
 
             {/* Hub */}
-            {/* Expanding hub pulse rings — one launches every 7s (28s cycle / 4 rings),
-                each travelling from the hub edge out to the outermost grid ring, then fading. */}
-            {[0, 1, 2, 3].map((i) => (
+            {/* Exactly 2 expanding hub pulse rings. Ring 0 starts at t=0; ring 1 is
+                delayed by 60% of the 7s cycle (4.2s) so it launches just as ring 0
+                reaches the 2nd-outermost grid ring (r=200) — never more than 2 in
+                flight, never a gap with 0. */}
+            {[0, 1].map((i) => (
               <circle
                 key={`hub-pulse-${i}`}
                 cx={CX}
@@ -494,7 +496,7 @@ export default function PersonalizationRadar({ sourceDetails }) {
                 stroke="#10b981"
                 strokeWidth="1.4"
                 className="radar-hub-emit"
-                style={{ animationDelay: `${i * 7}s` }}
+                style={{ animationDelay: `${i * 4.2}s` }}
               />
             ))}
             <circle

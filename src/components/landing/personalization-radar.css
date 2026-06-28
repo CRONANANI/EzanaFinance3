@@ -52,11 +52,13 @@
 
 /* Radar emit: each ring expands from the hub edge (r=48, scale 1) out to the
    outermost grid ring (r≈300, scale 6.25 = 300/48) and fades as it reaches it.
-   28s cycle with 7s-staggered delays on 4 rings → a new ring every 7s. */
+   Exactly 2 rings on a 7s cycle, the second delayed by 60% (4.2s) in the JSX, so
+   ring 2 launches just as ring 1 passes the 2nd-outermost grid ring (r=200,
+   ≈60% of the travel). At any moment exactly 2 rings are in flight. */
 .radar-hub-emit {
   transform-box: fill-box;
   transform-origin: center;
-  animation: radar-hub-emit 28s linear infinite;
+  animation: radar-hub-emit 7s linear infinite;
   pointer-events: none;
 }
 @keyframes radar-hub-emit {
@@ -64,8 +66,8 @@
     transform: scale(1);
     opacity: 0.9;
   }
-  80% {
-    opacity: 0.12;
+  60% {
+    opacity: 0.4; /* ≈r=200, 2nd-outermost ring — where ring 2 launches */
   }
   100% {
     transform: scale(6.25);
