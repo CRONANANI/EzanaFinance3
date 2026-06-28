@@ -77,7 +77,9 @@ body.light-mode:has(.landing-page) .navbar .nav-link-text,
 body.light-mode:has(.pricing-page) .navbar .nav-link,
 body.light-mode:has(.pricing-page) .navbar .nav-link-text,
 body.light-mode:has(.help-center-page) .navbar .nav-link,
-body.light-mode:has(.help-center-page) .navbar .nav-link-text {
+body.light-mode:has(.help-center-page) .navbar .nav-link-text,
+body.light-mode:has(.privacy-policy-page) .navbar .nav-link,
+body.light-mode:has(.privacy-policy-page) .navbar .nav-link-text {
   color: var(--text-secondary) !important;
 }
 
@@ -89,7 +91,10 @@ body.light-mode:has(.pricing-page) .navbar .nav-link:focus-visible,
 body.light-mode:has(.pricing-page) .navbar .nav-link-text:hover,
 body.light-mode:has(.help-center-page) .navbar .nav-link:hover,
 body.light-mode:has(.help-center-page) .navbar .nav-link:focus-visible,
-body.light-mode:has(.help-center-page) .navbar .nav-link-text:hover {
+body.light-mode:has(.help-center-page) .navbar .nav-link-text:hover,
+body.light-mode:has(.privacy-policy-page) .navbar .nav-link:hover,
+body.light-mode:has(.privacy-policy-page) .navbar .nav-link:focus-visible,
+body.light-mode:has(.privacy-policy-page) .navbar .nav-link-text:hover {
   color: var(--emerald-text) !important;
 }
 
@@ -755,89 +760,7 @@ body.light-mode .landing-page .hero-cybercore-root[data-hero-dark] [class*='no-s
   color: #6b7280 !important;
 }
 
-/* ═══════════════════════════════════════════════════════════
-   Public legal pages (privacy / terms / accessibility) — forced
-   dark marketing navbar.
-
-   These routes carry the server-applied `route-legal-dark` body
-   class and render in forced dark mode. The marketing navbar must
-   match, regardless of the visitor's light/dark preference. This
-   block is declared last and scoped to `body.route-legal-dark`, so
-   it overrides the earlier `html:has(.privacy-policy-page)` rules
-   (which were written for the old *light* privacy page) at equal
-   specificity via source order, and also covers terms + accessibility.
-   ═══════════════════════════════════════════════════════════ */
-body.route-legal-dark .navbar,
-body.route-legal-dark .navbar.navbar-sticky,
-body.route-legal-dark .navbar.navbar-sticky.scrolled {
-  background: #0a0e13 !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.08) !important;
-  box-shadow: none !important;
-}
-
-body.route-legal-dark .navbar .nav-link,
-body.route-legal-dark .navbar .nav-link-text {
-  color: #8b949e !important;
-  background: transparent !important;
-  background-color: transparent !important;
-  text-decoration: none !important;
-  transform: none !important;
-  box-shadow: none !important;
-  filter: none !important;
-  opacity: 1 !important;
-  transition: color 0.12s ease !important;
-}
-
-body.route-legal-dark .navbar .nav-link:hover,
-body.route-legal-dark .navbar .nav-link-text:hover {
-  color: #34d399 !important;
-  background: transparent !important;
-}
-
-body.route-legal-dark .navbar .mobile-hamburger,
-body.route-legal-dark .navbar .mobile-hamburger i {
-  color: #e2e8f0 !important;
-}
-
-/* The light-page rule applied `mix-blend-mode: darken` to the logo, which
-   would make it disappear on the dark nav — reset it. */
-body.route-legal-dark .nav-logo-img {
-  mix-blend-mode: normal !important;
-}
-
-@media (max-width: 768px) {
-  body.route-legal-dark .mobile-nav-menu {
-    background: linear-gradient(180deg, #0a0e13 0%, #0d1218 100%) !important;
-    border-left-color: rgba(16, 185, 129, 0.15) !important;
-    box-shadow: -8px 0 32px rgba(0, 0, 0, 0.4) !important;
-  }
-
-  body.route-legal-dark .mobile-nav-link {
-    color: #cdd7e2 !important;
-  }
-
-  body.route-legal-dark .mobile-nav-link:hover,
-  body.route-legal-dark .mobile-nav-link:active {
-    background: rgba(16, 185, 129, 0.08) !important;
-    color: #34d399 !important;
-  }
-
-  body.route-legal-dark .mobile-nav-link i:first-child {
-    color: #6b7280 !important;
-  }
-
-  body.route-legal-dark .mobile-nav-partner {
-    color: #34d399 !important;
-    border-color: rgba(16, 185, 129, 0.25) !important;
-  }
-
-  body.route-legal-dark .mobile-nav-brand {
-    color: #34d399 !important;
-  }
-
-  body.route-legal-dark .mobile-nav-tagline {
-    color: #6b7280 !important;
-  }
-}
+/* Public legal pages (privacy / terms / accessibility) now render LIGHT like the
+   rest of the marketing site (they get `body.light-mode`), so the standard light
+   marketing navbar applies — the previous forced-dark `route-legal-dark` navbar
+   override has been removed. */

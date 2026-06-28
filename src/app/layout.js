@@ -76,7 +76,10 @@ export default async function RootLayout({ children }) {
     pathname.startsWith('/pricing') ||
     pathname.startsWith('/help-center') ||
     pathname.startsWith('/brokerages-integrations') ||
-    pathname.startsWith('/datasets');
+    pathname.startsWith('/datasets') ||
+    pathname === '/privacy-policy' ||
+    pathname === '/terms-of-service' ||
+    pathname === '/accessibility';
   const effectiveIsDark = isDark && !isMarketingLightRoute;
 
   const bodyClassName = ['app-body', effectiveIsDark ? null : 'light-mode', ...routeShellClasses]
@@ -127,7 +130,7 @@ export default async function RootLayout({ children }) {
                before paint so the navbar/page don't briefly flash dark.
                Matches isMarketingBrandLockedLightPath in ThemeProvider and
                the SSR class in this layout. */
-            var marketingLightRoutes = ['/', '/pricing', '/help-center', '/brokerages-integrations', '/datasets'];
+            var marketingLightRoutes = ['/', '/pricing', '/help-center', '/brokerages-integrations', '/datasets', '/privacy-policy', '/terms-of-service', '/accessibility'];
             try {
               var path = window.location.pathname || '/';
               for (var i = 0; i < marketingLightRoutes.length; i++) {
