@@ -2,46 +2,69 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
+import { Archive } from 'lucide-react';
 import { formatPublishedShort } from '@/lib/echo-format';
 import { getTag } from '@/lib/echo-tag-taxonomy';
 import { useAuth } from '@/components/AuthProvider';
 import { isAdminUserClient } from '@/lib/admin-helpers-client';
 
 import './ezana-echo.css';
+import './ezana-echo-home.css';
 
-const FEED_TABS = [
-  { id: 'all', label: 'All' },
-  { id: 'markets', label: 'Markets' },
-  { id: 'companies', label: 'Companies' },
-  { id: 'policy', label: 'Policy' },
-  { id: 'crypto', label: 'Crypto' },
-];
-
-const SORT_OPTIONS = ['Newest', 'Oldest'];
-
-const CATEGORY_GRADIENTS = {
-  markets: '#0f2a22',
-  companies: '#2d4a3a',
-  policy: '#3a3a3a',
-  crypto: '#1b3a5a',
+/* Category accent for the eyebrow dot. Emerald-forward per the design system;
+   anything unmapped falls back to emerald. */
+const CAT_ACCENT = {
+  markets: '#10b981',
+  companies: '#10b981',
+  analysis: '#22d3ee',
+  policy: '#d4a853',
+  'public-policy': '#d4a853',
+  crypto: '#818cf8',
+  capitol: '#34d399',
+  commodities: '#f59e0b',
+  global: '#2dd4bf',
+  deals: '#a78bfa',
+  founders: '#d4a853',
 };
 
-function AuthorAvatar({ name, size = 'md' }) {
-  const initials = name
+const catLabel = (slug) =>
+  (slug || '')
+    .split('-')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
+const catAccent = (slug) => CAT_ACCENT[slug] || 'var(--emerald)';
+
+function CatEyebrow({ slug }) {
+  return (
+    <span className="eth-eyebrow" style={{ color: catAccent(slug) }}>
+      <span className="dot" style={{ background: catAccent(slug) }} />
+      {catLabel(slug)}
+    </span>
+  );
+}
+
+function initialsOf(name = '') {
+  return name
     .split(' ')
     .map((n) => n[0])
     .join('')
     .slice(0, 2)
     .toUpperCase();
-  return (
-    <span className={`echo-v3-avatar echo-v3-avatar--${size}`} aria-hidden="true">
-      {initials}
-    </span>
-  );
 }
 
-function MetaDot() {
-  return <span className="echo-v3-meta-dot" />;
+function Byline({ article, dark }) {
+  return (
+    <div className="eth-byline">
+      <span className="eth-avatar">{initialsOf(article.author)}</span>
+      <span
+        className="eth-byline-meta"
+        style={dark ? { color: 'rgba(226,232,240,0.7)' } : undefined}
+      >
+        <b style={dark ? { color: '#fff' } : undefined}>{article.author}</b> ·{' '}
+        {formatPublishedShort(article.publishedAt)} · {article.readTime} min
+      </span>
+    </div>
+  );
 }
 
 export default function EzanaEchoPage() {
@@ -51,9 +74,11 @@ export default function EzanaEchoPage() {
   const [archivedCount, setArchivedCount] = useState(0);
   const [archivingId, setArchivingId] = useState(null);
 
-  const [tab, setTab] = useState('all');
-  const [sort, setSort] = useState('Newest');
+  const [cat, setCat] = useState('all');
   const [activeTag, setActiveTag] = useState(null);
+
+  const [rawArticles, setRawArticles] = useState([]);
+  const [featuredRaw, setFeaturedRaw] = useState(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -81,37 +106,6 @@ export default function EzanaEchoPage() {
     };
   }, []);
 
-  async function handleArchive(articleId, e) {
-    e?.preventDefault();
-    e?.stopPropagation();
-    if (!confirm('Archive this article? It will be hidden from non-admin users.')) return;
-    setArchivingId(articleId);
-    try {
-      const res = await fetch('/api/echo/admin/archive', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ articleId }),
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        throw new Error(data?.error || `HTTP ${res.status}`);
-      }
-      setArchivedSet((prev) => {
-        const next = new Set(prev);
-        next.add(articleId);
-        return next;
-      });
-      setArchivedCount((c) => c + 1);
-    } catch (err) {
-      alert(`Failed to archive: ${err.message}`);
-    } finally {
-      setArchivingId(null);
-    }
-  }
-
-  const [rawArticles, setRawArticles] = useState([]);
-  const [featuredRaw, setFeaturedRaw] = useState(null);
-
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -131,6 +125,30 @@ export default function EzanaEchoPage() {
     };
   }, []);
 
+  async function handleArchive(articleId, e) {
+    e?.preventDefault();
+    e?.stopPropagation();
+    if (!confirm('Archive this article? It will be hidden from non-admin users.')) return;
+    setArchivingId(articleId);
+    try {
+      const res = await fetch('/api/echo/admin/archive', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ articleId }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || `HTTP ${res.status}`);
+      }
+      setArchivedSet((prev) => new Set(prev).add(articleId));
+      setArchivedCount((c) => c + 1);
+    } catch (err) {
+      alert(`Failed to archive: ${err.message}`);
+    } finally {
+      setArchivingId(null);
+    }
+  }
+
   const allArticles = useMemo(
     () => rawArticles.filter((a) => !archivedSet.has(a.id)),
     [rawArticles, archivedSet],
@@ -140,275 +158,233 @@ export default function EzanaEchoPage() {
     [featuredRaw, archivedSet],
   );
 
-  const sortedFiltered = useMemo(() => {
-    let list = tab === 'all' ? allArticles : allArticles.filter((a) => a.category === tab);
-    if (activeTag) list = list.filter((a) => a.tags?.includes(activeTag));
-    if (sort === 'Oldest') {
-      list = [...list].sort((a, b) => new Date(a.publishedAt) - new Date(b.publishedAt));
-    } else {
-      list = [...list].sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
-    }
-    return list;
-  }, [allArticles, tab, sort, activeTag]);
+  // Category filter list is derived from the real articles so it always matches
+  // what's actually published — "All" plus each distinct category, in order.
+  const categories = useMemo(() => {
+    const seen = [];
+    for (const a of allArticles)
+      if (a.category && !seen.includes(a.category)) seen.push(a.category);
+    return ['all', ...seen];
+  }, [allArticles]);
 
-  const gridArticles = useMemo(
-    () =>
-      tab === 'all' && !activeTag
-        ? allArticles.filter((a) => a.id !== featured?.id)
-        : sortedFiltered,
-    [allArticles, sortedFiltered, tab, activeTag, featured],
+  // Feed = everything except the featured story (so it isn't duplicated).
+  const feedSource = useMemo(
+    () => allArticles.filter((a) => a.id !== featured?.id),
+    [allArticles, featured],
   );
 
+  // Ranked "Top Stories" rail — first five of the feed (hub is newest-first).
+  const topStories = useMemo(() => feedSource.slice(0, 5), [feedSource]);
+
+  const filtered = useMemo(() => {
+    let list = cat === 'all' ? feedSource : feedSource.filter((a) => a.category === cat);
+    if (activeTag) list = list.filter((a) => a.tags?.includes(activeTag));
+    return list;
+  }, [feedSource, cat, activeTag]);
+
+  const heroHref = featured ? `/ezana-echo/${featured.id}` : '#';
+
   return (
-    <div className="echo-v3-page">
-      <section className="echo-v3-hero-band">
-        <div className="echo-v3-page-head">
-          <div className="echo-v3-page-head-left">
-            <h1 className="echo-v3-h1">
-              Markets, <span className="echo-v3-h1-accent">made clear.</span>
+    <div className="eth-page">
+      <div className="eth-wrap">
+        {/* Intro (the global navbar carries the top chrome — no masthead band) */}
+        <div className="eth-intro">
+          <div>
+            <p className="eth-intro-eyebrow">Markets · Intelligence · Editorial</p>
+            <h1 className="eth-intro-title">
+              Ezana <span>Echo</span>
             </h1>
-            <p className="echo-v3-page-sub">
-              Long-form analysis on the companies, commodities, and policies moving capital —
-              written for investors who want the why, not just the what.
-            </p>
           </div>
-          <div className="echo-v3-page-head-right">
-            <Link href="/ezana-echo/archived" className="echo-v3-archived-btn">
-              View archived articles
-              <span className="echo-v3-archived-count">{archivedCount}</span>
-            </Link>
-          </div>
+          <Link href="/ezana-echo/archived" className="eth-archived-btn">
+            View archived
+            <span className="eth-archived-count">{archivedCount}</span>
+          </Link>
         </div>
 
+        {/* Split featured hero + ranked Top Stories rail */}
         {featured && (
-          <div className="echo-v3-featured-wrap">
+          <section className="eth-hero">
             {isAdmin && (
               <button
                 type="button"
-                className="echo-v3-admin-archive-btn"
+                className="eth-archive-btn"
                 onClick={(e) => handleArchive(featured.id, e)}
                 disabled={archivingId === featured.id}
                 title="Archive this article"
               >
-                <i className="bi bi-archive" />
+                <Archive size={13} aria-hidden />
                 {archivingId === featured.id ? 'Archiving…' : 'Archive'}
               </button>
             )}
-            <Link href={`/ezana-echo/${featured.id}`} className="echo-v3-hero-card">
-              <div className="echo-v3-hero-img">
-                {featured.heroImage?.src && (
-                  <img
-                    src={featured.heroImage.src}
-                    alt={featured.heroImage.alt || featured.title}
-                    className="echo-v3-hero-cover-img"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none';
-                    }}
-                  />
-                )}
-                <span className="echo-v3-hero-badge">
-                  {featured.category.charAt(0).toUpperCase() + featured.category.slice(1)} · Feature
+            <Link href={heroHref} className="eth-feat">
+              {featured.heroImage?.src ? (
+                <img
+                  className="eth-feat-img"
+                  src={featured.heroImage.src}
+                  alt={featured.heroImage.alt || featured.title}
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+              ) : (
+                <span className="eth-feat-fallback" />
+              )}
+              <span className="eth-feat-scrim" />
+              <div className="eth-feat-body">
+                <span className="eth-eyebrow eth-feat-kicker">
+                  <span className="dot" style={{ background: catAccent(featured.category) }} />
+                  {catLabel(featured.category)} · The Big Read
                 </span>
-                {isAdmin && <span className="echo-v3-hero-archive-chip">Archive</span>}
-              </div>
-
-              <div className="echo-v3-hero-body">
-                <div className="echo-v3-hero-meta-top">
-                  FEATURE
-                  <MetaDot />
-                  {formatPublishedShort(featured.publishedAt).toUpperCase()}
-                  <MetaDot />
-                  {featured.readTime} MIN READ
-                </div>
-                <h2 className="echo-v3-hero-title">{featured.title}</h2>
-                <p className="echo-v3-hero-dek">{featured.excerpt}</p>
-
-                <div className="echo-v3-hero-stats">
-                  <div>
-                    <div className="echo-v3-stat-label">Tech weight</div>
-                    <div className="echo-v3-stat-value echo-v3-stat-value--positive">31.2%</div>
-                  </div>
-                  <div>
-                    <div className="echo-v3-stat-label">Peak finance · 1929</div>
-                    <div className="echo-v3-stat-value">39.4%</div>
-                  </div>
-                  <div>
-                    <div className="echo-v3-stat-label">Eras compared</div>
-                    <div className="echo-v3-stat-value">7</div>
-                  </div>
-                </div>
-
-                <div className="echo-v3-hero-author">
-                  <AuthorAvatar name={featured.author} size="md" />
-                  <div>
-                    <div className="echo-v3-hero-author-name">{featured.author}</div>
-                    <div className="echo-v3-hero-author-role">Editorial · Equity research</div>
-                  </div>
-                </div>
+                <h2 className="eth-feat-title">{featured.title}</h2>
+                {featured.excerpt && <p className="eth-feat-dek">{featured.excerpt}</p>}
+                <Byline article={featured} dark />
               </div>
             </Link>
-          </div>
-        )}
-      </section>
 
-      <section className="echo-v3-latest-section">
-        <div className="echo-v3-section-head">
-          <div>
-            <h3 className="echo-v3-sec-h">Featured</h3>
-            <p className="echo-v3-sec-sub">
-              Financial news, analysis, and insights curated for Ezana investors.
-            </p>
-          </div>
-          <div className="echo-v3-sec-right">
-            <div className="echo-v3-chip-group">
-              {FEED_TABS.map((f) => (
-                <button
-                  key={f.id}
-                  type="button"
-                  className={`echo-v3-chip ${tab === f.id ? 'echo-v3-chip--active' : ''}`}
-                  onClick={() => {
-                    setTab(f.id);
-                    setActiveTag(null);
-                  }}
-                >
-                  {f.label}
-                </button>
+            <div className="eth-rail">
+              <div className="eth-rail-head">
+                <span className="eth-rail-title">Top Stories</span>
+                <span className="eth-rail-live">
+                  <i />
+                  LATEST
+                </span>
+              </div>
+              {topStories.map((a, i) => (
+                <Link key={a.id} href={`/ezana-echo/${a.id}`} className="eth-rank">
+                  <span className="eth-rank-n">{String(i + 1).padStart(2, '0')}</span>
+                  <div>
+                    <CatEyebrow slug={a.category} />
+                    <h4 className="eth-rank-title">{a.title}</h4>
+                    <div className="eth-rank-meta">
+                      {a.author} <span>·</span> {a.readTime} min
+                    </div>
+                  </div>
+                </Link>
               ))}
             </div>
-            <span className="echo-v3-sort">
-              Sort by
-              <select
-                className="echo-v3-sort-select"
-                value={sort}
-                onChange={(e) => setSort(e.target.value)}
-              >
-                {SORT_OPTIONS.map((o) => (
-                  <option key={o} value={o}>
-                    {o}
-                  </option>
-                ))}
-              </select>
-            </span>
-          </div>
-        </div>
-
-        {activeTag && (
-          <div className="echo-v3-active-tag-banner">
-            <i className="bi bi-funnel-fill" />
-            <span>Filtered by:</span>
-            <span className="echo-v3-active-tag-chip">{getTag(activeTag).label}</span>
-            <button
-              type="button"
-              className="echo-v3-active-tag-clear"
-              onClick={() => setActiveTag(null)}
-            >
-              <i className="bi bi-x-lg" /> Clear
-            </button>
-          </div>
+          </section>
         )}
 
-        <div className="echo-v3-grid">
-          {gridArticles.slice(0, 9).map((article) => (
-            <div key={article.id} className="echo-v3-card-wrap">
-              {isAdmin && (
-                <button
-                  type="button"
-                  className="echo-v3-admin-archive-btn echo-v3-admin-archive-btn--card"
-                  onClick={(e) => handleArchive(article.id, e)}
-                  disabled={archivingId === article.id}
-                  title="Archive this article"
-                >
-                  <i className="bi bi-archive" />
-                  {archivingId === article.id ? 'Archiving…' : 'Archive'}
-                </button>
-              )}
-              <Link href={`/ezana-echo/${article.id}`} className="echo-v3-card">
-                <div
-                  className="echo-v3-card-img"
-                  style={{
-                    background: article.heroImage?.src
-                      ? undefined
-                      : `linear-gradient(160deg, ${CATEGORY_GRADIENTS[article.category] || '#1b3a5a'} 0%, var(--bg-primary) 100%)`,
-                  }}
-                >
-                  {article.heroImage?.src && (
-                    <img
-                      src={article.heroImage.src}
-                      alt={article.heroImage.alt || article.title}
-                      className="echo-v3-card-cover-img"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                        e.currentTarget.parentElement.style.background = `linear-gradient(160deg, ${CATEGORY_GRADIENTS[article.category] || '#1b3a5a'} 0%, var(--bg-primary) 100%)`;
-                      }}
-                    />
-                  )}
-                  <span className="echo-v3-card-badge">
-                    {article.category.charAt(0).toUpperCase() + article.category.slice(1)}
-                  </span>
-                  {isAdmin && archivedSet.has(article.id) && (
-                    <span className="echo-v3-card-archive-chip">Archive</span>
-                  )}
-                </div>
-
-                <div className="echo-v3-card-body">
-                  <div className="echo-v3-card-meta">
-                    {formatPublishedShort(article.publishedAt)}
-                    <MetaDot />
-                    {article.readTime} min read
-                  </div>
-                  <h4 className="echo-v3-card-title">{article.title}</h4>
-                  {article.excerpt && (
-                    <p className="echo-v3-card-dek">
-                      {article.excerpt.length > 160
-                        ? article.excerpt.slice(0, 160) + '…'
-                        : article.excerpt}
-                    </p>
-                  )}
-                  <div className="echo-v3-card-tags">
-                    {(article.tags || []).slice(1, 4).map((tagId) => {
-                      const t = getTag(tagId);
-                      return (
-                        <span
-                          key={tagId}
-                          className="echo-v3-tag"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setTab('all');
-                            setActiveTag(tagId);
-                          }}
-                        >
-                          {t.label}
-                        </span>
-                      );
-                    })}
-                  </div>
-                  <div className="echo-v3-card-foot">
-                    <AuthorAvatar name={article.author} size="sm" />
-                    <span>{article.author}</span>
-                  </div>
-                </div>
-              </Link>
-            </div>
-          ))}
+        {/* The Feed — controls + nav-style category filter (no dotted pills) */}
+        <div className="eth-controls">
+          <h2>{cat === 'all' ? 'The Feed' : catLabel(cat)}</h2>
+          <span className="eth-count">
+            {filtered.length} {filtered.length === 1 ? 'story' : 'stories'}
+          </span>
         </div>
 
-        {gridArticles.length === 0 && (
-          <div className="echo-v3-empty">
-            No articles match this filter.{' '}
+        <nav className="eth-catnav" aria-label="Filter by category">
+          {categories.map((slug) => (
             <button
+              key={slug}
               type="button"
-              className="echo-v3-empty-clear"
+              className={cat === slug ? 'active' : ''}
               onClick={() => {
-                setTab('all');
+                setCat(slug);
                 setActiveTag(null);
               }}
             >
-              Clear filter
+              {slug === 'all' ? 'All' : catLabel(slug)}
+            </button>
+          ))}
+        </nav>
+
+        {activeTag && (
+          <div className="eth-tag-banner">
+            <span>Filtered by tag:</span>
+            <span className="eth-tag-chip">{getTag(activeTag).label}</span>
+            <button type="button" className="eth-tag-clear" onClick={() => setActiveTag(null)}>
+              Clear
             </button>
           </div>
         )}
-      </section>
+
+        {/* Dense article grid */}
+        {filtered.length ? (
+          <div className="eth-grid">
+            {filtered.map((a) => (
+              <div key={a.id} className="eth-card-wrap">
+                {isAdmin && (
+                  <button
+                    type="button"
+                    className="eth-archive-btn"
+                    onClick={(e) => handleArchive(a.id, e)}
+                    disabled={archivingId === a.id}
+                    title="Archive this article"
+                  >
+                    <Archive size={13} aria-hidden />
+                    {archivingId === a.id ? '…' : 'Archive'}
+                  </button>
+                )}
+                <Link href={`/ezana-echo/${a.id}`} className="eth-card">
+                  <div className="eth-card-img">
+                    {a.heroImage?.src ? (
+                      <img
+                        src={a.heroImage.src}
+                        alt={a.heroImage.alt || a.title}
+                        loading="lazy"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    ) : null}
+                    <span className="eth-card-cat">
+                      <CatEyebrow slug={a.category} />
+                    </span>
+                  </div>
+                  <div className="eth-card-body">
+                    <h3 className="eth-card-title">{a.title}</h3>
+                    <div className="eth-card-foot">
+                      <span>{a.author}</span>
+                      <span className="sep">·</span>
+                      <span>{formatPublishedShort(a.publishedAt)}</span>
+                      <span className="sep">·</span>
+                      <span>{a.readTime} min</span>
+                    </div>
+                  </div>
+                </Link>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="eth-empty">
+            No stories in this section yet.
+            {(cat !== 'all' || activeTag) && (
+              <button
+                type="button"
+                className="eth-empty-clear"
+                onClick={() => {
+                  setCat('all');
+                  setActiveTag(null);
+                }}
+              >
+                Clear filter
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Newsletter band (presentational — wire to real signup later) */}
+        <div className="eth-news">
+          <div className="eth-news-l">
+            <div className="eth-news-eyebrow">The Evening Brief</div>
+            <h2 className="eth-news-title">Wall Street intelligence, in your inbox by 6pm.</h2>
+            <p className="eth-news-sub">
+              One email a day — the signals that moved markets, the disclosures that didn&apos;t
+              make the wire, and the one chart worth your morning.
+            </p>
+          </div>
+          <form className="eth-news-form" onSubmit={(e) => e.preventDefault()}>
+            <div className="eth-news-row">
+              <input className="eth-news-input" type="email" placeholder="you@firm.com" />
+              <button className="eth-news-btn" type="submit">
+                Subscribe
+              </button>
+            </div>
+            <span className="eth-news-fine">Free · Curated daily · Unsubscribe anytime</span>
+          </form>
+        </div>
+      </div>
     </div>
   );
 }
