@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { FeatureCardBack } from './features-card-backs';
 import { HOW_STEPS, METRICS_BAND } from './features-landing-data';
 
@@ -38,12 +37,6 @@ const FEATURE_CARDS = [
 ];
 
 export function FeaturesSection() {
-  const [flippedId, setFlippedId] = useState(null);
-
-  const toggleFlip = (key) => {
-    setFlippedId((prev) => (prev === key ? null : key));
-  };
-
   return (
     <section className="features-section" id="features">
       <div className="features-container">
@@ -58,25 +51,26 @@ export function FeaturesSection() {
 
         <div className="features-grid">
           {FEATURE_CARDS.map((card) => (
+            // Flip is hover/focus-only (CSS). The card is focusable so keyboard
+            // users can reveal the back via :focus-within — no JS state, so it
+            // can never get stuck flipped.
             <div
               key={card.key}
-              className={`feature-card flip-card${flippedId === card.key ? ' is-flipped' : ''}`}
+              className="feature-card flip-card"
               tabIndex={0}
-              role="button"
-              aria-label={`${card.title}. Hover or press to see preview.`}
-              onClick={() => toggleFlip(card.key)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  toggleFlip(card.key);
-                }
-              }}
+              aria-label={`${card.title}. Hover or focus to preview.`}
             >
               <div className="flip-inner">
                 <div className="flip-front">
                   <h3 className="feature-card-title">{card.title}</h3>
                   <p className="feature-card-description">{card.desc}</p>
-                  <span className="flip-hint lf-mono">Hover to preview →</span>
+                  <div className="flip-lines" aria-hidden>
+                    <span />
+                    <span />
+                    <span />
+                    <span />
+                    <span />
+                  </div>
                 </div>
                 <div className="flip-back">
                   <FeatureCardBack cardKey={card.key} />

@@ -129,9 +129,6 @@ export function CommunityBack() {
               </div>
             </div>
             <p className="fcb-post-body">{post.content}</p>
-            <div className="fcb-engage lf-mono">
-              {post.stats.likes} · {post.stats.comments} · {post.stats.bookmarks}
-            </div>
           </div>
         ))}
       </div>
@@ -140,13 +137,15 @@ export function CommunityBack() {
 }
 
 export function AlertsBack() {
+  // Cap to 3 so the stack fits the fixed flip-card height without overlapping.
+  const rows = ALERTS_FEED.slice(0, 3);
   return (
     <div className="fcb fcb-alerts">
       <div className="fcb-row-head">
         <span className="fcb-back-title">Real-time Alerts</span>
       </div>
       <div className="fcb-alert-stack">
-        {ALERTS_FEED.map((a, i) => (
+        {rows.map((a, i) => (
           <div key={i} className="fcb-alert-row">
             <i className={`bi ${a.icon}`} aria-hidden />
             <span className="fcb-alert-text">{a.text}</span>
@@ -163,7 +162,6 @@ export function AltAnalyticsBack() {
   return (
     <div className="fcb fcb-alt">
       <div className="fcb-kicker lf-mono">ALT-DATA SIGNALS</div>
-      <div className="fcb-head-sub-line">Tracked against the tickers they move</div>
       <div className="fcb-alt-rows">
         {ALT_SIGNALS_FEED.map((s, i) => (
           <div key={i} className="fcb-alt-row">

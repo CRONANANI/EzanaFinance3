@@ -254,9 +254,10 @@ body.light-mode .landing-page .feature-card {
   transform-style: preserve-3d;
 }
 
+/* Flip is hover/focus-only — no JS .is-flipped class, so the state can never
+   get stuck (a single trigger, never two competing ones). */
 .flip-card:hover .flip-inner,
-.flip-card:focus-within .flip-inner,
-.flip-card.is-flipped .flip-inner {
+.flip-card:focus-within .flip-inner {
   transform: rotateY(180deg);
 }
 
@@ -303,27 +304,69 @@ body.light-mode .landing-page .flip-back {
   padding: 8px 0;
 }
 
-.flip-front .flip-hint {
+/* Animated emerald "signal" lines — a wordless "there's more here" affordance
+   that replaces the old "Hover to preview" text. */
+.flip-front .flip-lines {
   flex-shrink: 0;
-  margin: 0;
+  margin-top: 8px;
 }
 
-.flip-hint {
-  margin-top: 6px;
-  font-size: 0.625rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--emerald-text);
-  opacity: 0.75;
-  transition:
-    opacity 0.2s,
-    transform 0.2s;
+.flip-lines {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 4px;
+  height: 14px;
 }
 
-.flip-card:hover .flip-hint,
-.flip-card:focus-within .flip-hint,
-.flip-card.is-flipped .flip-hint {
-  opacity: 0;
+.flip-lines span {
+  width: 3px;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--emerald);
+  opacity: 0.55;
+  transform-origin: bottom center;
+  animation: flip-eq 1.4s ease-in-out infinite;
+}
+
+.flip-lines span:nth-child(1) {
+  animation-delay: 0s;
+}
+.flip-lines span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.flip-lines span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.flip-lines span:nth-child(4) {
+  animation-delay: 0.45s;
+}
+.flip-lines span:nth-child(5) {
+  animation-delay: 0.6s;
+}
+
+@keyframes flip-eq {
+  0%,
+  100% {
+    transform: scaleY(0.4);
+    opacity: 0.45;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 0.9;
+  }
+}
+
+.flip-card:hover .flip-lines span,
+.flip-card:focus-within .flip-lines span {
+  opacity: 0.95;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flip-lines span {
+    animation: none;
+    transform: scaleY(0.7);
+  }
 }
 
 .flip-back {
@@ -334,8 +377,7 @@ body.light-mode .landing-page .flip-back {
 }
 
 .flip-card:hover .flip-front,
-.flip-card:focus-within .flip-front,
-.flip-card.is-flipped .flip-front {
+.flip-card:focus-within .flip-front {
   border-color: rgba(16, 185, 129, 0.28);
 }
 
@@ -345,8 +387,7 @@ body.light-mode .landing-page .flip-back {
   }
 
   .flip-card:hover .flip-inner,
-  .flip-card:focus-within .flip-inner,
-  .flip-card.is-flipped .flip-inner {
+  .flip-card:focus-within .flip-inner {
     transform: none;
   }
 
@@ -361,14 +402,12 @@ body.light-mode .landing-page .flip-back {
   }
 
   .flip-card:hover .flip-back,
-  .flip-card:focus-within .flip-back,
-  .flip-card.is-flipped .flip-back {
+  .flip-card:focus-within .flip-back {
     opacity: 1;
   }
 
   .flip-card:hover .flip-front,
-  .flip-card:focus-within .flip-front,
-  .flip-card.is-flipped .flip-front {
+  .flip-card:focus-within .flip-front {
     opacity: 0;
   }
 }
@@ -379,9 +418,10 @@ body.light-mode .landing-page .flip-back {
   height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 6px;
   font-size: 0.875rem;
   color: var(--text-body);
+  overflow: hidden;
 }
 
 .fcb-kicker {
@@ -393,7 +433,7 @@ body.light-mode .landing-page .flip-back {
 }
 
 .fcb-big {
-  font-size: 1.4rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: var(--text-primary);
   line-height: 1.1;
@@ -427,7 +467,7 @@ body.light-mode .landing-page .flip-back {
 }
 
 .fcb-back-title {
-  font-size: 1.0625rem;
+  font-size: 1rem;
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.01em;
@@ -449,14 +489,14 @@ body.light-mode .landing-page .flip-back {
 
 .fcb-sparkline {
   width: 100%;
-  height: 38px;
+  height: 26px;
   flex-shrink: 0;
 }
 
 .fcb-metric-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6px 14px;
+  gap: 4px 12px;
   margin-top: auto;
 }
 
@@ -485,7 +525,7 @@ body.light-mode .landing-page .flip-back {
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
-  gap: 10px;
+  gap: 7px;
   flex: 1;
   min-height: 0;
   overflow: hidden;
@@ -493,7 +533,7 @@ body.light-mode .landing-page .flip-back {
 
 .fcb-community-item {
   border-bottom: 1px solid var(--border-secondary);
-  padding-bottom: 6px;
+  padding-bottom: 5px;
 }
 
 .fcb-community-item:last-child {
@@ -501,10 +541,10 @@ body.light-mode .landing-page .flip-back {
 }
 
 .fcb-community-feed .fcb-post-body {
-  font-size: 0.8125rem;
-  line-height: 1.45;
+  font-size: 0.75rem;
+  line-height: 1.35;
   color: var(--text-muted);
-  margin: 5px 0;
+  margin: 4px 0 0;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -544,7 +584,7 @@ body.light-mode .landing-page .flip-back {
   display: grid;
   align-items: center;
   gap: 6px;
-  padding: 5px 0;
+  padding: 4px 0;
   font-size: 0.875rem;
   border-bottom: 1px solid var(--border-secondary);
 }
@@ -628,26 +668,26 @@ body.light-mode .landing-page .flip-back {
 }
 
 .fcb-intel-row {
-  grid-template-columns: 28px 1fr auto;
+  grid-template-columns: 24px 1fr auto;
 }
 
 .fcb-intel-icon {
-  width: 26px;
-  height: 26px;
+  width: 22px;
+  height: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 6px;
   background: var(--emerald-bg);
   color: var(--emerald-text);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
 }
 
 .fcb-intel-agency {
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--text-primary);
-  line-height: 1.25;
+  line-height: 1.2;
 }
 
 .fcb-intel-co {
@@ -664,13 +704,22 @@ body.light-mode .landing-page .flip-back {
 
 .fcb-post-head {
   display: flex;
-  gap: 8px;
+  gap: 7px;
   align-items: center;
 }
 
+/* Keep name + badge on one row so each post leaves room for a 2-line body. */
+.fcb-post-head > div {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
 .fcb-avatar {
-  width: 34px;
-  height: 34px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--emerald) 0%, var(--emerald-dark) 100%);
   display: flex;
@@ -718,8 +767,8 @@ body.light-mode .landing-page .flip-back {
   background: var(--bg-tertiary);
   border: 1px solid var(--border-secondary);
   border-radius: 6px;
-  padding: 9px 11px !important;
-  margin-bottom: 5px;
+  padding: 7px 10px !important;
+  margin-bottom: 0;
 }
 
 .fcb-alert-row i {
@@ -730,7 +779,10 @@ body.light-mode .landing-page .flip-back {
 .fcb-alert-text {
   font-size: 0.8125rem;
   color: var(--text-secondary);
-  line-height: 1.35;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .fcb-alert-time {
