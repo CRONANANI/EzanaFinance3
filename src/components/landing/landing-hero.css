@@ -255,7 +255,12 @@
   right: 8px;
   transform: translateY(-50%);
   width: 354px;
-  background: var(--bg-secondary);
+  /* Slightly transparent so the dotted map shows through subtly; blur keeps the
+     card content legible over the busy background. Hero is brand-locked dark, so
+     this is the rgba form of the dark --bg-secondary (#0a0e13). */
+  background: rgba(10, 14, 19, 0.72);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border-hover);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg), var(--shadow-glow);

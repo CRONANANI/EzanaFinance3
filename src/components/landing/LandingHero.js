@@ -202,7 +202,7 @@ export function LandingHero() {
         <div className="lp-map-worldmap">
           <WorldMap
             lineColor="#10b981"
-            dotColor="rgba(16, 185, 129, 0.5)"
+            dotColor="rgba(5, 150, 105, 0.7)"
             hideControls
             hideFinancialDots
           />
