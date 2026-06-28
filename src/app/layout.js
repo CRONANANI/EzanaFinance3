@@ -65,6 +65,9 @@ export default async function RootLayout({ children }) {
      route. Setting them in SSR eliminates that race. */
   const pathname = headers().get('x-pathname') ?? '';
   const routeShellClasses = resolveRouteShellClasses(pathname);
+  // Per-request CSP nonce (set by middleware) so our inline <script>s are allowed
+  // without script-src 'unsafe-inline'. Undefined when absent (e.g. static export).
+  const nonce = headers().get('x-nonce') || undefined;
 
   /* Public marketing routes (/, /pricing, /help-center, /datasets,
      /brokerages-integrations) render LIGHT by spec regardless of the user's
@@ -115,6 +118,7 @@ export default async function RootLayout({ children }) {
             We keep the cookie as a secondary signal only — ThemeProvider
             re-writes it on mount so it can never drift again. */}
         <script
+          nonce={nonce}
           dangerouslySetInnerHTML={{
             __html: `
         (function() {
@@ -203,6 +207,7 @@ export default async function RootLayout({ children }) {
           media="print"
         />
         <script
+          nonce={nonce}
           dangerouslySetInnerHTML={{
             __html:
               '(function(){var l=document.querySelector(\'link[href*="bootstrap-icons"][media="print"]\');if(l){l.media=\'all\';}})();',

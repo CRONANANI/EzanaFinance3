@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/components/AuthProvider';
+import { sanitizeHtml } from '@/lib/sanitize-html';
 import './platform-changelog-panel.css';
 
 const CATEGORY_META = {
@@ -57,15 +58,18 @@ function groupEntriesByDay(entries) {
 function renderBody(text) {
   const paragraphs = text.split(/\n\s*\n/).filter(Boolean);
   return paragraphs.map((p, i) => {
-    let html = p
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
+    let html = p.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
     html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
     html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
     html = html.replace(/\n/g, '<br />');
-    return <p key={i} className="pcl-entry-paragraph" dangerouslySetInnerHTML={{ __html: html }} />;
+    return (
+      <p
+        key={i}
+        className="pcl-entry-paragraph"
+        dangerouslySetInnerHTML={{ __html: sanitizeHtml(html) }}
+      />
+    );
   });
 }
 
@@ -258,7 +262,9 @@ export function PlatformChangelogPanel() {
     <div className="pcl-panel">
       <header className="pcl-header">
         <h2 className="pcl-title">Platform Changelog</h2>
-        <p className="pcl-subtitle">Recent updates, improvements, and fixes shipped to the platform.</p>
+        <p className="pcl-subtitle">
+          Recent updates, improvements, and fixes shipped to the platform.
+        </p>
       </header>
 
       {isAdmin && (

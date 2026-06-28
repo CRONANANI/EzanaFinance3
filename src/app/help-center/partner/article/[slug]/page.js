@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ChevronLeft, ChevronRight, ArrowRight, FileText } from 'lucide-react';
 import { PARTNER_ARTICLES, PARTNER_CATEGORIES } from '@/lib/help-center-content';
 import ArticleFeedback from '@/components/help-center/ArticleFeedback';
+import { sanitizeHtml } from '@/lib/sanitize-html';
 import '../../../help-center.css';
 
 const BASE = '/help-center/partner';
@@ -70,7 +71,7 @@ export default function PartnerHelpArticlePage() {
 
         <div
           className="hc-prose max-w-none"
-          dangerouslySetInnerHTML={{ __html: article.content }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content) }}
         />
 
         {relatedArticles.length > 0 && (

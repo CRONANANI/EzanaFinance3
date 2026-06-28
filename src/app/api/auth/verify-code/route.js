@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { awardELO } from '@/lib/elo';
 import { getAdminClient, requireUser } from '@/lib/supabase';
 import { enforceAuthRateLimit } from '@/lib/auth-rate-limit';
+import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 import { sanitizeText, sanitizeEmail } from '@/lib/sanitize';
 
 async function grantEmailVerifiedElo(supabaseAdmin, userId) {
@@ -28,6 +29,12 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function POST(request) {
+  const rl = await checkRateLimit(`auth:verify-code:${getClientIp(request)}`, {
+    limit: 15,
+    window: '60 s',
+  });
+  if (!rl.success) return rateLimitResponse(rl);
+
   const limited = await enforceAuthRateLimit(request, { endpointLabel: 'verify-code' });
   if (limited) return limited;
 

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { resend } from '@/lib/services/resend';
 import { getAdminClient, requireUser } from '@/lib/supabase';
 import { enforceAuthRateLimit } from '@/lib/auth-rate-limit';
+import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 import { sanitizeEmail } from '@/lib/sanitize';
 
 export const runtime = 'nodejs';
@@ -12,6 +13,13 @@ function generateCode() {
 }
 
 export async function POST(request) {
+  // Fast IP-level Redis limiter in front of the Supabase lockout backstop.
+  const rl = await checkRateLimit(`auth:send-verification:${getClientIp(request)}`, {
+    limit: 10,
+    window: '60 s',
+  });
+  if (!rl.success) return rateLimitResponse(rl);
+
   const limited = await enforceAuthRateLimit(request, { endpointLabel: 'send-verification' });
   if (limited) return limited;
 

@@ -68,6 +68,35 @@ export async function middleware(request) {
   const forwardedHeaders = new Headers(request.headers);
   forwardedHeaders.set('x-pathname', pathname);
 
+  /* Layer 3 — per-request CSP with a nonce so we can drop script-src
+     'unsafe-inline'. Next.js reads the nonce from the request's
+     Content-Security-Policy header and applies it to its own inline scripts;
+     our two inline <script>s in layout.js read it from `x-nonce`. The nonce is
+     set on the request headers (for Next + layout) and the CSP is also set on
+     the page response below. 'unsafe-eval' is allowed in dev only (HMR needs
+     it); production stays strict. style-src keeps 'unsafe-inline' — style
+     injection is far lower risk than script injection and removing it breaks
+     CSS-in-JS. All integration allowlists (Stripe, Plaid, Supabase, Alpaca,
+     Finnhub, Vercel, Sentry, Anthropic, Polymarket…) are preserved verbatim. */
+  const nonce = btoa(crypto.randomUUID());
+  const isProd = process.env.NODE_ENV === 'production';
+  const cspHeader = [
+    "default-src 'self'",
+    `script-src 'self' 'nonce-${nonce}'${isProd ? '' : " 'unsafe-eval'"} https://js.stripe.com https://cdn.vercel-insights.com https://vercel.live https://cdn.plaid.com`,
+    "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com",
+    "img-src 'self' data: blob: https:",
+    "font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com",
+    "connect-src 'self' https://api.open-meteo.com https://archive-api.open-meteo.com https://www.alphavantage.co https://financialmodelingprep.com https://finnhub.io https://api.stripe.com https://gamma-api.polymarket.com https://clob.polymarket.com https://*.supabase.co wss://*.supabase.co https://*.alpaca.markets https://*.vercel-insights.com https://*.finnhub.io wss://*.finnhub.io https://*.vercel.live https://api.anthropic.com https://raw.githubusercontent.com https://*.sentry.io https://cdn.plaid.com https://production.plaid.com https://sandbox.plaid.com",
+    "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://vercel.live https://cdn.plaid.com",
+    // Allow same-origin + blob web workers (e.g. Sentry replay compression).
+    // Without this they fall through to default-src 'self', which blocks blob:.
+    "worker-src 'self' blob:",
+    "object-src 'none'",
+    "base-uri 'self'",
+  ].join('; ');
+  forwardedHeaders.set('x-nonce', nonce);
+  forwardedHeaders.set('Content-Security-Policy', cspHeader);
+
   /** Stripe webhook must receive the raw body — skip session / CORS handling */
   if (pathname.startsWith('/api/stripe/webhook')) {
     return NextResponse.next({ request: { headers: forwardedHeaders } });
@@ -93,6 +122,7 @@ export async function middleware(request) {
   }
 
   let response = NextResponse.next({ request: { headers: forwardedHeaders } });
+  response.headers.set('Content-Security-Policy', cspHeader);
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,

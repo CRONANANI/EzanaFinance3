@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { getContractAwards } from '@/lib/usaspending';
+import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 
 /**
  * GET /api/usaspending/contract-awards?recipient=&agency=&limit=
@@ -22,6 +23,13 @@ export const dynamic = 'force-dynamic';
 
 export const GET = withApiGuard(
   async (request) => {
+    // Moderate per-IP limit on this external-API proxy (USAspending.gov).
+    const rl = await checkRateLimit(`ext:usaspending-awards:${getClientIp(request)}`, {
+      limit: 30,
+      window: '60 s',
+    });
+    if (!rl.success) return rateLimitResponse(rl);
+
     const { searchParams } = new URL(request.url);
     const recipient = searchParams.get('recipient') || '';
     const agency = searchParams.get('agency') || '';

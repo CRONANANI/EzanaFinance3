@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { RAY_DALIO_SYSTEM_PROMPT } from '@/lib/rayDalioSystemPrompt';
 import { getAdminClient, requireUser } from '@/lib/supabase';
+import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -176,6 +177,13 @@ function filterAIOutput(text) {
 }
 
 export async function POST(request) {
+  // Moderate limit — this proxies a paid LLM call; cap per-IP to prevent abuse/cost runaway.
+  const rl = await checkRateLimit(`ai:centaur-chat:${getClientIp(request)}`, {
+    limit: 20,
+    window: '60 s',
+  });
+  if (!rl.success) return rateLimitResponse(rl);
+
   try {
     const body = await request.json();
     const { messages, investor, persona } = body;

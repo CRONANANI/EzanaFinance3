@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient, requireUser } from '@/lib/supabase';
 import { assertPublicHttpUrl } from '@/lib/url-guard';
+import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -158,6 +159,13 @@ Important rules:
 }
 
 export async function POST(request) {
+  // Moderate limit — fetches an external article + runs a paid LLM analysis.
+  const rl = await checkRateLimit(`ai:analyze-event:${getClientIp(request)}`, {
+    limit: 20,
+    window: '60 s',
+  });
+  if (!rl.success) return rateLimitResponse(rl);
+
   try {
     const { eventTitle, eventBody, eventCountry, eventUrl } = await request.json();
     let user;

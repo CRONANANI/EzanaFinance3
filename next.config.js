@@ -11,20 +11,10 @@ const securityHeaders = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
   { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
-  {
-    key: 'Content-Security-Policy',
-    value: [
-      "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' https://js.stripe.com https://cdn.vercel-insights.com https://vercel.live https://cdn.plaid.com",
-      "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com",
-      "img-src 'self' data: blob: https:",
-      "font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com",
-      "connect-src 'self' https://api.open-meteo.com https://archive-api.open-meteo.com https://www.alphavantage.co https://financialmodelingprep.com https://finnhub.io https://api.stripe.com https://gamma-api.polymarket.com https://clob.polymarket.com https://*.supabase.co wss://*.supabase.co https://*.alpaca.markets https://*.vercel-insights.com https://*.finnhub.io wss://*.finnhub.io https://*.vercel.live https://api.anthropic.com https://raw.githubusercontent.com https://*.sentry.io https://cdn.plaid.com https://production.plaid.com https://sandbox.plaid.com",
-      "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://vercel.live https://cdn.plaid.com",
-      "object-src 'none'",
-      "base-uri 'self'",
-    ].join('; '),
-  },
+  // NOTE: Content-Security-Policy is now set per-request in src/middleware.js so
+  // it can carry a script nonce (which lets us drop script-src 'unsafe-inline').
+  // Declaring it here too would emit a second, conflicting policy, so the CSP
+  // lives only in the middleware. All other headers remain static here.
 ];
 
 const nextConfig = {

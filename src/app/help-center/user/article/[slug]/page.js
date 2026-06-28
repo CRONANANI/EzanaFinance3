@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ChevronLeft, ChevronRight, ArrowRight, FileText } from 'lucide-react';
 import { USER_ARTICLES, USER_CATEGORIES } from '@/lib/help-center-content';
 import ArticleFeedback from '@/components/help-center/ArticleFeedback';
+import { sanitizeHtml } from '@/lib/sanitize-html';
 import '../../../help-center.css';
 
 const BASE = '/help-center/user';
@@ -76,7 +77,7 @@ export default function UserHelpArticlePage() {
 
         <div
           className="hc-prose max-w-none"
-          dangerouslySetInnerHTML={{ __html: article.content }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content) }}
         />
 
         {relatedArticles.length > 0 && (

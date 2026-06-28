@@ -1,10 +1,17 @@
 import { NextResponse } from 'next/server';
 import { recordLoginAttempt } from '@/lib/login-lockout';
 import { enforceAuthRateLimit } from '@/lib/auth-rate-limit';
+import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request) {
+  const rl = await checkRateLimit(`auth:record-attempt:${getClientIp(request)}`, {
+    limit: 20,
+    window: '60 s',
+  });
+  if (!rl.success) return rateLimitResponse(rl);
+
   const rateLimited = await enforceAuthRateLimit(request, { endpointLabel: 'record-attempt' });
   if (rateLimited) return rateLimited;
 
