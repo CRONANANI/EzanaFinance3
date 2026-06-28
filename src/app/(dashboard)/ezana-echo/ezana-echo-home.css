@@ -413,15 +413,6 @@
 .eth-card:hover .eth-card-img {
   border-color: var(--border-hover);
 }
-.eth-card-cat {
-  position: absolute;
-  top: 11px;
-  left: 11px;
-  padding: 4px 9px;
-  border-radius: var(--radius-sm);
-  background: rgba(10, 14, 19, 0.78);
-  backdrop-filter: blur(4px);
-}
 .eth-card-body {
   padding: 14px 2px 0;
 }
@@ -449,6 +440,16 @@
 }
 .eth-card-foot .sep {
   color: var(--text-ghost);
+}
+/* Category label, moved off the image to sit below the author — sized to match
+   the author/foot text, on-brand emerald. */
+.eth-card-category {
+  margin-top: 7px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--emerald-text);
 }
 
 .eth-empty {

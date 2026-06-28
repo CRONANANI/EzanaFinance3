@@ -175,7 +175,7 @@ export const nvidiaSecondMostValuableArticle = {
     },
   ],
   author: 'Ezana Finance Editorial',
-  category: 'markets',
+  category: 'companies-earnings',
   tags: ['companies', 'technology', 'ai', 'semiconductors', 'markets'],
   tickers: ['NVDA', 'GOOG', 'AAPL', 'MSFT', 'AMZN', 'TSM', 'AVGO', 'GLD', 'SMH', 'SOXX'],
   entities: {

@@ -11,24 +11,46 @@ import { isAdminUserClient } from '@/lib/admin-helpers-client';
 import './ezana-echo.css';
 import './ezana-echo-home.css';
 
-/* Category accent for the eyebrow dot. Emerald-forward per the design system;
+/* The 12 canonical Echo categories (id → label), shown as filter chips. "All"
+   is prepended in the nav. Article `category` ids must match one of these. */
+const CATEGORIES = [
+  { id: 'markets', label: 'Markets' },
+  { id: 'public-policy', label: 'Public Policy' },
+  { id: 'crypto', label: 'Crypto' },
+  { id: 'commodities', label: 'Commodities' },
+  { id: 'inside-the-capitol', label: 'Inside the Capitol' },
+  { id: 'companies-earnings', label: 'Companies & Earnings' },
+  { id: 'tech-infrastructure', label: 'Tech & Infrastructure' },
+  { id: 'global-emerging', label: 'Global & Emerging Markets' },
+  { id: 'deals-dealmakers', label: 'Deals & Dealmakers' },
+  { id: 'founders-power', label: 'Founders & Power Players' },
+  { id: 'science-health', label: 'Science & Health' },
+  { id: 'quant-data', label: 'Quant & Data' },
+];
+
+/* Accent for the category eyebrow dot. Emerald-forward per the design system;
    anything unmapped falls back to emerald. */
 const CAT_ACCENT = {
   markets: '#10b981',
-  companies: '#10b981',
-  analysis: '#22d3ee',
-  policy: '#d4a853',
   'public-policy': '#d4a853',
   crypto: '#818cf8',
-  capitol: '#34d399',
   commodities: '#f59e0b',
-  global: '#2dd4bf',
-  deals: '#a78bfa',
-  founders: '#d4a853',
+  'inside-the-capitol': '#34d399',
+  'companies-earnings': '#10b981',
+  'tech-infrastructure': '#22d3ee',
+  'global-emerging': '#2dd4bf',
+  'deals-dealmakers': '#a78bfa',
+  'founders-power': '#d4a853',
+  'science-health': '#2dd4bf',
+  'quant-data': '#818cf8',
 };
 
-const catLabel = (slug) =>
-  (slug || '')
+const CATEGORY_LABELS = Object.fromEntries(CATEGORIES.map((c) => [c.id, c.label]));
+/* Proper label for a category id — never shows a raw kebab id. Falls back to a
+   title-cased version for any legacy/unknown id. */
+const getCategoryLabel = (id) =>
+  CATEGORY_LABELS[id] ||
+  (id || '')
     .split('-')
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(' ');
@@ -38,7 +60,7 @@ function CatEyebrow({ slug }) {
   return (
     <span className="eth-eyebrow" style={{ color: catAccent(slug) }}>
       <span className="dot" style={{ background: catAccent(slug) }} />
-      {catLabel(slug)}
+      {getCategoryLabel(slug)}
     </span>
   );
 }
@@ -158,15 +180,6 @@ export default function EzanaEchoPage() {
     [featuredRaw, archivedSet],
   );
 
-  // Category filter list is derived from the real articles so it always matches
-  // what's actually published — "All" plus each distinct category, in order.
-  const categories = useMemo(() => {
-    const seen = [];
-    for (const a of allArticles)
-      if (a.category && !seen.includes(a.category)) seen.push(a.category);
-    return ['all', ...seen];
-  }, [allArticles]);
-
   // Feed = everything except the featured story (so it isn't duplicated).
   const feedSource = useMemo(
     () => allArticles.filter((a) => a.id !== featured?.id),
@@ -233,7 +246,7 @@ export default function EzanaEchoPage() {
               <div className="eth-feat-body">
                 <span className="eth-eyebrow eth-feat-kicker">
                   <span className="dot" style={{ background: catAccent(featured.category) }} />
-                  {catLabel(featured.category)} · The Big Read
+                  {getCategoryLabel(featured.category)} · The Big Read
                 </span>
                 <h2 className="eth-feat-title">{featured.title}</h2>
                 {featured.excerpt && <p className="eth-feat-dek">{featured.excerpt}</p>}
@@ -267,24 +280,34 @@ export default function EzanaEchoPage() {
 
         {/* The Feed — controls + nav-style category filter (no dotted pills) */}
         <div className="eth-controls">
-          <h2>{cat === 'all' ? 'The Feed' : catLabel(cat)}</h2>
+          <h2>{cat === 'all' ? 'The Feed' : getCategoryLabel(cat)}</h2>
           <span className="eth-count">
             {filtered.length} {filtered.length === 1 ? 'story' : 'stories'}
           </span>
         </div>
 
         <nav className="eth-catnav" aria-label="Filter by category">
-          {categories.map((slug) => (
+          <button
+            type="button"
+            className={cat === 'all' ? 'active' : ''}
+            onClick={() => {
+              setCat('all');
+              setActiveTag(null);
+            }}
+          >
+            All
+          </button>
+          {CATEGORIES.map((c) => (
             <button
-              key={slug}
+              key={c.id}
               type="button"
-              className={cat === slug ? 'active' : ''}
+              className={cat === c.id ? 'active' : ''}
               onClick={() => {
-                setCat(slug);
+                setCat(c.id);
                 setActiveTag(null);
               }}
             >
-              {slug === 'all' ? 'All' : catLabel(slug)}
+              {c.label}
             </button>
           ))}
         </nav>
@@ -328,9 +351,6 @@ export default function EzanaEchoPage() {
                         }}
                       />
                     ) : null}
-                    <span className="eth-card-cat">
-                      <CatEyebrow slug={a.category} />
-                    </span>
                   </div>
                   <div className="eth-card-body">
                     <h3 className="eth-card-title">{a.title}</h3>
@@ -341,6 +361,8 @@ export default function EzanaEchoPage() {
                       <span className="sep">·</span>
                       <span>{a.readTime} min</span>
                     </div>
+                    {/* Category moved off the image → below the author, sized to match. */}
+                    <div className="eth-card-category">{getCategoryLabel(a.category)}</div>
                   </div>
                 </Link>
               </div>
