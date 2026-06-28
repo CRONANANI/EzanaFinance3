@@ -482,15 +482,21 @@ export default function PersonalizationRadar({ sourceDetails }) {
             })}
 
             {/* Hub */}
-            <circle
-              cx={CX}
-              cy={CY}
-              r={48}
-              fill="none"
-              stroke="#10b981"
-              strokeWidth="1.4"
-              className="radar-hub-ring"
-            />
+            {/* Expanding hub pulse rings — one launches every 1.5s (6s cycle / 4 rings),
+                each travelling from the hub edge out to the outermost grid ring, then fading. */}
+            {[0, 1, 2, 3].map((i) => (
+              <circle
+                key={`hub-pulse-${i}`}
+                cx={CX}
+                cy={CY}
+                r={48}
+                fill="none"
+                stroke="#10b981"
+                strokeWidth="1.4"
+                className="radar-hub-emit"
+                style={{ animationDelay: `${i * 1.5}s` }}
+              />
+            ))}
             <circle
               cx={CX}
               cy={CY}

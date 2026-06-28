@@ -50,20 +50,26 @@
   }
 }
 
-.radar-hub-ring {
-  animation: radar-hub-pulse 3.4s ease-in-out infinite;
+/* Radar emit: each ring expands from the hub edge (r=48, scale 1) out to the
+   outermost grid ring (r≈300, scale 6.25 = 300/48) and fades as it reaches it.
+   6s cycle with 1.5s-staggered delays on 4 rings → a new ring every 1.5s. */
+.radar-hub-emit {
   transform-box: fill-box;
   transform-origin: center;
+  animation: radar-hub-emit 6s linear infinite;
+  pointer-events: none;
 }
-@keyframes radar-hub-pulse {
-  0%,
-  100% {
-    opacity: 0.7;
-    transform: scale(0.835);
-  }
-  50% {
+@keyframes radar-hub-emit {
+  0% {
+    transform: scale(1);
     opacity: 0.9;
-    transform: scale(1.07);
+  }
+  80% {
+    opacity: 0.12;
+  }
+  100% {
+    transform: scale(6.25);
+    opacity: 0;
   }
 }
 
@@ -96,7 +102,7 @@
   .radar-sweep1,
   .radar-sweep2,
   .radar-blip-pulse,
-  .radar-hub-ring {
+  .radar-hub-emit {
     animation: none;
   }
 }
