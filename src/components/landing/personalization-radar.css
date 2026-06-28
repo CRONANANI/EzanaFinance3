@@ -52,11 +52,11 @@
 
 /* Radar emit: each ring expands from the hub edge (r=48, scale 1) out to the
    outermost grid ring (r≈300, scale 6.25 = 300/48) and fades as it reaches it.
-   12s cycle with 3s-staggered delays on 4 rings → a new ring every 3s. */
+   28s cycle with 7s-staggered delays on 4 rings → a new ring every 7s. */
 .radar-hub-emit {
   transform-box: fill-box;
   transform-origin: center;
-  animation: radar-hub-emit 12s linear infinite;
+  animation: radar-hub-emit 28s linear infinite;
   pointer-events: none;
 }
 @keyframes radar-hub-emit {
