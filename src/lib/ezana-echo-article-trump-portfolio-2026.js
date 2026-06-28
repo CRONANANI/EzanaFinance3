@@ -40,7 +40,7 @@ export const trumpPortfolio2026 = {
   readTime: 11,
   publishedAt: '2026-06-20',
   listMeta: '20 Jun 2026',
-  featured: true,
+  featured: false,
   likes: 0,
   comments: 0,
   reads: 0,

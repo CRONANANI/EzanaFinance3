@@ -543,7 +543,11 @@ body.light-mode .landing-page .landing-faq-answer {
 }
 
 body.light-mode .landing-page .landing-faq-help-link a {
-  color: var(--text-muted);
+  color: var(--emerald);
+}
+
+body.light-mode .landing-page .landing-faq-help-link a:hover {
+  color: var(--emerald-hover);
 }
 
 body.light-mode .landing-page .landing-faq-contact-box {

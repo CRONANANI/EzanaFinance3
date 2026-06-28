@@ -310,6 +310,6 @@ export const sectorDominanceArticle = {
   },
   readTime: 18,
   publishedAt: '2026-04-30',
-  featured: true,
+  featured: false,
   source: 'Datastream, Goldman Sachs Research (October 2025)',
 };

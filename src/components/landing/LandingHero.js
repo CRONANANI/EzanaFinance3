@@ -21,7 +21,7 @@ import './landing-hero.css';
 const HEADLINE = [
   { words: ['The', 'edge', 'belongs', 'to'] },
   { words: ['the', 'informed,', 'where'] },
-  { words: ['knowledge', 'compounds'] },
+  { words: ['knowledge', 'compounds'], mark: true },
   { words: ['into opportunity'], mark: true },
 ];
 
@@ -326,7 +326,7 @@ export function LandingHero() {
 
           <div className="lp-card-foot">
             Ezana sources data across&nbsp;
-            <a className="lp-foot-link" href="/datasets">
+            <a className="lp-foot-link" href="#resources">
               7 dimensions
             </a>
           </div>
