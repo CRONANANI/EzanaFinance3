@@ -19,7 +19,7 @@ export const trumpPortfolio2026 = {
     caption:
       'Editorial illustration. The transaction figures in this article are drawn from Trump’s Q1 2026 OGE Form 278-T disclosures, which report value ranges and dates — not share counts or exact portfolio weights.',
   },
-  category: 'markets',
+  category: 'inside-the-capitol',
   author: 'Ezana Finance Editorial',
   tickers: ['NVDA', 'AMD', 'INTC', 'AVGO', 'DELL', 'ORCL', 'PLTR', 'BA', 'MSFT', 'AMZN'],
   entities: {
