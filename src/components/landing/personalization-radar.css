@@ -52,25 +52,30 @@
 
 /* Radar emit: each ring expands from the hub edge (r=48, scale 1) out to the
    outermost grid ring (r≈300, scale 6.25 = 300/48) and fades as it reaches it.
-   Exactly 2 rings on a 7s cycle, the second delayed by 60% (4.2s) in the JSX, so
-   ring 2 launches just as ring 1 passes the 2nd-outermost grid ring (r=200,
-   ≈60% of the travel). At any moment exactly 2 rings are in flight. */
+   VARIABLE SPEED: the ring covers hub → 2nd-outermost ring (r=200, scale 4.17)
+   in the first 45% of the cycle (fast leg), then the r=200 → r=300 final leg over
+   the remaining 55% (slow leg) — the cubic-bezier ease-out adds natural decel.
+   Exactly 2 rings, the second delayed half a cycle (3s) in the JSX, so as one
+   fades at the edge the next is emerging from the core (clean handoff, never 3,
+   never 0). Tuning: 45% keyframe = fast/slow contrast; JSX delay = handoff
+   timing; 6s = overall speed. */
 .radar-hub-emit {
   transform-box: fill-box;
   transform-origin: center;
-  animation: radar-hub-emit 7s linear infinite;
+  animation: radar-hub-emit 6s cubic-bezier(0.16, 0.8, 0.3, 1) infinite;
   pointer-events: none;
 }
 @keyframes radar-hub-emit {
   0% {
-    transform: scale(1);
+    transform: scale(1); /* r=48, hub edge */
     opacity: 0.9;
   }
-  60% {
-    opacity: 0.4; /* ≈r=200, 2nd-outermost ring — where ring 2 launches */
+  45% {
+    transform: scale(4.17); /* r=200, 2nd-outermost ring — reached quickly (fast leg) */
+    opacity: 0.6;
   }
   100% {
-    transform: scale(6.25);
+    transform: scale(6.25); /* r=300, outer edge — slow final leg, faded out */
     opacity: 0;
   }
 }
