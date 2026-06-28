@@ -65,7 +65,9 @@
 
 .features-section {
   width: 100%;
-  padding: 80px 0 60px 0;
+  /* Top/bottom padding halved (80→40 top, 60→30 bottom) to cut the gaps to the
+     brokerage section above and the Data & Resources section below in half. */
+  padding: 40px 0 30px 0;
   background: var(--nav-bg-solid);
   position: relative;
   overflow: hidden;
@@ -98,7 +100,9 @@
 
 .features-section .features-grid-header {
   text-align: center;
-  padding: 96px 0 0;
+  /* Header top padding halved (96 → 48) — part of cutting the gap to the
+     brokerage section above in half. */
+  padding: 48px 0 0;
   margin-bottom: 48px;
 }
 

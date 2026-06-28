@@ -1,7 +1,9 @@
 /* Brokerage logos — single-row marquee, uniform tiles */
 
 .bl-section {
-  padding: 4rem 2rem;
+  /* bottom padding halved (4rem → 2rem) to tighten the gap to the
+     "Why Ezana Finance" features section below */
+  padding: 4rem 2rem 2rem;
   text-align: center;
   overflow: hidden;
   border-top: 1px solid var(--border-secondary);
