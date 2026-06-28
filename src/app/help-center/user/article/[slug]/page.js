@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight, ArrowRight, FileText } from 'lucide-react';
 import { USER_ARTICLES, USER_CATEGORIES } from '@/lib/help-center-content';
+import ArticleFeedback from '@/components/help-center/ArticleFeedback';
 import '../../../help-center.css';
 
 const BASE = '/help-center/user';
@@ -26,9 +27,7 @@ export default function UserHelpArticlePage() {
 
   const relatedArticles = useMemo(() => {
     if (!relatedCategory) return [];
-    return relatedCategory.articles
-      .filter((a) => a.slug !== slug)
-      .slice(0, 5);
+    return relatedCategory.articles.filter((a) => a.slug !== slug).slice(0, 5);
   }, [relatedCategory, slug]);
 
   if (!article) {
@@ -50,9 +49,13 @@ export default function UserHelpArticlePage() {
       <article className="mx-auto max-w-3xl px-4 py-12">
         {/* Breadcrumbs */}
         <nav className="hc-faint mb-6 flex flex-wrap items-center gap-2 text-xs">
-          <Link href="/help-center" className="hc-link-muted hover:underline">Help Center</Link>
+          <Link href="/help-center" className="hc-link-muted hover:underline">
+            Help Center
+          </Link>
           <ChevronRight className="h-3 w-3" />
-          <Link href={BASE} className="hc-link-muted hover:underline">User Support</Link>
+          <Link href={BASE} className="hc-link-muted hover:underline">
+            User Support
+          </Link>
           {relatedCategory && (
             <>
               <ChevronRight className="h-3 w-3" />
@@ -95,16 +98,7 @@ export default function UserHelpArticlePage() {
           </section>
         )}
 
-        <div
-          className="mt-12 pt-8"
-          style={{ borderTop: '1px solid var(--border-primary)' }}
-        >
-          <p className="hc-faint mb-4 text-sm">Was this article helpful?</p>
-          <div className="flex gap-2">
-            <button type="button" className="hc-btn-ghost text-sm">Yes</button>
-            <button type="button" className="hc-btn-ghost text-sm">No</button>
-          </div>
-        </div>
+        <ArticleFeedback section="user" articleSlug={slug} />
 
         <footer
           className="mt-8 flex flex-col items-start justify-between gap-4 pt-6 sm:flex-row sm:items-center"
