@@ -116,11 +116,7 @@ export default function ArticleFeedback({ section, articleSlug }) {
             </span>
             <div className="flex items-center gap-3">
               {status === 'error' && (
-                <span
-                  className="text-xs"
-                  style={{ color: 'var(--negative, #ef4444)' }}
-                  role="alert"
-                >
+                <span className="text-xs" style={{ color: 'var(--negative)' }} role="alert">
                   Couldn&apos;t save — try again
                 </span>
               )}
