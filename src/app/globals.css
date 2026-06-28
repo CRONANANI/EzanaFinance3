@@ -558,7 +558,7 @@ body.light-mode {
     padding: 0.35rem 0.4rem !important;
     border-radius: 8px !important;
     backdrop-filter: blur(12px);
-    background: rgba(13, 17, 23, 0.92) !important;
+    background: rgba(13, 17, 23, 0.72) !important;
     border: 1px solid rgba(16, 185, 129, 0.2) !important;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
     gap: 0.3rem !important;

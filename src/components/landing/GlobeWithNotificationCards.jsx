@@ -137,7 +137,7 @@ export function GlobeWithNotificationCards({
           onReady={onGlobeReady}
           /* Globe is brand-locked to dark on the landing page regardless of app theme. */
           oceanFill="#020403"
-          dotColor="rgba(52, 211, 153, ALPHA)"
+          dotColor="rgba(5, 150, 105, ALPHA)"
         />
       </div>
 
