@@ -482,23 +482,6 @@ export default function PersonalizationRadar({ sourceDetails }) {
             })}
 
             {/* Hub */}
-            {/* Exactly 2 expanding hub pulse rings, variable speed (slowed initial
-                leg core→r=200, slow r=200→edge — see keyframes). Ring 1 is offset
-                half the 8.7s cycle (4.35s) so one ring is always near the core while
-                the other fades at the edge — never more than 2 in flight, never a gap with 0. */}
-            {[0, 1].map((i) => (
-              <circle
-                key={`hub-pulse-${i}`}
-                cx={CX}
-                cy={CY}
-                r={48}
-                fill="none"
-                stroke="#10b981"
-                strokeWidth="1.4"
-                className="radar-hub-emit"
-                style={{ animationDelay: `${i * 4.35}s` }}
-              />
-            ))}
             <circle
               cx={CX}
               cy={CY}
