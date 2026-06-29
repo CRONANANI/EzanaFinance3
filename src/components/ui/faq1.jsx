@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
 import { Plus } from 'lucide-react';
 
 const DEFAULT_ITEMS = [
@@ -90,7 +89,9 @@ export function Faq1({ heading = 'Frequently asked', items = DEFAULT_ITEMS, onCo
           })}
         </div>
         <p className="landing-faq-help-link">
-          <Link href="/help-center">view our more in depth help center</Link>
+          {/* Plain <a>: Next <Link> client navigation silently no-ops on the
+              landing page, so the help-center link has to be a real navigation. */}
+          <a href="/help-center">view our more in depth help center</a>
         </p>
         {onContactClick && (
           <div className="landing-faq-contact-box">
