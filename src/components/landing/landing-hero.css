@@ -28,6 +28,12 @@
   max-width: none;
   pointer-events: none;
   z-index: 0;
+  /* Fade the map's top edge to transparent so it dissolves into the top nav
+     instead of showing a hard rectangular edge. Mask fades the actual map
+     pixels (dots + route overlay) regardless of what's behind, so it works in
+     both light and dark. Top ~12% fades out; below that the map is fully shown. */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 12%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 12%);
 }
 .lp-map-img {
   width: 100%;
