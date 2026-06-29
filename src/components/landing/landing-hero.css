@@ -255,13 +255,28 @@
   right: 8px;
   transform: translateY(-50%);
   width: 354px;
-  /* Slightly transparent so the dotted map shows through subtly; blur keeps the
-     card content legible over the busy background. Hero is brand-locked dark, so
-     this is the rgba form of the dark --bg-secondary (#0a0e13). */
-  background: rgba(10, 14, 19, 0.72);
+  /* Translucent WHITE card: the dotted map shows through subtly while blur keeps
+     the content legible. The hero is brand-locked dark, so the card scopes a set
+     of light-theme token overrides below (mirroring theme-variables.css light
+     mode) — this flips all child text/surfaces to dark-on-white without editing
+     every child rule. Emerald accent border retained. */
+  background: rgba(255, 255, 255, 0.72);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--border-hover);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  --text-primary: #0f172a;
+  --text-secondary: #1e293b;
+  --text-body: #334155;
+  --text-muted: #64748b;
+  --text-faint: #94a3b8;
+  --bg-primary: #ffffff;
+  --bg-tertiary: #f1f5f9;
+  --border-primary: rgba(0, 0, 0, 0.08);
+  --emerald-bg: rgba(16, 185, 129, 0.1);
+  --emerald-border: rgba(16, 185, 129, 0.25);
+  --negative: #dc2626;
+  --blue: #2563eb;
+  --amber: #b45309;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg), var(--shadow-glow);
   padding: 16px 18px;
