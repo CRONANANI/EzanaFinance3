@@ -56,11 +56,23 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Save button row — sits just above the divider, below the byline */
+/* Actions row at the bottom of the title band, directly above the divider:
+   back link far-left, save button far-right. Spans the title-band measure so
+   both align to the divider's left/right edges. */
+.echo-title-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 1.25rem;
+  text-align: left;
+}
+
+/* Save button now sits at the right of .echo-title-actions (no own top gap). */
 .echo-title-save {
   display: flex;
-  justify-content: center;
-  margin-top: 1.25rem;
+  justify-content: flex-end;
+  margin-top: 0;
 }
 
 .echo-title-divider {

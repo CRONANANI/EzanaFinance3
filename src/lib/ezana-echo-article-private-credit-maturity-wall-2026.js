@@ -123,10 +123,10 @@ export const privateCreditMaturityWallArticle2026 = {
   excerpt:
     'A Reuters analysis of 74 business development companies found only about $15 billion of roughly $84 billion in assets mature this year — under 20% — with the refinancing wall clustered in 2028 and 2029. Amend-and-extend deals pushed the pressure out, but software exposure, rising payment-in-kind income, and the first-ever net BDC outflow complicate the calm.',
   heroImage: {
-    src: '/tech-reigns-wall-street-panic.jpg',
-    alt: 'Wall Street trading floor signage, illustrating credit market stress and refinancing risk',
+    src: '/echo/private-credit-hero.png',
+    alt: 'A pink "Private Credit" piggy bank balanced on a cracking plank labeled "Market," supported by classical columns — illustrating structural strain in the private credit market.',
     caption:
-      'Private credit’s maturity wall has been pushed to 2028-2029, but the calm depends on amend-and-extend deals holding and payment-in-kind income not masking borrower stress.',
+      'The private credit market has ballooned through the low-rate era; now a wall of maturities tests how much weight the structure can bear. (Illustration)',
   },
   contentBlocks: [
     {
@@ -191,6 +191,27 @@ export const privateCreditMaturityWallArticle2026 = {
       context:
         'More than half a trillion dollars of committed but undeployed capital sat in private credit funds as of mid-2025 (Vanguard, Preqin) — a buffer that can refinance maturities, but only at the price the lender sets.',
     },
+    {
+      type: 'heading',
+      text: 'The maturity wall in the context of the broader debt cycle',
+      level: 2,
+    },
+    {
+      type: 'paragraph',
+      text: 'Step back from the BDC filings and the maturity wall resolves into something older and more familiar: a phase in a [[kw:long-term-debt-cycle]]long-term debt cycle[[/kw]]. Debt accumulates over years precisely because, in benign conditions, borrowing feels both cheap and safe — and private credit is the purest recent example, scaling from a niche corner of finance to a roughly $1.7 trillion asset class over a decade in which base rates sat near zero. Cheap money does not just lower the cost of a loan; it raises the amount of debt a given stream of income can support, which is why leverage multiples on private-credit deals drifted higher year after year. The $84 billion of BDC assets now marching toward 2028 and 2029 is not an anomaly — it is the back end of an accumulation phase, the point at which the borrowing finally has to be serviced or settled.',
+    },
+    {
+      type: 'paragraph',
+      text: 'What makes that phase bite is the nature of debt itself: every loan is a promise to deliver money in the future, and the real weight of that promise is not fixed. Private credit is overwhelmingly floating-rate, so when policy rates climbed from near zero to north of 4%, the debt-service burden on those borrowers repriced almost in real time — a company that comfortably covered interest at a 6% all-in rate can find itself stretched at 11%. The promise did not change; the burden of keeping it roughly doubled. Payment-in-kind income rising to around 8% of BDC investment income is the visible symptom of borrowers conserving cash they no longer have to spare.',
+    },
+    {
+      type: 'paragraph',
+      text: 'When debt-service costs rise faster than income, a borrower has only four ways out, and they are the same four whether the borrower is a government, a blue-chip company, or a mid-market software firm sitting in a BDC portfolio: roll the debt into a new loan, cut spending to free up cash, sell assets to raise it, or hand creditors equity in place of repayment. Each option carries a cost — rolling locks in higher rates, cutting starves growth, selling crystallizes losses, and equity dilutes or wipes out the owner. The entire private-credit calm of the past two years has been an exercise in choosing the first option, rolling, as aggressively as the market will allow.',
+    },
+    {
+      type: 'paragraph',
+      text: 'That preference is why "extend and pretend" is not a clever new tactic but a recurring feature of every credit cycle. Both sides are incentivized to push maturities out rather than crystallize a loss today: the borrower keeps operating, and the lender avoids writing down a loan and reporting the damage to its own investors. Multiplied across thousands of deals in 2024 and 2025, that shared incentive is exactly what built the 2028-2029 wall — maturities were not retired, they were relocated to a future everyone assumed would be kinder. The cycle does not remove the reckoning; it merely schedules it.',
+    },
     { type: 'heading', text: 'The lender landscape behind the wall', level: 2 },
     {
       type: 'paragraph',
@@ -242,6 +263,19 @@ export const privateCreditMaturityWallArticle2026 = {
       context:
         'Analysts estimate the industry’s true stress rate — including liability-management exercises and selective defaults — is roughly double the sub-2% non-accrual rate carried in reported BDC net asset values.',
     },
+    { type: 'heading', text: 'How credit cycles resolve — orderly vs. disorderly', level: 2 },
+    {
+      type: 'paragraph',
+      text: 'Credit booms do not all end the same way, and the difference matters more than the size of the wall. [[kw:deleveraging]]Deleveraging[[/kw]] runs along a spectrum. At the orderly end, maturities are extended on reasonable terms, sponsors inject fresh equity to cure covenant breaches, base rates drift lower, and the more than $500 billion of dry powder quietly refinances the strongest borrowers — the debt load works down gradually and few headlines are made. At the disorderly end, refinancing windows shut, forced sales hit a thin secondary market, defaults cluster, and net asset values are marked down in a hurry as the losses that PIK and amend-and-extend had postponed all surface at once.',
+    },
+    {
+      type: 'paragraph',
+      text: 'What tips a situation from one end to the other is flexibility — specifically, who has it and who does not. A borrower with a patient lender, a profitable business, and an equity sponsor willing to write a check can ride out a maturity; a borrower whose only lender is a redemption-pressured fund, whose end-market is being reordered by AI, and whose rating already sits at ‘B-’ or below has no slack when the loan comes due. This is the historical rhyme of credit: booms financed in calm conditions are tested when conditions tighten, and the outcome is decided not by the headline debt figure but by the distribution of flexibility across the borrowers behind it.',
+    },
+    {
+      type: 'paragraph',
+      text: 'For private credit specifically, the fork between orderly and disorderly will be visible long before the 2028 maturities arrive — and it will show up in the income statement rather than the maturity schedule. PIK climbing past 10% of interest income, non-accruals ticking up, and discounts to NAV widening are the early tells that the soft, extend-and-pretend resolution is slipping toward the hard one. The roughly $500 billion of dry powder and the equity cushions beneath the strongest deals are the system’s shock absorbers; the thinly-rated software cohort and the redemption-prone non-traded vehicles are where those absorbers are weakest. The wall’s date is fixed — which side of the spectrum the market lands on is still being decided, quarter by quarter.',
+    },
     { type: 'heading', text: 'How to position around the wall', level: 2 },
     {
       type: 'paragraph',
@@ -275,9 +309,11 @@ export const privateCreditMaturityWallArticle2026 = {
       { id: 'business-development-company', label: 'Business Development Company' },
       { id: 'amend-and-extend', label: 'Amend-and-Extend' },
       { id: 'payment-in-kind', label: 'Payment-in-Kind (PIK)' },
+      { id: 'long-term-debt-cycle', label: 'Long-Term Debt Cycle' },
+      { id: 'deleveraging', label: 'Deleveraging' },
     ],
   },
-  readTime: 10,
+  readTime: 12,
   publishedAt: '2026-05-04',
   featured: false,
   likes: 0,

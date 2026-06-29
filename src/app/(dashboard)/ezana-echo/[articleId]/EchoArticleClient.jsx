@@ -2716,14 +2716,11 @@ export default function EchoArticleClient({
   return (
     <EchoKeywordProvider articleTracker={articleTracker}>
       <div className="echo-article-page">
-        <div className="echo-article-topbar">
-          <div className="echo-back-row">
-            <Link href="/ezana-echo" className="echo-back">
-              <i className="bi bi-arrow-left" aria-hidden /> Back to Ezana Echo
-            </Link>
-          </div>
-
-          {isAdmin && (
+        {/* Admin-only top bar. For regular users nothing renders here, so the
+            title band rides up tight to the nav. The "Back to Ezana Echo" link
+            has moved to the bottom-left of the title band (see echo-title-actions). */}
+        {isAdmin && (
+          <div className="echo-article-topbar">
             <div className="echo-article-admin-bar">
               {isArchived && (
                 <span className="echo-article-archived-badge">
@@ -2754,8 +2751,8 @@ export default function EchoArticleClient({
                 )}
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Zone A — title band, tight measure, directly under the nav */}
         <header className="echo-title-band">
@@ -2785,13 +2782,20 @@ export default function EchoArticleClient({
             {' · '}
             <span className="echo-readtime">{article.readTime} min read</span>
           </div>
-          <div className="echo-title-save">
-            <EchoSaveButton
-              articleId={article.id}
-              articleTags={articleTags}
-              placement="top"
-              articleTracker={articleTracker}
-            />
+          {/* Bottom of the title band, directly above the divider: back link
+              far-left, save button far-right (space-between). */}
+          <div className="echo-title-actions">
+            <Link href="/ezana-echo" className="echo-back">
+              <i className="bi bi-arrow-left" aria-hidden /> Back to Ezana Echo
+            </Link>
+            <div className="echo-title-save">
+              <EchoSaveButton
+                articleId={article.id}
+                articleTags={articleTags}
+                placement="top"
+                articleTracker={articleTracker}
+              />
+            </div>
           </div>
         </header>
 

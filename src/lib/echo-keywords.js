@@ -2104,6 +2104,71 @@ export const KEYWORDS = {
     courseId: 'fixed-income-101-1',
     courseTitle: 'Credit and Fixed Income',
   },
+
+  'long-term-debt-cycle': {
+    id: 'long-term-debt-cycle',
+    term: 'Long-Term Debt Cycle',
+    definition:
+      'The multi-year pattern in which debt builds up while borrowing feels cheap and safe, until the accumulated debt-service burden eventually forces a reckoning — refinancing, restructuring, or default. A sector’s maturity wall is a small instance of this larger, recurring rhythm.',
+    template: 'timeline',
+    templateData: {
+      title: 'Phases of a long-term debt cycle',
+      events: [
+        {
+          year: 'Accumulation',
+          label: 'Cheap money lifts leverage',
+          detail: 'Debt grows faster than income; risk feels low',
+        },
+        {
+          year: 'The squeeze',
+          label: 'Rates rise, burden grows',
+          detail: 'Debt service outpaces cash flow',
+        },
+        {
+          year: 'Reckoning',
+          label: 'Roll, cut, sell, or hand over equity',
+          detail: 'Maturities must be serviced or settled',
+        },
+        {
+          year: 'Deleveraging',
+          label: 'Orderly or disorderly',
+          detail: 'Extensions and paydowns — or defaults and markdowns',
+        },
+      ],
+    },
+    realWorld:
+      'Private credit scaled to ~$1.7 trillion during a decade of near-zero rates. The 2028-2029 maturity wall is the back end of that accumulation phase — the point where the borrowing has to be settled.',
+    courseId: 'macro-indicators-2',
+    courseTitle: 'Understanding Economic Indicators',
+  },
+
+  deleveraging: {
+    id: 'deleveraging',
+    term: 'Deleveraging',
+    definition:
+      'The process by which an over-indebted borrower, sector, or economy reduces its debt burden. It runs along a spectrum from orderly (extensions, equity injections, gradual paydown) to disorderly (forced asset sales, defaults, and sharp markdowns).',
+    template: 'comparison',
+    templateData: {
+      title: 'Orderly vs. disorderly deleveraging',
+      headers: ['Path', 'Mechanics', 'Outcome'],
+      rows: [
+        {
+          label: 'Orderly',
+          cells: ['Extend, refinance, equity cures', 'Debt works down gradually'],
+        },
+        {
+          label: 'Disorderly',
+          cells: ['Forced sales, defaults', 'NAV markdowns, clustered losses'],
+        },
+      ],
+      footnote:
+        'What tips one to the other is flexibility — refinancing access, equity cushions, and income trajectory.',
+    },
+    realWorld:
+      'For private credit, the fork shows up in the income statement before the maturity schedule: rising PIK, climbing non-accruals, and widening discounts to NAV signal the soft resolution slipping toward the hard one.',
+    courseId: 'fixed-income-101-1',
+    courseTitle: 'Credit and Fixed Income',
+  },
 };
 
 export function getKeywordById(id) {
