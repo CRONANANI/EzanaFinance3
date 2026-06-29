@@ -15,6 +15,7 @@ import {
   BarChart,
   Bar,
   Legend,
+  LabelList,
 } from 'recharts';
 import { useAuth } from '@/components/AuthProvider';
 import { useTheme } from '@/components/ThemeProvider';
@@ -49,6 +50,10 @@ import {
   SEMI_FINANCIALS,
   FOUNDRY_MARKET_SHARE,
 } from '@/lib/ezana-echo-article-semiconductors';
+import {
+  PRIVATE_CREDIT_MATURITY_DATA,
+  PRIVATE_CREDIT_MATURITY_KEYS,
+} from '@/lib/ezana-echo-article-private-credit-maturity-wall-2026';
 
 import '../../../../../app-legacy/assets/css/theme.css';
 import '../../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -440,6 +445,9 @@ function ArticleChart({
   }
   if (variant === 'stacked-bar-forecast') {
     return <MarketForecastChart title={title} caption={caption} yLabel={yLabel} />;
+  }
+  if (variant === 'private-credit-maturity-wall') {
+    return <MaturityWallChart title={title} caption={caption} yLabel={yLabel} />;
   }
   if (variant === 'fiber-optic-world-map') {
     return (
@@ -889,6 +897,167 @@ function MarketForecastChart({ title, caption, yLabel }) {
                 fill={k.color}
                 radius={k.key === 'Others' ? [3, 3, 0, 0] : [0, 0, 0, 0]}
               />
+            ))}
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+      {caption && <figcaption className="echo-chart-caption">{caption}</figcaption>}
+    </figure>
+  );
+}
+
+function MaturityWallChart({ title, caption, yLabel }) {
+  /* Interactive stacked bar: yearly CRE debt maturities split by lender type.
+     Legend swatches toggle individual series on/off; the total label on top of
+     each bar always reflects the exact yearly total read from the source chart. */
+  const [hidden, setHidden] = useState(() => new Set());
+
+  const toggle = (key) => {
+    setHidden((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
+  const renderTooltip = ({ active, payload, label }) => {
+    if (!active || !payload || payload.length === 0) return null;
+    const total = payload.reduce((sum, p) => sum + (Number(p.value) || 0), 0);
+    return (
+      <div
+        style={{
+          background: 'var(--echo-tooltip-bg, #0d1117)',
+          border: '1px solid rgba(99,102,241,0.3)',
+          borderRadius: 8,
+          color: 'var(--echo-tooltip-text, #f0f6fc)',
+          fontSize: '0.7rem',
+          padding: '8px 10px',
+          minWidth: 150,
+        }}
+      >
+        <div
+          style={{ fontWeight: 700, marginBottom: 4 }}
+        >{`'${String(label).slice(2)} maturities`}</div>
+        {payload
+          .slice()
+          .reverse()
+          .map((p) => (
+            <div
+              key={p.dataKey}
+              style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}
+            >
+              <span style={{ color: p.color }}>{p.name}</span>
+              <span>${Number(p.value).toFixed(0)}B</span>
+            </div>
+          ))}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            gap: 12,
+            marginTop: 4,
+            paddingTop: 4,
+            borderTop: '1px solid rgba(255,255,255,0.12)',
+            fontWeight: 700,
+          }}
+        >
+          <span>Total</span>
+          <span>${total.toFixed(0)}B</span>
+        </div>
+      </div>
+    );
+  };
+
+  const renderLegend = () => (
+    <div className="echo-forecast-legend">
+      {PRIVATE_CREDIT_MATURITY_KEYS.map((k) => {
+        const off = hidden.has(k.key);
+        return (
+          <button
+            key={k.key}
+            type="button"
+            className="echo-forecast-legend-item"
+            onClick={() => toggle(k.key)}
+            aria-pressed={!off}
+            style={{
+              cursor: 'pointer',
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              opacity: off ? 0.35 : 1,
+              textDecoration: off ? 'line-through' : 'none',
+            }}
+            title={off ? `Show ${k.label}` : `Hide ${k.label}`}
+          >
+            <span className="echo-forecast-legend-swatch" style={{ background: k.color }} />
+            <div>
+              <div className="echo-forecast-legend-name">{k.label}</div>
+            </div>
+          </button>
+        );
+      })}
+    </div>
+  );
+
+  /* The topmost visible series carries the year-total label on top of the bar. */
+  const visibleKeys = PRIVATE_CREDIT_MATURITY_KEYS.filter((k) => !hidden.has(k.key));
+  const topKey = visibleKeys.length ? visibleKeys[visibleKeys.length - 1].key : null;
+
+  return (
+    <figure className="echo-chart">
+      {title && <div className="echo-chart-title">{title}</div>}
+      <div className="echo-chart-responsive-wrap echo-chart-responsive-wrap--tall">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart
+            data={PRIVATE_CREDIT_MATURITY_DATA}
+            margin={{ top: 24, right: 10, left: 0, bottom: 5 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+            <XAxis
+              dataKey="year"
+              tick={{ fill: 'var(--echo-axis-tick, #8b949e)', fontSize: 9 }}
+              tickLine={false}
+              axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+              interval={0}
+              tickFormatter={(v) => `'${String(v).slice(2)}`}
+            />
+            <YAxis
+              tick={{ fill: 'var(--echo-axis-tick, #8b949e)', fontSize: 9 }}
+              tickLine={false}
+              axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+              width={34}
+              label={{
+                value: yLabel || 'USD Bn',
+                angle: -90,
+                position: 'insideLeft',
+                fill: 'var(--echo-axis-tick, #6b7280)',
+                fontSize: 8,
+                offset: 5,
+              }}
+            />
+            <Tooltip cursor={{ fill: 'rgba(255,255,255,0.04)' }} content={renderTooltip} />
+            <Legend content={renderLegend} />
+            {PRIVATE_CREDIT_MATURITY_KEYS.map((k) => (
+              <Bar
+                key={k.key}
+                dataKey={k.key}
+                stackId="a"
+                fill={k.color}
+                hide={hidden.has(k.key)}
+                radius={k.key === topKey ? [3, 3, 0, 0] : [0, 0, 0, 0]}
+              >
+                {k.key === topKey && (
+                  <LabelList
+                    dataKey="total"
+                    position="top"
+                    fill="var(--echo-axis-tick, #c9d1d9)"
+                    fontSize={9}
+                    fontWeight={700}
+                    formatter={(v) => `$${v}B`}
+                  />
+                )}
+              </Bar>
             ))}
           </BarChart>
         </ResponsiveContainer>

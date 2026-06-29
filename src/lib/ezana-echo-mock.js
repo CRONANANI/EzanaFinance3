@@ -30,6 +30,7 @@ import { hantavirusArticle } from './ezana-echo-article-hantavirus.js';
 import { semiconductorArticle } from './ezana-echo-article-semiconductors.js';
 import { trumpPortfolio2026 } from './ezana-echo-article-trump-portfolio-2026.js';
 import { peterThiel2026 } from './ezana-echo-article-peter-thiel-2026.js';
+import { privateCreditMaturityWallArticle2026 } from './ezana-echo-article-private-credit-maturity-wall-2026.js';
 
 const ARTICLES = [
   peterThiel2026,
@@ -41,6 +42,7 @@ const ARTICLES = [
   fiberOpticArticle,
   hantavirusArticle,
   semiconductorArticle,
+  privateCreditMaturityWallArticle2026,
 ];
 
 export const ECHO_TRENDING = {

@@ -2029,6 +2029,81 @@ export const KEYWORDS = {
     courseId: 'geopolitics-101-1',
     courseTitle: 'Geopolitical Risk in Markets',
   },
+
+  /* ════════════════════════════════════════════════════════════════════════
+     Private credit / BDC maturity-wall article keywords
+     ════════════════════════════════════════════════════════════════════════ */
+
+  'business-development-company': {
+    id: 'business-development-company',
+    term: 'Business Development Company (BDC)',
+    definition:
+      'A publicly traded or non-traded fund that lends to mid-sized private companies, giving ordinary investors access to private credit. BDCs must distribute most of their income as dividends, which makes them high-yield vehicles — and exposes them directly to the credit quality of the loans they hold.',
+    template: 'comparison',
+    templateData: {
+      title: 'BDC vs. traditional bond fund',
+      headers: ['Feature', 'BDC', 'Bond fund'],
+      rows: [
+        { label: 'Holdings', cells: ['Direct private loans', 'Tradable public bonds'] },
+        { label: 'Liquidity', cells: ['Often gated / quarterly', 'Daily'] },
+        { label: 'Income signal', cells: ['PIK + non-accruals', 'Coupon + price'] },
+      ],
+      footnote:
+        'Because BDC loans are private and marked to model, the income statement (PIK, non-accruals) often reveals stress before the NAV does.',
+    },
+    realWorld:
+      'When a BDC reports rising payment-in-kind income, it is collecting less cash than its headline yield implies — a leading indicator that the maturity wall ahead could be harder to refinance than the dividend suggests.',
+    courseId: 'fixed-income-101-1',
+    courseTitle: 'Credit and Fixed Income',
+  },
+
+  'amend-and-extend': {
+    id: 'amend-and-extend',
+    term: 'Amend-and-Extend',
+    definition:
+      'A liability-management transaction in which a borrower and its lenders renegotiate an existing loan to push out the maturity date rather than repaying or refinancing it. It defers the refinancing question — useful for healthy credits, a way to delay recognition of trouble for weak ones.',
+    template: 'comparison',
+    templateData: {
+      title: 'Why the maturity wall moved to 2028-2029',
+      headers: ['Action', 'Effect', 'Risk'],
+      rows: [
+        {
+          label: 'Amend-and-extend',
+          cells: ['Pushes maturity out 1-3 years', 'Stacks weak credits later'],
+        },
+        { label: 'Refinance', cells: ['New loan repays old', 'Reprices to current rates'] },
+        { label: 'Repay', cells: ['Debt retired', 'Needs cash or asset sale'] },
+      ],
+      footnote:
+        'Repricings and refinancings made up 75-85% of leveraged-loan issuance in 2024-2025 (Fitch), thinning near-term maturities.',
+    },
+    realWorld:
+      'Each extension bets the borrower will be healthier — or rates lower — when the new maturity arrives. For marginal credits, repeated extensions quietly turn a refinancing question into a solvency one.',
+    courseId: 'fixed-income-101-1',
+    courseTitle: 'Credit and Fixed Income',
+  },
+
+  'payment-in-kind': {
+    id: 'payment-in-kind',
+    term: 'Payment-in-Kind (PIK)',
+    definition:
+      'Interest a borrower defers by adding it to the loan’s principal instead of paying it in cash. PIK lets a lender book income it has not actually collected, flattering reported yield and the appearance of credit health — which is why a rising PIK share is a classic early-warning sign.',
+    template: 'comparison',
+    templateData: {
+      title: 'Cash interest vs. PIK',
+      headers: ['Type', 'Cash received', 'What it signals'],
+      rows: [
+        { label: 'Cash interest', cells: ['Yes', 'Borrower is servicing debt'] },
+        { label: 'PIK', cells: ['No — added to principal', 'Borrower is conserving cash'] },
+      ],
+      footnote:
+        'PIK above ~10% of a BDC’s interest income is a flag worth scrutinizing; the sector average is around 8% and rising (2026).',
+    },
+    realWorld:
+      'When PIK climbs, a fund’s yield can look healthy while the cash behind it thins out. Analysts estimate the industry’s true stress rate is near 5% — roughly double the sub-2% carried in reported NAVs.',
+    courseId: 'fixed-income-101-1',
+    courseTitle: 'Credit and Fixed Income',
+  },
 };
 
 export function getKeywordById(id) {
