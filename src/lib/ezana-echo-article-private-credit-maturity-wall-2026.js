@@ -173,7 +173,7 @@ export const privateCreditMaturityWallArticle2026 = {
     },
     {
       type: 'paragraph',
-      text: 'That back-loading is not unique to BDCs; it mirrors the broader leveraged finance market. Fitch Ratings’ January 2026 review of the global leveraged finance maturity profile found that weaker-credit concentrations are especially high in the 2028 and 2029 cohorts — issuers rated ‘B-’ or below account for roughly 68% of 2028 US leveraged-loan maturities and about 60% of 2029 maturities. S&P Global Ratings put a dollar figure on the same dynamic in February 2026: maturities of ‘B-’ and lower-rated debt surge to a peak near $215 billion in 2028, up from roughly $57 billion in 2026. The market has not avoided the wall; it has stacked its riskiest borrowers against it.',
+      text: 'That back-loading is not unique to BDCs; it mirrors the broader leveraged finance market. Fitch Ratings’ January 2026 review of the global leveraged finance maturity profile found that weaker-credit concentrations are especially high in the 2028 and 2029 cohorts — issuers rated ‘B-’ or below account for roughly 68% of 2028 US [[kw:leveraged-loan]]leveraged-loan[[/kw]] maturities and about 60% of 2029 maturities. S&P Global Ratings put a dollar figure on the same dynamic in February 2026: maturities of ‘B-’ and lower-rated debt surge to a peak near $215 billion in 2028, up from roughly $57 billion in 2026. The market has not avoided the wall; it has stacked its riskiest borrowers against it.',
     },
     { type: 'heading', text: 'How the wall got pushed out: the extension game', level: 2 },
     {
@@ -240,7 +240,7 @@ export const privateCreditMaturityWallArticle2026 = {
     },
     {
       type: 'paragraph',
-      text: 'Moody’s Ratings made the concern explicit in April 2026, warning that BDCs with heavy software and technology exposure face rising refinancing and credit risk as those maturities concentrate in 2028 and 2029. The agency characterized near-term asset quality as largely benign while framing AI disruption as a monitoring risk rather than an immediate one — a measured way of saying the danger is real but not yet due. For a portfolio underwritten on the assumption that software revenue compounds indefinitely, a maturity wall arriving just as AI reorders the sector’s economics is an uncomfortable coincidence of timing.',
+      text: 'Moody’s Ratings made the concern explicit in April 2026, warning that BDCs with heavy software and technology exposure face rising refinancing and credit risk as those maturities concentrate in 2028 and 2029. The agency characterized near-term asset quality as largely benign while framing AI disruption as a monitoring risk rather than an immediate one — a measured way of saying the danger is real but not yet due. For a portfolio underwritten on the assumption that software revenue compounds indefinitely, a [[kw:maturity-wall]]maturity wall[[/kw]] arriving just as AI reorders the sector’s economics is an uncomfortable coincidence of timing.',
     },
     { type: 'heading', text: 'The tell to watch: payment-in-kind income', level: 2 },
     {
@@ -283,7 +283,7 @@ export const privateCreditMaturityWallArticle2026 = {
     },
     {
       type: 'paragraph',
-      text: 'The base case for the next two years is orderly: amend-and-extend keeps working, base rates drift lower, the $500 billion-plus of dry powder refinances the strongest borrowers, and the 2028-2029 wall is chipped down well before it arrives. The bear case is a sequence — rates stay higher for longer, PIK keeps climbing past 10% of income, software credits deteriorate as AI reshapes their end-markets, and redemptions force selling into the wall rather than ahead of it. The difference between the two scenarios is not the size of the wall, which is fixed, but whether the market reaches it with momentum or with its back already against it.',
+      text: 'The base case for the next two years is orderly: amend-and-extend keeps working, base rates drift lower, the $500 billion-plus of [[kw:dry-powder]]dry powder[[/kw]] refinances the strongest borrowers, and the 2028-2029 wall is chipped down well before it arrives. The bear case is a sequence — rates stay higher for longer, PIK keeps climbing past 10% of income, software credits deteriorate as AI reshapes their end-markets, and redemptions force selling into the wall rather than ahead of it. The difference between the two scenarios is not the size of the wall, which is fixed, but whether the market reaches it with momentum or with its back already against it.',
     },
     {
       type: 'paragraph',
@@ -311,6 +311,9 @@ export const privateCreditMaturityWallArticle2026 = {
       { id: 'payment-in-kind', label: 'Payment-in-Kind (PIK)' },
       { id: 'long-term-debt-cycle', label: 'Long-Term Debt Cycle' },
       { id: 'deleveraging', label: 'Deleveraging' },
+      { id: 'leveraged-loan', label: 'Leveraged Loan' },
+      { id: 'maturity-wall', label: 'Maturity Wall' },
+      { id: 'dry-powder', label: 'Dry Powder' },
     ],
   },
   readTime: 12,

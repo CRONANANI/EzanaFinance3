@@ -2169,6 +2169,72 @@ export const KEYWORDS = {
     courseId: 'fixed-income-101-1',
     courseTitle: 'Credit and Fixed Income',
   },
+
+  'maturity-wall': {
+    id: 'maturity-wall',
+    term: 'Maturity Wall',
+    definition:
+      'A maturity wall is a concentration of debt that all comes due within a short, specific window — here, the cluster of private-credit and BDC loans maturing in 2028 and 2029. When too much debt matures at once into tight financing conditions, borrowers can struggle to refinance, which turns a scheduling issue into a potential credit event.',
+    template: 'comparison',
+    templateData: {
+      title: 'Near-term maturities vs. the wall',
+      headers: ['Period', 'BDC maturities', 'Risk'],
+      rows: [
+        { label: '2026 (near-term)', cells: ['~$15B (<20% of total)', 'Benign'] },
+        { label: '2028–2029 (the wall)', cells: ['Peak concentration', 'Elevated'] },
+      ],
+      footnote: 'Only ~$15B of ~$84B in BDC assets mature in 2026; the load peaks in 2028–2029.',
+    },
+    realWorld:
+      'The danger of a maturity wall is timing: refinancing a few loans is easy, but refinancing a wall of them at once — into higher rates and thinner liquidity — is where defaults cluster.',
+    courseId: 'fixed-income-101-1',
+    courseTitle: 'Credit and Fixed Income',
+  },
+
+  'leveraged-loan': {
+    id: 'leveraged-loan',
+    term: 'Leveraged Loan',
+    definition:
+      'A leveraged loan is a floating-rate loan made to a company that already carries significant debt — a below-investment-grade, or “B”-tier, borrower. These loans finance buyouts and refinancings and are the raw material of both the syndicated market and private credit. Because their rate floats, the borrower’s interest cost rises directly with policy rates.',
+    template: 'comparison',
+    templateData: {
+      title: 'Leveraged loan vs. investment-grade bond',
+      headers: ['Feature', 'Leveraged loan', 'IG bond'],
+      rows: [
+        { label: 'Borrower', cells: ['Below investment grade', 'Investment grade'] },
+        { label: 'Rate', cells: ['Floating', 'Usually fixed'] },
+        { label: 'Default risk', cells: ['Higher', 'Lower'] },
+      ],
+      footnote:
+        'Issuers rated ‘B-’ or below make up roughly 68% of 2028 leveraged-loan maturities.',
+    },
+    realWorld:
+      'Because leveraged loans float, the climb in base rates raised borrowers’ debt-service costs in real time — the squeeze that sits behind the maturity wall.',
+    courseId: 'fixed-income-101-1',
+    courseTitle: 'Credit and Fixed Income',
+  },
+
+  'dry-powder': {
+    id: 'dry-powder',
+    term: 'Dry Powder',
+    definition:
+      'Dry powder is capital that investors have committed to a fund but that the manager has not yet deployed. In private credit it is firepower available to make new loans or refinance existing ones — a buffer that can absorb part of a maturity wall, though lenders deploy it on their own terms and at current pricing.',
+    template: 'comparison',
+    templateData: {
+      title: 'Private credit firepower',
+      headers: ['Metric', 'Value'],
+      rows: [
+        { label: 'Undeployed dry powder', cells: ['$500B+ (mid-2025)'] },
+        { label: 'Total private credit', cells: ['~$1.7 trillion'] },
+      ],
+      footnote:
+        'Dry powder can refinance the strongest borrowers into the wall — but only at the price the lender sets.',
+    },
+    realWorld:
+      'More than $500 billion of committed-but-undeployed capital is the system’s main shock absorber against the 2028–2029 wall.',
+    courseId: 'fixed-income-101-1',
+    courseTitle: 'Credit and Fixed Income',
+  },
 };
 
 export function getKeywordById(id) {
