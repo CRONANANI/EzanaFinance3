@@ -35,13 +35,9 @@ export const metadata = {
   title: 'Ezana Finance - Follow the moves that matter',
   description:
     'Track congressional trades, analyze market intelligence, and manage your portfolio with institutional-grade tools.',
-  icons: {
-    icon: [
-      { url: '/ezana-logo.svg', type: 'image/svg+xml' },
-      { url: '/ezana-logo.png', type: 'image/png' },
-    ],
-    apple: '/ezana-logo.png',
-  },
+  // Favicon + apple-touch icon are served by Next's file conventions from
+  // src/app/icon.png and src/app/apple-icon.png (the nav-bar logo). No explicit
+  // `icons` here so those files are the single source of truth.
 };
 
 export default async function RootLayout({ children }) {
