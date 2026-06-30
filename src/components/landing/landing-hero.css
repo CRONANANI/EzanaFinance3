@@ -418,10 +418,15 @@
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--text-faint);
+  /* Plain words match the "Portfolio sentiment rating" label colour. */
+  color: var(--text-muted);
   margin: 13px 0 8px;
 }
-.lp-why-alert {
+/* "Windfalls" in Ezana green, "headwinds" in red; the rest stays muted. */
+.lp-why-windfall {
+  color: var(--emerald);
+}
+.lp-why-headwind {
   color: var(--negative);
 }
 .lp-signals {
@@ -438,8 +443,24 @@
 .lp-sig-head {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 7px;
   margin-bottom: 6px;
+}
+/* Small gold "Analyze" pill pinned to the right of each signal row. */
+.lp-sig-analyze {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8a6d1a;
+  background: rgba(212, 175, 55, 0.18);
+  border: 1px solid rgba(212, 175, 55, 0.5);
+  border-radius: var(--radius-pill);
+  padding: 2px 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .lp-sig-name {
   font-family: var(--font-mono);
@@ -465,6 +486,9 @@
 }
 .lp-sig-json .n {
   color: var(--amber);
+}
+.lp-sig-json .neg {
+  color: var(--negative);
 }
 .lp-sig-json .p {
   color: var(--text-faint);

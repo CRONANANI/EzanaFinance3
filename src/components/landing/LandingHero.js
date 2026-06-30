@@ -86,7 +86,7 @@ const SIGNALS = [
       t(' '),
       j('k', '"signal"'),
       t(': '),
-      j('s', '"institutional_buy"'),
+      j('s', '"institutional_sell"'),
       t(',\n  '),
       j('k', '"filing"'),
       t(': '),
@@ -94,7 +94,7 @@ const SIGNALS = [
       t(', '),
       j('k', '"Δposition"'),
       t(': '),
-      j('n', '+1.2M'),
+      j('neg', '-1.2M'),
       t(' '),
       j('p', '}'),
     ],
@@ -301,13 +301,17 @@ export function LandingHero() {
             </div>
           </div>
 
-          <div className="lp-why lp-why-alert">Windfalls to watch out for:</div>
+          <div className="lp-why">
+            <span className="lp-why-windfall">Windfalls</span> and{' '}
+            <span className="lp-why-headwind">headwinds</span> to watch out for:
+          </div>
 
           <div className="lp-signals">
             {SIGNALS.map((s) => (
               <div className="lp-signal" key={s.name}>
                 <div className="lp-sig-head">
                   <span className="lp-sig-name">{s.name}</span>
+                  <span className="lp-sig-analyze">Analyze</span>
                 </div>
                 <pre className="lp-sig-json">
                   {s.json.map((seg, i) =>
