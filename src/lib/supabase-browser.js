@@ -29,7 +29,18 @@ if (!supabaseUrl || !supabaseAnonKey) {
 // "Signing in…") — and the held lock survives client-side navigation, so it
 // also wedges every later sign-in in the same tab. The factory therefore
 // returns the one shared instance instead of constructing a new client.
-export const supabase = createBrowserClient(supabaseUrl || '', supabaseAnonKey || '');
+//
+// No-op auth lock: bypass the navigator Web Locks API entirely. The default
+// navigator lock can be acquired-but-not-released across our full-page
+// (window.location.assign) auth redirects — e.g. during MFA — deadlocking
+// mfa.verify()/getUser() so login hangs on "Verifying…". Running the callback
+// without a lock is safe because we use the single shared client instance
+// above: there is no multi-instance race for the lock to guard.
+const noopLock = async (_name, _acquireTimeout, fn) => fn();
+
+export const supabase = createBrowserClient(supabaseUrl || '', supabaseAnonKey || '', {
+  auth: { flowType: 'pkce', lock: noopLock },
+});
 
 export function createClient() {
   return supabase;

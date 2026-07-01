@@ -50,24 +50,64 @@ export default function MfaChallengeCard({ redirectTo = '/home' }) {
       if (!factorId || code.length !== 6 || loading) return;
       setLoading(true);
       setError(null);
-      const { data: challenge, error: chErr } = await supabase.auth.mfa.challenge({ factorId });
-      if (chErr) {
-        setError(chErr.message);
+
+      // Safety valve: never let the button stick on "Verifying…" forever. If the
+      // verify/redirect path stalls, recover the UI so the user can retry.
+      let timedOut = false;
+      const guard = setTimeout(() => {
+        timedOut = true;
+        setError('Verification timed out. Please try again.');
         setLoading(false);
-        return;
+      }, 15000);
+
+      try {
+        const { data: challenge, error: chErr } = await supabase.auth.mfa.challenge({ factorId });
+        if (chErr) {
+          clearTimeout(guard);
+          if (!timedOut) {
+            setError(chErr.message);
+            setLoading(false);
+          }
+          return;
+        }
+        const { error: vErr } = await supabase.auth.mfa.verify({
+          factorId,
+          challengeId: challenge.id,
+          code,
+        });
+        if (vErr) {
+          clearTimeout(guard);
+          if (!timedOut) {
+            setError(vErr.message);
+            setLoading(false);
+          }
+          return;
+        }
+
+        // verify() succeeded, but window.location.assign() can fire before the new
+        // aal2 cookie is persisted, so the middleware bounces back to /auth/mfa (a
+        // loop that looks like a hang). Poll until the session reports aal2 first.
+        try {
+          for (let i = 0; i < 10; i++) {
+            const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+            if (aal?.currentLevel === 'aal2') break;
+            await new Promise((r) => setTimeout(r, 150));
+          }
+        } catch {
+          /* redirect regardless — the cookie is set even if this poll errors */
+        }
+
+        if (timedOut) return; // guard already recovered the UI; don't redirect
+        clearTimeout(guard);
+        // Session is now aal2 — full reload so the middleware sees the new cookie.
+        window.location.assign(dest);
+      } catch (err) {
+        clearTimeout(guard);
+        if (!timedOut) {
+          setError(err?.message || 'Something went wrong. Please try again.');
+          setLoading(false);
+        }
       }
-      const { error: vErr } = await supabase.auth.mfa.verify({
-        factorId,
-        challengeId: challenge.id,
-        code,
-      });
-      if (vErr) {
-        setError(vErr.message);
-        setLoading(false);
-        return;
-      }
-      // Session is now aal2 — full reload so the middleware sees the new cookie.
-      window.location.assign(dest);
     },
     [factorId, code, loading, dest],
   );

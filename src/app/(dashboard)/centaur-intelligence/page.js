@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { createBrowserClient } from '@supabase/ssr';
+import { supabase } from '@/lib/supabase-browser';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -22,8 +22,11 @@ import dynamicImport from 'next/dynamic';
    sit in the initial bundle of /centaur-intelligence (previously ~298 kB
    First Load). */
 const SentinelReportModal = dynamicImport(
-  () => import('@/components/centaur/SentinelReportModal').then((m) => ({ default: m.SentinelReportModal })),
-  { ssr: false, loading: () => null }
+  () =>
+    import('@/components/centaur/SentinelReportModal').then((m) => ({
+      default: m.SentinelReportModal,
+    })),
+  { ssr: false, loading: () => null },
 );
 
 const TooltipProvider = TooltipPrimitive.Provider;
@@ -110,10 +113,9 @@ export default function CentaurIntelligencePage() {
     [boardroomMode],
   );
 
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  );
+  // Uses the single shared browser client (with the no-op auth lock) — creating
+  // a separate client here would re-introduce the multi-instance Web Locks
+  // deadlock the shared client exists to prevent.
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -153,7 +155,9 @@ export default function CentaurIntelligencePage() {
       if (!res.ok) return;
       const data = await res.json();
       setSentinelReport(data.report);
-      setSentinelReports(Array.isArray(data.reports) ? data.reports : data.report ? [data.report] : []);
+      setSentinelReports(
+        Array.isArray(data.reports) ? data.reports : data.report ? [data.report] : [],
+      );
     } catch (error) {
       console.error('Failed to fetch sentinel report:', error);
     }
@@ -220,7 +224,10 @@ export default function CentaurIntelligencePage() {
       console.error('Chat fetch error:', err);
       setDisplayMessages((prev) => [
         ...prev,
-        { role: 'assistant', content: 'Connection error. Please check your internet and try again.' },
+        {
+          role: 'assistant',
+          content: 'Connection error. Please check your internet and try again.',
+        },
       ]);
     } finally {
       setChatLoading(false);
@@ -276,8 +283,14 @@ export default function CentaurIntelligencePage() {
 
   if (loading) {
     return (
-      <div className="dashboard-page-inset er-page ci-page" style={{ padding: '2rem', textAlign: 'center', color: '#888' }}>
-        <i className="bi bi-hourglass" style={{ fontSize: '2rem', display: 'block', marginBottom: '1rem' }} />
+      <div
+        className="dashboard-page-inset er-page ci-page"
+        style={{ padding: '2rem', textAlign: 'center', color: '#888' }}
+      >
+        <i
+          className="bi bi-hourglass"
+          style={{ fontSize: '2rem', display: 'block', marginBottom: '1rem' }}
+        />
         Loading Centaur Intelligence...
       </div>
     );
@@ -315,14 +328,20 @@ export default function CentaurIntelligencePage() {
             </div>
             {sentinelReport && (
               <div className="er-card-actions">
-                <button type="button" onClick={() => openSentinelModal(sentinelReport)} className="er-pill-toggle er-pill-toggle--active">
+                <button
+                  type="button"
+                  onClick={() => openSentinelModal(sentinelReport)}
+                  className="er-pill-toggle er-pill-toggle--active"
+                >
                   View Latest
                 </button>
               </div>
             )}
           </div>
           <div className="er-card-body">
-            <p style={{ color: '#d4af37', fontWeight: 600, marginBottom: '0.5rem' }}>Portfolio Status: STRONG</p>
+            <p style={{ color: '#d4af37', fontWeight: 600, marginBottom: '0.5rem' }}>
+              Portfolio Status: STRONG
+            </p>
             <p style={{ fontSize: '0.9rem', marginBottom: '1rem' }}>
               Your portfolio health is strong. Review the full report for highlights and actions.
             </p>
@@ -376,7 +395,9 @@ export default function CentaurIntelligencePage() {
                 <i className="bi bi-chat-dots" aria-hidden />
                 <div>
                   <h3>Chat with {boardroomMode || 'Yohannes'}</h3>
-                  <p className="er-card-subtitle">{boardroomMode ? 'Boardroom meeting mode' : 'Default advisor'}</p>
+                  <p className="er-card-subtitle">
+                    {boardroomMode ? 'Boardroom meeting mode' : 'Default advisor'}
+                  </p>
                 </div>
               </div>
               <div className="er-card-actions">
@@ -403,22 +424,36 @@ export default function CentaurIntelligencePage() {
               {showDalioBanner && (
                 <div className="er-card ci-dalio-banner">
                   <div className="er-card-body">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.75rem',
+                        marginBottom: '0.75rem',
+                      }}
+                    >
                       <div className="ci-dalio-avatar">RD</div>
                       <div>
                         <h3 className="ci-dalio-name">DalioMind</h3>
                         <p className="er-card-subtitle" style={{ margin: '2px 0 0' }}>
-                          Founder, Bridgewater Associates · Author, <em>The Changing World Order</em>
+                          Founder, Bridgewater Associates · Author,{' '}
+                          <em>The Changing World Order</em>
                         </p>
                       </div>
                     </div>
                     <p style={{ fontSize: '0.82rem', lineHeight: 1.5, margin: '0 0 0.75rem' }}>
-                      Ask me about macro cycles, empire rises and declines, money and debt dynamics, the US–China transition, reserve currency history,
-                      or how to think about investing through major regime changes.
+                      Ask me about macro cycles, empire rises and declines, money and debt dynamics,
+                      the US–China transition, reserve currency history, or how to think about
+                      investing through major regime changes.
                     </p>
                     <div className="er-pill-toggle-group" style={{ marginBottom: 0 }}>
                       {RAY_DALIO_SUGGESTED_PROMPTS.map((prompt) => (
-                        <button key={prompt} type="button" className="er-pill-toggle" onClick={() => setPromptValue(prompt)}>
+                        <button
+                          key={prompt}
+                          type="button"
+                          className="er-pill-toggle"
+                          onClick={() => setPromptValue(prompt)}
+                        >
                           {prompt}
                         </button>
                       ))}
@@ -438,7 +473,9 @@ export default function CentaurIntelligencePage() {
                   >
                     {msg.role === 'assistant' ? boardroomMode || 'Yohannes' : 'You'}
                   </div>
-                  <p style={{ margin: 0, color: '#1f2937', fontSize: '0.85rem', lineHeight: '1.5' }}>
+                  <p
+                    style={{ margin: 0, color: '#1f2937', fontSize: '0.85rem', lineHeight: '1.5' }}
+                  >
                     {msg.content}
                   </p>
                 </div>
@@ -449,13 +486,20 @@ export default function CentaurIntelligencePage() {
               <CentaurPromptBox
                 onSend={sendMessage}
                 disabled={chatLoading}
-                placeholder={chatLoading ? 'Waiting for reply…' : `Message ${boardroomMode || 'Yohannes'}…`}
+                placeholder={
+                  chatLoading ? 'Waiting for reply…' : `Message ${boardroomMode || 'Yohannes'}…`
+                }
                 value={promptValue}
                 onValueChange={setPromptValue}
                 promptShellClassName="ci-centaur-prompt-shell"
               />
               {boardroomMode && (
-                <button type="button" onClick={exitBoardroom} className="er-pill-toggle" style={{ marginTop: '8px', width: '100%', justifyContent: 'center' }}>
+                <button
+                  type="button"
+                  onClick={exitBoardroom}
+                  className="er-pill-toggle"
+                  style={{ marginTop: '8px', width: '100%', justifyContent: 'center' }}
+                >
                   Exit boardroom (back to Yohannes)
                 </button>
               )}
@@ -474,7 +518,9 @@ export default function CentaurIntelligencePage() {
                 </div>
               </div>
               <div className="er-card-body">
-                <p style={{ fontSize: '0.85rem', marginBottom: '1rem' }}>Schedule a meeting with legendary investors to review your portfolio.</p>
+                <p style={{ fontSize: '0.85rem', marginBottom: '1rem' }}>
+                  Schedule a meeting with legendary investors to review your portfolio.
+                </p>
                 {LEGENDARY_INVESTORS.map((investor) => (
                   <div
                     key={investor.id}
@@ -486,7 +532,15 @@ export default function CentaurIntelligencePage() {
                       gap: '10px',
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        flex: 1,
+                        minWidth: 0,
+                      }}
+                    >
                       <div
                         style={{
                           width: '36px',
@@ -503,7 +557,14 @@ export default function CentaurIntelligencePage() {
                         <i className="bi bi-cpu" style={{ color: '#D4AF37', fontSize: '1rem' }} />
                       </div>
                       <div style={{ minWidth: 0 }}>
-                        <p style={{ margin: 0, fontSize: '0.875rem', fontWeight: 700, color: '#D4AF37' }}>
+                        <p
+                          style={{
+                            margin: 0,
+                            fontSize: '0.875rem',
+                            fontWeight: 700,
+                            color: '#D4AF37',
+                          }}
+                        >
                           {investor.botName}
                         </p>
                         <p style={{ margin: 0, fontSize: '0.6875rem', color: '#6b7280' }}>
@@ -521,7 +582,9 @@ export default function CentaurIntelligencePage() {
                   </div>
                 ))}
                 {/* New advisors from the Council Chamber — coming soon */}
-                {ADVISORS.filter((a) => !LEGENDARY_INVESTORS.some((inv) => inv.botName === a.name)).map((advisor) => (
+                {ADVISORS.filter(
+                  (a) => !LEGENDARY_INVESTORS.some((inv) => inv.botName === a.name),
+                ).map((advisor) => (
                   <div
                     key={advisor.id}
                     style={{
@@ -533,7 +596,15 @@ export default function CentaurIntelligencePage() {
                       opacity: 0.6,
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        flex: 1,
+                        minWidth: 0,
+                      }}
+                    >
                       <div
                         style={{
                           width: '36px',
@@ -551,11 +622,24 @@ export default function CentaurIntelligencePage() {
                         {advisor.glyph}
                       </div>
                       <div style={{ minWidth: 0 }}>
-                        <p style={{ margin: 0, fontSize: '0.875rem', fontWeight: 700, color: '#D4AF37' }}>{advisor.name}</p>
-                        <p style={{ margin: 0, fontSize: '0.6875rem', color: '#6b7280' }}>Inspired by {advisor.persona}</p>
+                        <p
+                          style={{
+                            margin: 0,
+                            fontSize: '0.875rem',
+                            fontWeight: 700,
+                            color: '#D4AF37',
+                          }}
+                        >
+                          {advisor.name}
+                        </p>
+                        <p style={{ margin: 0, fontSize: '0.6875rem', color: '#6b7280' }}>
+                          Inspired by {advisor.persona}
+                        </p>
                       </div>
                     </div>
-                    <span style={{ fontSize: '0.6rem', color: '#6b7280', fontStyle: 'italic' }}>Coming soon</span>
+                    <span style={{ fontSize: '0.6rem', color: '#6b7280', fontStyle: 'italic' }}>
+                      Coming soon
+                    </span>
                   </div>
                 ))}
               </div>
@@ -573,7 +657,12 @@ export default function CentaurIntelligencePage() {
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
                   <i
                     className="bi bi-info-circle"
-                    style={{ color: '#D4AF37', fontSize: '0.8rem', flexShrink: 0, marginTop: '1px' }}
+                    style={{
+                      color: '#D4AF37',
+                      fontSize: '0.8rem',
+                      flexShrink: 0,
+                      marginTop: '1px',
+                    }}
                   />
                   <p
                     style={{
@@ -613,7 +702,11 @@ export default function CentaurIntelligencePage() {
                     {debriefItems.slice(0, 3).map((item, idx) => (
                       <div
                         key={idx}
-                        style={{ marginBottom: '0.75rem', paddingBottom: '0.75rem', borderBottom: '1px solid rgba(212, 175, 55, 0.08)' }}
+                        style={{
+                          marginBottom: '0.75rem',
+                          paddingBottom: '0.75rem',
+                          borderBottom: '1px solid rgba(212, 175, 55, 0.08)',
+                        }}
                       >
                         <p style={{ fontSize: '0.8rem', margin: '0 0 4px 0', fontWeight: 600 }}>
                           {item.event_title}
@@ -623,7 +716,16 @@ export default function CentaurIntelligencePage() {
                         </p>
                       </div>
                     ))}
-                    <Link href="/market-analysis" style={{ display: 'inline-block', color: '#d4af37', fontSize: '0.8rem', marginTop: '1rem', textDecoration: 'none' }}>
+                    <Link
+                      href="/market-analysis"
+                      style={{
+                        display: 'inline-block',
+                        color: '#d4af37',
+                        fontSize: '0.8rem',
+                        marginTop: '1rem',
+                        textDecoration: 'none',
+                      }}
+                    >
                       Review Debrief →
                     </Link>
                   </>
@@ -633,7 +735,11 @@ export default function CentaurIntelligencePage() {
           </div>
         </div>
 
-        <SentinelReportModal open={sentinelModalOpen} onClose={() => setSentinelModalOpen(false)} report={modalReport} />
+        <SentinelReportModal
+          open={sentinelModalOpen}
+          onClose={() => setSentinelModalOpen(false)}
+          report={modalReport}
+        />
       </div>
     </TooltipProvider>
   );
