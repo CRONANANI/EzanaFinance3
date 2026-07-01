@@ -211,6 +211,8 @@ export default function GovContractsClient({ awards = [], isLive = false, note =
     <div className="gcx-page">
       <CategoryBar openCat={openCat} setOpenCat={setOpenCat} />
 
+      <AwardTicker awards={awards} />
+
       <header className="gcx-header">
         <p className="gcx-eyebrow">DATASETS · USASPENDING.GOV</p>
         <h1 className="gcx-title">Government contracts</h1>
@@ -218,13 +220,6 @@ export default function GovContractsClient({ awards = [], isLive = false, note =
           Federal contract awards from USAspending.gov, aggregated by recipient and awarding agency.
           {isLive ? '' : ' Showing sample data — live source unavailable.'}
         </p>
-        <button
-          type="button"
-          className={`gcx-btn ${queryOpen ? 'gcx-btn-outline' : 'gcx-btn-primary'}`}
-          onClick={() => setQueryOpen((o) => !o)}
-        >
-          {queryOpen ? 'Close builder' : 'Generate report'}
-        </button>
       </header>
 
       {queryOpen && (
@@ -237,6 +232,9 @@ export default function GovContractsClient({ awards = [], isLive = false, note =
       <div className="gcx-body">
         {/* filter rail */}
         <aside className="gcx-rail">
+          <button type="button" className="gcx-reportbtn" onClick={() => setQueryOpen((o) => !o)}>
+            {queryOpen ? 'Close builder' : 'Generate report'}
+          </button>
           <FilterGroup title="Awarding agency">
             <RailChip
               active={agencyFilter === 'all'}
@@ -343,19 +341,50 @@ export default function GovContractsClient({ awards = [], isLive = false, note =
             )}
           </section>
 
-          <section className="gcx-card gcx-list">
-            <div className="gcx-list-head">
-              <h2 className="gcx-hero-title">Leading contractors · {label}</h2>
-              <span className="gcx-list-count">{filtered.length} shown</span>
-            </div>
-            <ContractorList recipients={filtered.slice(0, 25)} onPick={setSelected} />
-          </section>
-
           <p className="gcx-note">{note}</p>
         </main>
       </div>
 
+      {/* Leading contractors — full page width, below the rail + treemap row. */}
+      <section className="gcx-card gcx-list">
+        <div className="gcx-list-head">
+          <h2 className="gcx-hero-title">Leading contractors · {label}</h2>
+          <span className="gcx-list-count">{filtered.length} shown</span>
+        </div>
+        <ContractorList recipients={filtered.slice(0, 25)} onPick={setSelected} />
+      </section>
+
       {selected && <DrillModal recipient={selected} onClose={() => setSelected(null)} />}
+    </div>
+  );
+}
+
+/* ────────────────────────── Award ticker ────────────────────────── */
+function AwardTicker({ awards }) {
+  const items = useMemo(() => {
+    const list = awards
+      .map((a) => ({
+        agency: AGENCIES[normalizeAgency(a.agency)].label,
+        name: a.recipient,
+        value: fmtUSD(Number(a.amountValue) || parseAmount(a.amount) || 0),
+      }))
+      .filter((x) => x.name)
+      .slice(0, 24);
+    return list.length ? [...list, ...list] : []; // duplicate for a seamless loop
+  }, [awards]);
+
+  if (!items.length) return null;
+  return (
+    <div className="gcx-ticker" aria-hidden="true">
+      <div className="gcx-ticker-track">
+        {items.map((it, i) => (
+          <div className="gcx-titem" key={i}>
+            <span className="gcx-ta gcx-mono">{it.agency}</span>
+            <span className="gcx-tn">{it.name}</span>
+            <span className="gcx-tv gcx-mono">{it.value}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -628,6 +657,68 @@ function ShareDonut({ recipients, total }) {
   );
 }
 
+/* Modal donut: this recipient's awards split by awarding agency (center = top
+   agency %). Every award carries an agency, so this is always derivable. */
+function AgencyBreakdown({ awards }) {
+  const byAgency = {};
+  for (const a of awards) {
+    const ag = normalizeAgency(a.agencyName);
+    byAgency[ag] = (byAgency[ag] || 0) + (Number(a.value) || 0);
+  }
+  const data = AGENCY_ORDER.filter((ag) => byAgency[ag]).map((ag) => ({
+    agency: ag,
+    value: byAgency[ag],
+  }));
+  const sum = data.reduce((s, d) => s + d.value, 0);
+  if (!sum) return <div className="gcx-empty">No agency data.</div>;
+  const segs = donutSegments(data, sum);
+  const top = [...data].sort((a, b) => b.value - a.value)[0];
+  const topPct = Math.round((top.value / sum) * 100);
+  return (
+    <div className="gcx-donut-wrap gcx-donut-wrap--sm">
+      <svg viewBox="0 0 150 150" className="gcx-donut">
+        <circle cx={75} cy={75} r={58} fill="none" stroke="var(--bg-tertiary)" strokeWidth={26} />
+        {segs.map((s) => {
+          const C = 2 * Math.PI * 58;
+          const frac = s.dash / (2 * Math.PI * 70); // recompute for r=58
+          return (
+            <circle
+              key={s.agency}
+              cx={75}
+              cy={75}
+              r={58}
+              fill="none"
+              stroke={AGENCIES[s.agency].color}
+              strokeWidth={26}
+              strokeDasharray={`${frac * C} ${C - frac * C}`}
+              strokeDashoffset={(s.offset / (2 * Math.PI * 70)) * C}
+              transform="rotate(-90 75 75)"
+            />
+          );
+        })}
+        <text x={75} y={72} className="gcx-donut-c1">
+          {topPct}%
+        </text>
+        <text x={75} y={88} className="gcx-donut-c2">
+          {AGENCIES[top.agency].label}
+        </text>
+      </svg>
+      <div className="gcx-donut-list">
+        {[...data]
+          .sort((a, b) => b.value - a.value)
+          .map((d) => (
+            <div className="gcx-donut-row" key={d.agency}>
+              <span className="gcx-dot" style={{ background: AGENCIES[d.agency].color }} />
+              <span className="gcx-donut-name">{AGENCIES[d.agency].label}</span>
+              <span className="gcx-mono gcx-donut-val">{fmtUSD(d.value)}</span>
+              <span className="gcx-mono gcx-donut-pct">{Math.round((d.value / sum) * 100)}%</span>
+            </div>
+          ))}
+      </div>
+    </div>
+  );
+}
+
 /* ────────────────────────── Contractor list ────────────────────────── */
 function ContractorList({ recipients, onPick }) {
   const max = Math.max(...recipients.map((r) => r.total), 1);
@@ -730,6 +821,11 @@ function DrillModal({ recipient: r, onClose }) {
           ) : (
             <div className="gcx-empty">No dated awards for this recipient in the loaded slice.</div>
           )}
+
+          <div className="gcx-modal-h" style={{ marginTop: 18 }}>
+            Breakdown by agency
+          </div>
+          <AgencyBreakdown awards={r.awards} />
 
           <div className="gcx-modal-actions">
             <button type="button" className="gcx-btn gcx-btn-primary">

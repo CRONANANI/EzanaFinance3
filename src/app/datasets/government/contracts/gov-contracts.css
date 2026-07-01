@@ -90,6 +90,53 @@
   font-weight: 600;
 }
 
+/* ── award ticker (white marquee, thin emerald underline) ── */
+.gcx-ticker {
+  overflow: hidden;
+  background: #fff;
+  border-bottom: 1.5px solid var(--emerald);
+  margin-bottom: 20px;
+  white-space: nowrap;
+}
+.gcx-ticker-track {
+  display: inline-flex;
+  width: max-content;
+  animation: gcx-tick 40s linear infinite;
+}
+.gcx-ticker:hover .gcx-ticker-track {
+  animation-play-state: paused;
+}
+@keyframes gcx-tick {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.gcx-titem {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 9px;
+  padding: 11px 20px;
+  border-right: 1px solid var(--border-primary);
+}
+.gcx-titem .gcx-ta {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.gcx-titem .gcx-tn {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.gcx-titem .gcx-tv {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--emerald);
+}
+
 /* ── header ── */
 .gcx-header {
   text-align: center;
@@ -171,11 +218,35 @@
   align-items: flex-start;
 }
 .gcx-rail {
-  width: 210px;
+  width: 148px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 20px;
+}
+
+/* Generate report — top of the rail, full width: white bg, emerald text, 2px
+   emerald underline (per design correction #3). */
+.gcx-reportbtn {
+  width: 100%;
+  height: 32px;
+  background: #fff;
+  color: var(--emerald);
+  border: none;
+  border-bottom: 2px solid var(--emerald);
+  border-radius: 6px;
+  font-family: var(--font-sans, sans-serif);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background 0.15s ease;
+}
+.gcx-reportbtn:hover {
+  background: var(--emerald-bg);
 }
 .gcx-main {
   flex: 1;
@@ -188,12 +259,13 @@
 /* ── filter groups ── */
 .gcx-fg-title {
   font-family: var(--font-mono, monospace);
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--emerald);
   margin-bottom: 9px;
+  padding: 0 9px;
 }
 .gcx-chip {
   display: flex;
@@ -213,12 +285,13 @@
   background: var(--bg-tertiary);
 }
 .gcx-chip.is-active {
-  background: var(--emerald);
-  color: #fff;
-  border-color: var(--emerald);
+  background: var(--emerald-bg);
+  color: var(--emerald);
+  border-color: transparent;
+  font-weight: 600;
 }
 .gcx-chip.is-active .gcx-chip-count {
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--emerald);
 }
 .gcx-chip-label {
   display: inline-flex;
@@ -399,6 +472,14 @@
   gap: 26px;
   padding: 12px;
 }
+.gcx-donut-wrap--sm {
+  gap: 16px;
+  padding: 4px 0 8px;
+}
+.gcx-donut-wrap--sm .gcx-donut {
+  width: 130px;
+  height: 130px;
+}
 .gcx-donut {
   width: 180px;
   height: 180px;
@@ -440,9 +521,10 @@
   text-align: right;
 }
 
-/* ── list ── */
+/* ── list (full page width, below the rail + treemap row) ── */
 .gcx-list {
   padding: 14px 18px;
+  margin-top: 18px;
 }
 .gcx-list-head {
   display: flex;
