@@ -8,6 +8,20 @@
   background: var(--bg-primary);
   color: var(--text-primary);
   font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  /* Pin the design tokens to their exact Option-1b values so accents resolve to
+     the BRIGHT emerald (#10b981) at rest — some ancestor theme scopes redefine
+     --emerald to the darker #059669, which is the design's HOVER colour only.
+     Also pin the agency status colours so the treemap/legend match the mockup
+     regardless of which theme scope wraps the page. */
+  --emerald: #10b981;
+  --emerald-hover: #059669;
+  --emerald-bg: rgba(16, 185, 129, 0.08);
+  --emerald-border: rgba(16, 185, 129, 0.15);
+  --positive: #10b981;
+  --warning: #f59e0b;
+  --info: #3b82f6;
+  --purple: #a78bfa;
+  --pink: #ec4899;
 }
 .gcx-mono {
   font-family: var(--font-mono, 'JetBrains Mono', monospace);

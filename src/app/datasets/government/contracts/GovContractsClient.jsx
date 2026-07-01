@@ -464,13 +464,29 @@ function Treemap({ recipients, onPick }) {
   }));
   const grandTotal = columns.reduce((s, c) => s + c.total, 0) || 1;
 
+  // Column widths: give every present agency a readable MINIMUM width so a
+  // dominant agency (DoD) can't crush the rest into slivers, then distribute the
+  // remaining width proportionally to each agency's total. Falls back to purely
+  // proportional if the minimums wouldn't fit.
+  const totalGaps = GAP * Math.max(0, columns.length - 1);
+  const avail = W - totalGaps;
+  const MIN_COL = 100;
+  const useMin = MIN_COL * columns.length <= avail;
+  const remainder = useMin ? avail - MIN_COL * columns.length : avail;
+
   let x = 0;
   const tiles = [];
-  columns.forEach((col, ci) => {
-    const colW = Math.max(24, (col.total / grandTotal) * (W - GAP * (columns.length - 1)));
+  columns.forEach((col) => {
+    const colW = useMin
+      ? MIN_COL + (col.total / grandTotal) * remainder
+      : Math.max(24, (col.total / grandTotal) * avail);
+    // Recipient tiles fill the column height proportionally, with a readable
+    // minimum so a tall stack of tiny awards still shows a hover target.
+    const colGaps = GAP * Math.max(0, col.items.length - 1);
+    const colInner = H - colGaps;
     let y = 0;
     col.items.forEach((r) => {
-      const h = Math.max(3, (r.total / col.total) * (H - GAP * (col.items.length - 1)));
+      const h = Math.max(3, (r.total / col.total) * colInner);
       tiles.push({ r, x, y, w: colW, h, agency: col.agency });
       y += h + GAP;
     });
