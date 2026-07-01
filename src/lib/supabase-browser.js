@@ -30,16 +30,33 @@ if (!supabaseUrl || !supabaseAnonKey) {
 // also wedges every later sign-in in the same tab. The factory therefore
 // returns the one shared instance instead of constructing a new client.
 //
-// No-op auth lock: bypass the navigator Web Locks API entirely. The default
-// navigator lock can be acquired-but-not-released across our full-page
-// (window.location.assign) auth redirects — e.g. during MFA — deadlocking
-// mfa.verify()/getUser() so login hangs on "Verifying…". Running the callback
-// without a lock is safe because we use the single shared client instance
-// above: there is no multi-instance race for the lock to guard.
-const noopLock = async (_name, _acquireTimeout, fn) => fn();
+// In-memory, self-releasing serialization lock.
+//
+// Why not the default navigator Web Locks lock: it was being acquired and NOT
+// released across our full-page (window.location.assign) auth redirects, which
+// deadlocked mfa.verify()/getUser() → login hung forever on "Verifying…".
+//
+// Why not a no-op lock (lock: (_n,_t,fn)=>fn()): with zero serialization, a
+// background autoRefreshToken can run concurrently with mfa.challenge()/verify(),
+// racing over the session and stalling the verify → "Verification timed out."
+//
+// This promise-chain lock serializes auth calls within the tab (fixing the race)
+// but ALWAYS releases when each call settles (fixing the deadlock). It is
+// functionally what Supabase's own processLock does, implemented inline so it
+// doesn't depend on a specific export path.
+let lockChain = Promise.resolve();
+const processLock = (_name, _acquireTimeout, fn) => {
+  const run = lockChain.then(() => fn());
+  // Keep the chain alive regardless of success/failure, without leaking rejections.
+  lockChain = run.then(
+    () => undefined,
+    () => undefined,
+  );
+  return run;
+};
 
 export const supabase = createBrowserClient(supabaseUrl || '', supabaseAnonKey || '', {
-  auth: { flowType: 'pkce', lock: noopLock },
+  auth: { flowType: 'pkce', lock: processLock },
 });
 
 export function createClient() {

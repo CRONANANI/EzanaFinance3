@@ -52,13 +52,18 @@ export default function MfaChallengeCard({ redirectTo = '/home' }) {
       setError(null);
 
       // Safety valve: never let the button stick on "Verifying…" forever. If the
-      // verify/redirect path stalls, recover the UI so the user can retry.
+      // verify/redirect path stalls, recover the UI so the user can retry. 20s is
+      // generous — challenge() + verify() + TOTP validation can take several
+      // seconds on a slow connection; `stage` records how far we got for field
+      // diagnosis if the guard ever trips.
       let timedOut = false;
+      let stage = 'challenge';
       const guard = setTimeout(() => {
         timedOut = true;
+        console.warn('[mfa] timed out — last stage:', stage);
         setError('Verification timed out. Please try again.');
         setLoading(false);
-      }, 15000);
+      }, 20000);
 
       try {
         const { data: challenge, error: chErr } = await supabase.auth.mfa.challenge({ factorId });
@@ -70,6 +75,7 @@ export default function MfaChallengeCard({ redirectTo = '/home' }) {
           }
           return;
         }
+        stage = 'verify';
         const { error: vErr } = await supabase.auth.mfa.verify({
           factorId,
           challengeId: challenge.id,
@@ -84,11 +90,13 @@ export default function MfaChallengeCard({ redirectTo = '/home' }) {
           return;
         }
 
-        // verify() succeeded, but window.location.assign() can fire before the new
-        // aal2 cookie is persisted, so the middleware bounces back to /auth/mfa (a
-        // loop that looks like a hang). Poll until the session reports aal2 first.
+        // verify() succeeded → the session IS aal2 server-side. The poll below is
+        // only to let the new cookie settle before window.location.assign(), so the
+        // middleware doesn't bounce back to /auth/mfa. Cap it short (~750ms) and
+        // redirect regardless — don't let the poll extend the perceived verify time.
+        stage = 'poll';
         try {
-          for (let i = 0; i < 10; i++) {
+          for (let i = 0; i < 5; i++) {
             const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
             if (aal?.currentLevel === 'aal2') break;
             await new Promise((r) => setTimeout(r, 150));
