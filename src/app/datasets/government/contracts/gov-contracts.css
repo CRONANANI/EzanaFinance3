@@ -2,9 +2,9 @@
    except the gold/agency accents which come from CSS custom properties). */
 
 .gcx-page {
-  max-width: 1200px;
+  max-width: 1440px;
   margin: 0 auto;
-  padding: 0 20px 64px;
+  padding: 0 32px 64px;
   background: var(--bg-primary);
   color: var(--text-primary);
   font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
@@ -31,6 +31,7 @@
 /* ── category bar ── */
 .gcx-catbar {
   display: flex;
+  justify-content: center;
   gap: 4px;
   border-bottom: 1px solid var(--border-primary);
   padding: 10px 0;
@@ -101,7 +102,9 @@
 .gcx-ticker-track {
   display: inline-flex;
   width: max-content;
-  animation: gcx-tick 40s linear infinite;
+  /* ~30% slower than the original 40s (per design tweak). Scoped to this page's
+     own AwardTicker — not the shared am2 MarqueeTicker, which isn't used here. */
+  animation: gcx-tick 52s linear infinite;
 }
 .gcx-ticker:hover .gcx-ticker-track {
   animation-play-state: paused;

@@ -478,7 +478,10 @@ function AgencyLegend({ agencyFilter, onPick, counts }) {
 
 /* ────────────────────────── Treemap ────────────────────────── */
 function Treemap({ recipients, onPick }) {
-  const W = 900;
+  // Wider viewBox keeps the aspect ratio balanced (not too tall) now that the
+  // page/main column is wider (1440px max). viewBox scales uniformly, so tiles
+  // don't distort — this just tunes the width:height proportion.
+  const W = 1100;
   const H = 440;
   const GAP = 3;
   const maxValue = Math.max(...recipients.map((r) => r.total), 1);
