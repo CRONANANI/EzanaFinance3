@@ -363,13 +363,6 @@ function joinList(arr) {
 }
 
 /* ══════════════════════════ ticker (real live items) ══════════════════════════ */
-const TAGS = {
-  congress: { tag: 'CONGRESS', color: 'var(--emerald)' },
-  gov: { tag: 'CONTRACTS', color: 'var(--amber)' },
-  sec: { tag: '13F', color: 'var(--info)' },
-  markets: { tag: 'ODDS', color: 'var(--purple)' },
-};
-
 function shortMoney(n) {
   const v = Number(n);
   if (!Number.isFinite(v) || v <= 0) return null;
@@ -398,98 +391,151 @@ async function getJson(url) {
   return res.json().catch(() => null);
 }
 
-/** Fetch the four live feeds, omit any that error/return nothing, round-robin
- *  interleave so tags mix, cap ~20. Returns { items, omitted[] }. */
+/* Polymarket outcomePrices are already market-implied probabilities in [0,1]
+   (same reading match.js's normalizeProbability uses). Parse to [{name,prob}]. */
+function marketOutcomes(m) {
+  const names = parseMaybeJson(m.outcomes) || [];
+  const prices = parseMaybeJson(m.outcomePrices) || [];
+  const out = [];
+  for (let i = 0; i < Math.max(names.length, prices.length); i++) {
+    const prob = Number(prices[i]);
+    if (!Number.isFinite(prob)) continue;
+    out.push({ name: names[i] || (i === 0 ? 'Yes' : 'No'), prob });
+  }
+  return out.sort((a, b) => b.prob - a.prob);
+}
+
+const PER_SOURCE_CAP = 4;
+
+/* Each ticker item carries its parent category (for tag color) plus a
+   per-subcategory tag. ODDS items also carry the Polymarket slug so a click can
+   open the detail popup. Every subcategory with a live route is sampled; those
+   without one are omitted and reported (dynamically).
+   Wireable now: congress trades, lobbying, contracts, 13F, prices, prediction.
+   No live route (omitted): FEC fundraising, federal outlays, patents, insider
+   Form 4, ETF holdings, analyst ratings (auth-gated). */
 async function loadTickerItems() {
-  const [congress, contracts, thirteenF, odds] = await Promise.all([
+  const [congress, lobbying, contracts, thirteenF, movers, markets] = await Promise.all([
     getJson('/api/fmp/congress-latest').catch(() => null),
+    getJson('/api/quiver/lobbying').catch(() => null),
     getJson('/api/usaspending/contract-awards?limit=8').catch(() => null),
     getJson('/api/quiver/sec13f').catch(() => null),
-    getJson('/api/polymarket/markets?limit=10&active=true').catch(() => null),
+    getJson('/api/fmp/movers?limit=8').catch(() => null),
+    getJson('/api/polymarket/markets?limit=12&active=true').catch(() => null),
   ]);
 
   const omitted = [];
+  // ordered so a round-robin rotates categories (no back-to-back same source)
   const buckets = [];
+  const pushOrOmit = (rows, label) => {
+    if (rows && rows.length) buckets.push(rows.slice(0, PER_SOURCE_CAP));
+    else omitted.push(label);
+  };
 
+  // 1 · Congress trading (congress)
   const cTrades = Array.isArray(congress?.trades) ? congress.trades : [];
-  if (cTrades.length) {
-    buckets.push(
-      cTrades.slice(0, 6).map((t) => ({
-        cat: 'congress',
-        subject: `${t.name} · ${t.symbol || '—'}`,
-        value: t.amount || (t.positive ? 'Buy' : 'Sell'),
-        positive: !!t.positive,
-      })),
-    );
-  } else omitted.push('congress trades');
+  pushOrOmit(
+    cTrades.map((t) => ({
+      cat: 'congress',
+      tag: 'CONGRESS',
+      subject: `${t.name} · ${t.symbol || '—'}`,
+      value: t.amount || (t.positive ? 'Buy' : 'Sell'),
+      positive: !!t.positive,
+    })),
+    'Congress trading',
+  );
 
+  // 2 · Government contracts (gov)
   const cRows = Array.isArray(contracts?.rows) ? contracts.rows : [];
-  if (cRows.length) {
-    buckets.push(
-      cRows.slice(0, 6).map((r) => ({
-        cat: 'gov',
-        subject: `${r.recipient} · ${r.agency}`,
-        value: r.amount,
-        positive: false,
-      })),
-    );
-  } else omitted.push('contract awards');
+  pushOrOmit(
+    cRows.map((r) => ({
+      cat: 'gov',
+      tag: 'CONTRACT',
+      subject: `${r.recipient} · ${r.agency}`,
+      value: r.amount,
+      positive: false,
+    })),
+    'Government contracts',
+  );
 
-  const f13 = Array.isArray(thirteenF)
-    ? thirteenF
-    : Array.isArray(thirteenF?.data)
-      ? thirteenF.data
+  // 3 · 13F holdings (sec)
+  const f13 = Array.isArray(thirteenF) ? thirteenF : parseMaybeJson(thirteenF?.data) || [];
+  pushOrOmit(
+    f13.map((r) => ({
+      cat: 'sec',
+      tag: '13F',
+      subject: `${r.Name || r.Fund || 'Institution'} · ${r.Ticker || r.ticker || '—'}`,
+      value: shortMoney(r.Value ?? r.value) || '—',
+      positive: false,
+    })),
+    '13F holdings',
+  );
+
+  // 4 · Prediction markets (markets) — clickable, carries slug
+  const mkts = Array.isArray(markets)
+    ? markets
+    : Array.isArray(markets?.markets)
+      ? markets.markets
       : [];
-  if (f13.length) {
-    buckets.push(
-      f13.slice(0, 5).map((r) => ({
-        cat: 'sec',
-        subject: `${r.Name || r.Fund || r.owner || 'Institution'} · ${r.Ticker || r.ticker || '—'}`,
-        value: shortMoney(r.Value ?? r.value) || '—',
+  const oddsItems = [];
+  for (const m of mkts) {
+    const outs = marketOutcomes(m);
+    const q = String(m.question || '').slice(0, 44);
+    if (!q || !outs.length || !m.slug) continue;
+    oddsItems.push({
+      cat: 'markets',
+      tag: 'ODDS',
+      subject: `${q} · ${outs[0].name}`,
+      value: `${Math.round(outs[0].prob * 100)}¢`,
+      positive: false,
+      slug: m.slug,
+      question: m.question,
+    });
+  }
+  pushOrOmit(oddsItems, 'Prediction markets');
+
+  // 5 · Lobbying activity (congress)
+  const lobRows = Array.isArray(lobbying) ? lobbying : parseMaybeJson(lobbying?.data) || [];
+  pushOrOmit(
+    lobRows
+      .filter((r) => r.Client || r.client)
+      .map((r) => ({
+        cat: 'congress',
+        tag: 'LOBBYING',
+        subject: `${r.Client || r.client}${r.Ticker ? ` · ${r.Ticker}` : ''}`,
+        value: shortMoney(r.Amount ?? r.amount) || '—',
         positive: false,
       })),
-    );
-  } else omitted.push('13F filings');
+    'Lobbying activity',
+  );
 
-  const mkts = Array.isArray(odds) ? odds : Array.isArray(odds?.markets) ? odds.markets : [];
-  if (mkts.length) {
-    const items = [];
-    for (const m of mkts.slice(0, 8)) {
-      const outcomes = parseMaybeJson(m.outcomes);
-      const prices = parseMaybeJson(m.outcomePrices);
-      const price = prices && prices.length ? Number(prices[0]) : NaN;
-      const outcome = outcomes && outcomes.length ? outcomes[0] : 'Yes';
-      const q = String(m.question || '').slice(0, 46);
-      if (!q || !Number.isFinite(price)) continue;
-      items.push({
+  // 6 · Prices & fundamentals (markets)
+  const gainers = Array.isArray(movers?.gainers) ? movers.gainers : [];
+  const losers = Array.isArray(movers?.losers) ? movers.losers : [];
+  const moverRows = [...gainers.slice(0, 3), ...losers.slice(0, 1)];
+  pushOrOmit(
+    moverRows
+      .filter((r) => r.ticker)
+      .map((r) => ({
         cat: 'markets',
-        subject: `${q} · ${outcome}`,
-        value: `${Math.round(price * 100)}¢`,
-        positive: false,
-      });
-    }
-    if (items.length) buckets.push(items);
-    else omitted.push('prediction odds');
-  } else omitted.push('prediction odds');
+        tag: 'PRICES',
+        subject: `${r.ticker}${r.name ? ` · ${r.name}` : ''}`,
+        value: r.change || '—',
+        positive: !!r.positive,
+      })),
+    'Prices & fundamentals',
+  );
 
+  // round-robin interleave across subcategories so no source runs back-to-back
   const items = [];
-  let idx = 0;
-  while (items.length < 20) {
-    let added = false;
-    for (const b of buckets) {
-      if (b[idx]) {
-        items.push(b[idx]);
-        added = true;
-        if (items.length >= 20) break;
-      }
-    }
-    if (!added) break;
-    idx++;
+  const maxLen = buckets.reduce((m, b) => Math.max(m, b.length), 0);
+  for (let i = 0; i < maxLen; i++) {
+    for (const b of buckets) if (b[i]) items.push(b[i]);
   }
   return { items, omitted };
 }
 
-function CrossDatasetTicker() {
+function CrossDatasetTicker({ onOddsClick }) {
   const [items, setItems] = useState([]);
 
   useEffect(() => {
@@ -497,11 +543,12 @@ function CrossDatasetTicker() {
     loadTickerItems().then(({ items, omitted }) => {
       if (!alive) return;
       setItems(items);
-      if (omitted.length) {
-        // Honest rule: report (never fake) any source without a live feed.
-        // eslint-disable-next-line no-console
-        console.info(`[datasets ticker] omitted (no live feed): ${omitted.join(', ')}`);
-      }
+      // Honest rule: report (never fake) any subcategory without a live feed.
+      // eslint-disable-next-line no-console
+      console.info(
+        `[datasets ticker] ${items.length} live items across ${new Set(items.map((i) => i.tag)).size} subcategories` +
+          (omitted.length ? ` · omitted (no live feed): ${omitted.join(', ')}` : ''),
+      );
     });
     return () => {
       alive = false;
@@ -511,17 +558,32 @@ function CrossDatasetTicker() {
   if (!items.length) return null;
   const loop = [...items, ...items];
   return (
-    <div className="dsx-ticker" aria-hidden="true">
+    <div className="dsx-ticker">
       <div className="dsx-ticker-track">
         {loop.map((it, i) => {
-          const t = TAGS[it.cat];
-          return (
-            <div className="dsx-titem" key={i}>
-              <span className="dsx-mono dsx-ttag" style={{ color: t.color }}>
-                {t.tag}
+          const color = CATS[it.cat].color;
+          const inner = (
+            <>
+              <span className="dsx-mono dsx-ttag" style={{ color }}>
+                {it.tag}
               </span>
               <span className="dsx-tsub">{it.subject}</span>
               <span className={`dsx-mono dsx-tval${it.positive ? ' pos' : ''}`}>{it.value}</span>
+            </>
+          );
+          return it.slug ? (
+            <button
+              type="button"
+              className="dsx-titem dsx-titem-odds"
+              key={i}
+              onClick={() => onOddsClick({ slug: it.slug, question: it.question })}
+              aria-label={`Open market odds: ${it.question}`}
+            >
+              {inner}
+            </button>
+          ) : (
+            <div className="dsx-titem" key={i} aria-hidden="true">
+              {inner}
             </div>
           );
         })}
@@ -858,10 +920,140 @@ function AnalysisPanel({ selectedNodes, onSelectPreset }) {
   return <PanelCombined nodes={list} />;
 }
 
+/* ══════════════════════════ odds popup (Polymarket detail) ══════════════════════════ */
+function fmtDate(d) {
+  try {
+    return new Date(d).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  } catch {
+    return d;
+  }
+}
+
+function OddsPopup({ slug, question, onClose }) {
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    const onEsc = (e) => e.key === 'Escape' && onClose();
+    document.addEventListener('keydown', onEsc);
+    return () => document.removeEventListener('keydown', onEsc);
+  }, [onClose]);
+
+  useEffect(() => {
+    let alive = true;
+    setData(null);
+    setError(false);
+    getJson(`/api/polymarket/market?slug=${encodeURIComponent(slug)}`)
+      .then((d) => {
+        if (!alive) return;
+        if (d && !d.error && (d.question || d.outcomes)) setData(d);
+        else setError(true);
+      })
+      .catch(() => {
+        if (alive) setError(true);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [slug]);
+
+  const outcomes = data ? marketOutcomes(data) : [];
+  const url = `https://polymarket.com/event/${slug}`;
+
+  return (
+    <div className="dsx-modal-backdrop" onClick={onClose}>
+      <div
+        className="dsx-modal"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Market odds"
+      >
+        <button type="button" className="dsx-modal-x" onClick={onClose} aria-label="Close">
+          <X size={18} />
+        </button>
+        <span className="dsx-modal-tag">Odds · prediction market</span>
+        <h2 className="dsx-modal-q">{data?.question || question}</h2>
+
+        {!data && !error && (
+          <div aria-live="polite" aria-busy="true">
+            <div className="dsx-skel" style={{ width: '55%' }} />
+            <div className="dsx-skel" style={{ width: '90%', height: 24 }} />
+            <div className="dsx-skel" style={{ width: '90%', height: 24 }} />
+          </div>
+        )}
+
+        {error && (
+          <div className="dsx-modal-state">
+            Couldn’t load this market right now.
+            <br />
+            <a className="dsx-modal-link" href={url} target="_blank" rel="noopener noreferrer">
+              View on Polymarket <ArrowRight size={13} />
+            </a>
+          </div>
+        )}
+
+        {data && (
+          <>
+            <div className="dsx-modal-meta">
+              {data.category && <span>{data.category}</span>}
+              {data.endDate && (
+                <span>
+                  Resolves <b>{fmtDate(data.endDate)}</b>
+                </span>
+              )}
+              {data.volume > 0 && (
+                <span>
+                  Volume <b>{shortMoney(data.volume)}</b>
+                </span>
+              )}
+            </div>
+
+            <div className="dsx-modal-h">Current market-implied probabilities</div>
+            {outcomes.length ? (
+              outcomes.map((o, i) => {
+                const pct = Math.round(o.prob * 100);
+                return (
+                  <div className="dsx-outcome" key={i}>
+                    <div className="dsx-outcome-top">
+                      <span className="dsx-outcome-name">{o.name}</span>
+                      <span className="dsx-outcome-val">
+                        {pct}¢ · {pct}%
+                      </span>
+                    </div>
+                    <div className="dsx-outcome-bar">
+                      <i style={{ width: `${pct}%` }} />
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="dsx-modal-state">No current outcome prices published.</div>
+            )}
+
+            <a className="dsx-modal-link" href={url} target="_blank" rel="noopener noreferrer">
+              View on Polymarket <ArrowRight size={13} />
+            </a>
+            <p className="dsx-modal-note">
+              Current market-implied probabilities from Polymarket, shown for information only — not
+              investment advice.
+            </p>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ══════════════════════════ page ══════════════════════════ */
 export default function DatasetsOverviewClient() {
   const [selectedNodes, setSelectedNodes] = useState(() => new Set());
   const [categoryFilter, setCategoryFilter] = useState(null);
+  const [oddsMarket, setOddsMarket] = useState(null); // { slug, question } | null
 
   const toggleNode = (id) => {
     setCategoryFilter(null);
@@ -891,7 +1083,7 @@ export default function DatasetsOverviewClient() {
     <div className="dsx-page">
       <CategoryBar />
 
-      <CrossDatasetTicker />
+      <CrossDatasetTicker onOddsClick={setOddsMarket} />
 
       <header className="dsx-header">
         <p className="dsx-eyebrow">DATASETS</p>
@@ -959,6 +1151,14 @@ export default function DatasetsOverviewClient() {
           );
         })}
       </div>
+
+      {oddsMarket && (
+        <OddsPopup
+          slug={oddsMarket.slug}
+          question={oddsMarket.question}
+          onClose={() => setOddsMarket(null)}
+        />
+      )}
     </div>
   );
 }

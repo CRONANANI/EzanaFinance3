@@ -580,6 +580,193 @@
   margin-top: 2px;
 }
 
+/* clickable ODDS ticker items */
+.dsx-titem-odds {
+  background: none;
+  border: none;
+  border-right: 1px solid var(--border-primary);
+  font: inherit;
+  cursor: pointer;
+}
+.dsx-titem-odds:hover {
+  background: var(--emerald-bg);
+}
+
+/* ── odds popup (Polymarket detail) — family drill-modal pattern ── */
+.dsx-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.42);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 24px;
+  animation: dsx-fade 0.2s ease;
+}
+@keyframes dsx-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.dsx-modal {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  max-height: 88vh;
+  overflow-y: auto;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg, 0 20px 60px rgba(15, 23, 42, 0.2));
+  padding: 22px;
+  animation: dsx-pop 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+@keyframes dsx-pop {
+  from {
+    transform: scale(0.96);
+    opacity: 0.6;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.dsx-modal-x {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: var(--radius-md, 8px);
+}
+.dsx-modal-x:hover {
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+}
+.dsx-modal-tag {
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--purple);
+}
+.dsx-modal-q {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.35;
+  margin: 8px 40px 10px 0;
+}
+.dsx-modal-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-family: var(--font-mono, monospace);
+  font-size: 11.5px;
+  color: var(--text-muted);
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-primary);
+}
+.dsx-modal-meta b {
+  color: var(--text-primary);
+}
+.dsx-modal-h {
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin: 16px 0 10px;
+}
+.dsx-outcome {
+  margin-bottom: 12px;
+}
+.dsx-outcome-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+.dsx-outcome-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.dsx-outcome-val {
+  font-family: var(--font-mono, monospace);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--emerald);
+}
+.dsx-outcome-bar {
+  height: 6px;
+  border-radius: var(--radius-pill, 9999px);
+  background: var(--bg-tertiary);
+  overflow: hidden;
+}
+.dsx-outcome-bar i {
+  display: block;
+  height: 100%;
+  background: var(--emerald);
+  border-radius: var(--radius-pill, 9999px);
+}
+.dsx-modal-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--emerald);
+  text-decoration: none;
+}
+.dsx-modal-note {
+  margin: 14px 0 0;
+  font-size: 10.5px;
+  font-style: italic;
+  color: var(--text-faint);
+  line-height: 1.45;
+}
+.dsx-modal-state {
+  padding: 28px 8px;
+  text-align: center;
+  color: var(--text-faint);
+  font-size: 13px;
+}
+/* loading skeleton */
+.dsx-skel {
+  height: 12px;
+  border-radius: 6px;
+  background: var(--bg-tertiary);
+  animation: dsx-shimmer 1.2s ease-in-out infinite;
+  margin-bottom: 10px;
+}
+@keyframes dsx-shimmer {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 /* ── responsive ── */
 @media (max-width: 900px) {
   .dsx-mapwrap {
@@ -608,6 +795,22 @@
   }
   .dsx-cards {
     grid-template-columns: 1fr;
+  }
+  /* odds popup → full-width sheet pinned to the bottom */
+  .dsx-modal-backdrop {
+    padding: 0;
+    align-items: flex-end;
+  }
+  .dsx-modal {
+    max-width: 100%;
+    max-height: 92vh;
+    border-radius: 16px 16px 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dsx-skel {
+    animation: none;
   }
 }
 
