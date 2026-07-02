@@ -101,19 +101,19 @@ export default function MfaChallengeCard({ redirectTo = '/home' }) {
           return;
         }
 
-        // verify() succeeded → the session IS aal2 server-side. Short poll only
-        // to let the new cookie settle before the full-page redirect so the
-        // middleware doesn't bounce back to /auth/mfa.
-        try {
-          for (let i = 0; i < 5; i++) {
-            const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-            if (aal?.currentLevel === 'aal2') break;
-            await new Promise((r) => setTimeout(r, 150));
-          }
-        } catch {
-          /* redirect regardless — the cookie is set even if this poll errors */
-        }
-
+        // verify() returned a valid aal2 session (access_token in vData) — the
+        // login genuinely succeeded server-side (confirmed by a 200 Network
+        // capture). Do NOT poll getAuthenticatorAssuranceLevel() to re-confirm:
+        // that call serializes on the SAME in-process auth lock (processLock) as
+        // GoTrue's post-verify onAuthStateChange work, so it can never resolve —
+        // it hangs the flow until the guard fires ("Verification timed out")
+        // despite the successful login. Instead, a short fixed delay lets the
+        // @supabase/ssr cookie write flush; the full-page navigation then
+        // re-reads that cookie and the middleware sees aal2. (Bump to ~500ms if
+        // the middleware is ever observed to bounce back to /auth/mfa — but do
+        // NOT reintroduce the AAL poll.)
+        console.log('[mfa] verify succeeded — redirecting');
+        await new Promise((r) => setTimeout(r, 250));
         window.location.assign(dest);
       } catch (err) {
         const msg = String(err?.message || '');
