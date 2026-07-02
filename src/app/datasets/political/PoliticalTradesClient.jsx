@@ -5,9 +5,11 @@
  * Sibling of the Government Contracts 1b page: shared CategoryBar + ticker
  * pattern + 1440px margins. Presentation layer only.
  *
- * Data: binds to the STOCK Act trade rows passed in (the vetted public sample —
- * the guaranteed tier; the client also best-effort-fetches the live feed and
- * uses it if it returns compatible rows). Everything on the page (leaderboard,
+ * Data: binds ONLY to the live, canonical, enriched STOCK Act feed
+ * (/api/politicians/trades → normalizeFmpTrade + enrichTrade). NO mock data
+ * renders in production. A static sample may be injected via devSampleTrades,
+ * but ONLY in local dev when NEXT_PUBLIC_ALLOW_SAMPLE_DATA==='true'; otherwise
+ * the page shows honest empty/error states. Everything on the page (leaderboard,
  * stats, donut, table, modal) is aggregated from those real trade rows.
  *
  * Honest gaps (no real backing in the current public tier — rendered as "—",
@@ -15,19 +17,54 @@
  * and official BioGuideID headshots (silhouette + initials + party ring shown
  * until a BioGuideID resolves via resolveHeadshot).
  */
-import { useMemo, useState, useEffect } from 'react';
-import { LayoutGrid, PieChart as PieIcon, X, ArrowUpRight, FileDown, UserPlus } from 'lucide-react';
+import { useMemo, useState, useEffect, useRef } from 'react';
+import {
+  LayoutGrid,
+  PieChart as PieIcon,
+  X,
+  ArrowUpRight,
+  FileDown,
+  UserPlus,
+  Search,
+} from 'lucide-react';
 import CategoryBar from '@/components/datasets/CategoryBar';
 import { resolveHeadshot } from '@/lib/politicians/headshots';
+import { POSITION_BASIS_NOTE, positionStatusMeta } from '@/lib/politicians/position-status';
 import './pol-trades.css';
 
-/* ── party + sector color keys (pinned on .ptx-page; SVG uses the tokens) ── */
+/* ── party color keys (pinned on .ptx-page; SVG uses the tokens) ── */
 const PARTIES = {
   Democrat: { code: 'D', color: 'var(--info)' },
   Republican: { code: 'R', color: 'var(--negative)' },
   Independent: { code: 'I', color: 'var(--purple)' },
 };
 const partyMeta = (p) => PARTIES[p] || { code: '?', color: 'var(--text-faint)' };
+/* canonical party code ('D'|'R'|'I'|null) → display word used internally */
+const PARTY_WORD = { D: 'Democrat', R: 'Republican', I: 'Independent' };
+
+/**
+ * Adapt a canonical enriched trade (from /api/politicians/trades) into the
+ * internal display shape this component aggregates on. Excess return is a
+ * computed-pipeline field NOT present in the disclosure firehose → null → "—".
+ */
+function toDisplay(c, i) {
+  return {
+    id: c.id || `${c.bioguideId || c.name}-${c.ticker}-${c.tradedAt}-${i}`,
+    ticker: c.ticker || '—',
+    transaction: c.side === 'purchase' ? 'Purchase' : c.side === 'sale' ? 'Sale' : 'Other',
+    politician: c.name,
+    party: PARTY_WORD[c.party] || 'Unknown',
+    chamber: c.chamber || '—',
+    state: c.state || null,
+    bioguideId: c.bioguideId || null,
+    traded: c.tradedAt || '',
+    filed: c.filedAt || '',
+    amount: c.amountBand?.raw || '—',
+    amountMin: c.amountBand?.min ?? 0,
+    amountMid: c.amountBand?.mid ?? 0,
+    excessReturn: null, // computed pipeline; unavailable in the firehose → "—"
+  };
+}
 
 /* ── formatting + parsing ── */
 function fmtUSD(v) {
@@ -59,29 +96,38 @@ function aggregateMembers(trades) {
         name: t.politician,
         party: t.party,
         chamber: t.chamber,
-        state: t.state || null, // not in the public tier → "—"
+        state: t.state || null,
+        bioguideId: t.bioguideId || null,
         trades: [],
       });
     }
     map.get(t.politician).trades.push(t);
   }
-  return [...map.values()]
-    .map((m) => {
-      const ex = m.trades.map((t) => Number(t.excessReturn)).filter(Number.isFinite);
-      const excess = ex.length ? ex.reduce((a, b) => a + b, 0) / ex.length : null;
-      const volume = m.trades.reduce((s, t) => s + bandMid(t.amount), 0);
-      // sparkline: this member's excess-return per trade, oldest → newest (real, derived)
-      const spark = [...m.trades]
-        .sort((a, b) => String(a.traded).localeCompare(String(b.traded)))
-        .map((t) => Number(t.excessReturn))
-        .filter(Number.isFinite);
-      return { ...m, count: m.trades.length, excess, volume, spark };
-    })
-    .sort((a, b) => (b.excess ?? -999) - (a.excess ?? -999));
+  const out = [...map.values()].map((m) => {
+    const ex = m.trades.map((t) => Number(t.excessReturn)).filter(Number.isFinite);
+    const excess = ex.length ? ex.reduce((a, b) => a + b, 0) / ex.length : null;
+    const volume = m.trades.reduce((s, t) => s + (t.amountMid || bandMid(t.amount)), 0);
+    const spark = [...m.trades]
+      .sort((a, b) => String(a.traded).localeCompare(String(b.traded)))
+      .map((t) => Number(t.excessReturn))
+      .filter(Number.isFinite);
+    return { ...m, count: m.trades.length, excess, volume, spark };
+  });
+  // Rank by excess when the performance pipeline supplies it; otherwise by
+  // disclosed volume (real, from amount-band midpoints) — never fabricated.
+  const anyExcess = out.some((m) => m.excess != null);
+  return out.sort((a, b) =>
+    anyExcess ? (b.excess ?? -999) - (a.excess ?? -999) : b.volume - a.volume,
+  );
 }
 
-export default function PoliticalTradesClient({ sampleTrades = [], sampleLeaders = [] }) {
-  const [trades, setTrades] = useState(sampleTrades);
+export default function PoliticalTradesClient({ devSampleTrades = null }) {
+  // NO MOCK DATA IN PRODUCTION: start empty (or dev-only sample), then load the
+  // live canonical firehose. If it fails and no dev sample is enabled, show an
+  // honest error/empty state — never sample rows.
+  const [trades, setTrades] = useState(() => devSampleTrades || []);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const [partyFilter, setPartyFilter] = useState('all');
   const [chamberFilter, setChamberFilter] = useState('all');
   const [txnFilter, setTxnFilter] = useState('all');
@@ -90,42 +136,37 @@ export default function PoliticalTradesClient({ sampleTrades = [], sampleLeaders
   const [heroView, setHeroView] = useState('leaderboard');
   const [selected, setSelected] = useState(null);
 
-  // Best-effort live feed: if /api/quiver/congress-trades returns compatible
-  // rows, use them; otherwise keep the vetted sample tier. Never breaks the page.
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      setLoading(true);
       try {
-        const res = await fetch('/api/quiver/congress-trades');
-        if (!res.ok) return;
-        const data = await res.json();
-        if (cancelled || !Array.isArray(data) || data.length === 0) return;
-        const mapped = data
-          .map((r, i) => ({
-            id: r.id || `live-${i}`,
-            ticker: r.ticker || r.Ticker,
-            transaction: /sale|sell/i.test(r.transaction || r.Transaction || '')
-              ? 'Sale'
-              : 'Purchase',
-            politician: r.politician || r.Representative || r.Senator || r.name,
-            party: r.party || r.Party,
-            chamber: r.chamber || r.Chamber,
-            state: r.state || r.State || null,
-            traded: r.traded || r.TransactionDate || r.transactionDate,
-            filed: r.filed || r.ReportDate || r.reportDate,
-            amount: r.amount || r.Range || r.amountRange,
-            excessReturn: Number(r.excessReturn ?? r.excess_return),
-          }))
-          .filter((r) => r.ticker && r.politician && r.party);
-        if (mapped.length) setTrades(mapped);
+        const res = await fetch('/api/politicians/trades?limit=300');
+        const data = await res.json().catch(() => null);
+        if (cancelled) return;
+        if (res.ok && data?.ok && Array.isArray(data.trades) && data.trades.length) {
+          setTrades(data.trades.map(toDisplay));
+          setLoadError(null);
+        } else if (devSampleTrades) {
+          setTrades(devSampleTrades); // local-dev only
+        } else {
+          setLoadError(
+            data?.error ||
+              'Live congressional data is temporarily unavailable — try again shortly.',
+          );
+        }
       } catch {
-        /* keep sample */
+        if (!cancelled && !devSampleTrades) {
+          setLoadError('Live congressional data is temporarily unavailable — try again shortly.');
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [devSampleTrades]);
 
   const latestDate = useMemo(() => {
     const ds = trades.map((t) => new Date(t.traded)).filter((d) => !Number.isNaN(d.getTime()));
@@ -146,7 +187,7 @@ export default function PoliticalTradesClient({ sampleTrades = [], sampleLeaders
         t.transaction !== (txnFilter === 'purchases' ? 'Purchase' : 'Sale')
       )
         return false;
-      if (bandMid(t.amount) < minValue * 1000) return false;
+      if ((t.amountMin ?? bandMid(t.amount)) < minValue * 1000) return false;
       if (periodCut) {
         const d = new Date(t.traded);
         if (!Number.isNaN(d.getTime()) && d < periodCut) return false;
@@ -375,7 +416,11 @@ export default function PoliticalTradesClient({ sampleTrades = [], sampleLeaders
                 </button>
               </div>
             </div>
-            {members.length === 0 ? (
+            {loadError ? (
+              <div className="ptx-empty">{loadError}</div>
+            ) : loading && members.length === 0 ? (
+              <div className="ptx-empty">Loading live congressional disclosures…</div>
+            ) : members.length === 0 ? (
               <div className="ptx-empty">No members match the current filters.</div>
             ) : heroView === 'leaderboard' ? (
               <div className="ptx-cards">
@@ -389,6 +434,8 @@ export default function PoliticalTradesClient({ sampleTrades = [], sampleLeaders
           </section>
         </main>
       </div>
+
+      <TickerSearch onSelectMember={setSelected} />
 
       <section className="ptx-card ptx-table-card">
         <div className="ptx-table-head">
@@ -434,12 +481,24 @@ export default function PoliticalTradesClient({ sampleTrades = [], sampleLeaders
                     <td className="ptx-mono ptx-muted">{t.filed}</td>
                     <td className="ptx-mono ptx-muted">{t.traded}</td>
                     <td className="ptx-mono r">{t.amount}</td>
-                    <td className={`ptx-mono r ${Number(t.excessReturn) >= 0 ? 'pos' : 'neg'}`}>
-                      {pct(Number(t.excessReturn))}
+                    <td
+                      className={`ptx-mono r ${t.excessReturn == null ? 'ptx-muted' : Number(t.excessReturn) >= 0 ? 'pos' : 'neg'}`}
+                    >
+                      {t.excessReturn == null ? '—' : pct(Number(t.excessReturn))}
                     </td>
                   </tr>
                 );
               })}
+              {filtered.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="ptx-empty" style={{ padding: '28px' }}>
+                    {loadError ||
+                      (loading
+                        ? 'Loading live disclosures…'
+                        : 'No trades match the current filters.')}
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -654,6 +713,214 @@ function VolumeDonut({ trades }) {
           ))}
       </div>
     </div>
+  );
+}
+
+/* ────────────────────────── Ticker search (Part B) ────────────────────────── */
+function TickerSearch({ onSelectMember }) {
+  const [q, setQ] = useState('');
+  const [suggests, setSuggests] = useState([]);
+  const [result, setResult] = useState(null); // { symbol, company, members }
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const debounceRef = useRef(null);
+
+  // debounced autocomplete via the existing fmp/search route
+  useEffect(() => {
+    if (result) return; // don't autocomplete while showing results
+    const term = q.trim();
+    if (term.length < 1) {
+      setSuggests([]);
+      return;
+    }
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/fmp/search?q=${encodeURIComponent(term)}`);
+        const data = await res.json().catch(() => []);
+        setSuggests(Array.isArray(data) ? data.slice(0, 8) : []);
+      } catch {
+        setSuggests([]);
+      }
+    }, 300);
+    return () => clearTimeout(debounceRef.current);
+  }, [q, result]);
+
+  const runSearch = async (symbol, company) => {
+    const sym = String(symbol || q)
+      .toUpperCase()
+      .trim();
+    if (!/^[A-Z.\-]{1,6}$/.test(sym)) {
+      setError('Enter a valid ticker (1–6 letters).');
+      return;
+    }
+    setSuggests([]);
+    setLoading(true);
+    setError(null);
+    setResult({ symbol: sym, company: company || '', members: null });
+    try {
+      const res = await fetch(`/api/politicians/ticker-activity?symbol=${encodeURIComponent(sym)}`);
+      const data = await res.json().catch(() => null);
+      if (res.ok && data?.ok) {
+        setResult({ symbol: sym, company: company || '', members: data.members });
+      } else {
+        setResult(null);
+        setError(data?.error || 'Search is temporarily unavailable — try again shortly.');
+      }
+    } catch {
+      setResult(null);
+      setError('Search is temporarily unavailable — try again shortly.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const clear = () => {
+    setResult(null);
+    setQ('');
+    setError(null);
+    setSuggests([]);
+  };
+
+  const openMember = (g) => {
+    // adapt the ticker-activity member group → the drill-down modal's shape
+    onSelectMember({
+      name: g.member.name,
+      party: PARTY_WORD[g.member.party] || 'Unknown',
+      chamber: g.member.chamber || '—',
+      state: g.member.state || null,
+      bioguideId: g.member.bioguideId || null,
+      count: g.trades.length,
+      excess: null,
+      trades: g.trades.map((c) => ({
+        traded: c.tradedAt,
+        excessReturn: null,
+        ticker: c.ticker,
+        amount: c.amountBand?.raw,
+      })),
+    });
+  };
+
+  return (
+    <section className="ptx-card ptx-search">
+      {!result && !error ? (
+        <div className="ptx-search-input-wrap">
+          <Search size={16} className="ptx-search-icon" />
+          <input
+            className="ptx-search-input ptx-mono"
+            value={q}
+            onChange={(e) => setQ(e.target.value.toUpperCase())}
+            onKeyDown={(e) => e.key === 'Enter' && runSearch()}
+            placeholder="Search a ticker — e.g. AAPL"
+            aria-label="Search a stock ticker for congressional trades"
+          />
+          {suggests.length > 0 && (
+            <div className="ptx-search-suggests">
+              {suggests.map((s) => (
+                <button
+                  key={s.symbol}
+                  type="button"
+                  className="ptx-suggest"
+                  onClick={() => runSearch(s.symbol, s.name)}
+                >
+                  <span className="ptx-mono ptx-suggest-sym">{s.symbol}</span>
+                  <span className="ptx-suggest-name">{s.name}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="ptx-search-results">
+          <div className="ptx-search-res-head">
+            <div>
+              <span className="ptx-mono ptx-tk">{result?.symbol}</span>
+              {result?.company && <span className="ptx-search-company"> · {result.company}</span>}
+              {result?.members && (
+                <span className="ptx-search-count">
+                  {' '}
+                  · {result.members.length} members disclosed trades
+                </span>
+              )}
+            </div>
+            <button
+              type="button"
+              className="ptx-search-clear"
+              onClick={clear}
+              aria-label="Clear search"
+            >
+              <X size={16} />
+            </button>
+          </div>
+
+          {error && <div className="ptx-empty">{error}</div>}
+          {loading && !error && <div className="ptx-empty">Searching disclosures…</div>}
+          {result?.members && result.members.length === 0 && (
+            <div className="ptx-empty">
+              No disclosed congressional trades found for {result.symbol}. STOCK Act filings can lag
+              trades by up to 45 days.
+            </div>
+          )}
+
+          {result?.members && result.members.length > 0 && (
+            <>
+              <div className="ptx-search-rows">
+                {result.members.map((g) => {
+                  const pm = partyMeta(PARTY_WORD[g.member.party] || 'Unknown');
+                  const sm = positionStatusMeta(g.position);
+                  const shown = g.trades.slice(0, 3);
+                  return (
+                    <button
+                      key={g.member.bioguideId || g.member.name}
+                      type="button"
+                      className="ptx-search-row"
+                      onClick={() => openMember(g)}
+                    >
+                      <span className="ptx-search-member">
+                        <span className="ptx-mini-avatar" style={{ borderColor: pm.color }}>
+                          {initials(g.member.name)}
+                        </span>
+                        <span>
+                          {g.member.name}
+                          <span className="ptx-badge-inline" style={{ color: pm.color }}>
+                            {' '}
+                            {pm.code}
+                          </span>
+                          <span className="ptx-polcell-sub">
+                            {g.member.chamber || '—'} · {g.member.state || '—'}
+                          </span>
+                        </span>
+                      </span>
+                      <span className="ptx-search-trades">
+                        {shown.map((t, i) => (
+                          <span key={i} className="ptx-search-trade">
+                            <span className={`ptx-txn ${t.side === 'purchase' ? 'buy' : 'sell'}`}>
+                              {t.side === 'purchase' ? 'Buy' : t.side === 'sale' ? 'Sale' : 'Other'}
+                            </span>
+                            <span className="ptx-mono ptx-muted">{t.tradedAt}</span>
+                            <span className="ptx-mono">{t.amountBand?.raw || '—'}</span>
+                          </span>
+                        ))}
+                        {g.trades.length > 3 && (
+                          <span className="ptx-muted">+{g.trades.length - 3} more</span>
+                        )}
+                      </span>
+                      <span
+                        className={`ptx-status ptx-status-${sm.tone}`}
+                        title={POSITION_BASIS_NOTE}
+                      >
+                        {sm.label}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="ptx-search-basis">{POSITION_BASIS_NOTE}</p>
+            </>
+          )}
+        </div>
+      )}
+    </section>
   );
 }
 

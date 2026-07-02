@@ -16,6 +16,7 @@
   --emerald-border: rgba(16, 185, 129, 0.15);
   --positive: #10b981;
   --negative: #ef4444;
+  --warning: #d97706;
   --info: #3b82f6;
   --purple: #a78bfa;
 }
@@ -720,6 +721,207 @@
   font-family: var(--font-mono, monospace);
 }
 
+/* ── ticker search ("who in Congress traded X?") ── */
+.ptx-search {
+  padding: 16px 18px;
+}
+.ptx-search-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.ptx-search-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--text-faint);
+  pointer-events: none;
+}
+.ptx-search-input {
+  width: 100%;
+  height: 42px;
+  padding: 0 14px 0 36px;
+  background: var(--surface-input, #f3f4f6);
+  border: 1px solid var(--border-input, rgba(0, 0, 0, 0.12));
+  border-radius: var(--radius-md, 8px);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+  outline: none;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+.ptx-search-input::placeholder {
+  color: var(--text-faint);
+  font-weight: 500;
+  letter-spacing: 0;
+}
+.ptx-search-input:focus {
+  border-color: var(--border-focus, rgba(16, 185, 129, 0.4));
+  background: var(--surface-input-focus, #fff);
+}
+.ptx-search-suggests {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md, 8px);
+  box-shadow: var(--shadow-md, 0 8px 24px rgba(15, 23, 42, 0.12));
+  overflow: hidden;
+  max-height: 320px;
+  overflow-y: auto;
+}
+.ptx-suggest {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 14px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border-primary);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+.ptx-suggest:last-child {
+  border-bottom: none;
+}
+.ptx-suggest:hover {
+  background: var(--bg-tertiary);
+}
+.ptx-suggest-sym {
+  font-weight: 700;
+  color: var(--text-primary);
+  min-width: 54px;
+  flex-shrink: 0;
+}
+.ptx-suggest-name {
+  font-size: 12px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* results */
+.ptx-search-res-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.ptx-search-res-head .ptx-tk {
+  font-size: 15px;
+}
+.ptx-search-company {
+  color: var(--text-muted);
+}
+.ptx-search-count {
+  color: var(--text-faint);
+}
+.ptx-search-clear {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  padding: 2px;
+  border-radius: var(--radius-sm, 6px);
+}
+.ptx-search-clear:hover {
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+}
+.ptx-search-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ptx-search-row {
+  display: grid;
+  grid-template-columns: minmax(160px, 1.2fr) 2fr auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 11px 10px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border-primary);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+.ptx-search-row:hover {
+  background: var(--bg-tertiary);
+}
+.ptx-search-member {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.ptx-badge-inline {
+  font-size: 11px;
+  font-weight: 700;
+}
+.ptx-search-trades {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  font-size: 11.5px;
+}
+.ptx-search-trade {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.ptx-status {
+  justify-self: end;
+  display: inline-block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill, 9999px);
+  white-space: nowrap;
+  cursor: help;
+}
+.ptx-status-pos {
+  color: var(--positive);
+  background: var(--emerald-bg, rgba(16, 185, 129, 0.08));
+}
+.ptx-status-neg {
+  color: var(--negative);
+  background: rgba(239, 68, 68, 0.08);
+}
+.ptx-status-warn {
+  color: var(--warning);
+  background: rgba(217, 119, 6, 0.1);
+}
+.ptx-status-muted {
+  color: var(--text-muted);
+  background: var(--bg-tertiary);
+}
+.ptx-search-basis {
+  margin: 12px 2px 0;
+  font-size: 11px;
+  font-style: italic;
+  color: var(--text-faint);
+  line-height: 1.45;
+}
+
 /* ── responsive ── */
 @media (max-width: 900px) {
   .ptx-body {
@@ -742,5 +944,12 @@
   }
   .ptx-modal-left {
     width: 100%;
+  }
+  .ptx-search-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .ptx-status {
+    justify-self: start;
   }
 }
