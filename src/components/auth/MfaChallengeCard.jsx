@@ -51,50 +51,59 @@ export default function MfaChallengeCard({ redirectTo = '/home' }) {
       setLoading(true);
       setError(null);
 
-      // Safety valve: never let the button stick on "Verifying…" forever. If the
-      // verify/redirect path stalls, recover the UI so the user can retry. 20s is
-      // generous — challenge() + verify() + TOTP validation can take several
-      // seconds on a slow connection; `stage` records how far we got for field
-      // diagnosis if the guard ever trips.
-      let timedOut = false;
-      let stage = 'challenge';
-      const guard = setTimeout(() => {
-        timedOut = true;
-        console.warn('[mfa] timed out — last stage:', stage);
-        setError('Verification timed out. Please try again.');
-        setLoading(false);
-      }, 20000);
+      // Per-phase timeouts instead of a single 20s guard: challenge() and
+      // verify() each call Supabase's own auth server directly (not our /api),
+      // so a stall in either points at the auth server / network, not our code.
+      // Splitting the ceilings lets us give a SPECIFIC message per phase and,
+      // with the [mfa] timing logs below, pinpoint the stalling call from the
+      // field. (Temporary diagnostic logs — safe to remove once the root cause
+      // is confirmed.)
+      const withTimeout = (promise, ms, label) =>
+        Promise.race([
+          promise,
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error(`__timeout__:${label}`)), ms),
+          ),
+        ]);
 
+      const t0 = performance.now();
       try {
-        const { data: challenge, error: chErr } = await supabase.auth.mfa.challenge({ factorId });
+        console.log('[mfa] challenge start');
+        const { data: challenge, error: chErr } = await withTimeout(
+          supabase.auth.mfa.challenge({ factorId }),
+          8000,
+          'challenge',
+        );
+        console.log('[mfa] challenge done', Math.round(performance.now() - t0), 'ms', {
+          chErr: chErr?.message || null,
+          challengeId: challenge?.id || null,
+        });
         if (chErr) {
-          clearTimeout(guard);
-          if (!timedOut) {
-            setError(chErr.message);
-            setLoading(false);
-          }
+          setError(chErr.message || 'Could not start verification.');
+          setLoading(false);
           return;
         }
-        stage = 'verify';
-        const { error: vErr } = await supabase.auth.mfa.verify({
-          factorId,
-          challengeId: challenge.id,
-          code,
+
+        const t1 = performance.now();
+        console.log('[mfa] verify start');
+        const { data: vData, error: vErr } = await withTimeout(
+          supabase.auth.mfa.verify({ factorId, challengeId: challenge.id, code }),
+          12000,
+          'verify',
+        );
+        console.log('[mfa] verify done', Math.round(performance.now() - t1), 'ms', {
+          vErr: vErr?.message || null,
+          session: vData?.access_token ? 'got session' : 'no session',
         });
         if (vErr) {
-          clearTimeout(guard);
-          if (!timedOut) {
-            setError(vErr.message);
-            setLoading(false);
-          }
+          setError(vErr.message || 'That code did not verify. Check the code and try again.');
+          setLoading(false);
           return;
         }
 
-        // verify() succeeded → the session IS aal2 server-side. The poll below is
-        // only to let the new cookie settle before window.location.assign(), so the
-        // middleware doesn't bounce back to /auth/mfa. Cap it short (~750ms) and
-        // redirect regardless — don't let the poll extend the perceived verify time.
-        stage = 'poll';
+        // verify() succeeded → the session IS aal2 server-side. Short poll only
+        // to let the new cookie settle before the full-page redirect so the
+        // middleware doesn't bounce back to /auth/mfa.
         try {
           for (let i = 0; i < 5; i++) {
             const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
@@ -105,16 +114,23 @@ export default function MfaChallengeCard({ redirectTo = '/home' }) {
           /* redirect regardless — the cookie is set even if this poll errors */
         }
 
-        if (timedOut) return; // guard already recovered the UI; don't redirect
-        clearTimeout(guard);
-        // Session is now aal2 — full reload so the middleware sees the new cookie.
         window.location.assign(dest);
       } catch (err) {
-        clearTimeout(guard);
-        if (!timedOut) {
+        const msg = String(err?.message || '');
+        if (msg === '__timeout__:challenge') {
+          console.warn('[mfa] challenge timed out (>8s) — auth server/network unreachable');
+          setError(
+            "Couldn't reach the authentication server — check your connection and try again.",
+          );
+        } else if (msg === '__timeout__:verify') {
+          console.warn('[mfa] verify timed out (>12s)');
+          setError(
+            'Verifying took too long. Please try again — if it keeps happening, re-add your authenticator in settings.',
+          );
+        } else {
           setError(err?.message || 'Something went wrong. Please try again.');
-          setLoading(false);
         }
+        setLoading(false);
       }
     },
     [factorId, code, loading, dest],
