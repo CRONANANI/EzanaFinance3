@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { FeatureCardBack } from './features-card-backs';
 import { HOW_STEPS, METRICS_BAND } from './features-landing-data';
 
@@ -37,6 +38,12 @@ const FEATURE_CARDS = [
 ];
 
 export function FeaturesSection() {
+  // Touch devices have no hover, so tapping a card toggles the flip. Desktop
+  // still flips on hover/focus (CSS); this state layers on top for touch/click
+  // and keyboard, and stays in sync via aria-pressed.
+  const [flipped, setFlipped] = useState(null);
+  const toggle = (key) => setFlipped((prev) => (prev === key ? null : key));
+
   return (
     <section className="features-section" id="features">
       <div className="features-container">
@@ -51,14 +58,23 @@ export function FeaturesSection() {
 
         <div className="features-grid">
           {FEATURE_CARDS.map((card) => (
-            // Flip is hover/focus-only (CSS). The card is focusable so keyboard
-            // users can reveal the back via :focus-within — no JS state, so it
-            // can never get stuck flipped.
+            // Desktop flips on hover/focus (CSS). Touch/click and keyboard flip
+            // via the is-flipped class toggled here, so mobile users (no hover)
+            // can still reveal the back face.
             <div
               key={card.key}
-              className="feature-card flip-card"
+              className={`feature-card flip-card${flipped === card.key ? ' is-flipped' : ''}`}
               tabIndex={0}
-              aria-label={`${card.title}. Hover or focus to preview.`}
+              role="button"
+              aria-pressed={flipped === card.key}
+              aria-label={`${card.title}. Tap, or hover, to preview.`}
+              onClick={() => toggle(card.key)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  toggle(card.key);
+                }
+              }}
             >
               <div className="flip-inner">
                 <div className="flip-front">

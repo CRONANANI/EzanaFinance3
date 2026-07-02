@@ -560,6 +560,45 @@
   }
 }
 
+/* Phones: tighten spacing, let the headline shrink, keep the actions on-screen.
+   The hero already clips overflow, so the oversized decorative map is contained;
+   here we shrink + fade it further so it never competes with the copy. */
+@media (max-width: 480px) {
+  .lp-band {
+    padding: 0 16px;
+  }
+  .lp-copy {
+    padding: 40px 0 44px;
+  }
+  .lp-title {
+    font-size: clamp(1.55rem, 8vw, 2rem);
+    margin-bottom: 20px;
+  }
+  .lp-lead {
+    font-size: 17px;
+  }
+  .lp-sub {
+    font-size: 15px;
+    margin-bottom: 26px;
+  }
+  .lp-actions {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  /* Full-width, ≥44px-tall tap targets that stack cleanly when they wrap. */
+  .lp-btn-primary,
+  .lp-btn-ghost {
+    flex: 1 1 auto;
+    justify-content: center;
+    min-height: 46px;
+  }
+  .lp-map {
+    right: -420px;
+    width: 1200px;
+    opacity: 0.5;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .lp-title .w {
     transform: none !important;

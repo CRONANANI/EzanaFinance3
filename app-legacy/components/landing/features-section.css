@@ -258,10 +258,12 @@ body.light-mode .landing-page .feature-card {
   transform-style: preserve-3d;
 }
 
-/* Flip is hover/focus-only — no JS .is-flipped class, so the state can never
-   get stuck (a single trigger, never two competing ones). */
+/* Desktop flips on hover/focus. Touch devices have no hover, so the component
+   toggles .is-flipped on tap/click/keyboard — that class drives the same flip
+   so the back face is reachable on mobile. */
 .flip-card:hover .flip-inner,
-.flip-card:focus-within .flip-inner {
+.flip-card:focus-within .flip-inner,
+.flip-card.is-flipped .flip-inner {
   transform: rotateY(180deg);
 }
 

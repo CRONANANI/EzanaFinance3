@@ -251,6 +251,27 @@ body.light-mode .landing-footer {
   .landing-footer-legal {
     justify-content: center;
   }
+
+  /* Mobile tap targets ≥44px: give the text links real vertical hit area and
+     size the social icons up. Desktop layout is unchanged. */
+  .landing-footer-links a,
+  .landing-footer-links button.landing-footer-link-btn {
+    padding: 0.375rem 0;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .landing-footer-legal a,
+  .landing-footer-legal button {
+    padding: 0.375rem 0;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .landing-footer-social {
+    width: 44px;
+    height: 44px;
+  }
 }
 
 /* Guarantee footer links/buttons are always clickable (defensive against overlays) */
