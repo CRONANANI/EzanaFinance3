@@ -457,7 +457,6 @@ export default function PoliticalTradesClient({ devSampleTrades = null }) {
             </thead>
             <tbody>
               {filtered.map((t) => {
-                const pm = partyMeta(t.party);
                 const member = members.find((m) => m.name === t.politician);
                 return (
                   <tr key={t.id} onClick={() => member && setSelected(member)}>
@@ -469,9 +468,7 @@ export default function PoliticalTradesClient({ devSampleTrades = null }) {
                     </td>
                     <td>
                       <span className="ptx-polcell">
-                        <span className="ptx-mini-avatar" style={{ borderColor: pm.color }}>
-                          {initials(t.politician)}
-                        </span>
+                        <MiniAvatar name={t.politician} bioguideId={t.bioguideId} party={t.party} />
                         <span>
                           {t.politician}
                           <span className="ptx-polcell-sub">{t.chamber}</span>
@@ -607,6 +604,35 @@ function Avatar({ member, size = 64 }) {
         />
       ) : (
         <span className="ptx-avatar-fallback">{initials(member.name)}</span>
+      )}
+    </span>
+  );
+}
+
+/* 26px table/search avatar — same resolver + onError + party ring as <Avatar>. */
+function MiniAvatar({ name, bioguideId, party }) {
+  const pm = partyMeta(party);
+  const shot = resolveHeadshot({ name, bioguideId });
+  const [failed, setFailed] = useState(false);
+  const showImg = shot && !failed;
+  return (
+    <span className="ptx-mini-avatar" style={{ borderColor: pm.color }}>
+      {showImg ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={shot.src}
+          alt={name}
+          loading="lazy"
+          onError={() => setFailed(true)}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center top',
+          }}
+        />
+      ) : (
+        initials(name)
       )}
     </span>
   );
@@ -877,9 +903,11 @@ function TickerSearch({ onSelectMember }) {
                       onClick={() => openMember(g)}
                     >
                       <span className="ptx-search-member">
-                        <span className="ptx-mini-avatar" style={{ borderColor: pm.color }}>
-                          {initials(g.member.name)}
-                        </span>
+                        <MiniAvatar
+                          name={g.member.name}
+                          bioguideId={g.member.bioguideId}
+                          party={PARTY_WORD[g.member.party] || 'Unknown'}
+                        />
                         <span>
                           {g.member.name}
                           <span className="ptx-badge-inline" style={{ color: pm.color }}>

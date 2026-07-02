@@ -13,9 +13,11 @@ const BASE = 'https://financialmodelingprep.com/stable';
 
 async function fetchLatest(chamber) {
   const FMP_KEY = getFmpKey();
-  const endpoint = chamber === 'senate' ? 'senate-trades' : 'house-trades';
+  // The "latest disclosures" firehose lives at senate-latest/house-latest.
+  // senate-trades/house-trades REQUIRE a `symbol` param and return empty here.
+  const endpoint = chamber === 'senate' ? 'senate-latest' : 'house-latest';
   try {
-    const url = `${BASE}/${endpoint}?page=0&apikey=${encodeURIComponent(FMP_KEY)}`;
+    const url = `${BASE}/${endpoint}?page=0&limit=100&apikey=${encodeURIComponent(FMP_KEY)}`;
     const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) {
       console.warn(`[congress-latest] ${endpoint} HTTP ${res.status}`);

@@ -1,10 +1,16 @@
 /**
  * GET /api/politicians/trades — the canonical, enriched STOCK Act firehose.
  *
- * Fans out to FMP senate-trades + house-trades (no symbol = latest firehose),
- * normalizes every row via normalizeFmpTrade + enrichTrade, merges both
- * chambers, sorts by filedAt desc. The page binds ONLY these canonical fields —
- * no raw-FMP parsing in components. Query: ?page=0&limit=200.
+ * Fans out to FMP senate-latest + house-latest (the no-symbol "latest
+ * disclosures" firehose), normalizes every row via normalizeFmpTrade +
+ * enrichTrade, merges both chambers, sorts by filedAt desc. The page binds ONLY
+ * these canonical fields — no raw-FMP parsing in components. Query:
+ * ?page=0&limit=200.
+ *
+ * NOTE: FMP's `senate-trades`/`house-trades` REQUIRE a `symbol` param — calling
+ * them without one returns an error, which is why the old firehose came back
+ * empty (502) while the by-symbol ticker search worked. The firehose lives at
+ * `senate-latest`/`house-latest`.
  */
 import { NextResponse } from 'next/server';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
@@ -16,16 +22,27 @@ export const dynamic = 'force-dynamic';
 const BASE = 'https://financialmodelingprep.com/stable';
 const getFmpKey = () => process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
 
+// FMP caps the latest endpoints at 100 rows/page.
+const FMP_PAGE_LIMIT = 100;
+
 async function fetchChamber(chamber, key, page) {
-  const endpoint = chamber === 'Senate' ? 'senate-trades' : 'house-trades';
+  const endpoint = chamber === 'Senate' ? 'senate-latest' : 'house-latest';
   try {
-    const url = `${BASE}/${endpoint}?page=${page}&apikey=${encodeURIComponent(key)}`;
+    const url = `${BASE}/${endpoint}?page=${page}&limit=${FMP_PAGE_LIMIT}&apikey=${encodeURIComponent(key)}`;
     const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) return [];
+    if (!res.ok) {
+      console.warn(`[politicians/trades] ${endpoint} HTTP ${res.status}`);
+      return { rows: [], status: res.status };
+    }
     const data = await res.json();
-    return Array.isArray(data) ? data.map((r) => enrichTrade(normalizeFmpTrade(r, chamber))) : [];
-  } catch {
-    return [];
+    const rows = Array.isArray(data)
+      ? data.map((r) => enrichTrade(normalizeFmpTrade(r, chamber)))
+      : [];
+    console.info(`[politicians/trades] ${endpoint} HTTP 200 · ${rows.length} rows`);
+    return { rows, status: 200 };
+  } catch (err) {
+    console.error(`[politicians/trades] ${chamber} error:`, err?.message);
+    return { rows: [], status: 0 };
   }
 }
 
@@ -53,12 +70,17 @@ export async function GET(request) {
     fetchChamber('House', key, page),
   ]);
 
-  const merged = [...senate, ...house]
+  // Return whatever is real: a transient single-chamber failure must NOT blank
+  // the whole table. Only 502 when BOTH chambers genuinely came back empty.
+  const merged = [...senate.rows, ...house.rows]
     .filter((t) => t.name && t.name !== 'Unknown')
     .sort((a, b) => String(b.filedAt || '').localeCompare(String(a.filedAt || '')))
     .slice(0, limit);
 
   if (merged.length === 0) {
+    console.warn(
+      `[politicians/trades] empty firehose — senate HTTP ${senate.status}, house HTTP ${house.status}`,
+    );
     return NextResponse.json(
       {
         ok: false,

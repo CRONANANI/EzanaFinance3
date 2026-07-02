@@ -566,6 +566,7 @@
   color: var(--text-muted);
   background: var(--bg-tertiary);
   flex-shrink: 0;
+  overflow: hidden; /* clip the headshot <img> to the circle */
 }
 .ptx-polcell-sub {
   display: block;
