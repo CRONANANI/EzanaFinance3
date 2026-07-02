@@ -356,6 +356,14 @@ body.light-mode .mkt-card {
     padding-left: 1rem;
     padding-right: 1rem;
   }
+  /* Dataset dashboard search row: stack the two fields and use a ≥16px input so
+     iOS Safari doesn't zoom the viewport when a field is focused. */
+  .mkt-ds-search-row {
+    grid-template-columns: 1fr;
+  }
+  .mkt-ds-input {
+    font-size: 16px;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════

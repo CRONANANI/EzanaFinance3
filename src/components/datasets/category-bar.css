@@ -63,3 +63,32 @@
   color: var(--emerald);
   font-weight: 600;
 }
+
+/* Phones/tablets: four long category labels can't fit centered in one row, so
+   make the bar a left-aligned horizontal-scroll strip (swipeable) instead of
+   overflowing the viewport. Triggers keep their size and stay tappable. */
+@media (max-width: 768px) {
+  .dscat-bar {
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 8px 0;
+  }
+  .dscat-bar::-webkit-scrollbar {
+    display: none;
+  }
+  .dscat {
+    flex: 0 0 auto;
+  }
+  .dscat-trigger {
+    white-space: nowrap;
+  }
+  /* Never let the dropdown push past the right edge on a narrow screen. */
+  .dscat-menu {
+    min-width: 0;
+    width: max-content;
+    max-width: calc(100vw - 24px);
+  }
+}
