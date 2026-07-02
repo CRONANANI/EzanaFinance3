@@ -1,23 +1,29 @@
 'use client';
 
 /**
- * Datasets index — "Interactive Signal Map" (Claude Design direction 1a).
+ * Datasets index — "Interactive Signal Map" v2 (Claude Design).
  * Third page in the redesigned dataset family (Government Contracts 1b,
  * Congressional Trading 1a): shared CategoryBar + ticker pattern + 1440px
  * margins. Presentation layer only.
  *
+ * v2 topology: pure HUB-AND-SPOKE. There are NO node-to-node edges — every
+ * dataset connects only to the central EZANA engine (everything feeds the
+ * engine; the engine relates everything). The 12 spokes animate a slow inward
+ * "intake" flow. Selection is MULTI-SELECT (a Set of dataset ids); the right
+ * panel renders a deep single-dataset analysis or a combined-signal analysis.
+ *
  * The cross-dataset ticker is driven by REAL live items mixed from existing
  * integrations (congress trades, contract awards, 13F filings, prediction-market
  * odds). Sources without a live feed are omitted — never faked. Insider buys are
- * intentionally omitted: no live insider feed exists yet (the SEC page renders a
- * static sample), so faking it here would violate the no-mock rule.
+ * intentionally omitted: no live insider feed exists yet.
  *
- * The 12 dataset nodes, 11 connections, and their explainer copy are
- * product-approved content from the handoff (README). Node/hub/legend
- * interactions drive `selectedNode` and `categoryFilter` (mutually exclusive).
+ * Analysis copy is grounded in the project's analytical vocabulary (event
+ * studies around disclosure dates, lead-lag cross-correlation, accumulation
+ * breadth/clustering, vig-free implied probability vs. model edge). It is
+ * informational only — no return promises or advice phrasing.
  */
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowRight, Zap } from 'lucide-react';
+import { ArrowRight, Zap, X } from 'lucide-react';
 import CategoryBar from '@/components/datasets/CategoryBar';
 import './ds-overview.css';
 
@@ -32,11 +38,14 @@ const CATS = {
   sec: { label: 'SEC & Institutional', color: 'var(--info)', corner: 'SEC & INSTITUTIONAL' },
   markets: { label: 'Markets & Signals', color: 'var(--purple)', corner: 'MARKETS & SIGNALS' },
 };
+const CAT_ORDER = ['congress', 'gov', 'sec', 'markets'];
 
-/* ── the 12 dataset nodes (label · category · sources · scope) ──
+/* ── the 12 dataset nodes ──
    angle is in degrees (SVG y-down); nodes sit on an ellipse grouped into four
-   quadrant arcs by category (top-left congress, top-right gov, bottom-left sec,
-   bottom-right markets). */
+   quadrant arcs by category. Each node carries its sources, a scope blurb, the
+   analytical treatment (`analyze`), a per-other-category cross mechanism
+   (`moves`), and a short joint-pattern phrase (`pattern`) used to compose
+   multi-select copy. */
 const NODES = [
   // top-left — Congressional & Political
   {
@@ -47,6 +56,15 @@ const NODES = [
     sources: 'Quiver Quantitative · STOCK Act disclosures',
     blurb:
       'Every stock transaction disclosed by members of Congress under the STOCK Act, enriched with party and chamber.',
+    analyze:
+      'We run event studies around each disclosure date, measuring abnormal returns in the traded name and its sector over 1-, 5-, and 20-day windows, and track filing lag alongside party and committee concentration.',
+    moves: {
+      gov: 'Disclosed positions are cross-referenced with contract and spending flows to flag members trading in industries their committees oversee.',
+      sec: 'We test for overlap between member purchases and Form 4 insider buying in the same tickers — coincident buying tends to mark higher-conviction clusters.',
+      markets:
+        'Disclosed trades are compared against subsequent price and rating moves to see where member activity historically precedes sector rotation.',
+    },
+    pattern: 'member disclosures front-running sector moves',
   },
   {
     id: 'lobbying',
@@ -56,6 +74,15 @@ const NODES = [
     sources: 'Senate LDA LD-1/LD-2',
     blurb:
       'Corporate and trade-group lobbying spend disclosed quarterly under the Lobbying Disclosure Act.',
+    analyze:
+      'We track lobbying spend by issue and client quarter over quarter, measuring acceleration and the lead-lag cross-correlation between spend and the downstream policy or award events it tends to precede.',
+    moves: {
+      gov: 'Rising lobbying spend by a firm is tested as a leading indicator of contract awards, which historically follow by roughly two to three quarters.',
+      sec: 'Sustained lobbying by a company is compared with institutional 13F accumulation in the same name to see whether large holders position ahead of policy outcomes.',
+      markets:
+        'We watch whether lobbying intensity around a bill precedes re-rating in the affected sector’s prices and analyst coverage.',
+    },
+    pattern: 'lobbying spend leading contract awards',
   },
   {
     id: 'fundraising',
@@ -65,6 +92,15 @@ const NODES = [
     sources: 'FEC',
     blurb:
       'Federal campaign contributions and PAC money reported to the Federal Election Commission.',
+    analyze:
+      'We measure fundraising momentum — contribution velocity and PAC concentration by race and sector — and track how it shifts across the election cycle.',
+    moves: {
+      gov: 'Donor-industry concentration is mapped against agencies and programs to surface where fundraising aligns with spending priorities.',
+      sec: 'Sector fundraising trends are compared with institutional positioning to see whether 13F rotations lean toward politically favored industries.',
+      markets:
+        'Fundraising momentum is tested against prediction-market odds — money tends to lead shifts in implied win probability, which in turn move policy-sensitive sectors.',
+    },
+    pattern: 'fundraising momentum leading election odds',
   },
   // top-right — Government Activity
   {
@@ -74,6 +110,16 @@ const NODES = [
     angle: 285,
     sources: 'USAspending.gov · Treasury',
     blurb: 'Federal contract awards broken out by recipient, awarding agency, and amount.',
+    analyze:
+      'We aggregate awards by recipient, agency, and NAICS, measuring award momentum and backlog growth, and run event studies on contractor equities around announcement dates.',
+    moves: {
+      congress:
+        'Award timing is cross-referenced with lobbying spend and member trading to flag positioning ahead of public announcements.',
+      sec: 'We check whether institutional 13F accumulation and insider buying in a contractor precede award momentum.',
+      markets:
+        'Award announcements are tested as re-rating catalysts — we measure abnormal returns and analyst-estimate revisions for the awarded contractor.',
+    },
+    pattern: 'award announcements re-rating contractor equities',
   },
   {
     id: 'federal-spending',
@@ -82,6 +128,16 @@ const NODES = [
     angle: 315,
     sources: 'USAspending.gov · Treasury',
     blurb: 'Federal outlays across agencies and programs over time.',
+    analyze:
+      'We track outlays by agency and program over time, measuring growth rates and rotation across sectors relative to appropriations.',
+    moves: {
+      congress:
+        'Spending shifts are aligned with fundraising and committee priorities to see which programs are funded ahead of budget cycles.',
+      sec: 'Program-level outlay growth is compared with ETF and 13F flows into the exposed sectors.',
+      markets:
+        'We test whether federal outlay growth leads sector-level price performance — spending rotations tend to precede relative-strength shifts.',
+    },
+    pattern: 'outlay growth rotating sector performance',
   },
   {
     id: 'patents',
@@ -90,6 +146,16 @@ const NODES = [
     angle: 345,
     sources: 'USPTO',
     blurb: 'Granted patents and application activity mapped to assignees.',
+    analyze:
+      'We measure patent grant and application momentum by assignee and technology class, using citation breadth as a proxy for innovation intensity.',
+    moves: {
+      congress:
+        'Patent clusters in regulated technologies are cross-referenced with lobbying activity around the same standards.',
+      sec: 'Accelerating patent activity is compared with institutional accumulation to see whether 13F filers position ahead of commercialization.',
+      markets:
+        'Patent momentum is tested as a leading input to analyst upgrades and longer-horizon fundamental re-rating.',
+    },
+    pattern: 'patent momentum feeding analyst upgrades',
   },
   // bottom-right — Markets & Signals
   {
@@ -99,6 +165,15 @@ const NODES = [
     angle: 15,
     sources: 'Finnhub · licensed providers',
     blurb: 'Analyst ratings, upgrades, downgrades, and price targets across equities.',
+    analyze:
+      'We aggregate ratings, revisions, and price-target dispersion, measuring upgrade/downgrade momentum and how far consensus lags realized fundamentals.',
+    moves: {
+      congress:
+        'Rating revisions are checked against member trading to see where disclosures front-run or trail sell-side consensus.',
+      gov: 'We test whether contract awards and patent momentum lead analyst upgrades in the affected names.',
+      sec: 'Rating momentum is compared with 13F rotation and insider buying — coverage tends to follow institutional accumulation.',
+    },
+    pattern: 'coverage revisions trailing institutional accumulation',
   },
   {
     id: 'prices',
@@ -107,6 +182,15 @@ const NODES = [
     angle: 45,
     sources: 'Finnhub · FMP · Alpha Vantage',
     blurb: 'Real-time prices, fundamentals, and technical signals across equities.',
+    analyze:
+      'Prices and fundamentals are the common measurement layer: we compute abnormal returns, volatility regimes, and momentum, and use them as the dependent variable in every cross-dataset event study.',
+    moves: {
+      congress:
+        'We measure whether disclosed member trades and lobbying intensity historically precede abnormal returns in the affected sectors.',
+      gov: 'Contract awards and federal outlays are tested as re-rating catalysts against realized price and fundamental moves.',
+      sec: 'Insider clusters, 13F rotations, and ETF flows are evaluated for lead-lag relationships with subsequent price inflections.',
+    },
+    pattern: 'abnormal returns confirming upstream signals',
   },
   {
     id: 'prediction',
@@ -115,6 +199,15 @@ const NODES = [
     angle: 75,
     sources: 'Polymarket Gamma/Data/CLOB',
     blurb: 'Live event and election odds from on-chain prediction markets.',
+    analyze:
+      'We convert market prices to vig-free implied probabilities and track how those odds shift over time, comparing implied probability against our own estimate to size the edge (model probability minus implied).',
+    moves: {
+      congress:
+        'Odds movements are tested against fundraising momentum and member trading — shifting probabilities re-shape committee power and the policy landscape members trade around.',
+      gov: 'Policy-market odds are aligned with expected spending and contract outcomes to anticipate which programs are being priced in.',
+      sec: 'We watch whether institutional positioning shifts as event odds re-price, using implied-probability moves as a rotation signal.',
+    },
+    pattern: 'implied-probability shifts leading sector rotation',
   },
   // bottom-left — SEC & Institutional
   {
@@ -124,6 +217,16 @@ const NODES = [
     angle: 105,
     sources: 'Financial Modeling Prep',
     blurb: 'ETF constituent holdings and the flow shifts that move them.',
+    analyze:
+      'We track ETF constituent weights and creation/redemption-driven flows, measuring flow breadth and concentration into and out of sectors.',
+    moves: {
+      congress:
+        'Sector flows are compared with policy and fundraising trends to see whether allocation leans toward politically favored industries.',
+      gov: 'ETF flows into contractor- and program-exposed sectors are checked against award and spending momentum.',
+      markets:
+        'We test whether ETF flow surges amplify existing price momentum — passive flows tend to reinforce trends rather than initiate them.',
+    },
+    pattern: 'flow surges amplifying price momentum',
   },
   {
     id: 'holdings13f',
@@ -132,6 +235,16 @@ const NODES = [
     angle: 135,
     sources: 'SEC EDGAR',
     blurb: 'Quarterly institutional equity holdings disclosed on Form 13F.',
+    analyze:
+      'We diff quarterly 13F filings to compute position changes by manager, measuring accumulation/distribution breadth and clustering across correlated institutions.',
+    moves: {
+      congress:
+        'Institutional accumulation is cross-referenced with member trading and lobbying to flag names where multiple informed sources converge.',
+      gov: 'We check whether 13F buying leads the beneficiaries of contract awards and spending.',
+      markets:
+        '13F rotations are tested as a lead indicator for analyst coverage and price momentum in the accumulated names.',
+    },
+    pattern: '13F accumulation leading coverage and price',
   },
   {
     id: 'insider',
@@ -140,41 +253,57 @@ const NODES = [
     angle: 165,
     sources: 'SEC EDGAR',
     blurb: "Officer and director transactions in their own company's stock (Form 4).",
+    analyze:
+      'We measure insider-buy breadth and clustering (multiple officers buying within a short window), scoring transactions by size relative to holdings and by recency.',
+    moves: {
+      congress:
+        'Insider clusters are overlapped with member purchases in the same tickers — coincident buying tends to mark the highest-conviction signals.',
+      gov: 'We check whether insider buying at a contractor precedes award momentum.',
+      markets:
+        'Insider-buy clusters are tested as leading indicators of price inflections, historically preceding positive abnormal returns.',
+    },
+    pattern: 'insider-buy clusters leading price inflections',
   },
 ];
 
-/* ── the 11 connection edges (verbatim explainer copy) ── */
-const EDGES = [
-  ['congress-trading', 'prices', "Members' disclosed trades often front-run sector moves."],
-  [
-    'congress-trading',
-    'insider',
-    'Congress + insider buying overlap is the strongest conviction signal.',
-  ],
-  [
-    'lobbying',
-    'gov-contracts',
-    'Lobbying spend typically precedes contract awards by 2–3 quarters.',
-  ],
-  ['fundraising', 'prediction', 'Fundraising momentum moves election odds.'],
-  [
-    'prediction',
-    'congress-trading',
-    'Shifting odds re-shape committee power — and member trading.',
-  ],
-  ['gov-contracts', 'prices', 'Contract awards re-rate contractor stocks.'],
-  ['federal-spending', 'prices', 'Federal outlays rotate sector performance.'],
-  ['patents', 'ratings', 'Patent momentum feeds analyst upgrades.'],
-  ['insider', 'prices', 'Insider buying clusters lead price inflections.'],
-  ['holdings13f', 'ratings', '13F rotations pull analyst coverage with them.'],
-  ['etf', 'prices', 'ETF flows amplify price trends.'],
-];
+const NODE_BY_ID = NODES.reduce((m, n) => ((m[n.id] = n), m), {});
 
-/* signature signal chains — each selects its starting node */
-const CHAINS = [
-  { label: 'Lobbying → Contracts → Prices', start: 'lobbying' },
-  { label: 'Congress trades → Insider overlap', start: 'congress-trading' },
-  { label: 'Fundraising → Odds → Rotation', start: 'fundraising' },
+/* signature signal chains → multi-select presets (each selects a SET of nodes).
+   Combined copy + patterns are hand-written for the three presets. */
+const PRESETS = [
+  {
+    label: 'Lobbying → Contracts → Prices',
+    nodes: ['lobbying', 'gov-contracts', 'prices'],
+    combined:
+      'Lobbying spend, contract awards, and price action form Ezana’s clearest lead-lag chain. We test whether a firm’s rising lobbying intensity precedes federal awards by two to three quarters, then whether those awards re-rate the contractor’s equity.',
+    patterns: [
+      'Lobbying spend accelerating ahead of an award window → pre-award positioning in the contractor’s equity.',
+      'Award-announcement clustering → abnormal returns and analyst-estimate revisions in the days after.',
+      'Lobbying and award momentum diverging from flat prices → a lag the market may not have priced yet.',
+    ],
+  },
+  {
+    label: 'Congress trades → Insider overlap',
+    nodes: ['congress-trading', 'insider'],
+    combined:
+      'Congressional disclosures and insider Form 4 activity are strongest when they agree. We test for the same tickers appearing in both feeds inside a short window, treating coincident buying as a higher-conviction cluster.',
+    patterns: [
+      'Member purchase and officer buying in the same name within weeks → convergent-conviction cluster.',
+      'Committee-relevant member trade with no matching insider activity → single-source signal, weighted lower.',
+      'Insider-cluster breadth rising alongside member buying → accumulation we watch for a price inflection.',
+    ],
+  },
+  {
+    label: 'Fundraising → Odds → Rotation',
+    nodes: ['fundraising', 'prediction', 'prices'],
+    combined:
+      'Fundraising momentum, prediction-market odds, and sector prices trace how political expectations become market rotation. We test whether contribution velocity leads implied-probability shifts, and whether those odds moves precede rotation in policy-sensitive sectors.',
+    patterns: [
+      'Fundraising surge ahead of a race → a leading move in that outcome’s implied probability.',
+      'Odds re-pricing a policy outcome → a rotation signal for the exposed sector’s prices.',
+      'Implied probability diverging from the fundraising trend → a mispricing we flag for review.',
+    ],
+  },
 ];
 
 /* four sourced category cards (route to each category's primary dataset page) */
@@ -212,43 +341,25 @@ const CX = 360;
 const CY = 250;
 const RX = 280;
 const RY = 185;
-const BOW = 0.36;
 
 const rad = (deg) => (deg * Math.PI) / 180;
+const nodePos = (angle) => ({
+  x: CX + RX * Math.cos(rad(angle)),
+  y: CY + RY * Math.sin(rad(angle)),
+});
 
-function nodePos(angle) {
-  return { x: CX + RX * Math.cos(rad(angle)), y: CY + RY * Math.sin(rad(angle)) };
-}
-
-/* split a label into (at most) two balanced lines for extreme/long placements */
+/* split a label into (at most) two balanced lines */
 function wrapLabel(label) {
   const words = label.split(' ');
   if (words.length < 2) return [label];
-  // put the shorter run on top so the two lines look balanced
   if (words.length === 2) return words;
   return [words.slice(0, 2).join(' '), words.slice(2).join(' ')];
 }
 
-const NODE_BY_ID = NODES.reduce((m, n) => ((m[n.id] = n), m), {});
-
-/* partner-node ids for a given node (nodes sharing an edge) */
-function partnersOf(id) {
-  const set = new Set();
-  for (const [a, b] of EDGES) {
-    if (a === id) set.add(b);
-    if (b === id) set.add(a);
-  }
-  return set;
-}
-
-/* edges incident to a node → [{ partner, explainer }] */
-function connectionsOf(id) {
-  const out = [];
-  for (const [a, b, exp] of EDGES) {
-    if (a === id) out.push({ partner: b, explainer: exp });
-    else if (b === id) out.push({ partner: a, explainer: exp });
-  }
-  return out;
+function joinList(arr) {
+  if (arr.length <= 1) return arr[0] || '';
+  if (arr.length === 2) return `${arr[0]} and ${arr[1]}`;
+  return `${arr.slice(0, -1).join(', ')}, and ${arr[arr.length - 1]}`;
 }
 
 /* ══════════════════════════ ticker (real live items) ══════════════════════════ */
@@ -308,7 +419,6 @@ async function loadTickerItems() {
         subject: `${t.name} · ${t.symbol || '—'}`,
         value: t.amount || (t.positive ? 'Buy' : 'Sell'),
         positive: !!t.positive,
-        href: '/datasets/political',
       })),
     );
   } else omitted.push('congress trades');
@@ -321,7 +431,6 @@ async function loadTickerItems() {
         subject: `${r.recipient} · ${r.agency}`,
         value: r.amount,
         positive: false,
-        href: '/datasets/government/contracts',
       })),
     );
   } else omitted.push('contract awards');
@@ -338,7 +447,6 @@ async function loadTickerItems() {
         subject: `${r.Name || r.Fund || r.owner || 'Institution'} · ${r.Ticker || r.ticker || '—'}`,
         value: shortMoney(r.Value ?? r.value) || '—',
         positive: false,
-        href: '/datasets/sec-filings',
       })),
     );
   } else omitted.push('13F filings');
@@ -358,14 +466,12 @@ async function loadTickerItems() {
         subject: `${q} · ${outcome}`,
         value: `${Math.round(price * 100)}¢`,
         positive: false,
-        href: '/datasets/prediction-markets',
       });
     }
     if (items.length) buckets.push(items);
     else omitted.push('prediction odds');
   } else omitted.push('prediction odds');
 
-  // round-robin interleave across sources so tags mix, cap ~20
   const items = [];
   let idx = 0;
   while (items.length < 20) {
@@ -424,13 +530,11 @@ function CrossDatasetTicker() {
   );
 }
 
-/* ══════════════════════════ signal map ══════════════════════════ */
-function SignalMap({ selectedNode, categoryFilter, onSelectNode, onClear }) {
+/* ══════════════════════════ signal map (hub-and-spoke) ══════════════════════════ */
+function SignalMap({ selectedNodes, categoryFilter, onToggleNode, onClear }) {
   const positions = useMemo(() => NODES.map((n) => ({ ...n, ...nodePos(n.angle) })), []);
-  const posById = useMemo(() => positions.reduce((m, n) => ((m[n.id] = n), m), {}), [positions]);
-  const partners = selectedNode ? partnersOf(selectedNode) : null;
+  const hasSelection = selectedNodes.size > 0;
 
-  // corner category labels (mono uppercase, category-colored)
   const corners = [
     { cat: 'congress', x: 20, y: 24, anchor: 'start' },
     { cat: 'gov', x: VW - 20, y: 24, anchor: 'end' },
@@ -438,28 +542,18 @@ function SignalMap({ selectedNode, categoryFilter, onSelectNode, onClear }) {
     { cat: 'markets', x: VW - 20, y: VH - 14, anchor: 'end' },
   ];
 
-  const nodeVisible = (n) => {
-    if (selectedNode) return n.id === selectedNode || partners.has(n.id) ? 1 : 0.28;
-    if (categoryFilter) return n.cat === categoryFilter ? 1 : 0.28;
-    return 1;
+  // spoke emphasis: hot (selected / filtered category), dim (something else
+  // active), or default (soft emerald intake flow on all).
+  const spokeClass = (n) => {
+    if (hasSelection) return selectedNodes.has(n.id) ? 'dsx-spoke is-hot' : 'dsx-spoke is-dim';
+    if (categoryFilter) return n.cat === categoryFilter ? 'dsx-spoke is-hot' : 'dsx-spoke is-dim';
+    return 'dsx-spoke is-flow';
   };
 
-  const edgeStyle = ([a, b]) => {
-    if (selectedNode) {
-      const on = a === selectedNode || b === selectedNode;
-      const color = CATS[NODE_BY_ID[selectedNode].cat].color;
-      return on
-        ? { stroke: color, strokeOpacity: 0.75, strokeWidth: 2, flow: true }
-        : { stroke: '#94a3b8', strokeOpacity: 0.08, strokeWidth: 1.4, flow: false };
-    }
-    if (categoryFilter) {
-      const on = NODE_BY_ID[a].cat === categoryFilter || NODE_BY_ID[b].cat === categoryFilter;
-      const color = CATS[categoryFilter].color;
-      return on
-        ? { stroke: color, strokeOpacity: 0.6, strokeWidth: 1.8, flow: false }
-        : { stroke: '#94a3b8', strokeOpacity: 0.08, strokeWidth: 1.4, flow: false };
-    }
-    return { stroke: '#94a3b8', strokeOpacity: 0.28, strokeWidth: 1.4, flow: false };
+  const nodeOpacity = (n) => {
+    if (hasSelection) return selectedNodes.has(n.id) ? 1 : 0.35;
+    if (categoryFilter) return n.cat === categoryFilter ? 1 : 0.35;
+    return 1;
   };
 
   return (
@@ -467,7 +561,7 @@ function SignalMap({ selectedNode, categoryFilter, onSelectNode, onClear }) {
       className="dsx-map-svg"
       viewBox={`0 0 ${VW} ${VH}`}
       role="img"
-      aria-label="Interactive map of how Ezana's 12 datasets connect across four categories"
+      aria-label="Interactive hub-and-spoke map of Ezana's 12 datasets feeding the signal engine"
     >
       {/* corner category names */}
       {corners.map((c) => (
@@ -483,42 +577,28 @@ function SignalMap({ selectedNode, categoryFilter, onSelectNode, onClear }) {
         </text>
       ))}
 
-      {/* faint spokes node → center */}
-      {positions.map((n) => (
-        <line key={`sp-${n.id}`} className="dsx-spoke" x1={n.x} y1={n.y} x2={CX} y2={CY} />
+      {/* the ONLY lines: 12 spokes, each animating an inward intake flow (node → hub) */}
+      {positions.map((n, i) => (
+        <line
+          key={`sp-${n.id}`}
+          className={spokeClass(n)}
+          x1={n.x}
+          y1={n.y}
+          x2={CX}
+          y2={CY}
+          style={{ animationDelay: `${-(i * 0.24).toFixed(2)}s` }}
+        />
       ))}
 
-      {/* connection edges (bowed quadratics) */}
-      {EDGES.map(([a, b], i) => {
-        const pa = posById[a];
-        const pb = posById[b];
-        const mx = (pa.x + pb.x) / 2;
-        const my = (pa.y + pb.y) / 2;
-        const cxp = mx + (CX - mx) * BOW;
-        const cyp = my + (CY - my) * BOW;
-        const st = edgeStyle([a, b]);
-        return (
-          <path
-            key={`edge-${i}`}
-            className={`dsx-edge${st.flow ? ' is-flow' : ''}`}
-            d={`M ${pa.x} ${pa.y} Q ${cxp} ${cyp} ${pb.x} ${pb.y}`}
-            style={{
-              stroke: st.stroke,
-              strokeOpacity: st.strokeOpacity,
-              strokeWidth: st.strokeWidth,
-            }}
-          />
-        );
-      })}
-
-      {/* center hub */}
-      <circle className="dsx-hub-halo" cx={CX} cy={CY} r={38} />
-      <circle className="dsx-hub-ring" cx={CX} cy={CY} r={30} />
+      {/* center hub — the living engine */}
+      <circle className="dsx-hub-halo" cx={CX} cy={CY} r={40} />
+      <circle className="dsx-hub-ring2" cx={CX} cy={CY} r={33} />
+      <circle className="dsx-hub-ring" cx={CX} cy={CY} r={27} />
       <circle
         className="dsx-hub-circle"
         cx={CX}
         cy={CY}
-        r={26}
+        r={24}
         onClick={onClear}
         role="button"
         aria-label="Clear selection"
@@ -535,15 +615,32 @@ function SignalMap({ selectedNode, categoryFilter, onSelectNode, onClear }) {
         const cosA = Math.cos(rad(n.angle));
         const sinA = Math.sin(rad(n.angle));
         const anchor = cosA < -0.34 ? 'end' : cosA > 0.34 ? 'start' : 'middle';
+        const isSel = selectedNodes.has(n.id);
         const lines = anchor !== 'middle' || n.label.length > 15 ? wrapLabel(n.label) : [n.label];
-        const lx = anchor === 'start' ? n.x + 12 : anchor === 'end' ? n.x - 12 : n.x;
-        let ly;
-        if (anchor === 'middle') ly = sinA < 0 ? n.y - 14 : n.y + 20;
-        else ly = n.y + 4;
-        if (lines.length > 1) ly -= 6;
         const color = CATS[n.cat].color;
-        const isSel = selectedNode === n.id;
-        const op = nodeVisible(n);
+        const op = nodeOpacity(n);
+
+        // dot→label gap; grows a step when selected so the ring never touches text
+        const sideGap = isSel ? 18 : 15;
+        const topGap = isSel ? 22 : 18;
+        const botGap = isSel ? 30 : 26;
+        let lx;
+        let firstY;
+        if (anchor === 'middle') {
+          lx = n.x;
+          if (sinA < 0) {
+            // top: stack lines ABOVE the dot
+            const lastY = n.y - topGap;
+            firstY = lastY - (lines.length - 1) * 13;
+          } else {
+            // bottom: stack lines BELOW the dot
+            firstY = n.y + botGap;
+          }
+        } else {
+          lx = anchor === 'start' ? n.x + sideGap : n.x - sideGap;
+          firstY = n.y + 4 - (lines.length - 1) * 6.5;
+        }
+
         return (
           <g key={n.id}>
             {isSel && (
@@ -563,9 +660,9 @@ function SignalMap({ selectedNode, categoryFilter, onSelectNode, onClear }) {
               style={{ fill: color, opacity: op }}
             />
             <text
-              className="dsx-node-label"
+              className={`dsx-node-label${isSel ? ' is-sel' : ''}`}
               x={lx}
-              y={ly}
+              y={firstY}
               textAnchor={anchor}
               style={{ opacity: op }}
             >
@@ -583,14 +680,15 @@ function SignalMap({ selectedNode, categoryFilter, onSelectNode, onClear }) {
               cx={n.x}
               cy={n.y}
               r={24}
-              onClick={() => onSelectNode(n.id)}
+              onClick={() => onToggleNode(n.id)}
               role="button"
               tabIndex={0}
-              aria-label={`${n.label} — show connections`}
+              aria-pressed={isSel}
+              aria-label={`${n.label} — ${isSel ? 'deselect' : 'add to analysis'}`}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
-                  onSelectNode(n.id);
+                  onToggleNode(n.id);
                 }
               }}
             />
@@ -601,104 +699,193 @@ function SignalMap({ selectedNode, categoryFilter, onSelectNode, onClear }) {
   );
 }
 
-/* ══════════════════════════ explorer panel ══════════════════════════ */
-function ExplorerPanel({ selectedNode, onSelectNode }) {
-  if (!selectedNode) {
-    return (
-      <div className="dsx-panel">
-        <span className="dsx-chip">
-          <Zap size={12} /> Signal engine
-        </span>
-        <h2 className="dsx-panel-title">How our datasets move each other</h2>
-        <p className="dsx-panel-blurb">
-          Ezana&apos;s four categories aren&apos;t silos. Click any node to see what it feeds — and
-          walk the graph from one dataset to the next.
-        </p>
-        <div className="dsx-stats">
-          <span>
-            <b>12</b> datasets
-          </span>
-          <span>
-            <b>4</b> categories
-          </span>
-          <span>
-            <b>11</b> live connections
-          </span>
-        </div>
-        <div className="dsx-section-h">Signature signal chains</div>
-        <div className="dsx-rows">
-          {CHAINS.map((c) => (
-            <button
-              key={c.label}
-              type="button"
-              className="dsx-chain"
-              onClick={() => onSelectNode(c.start)}
-            >
-              <ArrowRight size={14} /> {c.label}
-            </button>
-          ))}
-        </div>
-      </div>
-    );
-  }
+/* ══════════════════════════ analysis panel ══════════════════════════ */
+function CategoryChip({ cat, tinted }) {
+  const c = CATS[cat];
+  return (
+    <span
+      className="dsx-chip"
+      style={
+        tinted ? { color: c.color, background: 'transparent', borderColor: c.color } : undefined
+      }
+    >
+      <span className="dsx-legend-dot" style={{ background: c.color }} /> {c.label}
+    </span>
+  );
+}
 
-  const node = NODE_BY_ID[selectedNode];
-  const cat = CATS[node.cat];
-  const conns = connectionsOf(selectedNode);
+/** per-other-category cross-mechanism blocks for one node */
+function MovesBlocks({ node }) {
+  return (
+    <div className="dsx-moves">
+      {CAT_ORDER.filter((k) => k !== node.cat).map((k) => (
+        <div className="dsx-moveblock" key={k}>
+          <span className="dsx-move-cat">
+            <span className="dsx-legend-dot" style={{ background: CATS[k].color }} />
+            {CATS[k].label}
+          </span>
+          <p className="dsx-move-text">{node.moves[k]}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function PanelDefault({ onSelectPreset }) {
   return (
     <div className="dsx-panel">
-      <span
-        className="dsx-chip"
-        style={{ color: cat.color, background: 'transparent', borderColor: cat.color }}
-      >
-        <span className="dsx-legend-dot" style={{ background: cat.color }} /> {cat.label}
+      <span className="dsx-chip">
+        <Zap size={12} /> Signal engine
       </span>
-      <h2 className="dsx-panel-title">{node.label}</h2>
-      <p className="dsx-panel-blurb">{node.blurb}</p>
-      <p className="dsx-source">
-        <b>HOW WE SOURCE IT ·</b> {node.sources}
+      <h2 className="dsx-panel-title">How our datasets move each other</h2>
+      <p className="dsx-panel-blurb">
+        Ezana&apos;s four categories aren&apos;t silos — every dataset feeds one engine, and the
+        engine relates them all. Click any node to analyze it; add more to study how they combine.
       </p>
-      <div className="dsx-section-h">How it moves other datasets</div>
+      <div className="dsx-stats">
+        <span>
+          <b>12</b> datasets
+        </span>
+        <span>
+          <b>4</b> categories
+        </span>
+        <span>
+          <b>1</b> signal engine
+        </span>
+      </div>
+      <div className="dsx-section-h">Signature signal chains</div>
       <div className="dsx-rows">
-        {conns.map(({ partner, explainer }) => {
-          const p = NODE_BY_ID[partner];
-          return (
-            <button
-              key={partner}
-              type="button"
-              className="dsx-row"
-              onClick={() => onSelectNode(partner)}
-            >
-              <span className="dsx-row-dot" style={{ background: CATS[p.cat].color }} />
-              <span>
-                <span className="dsx-row-name">{p.label}</span>
-                <span className="dsx-row-exp">{explainer}</span>
-              </span>
-            </button>
-          );
-        })}
+        {PRESETS.map((p) => (
+          <button
+            key={p.label}
+            type="button"
+            className="dsx-chain"
+            onClick={() => onSelectPreset(p.nodes)}
+          >
+            <ArrowRight size={14} /> {p.label}
+          </button>
+        ))}
       </div>
     </div>
   );
 }
 
+function PanelSingle({ node }) {
+  return (
+    <div className="dsx-panel">
+      <CategoryChip cat={node.cat} tinted />
+      <h2 className="dsx-panel-title">{node.label}</h2>
+      <p className="dsx-source">
+        <b>HOW WE SOURCE IT ·</b> {node.sources}
+      </p>
+      <div className="dsx-section-h">How we analyze it</div>
+      <p className="dsx-panel-blurb">{node.analyze}</p>
+      <div className="dsx-section-h">How it moves the other three categories</div>
+      <MovesBlocks node={node} />
+    </div>
+  );
+}
+
+function PanelCombined({ nodes }) {
+  const selCats = new Set(nodes.map((n) => n.cat));
+  const remaining = CAT_ORDER.filter((k) => !selCats.has(k));
+
+  // exact-set match to a preset → use its hand-written combined copy + patterns
+  const selIds = new Set(nodes.map((n) => n.id));
+  const preset = PRESETS.find(
+    (p) => p.nodes.length === selIds.size && p.nodes.every((id) => selIds.has(id)),
+  );
+
+  const combined =
+    preset?.combined ||
+    `You've combined ${joinList(nodes.map((n) => n.label))}. Ezana analyzes them together for lead-lag structure and convergent, cross-category signals.`;
+
+  // patterns: preset copy, else each node's concrete joint pattern (sentence-cased)
+  const patterns =
+    preset?.patterns ||
+    nodes.map((n) => {
+      const s = n.pattern;
+      return `${s.charAt(0).toUpperCase()}${s.slice(1)}.`;
+    });
+
+  return (
+    <div className="dsx-panel">
+      <div className="dsx-selchips">
+        {nodes.map((n) => (
+          <span className="dsx-selchip" key={n.id} style={{ borderColor: CATS[n.cat].color }}>
+            <span className="dsx-legend-dot" style={{ background: CATS[n.cat].color }} />
+            {n.label}
+          </span>
+        ))}
+      </div>
+      <div className="dsx-section-h">Combined signal</div>
+      <p className="dsx-panel-blurb">{combined}</p>
+
+      {remaining.length > 0 && (
+        <>
+          <div className="dsx-section-h">What it implies for the other categories</div>
+          <div className="dsx-moves">
+            {remaining.map((k) => {
+              const texts = [...new Set(nodes.map((n) => n.moves[k]).filter(Boolean))].slice(0, 2);
+              return (
+                <div className="dsx-moveblock" key={k}>
+                  <span className="dsx-move-cat">
+                    <span className="dsx-legend-dot" style={{ background: CATS[k].color }} />
+                    {CATS[k].label}
+                  </span>
+                  <p className="dsx-move-text">{texts.join(' ')}</p>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
+
+      <div className="dsx-section-h">Patterns we watch</div>
+      <ul className="dsx-patterns">
+        {patterns.map((p, i) => (
+          <li key={i}>{p}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function AnalysisPanel({ selectedNodes, onSelectPreset }) {
+  const list = [...selectedNodes].map((id) => NODE_BY_ID[id]).filter(Boolean);
+  if (list.length === 0) return <PanelDefault onSelectPreset={onSelectPreset} />;
+  if (list.length === 1) return <PanelSingle node={list[0]} />;
+  return <PanelCombined nodes={list} />;
+}
+
 /* ══════════════════════════ page ══════════════════════════ */
 export default function DatasetsOverviewClient() {
-  const [selectedNode, setSelectedNode] = useState(null);
+  const [selectedNodes, setSelectedNodes] = useState(() => new Set());
   const [categoryFilter, setCategoryFilter] = useState(null);
 
-  const selectNode = (id) => {
-    setSelectedNode(id);
+  const toggleNode = (id) => {
     setCategoryFilter(null);
+    setSelectedNodes((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+  const selectPreset = (ids) => {
+    setCategoryFilter(null);
+    setSelectedNodes(new Set(ids));
   };
   const toggleCategory = (key) => {
+    setSelectedNodes(new Set());
     setCategoryFilter((prev) => (prev === key ? null : key));
-    setSelectedNode(null);
   };
   const clearAll = () => {
-    setSelectedNode(null);
+    setSelectedNodes(new Set());
     setCategoryFilter(null);
   };
+
+  const hasSelection = selectedNodes.size > 0;
 
   return (
     <div className="dsx-page">
@@ -710,8 +897,8 @@ export default function DatasetsOverviewClient() {
         <p className="dsx-eyebrow">DATASETS</p>
         <h1 className="dsx-title">Every signal, sourced and attributed</h1>
         <p className="dsx-sub">
-          Ezana organizes its data across four dimensions — and shows you exactly how each one moves
-          the others. No black boxes.
+          Ezana organizes its data across four dimensions — and shows you exactly how each one feeds
+          the signal engine that relates them. No black boxes.
         </p>
       </header>
 
@@ -735,14 +922,19 @@ export default function DatasetsOverviewClient() {
       <section className="dsx-card">
         <div className="dsx-mapwrap">
           <div className="dsx-map">
+            {hasSelection && (
+              <button type="button" className="dsx-clearbtn" onClick={clearAll}>
+                <X size={13} /> Clear ({selectedNodes.size})
+              </button>
+            )}
             <SignalMap
-              selectedNode={selectedNode}
+              selectedNodes={selectedNodes}
               categoryFilter={categoryFilter}
-              onSelectNode={selectNode}
+              onToggleNode={toggleNode}
               onClear={clearAll}
             />
           </div>
-          <ExplorerPanel selectedNode={selectedNode} onSelectNode={selectNode} />
+          <AnalysisPanel selectedNodes={selectedNodes} onSelectPreset={selectPreset} />
         </div>
       </section>
 
