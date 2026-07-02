@@ -283,6 +283,15 @@
   }
 }
 
+/* Phones: let the back-link / save-button row wrap instead of squeezing the
+   full "Back to Ezana Echo" label against the save button on a 360px screen. */
+@media (max-width: 480px) {
+  .echo-title-actions {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .echo-anchor-pulse {
     animation: none;

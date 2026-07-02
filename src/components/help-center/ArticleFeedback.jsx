@@ -97,7 +97,7 @@ export default function ArticleFeedback({ section, articleSlug }) {
           </label>
           <textarea
             id={textareaId}
-            className="hc-input w-full rounded-md p-2.5 text-sm"
+            className="hc-input w-full rounded-md p-2.5 text-base sm:text-sm"
             rows={3}
             maxLength={MAX_COMMENT}
             value={comment}
