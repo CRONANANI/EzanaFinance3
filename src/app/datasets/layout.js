@@ -10,7 +10,11 @@ import '../marketing-explore.css';
 // dropdown bar and centered header, so it must not inherit the "Back to home /
 // Get started" marketing bar or the old sub-tab rows (that produced 3 stacked
 // navs). The global app nav still wraps everything at the root layout.
-const STANDALONE_ROUTES = new Set(['/datasets/government/contracts', '/datasets/political']);
+const STANDALONE_ROUTES = new Set([
+  '/datasets',
+  '/datasets/government/contracts',
+  '/datasets/political',
+]);
 
 export default function DatasetsLayout({ children }) {
   const pathname = usePathname();
