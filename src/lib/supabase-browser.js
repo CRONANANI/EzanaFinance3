@@ -13,6 +13,7 @@
  * browser callers import from `'@/lib/supabase-browser'`.
  */
 import { createBrowserClient } from '@supabase/ssr';
+import { processLock } from '@supabase/auth-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -30,31 +31,20 @@ if (!supabaseUrl || !supabaseAnonKey) {
 // also wedges every later sign-in in the same tab. The factory therefore
 // returns the one shared instance instead of constructing a new client.
 //
-// In-memory, self-releasing serialization lock.
-//
-// Why not the default navigator Web Locks lock: it was being acquired and NOT
-// released across our full-page (window.location.assign) auth redirects, which
-// deadlocked mfa.verify()/getUser() → login hung forever on "Verifying…".
-//
-// Why not a no-op lock (lock: (_n,_t,fn)=>fn()): with zero serialization, a
-// background autoRefreshToken can run concurrently with mfa.challenge()/verify(),
-// racing over the session and stalling the verify → "Verification timed out."
-//
-// This promise-chain lock serializes auth calls within the tab (fixing the race)
-// but ALWAYS releases when each call settles (fixing the deadlock). It is
-// functionally what Supabase's own processLock does, implemented inline so it
-// doesn't depend on a specific export path.
-let lockChain = Promise.resolve();
-const processLock = (_name, _acquireTimeout, fn) => {
-  const run = lockChain.then(() => fn());
-  // Keep the chain alive regardless of success/failure, without leaking rejections.
-  lockChain = run.then(
-    () => undefined,
-    () => undefined,
-  );
-  return run;
-};
-
+// Auth lock: use Supabase's OWN in-memory `processLock`. This is the lock done
+// right — the successor to a chain of failed attempts:
+//   • default navigator Web Locks → acquired-but-not-released across our
+//     full-page (window.location.assign) redirects → deadlock, login hung
+//     forever on "Verifying…".
+//   • no-op lock → zero serialization → autoRefreshToken raced verify().
+//   • naive inline promise-chain → serialized correctly, but had NO escape
+//     valve: if ONE fn() hung (e.g. GoTrue's post-verify internal work), the
+//     chain never advanced and every later call — including verify() — queued
+//     behind it until the 12s wrapper fired ("Verification timed out").
+// Supabase's processLock is an in-memory, per-name chain that HONORS the
+// acquireTimeout: a waiter that can't get its turn within the timeout proceeds
+// (throws ProcessLockAcquireTimeoutError) rather than wedging forever, so a
+// hung link can't strand later calls. It is NOT the navigator lock.
 export const supabase = createBrowserClient(supabaseUrl || '', supabaseAnonKey || '', {
   auth: { flowType: 'pkce', lock: processLock },
 });
