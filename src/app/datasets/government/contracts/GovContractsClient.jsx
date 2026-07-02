@@ -11,18 +11,18 @@
  *  - YoY and quarterly series → derived from the loaded award dates where the
  *    data supports it, else an honest empty state.
  */
-import { useMemo, useState, useEffect, useRef } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import {
   LayoutGrid,
   PieChart as PieIcon,
   X,
   ArrowUpRight,
-  ChevronDown,
   Sparkles,
   Play,
   FileDown,
   Star,
 } from 'lucide-react';
+import CategoryBar from '@/components/datasets/CategoryBar';
 import './gov-contracts.css';
 
 /* ── Agency color buckets (design key; SVG fills use the CSS tokens) ── */
@@ -45,55 +45,6 @@ function normalizeAgency(name) {
   if (/general services|gsa/.test(s)) return 'GSA';
   return 'Other';
 }
-
-/* ── Category dropdown bar — items route to the real existing dataset pages.
-   Where a dedicated sub-page doesn't exist, we route to that category's hub. ── */
-const CATEGORIES = [
-  {
-    key: 'congress',
-    label: 'Congressional & Political',
-    items: [
-      ['Politician Search', '/datasets/political'],
-      ['Congress Trading', '/datasets/political'],
-      ['Donald Trump Trade Tracker', '/datasets/political'],
-      ['Congress Live Net Worth', '/datasets/political'],
-      ['Legislation Search', '/datasets/political'],
-      ['Election Fundraising', '/datasets/political'],
-      ['2026 Midterm Elections', '/datasets/political'],
-    ],
-  },
-  {
-    key: 'gov',
-    label: 'Government Activity',
-    active: true,
-    items: [
-      ['Government Contracts', '/datasets/government/contracts', true],
-      ['Corporate Lobbying', '/datasets/government'],
-      ['Patents', '/datasets/government'],
-    ],
-  },
-  {
-    key: 'sec',
-    label: 'SEC & Institutional Filings',
-    items: [
-      ['Insider Trading', '/datasets/sec-filings'],
-      ['Executive Compensation', '/datasets/sec-filings'],
-      ['Institutional Holdings', '/datasets/sec-filings'],
-      ['Whale Moves', '/datasets/sec-filings'],
-      ['ETF Holdings', '/datasets/sec-filings'],
-    ],
-  },
-  {
-    key: 'markets',
-    label: 'Markets & Signals',
-    items: [
-      ['Markets & Equities', '/datasets/markets'],
-      ['Prediction Markets', '/datasets/prediction-markets'],
-      ['Alternative Signals', '/datasets/alternative'],
-      ['Global & Macro', '/datasets/global'],
-    ],
-  },
-];
 
 const SEED_QUERY = `FROM gov.contracts
 WHERE fiscal_year = 2026 AND awarding_agency = "DoD"
@@ -167,7 +118,6 @@ export default function GovContractsClient({ awards = [], isLive = false, note =
   const [heroView, setHeroView] = useState('treemap');
   const [selected, setSelected] = useState(null);
   const [queryOpen, setQueryOpen] = useState(false);
-  const [openCat, setOpenCat] = useState(null);
 
   // agency counts (real)
   const agencyCounts = useMemo(() => {
@@ -209,7 +159,7 @@ export default function GovContractsClient({ awards = [], isLive = false, note =
 
   return (
     <div className="gcx-page">
-      <CategoryBar openCat={openCat} setOpenCat={setOpenCat} />
+      <CategoryBar active="gov" activeItem="Government Contracts" />
 
       <AwardTicker awards={awards} />
 
@@ -386,42 +336,6 @@ function AwardTicker({ awards }) {
         ))}
       </div>
     </div>
-  );
-}
-
-/* ────────────────────────── Category bar ────────────────────────── */
-function CategoryBar({ openCat, setOpenCat }) {
-  const ref = useRef(null);
-  useEffect(() => {
-    const onDoc = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setOpenCat(null);
-    };
-    document.addEventListener('mousedown', onDoc);
-    return () => document.removeEventListener('mousedown', onDoc);
-  }, [setOpenCat]);
-  return (
-    <nav className="gcx-catbar" ref={ref}>
-      {CATEGORIES.map((cat) => (
-        <div className="gcx-cat" key={cat.key}>
-          <button
-            type="button"
-            className={`gcx-cat-trigger ${cat.active ? 'is-active' : ''}`}
-            onClick={() => setOpenCat((o) => (o === cat.key ? null : cat.key))}
-          >
-            {cat.label} <ChevronDown size={13} />
-          </button>
-          {openCat === cat.key && (
-            <div className="gcx-cat-menu">
-              {cat.items.map(([name, href, active]) => (
-                <a key={name} href={href} className={`gcx-cat-item ${active ? 'is-active' : ''}`}>
-                  {name}
-                </a>
-              ))}
-            </div>
-          )}
-        </div>
-      ))}
-    </nav>
   );
 }
 

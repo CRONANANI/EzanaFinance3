@@ -77,6 +77,8 @@ const nextConfig = {
       { protocol: 'https', hostname: 'images.unsplash.com', pathname: '/**' },
       { protocol: 'https', hostname: 'logo.clearbit.com', pathname: '/**' },
       { protocol: 'https', hostname: 'cdn.plaid.com', pathname: '/**' },
+      // Official public-domain congressional portraits (politician headshots).
+      { protocol: 'https', hostname: 'unitedstates.github.io', pathname: '/images/congress/**' },
     ],
   },
 };
