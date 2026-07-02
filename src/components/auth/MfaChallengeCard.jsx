@@ -123,7 +123,23 @@ export default function MfaChallengeCard({ redirectTo = '/home' }) {
             "Couldn't reach the authentication server — check your connection and try again.",
           );
         } else if (msg === '__timeout__:verify') {
-          console.warn('[mfa] verify timed out (>12s)');
+          // The verify HTTP call may have returned 200 with a valid aal2 session
+          // even though the lock-wrapped promise didn't resolve in time. Check
+          // the LOCAL session (reads storage, no network/lock) before failing —
+          // if the session actually landed, the login succeeded, so redirect.
+          try {
+            const {
+              data: { session },
+            } = await supabase.auth.getSession();
+            if (session?.access_token) {
+              console.warn('[mfa] verify promise stranded but session is present — redirecting');
+              window.location.assign(dest);
+              return;
+            }
+          } catch {
+            /* fall through to the timeout error */
+          }
+          console.warn('[mfa] verify timed out (>12s) and no session present');
           setError(
             'Verifying took too long. Please try again — if it keeps happening, re-add your authenticator in settings.',
           );
