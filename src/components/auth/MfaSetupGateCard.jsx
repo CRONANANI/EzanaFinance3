@@ -74,24 +74,55 @@ export default function MfaSetupGateCard({ redirectTo = '/home' }) {
       if (!factorId || code.length !== 6 || loading) return;
       setLoading(true);
       setError(null);
-      const { data: challenge, error: chErr } = await supabase.auth.mfa.challenge({ factorId });
-      if (chErr) {
-        setError(chErr.message);
+
+      // Enrollment keeps the client `enroll` (QR/secret generation works fine and
+      // doesn't wedge), but the first challenge + verify run SERVER-SIDE via the
+      // same /api/auth/mfa/* routes as login step-up — off the browser SDK's
+      // wedge-prone auth lock. Verify's Set-Cookie elevates the session to aal2.
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 15000);
+      const postJson = async (url, payload) => {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          signal: ctrl.signal,
+        });
+        const json = await res.json().catch(() => ({}));
+        return { res, json };
+      };
+
+      try {
+        const { res: chRes, json: chJson } = await postJson('/api/auth/mfa/challenge', {
+          factorId,
+        });
+        if (!chRes.ok || !chJson.challengeId) {
+          setError(chJson.error || 'Could not start verification.');
+          setLoading(false);
+          return;
+        }
+        const { res: vRes, json: vJson } = await postJson('/api/auth/mfa/verify', {
+          factorId,
+          challengeId: chJson.challengeId,
+          code,
+        });
+        if (!vRes.ok || !vJson.ok) {
+          setError(vJson.error || 'That code did not verify. Check the code and try again.');
+          setLoading(false);
+          return;
+        }
+        // First verification elevates the session to aal2 — full reload onward.
+        window.location.assign(dest);
+      } catch (err) {
+        setError(
+          err?.name === 'AbortError'
+            ? 'Verifying took too long — please try again.'
+            : 'Something went wrong. Please try again.',
+        );
         setLoading(false);
-        return;
+      } finally {
+        clearTimeout(timer);
       }
-      const { error: vErr } = await supabase.auth.mfa.verify({
-        factorId,
-        challengeId: challenge.id,
-        code,
-      });
-      if (vErr) {
-        setError(vErr.message);
-        setLoading(false);
-        return;
-      }
-      // First verification elevates the session to aal2 — full reload onward.
-      window.location.assign(dest);
     },
     [factorId, code, loading, dest],
   );

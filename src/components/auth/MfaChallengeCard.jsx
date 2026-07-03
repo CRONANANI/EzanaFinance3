@@ -51,102 +51,57 @@ export default function MfaChallengeCard({ redirectTo = '/home' }) {
       setLoading(true);
       setError(null);
 
-      // Per-phase timeouts instead of a single 20s guard: challenge() and
-      // verify() each call Supabase's own auth server directly (not our /api),
-      // so a stall in either points at the auth server / network, not our code.
-      // Splitting the ceilings lets us give a SPECIFIC message per phase and,
-      // with the [mfa] timing logs below, pinpoint the stalling call from the
-      // field. (Temporary diagnostic logs — safe to remove once the root cause
-      // is confirmed.)
-      const withTimeout = (promise, ms, label) =>
-        Promise.race([
-          promise,
-          new Promise((_, reject) =>
-            setTimeout(() => reject(new Error(`__timeout__:${label}`)), ms),
-          ),
-        ]);
+      // Challenge + verify now run SERVER-SIDE (/api/auth/mfa/*), off the browser
+      // Supabase SDK whose auth-lock/promise layer caused the wedge. On success
+      // the verify route writes the new aal2 session as Set-Cookie; a full reload
+      // re-reads it and middleware sees aal2. A single AbortController caps both
+      // calls; the real Supabase error is surfaced (never a generic timeout).
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 15000);
+      const postJson = async (url, payload) => {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          signal: ctrl.signal,
+        });
+        const json = await res.json().catch(() => ({}));
+        return { res, json };
+      };
 
-      const t0 = performance.now();
       try {
-        console.log('[mfa] challenge start');
-        const { data: challenge, error: chErr } = await withTimeout(
-          supabase.auth.mfa.challenge({ factorId }),
-          8000,
-          'challenge',
-        );
-        console.log('[mfa] challenge done', Math.round(performance.now() - t0), 'ms', {
-          chErr: chErr?.message || null,
-          challengeId: challenge?.id || null,
+        const { res: chRes, json: chJson } = await postJson('/api/auth/mfa/challenge', {
+          factorId,
         });
-        if (chErr) {
-          setError(chErr.message || 'Could not start verification.');
+        if (!chRes.ok || !chJson.challengeId) {
+          setError(chJson.error || 'Could not start verification.');
           setLoading(false);
           return;
         }
 
-        const t1 = performance.now();
-        console.log('[mfa] verify start');
-        const { data: vData, error: vErr } = await withTimeout(
-          supabase.auth.mfa.verify({ factorId, challengeId: challenge.id, code }),
-          12000,
-          'verify',
-        );
-        console.log('[mfa] verify done', Math.round(performance.now() - t1), 'ms', {
-          vErr: vErr?.message || null,
-          session: vData?.access_token ? 'got session' : 'no session',
+        const { res: vRes, json: vJson } = await postJson('/api/auth/mfa/verify', {
+          factorId,
+          challengeId: chJson.challengeId,
+          code,
         });
-        if (vErr) {
-          setError(vErr.message || 'That code did not verify. Check the code and try again.');
+        if (!vRes.ok || !vJson.ok) {
+          setError(vJson.error || 'That code did not verify. Check the code and try again.');
           setLoading(false);
           return;
         }
 
-        // verify() returned a valid aal2 session (access_token in vData) — the
-        // login genuinely succeeded server-side (confirmed by a 200 Network
-        // capture). Do NOT poll getAuthenticatorAssuranceLevel() to re-confirm:
-        // that call serializes on the SAME in-process auth lock (processLock) as
-        // GoTrue's post-verify onAuthStateChange work, so it can never resolve —
-        // it hangs the flow until the guard fires ("Verification timed out")
-        // despite the successful login. Instead, a short fixed delay lets the
-        // @supabase/ssr cookie write flush; the full-page navigation then
-        // re-reads that cookie and the middleware sees aal2. (Bump to ~500ms if
-        // the middleware is ever observed to bounce back to /auth/mfa — but do
-        // NOT reintroduce the AAL poll.)
-        console.log('[mfa] verify succeeded — redirecting');
-        await new Promise((r) => setTimeout(r, 250));
+        // aal2 session is set on the verify response (Set-Cookie). A full reload
+        // makes the browser re-read it so middleware sees aal2.
         window.location.assign(dest);
       } catch (err) {
-        const msg = String(err?.message || '');
-        if (msg === '__timeout__:challenge') {
-          console.warn('[mfa] challenge timed out (>8s) — auth server/network unreachable');
-          setError(
-            "Couldn't reach the authentication server — check your connection and try again.",
-          );
-        } else if (msg === '__timeout__:verify') {
-          // The verify HTTP call may have returned 200 with a valid aal2 session
-          // even though the lock-wrapped promise didn't resolve in time. Check
-          // the LOCAL session (reads storage, no network/lock) before failing —
-          // if the session actually landed, the login succeeded, so redirect.
-          try {
-            const {
-              data: { session },
-            } = await supabase.auth.getSession();
-            if (session?.access_token) {
-              console.warn('[mfa] verify promise stranded but session is present — redirecting');
-              window.location.assign(dest);
-              return;
-            }
-          } catch {
-            /* fall through to the timeout error */
-          }
-          console.warn('[mfa] verify timed out (>12s) and no session present');
-          setError(
-            'Verifying took too long. Please try again — if it keeps happening, re-add your authenticator in settings.',
-          );
+        if (err?.name === 'AbortError') {
+          setError('Verifying took too long — please check your connection and try again.');
         } else {
-          setError(err?.message || 'Something went wrong. Please try again.');
+          setError('Something went wrong. Please try again.');
         }
         setLoading(false);
+      } finally {
+        clearTimeout(timer);
       }
     },
     [factorId, code, loading, dest],
