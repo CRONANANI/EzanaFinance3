@@ -736,12 +736,14 @@ function SignalMap({ selectedNodes, categoryFilter, onToggleNode, onClear }) {
                   ))
                 : lines[0]}
             </text>
-            {/* transparent oversized tap/click target (≥44px hit area) */}
+            {/* transparent oversized tap/click target (as large as node spacing
+                allows — ~45px on desktop, the max feasible on phones without
+                neighboring hit areas overlapping) */}
             <circle
               className="dsx-node-hit"
               cx={n.x}
               cy={n.y}
-              r={24}
+              r={27}
               onClick={() => onToggleNode(n.id)}
               role="button"
               tabIndex={0}

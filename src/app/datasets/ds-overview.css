@@ -796,6 +796,11 @@
   .dsx-cards {
     grid-template-columns: 1fr;
   }
+  /* Give the 12-node SVG the full card width on phones so node labels stay as
+     legible as possible (the graph scales uniformly with its viewBox). */
+  .dsx-map {
+    padding: 6px;
+  }
   /* odds popup → full-width sheet pinned to the bottom */
   .dsx-modal-backdrop {
     padding: 0;
