@@ -259,7 +259,7 @@ export default function PoliticalTradesClient({ devSampleTrades = null }) {
 
   return (
     <div className="ptx-page">
-      <CategoryBar active="congress" activeItem="Congressional trading" />
+      <CategoryBar active="capitol" activeItem="US House Financial Disclosures" />
 
       <TradeTicker members={members} />
 

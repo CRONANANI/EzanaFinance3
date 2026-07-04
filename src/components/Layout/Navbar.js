@@ -18,71 +18,35 @@ import {
   ArrowRight,
   Landmark,
   Building2,
-  LineChart,
   Radar,
-  Target,
   Globe,
   Users,
   TrendingUp,
-  Wallet,
   ScrollText,
-  Banknote,
-  Vote,
-  Megaphone,
-  Lightbulb,
-  Briefcase,
-  BadgeDollarSign,
-  Fish,
-  PieChart,
-  FileText,
 } from 'lucide-react';
+import { DATASET_TAXONOMY } from '@/lib/datasets/taxonomy';
 import '@/components/ui/animated-nav.css';
 
-/* Landing-nav Datasets mega-menu — columns grouped by category. Each item
-   links into the public /datasets section (its parent dimension page), where
-   visitors see what a dataset is and exactly where Ezana sources it. */
-const DATASET_MENU = [
-  {
-    heading: 'Congressional & Political',
-    items: [
-      { icon: Users, label: 'Politician Search', href: '/datasets/political' },
-      { icon: Landmark, label: 'Congress Trading', href: '/datasets/political' },
-      { icon: TrendingUp, label: 'Donald Trump Trade Tracker', href: '/datasets/political' },
-      { icon: Wallet, label: 'Congress Live Net Worth', href: '/datasets/political' },
-      { icon: ScrollText, label: 'Legislation Search', href: '/datasets/political' },
-      { icon: Banknote, label: 'Election Fundraising', href: '/datasets/political' },
-      { icon: Vote, label: '2026 Midterm Elections', href: '/datasets/political' },
-    ],
-  },
-  {
-    heading: 'Government Activity',
-    items: [
-      // Flagship live-data government dataset (USAspending.gov) — first in the column.
-      { icon: FileText, label: 'Government Contracts', href: '/datasets/government/contracts' },
-      { icon: Megaphone, label: 'Corporate Lobbying', href: '/datasets/government' },
-      { icon: Lightbulb, label: 'Patents', href: '/datasets/government' },
-    ],
-  },
-  {
-    heading: 'SEC & Institutional Filings',
-    items: [
-      { icon: Briefcase, label: 'Insider Trading', href: '/datasets/sec-filings' },
-      { icon: BadgeDollarSign, label: 'Executive Compensation', href: '/datasets/sec-filings' },
-      { icon: Building2, label: 'Institutional Holdings', href: '/datasets/sec-filings' },
-      { icon: Fish, label: 'Whale Moves', href: '/datasets/sec-filings' },
-      { icon: PieChart, label: 'ETF Holdings', href: '/datasets/sec-filings' },
-    ],
-  },
-  {
-    heading: 'Markets & Signals',
-    items: [
-      { icon: LineChart, label: 'Markets & Equities', href: '/datasets/markets' },
-      { icon: Target, label: 'Prediction Markets', href: '/datasets/prediction-markets' },
-      { icon: Radar, label: 'Alternative Signals', href: '/datasets/alternative' },
-      { icon: Globe, label: 'Global & Macro', href: '/datasets/global' },
-    ],
-  },
-];
+/* Landing-nav Datasets mega-menu — the SAME seven dimensions as the orbital map,
+   the in-page CategoryBar, and the signal map, built from the shared
+   DATASET_TAXONOMY so the nav can never drift. One Lucide icon per dimension;
+   roadmap (live:false) items render a muted "Soon" tag. */
+const DIMENSION_ICON = {
+  capitol: Landmark,
+  titans: Building2,
+  eyes: Radar,
+  whispers: TrendingUp,
+  hive: Users,
+  lighthouse: Globe,
+  regulatory: ScrollText,
+};
+const DATASET_MENU = DATASET_TAXONOMY.map((d) => ({
+  id: d.id,
+  heading: d.label,
+  color: d.color,
+  icon: DIMENSION_ICON[d.id],
+  items: d.items.map((it) => ({ label: it.label, href: it.href, live: it.live })),
+}));
 
 export function Navbar() {
   const pathname = usePathname();
@@ -459,25 +423,33 @@ export function Navbar() {
               >
                 <div className="nav-datasets-panel">
                   <div className="nav-datasets-cols">
-                    {DATASET_MENU.map((col) => (
-                      <div key={col.heading} className="nav-datasets-col">
-                        <p className="nav-datasets-col-head">{col.heading}</p>
-                        {col.items.map((item) => {
-                          const Icon = item.icon;
-                          return (
+                    {DATASET_MENU.map((col) => {
+                      const ColIcon = col.icon;
+                      return (
+                        <div key={col.id} className="nav-datasets-col">
+                          <p className="nav-datasets-col-head">
+                            <ColIcon
+                              size={14}
+                              aria-hidden
+                              className="nav-datasets-col-icon"
+                              style={{ color: col.color }}
+                            />
+                            {col.heading}
+                          </p>
+                          {col.items.map((item) => (
                             <a
                               key={item.label}
                               href={item.href}
                               className="nav-datasets-item"
                               role="menuitem"
                             >
-                              <Icon size={16} aria-hidden className="nav-datasets-item-icon" />
                               <span className="nav-datasets-item-label">{item.label}</span>
+                              {!item.live && <span className="nav-datasets-soon">Soon</span>}
                             </a>
-                          );
-                        })}
-                      </div>
-                    ))}
+                          ))}
+                        </div>
+                      );
+                    })}
                   </div>
                   <a href="/datasets" className="nav-datasets-foot" role="menuitem">
                     View all datasets

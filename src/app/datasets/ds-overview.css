@@ -9,15 +9,19 @@
   background: var(--bg-primary);
   color: var(--text-primary);
   font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
-  /* Category palette pinned so node/edge/tag colours resolve regardless of any
-     ancestor theme scope (same approach as the sibling dataset pages). */
-  --emerald: #10b981;
+  /* 7-dimension palette pinned so node/spoke/tag/legend colours resolve
+     regardless of any ancestor theme scope (same approach as the sibling
+     dataset pages). One token per orbital dimension. */
+  --emerald: #10b981; /* Capitol Watch */
   --emerald-hover: #059669;
   --emerald-bg: rgba(16, 185, 129, 0.08);
   --emerald-border: rgba(16, 185, 129, 0.2);
-  --amber: #f59e0b;
-  --info: #3b82f6;
-  --purple: #a78bfa;
+  --info: #3b82f6; /* Titans Shadow */
+  --cyan: #06b6d4; /* Eyes Above */
+  --orange: #f97316; /* Consumer Whispers */
+  --pink: #ec4899; /* The Hive */
+  --indigo: #6366f1; /* Global Empire Lighthouse */
+  --amber: #f59e0b; /* Regulatory Winds */
 }
 .dsx-mono {
   font-family: var(--font-mono, 'JetBrains Mono', monospace);
@@ -445,6 +449,49 @@
   flex-shrink: 0;
 }
 
+/* dimension → dataset rows (panel) */
+.dsx-ds-link {
+  display: block;
+  text-decoration: none;
+  border-radius: var(--radius-md, 8px);
+}
+.dsx-ds-link:hover {
+  background: var(--bg-tertiary);
+}
+.dsx-ds-link.is-soon {
+  cursor: default;
+}
+.dsx-ds-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 9px 8px;
+}
+.dsx-ds-row .dsx-row-dot {
+  margin-top: 4px;
+}
+.dsx-ds-go {
+  margin-left: auto;
+  margin-top: 3px;
+  color: var(--text-faint);
+  flex-shrink: 0;
+}
+.dsx-ds-soon {
+  margin-left: auto;
+  flex-shrink: 0;
+  align-self: center;
+  font-family: var(--font-mono, monospace);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-pill, 9999px);
+  padding: 1px 7px;
+}
+
 /* analysis: per-other-category cross-mechanism blocks */
 .dsx-moves {
   display: flex;
@@ -531,7 +578,8 @@
 /* ── four sourced category cards ── */
 .dsx-cards {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  /* 7 dimension cards — auto-fit so they wrap cleanly (4→3→2→1) at any width */
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
   gap: 16px;
   margin-top: 20px;
 }

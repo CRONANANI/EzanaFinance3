@@ -5,23 +5,28 @@ import { motion, MotionConfig } from 'framer-motion';
 import { User } from 'lucide-react';
 import { EzanaNavLogo } from '@/components/brand/EzanaNavLogo';
 import { cn } from '@/lib/utils';
+import { DATASET_TAXONOMY } from '@/lib/datasets/taxonomy';
 import './personalization-radar.css';
 
 const CX = 560,
   CY = 360,
   RMIN = 84,
   RMAX = 300;
-const N = 7;
 
-const DIMS = [
-  { id: 'capitol', nm: 'Capitol Watch', w: 0.94 },
-  { id: 'titans', nm: 'Titans Shadow', w: 0.62 },
-  { id: 'eyes', nm: 'Eyes Above', w: 0.8 },
-  { id: 'lighthouse', nm: 'Global Empire Lighthouse', w: 0.46 },
-  { id: 'whispers', nm: 'Consumer Whispers', w: 0.38 },
-  { id: 'hive', nm: 'The Hive', w: 0.72 },
-  { id: 'regulatory', nm: 'Regulatory Winds', w: 0.34 },
-];
+// The 7 axes ARE the shared taxonomy's 7 dimensions (ids + labels), so the radar
+// can never drift from the nav / CategoryBar / signal map. Only the per-axis
+// resting weight (how far the dot sits from the hub) is presentation-local.
+const DIM_WEIGHT = {
+  capitol: 0.94,
+  titans: 0.62,
+  eyes: 0.8,
+  whispers: 0.38,
+  hive: 0.72,
+  lighthouse: 0.46,
+  regulatory: 0.34,
+};
+const DIMS = DATASET_TAXONOMY.map((d) => ({ id: d.id, nm: d.label, w: DIM_WEIGHT[d.id] ?? 0.5 }));
+const N = DIMS.length;
 
 function ang(i) {
   return ((-90 + (i * 360) / N) * Math.PI) / 180;

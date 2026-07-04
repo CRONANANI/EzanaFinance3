@@ -2134,6 +2134,9 @@ html:has(.landing-page) .navbar .logo,
 }
 
 .nav-datasets-col-head {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
   margin: 0 0 0.35rem;
   font-size: 0.6875rem;
   font-weight: 700;
@@ -2141,15 +2144,32 @@ html:has(.landing-page) .navbar .logo,
   text-transform: uppercase;
   color: var(--text-faint);
 }
+.nav-datasets-col-icon {
+  flex-shrink: 0;
+}
 
 .navbar .nav-datasets-item {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 0.5rem;
   padding: 0.4rem 0.5rem;
   border-radius: var(--radius-md);
   text-decoration: none;
   transition: background 0.14s ease;
+}
+.nav-datasets-soon {
+  flex-shrink: 0;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  background: var(--bg-tertiary, rgba(148, 163, 184, 0.12));
+  border: 1px solid var(--border-strong);
+  border-radius: 9999px;
+  padding: 0.05rem 0.35rem;
 }
 .navbar .nav-datasets-item:hover,
 .navbar .nav-datasets-item:focus-visible {

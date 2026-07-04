@@ -159,7 +159,7 @@ export default function GovContractsClient({ awards = [], isLive = false, note =
 
   return (
     <div className="gcx-page">
-      <CategoryBar active="gov" activeItem="Government Contracts" />
+      <CategoryBar active="capitol" activeItem="Government Contracts" />
 
       <AwardTicker awards={awards} />
 

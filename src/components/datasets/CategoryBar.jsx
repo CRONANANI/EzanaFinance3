@@ -1,61 +1,23 @@
 'use client';
 
 /**
- * Shared four-category dropdown bar for the dataset pages (Government Contracts,
- * Congressional trading, …). One component, used on every dataset page in the
- * family — do NOT fork it. Pass `active` to mark the current category + item:
- *   <CategoryBar active="gov" activeItem="Government Contracts" />
- *   <CategoryBar active="congress" activeItem="Congressional trading" />
+ * Shared dataset category bar for the dataset pages (Government Contracts,
+ * Congressional trading, Datasets overview, …). One component, used on every
+ * dataset page in the family — do NOT fork it.
  *
- * Items route to the real existing dataset pages; where a dedicated sub-page
- * doesn't exist yet, they route to that category's hub.
+ * The categories ARE the shared DATASET_TAXONOMY (src/lib/datasets/taxonomy.js) —
+ * the same 7 dimensions as the landing-page orbital map. Pass `active` (a
+ * dimension id) to mark the current dimension, and `activeItem` (an item label)
+ * to mark the current dataset:
+ *   <CategoryBar active="capitol" activeItem="Government Contracts" />
+ *
+ * Roadmap items (live:false) show a muted "Soon" badge and route to the
+ * dimension's overview rather than presenting as live data.
  */
 import { useEffect, useRef, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
+import { DATASET_TAXONOMY } from '@/lib/datasets/taxonomy';
 import './category-bar.css';
-
-export const DATASET_CATEGORIES = [
-  {
-    key: 'congress',
-    label: 'Congressional & Political',
-    items: [
-      ['Congressional trading', '/datasets/political'],
-      ['Government contracts', '/datasets/government/contracts'],
-      ['Lobbying activity', '/datasets/government'],
-      ['Committee assignments', '/datasets/political'],
-    ],
-  },
-  {
-    key: 'gov',
-    label: 'Government Activity',
-    items: [
-      ['Government Contracts', '/datasets/government/contracts'],
-      ['Corporate Lobbying', '/datasets/government'],
-      ['Patents', '/datasets/government'],
-    ],
-  },
-  {
-    key: 'sec',
-    label: 'SEC & Institutional Filings',
-    items: [
-      ['Insider Trading', '/datasets/sec-filings'],
-      ['Executive Compensation', '/datasets/sec-filings'],
-      ['Institutional Holdings', '/datasets/sec-filings'],
-      ['Whale Moves', '/datasets/sec-filings'],
-      ['ETF Holdings', '/datasets/sec-filings'],
-    ],
-  },
-  {
-    key: 'markets',
-    label: 'Markets & Signals',
-    items: [
-      ['Markets & Equities', '/datasets/markets'],
-      ['Prediction Markets', '/datasets/prediction-markets'],
-      ['Alternative Signals', '/datasets/alternative'],
-      ['Global & Macro', '/datasets/global'],
-    ],
-  },
-];
 
 export default function CategoryBar({ active, activeItem }) {
   const [openCat, setOpenCat] = useState(null);
@@ -69,24 +31,31 @@ export default function CategoryBar({ active, activeItem }) {
   }, []);
   return (
     <nav className="dscat-bar" ref={ref}>
-      {DATASET_CATEGORIES.map((cat) => (
-        <div className="dscat" key={cat.key}>
+      {DATASET_TAXONOMY.map((cat) => (
+        <div className="dscat" key={cat.id}>
           <button
             type="button"
-            className={`dscat-trigger ${cat.key === active ? 'is-active' : ''}`}
-            onClick={() => setOpenCat((o) => (o === cat.key ? null : cat.key))}
+            className={`dscat-trigger ${cat.id === active ? 'is-active' : ''}`}
+            style={
+              cat.id === active
+                ? { boxShadow: `inset 0 -2px 0 ${cat.color}`, color: cat.color }
+                : undefined
+            }
+            onClick={() => setOpenCat((o) => (o === cat.id ? null : cat.id))}
           >
+            <span className="dscat-dot" style={{ background: cat.color }} />
             {cat.label} <ChevronDown size={13} />
           </button>
-          {openCat === cat.key && (
+          {openCat === cat.id && (
             <div className="dscat-menu">
-              {cat.items.map(([name, href]) => (
+              {cat.items.map((it) => (
                 <a
-                  key={name}
-                  href={href}
-                  className={`dscat-item ${name === activeItem ? 'is-active' : ''}`}
+                  key={it.label}
+                  href={it.href}
+                  className={`dscat-item ${it.label === activeItem ? 'is-active' : ''}`}
                 >
-                  {name}
+                  <span>{it.label}</span>
+                  {!it.live && <span className="dscat-soon">Soon</span>}
                 </a>
               ))}
             </div>
