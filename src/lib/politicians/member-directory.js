@@ -33,15 +33,68 @@ export function normalizeParty(p) {
 /**
  * Seed directory (keyed by BioGuideID). Trimmed to the fields the UI needs.
  * TODO(vendored data): replace/augment with the full legislators-current trim.
+ *
+ * `fecIds` mirrors the `id.fec` array in the unitedstates/congress-legislators
+ * dataset (a member can have several FEC candidate IDs across cycles/offices).
+ * It powers the campaign-finance (OpenFEC) join. Only a couple of well-known,
+ * stable IDs are seeded here as worked examples; the rest resolve at runtime via
+ * the cached `/candidates/search/` name+state fallback (see resolveFecCandidateId
+ * in src/lib/fec/join.js). Dropping in the vendored JSON with `id.fec` populates
+ * the full set and makes the direct join exhaustive.
  */
 export const DIRECTORY = {
-  T000278: { fullName: 'Tommy Tuberville', party: 'R', chamber: 'Senate', state: 'AL' },
-  P000197: { fullName: 'Nancy Pelosi', party: 'D', chamber: 'House', state: 'CA' },
-  C001120: { fullName: 'Dan Crenshaw', party: 'R', chamber: 'House', state: 'TX' },
-  G000583: { fullName: 'Josh Gottheimer', party: 'D', chamber: 'House', state: 'NJ' },
-  H001077: { fullName: 'John Hickenlooper', party: 'D', chamber: 'Senate', state: 'CO' },
-  C001047: { fullName: 'Shelley Moore Capito', party: 'R', chamber: 'Senate', state: 'WV' },
+  T000278: {
+    fullName: 'Tommy Tuberville',
+    party: 'R',
+    chamber: 'Senate',
+    state: 'AL',
+    fecIds: ['S0AL00214'],
+  },
+  P000197: {
+    fullName: 'Nancy Pelosi',
+    party: 'D',
+    chamber: 'House',
+    state: 'CA',
+    fecIds: ['H8CA05035'],
+  },
+  C001120: { fullName: 'Dan Crenshaw', party: 'R', chamber: 'House', state: 'TX', fecIds: [] },
+  G000583: { fullName: 'Josh Gottheimer', party: 'D', chamber: 'House', state: 'NJ', fecIds: [] },
+  H001077: {
+    fullName: 'John Hickenlooper',
+    party: 'D',
+    chamber: 'Senate',
+    state: 'CO',
+    fecIds: [],
+  },
+  C001047: {
+    fullName: 'Shelley Moore Capito',
+    party: 'R',
+    chamber: 'Senate',
+    state: 'WV',
+    fecIds: [],
+  },
 };
+
+/**
+ * FEC candidate IDs known for a member from the vendored directory (may be
+ * empty — callers then fall back to the cached name+state candidate search).
+ * @returns {string[]}
+ */
+export function fecIdsForMember(bioguideId) {
+  const m = bioguideId && DIRECTORY[bioguideId];
+  return Array.isArray(m?.fecIds) ? m.fecIds : [];
+}
+
+/** Directory lookup by bioguideId → { fullName, party, chamber, state, fecIds }. */
+export function memberByBioguide(bioguideId) {
+  const m = bioguideId && DIRECTORY[bioguideId];
+  return m ? { bioguideId, ...m } : null;
+}
+
+/** All seeded members (used to scope cross-member FEC aggregates to Congress). */
+export function allDirectoryMembers() {
+  return Object.entries(DIRECTORY).map(([bioguideId, m]) => ({ bioguideId, ...m }));
+}
 
 // Secondary index by normalized name (built from the seed above).
 const BY_NAME = Object.entries(DIRECTORY).reduce((acc, [bioguideId, m]) => {
