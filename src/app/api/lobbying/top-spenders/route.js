@@ -3,6 +3,7 @@ import { getAdminClient } from '@/lib/supabase';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 import { normalizeQuarter, PERIOD_KEYS } from '@/lib/lobbying/period';
 import { canonicalEntity } from '@/lib/lobbying/normalize';
+import { getPeriodCoverage } from '@/lib/lobbying/coverage';
 
 /**
  * GET /api/lobbying/top-spenders?year=&by=client|registrant&period=  — aggregate
@@ -34,11 +35,18 @@ export async function GET(request) {
   const period = PERIOD_KEYS.includes(periodParamRaw) ? periodParamRaw : 'year';
   const days = Math.min(Math.max(Number(searchParams.get('days')) || 90, 1), 365);
 
-  const empty = { ok: true, source: SOURCE, year, by, period, spenders: [] };
+  const empty = { ok: true, source: SOURCE, year, by, period, spenders: [], coverage: null };
   if (!supaConfigured()) return NextResponse.json(empty);
 
   try {
     const admin = getAdminClient();
+    // coverage for the selected period so the card can flag a partial ranking
+    let coverage = null;
+    try {
+      coverage = await getPeriodCoverage(admin, year, period);
+    } catch {
+      /* coverage is best-effort */
+    }
     const { data, error } = await admin
       .from('lobbying_filings')
       .select(
@@ -46,7 +54,8 @@ export async function GET(request) {
       )
       .eq('filing_year', year)
       .limit(8000);
-    if (error || !Array.isArray(data) || !data.length) return NextResponse.json(empty);
+    if (error || !Array.isArray(data) || !data.length)
+      return NextResponse.json({ ...empty, coverage });
 
     const rangeCutoff = period === 'range' ? Date.now() - days * 86400000 : null;
     const quarter = ['q1', 'q2', 'q3', 'q4'].includes(period) ? period : null;
@@ -93,8 +102,17 @@ export async function GET(request) {
       .sort((a, b) => b.total - a.total)
       .slice(0, 25);
 
-    if (!spenders.length) return NextResponse.json(empty);
-    return NextResponse.json({ ok: true, source: SOURCE, year, by, period, days, spenders });
+    if (!spenders.length) return NextResponse.json({ ...empty, coverage });
+    return NextResponse.json({
+      ok: true,
+      source: SOURCE,
+      year,
+      by,
+      period,
+      days,
+      spenders,
+      coverage,
+    });
   } catch {
     return NextResponse.json(empty);
   }

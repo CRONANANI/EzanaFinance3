@@ -671,3 +671,64 @@
     align-items: stretch;
   }
 }
+
+/* Partial-coverage warning + operational "data health" readout. Tokens only. */
+.lbx-partial {
+  margin: 0 0 10px;
+  padding: 6px 10px;
+  border: 1px solid var(--border-primary);
+  border-left: 3px solid var(--warning, #d97706);
+  border-radius: 0.5rem;
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  background: var(--surface-card);
+}
+.lbx-health {
+  margin-top: 22px;
+  border: 1px solid var(--border-primary);
+  border-radius: 0.75rem;
+  background: var(--surface-card);
+  padding: 4px 14px;
+}
+.lbx-health-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 2px;
+  cursor: pointer;
+  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-faint);
+  list-style: none;
+}
+.lbx-health-summary::-webkit-details-marker {
+  display: none;
+}
+.lbx-health-meta {
+  font-family: var(--font-mono, monospace);
+  font-weight: 500;
+  font-size: 0.7rem;
+  color: var(--text-faint);
+}
+.lbx-health-empty {
+  padding: 6px 2px 14px;
+  font-size: 0.75rem;
+  color: var(--text-faint);
+}
+.lbx-health-table {
+  font-size: 0.76rem;
+  margin-bottom: 10px;
+}
+.lbx-health-table th,
+.lbx-health-table td {
+  padding: 6px 8px;
+}
+.lbx-health-ok {
+  color: var(--positive, #10b981);
+}
+.lbx-health-bad {
+  color: var(--negative, #ef4444);
+  font-weight: 600;
+}

@@ -340,6 +340,7 @@ export default function LobbyingClient() {
               <TopSpendersTable
                 loading={spenders.loading}
                 spenders={spenders.data?.spenders || []}
+                coverage={spenders.data?.coverage || null}
                 by={spenderBy}
                 onByChange={setSpenderBy}
                 period={spenderPeriod}
@@ -513,8 +514,84 @@ export default function LobbyingClient() {
         </p>
       </section>
 
+      <DataHealth />
+
       {selected ? <FilingModal uuid={selected} onClose={() => setSelected(null)} /> : null}
     </div>
+  );
+}
+
+/* Operational "data health" footer — per-quarter ingest coverage from the
+   resumable cursor. Subtle (not user-marketing): JetBrains Mono figures,
+   --text-faint. Expandable so it stays out of the way. */
+function DataHealth() {
+  const [open, setOpen] = useState(false);
+  const { loading, data } = useJson('/api/lobbying/ingest-status', []);
+  const quarters = data?.quarters || [];
+  const loaded = quarters.reduce((s, q) => s + (q.rowsLoaded || 0), 0);
+
+  return (
+    <details className="lbx-health" open={open} onToggle={(e) => setOpen(e.target.open)}>
+      <summary className="lbx-health-summary">
+        Data health
+        <span className="lbx-health-meta">
+          {loading
+            ? 'loading…'
+            : `${loaded.toLocaleString()} filings cached · updated ${data?.updatedAt ? relTime(data.updatedAt) || '—' : 'never'}`}
+        </span>
+      </summary>
+      {!loading && quarters.length === 0 ? (
+        <p className="lbx-health-empty">
+          No ingest runs recorded yet — the pipeline seeds the cache on its schedule.
+        </p>
+      ) : (
+        <div className="lbx-table-wrap">
+          <table className="lbx-table lbx-health-table">
+            <thead>
+              <tr>
+                <th>Period</th>
+                <th className="r">Rows</th>
+                <th className="r">Coverage</th>
+                <th>Phase</th>
+                <th>Last run</th>
+                <th className="r">Δ</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {quarters.map((q) => (
+                <tr key={`${q.year}-${q.quarter}`}>
+                  <td className="lbx-mono">
+                    {q.quarter.toUpperCase()} {q.year}
+                  </td>
+                  <td className="lbx-mono r">{Number(q.rowsLoaded || 0).toLocaleString()}</td>
+                  <td className="lbx-mono r">
+                    {q.coveragePct == null ? '—' : `${q.coveragePct}%`}
+                  </td>
+                  <td className="lbx-muted">{q.complete ? 'complete' : q.phase}</td>
+                  <td className="lbx-mono lbx-muted">
+                    {q.lastRunAt ? relTime(q.lastRunAt) || '—' : '—'}
+                  </td>
+                  <td className="lbx-mono r">{q.lastDelta ? `+${q.lastDelta}` : '—'}</td>
+                  <td
+                    className={
+                      q.lastStatus === 'failed'
+                        ? 'lbx-health-bad'
+                        : q.lastStatus === 'ok'
+                          ? 'lbx-health-ok'
+                          : 'lbx-muted'
+                    }
+                    title={q.lastReason || ''}
+                  >
+                    {q.lastStatus}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </details>
   );
 }
 
@@ -596,16 +673,33 @@ function IssueBars({ loading, issues }) {
 /* Top Spenders — period-selectable, client⇄registrant, sortable-by-total table
    with a slim share bar. Accurate to LDA: name (client org or firm) → total
    real reported $ → filings → lobbyists. */
-function TopSpendersTable({ loading, spenders, by, onByChange, period, onPeriodChange, year }) {
+function TopSpendersTable({
+  loading,
+  spenders,
+  coverage,
+  by,
+  onByChange,
+  period,
+  onPeriodChange,
+  year,
+}) {
   const rows = useMemo(
     () => [...spenders].sort((a, b) => b.total - a.total).slice(0, 25),
     [spenders],
   );
   const max = rows.length ? Math.max(...rows.map((s) => s.total), 1) : 1;
   const nameLabel = by === 'registrant' ? 'Registrant (firm)' : 'Client (org)';
+  // partial-coverage warning: this period isn't fully ingested yet
+  const partial = coverage && !coverage.complete;
+  const partialText = partial
+    ? coverage.pct != null
+      ? `Partial coverage — ${coverage.pct}% of filings loaded; ranking may be incomplete.`
+      : 'Partial coverage — this period is still ingesting; ranking may be incomplete.'
+    : null;
 
   return (
     <div>
+      {partialText ? <p className="lbx-partial">{partialText}</p> : null}
       <div className="lbx-spender-controls">
         <div className="lbx-seg" role="group" aria-label="Rank spenders by">
           {[
