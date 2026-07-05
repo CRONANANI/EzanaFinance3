@@ -84,6 +84,10 @@
     {
       "path": "/api/cron/ingest-lobbying",
       "schedule": "0 */3 * * *"
+    },
+    {
+      "path": "/api/cron/ingest-lobbying?mode=rescan",
+      "schedule": "0 5 * * 0"
     }
   ]
 }

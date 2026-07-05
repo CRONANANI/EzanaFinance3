@@ -172,6 +172,140 @@ async function backfillQuarter(admin, budget, { year, quarter, state }, maxPages
   };
 }
 
+/**
+ * Steady-state INCREMENTAL pull for a completed quarter: fetch newest-posted
+ * filings and upsert only those newer than the cursor's last_seen_posted, then
+ * stop once a page reaches already-known filings. Cheap and current.
+ */
+async function incrementalQuarter(admin, budget, { year, quarter, state }, maxPages, errors) {
+  const periodCode = QUARTER_PERIOD_CODE[quarter];
+  const since = state?.last_seen_posted ? Date.parse(state.last_seen_posted) : null;
+  let delta = 0;
+  let newest = since;
+
+  for (let page = 1; page <= maxPages; page++) {
+    if (budget.remaining < 2) break;
+    const res = await listFilings(
+      {
+        filingYear: year,
+        filingPeriod: periodCode,
+        ordering: '-dt_posted',
+        page,
+        pageSize: PAGE_SIZE,
+      },
+      { budget },
+    );
+    if (!res.ok) {
+      errors.push(`${year} ${quarter} inc p${page}: ${res.error}`);
+      break;
+    }
+    const results = Array.isArray(res.data?.results) ? res.data.results : [];
+    if (!results.length) break;
+
+    const fresh =
+      since == null
+        ? results
+        : results.filter((f) => {
+            const t = Date.parse(f.dt_posted);
+            return !Number.isNaN(t) && t > since;
+          });
+    if (fresh.length) {
+      const rows = fresh.map(mapFilingRow).filter((r) => r.uuid);
+      const { error } = await admin.from('lobbying_filings').upsert(rows, { onConflict: 'uuid' });
+      if (error) {
+        errors.push(`${year} ${quarter} inc p${page}: ${error.message}`);
+        break;
+      }
+      delta += rows.length;
+      for (const f of fresh) {
+        const t = Date.parse(f.dt_posted);
+        if (!Number.isNaN(t) && (newest == null || t > newest)) newest = t;
+      }
+    }
+    // once this page's oldest row is already known, we've caught up
+    const posts = results.map((f) => Date.parse(f.dt_posted)).filter((n) => !Number.isNaN(n));
+    const pageMin = posts.length ? Math.min(...posts) : null;
+    if (since != null && pageMin != null && pageMin <= since) break;
+    if (!res.data?.next) break;
+  }
+
+  return {
+    year,
+    quarter,
+    period_code: periodCode,
+    total_count: state?.total_count ?? null,
+    last_page: state?.last_page || 0,
+    complete: true,
+    phase: 'incremental',
+    last_seen_posted:
+      newest != null ? new Date(newest).toISOString() : state?.last_seen_posted || null,
+    rows_upserted: (state?.rows_upserted || 0) + delta,
+    last_run_at: new Date().toISOString(),
+    last_status: 'ok',
+    last_reason: null,
+    last_delta: delta,
+    updated_at: new Date().toISOString(),
+    _delta: delta,
+  };
+}
+
+/**
+ * Weekly late/amended re-scan: LDA filings are amended and back-filed constantly,
+ * and an amendment may not change dt_posted, so incremental can miss it. This
+ * re-pulls the newest `pages` of recent quarters and upserts unconditionally
+ * (idempotent on filing_uuid), so amendments overwrite the cached row.
+ */
+async function rescanQuarter(admin, budget, { year, quarter, state }, pages, errors) {
+  const periodCode = QUARTER_PERIOD_CODE[quarter];
+  let delta = 0;
+  for (let page = 1; page <= pages; page++) {
+    if (budget.remaining < 2) break;
+    const res = await listFilings(
+      {
+        filingYear: year,
+        filingPeriod: periodCode,
+        ordering: '-dt_posted',
+        page,
+        pageSize: PAGE_SIZE,
+      },
+      { budget },
+    );
+    if (!res.ok) {
+      errors.push(`${year} ${quarter} rescan p${page}: ${res.error}`);
+      break;
+    }
+    const results = Array.isArray(res.data?.results) ? res.data.results : [];
+    if (!results.length) break;
+    const rows = results.map(mapFilingRow).filter((r) => r.uuid);
+    if (rows.length) {
+      const { error } = await admin.from('lobbying_filings').upsert(rows, { onConflict: 'uuid' });
+      if (error) {
+        errors.push(`${year} ${quarter} rescan p${page}: ${error.message}`);
+        break;
+      }
+      delta += rows.length;
+    }
+    if (!res.data?.next) break;
+  }
+  return {
+    year,
+    quarter,
+    period_code: periodCode,
+    total_count: state?.total_count ?? null,
+    last_page: state?.last_page || 0,
+    complete: state?.complete ?? false,
+    phase: state?.phase || 'incremental',
+    last_seen_posted: state?.last_seen_posted || null,
+    rows_upserted: (state?.rows_upserted || 0) + 0, // rescan overwrites; don't inflate cumulative
+    last_run_at: new Date().toISOString(),
+    last_status: 'ok',
+    last_reason: 'rescan',
+    last_delta: delta,
+    updated_at: new Date().toISOString(),
+    _delta: delta,
+  };
+}
+
 export async function GET(request) {
   if (!isAuthorized(request)) {
     return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
@@ -199,45 +333,67 @@ export async function GET(request) {
     40,
   );
 
+  const mode = (searchParams.get('mode') || 'auto').toLowerCase();
   const admin = getAdminClient();
   const budget = createLdaBudget(REQUEST_BUDGET);
   const states = await loadStates(admin, targetYears);
   const errors = [];
   const results = [];
 
-  // Build the work list: incomplete (year, quarter) first, least-covered first
-  // so backfill spreads evenly. (Incremental maintenance of complete quarters
-  // is added in the steady-state pass — this pass drives backfill to done.)
-  const work = [];
-  for (const year of targetYears) {
-    for (const quarter of targetQuarters) {
-      const state = states.get(`${year}-${quarter}`) || null;
-      if (state?.complete) continue; // maintained incrementally elsewhere
-      work.push({ year, quarter, state });
-    }
-  }
-  work.sort((a, b) => (a.state?.last_page || 0) - (b.state?.last_page || 0));
-
-  for (const item of work) {
-    if (budget.remaining < 3) break;
-    const next = await backfillQuarter(admin, budget, item, pagesPerQuarter, errors);
+  const persist = async (next) => {
     const { _delta, ...row } = next;
     await admin.from('lobbying_ingest_state').upsert(row, { onConflict: 'year,quarter' });
     results.push({
       year: row.year,
       quarter: row.quarter,
+      phase: row.phase,
       delta: _delta,
       lastPage: row.last_page,
       totalCount: row.total_count,
       complete: row.complete,
     });
+  };
+
+  if (mode === 'rescan') {
+    // Weekly late/amended re-scan of recent quarters (idempotent overwrite).
+    const rescanPages = Math.min(Math.max(Number(searchParams.get('rescanPages')) || 3, 1), 10);
+    for (const year of targetYears) {
+      for (const quarter of targetQuarters) {
+        if (budget.remaining < 3) break;
+        const state = states.get(`${year}-${quarter}`) || null;
+        await persist(
+          await rescanQuarter(admin, budget, { year, quarter, state }, rescanPages, errors),
+        );
+      }
+    }
+  } else {
+    // Backfill incomplete quarters first (least-covered first), then keep the
+    // completed quarters current with a cheap incremental pull.
+    const incomplete = [];
+    const complete = [];
+    for (const year of targetYears) {
+      for (const quarter of targetQuarters) {
+        const state = states.get(`${year}-${quarter}`) || null;
+        (state?.complete ? complete : incomplete).push({ year, quarter, state });
+      }
+    }
+    incomplete.sort((a, b) => (a.state?.last_page || 0) - (b.state?.last_page || 0));
+
+    for (const item of incomplete) {
+      if (budget.remaining < 3) break;
+      await persist(await backfillQuarter(admin, budget, item, pagesPerQuarter, errors));
+    }
+    for (const item of complete) {
+      if (budget.remaining < 3) break;
+      await persist(await incrementalQuarter(admin, budget, item, 3, errors));
+    }
   }
 
   const constantsUpserted = await refreshConstants(admin, budget);
 
   return NextResponse.json({
     ok: true,
-    mode: 'backfill',
+    mode,
     quarters: results,
     filingsUpserted: results.reduce((s, r) => s + (r.delta || 0), 0),
     constantsUpserted,
