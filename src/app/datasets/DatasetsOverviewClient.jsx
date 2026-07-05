@@ -25,7 +25,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowRight, Zap, X } from 'lucide-react';
 import CategoryBar from '@/components/datasets/CategoryBar';
-import { DATASET_TAXONOMY, DIMENSION_IDS, TAXONOMY_STATS } from '@/lib/datasets/taxonomy';
+import {
+  DATASET_TAXONOMY,
+  DIMENSION_IDS,
+  TAXONOMY_STATS,
+  SOURCE_TYPE_META,
+} from '@/lib/datasets/taxonomy';
 import './ds-overview.css';
 
 /* ── 7 dimensions: the shared DATASET_TAXONOMY is the single source of truth ──
@@ -496,6 +501,16 @@ function DimensionDatasets({ node }) {
             <span>
               <span className="dsx-row-name">{it.label}</span>
               <span className="dsx-row-exp">{it.description}</span>
+              {it.source && (
+                <span className="dsx-ds-src">
+                  {it.sourceType && SOURCE_TYPE_META[it.sourceType] && (
+                    <span className={`dsx-ds-srctag dsx-src-${it.sourceType}`}>
+                      {SOURCE_TYPE_META[it.sourceType].label}
+                    </span>
+                  )}
+                  {it.source}
+                </span>
+              )}
             </span>
             {it.live ? (
               <ArrowRight size={13} className="dsx-ds-go" aria-hidden />

@@ -492,6 +492,43 @@
   padding: 1px 7px;
 }
 
+/* source attribution line under each dataset ("sourced and attributed") */
+.dsx-ds-src {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+  font-family: var(--font-mono, monospace);
+  font-size: 10.5px;
+  color: var(--text-faint);
+}
+.dsx-ds-srctag {
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-radius: var(--radius-pill, 9999px);
+  padding: 1px 6px;
+}
+/* 🟢 free gov · 🔵 free public · 🟡 licensed · ⚪ commercial/roadmap */
+.dsx-src-gov {
+  color: var(--emerald);
+  background: var(--emerald-bg, rgba(16, 185, 129, 0.1));
+}
+.dsx-src-public {
+  color: var(--info);
+  background: rgba(59, 130, 246, 0.1);
+}
+.dsx-src-licensed {
+  color: var(--amber);
+  background: rgba(245, 158, 11, 0.12);
+}
+.dsx-src-none {
+  color: var(--text-muted);
+  background: var(--bg-tertiary);
+}
+
 /* analysis: per-other-category cross-mechanism blocks */
 .dsx-moves {
   display: flex;
