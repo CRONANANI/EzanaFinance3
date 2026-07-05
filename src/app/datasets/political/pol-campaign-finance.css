@@ -1,0 +1,369 @@
+/* Campaign Finance section (FEC / OpenFEC) on the Political Trade Tracker.
+   Page-scoped `pcf-` classes; tokens only (no new globals). Mirrors the ptx-*
+   card family: --surface-card fill, --border-primary borders, Plus Jakarta Sans
+   headers, JetBrains Mono (600, tabular-nums) for every numeric/currency value.
+   Radius 0.75–1rem. Light + dark both resolve from tokens. */
+
+.pcf-section {
+  margin-top: 28px;
+}
+.pcf-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.pcf-title {
+  margin: 0;
+  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+.pcf-source {
+  font-size: 0.72rem;
+  color: var(--text-faint);
+}
+.pcf-mono {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Money Map stat strip ── */
+.pcf-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.pcf-stat {
+  background: var(--surface-card);
+  border: 1px solid var(--border-primary);
+  border-radius: 0.85rem;
+  padding: 14px 16px;
+}
+.pcf-stat-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-faint);
+}
+.pcf-stat-value {
+  margin-top: 6px;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  font-size: 1.4rem;
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+.pcf-stat-sub {
+  margin-top: 4px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+/* ── Cards ── */
+.pcf-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.pcf-card {
+  background: var(--surface-card);
+  border: 1px solid var(--border-primary);
+  border-radius: 1rem;
+  padding: 16px 18px;
+  min-width: 0;
+}
+.pcf-card--wide {
+  grid-column: 1 / -1;
+}
+.pcf-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.pcf-card-title {
+  margin: 0;
+  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.pcf-card-note {
+  font-size: 0.72rem;
+  color: var(--text-faint);
+}
+.pcf-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.pcf-toggle {
+  display: inline-flex;
+  border: 1px solid var(--border-primary);
+  border-radius: 0.6rem;
+  overflow: hidden;
+}
+.pcf-toggle-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-size: 0.76rem;
+  font-weight: 600;
+  padding: 5px 11px;
+  cursor: pointer;
+  transition:
+    background 0.14s ease,
+    color 0.14s ease;
+}
+.pcf-toggle-btn + .pcf-toggle-btn {
+  border-left: 1px solid var(--border-primary);
+}
+.pcf-toggle-btn:hover {
+  background: var(--surface-card-hover);
+}
+.pcf-toggle-btn.is-active {
+  background: var(--emerald-bg, rgba(16, 185, 129, 0.08));
+  color: var(--emerald, #10b981);
+}
+
+/* ── Tables ── */
+.pcf-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.pcf-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.pcf-table th {
+  text-align: left;
+  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-faint);
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border-primary);
+  white-space: nowrap;
+}
+.pcf-table th.r,
+.pcf-table td.r {
+  text-align: right;
+}
+.pcf-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+.pcf-table th.sortable:hover {
+  color: var(--text-muted);
+}
+.pcf-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--border-primary);
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+.pcf-row {
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+.pcf-row:hover {
+  background: var(--surface-card-hover);
+}
+.pcf-rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--emerald-bg, rgba(16, 185, 129, 0.08));
+  color: var(--emerald, #10b981);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+.pcf-member {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+.pcf-member-name {
+  font-weight: 600;
+  white-space: nowrap;
+}
+.pcf-member-sub {
+  font-size: 0.72rem;
+  color: var(--text-faint);
+}
+.pcf-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 5px;
+  color: #fff;
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+.pcf-muted {
+  color: var(--text-faint);
+}
+
+/* Individual-vs-PAC mini stacked bar */
+.pcf-mix {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 120px;
+}
+.pcf-mixbar {
+  flex: 1;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.18);
+  overflow: hidden;
+  display: flex;
+}
+.pcf-mixbar-ind {
+  height: 100%;
+  background: var(--info, #3b82f6);
+}
+.pcf-mixbar-pac {
+  height: 100%;
+  background: var(--warning, #d97706);
+}
+.pcf-mix-legend {
+  font-size: 0.68rem;
+  color: var(--text-faint);
+  white-space: nowrap;
+}
+.pcf-mix-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  margin-right: 3px;
+  vertical-align: middle;
+}
+
+.pcf-pos {
+  color: var(--positive, #10b981);
+}
+.pcf-neg {
+  color: var(--negative, #ef4444);
+}
+
+.pcf-empty {
+  padding: 22px 10px;
+  text-align: center;
+  color: var(--text-faint);
+  font-size: 0.85rem;
+}
+
+/* ── Modal campaign-finance block ── */
+.pcf-modal-block {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-primary);
+}
+.pcf-modal-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-faint);
+  margin-bottom: 10px;
+}
+.pcf-modal-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.pcf-modal-stat {
+  border: 1px solid var(--border-primary);
+  border-radius: 0.7rem;
+  padding: 9px 11px;
+}
+.pcf-modal-stat-label {
+  font-size: 0.64rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-faint);
+}
+.pcf-modal-stat-value {
+  margin-top: 3px;
+  font-family: var(--font-mono, monospace);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+.pcf-modal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 8px 0 0;
+}
+.pcf-modal-list-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.8rem;
+}
+.pcf-modal-list-row span:first-child {
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pcf-modal-sub {
+  font-size: 0.72rem;
+  color: var(--text-faint);
+  margin: 4px 0 0;
+}
+.pcf-modal-foot {
+  margin-top: 10px;
+  font-size: 0.68rem;
+  color: var(--text-faint);
+}
+
+@media (max-width: 860px) {
+  .pcf-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .pcf-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 520px) {
+  .pcf-modal-grid {
+    grid-template-columns: 1fr;
+  }
+}
