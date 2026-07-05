@@ -83,7 +83,7 @@
     },
     {
       "path": "/api/cron/ingest-lobbying",
-      "schedule": "0 8 * * *"
+      "schedule": "0 */3 * * *"
     }
   ]
 }

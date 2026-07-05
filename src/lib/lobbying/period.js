@@ -35,3 +35,12 @@ export function periodLabel(period, days) {
 
 /** Valid period keys accepted by the top-spenders route. */
 export const PERIOD_KEYS = ['year', 'ytd', 'q1', 'q2', 'q3', 'q4', 'range'];
+
+/** The four quarters, and the LDA `filing_period` filter value each maps to. */
+export const QUARTERS = ['q1', 'q2', 'q3', 'q4'];
+export const QUARTER_PERIOD_CODE = {
+  q1: 'first_quarter',
+  q2: 'second_quarter',
+  q3: 'third_quarter',
+  q4: 'fourth_quarter',
+};
