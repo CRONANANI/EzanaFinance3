@@ -423,6 +423,7 @@ export default function LobbyingClient() {
                 rankBy={rankBy}
                 onPick={openClientFiling}
                 period={p.label}
+                filingsInPeriod={spenders.data?.filingsInPeriod ?? null}
               />
             ) : (
               <IssueMix
@@ -601,11 +602,23 @@ function IssueChip({ label }) {
 }
 
 /* ── leaderboard: bar LENGTH = $ total, SEGMENTS = targeting activity share ── */
-function Leaderboard({ loading, rows, rankBy, onPick, period }) {
+function Leaderboard({ loading, rows, rankBy, onPick, period, filingsInPeriod }) {
   const top = rows.slice(0, 12);
   const max = top.length ? Math.max(...top.map((s) => s.total), 1) : 1;
   if (loading) return <div className="lbx-empty">Loading leaderboard…</div>;
-  if (!top.length) return <div className="lbx-empty">No spender data for {period} yet.</div>;
+  if (!top.length) {
+    // Distinguish real sparseness (filings loaded, but mostly registrations with
+    // no dollar figure yet) from "nothing ingested" so this never reads as a bug.
+    if (filingsInPeriod > 0)
+      return (
+        <div className="lbx-empty">
+          No disclosed spend for {period} yet — {filingsInPeriod.toLocaleString()} filing
+          {filingsInPeriod === 1 ? '' : 's'} loaded, mostly registrations (no dollar figure). Try FY
+          2025.
+        </div>
+      );
+    return <div className="lbx-empty">No spender data for {period} yet.</div>;
+  }
 
   return (
     <div>

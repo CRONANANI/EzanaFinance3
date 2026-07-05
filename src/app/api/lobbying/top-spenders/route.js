@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
-import { normalizeQuarter, PERIOD_KEYS } from '@/lib/lobbying/period';
+import { PERIOD_KEYS } from '@/lib/lobbying/period';
 import { canonicalEntity } from '@/lib/lobbying/normalize';
 import { getPeriodCoverage } from '@/lib/lobbying/coverage';
 import { ENTITY_GROUPS } from '@/lib/lobbying/entities';
@@ -12,9 +12,12 @@ import { ENTITY_GROUPS } from '@/lib/lobbying/entities';
  * the lobbying_filings cache, scoped to a time period.
  *
  * period ∈ year (default, whole year) | ytd | q1|q2|q3|q4 | range (last N days,
- * ?days=90 default, computed from dt_posted). Quarters map from the raw LDA
- * filing_period label via normalizeQuarter. Only REAL reported dollars count
- * toward totals — registrations / no-activity reports are excluded so the board
+ * ?days=90 default). The dollar rule (is_registration=false + amount>0), the
+ * period predicate (quarter/last-N-days), issue/entity/min filters, ordering by
+ * amount desc, and the row cap are all pushed to the DB — so the biggest
+ * spenders are guaranteed in the fetched slice and JS only does canonical
+ * grouping + targeting-share tally. Only REAL reported dollars count toward
+ * totals — registrations / no-activity reports are excluded so the board
  * reflects actual spend. Supabase-first (cache-only aggregate); honest empty.
  */
 export const dynamic = 'force-dynamic';
@@ -53,42 +56,55 @@ export async function GET(request) {
     } catch {
       /* coverage is best-effort */
     }
-    const { data, error } = await admin
-      .from('lobbying_filings')
-      .select(
-        `${nameCol},amount,lobbyist_count,filing_period,dt_posted,is_registration,filing_type,entity_buckets,issue_buckets`,
-      )
-      .eq('filing_year', year)
-      .limit(8000);
-    if (error || !Array.isArray(data) || !data.length)
-      return NextResponse.json({ ...empty, coverage });
 
-    const rangeCutoff = period === 'range' ? Date.now() - days * 86400000 : null;
+    const rangeCutoff =
+      period === 'range' ? new Date(Date.now() - days * 86400000).toISOString() : null;
     const quarter = ['q1', 'q2', 'q3', 'q4'].includes(period) ? period : null;
-
-    const passesFilters = (r) => {
-      if (quarter) {
-        if (normalizeQuarter(r.filing_period) !== quarter) return false;
-      } else if (rangeCutoff != null) {
-        const t = Date.parse(r.dt_posted);
-        if (Number.isNaN(t) || t < rangeCutoff) return false;
-      }
-      if (issue && !(Array.isArray(r.issue_buckets) && r.issue_buckets.includes(issue)))
-        return false;
-      if (
-        groupBuckets &&
-        !(Array.isArray(r.entity_buckets) && r.entity_buckets.some((b) => groupBuckets.includes(b)))
-      )
-        return false;
-      if (min > 0 && !(Number(r.amount) >= min)) return false;
-      return true;
+    // Apply the period predicate (quarter or last-N-days) to a query. YTD/year
+    // are already scoped by .eq('filing_year', year), so they add nothing here.
+    const withPeriod = (q) => {
+      if (quarter) return q.eq('quarter', period);
+      if (rangeCutoff != null) return q.gte('dt_posted', rangeCutoff);
+      return q;
     };
 
-    // Only real reported dollars count (exclude registrations / no-spend).
-    const isDollar = (r) =>
-      r.is_registration !== true &&
-      !/registration/i.test(String(r.filing_type || '')) &&
-      Number(r.amount) > 0;
+    // Push the aggregation-relevant filters to the DB — dollar rule, period,
+    // issue/entity/min — and order by amount desc so the biggest spenders are
+    // guaranteed to be in the fetched slice even at the cap (the opposite of the
+    // old arbitrary unordered .limit(8000)). JS then only does canonical
+    // grouping + targeting-share tally over these correct, dollar-bearing rows.
+    let q = admin
+      .from('lobbying_filings')
+      .select(`${nameCol},amount,lobbyist_count,entity_buckets`)
+      .eq('filing_year', year)
+      .eq('is_registration', false)
+      .gt('amount', 0);
+    q = withPeriod(q);
+    if (issue) q = q.overlaps('issue_buckets', [issue]);
+    if (groupBuckets) q = q.overlaps('entity_buckets', groupBuckets);
+    if (min > 0) q = q.gte('amount', min);
+    q = q.order('amount', { ascending: false, nullsFirst: false }).limit(20000);
+
+    const { data, error } = await q;
+    if (error) return NextResponse.json({ ...empty, coverage });
+    if (!Array.isArray(data) || !data.length) {
+      // Distinguish "genuinely no disclosed spend yet" (early YTD, mostly
+      // registrations) from a bug: report how many filings are loaded for the
+      // period so the card can say so precisely instead of blanking.
+      let filingsInPeriod = 0;
+      try {
+        let cq = admin
+          .from('lobbying_filings')
+          .select('uuid', { count: 'exact', head: true })
+          .eq('filing_year', year);
+        cq = withPeriod(cq);
+        const { count } = await cq;
+        filingsInPeriod = count || 0;
+      } catch {
+        /* best-effort */
+      }
+      return NextResponse.json({ ...empty, coverage, filingsInPeriod });
+    }
 
     // Group on the CANONICAL entity key so a corporation's spelling variants
     // ("General Motors" / "General Motors Company" / "GENERAL MOTORS CO.") sum
@@ -98,7 +114,7 @@ export async function GET(request) {
     const acc = new Map();
     for (const r of data) {
       const raw = r[nameCol];
-      if (!raw || !passesFilters(r)) continue;
+      if (!raw) continue;
       const { key, display } = canonicalEntity(raw);
       if (!key) continue;
       if (!acc.has(key))
@@ -113,7 +129,8 @@ export async function GET(request) {
       const e = acc.get(key);
       e.filings += 1;
       e.lobbyists += Number(r.lobbyist_count) || 0;
-      if (isDollar(r)) e.total += Number(r.amount);
+      // every fetched row is dollar-bearing (DB-filtered), so it counts to total
+      e.total += Number(r.amount);
       e.labels.set(display, (e.labels.get(display) || 0) + 1);
       for (const b of Array.isArray(r.entity_buckets) ? r.entity_buckets : []) {
         e.ent.set(b, (e.ent.get(b) || 0) + 1);
