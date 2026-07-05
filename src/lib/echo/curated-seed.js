@@ -18,8 +18,10 @@ import { semiconductorArticle } from '@/lib/ezana-echo-article-semiconductors.js
 import { trumpPortfolio2026 } from '@/lib/ezana-echo-article-trump-portfolio-2026.js';
 import { peterThiel2026 } from '@/lib/ezana-echo-article-peter-thiel-2026.js';
 import { privateCreditMaturityWallArticle2026 } from '@/lib/ezana-echo-article-private-credit-maturity-wall-2026.js';
+import { criticalMineralsArticle2026 } from '@/lib/ezana-echo-article-critical-minerals-2026.js';
 
 const SOURCE = [
+  criticalMineralsArticle2026,
   peterThiel2026,
   trumpPortfolio2026,
   nvidiaSecondMostValuableArticle,

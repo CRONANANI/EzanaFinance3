@@ -670,7 +670,7 @@ export const fiberOpticArticle = {
   },
   readTime: 14,
   publishedAt: '2026-05-02',
-  featured: true,
+  featured: false,
   likes: 287,
   comments: 64,
   reads: 5840,
