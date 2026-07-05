@@ -2235,6 +2235,132 @@ export const KEYWORDS = {
     courseId: 'fixed-income-101-1',
     courseTitle: 'Credit and Fixed Income',
   },
+
+  /* ════════════════════════════════════════════════════════════════════════
+     Critical minerals reserve-concentration article keywords
+     ════════════════════════════════════════════════════════════════════════ */
+
+  'mineral-reserves': {
+    id: 'mineral-reserves',
+    term: 'Mineral Reserves',
+    definition:
+      'Reserves are the portion of a mineral deposit that is economically extractable at the time of assessment — not the total amount in the earth’s crust, which is the broader "resource." Because economics decide the boundary, reserves grow or shrink as prices and mining technology change: a deposit uneconomic at one price becomes a reserve at a higher one.',
+    template: 'comparison',
+    templateData: {
+      title: 'Reserves vs. resources',
+      headers: ['Term', 'What it counts', 'Moves with'],
+      rows: [
+        { label: 'Reserves', cells: ['Economically mineable now', 'Prices, technology, policy'] },
+        { label: 'Resources', cells: ['All identified material', 'Geology (mostly fixed)'] },
+      ],
+      footnote:
+        'Reserve shares — not resource shares — constrain the next decade of supply, which is why the USGS reserve figures are the relevant chokepoint measure.',
+    },
+    realWorld:
+      'A country’s reserve share is what gives it near-term leverage: China’s ~48% of rare-earth reserves and South Africa’s 83% of platinum-group metals are reserve positions, and they set the supply constraints the energy transition has to work around.',
+    courseId: 'macro-indicators-2',
+    courseTitle: 'Reading Macro Data',
+  },
+
+  'platinum-group-metals': {
+    id: 'platinum-group-metals',
+    term: 'Platinum-Group Metals (PGMs)',
+    definition:
+      'A set of six related metals — platinum, palladium, rhodium, ruthenium, iridium, and osmium — prized for catalytic and high-temperature properties. They are essential to catalytic converters, hydrogen electrolyzers, jet-engine coatings, and chip fabrication, and their reserves are the most geographically concentrated of any major mineral.',
+    template: 'comparison',
+    templateData: {
+      title: 'Where PGM reserves sit',
+      headers: ['Holder', 'Position'],
+      rows: [
+        { label: 'South Africa', cells: ['~83% of world reserves'] },
+        { label: 'Russia', cells: ['Most of the remainder'] },
+      ],
+      footnote:
+        'South Africa’s 83% reserve share (USGS 2026) is the single most concentrated position in the entire mineral map.',
+    },
+    realWorld:
+      'PGMs are both a green-tech input (autocatalysts, electrolyzers) and a defense input (engine coatings, sensors), so an 83% single-country reserve share registers as a security concern, not just a commodity one.',
+    courseId: 'geopolitics-101-1',
+    courseTitle: 'Resources and Power',
+  },
+
+  'rare-earth-elements': {
+    id: 'rare-earth-elements',
+    term: 'Rare-Earth Elements (REEs)',
+    definition:
+      'A group of 17 metals — including neodymium and dysprosium — used to make the high-strength permanent magnets in electric motors, wind turbines, guided munitions, and hard drives. They are not geologically rare, but their reserves and, far more so, their processing are concentrated in China.',
+    template: 'comparison',
+    templateData: {
+      title: 'Rare-earth reserves vs. leverage',
+      headers: ['Holder', 'Reserves', 'Note'],
+      rows: [
+        { label: 'China', cells: ['44.0 Mt (~48%)', 'Dominant processing share'] },
+        { label: 'Brazil', cells: ['21.0 Mt (~23%)', 'Second-largest reserves'] },
+        { label: 'United States', cells: ['1.9 Mt (~2%)', 'Import-dependent'] },
+      ],
+      footnote:
+        'World reserve base is 91.9 Mt (USGS 2026). China’s real leverage rests on processing, where its share far exceeds its ~48% of reserves.',
+    },
+    realWorld:
+      'Because the value and dependency concentrate in the midstream (processing), reserve share understates China’s position — the reason the U.S. response is a stockpile ("Project Vault") rather than mining alone.',
+    courseId: 'geopolitics-101-4',
+    courseTitle: 'Resources and Power',
+  },
+
+  'supply-chain-chokepoint': {
+    id: 'supply-chain-chokepoint',
+    term: 'Supply-Chain Chokepoint',
+    definition:
+      'A single point in a global supply chain — a country, a strait, a processing step — through which so much of a good passes that a disruption there ripples worldwide. In minerals, a chokepoint does not require a monopoly: a 25–50% reserve or processing share in one jurisdiction is enough for one government’s policy to move a global price.',
+    template: 'comparison',
+    templateData: {
+      title: 'What makes a mineral a chokepoint',
+      headers: ['Factor', 'Effect'],
+      rows: [
+        { label: 'High single-country share', cells: ['One policy moves the price'] },
+        { label: 'No substitute', cells: ['Buyers cannot route around it'] },
+        { label: 'Located in a fragile state', cells: ['Standing supply risk'] },
+      ],
+      footnote:
+        'Cobalt (DRC ~50%) and bauxite (Guinea ~26%) combine high concentration with political fragility — the sharpest chokepoint profile.',
+    },
+    realWorld:
+      'Morocco’s 69% of phosphate is a food-security chokepoint; the DRC’s ~50% of cobalt is a battery one. Neither is a monopoly, yet each lets one country’s decisions reverberate globally.',
+    courseId: 'geopolitics-101-1',
+    courseTitle: 'Resources and Power',
+  },
+
+  'critical-minerals-list': {
+    id: 'critical-minerals-list',
+    term: 'Critical Minerals List',
+    definition:
+      'The official U.S. roster of minerals deemed essential to the economy and national security and vulnerable to supply disruption, maintained by the USGS under the Energy Act of 2020 and updated periodically. Being on the list drives federal permitting priority, stockpiling, and supply-chain policy.',
+    template: 'timeline',
+    templateData: {
+      title: 'How the list became policy',
+      events: [
+        {
+          year: '2020',
+          label: 'Energy Act',
+          detail: 'Mandates a USGS critical-minerals methodology',
+        },
+        {
+          year: '2022',
+          label: 'List expanded',
+          detail: 'USGS list grows to 50 mineral commodities',
+        },
+        {
+          year: '2026',
+          label: 'Stockpiling',
+          detail: '"Project Vault" targets rare earths, lithium, nickel',
+        },
+      ],
+    },
+    realWorld:
+      'The critical-minerals list is effectively a map of where U.S. import dependence meets strategic use — and it is redrawn only about once a year, which makes it a slow-moving, decisive macro variable.',
+    courseId: 'geopolitics-101-1',
+    courseTitle: 'Resources and Power',
+  },
 };
 
 export function getKeywordById(id) {

@@ -31,8 +31,10 @@ import { semiconductorArticle } from './ezana-echo-article-semiconductors.js';
 import { trumpPortfolio2026 } from './ezana-echo-article-trump-portfolio-2026.js';
 import { peterThiel2026 } from './ezana-echo-article-peter-thiel-2026.js';
 import { privateCreditMaturityWallArticle2026 } from './ezana-echo-article-private-credit-maturity-wall-2026.js';
+import { criticalMineralsArticle2026 } from './ezana-echo-article-critical-minerals-2026.js';
 
 const ARTICLES = [
+  criticalMineralsArticle2026,
   peterThiel2026,
   trumpPortfolio2026,
   nvidiaSecondMostValuableArticle,
@@ -47,6 +49,11 @@ const ARTICLES = [
 
 export const ECHO_TRENDING = {
   mostRead: [
+    {
+      title: 'Who Controls the World’s Critical Minerals',
+      reads: 7300,
+      id: 'critical-minerals-reserve-concentration-2026',
+    },
     {
       title: "Peter Thiel's Worldview, Decoded",
       reads: 11200,
@@ -113,6 +120,29 @@ export const ECHO_TRENDING = {
 
 /** @type {Record<string, { id: string; author: { name: string; initials: string; id?: string }; content: string; createdAt: string }[]>} */
 export const ECHO_MOCK_COMMENTS_BY_ARTICLE = {
+  'critical-minerals-reserve-concentration-2026': [
+    {
+      id: 'c-minerals-1',
+      author: { name: 'Ingrid Solberg', initials: 'IS' },
+      content:
+        'The reserves-vs-resources distinction up front is what most of these pieces skip. Concentration of *reserves* is the number that actually binds supply, and 83% PGMs in one country is genuinely shocking laid out this way.',
+      createdAt: '2026-07-05T13:10:00Z',
+    },
+    {
+      id: 'c-minerals-2',
+      author: { name: 'Rafael Mendes', initials: 'RM' },
+      content:
+        'Glad the rare-earths number is the USGS ~48% and not the 52% infographic everyone keeps reposting. The point that reserves understate China because processing is the real lever is the whole ballgame.',
+      createdAt: '2026-07-05T15:35:00Z',
+    },
+    {
+      id: 'c-minerals-3',
+      author: { name: 'Wei Tan', initials: 'WT' },
+      content:
+        'The battery-metals chart makes the additive-not-interchangeable argument better than any paragraph could. You are exposed to DRC, Indonesia, Chile, and China all at once, and you cannot substitute your way out.',
+      createdAt: '2026-07-05T18:02:00Z',
+    },
+  ],
   'peter-thiel-worldview-2026': [
     {
       id: 'c-thiel-1',
