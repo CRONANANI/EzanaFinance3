@@ -2099,7 +2099,9 @@ html:has(.landing-page) .navbar .logo,
   position: absolute;
   top: 100%;
   left: 50%;
-  width: min(860px, 94vw);
+  /* Wide enough for all 7 dimension buckets in ONE row; 96vw cap keeps it
+     inside the viewport (no horizontal page scroll). */
+  width: min(1200px, 96vw);
   padding-top: 0.6rem;
   transform: translateX(-50%) translateY(-6px);
   opacity: 0;
@@ -2128,8 +2130,10 @@ html:has(.landing-page) .navbar .logo,
 
 .nav-datasets-cols {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.4rem 1rem;
+  /* All 7 buckets in a single row; columns top-aligned, heights vary by item
+     count (expected). */
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.4rem 0.75rem;
   align-items: start;
 }
 
@@ -2221,17 +2225,20 @@ html:has(.landing-page) .navbar .logo,
   outline: none;
 }
 
-/* On narrow desktops collapse to two columns so the panel never
-   exceeds the viewport. (Hidden entirely on mobile via .nav-menu-desktop.) */
-@media (max-width: 720px) {
+/* The mega-menu only shows on the desktop nav (≥1024px; below that the nav is
+   the stacked hamburger drawer). On smaller laptops where 7 equal columns would
+   get cramped, keep them in ONE row but make it a horizontal-scroll strip rather
+   than wrapping to a second row. */
+@media (max-width: 1120px) {
   .nav-datasets-cols {
-    grid-template-columns: repeat(2, 1fr);
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
-}
-
-@media (max-width: 980px) {
-  .nav-datasets-cols {
-    grid-template-columns: repeat(2, 1fr);
+  .nav-datasets-col {
+    flex: 0 0 auto;
+    min-width: 148px;
   }
 }
 
