@@ -636,3 +636,38 @@
   color: var(--text-faint);
   line-height: 1.5;
 }
+
+/* Top-spenders period/metric controls, slim share bar, sort-toggle head, and
+   --bg-tertiary table headers (Quiver-style readability). Tokens only. */
+.lbx-spender-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.lbx-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.lbx-seg--wrap {
+  flex-wrap: wrap;
+}
+.lbx-table thead th {
+  background: var(--bg-tertiary, rgba(148, 163, 184, 0.1));
+}
+.lbx-bar-track--slim {
+  display: block;
+  height: 6px;
+  min-width: 80px;
+  width: 120px;
+}
+@media (max-width: 600px) {
+  .lbx-spender-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

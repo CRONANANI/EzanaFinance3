@@ -14,7 +14,18 @@
 import { useMemo, useState, useEffect, useCallback } from 'react';
 import { X, ArrowUpRight, ExternalLink } from 'lucide-react';
 import CategoryBar from '@/components/datasets/CategoryBar';
+import { periodLabel, normalizeQuarter } from '@/lib/lobbying/period';
 import './lobbying.css';
+
+const SPENDER_PERIODS = [
+  ['year', 'Full year'],
+  ['q1', 'Q1'],
+  ['q2', 'Q2'],
+  ['q3', 'Q3'],
+  ['q4', 'Q4'],
+  ['ytd', 'YTD'],
+  ['range', 'Last 90d'],
+];
 
 // The current year is filed quarterly in arrears, so it's sparse early on.
 const YEARS = [
@@ -38,6 +49,14 @@ function fmtDate(iso) {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '—';
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+/** Compact period label for a filing row, e.g. "Q2 2025" (falls back to raw). */
+function periodShort(f) {
+  const q = normalizeQuarter(f?.period);
+  if (q && f?.year) return `${q.toUpperCase()} ${f.year}`;
+  if (q) return q.toUpperCase();
+  return f?.period || '—';
 }
 
 /** A filing that has no real reported dollar figure carries a label, not "$0". */
@@ -94,31 +113,37 @@ export default function LobbyingClient() {
   const [minAmount, setMinAmount] = useState(0); // in $K
   const [heroView, setHeroView] = useState('issue'); // 'issue' | 'spenders'
   const [spenderBy, setSpenderBy] = useState('client'); // 'client' | 'registrant'
+  const [spenderPeriod, setSpenderPeriod] = useState('year'); // year|ytd|q1..q4|range
+  const [filingsSort, setFilingsSort] = useState('date'); // 'date' | 'amount'
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState(null); // filing uuid for modal
 
   // reset page when filters change
   useEffect(() => {
     setPage(1);
-  }, [year, issue, entity, filingType, minAmount]);
+  }, [year, issue, entity, filingType, minAmount, filingsSort]);
 
   const constants = useJson('/api/lobbying/constants', []);
   const summary = useJson(`/api/lobbying/summary?year=${year}`, [year]);
   const byIssue = useJson(`/api/lobbying/by-issue?year=${year}`, [year]);
-  const spenders = useJson(`/api/lobbying/top-spenders?year=${year}&by=${spenderBy}`, [
-    year,
-    spenderBy,
-  ]);
+  const spenders = useJson(
+    `/api/lobbying/top-spenders?year=${year}&by=${spenderBy}&period=${spenderPeriod}`,
+    [year, spenderBy, spenderPeriod],
+  );
 
   const minAmt = minAmount * 1000;
   const filingsUrl = useMemo(() => {
-    const p = new URLSearchParams({ year: String(year), page: String(page), sort: 'amount' });
+    const p = new URLSearchParams({
+      year: String(year),
+      page: String(page),
+      sort: filingsSort === 'amount' ? 'amount' : 'date',
+    });
     if (issue) p.set('issue', issue);
     if (entity) p.set('entity', entity);
     if (filingType) p.set('type', filingType);
     if (minAmt > 0) p.set('minAmount', String(minAmt));
     return `/api/lobbying/filings?${p.toString()}`;
-  }, [year, page, issue, entity, filingType, minAmt]);
+  }, [year, page, issue, entity, filingType, minAmt, filingsSort]);
   const filings = useJson(filingsUrl, [filingsUrl]);
 
   const results = useMemo(() => filings.data?.results || [], [filings.data]);
@@ -285,7 +310,9 @@ export default function LobbyingClient() {
           <section className="lbx-card lbx-hero">
             <div className="lbx-hero-head">
               <h2 className="lbx-card-title">
-                {heroView === 'issue' ? `Spending by issue · ${year}` : `Top spenders · ${year}`}
+                {heroView === 'issue'
+                  ? `Spending by issue · ${year}`
+                  : `Top spenders · ${periodLabel(spenderPeriod)} · ${year}`}
               </h2>
               <div className="lbx-seg" role="group" aria-label="Hero view">
                 <button
@@ -310,25 +337,15 @@ export default function LobbyingClient() {
             {heroView === 'issue' ? (
               <IssueBars loading={byIssue.loading} issues={byIssue.data?.issues || []} />
             ) : (
-              <>
-                <div className="lbx-seg lbx-seg--sub" role="group" aria-label="Rank spenders by">
-                  {[
-                    ['client', 'By client'],
-                    ['registrant', 'By registrant'],
-                  ].map(([v, l]) => (
-                    <button
-                      key={v}
-                      type="button"
-                      className={`lbx-seg-btn${spenderBy === v ? ' is-active' : ''}`}
-                      aria-pressed={spenderBy === v}
-                      onClick={() => setSpenderBy(v)}
-                    >
-                      {l}
-                    </button>
-                  ))}
-                </div>
-                <SpenderBars loading={spenders.loading} spenders={spenders.data?.spenders || []} />
-              </>
+              <TopSpendersTable
+                loading={spenders.loading}
+                spenders={spenders.data?.spenders || []}
+                by={spenderBy}
+                onByChange={setSpenderBy}
+                period={spenderPeriod}
+                onPeriodChange={setSpenderPeriod}
+                year={year}
+              />
             )}
           </section>
 
@@ -392,30 +409,44 @@ export default function LobbyingClient() {
       {/* recent filings — full width */}
       <section className="lbx-card lbx-filings">
         <div className="lbx-card-head">
-          <h2 className="lbx-card-title">
-            {hasFilters ? 'Filtered filings' : 'Recent filings'} · {year}
-          </h2>
-          <span className="lbx-card-note">
-            {filings.loading ? 'Loading…' : `${totalCount.toLocaleString()} match`}
-          </span>
+          <h2 className="lbx-card-title">Recent disclosures · {year}</h2>
+          <div className="lbx-controls">
+            <div className="lbx-seg" role="group" aria-label="Sort disclosures by">
+              {[
+                ['date', 'Most recent'],
+                ['amount', 'Largest'],
+              ].map(([v, l]) => (
+                <button
+                  key={v}
+                  type="button"
+                  className={`lbx-seg-btn${filingsSort === v ? ' is-active' : ''}`}
+                  aria-pressed={filingsSort === v}
+                  onClick={() => setFilingsSort(v)}
+                >
+                  {l}
+                </button>
+              ))}
+            </div>
+            <span className="lbx-card-note">
+              {filings.loading ? 'Loading…' : `${totalCount.toLocaleString()} match`}
+            </span>
+          </div>
         </div>
         <div className="lbx-table-wrap">
           <table className="lbx-table">
             <thead>
               <tr>
-                <th>#</th>
                 <th>Client (paying)</th>
                 <th>Registrant (firm)</th>
                 <th>Issues</th>
                 <th className="r">Amount</th>
-                <th className="r">Lobbyists</th>
                 <th>Period</th>
+                <th className="r">Filed</th>
               </tr>
             </thead>
             <tbody>
               {results.map((f, i) => (
                 <tr key={f.uuid || i} className="lbx-row" onClick={() => setSelected(f.uuid)}>
-                  <td className="lbx-mono lbx-muted">{(page - 1) * 25 + i + 1}</td>
                   <td className="lbx-strong">{f.client || '—'}</td>
                   <td>{f.registrant || '—'}</td>
                   <td>
@@ -433,21 +464,21 @@ export default function LobbyingClient() {
                   <td className="r">
                     <AmountCell filing={f} />
                   </td>
-                  <td className="lbx-mono r">{f.lobbyistCount || 0}</td>
-                  <td className="lbx-muted">{f.period || '—'}</td>
+                  <td className="lbx-mono lbx-muted">{periodShort(f)}</td>
+                  <td className="lbx-mono r lbx-muted">{fmtDate(f.posted)}</td>
                 </tr>
               ))}
               {!filings.loading && results.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="lbx-empty">
-                    No lobbying filings match the current filters for {year}.
+                  <td colSpan={6} className="lbx-empty">
+                    No lobbying disclosures match the current filters for {year}.
                   </td>
                 </tr>
               )}
               {filings.loading && (
                 <tr>
-                  <td colSpan={7} className="lbx-empty">
-                    Loading filings…
+                  <td colSpan={6} className="lbx-empty">
+                    Loading disclosures…
                   </td>
                 </tr>
               )}
@@ -562,24 +593,98 @@ function IssueBars({ loading, issues }) {
   );
 }
 
-function SpenderBars({ loading, spenders }) {
-  if (loading) return <div className="lbx-empty">Loading top spenders…</div>;
-  if (!spenders.length)
-    return <div className="lbx-empty">No spender data ingested for this year yet.</div>;
-  const max = Math.max(...spenders.map((s) => s.total), 1);
+/* Top Spenders — period-selectable, client⇄registrant, sortable-by-total table
+   with a slim share bar. Accurate to LDA: name (client org or firm) → total
+   real reported $ → filings → lobbyists. */
+function TopSpendersTable({ loading, spenders, by, onByChange, period, onPeriodChange, year }) {
+  const rows = useMemo(
+    () => [...spenders].sort((a, b) => b.total - a.total).slice(0, 25),
+    [spenders],
+  );
+  const max = rows.length ? Math.max(...rows.map((s) => s.total), 1) : 1;
+  const nameLabel = by === 'registrant' ? 'Registrant (firm)' : 'Client (org)';
+
   return (
-    <div className="lbx-bars">
-      {spenders.slice(0, 12).map((s, i) => (
-        <div key={s.name} className="lbx-bar-row">
-          <span className="lbx-bar-label" title={s.name}>
-            {i + 1}. {s.name}
-          </span>
-          <span className="lbx-bar-track">
-            <span className="lbx-bar-fill" style={{ width: `${(s.total / max) * 100}%` }} />
-          </span>
-          <span className="lbx-mono lbx-bar-val">{fmtUSD(s.total)}</span>
+    <div>
+      <div className="lbx-spender-controls">
+        <div className="lbx-seg" role="group" aria-label="Rank spenders by">
+          {[
+            ['client', 'By client'],
+            ['registrant', 'By registrant'],
+          ].map(([v, l]) => (
+            <button
+              key={v}
+              type="button"
+              className={`lbx-seg-btn${by === v ? ' is-active' : ''}`}
+              aria-pressed={by === v}
+              onClick={() => onByChange(v)}
+            >
+              {l}
+            </button>
+          ))}
         </div>
-      ))}
+        <div className="lbx-seg lbx-seg--wrap" role="group" aria-label="Time period">
+          {SPENDER_PERIODS.map(([v, l]) => (
+            <button
+              key={v}
+              type="button"
+              className={`lbx-seg-btn${period === v ? ' is-active' : ''}`}
+              aria-pressed={period === v}
+              onClick={() => onPeriodChange(v)}
+            >
+              {l}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="lbx-table-wrap">
+        <table className="lbx-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>{nameLabel}</th>
+              <th className="r">Total spent</th>
+              <th className="r">Filings</th>
+              <th className="r">Lobbyists</th>
+              <th>Share</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((s, i) => (
+              <tr key={s.name}>
+                <td className="lbx-mono lbx-muted">{i + 1}</td>
+                <td className="lbx-strong">{s.name}</td>
+                <td className="lbx-mono r">{fmtUSD(s.total)}</td>
+                <td className="lbx-mono r">{s.filings}</td>
+                <td className="lbx-mono r">{s.lobbyists}</td>
+                <td>
+                  <span className="lbx-bar-track lbx-bar-track--slim">
+                    <span className="lbx-bar-fill" style={{ width: `${(s.total / max) * 100}%` }} />
+                  </span>
+                </td>
+              </tr>
+            ))}
+            {!loading && rows.length === 0 && (
+              <tr>
+                <td colSpan={6} className="lbx-empty">
+                  No filings for {periodLabel(period)} {year} yet.
+                </td>
+              </tr>
+            )}
+            {loading && (
+              <tr>
+                <td colSpan={6} className="lbx-empty">
+                  Loading top spenders…
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+      <p className="lbx-note" style={{ marginTop: 8 }}>
+        Real reported dollars only — registrations / no-activity reports excluded. {SOURCE_LABEL}
+      </p>
     </div>
   );
 }
