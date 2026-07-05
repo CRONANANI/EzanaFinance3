@@ -1,0 +1,132 @@
+import { NextResponse } from 'next/server';
+import { getAdminClient } from '@/lib/supabase';
+import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
+import { hasLdaKey, createLdaBudget, listFilings } from '@/lib/lobbying/client';
+import { normalizeFiling } from '@/lib/lobbying/normalize';
+
+/**
+ * GET /api/lobbying/filings — lobbying disclosure filings with REAL server-side
+ * filtering (year, issue, entity, registrant, client, type, min amount, sort,
+ * page). Supabase-first (the ingest cron writes lobbying_filings); live LDA
+ * fallback on cache miss; honest empty. NO mock data.
+ *
+ * → { source, year, results:[{uuid,year,period,posted,amount,registrant,client,
+ *     issues[],entities[],lobbyistCount}], count, next, page }
+ */
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+const SOURCE = 'Senate LDA (lda.gov)';
+const supaConfigured = () =>
+  !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+
+export async function GET(request) {
+  const rl = await checkRateLimit(`lobbying:filings:${getClientIp(request)}`, { limit: 60 });
+  if (!rl.success) return rateLimitResponse(rl);
+
+  const { searchParams } = new URL(request.url);
+  const year = Number(searchParams.get('year')) || 2026;
+  const issue = (searchParams.get('issue') || '').trim();
+  const entity = (searchParams.get('entity') || '').trim();
+  const registrant = (searchParams.get('registrant') || '').trim();
+  const client = (searchParams.get('client') || '').trim();
+  const type = (searchParams.get('type') || '').trim();
+  const minAmount = Number(searchParams.get('minAmount')) || 0;
+  const sort = searchParams.get('sort') === 'amount' ? 'amount' : 'dt_posted';
+  const page = Math.max(1, Number(searchParams.get('page')) || 1);
+  const pageSize = Math.min(Number(searchParams.get('pageSize')) || 25, 100);
+
+  const empty = { ok: true, source: SOURCE, year, results: [], count: 0, next: null, page };
+
+  // Supabase-first
+  if (supaConfigured()) {
+    try {
+      const admin = getAdminClient();
+      let q = admin
+        .from('lobbying_filings')
+        .select('*', { count: 'exact' })
+        .eq('filing_year', year);
+      if (registrant) q = q.ilike('registrant_name', `%${registrant}%`);
+      if (client) q = q.ilike('client_name', `%${client}%`);
+      if (type) q = q.ilike('filing_type', `%${type}%`);
+      if (minAmount > 0) q = q.gte('amount', minAmount);
+      if (entity) q = q.contains('entities', [entity]);
+      if (issue) q = q.contains('issues', [{ display: issue }]);
+      q = q.order(sort, { ascending: false, nullsFirst: false });
+      const from = (page - 1) * pageSize;
+      q = q.range(from, from + pageSize - 1);
+
+      const { data, count, error } = await q;
+      if (!error && Array.isArray(data)) {
+        if (!data.length && page === 1) {
+          // fall through to live only when the cache is truly empty
+          if (count === 0) return await liveOrEmpty();
+        }
+        const results = data.map((r) => ({
+          uuid: r.uuid,
+          year: r.filing_year,
+          period: r.filing_period,
+          posted: r.dt_posted,
+          amount: r.amount != null ? Number(r.amount) : null,
+          type: r.filing_type,
+          registrant: r.registrant_name,
+          client: r.client_name,
+          clientDescription: r.client_description,
+          issues: r.issues || [],
+          entities: r.entities || [],
+          lobbyists: r.lobbyists || [],
+          lobbyistCount: r.lobbyist_count || 0,
+          url: r.document_url,
+        }));
+        const total = count ?? results.length;
+        return NextResponse.json({
+          ok: true,
+          source: SOURCE,
+          year,
+          results,
+          count: total,
+          next: from + pageSize < total ? page + 1 : null,
+          page,
+        });
+      }
+    } catch {
+      /* fall through to live */
+    }
+  }
+
+  return await liveOrEmpty();
+
+  async function liveOrEmpty() {
+    if (!hasLdaKey()) return NextResponse.json(empty);
+    try {
+      const res = await listFilings(
+        {
+          filingYear: year,
+          issueCode: issue || undefined,
+          governmentEntity: entity || undefined,
+          registrantName: registrant || undefined,
+          clientName: client || undefined,
+          filingType: type || undefined,
+          ordering: sort === 'amount' ? '-income' : '-dt_posted',
+          page,
+          pageSize,
+        },
+        { budget: createLdaBudget(4) },
+      );
+      if (!res.ok || !Array.isArray(res.data?.results)) return NextResponse.json(empty);
+      let results = res.data.results.map(normalizeFiling);
+      if (minAmount > 0) results = results.filter((r) => (r.amount || 0) >= minAmount);
+      return NextResponse.json({
+        ok: true,
+        source: SOURCE,
+        year,
+        results,
+        count: res.data.count ?? results.length,
+        next: res.data.next ? page + 1 : null,
+        page,
+      });
+    } catch {
+      return NextResponse.json(empty);
+    }
+  }
+}
