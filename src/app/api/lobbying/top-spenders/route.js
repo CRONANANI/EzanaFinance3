@@ -20,7 +20,7 @@ export async function GET(request) {
   if (!rl.success) return rateLimitResponse(rl);
 
   const { searchParams } = new URL(request.url);
-  const year = Number(searchParams.get('year')) || 2026;
+  const year = Number(searchParams.get('year')) || 2025;
   const by = searchParams.get('by') === 'registrant' ? 'registrant' : 'client';
   const nameCol = by === 'registrant' ? 'registrant_name' : 'client_name';
 

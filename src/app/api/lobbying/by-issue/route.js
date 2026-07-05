@@ -24,7 +24,7 @@ export async function GET(request) {
   if (!rl.success) return rateLimitResponse(rl);
 
   const { searchParams } = new URL(request.url);
-  const year = Number(searchParams.get('year')) || 2026;
+  const year = Number(searchParams.get('year')) || 2025;
 
   const empty = { ok: true, source: SOURCE, year, issues: [] };
   if (!supaConfigured()) return NextResponse.json(empty);

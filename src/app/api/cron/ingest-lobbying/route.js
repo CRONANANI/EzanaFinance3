@@ -21,12 +21,16 @@ import { normalizeFiling, normalizeConstants } from '@/lib/lobbying/normalize';
  * No mock rows are ever written.
  *
  *   curl https://ezana.world/api/cron/ingest-lobbying -H "Authorization: Bearer $CRON_SECRET"
- * Optional: ?year=2026&pages=4
+ * Optional: ?years=2025,2024,2026&pages=8  (defaults to the meaningful set below)
+ *
+ * Lobbying is filed quarterly in arrears, so the current year (2026) is nearly
+ * empty early on; the default ingests 2025 + 2024 (populated) and 2026 as it
+ * fills, so the cache holds real data immediately.
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const DEFAULT_YEAR = 2026;
+const DEFAULT_YEARS = [2025, 2024, 2026];
 
 function isAuthorized(request) {
   const secret = process.env.CRON_SECRET;
@@ -76,15 +80,45 @@ export async function GET(request) {
   }
 
   const { searchParams } = new URL(request.url);
-  const year = Number(searchParams.get('year')) || DEFAULT_YEAR;
-  const pages = Math.min(Number(searchParams.get('pages')) || 4, 20);
+  const yearsParam = (searchParams.get('years') || '')
+    .split(',')
+    .map((y) => Number(y.trim()))
+    .filter((y) => Number.isFinite(y) && y > 2000);
+  const single = Number(searchParams.get('year'));
+  const years = yearsParam.length
+    ? yearsParam
+    : Number.isFinite(single) && single > 2000
+      ? [single]
+      : DEFAULT_YEARS;
+  const pages = Math.min(Number(searchParams.get('pages')) || 8, 30);
 
   const admin = getAdminClient();
-  const budget = createLdaBudget(90);
+  const budget = createLdaBudget(110);
 
-  let filingsUpserted = 0;
+  const perYear = {};
   const errors = [];
 
+  for (const year of years) {
+    if (budget.remaining < 3) break;
+    perYear[year] = await ingestYear(admin, budget, year, pages, errors);
+  }
+
+  const constantsUpserted = await refreshConstants(admin, budget);
+
+  return NextResponse.json({
+    ok: true,
+    years,
+    filingsPerYear: perYear,
+    filingsUpserted: Object.values(perYear).reduce((s, n) => s + n, 0),
+    constantsUpserted,
+    requestsUsed: budget.used,
+    errors: errors.slice(0, 12),
+  });
+}
+
+/** Ingest up to `pages` of the most recently posted filings for one year. */
+async function ingestYear(admin, budget, year, pages, errors) {
+  let upserted = 0;
   for (let page = 1; page <= pages; page++) {
     if (budget.remaining < 2) break;
     try {
@@ -93,7 +127,7 @@ export async function GET(request) {
         { budget },
       );
       if (!res.ok) {
-        errors.push(`page ${page}: ${res.error}`);
+        errors.push(`${year} page ${page}: ${res.error}`);
         break;
       }
       const results = Array.isArray(res.data?.results) ? res.data.results : [];
@@ -108,6 +142,8 @@ export async function GET(request) {
           dt_posted: n.posted,
           amount: n.amount,
           filing_type: n.type,
+          filing_type_code: n.typeCode,
+          is_registration: n.isRegistration,
           registrant_name: n.registrant,
           registrant_id: n.registrantId,
           client_name: n.client,
@@ -126,24 +162,14 @@ export async function GET(request) {
         const { error } = await admin
           .from('lobbying_filings')
           .upsert(valid, { onConflict: 'uuid' });
-        if (error) errors.push(`page ${page}: ${error.message}`);
-        else filingsUpserted += valid.length;
+        if (error) errors.push(`${year} page ${page}: ${error.message}`);
+        else upserted += valid.length;
       }
-      if (!res.data?.next) break; // no more pages
+      if (!res.data?.next) break; // no more pages for this year
     } catch (e) {
-      errors.push(`page ${page}: ${e?.message || 'failed'}`);
+      errors.push(`${year} page ${page}: ${e?.message || 'failed'}`);
       break;
     }
   }
-
-  const constantsUpserted = await refreshConstants(admin, budget);
-
-  return NextResponse.json({
-    ok: true,
-    year,
-    filingsUpserted,
-    constantsUpserted,
-    requestsUsed: budget.used,
-    errors: errors.slice(0, 10),
-  });
+  return upserted;
 }
