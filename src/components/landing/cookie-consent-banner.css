@@ -178,30 +178,41 @@ body:not(.light-mode) .cookie-banner-cat-row strong {
 }
 
 /* ── Narrow viewports ────────────────────────────────────── */
+/* Phones: a slim, compact bottom sheet pinned to the bottom edge (with safe-area
+   inset) so it never floats mid-screen over the hero copy/CTAs. */
 @media (max-width: 640px) {
   .cookie-banner {
-    left: 12px;
-    right: 12px;
-    bottom: 12px;
-    padding: 14px 16px;
-    border-radius: 12px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 14px 14px 0 0;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+    padding: 10px 14px;
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+  .cookie-banner-text {
+    margin-bottom: 8px;
   }
   .cookie-banner-title {
-    font-size: 14.5px;
+    font-size: 13.5px;
   }
   .cookie-banner-body {
-    font-size: 12.5px;
-  }
-  .cookie-banner-btn {
-    padding: 8px 14px;
-    font-size: 12.5px;
+    font-size: 12px;
+    line-height: 1.4;
   }
   .cookie-banner-actions {
     flex-direction: column;
+    gap: 6px;
     width: 100%;
   }
   .cookie-banner-actions .cookie-banner-btn {
     width: 100%;
+    /* compact but ≥44px tap target */
+    padding: 10px 14px;
+    min-height: 44px;
+    font-size: 13px;
   }
 }
 

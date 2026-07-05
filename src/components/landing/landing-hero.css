@@ -595,7 +595,9 @@
   .lp-map {
     right: -420px;
     width: 1200px;
-    opacity: 0.5;
+    /* Raised from 0.5 so the (now darker) continent dots read clearly on phones;
+       the left-side .lp-map-fade still protects headline legibility. */
+    opacity: 0.75;
   }
 }
 

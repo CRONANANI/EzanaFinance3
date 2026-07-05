@@ -155,7 +155,19 @@ const ROUTES_HTML = `
 
 export function LandingHero() {
   const [go, setGo] = useState(false);
+  // On phones the dotted continents read too faint, so darken/strengthen the dot
+  // colour at mobile widths only (desktop stays at the lighter tuned value).
+  const [mapDense, setMapDense] = useState(false);
   const valueRef = useRef(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return undefined;
+    const mq = window.matchMedia('(max-width: 480px)');
+    const apply = () => setMapDense(mq.matches);
+    apply();
+    mq.addEventListener('change', apply);
+    return () => mq.removeEventListener('change', apply);
+  }, []);
 
   useEffect(() => {
     const reduce =
@@ -202,7 +214,7 @@ export function LandingHero() {
         <div className="lp-map-worldmap">
           <WorldMap
             lineColor="#10b981"
-            dotColor="rgba(5, 150, 105, 0.7)"
+            dotColor={mapDense ? 'rgba(4, 120, 87, 0.92)' : 'rgba(5, 150, 105, 0.7)'}
             hideControls
             hideFinancialDots
           />

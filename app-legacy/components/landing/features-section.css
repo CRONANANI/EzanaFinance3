@@ -498,6 +498,14 @@ body.light-mode .landing-page .flip-back {
   height: 26px;
   flex-shrink: 0;
 }
+/* Phones: drop the little area chart — it's clutter on a small card. The card
+   back is flex-column with metrics pinned via margin-top:auto, so it reflows
+   cleanly with no empty gap. Desktop keeps it. */
+@media (max-width: 480px) {
+  .fcb-sparkline {
+    display: none;
+  }
+}
 
 .fcb-metric-grid {
   display: grid;
@@ -770,9 +778,12 @@ body.light-mode .landing-page .flip-back {
 
 .fcb-alert-row {
   grid-template-columns: 18px 1fr auto;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-secondary);
+  /* White rows (not grey); the border + subtle shadow keep them distinct on the
+     white card back. */
+  background: #fff;
+  border: 1px solid var(--border-primary);
   border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
   padding: 7px 10px !important;
   margin-bottom: 0;
 }
