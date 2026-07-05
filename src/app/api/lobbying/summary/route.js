@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
+import { canonicalEntity } from '@/lib/lobbying/normalize';
 
 /**
  * GET /api/lobbying/summary?year=  — the stat-strip numbers for a year: total
@@ -47,8 +48,9 @@ export async function GET(request) {
     let totalSpend = 0;
     let syncedAt = null;
     for (const r of data) {
-      if (r.registrant_name) registrants.add(r.registrant_name);
-      if (r.client_name) clients.add(r.client_name);
+      // count DISTINCT canonical entities so spelling variants don't inflate
+      if (r.registrant_name) registrants.add(canonicalEntity(r.registrant_name).key);
+      if (r.client_name) clients.add(canonicalEntity(r.client_name).key);
       totalSpend += Number(r.amount) || 0;
       if (r.synced_at && (!syncedAt || r.synced_at > syncedAt)) syncedAt = r.synced_at;
     }

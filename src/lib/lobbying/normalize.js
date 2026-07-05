@@ -136,6 +136,96 @@ export function normalizeFilingDetail(f = {}) {
   };
 }
 
+/* ── Entity-name canonicalization (for AGGREGATES only) ──────────────────────
+   The same corporation files under many spelling variants ("General Motors",
+   "General Motors Company", "General Motors, LLC", "GENERAL MOTORS CO."). Raw
+   grouping fragments its spend across rows so no single variant reaches the
+   top 25. canonicalEntity() collapses those variants to one grouping key so
+   top-spenders / distinct counts consolidate correctly (matching Quiver-style
+   boards). ONLY aggregates use this — individual filings keep their exact filed
+   name in the recent-disclosures table. */
+
+const CORP_SUFFIX_RE =
+  /\b(INCORPORATED|INC|CORPORATION|CORP|COMPANY|CO|LLC|LLP|LP|LTD|PLC|HOLDINGS|GROUP|THE|USA|US|NA|N A)\b/g;
+
+/**
+ * Curated alias map for cross-name merges that suffix-stripping alone can't
+ * catch (rebrands, subsidiaries, punctuation variants of the SAME filer). Keyed
+ * by the suffix-stripped UPPERCASE form → { key, display }. Small and
+ * conservative on purpose — a false merge is worse than a missed one, so this
+ * only lists cases where the entities are unambiguously the same filer.
+ * Extend as new high-volume filers surface. (~20 top corporate lobbyists.)
+ */
+const ENTITY_ALIASES = {
+  'META PLATFORMS': { key: 'META', display: 'Meta' },
+  META: { key: 'META', display: 'Meta' },
+  FACEBOOK: { key: 'META', display: 'Meta' },
+  ALPHABET: { key: 'GOOGLE', display: 'Google (Alphabet)' },
+  GOOGLE: { key: 'GOOGLE', display: 'Google (Alphabet)' },
+  'AMAZON COM': { key: 'AMAZON', display: 'Amazon' },
+  'AMAZON WEB SERVICES': { key: 'AMAZON', display: 'Amazon' },
+  AMAZON: { key: 'AMAZON', display: 'Amazon' },
+  'EXXON MOBIL': { key: 'EXXONMOBIL', display: 'ExxonMobil' },
+  EXXONMOBIL: { key: 'EXXONMOBIL', display: 'ExxonMobil' },
+  'JPMORGAN CHASE': { key: 'JPMORGAN CHASE', display: 'JPMorgan Chase' },
+  'JP MORGAN CHASE': { key: 'JPMORGAN CHASE', display: 'JPMorgan Chase' },
+  'GENERAL MOTORS': { key: 'GENERAL MOTORS', display: 'General Motors' },
+  'FORD MOTOR': { key: 'FORD', display: 'Ford Motor' },
+  BOEING: { key: 'BOEING', display: 'Boeing' },
+  'LOCKHEED MARTIN': { key: 'LOCKHEED MARTIN', display: 'Lockheed Martin' },
+  'AT&T': { key: 'AT&T', display: 'AT&T' },
+  'CHARTER COMMUNICATIONS': { key: 'CHARTER', display: 'Charter Communications' },
+  'COMCAST NBCUNIVERSAL': { key: 'COMCAST', display: 'Comcast' },
+  COMCAST: { key: 'COMCAST', display: 'Comcast' },
+  'PHARMACEUTICAL RESEARCH & MANUFACTURERS OF AMERICA': {
+    key: 'PHRMA',
+    display: 'PhRMA',
+  },
+};
+
+const SMALL_WORDS = new Set(['of', 'and', 'the', 'for', 'to', 'in', 'on', 'a', 'an']);
+
+/** Readable Title Case for a display label (avoids ALL-CAPS in the UI). */
+export function titleCase(str) {
+  const s = String(str || '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!s) return '';
+  return s
+    .split(' ')
+    .map((word, i) => {
+      const lower = word.toLowerCase();
+      // keep short all-caps tokens (acronyms/tickers) uppercase: GM, IBM, AT&T
+      if (/^[A-Z0-9&.]{2,4}$/.test(word) && word === word.toUpperCase()) return word;
+      if (i > 0 && SMALL_WORDS.has(lower)) return lower;
+      return lower.charAt(0).toUpperCase() + lower.slice(1);
+    })
+    .join(' ');
+}
+
+/**
+ * Canonicalize a lobbying entity name for AGGREGATION.
+ * @param {string} raw client_name or registrant_name from a filing
+ * @returns {{key:string, display:string}} key = grouping key; display = clean label
+ */
+export function canonicalEntity(raw) {
+  if (!raw) return { key: '', display: '' };
+  const s = String(raw).replace(/\s+/g, ' ').trim();
+  const cleaned = s
+    .toUpperCase()
+    .replace(/[.,]/g, ' ')
+    .replace(CORP_SUFFIX_RE, ' ')
+    // drop a dangling conjunction left by suffix stripping ("… & Co" → "… &" → "…"),
+    // but keep glued ampersands inside a token (AT&T) untouched
+    .replace(/\s+(AND|&)\s*$/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const alias = ENTITY_ALIASES[cleaned];
+  if (alias) return { key: alias.key, display: alias.display };
+  // no alias → group on the suffix-stripped key, show a cleaned title-cased label
+  return { key: cleaned || s.toUpperCase(), display: titleCase(s) };
+}
+
 /** LDA constant list → [{ value, label }] for a filter dropdown. */
 export function normalizeConstants(results = [], { valueKey = 'value', labelKey = 'name' } = {}) {
   return (Array.isArray(results) ? results : [])

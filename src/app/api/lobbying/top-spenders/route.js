@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 import { normalizeQuarter, PERIOD_KEYS } from '@/lib/lobbying/period';
+import { canonicalEntity } from '@/lib/lobbying/normalize';
 
 /**
  * GET /api/lobbying/top-spenders?year=&by=client|registrant&period=  — aggregate
@@ -65,18 +66,29 @@ export async function GET(request) {
       !/registration/i.test(String(r.filing_type || '')) &&
       Number(r.amount) > 0;
 
+    // Group on the CANONICAL entity key so a corporation's spelling variants
+    // ("General Motors" / "General Motors Company" / "GENERAL MOTORS CO.") sum
+    // into one row instead of fragmenting across the board.
     const acc = new Map();
     for (const r of data) {
-      const name = r[nameCol];
-      if (!name || !inPeriod(r)) continue;
-      if (!acc.has(name)) acc.set(name, { total: 0, filings: 0, lobbyists: 0 });
-      const e = acc.get(name);
+      const raw = r[nameCol];
+      if (!raw || !inPeriod(r)) continue;
+      const { key, display } = canonicalEntity(raw);
+      if (!key) continue;
+      if (!acc.has(key))
+        acc.set(key, { display, labels: new Map(), total: 0, filings: 0, lobbyists: 0 });
+      const e = acc.get(key);
       e.filings += 1;
       e.lobbyists += Number(r.lobbyist_count) || 0;
       if (isDollar(r)) e.total += Number(r.amount);
+      // track the most-common cleaned display label for this key
+      e.labels.set(display, (e.labels.get(display) || 0) + 1);
     }
-    const spenders = [...acc.entries()]
-      .map(([name, e]) => ({ name, total: e.total, filings: e.filings, lobbyists: e.lobbyists }))
+    const spenders = [...acc.values()]
+      .map((e) => {
+        const label = [...e.labels.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || e.display;
+        return { name: label, total: e.total, filings: e.filings, lobbyists: e.lobbyists };
+      })
       .filter((s) => s.total > 0)
       .sort((a, b) => b.total - a.total)
       .slice(0, 25);
