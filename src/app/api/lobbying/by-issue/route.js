@@ -1,16 +1,15 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
+import { normalizeQuarter, PERIOD_KEYS } from '@/lib/lobbying/period';
+import { issueBucket } from '@/lib/lobbying/entities';
 
 /**
- * GET /api/lobbying/by-issue?year=  — total reported $ and filing counts per
- * lobbying issue area, from the lobbying_filings cache (Supabase-first,
- * cache-only aggregate). Powers the "Spending by issue" hero chart. Honest
- * empty. NO mock data.
- *
- * Note: a filing's amount covers ALL issues it lists; attributing the full
- * amount to each of its issues would double-count. We report per-issue filing
- * counts and the summed amount of filings touching each issue, labeled as such.
+ * GET /api/lobbying/by-issue?year=&period=  — SHARE OF FILINGS per lobbying issue
+ * area for the period (the Influence Ledger's issue-mix donut). Honesty
+ * constraint: the LDA does NOT itemize dollars per issue, so this is an ACTIVITY
+ * view — count of filings citing each issue — never dollars per issue. Cache-only
+ * aggregate; honest empty. NO mock data.
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -25,41 +24,58 @@ export async function GET(request) {
 
   const { searchParams } = new URL(request.url);
   const year = Number(searchParams.get('year')) || 2025;
+  const periodRaw = (searchParams.get('period') || 'year').toLowerCase();
+  const period = PERIOD_KEYS.includes(periodRaw) ? periodRaw : 'year';
+  const days = Math.min(Math.max(Number(searchParams.get('days')) || 90, 1), 365);
 
-  const empty = { ok: true, source: SOURCE, year, issues: [] };
+  const empty = { ok: true, source: SOURCE, year, period, filingsAnalyzed: 0, issues: [] };
   if (!supaConfigured()) return NextResponse.json(empty);
 
   try {
     const admin = getAdminClient();
     const { data, error } = await admin
       .from('lobbying_filings')
-      .select('amount,issues')
+      .select('issues,filing_period,dt_posted')
       .eq('filing_year', year)
-      .limit(6000);
+      .limit(8000);
     if (error || !Array.isArray(data) || !data.length) return NextResponse.json(empty);
 
-    const acc = new Map(); // issueDisplay → { amount, filings }
+    const rangeCutoff = period === 'range' ? Date.now() - days * 86400000 : null;
+    const quarter = ['q1', 'q2', 'q3', 'q4'].includes(period) ? period : null;
+    const inPeriod = (r) => {
+      if (quarter) return normalizeQuarter(r.filing_period) === quarter;
+      if (rangeCutoff != null) {
+        const t = Date.parse(r.dt_posted);
+        return !Number.isNaN(t) && t >= rangeCutoff;
+      }
+      return true;
+    };
+
+    const acc = new Map(); // issueDisplay → { filings }
+    let filingsAnalyzed = 0;
     for (const r of data) {
-      const amt = Number(r.amount) || 0;
-      const list = Array.isArray(r.issues) ? r.issues : [];
+      if (!inPeriod(r)) continue;
+      filingsAnalyzed += 1;
       const seen = new Set();
-      for (const it of list) {
+      for (const it of Array.isArray(r.issues) ? r.issues : []) {
         const label = it?.display || it?.code;
         if (!label || seen.has(label)) continue;
         seen.add(label);
-        if (!acc.has(label)) acc.set(label, { amount: 0, filings: 0 });
-        const e = acc.get(label);
-        e.amount += amt;
-        e.filings += 1;
+        acc.set(label, (acc.get(label) || 0) + 1);
       }
     }
     const issues = [...acc.entries()]
-      .map(([label, e]) => ({ issue: label, amount: e.amount, filings: e.filings }))
-      .sort((a, b) => b.amount - a.amount)
-      .slice(0, 20);
+      .map(([issue, filings]) => ({
+        issue,
+        filings,
+        bucket: issueBucket(issue),
+        share: filingsAnalyzed ? filings / filingsAnalyzed : 0,
+      }))
+      .sort((a, b) => b.filings - a.filings)
+      .slice(0, 12);
 
     if (!issues.length) return NextResponse.json(empty);
-    return NextResponse.json({ ok: true, source: SOURCE, year, issues });
+    return NextResponse.json({ ok: true, source: SOURCE, year, period, filingsAnalyzed, issues });
   } catch {
     return NextResponse.json(empty);
   }

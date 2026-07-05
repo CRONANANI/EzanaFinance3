@@ -3,6 +3,8 @@ import { getAdminClient } from '@/lib/supabase';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 import { hasLdaKey, createLdaBudget, listFilings } from '@/lib/lobbying/client';
 import { normalizeFiling } from '@/lib/lobbying/normalize';
+import { ENTITY_GROUPS } from '@/lib/lobbying/entities';
+import { QUARTER_PERIOD_CODE } from '@/lib/lobbying/period';
 
 /**
  * GET /api/lobbying/filings — lobbying disclosure filings with REAL server-side
@@ -26,15 +28,18 @@ export async function GET(request) {
 
   const { searchParams } = new URL(request.url);
   const year = Number(searchParams.get('year')) || 2025;
-  const issue = (searchParams.get('issue') || '').trim();
-  const entity = (searchParams.get('entity') || '').trim();
+  const issue = (searchParams.get('issue') || '').trim().toLowerCase(); // issue bucket
+  const entityGroup = (searchParams.get('entityGroup') || '').trim().toLowerCase();
   const registrant = (searchParams.get('registrant') || '').trim();
   const client = (searchParams.get('client') || '').trim();
   const type = (searchParams.get('type') || '').trim();
-  const minAmount = Number(searchParams.get('minAmount')) || 0;
+  const minAmount = Number(searchParams.get('min')) || Number(searchParams.get('minAmount')) || 0;
+  const period = (searchParams.get('period') || '').trim().toLowerCase();
+  const days = Math.min(Math.max(Number(searchParams.get('days')) || 90, 1), 365);
   const sort = searchParams.get('sort') === 'amount' ? 'amount' : 'dt_posted';
   const page = Math.max(1, Number(searchParams.get('page')) || 1);
-  const pageSize = Math.min(Number(searchParams.get('pageSize')) || 25, 100);
+  const pageSize = Math.min(Number(searchParams.get('pageSize')) || 25, 500);
+  const groupBuckets = ENTITY_GROUPS[entityGroup] || null;
 
   const empty = { ok: true, source: SOURCE, year, results: [], count: 0, next: null, page };
 
@@ -50,8 +55,14 @@ export async function GET(request) {
       if (client) q = q.ilike('client_name', `%${client}%`);
       if (type) q = q.ilike('filing_type', `%${type}%`);
       if (minAmount > 0) q = q.gte('amount', minAmount);
-      if (entity) q = q.contains('entities', [entity]);
-      if (issue) q = q.contains('issues', [{ display: issue }]);
+      if (groupBuckets) q = q.overlaps('entity_buckets', groupBuckets);
+      if (issue) q = q.overlaps('issue_buckets', [issue]);
+      // period → DB predicate (quarter or last-N-days), so pagination stays exact
+      if (['q1', 'q2', 'q3', 'q4'].includes(period)) {
+        q = q.eq('quarter', period);
+      } else if (period === 'range') {
+        q = q.gte('dt_posted', new Date(Date.now() - days * 86400000).toISOString());
+      }
       q = q.order(sort, { ascending: false, nullsFirst: false });
       const from = (page - 1) * pageSize;
       q = q.range(from, from + pageSize - 1);
@@ -109,11 +120,14 @@ export async function GET(request) {
   async function liveOrEmpty() {
     if (!hasLdaKey()) return NextResponse.json(empty);
     try {
+      // Live LDA fallback: bucket-based issue/entity filters don't map to LDA's
+      // raw codes, so they're applied client-side after normalization below.
       const res = await listFilings(
         {
           filingYear: year,
-          issueCode: issue || undefined,
-          governmentEntity: entity || undefined,
+          filingPeriod: ['q1', 'q2', 'q3', 'q4'].includes(period)
+            ? QUARTER_PERIOD_CODE[period]
+            : undefined,
           registrantName: registrant || undefined,
           clientName: client || undefined,
           filingType: type || undefined,

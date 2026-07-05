@@ -11,6 +11,7 @@ import {
 import { normalizeFiling, normalizeConstants } from '@/lib/lobbying/normalize';
 import { normalizeQuarter, QUARTERS, QUARTER_PERIOD_CODE } from '@/lib/lobbying/period';
 import { validateBatch, topCanonicalMerges } from '@/lib/lobbying/quality';
+import { bucketsForFiling, issueBucket } from '@/lib/lobbying/entities';
 
 /**
  * Resumable, per-quarter ingest of Senate LDA filings into Supabase.
@@ -59,6 +60,8 @@ function mapFilingRow(f) {
     client_description: n.clientDescription,
     issues: n.issues,
     entities: n.entities,
+    entity_buckets: bucketsForFiling(n.entities),
+    issue_buckets: [...new Set((n.issues || []).map((it) => issueBucket(it.display || it.code)))],
     lobbyists: n.lobbyists,
     lobbyist_count: n.lobbyistCount,
     document_url: n.url,
