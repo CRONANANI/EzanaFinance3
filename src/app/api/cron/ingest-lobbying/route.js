@@ -90,7 +90,10 @@ export async function GET(request) {
     : Number.isFinite(single) && single > 2000
       ? [single]
       : DEFAULT_YEARS;
-  const pages = Math.min(Number(searchParams.get('pages')) || 8, 30);
+  // Enough pages per year that all four quarters are represented (filings are
+  // ordered by -dt_posted, so a full year needs a deeper pull for quarter-scoped
+  // top-spenders accuracy). 12 pages ≈ 300 filings/year; stays within budget.
+  const pages = Math.min(Number(searchParams.get('pages')) || 12, 40);
 
   const admin = getAdminClient();
   const budget = createLdaBudget(110);
