@@ -10,6 +10,7 @@ import {
 } from '@/lib/lobbying/client';
 import { normalizeFiling, normalizeConstants } from '@/lib/lobbying/normalize';
 import { normalizeQuarter, QUARTERS, QUARTER_PERIOD_CODE } from '@/lib/lobbying/period';
+import { validateBatch, topCanonicalMerges } from '@/lib/lobbying/quality';
 
 /**
  * Resumable, per-quarter ingest of Senate LDA filings into Supabase.
@@ -65,6 +66,21 @@ function mapFilingRow(f) {
   };
 }
 
+/**
+ * Data-quality gate before load: validate/repair the batch, then upsert only the
+ * good rows. A structurally-broken batch is rejected (skip the load) so a
+ * truncated/garbage pull never overwrites the previous good cache.
+ * @returns {{ ok:boolean, loaded:number, reason:string|null, flags:object }}
+ */
+async function loadFilings(admin, mappedRows) {
+  const v = validateBatch(mappedRows);
+  if (!v.ok) return { ok: false, loaded: 0, reason: v.reason, flags: v.flags };
+  if (!v.load.length) return { ok: true, loaded: 0, reason: null, flags: v.flags };
+  const { error } = await admin.from('lobbying_filings').upsert(v.load, { onConflict: 'uuid' });
+  if (error) return { ok: false, loaded: 0, reason: error.message, flags: v.flags };
+  return { ok: true, loaded: v.load.length, reason: null, flags: v.flags };
+}
+
 async function refreshConstants(admin, budget) {
   const jobs = [
     ['issue', getIssueConstants({ budget })],
@@ -107,12 +123,20 @@ async function loadStates(admin, years) {
  * Advance ONE (year, quarter) during backfill: fetch up to `maxPages` pages from
  * the cursor's last_page, upsert them, and return the updated cursor state.
  */
-async function backfillQuarter(admin, budget, { year, quarter, state }, maxPages, errors) {
+async function backfillQuarter(
+  admin,
+  budget,
+  { year, quarter, state },
+  maxPages,
+  errors,
+  mergeSink,
+) {
   const periodCode = QUARTER_PERIOD_CODE[quarter];
   let lastPage = state?.last_page || 0;
   let totalCount = state?.total_count ?? null;
   let delta = 0;
   let done = false;
+  let valReason = null;
 
   for (let i = 0; i < maxPages; i++) {
     if (budget.remaining < 2) break;
@@ -137,15 +161,16 @@ async function backfillQuarter(admin, budget, { year, quarter, state }, maxPages
       done = true;
       break;
     }
-    const rows = results.map(mapFilingRow).filter((r) => r.uuid);
-    if (rows.length) {
-      const { error } = await admin.from('lobbying_filings').upsert(rows, { onConflict: 'uuid' });
-      if (error) {
-        errors.push(`${year} ${quarter} p${page}: ${error.message}`);
-        break;
-      }
-      delta += rows.length;
+    const mapped = results.map(mapFilingRow);
+    if (mergeSink && mergeSink.length < 4000) mergeSink.push(...mapped);
+    const loaded = await loadFilings(admin, mapped);
+    if (!loaded.ok) {
+      // data-quality gate rejected this batch → skip load, keep good cache, stop
+      errors.push(`${year} ${quarter} p${page}: rejected (${loaded.reason})`);
+      valReason = loaded.reason;
+      break;
     }
+    delta += loaded.loaded;
     lastPage = page;
     if (!res.data?.next) {
       done = true;
@@ -153,7 +178,8 @@ async function backfillQuarter(admin, budget, { year, quarter, state }, maxPages
     }
   }
 
-  const complete = done || (totalCount != null && lastPage * PAGE_SIZE >= totalCount);
+  const complete =
+    !valReason && (done || (totalCount != null && lastPage * PAGE_SIZE >= totalCount));
   return {
     year,
     quarter,
@@ -164,8 +190,8 @@ async function backfillQuarter(admin, budget, { year, quarter, state }, maxPages
     phase: complete ? 'incremental' : 'backfill',
     rows_upserted: (state?.rows_upserted || 0) + delta,
     last_run_at: new Date().toISOString(),
-    last_status: 'ok',
-    last_reason: null,
+    last_status: valReason ? 'failed' : 'ok',
+    last_reason: valReason,
     last_delta: delta,
     updated_at: new Date().toISOString(),
     _delta: delta,
@@ -210,13 +236,12 @@ async function incrementalQuarter(admin, budget, { year, quarter, state }, maxPa
             return !Number.isNaN(t) && t > since;
           });
     if (fresh.length) {
-      const rows = fresh.map(mapFilingRow).filter((r) => r.uuid);
-      const { error } = await admin.from('lobbying_filings').upsert(rows, { onConflict: 'uuid' });
-      if (error) {
-        errors.push(`${year} ${quarter} inc p${page}: ${error.message}`);
+      const loaded = await loadFilings(admin, fresh.map(mapFilingRow));
+      if (!loaded.ok) {
+        errors.push(`${year} ${quarter} inc p${page}: rejected (${loaded.reason})`);
         break;
       }
-      delta += rows.length;
+      delta += loaded.loaded;
       for (const f of fresh) {
         const t = Date.parse(f.dt_posted);
         if (!Number.isNaN(t) && (newest == null || t > newest)) newest = t;
@@ -276,15 +301,12 @@ async function rescanQuarter(admin, budget, { year, quarter, state }, pages, err
     }
     const results = Array.isArray(res.data?.results) ? res.data.results : [];
     if (!results.length) break;
-    const rows = results.map(mapFilingRow).filter((r) => r.uuid);
-    if (rows.length) {
-      const { error } = await admin.from('lobbying_filings').upsert(rows, { onConflict: 'uuid' });
-      if (error) {
-        errors.push(`${year} ${quarter} rescan p${page}: ${error.message}`);
-        break;
-      }
-      delta += rows.length;
+    const loaded = await loadFilings(admin, results.map(mapFilingRow));
+    if (!loaded.ok) {
+      errors.push(`${year} ${quarter} rescan p${page}: rejected (${loaded.reason})`);
+      break;
     }
+    delta += loaded.loaded;
     if (!res.data?.next) break;
   }
   return {
@@ -339,6 +361,7 @@ export async function GET(request) {
   const states = await loadStates(admin, targetYears);
   const errors = [];
   const results = [];
+  const mergeSink = []; // sample of fetched rows for over-merge visibility
 
   const persist = async (next) => {
     const { _delta, ...row } = next;
@@ -381,7 +404,7 @@ export async function GET(request) {
 
     for (const item of incomplete) {
       if (budget.remaining < 3) break;
-      await persist(await backfillQuarter(admin, budget, item, pagesPerQuarter, errors));
+      await persist(await backfillQuarter(admin, budget, item, pagesPerQuarter, errors, mergeSink));
     }
     for (const item of complete) {
       if (budget.remaining < 3) break;
@@ -391,6 +414,13 @@ export async function GET(request) {
 
   const constantsUpserted = await refreshConstants(admin, budget);
 
+  // Over-merge visibility: log the biggest canonical merges so a bad merge
+  // (two distinct companies collapsed) is spot-checkable in run logs.
+  const topMerges = topCanonicalMerges(mergeSink, 'client');
+  if (topMerges.length) {
+    console.warn('[ingest-lobbying] top canonical client merges:', JSON.stringify(topMerges));
+  }
+
   return NextResponse.json({
     ok: true,
     mode,
@@ -398,6 +428,7 @@ export async function GET(request) {
     filingsUpserted: results.reduce((s, r) => s + (r.delta || 0), 0),
     constantsUpserted,
     requestsUsed: budget.used,
+    topMerges,
     errors: errors.slice(0, 12),
   });
 }
