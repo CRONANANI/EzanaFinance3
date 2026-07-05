@@ -65,9 +65,9 @@ export const DATASET_TAXONOMY = [
       {
         label: 'Lobbying Activity',
         description: 'Lobbying Disclosure Act filings tracking influence efforts',
-        href: '/datasets/government',
+        href: '/datasets/government/lobbying',
         live: true,
-        source: 'Senate LDA API',
+        source: 'Senate LDA API (lda.gov)',
         sourceType: 'gov',
       },
       // folded in from the old nav buckets

@@ -13,6 +13,7 @@ import '../marketing-explore.css';
 const STANDALONE_ROUTES = new Set([
   '/datasets',
   '/datasets/government/contracts',
+  '/datasets/government/lobbying',
   '/datasets/political',
 ]);
 
