@@ -12,6 +12,7 @@ import '../marketing-explore.css';
 // navs). The global app nav still wraps everything at the root layout.
 const STANDALONE_ROUTES = new Set([
   '/datasets',
+  '/datasets/campaignfinancerecords',
   '/datasets/government/contracts',
   '/datasets/government/lobbying',
   '/datasets/political',

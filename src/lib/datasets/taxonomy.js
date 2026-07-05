@@ -57,7 +57,7 @@ export const DATASET_TAXONOMY = [
       {
         label: 'Campaign Finance Records',
         description: 'Federal Election Commission contribution and spending data',
-        href: '/datasets/political',
+        href: '/datasets/campaignfinancerecords',
         live: true,
         source: 'FEC API (api.open.fec.gov)',
         sourceType: 'gov',
