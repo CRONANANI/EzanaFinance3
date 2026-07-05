@@ -5,6 +5,7 @@ import { Building2, Search, Trophy } from 'lucide-react';
 import { DatasetDashboard } from './DatasetDashboard';
 import { Ticker, EntityName } from './DatasetTable';
 import { ContractDetailPopup } from './ContractDetailPopup';
+import { PolicyMomentumCard } from '@/components/congress/PolicyMomentumCard';
 
 /**
  * Client wrapper that builds the DatasetDashboard config for the federal
@@ -38,6 +39,9 @@ export function GovernmentContractsDashboard({
   note,
   liveNote = 'Live federal contract data via USAspending.gov (U.S. Treasury), updated daily.',
   sampleNote = 'Sample of recent awards — full live dataset available in the app.',
+  // Additive Congress.gov surface: sectors with legislative tailwinds behind
+  // the contractors on this page. On by default; opt out per-page if needed.
+  showLegislativeTailwinds = true,
 }) {
   // One shared detail popup serves BOTH the top-recipients list and the awards
   // table. `activeDetail` is { kind: 'recipient' | 'award', data } | null. Only
@@ -105,7 +109,14 @@ export function GovernmentContractsDashboard({
 
   return (
     <>
-      <DatasetDashboard config={config} />
+      <DatasetDashboard config={config}>
+        {showLegislativeTailwinds ? (
+          <PolicyMomentumCard
+            title="Legislative tailwinds"
+            intro="Sectors seeing rising legislative activity in Congress — a read on where policy momentum may favor the contractors and industries on this page. Informational only, not investment advice."
+          />
+        ) : null}
+      </DatasetDashboard>
       {activeDetail ? (
         <ContractDetailPopup
           detail={activeDetail}

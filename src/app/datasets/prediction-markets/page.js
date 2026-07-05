@@ -4,6 +4,7 @@ import { Search, Target } from 'lucide-react';
 import { DatasetDashboard } from '@/components/marketing/DatasetDashboard';
 import { EntityName } from '@/components/marketing/DatasetTable';
 import { PREDICTION_MARKETS_SAMPLE, TOP_MARKETS } from './prediction-markets-sample';
+import { LegislationMarketsSection } from '@/components/congress/LegislationMarketsSection';
 
 const config = {
   title: 'Prediction markets data',
@@ -47,5 +48,9 @@ const config = {
 };
 
 export default function PredictionMarketsDatasetPage() {
-  return <DatasetDashboard config={config} />;
+  return (
+    <DatasetDashboard config={config}>
+      <LegislationMarketsSection />
+    </DatasetDashboard>
+  );
 }

@@ -4,6 +4,7 @@ import { Search, Activity } from 'lucide-react';
 import { DatasetDashboard } from '@/components/marketing/DatasetDashboard';
 import { Ticker, SentimentBadge, ReturnValue } from '@/components/marketing/DatasetTable';
 import { MARKETS_SNAPSHOT_SAMPLE, TOP_MOVERS } from './markets-sample';
+import { PolicyMomentumCard } from '@/components/congress/PolicyMomentumCard';
 
 const config = {
   title: 'Markets & equities data',
@@ -54,5 +55,9 @@ const config = {
 };
 
 export default function MarketsDatasetPage() {
-  return <DatasetDashboard config={config} />;
+  return (
+    <DatasetDashboard config={config}>
+      <PolicyMomentumCard />
+    </DatasetDashboard>
+  );
 }

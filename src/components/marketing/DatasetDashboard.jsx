@@ -14,7 +14,7 @@ import { DatasetTable } from './DatasetTable';
  * Each page passes a `config` object; the data lives in co-located
  * `*-sample.js` modules so it is unmistakably static sample data.
  */
-export function DatasetDashboard({ config }) {
+export function DatasetDashboard({ config, children }) {
   const {
     eyebrow = 'Datasets',
     title,
@@ -154,6 +154,8 @@ export function DatasetDashboard({ config }) {
           </p>
         ) : null}
       </section>
+
+      {children ? <section className="mkt-ds-section">{children}</section> : null}
 
       {source && (
         <section className="mkt-ds-section">

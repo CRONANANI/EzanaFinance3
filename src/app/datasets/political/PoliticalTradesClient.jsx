@@ -30,6 +30,8 @@ import {
 import CategoryBar from '@/components/datasets/CategoryBar';
 import { resolveHeadshot } from '@/lib/politicians/headshots';
 import { POSITION_BASIS_NOTE, positionStatusMeta } from '@/lib/politicians/position-status';
+import { sectorsForTicker } from '@/lib/congress/policy-sector-map';
+import { MomentumChip, BillStageChip } from '@/components/congress/chips';
 import './pol-trades.css';
 
 /* ── party color keys (pinned on .ptx-page; SVG uses the tokens) ── */
@@ -952,6 +954,107 @@ function TickerSearch({ onSelectMember }) {
   );
 }
 
+/* ── Legislative context: connects a member's disclosed holdings to the sectors
+   seeing active legislation in Congress. Informational only — an oversight-
+   overlap read ("legislates/trades in the same sector"), never a claim of
+   wrongdoing and never investment advice. Honest empty; no mock data. ── */
+function MemberLegislativeContext({ member: m }) {
+  const [state, setState] = useState({ loading: true, sectors: [] });
+
+  // sectors this member actually trades in, from their disclosed tickers (real)
+  const memberSectors = useMemo(() => {
+    const set = new Set();
+    for (const t of m.trades || []) {
+      for (const k of sectorsForTicker(t.ticker)) set.add(k);
+    }
+    return set;
+  }, [m.trades]);
+
+  useEffect(() => {
+    let alive = true;
+    fetch('/api/congress/momentum?window=90')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!alive) return;
+        setState({ loading: false, sectors: Array.isArray(d?.sectors) ? d.sectors : [] });
+      })
+      .catch(() => alive && setState({ loading: false, sectors: [] }));
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const { loading, sectors } = state;
+  const max = sectors.length ? sectors[0].score : 0;
+  // overlap = sectors with active legislation AND that the member trades in
+  const overlap = sectors.filter((s) => memberSectors.has(s.sector)).slice(0, 4);
+
+  return (
+    <div className="ptx-modal-section">
+      <div className="ptx-modal-h">Legislative context</div>
+      {loading ? (
+        <div className="ptx-rail-note">Loading legislative activity…</div>
+      ) : !memberSectors.size ? (
+        <div className="ptx-rail-note">No disclosed tickers map to a tracked policy sector.</div>
+      ) : !overlap.length ? (
+        <div className="ptx-rail-note">
+          No active legislation in this member’s traded sectors right now.
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {overlap.map((s) => (
+            <div
+              key={s.sector}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 10,
+              }}
+            >
+              <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <span style={{ fontSize: 13, fontWeight: 600 }}>{s.label}</span>
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    fontSize: 11,
+                    color: 'var(--warning, #f59e0b)',
+                    fontWeight: 600,
+                  }}
+                >
+                  <span
+                    aria-hidden
+                    style={{
+                      padding: '1px 6px',
+                      borderRadius: 999,
+                      border: '1px solid currentColor',
+                    }}
+                  >
+                    Oversight overlap
+                  </span>
+                  <span style={{ color: 'var(--text-faint,#8b949e)', fontWeight: 500 }}>
+                    trades &amp; legislation in this sector
+                  </span>
+                </span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: '0 0 auto' }}>
+                {s.bills?.[0]?.stage ? <BillStageChip stage={s.bills[0].stage} size="sm" /> : null}
+                <MomentumChip score={s.score} max={max} size="sm" />
+              </div>
+            </div>
+          ))}
+          <p className="ptx-rail-note" style={{ marginTop: 2 }}>
+            Sector overlap between disclosed trades and active legislation — informational context,
+            not a claim of influence or investment advice.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ────────────────────────── Member modal ────────────────────────── */
 function MemberModal({ member: m, onClose }) {
   useEffect(() => {
@@ -1021,6 +1124,8 @@ function MemberModal({ member: m, onClose }) {
             Holdings by sector
           </div>
           <div className="ptx-rail-note">Not available in the public disclosure tier.</div>
+
+          <MemberLegislativeContext member={m} />
 
           <div className="ptx-modal-actions">
             <button type="button" className="ptx-btn ptx-btn-primary">
