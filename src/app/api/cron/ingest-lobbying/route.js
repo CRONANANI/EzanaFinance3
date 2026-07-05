@@ -52,7 +52,9 @@ function mapFilingRow(f) {
     amount: n.amount,
     filing_type: n.type,
     filing_type_code: n.typeCode,
-    is_registration: n.isRegistration,
+    // strict boolean, never null — a null here would be excluded by the
+    // top-spenders `is_registration = false` predicate even for real reports
+    is_registration: n.isRegistration === true,
     registrant_name: n.registrant,
     registrant_id: n.registrantId,
     client_name: n.client,

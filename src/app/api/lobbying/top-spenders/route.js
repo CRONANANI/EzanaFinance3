@@ -73,11 +73,16 @@ export async function GET(request) {
     // guaranteed to be in the fetched slice even at the cap (the opposite of the
     // old arbitrary unordered .limit(8000)). JS then only does canonical
     // grouping + targeting-share tally over these correct, dollar-bearing rows.
+    // `amount > 0` is the real dollar gate (registrations carry a null amount, so
+    // they're already excluded here). The is_registration predicate is tolerant
+    // of legacy NULLs — rows ingested before the column was populated are null,
+    // and a strict `.eq(false)` would wrongly drop those real dollar-bearing
+    // reports, blanking the board. `.gt('amount', 0)` keeps registrations out.
     let q = admin
       .from('lobbying_filings')
       .select(`${nameCol},amount,lobbyist_count,entity_buckets`)
       .eq('filing_year', year)
-      .eq('is_registration', false)
+      .or('is_registration.is.null,is_registration.eq.false')
       .gt('amount', 0);
     q = withPeriod(q);
     if (issue) q = q.overlaps('issue_buckets', [issue]);

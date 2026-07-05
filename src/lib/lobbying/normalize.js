@@ -6,9 +6,14 @@
  * data yields nulls/empties, never fabricated values.
  */
 
+// LDA reports dollar fields (income/expenses) as decimal STRINGS ("160000.00")
+// or null. Coerce robustly: strip any currency formatting ($, commas, spaces)
+// before Number() so "$1,600,000.00" and "160000.00" both parse, never null.
 const num = (v) => {
-  if (v === null || v === undefined || v === '') return null;
-  const n = Number(v);
+  if (v === null || v === undefined) return null;
+  const s = typeof v === 'string' ? v.replace(/[$,\s]/g, '') : v;
+  if (s === '') return null;
+  const n = Number(s);
   return Number.isFinite(n) ? n : null;
 };
 
