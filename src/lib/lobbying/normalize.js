@@ -12,6 +12,18 @@ const num = (v) => {
   return Number.isFinite(n) ? n : null;
 };
 
+/**
+ * Whether a filing is a registration (or amendment thereof) rather than an
+ * activity report. Registrations and no-activity quarterly reports legitimately
+ * carry no dollar figure, so the UI labels them instead of rendering "$0".
+ * LDA filing_type codes: RR/RA/RE… = registrations; Q1–Q4 / MM / … = reports.
+ */
+export function isRegistrationFiling(f = {}) {
+  const code = String(f.filing_type || '').toUpperCase();
+  const display = String(f.filing_type_display || '').toLowerCase();
+  return /registration/.test(display) || /^R[A-Z]?$/.test(code) || code.startsWith('RR');
+}
+
 /** A filing's reported dollar amount: income OR expenses (LDA sets one). */
 export function filingAmount(f = {}) {
   const income = num(f.income);
@@ -93,6 +105,8 @@ export function normalizeFiling(f = {}) {
     posted: f.dt_posted || null,
     amount: filingAmount(f),
     type: f.filing_type_display || f.filing_type || null,
+    typeCode: f.filing_type || null,
+    isRegistration: isRegistrationFiling(f),
     registrant: f.registrant?.name || null,
     registrantId: f.registrant?.id || null,
     client: f.client?.name || null,

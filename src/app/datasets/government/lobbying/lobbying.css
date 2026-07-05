@@ -591,3 +591,48 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Data-freshness chip (cached vs live), $0/registration label, and the
+   spend-surface footnote. Tokens only. */
+.lbx-fresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 14px;
+  padding: 5px 11px;
+  border: 1px solid var(--border-primary);
+  border-radius: 999px;
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  background: var(--surface-card);
+}
+.lbx-fresh-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+  background: var(--text-faint);
+}
+.lbx-fresh-dot--cache {
+  background: var(--emerald, #10b981);
+}
+.lbx-fresh-dot--live {
+  background: var(--info, #3b82f6);
+}
+.lbx-fresh-dot--empty {
+  background: var(--warning, #d97706);
+}
+.lbx-fresh-dot--load {
+  background: var(--text-faint);
+}
+.lbx-noamount {
+  font-size: 0.76rem;
+  color: var(--text-faint);
+  font-style: italic;
+}
+.lbx-footnote {
+  margin: -8px 0 20px;
+  font-size: 0.72rem;
+  color: var(--text-faint);
+  line-height: 1.5;
+}

@@ -16,8 +16,15 @@ import { X, ArrowUpRight, ExternalLink } from 'lucide-react';
 import CategoryBar from '@/components/datasets/CategoryBar';
 import './lobbying.css';
 
-const YEARS = [2026, 2025, 2024];
+// The current year is filed quarterly in arrears, so it's sparse early on.
+const YEARS = [
+  { value: '2026', label: '2026 (partial)' },
+  { value: '2025', label: '2025' },
+  { value: '2024', label: '2024' },
+];
 const SOURCE_LABEL = 'Source: Senate LDA · lda.gov';
+const ZERO_NOTE =
+  'Registrations and some quarterly reports carry no dollar figure; $0 does not always mean no activity.';
 
 function fmtUSD(v) {
   const n = Number(v) || 0;
@@ -31,6 +38,34 @@ function fmtDate(iso) {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '—';
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+/** A filing that has no real reported dollar figure carries a label, not "$0". */
+function hasReportedAmount(f) {
+  return !f?.isRegistration && f?.amount != null && Number(f.amount) > 0;
+}
+
+/** Amount cell content: real $ when reported, else an honest muted label. */
+function AmountCell({ filing }) {
+  if (hasReportedAmount(filing)) {
+    return <span className="lbx-mono">{fmtUSD(filing.amount)}</span>;
+  }
+  const label = filing?.isRegistration ? 'Registration' : 'No reported spend';
+  return <span className="lbx-noamount">{label}</span>;
+}
+
+/** "updated 2h ago" style relative time from an ISO timestamp. */
+function relTime(iso) {
+  if (!iso) return null;
+  const t = Date.parse(iso);
+  if (Number.isNaN(t)) return null;
+  const s = Math.max(0, (Date.now() - t) / 1000);
+  if (s < 90) return 'just now';
+  const m = s / 60;
+  if (m < 90) return `${Math.round(m)}m ago`;
+  const h = m / 60;
+  if (h < 36) return `${Math.round(h)}h ago`;
+  return `${Math.round(h / 24)}d ago`;
 }
 
 /* ── data hook ── */
@@ -52,7 +87,7 @@ function useJson(url, deps) {
 }
 
 export default function LobbyingClient() {
-  const [year, setYear] = useState(2026);
+  const [year, setYear] = useState(2025);
   const [issue, setIssue] = useState('');
   const [entity, setEntity] = useState('');
   const [filingType, setFilingType] = useState('');
@@ -86,7 +121,7 @@ export default function LobbyingClient() {
   }, [year, page, issue, entity, filingType, minAmt]);
   const filings = useJson(filingsUrl, [filingsUrl]);
 
-  const results = filings.data?.results || [];
+  const results = useMemo(() => filings.data?.results || [], [filings.data]);
   const totalCount = filings.data?.count || 0;
   const issueVocab = constants.data?.issues || [];
   const entityVocab = constants.data?.entities || [];
@@ -111,7 +146,12 @@ export default function LobbyingClient() {
         const e = acc.get(l.name);
         e.filings += 1;
         if (f.client) e.clients.add(f.client);
-        e.spend += Number(f.amount) || 0;
+        // Represented $ counts only real reported dollar figures — registrations
+        // and no-activity reports carry no dollar and must not read as spend.
+        if (hasReportedAmount(f)) {
+          e.spend += Number(f.amount);
+          e.hasDollar = true;
+        }
         if (l.revolvingDoor) {
           e.revolvingDoor = true;
           e.coveredPosition = e.coveredPosition || l.coveredPosition;
@@ -146,6 +186,9 @@ export default function LobbyingClient() {
         </p>
       </header>
 
+      {/* data-freshness indicator: cached (with last-ingest age) vs live, + year */}
+      <FreshnessChip summary={summary} year={year} />
+
       {/* stat strip */}
       <div className="lbx-stats">
         <StatCard
@@ -166,9 +209,10 @@ export default function LobbyingClient() {
         <StatCard
           label="Filings"
           value={summary.loading ? '—' : Number(sm.filings || 0).toLocaleString()}
-          sub={`Cached · ${year}`}
+          sub={`Filing year ${year}`}
         />
       </div>
+      <p className="lbx-footnote">{ZERO_NOTE}</p>
 
       <div className="lbx-body">
         {/* filter rail */}
@@ -186,7 +230,7 @@ export default function LobbyingClient() {
             label="Year"
             value={String(year)}
             onChange={(v) => setYear(Number(v))}
-            options={YEARS.map((y) => ({ value: String(y), label: String(y) }))}
+            options={YEARS}
           />
 
           <FilterSelect
@@ -322,7 +366,13 @@ export default function LobbyingClient() {
                       </td>
                       <td className="lbx-mono r">{r.filings}</td>
                       <td className="lbx-mono r">{r.clients}</td>
-                      <td className="lbx-mono r">{fmtUSD(r.spend)}</td>
+                      <td className="r">
+                        {r.hasDollar ? (
+                          <span className="lbx-mono">{fmtUSD(r.spend)}</span>
+                        ) : (
+                          <span className="lbx-noamount">—</span>
+                        )}
+                      </td>
                     </tr>
                   ))}
                   {!filings.loading && revolvers.length === 0 && (
@@ -380,7 +430,9 @@ export default function LobbyingClient() {
                       ) : null}
                     </span>
                   </td>
-                  <td className="lbx-mono r">{f.amount != null ? fmtUSD(f.amount) : '—'}</td>
+                  <td className="r">
+                    <AmountCell filing={f} />
+                  </td>
                   <td className="lbx-mono r">{f.lobbyistCount || 0}</td>
                   <td className="lbx-muted">{f.period || '—'}</td>
                 </tr>
@@ -426,7 +478,7 @@ export default function LobbyingClient() {
           </div>
         ) : null}
         <p className="lbx-note">
-          {SOURCE_LABEL} · filing year {year}
+          {SOURCE_LABEL} · filing year {year}. {ZERO_NOTE}
         </p>
       </section>
 
@@ -436,6 +488,32 @@ export default function LobbyingClient() {
 }
 
 /* ── small building blocks ── */
+function FreshnessChip({ summary, year }) {
+  const d = summary?.data;
+  let dot = 'live';
+  let text;
+  if (summary?.loading) {
+    dot = 'load';
+    text = `Loading · ${year}`;
+  } else if (d?.origin === 'cache') {
+    const rel = relTime(d.syncedAt);
+    dot = 'cache';
+    text = `Cached · ${year}${rel ? ` · updated ${rel}` : ''}`;
+  } else if (d?.origin === 'live') {
+    dot = 'live';
+    text = `Live · ${year}`;
+  } else {
+    dot = 'empty';
+    text = `No cached data yet · ${year}`;
+  }
+  return (
+    <div className="lbx-fresh">
+      <span className={`lbx-fresh-dot lbx-fresh-dot--${dot}`} aria-hidden />
+      <span>{text}</span>
+    </div>
+  );
+}
+
 function StatCard({ label, value, sub }) {
   return (
     <div className="lbx-stat">
@@ -542,8 +620,14 @@ function FilingModal({ uuid, onClose }) {
               <div className="lbx-modal-stats">
                 <div>
                   <span className="lbx-modal-stat-label">Amount</span>
-                  <span className="lbx-modal-stat-value lbx-mono">
-                    {f.amount != null ? fmtUSD(f.amount) : '—'}
+                  <span className="lbx-modal-stat-value">
+                    {hasReportedAmount(f) ? (
+                      <span className="lbx-mono">{fmtUSD(f.amount)}</span>
+                    ) : (
+                      <span className="lbx-noamount">
+                        {f.isRegistration ? 'Registration' : 'No reported spend'}
+                      </span>
+                    )}
                   </span>
                 </div>
                 <div>

@@ -20,7 +20,7 @@ export async function GET(request) {
   if (!rl.success) return rateLimitResponse(rl);
 
   const { searchParams } = new URL(request.url);
-  const year = Number(searchParams.get('year')) || 2026;
+  const year = Number(searchParams.get('year')) || 2025;
 
   const empty = {
     ok: true,
@@ -37,7 +37,7 @@ export async function GET(request) {
     const admin = getAdminClient();
     const { data, error } = await admin
       .from('lobbying_filings')
-      .select('registrant_name,client_name,amount')
+      .select('registrant_name,client_name,amount,synced_at')
       .eq('filing_year', year)
       .limit(8000);
     if (error || !Array.isArray(data) || !data.length) return NextResponse.json(empty);
@@ -45,14 +45,18 @@ export async function GET(request) {
     const registrants = new Set();
     const clients = new Set();
     let totalSpend = 0;
+    let syncedAt = null;
     for (const r of data) {
       if (r.registrant_name) registrants.add(r.registrant_name);
       if (r.client_name) clients.add(r.client_name);
       totalSpend += Number(r.amount) || 0;
+      if (r.synced_at && (!syncedAt || r.synced_at > syncedAt)) syncedAt = r.synced_at;
     }
     return NextResponse.json({
       ok: true,
       source: SOURCE,
+      origin: 'cache',
+      syncedAt,
       year,
       totalSpend,
       registrants: registrants.size,

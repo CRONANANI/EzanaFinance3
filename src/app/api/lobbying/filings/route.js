@@ -25,7 +25,7 @@ export async function GET(request) {
   if (!rl.success) return rateLimitResponse(rl);
 
   const { searchParams } = new URL(request.url);
-  const year = Number(searchParams.get('year')) || 2026;
+  const year = Number(searchParams.get('year')) || 2025;
   const issue = (searchParams.get('issue') || '').trim();
   const entity = (searchParams.get('entity') || '').trim();
   const registrant = (searchParams.get('registrant') || '').trim();
@@ -69,6 +69,9 @@ export async function GET(request) {
           posted: r.dt_posted,
           amount: r.amount != null ? Number(r.amount) : null,
           type: r.filing_type,
+          typeCode: r.filing_type_code || null,
+          isRegistration:
+            r.is_registration === true || /registration/i.test(String(r.filing_type || '')),
           registrant: r.registrant_name,
           client: r.client_name,
           clientDescription: r.client_description,
@@ -79,9 +82,16 @@ export async function GET(request) {
           url: r.document_url,
         }));
         const total = count ?? results.length;
+        // freshest cache timestamp in this page → drives the "updated …" chip
+        const syncedAt = data.reduce(
+          (m, r) => (r.synced_at && (!m || r.synced_at > m) ? r.synced_at : m),
+          null,
+        );
         return NextResponse.json({
           ok: true,
           source: SOURCE,
+          origin: 'cache',
+          syncedAt,
           year,
           results,
           count: total,
@@ -119,6 +129,8 @@ export async function GET(request) {
       return NextResponse.json({
         ok: true,
         source: SOURCE,
+        origin: 'live',
+        syncedAt: null,
         year,
         results,
         count: res.data.count ?? results.length,
