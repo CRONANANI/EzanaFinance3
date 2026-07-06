@@ -396,6 +396,11 @@ export function Navbar() {
                 Resources
               </a>
             </li>
+            <li className="nav-item">
+              <a href="/pricing" className="nav-link">
+                Pricing
+              </a>
+            </li>
             <li
               className="nav-item nav-datasets"
               ref={datasetsRef}
@@ -457,11 +462,6 @@ export function Navbar() {
                   </a>
                 </div>
               </div>
-            </li>
-            <li className="nav-item">
-              <a href="/pricing" className="nav-link">
-                Pricing
-              </a>
             </li>
             <li className="nav-item">
               <a href="/ezana-echo" className="nav-link">
@@ -537,21 +537,21 @@ export function Navbar() {
                     <i className="bi bi-chevron-right mobile-nav-chevron" />
                   </a>
                   <a
-                    href="/datasets"
-                    className="mobile-nav-link"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <i className="bi bi-stack" />
-                    <span>Datasets</span>
-                    <i className="bi bi-chevron-right mobile-nav-chevron" />
-                  </a>
-                  <a
                     href="/pricing"
                     className="mobile-nav-link"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <i className="bi bi-tag" />
                     <span>Pricing</span>
+                    <i className="bi bi-chevron-right mobile-nav-chevron" />
+                  </a>
+                  <a
+                    href="/datasets"
+                    className="mobile-nav-link"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <i className="bi bi-stack" />
+                    <span>Datasets</span>
                     <i className="bi bi-chevron-right mobile-nav-chevron" />
                   </a>
                   <a
