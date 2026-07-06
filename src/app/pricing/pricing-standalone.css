@@ -53,39 +53,27 @@
   letter-spacing: -0.02em;
   margin: 0 0 1rem;
   color: var(--text-primary, #0f172a);
-  white-space: nowrap;
   overflow: visible;
 }
 @media (max-width: 600px) {
   .pricing-h1 {
-    white-space: normal;
     font-size: clamp(1.5rem, 6vw, 2rem);
   }
 }
-/* Brighter, more contrasting gradient — emerald-to-teal so it pops against the page */
+/* Solid Ezana emerald (matches the brand green used elsewhere) — no gradient */
 .pricing-h1-accent {
-  background: linear-gradient(135deg, #10b981 0%, #34d399 50%, #10b981 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
+  color: #10b981;
+  -webkit-text-fill-color: #10b981;
 }
 
 .pricing-subtitle {
   font-size: 0.95rem;
   line-height: 1.5;
   margin: 0 auto 1.75rem;
-  max-width: 75rem;
+  max-width: 34rem; /* was 75rem — now centers within the hero */
   padding: 0 1.5rem;
   color: var(--text-muted, #64748b);
-  white-space: nowrap;
-  overflow: visible;
-}
-@media (max-width: 1100px) {
-  .pricing-subtitle {
-    white-space: normal;
-    max-width: 42rem;
-  }
+  text-align: center;
 }
 
 /* ── Billing toggle ─────────────────────────────────────────────────────── */
@@ -707,17 +695,23 @@
 
 /* ── Partner plan pill (free to join, commission-based) ─────────────────── */
 .pricing-partner-pill {
-  display: grid;
-  grid-template-columns: 1.1fr 1fr;
-  gap: 1.75rem;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  max-width: 980px;
+  gap: 1.5rem;
+  max-width: 760px;
   margin: 1.5rem auto 0;
-  padding: 1.75rem 2rem;
+  padding: 2rem;
   border: 1px solid rgba(16, 185, 129, 0.3);
   border-radius: 18px;
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.07), rgba(16, 185, 129, 0.02));
+  background: #ffffff;
   box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.06));
+}
+.pricing-partner-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
 }
 /* Center every line in the partner card's info column (eyebrow, name,
    tagline, price, and the Become a Partner button). */
@@ -776,8 +770,9 @@
 }
 .pricing-partner-rates {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(4, 1fr);
   gap: 0.75rem;
+  width: 100%;
 }
 .pricing-partner-rate {
   display: flex;
@@ -817,15 +812,9 @@
   padding: 0.1rem 0.35rem;
   border-radius: 9999px;
 }
-@media (max-width: 820px) {
-  .pricing-partner-pill {
-    grid-template-columns: 1fr;
-    gap: 1.25rem;
-  }
-}
-@media (max-width: 480px) {
+@media (max-width: 640px) {
   .pricing-partner-rates {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 

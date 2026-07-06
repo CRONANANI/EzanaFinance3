@@ -596,9 +596,6 @@ export default function PricingPage() {
                     <>
                       <span className="plan-price-currency">$</span>
                       <span className="plan-price-amount">{price}</span>
-                      <span className="plan-price-interval">
-                        /{billing === 'yearly' ? 'mo billed annually' : 'month'}
-                      </span>
                     </>
                   )}
                 </div>
@@ -623,9 +620,7 @@ export default function PricingPage() {
                   <span>{ctaLabel}</span>
                   {!isPending ? <ArrowRight size={16} aria-hidden /> : null}
                 </button>
-                {isContact ? (
-                  <p className="plan-finesub">We reply within 1 business day</p>
-                ) : null}
+                {isContact ? <p className="plan-finesub">We reply within 1 business day</p> : null}
 
                 <div className="plan-features-divider" />
                 <div className="plan-features-label">What&apos;s included</div>
@@ -644,6 +639,7 @@ export default function PricingPage() {
 
         {/* ── Partner plan — free to join, commission-based ─────────────── */}
         <div className="pricing-partner-pill">
+          {/* 1. Header text on top */}
           <div className="pricing-partner-info">
             <span className="pricing-partner-eyebrow">Partner Program</span>
             <h3 className="pricing-partner-name">Partner</h3>
@@ -651,14 +647,9 @@ export default function PricingPage() {
               For creators, traders, and financial professionals. Free to join — Ezana takes a
               commission only when you earn, so your plan scales with what you make.
             </p>
-            <div className="pricing-partner-price">
-              <span className="plan-price-amount">Free</span>
-              <span className="plan-price-interval">to join · commission-based</span>
-            </div>
-            <Link href="/auth/partner/apply" className="pricing-partner-cta">
-              Become a Partner <ArrowRight size={16} aria-hidden />
-            </Link>
           </div>
+
+          {/* 2. Four rate cards in the middle */}
           <div className="pricing-partner-rates">
             <div className="pricing-partner-rate">
               <span className="pricing-partner-rate-value">70%</span>
@@ -679,6 +670,17 @@ export default function PricingPage() {
               <span className="pricing-partner-rate-value">Echo</span>
               <span className="pricing-partner-rate-label">publish &amp; grow subscribers</span>
             </div>
+          </div>
+
+          {/* 3. Price + CTA below, centered */}
+          <div className="pricing-partner-footer">
+            <div className="pricing-partner-price">
+              <span className="plan-price-amount">Free</span>
+              <span className="plan-price-interval">to join · commission-based</span>
+            </div>
+            <Link href="/auth/partner/apply" className="pricing-partner-cta">
+              Become a Partner <ArrowRight size={16} aria-hidden />
+            </Link>
           </div>
         </div>
 
