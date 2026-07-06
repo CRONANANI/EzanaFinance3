@@ -37,8 +37,14 @@ export async function GET(request) {
       .from('lobbying_filings')
       .select('issues,filing_period,dt_posted')
       .eq('filing_year', year)
-      .limit(8000);
-    if (error || !Array.isArray(data) || !data.length) return NextResponse.json(empty);
+      .not('issues', 'is', null)
+      .limit(5000);
+    if (error) {
+      return NextResponse.json({ ...empty, _debug: `query error: ${error.message}` });
+    }
+    if (!Array.isArray(data) || !data.length) {
+      return NextResponse.json({ ...empty, _debug: `no rows: len=${data?.length ?? 'null'}` });
+    }
 
     const rangeCutoff = period === 'range' ? Date.now() - days * 86400000 : null;
     const quarter = ['q1', 'q2', 'q3', 'q4'].includes(period) ? period : null;
