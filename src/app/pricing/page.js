@@ -589,14 +589,16 @@ export default function PricingPage() {
 
                 <div className="plan-price">
                   {price === null ? (
-                    <span className="plan-price-amount">Custom</span>
+                    <span className="plan-price-amount"></span>
                   ) : plan.isFree ? (
-                    <span className="plan-price-amount">Free</span>
+                    <span className="plan-price-amount"></span>
                   ) : (
                     <>
                       <span className="plan-price-currency">$</span>
                       <span className="plan-price-amount">{price}</span>
-                      <span className="plan-price-interval">/mo</span>
+                      <span className="plan-price-interval">
+                        /{billing === 'yearly' ? 'mo billed annually' : 'month'}
+                      </span>
                     </>
                   )}
                 </div>
@@ -604,7 +606,7 @@ export default function PricingPage() {
                   {plan.isFree
                     ? ''
                     : price === null
-                      ? 'Tailored to your organization'
+                      ? ''
                       : billing === 'yearly'
                         ? ''
                         : 'Billed monthly · cancel anytime'}
