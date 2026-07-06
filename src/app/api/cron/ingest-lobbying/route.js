@@ -421,6 +421,12 @@ export async function GET(request) {
     }
     incomplete.sort((a, b) => (a.state?.last_page || 0) - (b.state?.last_page || 0));
 
+    for (const it of incomplete) {
+      errors.push(
+        `cursor-read ${it.year}-${it.quarter}: state=${it.state ? `last_page=${it.state.last_page}` : 'NULL(miss)'}`,
+      );
+    }
+
     for (const item of incomplete) {
       if (budget.remaining < 3) break;
       await persist(await backfillQuarter(admin, budget, item, pagesPerQuarter, errors, mergeSink));
