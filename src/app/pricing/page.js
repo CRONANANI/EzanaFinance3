@@ -596,6 +596,7 @@ export default function PricingPage() {
                     <>
                       <span className="plan-price-currency">$</span>
                       <span className="plan-price-amount">{price}</span>
+                      <span className="plan-price-interval">/mo</span>
                     </>
                   )}
                 </div>
