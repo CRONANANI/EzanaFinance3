@@ -5,6 +5,7 @@ import { hasLdaKey, createLdaBudget, listFilings } from '@/lib/lobbying/client';
 import { normalizeFiling } from '@/lib/lobbying/normalize';
 import { ENTITY_GROUPS } from '@/lib/lobbying/entities';
 import { QUARTER_PERIOD_CODE } from '@/lib/lobbying/period';
+import { fetchTickerMap, fetchPublicClientNames, tickerFor } from '@/lib/lobbying/tickers';
 
 /**
  * GET /api/lobbying/filings — lobbying disclosure filings with REAL server-side
@@ -12,8 +13,14 @@ import { QUARTER_PERIOD_CODE } from '@/lib/lobbying/period';
  * page). Supabase-first (the ingest cron writes lobbying_filings); live LDA
  * fallback on cache miss; honest empty. NO mock data.
  *
+ * Each row is left-joined against the curated lobbying_client_tickers table
+ * (ticker/exchange/companyLabel/isPublic). ?onlyPublic=1 restricts to filings
+ * whose client is a verified public company (filter pushed to the DB so
+ * pagination stays exact).
+ *
  * → { source, year, results:[{uuid,year,period,posted,amount,registrant,client,
- *     issues[],entities[],lobbyistCount}], count, next, page }
+ *     issues[],entities[],lobbyistCount,ticker,exchange,companyLabel,isPublic}],
+ *     count, next, page }
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -40,6 +47,9 @@ export async function GET(request) {
   const page = Math.max(1, Number(searchParams.get('page')) || 1);
   const pageSize = Math.min(Number(searchParams.get('pageSize')) || 25, 500);
   const groupBuckets = ENTITY_GROUPS[entityGroup] || null;
+  const onlyPublic = ['1', 'true', 'yes'].includes(
+    (searchParams.get('onlyPublic') || '').toLowerCase(),
+  );
 
   const empty = { ok: true, source: SOURCE, year, results: [], count: 0, next: null, page };
 
@@ -47,10 +57,18 @@ export async function GET(request) {
   if (supaConfigured()) {
     try {
       const admin = getAdminClient();
+      // onlyPublic → restrict to verified public clients at the DB (exact-case
+      // .in on the uppercase-stored client_name) so pagination stays correct.
+      let publicNames = null;
+      if (onlyPublic) {
+        publicNames = await fetchPublicClientNames(admin);
+        if (!publicNames.length) return NextResponse.json(empty);
+      }
       let q = admin
         .from('lobbying_filings')
         .select('*', { count: 'exact' })
         .eq('filing_year', year);
+      if (publicNames) q = q.in('client_name', publicNames);
       if (registrant) q = q.ilike('registrant_name', `%${registrant}%`);
       if (client) q = q.ilike('client_name', `%${client}%`);
       if (type) q = q.ilike('filing_type', `%${type}%`);
@@ -73,6 +91,11 @@ export async function GET(request) {
           // fall through to live only when the cache is truly empty
           if (count === 0) return await liveOrEmpty();
         }
+        // one indexed .in() lookup enriches the whole page with ticker fields
+        const tickerMap = await fetchTickerMap(
+          admin,
+          data.map((r) => r.client_name),
+        );
         const results = data.map((r) => ({
           uuid: r.uuid,
           year: r.filing_year,
@@ -91,6 +114,7 @@ export async function GET(request) {
           lobbyists: r.lobbyists || [],
           lobbyistCount: r.lobbyist_count || 0,
           url: r.document_url,
+          ...tickerFor(r.client_name, tickerMap),
         }));
         const total = count ?? results.length;
         // freshest cache timestamp in this page → drives the "updated …" chip
@@ -140,6 +164,20 @@ export async function GET(request) {
       if (!res.ok || !Array.isArray(res.data?.results)) return NextResponse.json(empty);
       let results = res.data.results.map(normalizeFiling);
       if (minAmount > 0) results = results.filter((r) => (r.amount || 0) >= minAmount);
+      // enrich with tickers (best-effort) so the public column works off live too
+      if (supaConfigured()) {
+        try {
+          const admin = getAdminClient();
+          const tickerMap = await fetchTickerMap(
+            admin,
+            results.map((r) => r.client),
+          );
+          results = results.map((r) => ({ ...r, ...tickerFor(r.client, tickerMap) }));
+          if (onlyPublic) results = results.filter((r) => r.isPublic);
+        } catch {
+          /* enrichment is best-effort */
+        }
+      }
       return NextResponse.json({
         ok: true,
         source: SOURCE,

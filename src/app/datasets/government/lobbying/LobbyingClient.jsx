@@ -18,6 +18,7 @@ import { useMemo, useState, useEffect, useCallback } from 'react';
 import { X, ArrowUpRight, ExternalLink, Info, Download, RefreshCw } from 'lucide-react';
 import CategoryBar from '@/components/datasets/CategoryBar';
 import { ENTITY_LABEL, ENTITY_ORDER, ISSUE_LABEL } from '@/lib/lobbying/entities';
+import CompanyCard from './CompanyCard';
 import './lobbying.css';
 
 /* period selector → API scope. The current year is 2026 (filed in arrears). */
@@ -101,17 +102,23 @@ export default function LobbyingClient() {
   const [minIdx, setMinIdx] = useState(0);
   const [rankBy, setRankBy] = useState('client'); // 'client' | 'firm'
   const [heroView, setHeroView] = useState('target'); // 'target' | 'issue'
-  const [sort, setSort] = useState('date'); // 'date' | 'amount'
+  // disclosures table mode: public corporations (default) | largest | recent
+  const [tableMode, setTableMode] = useState('public');
   const [page, setPage] = useState(1);
-  const [selected, setSelected] = useState(null);
+  const [selected, setSelected] = useState(null); // filing uuid → FilingModal
+  const [company, setCompany] = useState(null); // { ticker, companyLabel, clientName, exchange }
+  const [quotes, setQuotes] = useState({}); // { TICKER: { price, change } }
   const [exporting, setExporting] = useState(false);
 
   const p = PERIODS.find((x) => x.key === periodKey) || PERIODS[3];
   const min = MIN_STOPS[minIdx];
+  const sort = tableMode === 'recent' ? 'date' : 'amount';
+  const onlyPublic = tableMode === 'public';
+  const showTicker = tableMode === 'public' || tableMode === 'largest';
 
   useEffect(() => {
     setPage(1);
-  }, [periodKey, issueFilter, entityFilter, minIdx, sort]);
+  }, [periodKey, issueFilter, entityFilter, minIdx, tableMode]);
 
   // shared query string for the filtered set (leaderboard + table + export)
   const scope = useMemo(() => {
@@ -138,18 +145,54 @@ export default function LobbyingClient() {
     rankBy,
   ]);
   const ticker = useJson(`/api/lobbying/filings?year=${p.year}&pageSize=24&sort=date`, [p.year]);
-  const filings = useJson(`/api/lobbying/filings?${scopeStr}&sort=${sort}&page=${page}`, [
-    scopeStr,
-    sort,
-    page,
-  ]);
+  const filings = useJson(
+    `/api/lobbying/filings?${scopeStr}&sort=${sort}&page=${page}${onlyPublic ? '&onlyPublic=1' : ''}`,
+    [scopeStr, sort, page, onlyPublic],
+  );
 
   const sm = summary.data || {};
   const spenderRows = spenders.data?.spenders || [];
   const coverage = spenders.data?.coverage || null;
-  const results = filings.data?.results || [];
+  const results = useMemo(() => filings.data?.results || [], [filings.data]);
   const totalCount = filings.data?.count || 0;
   const topIssue = byIssue.data?.issues?.[0] || null;
+
+  // Hydrate stock prices for the tickers on the visible page in ONE batched call
+  // (cached 60s upstream); never blocks table render — rows show, price fills in.
+  const pageTickers = useMemo(
+    () => [...new Set(results.map((r) => r.ticker).filter(Boolean))],
+    [results],
+  );
+  const tickersKey = pageTickers.join(',');
+  useEffect(() => {
+    if (!tickersKey) return undefined;
+    let alive = true;
+    fetch(`/api/market-data/quotes?symbols=${encodeURIComponent(tickersKey)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (alive && d?.quotes) setQuotes((prev) => ({ ...prev, ...d.quotes }));
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [tickersKey]);
+
+  const openRow = useCallback(
+    (f) => {
+      if (tableMode === 'public' && f.ticker) {
+        setCompany({
+          ticker: f.ticker,
+          companyLabel: f.companyLabel || f.client,
+          clientName: f.client,
+          exchange: f.exchange,
+        });
+      } else {
+        setSelected(f.uuid);
+      }
+    },
+    [tableMode],
+  );
 
   const resetFilters = useCallback(() => {
     setIssueFilter('');
@@ -177,7 +220,9 @@ export default function LobbyingClient() {
   async function doExport(fmt) {
     setExporting(true);
     try {
-      const r = await fetch(`/api/lobbying/filings?${scopeStr}&sort=${sort}&pageSize=500&page=1`);
+      const r = await fetch(
+        `/api/lobbying/filings?${scopeStr}&sort=${sort}&pageSize=500&page=1${onlyPublic ? '&onlyPublic=1' : ''}`,
+      );
       const d = await r.json();
       const rows = d?.results || [];
       let blob;
@@ -435,21 +480,22 @@ export default function LobbyingClient() {
             )}
           </section>
 
-          {/* recent disclosures table (indented under the main column) */}
+          {/* largest disclosures table (indented under the main column) */}
           <section className="lbx-card lbx-filings">
             <div className="lbx-card-head">
-              <h2 className="lbx-card-title">Recent disclosures · {p.label}</h2>
+              <h2 className="lbx-card-title">Largest disclosures · {p.label}</h2>
               <div className="lbx-controls">
-                <div className="lbx-seg" role="group" aria-label="Sort by">
+                <div className="lbx-seg" role="group" aria-label="Table view">
                   {[
-                    ['date', 'Most recent'],
-                    ['amount', 'Largest'],
+                    ['public', 'Public corporations'],
+                    ['largest', 'Largest'],
+                    ['recent', 'Most recent'],
                   ].map(([v, l]) => (
                     <button
                       key={v}
                       type="button"
-                      className={`lbx-seg-btn${sort === v ? ' is-active' : ''}`}
-                      onClick={() => setSort(v)}
+                      className={`lbx-seg-btn${tableMode === v ? ' is-active' : ''}`}
+                      onClick={() => setTableMode(v)}
                     >
                       {l}
                     </button>
@@ -460,11 +506,20 @@ export default function LobbyingClient() {
                 </span>
               </div>
             </div>
+            {onlyPublic ? (
+              <p className="lbx-info lbx-info--tight">
+                <Info size={13} />
+                Public companies only — matched to a verified ticker. Prices are live; lobbying
+                dollars are the disclosed filing totals.
+              </p>
+            ) : null}
             <div className="lbx-table-wrap">
               <table className="lbx-table">
                 <thead>
                   <tr>
                     <th>Client (paying)</th>
+                    {showTicker ? <th>Ticker</th> : null}
+                    {showTicker ? <th className="r">Stock price</th> : null}
                     <th>Firm</th>
                     <th>Issues</th>
                     <th>Targets</th>
@@ -474,8 +529,27 @@ export default function LobbyingClient() {
                 </thead>
                 <tbody>
                   {results.map((f, i) => (
-                    <tr key={f.uuid || i} className="lbx-row" onClick={() => setSelected(f.uuid)}>
-                      <td className="lbx-strong">{f.client || '—'}</td>
+                    <tr key={f.uuid || i} className="lbx-row" onClick={() => openRow(f)}>
+                      <td className="lbx-strong">
+                        {f.client || '—'}
+                        {onlyPublic && f.companyLabel ? (
+                          <span className="lbx-cc-hint"> · {f.companyLabel}</span>
+                        ) : null}
+                      </td>
+                      {showTicker ? (
+                        <td>
+                          {f.ticker ? (
+                            <span className="lbx-tickpill lbx-mono">{f.ticker}</span>
+                          ) : (
+                            <span className="lbx-muted">—</span>
+                          )}
+                        </td>
+                      ) : null}
+                      {showTicker ? (
+                        <td className="r">
+                          <StockPrice ticker={f.ticker} q={quotes[f.ticker]} />
+                        </td>
+                      ) : null}
                       <td>{f.registrant || '—'}</td>
                       <td>
                         <span className="lbx-chips">
@@ -505,14 +579,16 @@ export default function LobbyingClient() {
                   ))}
                   {!filings.loading && results.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="lbx-empty">
-                        No lobbying disclosures match these filters for {p.label}.
+                      <td colSpan={showTicker ? 8 : 6} className="lbx-empty">
+                        {onlyPublic
+                          ? `No public-company disclosures match these filters for ${p.label}.`
+                          : `No lobbying disclosures match these filters for ${p.label}.`}
                       </td>
                     </tr>
                   )}
                   {filings.loading && (
                     <tr>
-                      <td colSpan={6} className="lbx-empty">
+                      <td colSpan={showTicker ? 8 : 6} className="lbx-empty">
                         Loading disclosures…
                       </td>
                     </tr>
@@ -550,8 +626,34 @@ export default function LobbyingClient() {
         </main>
       </div>
 
+      {company ? (
+        <CompanyCard
+          ticker={company.ticker}
+          companyLabel={company.companyLabel}
+          clientName={company.clientName}
+          exchange={company.exchange}
+          onClose={() => setCompany(null)}
+          onOpenFiling={(uuid) => setSelected(uuid)}
+        />
+      ) : null}
       {selected ? <FilingModal uuid={selected} onClose={() => setSelected(null)} /> : null}
     </div>
+  );
+}
+
+/* ── stock price cell: emerald up / red down; '·' while quotes hydrate ── */
+function StockPrice({ ticker, q }) {
+  if (!ticker) return <span className="lbx-muted">—</span>;
+  if (!q) return <span className="lbx-muted lbx-mono">·</span>;
+  const up = (q.change ?? 0) >= 0;
+  return (
+    <span className="lbx-price lbx-mono">
+      ${q.price}
+      <span className={`lbx-chg ${up ? 'up' : 'down'}`}>
+        {up ? '+' : ''}
+        {q.change}%
+      </span>
+    </span>
   );
 }
 

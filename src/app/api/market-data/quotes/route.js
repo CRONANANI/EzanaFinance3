@@ -9,6 +9,29 @@ export const dynamic = 'force-dynamic';
 // protects the upstream AlphaVantage/Finnhub quotas from request bursts.
 const QUOTES_TTL_SECONDS = 60;
 
+// Batched per-symbol quotes for an explicit ticker list (?symbols=LUMN,BA,GM).
+// Returns a keyed map { LUMN: { price, change }, ... } — used by the lobbying
+// public-companies view to hydrate stock prices in one call.
+async function handleSymbolQuotes(symbols) {
+  const out = {};
+  try {
+    const quotes = await fetchAllBulkQuotesAlpha(symbols);
+    for (const sym of symbols) {
+      const q = quotes[sym];
+      out[sym] =
+        q && q.price > 0
+          ? {
+              price: Number(q.price.toFixed(2)),
+              change: parseFloat((q.changePercent ?? 0).toFixed(2)),
+            }
+          : null;
+    }
+  } catch {
+    for (const sym of symbols) out[sym] = null;
+  }
+  return out;
+}
+
 async function fetchFinnhubQuote(symbol, apiKey) {
   try {
     const res = await fetch(
@@ -182,7 +205,34 @@ async function handleGet() {
 }
 
 export const GET = withApiGuard(
-  async () => {
+  async (request) => {
+    // ?symbols=LUMN,BA,GM → batched keyed map; else the market-overview payload.
+    const symbolsRaw = new URL(request.url).searchParams.get('symbols');
+    if (symbolsRaw) {
+      const symbols = [
+        ...new Set(
+          symbolsRaw
+            .split(',')
+            .map((s) => s.trim().toUpperCase())
+            .filter(Boolean),
+        ),
+      ].slice(0, 50);
+      if (!symbols.length) return NextResponse.json({ quotes: {} });
+      try {
+        const key = `market-data:quotes:symbols:${[...symbols].sort().join(',')}`;
+        const quotes = await cacheGetOrSet(key, QUOTES_TTL_SECONDS, () =>
+          handleSymbolQuotes(symbols),
+        );
+        return NextResponse.json(
+          { quotes },
+          { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120' } },
+        );
+      } catch (err) {
+        console.error('[market-data/quotes symbols]', err);
+        return NextResponse.json({ quotes: {} }, { status: 500 });
+      }
+    }
+
     try {
       const quotes = await cacheGetOrSet('market-data:quotes', QUOTES_TTL_SECONDS, handleGet);
       return NextResponse.json(

@@ -5,6 +5,7 @@ import { PERIOD_KEYS } from '@/lib/lobbying/period';
 import { canonicalEntity } from '@/lib/lobbying/normalize';
 import { getPeriodCoverage } from '@/lib/lobbying/coverage';
 import { ENTITY_GROUPS } from '@/lib/lobbying/entities';
+import { fetchTickerMap, tickerFor } from '@/lib/lobbying/tickers';
 
 /**
  * GET /api/lobbying/top-spenders?year=&by=client|registrant&period=  — aggregate
@@ -43,6 +44,9 @@ export async function GET(request) {
   const entityGroup = (searchParams.get('entityGroup') || '').toLowerCase(); // congress|agencies|whitehouse
   const min = Number(searchParams.get('min')) || 0;
   const groupBuckets = ENTITY_GROUPS[entityGroup] || null;
+  const onlyPublic = ['1', 'true', 'yes'].includes(
+    (searchParams.get('onlyPublic') || '').toLowerCase(),
+  );
 
   const empty = { ok: true, source: SOURCE, year, by, period, spenders: [], coverage: null };
   if (!supaConfigured()) return NextResponse.json(empty);
@@ -126,6 +130,7 @@ export async function GET(request) {
         acc.set(key, {
           display,
           labels: new Map(),
+          raw: new Set(),
           total: 0,
           filings: 0,
           lobbyists: 0,
@@ -137,11 +142,31 @@ export async function GET(request) {
       // every fetched row is dollar-bearing (DB-filtered), so it counts to total
       e.total += Number(r.amount);
       e.labels.set(display, (e.labels.get(display) || 0) + 1);
+      e.raw.add(raw);
       for (const b of Array.isArray(r.entity_buckets) ? r.entity_buckets : []) {
         e.ent.set(b, (e.ent.get(b) || 0) + 1);
       }
     }
-    const spenders = [...acc.values()]
+
+    // Ticker join: only client-mode groups map to the client_name ticker table.
+    // Look up every raw name across all groups in one indexed query, then attach
+    // the first matching ticker per group.
+    const tickerMap =
+      by === 'client'
+        ? await fetchTickerMap(
+            admin,
+            [...acc.values()].flatMap((e) => [...e.raw]),
+          )
+        : new Map();
+    const tickerForGroup = (e) => {
+      for (const raw of e.raw) {
+        const t = tickerFor(raw, tickerMap);
+        if (t.isPublic) return t;
+      }
+      return { ticker: null, exchange: null, companyLabel: null, isPublic: false };
+    };
+
+    let spenders = [...acc.values()]
       .map((e) => {
         const label = [...e.labels.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || e.display;
         // targeting share is a CLIENT-level concept; firms show solid bars.
@@ -158,11 +183,12 @@ export async function GET(request) {
           filings: e.filings,
           lobbyists: e.lobbyists,
           targeting,
+          ...tickerForGroup(e),
         };
       })
-      .filter((s) => s.total > 0)
-      .sort((a, b) => b.total - a.total)
-      .slice(0, 25);
+      .filter((s) => s.total > 0);
+    if (onlyPublic) spenders = spenders.filter((s) => s.isPublic);
+    spenders = spenders.sort((a, b) => b.total - a.total).slice(0, 25);
 
     if (!spenders.length) return NextResponse.json({ ...empty, coverage });
     return NextResponse.json({

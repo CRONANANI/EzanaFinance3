@@ -16,6 +16,10 @@
   --emerald-bg: rgba(16, 185, 129, 0.08);
   --warning: #f59e0b;
   --lbx-inset: #f8fafc;
+  /* gold accent for public-company / ticker identity */
+  --lbx-gold: #d4a853;
+  --lbx-gold-bg: rgba(212, 168, 83, 0.12);
+  --lbx-down: #ef4444;
   /* Government-entity palette (bar segments, legend, entity chips) */
   --lbx-ent-house: #10b981;
   --lbx-ent-senate: #059669;
@@ -894,6 +898,179 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
+}
+
+/* ── ticker pill + stock price (public-companies table) ── */
+.lbx-tickpill {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 5px;
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  color: var(--lbx-gold);
+  background: var(--lbx-gold-bg);
+  border: 1px solid var(--lbx-gold);
+}
+.lbx-price {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+.lbx-chg {
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+.lbx-chg.up {
+  color: var(--emerald);
+}
+.lbx-chg.down {
+  color: var(--lbx-down);
+}
+.lbx-cc-hint {
+  font-weight: 500;
+  color: var(--text-faint);
+}
+
+/* ── Company Card (public-company drill-down modal) ── */
+.lbx-cc {
+  max-width: 560px;
+  width: min(560px, calc(100vw - 32px));
+  padding: 0;
+  position: relative;
+}
+.lbx-cc-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 22px 14px;
+  border-bottom: 1px solid var(--border-primary);
+}
+.lbx-cc-name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0 0 6px;
+  color: var(--text-primary);
+}
+.lbx-cc-tags {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.lbx-cc-exch {
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.lbx-cc-quote {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  text-align: right;
+}
+.lbx-cc-price {
+  font-size: 1.2rem;
+  color: var(--text-primary);
+}
+.lbx-cc-chart {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--border-primary);
+}
+.lbx-cc-spark {
+  width: 100%;
+  height: 34px;
+  display: block;
+}
+.lbx-cc-spark path {
+  stroke: var(--text-faint);
+}
+.lbx-cc-spark.up path {
+  stroke: var(--emerald);
+}
+.lbx-cc-spark.down path {
+  stroke: var(--lbx-down);
+}
+.lbx-cc-spark--empty {
+  border-bottom: 1.5px dashed var(--border-primary);
+  height: 0;
+  align-self: center;
+}
+.lbx-cc-chart-label {
+  flex: none;
+  font-size: 0.68rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.lbx-cc-sec {
+  padding: 14px 22px 8px;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--emerald-hover);
+}
+.lbx-cc-filings {
+  list-style: none;
+  margin: 0;
+  padding: 0 12px 8px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+.lbx-cc-frow {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 10px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: var(--text-primary);
+}
+.lbx-cc-frow:hover {
+  background: var(--lbx-inset);
+}
+.lbx-cc-fmeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.8rem;
+  min-width: 0;
+}
+.lbx-cc-freg {
+  font-weight: 600;
+}
+.lbx-cc-fmeta .lbx-muted {
+  font-size: 0.72rem;
+}
+.lbx-cc-famt {
+  flex: none;
+  color: var(--text-primary);
+}
+.lbx-cc-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--lbx-gold);
+  text-decoration: none;
+}
+.lbx-cc .lbx-modal-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 /* ── responsive ── */
