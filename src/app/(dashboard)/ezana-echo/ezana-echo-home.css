@@ -29,15 +29,7 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: 20px;
-  padding: 36px 0 26px;
-}
-.eth-intro-eyebrow {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--text-faint);
-  margin: 0 0 10px;
+  padding: 7px 0 26px;
 }
 .eth-intro-title {
   font-family: var(--font-serif);

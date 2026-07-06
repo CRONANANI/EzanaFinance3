@@ -203,7 +203,6 @@ export default function EzanaEchoPage() {
         {/* Intro (the global navbar carries the top chrome — no masthead band) */}
         <div className="eth-intro">
           <div>
-            <p className="eth-intro-eyebrow">Markets · Intelligence · Editorial</p>
             <h1 className="eth-intro-title">
               Ezana <span>Echo</span>
             </h1>
