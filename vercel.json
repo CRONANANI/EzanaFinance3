@@ -82,11 +82,11 @@
       "schedule": "0 7 * * *"
     },
     {
-      "path": "/api/cron/ingest-lobbying",
+      "path": "/api/cron/ingest-lobbying?years=2026,2025,2024&pagesPerQuarter=20",
       "schedule": "0 */3 * * *"
     },
     {
-      "path": "/api/cron/ingest-lobbying?mode=rescan",
+      "path": "/api/cron/ingest-lobbying?years=2026,2025&mode=rescan&rescanPages=5",
       "schedule": "0 5 * * 0"
     }
   ]

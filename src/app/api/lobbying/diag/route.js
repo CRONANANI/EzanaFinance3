@@ -21,7 +21,13 @@ export const runtime = 'nodejs';
 function isAuthorized(request) {
   const secret = process.env.CRON_SECRET;
   if (!secret) return false;
-  return (request.headers.get('authorization') || '') === `Bearer ${secret}`;
+  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
+  // `?key=$CRON_SECRET` fallback for header-less cron/callers (see ingest route).
+  try {
+    return new URL(request.url).searchParams.get('key') === secret;
+  } catch {
+    return false;
+  }
 }
 
 const supaConfigured = () =>

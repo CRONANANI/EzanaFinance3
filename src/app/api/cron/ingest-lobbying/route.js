@@ -37,7 +37,16 @@ const REQUEST_BUDGET = 110; // stay under 120/min
 function isAuthorized(request) {
   const secret = process.env.CRON_SECRET;
   if (!secret) return false;
-  return (request.headers.get('authorization') || '') === `Bearer ${secret}`;
+  // Primary: Vercel cron auto-injects `Authorization: Bearer $CRON_SECRET`.
+  if ((request.headers.get('authorization') || '') === `Bearer ${secret}`) return true;
+  // Fallback: `?key=$CRON_SECRET` for cron setups that can't send a custom
+  // header (e.g. some Vercel plans). Same secret; query params can appear in
+  // access logs, so the header path is preferred where available.
+  try {
+    return new URL(request.url).searchParams.get('key') === secret;
+  } catch {
+    return false;
+  }
 }
 
 /** Normalized LDA filing → lobbying_filings row (incl. the quarter column). */

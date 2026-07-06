@@ -424,6 +424,7 @@ export default function LobbyingClient() {
                 onPick={openClientFiling}
                 period={p.label}
                 filingsInPeriod={spenders.data?.filingsInPeriod ?? null}
+                coverage={coverage}
               />
             ) : (
               <IssueMix
@@ -602,19 +603,35 @@ function IssueChip({ label }) {
 }
 
 /* ── leaderboard: bar LENGTH = $ total, SEGMENTS = targeting activity share ── */
-function Leaderboard({ loading, rows, rankBy, onPick, period, filingsInPeriod }) {
+function Leaderboard({ loading, rows, rankBy, onPick, period, filingsInPeriod, coverage }) {
   const top = rows.slice(0, 12);
   const max = top.length ? Math.max(...top.map((s) => s.total), 1) : 1;
   if (loading) return <div className="lbx-empty">Loading leaderboard…</div>;
   if (!top.length) {
-    // Distinguish real sparseness (filings loaded, but mostly registrations with
-    // no dollar figure yet) from "nothing ingested" so this never reads as a bug.
-    if (filingsInPeriod > 0)
+    // Tell the honest truth about WHY it's empty so a blank period never reads as
+    // a bug: a coverage % / ingesting state (still loading), real sparseness
+    // (filings loaded but mostly registrations with no dollar figure yet), or
+    // genuinely nothing loaded for the period. coverage.pct/complete come from
+    // the route's period-coverage; filingsInPeriod is the loaded-filing count.
+    const pct = coverage && coverage.pct != null ? coverage.pct : null;
+    const ingesting = coverage && !coverage.complete;
+    // Only nudge toward FY 2025 when the user isn't already viewing it.
+    const tryHint = /fy\s*2025/i.test(period) ? '' : ' Try FY 2025.';
+    if (filingsInPeriod > 0) {
+      const cov = pct != null ? `${pct}% ingested` : ingesting ? 'still ingesting' : null;
       return (
         <div className="lbx-empty">
-          No disclosed spend for {period} yet — {filingsInPeriod.toLocaleString()} filing
-          {filingsInPeriod === 1 ? '' : 's'} loaded, mostly registrations (no dollar figure). Try FY
-          2025.
+          No reported dollars for {period} yet{cov ? ` — ${cov}` : ''} —{' '}
+          {filingsInPeriod.toLocaleString()} filing{filingsInPeriod === 1 ? '' : 's'} loaded, mostly
+          registrations (no dollar figure).{tryHint}
+        </div>
+      );
+    }
+    if (ingesting)
+      return (
+        <div className="lbx-empty">
+          {period} is {pct != null ? `${pct}% ingested` : 'still ingesting'} — no reported dollars
+          loaded yet.{tryHint}
         </div>
       );
     return <div className="lbx-empty">No spender data for {period} yet.</div>;
