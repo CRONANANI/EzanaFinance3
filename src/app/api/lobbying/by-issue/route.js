@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
-import { normalizeQuarter, PERIOD_KEYS } from '@/lib/lobbying/period';
+import { PERIOD_KEYS } from '@/lib/lobbying/period';
 import { issueBucket } from '@/lib/lobbying/entities';
 
 /**
@@ -33,52 +33,31 @@ export async function GET(request) {
 
   try {
     const admin = getAdminClient();
-    const { data, error } = await admin
-      .from('lobbying_filings')
-      .select('issues,filing_period,dt_posted')
-      .eq('filing_year', year)
-      .not('issues', 'is', null)
-      .limit(5000);
+    const { data, error } = await admin.rpc('lobbying_issue_mix', {
+      p_year: year,
+      p_period: period,
+      p_days: days,
+    });
     if (error) {
-      return NextResponse.json({ ...empty, _debug: `query error: ${error.message}` });
+      return NextResponse.json({ ...empty, _debug: `rpc error: ${error.message}` });
     }
     if (!Array.isArray(data) || !data.length) {
-      return NextResponse.json({ ...empty, _debug: `no rows: len=${data?.length ?? 'null'}` });
+      return NextResponse.json(empty);
     }
 
-    const rangeCutoff = period === 'range' ? Date.now() - days * 86400000 : null;
-    const quarter = ['q1', 'q2', 'q3', 'q4'].includes(period) ? period : null;
-    const inPeriod = (r) => {
-      if (quarter) return normalizeQuarter(r.filing_period) === quarter;
-      if (rangeCutoff != null) {
-        const t = Date.parse(r.dt_posted);
-        return !Number.isNaN(t) && t >= rangeCutoff;
-      }
-      return true;
-    };
-
-    const acc = new Map(); // issueDisplay → { filings }
-    let filingsAnalyzed = 0;
-    for (const r of data) {
-      if (!inPeriod(r)) continue;
-      filingsAnalyzed += 1;
-      const seen = new Set();
-      for (const it of Array.isArray(r.issues) ? r.issues : []) {
-        const label = it?.display || it?.code;
-        if (!label || seen.has(label)) continue;
-        seen.add(label);
-        acc.set(label, (acc.get(label) || 0) + 1);
-      }
-    }
-    const issues = [...acc.entries()]
-      .map(([issue, filings]) => ({
-        issue,
-        filings,
-        bucket: issueBucket(issue),
-        share: filingsAnalyzed ? filings / filingsAnalyzed : 0,
-      }))
-      .sort((a, b) => b.filings - a.filings)
-      .slice(0, 12);
+    // RPC returns exact full-scope counts: { issue, filings, total_filings }.
+    const filingsAnalyzed = Number(data[0]?.total_filings) || 0;
+    const issues = data
+      .map((r) => {
+        const filings = Number(r.filings) || 0;
+        return {
+          issue: r.issue,
+          filings,
+          bucket: issueBucket(r.issue),
+          share: filingsAnalyzed ? filings / filingsAnalyzed : 0,
+        };
+      })
+      .filter((r) => r.issue);
 
     if (!issues.length) return NextResponse.json(empty);
     return NextResponse.json({ ok: true, source: SOURCE, year, period, filingsAnalyzed, issues });
