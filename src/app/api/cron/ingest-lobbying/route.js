@@ -379,7 +379,12 @@ export async function GET(request) {
 
   const persist = async (next) => {
     const { _delta, ...row } = next;
-    await admin.from('lobbying_ingest_state').upsert(row, { onConflict: 'year,quarter' });
+    const { error: persistError } = await admin
+      .from('lobbying_ingest_state')
+      .upsert(row, { onConflict: 'year,quarter' });
+    if (persistError) {
+      errors.push(`persist ${row.year} ${row.quarter}: ${persistError.message}`);
+    }
     results.push({
       year: row.year,
       quarter: row.quarter,
