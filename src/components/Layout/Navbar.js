@@ -465,7 +465,7 @@ export function Navbar() {
             </li>
             <li className="nav-item">
               <a href="/ezana-echo" className="nav-link">
-                Ezana Echo
+                Ezana <span style={{ color: 'var(--emerald)' }}>Echo</span>
               </a>
             </li>
             <li className="nav-item">
@@ -560,7 +560,9 @@ export function Navbar() {
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <i className="bi bi-newspaper" />
-                    <span>Ezana Echo</span>
+                    <span>
+                      Ezana <span style={{ color: 'var(--emerald)' }}>Echo</span>
+                    </span>
                     <i className="bi bi-chevron-right mobile-nav-chevron" />
                   </a>
                   <a

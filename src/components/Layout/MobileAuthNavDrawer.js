@@ -76,34 +76,104 @@ function buildNavGroups(isOrgUser) {
   const trading = {
     label: 'Trading',
     items: [
-      { label: 'Brokerage & trading', href: '/trading', icon: LineChart, description: 'Live account' },
-      { label: 'Trading dashboard', href: '/trading/dashboard', icon: BarChart3, description: 'Orders & activity' },
-      { label: 'Mock portfolio', href: '/trading/mock', icon: Gamepad2, description: 'Paper $100K' },
+      {
+        label: 'Brokerage & trading',
+        href: '/trading',
+        icon: LineChart,
+        description: 'Live account',
+      },
+      {
+        label: 'Trading dashboard',
+        href: '/trading/dashboard',
+        icon: BarChart3,
+        description: 'Orders & activity',
+      },
+      {
+        label: 'Mock portfolio',
+        href: '/trading/mock',
+        icon: Gamepad2,
+        description: 'Paper $100K',
+      },
       // Council trading lives under the Team Hub group for org users.
-      { label: 'Open account', href: '/trading/open-account', icon: Banknote, description: 'Start brokerage' },
+      {
+        label: 'Open account',
+        href: '/trading/open-account',
+        icon: Banknote,
+        description: 'Start brokerage',
+      },
     ],
   };
 
   const research = {
     label: 'Research & markets',
     items: [
-      { label: 'Inside the Capitol', href: '/inside-the-capitol', icon: Landmark, description: 'Congressional trades' },
-      { label: 'Company & portfolio research', href: '/company-research', icon: BarChart3, description: 'Stocks & models' },
-      { label: 'Global market analysis', href: '/market-analysis', icon: Globe2, description: 'Sectors & trends' },
-      { label: 'Financial analytics', href: '/financial-analytics', icon: LineChart, description: 'Deep metrics' },
-      { label: 'Alternative markets', href: '/alternative-markets', icon: Globe2, description: 'Crypto & commodities' },
+      {
+        label: 'Inside the Capitol',
+        href: '/inside-the-capitol',
+        icon: Landmark,
+        description: 'Congressional trades',
+      },
+      {
+        label: 'Company & portfolio research',
+        href: '/company-research',
+        icon: BarChart3,
+        description: 'Stocks & models',
+      },
+      {
+        label: 'Global market analysis',
+        href: '/market-analysis',
+        icon: Globe2,
+        description: 'Sectors & trends',
+      },
+      {
+        label: 'Financial analytics',
+        href: '/financial-analytics',
+        icon: LineChart,
+        description: 'Deep metrics',
+      },
+      {
+        label: 'Alternative markets',
+        href: '/alternative-markets',
+        icon: Globe2,
+        description: 'Crypto & commodities',
+      },
       { label: 'Ezana Echo', href: '/ezana-echo', icon: Radio, description: 'Articles & insights' },
-      { label: 'Kairos Signal', href: '/kairos-signal', icon: CloudSun, description: 'Weather & macro' },
-      { label: 'Betting markets', href: '/betting-markets', icon: Target, description: 'Odds & EV' },
-      { label: 'For the Quants', href: '/for-the-quants', icon: Calculator, description: 'Backtests & tools' },
-      { label: 'Centaur Intelligence', href: '/centaur-intelligence', icon: Sparkles, description: 'AI assistant' },
+      {
+        label: 'Kairos Signal',
+        href: '/kairos-signal',
+        icon: CloudSun,
+        description: 'Weather & macro',
+      },
+      {
+        label: 'Betting markets',
+        href: '/betting-markets',
+        icon: Target,
+        description: 'Odds & EV',
+      },
+      {
+        label: 'For the Quants',
+        href: '/for-the-quants',
+        icon: Calculator,
+        description: 'Backtests & tools',
+      },
+      {
+        label: 'Centaur Intelligence',
+        href: '/centaur-intelligence',
+        icon: Sparkles,
+        description: 'AI assistant',
+      },
     ],
   };
 
   const globalRank = {
     label: 'Rankings & tools',
     items: [
-      { label: 'Empire rankings', href: '/empire-ranking', icon: Crown, description: 'Leaders & scores' },
+      {
+        label: 'Empire rankings',
+        href: '/empire-ranking',
+        icon: Crown,
+        description: 'Leaders & scores',
+      },
       { label: 'Leaderboard', href: '/leaderboard', icon: Trophy, description: 'Top performers' },
       { label: 'Terminal', href: '/terminal', icon: Terminal, description: 'Market terminal' },
     ],
@@ -113,26 +183,71 @@ function buildNavGroups(isOrgUser) {
     ? {
         label: 'Community',
         items: [
-          { label: 'Community feed', href: '/community', icon: Users, description: 'Posts & people' },
-          { label: 'Messages', href: '/community/messages', icon: MessageSquare, description: 'Direct messages' },
+          {
+            label: 'Community feed',
+            href: '/community',
+            icon: Users,
+            description: 'Posts & people',
+          },
+          {
+            label: 'Messages',
+            href: '/community/messages',
+            icon: MessageSquare,
+            description: 'Direct messages',
+          },
         ],
       }
     : {
         label: 'Team Hub',
         items: [
-          { label: 'Team hub home', href: '/org-team-hub', icon: Building2, description: 'Fund overview & analytics' },
-          { label: 'Council trading', href: '/org-trading', icon: Landmark, description: 'Mock books & flags' },
-          { label: 'Pitch pipeline', href: '/org-team-hub/pitches', icon: Kanban, description: 'Active committee pitches' },
-          { label: 'Pitch archive', href: '/org-team-hub/pitch-archive', icon: Archive, description: 'Decided pitches & hindsight' },
-          { label: 'Hierarchy', href: '/org-team-hub/hierarchy', icon: Network, description: 'Org structure' },
+          {
+            label: 'Team hub home',
+            href: '/org-team-hub',
+            icon: Building2,
+            description: 'Fund overview & analytics',
+          },
+          {
+            label: 'Council trading',
+            href: '/org-trading',
+            icon: Landmark,
+            description: 'Mock books & flags',
+          },
+          {
+            label: 'Pitch pipeline',
+            href: '/org-team-hub/pitches',
+            icon: Kanban,
+            description: 'Active committee pitches',
+          },
+          {
+            label: 'Pitch archive',
+            href: '/org-team-hub/pitch-archive',
+            icon: Archive,
+            description: 'Decided pitches & hindsight',
+          },
+          {
+            label: 'Hierarchy',
+            href: '/org-team-hub/hierarchy',
+            icon: Network,
+            description: 'Org structure',
+          },
         ],
       };
 
   const learning = {
     label: 'Learning',
     items: [
-      { label: 'Learning center', href: '/learning-center', icon: GraduationCap, description: 'Courses' },
-      { label: 'Badges', href: '/learning-center/badges', icon: Award, description: 'Achievements' },
+      {
+        label: 'Learning center',
+        href: '/learning-center',
+        icon: GraduationCap,
+        description: 'Courses',
+      },
+      {
+        label: 'Badges',
+        href: '/learning-center/badges',
+        icon: Award,
+        description: 'Achievements',
+      },
     ],
   };
 
@@ -140,11 +255,21 @@ function buildNavGroups(isOrgUser) {
     label: 'Account & help',
     items: [
       { label: 'Settings', href: '/settings', icon: Settings, description: 'Preferences & plan' },
-      { label: 'Profile & appearance', href: '/user-profile-settings', icon: UserCircle, description: 'Your profile' },
+      {
+        label: 'Profile & appearance',
+        href: '/user-profile-settings',
+        icon: UserCircle,
+        description: 'Your profile',
+      },
       { label: 'Select plan', href: '/select-plan', icon: CreditCard, description: 'Upgrade' },
       { label: 'Subscribe', href: '/subscribe', icon: ShoppingCart, description: 'Checkout' },
       { label: 'Onboarding', href: '/onboarding', icon: ListChecks, description: 'Get started' },
-      { label: 'Help center', href: '/help-center', icon: HelpCircle, description: 'Guides & support' },
+      {
+        label: 'Help center',
+        href: '/help-center',
+        icon: HelpCircle,
+        description: 'Guides & support',
+      },
     ],
   };
 
@@ -158,24 +283,84 @@ function buildPartnerNavGroups() {
       label: 'Partner',
       items: [
         { label: 'Partner home', href: '/partner-home', icon: Home, description: 'Hub' },
-        { label: 'Partner dashboard', href: '/partner-dashboard', icon: LayoutDashboard, description: 'Metrics' },
-        { label: 'Partner community', href: '/partner-community', icon: Users, description: 'Network' },
-        { label: 'Content studio', href: '/partner-learning', icon: GraduationCap, description: 'Courses & content' },
+        {
+          label: 'Partner dashboard',
+          href: '/partner-dashboard',
+          icon: LayoutDashboard,
+          description: 'Metrics',
+        },
+        {
+          label: 'Partner community',
+          href: '/partner-community',
+          icon: Users,
+          description: 'Network',
+        },
+        {
+          label: 'Content studio',
+          href: '/partner-learning',
+          icon: GraduationCap,
+          description: 'Courses & content',
+        },
       ],
     },
     {
       label: 'Research',
       items: [
-        { label: 'Centaur Intelligence', href: '/centaur-intelligence', icon: Sparkles, description: 'AI assistant' },
-        { label: 'Kairos Signal', href: '/kairos-signal', icon: CloudSun, description: 'Weather & macro' },
-        { label: 'Inside the Capitol', href: '/inside-the-capitol', icon: Landmark, description: 'Congressional trades' },
-        { label: 'Company & portfolio research', href: '/company-research', icon: BarChart3, description: 'Analysis' },
-        { label: 'Global market analysis', href: '/market-analysis', icon: Globe2, description: 'Trends' },
-        { label: 'For the Quants', href: '/for-the-quants', icon: Calculator, description: 'Quant tools' },
-        { label: 'Betting markets', href: '/betting-markets', icon: Target, description: 'Odds & EV' },
+        {
+          label: 'Centaur Intelligence',
+          href: '/centaur-intelligence',
+          icon: Sparkles,
+          description: 'AI assistant',
+        },
+        {
+          label: 'Kairos Signal',
+          href: '/kairos-signal',
+          icon: CloudSun,
+          description: 'Weather & macro',
+        },
+        {
+          label: 'Inside the Capitol',
+          href: '/inside-the-capitol',
+          icon: Landmark,
+          description: 'Congressional trades',
+        },
+        {
+          label: 'Company & portfolio research',
+          href: '/company-research',
+          icon: BarChart3,
+          description: 'Analysis',
+        },
+        {
+          label: 'Global market analysis',
+          href: '/market-analysis',
+          icon: Globe2,
+          description: 'Trends',
+        },
+        {
+          label: 'For the Quants',
+          href: '/for-the-quants',
+          icon: Calculator,
+          description: 'Quant tools',
+        },
+        {
+          label: 'Betting markets',
+          href: '/betting-markets',
+          icon: Target,
+          description: 'Odds & EV',
+        },
         { label: 'Ezana Echo', href: '/ezana-echo', icon: Radio, description: 'Articles' },
-        { label: 'Alternative markets', href: '/alternative-markets', icon: Globe2, description: 'Crypto & commodities' },
-        { label: 'Financial analytics', href: '/financial-analytics', icon: LineChart, description: 'Deep metrics' },
+        {
+          label: 'Alternative markets',
+          href: '/alternative-markets',
+          icon: Globe2,
+          description: 'Crypto & commodities',
+        },
+        {
+          label: 'Financial analytics',
+          href: '/financial-analytics',
+          icon: LineChart,
+          description: 'Deep metrics',
+        },
       ],
     },
     {
@@ -188,10 +373,15 @@ function buildPartnerNavGroups() {
   ];
 }
 
-export function MobileAuthNavDrawer({ open, onClose, isOrgUser = false, variant = 'user', onLogout }) {
+export function MobileAuthNavDrawer({
+  open,
+  onClose,
+  isOrgUser = false,
+  variant = 'user',
+  onLogout,
+}) {
   const pathname = usePathname();
-  const groups =
-    variant === 'partner' ? buildPartnerNavGroups() : buildNavGroups(isOrgUser);
+  const groups = variant === 'partner' ? buildPartnerNavGroups() : buildNavGroups(isOrgUser);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -230,7 +420,7 @@ export function MobileAuthNavDrawer({ open, onClose, isOrgUser = false, variant 
         className={cn(
           'mobile-auth-drawer',
           'absolute right-0 top-0 flex h-full w-[min(100%,20rem)] max-w-sm flex-col',
-          'border-l border-border bg-card text-foreground shadow-xl'
+          'border-l border-border bg-card text-foreground shadow-xl',
         )}
         onClick={(e) => e.stopPropagation()}
         onKeyDown={(e) => e.stopPropagation()}
@@ -266,18 +456,26 @@ export function MobileAuthNavDrawer({ open, onClose, isOrgUser = false, variant 
                           'flex items-center gap-3 border-l-2 px-4 py-3 text-sm font-medium transition-colors',
                           active
                             ? 'border-primary bg-primary/10 text-primary'
-                            : 'border-transparent text-foreground hover:bg-muted/80'
+                            : 'border-transparent text-foreground hover:bg-muted/80',
                         )}
                       >
                         <Icon
                           className={cn(
                             'h-4 w-4 shrink-0',
-                            active ? 'text-primary' : 'text-muted-foreground'
+                            active ? 'text-primary' : 'text-muted-foreground',
                           )}
                           aria-hidden
                         />
                         <div className="min-w-0 flex-1">
-                          <div className="truncate">{item.label}</div>
+                          <div className="truncate">
+                            {item.href === '/ezana-echo' ? (
+                              <>
+                                Ezana <span style={{ color: 'var(--emerald)' }}>Echo</span>
+                              </>
+                            ) : (
+                              item.label
+                            )}
+                          </div>
                           {item.description && (
                             <div className="truncate text-[11px] font-normal text-muted-foreground">
                               {item.description}
@@ -287,7 +485,7 @@ export function MobileAuthNavDrawer({ open, onClose, isOrgUser = false, variant 
                         <ChevronRight
                           className={cn(
                             'h-3.5 w-3.5 shrink-0',
-                            active ? 'text-primary' : 'text-muted-foreground/50'
+                            active ? 'text-primary' : 'text-muted-foreground/50',
                           )}
                           aria-hidden
                         />
@@ -318,7 +516,7 @@ export function MobileAuthNavDrawer({ open, onClose, isOrgUser = false, variant 
         )}
       </nav>
     </div>,
-    document.body
+    document.body,
   );
 }
 

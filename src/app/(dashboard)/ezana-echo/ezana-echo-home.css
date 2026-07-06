@@ -18,9 +18,11 @@
   box-sizing: border-box;
 }
 .eth-wrap {
-  max-width: 1300px;
+  /* match .nav-container-centered (1400px envelope, 2rem side padding) so the
+     hero's edges align with the nav logo and "Become a Partner" */
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 0 40px;
+  padding: 0 2rem;
 }
 
 /* ── Intro row (no masthead — the app navbar sits above) ─────────── */
@@ -136,7 +138,7 @@
 }
 .eth-feat {
   position: relative;
-  min-height: 460px;
+  min-height: 276px; /* was 460px (~40% shorter) */
   cursor: pointer;
   border-right: 1px solid var(--border-primary);
   display: block;
@@ -172,7 +174,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  padding: 36px;
+  padding: 22px; /* was 36px */
 }
 /* Hero copy sits on a permanently dark scrim in BOTH themes, so it must stay
    light regardless of the page's light/dark text color — hence !important to
