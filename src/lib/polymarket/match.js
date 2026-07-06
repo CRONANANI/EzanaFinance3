@@ -10,9 +10,27 @@
  *
  * URL construction uses groupSlug only (event-level slug). Markets
  * without a groupSlug are filtered out so we never emit a 404 link.
+ *
+ * findMatchingMarkets is SEMANTIC-first: it embeds the article and does a
+ * pgvector nearest-neighbour query against the polymarket_market_index (built by
+ * the index-polymarket cron), then layers the entity boost + sports reject +
+ * volume/confidence gate on top. When embeddings/index aren't available (no key,
+ * empty index, or a miss) it falls back to the original entity-based Gamma
+ * search, so behaviour degrades gracefully rather than breaking.
  */
+import { getAdminClient } from '@/lib/supabase';
+import { embedText, hasEmbeddingKey } from '@/lib/embeddings';
+import { cacheGetOrSet } from '@/lib/cache';
 
 const GAMMA_BASE = 'https://gamma-api.polymarket.com';
+
+const supaConfigured = () =>
+  !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+
+// Similarity gate (cosine, 0..1) and volume floor — tune empirically against the
+// Polymarket example set. Env-overridable so they adjust without a redeploy.
+const SIM_THRESHOLD = Number(process.env.POLYMARKET_SIM_THRESHOLD) || 0.78;
+const MIN_VOLUME = Number(process.env.POLYMARKET_MIN_VOLUME) || 0;
 
 /* ════════════════════════════════════════════════════════════════════
    Stop words — not emitted as search queries (entity-only queries).
@@ -602,13 +620,178 @@ export async function findMatchingMarket(event) {
   }
 }
 
+/* ════════════════════════════════════════════════════════════════════
+   Semantic matching (embeddings + pgvector) — the primary path
+   ════════════════════════════════════════════════════════════════════ */
+
+const SPORTS_TERMS_RE =
+  /\b(win by|ko\/tko|round \d|fight|bout|match|seed|playoff|championship|ufc|mma|boxing|nfl|nba|nhl|mlb|o\/u \d|spread|moneyline|over\/under)\b/i;
+
+/** Sports-junk reject (same rule as the lexical gate), reused semantically. */
+function sportsRejected(haystack, entityMap) {
+  if (!SPORTS_TERMS_RE.test(haystack)) return false;
+  const hasSportsEntity = [...entityMap.values()].some((e) => e.topic === 'sports');
+  return !hasSportsEntity;
+}
+
+/** Small bonus (capped) when a market shares a named entity with the article —
+    a boost, not a gate, so dictionary hits rank up without blocking misses. */
+function entityBonus(haystack, entityMap) {
+  let bonus = 0;
+  for (const [canonical] of entityMap) {
+    if (canonical.length < 3) continue;
+    if (haystack.includes(canonical)) bonus += 0.04;
+  }
+  return Math.min(bonus, 0.12);
+}
+
+/** polymarket_market_index row → the market shape formatMarket expects. */
+function indexRowToMarket(row) {
+  return {
+    id: row.market_id,
+    question: row.question,
+    groupItemTitle: row.question,
+    description: row.description || '',
+    groupSlug: row.group_slug,
+    eventSlug: row.event_slug,
+    slug: row.slug,
+    volume: Number(row.volume) || 0,
+    volume24hr: Number(row.volume24hr) || 0,
+    liquidity: Number(row.liquidity) || 0,
+    endDate: row.end_date,
+    icon: row.icon,
+    category: row.category,
+    lastTradePrice: row.yes_price,
+    active: true,
+  };
+}
+
+function articleText(event) {
+  const headline = String(event?.headline || event?.title || '');
+  const summary = String(event?.summary || event?.body || event?.description || '');
+  return `${headline}\n${summary}`.trim();
+}
+
+function djb2(str) {
+  let h = 5381;
+  for (let i = 0; i < str.length; i += 1) h = ((h << 5) + h + str.charCodeAt(i)) >>> 0;
+  return h.toString(36);
+}
+
+function articleCacheKey(event) {
+  const id = event?.id ?? event?.articleId ?? event?.eventId ?? null;
+  return id ? `pm:emb:id:${id}` : `pm:emb:h:${djb2(articleText(event))}`;
+}
+
+/** Is the index populated at all? (cached) — distinguishes "index empty, fall
+    back to lexical" from "index live but nothing cleared the bar" (honest empty). */
+async function indexPopulated(admin) {
+  try {
+    return await cacheGetOrSet('pm:index:populated', 300, async () => {
+      const { count } = await admin
+        .from('polymarket_market_index')
+        .select('market_id', { count: 'exact', head: true });
+      return (count || 0) > 0;
+    });
+  } catch {
+    return false;
+  }
+}
+
 /**
- * Find up to 6 relevant Polymarket markets for an event.
- *
- * Phase 1: entity-direct search (hard relevance gate)
- * Phase 2: topic backfill if < 6 results
+ * Semantic match: embed the article, pgvector NN query, then entity boost +
+ * sports reject + confidence/volume gate. Returns:
+ *   - { markets, noHighConfidence } when the index answered (markets or honest empty)
+ *   - null when semantic is unavailable/failed → caller falls back to lexical
+ */
+async function findMatchingMarketsSemantic(event, TARGET) {
+  const text = articleText(event);
+  if (!text) return null;
+
+  const vec = await cacheGetOrSet(articleCacheKey(event), 600, () => embedText(text)).catch(
+    () => null,
+  );
+  if (!Array.isArray(vec) || !vec.length) return null; // embedding failed → fall back
+
+  const admin = getAdminClient();
+  let rows;
+  try {
+    const { data, error } = await admin.rpc('match_polymarket_markets', {
+      query_embedding: vec,
+      match_threshold: SIM_THRESHOLD,
+      match_count: Math.max(TARGET * 3, 10),
+      min_volume: MIN_VOLUME,
+    });
+    if (error) return null; // RPC/index problem → fall back
+    rows = Array.isArray(data) ? data : [];
+  } catch {
+    return null;
+  }
+
+  if (!rows.length) {
+    // nothing cleared the threshold — only honest-empty if the index is actually
+    // populated; if it's empty (cron hasn't run), fall back to lexical instead.
+    return (await indexPopulated(admin)) ? { markets: [], noHighConfidence: true } : null;
+  }
+
+  const { entities } = extractEntities({
+    ...event,
+    headline: event?.headline ?? event?.title ?? '',
+  });
+
+  const seen = new Set();
+  const scored = [];
+  for (const row of rows) {
+    const id = String(row.market_id || '');
+    if (!id || seen.has(id)) continue;
+    const haystack = `${row.question || ''} ${row.description || ''}`.toLowerCase();
+    if (sportsRejected(haystack, entities)) continue;
+    seen.add(id);
+    const sim = Number(row.similarity) || 0;
+    scored.push({
+      row,
+      rank: sim + entityBonus(haystack, entities),
+      volume: Number(row.volume) || 0,
+    });
+  }
+  // rank by similarity(+entity boost), tie-break toward the more liquid market
+  scored.sort((a, b) => b.rank - a.rank || b.volume - a.volume);
+
+  const markets = scored
+    .slice(0, TARGET)
+    .map((s) => formatMarket(indexRowToMarket(s.row)))
+    .filter((m) => m.hasValidUrl)
+    .slice(0, TARGET);
+
+  return { markets, noHighConfidence: markets.length === 0 };
+}
+
+/**
+ * Find up to 6 relevant Polymarket markets for an event. Semantic-first
+ * (embeddings + pgvector); falls back to the entity-based Gamma search when
+ * embeddings/index aren't available or the index is empty.
  */
 export async function findMatchingMarkets(event, { limit = 6 } = {}) {
+  const TARGET = Math.min(limit, 6);
+  if (supaConfigured() && hasEmbeddingKey()) {
+    try {
+      const semantic = await findMatchingMarketsSemantic(event, TARGET);
+      // Trust the semantic result whenever the index answered (markets found, or
+      // an authoritative honest-empty). null means unavailable → fall back.
+      if (semantic) return semantic;
+    } catch {
+      /* fall through to lexical */
+    }
+  }
+  return findMatchingMarketsLexical(event, { limit });
+}
+
+/**
+ * Lexical fallback: entity-direct Gamma search with the hard relevance gate.
+ * Used when semantic matching is unavailable (no embedding key, empty index, or
+ * a transient failure). This is the original matcher, preserved intact.
+ */
+async function findMatchingMarketsLexical(event, { limit = 6 } = {}) {
   const TARGET = Math.min(limit, 6);
 
   try {

@@ -88,6 +88,10 @@
     {
       "path": "/api/cron/ingest-lobbying?years=2026,2025&mode=rescan&rescanPages=5",
       "schedule": "0 5 * * 0"
+    },
+    {
+      "path": "/api/cron/index-polymarket?maxMarkets=1500",
+      "schedule": "0 */2 * * *"
     }
   ]
 }
