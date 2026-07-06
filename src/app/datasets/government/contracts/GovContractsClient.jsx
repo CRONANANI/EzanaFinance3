@@ -292,17 +292,18 @@ export default function GovContractsClient({ awards = [], isLive = false, note =
           </section>
 
           <p className="gcx-note">{note}</p>
+
+          {/* Leading contractors — now inside .gcx-main so its left edge
+              aligns with the treemap and its width tracks the main column. */}
+          <section className="gcx-card gcx-list">
+            <div className="gcx-list-head">
+              <h2 className="gcx-hero-title">Leading contractors · {label}</h2>
+              <span className="gcx-list-count">{filtered.length} shown</span>
+            </div>
+            <ContractorList recipients={filtered.slice(0, 25)} onPick={setSelected} />
+          </section>
         </main>
       </div>
-
-      {/* Leading contractors — full page width, below the rail + treemap row. */}
-      <section className="gcx-card gcx-list">
-        <div className="gcx-list-head">
-          <h2 className="gcx-hero-title">Leading contractors · {label}</h2>
-          <span className="gcx-list-count">{filtered.length} shown</span>
-        </div>
-        <ContractorList recipients={filtered.slice(0, 25)} onPick={setSelected} />
-      </section>
 
       {selected && <DrillModal recipient={selected} onClose={() => setSelected(null)} />}
     </div>

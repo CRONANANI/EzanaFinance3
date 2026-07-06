@@ -524,10 +524,10 @@
   text-align: right;
 }
 
-/* ── list (full page width, below the rail + treemap row) ── */
+/* ── list (inside .gcx-main; left edge aligns with the treemap) ── */
 .gcx-list {
   padding: 14px 18px;
-  margin-top: 18px;
+  /* margin-top removed — the .gcx-main flex-column gap (18px) now spaces it. */
 }
 .gcx-list-head {
   display: flex;
