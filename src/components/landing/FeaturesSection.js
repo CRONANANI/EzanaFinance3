@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { FeatureCardBack } from './features-card-backs';
+import { useEffect, useState } from 'react';
+import { FeatureVisual } from './features-visuals';
 import { HOW_STEPS, METRICS_BAND } from './features-landing-data';
+import './features-visuals.css';
 
 const FEATURE_CARDS = [
   {
@@ -38,11 +39,18 @@ const FEATURE_CARDS = [
 ];
 
 export function FeaturesSection() {
-  // Touch devices have no hover, so tapping a card toggles the flip. Desktop
-  // still flips on hover/focus (CSS); this state layers on top for touch/click
-  // and keyboard, and stays in sync via aria-pressed.
-  const [flipped, setFlipped] = useState(null);
-  const toggle = (key) => setFlipped((prev) => (prev === key ? null : key));
+  // One timer drives all six visuals: a single `tick` incremented every 2000ms.
+  // Each visual derives its frame from `tick`. Respect prefers-reduced-motion —
+  // render the resting frame (tick stays 0) and never start the interval.
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return undefined;
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (mq.matches) return undefined;
+    const id = setInterval(() => setTick((t) => t + 1), 2000);
+    return () => clearInterval(id);
+  }, []);
 
   return (
     <section className="features-section" id="features">
@@ -58,39 +66,14 @@ export function FeaturesSection() {
 
         <div className="features-grid">
           {FEATURE_CARDS.map((card) => (
-            // Desktop flips on hover/focus (CSS). Touch/click and keyboard flip
-            // via the is-flipped class toggled here, so mobile users (no hover)
-            // can still reveal the back face.
-            <div
-              key={card.key}
-              className={`feature-card flip-card${flipped === card.key ? ' is-flipped' : ''}`}
-              tabIndex={0}
-              role="button"
-              aria-pressed={flipped === card.key}
-              aria-label={`${card.title}. Tap, or hover, to preview.`}
-              onClick={() => toggle(card.key)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  toggle(card.key);
-                }
-              }}
-            >
-              <div className="flip-inner">
-                <div className="flip-front">
-                  <h3 className="feature-card-title">{card.title}</h3>
-                  <p className="feature-card-description">{card.desc}</p>
-                  <div className="flip-lines" aria-hidden>
-                    <span />
-                    <span />
-                    <span />
-                    <span />
-                    <span />
-                  </div>
-                </div>
-                <div className="flip-back">
-                  <FeatureCardBack cardKey={card.key} />
-                </div>
+            // Single-face card: title → body → animated visual pinned to the
+            // bottom. Every visual shares one fixed-size frame so all six read
+            // uniform (see .feature-viz + features-visuals.jsx).
+            <div key={card.key} className="feature-card feature-card--viz">
+              <h3 className="feature-card-title">{card.title}</h3>
+              <p className="feature-card-description">{card.desc}</p>
+              <div className="feature-viz" aria-hidden>
+                <FeatureVisual cardKey={card.key} tick={tick} />
               </div>
             </div>
           ))}
