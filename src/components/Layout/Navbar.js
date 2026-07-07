@@ -127,44 +127,16 @@ export function Navbar() {
     // get the standard Dashboard item.
     ...(isOrgUser
       ? [
+          // Team Hub stays reachable as a direct nav link; the dropdown menu was
+          // removed (D1). Council Trading / Pitch Pipeline / Pitch Archive are
+          // reached from the Team Hub home Command Center + in-page links.
           {
             id: 5,
             title: 'Team Hub',
             url: '/org-team-hub',
             icon: 'bi-building',
-            dropdown: true,
             isActive: pathname?.includes('/org-team-hub') || pathname?.includes('/org-trading'),
             variant: 'purple',
-            items: [
-              {
-                id: 51,
-                title: 'Home',
-                description: 'Fund overview, activity & analytics',
-                url: '/org-team-hub',
-                icon: 'bi-building',
-              },
-              {
-                id: 52,
-                title: 'Council Trading',
-                description: 'Org mock portfolios & position flags',
-                url: '/org-trading',
-                icon: 'bi-bank2',
-              },
-              {
-                id: 53,
-                title: 'Pitch Pipeline',
-                description: 'Active pitches through committee',
-                url: '/org-team-hub/pitches',
-                icon: 'bi-kanban',
-              },
-              {
-                id: 54,
-                title: 'Pitch Archive',
-                description: 'Decided pitches & hindsight',
-                url: '/org-team-hub/pitch-archive',
-                icon: 'bi-archive',
-              },
-            ],
           },
         ]
       : [
