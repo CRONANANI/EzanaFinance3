@@ -547,7 +547,13 @@ export default function PricingPage() {
       <section className="pricing-cards-section" aria-label="Plans">
         <div className="pricing-cards-grid pricing-cards-grid--five">
           {PLANS.map((plan) => {
-            const price = billing === 'yearly' ? plan.yearlyPrice : plan.monthlyPrice;
+            // annual shows the true yearly total (per-month-equivalent × 12)
+            const price =
+              billing === 'yearly'
+                ? plan.yearlyPrice != null
+                  ? plan.yearlyPrice * 12
+                  : null
+                : plan.monthlyPrice;
             const isContact = plan.contactSales;
             const isPending = pendingPlan === plan.id;
             const ctaLabel = plan.isFree
@@ -597,7 +603,7 @@ export default function PricingPage() {
                       <span className="plan-price-currency">$</span>
                       <span className="plan-price-amount">{price}</span>
                       <span className="plan-price-interval">
-                        /{billing === 'yearly' ? 'mo billed annually' : 'month'}
+                        /{billing === 'yearly' ? 'annual' : 'month'}
                       </span>
                     </>
                   )}
