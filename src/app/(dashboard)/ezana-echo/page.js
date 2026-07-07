@@ -402,7 +402,7 @@ export default function EzanaEchoPage() {
                 Subscribe
               </button>
             </div>
-            <span className="eth-news-fine">Free · Curated daily · Unsubscribe anytime</span>
+            <span className="eth-news-fine">Unsubscribe anytime</span>
           </form>
         </div>
       </div>
