@@ -6,19 +6,19 @@ function eventHasSearchSignal(event) {
   if (!event) return false;
   if (event.headline || event.title) return true;
   if (event.summary || event.description) return true;
-  if (Array.isArray(event.impactedKeywords) && event.impactedKeywords.length > 0) return true;
-  if (Array.isArray(event.impactedSymbols) && event.impactedSymbols.length > 0) return true;
   return false;
 }
 
 /**
- * Lazily fetches Polymarket markets related to an event. Designed to be called
- * when a user opens a "View related prediction markets" panel — not eagerly on
- * every event render — so we don't hit Polymarket's API for events the user
- * never inspects.
+ * Lazily fetches prediction markets SEMANTICALLY related to an event. Embeds the
+ * event's headline + summary server-side (Supabase gte-small) and nearest-
+ * neighbour matches pre-embedded markets via /api/market-data/related-markets
+ * (match_markets RPC, cosine, threshold 0.803). Matches on meaning, not shared
+ * words — far more accurate than the old keyword/entity substring search.
  *
- * Pass `enabled: false` to defer the fetch. Flip to true (e.g. on panel open)
- * to trigger the request.
+ * Signature and `enabled`-gating are unchanged so RelatedMarketsPanel and its
+ * call sites need no changes. `noHighConfidence` is set true when nothing clears
+ * the threshold (empty result) — driving the panel's honest empty state.
  */
 export function useRelatedPolymarketMarkets(event, { enabled = true, limit = 8 } = {}) {
   const [markets, setMarkets] = useState([]);
@@ -26,19 +26,21 @@ export function useRelatedPolymarketMarkets(event, { enabled = true, limit = 8 }
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const kwKey = Array.isArray(event?.impactedKeywords) ? event.impactedKeywords.join('\u0001') : '';
-  const symKey = Array.isArray(event?.impactedSymbols) ? event.impactedSymbols.join('\u0001') : '';
+  // Query text mirrors Adjacent: "${headline}. ${summary}".
+  const queryText = event
+    ? `${event.headline || event.title || ''}. ${event.summary || event.description || ''}`.trim()
+    : '';
 
   useEffect(() => {
     if (!enabled || !event) {
-      return;
+      return undefined;
     }
     if (!eventHasSearchSignal(event)) {
       setMarkets([]);
       setNoHighConfidence(false);
       setError(null);
       setIsLoading(false);
-      return;
+      return undefined;
     }
 
     let cancelled = false;
@@ -48,26 +50,18 @@ export function useRelatedPolymarketMarkets(event, { enabled = true, limit = 8 }
 
     async function run() {
       try {
-        const res = await fetch('/api/polymarket/related-markets', {
+        const res = await fetch('/api/market-data/related-markets', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            headline: event.headline ?? event.title,
-            title: event.title ?? event.headline,
-            topic: event.topic,
-            summary: event.summary,
-            description: event.description,
-            impactedKeywords: event.impactedKeywords,
-            impactedSymbols: event.impactedSymbols,
-            country: event.country,
-            limit,
-          }),
+          body: JSON.stringify({ text: queryText, limit }),
         });
         const data = await res.json();
         if (cancelled) return;
-        if (!res.ok) throw new Error(data?.error || 'Failed to load markets');
-        setMarkets(Array.isArray(data?.markets) ? data.markets : []);
-        setNoHighConfidence(Boolean(data?.noHighConfidence));
+        if (!res.ok) throw new Error(data?._debug || data?.error || 'Failed to load markets');
+        const list = Array.isArray(data?.markets) ? data.markets : [];
+        setMarkets(list);
+        // nothing cleared the similarity threshold → honest empty state
+        setNoHighConfidence(list.length === 0);
       } catch (err) {
         if (!cancelled) setError(err.message);
       } finally {
@@ -79,19 +73,9 @@ export function useRelatedPolymarketMarkets(event, { enabled = true, limit = 8 }
     return () => {
       cancelled = true;
     };
-  }, [
-    enabled,
-    limit,
-    event?.id,
-    event?.headline,
-    event?.title,
-    event?.summary,
-    event?.description,
-    kwKey,
-    symKey,
-    event?.topic,
-    event?.country,
-  ]);
+    // queryText encodes the event's text; re-run when it (or enabled/limit) changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enabled, limit, queryText]);
 
   return { markets, noHighConfidence, isLoading, error };
 }

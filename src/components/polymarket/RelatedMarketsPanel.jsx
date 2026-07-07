@@ -43,8 +43,8 @@ export function RelatedMarketsPanel({
 
       {variant === 'modal' && (
         <p className="pm-related__subtitle">
-          Live prediction markets matched to this event&apos;s keywords. Odds shown in cents (¢) —
-          the implied probability of the YES outcome.
+          Live prediction markets semantically matched to this event. Odds shown in cents (¢) — the
+          implied probability of the YES outcome.
         </p>
       )}
 
@@ -64,8 +64,8 @@ export function RelatedMarketsPanel({
 
       {!isLoading && !error && markets.length === 0 && noHighConfidence && (
         <div className="pm-related__empty">
-          No high-confidence prediction markets match this article. We searched Polymarket with this
-          event&apos;s keywords and symbols, but nothing passed the relevance bar right now.
+          No high-confidence prediction markets match this article. Nothing cleared the relevance
+          threshold for this event right now.
         </div>
       )}
 

@@ -92,6 +92,10 @@
     {
       "path": "/api/cron/index-polymarket?maxMarkets=1500",
       "schedule": "0 */2 * * *"
+    },
+    {
+      "path": "/api/cron/index-prediction-markets?maxMarkets=400",
+      "schedule": "30 */2 * * *"
     }
   ]
 }
