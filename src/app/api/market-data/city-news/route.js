@@ -1,10 +1,96 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
+import {
+  hasMarketaux,
+  fetchCityNews,
+  buildSearchQuery,
+  normalizeMarketauxArticle,
+} from '@/lib/marketaux/client';
 
 export const dynamic = 'force-dynamic';
 
 const FINNHUB_KEY = process.env.FINNHUB_API_KEY;
 const BASE = 'https://finnhub.io/api/v1';
+
+// City → ISO-3166-1 alpha-2 (lowercase) for Marketaux `countries`. Keyed by the
+// same hyphenated ids as CITY_KEYWORDS / FINANCIAL_CITIES (what the panel passes
+// as ?city=). Same-country cities (us/ca/…) are separated by keyword `search`.
+const CITY_TO_COUNTRY = {
+  'new-york': 'us',
+  boston: 'us',
+  miami: 'us',
+  'san-francisco': 'us',
+  chicago: 'us',
+  toronto: 'ca',
+  montreal: 'ca',
+  'sao-paulo': 'br',
+  london: 'gb',
+  frankfurt: 'de',
+  paris: 'fr',
+  geneva: 'ch',
+  dublin: 'ie',
+  stockholm: 'se',
+  dubai: 'ae',
+  'tel-aviv': 'il',
+  mumbai: 'in',
+  singapore: 'sg',
+  'hong-kong': 'hk',
+  shanghai: 'cn',
+  tokyo: 'jp',
+  seoul: 'kr',
+  sydney: 'au',
+  melbourne: 'au',
+  auckland: 'nz',
+  johannesburg: 'za',
+  'addis-ababa': 'et',
+  lagos: 'ng',
+  nairobi: 'ke',
+  moscow: 'ru',
+  santiago: 'cl',
+  lima: 'pe',
+  bogota: 'co',
+  medellin: 'co',
+  'buenos-aires': 'ar',
+  hamilton: 'bm',
+};
+
+const COUNTRY_NAME = {
+  us: 'United States',
+  ca: 'Canada',
+  br: 'Brazil',
+  gb: 'United Kingdom',
+  de: 'Germany',
+  fr: 'France',
+  ch: 'Switzerland',
+  ie: 'Ireland',
+  se: 'Sweden',
+  ae: 'United Arab Emirates',
+  il: 'Israel',
+  in: 'India',
+  sg: 'Singapore',
+  hk: 'Hong Kong',
+  cn: 'China',
+  jp: 'Japan',
+  kr: 'South Korea',
+  au: 'Australia',
+  nz: 'New Zealand',
+  za: 'South Africa',
+  et: 'Ethiopia',
+  ng: 'Nigeria',
+  ke: 'Kenya',
+  ru: 'Russia',
+  cl: 'Chile',
+  pe: 'Peru',
+  co: 'Colombia',
+  ar: 'Argentina',
+  bm: 'Bermuda',
+};
+
+const cityDisplayName = (id) =>
+  String(id || '')
+    .split('-')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
 
 const CITY_KEYWORDS = {
   'new-york': [
@@ -133,6 +219,25 @@ export const GET = withApiGuard(
 
       if (!cityId) return NextResponse.json({ error: 'city param required' }, { status: 400 });
 
+      // ── Marketaux primary: national market (countries) + city keywords (search).
+      // Falls through to the Finnhub path below on error / empty / no token, so
+      // the panel never hard-breaks.
+      const countries = CITY_TO_COUNTRY[cityId];
+      if (hasMarketaux() && countries) {
+        const search = buildSearchQuery(CITY_KEYWORDS[cityId]);
+        const { articles, error } = await fetchCityNews({ countries, search, limit: 25 });
+        if (!error && Array.isArray(articles) && articles.length) {
+          const city = cityDisplayName(cityId);
+          const country = COUNTRY_NAME[countries] || countries.toUpperCase();
+          const news = articles.map((a) => normalizeMarketauxArticle(a, { city, country }));
+          return NextResponse.json(
+            { news, source: 'marketaux' },
+            { headers: { 'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=1200' } },
+          );
+        }
+        // else: fall through to Finnhub (rate-limited / usage cap / empty)
+      }
+
       const tickers = CITY_TICKERS[cityId] || [];
 
       const today = new Date().toISOString().split('T')[0];
@@ -209,6 +314,7 @@ export const GET = withApiGuard(
               time: Math.floor(Date.now() / 1000),
             },
           ],
+          source: 'finnhub',
         });
       }
 
@@ -225,13 +331,16 @@ export const GET = withApiGuard(
       }));
 
       return NextResponse.json(
-        { news: formatted },
+        { news: formatted, source: 'finnhub' },
         {
           headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' },
         },
       );
     } catch (error) {
-      return NextResponse.json({ error: error.message, news: [] }, { status: 500 });
+      return NextResponse.json(
+        { error: error.message, news: [], source: 'error' },
+        { status: 500 },
+      );
     }
   },
   { requireAuth: false },
