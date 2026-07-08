@@ -32,9 +32,24 @@ const ACTIONS = [
   { id: 'org', label: 'Org Chart', Icon: Users, href: '/org-team-hub/org-chart' },
   { id: 'pitch', label: 'Pitch Pipeline', Icon: Presentation, href: '/org-team-hub/pitches' },
   { id: 'trading', label: 'Trading Desk', Icon: LineChart, href: '/org-trading' },
-  { id: 'analytics', label: 'Fund Analytics', Icon: TrendingUp, href: '/org-team-hub/fund-analytics' },
-  { id: 'assignments', label: 'Assignments', Icon: ClipboardList, href: '/org-team-hub/assignments' },
-  { id: 'research', label: 'Research Library', Icon: BookOpen, href: '/org-team-hub/research-library' },
+  {
+    id: 'analytics',
+    label: 'Fund Analytics',
+    Icon: TrendingUp,
+    href: '/org-team-hub/fund-analytics',
+  },
+  {
+    id: 'assignments',
+    label: 'Assignments',
+    Icon: ClipboardList,
+    href: '/org-team-hub/assignments',
+  },
+  {
+    id: 'research',
+    label: 'Research Library',
+    Icon: BookOpen,
+    href: '/org-team-hub/research-library',
+  },
   { id: 'meetings', label: 'Meetings', Icon: Video, href: '/org-team-hub/meetings' },
   { id: 'recognition', label: 'Recognition', Icon: Award, href: '/org-team-hub/recognition' },
   { id: 'grades', label: 'Grades', Icon: Star, href: '/org-team-hub/grades' },
@@ -213,7 +228,9 @@ function buildChart(cur, prev) {
   const xAt = (i, n) => (n <= 1 ? 0 : (i / (n - 1)) * W);
   const yAt = (v) => padTop + (1 - (v - min) / span) * (H - padTop - padBot);
   const toPath = (arr) =>
-    arr.map((v, i) => `${i === 0 ? 'M' : 'L'}${xAt(i, arr.length).toFixed(1)} ${yAt(v).toFixed(1)}`).join(' ');
+    arr
+      .map((v, i) => `${i === 0 ? 'M' : 'L'}${xAt(i, arr.length).toFixed(1)} ${yAt(v).toFixed(1)}`)
+      .join(' ');
   const line = toPath(cur);
   return {
     line,
@@ -327,36 +344,54 @@ function FundChart({ snapshots, loading }) {
         {geom ? (
           <>
             <svg viewBox="0 0 800 180" preserveAspectRatio="none" aria-hidden="true">
-            <defs>
-              <linearGradient id="thw-fill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="rgba(16,185,129,0.28)" />
-                <stop offset="100%" stopColor="rgba(16,185,129,0)" />
-              </linearGradient>
-            </defs>
-            <line x1="0" y1="45" x2="800" y2="45" stroke="rgba(16,185,129,0.06)" strokeWidth="1" />
-            <line x1="0" y1="90" x2="800" y2="90" stroke="rgba(16,185,129,0.06)" strokeWidth="1" />
-            <line x1="0" y1="135" x2="800" y2="135" stroke="rgba(16,185,129,0.06)" strokeWidth="1" />
-            {geom.prevLine && (
-              <path
-                d={geom.prevLine}
-                stroke="var(--chart-axis)"
-                strokeWidth="1.2"
-                strokeDasharray="3 5"
-                fill="none"
-                opacity="0.55"
+              <defs>
+                <linearGradient id="thw-fill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="rgba(16,185,129,0.28)" />
+                  <stop offset="100%" stopColor="rgba(16,185,129,0)" />
+                </linearGradient>
+              </defs>
+              <line
+                x1="0"
+                y1="45"
+                x2="800"
+                y2="45"
+                stroke="rgba(16,185,129,0.06)"
+                strokeWidth="1"
               />
-            )}
-            <path d={geom.area} fill="url(#thw-fill)" />
-            <path d={geom.line} stroke="var(--emerald)" strokeWidth="2" fill="none" />
-            <circle cx={geom.lastX} cy={geom.lastY} r="3.5" fill="var(--emerald)" />
+              <line
+                x1="0"
+                y1="90"
+                x2="800"
+                y2="90"
+                stroke="rgba(16,185,129,0.06)"
+                strokeWidth="1"
+              />
+              <line
+                x1="0"
+                y1="135"
+                x2="800"
+                y2="135"
+                stroke="rgba(16,185,129,0.06)"
+                strokeWidth="1"
+              />
+              {geom.prevLine && (
+                <path
+                  d={geom.prevLine}
+                  stroke="var(--chart-axis)"
+                  strokeWidth="1.2"
+                  strokeDasharray="3 5"
+                  fill="none"
+                  opacity="0.55"
+                />
+              )}
+              <path d={geom.area} fill="url(#thw-fill)" />
+              <path d={geom.line} stroke="var(--emerald)" strokeWidth="2" fill="none" />
+              <circle cx={geom.lastX} cy={geom.lastY} r="3.5" fill="var(--emerald)" />
             </svg>
             {hp && (
               <>
                 <div className="thw-chart-cross" style={{ left: `${leftPct}%` }} />
-                <div
-                  className="thw-chart-dot"
-                  style={{ left: `${leftPct}%`, top: `${topPct}%` }}
-                />
+                <div className="thw-chart-dot" style={{ left: `${leftPct}%`, top: `${topPct}%` }} />
                 <div
                   className="thw-chart-tip"
                   style={{ left: `${Math.min(91, Math.max(9, leftPct))}%` }}
@@ -373,8 +408,8 @@ function FundChart({ snapshots, loading }) {
               <Skel w="100%" h={120} style={{ borderRadius: 10 }} />
             ) : (
               <p className="thw-empty">
-                No fund snapshots yet — the chart fills in as daily snapshots are recorded from
-                Fund Analytics.
+                No fund snapshots yet — the chart fills in as daily snapshots are recorded from Fund
+                Analytics.
               </p>
             )}
           </div>
@@ -433,7 +468,12 @@ function SectorDesk({ sectors, cohort, loading, onOpen }) {
               </div>
             ))
           : rows.map((s, i) => (
-              <button key={s.teamId || s.name} type="button" className="thw-sector" onClick={onOpen}>
+              <button
+                key={s.teamId || s.name}
+                type="button"
+                className="thw-sector"
+                onClick={onOpen}
+              >
                 <div className="thw-sector-rank">#{i + 1}</div>
                 <div className="thw-sector-name">{s.name}</div>
                 <div className={`thw-sector-roi${(s.roiPct ?? 0) < 0 ? ' neg' : ''}`}>
@@ -579,7 +619,11 @@ function Digest({ digest, loading }) {
         >
           {recognitions.slice(0, 2).map((r) => (
             <div key={r.id} className="thw-cell-line">
-              <Trophy size={13} strokeWidth={1.8} style={{ color: 'var(--warning)', flexShrink: 0 }} />
+              <Trophy
+                size={13}
+                strokeWidth={1.8}
+                style={{ color: 'var(--warning)', flexShrink: 0 }}
+              />
               <span className="thw-nm">
                 {r.title} — {r.recipient_name}
               </span>
@@ -654,7 +698,9 @@ function TaskManagement({ tasksData, loading, onStatusChange }) {
         <span className="thw-card-title">
           <ClipboardList size={15} strokeWidth={1.8} /> Task management
         </span>
-        <span className="thw-section-meta">{loading ? <Skel w={44} h={10} /> : `${openCount} OPEN`}</span>
+        <span className="thw-section-meta">
+          {loading ? <Skel w={44} h={10} /> : `${openCount} OPEN`}
+        </span>
       </div>
       <div className="thw-card-body">
         {loading &&
@@ -758,10 +804,14 @@ function Deadlines({ tasksData, loading, onOpenBoard }) {
               <div className="thw-deadline-body">
                 <div className="thw-deadline-title">{d.title}</div>
                 <div className="thw-deadline-meta">
-                  <Clock size={11} strokeWidth={1.8} /> <span style={{ textTransform: 'capitalize' }}>{d.meta}</span>
+                  <Clock size={11} strokeWidth={1.8} />{' '}
+                  <span style={{ textTransform: 'capitalize' }}>{d.meta}</span>
                 </div>
               </div>
-              <span className={`thw-badge thw-badge-${d.tone}`} style={{ textTransform: 'capitalize' }}>
+              <span
+                className={`thw-badge thw-badge-${d.tone}`}
+                style={{ textTransform: 'capitalize' }}
+              >
                 {d.tag}
               </span>
             </div>
@@ -868,6 +918,14 @@ export default function OrgTeamHubPage() {
     Boolean(isOrgUser && !isLoading),
   );
 
+  // Client-side failsafe: even if the org context misbehaves, never leave the
+  // user on an infinite "Loading…" spinner. After 10s, offer a Retry path.
+  const [loadTimedOut, setLoadTimedOut] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setLoadTimedOut(true), 10000);
+    return () => clearTimeout(t);
+  }, []);
+
   // Optimistic task-status updates backed by PATCH /api/org/tasks.
   const handleStatusChange = useCallback(
     async (taskId, nextStatus) => {
@@ -877,7 +935,11 @@ export default function OrgTeamHubPage() {
         const tasks = d.tasks.map((t) => {
           if (t.id !== taskId) return t;
           prevStatus = t.status;
-          return { ...t, status: nextStatus, overdue: nextStatus === 'completed' ? false : t.overdue };
+          return {
+            ...t,
+            status: nextStatus,
+            overdue: nextStatus === 'completed' ? false : t.overdue,
+          };
         });
         return {
           ...d,
@@ -909,8 +971,31 @@ export default function OrgTeamHubPage() {
     [setTasksData],
   );
 
-  if (isLoading) {
+  if (isLoading && !loadTimedOut) {
     return <div style={{ padding: '2rem', color: 'var(--text-muted)' }}>Loading Team Hub…</div>;
+  }
+  if (isLoading && loadTimedOut) {
+    return (
+      <div style={{ padding: '2rem', color: 'var(--text-muted)' }}>
+        Team Hub is taking longer than expected to load.{' '}
+        <button
+          type="button"
+          onClick={() => window.location.reload()}
+          style={{
+            marginLeft: '0.5rem',
+            padding: '0.375rem 0.875rem',
+            border: '1px solid var(--emerald-border, rgba(16,185,129,0.4))',
+            borderRadius: 8,
+            background: 'var(--emerald-bg, rgba(16,185,129,0.1))',
+            color: 'var(--emerald, #10b981)',
+            fontWeight: 600,
+            cursor: 'pointer',
+          }}
+        >
+          Retry
+        </button>
+      </div>
+    );
   }
   if (!isOrgUser) {
     return (
@@ -923,7 +1008,8 @@ export default function OrgTeamHubPage() {
   const perf = summary?.performance || null;
   const counts = summary?.counts || null;
   const strip = summary?.statStrip || null;
-  const orgName = universityName || summary?.org?.name || orgData?.org?.name || 'Investment Council';
+  const orgName =
+    universityName || summary?.org?.name || orgData?.org?.name || 'Investment Council';
   const fundLabel = fundName || `${orgName} Fund`;
   const roleLabel = summary?.viewer?.title || ROLE_LABEL[orgRole] || 'Member';
   const violations = strip?.openViolations ?? 0;
@@ -938,7 +1024,11 @@ export default function OrgTeamHubPage() {
             <b className="thw-brand">{fundLabel}</b> · {orgName} · {roleLabel}
           </span>
           <div className="thw-display">
-            {loading ? <Skel w={280} h={48} style={{ borderRadius: 10 }} /> : fmtMoney(perf?.total_value)}
+            {loading ? (
+              <Skel w={280} h={48} style={{ borderRadius: 10 }} />
+            ) : (
+              fmtMoney(perf?.total_value)
+            )}
           </div>
           <div className="thw-hero-deltas">
             {loading ? (
