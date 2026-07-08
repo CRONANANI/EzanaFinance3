@@ -36,21 +36,28 @@ export const GET = withApiGuard(
       }
 
       const data = await res.json();
-      const markets = (Array.isArray(data) ? data : []).map((m) => ({
-        id: m.id,
-        question: m.question || m.title || '',
-        slug: m.slug || '',
-        outcomes: m.outcomes || [],
-        outcomePrices: m.outcomePrices || m.outcome_prices || [],
-        volume: parseFloat(m.volume) || 0,
-        volume24hr: parseFloat(m.volume24hr) || 0,
-        liquidity: parseFloat(m.liquidity) || 0,
-        endDate: m.endDate || m.end_date_iso || '',
-        image: m.image || '',
-        icon: m.icon || '',
-        category: m.category || '',
-        active: m.active,
-      }));
+      const markets = (Array.isArray(data) ? data : []).map((m) => {
+        // Real EVENT slug/title (events[0]) — the market-level slug 404s as an
+        // /event/ URL, so carry the event slug for building working links.
+        const ev = Array.isArray(m.events) && m.events.length ? m.events[0] : null;
+        return {
+          id: m.id,
+          question: m.question || m.title || '',
+          slug: m.slug || '',
+          eventSlug: ev?.slug || m.eventSlug || m.groupSlug || null,
+          eventTitle: ev?.title || null,
+          outcomes: m.outcomes || [],
+          outcomePrices: m.outcomePrices || m.outcome_prices || [],
+          volume: parseFloat(m.volume) || 0,
+          volume24hr: parseFloat(m.volume24hr) || 0,
+          liquidity: parseFloat(m.liquidity) || 0,
+          endDate: m.endDate || m.end_date_iso || '',
+          image: m.image || '',
+          icon: m.icon || '',
+          category: m.category || '',
+          active: m.active,
+        };
+      });
 
       return NextResponse.json(markets);
     } catch (error) {

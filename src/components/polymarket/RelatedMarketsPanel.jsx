@@ -124,6 +124,9 @@ function MarketRow({ market }) {
 
         <div className="pm-related__row-body">
           <div className="pm-related__row-title">{market.marketTitle}</div>
+          {market.marketQuestion && market.marketQuestion !== market.marketTitle && (
+            <div className="pm-related__row-question">{market.marketQuestion}</div>
+          )}
           <div className="pm-related__row-meta">
             {ends && <span>Ends {ends}</span>}
             {ends && vol && <span aria-hidden> · </span>}

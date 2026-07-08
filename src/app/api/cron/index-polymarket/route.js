@@ -70,6 +70,10 @@ function toRow(m) {
   const description = typeof m?.description === 'string' ? m.description : '';
   const marketId = String(m?.id ?? m?.conditionId ?? '');
   if (!marketId || !question) return null;
+  // The real EVENT slug lives on events[0]; the top-level eventSlug/groupSlug
+  // are usually empty. Storing the event slug (not the market-level slug) is
+  // what lets the matcher build a working /event/ URL instead of a 404.
+  const ev = Array.isArray(m?.events) && m.events.length ? m.events[0] : null;
   return {
     text: `${question}\n${description}`.trim(),
     row: {
@@ -77,7 +81,7 @@ function toRow(m) {
       question,
       description,
       group_slug: m?.groupSlug || m?.group_slug || null,
-      event_slug: m?.eventSlug || m?.event_slug || null,
+      event_slug: ev?.slug || m?.eventSlug || m?.event_slug || null,
       slug: m?.slug || m?.marketSlug || null,
       volume: Number(m?.volume ?? m?.volumeNum ?? 0) || 0,
       volume24hr: Number(m?.volume24hr ?? m?.volume24Hr ?? 0) || 0,

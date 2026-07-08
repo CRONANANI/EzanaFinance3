@@ -24,15 +24,21 @@ export const dynamic = 'force-dynamic';
 const MATCH_THRESHOLD = Number(process.env.POLYMARKET_MATCH_THRESHOLD) || 0.803;
 const LOOSE_THRESHOLD = Number(process.env.POLYMARKET_LOOSE_THRESHOLD) || 0.74;
 
-/** match_markets RPC row → the market shape RelatedMarketsPanel expects. */
+/**
+ * match_markets RPC row → the market shape RelatedMarketsPanel expects.
+ * Returns null when the row has no verified event link so the pipeline drops
+ * it — we never render a card that dead-ends on the Polymarket homepage or a
+ * 404. `link` is written strictly (event slug only) by the index cron.
+ */
 function toPanelMarket(r) {
   const link = r.link || null;
+  if (!link) return null;
   const similarity = r.similarity != null ? Number(r.similarity) : null;
   return {
     marketId: String(r.market_id ?? ''),
     marketTitle: r.question || 'Market',
-    url: link || 'https://polymarket.com',
-    hasValidUrl: !!link,
+    url: link,
+    hasValidUrl: true,
     yesProbability: r.probability != null ? Number(r.probability) : null,
     volume: Number(r.volume ?? 0),
     volume24hr: 0,
@@ -86,7 +92,8 @@ export const POST = withApiGuard(
         });
       }
 
-      const markets = (Array.isArray(data) ? data : []).map(toPanelMarket);
+      // Drop rows without a verified event link (toPanelMarket → null).
+      const markets = (Array.isArray(data) ? data : []).map(toPanelMarket).filter(Boolean);
       const confident = markets.filter((m) => m.tier === 'confident').length;
       return NextResponse.json({
         markets,

@@ -164,6 +164,20 @@
   overflow: hidden;
 }
 
+/* Secondary line: the specific market question when it differs from the
+   event title shown above. De-emphasized so the event title reads primary. */
+.pm-related__row-question {
+  font-size: 0.71875rem;
+  font-weight: 400;
+  color: #9ca3af;
+  line-height: 1.3;
+  margin-top: 0.125rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .pm-related__row-meta {
   font-size: 0.6875rem;
   color: #6b7280;

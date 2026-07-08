@@ -479,58 +479,67 @@ function normalizeProbability(market) {
   return 0.5;
 }
 
+/** Gamma markets belong to a parent EVENT; the user-facing page is the event.
+    The real event slug/title live on `market.events[0]` (the top-level
+    groupSlug/eventSlug fields are usually empty on the /markets response). */
+function eventOf(market) {
+  return Array.isArray(market?.events) && market.events.length ? market.events[0] : null;
+}
+
+function eventTitleOf(market) {
+  return market?.eventTitle || eventOf(market)?.title || null;
+}
+
 /**
- * Build a working Polymarket URL.
+ * Build a working Polymarket URL — STRICT.
  *
- * Polymarket URL structure:
- *   - Event page: https://polymarket.com/event/{event-slug}
- *   - There is NO ?tid= parameter — conditionId is a blockchain
- *     address (CTF contract), not a URL param. Appending it 404s.
+ * Polymarket's user-facing page is the EVENT: https://polymarket.com/event/{event-slug}.
+ * Markets are outcomes *inside* an event; their own `slug` (often a date/hex
+ * variant) 404s when placed in an /event/ URL. So we only ever use a verified
+ * EVENT slug — from `events[0].slug` (the normal Gamma case) or an explicit
+ * event/group slug field — and return null when none exists. We NEVER mint a
+ * URL from the market-level slug, conditionId, or id.
  *
- * Gamma API returns:
- *   - groupSlug: the EVENT-level slug (what we want)
- *   - slug: the MARKET-level slug — usually an individual outcome,
- *     not a valid URL on its own (often a hex hash)
- *   - conditionId: CTF contract address (never goes in URL)
- *   - id: internal DB ID (never goes in URL)
- *
- * ONLY groupSlug reliably produces a working URL. If we don't have
- * one, fall back to the polymarket.com homepage rather than minting
- * a 404. The accompanying hasValidUrl flag (see formatMarket) lets
- * the UI hide the external-link affordance for those rows.
+ * A null return means "no verified event page" → the caller drops the market
+ * rather than rendering a dead/404 link.
  */
 function buildMarketUrl(market) {
   const eventSlug =
-    market?.groupSlug || market?.group_slug || market?.eventSlug || market?.event_slug;
-  if (eventSlug) {
-    return `https://polymarket.com/event/${eventSlug}`;
-  }
-
-  // If we only have a market-level slug, accept it ONLY when it
-  // looks like a real event slug (kebab-case words, not a hex hash).
-  const slug = market?.slug || market?.marketSlug;
-  if (slug && slug.includes('-') && !slug.match(/^0x[a-f0-9]+$/i) && slug.length > 10) {
-    return `https://polymarket.com/event/${slug}`;
-  }
-
-  // Never construct a URL from conditionId or numeric id — both 404.
-  return 'https://polymarket.com';
+    market?.eventSlug ||
+    eventOf(market)?.slug ||
+    market?.event_slug ||
+    market?.groupSlug ||
+    market?.group_slug ||
+    null;
+  if (eventSlug) return `https://polymarket.com/event/${eventSlug}`;
+  return null;
 }
 
 function openActiveMarket(m) {
   return Boolean(m?.active) && !m?.closed;
 }
 
+/**
+ * Map a Gamma/index market to the panel shape. Returns null when there is no
+ * verified event URL so the pipeline can drop it — every rendered market is
+ * guaranteed to open a real Polymarket event page.
+ */
 function formatMarket(m) {
   const url = buildMarketUrl(m);
+  if (!url) return null;
+  const question = String(m?.groupItemTitle ?? m?.question ?? m?.title ?? 'Market');
+  const eventTitle = eventTitleOf(m);
   return {
     marketId: String(m?.id ?? m?.conditionId ?? ''),
-    marketTitle: String(m?.groupItemTitle ?? m?.question ?? m?.title ?? 'Market'),
+    // Primary label is the EVENT title (matches the page you land on); the
+    // specific market question is the secondary line only when it differs.
+    marketTitle: eventTitle || question,
+    marketQuestion: eventTitle && eventTitle !== question ? question : null,
+    eventTitle: eventTitle || null,
     description: typeof m?.description === 'string' ? m.description : '',
     url,
-    // Hint for the UI — false when the URL fell back to polymarket.com
-    // homepage so the external-link arrow can be suppressed.
-    hasValidUrl: url !== 'https://polymarket.com',
+    // Every rendered market now carries a verified event URL by construction.
+    hasValidUrl: true,
     yesProbability: normalizeProbability(m),
     volume: Number(m?.volume ?? m?.volumeNum ?? 0),
     volume24hr: Number(m?.volume24hr ?? m?.volume24Hr ?? 0),
@@ -601,16 +610,24 @@ export async function findMatchingMarket(event) {
       .filter((x) => x.score > 0)
       .sort((a, b) => b.score - a.score || Number(b.m?.volume ?? 0) - Number(a.m?.volume ?? 0));
 
-    const best = scored[0]?.m;
-    if (!best) return null;
-
-    return {
-      marketId: String(best.id ?? best.conditionId ?? ''),
-      marketTitle: String(best.groupItemTitle ?? best.question ?? best.title ?? 'Market'),
-      url: buildMarketUrl(best),
-      yesProbability: normalizeProbability(best),
-      volume: Number(best.volume ?? best.volumeNum ?? 0),
-    };
+    // Walk candidates best-first and take the first with a verified event URL.
+    // A market without a resolvable event page is dropped, never linked.
+    for (const { m: best } of scored) {
+      const url = buildMarketUrl(best);
+      if (!url) continue;
+      const question = String(best.groupItemTitle ?? best.question ?? best.title ?? 'Market');
+      const eventTitle = eventTitleOf(best);
+      return {
+        marketId: String(best.id ?? best.conditionId ?? ''),
+        marketTitle: eventTitle || question,
+        marketQuestion: eventTitle && eventTitle !== question ? question : null,
+        eventTitle: eventTitle || null,
+        url,
+        yesProbability: normalizeProbability(best),
+        volume: Number(best.volume ?? best.volumeNum ?? 0),
+      };
+    }
+    return null;
   } catch (err) {
     if (process.env.NODE_ENV === 'development') {
       // eslint-disable-next-line no-console
@@ -760,7 +777,8 @@ async function findMatchingMarketsSemantic(event, TARGET) {
   const markets = scored
     .slice(0, TARGET)
     .map((s) => formatMarket(indexRowToMarket(s.row)))
-    .filter((m) => m.hasValidUrl)
+    // Drop markets with no verified event URL (formatMarket returned null).
+    .filter(Boolean)
     .slice(0, TARGET);
 
   return { markets, noHighConfidence: markets.length === 0 };
@@ -845,7 +863,8 @@ async function findMatchingMarketsLexical(event, { limit = 6 } = {}) {
     // filtered out so we never present a dead-end link.
     const combined = topEntity
       .map((row) => formatMarket(row.m))
-      .filter((m) => m.hasValidUrl)
+      // Drop markets with no verified event URL (formatMarket returned null).
+      .filter(Boolean)
       .slice(0, TARGET);
 
     return {

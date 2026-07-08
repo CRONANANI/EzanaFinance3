@@ -50,14 +50,17 @@ function yesProbability(m) {
   return null;
 }
 
-/** event-level deep link (never a conditionId/hex slug that 404s). */
+/**
+ * Event-level deep link — STRICT. Polymarket's page is the EVENT, and the real
+ * event slug lives on events[0].slug (top-level eventSlug/groupSlug are usually
+ * empty). A market-level slug placed in an /event/ URL 404s, so we NEVER fall
+ * back to it — return null when there's no verified event slug and let the row
+ * carry a null link (dropped downstream instead of linking to a dead page).
+ */
 function marketLink(m) {
-  const eventSlug = m?.groupSlug || m?.group_slug || m?.eventSlug || m?.event_slug;
+  const ev = Array.isArray(m?.events) && m.events.length ? m.events[0] : null;
+  const eventSlug = m?.eventSlug || ev?.slug || m?.event_slug || m?.groupSlug || m?.group_slug;
   if (eventSlug) return `https://polymarket.com/event/${eventSlug}`;
-  const slug = m?.slug || m?.marketSlug;
-  if (slug && slug.includes('-') && !/^0x[a-f0-9]+$/i.test(slug) && slug.length > 10) {
-    return `https://polymarket.com/event/${slug}`;
-  }
   return null;
 }
 

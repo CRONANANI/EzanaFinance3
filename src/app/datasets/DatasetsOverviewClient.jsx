@@ -652,7 +652,9 @@ function OddsPopup({ slug, question, onClose }) {
   }, [slug]);
 
   const outcomes = data ? marketOutcomes(data) : [];
-  const url = `https://polymarket.com/event/${slug}`;
+  // Build the link from the VERIFIED event slug (events[0].slug), never the
+  // market-level slug — the latter 404s in an /event/ URL. Null → no link.
+  const eventUrl = data?.eventSlug ? `https://polymarket.com/event/${data.eventSlug}` : null;
 
   return (
     <div className="dsx-modal-backdrop" onClick={onClose}>
@@ -681,7 +683,12 @@ function OddsPopup({ slug, question, onClose }) {
           <div className="dsx-modal-state">
             Couldn’t load this market right now.
             <br />
-            <a className="dsx-modal-link" href={url} target="_blank" rel="noopener noreferrer">
+            <a
+              className="dsx-modal-link"
+              href="https://polymarket.com"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               View on Polymarket <ArrowRight size={13} />
             </a>
           </div>
@@ -725,9 +732,16 @@ function OddsPopup({ slug, question, onClose }) {
               <div className="dsx-modal-state">No current outcome prices published.</div>
             )}
 
-            <a className="dsx-modal-link" href={url} target="_blank" rel="noopener noreferrer">
-              View on Polymarket <ArrowRight size={13} />
-            </a>
+            {eventUrl && (
+              <a
+                className="dsx-modal-link"
+                href={eventUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View on Polymarket <ArrowRight size={13} />
+              </a>
+            )}
             <p className="dsx-modal-note">
               Current market-implied probabilities from Polymarket, shown for information only — not
               investment advice.

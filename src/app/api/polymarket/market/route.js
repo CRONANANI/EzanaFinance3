@@ -38,6 +38,12 @@ export const GET = withApiGuard(
         return NextResponse.json({ error: 'Market not found' }, { status: 404 });
       }
 
+      // The real EVENT slug/title live on events[0]; the user-facing Polymarket
+      // page is the event, and a market-level slug 404s in an /event/ URL.
+      const ev = Array.isArray(market.events) && market.events.length ? market.events[0] : null;
+      const eventSlug = ev?.slug || market.eventSlug || market.groupSlug || null;
+      const eventTitle = ev?.title || null;
+
       let price = null;
       if (tokenId) {
         try {
@@ -57,6 +63,8 @@ export const GET = withApiGuard(
         id: market.id,
         question: market.question || market.title || '',
         slug: market.slug || '',
+        eventSlug,
+        eventTitle,
         description: market.description || '',
         outcomes: market.outcomes || [],
         outcomePrices: market.outcomePrices || [],
