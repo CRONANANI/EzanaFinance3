@@ -1688,6 +1688,23 @@ export default function MarketAnalysisPage() {
   const [chainEventsLoading, setChainEventsLoading] = useState(true);
   const [sendToTeamChainEvent, setSendToTeamChainEvent] = useState(null);
   const [tutorialOpen, setTutorialOpen] = useState(false);
+  // Track the app-wide applied theme. ThemeProvider is the single source of
+  // truth: it stamps `light-mode` on <html> for the light theme (resolving
+  // `system` for us). We mirror that class here so this route can drop its
+  // hard `force-dark-theme` lock and paint light when the app theme is light,
+  // while staying dark otherwise. Initial value is false so SSR/first client
+  // render both emit `force-dark-theme` (no hydration mismatch); the observer
+  // flips it after mount if the user is on the light theme.
+  const [isLightTheme, setIsLightTheme] = useState(false);
+  useEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+    const root = document.documentElement;
+    const sync = () => setIsLightTheme(root.classList.contains('light-mode'));
+    sync();
+    const mo = new MutationObserver(sync);
+    mo.observe(root, { attributes: true, attributeFilter: ['class'] });
+    return () => mo.disconnect();
+  }, []);
   const mapRef = useRef(null);
   const gpmButtonRef = useRef(null);
   const arrowDismissTimer = useRef(null);
@@ -2052,7 +2069,7 @@ export default function MarketAnalysisPage() {
 
   return (
     <div
-      className={`ma-fullscreen force-dark-theme ${view === 'map' ? 'ma-view-map' : ''} ${view === 'chain' ? 'ma-view-chain' : ''}`}
+      className={`ma-fullscreen ${isLightTheme ? 'ma-theme-light' : 'force-dark-theme'} ${view === 'map' ? 'ma-view-map' : ''} ${view === 'chain' ? 'ma-view-chain' : ''}`}
     >
       {/* Portrait orientation block — prompts users to rotate on phones */}
       <div
@@ -2204,6 +2221,9 @@ export default function MarketAnalysisPage() {
               <WorldMap
                 ref={mapRef}
                 lineColor="#10b981"
+                /* Light theme: emerald continent dots on white (landing-page
+                   palette). Dark theme keeps the default white @ 25%. */
+                dotColor={isLightTheme ? '#10b98159' : undefined}
                 selectedPanelId={selectedDot}
                 onDotClick={handleCenterClick}
                 onPowerCountryClick={handlePowerCountryClick}

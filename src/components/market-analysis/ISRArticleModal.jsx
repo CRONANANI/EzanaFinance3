@@ -13,8 +13,9 @@ import { RelatedMarketsPanel } from '@/components/polymarket/RelatedMarketsPanel
 import { useOrg } from '@/contexts/OrgContext';
 
 const OrgSendToTeamModal = dynamic(
-  () => import('@/components/org/OrgSendToTeamModal').then((m) => ({ default: m.OrgSendToTeamModal })),
-  { ssr: false }
+  () =>
+    import('@/components/org/OrgSendToTeamModal').then((m) => ({ default: m.OrgSendToTeamModal })),
+  { ssr: false },
 );
 
 function formatLong(iso) {
@@ -40,7 +41,9 @@ export function ISRArticleModal({ event, polymarket, onClose }) {
     if (!event) return undefined;
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = prev; };
+    return () => {
+      document.body.style.overflow = prev;
+    };
   }, [event]);
 
   if (!event) return null;
@@ -59,7 +62,8 @@ export function ISRArticleModal({ event, polymarket, onClose }) {
         <header className="sentinel-modal-header">
           <div>
             <p className="sentinel-modal-kicker">
-              ISR · {event.city ? `${event.city}, ` : ''}{event.country}
+              ISR · {event.city ? `${event.city}, ` : ''}
+              {event.country}
             </p>
             <h2 id="isr-article-title" className="sentinel-modal-title">
               {event.headline}
@@ -79,13 +83,12 @@ export function ISRArticleModal({ event, polymarket, onClose }) {
         </header>
 
         <div className="sentinel-modal-main">
-          {polymarket && (
-            <a
-              className="isr-polymarket-banner"
-              href={polymarket.url}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+          {/* Thin horizontal prediction-market card — only rendered when a real
+              semantic match exists for this event (no dead/fabricated CTA). The
+              "View prediction market" action is a distinct BLUE button (#3b82f6),
+              separate from the emerald brand accent. */}
+          {polymarket && polymarket.url && (
+            <div className="isr-polymarket-banner">
               <div className="isr-polymarket-banner-icon" aria-hidden>
                 <span className="isr-polymarket-banner-pulse" />
               </div>
@@ -93,13 +96,24 @@ export function ISRArticleModal({ event, polymarket, onClose }) {
                 <div className="isr-polymarket-banner-kicker">Live on Polymarket</div>
                 <div className="isr-polymarket-banner-title">{polymarket.marketTitle}</div>
                 <div className="isr-polymarket-banner-meta">
-                  YES {(polymarket.yesProbability * 100).toFixed(0)}¢
-                  {' · '}
-                  Volume ${Math.round(polymarket.volume).toLocaleString()}
+                  {typeof polymarket.yesProbability === 'number'
+                    ? `YES ${(polymarket.yesProbability * 100).toFixed(0)}¢`
+                    : 'Live odds'}
+                  {typeof polymarket.volume === 'number' && polymarket.volume > 0
+                    ? ` · Volume $${Math.round(polymarket.volume).toLocaleString()}`
+                    : ''}
                 </div>
               </div>
-              <i className="bi bi-box-arrow-up-right isr-polymarket-banner-ext" aria-hidden />
-            </a>
+              <a
+                className="isr-polymarket-view-btn"
+                href={polymarket.url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View prediction market
+                <i className="bi bi-box-arrow-up-right" aria-hidden />
+              </a>
+            </div>
           )}
 
           <div className="sentinel-related-markets-section">
@@ -134,14 +148,12 @@ export function ISRArticleModal({ event, polymarket, onClose }) {
               <div className="sentinel-report-section-body">
                 {event.impactedSymbols?.length ? (
                   <p>
-                    <strong>Symbols watched:</strong>{' '}
-                    {event.impactedSymbols.join(', ')}
+                    <strong>Symbols watched:</strong> {event.impactedSymbols.join(', ')}
                   </p>
                 ) : null}
                 {event.impactedKeywords?.length ? (
                   <p>
-                    <strong>Tags:</strong>{' '}
-                    {event.impactedKeywords.join(', ')}
+                    <strong>Tags:</strong> {event.impactedKeywords.join(', ')}
                   </p>
                 ) : null}
               </div>
@@ -174,12 +186,13 @@ export function ISRArticleModal({ event, polymarket, onClose }) {
                 </p>
               ) : (
                 <p>
-                  Published by <strong>{event.source}</strong>. No public URL available for this story.
+                  Published by <strong>{event.source}</strong>. No public URL available for this
+                  story.
                 </p>
               )}
               <p className="isr-article-disclaimer">
-                ISR aggregates publicly reported news and geolocates events to a
-                city/country. It does not surveil private or ambient data.
+                ISR aggregates publicly reported news and geolocates events to a city/country. It
+                does not surveil private or ambient data.
               </p>
             </div>
           </div>
