@@ -10,25 +10,18 @@ import {
   useRef,
 } from 'react';
 import { useAuth } from '@/components/AuthProvider';
-import { supabase } from '@/lib/supabase-browser';
 import { getMemberPermissions } from '@/lib/orgMockData';
 import { getExtendedPermissions } from '@/lib/orgPermissionsExtended';
 
 const OrgContext = createContext(null);
 
-/**
- * Race a Supabase query against a hard timeout so a hanging request (network
- * stall, RLS/policy deadlock, or an auth session that never returns) can never
- * freeze the whole app on "Loading Team Hub…". On timeout the rejection lands
- * in checkOrgStatus's catch, `finally` runs, and `isLoading` clears.
- */
-const withTimeout = (promise, ms, label) =>
-  Promise.race([
-    promise,
-    new Promise((_, reject) =>
-      setTimeout(() => reject(new Error(`OrgContext timeout: ${label}`)), ms),
-    ),
-  ]);
+/** Non-org defaults, applied whenever the lookup can't confirm membership. */
+function applyNonOrg(set) {
+  set.isOrgUser(false);
+  set.orgRole(null);
+  set.orgData(null);
+  set.permissionOverrides([]);
+}
 
 export function OrgProvider({ children }) {
   const { user, isAuthenticated, loading: authLoading } = useAuth();
@@ -42,16 +35,19 @@ export function OrgProvider({ children }) {
   const runningRef = useRef(false);
 
   const checkOrgStatus = useCallback(async () => {
+    const set = {
+      isOrgUser: setIsOrgUser,
+      orgRole: setOrgRole,
+      orgData: setOrgData,
+      permissionOverrides: setPermissionOverrides,
+    };
+
     // Wait for auth to settle before deciding org status. Running while `user`
-    // is transiently null during auth boot would either false-resolve to
-    // non-org or fire a query before the session token is attached (RLS stall).
+    // is transiently null during auth boot would false-resolve to non-org.
     if (authLoading) return;
 
     if (!isAuthenticated || !user) {
-      setIsOrgUser(false);
-      setOrgRole(null);
-      setOrgData(null);
-      setPermissionOverrides([]);
+      applyNonOrg(set);
       setIsLoading(false);
       return;
     }
@@ -62,76 +58,31 @@ export function OrgProvider({ children }) {
 
     setIsLoading(true);
     try {
-      const { data: member, error } = await withTimeout(
-        supabase
-          .from('org_members')
-          .select(
-            `
-          *,
-          organizations (*)
-        `,
-          )
-          .eq('user_id', user.id)
-          .eq('is_active', true)
-          .limit(1)
-          .maybeSingle(),
-        8000,
-        'org_members',
-      );
+      // Resolve org status via the SERVER route, NOT the browser Supabase
+      // client. The browser client's GoTrue Web-Locks/processLock can wedge and
+      // hang `supabase.from(...)` forever (documented in supabase-browser.js);
+      // a plain fetch + AbortSignal.timeout can't hang unbounded, so `finally`
+      // always runs and isLoading always clears. See /api/org/status.
+      const res = await fetch('/api/org/status', {
+        credentials: 'include',
+        signal: AbortSignal.timeout(8000),
+      });
+      const payload = res.ok ? await res.json() : null;
 
-      if (error || !member) {
-        setIsOrgUser(false);
-        setOrgRole(null);
-        setOrgData(null);
-        setPermissionOverrides([]);
+      if (!payload || !payload.isOrgUser) {
+        applyNonOrg(set);
         return;
       }
 
       setIsOrgUser(true);
-      setOrgRole(member.role);
-
-      let team = null;
-      if (member.team_id) {
-        const { data: teamRow } = await withTimeout(
-          supabase.from('org_teams').select('*').eq('id', member.team_id).maybeSingle(),
-          8000,
-          'org_teams:one',
-        );
-        team = teamRow;
-      }
-
-      const { data: teams } = await withTimeout(
-        supabase.from('org_teams').select('*').eq('org_id', member.org_id).order('name'),
-        8000,
-        'org_teams:list',
+      setOrgRole(payload.orgRole ?? null);
+      setOrgData(payload.orgData ?? null);
+      setPermissionOverrides(
+        Array.isArray(payload.permissionOverrides) ? payload.permissionOverrides : [],
       );
-
-      setOrgData({
-        org: member.organizations,
-        member: { ...member, email: user.email },
-        team,
-        teams: teams || [],
-      });
-
-      const { data: permRows, error: permErr } = await withTimeout(
-        supabase
-          .from('org_member_permissions')
-          .select('permission_key')
-          .eq('org_member_id', member.id),
-        8000,
-        'org_member_permissions',
-      );
-      if (permErr) {
-        setPermissionOverrides([]);
-      } else {
-        setPermissionOverrides((permRows || []).map((p) => p.permission_key));
-      }
     } catch (err) {
       console.error('[Org] Status check error:', err);
-      setIsOrgUser(false);
-      setOrgRole(null);
-      setOrgData(null);
-      setPermissionOverrides([]);
+      applyNonOrg(set);
     } finally {
       runningRef.current = false;
       setIsLoading(false);
