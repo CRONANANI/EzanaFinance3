@@ -102,26 +102,28 @@ function MobileRadarFlow({ dims, sourceDetails, accentColor }) {
 
       {activeSource && detail && (
         <div
-          className="w-full min-w-0 rounded-xl border p-3 sm:p-4"
+          className="w-full min-w-0 rounded-xl p-3 sm:p-4"
           style={{
-            background: 'rgba(10, 15, 10, 0.98)',
-            borderColor: `${accentColor}40`,
-            boxShadow: `0 8px 28px -8px rgba(0,0,0,0.5), 0 0 0 1px ${accentColor}10`,
+            // Match the desktop hover popup: white card, Ezana-green outline,
+            // dark legible text.
+            background: '#fff',
+            border: '1px solid #10b981',
+            boxShadow: '0 8px 28px -8px rgba(0,0,0,0.18)',
           }}
         >
           {detail.tagline && (
-            <p className="mb-2 text-center text-[11px] leading-snug text-emerald-200/85">
+            <p className="mb-2 text-center text-[11px] leading-snug text-slate-600">
               {detail.tagline}
             </p>
           )}
-          <p className="mb-2 text-center text-[10px] font-semibold uppercase tracking-wide text-emerald-400/80">
+          <p className="mb-2 text-center text-[10px] font-semibold uppercase tracking-wide text-emerald-600">
             Powered by
           </p>
           <ul className="max-h-48 space-y-3 overflow-y-auto pr-1">
             {detail.sources?.map((src) => (
               <li key={src.name} className="text-center">
-                <div className="text-xs font-semibold text-white">{src.name}</div>
-                <div className="mt-0.5 text-[11px] leading-snug text-emerald-100/75">
+                <div className="text-xs font-semibold text-slate-900">{src.name}</div>
+                <div className="mt-0.5 text-[11px] leading-snug text-slate-600">
                   {src.description}
                 </div>
               </li>
@@ -538,30 +540,31 @@ export default function PersonalizationRadar({ sourceDetails }) {
             {/* Dimension description card — shown on hover or click of a dot/label */}
             {activeDim !== null && activeDetail && popupPos && (
               <div
-                className="absolute z-50 rounded-xl border p-4 w-[280px] sm:w-[300px]"
+                className="absolute z-50 rounded-xl p-4 w-[280px] sm:w-[300px]"
                 style={{
                   ...popupPos,
-                  background: 'rgba(10, 15, 10, 0.98)',
-                  borderColor: 'rgba(16,185,129,0.4)',
-                  boxShadow: '0 12px 32px -8px rgba(0,0,0,0.6), 0 0 0 1px rgba(16,185,129,0.1)',
-                  backdropFilter: 'blur(8px)',
+                  // White card with an Ezana-green outline per handoff; text
+                  // colors below are dark so they stay legible on white.
+                  background: '#fff',
+                  border: '1px solid #10b981',
+                  boxShadow: '0 12px 32px -8px rgba(0,0,0,0.18)',
                   pointerEvents: 'none',
                 }}
                 role="tooltip"
               >
                 {activeDetail.tagline && (
-                  <div className="mb-3 text-center text-[11px] leading-snug text-emerald-200/80">
+                  <div className="mb-3 text-center text-[11px] leading-snug text-slate-600">
                     {activeDetail.tagline}
                   </div>
                 )}
-                <div className="mb-2 text-center text-[10px] font-semibold uppercase tracking-wide text-emerald-400/80">
+                <div className="mb-2 text-center text-[10px] font-semibold uppercase tracking-wide text-emerald-600">
                   Powered by
                 </div>
                 <ul className="space-y-3">
                   {activeDetail.sources?.map((src) => (
                     <li key={src.name} className="text-center">
-                      <div className="text-xs font-semibold text-white">{src.name}</div>
-                      <div className="mt-0.5 text-[11px] leading-snug text-emerald-100/70">
+                      <div className="text-xs font-semibold text-slate-900">{src.name}</div>
+                      <div className="mt-0.5 text-[11px] leading-snug text-slate-600">
                         {src.description}
                       </div>
                     </li>

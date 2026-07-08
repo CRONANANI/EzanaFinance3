@@ -11,6 +11,12 @@
   color: var(--text-secondary);
   font-family: var(--font-sans);
   padding-bottom: 8px;
+  /* The real gap above the "Ezana Echo" title is the dashboard shell's
+     `padding-top: calc(navbar-height + 1.5rem)` (see (dashboard)/layout.css) —
+     NOT .eth-intro, which is why earlier tweaks to .eth-intro alone never
+     moved it. Pull the page up to cancel that extra 1.5rem so the title sits
+     tight to the nav (~80% less gap; ~7px remains from .eth-intro's top pad). */
+  margin-top: -1.5rem;
 }
 .eth-page *,
 .eth-page *::before,
@@ -31,7 +37,8 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: 20px;
-  padding: 7px 0 26px;
+  /* Tight to the nav on top; trimmed bottom pad pulls the hero up higher. */
+  padding: 7px 0 16px;
 }
 .eth-intro-title {
   font-family: var(--font-serif);
@@ -133,14 +140,15 @@
   grid-template-columns: 1.5fr 1fr;
   gap: 0;
   border: 1px solid var(--border-primary);
-  border-radius: var(--radius-xl);
+  border-radius: 0; /* sharp rectangle edges per handoff (was --radius-xl) */
   overflow: hidden;
 }
 .eth-feat {
   position: relative;
-  min-height: 276px; /* was 460px (~40% shorter) */
+  min-height: 150px; /* ~50% shorter (was 276px); rail compressed to match */
   cursor: pointer;
   border-right: 1px solid var(--border-primary);
+  border-radius: 0; /* sharp edges */
   display: block;
 }
 .eth-feat-img {
@@ -211,7 +219,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 22px;
+  padding: 11px 22px;
   border-bottom: 1px solid var(--border-primary);
 }
 .eth-rail-title {
@@ -240,7 +248,7 @@
   display: grid;
   grid-template-columns: 30px 1fr;
   gap: 12px;
-  padding: 14px 22px;
+  padding: 9px 22px;
   border-bottom: 1px solid var(--border-primary);
   cursor: pointer;
   transition: background 0.14s ease;
@@ -270,6 +278,12 @@
   color: var(--text-primary);
   margin: 6px 0 0;
   transition: color 0.14s ease;
+  /* Bound each row to 2 lines so the compressed rail keeps a predictable,
+     ~half-height footprint alongside the shorter hero. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .eth-rank:hover .eth-rank-title {
   color: var(--emerald);
@@ -314,13 +328,12 @@
 .eth-catnav {
   display: flex;
   align-items: center;
-  gap: 22px;
+  /* Wrap to as many rows as needed so EVERY category chip is fully visible —
+     previously overflow-x:auto clipped the tail (the chips after "Founders &
+     Power Players"). Row-gap keeps wrapped rows legible. */
+  flex-wrap: wrap;
+  gap: 12px 22px;
   margin-top: 16px;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-.eth-catnav::-webkit-scrollbar {
-  display: none;
 }
 .eth-catnav button {
   background: none;
@@ -601,7 +614,7 @@
   .eth-feat {
     border-right: none;
     border-bottom: 1px solid var(--border-primary);
-    min-height: 380px;
+    min-height: 240px;
   }
   .eth-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -629,6 +642,15 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 14px;
+  }
+}
+
+/* On mobile the dashboard shell drops its top padding to `navbar + 1rem`
+   (see (dashboard)/layout.css), so the full -1.5rem pull would tuck the title
+   under the fixed navbar. Ease the pull back on small screens. */
+@media (max-width: 768px) {
+  .eth-page {
+    margin-top: -0.25rem;
   }
 }
 

@@ -7,14 +7,28 @@
   justify-content: flex-start;
 }
 
+/* Outline removed per handoff — the six cards read as an open grid, grouped by
+   spacing alone. !important is required to beat the border-color declarations in
+   globals.css / landing-light-mode.css that carry their own !important / higher
+   specificity. Hover no longer draws a ring either. */
+.feature-card.feature-card--viz,
+.feature-card.feature-card--viz:hover {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 /* Fixed-size visual zone — identical width AND height on every card, centered,
    with bottom padding. margin-top:auto pins it to the card's bottom edge so all
    six visuals sit on the same baseline regardless of body-copy length. */
 .feature-viz {
   margin-top: auto;
   width: 100%;
-  height: 76px;
-  padding-top: 14px;
+  /* Enlarged uniformly (~76px → 88px) now that the card outline is gone so the
+     visuals read a touch bigger. Every card shares this one frame, so all six
+     scale by exactly the same amount — uniformity is preserved. */
+  height: 88px;
+  padding-top: 16px;
   display: flex;
   align-items: flex-end;
   justify-content: center;

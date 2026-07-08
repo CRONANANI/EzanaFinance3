@@ -186,8 +186,9 @@ export default function EzanaEchoPage() {
     [allArticles, featured],
   );
 
-  // Ranked "Top Stories" rail — first five of the feed (hub is newest-first).
-  const topStories = useMemo(() => feedSource.slice(0, 5), [feedSource]);
+  // Ranked "Top Stories" rail — first three of the feed (hub is newest-first).
+  // Trimmed from five so the rail's height matches the ~50%-shorter hero.
+  const topStories = useMemo(() => feedSource.slice(0, 3), [feedSource]);
 
   const filtered = useMemo(() => {
     let list = cat === 'all' ? feedSource : feedSource.filter((a) => a.category === cat);

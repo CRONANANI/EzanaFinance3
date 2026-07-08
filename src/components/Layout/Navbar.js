@@ -428,6 +428,12 @@ export function Navbar() {
                       );
                     })}
                   </div>
+                  <div className="nav-datasets-divider" />
+                  <a href="/ezana-api" className="nav-datasets-foot" role="menuitem">
+                    Ezana API
+                    <ArrowRight size={14} aria-hidden />
+                  </a>
+                  <div className="nav-datasets-divider" />
                   <a href="/datasets" className="nav-datasets-foot" role="menuitem">
                     View all datasets
                     <ArrowRight size={14} aria-hidden />
@@ -524,6 +530,15 @@ export function Navbar() {
                   >
                     <i className="bi bi-stack" />
                     <span>Datasets</span>
+                    <i className="bi bi-chevron-right mobile-nav-chevron" />
+                  </a>
+                  <a
+                    href="/ezana-api"
+                    className="mobile-nav-link"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <i className="bi bi-code-slash" />
+                    <span>Ezana API</span>
                     <i className="bi bi-chevron-right mobile-nav-chevron" />
                   </a>
                   <a

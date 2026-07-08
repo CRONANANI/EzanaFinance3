@@ -2226,18 +2226,27 @@ html:has(.landing-page) .navbar .logo,
   align-items: center;
   gap: 0.35rem;
   width: 100%;
-  margin-top: 0.5rem;
-  padding: 0.65rem 0.6rem 0.4rem;
+  padding: 0.5rem 0.6rem;
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--emerald-text);
   text-decoration: none;
-  border-top: 1px solid var(--border-strong);
+  /* Separation between the footer links is drawn by explicit
+     .nav-datasets-divider hairlines (see below), so no per-link border here —
+     that keeps "Ezana API" sitting in its own bordered band, one line above
+     and one line below, directly over "View all datasets". */
 }
 .navbar .nav-datasets-foot:hover,
 .navbar .nav-datasets-foot:focus-visible {
   color: var(--emerald);
   outline: none;
+}
+/* Hairline separators bracketing the "Ezana API" footer entry. */
+.navbar .nav-datasets-divider {
+  width: 100%;
+  height: 1px;
+  margin: 0.35rem 0;
+  background: var(--border-strong);
 }
 
 /* The mega-menu only shows on the desktop nav (≥1024px; below that the nav is

@@ -76,6 +76,7 @@ export default async function RootLayout({ children }) {
     pathname.startsWith('/help-center') ||
     pathname.startsWith('/brokerages-integrations') ||
     pathname.startsWith('/datasets') ||
+    pathname.startsWith('/ezana-api') ||
     pathname === '/privacy-policy' ||
     pathname === '/terms-of-service' ||
     pathname === '/accessibility';
@@ -130,7 +131,7 @@ export default async function RootLayout({ children }) {
                before paint so the navbar/page don't briefly flash dark.
                Matches isMarketingBrandLockedLightPath in ThemeProvider and
                the SSR class in this layout. */
-            var marketingLightRoutes = ['/', '/pricing', '/help-center', '/brokerages-integrations', '/datasets', '/privacy-policy', '/terms-of-service', '/accessibility'];
+            var marketingLightRoutes = ['/', '/pricing', '/help-center', '/brokerages-integrations', '/datasets', '/ezana-api', '/privacy-policy', '/terms-of-service', '/accessibility'];
             try {
               var path = window.location.pathname || '/';
               for (var i = 0; i < marketingLightRoutes.length; i++) {

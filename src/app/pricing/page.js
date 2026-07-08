@@ -681,12 +681,8 @@ export default function PricingPage() {
             </div>
           </div>
 
-          {/* 3. Price + CTA below, centered */}
+          {/* 3. CTA below, centered (price line removed per handoff) */}
           <div className="pricing-partner-footer">
-            <div className="pricing-partner-price">
-              <span className="plan-price-amount">Free</span>
-              <span className="plan-price-interval">to join · commission-based</span>
-            </div>
             <Link href="/auth/partner/apply" className="pricing-partner-cta">
               Become a Partner <ArrowRight size={16} aria-hidden />
             </Link>
