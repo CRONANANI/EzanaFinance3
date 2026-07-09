@@ -2,8 +2,150 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import {
+  Bell,
+  LineChart,
+  Landmark,
+  TrendingUp,
+  Eye,
+  Users,
+  GraduationCap,
+  Check,
+  ArrowRight,
+} from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/lib/supabase-browser';
+
+/* Notification type → display category (label, accent color, Lucide icon).
+   Colors are literals only where no theme token maps (per the handoff). */
+const CATEGORY_META = {
+  market_news: {
+    label: 'Market',
+    color: '#3b82f6',
+    tint: 'rgba(59,130,246,0.14)',
+    Icon: LineChart,
+  },
+  'inside-the-capitol': {
+    label: 'Inside the Capitol',
+    color: '#a78bfa',
+    tint: 'rgba(167,139,250,0.16)',
+    Icon: Landmark,
+  },
+  portfolio_alerts: {
+    label: 'Portfolio',
+    color: '#f59e0b',
+    tint: 'rgba(245,158,11,0.16)',
+    Icon: TrendingUp,
+  },
+  watchlist: {
+    label: 'Watchlist',
+    color: 'var(--emerald, #10b981)',
+    tint: 'var(--emerald-bg, rgba(16,185,129,0.14))',
+    Icon: Eye,
+  },
+  community: { label: 'Community', color: '#06b6d4', tint: 'rgba(6,182,212,0.16)', Icon: Users },
+  learning: {
+    label: 'Learning',
+    color: '#ec4899',
+    tint: 'rgba(236,72,153,0.16)',
+    Icon: GraduationCap,
+  },
+};
+const NEUTRAL_CATEGORY = {
+  label: 'Notification',
+  color: 'var(--text-muted, #6b7280)',
+  tint: 'rgba(107,114,128,0.14)',
+  Icon: Bell,
+};
+function categoryMeta(type) {
+  return CATEGORY_META[type] || NEUTRAL_CATEGORY;
+}
+
+/* priority (from mapDbNotification) → severity chip. */
+function severityMeta(priority) {
+  if (priority === 'critical') return { key: 'high', label: 'High' };
+  if (priority === 'high') return { key: 'watch', label: 'Watch' };
+  return { key: 'fyi', label: 'FYI' };
+}
+
+function isToday(ts) {
+  const d = new Date(ts);
+  const now = new Date();
+  return (
+    d.getFullYear() === now.getFullYear() &&
+    d.getMonth() === now.getMonth() &&
+    d.getDate() === now.getDate()
+  );
+}
+
+// Filter keys reuse the real notification `type` values so filtering stays wired
+// to the existing feed.
+const FILTER_TABS = [
+  { key: 'all', label: 'All' },
+  { key: 'watchlist', label: 'Watchlist' },
+  { key: 'inside-the-capitol', label: 'Inside the Capitol' },
+  { key: 'market_news', label: 'Market' },
+  { key: 'portfolio_alerts', label: 'Portfolio' },
+  { key: 'community', label: 'Community' },
+  { key: 'learning', label: 'Learning' },
+];
+
+/* Redesigned notification row (desktop panel, spec 1b). */
+function NotifRowNew({ n, onOpen, onFriendRespond }) {
+  const cat = categoryMeta(n.type);
+  const sev = severityMeta(n.priority);
+  const Icon = cat.Icon;
+  const unread = !n.read;
+  return (
+    <div
+      className={`nnx-row${unread ? ' nnx-row--unread' : ''}`}
+      role="button"
+      tabIndex={0}
+      onClick={() => onOpen(n)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onOpen(n);
+        }
+      }}
+    >
+      <span className="nnx-tile" style={{ color: cat.color, background: cat.tint }}>
+        <Icon size={18} strokeWidth={1.9} aria-hidden />
+      </span>
+      <span className="nnx-main">
+        <span className="nnx-cat">{cat.label}</span>
+        <span className="nnx-title">{n.title}</span>
+        {n.content && <span className="nnx-desc">{n.content}</span>}
+        {n.friendRequestId && onFriendRespond && (
+          <span className="nnx-friend" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              className="nnx-friend-accept"
+              onClick={() => onFriendRespond(n.friendRequestId, 'accepted')}
+            >
+              Accept
+            </button>
+            <button
+              type="button"
+              className="nnx-friend-decline"
+              onClick={() => onFriendRespond(n.friendRequestId, 'rejected')}
+            >
+              Decline
+            </button>
+          </span>
+        )}
+        <span className={`nnx-sev nnx-sev--${sev.key}`}>
+          <i className="nnx-sev-dot" />
+          {sev.label}
+        </span>
+      </span>
+      <span className="nnx-right">
+        <span className="nnx-time">{getTimeAgo(n.time)}</span>
+        {unread && <span className="nnx-udot" />}
+      </span>
+    </div>
+  );
+}
 
 /**
  * Normalize a notification row for the bell UI.
@@ -104,6 +246,10 @@ export function NavNotifications() {
     return n.type === filter;
   });
 
+  // TODAY / EARLIER grouping for the redesigned desktop panel.
+  const todayItems = filtered.filter((n) => isToday(n.time));
+  const earlierItems = filtered.filter((n) => !isToday(n.time));
+
   const toggleOpen = useCallback(() => {
     setIsOpen((prev) => !prev);
     setExpandedId(null);
@@ -174,6 +320,24 @@ export function NavNotifications() {
     setIsOpen(false);
     setExpandedId(null);
   }, []);
+
+  // Redesigned-row click: mark read (clears rail/wash/dot + decrements counts)
+  // and track the open, reusing the existing per-item read + track wiring.
+  const openNotification = useCallback(
+    (n) => {
+      markAsRead(n.id);
+      if (String(n.id).startsWith('fr-')) return;
+      fetch('/api/notifications/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event_type: 'notification_click',
+          event_data: { notification_id: n.id, type: n.type },
+        }),
+      }).catch(() => {});
+    },
+    [markAsRead],
+  );
 
   const respondFriendRequest = useCallback(async (requestId, status) => {
     try {
@@ -368,27 +532,96 @@ export function NavNotifications() {
         )}
       </button>
 
-      {/* ════ DESKTOP DROPDOWN (hidden on mobile via CSS) ════ */}
+      {/* ════ DESKTOP DROPDOWN (hidden on mobile via CSS) — redesigned panel ════ */}
       {isOpen && (
-        <div ref={dropdownRef} className="nn-dropdown">
-          <div className="nn-dropdown-header">
-            <h3 className="nn-dropdown-title">
-              <i
-                className="bi bi-bell-fill"
-                style={{ color: '#10b981', marginRight: '0.5rem', fontSize: '0.875rem' }}
-              />
-              Notifications
-            </h3>
-            <div className="nn-dropdown-actions">
-              {unreadCount > 0 && (
-                <button className="nn-mark-all" onClick={markAllRead} type="button">
-                  Mark all read
-                </button>
-              )}
+        <div
+          ref={dropdownRef}
+          className="nn-dropdown nnx-panel"
+          role="dialog"
+          aria-label="Notifications"
+        >
+          <span className="nnx-caret" aria-hidden />
+
+          {/* Fixed header */}
+          <div className="nnx-header">
+            <div className="nnx-header-l">
+              <span className="nnx-live" aria-hidden />
+              <h3 className="nnx-h-title">Notifications</h3>
+              {unreadCount > 0 && <span className="nnx-new-pill">{unreadCount} new</span>}
             </div>
+            {unreadCount > 0 && (
+              <button className="nnx-markall" onClick={markAllRead} type="button">
+                <Check size={13} strokeWidth={2.6} aria-hidden /> Mark all read
+              </button>
+            )}
           </div>
-          <FilterBar />
-          <NotifList className="nn-list" />
+
+          {/* Fixed filter tabs */}
+          <div className="nnx-tabs">
+            {FILTER_TABS.map((f) => {
+              const c =
+                f.key === 'all'
+                  ? unreadCount
+                  : notifications.filter((n) => n.type === f.key && !n.read).length;
+              return (
+                <button
+                  key={f.key}
+                  type="button"
+                  className={`nnx-tab${filter === f.key ? ' nnx-tab--active' : ''}`}
+                  onClick={() => setFilter(f.key)}
+                >
+                  {f.label}
+                  {c > 0 && <span className="nnx-tab-count">{c}</span>}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Scrolling body */}
+          <div className="nnx-body">
+            {filtered.length === 0 ? (
+              <div className="nnx-empty">
+                <Bell size={26} strokeWidth={1.5} aria-hidden />
+                <p>You&apos;re all caught up.</p>
+              </div>
+            ) : (
+              <>
+                {todayItems.length > 0 && (
+                  <>
+                    <div className="nnx-group">TODAY</div>
+                    {todayItems.map((n) => (
+                      <NotifRowNew
+                        key={n.id}
+                        n={n}
+                        onOpen={openNotification}
+                        onFriendRespond={respondFriendRequest}
+                      />
+                    ))}
+                  </>
+                )}
+                {earlierItems.length > 0 && (
+                  <>
+                    <div className="nnx-group">EARLIER</div>
+                    {earlierItems.map((n) => (
+                      <NotifRowNew
+                        key={n.id}
+                        n={n}
+                        onOpen={openNotification}
+                        onFriendRespond={respondFriendRequest}
+                      />
+                    ))}
+                  </>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Fixed footer */}
+          <div className="nnx-footer">
+            <a className="nnx-center-link" href="/settings?tab=notifications" onClick={closePanel}>
+              View notification center <ArrowRight size={14} strokeWidth={2.2} aria-hidden />
+            </a>
+          </div>
         </div>
       )}
 
