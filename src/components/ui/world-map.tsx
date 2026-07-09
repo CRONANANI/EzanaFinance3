@@ -895,6 +895,10 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
           transform: `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})`,
           transformOrigin: '0 0',
           transition: isDragging ? 'none' : 'transform 0.15s ease-out',
+          // Promote the map to its own GPU layer so dot centers are composited
+          // on whole device pixels — removes the sub-pixel banding at default zoom.
+          willChange: 'transform',
+          backfaceVisibility: 'hidden',
         }}
       >
         <div
@@ -923,6 +927,11 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
             viewBox={`0 0 ${width} ${height}`}
             className="world-map-svg world-map-svg--interactive"
             preserveAspectRatio="xMidYMid meet"
+            /* geometricPrecision (not the default optimizeSpeed heuristic) makes
+               the browser anti-alias the dense dot grid properly, killing the
+               moiré/vertical-banding artifact that otherwise appears at the
+               default zoom and only "cleaned up" when you zoomed. */
+            shapeRendering="geometricPrecision"
             style={{
               position: 'absolute',
               top: 0,

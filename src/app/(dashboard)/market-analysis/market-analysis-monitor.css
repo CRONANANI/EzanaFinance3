@@ -70,6 +70,9 @@ body.sidebar-open .ma-fullscreen {
   inset: 0;
   pointer-events: none;
   user-select: none;
+  /* Anti-alias the dense dot grid properly so it never bands/moirés at the
+     default zoom (never crispEdges/optimizeSpeed, which cause the artifact). */
+  shape-rendering: geometricPrecision;
 }
 
 .world-map-svg--interactive {

@@ -16,6 +16,25 @@ const ALPHA_VANTAGE_KEY =
   process.env.ALPHA_VANTAGE_API_KEY || process.env.NEXT_PUBLIC_ALPHA_VANTAGE_KEY;
 const ALPHA_VANTAGE_BASE = 'https://www.alphavantage.co/query';
 
+// Per-source latency caps so no single upstream can stall the response. Finnhub
+// is fast and primary (2.5s); AlphaVantage is slow/rate-limited and only a
+// nice-to-have, so it gets the shorter 2s budget. Because every upstream fetch
+// is timeout-bounded, the overall Promise.all can never exceed ~2.5s → THE CHAIN
+// returns within 3s on a cold load regardless of AlphaVantage.
+const FINNHUB_TIMEOUT_MS = 2500;
+const ALPHA_VANTAGE_TIMEOUT_MS = 2000;
+
+function fetchWithTimeout(url, opts = {}, ms = 2500) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), ms);
+  return fetch(url, { ...opts, signal: ctrl.signal }).finally(() => clearTimeout(t));
+}
+
+// Best-effort in-memory cache keyed by country+layers so repeat chain selections
+// on a warm instance are instant (complements the CDN s-maxage/SWR headers).
+const MEM_TTL_MS = 10 * 60 * 1000;
+const memCache = new Map(); // key -> { at: number, payload: object }
+
 /**
  * GET /api/market-data/power-map-news
  *
@@ -85,13 +104,23 @@ export const GET = withApiGuard(
 async function fetchFinnhubNews() {
   if (!FINNHUB_KEY) return [];
   try {
+    // Each call is independently timeout-bounded and falls back to [] on
+    // abort/error so one slow/failed category never sinks the other.
     const responses = await Promise.all([
-      fetch(`${FINNHUB_BASE}/news?category=general&token=${FINNHUB_KEY}`).then((r) =>
-        r.ok ? r.json() : [],
-      ),
-      fetch(`${FINNHUB_BASE}/news?category=forex&token=${FINNHUB_KEY}`).then((r) =>
-        r.ok ? r.json() : [],
-      ),
+      fetchWithTimeout(
+        `${FINNHUB_BASE}/news?category=general&token=${FINNHUB_KEY}`,
+        {},
+        FINNHUB_TIMEOUT_MS,
+      )
+        .then((r) => (r.ok ? r.json() : []))
+        .catch(() => []),
+      fetchWithTimeout(
+        `${FINNHUB_BASE}/news?category=forex&token=${FINNHUB_KEY}`,
+        {},
+        FINNHUB_TIMEOUT_MS,
+      )
+        .then((r) => (r.ok ? r.json() : []))
+        .catch(() => []),
     ]);
 
     return responses
@@ -139,7 +168,13 @@ async function fetchAlphaVantageNews(country, layers) {
 
   try {
     const url = `${ALPHA_VANTAGE_BASE}?${params.toString()}`;
-    const res = await fetch(url, { headers: { 'User-Agent': 'EzanaFinance/1.0' } });
+    // Shorter budget: if AlphaVantage's slow free tier doesn't beat 2s, we abort
+    // and ship Finnhub-only (sentiment is a nice-to-have, not required).
+    const res = await fetchWithTimeout(
+      url,
+      { headers: { 'User-Agent': 'EzanaFinance/1.0' } },
+      ALPHA_VANTAGE_TIMEOUT_MS,
+    );
     if (!res.ok) {
       console.warn('[power-map-news] alphavantage non-OK status:', res.status);
       return [];
@@ -188,7 +223,18 @@ function avTimeToUnix(avTime) {
 }
 
 // ─── Main pipeline ─────────────────────────────────────────────────────────
+const NEWS_HEADERS = {
+  'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=3600',
+};
+
 async function fetchAndFilter(country, layers) {
+  // Warm-instance cache: repeat chain selections return instantly.
+  const cacheKey = `${country}|${[...layers].sort().join(',')}`;
+  const cached = memCache.get(cacheKey);
+  if (cached && Date.now() - cached.at < MEM_TTL_MS) {
+    return NextResponse.json(cached.payload, { headers: NEWS_HEADERS });
+  }
+
   const [finnhubArticles, alphaArticles] = await Promise.all([
     fetchFinnhubNews(),
     fetchAlphaVantageNews(country, layers),
@@ -264,22 +310,23 @@ async function fetchAndFilter(country, layers) {
     sourceProvider: n._source,
   }));
 
-  return NextResponse.json(
-    {
-      news: formatted,
-      country,
-      layers,
-      sources: {
-        finnhub: finnhubArticles.length,
-        alphavantage: alphaArticles.length,
-      },
-      countryRelevant: countryRelevant.length,
-      finalMatches: formatted.length,
+  const payload = {
+    news: formatted,
+    country,
+    layers,
+    sources: {
+      finnhub: finnhubArticles.length,
+      alphavantage: alphaArticles.length,
     },
-    {
-      headers: {
-        'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=3600',
-      },
-    },
-  );
+    countryRelevant: countryRelevant.length,
+    finalMatches: formatted.length,
+  };
+
+  // Only cache a useful result so a transient empty upstream fetch isn't pinned
+  // for 10 minutes.
+  if (formatted.length > 0) {
+    memCache.set(cacheKey, { at: Date.now(), payload });
+  }
+
+  return NextResponse.json(payload, { headers: NEWS_HEADERS });
 }

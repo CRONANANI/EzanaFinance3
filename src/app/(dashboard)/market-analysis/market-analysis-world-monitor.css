@@ -377,6 +377,8 @@
   pointer-events: none;
   mask-image: linear-gradient(to bottom, transparent, white 10%, white 90%, transparent);
   -webkit-mask-image: linear-gradient(to bottom, transparent, white 10%, white 90%, transparent);
+  /* Clean dot rendering at every zoom — no default-scale banding/moiré. */
+  shape-rendering: geometricPrecision;
 }
 
 .world-map-svg--interactive {
