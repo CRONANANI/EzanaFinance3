@@ -1305,6 +1305,100 @@ export const MOCK_TEAM_PERFORMANCE = [
   },
 ];
 
+// ── Fund-level performance + weekly snapshot series ──
+// One coherent set of fund numbers for the Ezana Test University Fund, used as
+// the Command Center / chart fallback when the live summary API has no data yet.
+// total_value = sum of the seven sector sleeves; alpha = return − S&P 500 return.
+export const MOCK_FUND_PERFORMANCE = {
+  total_value: 846500, // Σ MOCK_TEAM_PERFORMANCE.value
+  total_cost: 772300,
+  return_pct: 9.6,
+  benchmark_return_pct: 6.1, // S&P 500 comparison series
+  alpha_pct: 3.5, // 9.6 − 6.1
+};
+
+// Deterministic (no Math.random → SSR-safe) weekly series from Jan → mid-year,
+// growing total_cost → total_value with an S&P 500 benchmark line. A sine
+// envelope pins both endpoints exactly so the last point matches the headline.
+function buildFundSnapshots() {
+  const WEEKS = 28;
+  const base = MOCK_FUND_PERFORMANCE.total_cost;
+  const end = MOCK_FUND_PERFORMANCE.total_value;
+  const benchEnd = Math.round(base * (1 + MOCK_FUND_PERFORMANCE.benchmark_return_pct / 100));
+  const startMs = Date.parse('2026-01-05T00:00:00Z');
+  const out = [];
+  for (let i = 0; i < WEEKS; i += 1) {
+    const f = i / (WEEKS - 1);
+    const env = Math.sin(Math.PI * f); // 0 at both ends → clean endpoints
+    const wig = (Math.sin(i * 1.7) * 0.008 + Math.sin(i * 0.6) * 0.004) * env;
+    const bwig = Math.sin(i * 1.3) * 0.004 * env;
+    const value = Math.round(base + (end - base) * f + base * wig);
+    const benchmarkValue = Math.round(base + (benchEnd - base) * f + base * bwig);
+    const date = new Date(startMs + i * 7 * 86400000).toISOString().slice(0, 10);
+    out.push({ date, value, benchmarkValue });
+  }
+  return out;
+}
+export const MOCK_FUND_SNAPSHOTS = buildFundSnapshots();
+
+// ── Fund calendar (events + deliverable deadlines) with color-family accents ──
+// Families: fund (emerald), pitch/competition (gold), meeting/cohort (blue),
+// research/assignment (violet), flag/compliance (red). The Team Hub "This week
+// in the fund" calendar reads this so every item is consistently color-coded.
+const EVENT_TYPE_ACCENT = {
+  presentation: 'pitch', // stock pitches → gold
+  pitch: 'pitch',
+  competition: 'pitch',
+  review: 'fund', // portfolio reviews → emerald
+  meeting: 'meeting', // all-hands / cohort → blue
+};
+function memberName(id) {
+  return MOCK_MEMBERS.find((m) => m.id === id)?.name || null;
+}
+export function getFundCalendar() {
+  const items = [];
+  for (const e of MOCK_EVENTS) {
+    items.push({
+      id: `evt-${e.id}`,
+      kind: e.type === 'meeting' ? 'meeting' : 'event',
+      accent: EVENT_TYPE_ACCENT[e.type] || 'meeting',
+      title: e.title,
+      date: e.date,
+      team: e.team_name,
+      meta:
+        e.type === 'meeting'
+          ? 'Meeting'
+          : `${(e.deliverables || []).length} deliverables · led by ${memberName(e.created_by) || 'Council'}`,
+    });
+    // A pitch/review event's own submission deadline lands as a gold/violet marker.
+    if (e.deadline) {
+      items.push({
+        id: `dl-${e.id}`,
+        kind: 'deadline',
+        accent: e.type === 'meeting' ? 'meeting' : 'pitch',
+        title: `${e.title} — materials due`,
+        date: e.deadline,
+        team: e.team_name,
+        meta: 'Submission deadline',
+      });
+    }
+  }
+  for (const t of MOCK_TASKS) {
+    if (!t.due_date) continue;
+    const team = MOCK_TEAMS.find((tm) => tm.id === t.team_id)?.name || 'Council';
+    items.push({
+      id: `task-${t.id}`,
+      kind: 'assignment',
+      accent: t.priority === 'urgent' ? 'flag' : 'research', // urgent → red, else violet
+      title: t.title,
+      date: `${t.due_date}T23:59:00Z`,
+      team,
+      meta: `${t.priority} · ${memberName(t.assigned_to) || 'Unassigned'}`,
+    });
+  }
+  return items.sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
+}
+
 // ── NEW: TMT individual holdings breakdown ──
 export const MOCK_TMT_HOLDINGS = [
   {

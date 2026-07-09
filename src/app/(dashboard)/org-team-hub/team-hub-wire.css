@@ -38,6 +38,20 @@
   --chart-axis: rgba(255, 255, 255, 0.22);
   --shadow-sm: none;
 
+  /* Color-coded functional families (E2): fund/performance = emerald,
+     pitches/competitions = gold, meetings/cohorts = blue,
+     research/assignments = violet, negatives/compliance flags = red. */
+  --fam-fund: #34d399;
+  --fam-pitch: #d4a853;
+  --fam-meeting: #60a5fa;
+  --fam-research: #a78bfa;
+  --fam-flag: #f87171;
+  --fam-fund-bg: rgba(52, 211, 153, 0.1);
+  --fam-pitch-bg: rgba(212, 168, 83, 0.12);
+  --fam-meeting-bg: rgba(96, 165, 250, 0.12);
+  --fam-research-bg: rgba(167, 139, 250, 0.12);
+  --fam-flag-bg: rgba(248, 113, 113, 0.12);
+
   /* Flat flag / segmented-active treatment (navy in light, green in dark). */
   --thw-flag-bg: #34d399;
   --thw-flag-text: #0b0d10;
@@ -84,6 +98,18 @@ body.light-mode .thw-root {
   --thw-flag-text: #ffffff;
   --thw-accent: #0f172a;
   --thw-accent-text: #ffffff;
+
+  /* Color-coded families — light-mode shades. */
+  --fam-fund: #059669;
+  --fam-pitch: #b45309;
+  --fam-meeting: #2563eb;
+  --fam-research: #7c3aed;
+  --fam-flag: #dc2626;
+  --fam-fund-bg: rgba(5, 150, 105, 0.08);
+  --fam-pitch-bg: rgba(180, 83, 9, 0.09);
+  --fam-meeting-bg: rgba(37, 99, 235, 0.08);
+  --fam-research-bg: rgba(124, 58, 237, 0.08);
+  --fam-flag-bg: rgba(220, 38, 38, 0.08);
 }
 
 .thw-root * {
@@ -451,8 +477,10 @@ body.light-mode .thw-root {
   overflow: hidden;
   background: var(--surface-card);
 }
+/* ~40% shorter than before: tighter padding, smaller type, no name min-height,
+   condensed ticker chips — same fields, denser. */
 .thw-sector {
-  padding: 13px 15px;
+  padding: 9px 12px;
   border-left: 1px solid var(--border-secondary);
   cursor: pointer;
   transition: background 0.12s ease-out;
@@ -469,38 +497,46 @@ body.light-mode .thw-root {
 }
 .thw-sector-rank {
   font-family: var(--font-mono);
-  font-size: 9.5px;
+  font-size: 9px;
   color: var(--text-ghost);
 }
 .thw-sector-name {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--text-primary);
-  margin-top: 4px;
-  line-height: 1.3;
-  min-height: 31px;
+  margin-top: 2px;
+  line-height: 1.22;
+  min-height: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .thw-sector-roi {
   font-family: var(--font-mono);
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--emerald);
-  margin-top: 5px;
+  margin-top: 3px;
 }
 .thw-sector-roi.neg {
   color: var(--negative);
 }
 .thw-sector-val {
   font-family: var(--font-mono);
-  font-size: 10.5px;
+  font-size: 9.5px;
   color: var(--text-faint);
-  margin-top: 1px;
+  margin-top: 0;
 }
 .thw-sector-tkrs {
   display: flex;
-  gap: 4px;
-  margin-top: 9px;
+  gap: 3px;
+  margin-top: 6px;
   flex-wrap: wrap;
+}
+.thw-sector-tkrs .thw-tkr {
+  font-size: 8.5px;
+  padding: 1px 4px;
 }
 
 /* ── 5. Bento grid ─────────────────────────────────────────── */
@@ -878,6 +914,242 @@ button.thw-badge-btn:disabled {
   }
 }
 
+/* ── Color-family accent system (E2) ───────────────────────────
+   A card / calendar item / chip opts into a family via data-accent; every
+   family resolves to --fam (line/text) + --fam-bg (tint). Never hardcode the
+   hex per element — it all routes through these vars. */
+[data-accent='fund'] {
+  --fam: var(--fam-fund);
+  --fam-bg: var(--fam-fund-bg);
+}
+[data-accent='pitch'] {
+  --fam: var(--fam-pitch);
+  --fam-bg: var(--fam-pitch-bg);
+}
+[data-accent='meeting'] {
+  --fam: var(--fam-meeting);
+  --fam-bg: var(--fam-meeting-bg);
+}
+[data-accent='research'] {
+  --fam: var(--fam-research);
+  --fam-bg: var(--fam-research-bg);
+}
+[data-accent='flag'] {
+  --fam: var(--fam-flag);
+  --fam-bg: var(--fam-flag-bg);
+}
+/* Card family rail (inset so it respects the radius and never clips content)
+   plus a family-tinted header icon. */
+.thw-card[data-accent] {
+  box-shadow: inset 3px 0 0 var(--fam);
+}
+.thw-card[data-accent] .thw-card-title svg {
+  color: var(--fam);
+}
+
+/* ── Slim context topbar (replaces the fund-value hero) ──────── */
+.thw-topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 36px 0;
+}
+
+/* ── Fund calendar — "This week in the fund" ───────────────────
+   Card-chrome day cells in one aligned auto-fill grid; each event carries its
+   family accent (gold pitch, blue meeting, violet assignment, red flag). */
+.thw-cal-section {
+  padding: 16px 36px 0;
+}
+.thw-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+.thw-cal-item {
+  display: block;
+  text-align: left;
+  padding: 12px 14px 12px 16px;
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+  background: var(--surface-card);
+  box-shadow: inset 3px 0 0 var(--fam, var(--border-hover));
+  cursor: pointer;
+  font-family: inherit;
+  color: inherit;
+  transition:
+    background 0.12s ease-out,
+    border-color 0.12s ease-out;
+}
+.thw-cal-item:hover {
+  background: var(--surface-card-hover);
+  border-color: var(--border-hover);
+}
+.thw-cal-date {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-family: var(--font-mono);
+  margin-bottom: 7px;
+}
+.thw-cal-wd {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: var(--text-faint);
+}
+.thw-cal-md {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--fam, var(--text-primary));
+}
+.thw-cal-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.thw-cal-meta {
+  margin-top: 4px;
+  font-size: 10.5px;
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Command Center — fund panel + assignments strip ─────────── */
+.thw-cc-fund {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  padding: 12px 14px;
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  background: var(--fam-fund-bg);
+  cursor: pointer;
+  font-family: inherit;
+  color: inherit;
+  transition:
+    border-color 0.12s ease-out,
+    background 0.12s ease-out;
+}
+.thw-cc-fund:hover {
+  border-color: var(--emerald-border);
+}
+.thw-cc-fund-main {
+  min-width: 0;
+}
+.thw-cc-fund-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.thw-cc-fund-value {
+  display: block;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  line-height: 1.05;
+  margin: 3px 0 6px;
+}
+.thw-cc-fund-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+}
+.thw-cc-fund-metrics .pos {
+  color: var(--emerald);
+}
+.thw-cc-fund-metrics .neg {
+  color: var(--negative);
+}
+.thw-cc-fund-metrics .mut {
+  color: var(--text-faint);
+}
+.thw-cc-fund-go {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--emerald);
+  white-space: nowrap;
+}
+/* Command Center's fund chart is compact (fits under the value panel). */
+.thw-chart-card--compact {
+  margin-top: 10px;
+  padding: 10px 12px 4px;
+}
+.thw-chart-card--compact .thw-chart {
+  height: 92px;
+  margin-top: 8px;
+}
+.thw-chart-card--compact .thw-axis {
+  padding: 6px 2px 2px;
+}
+
+.thw-cc-assign {
+  margin-top: 14px;
+}
+.thw-cc-assign-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+.thw-cc-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 100%;
+  padding: 5px 9px;
+  border-radius: 8px;
+  border: 1px solid var(--border-primary);
+  background: var(--fam-bg, var(--surface-card));
+  box-shadow: inset 2px 0 0 var(--fam, var(--border-hover));
+  cursor: pointer;
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  transition: border-color 0.12s ease-out;
+}
+.thw-cc-chip:hover {
+  border-color: var(--border-hover);
+}
+.thw-cc-chip-title {
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 170px;
+}
+.thw-cc-chip-due {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  color: var(--fam, var(--text-faint));
+  flex-shrink: 0;
+}
+
 /* ── Responsive ────────────────────────────────────────────── */
 @media (max-width: 1180px) {
   .thw-hero {
@@ -885,8 +1157,12 @@ button.thw-badge-btn:disabled {
     gap: 22px;
     padding: 24px 20px;
   }
-  .thw-sectors {
+  .thw-sectors,
+  .thw-cal-section {
     padding: 18px 20px 0;
+  }
+  .thw-topbar {
+    padding: 14px 20px 0;
   }
   .thw-sector-grid {
     grid-template-columns: repeat(4, 1fr);
@@ -898,6 +1174,7 @@ button.thw-badge-btn:disabled {
     padding: 20px 20px 32px;
   }
   .thw-span8,
+  .thw-span7,
   .thw-span5,
   .thw-span4,
   .thw-span3 {
@@ -918,6 +1195,7 @@ button.thw-badge-btn:disabled {
     grid-template-columns: 1fr;
   }
   .thw-span8,
+  .thw-span7,
   .thw-span5,
   .thw-span4,
   .thw-span3 {

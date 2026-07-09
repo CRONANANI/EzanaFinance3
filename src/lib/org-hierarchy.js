@@ -14,25 +14,83 @@
  *   - Nobody edits their own role.
  */
 
+// Rank 0 = top. Junior/quant tiers use fractional ranks so they slot into the
+// existing seniority order WITHOUT shifting the original integer ranks — the
+// permission math (strictly-below comparisons) is preserved unchanged.
 export const ORG_TIERS = [
-  { id: 'president', label: 'President', short: 'PRESIDENT', cls: 'exec', rank: 0, role: 'executive' },
-  { id: 'vice_president', label: 'Vice President', short: 'VP', cls: 'exec', rank: 1, role: 'executive' },
+  {
+    id: 'president',
+    label: 'President',
+    short: 'PRESIDENT',
+    cls: 'exec',
+    rank: 0,
+    role: 'executive',
+  },
+  {
+    id: 'vice_president',
+    label: 'Vice President',
+    short: 'VP',
+    cls: 'exec',
+    rank: 1,
+    role: 'executive',
+  },
   { id: 'executive', label: 'Executive', short: 'EXEC', cls: 'exec', rank: 2, role: 'executive' },
-  { id: 'senior_portfolio_manager', label: 'Senior Portfolio Manager', short: 'SR PM', cls: 'pm', rank: 3, role: 'portfolio_manager' },
-  { id: 'portfolio_manager', label: 'Portfolio Manager', short: 'PM', cls: 'pm', rank: 4, role: 'portfolio_manager' },
-  { id: 'senior_analyst', label: 'Senior Analyst', short: 'SR ANALYST', cls: 'an', rank: 5, role: 'analyst' },
+  {
+    id: 'senior_portfolio_manager',
+    label: 'Senior Portfolio Manager',
+    short: 'SR PM',
+    cls: 'pm',
+    rank: 3,
+    role: 'portfolio_manager',
+  },
+  {
+    id: 'portfolio_manager',
+    label: 'Portfolio Manager',
+    short: 'PM',
+    cls: 'pm',
+    rank: 4,
+    role: 'portfolio_manager',
+  },
+  {
+    id: 'junior_portfolio_manager',
+    label: 'Junior Portfolio Manager',
+    short: 'JR PM',
+    cls: 'pm',
+    rank: 4.5,
+    role: 'portfolio_manager',
+  },
+  {
+    id: 'senior_analyst',
+    label: 'Senior Analyst',
+    short: 'SR ANALYST',
+    cls: 'an',
+    rank: 5,
+    role: 'analyst',
+  },
+  {
+    id: 'quant_analyst',
+    label: 'Quant Trader',
+    short: 'QUANT',
+    cls: 'an',
+    rank: 5.5,
+    role: 'analyst',
+  },
   { id: 'analyst', label: 'Analyst', short: 'ANALYST', cls: 'an', rank: 6, role: 'analyst' },
+  {
+    id: 'junior_analyst',
+    label: 'Junior Analyst',
+    short: 'JR ANALYST',
+    cls: 'an',
+    rank: 6.5,
+    role: 'analyst',
+  },
 ];
 
 const TIER_BY_ID = new Map(ORG_TIERS.map((t) => [t.id, t]));
 
 /** Tier record for a member; falls back to the coarse role column. */
 export function tierOf(member) {
-  return (
-    TIER_BY_ID.get(member?.tier) ||
-    TIER_BY_ID.get(member?.role) ||
-    TIER_BY_ID.get('analyst')
-  );
+  return TIER_BY_ID.get(member?.tier) || TIER_BY_ID.get(member?.role) || TIER_BY_ID.get('analyst');
 }
 
 export function tierRank(member) {

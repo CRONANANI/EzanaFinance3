@@ -21,10 +21,17 @@ import {
   Pin,
   Flame,
   Clock,
+  Calendar,
   ArrowRight,
 } from 'lucide-react';
 import { useOrg } from '@/contexts/OrgContext';
-import { MOCK_TEAM_PERFORMANCE } from '@/lib/orgMockData';
+import {
+  MOCK_TEAM_PERFORMANCE,
+  MOCK_FUND_PERFORMANCE,
+  MOCK_FUND_SNAPSHOTS,
+  MOCK_TASKS,
+  getFundCalendar,
+} from '@/lib/orgMockData';
 import './team-hub-wire.css';
 
 /* ── Team Hub destinations (the 14 pinnable shortcuts) ─────────── */
@@ -263,7 +270,7 @@ function sliceSnapshots(snapshots, range) {
   return pts.length >= 2 ? pts : snapshots;
 }
 
-function FundChart({ snapshots, loading }) {
+function FundChart({ snapshots, loading, compact = false }) {
   const [range, setRange] = useState('YTD');
   const [hover, setHover] = useState(null);
   const chartRef = useRef(null);
@@ -314,7 +321,7 @@ function FundChart({ snapshots, loading }) {
   const topPct = hp ? (hp.y / geom.H) * 100 : 0;
 
   return (
-    <div className="thw-chart-card">
+    <div className={`thw-chart-card${compact ? ' thw-chart-card--compact' : ''}`}>
       <div className="thw-chart-head">
         <span className="thw-chart-label">
           Fund value{months ? ` · trailing ${months} months` : ''}
@@ -531,10 +538,10 @@ function Digest({ digest, loading }) {
   const recognitions = digest?.recognitions || [];
 
   return (
-    <section className="thw-card thw-span8" aria-label="This week in the fund">
+    <section className="thw-card thw-span7" data-accent="fund" aria-label="Fund activity">
       <div className="thw-card-head">
         <span className="thw-card-title">
-          <Flame size={15} strokeWidth={1.8} /> This week in the fund
+          <Flame size={15} strokeWidth={1.8} /> Fund activity
         </span>
         <span className="thw-section-meta">LAST 7 DAYS</span>
       </div>
@@ -635,18 +642,157 @@ function Digest({ digest, loading }) {
   );
 }
 
-/* ── Shortcuts (all 14 destinations, compact grid) ────────────── */
-function Shortcuts() {
-  const router = useRouter();
+/* ── This week in the fund — calendar (mock events + deliverable deadlines) ─── */
+function calDate(iso) {
+  const d = new Date(iso);
+  return {
+    wd: d.toLocaleString('en-US', { weekday: 'short', timeZone: 'UTC' }).toUpperCase(),
+    md: d
+      .toLocaleString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })
+      .toUpperCase(),
+  };
+}
+
+function FundCalendar({ items, loading, onOpen }) {
+  const rows = items.slice(0, 8);
   return (
-    <section className="thw-card thw-span4" aria-label="Shortcuts">
+    <section className="thw-cal-section" aria-label="This week in the fund">
+      <div className="thw-section-head">
+        <span className="thw-card-title">
+          <Calendar size={15} strokeWidth={1.8} /> This week in the fund
+        </span>
+        <span className="thw-section-meta">FUND CALENDAR</span>
+      </div>
+      <div className="thw-cal-grid">
+        {loading
+          ? Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="thw-cal-item" aria-hidden="true">
+                <Skel w={40} h={30} />
+                <div style={{ marginTop: 8 }}>
+                  <Skel w="85%" h={12} />
+                </div>
+                <div style={{ marginTop: 6 }}>
+                  <Skel w="60%" h={10} />
+                </div>
+              </div>
+            ))
+          : rows.map((it) => {
+              const dt = calDate(it.date);
+              return (
+                <button
+                  key={it.id}
+                  type="button"
+                  className="thw-cal-item"
+                  data-accent={it.accent}
+                  onClick={() => onOpen(it)}
+                >
+                  <div className="thw-cal-date">
+                    <span className="thw-cal-wd">{dt.wd}</span>
+                    <span className="thw-cal-md">{dt.md}</span>
+                  </div>
+                  <div className="thw-cal-title">{it.title}</div>
+                  <div className="thw-cal-meta">
+                    {it.team}
+                    {it.meta ? ` · ${it.meta}` : ''}
+                  </div>
+                </button>
+              );
+            })}
+      </div>
+    </section>
+  );
+}
+
+/* ── Command Center (fund chart + numbers + assignments + 14 shortcuts) ─────── */
+function CommandCenter({ fund, snapshots, tasksData, loading, onOpenTrading, onOpenAssignments }) {
+  const router = useRouter();
+
+  // My open, due-dated assignments — live when present, else the mock universe
+  // so the strip is never empty in a demo.
+  const liveAssign = (tasksData?.tasks || []).filter(
+    (t) => t.mine && t.status !== 'completed' && t.due_date,
+  );
+  const assignSrc = liveAssign.length
+    ? liveAssign
+    : MOCK_TASKS.filter((t) => t.status !== 'completed' && t.due_date);
+  const assignments = assignSrc.slice(0, 4).map((t) => ({
+    id: t.id,
+    title: t.title,
+    due: dueLabel(t.due_date),
+    urgent: t.priority === 'urgent',
+  }));
+
+  const returnPos = (fund?.return_pct ?? 0) >= 0;
+  const alphaPos = (fund?.alpha_pct ?? 0) >= 0;
+
+  return (
+    <section className="thw-card thw-cc thw-span5" data-accent="fund" aria-label="Command Center">
       <div className="thw-card-head">
         <span className="thw-card-title">
-          <Pin size={15} strokeWidth={1.8} /> Shortcuts
+          <Pin size={15} strokeWidth={1.8} /> Command Center
         </span>
-        <span className="thw-section-meta">ALL · {ACTIONS.length}</span>
+        <span className="thw-section-meta">FALL 2026</span>
       </div>
       <div className="thw-card-body" style={{ paddingTop: 12, paddingBottom: 14 }}>
+        {/* Fund value — clickable → Trading Desk (Council Trading) */}
+        <button
+          type="button"
+          className="thw-cc-fund"
+          onClick={onOpenTrading}
+          aria-label="Open Trading Desk"
+        >
+          <div className="thw-cc-fund-main">
+            <span className="thw-cc-fund-label">Fund value</span>
+            <span className="thw-cc-fund-value">
+              {loading ? <Skel w={150} h={30} /> : fmtMoney(fund?.total_value)}
+            </span>
+            <span className="thw-cc-fund-metrics">
+              <span className={returnPos ? 'pos' : 'neg'}>
+                {fmtSignedPct(fund?.return_pct)} return
+              </span>
+              <span className={alphaPos ? 'pos' : 'neg'}>
+                {fmtSignedPct(fund?.alpha_pct)} alpha
+              </span>
+              <span className="mut">vs S&amp;P 500 {fmtSignedPct(fund?.benchmark_return_pct)}</span>
+            </span>
+          </div>
+          <span className="thw-cc-fund-go">
+            Trading Desk <ArrowRight size={13} strokeWidth={2} />
+          </span>
+        </button>
+
+        {/* Compact fund chart (value vs S&P 500) */}
+        <FundChart snapshots={snapshots} loading={loading} compact />
+
+        {/* Assignments strip */}
+        <div className="thw-cc-assign">
+          <div className="thw-col-label">
+            <ClipboardList size={12} strokeWidth={1.8} /> My assignments · due
+          </div>
+          <div className="thw-cc-assign-row">
+            {assignments.length === 0 ? (
+              <span className="thw-empty" style={{ padding: 0 }}>
+                Nothing due — you&apos;re clear.
+              </span>
+            ) : (
+              assignments.map((a) => (
+                <button
+                  key={a.id}
+                  type="button"
+                  className="thw-cc-chip"
+                  data-accent={a.urgent ? 'flag' : 'research'}
+                  onClick={onOpenAssignments}
+                  title={a.title}
+                >
+                  <span className="thw-cc-chip-title">{a.title}</span>
+                  <span className="thw-cc-chip-due">{a.due}</span>
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* 14 destination shortcuts */}
         <div className="thw-cmd-search" aria-hidden="true">
           <Search size={14} strokeWidth={1.8} /> Jump to anything…
           <span className="thw-kbd">⌘K</span>
@@ -693,7 +839,7 @@ function TaskManagement({ tasksData, loading, onStatusChange }) {
   };
 
   return (
-    <section className="thw-card thw-span5" aria-label="Tasks">
+    <section className="thw-card thw-span5" data-accent="research" aria-label="Tasks">
       <div className="thw-card-head">
         <span className="thw-card-title">
           <ClipboardList size={15} strokeWidth={1.8} /> Task management
@@ -775,7 +921,7 @@ function Deadlines({ tasksData, loading, onOpenBoard }) {
   const overdueCount = tasksData?.overdueCount ?? 0;
 
   return (
-    <section className="thw-card thw-span4" aria-label="Deadlines">
+    <section className="thw-card thw-span4" data-accent="flag" aria-label="Deadlines">
       <div className="thw-card-head">
         <span className="thw-card-title">
           <Clock size={15} strokeWidth={1.8} /> Deadlines
@@ -840,7 +986,7 @@ function OrganizationCard({ organization, role, loading, onViewOrg }) {
   const extra = Math.max(0, oversee.length - 4);
 
   return (
-    <section className="thw-card thw-span3" aria-label="Organization">
+    <section className="thw-card thw-span3" data-accent="meeting" aria-label="Organization">
       <div className="thw-card-head">
         <span className="thw-card-title">
           <Users size={15} strokeWidth={1.8} /> Organization
@@ -1006,90 +1152,39 @@ export default function OrgTeamHubPage() {
   }
 
   const perf = summary?.performance || null;
-  const counts = summary?.counts || null;
   const strip = summary?.statStrip || null;
   const orgName =
     universityName || summary?.org?.name || orgData?.org?.name || 'Investment Council';
   const fundLabel = fundName || `${orgName} Fund`;
   const roleLabel = summary?.viewer?.title || ROLE_LABEL[orgRole] || 'Member';
-  const violations = strip?.openViolations ?? 0;
+
+  // Fund numbers + chart series and the calendar surface: use live summary data
+  // when present, else the mock Ezana Test University Fund so the demo is always
+  // populated (mirrors SectorDesk's live-or-mock fallback).
+  const fund = perf && perf.total_value ? perf : MOCK_FUND_PERFORMANCE;
+  const fundSnapshots =
+    Array.isArray(summary?.snapshots) && summary.snapshots.length >= 3
+      ? summary.snapshots
+      : MOCK_FUND_SNAPSHOTS;
+  const calendarItems = getFundCalendar();
 
   return (
     <div className="thw-root">
       <Ticker digest={digest} loading={loading} />
 
-      <section className="thw-hero" aria-label="Fund overview">
-        <div>
-          <span className="thw-eyebrow">
-            <b className="thw-brand">{fundLabel}</b> · {orgName} · {roleLabel}
-          </span>
-          <div className="thw-display">
-            {loading ? (
-              <Skel w={280} h={48} style={{ borderRadius: 10 }} />
-            ) : (
-              fmtMoney(perf?.total_value)
-            )}
-          </div>
-          <div className="thw-hero-deltas">
-            {loading ? (
-              <Skel w={260} h={13} />
-            ) : (
-              <>
-                <span className={(perf?.return_pct ?? 0) >= 0 ? 'pos' : 'neg'}>
-                  {fmtSignedPct(perf?.return_pct)} return
-                </span>
-                <span className={(perf?.alpha_pct ?? 0) >= 0 ? 'pos' : 'neg'}>
-                  {fmtSignedPct(perf?.alpha_pct)} alpha
-                </span>
-                <span className="mut">
-                  {counts?.members ?? 0} members · {counts?.teams ?? 0} teams ·{' '}
-                  {counts?.openTasks ?? 0} open tasks
-                </span>
-              </>
-            )}
-          </div>
-          <div className="thw-hstats">
-            <div className="thw-hstat">
-              <div className="thw-hstat-label">Cohort</div>
-              <div className="thw-hstat-value">
-                {loading ? <Skel w={70} h={17} /> : strip?.cohort || '—'}
-              </div>
-            </div>
-            <div className="thw-hstat">
-              <div className="thw-hstat-label">My assignments</div>
-              <div className="thw-hstat-value">
-                {loading ? <Skel w={20} h={17} /> : (strip?.myAssignments ?? 0)}
-              </div>
-            </div>
-            <div className="thw-hstat">
-              <div className="thw-hstat-label">IPS violations</div>
-              <div className={`thw-hstat-value ${violations === 0 ? 'pos' : 'neg'}`}>
-                {loading ? (
-                  <Skel w={60} h={17} />
-                ) : violations === 0 ? (
-                  '0 · Clear'
-                ) : (
-                  `${violations} Open`
-                )}
-              </div>
-            </div>
-            <div className="thw-hstat">
-              <div className="thw-hstat-label">Vs S&amp;P 500</div>
-              <div className={`thw-hstat-value ${(perf?.alpha_pct ?? 0) >= 0 ? 'pos' : 'neg'}`}>
-                {loading ? (
-                  <Skel w={64} h={17} />
-                ) : perf?.alpha_pct == null ? (
-                  '—'
-                ) : (
-                  `${perf.alpha_pct >= 0 ? '+' : '−'}${Math.abs(perf.alpha_pct).toFixed(1)} PTS`
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* Slim context bar — the fund value/chart now lives in the Command Center */}
+      <header className="thw-topbar" aria-label="Fund overview">
+        <span className="thw-eyebrow">
+          <b className="thw-brand">{fundLabel}</b> · {orgName} · {roleLabel}
+        </span>
+      </header>
 
-        <FundChart snapshots={summary?.snapshots} loading={loading} />
-      </section>
+      {/* Fund calendar replaces the old fund-value hero slot */}
+      <FundCalendar
+        items={calendarItems}
+        loading={loading}
+        onOpen={() => router.push('/org-team-hub/meetings')}
+      />
 
       <SectorDesk
         sectors={summary?.sectors}
@@ -1099,8 +1194,15 @@ export default function OrgTeamHubPage() {
       />
 
       <div className="thw-bento">
+        <CommandCenter
+          fund={fund}
+          snapshots={fundSnapshots}
+          tasksData={tasksData}
+          loading={loading}
+          onOpenTrading={() => router.push('/org-trading')}
+          onOpenAssignments={() => router.push('/org-team-hub/assignments')}
+        />
         <Digest digest={digest} loading={loading} />
-        <Shortcuts />
         <TaskManagement
           tasksData={tasksData}
           loading={loading}
