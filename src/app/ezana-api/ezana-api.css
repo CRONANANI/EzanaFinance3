@@ -30,7 +30,9 @@
 .ea-hero-inner {
   max-width: 1180px;
   margin: 0 auto;
-  padding: 3.5rem 2rem 2.75rem;
+  /* Clear the fixed global navbar (~88px, same offset the sidenav/section
+     anchors use) so the eyebrow + H1 aren't hidden behind it on load. */
+  padding: calc(88px + 2.5rem) 2rem 2.75rem;
   text-align: center;
 }
 .ea-eyebrow {
@@ -417,6 +419,15 @@
 .ea-ep-base {
   font-family: var(--font-mono, 'JetBrains Mono', monospace);
   font-size: 0.75rem !important;
+}
+/* One-line "what a quant does with this" framing under each group header. */
+.ea-ep-framing {
+  margin: 0;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--ea-border);
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--ea-muted);
 }
 .ea-ep-list {
   list-style: none;
