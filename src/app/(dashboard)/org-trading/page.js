@@ -21,7 +21,7 @@ export default function OrgTradingPage() {
   }
 
   return (
-    <div className="dashboard-page-inset org-trading-page">
+    <div className="org-trading-page">
       <div className="ot-hero">
         <div className="ot-hero-left">
           <div className="ot-hero-icon">
