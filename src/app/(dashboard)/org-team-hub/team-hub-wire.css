@@ -7,9 +7,12 @@
    ════════════════════════════════════════════════════════════ */
 
 .thw-root {
-  /* Sits inside the normal dashboard-main padding (no full-bleed). */
-  margin: 0 auto;
-  max-width: 1240px;
+  /* Fill the full dashboard content width, exactly like the regular-app home
+     page: the dashboard shell already supplies max-width:100% + 2rem side
+     padding, so no extra max-width cap here (the old 1240px cap left the page
+     too narrow on wide screens). */
+  margin: 0;
+  max-width: 100%;
   font-family: var(--font-sans);
 
   /* ── DARK (default) ── */
