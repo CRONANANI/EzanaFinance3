@@ -8,12 +8,17 @@
    ============================================ */
 
 /* ---------- GLOBAL ---------- */
+/* `overflow-x: clip` prevents horizontal scroll WITHOUT turning html/body into a
+   scroll container. `overflow-x: hidden` computes overflow-y to `auto`, which
+   makes the body a scroll container and breaks `position: sticky` descendants
+   (e.g. the /ezana-api docs legend). `clip` has the same visual effect with no
+   such side effect. */
 html {
   -webkit-text-size-adjust: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 body {
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 /* Touch-friendly scroll containers */

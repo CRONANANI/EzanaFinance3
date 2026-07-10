@@ -1,9 +1,10 @@
 /* ============================================================================
  *  EZANA API docs page — scoped styles (companion to page.js)
- *  Docs layout in the spirit of docs.adjacent.markets: sticky left section nav,
- *  a single readable content column, mono code/endpoint blocks. On-brand:
- *  emerald accents, Plus Jakarta Sans for prose, JetBrains Mono for code.
- *  Token-first; hardcoded emerald hex only where a token isn't guaranteed.
+ *  All-white surfaces (separation via hairline borders only), a sticky legend
+ *  with scroll-spy (a sticky pill bar on mobile), and light code blocks.
+ *  Plus Jakarta Sans for text; JetBrains Mono + tabular-nums for every number,
+ *  path, method, and code block. Self-animating SVG visuals go static under
+ *  prefers-reduced-motion. Token-first; literals only where no token maps.
  * ==========================================================================*/
 
 .ea-page {
@@ -11,28 +12,33 @@
   --ea-emerald-text: var(--emerald-text, #059669);
   --ea-ink: var(--text-primary, #0f172a);
   --ea-muted: var(--text-muted, #64748b);
-  --ea-border: var(--border-primary, rgba(0, 0, 0, 0.08));
-  --ea-surface: var(--surface-card, #ffffff);
-  --ea-code-bg: #0f172a;
+  --ea-border: var(--border-primary, rgba(0, 0, 0, 0.1));
+  --ea-surface: #ffffff;
+  --ea-code-tint: rgba(0, 0, 0, 0.04);
+  --ea-nav: 88px;
   font-family: var(--font-sans, 'Plus Jakarta Sans', system-ui, sans-serif);
   color: var(--ea-ink);
-  background: var(--bg-primary, #ffffff);
+  background: #ffffff;
   min-height: 100vh;
 }
+/* Mono utility — numbers/paths/counts always tabular. */
+.ea-mono,
+.ea-page code,
+.ea-page pre {
+  font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+  font-variant-numeric: tabular-nums;
+}
 
-/* ── Hero ─────────────────────────────────────────────────────────────── */
+/* ── Hero (pure white) ────────────────────────────────────────────────── */
 .ea-hero {
   border-bottom: 1px solid var(--ea-border);
-  background:
-    radial-gradient(ellipse at 50% -10%, rgba(16, 185, 129, 0.08), transparent 60%),
-    var(--bg-primary, #ffffff);
+  background: #ffffff;
 }
 .ea-hero-inner {
   max-width: 1180px;
   margin: 0 auto;
-  /* Clear the fixed global navbar (~88px, same offset the sidenav/section
-     anchors use) so the eyebrow + H1 aren't hidden behind it on load. */
-  padding: calc(88px + 2.5rem) 2rem 2.75rem;
+  /* Clear the fixed global navbar so the eyebrow + H1 aren't hidden on load. */
+  padding: calc(var(--ea-nav) + 2.5rem) 2rem 2.75rem;
   text-align: center;
 }
 .ea-eyebrow {
@@ -41,10 +47,11 @@
   gap: 0.4rem;
   padding: 0.3rem 0.7rem;
   border-radius: 9999px;
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  background: #ffffff;
   color: var(--ea-emerald-text);
   font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-variant-numeric: tabular-nums;
   font-size: 0.6875rem;
   font-weight: 600;
   letter-spacing: 0.12em;
@@ -69,6 +76,7 @@
   gap: 0.75rem;
   justify-content: center;
   flex-wrap: wrap;
+  margin-top: 1.5rem;
 }
 .ea-hero-note {
   margin: 1.25rem auto 0;
@@ -101,14 +109,14 @@
 .ea-btn--ghost {
   border: 1px solid var(--ea-border);
   color: var(--ea-ink);
-  background: var(--ea-surface);
+  background: #ffffff;
 }
 .ea-btn--ghost:hover {
   border-color: rgba(16, 185, 129, 0.4);
   color: var(--ea-emerald-text);
 }
 
-/* ── Shell: sticky nav + content ──────────────────────────────────────── */
+/* ── Shell: sticky legend + content ───────────────────────────────────── */
 .ea-shell {
   max-width: 1180px;
   margin: 0 auto;
@@ -119,10 +127,17 @@
   align-items: start;
 }
 
+/* Sticky legend: pinned below the fixed nav, self-scrolls if the 14 entries
+   exceed the viewport. (Global html/body use overflow-x: clip — not hidden —
+   so no ancestor scroll container breaks this sticky.) */
 .ea-sidenav {
   position: sticky;
-  top: 88px;
+  top: calc(var(--ea-nav) + 16px);
   align-self: start;
+  max-height: calc(100vh - var(--ea-nav) - 32px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
 }
 .ea-sidenav-head {
   margin: 0 0 0.6rem;
@@ -133,13 +148,13 @@
   text-transform: uppercase;
   color: var(--ea-muted);
 }
-.ea-sidenav ul {
+.ea-legend {
   list-style: none;
   margin: 0 0 1.5rem;
   padding: 0;
   border-left: 1px solid var(--ea-border);
 }
-.ea-sidenav li a {
+.ea-legend li a {
   display: block;
   padding: 0.45rem 0.9rem;
   margin-left: -1px;
@@ -152,10 +167,10 @@
     color 0.15s ease,
     border-color 0.15s ease;
 }
-.ea-sidenav li a:hover {
+.ea-legend li a:hover {
   color: var(--ea-ink);
 }
-.ea-sidenav li a.is-active {
+.ea-legend li a.is-active {
   color: var(--ea-emerald-text);
   border-left-color: var(--ea-emerald);
   font-weight: 600;
@@ -164,7 +179,7 @@
   padding: 1rem;
   border: 1px solid var(--ea-border);
   border-radius: 12px;
-  background: var(--ea-surface);
+  background: #ffffff;
 }
 .ea-sidenav-card-title {
   margin: 0 0 0.35rem;
@@ -194,7 +209,7 @@
   min-width: 0;
 }
 .ea-section {
-  scroll-margin-top: 88px;
+  scroll-margin-top: calc(var(--ea-nav) + 20px);
   padding-bottom: 2.75rem;
   margin-bottom: 2.75rem;
   border-bottom: 1px solid var(--ea-border);
@@ -230,16 +245,18 @@
 .ea-section a:hover {
   text-decoration: underline;
 }
+/* Inline code — near-white neutral chip (no colour wash), emerald text. */
 .ea-section code {
   font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-variant-numeric: tabular-nums;
   font-size: 0.85em;
   padding: 0.1rem 0.35rem;
   border-radius: 5px;
-  background: rgba(16, 185, 129, 0.09);
+  background: var(--ea-code-tint);
   color: var(--ea-emerald-text);
 }
 
-/* Overview feature grid */
+/* Overview / security feature grid */
 .ea-feature-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -250,7 +267,7 @@
   padding: 1.1rem;
   border: 1px solid var(--ea-border);
   border-radius: 12px;
-  background: var(--ea-surface);
+  background: #ffffff;
 }
 .ea-feature svg {
   color: var(--ea-emerald-text);
@@ -279,11 +296,11 @@
   padding: 1.25rem;
   border: 1px solid var(--ea-border);
   border-radius: 14px;
-  background: var(--ea-surface);
+  background: #ffffff;
 }
 .ea-tier--hl {
-  border-color: rgba(16, 185, 129, 0.4);
-  box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.2);
+  border-color: rgba(16, 185, 129, 0.5);
+  box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.25);
 }
 .ea-tier-head {
   display: flex;
@@ -303,6 +320,7 @@
 .ea-tier-price {
   margin: 0.35rem 0 0.75rem;
   font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-variant-numeric: tabular-nums;
   font-size: 1.35rem;
   font-weight: 700;
   color: var(--ea-emerald-text);
@@ -333,7 +351,7 @@
   background: var(--ea-emerald);
 }
 
-/* "Coming soon / placeholder" note */
+/* "Coming soon / roadmap" chip (badge accent, allowed) */
 .ea-soon-note {
   display: flex;
   align-items: center;
@@ -353,53 +371,59 @@
   padding: 0.12rem 0.4rem;
   border-radius: 9999px;
 }
+.ea-soon--inline {
+  margin-left: 0.5rem;
+}
 
-/* Code blocks */
+/* ── Light code blocks (white bg, hairline border, dark text) ─────────── */
 .ea-code {
-  margin: 1.25rem 0;
+  margin: 1rem 0;
   border-radius: 12px;
   overflow: hidden;
   border: 1px solid var(--ea-border);
+  background: #ffffff;
 }
 .ea-code-head {
   display: flex;
   align-items: center;
   gap: 0.45rem;
-  padding: 0.6rem 1rem;
+  padding: 0.55rem 1rem;
   font-family: var(--font-mono, 'JetBrains Mono', monospace);
-  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.72rem;
   font-weight: 600;
-  color: #cbd5e1;
-  background: #1e293b;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--ea-muted);
+  background: #ffffff;
+  border-bottom: 1px solid var(--ea-border);
 }
 .ea-code-head svg {
-  color: var(--ea-emerald);
+  color: var(--ea-emerald-text);
 }
 .ea-code pre {
   margin: 0;
   padding: 1rem;
   overflow-x: auto;
-  background: var(--ea-code-bg);
+  background: #ffffff;
 }
 .ea-code code {
   display: block;
   padding: 0;
   background: none;
-  color: #e2e8f0;
+  color: var(--ea-ink);
   font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-variant-numeric: tabular-nums;
   font-size: 0.8125rem;
   line-height: 1.65;
   white-space: pre;
 }
 
-/* Endpoint groups */
+/* Endpoint groups (white; separation via borders) */
 .ea-ep-group {
   margin: 1.25rem 0;
   border: 1px solid var(--ea-border);
   border-radius: 12px;
   overflow: hidden;
-  background: var(--ea-surface);
+  background: #ffffff;
 }
 .ea-ep-group-head {
   display: flex;
@@ -407,20 +431,29 @@
   justify-content: space-between;
   gap: 0.75rem;
   padding: 0.75rem 1rem;
-  background: rgba(16, 185, 129, 0.05);
+  background: #ffffff;
   border-bottom: 1px solid var(--ea-border);
 }
 .ea-ep-group-head h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
   margin: 0;
   font-size: 0.9375rem;
   font-weight: 700;
   color: var(--ea-ink);
 }
+.ea-ep-group-head h3 svg {
+  color: var(--ea-emerald-text);
+}
 .ea-ep-base {
   font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem !important;
+  color: var(--ea-muted) !important;
+  background: none !important;
+  padding: 0 !important;
 }
-/* One-line "what a quant does with this" framing under each group header. */
 .ea-ep-framing {
   margin: 0;
   padding: 0.7rem 1rem;
@@ -462,6 +495,7 @@
 .ea-method {
   flex-shrink: 0;
   font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-variant-numeric: tabular-nums;
   font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -477,7 +511,7 @@
   background: rgba(59, 130, 246, 0.14);
 }
 
-/* Terms list */
+/* Terms + changelog lists */
 .ea-terms {
   margin: 0 0 1rem;
   padding-left: 1.1rem;
@@ -485,6 +519,168 @@
 .ea-terms li {
   margin-bottom: 0.5rem;
   font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--ea-muted);
+}
+.ea-changelog {
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+  border-left: 2px solid var(--ea-border);
+}
+.ea-changelog li {
+  display: flex;
+  gap: 0.85rem;
+  padding: 0 0 0.9rem 1rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--ea-muted);
+}
+.ea-changelog-date {
+  flex-shrink: 0;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ea-emerald-text);
+  min-width: 5.5rem;
+}
+
+/* ── Quickstart ───────────────────────────────────────────────────────── */
+.ea-qs {
+  list-style: none;
+  margin: 1.25rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+.ea-qs-step {
+  display: flex;
+  gap: 0.9rem;
+}
+.ea-qs-num {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 9999px;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: var(--ea-emerald-text);
+  background: #ffffff;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+.ea-qs-step > div {
+  min-width: 0;
+  flex: 1;
+}
+.ea-qs-step h3 {
+  margin: 0.2rem 0 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ea-ink);
+}
+.ea-qs-step p {
+  margin: 0 0 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--ea-muted);
+}
+
+/* ── Tables (pagination / errors / coverage) ─────────────────────────── */
+.ea-table-wrap {
+  margin: 1rem 0 0;
+  border: 1px solid var(--ea-border);
+  border-radius: 12px;
+  overflow-x: auto;
+}
+.ea-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  background: #ffffff;
+}
+.ea-table th,
+.ea-table td {
+  text-align: left;
+  padding: 0.6rem 0.9rem;
+  border-bottom: 1px solid var(--ea-border);
+  vertical-align: top;
+}
+.ea-table tr:last-child td {
+  border-bottom: none;
+}
+.ea-table thead th {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ea-muted);
+  background: #ffffff;
+}
+.ea-table td {
+  color: var(--ea-muted);
+}
+.ea-table td:first-child {
+  color: var(--ea-ink);
+  font-weight: 600;
+}
+.ea-table td.ea-mono {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-variant-numeric: tabular-nums;
+  color: var(--ea-ink);
+}
+
+/* ── FAQ ──────────────────────────────────────────────────────────────── */
+.ea-faq {
+  margin-top: 1rem;
+  border: 1px solid var(--ea-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.ea-faq-item {
+  border-top: 1px solid var(--ea-border);
+  background: #ffffff;
+}
+.ea-faq-item:first-child {
+  border-top: none;
+}
+.ea-faq-item summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 0.85rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ea-ink);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.ea-faq-item summary::-webkit-details-marker {
+  display: none;
+}
+.ea-faq-item summary::after {
+  content: '+';
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  color: var(--ea-emerald-text);
+  font-size: 1.1rem;
+  line-height: 1;
+  transition: transform 0.18s ease;
+}
+.ea-faq-item[open] summary::after {
+  transform: rotate(45deg);
+}
+.ea-faq-item p {
+  margin: 0;
+  padding: 0 1rem 0.95rem;
+  font-size: 0.85rem;
   line-height: 1.6;
   color: var(--ea-muted);
 }
@@ -504,7 +700,7 @@
   padding: 1rem 1.1rem;
   border: 1px solid var(--ea-border);
   border-radius: 12px;
-  background: var(--ea-surface);
+  background: #ffffff;
 }
 .ea-step-num {
   flex-shrink: 0;
@@ -517,6 +713,7 @@
   background: var(--ea-emerald-text);
   color: #ffffff;
   font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-variant-numeric: tabular-nums;
   font-size: 0.8125rem;
   font-weight: 700;
 }
@@ -533,15 +730,14 @@
   color: var(--ea-muted);
 }
 
-/* Bottom CTA */
+/* Bottom CTA (white; emerald border only) */
 .ea-cta {
   margin-top: 1.5rem;
   padding: 1.75rem;
   text-align: center;
   border-radius: 16px;
-  border: 1px solid rgba(16, 185, 129, 0.25);
-  background:
-    radial-gradient(ellipse at top, rgba(16, 185, 129, 0.08), transparent 60%), var(--ea-surface);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: #ffffff;
 }
 .ea-cta h3 {
   margin: 0 0 0.4rem;
@@ -555,49 +751,297 @@
   color: var(--ea-muted);
 }
 
-/* ── Responsive ───────────────────────────────────────────────────────── */
-@media (max-width: 860px) {
-  .ea-shell {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-  .ea-sidenav {
-    position: static;
-    top: auto;
-  }
-  .ea-sidenav ul {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.25rem;
-    border-left: none;
-    margin-bottom: 1rem;
-  }
-  .ea-sidenav li a {
-    margin-left: 0;
-    border-left: none;
-    border-radius: 8px;
-    border: 1px solid var(--ea-border);
-    padding: 0.4rem 0.7rem;
-  }
-  .ea-sidenav li a.is-active {
-    border-color: var(--ea-emerald);
-    background: rgba(16, 185, 129, 0.08);
-  }
-  .ea-sidenav-card {
-    display: none;
+/* ══ Visuals (all white, hairline-bordered, illustrative) ══════════════ */
+.ea-viz-frame {
+  margin: 1.25rem 0;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--ea-border);
+  border-radius: 12px;
+  background: #ffffff;
+}
+.ea-viz-frame--hero {
+  max-width: 30rem;
+  margin: 1.75rem auto 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+.ea-viz-cap {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ea-muted);
+}
+.ea-viz {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.ea-viz-noise {
+  stroke: rgba(100, 116, 139, 0.4);
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
+.ea-viz-signal {
+  stroke: var(--ea-emerald);
+  stroke-width: 2.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: ea-draw 1.8s cubic-bezier(0.4, 0, 0.2, 1) forwards 0.25s;
+}
+@keyframes ea-draw {
+  to {
+    stroke-dashoffset: 0;
   }
 }
 
-/* Dark-mode defense (marketing routes render light, but keep it legible if a
-   viewer forces dark). */
-body:not(.light-mode) .ea-page {
-  --ea-ink: #f0f6fc;
-  --ea-muted: #9ca3af;
-  --ea-border: rgba(255, 255, 255, 0.1);
-  --ea-surface: rgba(255, 255, 255, 0.03);
-  background: #0a0e13;
+/* Request → node → response flow motif */
+.ea-flow {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.72rem;
 }
-body:not(.light-mode) .ea-hero {
-  background:
-    radial-gradient(ellipse at 50% -10%, rgba(16, 185, 129, 0.12), transparent 60%), #0a0e13;
+.ea-flow-chip,
+.ea-flow-node {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.55rem;
+  border-radius: 7px;
+  border: 1px solid var(--ea-border);
+  white-space: nowrap;
+}
+.ea-flow-req {
+  color: var(--ea-ink);
+}
+.ea-flow-node {
+  color: var(--ea-emerald-text);
+  border-color: rgba(16, 185, 129, 0.4);
+}
+.ea-flow-node svg {
+  color: var(--ea-emerald);
+}
+.ea-flow-wire {
+  width: 42px;
+  height: 12px;
+  flex-shrink: 0;
+}
+.ea-flow-wire line {
+  stroke: rgba(16, 185, 129, 0.6);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+  animation: ea-march 0.9s linear infinite;
+}
+@keyframes ea-march {
+  to {
+    stroke-dashoffset: -8;
+  }
+}
+.ea-flow-pulse {
+  fill: var(--ea-emerald);
+  animation: ea-pulse 1.4s ease-in-out infinite;
+}
+.ea-flow-pulse--2 {
+  animation-delay: 0.4s;
+}
+@keyframes ea-pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.ea-flow-res {
+  display: inline-flex;
+  flex-direction: column;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--ea-border);
+  border-radius: 7px;
+  color: var(--ea-ink);
+  line-height: 1.5;
+}
+.ea-flow-line {
+  display: block;
+  opacity: 0;
+  animation: ea-typein 0.3s ease forwards;
+}
+@keyframes ea-typein {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Data-coverage freshness strip */
+.ea-cov-strip {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.ea-cov-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--ea-border);
+  border-radius: 9px;
+}
+.ea-cov-name {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 0.6rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ea-muted);
+}
+.ea-cov-ticks {
+  display: flex;
+  gap: 3px;
+  align-items: flex-end;
+  height: 14px;
+}
+.ea-cov-ticks i {
+  width: 4px;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--ea-emerald);
+  transform-origin: bottom;
+  opacity: 0.28;
+  animation: ea-tick 1.8s ease-in-out infinite;
+}
+.ea-cov-ticks i:nth-child(2) {
+  animation-delay: 0.12s;
+}
+.ea-cov-ticks i:nth-child(3) {
+  animation-delay: 0.24s;
+}
+.ea-cov-ticks i:nth-child(4) {
+  animation-delay: 0.36s;
+}
+.ea-cov-ticks i:nth-child(5) {
+  animation-delay: 0.48s;
+}
+@keyframes ea-tick {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scaleY(0.55);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+/* ── Responsive: mobile sticky pill bar ───────────────────────────────── */
+@media (max-width: 900px) {
+  .ea-shell {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+  .ea-section {
+    scroll-margin-top: calc(var(--ea-nav) + 60px);
+  }
+  .ea-sidenav {
+    position: sticky;
+    top: 72px;
+    align-self: stretch;
+    max-height: none;
+    overflow: visible;
+    margin: 0 -2rem;
+    padding: 0.5rem 2rem;
+    background: #ffffff;
+    border-bottom: 1px solid var(--ea-border);
+    z-index: 20;
+  }
+  .ea-sidenav-head,
+  .ea-sidenav-card {
+    display: none;
+  }
+  .ea-legend {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.4rem;
+    margin: 0;
+    border-left: none;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .ea-legend::-webkit-scrollbar {
+    display: none;
+  }
+  .ea-legend li {
+    flex-shrink: 0;
+  }
+  .ea-legend li a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 34px;
+    margin-left: 0;
+    padding: 0.35rem 0.8rem;
+    border: 1px solid var(--ea-border);
+    border-left: 1px solid var(--ea-border);
+    border-radius: 9999px;
+    white-space: nowrap;
+    font-size: 0.8rem;
+  }
+  .ea-legend li a.is-active {
+    color: var(--ea-emerald-text);
+    border-color: rgba(16, 185, 129, 0.45);
+    background: rgba(16, 185, 129, 0.08);
+  }
+}
+
+@media (max-width: 560px) {
+  .ea-hero-inner {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+  .ea-shell {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+  .ea-sidenav {
+    margin: 0 -1.25rem;
+    padding: 0.5rem 1.25rem;
+  }
+}
+
+/* ── Reduced motion: everything static ────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .ea-viz-signal {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+  .ea-flow-wire line,
+  .ea-flow-pulse,
+  .ea-cov-ticks i {
+    animation: none;
+  }
+  .ea-flow-line {
+    animation: none;
+    opacity: 1;
+  }
+  .ea-cov-ticks i {
+    opacity: 0.7;
+    transform: none;
+  }
+  .ea-faq-item summary::after {
+    transition: none;
+  }
 }

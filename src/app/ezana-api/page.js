@@ -3,20 +3,16 @@
 /* ============================================================================
  *  EZANA API — documentation landing page (/ezana-api)
  *  ----------------------------------------------------------------------------
- *  A clean, docs-style page positioning the Ezana API as a signal-from-noise
- *  engine for traders and quant firms: it surfaces the relationships between
- *  obscure, overlooked data (congressional trades, lobbying flows, prediction
- *  markets, alt-data) and market movement, powered by elite news engineering.
- *  Layout is modeled on docs.adjacent.markets: a sticky left section nav, a
- *  single readable content column, and endpoint/code blocks in JetBrains Mono.
- *  On-brand (emerald accents, Plus Jakarta Sans) via the shared design tokens;
- *  scoped styles live in ezana-api.css.
+ *  Docs-style page positioning the Ezana API as a signal-from-noise engine for
+ *  traders and quant firms. All-white surfaces (separation via hairline borders
+ *  only), a sticky left legend with scroll-spy (a sticky pill bar on mobile),
+ *  Plus Jakarta Sans for text and JetBrains Mono (tabular-nums) for every
+ *  number / path / method / code block. Restrained, self-animating SVG visuals
+ *  render static under prefers-reduced-motion.
  *
- *  The global top nav comes from the root layout (ConditionalNavbar) — this
- *  page deliberately does NOT build its own top navigation.
- *
- *  Everything here is documentation/scaffolding. Endpoints and payloads are
- *  illustrative placeholders and are marked "coming soon" where not yet built.
+ *  The global top nav comes from the root layout (ConditionalNavbar). Everything
+ *  here is documentation/scaffolding — endpoints and payloads are illustrative
+ *  placeholders, marked roadmap/coming-soon where not yet live.
  * ==========================================================================*/
 
 import { useEffect, useState } from 'react';
@@ -25,23 +21,44 @@ import {
   ArrowRight,
   Terminal,
   KeyRound,
-  Gauge,
   Map,
   TrendingUp,
   Newspaper,
   Network,
   Zap,
   History,
+  Gauge,
+  Landmark,
+  Banknote,
+  Building2,
+  LineChart,
+  Rocket,
+  Filter,
+  AlertTriangle,
+  Webhook,
+  Database,
+  GitBranch,
+  ShieldCheck,
+  HelpCircle,
 } from 'lucide-react';
 import './ezana-api.css';
 
+/* Legend / scroll-spy order. */
 const SECTIONS = [
   { id: 'overview', label: 'Overview' },
+  { id: 'quickstart', label: 'Quickstart' },
   { id: 'getting-access', label: 'Getting access' },
   { id: 'authentication', label: 'Authentication' },
   { id: 'endpoints', label: 'Endpoints' },
+  { id: 'pagination', label: 'Pagination' },
+  { id: 'errors', label: 'Errors' },
+  { id: 'webhooks', label: 'Webhooks' },
+  { id: 'data-coverage', label: 'Data coverage' },
   { id: 'rate-limits', label: 'Rate limits & terms' },
-  { id: 'roadmap', label: 'How we build & ship it' },
+  { id: 'versioning', label: 'Versioning' },
+  { id: 'security', label: 'Security' },
+  { id: 'faq', label: 'FAQ' },
+  { id: 'roadmap', label: 'How we build & ship' },
 ];
 
 const ENDPOINT_GROUPS = [
@@ -49,71 +66,153 @@ const ENDPOINT_GROUPS = [
     key: 'congress',
     title: 'Congressional trading',
     base: '/v1/congress',
+    Icon: Landmark,
     framing:
       'Insider-flow signal — what informed, access-rich actors are trading, structured for signal extraction, not just raw disclosures.',
     routes: [
       {
-        method: 'GET',
         path: '/v1/congress/trades',
         desc: 'Disclosed House & Senate trades, filterable by member, ticker, party, and filing date — the raw substrate for an informed-flow factor.',
       },
       {
-        method: 'GET',
-        path: '/v1/congress/members',
-        desc: 'Roster of the 535 members with disclosure history and committee assignments, so you can weight signal by seat and sector oversight.',
+        path: '/v1/congress/trades/{id}',
+        desc: 'A single disclosure with STOCK Act filing metadata and disclosure lag, to model the delay between the trade and when the market saw it.',
       },
       {
-        method: 'GET',
-        path: '/v1/congress/trades/{id}',
-        desc: 'A single disclosure with STOCK Act filing metadata and disclosure lag — model the delay between the trade and when the market saw it.',
+        path: '/v1/congress/members',
+        desc: 'Roster of all 535 members with disclosure history and committee assignments, so you can weight signal by seat and sector oversight.',
+      },
+      {
+        path: '/v1/congress/members/{id}/trades',
+        desc: 'Full trade history for one member — build per-actor track records and conviction weights.',
+      },
+      {
+        path: '/v1/congress/committees/{id}/activity',
+        desc: 'Trading activity rolled up by committee, aligning flow with the sectors a committee actually oversees.',
+      },
+      {
+        path: '/v1/congress/signals/insider-flow',
+        desc: 'Pre-computed insider-flow score per ticker — a drop-in feature ranking names by informed-actor accumulation.',
       },
     ],
   },
   {
     key: 'lobbying',
-    title: 'Lobbying & government',
+    title: 'Lobbying & influence',
     base: '/v1/lobbying',
+    Icon: Network,
     framing:
-      'Influence-flow signal — map corporate influence spend and contract awards to sector and price exposure before the thesis is consensus.',
+      'Influence-flow signal — map corporate influence spend to sector and price exposure before the thesis is consensus.',
     routes: [
       {
-        method: 'GET',
         path: '/v1/lobbying/filings',
-        desc: 'LDA lobbying filings by registrant, client, issue area, and quarter — track where policy money is moving and which issuers are exposed.',
+        desc: 'LDA lobbying filings by registrant, client, issue area, and quarter — where policy money is moving and which issuers are exposed.',
       },
       {
-        method: 'GET',
+        path: '/v1/lobbying/filings/{uuid}',
+        desc: 'One filing in full, with issues lobbied, lobbyists, and reported spend.',
+      },
+      {
         path: '/v1/lobbying/clients/{id}',
         desc: 'Spend history and issue exposure for a single client, ready to join against your position book for a policy-risk overlay.',
       },
       {
-        method: 'GET',
-        path: '/v1/government/contracts',
-        desc: 'Awarded federal contracts mapped to publicly traded parents — a revenue-visibility signal ahead of guidance.',
+        path: '/v1/lobbying/top-spenders',
+        desc: 'Leaderboard of influence spend by client and sector over a window — spot ramps early.',
+      },
+      {
+        path: '/v1/lobbying/issues/mix',
+        desc: 'Breakdown of spend by issue area, so you can tilt toward the policy themes gaining budget.',
+      },
+      {
+        path: '/v1/lobbying/registrants/{id}',
+        desc: 'Activity for a lobbying firm across its client book — a cross-issuer influence network view.',
+      },
+      {
+        path: '/v1/lobbying/signals/policy-exposure',
+        desc: 'Per-ticker policy-exposure score blending spend, issues, and contract adjacency into one feature.',
       },
     ],
   },
   {
-    key: 'markets',
-    title: 'Markets & prediction signals',
-    base: '/v1/markets',
+    key: 'fec',
+    title: 'Campaign finance (FEC)',
+    base: '/v1/fec',
+    Icon: Banknote,
     framing:
-      'Consensus & odds signal — prediction-market probabilities and composite scores, semantically linked to the news moving them.',
+      'Political-capital signal — who funds whom, tied back to the sectors and issuers with the most at stake.',
     routes: [
       {
-        method: 'GET',
-        path: '/v1/markets/quotes',
-        desc: 'Reference and end-of-day market data for a symbol universe — the price series you regress every other signal against.',
+        path: '/v1/fec/contributions',
+        desc: 'Itemized contributions filterable by contributor, committee, cycle, and employer — map corporate and executive giving.',
       },
       {
-        method: 'GET',
-        path: '/v1/markets/predictions',
-        desc: 'Prediction-market odds (Polymarket-sourced) for tracked events — a real-money consensus probability for event-driven strategies.',
+        path: '/v1/fec/committees/{id}',
+        desc: 'A committee’s receipts, disbursements, and affiliations over a cycle.',
       },
       {
-        method: 'GET',
-        path: '/v1/markets/signals',
-        desc: 'Composite Ezana signals blending the datasets above into a single score you can drop into a model as a feature.',
+        path: '/v1/fec/candidates/{id}/funding',
+        desc: 'Funding profile for a candidate — sector concentration and top backers.',
+      },
+      {
+        path: '/v1/fec/signals/sector-giving',
+        desc: 'Net political giving by sector as a directional signal on regulatory posture.',
+      },
+    ],
+  },
+  {
+    key: 'contracts',
+    title: 'Government contracts (USASpending)',
+    base: '/v1/contracts',
+    Icon: Building2,
+    framing:
+      'Revenue-visibility signal — federal award flow mapped to publicly traded recipients, ahead of guidance.',
+    routes: [
+      {
+        path: '/v1/contracts/awards',
+        desc: 'Awarded federal contracts filterable by recipient, agency, NAICS, and date — mapped to public parents.',
+      },
+      {
+        path: '/v1/contracts/recipients/{id}',
+        desc: 'Award history for one recipient — backlog and momentum for an issuer.',
+      },
+      {
+        path: '/v1/contracts/agencies/{id}/spending',
+        desc: 'Spending by agency and program, to anticipate which vendors benefit.',
+      },
+      {
+        path: '/v1/contracts/signals/award-momentum',
+        desc: 'Per-ticker award-momentum score — acceleration in federal revenue exposure.',
+      },
+    ],
+  },
+  {
+    key: 'predictions',
+    title: 'Prediction markets',
+    base: '/v1/predictions',
+    Icon: Gauge,
+    framing:
+      'Consensus & odds signal — real-money probabilities for the events your positions are exposed to.',
+    routes: [
+      {
+        path: '/v1/predictions/markets',
+        desc: 'Live and historical prediction markets by topic and status — a real-money probability for each event.',
+      },
+      {
+        path: '/v1/predictions/markets/{id}',
+        desc: 'One market with current odds, liquidity, and resolution criteria.',
+      },
+      {
+        path: '/v1/predictions/markets/{id}/history',
+        desc: 'Point-in-time odds series for a market — the input to event-driven backtests.',
+      },
+      {
+        path: '/v1/predictions/consensus',
+        desc: 'Aggregated consensus probability across correlated markets for a theme.',
+      },
+      {
+        path: '/v1/predictions/movers',
+        desc: 'Markets with the largest odds moves over a window — where conviction is shifting fastest.',
       },
     ],
   },
@@ -121,23 +220,55 @@ const ENDPOINT_GROUPS = [
     key: 'news',
     title: 'News engineering',
     base: '/v1/news',
+    Icon: Newspaper,
     framing:
-      'The signal layer — news structured, entity-tagged, and semantically linked to tickers, events, and prediction-market odds so headlines become machine-usable features.',
+      'The signal layer — news structured, entity-tagged, and semantically linked to tickers, events, and odds so headlines become machine-usable features.',
     routes: [
       {
-        method: 'GET',
         path: '/v1/news/search',
-        desc: 'Semantic news search over structured, deduplicated articles — retrieve by meaning, not keywords, for a topic, thesis, or event.',
+        desc: 'Semantic news search over structured, deduplicated articles — retrieve by meaning, not keywords.',
       },
       {
-        method: 'GET',
-        path: '/v1/news/entities',
-        desc: 'Entity-tagged articles resolved to tickers, people, and issues, so you can build per-name news-flow and sentiment features.',
+        path: '/v1/news/{id}/entities',
+        desc: 'Entities resolved from one article to tickers, people, and issues — build per-name news-flow features.',
       },
       {
-        method: 'GET',
-        path: '/v1/news/matches',
-        desc: 'News↔market/odds matches — each article linked to the securities and prediction markets it moves, with a confidence score.',
+        path: '/v1/news/{id}/related-markets',
+        desc: 'Prediction markets and securities an article is semantically linked to, with confidence scores.',
+      },
+      {
+        path: '/v1/news/signals/odds-moves',
+        desc: 'News items time-aligned to the odds moves they preceded — a news→consensus lead signal.',
+      },
+      {
+        path: '/v1/news/sentiment/by-entity',
+        desc: 'Rolling entity-level sentiment derived from structured news flow.',
+      },
+    ],
+  },
+  {
+    key: 'markets',
+    title: 'Market data & signals',
+    base: '/v1/markets',
+    Icon: LineChart,
+    framing:
+      'The price layer — the series you regress every other signal against, plus composite and correlation features.',
+    routes: [
+      {
+        path: '/v1/markets/quotes',
+        desc: 'Reference and end-of-day market data for a symbol universe — the price series behind every feature.',
+      },
+      {
+        path: '/v1/markets/signals',
+        desc: 'Composite Ezana signals blending the datasets above into a single score per name.',
+      },
+      {
+        path: '/v1/signals/correlations',
+        desc: 'Discovered relationships between obscure datasets and price — the non-obvious links you can trade around.',
+      },
+      {
+        path: '/v1/signals/backtests/{id}',
+        desc: 'Point-in-time backtest results for a signal spec, with disclosure lag preserved so history isn’t contaminated by hindsight.',
       },
     ],
   },
@@ -191,6 +322,114 @@ const TIERS = [
   },
 ];
 
+const QUERY_PARAMS = [
+  { name: 'ticker', type: 'string', desc: 'Filter to a symbol (repeatable for a universe).' },
+  { name: 'from', type: 'date', desc: 'Inclusive start date (ISO 8601, e.g. 2026-01-01).' },
+  { name: 'to', type: 'date', desc: 'Inclusive end date (ISO 8601).' },
+  { name: 'limit', type: 'int', desc: 'Page size, 1–200 (default 50).' },
+  { name: 'cursor', type: 'string', desc: 'Opaque cursor from the previous page’s page.next.' },
+];
+
+const ERROR_CODES = [
+  {
+    code: '400',
+    name: 'Bad Request',
+    meaning: 'Malformed query — an invalid param, date, or cursor.',
+  },
+  { code: '401', name: 'Unauthorized', meaning: 'Missing or invalid bearer token.' },
+  {
+    code: '403',
+    name: 'Forbidden',
+    meaning: 'Key is valid but not scoped to this dataset or tier.',
+  },
+  { code: '404', name: 'Not Found', meaning: 'No resource matches the id/path.' },
+  {
+    code: '429',
+    name: 'Too Many Requests',
+    meaning: 'Rate limit exceeded — back off and retry after Reset.',
+  },
+  {
+    code: '500',
+    name: 'Server Error',
+    meaning: 'Unexpected error on our side — safe to retry with backoff.',
+  },
+];
+
+const COVERAGE_ROWS = [
+  {
+    dataset: 'Congressional trades',
+    source: 'House Clerk · Senate eFD',
+    depth: '2012 → present',
+    cadence: 'Ingested continuously',
+  },
+  {
+    dataset: 'Lobbying',
+    source: 'Senate LDA',
+    depth: '2013 → present',
+    cadence: 'Quarterly + backfill',
+  },
+  { dataset: 'Campaign finance', source: 'FEC', depth: '2003 → present', cadence: 'Daily' },
+  { dataset: 'Gov. contracts', source: 'USASpending', depth: '2008 → present', cadence: 'Daily' },
+  {
+    dataset: 'Prediction markets',
+    source: 'Polymarket',
+    depth: '2021 → present',
+    cadence: 'Near real-time',
+  },
+  {
+    dataset: 'News',
+    source: 'Multi-source, structured',
+    depth: 'Rolling 5-yr',
+    cadence: 'Streaming',
+  },
+  {
+    dataset: 'Market data',
+    source: 'Reference + EOD',
+    depth: '2000 → present',
+    cadence: 'End of day',
+  },
+];
+
+const CHANGELOG = [
+  {
+    date: '2026-07-01',
+    text: 'Added News-engineering signal endpoints (odds-moves, sentiment-by-entity).',
+  },
+  {
+    date: '2026-05-18',
+    text: 'Correlations endpoint (/v1/signals/correlations) enters private beta.',
+  },
+  { date: '2026-03-09', text: 'Cursor pagination standardized across all list endpoints.' },
+  { date: '2026-01-15', text: 'v1 congressional-trading + lobbying endpoints published.' },
+];
+
+const FAQ = [
+  {
+    q: 'How do I authenticate?',
+    a: 'A bearer token in the Authorization header on every HTTPS request. Keys are scoped to your lease tier and datasets — see Authentication.',
+  },
+  {
+    q: 'What are the rate limits?',
+    a: 'Per-key and tier-dependent (60/min on Developer up to custom on Institution). Every response carries X-RateLimit-* headers; a 429 means back off until Reset.',
+  },
+  {
+    q: 'Can I redistribute the data?',
+    a: 'No wholesale redistribution of raw feeds. You may use signal and derived features in your own analysis and products; primary-source attribution is preserved in every payload.',
+  },
+  {
+    q: 'Is there an SLA?',
+    a: 'Institution leases include an uptime SLA and dedicated support. Lower tiers are best-effort. Ask us for specifics for your volume.',
+  },
+  {
+    q: 'Do you offer backtest-ready history?',
+    a: 'Yes — series are point-in-time with disclosure lag preserved, so backtests aren’t contaminated by hindsight. Depth varies by dataset (see Data coverage).',
+  },
+  {
+    q: 'Are the signals investment advice?',
+    a: 'No. Everything is informational inputs/features, not advice or a recommendation. You own how you model and trade around it.',
+  },
+];
+
 const ROADMAP_STEPS = [
   {
     n: 1,
@@ -219,9 +458,15 @@ const ROADMAP_STEPS = [
   },
 ];
 
-const AUTH_SNIPPET = `curl https://api.ezana.world/v1/congress/trades \\
+const CURL_SNIPPET = `curl https://api.ezana.world/v1/congress/trades?ticker=NVDA&limit=20 \\
   -H "Authorization: Bearer $EZANA_API_KEY" \\
   -H "Accept: application/json"`;
+
+const JS_SNIPPET = `const res = await fetch(
+  "https://api.ezana.world/v1/congress/trades?ticker=NVDA&limit=20",
+  { headers: { Authorization: \`Bearer \${process.env.EZANA_API_KEY}\` } }
+);
+const { data, page } = await res.json();`;
 
 const RESPONSE_SNIPPET = `{
   "data": [
@@ -240,14 +485,100 @@ const RESPONSE_SNIPPET = `{
   "page": { "next": "cursor_abc", "has_more": true }
 }`;
 
-function Method({ method }) {
+const ERROR_ENVELOPE = `{
+  "error": {
+    "code": "rate_limited",
+    "status": 429,
+    "message": "Rate limit exceeded. Retry after the window resets.",
+    "request_id": "req_7c1f0a"
+  }
+}`;
+
+function Method({ method = 'GET' }) {
   return <span className={`ea-method ea-method--${method.toLowerCase()}`}>{method}</span>;
+}
+
+/* ── Visual 1: hero signal-from-noise sparkline (noisy grey → clean emerald) ── */
+function HeroSignal() {
+  const W = 340;
+  const H = 96;
+  // Deterministic noisy series + a smooth signal line derived from it.
+  const n = 48;
+  const noise = [];
+  const signal = [];
+  for (let i = 0; i < n; i += 1) {
+    const x = (i / (n - 1)) * W;
+    const base = H * 0.55 - Math.sin(i * 0.32) * 14 - (i / n) * 18;
+    const jitter = (Math.sin(i * 12.9) * 43758.5) % 1;
+    noise.push(`${x.toFixed(1)},${(base + (jitter - 0.5) * 26).toFixed(1)}`);
+    signal.push(`${x.toFixed(1)},${base.toFixed(1)}`);
+  }
+  return (
+    <svg
+      className="ea-viz ea-viz--hero"
+      viewBox={`0 0 ${W} ${H}`}
+      role="img"
+      aria-label="Signal resolving from noise"
+    >
+      <polyline className="ea-viz-noise" points={noise.join(' ')} fill="none" />
+      <polyline className="ea-viz-signal" points={signal.join(' ')} fill="none" pathLength={1} />
+    </svg>
+  );
+}
+
+/* ── Visual 2: request → node → response flow motif (JSON types in) ── */
+function RequestFlow() {
+  const lines = ['{', '  "data": [ … ],', '  "page": { "next": "cursor_abc" }', '}'];
+  return (
+    <div className="ea-flow" aria-hidden>
+      <span className="ea-flow-chip ea-flow-req">GET /v1/…</span>
+      <svg className="ea-flow-wire" viewBox="0 0 60 12" preserveAspectRatio="none">
+        <line x1="0" y1="6" x2="60" y2="6" />
+        <circle className="ea-flow-pulse" cx="0" cy="6" r="2.5" />
+      </svg>
+      <span className="ea-flow-node">
+        <Zap size={13} aria-hidden /> Ezana
+      </span>
+      <svg className="ea-flow-wire" viewBox="0 0 60 12" preserveAspectRatio="none">
+        <line x1="0" y1="6" x2="60" y2="6" />
+        <circle className="ea-flow-pulse ea-flow-pulse--2" cx="0" cy="6" r="2.5" />
+      </svg>
+      <span className="ea-flow-res">
+        {lines.map((l, i) => (
+          <span key={i} className="ea-flow-line" style={{ animationDelay: `${0.5 + i * 0.18}s` }}>
+            {l}
+          </span>
+        ))}
+      </span>
+    </div>
+  );
+}
+
+/* ── Visual 3: data-coverage freshness strip (decorative ticks) ── */
+function CoverageStrip() {
+  const tiles = ['Congress', 'Lobbying', 'FEC', 'Contracts', 'Predictions', 'News', 'Markets'];
+  return (
+    <div className="ea-cov-strip" aria-hidden>
+      {tiles.map((t, i) => (
+        <div key={t} className="ea-cov-tile">
+          <span className="ea-cov-name">{t}</span>
+          <span className="ea-cov-ticks" style={{ animationDelay: `${i * 0.22}s` }}>
+            <i />
+            <i />
+            <i />
+            <i />
+            <i />
+          </span>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export default function EzanaApiPage() {
   const [active, setActive] = useState('overview');
 
-  // Scroll-spy: highlight the sidebar entry for the section currently in view.
+  // Scroll-spy: highlight the legend entry for the section currently in view.
   useEffect(() => {
     if (typeof window === 'undefined' || !('IntersectionObserver' in window)) return undefined;
     const observer = new IntersectionObserver(
@@ -264,6 +595,14 @@ export default function EzanaApiPage() {
     });
     return () => observer.disconnect();
   }, []);
+
+  const scrollTo = (e, id) => {
+    const el = typeof document !== 'undefined' && document.getElementById(id);
+    if (!el) return;
+    e.preventDefault();
+    setActive(id);
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   return (
     <div className="ea-page">
@@ -283,11 +622,23 @@ export default function EzanaApiPage() {
             market-moving news into machine-usable signal, entity-tagged and semantically linked to
             the securities and events it touches.
           </p>
+          <div className="ea-viz-frame ea-viz-frame--hero">
+            <HeroSignal />
+            <span className="ea-viz-cap">Illustrative — noise resolving into signal</span>
+          </div>
           <div className="ea-hero-actions">
-            <a href="#getting-access" className="ea-btn ea-btn--primary">
+            <a
+              href="#getting-access"
+              className="ea-btn ea-btn--primary"
+              onClick={(e) => scrollTo(e, 'getting-access')}
+            >
               Get API access <ArrowRight size={15} aria-hidden />
             </a>
-            <a href="#endpoints" className="ea-btn ea-btn--ghost">
+            <a
+              href="#endpoints"
+              className="ea-btn ea-btn--ghost"
+              onClick={(e) => scrollTo(e, 'endpoints')}
+            >
               Explore the signal endpoints
             </a>
           </div>
@@ -298,14 +649,18 @@ export default function EzanaApiPage() {
         </div>
       </header>
 
-      {/* ── Docs body: sticky section nav + content column ───────────── */}
+      {/* ── Docs body: sticky legend + content column ────────────────── */}
       <div className="ea-shell">
         <nav className="ea-sidenav" aria-label="API documentation sections">
           <p className="ea-sidenav-head">Documentation</p>
-          <ul>
+          <ul className="ea-legend">
             {SECTIONS.map((s) => (
               <li key={s.id}>
-                <a href={`#${s.id}`} className={active === s.id ? 'is-active' : ''}>
+                <a
+                  href={`#${s.id}`}
+                  className={active === s.id ? 'is-active' : ''}
+                  onClick={(e) => scrollTo(e, s.id)}
+                >
                   {s.label}
                 </a>
               </li>
@@ -387,6 +742,67 @@ export default function EzanaApiPage() {
             </div>
           </section>
 
+          {/* Quickstart */}
+          <section id="quickstart" className="ea-section">
+            <h2>
+              <Rocket size={18} aria-hidden className="ea-h2-icon" />
+              Quickstart
+            </h2>
+            <p>Three steps from zero to your first signal.</p>
+            <ol className="ea-qs">
+              <li className="ea-qs-step">
+                <span className="ea-qs-num">1</span>
+                <div>
+                  <h3>Get a key</h3>
+                  <p>
+                    Request a scoped key at <a href="mailto:api@ezana.world">api@ezana.world</a> and
+                    export it as <code>EZANA_API_KEY</code>.
+                  </p>
+                </div>
+              </li>
+              <li className="ea-qs-step">
+                <span className="ea-qs-num">2</span>
+                <div>
+                  <h3>Make your first request</h3>
+                  <div className="ea-code">
+                    <div className="ea-code-head">
+                      <Terminal size={13} aria-hidden /> curl
+                    </div>
+                    <pre>
+                      <code>{CURL_SNIPPET}</code>
+                    </pre>
+                  </div>
+                  <div className="ea-code">
+                    <div className="ea-code-head">
+                      <Terminal size={13} aria-hidden /> JavaScript
+                    </div>
+                    <pre>
+                      <code>{JS_SNIPPET}</code>
+                    </pre>
+                  </div>
+                </div>
+              </li>
+              <li className="ea-qs-step">
+                <span className="ea-qs-num">3</span>
+                <div>
+                  <h3>Read the response</h3>
+                  <p>
+                    Every list response returns a <code>data</code> array and a <code>page</code>{' '}
+                    cursor. Follow <code>page.next</code> to paginate.
+                  </p>
+                  <div className="ea-code">
+                    <div className="ea-code-head">
+                      <Terminal size={13} aria-hidden /> 200 OK
+                    </div>
+                    <pre>
+                      <code>{RESPONSE_SNIPPET}</code>
+                    </pre>
+                  </div>
+                </div>
+              </li>
+            </ol>
+          </section>
+
           {/* Getting access */}
           <section id="getting-access" className="ea-section">
             <h2>Getting access</h2>
@@ -433,7 +849,7 @@ export default function EzanaApiPage() {
                 Authenticated request
               </div>
               <pre>
-                <code>{AUTH_SNIPPET}</code>
+                <code>{CURL_SNIPPET}</code>
               </pre>
             </div>
             <p className="ea-soon-note">
@@ -450,26 +866,34 @@ export default function EzanaApiPage() {
               each group framed by what a quant would actually do with it. Responses are JSON and
               cursor-paginated. The shapes below are illustrative placeholders.
             </p>
-            {ENDPOINT_GROUPS.map((group) => (
-              <div key={group.key} className="ea-ep-group">
-                <div className="ea-ep-group-head">
-                  <h3>{group.title}</h3>
-                  <code className="ea-ep-base">{group.base}</code>
+            <div className="ea-viz-frame">
+              <RequestFlow />
+            </div>
+            {ENDPOINT_GROUPS.map((group) => {
+              const GIcon = group.Icon;
+              return (
+                <div key={group.key} className="ea-ep-group">
+                  <div className="ea-ep-group-head">
+                    <h3>
+                      <GIcon size={15} aria-hidden /> {group.title}
+                    </h3>
+                    <code className="ea-ep-base">{group.base}</code>
+                  </div>
+                  {group.framing && <p className="ea-ep-framing">{group.framing}</p>}
+                  <ul className="ea-ep-list">
+                    {group.routes.map((r) => (
+                      <li key={r.path} className="ea-ep">
+                        <div className="ea-ep-sig">
+                          <Method method="GET" />
+                          <code>{r.path}</code>
+                        </div>
+                        <p>{r.desc}</p>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                {group.framing && <p className="ea-ep-framing">{group.framing}</p>}
-                <ul className="ea-ep-list">
-                  {group.routes.map((r) => (
-                    <li key={r.path} className="ea-ep">
-                      <div className="ea-ep-sig">
-                        <Method method={r.method} />
-                        <code>{r.path}</code>
-                      </div>
-                      <p>{r.desc}</p>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+              );
+            })}
             <div className="ea-code">
               <div className="ea-code-head">
                 <Terminal size={13} aria-hidden />
@@ -481,15 +905,165 @@ export default function EzanaApiPage() {
             </div>
           </section>
 
+          {/* Pagination */}
+          <section id="pagination" className="ea-section">
+            <h2>
+              <Filter size={18} aria-hidden className="ea-h2-icon" />
+              Pagination &amp; filtering
+            </h2>
+            <p>
+              List endpoints use opaque cursor pagination. Each response includes a{' '}
+              <code>page</code> object; when <code>page.has_more</code> is true, pass{' '}
+              <code>page.next</code> back as the <code>cursor</code> query param to fetch the next
+              page. Cursors are stable across inserts, so you never miss or double-count rows.
+            </p>
+            <div className="ea-table-wrap">
+              <table className="ea-table">
+                <thead>
+                  <tr>
+                    <th>Param</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {QUERY_PARAMS.map((p) => (
+                    <tr key={p.name}>
+                      <td>
+                        <code>{p.name}</code>
+                      </td>
+                      <td className="ea-mono">{p.type}</td>
+                      <td>{p.desc}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          {/* Errors */}
+          <section id="errors" className="ea-section">
+            <h2>
+              <AlertTriangle size={18} aria-hidden className="ea-h2-icon" />
+              Errors
+            </h2>
+            <p>
+              Errors return the appropriate HTTP status and a consistent JSON envelope with a stable{' '}
+              <code>code</code>, a human <code>message</code>, and a <code>request_id</code> to
+              quote in support.
+            </p>
+            <div className="ea-code">
+              <div className="ea-code-head">
+                <Terminal size={13} aria-hidden />
+                Error envelope
+              </div>
+              <pre>
+                <code>{ERROR_ENVELOPE}</code>
+              </pre>
+            </div>
+            <div className="ea-table-wrap">
+              <table className="ea-table">
+                <thead>
+                  <tr>
+                    <th>Status</th>
+                    <th>Name</th>
+                    <th>Meaning</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {ERROR_CODES.map((e) => (
+                    <tr key={e.code}>
+                      <td className="ea-mono">{e.code}</td>
+                      <td>{e.name}</td>
+                      <td>{e.meaning}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          {/* Webhooks */}
+          <section id="webhooks" className="ea-section">
+            <h2>
+              <Webhook size={18} aria-hidden className="ea-h2-icon" />
+              Webhooks
+              <span className="ea-soon ea-soon--inline">Roadmap</span>
+            </h2>
+            <p>
+              Rather than poll, subscribe to events and let Ezana push. Register a signed HTTPS
+              endpoint and choose event types — a new congressional filing for a watched ticker, a
+              large prediction-market odds move, or a fresh news→market match above a confidence
+              threshold. Deliveries are retried with backoff and signed with a per-subscription
+              secret.
+            </p>
+            <div className="ea-code">
+              <div className="ea-code-head">
+                <Webhook size={13} aria-hidden />
+                Example event
+              </div>
+              <pre>
+                <code>{`{
+  "type": "congress.trade.created",
+  "created_at": "2026-06-02T14:05:00Z",
+  "data": { "ticker": "NVDA", "member": "Rep. Jane Doe", "transaction": "purchase" }
+}`}</code>
+              </pre>
+            </div>
+            <p className="ea-soon-note">
+              <span className="ea-soon">Roadmap</span> Webhook subscriptions are illustrative and
+              not yet live.
+            </p>
+          </section>
+
+          {/* Data coverage */}
+          <section id="data-coverage" className="ea-section">
+            <h2>
+              <Database size={18} aria-hidden className="ea-h2-icon" />
+              Data coverage &amp; freshness
+            </h2>
+            <p>
+              Every dataset traces to a primary source, with point-in-time history and a defined
+              update cadence. Depth and cadence below are indicative.
+            </p>
+            <div className="ea-viz-frame">
+              <CoverageStrip />
+            </div>
+            <div className="ea-table-wrap">
+              <table className="ea-table">
+                <thead>
+                  <tr>
+                    <th>Dataset</th>
+                    <th>Source</th>
+                    <th>History</th>
+                    <th>Cadence</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {COVERAGE_ROWS.map((r) => (
+                    <tr key={r.dataset}>
+                      <td>{r.dataset}</td>
+                      <td>{r.source}</td>
+                      <td className="ea-mono">{r.depth}</td>
+                      <td>{r.cadence}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
           {/* Rate limits & terms */}
           <section id="rate-limits" className="ea-section">
             <h2>Rate limits &amp; terms</h2>
             <p>
               Rate limits are enforced per key and vary by lease tier (see{' '}
-              <a href="#getting-access">Getting access</a>). Every response carries{' '}
-              <code>X-RateLimit-Limit</code>, <code>X-RateLimit-Remaining</code>, and{' '}
-              <code>X-RateLimit-Reset</code> headers; exceeding your limit returns{' '}
-              <code>429 Too Many Requests</code>.
+              <a href="#getting-access" onClick={(e) => scrollTo(e, 'getting-access')}>
+                Getting access
+              </a>
+              ). Every response carries <code>X-RateLimit-Limit</code>,{' '}
+              <code>X-RateLimit-Remaining</code>, and <code>X-RateLimit-Reset</code> headers;
+              exceeding your limit returns <code>429 Too Many Requests</code>.
             </p>
             <ul className="ea-terms">
               <li>
@@ -503,6 +1077,85 @@ export default function EzanaApiPage() {
               <span className="ea-soon">Coming soon</span> Full terms of use and a data-license
               agreement will accompany general availability.
             </p>
+          </section>
+
+          {/* Versioning */}
+          <section id="versioning" className="ea-section">
+            <h2>
+              <GitBranch size={18} aria-hidden className="ea-h2-icon" />
+              Versioning &amp; changelog
+            </h2>
+            <p>
+              The API is versioned in the path (<code>/v1</code>). Within a version we only make
+              additive changes — new endpoints and fields — never breaking ones. Breaking changes
+              ship under a new version with a migration window and deprecation notices.
+            </p>
+            <ul className="ea-changelog">
+              {CHANGELOG.map((c) => (
+                <li key={c.date}>
+                  <span className="ea-changelog-date">{c.date}</span>
+                  <span>{c.text}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          {/* Security */}
+          <section id="security" className="ea-section">
+            <h2>
+              <ShieldCheck size={18} aria-hidden className="ea-h2-icon" />
+              Security
+            </h2>
+            <div className="ea-feature-grid">
+              <div className="ea-feature">
+                <KeyRound size={18} aria-hidden />
+                <h3>Scoped keys</h3>
+                <p>
+                  Keys are bound to a lease tier and dataset scopes, so a key only reaches what
+                  it&apos;s entitled to.
+                </p>
+              </div>
+              <div className="ea-feature">
+                <ShieldCheck size={18} aria-hidden />
+                <h3>Hashed at rest</h3>
+                <p>
+                  Only a salted hash of each key is stored — never the raw secret. If our store
+                  leaked, keys stay safe.
+                </p>
+              </div>
+              <div className="ea-feature">
+                <History size={18} aria-hidden />
+                <h3>Rotation</h3>
+                <p>
+                  Rotate or revoke a key at any time; overlapping keys let you roll without
+                  downtime.
+                </p>
+              </div>
+              <div className="ea-feature">
+                <Terminal size={18} aria-hidden />
+                <h3>TLS only</h3>
+                <p>
+                  All traffic is HTTPS (TLS 1.2+). Plaintext requests are rejected; never embed a
+                  key client-side.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* FAQ */}
+          <section id="faq" className="ea-section">
+            <h2>
+              <HelpCircle size={18} aria-hidden className="ea-h2-icon" />
+              FAQ
+            </h2>
+            <div className="ea-faq">
+              {FAQ.map((f) => (
+                <details key={f.q} className="ea-faq-item">
+                  <summary>{f.q}</summary>
+                  <p>{f.a}</p>
+                </details>
+              ))}
+            </div>
           </section>
 
           {/* Roadmap / build & distribution */}
