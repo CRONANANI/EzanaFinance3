@@ -40,6 +40,8 @@ import {
   GitBranch,
   ShieldCheck,
   HelpCircle,
+  Waypoints,
+  GitCompareArrows,
 } from 'lucide-react';
 import './ezana-api.css';
 
@@ -269,6 +271,78 @@ const ENDPOINT_GROUPS = [
       {
         path: '/v1/signals/backtests/{id}',
         desc: 'Point-in-time backtest results for a signal spec, with disclosure lag preserved so history isn’t contaminated by hindsight.',
+      },
+    ],
+  },
+  {
+    key: 'cross-signal',
+    title: 'Cross-dimensional signals',
+    base: '/v1/cross',
+    Icon: Waypoints,
+    framing:
+      'The signals that only exist because we hold all seven dimensions at once — joins across influence, capital, and consensus that no single-vendor feed can reconstruct.',
+    routes: [
+      {
+        path: '/v1/cross/influence-to-capital',
+        desc: 'Aligns lobbying and campaign-finance spend (Capitol Watch) against subsequent institutional accumulation (Titans Shadow) per issuer, surfacing names where influence money leads the smart money.',
+      },
+      {
+        path: '/v1/cross/contract-to-insider',
+        desc: 'Joins federal contract-award momentum (Capitol Watch) with corporate insider buying (Titans Shadow) on the awarded issuer, flagging where the people closest to the win are also buying.',
+      },
+      {
+        path: '/v1/cross/policy-to-price',
+        desc: 'Maps bill progression and agency rulings (Regulatory Winds) onto the sector baskets they move (Titans Shadow prices), scoring each ticker by unrealized regulatory catalyst.',
+      },
+      {
+        path: '/v1/cross/consensus-vs-fundamentals',
+        desc: 'Contrasts prediction-market odds (The Hive) with the fundamentals and analyst path (Titans Shadow) for the same event, isolating where crowd conviction diverges from the sell-side.',
+      },
+      {
+        path: '/v1/cross/demand-to-guidance',
+        desc: 'Regresses consumer demand signals — search, web traffic, card spend (Consumer Whispers) — against forward guidance and revisions (Titans Shadow) to catch demand inflections ahead of the print.',
+      },
+      {
+        path: '/v1/cross/macro-regime-overlay',
+        desc: 'Tags every other signal with the prevailing macro and geopolitical regime (Global Empire Lighthouse) so a factor can be conditioned on the environment it actually works in.',
+      },
+      {
+        path: '/v1/cross/composite/{ticker}',
+        desc: 'One call returns a per-ticker rollup of every cross-dimensional signal above, weighted and decayed by disclosure lag — a drop-in composite feature.',
+      },
+    ],
+  },
+  {
+    key: 'relationships',
+    title: 'Trend relationships & lead-lag',
+    base: '/v1/relationships',
+    Icon: GitCompareArrows,
+    framing:
+      'Time-structured relationships between dimensions — which trend leads which, by how long, and when the usual link breaks.',
+    routes: [
+      {
+        path: '/v1/relationships/lead-lag',
+        desc: 'Estimated lead-lag between any two dimension series for a ticker or sector (e.g. patent momentum → price), returning the lag in days and the strength of the relationship.',
+      },
+      {
+        path: '/v1/relationships/divergence',
+        desc: 'Flags where two normally-correlated dimensions have decoupled — insider selling into rising retail sentiment, say — ranked by how far the pair has drifted from its historical link.',
+      },
+      {
+        path: '/v1/relationships/confirmation',
+        desc: 'Counts how many independent dimensions currently agree on a name, turning multi-source corroboration into a single conviction score.',
+      },
+      {
+        path: '/v1/relationships/network/{entity}',
+        desc: 'Returns the influence graph around an entity — the politicians, lobbyists, contractors, and institutions linked to it across dimensions — for second-order exposure mapping.',
+      },
+      {
+        path: '/v1/relationships/regime-shift',
+        desc: 'Detects the moment a cross-dimensional relationship structurally changes, so you can retire or re-weight a factor before it quietly stops working.',
+      },
+      {
+        path: '/v1/relationships/backtest',
+        desc: 'Point-in-time backtest of any relationship above with disclosure lag preserved, so a lead-lag edge is measured on the data you would actually have had.',
       },
     ],
   },
