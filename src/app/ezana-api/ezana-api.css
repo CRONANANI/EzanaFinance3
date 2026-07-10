@@ -65,7 +65,9 @@
   color: var(--ea-ink);
 }
 .ea-lede {
-  max-width: 42rem;
+  /* Roughly double the previous 42rem so the copy runs much longer per line
+     before wrapping; capped by the 1180px hero so it never collides. */
+  max-width: 66rem;
   margin: 0 auto 1.5rem;
   font-size: 1.0625rem;
   line-height: 1.6;
@@ -1043,5 +1045,226 @@
   }
   .ea-faq-item summary::after {
     transition: none;
+  }
+}
+
+/* ── CTA secondary link + request-access modal ───────────────────────── */
+.ea-cta-alt {
+  margin: 0.75rem 0 0;
+  font-size: 0.8rem;
+  color: var(--ea-muted);
+}
+.ea-cta-alt a {
+  color: var(--ea-emerald-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+.ea-cta-alt a:hover {
+  text-decoration: underline;
+}
+
+.ea-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: max(4vh, 2rem) 1rem;
+  overflow-y: auto;
+  background: rgba(15, 23, 42, 0.55);
+  animation: ea-fade 0.2s ease;
+}
+.ea-modal {
+  width: 100%;
+  max-width: 520px;
+  background: #ffffff;
+  border: 1px solid var(--ea-border);
+  border-radius: 16px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.28);
+  overflow: hidden;
+  animation: ea-pop 0.2s ease;
+  font-family: var(--font-sans, 'Plus Jakarta Sans', system-ui, sans-serif);
+}
+@keyframes ea-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes ea-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.ea-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--ea-border);
+}
+.ea-modal-head h2 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--ea-ink);
+}
+.ea-modal-x {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--ea-muted);
+  padding: 0 0.25rem;
+}
+.ea-modal-x:hover {
+  color: var(--ea-ink);
+}
+.ea-modal-body {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+.ea-modal-error {
+  margin: 0;
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  background: rgba(220, 38, 38, 0.06);
+  color: #b91c1c;
+  font-size: 0.8rem;
+}
+.ea-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.ea-field > span {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ea-ink);
+}
+.ea-field > span em {
+  color: var(--ea-emerald-text);
+  font-style: normal;
+}
+.ea-field input,
+.ea-field select,
+.ea-field textarea {
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--ea-border);
+  border-radius: 9px;
+  background: #ffffff;
+  color: var(--ea-ink);
+  font-family: inherit;
+  font-size: 0.875rem;
+}
+.ea-field textarea {
+  resize: vertical;
+  min-height: 68px;
+}
+.ea-field input:focus,
+.ea-field select:focus,
+.ea-field textarea:focus {
+  outline: none;
+  border-color: rgba(16, 185, 129, 0.55);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.14);
+}
+.ea-field-err {
+  color: #b91c1c;
+  font-size: 0.72rem;
+}
+.ea-field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+}
+.ea-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.ea-chip {
+  padding: 0.35rem 0.7rem;
+  border-radius: 9999px;
+  border: 1px solid var(--ea-border);
+  background: #ffffff;
+  color: var(--ea-muted);
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    color 0.14s ease,
+    background 0.14s ease,
+    border-color 0.14s ease;
+}
+.ea-chip:hover {
+  border-color: rgba(16, 185, 129, 0.4);
+  color: var(--ea-ink);
+}
+.ea-chip.is-on {
+  color: var(--ea-emerald-text);
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.5);
+}
+.ea-modal-submit {
+  justify-content: center;
+  margin-top: 0.25rem;
+}
+.ea-modal-submit:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.ea-modal-alt {
+  margin: 0;
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--ea-muted);
+}
+.ea-modal-alt a {
+  color: var(--ea-emerald-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+.ea-modal-alt a:hover {
+  text-decoration: underline;
+}
+.ea-modal-done {
+  padding: 1.5rem 1.25rem;
+  text-align: center;
+}
+.ea-modal-done-title {
+  margin: 0 0 0.4rem;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--ea-emerald-text);
+}
+.ea-modal-done p {
+  margin: 0 0 1rem;
+  font-size: 0.875rem;
+  color: var(--ea-muted);
+}
+
+@media (max-width: 560px) {
+  .ea-field-row {
+    grid-template-columns: 1fr;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ea-modal-overlay,
+  .ea-modal {
+    animation: none;
   }
 }

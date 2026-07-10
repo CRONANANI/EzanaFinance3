@@ -15,7 +15,7 @@
  *  placeholders, marked roadmap/coming-soon where not yet live.
  * ==========================================================================*/
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -498,6 +498,236 @@ function Method({ method = 'GET' }) {
   return <span className={`ea-method ea-method--${method.toLowerCase()}`}>{method}</span>;
 }
 
+const REQ_DATASETS = [
+  { key: 'congress', label: 'Congressional trading' },
+  { key: 'lobbying', label: 'Lobbying & influence' },
+  { key: 'fec', label: 'Campaign finance' },
+  { key: 'contracts', label: 'Gov contracts' },
+  { key: 'predictions', label: 'Prediction markets' },
+  { key: 'news', label: 'News signals' },
+];
+const REQ_ROLES = [
+  { value: '', label: 'Select…' },
+  { value: 'trader', label: 'Trader' },
+  { value: 'quant_firm', label: 'Quant firm' },
+  { value: 'institution', label: 'Institution' },
+  { value: 'developer', label: 'Developer' },
+  { value: 'other', label: 'Other' },
+];
+const REQ_VOLUMES = [
+  { value: '', label: 'Select…' },
+  { value: '<10k', label: '< 10k / month' },
+  { value: '10-100k', label: '10–100k / month' },
+  { value: '100k-1M', label: '100k–1M / month' },
+  { value: '1M+', label: '1M+ / month' },
+];
+
+/* ── Accessible request-access modal (ESC/overlay close, focus trap) ── */
+function RequestAccessModal({ open, onClose }) {
+  const dialogRef = useRef(null);
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    company: '',
+    role: '',
+    useCase: '',
+    volume: '',
+  });
+  const [datasets, setDatasets] = useState([]);
+  const [errors, setErrors] = useState({});
+  const [status, setStatus] = useState('idle'); // idle | submitting | done | error
+  const [errorMsg, setErrorMsg] = useState('');
+
+  // Reset when (re)opened.
+  useEffect(() => {
+    if (open) {
+      setForm({ name: '', email: '', company: '', role: '', useCase: '', volume: '' });
+      setDatasets([]);
+      setErrors({});
+      setStatus('idle');
+      setErrorMsg('');
+    }
+  }, [open]);
+
+  // Focus trap + Escape + body scroll lock while open.
+  useEffect(() => {
+    if (!open) return undefined;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const el = dialogRef.current;
+    const first = el?.querySelector('input, textarea, select, button');
+    if (first) first.focus();
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
+      if (e.key !== 'Tab' || !el) return;
+      const focusables = el.querySelectorAll(
+        'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled])',
+      );
+      if (focusables.length === 0) return;
+      const firstEl = focusables[0];
+      const lastEl = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === firstEl) {
+        e.preventDefault();
+        lastEl.focus();
+      } else if (!e.shiftKey && document.activeElement === lastEl) {
+        e.preventDefault();
+        firstEl.focus();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [open, onClose]);
+
+  if (!open) return null;
+
+  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+  const toggleDataset = (k) =>
+    setDatasets((d) => (d.includes(k) ? d.filter((x) => x !== k) : [...d, k]));
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setStatus('submitting');
+    setErrorMsg('');
+    setErrors({});
+    try {
+      const res = await fetch('/api/ezana-api/request-access', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...form, datasets }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data?.ok) {
+        setStatus('done');
+        return;
+      }
+      if (data?.fields) setErrors(data.fields);
+      setErrorMsg(data?.error || `Request failed (HTTP ${res.status}).`);
+      setStatus('error');
+    } catch {
+      setErrorMsg('Could not reach the server. Please check your connection and try again.');
+      setStatus('error');
+    }
+  };
+
+  return (
+    <div className="ea-modal-overlay" role="presentation" onClick={onClose}>
+      <div
+        ref={dialogRef}
+        className="ea-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="ea-modal-title"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="ea-modal-head">
+          <h2 id="ea-modal-title">Request API access</h2>
+          <button type="button" className="ea-modal-x" onClick={onClose} aria-label="Close">
+            ×
+          </button>
+        </div>
+
+        {status === 'done' ? (
+          <div className="ea-modal-done">
+            <p className="ea-modal-done-title">Request received — we&apos;ll be in touch.</p>
+            <p>We review access requests manually and reply from api@ezana.world.</p>
+            <button type="button" className="ea-btn ea-btn--primary" onClick={onClose}>
+              Done
+            </button>
+          </div>
+        ) : (
+          <form className="ea-modal-body" onSubmit={submit} noValidate>
+            {errorMsg && (
+              <p className="ea-modal-error" role="alert">
+                {errorMsg}
+              </p>
+            )}
+            <label className="ea-field">
+              <span>
+                Name <em>*</em>
+              </span>
+              <input type="text" value={form.name} onChange={set('name')} required />
+              {errors.name && <small className="ea-field-err">{errors.name}</small>}
+            </label>
+            <label className="ea-field">
+              <span>
+                Work email <em>*</em>
+              </span>
+              <input type="email" value={form.email} onChange={set('email')} required />
+              {errors.email && <small className="ea-field-err">{errors.email}</small>}
+            </label>
+            <label className="ea-field">
+              <span>Company / firm</span>
+              <input type="text" value={form.company} onChange={set('company')} />
+            </label>
+            <div className="ea-field-row">
+              <label className="ea-field">
+                <span>Role</span>
+                <select value={form.role} onChange={set('role')}>
+                  {REQ_ROLES.map((r) => (
+                    <option key={r.value} value={r.value}>
+                      {r.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="ea-field">
+                <span>Expected monthly volume</span>
+                <select value={form.volume} onChange={set('volume')}>
+                  {REQ_VOLUMES.map((v) => (
+                    <option key={v.value} value={v.value}>
+                      {v.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <label className="ea-field">
+              <span>
+                How will you use the Ezana API? <em>*</em>
+              </span>
+              <textarea rows={3} value={form.useCase} onChange={set('useCase')} required />
+              {errors.useCase && <small className="ea-field-err">{errors.useCase}</small>}
+            </label>
+            <div className="ea-field">
+              <span>Datasets of interest</span>
+              <div className="ea-chips">
+                {REQ_DATASETS.map((d) => (
+                  <button
+                    key={d.key}
+                    type="button"
+                    className={`ea-chip${datasets.includes(d.key) ? ' is-on' : ''}`}
+                    aria-pressed={datasets.includes(d.key)}
+                    onClick={() => toggleDataset(d.key)}
+                  >
+                    {d.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <button
+              type="submit"
+              className="ea-btn ea-btn--primary ea-modal-submit"
+              disabled={status === 'submitting'}
+            >
+              {status === 'submitting' ? 'Sending…' : 'Send request'}
+              {status !== 'submitting' && <ArrowRight size={15} aria-hidden />}
+            </button>
+            <p className="ea-modal-alt">
+              or email <a href="mailto:api@ezana.world">api@ezana.world</a>
+            </p>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ── Visual 1: hero signal-from-noise sparkline (noisy grey → clean emerald) ── */
 function HeroSignal() {
   const W = 340;
@@ -577,6 +807,7 @@ function CoverageStrip() {
 
 export default function EzanaApiPage() {
   const [active, setActive] = useState('overview');
+  const [reqOpen, setReqOpen] = useState(false);
 
   // Scroll-spy: highlight the legend entry for the section currently in view.
   useEffect(() => {
@@ -1185,13 +1416,22 @@ export default function EzanaApiPage() {
                 Request an evaluation key and we&apos;ll get you a scoped token wired to the signal
                 families your models need.
               </p>
-              <a href="mailto:api@ezana.world" className="ea-btn ea-btn--primary">
-                Get API access <ArrowRight size={15} aria-hidden />
-              </a>
+              <button
+                type="button"
+                className="ea-btn ea-btn--primary"
+                onClick={() => setReqOpen(true)}
+              >
+                Request API access <ArrowRight size={15} aria-hidden />
+              </button>
+              <p className="ea-cta-alt">
+                or email <a href="mailto:api@ezana.world">api@ezana.world</a>
+              </p>
             </div>
           </section>
         </main>
       </div>
+
+      <RequestAccessModal open={reqOpen} onClose={() => setReqOpen(false)} />
     </div>
   );
 }

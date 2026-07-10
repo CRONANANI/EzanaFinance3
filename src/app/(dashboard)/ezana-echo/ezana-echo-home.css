@@ -37,8 +37,9 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: 20px;
-  /* Tight to the nav on top; trimmed bottom pad pulls the hero up higher. */
-  padding: 7px 0 16px;
+  /* Tight to the nav on top; a hair more top pad (7 → 11px) plus the title's
+     1.2 line-height keeps the serif ascenders from being clipped. */
+  padding: 11px 0 16px;
 }
 .eth-intro-title {
   font-family: var(--font-serif);
@@ -47,7 +48,8 @@
   letter-spacing: -0.015em;
   color: var(--text-primary);
   margin: 0;
-  line-height: 1.05;
+  /* 1.05 cropped the top of tall glyphs; 1.2 gives ascenders room. */
+  line-height: 1.2;
 }
 .eth-intro-title span {
   color: var(--emerald);

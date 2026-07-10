@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase-browser';
+import { clearLocalAuth } from '@/lib/clear-auth';
 
 const AuthContext = createContext({ user: null, loading: true });
 
@@ -52,14 +53,11 @@ export function AuthProvider({ children }) {
   }, []);
 
   const signOut = () => {
-    // Fire-and-forget client clear, then hand off to the authoritative server
-    // sign-out route (clears the session cookie + redirects to the login
-    // chooser). Never await the client signOut so it can't hang the redirect.
-    try {
-      supabase.auth.signOut();
-    } catch {
-      /* ignore */
-    }
+    // Clear LOCAL auth state synchronously and unconditionally (no network
+    // dependency) so a failed/hung sign-out can't leave a stale session that
+    // re-hydrates as logged-in on the next load. Then hand off to the
+    // authoritative server sign-out route (clears the cookie + redirects).
+    clearLocalAuth();
     setUser(null);
     if (typeof window !== 'undefined') {
       window.location.href = '/api/auth/signout';

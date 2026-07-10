@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { EzanaNavLogo } from '@/components/brand/EzanaNavLogo';
 import { useAuth } from '@/components/AuthProvider';
 import { useOrg } from '@/contexts/OrgContext';
-import { supabase } from '@/lib/supabase-browser';
+import { clearLocalAuth } from '@/lib/clear-auth';
 import { NavNotifications } from '@/components/NavNotifications';
 import { ChecklistProgressIcon } from '@/components/ChecklistProgressIcon';
 import { AnimatedNav } from '@/components/ui/AnimatedNav';
@@ -67,6 +67,11 @@ export function Navbar() {
   const isTermsOfService = pathname === '/terms-of-service';
   const isAccessibility = pathname === '/accessibility';
   const isEzanaEcho = pathname?.startsWith('/ezana-echo');
+  // /ezana-api is a public docs page reached from the landing Datasets menu —
+  // like /datasets and /pricing it must ALWAYS render the marketing navbar, so a
+  // stale client session can never leak the authed app chrome (bell/checklist/
+  // profile) onto it.
+  const isEzanaApi = pathname?.startsWith('/ezana-api');
   // Public marketing pages that ship their own self-contained chrome via
   // <MarketingPageShell> (its own header + "Back to home" / "Get started").
   // The global app navbar must NEVER render on top of these — otherwise a
@@ -91,7 +96,8 @@ export function Navbar() {
     isPrivacyPolicy ||
     isTermsOfService ||
     isAccessibility ||
-    isEzanaEcho;
+    isEzanaEcho ||
+    isEzanaApi;
   const isResearchActive =
     pathname?.includes('/inside-the-capitol') ||
     pathname?.includes('/company-research') ||
@@ -107,13 +113,10 @@ export function Navbar() {
   const isTradingActive = pathname?.includes('/trading') || pathname?.includes('/org-trading');
 
   const handleLogout = () => {
-    // Best-effort client-side clear (fire-and-forget — never await, so a hung
-    // signOut network call can't block the redirect or trap the user).
-    try {
-      supabase.auth.signOut();
-    } catch {
-      /* ignore */
-    }
+    // Clear LOCAL auth state unconditionally (scope:'local' + purge the stored
+    // token) so a hung/failed network sign-out can't leave a stale session that
+    // re-hydrates the authed navbar on the next load.
+    clearLocalAuth();
     // Authoritative server sign-out: clears the session cookie on the response
     // and redirects to the login chooser (/auth/login). Doing it server-side
     // means a failed/hung client signOut can't leave the user half-logged-in.

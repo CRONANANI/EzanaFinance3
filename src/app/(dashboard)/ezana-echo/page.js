@@ -208,10 +208,12 @@ export default function EzanaEchoPage() {
               Ezana <span>Echo</span>
             </h1>
           </div>
-          <Link href="/ezana-echo/archived" className="eth-archived-btn">
-            View archived
-            <span className="eth-archived-count">{archivedCount}</span>
-          </Link>
+          {isAdmin && (
+            <Link href="/ezana-echo/archived" className="eth-archived-btn">
+              View archived
+              <span className="eth-archived-count">{archivedCount}</span>
+            </Link>
+          )}
         </div>
 
         {/* Split featured hero + ranked Top Stories rail */}
