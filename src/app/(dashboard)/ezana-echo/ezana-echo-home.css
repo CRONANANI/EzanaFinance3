@@ -11,12 +11,11 @@
   color: var(--text-secondary);
   font-family: var(--font-sans);
   padding-bottom: 8px;
-  /* The real gap above the "Ezana Echo" title is the dashboard shell's
-     `padding-top: calc(navbar-height + 1.5rem)` (see (dashboard)/layout.css) —
-     NOT .eth-intro, which is why earlier tweaks to .eth-intro alone never
-     moved it. Pull the page up to cancel that extra 1.5rem so the title sits
-     tight to the nav (~80% less gap; ~7px remains from .eth-intro's top pad). */
-  margin-top: -1.5rem;
+  /* The gap above the "Ezana Echo" title is the dashboard shell's
+     `padding-top: calc(navbar-height + 1.5rem)` (see (dashboard)/layout.css).
+     Pull the page up by 0.6rem so ~0.9rem of that extra remains (1.5rem →
+     0.9rem, ~40% less) — tight to the nav without tucking the title under it. */
+  margin-top: -0.6rem;
 }
 .eth-page *,
 .eth-page *::before,
@@ -37,9 +36,9 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: 20px;
-  /* Tight to the nav on top; a hair more top pad (7 → 11px) plus the title's
-     1.2 line-height keeps the serif ascenders from being clipped. */
-  padding: 11px 0 16px;
+  /* Minimal top pad — the title's own line-height 1.2 + padding-top handle
+     clipping, and .eth-page controls the gap to the nav. */
+  padding: 3px 0 16px;
 }
 .eth-intro-title {
   font-family: var(--font-serif);
@@ -48,8 +47,10 @@
   letter-spacing: -0.015em;
   color: var(--text-primary);
   margin: 0;
-  /* 1.05 cropped the top of tall glyphs; 1.2 gives ascenders room. */
+  /* 1.05 cropped the top of tall glyphs; 1.2 + a 2px safety pad gives the
+     serif cap-height/ascenders room so the wordmark never clips. */
   line-height: 1.2;
+  padding-top: 2px;
 }
 .eth-intro-title span {
   color: var(--emerald);
@@ -330,12 +331,17 @@
 .eth-catnav {
   display: flex;
   align-items: center;
-  /* Wrap to as many rows as needed so EVERY category chip is fully visible —
-     previously overflow-x:auto clipped the tail (the chips after "Founders &
-     Power Players"). Row-gap keeps wrapped rows legible. */
-  flex-wrap: wrap;
-  gap: 12px 22px;
+  /* One row only — chips never wrap to a second line; the overflow scrolls
+     horizontally with the scrollbar hidden. */
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 22px;
   margin-top: 16px;
+  scrollbar-width: none; /* Firefox */
+  -webkit-overflow-scrolling: touch;
+}
+.eth-catnav::-webkit-scrollbar {
+  display: none; /* WebKit */
 }
 .eth-catnav button {
   background: none;
