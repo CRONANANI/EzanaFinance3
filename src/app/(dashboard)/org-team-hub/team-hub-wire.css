@@ -1,19 +1,18 @@
 /* ════════════════════════════════════════════════════════════
-   TEAM HUB HOME — regular-home "broadsheet" colouring on the
-   handoff package's card chrome: near-black card panels (#0e0f12)
-   with a clear white-alpha outline and rounded corners, green/red
-   data, mono labels. Class names are unchanged so page.js is
-   untouched; this file only re-skins. Dark = app default;
-   .light-mode maps to light cards with the same outline + radii.
+   TEAM HUB HOME — layout "2a": a fixed left command rail (212px)
+   beside the main content column. Emerald-forward, theme-token
+   only. Dark = app default; body.light-mode remaps to a light
+   palette with the same chrome. Money / ROI / dates render in
+   JetBrains Mono with tabular-nums.
    ════════════════════════════════════════════════════════════ */
 
 .thw-root {
-  /* Bleed past the dashboard main's padding so wire + hero rules run
-     edge-to-edge; sections re-introduce 36px gutters below. */
-  margin: -1.5rem -2rem -3rem;
+  /* Sits inside the normal dashboard-main padding (no full-bleed). */
+  margin: 0 auto;
+  max-width: 1240px;
   font-family: var(--font-sans);
 
-  /* ── DARK (default) — handoff black canvas + outlined card panels ── */
+  /* ── DARK (default) ── */
   --bg-primary: #0a0a0c;
   --bg-deep: #0a0a0c;
   --text-primary: #f0f6fc;
@@ -38,45 +37,20 @@
   --chart-axis: rgba(255, 255, 255, 0.22);
   --shadow-sm: none;
 
-  /* Color-coded functional families (E2): fund/performance = emerald,
-     pitches/competitions = gold, meetings/cohorts = blue,
-     research/assignments = violet, negatives/compliance flags = red. */
-  --fam-fund: #34d399;
-  --fam-pitch: #d4a853;
-  --fam-meeting: #60a5fa;
-  --fam-research: #a78bfa;
-  --fam-flag: #f87171;
-  --fam-fund-bg: rgba(52, 211, 153, 0.1);
-  --fam-pitch-bg: rgba(212, 168, 83, 0.12);
-  --fam-meeting-bg: rgba(96, 165, 250, 0.12);
-  --fam-research-bg: rgba(167, 139, 250, 0.12);
-  --fam-flag-bg: rgba(248, 113, 113, 0.12);
-
-  /* Flat flag / segmented-active treatment (navy in light, green in dark). */
-  --thw-flag-bg: #34d399;
-  --thw-flag-text: #0b0d10;
-  --thw-accent: #34d399;
-  --thw-accent-text: #0b0d10;
-
   background: var(--bg-primary);
   color: var(--text-secondary);
   letter-spacing: -0.008em;
   -webkit-font-smoothing: antialiased;
-  /* The full-bleed (negative side margins) can otherwise overhang by the
-     vertical scrollbar's width and add a stray horizontal scrollbar — the
-     "double scroll". `clip` removes it without creating a scroll container
-     (so it never adds an inner vertical scroll). */
-  overflow-x: clip;
 }
 
-/* ── Broadsheet palette — LIGHT (.light-mode) ── */
+/* ── LIGHT (.light-mode) ── */
 body.light-mode .thw-root {
   --bg-primary: #ffffff;
   --bg-deep: #ffffff;
   --text-primary: #0b0d10;
   --text-secondary: #374151;
   --text-muted: #6b7280;
-  --text-faint: #94928a;
+  --text-faint: #6b7280;
   --text-ghost: #9aa0a6;
   --surface-card: #f9fafb;
   --surface-card-hover: #f3f4f6;
@@ -93,104 +67,21 @@ body.light-mode .thw-root {
   --warning: #b45309;
   --warning-bg: rgba(180, 83, 9, 0.08);
   --chart-axis: rgba(0, 0, 0, 0.22);
-
-  --thw-flag-bg: #0f172a;
-  --thw-flag-text: #ffffff;
-  --thw-accent: #0f172a;
-  --thw-accent-text: #ffffff;
-
-  /* Color-coded families — light-mode shades. */
-  --fam-fund: #059669;
-  --fam-pitch: #b45309;
-  --fam-meeting: #2563eb;
-  --fam-research: #7c3aed;
-  --fam-flag: #dc2626;
-  --fam-fund-bg: rgba(5, 150, 105, 0.08);
-  --fam-pitch-bg: rgba(180, 83, 9, 0.09);
-  --fam-meeting-bg: rgba(37, 99, 235, 0.08);
-  --fam-research-bg: rgba(124, 58, 237, 0.08);
-  --fam-flag-bg: rgba(220, 38, 38, 0.08);
 }
 
 .thw-root * {
   box-sizing: border-box;
 }
-@media (max-width: 768px) {
-  .thw-root {
-    margin: -1rem -1rem -3rem;
-  }
+
+/* ── Shell: fixed rail + fluid main ────────────────────────────── */
+.thw-shell {
+  display: grid;
+  grid-template-columns: 212px minmax(0, 1fr);
+  gap: 26px;
+  align-items: start;
 }
 
-/* ── 1. Ticker tape ("the wire") ───────────────────────────── */
-.thw-ticker {
-  height: 34px;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  background: var(--bg-deep);
-  border-bottom: 1px solid var(--border-primary);
-}
-.thw-ticker-track {
-  display: flex;
-  white-space: nowrap;
-  animation: thw-tick 56s linear infinite;
-  will-change: transform;
-}
-.thw-ticker:hover .thw-ticker-track {
-  animation-play-state: paused;
-}
-@keyframes thw-tick {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .thw-ticker-track {
-    animation: none;
-  }
-}
-.thw-tick {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 20px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--text-muted);
-}
-.thw-tick b {
-  color: var(--text-primary);
-  font-weight: 600;
-}
-.thw-tick .thw-lbl {
-  font-size: 8.5px;
-  letter-spacing: 0.13em;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-.thw-lbl.em {
-  color: var(--emerald);
-}
-.thw-lbl.in {
-  color: var(--text-primary);
-}
-.thw-lbl.am {
-  color: var(--text-muted);
-}
-.thw-lbl.rd {
-  color: var(--negative);
-}
-.thw-tick .pos {
-  color: var(--emerald);
-}
-.thw-tick .neg {
-  color: var(--negative);
-}
-
-/* ── Shared: eyebrows, section heads, ticker tags ──────────── */
+/* ── Shared primitives ─────────────────────────────────────────── */
 .thw-eyebrow {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -199,24 +90,11 @@ body.light-mode .thw-root {
   font-weight: 700;
   color: var(--text-faint);
 }
-/* Fund name accent — themed to the university's brand color (data-driven). */
-.thw-brand {
-  color: var(--org-ink, var(--emerald));
-  font-weight: 700;
-}
-.thw-section-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 12px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--border-primary);
-}
 .thw-section-meta {
   font-size: 10.5px;
   color: var(--text-faint);
   font-family: var(--font-mono);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 .thw-col-label {
@@ -225,28 +103,10 @@ body.light-mode .thw-root {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-faint);
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   display: flex;
   align-items: center;
   gap: 6px;
-}
-/* Tickers render as bold editorial tags, not pills. */
-.thw-tkr {
-  font-family: var(--font-mono);
-  font-size: 9.5px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  padding: 1px 5px;
-  border-radius: 4px;
-  background: var(--surface-card);
-  color: var(--text-primary);
-  border: 1px solid var(--border-secondary);
-  flex-shrink: 0;
-}
-.thw-tkr.em {
-  background: var(--emerald-bg);
-  color: var(--emerald);
-  border-color: var(--emerald-border);
 }
 .thw-empty {
   font-size: 12px;
@@ -271,304 +131,25 @@ body.light-mode .thw-root {
 .thw-link:hover {
   color: var(--emerald);
 }
-
-/* ── 3. Hero — fund value + chart ──────────────────────────── */
-.thw-hero {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
-  gap: 32px;
-  align-items: start;
-  padding: 30px 36px 28px;
-  border-bottom: 1px solid var(--border-primary);
-  background: var(--bg-primary);
-}
-.thw-display {
+.thw-tkr {
   font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  font-size: 54px;
-  font-weight: 600;
-  letter-spacing: -0.03em;
-  color: var(--text-primary);
-  line-height: 1;
-  margin-top: 14px;
-}
-.thw-hero-deltas {
-  display: flex;
-  align-items: baseline;
-  gap: 16px;
-  margin-top: 12px;
-  font-family: var(--font-mono);
-  font-size: 13px;
-  flex-wrap: wrap;
-}
-.thw-hero-deltas .pos {
-  color: var(--emerald);
-}
-.thw-hero-deltas .neg {
-  color: var(--negative);
-}
-.thw-hero-deltas .mut {
-  color: var(--text-faint);
-  font-size: 11.5px;
-}
-.thw-hstats {
-  display: flex;
-  margin-top: 20px;
-  border: 1px solid var(--border-primary);
-  border-radius: 12px;
-  overflow: hidden;
-  width: fit-content;
-  max-width: 100%;
-  flex-wrap: wrap;
-}
-.thw-hstat {
-  padding: 11px 20px;
-  border-left: 1px solid var(--border-secondary);
-}
-.thw-hstat:first-child {
-  border-left: none;
-}
-.thw-hstat-label {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-  color: var(--text-faint);
-}
-.thw-hstat-value {
-  font-family: var(--font-mono);
-  font-size: 17px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-top: 4px;
-  line-height: 1.1;
-}
-.thw-hstat-value.pos {
-  color: var(--emerald);
-}
-.thw-hstat-value.neg {
-  color: var(--negative);
-}
-
-.thw-chart-card {
-  border: 1px solid var(--border-primary);
-  border-radius: 12px;
-  padding: 14px 18px 6px;
-  background: var(--surface-card);
-}
-.thw-chart-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-}
-.thw-chart-label {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-faint);
-}
-.thw-ranges {
-  display: flex;
-  gap: 4px;
-}
-.thw-range {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  padding: 5px 10px;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--text-muted);
-  border: 1px solid var(--border-primary);
-  cursor: pointer;
-  transition:
-    color 0.12s ease-out,
-    border-color 0.12s ease-out,
-    background 0.12s ease-out;
-}
-.thw-range:hover {
-  color: var(--text-secondary);
-  border-color: var(--border-hover);
-}
-.thw-range.active {
-  color: var(--thw-accent-text);
-  background: var(--thw-accent);
-  border-color: var(--thw-accent);
-}
-.thw-chart {
-  height: 148px;
-  margin-top: 12px;
-  position: relative;
-  cursor: crosshair;
-}
-.thw-chart svg {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-/* Interactive hover read-out — crosshair + point + value/date tooltip */
-.thw-chart-cross {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 1px;
-  background: var(--border-hover);
-  pointer-events: none;
-  transform: translateX(-0.5px);
-}
-.thw-chart-dot {
-  position: absolute;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--emerald);
-  border: 2px solid var(--surface-card);
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-}
-.thw-chart-tip {
-  position: absolute;
-  top: 2px;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  padding: 4px 9px;
-  border-radius: 7px;
-  background: var(--surface-card);
-  border: 1px solid var(--border-hover);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
-  pointer-events: none;
-  white-space: nowrap;
-  z-index: 2;
-}
-.thw-chart-tip-val {
-  font-family: var(--font-mono);
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-.thw-chart-tip-date {
-  font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 9.5px;
+  font-weight: 700;
   letter-spacing: 0.04em;
-  color: var(--text-faint);
-}
-.thw-axis {
-  display: flex;
-  justify-content: space-between;
-  font-family: var(--font-mono);
-  font-size: 9.5px;
-  color: var(--text-ghost);
-  padding: 8px 2px 6px;
-}
-
-/* ── 4. Sector desk strip ──────────────────────────────────── */
-.thw-sectors {
-  padding: 20px 36px 0;
-}
-.thw-sector-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  border: 1px solid var(--border-primary);
-  border-radius: 12px;
-  margin-top: 12px;
-  overflow: hidden;
+  padding: 1px 5px;
+  border-radius: 4px;
   background: var(--surface-card);
-}
-/* ~40% shorter than before: tighter padding, smaller type, no name min-height,
-   condensed ticker chips — same fields, denser. */
-.thw-sector {
-  padding: 9px 12px;
-  border-left: 1px solid var(--border-secondary);
-  cursor: pointer;
-  transition: background 0.12s ease-out;
-  text-align: left;
-  background: none;
-  font-family: inherit;
-  color: inherit;
-}
-.thw-sector:first-child {
-  border-left: none;
-}
-.thw-sector:hover {
-  background: var(--surface-card-hover);
-}
-.thw-sector-rank {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  color: var(--text-ghost);
-}
-.thw-sector-name {
-  font-size: 11px;
-  font-weight: 600;
   color: var(--text-primary);
-  margin-top: 2px;
-  line-height: 1.22;
-  min-height: 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.thw-sector-roi {
-  font-family: var(--font-mono);
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--emerald);
-  margin-top: 3px;
-}
-.thw-sector-roi.neg {
-  color: var(--negative);
-}
-.thw-sector-val {
-  font-family: var(--font-mono);
-  font-size: 9.5px;
-  color: var(--text-faint);
-  margin-top: 0;
-}
-.thw-sector-tkrs {
-  display: flex;
-  gap: 3px;
-  margin-top: 6px;
-  flex-wrap: wrap;
-}
-.thw-sector-tkrs .thw-tkr {
-  font-size: 8.5px;
-  padding: 1px 4px;
+  border: 1px solid var(--border-secondary);
+  flex-shrink: 0;
 }
 
-/* ── 5. Bento grid ─────────────────────────────────────────── */
-.thw-bento {
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap: 18px;
-  padding: 22px 36px 36px;
-  align-items: start;
-}
-.thw-span3 {
-  grid-column: span 3;
-}
-.thw-span4 {
-  grid-column: span 4;
-}
-.thw-span5 {
-  grid-column: span 5;
-}
-.thw-span8 {
-  grid-column: span 8;
-}
-
+/* ── Card chrome ───────────────────────────────────────────────── */
 .thw-card {
   border: 1px solid var(--border-primary);
-  border-radius: 12px;
+  border-radius: 14px;
   background: var(--surface-card);
-  box-shadow: none;
   transition: border-color 0.15s ease-out;
-}
-.thw-card:hover {
-  border-color: var(--border-hover);
 }
 .thw-card-head {
   display: flex;
@@ -587,94 +168,202 @@ body.light-mode .thw-root {
   gap: 8px;
 }
 .thw-card-title svg {
-  color: var(--text-faint);
+  color: var(--emerald);
 }
 .thw-card-body {
-  padding: 6px 20px 12px;
+  padding: 6px 20px 14px;
 }
 .thw-card-foot {
-  padding: 10px 20px;
+  padding: 12px 20px;
   border-top: 1px solid var(--border-secondary);
 }
 
-/* Digest — "This week in the fund" 3×2 cell grid */
-.thw-digest-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+/* ════════════════════════════════════════════════════════════
+   LEFT SIDEBAR
+   ════════════════════════════════════════════════════════════ */
+.thw-sidebar {
+  position: sticky;
+  top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-self: start;
 }
-.thw-cell {
-  padding: 13px 16px 14px;
-  border-left: 1px solid var(--border-secondary);
-  border-top: 1px solid var(--border-secondary);
-  min-width: 0;
-}
-.thw-cell:nth-child(3n + 1) {
-  border-left: none;
-}
-.thw-cell:nth-child(-n + 3) {
-  border-top: none;
-}
-.thw-cell-count {
-  font-family: var(--font-mono);
-  font-size: 21px;
-  font-weight: 600;
-  color: var(--text-primary);
-  line-height: 1.1;
-  margin-bottom: 4px;
-}
-.thw-cell-count.ghost {
-  color: var(--text-ghost);
-}
-.thw-cell-line {
+.thw-vp {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 11.5px;
-  color: var(--text-secondary);
-  padding: 3px 0;
+  gap: 11px;
+  padding: 14px;
+  border: 1px solid var(--border-primary);
+  border-radius: 14px;
+  background: var(--surface-card);
+}
+.thw-vp-avatar {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--emerald);
+  background: var(--emerald-bg);
+  border: 1.5px solid var(--emerald-border);
+}
+.thw-vp-meta {
   min-width: 0;
 }
-.thw-cell-line .thw-nm {
+.thw-vp-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--emerald);
+}
+.thw-vp-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-top: 2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.thw-cell-line .thw-d {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  margin-left: auto;
-  flex-shrink: 0;
+.thw-nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
-.thw-d.pos {
+.thw-nav-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--text-ghost);
+  padding: 0 10px 6px;
+}
+.thw-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 0.12s ease-out,
+    color 0.12s ease-out;
+}
+.thw-nav-item svg {
+  flex-shrink: 0;
+  color: var(--text-faint);
+  transition: color 0.12s ease-out;
+}
+.thw-nav-item span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.thw-nav-item:hover {
+  background: var(--surface-card-hover);
+  color: var(--text-primary);
+}
+.thw-nav-item:hover svg {
+  color: var(--text-secondary);
+}
+.thw-nav-item.active,
+.thw-nav-item.active:hover {
+  background: var(--emerald-bg);
+  color: var(--emerald);
+  font-weight: 600;
+}
+.thw-nav-item.active svg {
   color: var(--emerald);
 }
-.thw-d.neg {
-  color: var(--negative);
+.thw-nav-item.highlight {
+  color: var(--emerald);
+  font-weight: 600;
+}
+.thw-nav-item.highlight svg {
+  color: var(--emerald);
+}
+.thw-nav-item.highlight:hover {
+  background: var(--emerald-bg);
 }
 
-/* Shortcuts (⌘K bar + tiles) */
-.thw-cmd-search {
+/* ════════════════════════════════════════════════════════════
+   MAIN CONTENT
+   ════════════════════════════════════════════════════════════ */
+.thw-main {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  min-width: 0;
+}
+
+/* ── Header ─────────────────────────────────────────────────────── */
+.thw-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.thw-h1 {
+  font-size: 27px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  margin: 6px 0 0;
+  line-height: 1.1;
+}
+.thw-search {
   display: flex;
   align-items: center;
   gap: 8px;
-  border: 1px solid var(--border-input);
-  border-radius: 8px;
+  min-width: 260px;
   padding: 0 12px;
-  height: 36px;
-  color: var(--text-ghost);
-  font-size: 12.5px;
+  height: 40px;
+  border: 1px solid var(--border-input);
+  border-radius: 10px;
+  background: var(--surface-card);
+  color: var(--text-faint);
   cursor: text;
-  width: 100%;
-  background: transparent;
-  font-family: var(--font-sans);
-  text-align: left;
   transition: border-color 0.12s ease-out;
 }
-.thw-cmd-search:hover {
-  border-color: var(--border-hover);
+.thw-search:focus-within {
+  border-color: var(--emerald-border);
+}
+.thw-search svg {
+  flex-shrink: 0;
+}
+.thw-search-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 13px;
+}
+.thw-search-input::placeholder {
+  color: var(--text-ghost);
 }
 .thw-kbd {
-  margin-left: auto;
+  flex-shrink: 0;
   font-family: var(--font-mono);
   font-size: 10px;
   border: 1px solid var(--border-primary);
@@ -682,43 +371,352 @@ body.light-mode .thw-root {
   padding: 1px 6px;
   color: var(--text-faint);
 }
-/* All 14 destinations visible — compact square cells, 2 per row */
-.thw-tiles {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
-  margin-top: 10px;
-}
-.thw-tile {
+
+/* ── Calendar strip (paged) ─────────────────────────────────────── */
+.thw-cal-head {
   display: flex;
-  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.thw-cal-nav {
+  display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  cursor: pointer;
-  background: var(--surface-card);
+}
+.thw-cal-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
   border: 1px solid var(--border-primary);
-  color: var(--text-primary);
-  font-size: 11px;
+  background: var(--surface-card);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    background 0.12s ease-out,
+    border-color 0.12s ease-out,
+    opacity 0.12s ease-out;
+}
+.thw-cal-arrow:hover:not(:disabled) {
+  border-color: var(--emerald-border);
+  color: var(--emerald);
+}
+.thw-cal-arrow:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.thw-cal-title {
+  font-size: 14px;
   font-weight: 600;
-  text-align: left;
-  font-family: var(--font-sans);
-  white-space: nowrap;
+  color: var(--text-primary);
+  margin-left: 4px;
+}
+.thw-cal-viewport {
   overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 0;
+}
+.thw-cal-track {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 12px; /* keep in sync with CAL_GAP in page.js */
+  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .thw-cal-track {
+    transition: none;
+  }
+}
+.thw-cal-card {
+  flex: 0 0 auto;
+  width: calc((100% - 48px) / 5); /* 5 per page, 4 × 12px gaps */
+  min-height: 84px;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  padding: 10px 12px;
+  border: 1px solid var(--border-primary);
+  border-top: 2px solid var(--emerald);
+  border-radius: 10px;
+  background: var(--surface-card);
+  cursor: pointer;
+  font-family: inherit;
+  color: inherit;
   transition:
     background 0.12s ease-out,
     border-color 0.12s ease-out;
 }
-.thw-tile svg {
-  flex-shrink: 0;
-  color: var(--text-faint);
-}
-.thw-tile:hover {
+.thw-cal-card:hover {
   background: var(--surface-card-hover);
   border-color: var(--border-hover);
+  border-top-color: var(--emerald);
+}
+.thw-cal-date {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--emerald);
+}
+.thw-cal-card-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.25;
+  margin: 6px 0 auto;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.thw-cal-tag {
+  margin-top: 8px;
+  align-self: flex-start;
+  max-width: 100%;
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--surface-card-hover);
+  border: 1px solid var(--border-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Command Center hero ────────────────────────────────────────── */
+.thw-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 24px;
+  padding: 22px 24px;
+}
+.thw-hero-left {
+  min-width: 0;
+}
+.thw-fund {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  color: inherit;
+}
+.thw-fund-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.thw-fund-value {
+  display: block;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 44px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  line-height: 1.02;
+  margin: 4px 0 10px;
+}
+.thw-fund:hover .thw-fund-value {
+  color: var(--emerald);
+}
+.thw-fund-pills {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.thw-pill {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--border-primary);
+  background: var(--surface-card);
+  color: var(--text-secondary);
+}
+.thw-pill.pos {
+  color: var(--emerald);
+  background: var(--emerald-bg);
+  border-color: var(--emerald-border);
+}
+.thw-pill.neg {
+  color: var(--negative);
+  background: var(--negative-bg);
+  border-color: var(--negative);
+}
+.thw-pill.mut {
+  color: var(--text-faint);
+}
+.thw-hero-left .thw-chart-card {
+  margin-top: 16px;
+}
+
+.thw-hero-right {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-left: 1px solid var(--border-secondary);
+  padding-left: 24px;
+}
+.thw-assign-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.thw-assign {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  padding: 9px 11px;
+  border: 1px solid var(--border-primary);
+  border-left: 3px solid var(--emerald);
+  border-radius: 8px;
+  background: var(--surface-card);
+  cursor: pointer;
+  font-family: inherit;
+  color: inherit;
+  transition:
+    background 0.12s ease-out,
+    border-color 0.12s ease-out;
+}
+.thw-assign:hover {
+  background: var(--surface-card-hover);
+}
+.thw-assign.urgent {
+  border-left-color: var(--negative);
+}
+.thw-assign-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.thw-assign-due {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 10px;
+  color: var(--text-faint);
+}
+.thw-hero-cta {
+  margin-top: auto;
+  padding-top: 14px;
+}
+
+/* ── Sector desk — ROI leaderboard ──────────────────────────────── */
+.thw-sector-rows {
+  display: flex;
+  flex-direction: column;
+}
+.thw-sector-row {
+  display: grid;
+  grid-template-columns: 22px minmax(120px, 1.4fr) minmax(60px, 2fr) 56px auto;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  text-align: left;
+  padding: 11px 20px;
+  border-top: 1px solid var(--border-secondary);
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  color: inherit;
+  transition: background 0.12s ease-out;
+}
+.thw-sector-row:first-child {
+  border-top: none;
+}
+.thw-sector-row:hover {
+  background: var(--surface-card-hover);
+}
+.thw-sector-rank {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-ghost);
+}
+.thw-sector-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.thw-sector-bar {
+  display: block;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--surface-card-hover);
+  overflow: hidden;
+}
+.thw-sector-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--emerald);
+}
+.thw-sector-fill.neg {
+  background: var(--negative);
+}
+.thw-sector-roi {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--emerald);
+  text-align: right;
+}
+.thw-sector-roi.neg {
+  color: var(--negative);
+}
+.thw-sector-tkrs {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+}
+.thw-sector-tkrs .thw-tkr {
+  font-size: 8.5px;
+  padding: 1px 4px;
+}
+
+/* ── Bottom row — tasks + deadlines (equal height) ──────────────── */
+.thw-bottom {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 18px;
+  align-items: stretch;
+}
+.thw-deadlines {
+  display: flex;
+  flex-direction: column;
+}
+.thw-deadlines-body {
+  flex: 1;
 }
 
 /* Task management — dotted-rule rows */
@@ -758,7 +756,7 @@ body.light-mode .thw-root {
   text-decoration-color: var(--text-ghost);
 }
 
-/* Deadlines — editorial cards (urgency carried in red text/flag) */
+/* Deadlines — editorial cards */
 .thw-deadline {
   display: flex;
   align-items: center;
@@ -795,63 +793,7 @@ body.light-mode .thw-root {
   flex-shrink: 0;
 }
 
-/* Organization */
-.thw-you {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  border-radius: 10px;
-  border: 1px solid var(--border-primary);
-  background: var(--surface-card);
-}
-.thw-you-name {
-  font-size: 13.5px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-.thw-you-role {
-  font-size: 11.5px;
-  color: var(--text-muted);
-  margin-top: 1px;
-}
-.thw-avatar {
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-mono);
-  font-weight: 700;
-  flex-shrink: 0;
-}
-/* Neutral-in-palette tiers: leadership bold, PM muted, analyst green. */
-.thw-avatar.exec {
-  background: var(--surface-card);
-  color: var(--text-primary);
-  border: 1.5px solid var(--border-hover);
-}
-.thw-avatar.pm {
-  background: var(--surface-card);
-  color: var(--text-muted);
-  border: 1.5px solid var(--border-primary);
-}
-.thw-avatar.an {
-  background: var(--emerald-bg);
-  color: var(--emerald);
-  border: 1.5px solid var(--emerald-border);
-}
-.thw-avatar-stack {
-  display: flex;
-}
-.thw-avatar-stack .thw-avatar {
-  margin-left: -8px;
-  box-shadow: 0 0 0 3px var(--bg-primary);
-}
-.thw-avatar-stack .thw-avatar:first-child {
-  margin-left: 0;
-}
-
-/* Status badges — square editorial tags */
+/* ── Status badges ──────────────────────────────────────────────── */
 .thw-badge {
   display: inline-flex;
   align-items: center;
@@ -881,11 +823,10 @@ body.light-mode .thw-root {
   border-color: var(--negative);
 }
 .thw-badge-info {
-  background: var(--thw-accent);
-  color: var(--thw-accent-text);
-  border-color: var(--thw-accent);
+  background: var(--emerald-bg);
+  color: var(--emerald);
+  border-color: var(--emerald-border);
 }
-/* Clickable status badge (task progression) */
 button.thw-badge-btn {
   cursor: pointer;
   font-family: var(--font-mono);
@@ -898,7 +839,130 @@ button.thw-badge-btn:disabled {
   cursor: default;
 }
 
-/* ── Loading skeleton ──────────────────────────────────────── */
+/* ── Fund chart (reused rendering) ──────────────────────────────── */
+.thw-chart-card {
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+  padding: 12px 16px 6px;
+  background: var(--surface-card);
+}
+.thw-chart-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.thw-chart-head--bare {
+  justify-content: flex-end;
+}
+.thw-chart-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.thw-ranges {
+  display: flex;
+  gap: 4px;
+}
+.thw-range {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 10.5px;
+  padding: 5px 11px;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-primary);
+  cursor: pointer;
+  transition:
+    color 0.12s ease-out,
+    border-color 0.12s ease-out,
+    background 0.12s ease-out;
+}
+.thw-range:hover {
+  color: var(--text-secondary);
+  border-color: var(--border-hover);
+}
+.thw-range.active {
+  color: #fff;
+  background: var(--emerald);
+  border-color: var(--emerald);
+}
+body.light-mode .thw-range.active {
+  color: #fff;
+}
+.thw-chart {
+  height: 150px;
+  margin-top: 12px;
+  position: relative;
+  cursor: crosshair;
+}
+.thw-chart svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.thw-chart-cross {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--border-hover);
+  pointer-events: none;
+  transform: translateX(-0.5px);
+}
+.thw-chart-dot {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--emerald);
+  border: 2px solid var(--surface-card);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.thw-chart-tip {
+  position: absolute;
+  top: 2px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 4px 9px;
+  border-radius: 7px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-hover);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 2;
+}
+.thw-chart-tip-val {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.thw-chart-tip-date {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  color: var(--text-faint);
+}
+.thw-axis {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 9.5px;
+  color: var(--text-ghost);
+  padding: 8px 2px 6px;
+}
+
+/* ── Loading skeleton ───────────────────────────────────────────── */
 .thw-skel {
   background: var(--surface-card-hover);
   border-radius: 6px;
@@ -914,306 +978,90 @@ button.thw-badge-btn:disabled {
   }
 }
 
-/* ── Color-family accent system (E2) ───────────────────────────
-   A card / calendar item / chip opts into a family via data-accent; every
-   family resolves to --fam (line/text) + --fam-bg (tint). Never hardcode the
-   hex per element — it all routes through these vars. */
-[data-accent='fund'] {
-  --fam: var(--fam-fund);
-  --fam-bg: var(--fam-fund-bg);
+/* ════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ════════════════════════════════════════════════════════════ */
+@media (max-width: 1080px) {
+  .thw-shell {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  /* Rail collapses to a horizontal scroll row above the content. */
+  .thw-sidebar {
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+  }
+  .thw-vp {
+    flex: 1 1 auto;
+  }
+  .thw-nav-group {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
+    flex: 1 1 100%;
+  }
+  .thw-nav-label {
+    display: none;
+  }
+  .thw-nav-item {
+    width: auto;
+  }
+  /* Below the rail split the paged transform math (fixed 5-per-page) no longer
+     matches the card width, so fall back to a plain horizontal scroll and hide
+     the pager arrows — every card stays reachable. */
+  .thw-cal-arrow {
+    display: none;
+  }
+  .thw-cal-viewport {
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+  .thw-cal-track {
+    transform: none !important;
+  }
+  .thw-cal-card {
+    width: 200px;
+  }
 }
-[data-accent='pitch'] {
-  --fam: var(--fam-pitch);
-  --fam-bg: var(--fam-pitch-bg);
-}
-[data-accent='meeting'] {
-  --fam: var(--fam-meeting);
-  --fam-bg: var(--fam-meeting-bg);
-}
-[data-accent='research'] {
-  --fam: var(--fam-research);
-  --fam-bg: var(--fam-research-bg);
-}
-[data-accent='flag'] {
-  --fam: var(--fam-flag);
-  --fam-bg: var(--fam-flag-bg);
-}
-/* Card family rail (inset so it respects the radius and never clips content)
-   plus a family-tinted header icon. */
-.thw-card[data-accent] {
-  box-shadow: inset 3px 0 0 var(--fam);
-}
-.thw-card[data-accent] .thw-card-title svg {
-  color: var(--fam);
-}
-
-/* ── Slim context topbar (replaces the fund-value hero) ──────── */
-.thw-topbar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px 36px 0;
-}
-
-/* ── Fund calendar — "This week in the fund" ───────────────────
-   Card-chrome day cells in one aligned auto-fill grid; each event carries its
-   family accent (gold pitch, blue meeting, violet assignment, red flag). */
-.thw-cal-section {
-  padding: 16px 36px 0;
-}
-.thw-cal-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-  gap: 12px;
-  margin-top: 12px;
-}
-.thw-cal-item {
-  display: block;
-  text-align: left;
-  padding: 12px 14px 12px 16px;
-  border: 1px solid var(--border-primary);
-  border-radius: 12px;
-  background: var(--surface-card);
-  box-shadow: inset 3px 0 0 var(--fam, var(--border-hover));
-  cursor: pointer;
-  font-family: inherit;
-  color: inherit;
-  transition:
-    background 0.12s ease-out,
-    border-color 0.12s ease-out;
-}
-.thw-cal-item:hover {
-  background: var(--surface-card-hover);
-  border-color: var(--border-hover);
-}
-.thw-cal-date {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 6px;
-  font-family: var(--font-mono);
-  margin-bottom: 7px;
-}
-.thw-cal-wd {
-  font-size: 9px;
-  letter-spacing: 0.12em;
-  color: var(--text-faint);
-}
-.thw-cal-md {
-  font-size: 12.5px;
-  font-weight: 700;
-  color: var(--fam, var(--text-primary));
-}
-.thw-cal-title {
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--text-primary);
-  line-height: 1.25;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.thw-cal-meta {
-  margin-top: 4px;
-  font-size: 10.5px;
-  color: var(--text-faint);
-  font-family: var(--font-mono);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* ── Command Center — fund panel + assignments strip ─────────── */
-.thw-cc-fund {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  width: 100%;
-  text-align: left;
-  padding: 12px 14px;
-  border: 1px solid var(--border-primary);
-  border-radius: 10px;
-  background: var(--fam-fund-bg);
-  cursor: pointer;
-  font-family: inherit;
-  color: inherit;
-  transition:
-    border-color 0.12s ease-out,
-    background 0.12s ease-out;
-}
-.thw-cc-fund:hover {
-  border-color: var(--emerald-border);
-}
-.thw-cc-fund-main {
-  min-width: 0;
-}
-.thw-cc-fund-label {
-  display: block;
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-  color: var(--text-faint);
-}
-.thw-cc-fund-value {
-  display: block;
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  font-size: 30px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  color: var(--text-primary);
-  line-height: 1.05;
-  margin: 3px 0 6px;
-}
-.thw-cc-fund-metrics {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 10px;
-  font-family: var(--font-mono);
-  font-size: 11.5px;
-}
-.thw-cc-fund-metrics .pos {
-  color: var(--emerald);
-}
-.thw-cc-fund-metrics .neg {
-  color: var(--negative);
-}
-.thw-cc-fund-metrics .mut {
-  color: var(--text-faint);
-}
-.thw-cc-fund-go {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  flex-shrink: 0;
-  font-family: var(--font-sans);
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--emerald);
-  white-space: nowrap;
-}
-/* Command Center's fund chart is compact (fits under the value panel). */
-.thw-chart-card--compact {
-  margin-top: 10px;
-  padding: 10px 12px 4px;
-}
-.thw-chart-card--compact .thw-chart {
-  height: 92px;
-  margin-top: 8px;
-}
-.thw-chart-card--compact .thw-axis {
-  padding: 6px 2px 2px;
-}
-
-.thw-cc-assign {
-  margin-top: 14px;
-}
-.thw-cc-assign-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 6px;
-}
-.thw-cc-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  max-width: 100%;
-  padding: 5px 9px;
-  border-radius: 8px;
-  border: 1px solid var(--border-primary);
-  background: var(--fam-bg, var(--surface-card));
-  box-shadow: inset 2px 0 0 var(--fam, var(--border-hover));
-  cursor: pointer;
-  font-family: var(--font-sans);
-  color: var(--text-primary);
-  transition: border-color 0.12s ease-out;
-}
-.thw-cc-chip:hover {
-  border-color: var(--border-hover);
-}
-.thw-cc-chip-title {
-  font-size: 11px;
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 170px;
-}
-.thw-cc-chip-due {
-  font-family: var(--font-mono);
-  font-size: 9.5px;
-  color: var(--fam, var(--text-faint));
-  flex-shrink: 0;
-}
-
-/* ── Responsive ────────────────────────────────────────────── */
-@media (max-width: 1180px) {
+@media (max-width: 860px) {
   .thw-hero {
     grid-template-columns: 1fr;
-    gap: 22px;
-    padding: 24px 20px;
   }
-  .thw-sectors,
-  .thw-cal-section {
-    padding: 18px 20px 0;
-  }
-  .thw-topbar {
-    padding: 14px 20px 0;
-  }
-  .thw-sector-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-  .thw-sector:nth-child(4n + 1) {
+  .thw-hero-right {
     border-left: none;
+    border-top: 1px solid var(--border-secondary);
+    padding-left: 0;
+    padding-top: 18px;
+    margin-top: 4px;
   }
-  .thw-bento {
-    padding: 20px 20px 32px;
-  }
-  .thw-span8,
-  .thw-span7,
-  .thw-span5,
-  .thw-span4,
-  .thw-span3 {
-    grid-column: span 6;
-  }
-}
-@media (max-width: 720px) {
-  .thw-display {
-    font-size: 42px;
-  }
-  .thw-sector-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .thw-sector:nth-child(2n + 1) {
-    border-left: none;
-  }
-  .thw-bento {
+  .thw-bottom {
     grid-template-columns: 1fr;
   }
-  .thw-span8,
-  .thw-span7,
-  .thw-span5,
-  .thw-span4,
-  .thw-span3 {
-    grid-column: span 1;
+}
+@media (max-width: 620px) {
+  .thw-fund-value {
+    font-size: 36px;
   }
-  .thw-digest-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .thw-header {
+    align-items: flex-start;
   }
-  .thw-cell:nth-child(3n + 1) {
-    border-left: 1px solid var(--border-secondary);
+  .thw-search {
+    min-width: 0;
+    width: 100%;
   }
-  .thw-cell:nth-child(2n + 1) {
-    border-left: none;
+  .thw-cal-card {
+    width: 168px;
   }
-  .thw-cell:nth-child(-n + 2) {
-    border-top: none;
+  .thw-sector-row {
+    grid-template-columns: 20px minmax(0, 1fr) 52px;
+    gap: 10px;
   }
-  .thw-cell:nth-child(3) {
-    border-top: 1px solid var(--border-secondary);
+  /* Drop the bar + ticker columns on narrow screens; rank / name / ROI stay. */
+  .thw-sector-bar,
+  .thw-sector-tkrs {
+    display: none;
   }
 }

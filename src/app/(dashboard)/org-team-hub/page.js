@@ -15,13 +15,13 @@ import {
   Trophy,
   Shield,
   FileText,
-  Archive,
+  KeyRound,
   GraduationCap,
+  Command,
   Search,
-  Pin,
-  Flame,
   Clock,
-  Calendar,
+  ChevronLeft,
+  ChevronRight,
   ArrowRight,
 } from 'lucide-react';
 import { useOrg } from '@/contexts/OrgContext';
@@ -34,7 +34,9 @@ import {
 } from '@/lib/orgMockData';
 import './team-hub-wire.css';
 
-/* ── Team Hub destinations (the 14 pinnable shortcuts) ─────────── */
+/* ── Team Hub destinations (the 14 sidebar shortcuts) ──────────────
+   The `archive` slot is repurposed as "Team Permissions" (highlighted at the
+   foot of the Tools group). The rest are split into two nav groups by id. */
 const ACTIONS = [
   { id: 'org', label: 'Org Chart', Icon: Users, href: '/org-team-hub/org-chart' },
   { id: 'pitch', label: 'Pitch Pipeline', Icon: Presentation, href: '/org-team-hub/pitches' },
@@ -64,7 +66,35 @@ const ACTIONS = [
   { id: 'cohorts', label: 'Cohorts', Icon: GraduationCap, href: '/org-team-hub/cohorts' },
   { id: 'compliance', label: 'Compliance', Icon: Shield, href: '/org-team-hub/compliance' },
   { id: 'reports', label: 'Reports', Icon: FileText, href: '/org-team-hub/reports' },
-  { id: 'archive', label: 'Archive', Icon: Archive, href: '/org-team-hub/pitch-archive' },
+  {
+    id: 'permissions',
+    label: 'Team Permissions',
+    Icon: KeyRound,
+    href: '/org-team-hub/permissions',
+  },
+];
+const ACTION_BY_ID = Object.fromEntries(ACTIONS.map((a) => [a.id, a]));
+
+// Synthetic "current page" nav item — Command Center is this page.
+const NAV_CURRENT = {
+  id: '__cc',
+  label: 'Command Center',
+  Icon: Command,
+  href: '/org-team-hub',
+};
+const NAV_COMMAND_IDS = ['trading', 'analytics', 'assignments'];
+const NAV_TOOL_IDS = [
+  'org',
+  'pitch',
+  'research',
+  'meetings',
+  'recognition',
+  'grades',
+  'competitions',
+  'cohorts',
+  'compliance',
+  'reports',
+  'permissions',
 ];
 
 const ROLE_LABEL = {
@@ -83,13 +113,6 @@ function fmtSignedPct(n, digits = 1) {
   const v = Number(n);
   return `${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(digits)}%`;
 }
-function fmtCompactMoney(n) {
-  if (n == null || !Number.isFinite(Number(n))) return '—';
-  const v = Number(n);
-  if (Math.abs(v) >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
-  if (Math.abs(v) >= 1000) return `$${Math.round(v / 1000)}K`;
-  return `$${Math.round(v)}`;
-}
 function initials(name) {
   return (name || '')
     .split(' ')
@@ -106,6 +129,18 @@ function monthLabel(dateStr, withDay = false) {
 function dueLabel(dateStr) {
   const d = new Date(dateStr);
   return d.toLocaleString('en-US', { month: 'short', day: 'numeric' });
+}
+// Compact mono date for the calendar strip: "APR 12".
+function calChip(iso) {
+  const d = new Date(iso);
+  return d
+    .toLocaleString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })
+    .toUpperCase();
+}
+// Turn a title like "VP of Operations" into the mono eyebrow "VP · OPERATIONS".
+function roleEyebrow(title) {
+  if (!title) return 'MEMBER';
+  return title.toUpperCase().replace(/\s+OF\s+/g, ' · ');
 }
 
 /* ── Skeleton block ───────────────────────────────────────────── */
@@ -160,68 +195,11 @@ function useTeamHubData(enabled) {
   return { summary, digest, tasksData, loading, reloadTasks, setTasksData };
 }
 
-/* ── Ticker tape (live wire from the weekly digest) ───────────── */
-function buildTickerItems(digest) {
-  if (!digest) return [];
-  const out = [];
-  for (const p of digest.newPitches || []) {
-    out.push({ lbl: 'NEW PITCH', tone: 'in', t: p.ticker, detail: p.company_name });
-  }
-  for (const p of digest.positions || []) {
-    out.push({
-      lbl: 'POSITION',
-      tone: 'em',
-      t: p.ticker_symbol,
-      pos: `+${Math.round(Number(p.shares) || 0)} SH`,
-    });
-  }
-  for (const m of digest.movers || []) {
-    const up = (m.alpha_pct ?? 0) >= 0;
-    out.push({
-      lbl: 'MOVER',
-      tone: up ? 'em' : 'rd',
-      t: m.ticker,
-      [up ? 'pos' : 'neg']: `${up ? '+' : '−'}${Math.abs(m.alpha_pct).toFixed(1)}% ALPHA`,
-    });
-  }
-  for (const r of digest.recognitions || []) {
-    out.push({ lbl: 'RECOGNITION', tone: 'am', detail: `${r.title} — `, b: r.recipient_name });
-  }
-  for (const n of digest.notes || []) {
-    out.push({ lbl: 'RESEARCH', tone: 'in', t: n.ticker || undefined, detail: n.title });
-  }
-  return out;
-}
-
-function Ticker({ digest, loading }) {
-  const items = useMemo(() => buildTickerItems(digest), [digest]);
-  // Hidden until live data arrives; with no weekly activity the wire stays off.
-  if (loading || items.length === 0) return null;
-
-  const renderItem = (it, key) => (
-    <span key={key} className="thw-tick">
-      <span className={`thw-lbl ${it.tone}`}>{it.lbl}</span>
-      {it.t && <b>{it.t}</b>}
-      {it.detail && <span>{it.detail}</span>}
-      {it.b && <b>{it.b}</b>}
-      {it.pos && <span className="pos">{it.pos}</span>}
-      {it.neg && <span className="neg">{it.neg}</span>}
-    </span>
-  );
-
-  return (
-    <div className="thw-ticker" aria-label="This week in the fund — wire">
-      <div className="thw-ticker-track">
-        {items.map((it, i) => renderItem(it, `a-${i}`))}
-        {items.map((it, i) => renderItem(it, `b-${i}`))}
-      </div>
-    </div>
-  );
-}
-
-/* ── Hero fund-value chart (live snapshots, range-switchable) ─── */
-const RANGES = ['1W', '1M', '3M', 'YTD'];
-const RANGE_DAYS = { '1W': 7, '1M': 31, '3M': 92 };
+/* ── Fund-value chart (live snapshots, timeframe-switchable) ─────
+   Timeframes: 1M / 3M / YTD / 1Y. sliceSnapshots re-scopes the series;
+   1Y falls through to the 365-day window. */
+const RANGES = ['1M', '3M', 'YTD', '1Y'];
+const RANGE_DAYS = { '1M': 31, '3M': 92, '1Y': 365 };
 
 function buildChart(cur, prev) {
   const W = 800;
@@ -270,7 +248,7 @@ function sliceSnapshots(snapshots, range) {
   return pts.length >= 2 ? pts : snapshots;
 }
 
-function FundChart({ snapshots, loading, compact = false }) {
+function FundChart({ snapshots, loading, showLabel = true }) {
   const [range, setRange] = useState('YTD');
   const [hover, setHover] = useState(null);
   const chartRef = useRef(null);
@@ -279,7 +257,7 @@ function FundChart({ snapshots, loading, compact = false }) {
   const view = useMemo(() => {
     if (!live) return null;
     const pts = sliceSnapshots(live, range);
-    const withDay = range === '1W' || range === '1M';
+    const withDay = range === '1M';
     const cur = pts.map((p) => p.value);
     const bench = pts.map((p) => p.benchmarkValue);
     const prev = bench.every((b) => b != null && Number.isFinite(b)) ? bench : null;
@@ -321,12 +299,14 @@ function FundChart({ snapshots, loading, compact = false }) {
   const topPct = hp ? (hp.y / geom.H) * 100 : 0;
 
   return (
-    <div className={`thw-chart-card${compact ? ' thw-chart-card--compact' : ''}`}>
-      <div className="thw-chart-head">
-        <span className="thw-chart-label">
-          Fund value{months ? ` · trailing ${months} months` : ''}
-        </span>
-        <div className="thw-ranges">
+    <div className="thw-chart-card">
+      <div className={`thw-chart-head${showLabel ? '' : ' thw-chart-head--bare'}`}>
+        {showLabel && (
+          <span className="thw-chart-label">
+            Fund value{months ? ` · trailing ${months} months` : ''}
+          </span>
+        )}
+        <div className="thw-ranges" role="group" aria-label="Chart timeframe">
           {RANGES.map((r) => (
             <button
               key={r}
@@ -431,8 +411,217 @@ function FundChart({ snapshots, loading, compact = false }) {
   );
 }
 
-/* ── Sector desk (live team sleeves ranked by ROI) ────────────── */
-function SectorDesk({ sectors, cohort, loading, onOpen }) {
+/* ── Left sidebar — VP identity + Command / Tools nav ─────────── */
+function SidebarNav({ identityName, identityTitle, onGo }) {
+  const renderItem = (item) => {
+    const Icon = item.Icon;
+    const cls = [
+      'thw-nav-item',
+      item.id === NAV_CURRENT.id ? 'active' : '',
+      item.id === 'permissions' ? 'highlight' : '',
+    ]
+      .filter(Boolean)
+      .join(' ');
+    return (
+      <button
+        key={item.id}
+        type="button"
+        className={cls}
+        aria-current={item.id === NAV_CURRENT.id ? 'page' : undefined}
+        onClick={() => onGo(item.href)}
+      >
+        <Icon size={15} strokeWidth={1.8} />
+        <span>{item.label}</span>
+      </button>
+    );
+  };
+
+  return (
+    <aside className="thw-sidebar" aria-label="Team Hub navigation">
+      <div className="thw-vp">
+        <div className="thw-vp-avatar">{initials(identityName) || 'VP'}</div>
+        <div className="thw-vp-meta">
+          <div className="thw-vp-eyebrow">{roleEyebrow(identityTitle)}</div>
+          <div className="thw-vp-name">{identityName}</div>
+        </div>
+      </div>
+
+      <nav className="thw-nav-group" aria-label="Command">
+        <div className="thw-nav-label">Command</div>
+        {renderItem(NAV_CURRENT)}
+        {NAV_COMMAND_IDS.map((id) => renderItem(ACTION_BY_ID[id]))}
+      </nav>
+
+      <nav className="thw-nav-group" aria-label="Tools">
+        <div className="thw-nav-label">Tools</div>
+        {NAV_TOOL_IDS.map((id) => renderItem(ACTION_BY_ID[id]))}
+      </nav>
+    </aside>
+  );
+}
+
+/* ── Paged "This week in the fund" calendar strip ─────────────── */
+const CAL_PER_PAGE = 5;
+const CAL_GAP = 12; // px — must match .thw-cal-track gap
+
+function CalendarStrip({ items, loading, onOpen, onOpenAll }) {
+  const [page, setPage] = useState(0);
+  const rows = items || [];
+  const pages = Math.max(1, Math.ceil(rows.length / CAL_PER_PAGE));
+  const lastPage = pages - 1;
+
+  // Keep the page index inside bounds if the data length changes.
+  useEffect(() => {
+    setPage((p) => Math.min(Math.max(0, p), lastPage));
+  }, [lastPage]);
+  const clamped = Math.min(Math.max(0, page), lastPage);
+
+  return (
+    <section className="thw-cal" aria-label="This week in the fund">
+      <div className="thw-cal-head">
+        <div className="thw-cal-nav">
+          <button
+            type="button"
+            className="thw-cal-arrow"
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            disabled={clamped === 0}
+            aria-label="Previous week"
+          >
+            <ChevronLeft size={16} strokeWidth={2} />
+          </button>
+          <button
+            type="button"
+            className="thw-cal-arrow"
+            onClick={() => setPage((p) => Math.min(lastPage, p + 1))}
+            disabled={clamped >= lastPage}
+            aria-label="Next week"
+          >
+            <ChevronRight size={16} strokeWidth={2} />
+          </button>
+          <span className="thw-cal-title">This week in the fund</span>
+        </div>
+        <button type="button" className="thw-link" onClick={onOpenAll}>
+          Fund calendar <ArrowRight size={13} strokeWidth={2} />
+        </button>
+      </div>
+
+      <div className="thw-cal-viewport">
+        {loading ? (
+          <div className="thw-cal-track" aria-hidden="true">
+            {Array.from({ length: CAL_PER_PAGE }).map((_, i) => (
+              <div key={i} className="thw-cal-card">
+                <Skel w={52} h={11} />
+                <div style={{ marginTop: 8 }}>
+                  <Skel w="90%" h={12} />
+                </div>
+                <div style={{ marginTop: 8 }}>
+                  <Skel w={40} h={10} />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div
+            className="thw-cal-track"
+            style={{
+              transform: `translateX(calc(-1 * ${clamped} * (100% + ${CAL_GAP}px)))`,
+            }}
+          >
+            {rows.map((it) => (
+              <button key={it.id} type="button" className="thw-cal-card" onClick={() => onOpen(it)}>
+                <span className="thw-cal-date">{calChip(it.date)}</span>
+                <span className="thw-cal-card-title">{it.title}</span>
+                <span className="thw-cal-tag">{it.team}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+/* ── Command Center hero — fund value + chart + my assignments ── */
+function CommandHero({ fund, snapshots, tasksData, loading, onOpenTrading }) {
+  // My open, due-dated assignments — live when present, else the mock universe.
+  const liveAssign = (tasksData?.tasks || []).filter(
+    (t) => t.mine && t.status !== 'completed' && t.due_date,
+  );
+  const assignSrc = liveAssign.length
+    ? liveAssign
+    : MOCK_TASKS.filter((t) => t.status !== 'completed' && t.due_date);
+  const assignments = assignSrc.slice(0, 5).map((t) => ({
+    id: t.id,
+    title: t.title,
+    due: dueLabel(t.due_date),
+    urgent: t.priority === 'urgent',
+  }));
+
+  const returnPos = (fund?.return_pct ?? 0) >= 0;
+  const alphaPos = (fund?.alpha_pct ?? 0) >= 0;
+
+  return (
+    <section className="thw-card thw-hero" aria-label="Command Center">
+      <div className="thw-hero-left">
+        <button
+          type="button"
+          className="thw-fund"
+          onClick={onOpenTrading}
+          aria-label="Open Trading Desk"
+        >
+          <span className="thw-fund-label">Fund value</span>
+          <span className="thw-fund-value">
+            {loading ? <Skel w={190} h={40} /> : fmtMoney(fund?.total_value)}
+          </span>
+          <span className="thw-fund-pills">
+            <span className={`thw-pill ${returnPos ? 'pos' : 'neg'}`}>
+              {fmtSignedPct(fund?.return_pct)} return
+            </span>
+            <span className={`thw-pill ${alphaPos ? 'pos' : 'neg'}`}>
+              {fmtSignedPct(fund?.alpha_pct)} alpha
+            </span>
+            <span className="thw-pill mut">
+              S&amp;P 500 {fmtSignedPct(fund?.benchmark_return_pct)}
+            </span>
+          </span>
+        </button>
+        <FundChart snapshots={snapshots} loading={loading} showLabel={false} />
+      </div>
+
+      <div className="thw-hero-right">
+        <div className="thw-col-label">
+          <ClipboardList size={12} strokeWidth={1.8} /> My assignments · due
+        </div>
+        <div className="thw-assign-list">
+          {assignments.length === 0 ? (
+            <span className="thw-empty" style={{ padding: 0 }}>
+              Nothing due — you&apos;re clear.
+            </span>
+          ) : (
+            assignments.map((a) => (
+              <button
+                key={a.id}
+                type="button"
+                className={`thw-assign${a.urgent ? ' urgent' : ''}`}
+                onClick={onOpenTrading}
+                title={a.title}
+              >
+                <span className="thw-assign-title">{a.title}</span>
+                <span className="thw-assign-due">{a.due}</span>
+              </button>
+            ))
+          )}
+        </div>
+        <button type="button" className="thw-link thw-hero-cta" onClick={onOpenTrading}>
+          Open Trading Desk <ArrowRight size={13} strokeWidth={2} />
+        </button>
+      </div>
+    </section>
+  );
+}
+
+/* ── Sector Desk — ROI leaderboard ────────────────────────────── */
+function SectorDesk({ sectors, loading, onOpen }) {
   const fallback = useMemo(
     () =>
       [...MOCK_TEAM_PERFORMANCE]
@@ -449,370 +638,58 @@ function SectorDesk({ sectors, cohort, loading, onOpen }) {
 
   const live = Array.isArray(sectors) && sectors.some((s) => s.value > 0) ? sectors : null;
   const rows = live || (loading ? [] : fallback);
+  const topRoi = Math.max(0.0001, ...rows.map((r) => Math.abs(r.roiPct ?? 0)));
 
   return (
-    <section className="thw-sectors" aria-label="Sector desk">
-      <div className="thw-section-head">
-        <span className="thw-eyebrow">Sector desk</span>
-        <span className="thw-section-meta">
-          RANKED BY ROI{cohort ? ` · ${cohort.toUpperCase()}` : ''}
-        </span>
-      </div>
-      <div className="thw-sector-grid">
-        {loading && !live
-          ? Array.from({ length: 7 }).map((_, i) => (
-              <div key={i} className="thw-sector" aria-hidden="true">
-                <Skel w={22} h={10} />
-                <div style={{ marginTop: 8 }}>
-                  <Skel w="80%" h={12} />
-                </div>
-                <div style={{ marginTop: 10 }}>
-                  <Skel w={64} h={16} />
-                </div>
-                <div style={{ marginTop: 8 }}>
-                  <Skel w={40} h={10} />
-                </div>
-              </div>
-            ))
-          : rows.map((s, i) => (
-              <button
-                key={s.teamId || s.name}
-                type="button"
-                className="thw-sector"
-                onClick={onOpen}
-              >
-                <div className="thw-sector-rank">#{i + 1}</div>
-                <div className="thw-sector-name">{s.name}</div>
-                <div className={`thw-sector-roi${(s.roiPct ?? 0) < 0 ? ' neg' : ''}`}>
-                  {s.roiPct == null ? '—' : `${fmtSignedPct(s.roiPct)} ROI`}
-                </div>
-                <div className="thw-sector-val">{fmtCompactMoney(s.value)}</div>
-                <div className="thw-sector-tkrs">
-                  {(s.tickers || []).map((t) => (
-                    <span key={t} className="thw-tkr">
-                      {t}
-                    </span>
-                  ))}
-                </div>
-              </button>
-            ))}
-      </div>
-    </section>
-  );
-}
-
-/* ── This week in the fund (live digest) ──────────────────────── */
-function DigestCell({ label, count, loading, emptyCopy, children }) {
-  return (
-    <div className="thw-cell">
-      <div className="thw-col-label">{label}</div>
-      {loading ? (
-        <>
-          <div className="thw-cell-count">
-            <Skel w={26} h={21} />
-          </div>
-          <Skel w="90%" h={11} style={{ marginTop: 6 }} />
-        </>
-      ) : (
-        <>
-          <div className={`thw-cell-count${count === 0 ? ' ghost' : ''}`}>{count}</div>
-          {count === 0 ? (
-            <div className="thw-empty" style={{ padding: '2px 0' }}>
-              {emptyCopy}
-            </div>
-          ) : (
-            children
-          )}
-        </>
-      )}
-    </div>
-  );
-}
-
-function Digest({ digest, loading }) {
-  const pitches = digest?.newPitches || [];
-  const positions = digest?.positions || [];
-  const movers = digest?.movers || [];
-  const votes = digest?.votes || [];
-  const notes = digest?.notes || [];
-  const recognitions = digest?.recognitions || [];
-
-  return (
-    <section className="thw-card thw-span7" data-accent="fund" aria-label="Fund activity">
+    <section className="thw-card thw-sectors" aria-label="Sector desk">
       <div className="thw-card-head">
         <span className="thw-card-title">
-          <Flame size={15} strokeWidth={1.8} /> Fund activity
+          <TrendingUp size={15} strokeWidth={1.8} /> Sector desk
         </span>
-        <span className="thw-section-meta">LAST 7 DAYS</span>
+        <span className="thw-section-meta">RANKED BY ROI</span>
       </div>
-      <div className="thw-digest-grid">
-        <DigestCell
-          label="New pitches"
-          count={pitches.length}
-          loading={loading}
-          emptyCopy="No new pitches this week."
-        >
-          {pitches.slice(0, 3).map((p) => (
-            <div key={p.id || p.ticker} className="thw-cell-line">
-              <span className="thw-tkr">{p.ticker}</span>
-              <span className="thw-nm">{p.company_name}</span>
-            </div>
-          ))}
-        </DigestCell>
-        <DigestCell
-          label="Positions opened"
-          count={positions.length}
-          loading={loading}
-          emptyCopy="No positions opened this week."
-        >
-          {positions.slice(0, 3).map((p) => (
-            <div key={p.id || p.ticker_symbol} className="thw-cell-line">
-              <span className="thw-tkr">{p.ticker_symbol}</span>
-              <span className="thw-d">{`+${Math.round(Number(p.shares) || 0)} sh`}</span>
-            </div>
-          ))}
-        </DigestCell>
-        <DigestCell
-          label="Performance movers"
-          count={movers.length}
-          loading={loading}
-          emptyCopy="No outcome data yet."
-        >
-          {movers.slice(0, 3).map((m) => {
-            const up = (m.alpha_pct ?? 0) >= 0;
-            return (
-              <div key={m.ticker} className="thw-cell-line">
-                <span className={`thw-tkr${up ? ' em' : ''}`}>{m.ticker}</span>
-                <span className={`thw-d ${up ? 'pos' : 'neg'}`}>
-                  {`${up ? '+' : '−'}${Math.abs(m.alpha_pct).toFixed(1)}% alpha`}
-                </span>
-              </div>
-            );
-          })}
-        </DigestCell>
-        <DigestCell
-          label="Votes cast"
-          count={votes.length}
-          loading={loading}
-          emptyCopy="No committee votes this week."
-        >
-          {votes.slice(0, 3).map((v) => (
-            <div key={v.id} className="thw-cell-line">
-              {v.ticker && <span className="thw-tkr">{v.ticker}</span>}
-              <span className="thw-nm" style={{ textTransform: 'capitalize' }}>
-                {String(v.vote || '').replace('_', ' ')}
-              </span>
-            </div>
-          ))}
-        </DigestCell>
-        <DigestCell
-          label="Research notes"
-          count={notes.length}
-          loading={loading}
-          emptyCopy="No research notes this week."
-        >
-          {notes.slice(0, 3).map((n) => (
-            <div key={n.id} className="thw-cell-line">
-              {n.ticker && <span className="thw-tkr">{n.ticker}</span>}
-              <span className="thw-nm">{n.title}</span>
-            </div>
-          ))}
-        </DigestCell>
-        <DigestCell
-          label="Recognition"
-          count={recognitions.length}
-          loading={loading}
-          emptyCopy="No recognitions this week."
-        >
-          {recognitions.slice(0, 2).map((r) => (
-            <div key={r.id} className="thw-cell-line">
-              <Trophy
-                size={13}
-                strokeWidth={1.8}
-                style={{ color: 'var(--warning)', flexShrink: 0 }}
-              />
-              <span className="thw-nm">
-                {r.title} — {r.recipient_name}
-              </span>
-            </div>
-          ))}
-        </DigestCell>
-      </div>
-    </section>
-  );
-}
-
-/* ── This week in the fund — calendar (mock events + deliverable deadlines) ─── */
-function calDate(iso) {
-  const d = new Date(iso);
-  return {
-    wd: d.toLocaleString('en-US', { weekday: 'short', timeZone: 'UTC' }).toUpperCase(),
-    md: d
-      .toLocaleString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })
-      .toUpperCase(),
-  };
-}
-
-function FundCalendar({ items, loading, onOpen }) {
-  const rows = items.slice(0, 8);
-  return (
-    <section className="thw-cal-section" aria-label="This week in the fund">
-      <div className="thw-section-head">
-        <span className="thw-card-title">
-          <Calendar size={15} strokeWidth={1.8} /> This week in the fund
-        </span>
-        <span className="thw-section-meta">FUND CALENDAR</span>
-      </div>
-      <div className="thw-cal-grid">
-        {loading
-          ? Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="thw-cal-item" aria-hidden="true">
-                <Skel w={40} h={30} />
-                <div style={{ marginTop: 8 }}>
-                  <Skel w="85%" h={12} />
-                </div>
-                <div style={{ marginTop: 6 }}>
-                  <Skel w="60%" h={10} />
-                </div>
+      <div className="thw-sector-rows">
+        {loading && !live
+          ? Array.from({ length: 7 }).map((_, i) => (
+              <div key={i} className="thw-sector-row" aria-hidden="true">
+                <Skel w={20} h={12} />
+                <Skel w={130} h={13} />
+                <Skel w="100%" h={8} style={{ borderRadius: 999 }} />
+                <Skel w={54} h={13} />
               </div>
             ))
-          : rows.map((it) => {
-              const dt = calDate(it.date);
+          : rows.map((s, i) => {
+              const roi = s.roiPct ?? 0;
+              const neg = roi < 0;
+              const width = Math.max(4, Math.min(100, (Math.abs(roi) / topRoi) * 100));
               return (
                 <button
-                  key={it.id}
+                  key={s.teamId || s.name}
                   type="button"
-                  className="thw-cal-item"
-                  data-accent={it.accent}
-                  onClick={() => onOpen(it)}
+                  className="thw-sector-row"
+                  onClick={onOpen}
                 >
-                  <div className="thw-cal-date">
-                    <span className="thw-cal-wd">{dt.wd}</span>
-                    <span className="thw-cal-md">{dt.md}</span>
-                  </div>
-                  <div className="thw-cal-title">{it.title}</div>
-                  <div className="thw-cal-meta">
-                    {it.team}
-                    {it.meta ? ` · ${it.meta}` : ''}
-                  </div>
+                  <span className="thw-sector-rank">{i + 1}</span>
+                  <span className="thw-sector-name">{s.name}</span>
+                  <span className="thw-sector-bar">
+                    <span
+                      className={`thw-sector-fill${neg ? ' neg' : ''}`}
+                      style={{ width: `${width}%` }}
+                    />
+                  </span>
+                  <span className={`thw-sector-roi${neg ? ' neg' : ''}`}>
+                    {s.roiPct == null ? '—' : fmtSignedPct(roi)}
+                  </span>
+                  <span className="thw-sector-tkrs">
+                    {(s.tickers || []).slice(0, 3).map((t) => (
+                      <span key={t} className="thw-tkr">
+                        {t}
+                      </span>
+                    ))}
+                  </span>
                 </button>
               );
             })}
-      </div>
-    </section>
-  );
-}
-
-/* ── Command Center (fund chart + numbers + assignments + 14 shortcuts) ─────── */
-function CommandCenter({ fund, snapshots, tasksData, loading, onOpenTrading, onOpenAssignments }) {
-  const router = useRouter();
-
-  // My open, due-dated assignments — live when present, else the mock universe
-  // so the strip is never empty in a demo.
-  const liveAssign = (tasksData?.tasks || []).filter(
-    (t) => t.mine && t.status !== 'completed' && t.due_date,
-  );
-  const assignSrc = liveAssign.length
-    ? liveAssign
-    : MOCK_TASKS.filter((t) => t.status !== 'completed' && t.due_date);
-  const assignments = assignSrc.slice(0, 4).map((t) => ({
-    id: t.id,
-    title: t.title,
-    due: dueLabel(t.due_date),
-    urgent: t.priority === 'urgent',
-  }));
-
-  const returnPos = (fund?.return_pct ?? 0) >= 0;
-  const alphaPos = (fund?.alpha_pct ?? 0) >= 0;
-
-  return (
-    <section className="thw-card thw-cc thw-span5" data-accent="fund" aria-label="Command Center">
-      <div className="thw-card-head">
-        <span className="thw-card-title">
-          <Pin size={15} strokeWidth={1.8} /> Command Center
-        </span>
-        <span className="thw-section-meta">FALL 2026</span>
-      </div>
-      <div className="thw-card-body" style={{ paddingTop: 12, paddingBottom: 14 }}>
-        {/* Fund value — clickable → Trading Desk (Council Trading) */}
-        <button
-          type="button"
-          className="thw-cc-fund"
-          onClick={onOpenTrading}
-          aria-label="Open Trading Desk"
-        >
-          <div className="thw-cc-fund-main">
-            <span className="thw-cc-fund-label">Fund value</span>
-            <span className="thw-cc-fund-value">
-              {loading ? <Skel w={150} h={30} /> : fmtMoney(fund?.total_value)}
-            </span>
-            <span className="thw-cc-fund-metrics">
-              <span className={returnPos ? 'pos' : 'neg'}>
-                {fmtSignedPct(fund?.return_pct)} return
-              </span>
-              <span className={alphaPos ? 'pos' : 'neg'}>
-                {fmtSignedPct(fund?.alpha_pct)} alpha
-              </span>
-              <span className="mut">vs S&amp;P 500 {fmtSignedPct(fund?.benchmark_return_pct)}</span>
-            </span>
-          </div>
-          <span className="thw-cc-fund-go">
-            Trading Desk <ArrowRight size={13} strokeWidth={2} />
-          </span>
-        </button>
-
-        {/* Compact fund chart (value vs S&P 500) */}
-        <FundChart snapshots={snapshots} loading={loading} compact />
-
-        {/* Assignments strip */}
-        <div className="thw-cc-assign">
-          <div className="thw-col-label">
-            <ClipboardList size={12} strokeWidth={1.8} /> My assignments · due
-          </div>
-          <div className="thw-cc-assign-row">
-            {assignments.length === 0 ? (
-              <span className="thw-empty" style={{ padding: 0 }}>
-                Nothing due — you&apos;re clear.
-              </span>
-            ) : (
-              assignments.map((a) => (
-                <button
-                  key={a.id}
-                  type="button"
-                  className="thw-cc-chip"
-                  data-accent={a.urgent ? 'flag' : 'research'}
-                  onClick={onOpenAssignments}
-                  title={a.title}
-                >
-                  <span className="thw-cc-chip-title">{a.title}</span>
-                  <span className="thw-cc-chip-due">{a.due}</span>
-                </button>
-              ))
-            )}
-          </div>
-        </div>
-
-        {/* 14 destination shortcuts */}
-        <div className="thw-cmd-search" aria-hidden="true">
-          <Search size={14} strokeWidth={1.8} /> Jump to anything…
-          <span className="thw-kbd">⌘K</span>
-        </div>
-        <div className="thw-tiles">
-          {ACTIONS.map((a) => {
-            const Icon = a.Icon;
-            return (
-              <button
-                key={a.id}
-                type="button"
-                className="thw-tile"
-                onClick={() => router.push(a.href)}
-              >
-                <Icon size={14} strokeWidth={1.8} />
-                {a.label}
-              </button>
-            );
-          })}
-        </div>
       </div>
     </section>
   );
@@ -839,7 +716,7 @@ function TaskManagement({ tasksData, loading, onStatusChange }) {
   };
 
   return (
-    <section className="thw-card thw-span5" data-accent="research" aria-label="Tasks">
+    <section className="thw-card thw-tasks" aria-label="Tasks">
       <div className="thw-card-head">
         <span className="thw-card-title">
           <ClipboardList size={15} strokeWidth={1.8} /> Task management
@@ -850,7 +727,7 @@ function TaskManagement({ tasksData, loading, onStatusChange }) {
       </div>
       <div className="thw-card-body">
         {loading &&
-          Array.from({ length: 4 }).map((_, i) => (
+          Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="thw-task" aria-hidden="true">
               <div className="thw-task-body" style={{ flex: 1 }}>
                 <Skel w="76%" h={13} />
@@ -865,7 +742,7 @@ function TaskManagement({ tasksData, loading, onStatusChange }) {
           <p className="thw-empty">No tasks yet — managers can assign work from the task board.</p>
         )}
         {!loading &&
-          tasks.slice(0, 6).map((t) => {
+          tasks.slice(0, 7).map((t) => {
             const st = TASK_STATUS[t.status] || TASK_STATUS.pending;
             const done = t.status === 'completed';
             const meta = [t.priority, t.description].filter(Boolean).join(' · ');
@@ -907,7 +784,7 @@ function Deadlines({ tasksData, loading, onOpenBoard }) {
     const upcoming = tasks
       .filter((t) => !t.overdue)
       .sort((a, b) => Date.parse(a.due_date) - Date.parse(b.due_date));
-    return [...overdue, ...upcoming].slice(0, 3).map((t) => ({
+    return [...overdue, ...upcoming].slice(0, 4).map((t) => ({
       id: t.id,
       title: t.title,
       meta: t.overdue
@@ -921,7 +798,7 @@ function Deadlines({ tasksData, loading, onOpenBoard }) {
   const overdueCount = tasksData?.overdueCount ?? 0;
 
   return (
-    <section className="thw-card thw-span4" data-accent="flag" aria-label="Deadlines">
+    <section className="thw-card thw-deadlines" aria-label="Deadlines">
       <div className="thw-card-head">
         <span className="thw-card-title">
           <Clock size={15} strokeWidth={1.8} /> Deadlines
@@ -934,9 +811,9 @@ function Deadlines({ tasksData, loading, onOpenBoard }) {
           <span className="thw-section-meta">ON TRACK</span>
         )}
       </div>
-      <div className="thw-card-body" style={{ paddingTop: 12, paddingBottom: 14 }}>
+      <div className="thw-card-body thw-deadlines-body">
         {loading &&
-          Array.from({ length: 3 }).map((_, i) => (
+          Array.from({ length: 4 }).map((_, i) => (
             <div key={i} style={{ marginBottom: 8 }} aria-hidden="true">
               <Skel w="100%" h={52} style={{ borderRadius: 8 }} />
             </div>
@@ -972,97 +849,26 @@ function Deadlines({ tasksData, loading, onOpenBoard }) {
   );
 }
 
-/* ── Organization (live members, role-aware oversight) ────────── */
-const AVATAR_TONE = { executive: 'exec', portfolio_manager: 'pm', analyst: 'an' };
-const OVERSEE_LABEL = {
-  executive: 'You oversee',
-  portfolio_manager: 'Your analysts',
-  analyst: 'Your pod',
-};
-
-function OrganizationCard({ organization, role, loading, onViewOrg }) {
-  const you = organization?.you;
-  const oversee = organization?.oversee || [];
-  const extra = Math.max(0, oversee.length - 4);
-
-  return (
-    <section className="thw-card thw-span3" data-accent="meeting" aria-label="Organization">
-      <div className="thw-card-head">
-        <span className="thw-card-title">
-          <Users size={15} strokeWidth={1.8} /> Organization
-        </span>
-      </div>
-      <div className="thw-card-body" style={{ paddingTop: 12 }}>
-        {loading || !you ? (
-          <Skel w="100%" h={58} style={{ borderRadius: 10 }} />
-        ) : (
-          <div className="thw-you">
-            <div
-              className={`thw-avatar ${AVATAR_TONE[you.role] || 'exec'}`}
-              style={{ width: 34, height: 34, fontSize: 10 }}
-            >
-              {initials(you.name)}
-            </div>
-            <div style={{ minWidth: 0 }}>
-              <div className="thw-you-name">{you.name}</div>
-              <div className="thw-you-role">{you.title}</div>
-            </div>
-          </div>
-        )}
-        <div className="thw-col-label" style={{ marginTop: 14 }}>
-          {OVERSEE_LABEL[role] || 'Your team'}
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '4px 0' }}>
-          {loading ? (
-            <Skel w={120} h={26} style={{ borderRadius: 13 }} />
-          ) : oversee.length === 0 ? (
-            <span className="thw-empty" style={{ padding: 0 }}>
-              No direct reports yet.
-            </span>
-          ) : (
-            <div className="thw-avatar-stack">
-              {oversee.slice(0, 4).map((p) => (
-                <div
-                  key={p.name}
-                  className={`thw-avatar ${AVATAR_TONE[p.role] || 'pm'}`}
-                  style={{ width: 26, height: 26, fontSize: 8.5 }}
-                  title={p.name}
-                >
-                  {initials(p.name)}
-                </div>
-              ))}
-              {extra > 0 && (
-                <div className="thw-avatar an" style={{ width: 26, height: 26, fontSize: 8.5 }}>
-                  +{extra}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-        <div className="thw-section-meta" style={{ display: 'block', paddingTop: 2 }}>
-          {loading ? (
-            <Skel w={110} h={10} />
-          ) : (
-            `${organization?.pmCount ?? 0} PMS · ${organization?.analystCount ?? 0} ANALYSTS`
-          )}
-        </div>
-      </div>
-      <div className="thw-card-foot">
-        <button type="button" className="thw-link" onClick={onViewOrg}>
-          View org chart <ArrowRight size={12} strokeWidth={1.8} />
-        </button>
-      </div>
-    </section>
-  );
-}
-
 /* ── Page ─────────────────────────────────────────────────────── */
 export default function OrgTeamHubPage() {
   const router = useRouter();
-  const { isOrgUser, orgRole, orgData, isLoading, fundName, universityName } = useOrg();
-  const { summary, digest, tasksData, loading, setTasksData } = useTeamHubData(
+  const { isOrgUser, orgRole, isLoading } = useOrg();
+  const { summary, tasksData, loading, setTasksData } = useTeamHubData(
     Boolean(isOrgUser && !isLoading),
   );
+
+  // Header search stub — no command palette exists; ⌘K just focuses the input.
+  const searchRef = useRef(null);
+  useEffect(() => {
+    const onKey = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        searchRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   // Client-side failsafe: even if the org context misbehaves, never leave the
   // user on an infinite "Loading…" spinner. After 10s, offer a Retry path.
@@ -1152,15 +958,18 @@ export default function OrgTeamHubPage() {
   }
 
   const perf = summary?.performance || null;
-  const strip = summary?.statStrip || null;
-  const orgName =
-    universityName || summary?.org?.name || orgData?.org?.name || 'Investment Council';
-  const fundLabel = fundName || `${orgName} Fund`;
-  const roleLabel = summary?.viewer?.title || ROLE_LABEL[orgRole] || 'Member';
 
-  // Fund numbers + chart series and the calendar surface: use live summary data
-  // when present, else the mock Ezana Test University Fund so the demo is always
-  // populated (mirrors SectorDesk's live-or-mock fallback).
+  // Identity block — real viewer where available, else a sensible VP fallback.
+  const identityName =
+    summary?.viewer?.displayName || summary?.organization?.you?.name || 'Noah Raymond-Leigh';
+  const identityTitle =
+    summary?.viewer?.title ||
+    summary?.organization?.you?.title ||
+    ROLE_LABEL[orgRole] ||
+    'VP of Operations';
+
+  // Fund numbers + chart series + calendar: live summary when present, else the
+  // mock Ezana Test University Fund so the demo is always populated.
   const fund = perf && perf.total_value ? perf : MOCK_FUND_PERFORMANCE;
   const fundSnapshots =
     Array.isArray(summary?.snapshots) && summary.snapshots.length >= 3
@@ -1170,55 +979,66 @@ export default function OrgTeamHubPage() {
 
   return (
     <div className="thw-root">
-      <Ticker digest={digest} loading={loading} />
-
-      {/* Slim context bar — the fund value/chart now lives in the Command Center */}
-      <header className="thw-topbar" aria-label="Fund overview">
-        <span className="thw-eyebrow">
-          <b className="thw-brand">{fundLabel}</b> · {orgName} · {roleLabel}
-        </span>
-      </header>
-
-      {/* Fund calendar replaces the old fund-value hero slot */}
-      <FundCalendar
-        items={calendarItems}
-        loading={loading}
-        onOpen={() => router.push('/org-team-hub/meetings')}
-      />
-
-      <SectorDesk
-        sectors={summary?.sectors}
-        cohort={strip?.cohort}
-        loading={loading}
-        onOpen={() => router.push('/org-team-hub/fund-analytics')}
-      />
-
-      <div className="thw-bento">
-        <CommandCenter
-          fund={fund}
-          snapshots={fundSnapshots}
-          tasksData={tasksData}
-          loading={loading}
-          onOpenTrading={() => router.push('/org-trading')}
-          onOpenAssignments={() => router.push('/org-team-hub/assignments')}
+      <div className="thw-shell">
+        <SidebarNav
+          identityName={identityName}
+          identityTitle={identityTitle}
+          onGo={(href) => router.push(href)}
         />
-        <Digest digest={digest} loading={loading} />
-        <TaskManagement
-          tasksData={tasksData}
-          loading={loading}
-          onStatusChange={handleStatusChange}
-        />
-        <Deadlines
-          tasksData={tasksData}
-          loading={loading}
-          onOpenBoard={() => router.push('/org-team-hub/assignments')}
-        />
-        <OrganizationCard
-          organization={summary?.organization}
-          role={summary?.viewer?.role || orgRole}
-          loading={loading}
-          onViewOrg={() => router.push('/org-team-hub/org-chart')}
-        />
+
+        <main className="thw-main">
+          <header className="thw-header">
+            <div className="thw-header-lede">
+              <div className="thw-eyebrow">Team Hub · Fall 2026</div>
+              <h1 className="thw-h1">Command Center</h1>
+            </div>
+            <div className="thw-search" onClick={() => searchRef.current?.focus()}>
+              <Search size={15} strokeWidth={1.8} />
+              <input
+                ref={searchRef}
+                type="text"
+                className="thw-search-input"
+                placeholder="Jump to anything…"
+                aria-label="Jump to anything"
+              />
+              <span className="thw-kbd">⌘K</span>
+            </div>
+          </header>
+
+          <CalendarStrip
+            items={calendarItems}
+            loading={loading}
+            onOpen={() => router.push('/org-team-hub/meetings')}
+            onOpenAll={() => router.push('/org-team-hub/meetings')}
+          />
+
+          <CommandHero
+            fund={fund}
+            snapshots={fundSnapshots}
+            tasksData={tasksData}
+            loading={loading}
+            onOpenTrading={() => router.push('/org-trading')}
+          />
+
+          <SectorDesk
+            sectors={summary?.sectors}
+            loading={loading}
+            onOpen={() => router.push('/org-team-hub/fund-analytics')}
+          />
+
+          <div className="thw-bottom">
+            <TaskManagement
+              tasksData={tasksData}
+              loading={loading}
+              onStatusChange={handleStatusChange}
+            />
+            <Deadlines
+              tasksData={tasksData}
+              loading={loading}
+              onOpenBoard={() => router.push('/org-team-hub/assignments')}
+            />
+          </div>
+        </main>
       </div>
     </div>
   );
