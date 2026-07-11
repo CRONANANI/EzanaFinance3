@@ -923,7 +923,11 @@
 .ctd-table tbody tr:hover {
   background: var(--surface-card-hover, rgba(16, 185, 129, 0.04));
 }
-.ctd-r {
+/* Scoped to .ctd-table (0-2-1) so it out-specifies `.ctd-table th` (0-1-1) and
+   right-aligns BOTH the numeric headers and their cells — columns line up.
+   Ticker/Sector stay left-aligned (they don't carry .ctd-r). */
+.ctd-table th.ctd-r,
+.ctd-table td.ctd-r {
   text-align: right;
 }
 .ctd-ticker {
