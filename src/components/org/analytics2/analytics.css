@@ -194,7 +194,9 @@
   color: var(--text-primary);
   cursor: pointer;
   text-decoration: none;
-  transition: border-color 0.15s ease, transform 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    transform 0.15s ease;
 }
 .an4-btn:hover {
   border-color: var(--border-hover, rgba(16, 185, 129, 0.4));
@@ -249,6 +251,615 @@
 
 @media (max-width: 760px) {
   .an4-panels {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===========================================================================
+   Fund Analytics — redesign `1b` (Executive cockpit). `.fa-*` scoped so it
+   never collides with the original `.an4-*` panels. Theme tokens only; Lucide
+   icons; JetBrains Mono `tabular-nums` on every number (via .an4-num).
+   =========================================================================== */
+
+/* ── Header row: period selector + export ── */
+.fa-headrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+.fa-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+.fa-seg {
+  display: inline-flex;
+  padding: 3px;
+  gap: 2px;
+  border: 1px solid var(--border-primary);
+  border-radius: 9999px;
+  background: var(--surface-input, transparent);
+}
+.fa-seg button {
+  font-family: inherit;
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 0.32rem 0.75rem;
+  border: none;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+.fa-seg button:hover {
+  color: var(--text-primary);
+}
+.fa-seg button.is-active {
+  background: var(--emerald-bg, rgba(16, 185, 129, 0.12));
+  color: var(--emerald-text, #10b981);
+}
+
+/* ── Card ── */
+.fa-card {
+  border: 1px solid var(--border-primary);
+  border-radius: 14px;
+  background: var(--surface-card, transparent);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+.fa-card-pad {
+  padding: 1rem 1.1rem;
+}
+.fa-card-t {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0;
+}
+.fa-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.85rem 1rem 0.5rem;
+}
+.fa-card-mut {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+.fa-card-t svg {
+  color: var(--emerald-text, #10b981);
+}
+
+/* ── Since-last-meeting strip ── */
+.fa-slm {
+  display: flex;
+  align-items: stretch;
+  flex-wrap: wrap;
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+  background: var(--surface-card, transparent);
+}
+.fa-slm-lead {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.9rem;
+  background: var(--emerald-bg, rgba(16, 185, 129, 0.08));
+  color: var(--text-primary);
+}
+.fa-slm-lead svg {
+  color: var(--emerald-text, #10b981);
+}
+.fa-slm-lead .t {
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+.fa-slm-lead .d {
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.fa-slm-cell {
+  flex: 1;
+  min-width: 96px;
+  padding: 0.55rem 0.9rem;
+  border-left: 1px solid var(--border-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.fa-slm-cell .l {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+.fa-slm-cell .v {
+  font-family: var(--font-mono, monospace);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+.fa-amber {
+  color: var(--warning, #f59e0b);
+}
+
+/* ── Two-column body ── */
+.fa-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+.fa-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+
+/* ── Performance card ── */
+.fa-perf-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 0.9rem;
+}
+.fa-stat .l {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+.fa-stat .v {
+  font-family: var(--font-mono, monospace);
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: var(--text-primary);
+  margin-top: 2px;
+}
+.fa-chart {
+  width: 100%;
+  height: 168px;
+  display: block;
+}
+.fa-legend {
+  display: flex;
+  gap: 1.1rem;
+  margin-top: 0.5rem;
+}
+.fa-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+.fa-legend i {
+  width: 14px;
+  height: 3px;
+  border-radius: 2px;
+  display: inline-block;
+}
+.fa-empty {
+  padding: 1.6rem 1rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+/* ── Leaderboard ── */
+.fa-lb {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+.fa-lb th {
+  text-align: left;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 0.4rem 0.8rem;
+  border-bottom: 1px solid var(--border-primary);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+.fa-lb th.r,
+.fa-lb td.r {
+  text-align: right;
+}
+.fa-lb td {
+  padding: 0.5rem 0.8rem;
+  border-bottom: 1px solid var(--border-secondary);
+  color: var(--text-body, var(--text-secondary));
+  white-space: nowrap;
+}
+.fa-lb tbody tr:last-child td {
+  border-bottom: none;
+}
+.fa-lb tbody tr {
+  cursor: pointer;
+}
+.fa-lb tbody tr:hover td {
+  background: var(--surface-card-hover, rgba(16, 185, 129, 0.05));
+}
+.fa-lb tr.is-muted td {
+  opacity: 0.6;
+}
+.fa-rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.66rem;
+  font-weight: 800;
+  background: var(--surface-input, rgba(148, 163, 184, 0.14));
+  color: var(--text-muted);
+}
+.fa-rank.top1 {
+  background: rgba(245, 158, 11, 0.16);
+  color: var(--warning, #f59e0b);
+}
+.fa-rank.top2 {
+  background: rgba(148, 163, 184, 0.22);
+  color: var(--text-secondary);
+}
+.fa-rank.top3 {
+  background: rgba(180, 120, 60, 0.18);
+  color: #b4783c;
+}
+.fa-who {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.fa-av {
+  width: 26px;
+  height: 26px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.6rem;
+  font-weight: 800;
+  background: var(--emerald-bg, rgba(16, 185, 129, 0.14));
+  color: var(--emerald-text, #10b981);
+  flex-shrink: 0;
+}
+.fa-who .nm {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.fa-who .sl {
+  font-size: 0.64rem;
+  color: var(--text-muted);
+}
+.fa-contrib {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+.fa-contrib .amt {
+  font-family: var(--font-mono, monospace);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.fa-contrib-bar {
+  width: 68px;
+  height: 4px;
+  border-radius: 9999px;
+  background: var(--surface-input, rgba(148, 163, 184, 0.16));
+  overflow: hidden;
+}
+.fa-contrib-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 9999px;
+}
+
+/* ── Contributors / detractors ── */
+.fa-cd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-top: 1px solid var(--border-secondary);
+  cursor: default;
+}
+.fa-cd .tk {
+  font-family: var(--font-mono, monospace);
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 0.8rem;
+}
+.fa-cd .meta {
+  font-size: 0.64rem;
+  color: var(--text-muted);
+}
+.fa-cd .amt {
+  font-family: var(--font-mono, monospace);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  text-align: right;
+}
+
+/* ── Concentration banner ── */
+.fa-cbanner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 12px;
+  border: 1px solid;
+}
+.fa-cbanner.flag {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.35);
+}
+.fa-cbanner.ok {
+  background: var(--emerald-bg, rgba(16, 185, 129, 0.08));
+  border-color: var(--emerald-border, rgba(16, 185, 129, 0.25));
+}
+.fa-cbanner .bi {
+  display: flex;
+  flex-shrink: 0;
+}
+.fa-cbanner.flag .bi {
+  color: var(--warning, #f59e0b);
+}
+.fa-cbanner.ok .bi {
+  color: var(--emerald-text, #10b981);
+}
+.fa-cbanner .bt {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+.fa-cbanner .bd {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono, monospace);
+  font-variant-numeric: tabular-nums;
+}
+.fa-cbanner .bpill {
+  margin-left: auto;
+  font-family: var(--font-mono, monospace);
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  font-size: 0.9rem;
+}
+.fa-cbanner.flag .bpill {
+  color: var(--warning, #f59e0b);
+}
+
+/* ── Insight callout ── */
+.fa-callout {
+  display: flex;
+  gap: 0.55rem;
+  padding: 0.7rem 0.85rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-primary);
+  background: var(--surface-card, transparent);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+.fa-callout.warning {
+  background: rgba(245, 158, 11, 0.08);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+.fa-callout svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--text-muted);
+}
+.fa-callout.warning svg {
+  color: var(--warning, #f59e0b);
+}
+.fa-callout b {
+  color: var(--text-primary);
+  font-weight: 800;
+}
+
+/* ── Sector vs target ── */
+.fa-svt {
+  display: grid;
+  grid-template-columns: 92px 1fr 60px;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.28rem 0;
+}
+.fa-svt .sn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  min-width: 0;
+}
+.fa-svt .sn span.txt {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fa-sd {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+.fa-track {
+  position: relative;
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--surface-input, rgba(148, 163, 184, 0.16));
+  overflow: hidden;
+}
+.fa-track > i {
+  display: block;
+  height: 100%;
+  border-radius: 9999px;
+}
+.fa-track > .tgt {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 2px;
+  background: var(--text-muted);
+  border-radius: 2px;
+}
+.fa-svt .wt {
+  text-align: right;
+  font-family: var(--font-mono, monospace);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+.fa-svt .wt.over {
+  color: var(--warning, #f59e0b);
+}
+.fa-svt-pm {
+  font-size: 0.6rem;
+  color: var(--text-faint, var(--text-muted));
+}
+
+/* ── Pitch funnel ── */
+.fa-funnel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.fa-fstage {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.fa-fstage .bar {
+  flex: 1;
+  height: 26px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  padding: 0 0.6rem;
+  color: #04130d;
+  font-weight: 800;
+  font-size: 0.72rem;
+  min-width: 40px;
+}
+.fa-fstage .lbl {
+  width: 78px;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+.fa-fstage .cv {
+  width: 42px;
+  text-align: right;
+  font-family: var(--font-mono, monospace);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.66rem;
+  color: var(--text-muted);
+}
+
+/* ── Coverage gaps ── */
+.fa-gap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.45rem 0;
+  border-top: 1px solid var(--border-secondary);
+}
+.fa-gap:first-of-type {
+  border-top: none;
+}
+.fa-gap .gt {
+  font-family: var(--font-mono, monospace);
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 0.78rem;
+}
+.fa-gap .gs {
+  font-size: 0.62rem;
+  color: var(--text-muted);
+}
+.fa-assign {
+  font-family: inherit;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.28rem 0.6rem;
+  border-radius: 7px;
+  border: 1px solid var(--emerald-border, rgba(16, 185, 129, 0.3));
+  background: var(--emerald-bg, rgba(16, 185, 129, 0.08));
+  color: var(--emerald-text, #10b981);
+  cursor: pointer;
+}
+.fa-assign:hover {
+  border-color: var(--emerald, #10b981);
+}
+
+/* ── Cash tile ── */
+.fa-cash {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+/* ── Skeleton shimmer ── */
+.fa-skel {
+  border-radius: 8px;
+  background: linear-gradient(
+    90deg,
+    var(--surface-input, rgba(148, 163, 184, 0.1)) 25%,
+    var(--surface-card-hover, rgba(148, 163, 184, 0.18)) 37%,
+    var(--surface-input, rgba(148, 163, 184, 0.1)) 63%
+  );
+  background-size: 400% 100%;
+  animation: fa-shimmer 1.3s ease-in-out infinite;
+}
+@keyframes fa-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: 0 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fa-skel {
+    animation: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .fa-grid {
     grid-template-columns: 1fr;
   }
 }

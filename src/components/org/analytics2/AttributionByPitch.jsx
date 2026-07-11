@@ -35,7 +35,11 @@ export function AttributionByPitch({ data = [] }) {
     setSort((s) => ({ key, dir: s.key === key && s.dir === 'desc' ? 'asc' : 'desc' }));
 
   if (data.length === 0) {
-    return <div className="an4-state" style={{ padding: '1.5rem' }}>No pitches with outcomes yet.</div>;
+    return (
+      <div className="an4-state" style={{ padding: '1.5rem' }}>
+        No pitches with outcomes yet.
+      </div>
+    );
   }
 
   const pctCell = (n) => (n == null ? '—' : `${n >= 0 ? '+' : ''}${Number(n).toFixed(1)}%`);
@@ -47,21 +51,37 @@ export function AttributionByPitch({ data = [] }) {
           <tr>
             <th onClick={() => toggle('ticker')}>Ticker</th>
             <th onClick={() => toggle('analyst')}>Analyst</th>
-            <th className="r" onClick={() => toggle('return_pct')}>Return</th>
-            <th className="r" onClick={() => toggle('alpha_pct')}>Alpha</th>
+            <th className="r" onClick={() => toggle('return_pct')}>
+              Return
+            </th>
+            <th className="r" onClick={() => toggle('alpha_pct')}>
+              Alpha
+            </th>
             <th onClick={() => toggle('current_state')}>State</th>
           </tr>
         </thead>
         <tbody>
           {sorted.map((p) => (
             <tr key={p.pitch_id}>
-              <td className="an4-num" style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{p.ticker}</td>
-              <td>{p.analyst}</td>
-              <td className={`r an4-num ${(p.return_pct ?? 0) >= 0 ? 'an4-pos' : 'an4-neg'}`}>{pctCell(p.return_pct)}</td>
-              <td className={`r an4-num ${(p.alpha_pct ?? 0) >= 0 ? 'an4-pos' : 'an4-neg'}`}>{pctCell(p.alpha_pct)}</td>
+              <td className="an4-num" style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
+                {p.ticker}
+              </td>
+              <td
+                style={p.analyst ? undefined : { color: 'var(--text-muted)', fontStyle: 'italic' }}
+              >
+                {p.analyst || 'Unassigned'}
+              </td>
+              <td className={`r an4-num ${(p.return_pct ?? 0) >= 0 ? 'an4-pos' : 'an4-neg'}`}>
+                {pctCell(p.return_pct)}
+              </td>
+              <td className={`r an4-num ${(p.alpha_pct ?? 0) >= 0 ? 'an4-pos' : 'an4-neg'}`}>
+                {pctCell(p.alpha_pct)}
+              </td>
               <td>
                 {p.current_state ? (
-                  <span className={`an4-state-chip ${stateClass(p.current_state)}`}>{p.current_state}</span>
+                  <span className={`an4-state-chip ${stateClass(p.current_state)}`}>
+                    {p.current_state}
+                  </span>
                 ) : (
                   '—'
                 )}
