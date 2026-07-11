@@ -19,8 +19,12 @@
      The nav container and every page container consume these, so the left
      edge of page content aligns with the Ezana logo and the right edge
      aligns with the logout button. Single source of truth — do not fork. */
-  --app-shell-max: 1600px; /* matches .dashboard-page-inset's established cap */
-  --app-shell-pad: 2rem; /* matches .dashboard-main's established side padding */
+  --app-shell-max: 1600px; /* authed app: matches .dashboard-page-inset's established cap */
+  --app-shell-pad: 2rem; /* desktop side padding — shared by both envelopes */
+  /* Marketing envelope: routes under the landing navbar (.nav-container-centered)
+     share this so their content edges align with that nav's logo / CTA. It is
+     narrower than the authed app shell — the two navs are different widths. */
+  --marketing-shell-max: 1400px; /* matches .nav-container-centered's established cap */
 
   /* ── Core Backgrounds — flat single-tone dark mode ── */
   --bg-primary: #0a0e13; /* Page background */

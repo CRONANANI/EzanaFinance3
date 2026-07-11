@@ -5,7 +5,7 @@
    JS). Bar length encodes disclosed dollars; segments encode targeting ACTIVITY. */
 
 .lbx-page {
-  max-width: 1440px;
+  max-width: var(--marketing-shell-max);
   margin: 0 auto;
   padding: 0 32px 64px;
   background: var(--bg-primary);

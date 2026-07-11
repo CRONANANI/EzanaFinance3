@@ -939,9 +939,9 @@ html:has(.landing-page) body:not(.light-mode) {
   display: flex;
   align-items: center;
   width: 100%;
-  max-width: 1400px;
+  max-width: var(--marketing-shell-max);
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 var(--app-shell-pad);
   position: relative;
 }
 
