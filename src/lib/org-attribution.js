@@ -9,6 +9,23 @@ const num = (v) => (v == null ? null : Number(v));
 const finite = (v) => (Number.isFinite(Number(v)) ? Number(v) : null);
 const avg = (arr) => (arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null);
 
+/**
+ * Resolve an org_members row to a real, human name. Rows used to render the
+ * literal string 'Analyst' whenever display_name was null — a DATA bug that made
+ * the whole leaderboard anonymous. Fallback chain: display_name → title →
+ * 'Unassigned'. The string 'Analyst' must never appear as a rendered name.
+ * (No public profiles table + no service-role access here, so the user's email
+ * local-part is not reachable from this client; display_name is the real name.)
+ */
+function memberName(member) {
+  if (!member) return 'Unassigned';
+  const dn = (member.display_name || '').trim();
+  if (dn) return dn;
+  const title = (member.title || '').trim();
+  if (title) return title;
+  return 'Unassigned';
+}
+
 async function getTeamIds(supabase, orgId) {
   const { data: teams } = await supabase.from('org_teams').select('id').eq('org_id', orgId);
   return (teams || []).map((t) => t.id);
@@ -46,7 +63,7 @@ async function getPitchesWithHindsight(supabase, orgId) {
 async function getMemberMap(supabase, orgId) {
   const { data } = await supabase
     .from('org_members')
-    .select('id, user_id, display_name, role, sub_role, is_active, team_id')
+    .select('id, user_id, display_name, title, role, sub_role, is_active, team_id')
     .eq('org_id', orgId);
   return data || [];
 }
@@ -67,7 +84,9 @@ export async function computeFundPerformance(supabase, orgId) {
   // Benchmark proxy: the average benchmark return recorded against the fund's
   // pitches over the same period (avoids an external SPY round trip).
   const { hByPitch } = await getPitchesWithHindsight(supabase, orgId);
-  const benchmarks = [...hByPitch.values()].map((h) => finite(h.benchmark_return_pct)).filter((n) => n != null);
+  const benchmarks = [...hByPitch.values()]
+    .map((h) => finite(h.benchmark_return_pct))
+    .filter((n) => n != null);
   const benchmarkPct = avg(benchmarks);
   const alphaPct = returnPct != null && benchmarkPct != null ? returnPct - benchmarkPct : null;
 
@@ -105,7 +124,7 @@ export async function attributionByAnalyst(supabase, orgId) {
   return [...agg.entries()]
     .map(([memberId, a]) => ({
       member_id: memberId,
-      name: byId.get(memberId)?.display_name || 'Analyst',
+      name: memberName(byId.get(memberId)),
       role: byId.get(memberId)?.role || null,
       pitches: a.count,
       avg_return: avg(a.returns),
@@ -119,7 +138,10 @@ export async function attributionByAnalyst(supabase, orgId) {
 export async function attributionBySector(supabase, orgId) {
   const positions = await getPortfolio(supabase, orgId);
   const totalValue = positions.reduce((s, p) => s + (finite(p.current_value) ?? 0), 0);
-  const totalCost = positions.reduce((s, p) => s + (finite(p.shares) ?? 0) * (finite(p.avg_cost) ?? 0), 0);
+  const totalCost = positions.reduce(
+    (s, p) => s + (finite(p.shares) ?? 0) * (finite(p.avg_cost) ?? 0),
+    0,
+  );
 
   const bySector = new Map();
   for (const p of positions) {
@@ -158,7 +180,9 @@ export async function attributionByPitch(supabase, orgId) {
         pitch_id: p.id,
         ticker: p.ticker,
         company_name: p.company_name,
-        analyst: byId.get(p.analyst_member_id)?.display_name || '—',
+        // null (not '—') when unassigned → the UI renders "Unassigned" + Assign.
+        analyst: p.analyst_member_id ? memberName(byId.get(p.analyst_member_id)) : null,
+        analyst_member_id: p.analyst_member_id || null,
         decision: p.decision || p.stage || p.status || null,
         return_pct: h ? finite(h.return_pct) : null,
         alpha_pct: h ? finite(h.alpha_pct) : null,
@@ -210,7 +234,7 @@ export async function analystScorecard(supabase, orgId, memberId) {
 
   return {
     member_id: member.id,
-    name: member.display_name,
+    name: memberName(member),
     role: member.role,
     sub_role: member.sub_role,
     pitch_count: mine.length,
