@@ -37,8 +37,10 @@
 .ea-hero-inner {
   max-width: 1180px;
   margin: 0 auto;
-  /* Clear the fixed global navbar so the eyebrow + H1 aren't hidden on load. */
-  padding: calc(var(--ea-nav) + 2.5rem) 2rem 2.75rem;
+  /* Clear the fixed global navbar so the eyebrow + H1 aren't hidden on load.
+     Extra top breathing room trimmed ~80% (2.5rem → 0.5rem); navbar clearance
+     (var(--ea-nav)) and the sides/bottom are unchanged. */
+  padding: calc(var(--ea-nav) + 0.5rem) 2rem 2.75rem;
   text-align: center;
 }
 .ea-eyebrow {
