@@ -23,11 +23,13 @@
   box-sizing: border-box;
 }
 .eth-wrap {
-  /* match .nav-container-centered (1400px envelope, 2rem side padding) so the
-     hero's edges align with the nav logo and "Become a Partner" */
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 2rem;
+  /* Pass-through: the dashboard shell (.dashboard-main-content) provides the
+     shared nav envelope (max-width + 2rem side padding, centered). This wrapper
+     adds none of its own — a second cap/padding would inset the hero inside the
+     nav logo. Align comes entirely from the shell. */
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 /* ── Intro row (no masthead — the app navbar sits above) ─────────── */

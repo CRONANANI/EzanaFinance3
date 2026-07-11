@@ -64,8 +64,8 @@
   .comm-card-link,
   .lc2-sec-link,
   button,
-  a[class*="link"],
-  a[class*="btn"],
+  a[class*='link'],
+  a[class*='btn'],
   .nav-menu a {
     min-height: var(--ez-touch-min);
     display: inline-flex;
@@ -337,7 +337,7 @@
   }
 
   .dashboard-main .dashboard-container .dashboard-page-inset {
-    max-width: 1400px;
+    max-width: var(--app-shell-max);
   }
 }
 
@@ -352,7 +352,7 @@
   }
 
   .dashboard-main .dashboard-container .dashboard-page-inset {
-    max-width: 1600px;
+    max-width: var(--app-shell-max);
   }
 
   /* ── Home: maintain 3-col for row 1 with more breathing room ── */
@@ -376,14 +376,16 @@
     --ez-card-gap: 1.5rem;
   }
 
-  /* ── Dashboard: cap content width ── */
+  /* ── Dashboard: shell token is the single content cap (was 1800px !important,
+     which broke alignment with the nav envelope on wide screens) ── */
   .dashboard-main .dashboard-container .dashboard-page-inset {
-    max-width: 1800px !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
+    max-width: var(--app-shell-max);
+    margin-left: auto;
+    margin-right: auto;
   }
 
-  .dashboard-main.dashboard-main-content:not(.dashboard-main-content--fullscreen) .dashboard-container {
+  .dashboard-main.dashboard-main-content:not(.dashboard-main-content--fullscreen)
+    .dashboard-container {
     max-width: 1900px;
     margin-left: auto;
     margin-right: auto;
@@ -413,9 +415,9 @@
     max-width: 1600px !important;
   }
 
-  /* ── Home terminal body: cap width ── */
+  /* ── Home terminal body: shell token governs (was 1800px !important) ── */
   .home-terminal-body.dashboard-page-inset {
-    max-width: 1800px !important;
+    max-width: var(--app-shell-max);
   }
 
   /* ── Centaur: wider chat ── */
@@ -442,18 +444,18 @@
     --ez-card-gap: 1.75rem;
   }
 
-  /* ── Master container cap ── */
+  /* ── Master container: shell token governs (was 2200px / 2000px !important,
+     which let content run wider than the nav envelope on ultrawide) ── */
   .dashboard-main.dashboard-main-content:not(.dashboard-main-content--fullscreen) {
-    max-width: 2200px !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
+    max-width: var(--app-shell-max);
   }
 
   .dashboard-main .dashboard-container .dashboard-page-inset {
-    max-width: 2000px !important;
+    max-width: var(--app-shell-max);
   }
 
-  .dashboard-main.dashboard-main-content:not(.dashboard-main-content--fullscreen) .dashboard-container {
+  .dashboard-main.dashboard-main-content:not(.dashboard-main-content--fullscreen)
+    .dashboard-container {
     max-width: 2100px !important;
     margin-left: auto !important;
     margin-right: auto !important;

@@ -11,20 +11,32 @@
 
 .dashboard-main.dashboard-main-content {
   padding-top: calc(var(--navbar-height, 64px) + 1.5rem);
-  padding-left: 2rem;
-  padding-right: 2rem;
+  /* Shell IS the shared envelope: same max-width + side padding as the nav
+     container, centered. So the leftmost card lines up with the nav logo and
+     the rightmost card with the logout button at every width. Inner wrappers
+     (.dashboard-container, .dashboard-page-inset, page roots) pass through.
+     Fullscreen routes reset this below. */
+  padding-left: var(--app-shell-pad);
+  padding-right: var(--app-shell-pad);
   padding-bottom: 3rem;
   width: 100%;
-  max-width: 100%;
+  max-width: var(--app-shell-max);
+  margin-left: auto;
+  margin-right: auto;
   box-sizing: border-box;
   min-height: 100vh;
   background-color: var(--app-bg);
 }
 
-/* Full-screen routes (e.g. market analysis) — no horizontal inset; top clears fixed nav only */
+/* Full-screen routes (e.g. market analysis) — edge-to-edge; reset the envelope
+   so the map fills the viewport, top clears the fixed nav only */
 .dashboard-main-content.dashboard-main-content--fullscreen {
   padding: 0;
   padding-top: var(--navbar-height, 64px);
+  max-width: 100%;
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
   min-height: 100vh;
   box-sizing: border-box;
   background-color: transparent;
@@ -46,42 +58,33 @@
   box-sizing: border-box;
 }
 
-/* Partner hub — same horizontal rhythm as .dashboard-page-inset on regular dashboard pages */
+/* Partner hub — pass-through now that .dashboard-main IS the envelope. The old
+   1600px cap + 2rem padding stacked on the shell's own 2rem, insetting partner
+   cards 4rem while the nav sits at 2rem, so they could never line up. */
 .dashboard-main.dashboard-main-content .dashboard-container.dashboard-container--partner-inset {
-  max-width: 1600px;
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 2rem;
-  padding-right: 2rem;
+  max-width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 0;
+  padding-right: 0;
   box-sizing: border-box;
   width: 100%;
 }
 
-@media (max-width: 768px) {
-  .dashboard-main.dashboard-main-content .dashboard-container.dashboard-container--partner-inset {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-}
-
-/* Match Betting Markets `.betting-markets-container` — max-width + horizontal padding (2rem),
-   combined with main’s own horizontal padding (2rem) = same edge distance as Betting Markets. */
+/* Pass-through: the shell (.dashboard-main-content) provides the shared
+   envelope (max-width + 2rem side padding, centered). This wrapper adds none of
+   its own so card edges land exactly on the nav's logo / logout edges. */
 .dashboard-main.dashboard-main-content .dashboard-container .dashboard-page-inset {
-  max-width: 1600px;
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 2rem;
-  padding-right: 2rem;
+  max-width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 0;
+  padding-right: 0;
   box-sizing: border-box;
   width: 100%;
 }
 
 @media (max-width: 768px) {
-  .dashboard-main.dashboard-main-content .dashboard-container .dashboard-page-inset {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-
   .dashboard-main.dashboard-main-content:not(.dashboard-main-content--fullscreen) {
     padding-top: calc(var(--navbar-height, 64px) + 1rem);
     padding-left: 1rem;

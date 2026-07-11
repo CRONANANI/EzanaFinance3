@@ -988,6 +988,39 @@ html:has(.landing-page) body:not(.light-mode) {
   pointer-events: auto;
 }
 
+/* ── Authed nav container — canonical layout envelope ──────────────────
+   The nav previously had NO desktop max-width (full-bleed) while dashboard
+   content was capped at 1600px and centered — so they could never align.
+   Both now share --app-shell-max / --app-shell-pad. */
+.main-nav .nav-container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: var(--app-shell-max);
+  margin: 0 auto;
+  padding: 0 var(--app-shell-pad);
+  gap: 1rem;
+  box-sizing: border-box;
+}
+
+/* Center the middle nav links dead-center BETWEEN the two icon groups.
+   The two side zones take equal flex share so the center group lands in the
+   true middle regardless of the groups' differing intrinsic widths; the
+   center group takes only the width it needs. Higher specificity than
+   .animated-nav's own `flex: 1`, so this is the single centering mechanism. */
+.main-nav .nav-container > .nav-left-zone,
+.main-nav .nav-container > .nav-actions {
+  flex: 1 1 0;
+  min-width: 0;
+}
+.main-nav .nav-container > .nav-actions {
+  justify-content: flex-end; /* icons hug the right edge */
+}
+.main-nav .nav-container > :not(.nav-left-zone):not(.nav-actions) {
+  flex: 0 0 auto;
+  margin: 0 auto;
+}
+
 /* Dashboard nav: brand logo — same visual size as landing (.navbar) nav */
 .main-nav .nav-home-btn {
   display: flex;

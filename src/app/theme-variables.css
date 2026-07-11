@@ -15,6 +15,13 @@
 :root {
   --font-display: 'Nunito', system-ui, sans-serif;
 
+  /* ── Shared layout envelope ──────────────────────────────────────────
+     The nav container and every page container consume these, so the left
+     edge of page content aligns with the Ezana logo and the right edge
+     aligns with the logout button. Single source of truth — do not fork. */
+  --app-shell-max: 1600px; /* matches .dashboard-page-inset's established cap */
+  --app-shell-pad: 2rem; /* matches .dashboard-main's established side padding */
+
   /* ── Core Backgrounds — flat single-tone dark mode ── */
   --bg-primary: #0a0e13; /* Page background */
   --bg-secondary: #0a0e13; /* Cards match page (was #0d1117) */
