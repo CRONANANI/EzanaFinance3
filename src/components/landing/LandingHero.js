@@ -1,9 +1,20 @@
 'use client';
 
 import { Fragment, useEffect, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { ArrowRight, BarChart3, CheckCircle2 } from 'lucide-react';
-import { WorldMap } from '@/components/ui/world-map';
 import './landing-hero.css';
+
+// Defer the heavy animated world map (client-only) so the hero headline + CTA
+// paint immediately; the map fills in a beat later into reserved space (no
+// layout shift). WorldMap is a named export.
+const WorldMap = dynamic(
+  () => import('@/components/ui/world-map').then((m) => ({ default: m.WorldMap })),
+  {
+    ssr: false,
+    loading: () => <div aria-hidden style={{ minHeight: '320px', width: '100%' }} />,
+  },
+);
 
 /**
  * Landing hero — "Global Signal" (Column × Ezana hybrid).
