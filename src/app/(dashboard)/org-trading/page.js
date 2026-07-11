@@ -1,7 +1,7 @@
 'use client';
 
 import { useOrg } from '@/contexts/OrgContext';
-import { CouncilOverview } from '@/components/org-trading/CouncilOverview';
+import { CouncilTradingDesk } from '@/components/org-trading/CouncilTradingDesk';
 import { TeamPortfolioView } from '@/components/org-trading/TeamPortfolioView';
 import Link from 'next/link';
 import './org-trading.css';
@@ -22,28 +22,32 @@ export default function OrgTradingPage() {
 
   return (
     <div className="org-trading-page">
-      <div className="ot-hero">
-        <div className="ot-hero-left">
-          <div className="ot-hero-icon">
-            <i className="bi bi-bank2" />
+      {/* Legacy hero for PM / analyst views. The executive 1b desk
+          (CouncilTradingDesk) supplies its own header, so it is omitted there. */}
+      {orgRole !== 'executive' && (
+        <div className="ot-hero">
+          <div className="ot-hero-left">
+            <div className="ot-hero-icon">
+              <i className="bi bi-bank2" />
+            </div>
+            <div>
+              <h1>Council Trading</h1>
+              <p className="ot-hero-sub">
+                {orgData?.org?.name || 'Organization'} · {orgRole?.replace('_', ' ')}
+                {canFlagPositions && <span className="ot-perm-pill"> · Can flag positions</span>}
+              </p>
+            </div>
           </div>
-          <div>
-            <h1>Council Trading</h1>
-            <p className="ot-hero-sub">
-              {orgData?.org?.name || 'Organization'} · {orgRole?.replace('_', ' ')}
-              {canFlagPositions && <span className="ot-perm-pill"> · Can flag positions</span>}
-            </p>
+          <div className="ot-hero-actions">
+            <Link href="/org-trading/inbox" className="ot-inbox-link">
+              <i className="bi bi-flag-fill" />
+              <span>Flag Inbox</span>
+            </Link>
           </div>
         </div>
-        <div className="ot-hero-actions">
-          <Link href="/org-trading/inbox" className="ot-inbox-link">
-            <i className="bi bi-flag-fill" />
-            <span>Flag Inbox</span>
-          </Link>
-        </div>
-      </div>
+      )}
 
-      {orgRole === 'executive' && <CouncilOverview />}
+      {orgRole === 'executive' && <CouncilTradingDesk />}
       {orgRole === 'portfolio_manager' && (
         <TeamPortfolioView
           teamId={orgData?.member?.team_id}
