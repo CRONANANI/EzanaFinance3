@@ -12,6 +12,11 @@ const ALLOWED_ORIGINS = ['https://ezana.world', 'http://localhost:3000', 'http:/
 // Emergency global off-switch (operational only — NOT a per-user/device bypass):
 // set env MFA_ENFORCED=false to disable if a rollout issue locks users out.
 const MFA_ENFORCED = process.env.MFA_ENFORCED !== 'false';
+// Optional enrollment: when 'false' (the default), users without a factor are NOT forced to
+// enroll — MFA is available but not mandatory. Set MFA_REQUIRE_ENROLLMENT=true to make
+// enrollment mandatory again (production hardening). Step-up challenge for users who HAVE a
+// factor is unaffected and still governed by MFA_ENFORCED above.
+const MFA_REQUIRE_ENROLLMENT = process.env.MFA_REQUIRE_ENROLLMENT === 'true';
 
 export async function middleware(request) {
   const pathname = request.nextUrl.pathname;
@@ -358,7 +363,9 @@ export async function middleware(request) {
     }
   }
 
-  // ── MFA gate — mandatory second factor on every login, all app versions ──
+  // ── MFA gate — second factor across all app versions ──
+  // Enrollment is OPTIONAL by default (MFA_REQUIRE_ENROLLMENT=false); users who have
+  // enrolled are still challenged to aal2 when MFA_ENFORCED is on.
   // Runs after the disabled / onboarding / email-verified gates above. Covers
   // consumer + partner protected routes AND org routes (/org-trading is not in
   // the dashboard-route lists, so it is included explicitly here). The MFA
@@ -386,8 +393,10 @@ export async function middleware(request) {
           url.searchParams.set('redirect', pathname);
           return NextResponse.redirect(url);
         }
-        // No verified factor → force enrollment before proceeding.
-        if (aal.currentLevel === 'aal1' && aal.nextLevel === 'aal1') {
+        // No verified factor → only force enrollment when explicitly required.
+        // Default (MFA_REQUIRE_ENROLLMENT=false): MFA is optional, so skip the gate and
+        // let the user proceed without a factor.
+        if (MFA_REQUIRE_ENROLLMENT && aal.currentLevel === 'aal1' && aal.nextLevel === 'aal1') {
           const url = request.nextUrl.clone();
           url.pathname = '/auth/mfa-setup';
           url.search = '';
