@@ -8,6 +8,9 @@ import {
   attributionBySector,
   attributionByPitch,
 } from '@/lib/org-attribution';
+import { buildFundAnalytics } from '@/lib/org-fund-analytics';
+
+const PERIODS = ['semester', 'ytd', 'inception'];
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -21,38 +24,42 @@ export const GET = withApiGuard(
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     const orgId = member.org_id;
 
-    const [performance, byAnalyst, bySector, byPitch] = await Promise.all([
+    const { searchParams } = new URL(request.url);
+    const reqPeriod = searchParams.get('period');
+    const period = PERIODS.includes(reqPeriod) ? reqPeriod : 'semester';
+
+    const [performance, byAnalyst, bySector, byPitch, extended] = await Promise.all([
       computeFundPerformance(supabase, orgId),
       attributionByAnalyst(supabase, orgId),
       attributionBySector(supabase, orgId),
       attributionByPitch(supabase, orgId),
+      buildFundAnalytics(supabase, orgId, period),
     ]);
 
     // Best-effort daily snapshot cache (managers only; ignore RLS failures).
     if (assertOrgRole(member, ['executive', 'portfolio_manager'])) {
-      const { searchParams } = new URL(request.url);
       if (searchParams.get('snapshot') === '1') {
-        await supabase
-          .from('org_fund_snapshots')
-          .upsert(
-            {
-              org_id: orgId,
-              snapshot_date: new Date().toISOString().slice(0, 10),
-              total_value: performance.total_value,
-              total_cost: performance.total_cost,
-              return_pct: performance.return_pct,
-              benchmark_return_pct: performance.benchmark_return_pct,
-              alpha_pct: performance.alpha_pct,
-              attribution: { by_analyst: byAnalyst, by_sector: bySector, by_pitch: byPitch },
-            },
-            { onConflict: 'org_id,snapshot_date' },
-          );
+        await supabase.from('org_fund_snapshots').upsert(
+          {
+            org_id: orgId,
+            snapshot_date: new Date().toISOString().slice(0, 10),
+            total_value: performance.total_value,
+            total_cost: performance.total_cost,
+            return_pct: performance.return_pct,
+            benchmark_return_pct: performance.benchmark_return_pct,
+            alpha_pct: performance.alpha_pct,
+            attribution: { by_analyst: byAnalyst, by_sector: bySector, by_pitch: byPitch },
+          },
+          { onConflict: 'org_id,snapshot_date' },
+        );
       }
     }
 
     return NextResponse.json({
       performance,
       attribution: { byAnalyst, bySector, byPitch },
+      // Extended `1b` blocks — period-scoped, honest-empty (null/[] when absent).
+      ...extended,
       viewer: {
         memberId: member.id,
         role: member.role,
