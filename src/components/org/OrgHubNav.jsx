@@ -20,6 +20,7 @@
  */
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useOrg } from '@/contexts/OrgContext';
 import {
@@ -166,16 +167,17 @@ export function OrgHubNav() {
       .join(' ');
     const badge = item.badge ? counts?.[item.badge] : null;
     return (
-      <a
+      <Link
         key={item.href}
         href={item.href}
+        prefetch
         className={cls}
         aria-current={active ? 'page' : undefined}
       >
         <Icon size={15} strokeWidth={1.8} />
         <span>{item.label}</span>
         {badge && <span className={`ohn-badge ohn-badge--${badge.tone}`}>{badge.value}</span>}
-      </a>
+      </Link>
     );
   };
 
