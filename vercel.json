@@ -34,6 +34,10 @@
       "schedule": "0 4 * * *"
     },
     {
+      "path": "/api/cron/org-rating-decay",
+      "schedule": "0 4 * * *"
+    },
+    {
       "path": "/api/cron/competition-scorer",
       "schedule": "0 * * * *"
     },

@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Award, Sparkles, Target, TrendingUp, ClipboardList } from 'lucide-react';
+import { Award, Sparkles, Target, TrendingUp, ClipboardList, Printer } from 'lucide-react';
 import { badgeIcon } from './AwardModal';
 import './recognition2.css';
 
@@ -173,7 +173,18 @@ export function EzanaRatingScorecard({ memberId }) {
   const provisional = rating.is_provisional;
 
   return (
-    <div className="rec2-card">
+    <div className="rec2-card rec2-print-area">
+      {/* ── Toolbar (screen only) ── */}
+      <div className="rec2-actions rec2-no-print" style={{ justifyContent: 'flex-end' }}>
+        <button
+          type="button"
+          className="rec2-btn"
+          onClick={() => window.print()}
+          title="Export this scorecard to PDF via your browser's print dialog"
+        >
+          <Printer size={14} aria-hidden /> Export
+        </button>
+      </div>
       {/* ── Hero ── */}
       <div className="rec2-hero">
         <div className="rec2-hero-avatar" aria-hidden>

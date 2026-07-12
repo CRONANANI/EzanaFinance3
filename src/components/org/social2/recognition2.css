@@ -582,3 +582,71 @@
   color: var(--text-muted);
   margin-top: 0.4rem;
 }
+
+/* ===========================================================================
+   Print — Export scorecard to PDF via window.print(). Only the scorecard
+   (.rec2-print-area) prints; all app chrome/nav is hidden. Numbers stay
+   legible (mono + tabular-nums retained from on-screen rules). Print output
+   is a separate, always-light document — theme tokens don't apply to paper.
+   =========================================================================== */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .rec2-print-area,
+  .rec2-print-area * {
+    visibility: visible;
+  }
+  .rec2-print-area {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    padding: 1rem;
+    margin: 0;
+    border: none;
+    border-radius: 0;
+    background: #ffffff;
+    color: #0a0a0a;
+  }
+  /* Keep every readout legible on white paper regardless of screen theme. */
+  .rec2-print-area .rec2-hero-name,
+  .rec2-print-area .rec2-hero-rating-value,
+  .rec2-print-area .rec2-stat-value,
+  .rec2-print-area .rec2-cat-score,
+  .rec2-print-area .rec2-ticker,
+  .rec2-print-area .rec2-table th,
+  .rec2-print-area .rec2-cat-label {
+    color: #0a0a0a;
+  }
+  .rec2-print-area .rec2-hero-meta,
+  .rec2-print-area .rec2-hero-rating-label,
+  .rec2-print-area .rec2-stat-label,
+  .rec2-print-area .rec2-cat-weight,
+  .rec2-print-area .rec2-caveat,
+  .rec2-print-area .rec2-section-title {
+    color: #444444;
+  }
+  .rec2-print-area .rec2-table td {
+    color: #222222;
+    border-color: #cccccc;
+  }
+  .rec2-print-area .rec2-table th {
+    border-color: #999999;
+  }
+  /* Hide screen-only chrome (the Export button toolbar). */
+  .rec2-no-print {
+    display: none !important;
+  }
+  /* Avoid awkward page breaks inside a section, table, or receipt row. */
+  .rec2-section,
+  .rec2-hero,
+  .rec2-table tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  /* Ensure category-bar fills and calibration marks render on paper. */
+  .rec2-print-area * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
