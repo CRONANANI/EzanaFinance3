@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Check, Plus, UserCog } from 'lucide-react';
+import { Check, Columns3, Gavel, Network, Plus, Radar, UserCog } from 'lucide-react';
 import { useOrg } from '@/contexts/OrgContext';
 import { useToast } from '@/contexts/ToastContext';
 import { OrgMemberProfileModal } from '@/components/org/OrgMemberProfileModal';
+import { ColumnsView, RadialView, VacantSeat } from './OrgChartViews';
 import './org-final.css';
 
 /* ── helpers ──────────────────────────────────────────────────── */
@@ -31,7 +32,12 @@ function fmtSignedPct(n, digits = 1) {
 }
 function longDate(d = new Date()) {
   return d
-    .toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
+    .toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    })
     .toUpperCase();
 }
 function toModalMember(m) {
@@ -65,7 +71,11 @@ function Avatar({ member, cls, size = 26, fs }) {
 
 function Skel({ w = 80, h = 14, style }) {
   return (
-    <span className="ox-skel" style={{ display: 'inline-block', width: w, height: h, ...style }} aria-hidden="true" />
+    <span
+      className="ox-skel"
+      style={{ display: 'inline-block', width: w, height: h, ...style }}
+      aria-hidden="true"
+    />
   );
 }
 
@@ -78,6 +88,8 @@ export function OrgFinalClient() {
   const [chart, setChart] = useState(null);
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [layout, setLayout] = useState('tiers'); // tiers | radial | columns
+  const [committee, setCommittee] = useState(false); // investment-committee overlay
   const [filter, setFilter] = useState('all'); // all | exec | pm | an
   const [profileId, setProfileId] = useState(null);
   const [editId, setEditId] = useState(null); // member whose role popover is open
@@ -120,14 +132,20 @@ export function OrgFinalClient() {
   const members = chart?.members || [];
   const byId = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
   const tierById = useMemo(() => new Map((chart?.tiers || []).map((t) => [t.id, t])), [chart]);
-  const tierOf = useCallback((m) => tierById.get(m?.tier) || { cls: 'an', short: '', rank: 6, label: '' }, [tierById]);
+  const tierOf = useCallback(
+    (m) => tierById.get(m?.tier) || { cls: 'an', short: '', rank: 6, label: '' },
+    [tierById],
+  );
   const clsOf = useCallback((m) => tierOf(m).cls, [tierOf]);
   const rankOf = useCallback((m) => tierOf(m).rank ?? 6, [tierOf]);
   const childrenOf = useCallback(
     (id) =>
       members
         .filter((m) => m.reports_to === id)
-        .sort((a, b) => rankOf(a) - rankOf(b) || (a.display_name || '').localeCompare(b.display_name || '')),
+        .sort(
+          (a, b) =>
+            rankOf(a) - rankOf(b) || (a.display_name || '').localeCompare(b.display_name || ''),
+        ),
     [members, rankOf],
   );
 
@@ -144,20 +162,41 @@ export function OrgFinalClient() {
     [members, rankOf],
   );
   const leadership = useMemo(() => members.filter((m) => clsOf(m) === 'exec'), [members, clsOf]);
+  const leadershipNodes = useMemo(
+    () => [president, vp, ...execs].filter(Boolean),
+    [president, vp, execs],
+  );
 
-  // Desks from the team-hub summary (name / roi / value), members joined by team_id.
+  // The team that holds leadership (president's desk) is not a sector desk.
+  const leadershipTeamId = president?.team_id || vp?.team_id || null;
+
+  // Investment committee = active executives + portfolio managers (IC voters).
+  const isCommittee = useCallback(
+    (m) => m?.role === 'executive' || m?.role === 'portfolio_manager',
+    [],
+  );
+  const committeeCount = useMemo(() => members.filter(isCommittee).length, [members, isCommittee]);
+
+  // Desks from the team-hub summary (name / roi / value), joined to ACTIVE members
+  // only (chart endpoint returns is_active=true). Alumni/inactive never appear.
   const deskSectors = summary?.sectors || [];
   const desks = useMemo(() => {
-    return deskSectors.map((s) => {
-      const onDesk = members.filter((m) => m.team_id === s.teamId);
-      const sorted = [...onDesk].sort((a, b) => rankOf(a) - rankOf(b));
-      const lead = sorted[0] || null;
-      const analysts = lead ? sorted.slice(1) : [];
-      const overseer = lead?.reports_to ? byId.get(lead.reports_to) : null;
-      const exec = overseer && clsOf(overseer) === 'exec' ? overseer : null;
-      return { ...s, members: sorted, lead, analysts, exec };
-    });
-  }, [deskSectors, members, byId, rankOf, clsOf]);
+    return deskSectors
+      .filter((s) => s.teamId !== leadershipTeamId && !/^executive$/i.test(s.name || ''))
+      .map((s) => {
+        const onDesk = members.filter((m) => m.team_id === s.teamId);
+        const sorted = [...onDesk].sort((a, b) => rankOf(a) - rankOf(b));
+        const lead = sorted[0] || null;
+        const analysts = lead ? sorted.slice(1) : [];
+        const overseer = lead?.reports_to ? byId.get(lead.reports_to) : null;
+        const exec = overseer && clsOf(overseer) === 'exec' ? overseer : null;
+        return { ...s, members: sorted, lead, analysts, exec };
+      });
+  }, [deskSectors, members, byId, rankOf, clsOf, leadershipTeamId]);
+
+  // Vacancy = a sector desk with no ACTIVE head (open lead seat). There is no
+  // expected-roster data source, so we never infer open seats from inactive rows.
+  const vacancies = useMemo(() => desks.reduce((n, d) => n + (d.lead ? 0 : 1), 0), [desks]);
 
   const perf = summary?.performance || null;
   const roiValues = desks.map((d) => d.roiPct).filter((r) => r != null && Number.isFinite(r));
@@ -202,7 +241,9 @@ export function OrgFinalClient() {
         ...c,
         members: c.members.map((m) => (m.id === target.id ? { ...m, ...data.member } : m)),
       }));
-      toast.success(`${target.display_name} is now ${tierById.get(pendingTier)?.label || pendingTier}`);
+      toast.success(
+        `${target.display_name} is now ${tierById.get(pendingTier)?.label || pendingTier}`,
+      );
       setEditId(null);
       setPendingTier(null);
     } catch (err) {
@@ -214,7 +255,11 @@ export function OrgFinalClient() {
 
   /* ── guards ── */
   if (isLoading) {
-    return <div className="ox-root" style={{ padding: '2rem', color: 'var(--text-muted)' }}>Loading organization…</div>;
+    return (
+      <div className="ox-root" style={{ padding: '2rem', color: 'var(--text-muted)' }}>
+        Loading organization…
+      </div>
+    );
   }
   if (!isOrgUser) {
     return (
@@ -229,7 +274,7 @@ export function OrgFinalClient() {
     m ? (
       <button
         type="button"
-        className={`ox-node${big ? ' big' : ''}`}
+        className={`ox-node${big ? ' big' : ''}${isCommittee(m) ? ' ic' : ''}`}
         onClick={() => openProfile(m)}
       >
         <Avatar member={m} cls={clsOf(m)} size={big ? 38 : 26} fs={big ? 11 : 8.5} />
@@ -237,6 +282,11 @@ export function OrgFinalClient() {
           <div className="ox-node-nm">{m.display_name}</div>
           <div className="ox-node-rl">{m.title || tierOf(m).label}</div>
         </div>
+        {committee && isCommittee(m) && (
+          <span className="ox-node-ic" title="Investment committee">
+            IC
+          </span>
+        )}
       </button>
     ) : null;
 
@@ -291,7 +341,11 @@ export function OrgFinalClient() {
                     {t2.label}
                     {t2.id === m.tier && <span className="oxr-roleopt-now">CURRENT</span>}
                     {checked && t2.id !== m.tier && (
-                      <Check size={12} strokeWidth={2} style={{ marginLeft: 'auto', color: 'var(--emerald)' }} />
+                      <Check
+                        size={12}
+                        strokeWidth={2}
+                        style={{ marginLeft: 'auto', color: 'var(--emerald)' }}
+                      />
                     )}
                   </button>
                 );
@@ -354,20 +408,34 @@ export function OrgFinalClient() {
         <b className={d.roiPct != null && d.roiPct < 0 ? 'neg' : ''}>{fmtSignedPct(d.roiPct)}</b>
       </div>
       {d.lead ? (
-        <button type="button" className="ox2-lead" onClick={() => openProfile(d.lead)}>
+        <button
+          type="button"
+          className={`ox2-lead${isCommittee(d.lead) ? ' ic' : ''}`}
+          onClick={() => openProfile(d.lead)}
+        >
           <Avatar member={d.lead} cls={clsOf(d.lead)} size={26} fs={8.5} />
           <div style={{ minWidth: 0 }}>
             <div className="ox2-lead-nm">{d.lead.display_name}</div>
             <div className="ox2-lead-rl">{d.lead.title || tierOf(d.lead).label}</div>
           </div>
+          {committee && isCommittee(d.lead) && (
+            <span className="ox-node-ic" title="Investment committee">
+              IC
+            </span>
+          )}
         </button>
       ) : (
-        <div className="ox2-lead-empty">No lead assigned</div>
+        <VacantSeat label="Desk head" />
       )}
       {d.analysts.length > 0 && (
         <div className="ox2-memberlist">
           {d.analysts.map((a) => (
-            <button key={a.id} type="button" className="ox2-member-row" onClick={() => openProfile(a)}>
+            <button
+              key={a.id}
+              type="button"
+              className="ox2-member-row"
+              onClick={() => openProfile(a)}
+            >
               <Avatar member={a} cls={clsOf(a)} size={20} fs={6.5} />
               <span className="ox2-member-nm">{a.display_name}</span>
               {a.tier === 'senior_analyst' && <span className="ox2-member-sr">SR</span>}
@@ -434,6 +502,25 @@ export function OrgFinalClient() {
             <b>{fundName || 'Team Hub'}</b> · {universityName || 'Organization'} · {longDate()}
           </div>
           <h1 className="ox-h1">The investment council.</h1>
+          <div className="ox2-summaryline" aria-label="Council summary">
+            {loading ? (
+              <Skel w={280} h={13} />
+            ) : (
+              <>
+                <span>
+                  <b>{stats.members}</b> member{stats.members === 1 ? '' : 's'}
+                </span>
+                <span className="ox2-summary-sep">·</span>
+                <span>
+                  <b>{stats.desks}</b> desk{stats.desks === 1 ? '' : 's'}
+                </span>
+                <span className="ox2-summary-sep">·</span>
+                <span className={vacancies > 0 ? 'vac' : ''}>
+                  <b>{vacancies}</b> vacanc{vacancies === 1 ? 'y' : 'ies'}
+                </span>
+              </>
+            )}
+          </div>
           <p className="ox-prose">
             {loading ? (
               <Skel w={520} h={16} />
@@ -443,7 +530,11 @@ export function OrgFinalClient() {
                 desk{stats.desks === 1 ? '' : 's'}.{' '}
                 {president && (
                   <>
-                    <button type="button" className="ox-prose-a" onClick={() => openProfile(president)}>
+                    <button
+                      type="button"
+                      className="ox-prose-a"
+                      onClick={() => openProfile(president)}
+                    >
                       {president.display_name}
                     </button>{' '}
                     presides
@@ -467,8 +558,13 @@ export function OrgFinalClient() {
                 {president && '. '}
                 {topDesk && topDesk.lead && (
                   <>
-                    <b>{topDesk.name}</b> leads the fund at <b>{fmtSignedPct(topDesk.roiPct)} ROI</b> under{' '}
-                    <button type="button" className="ox-prose-a" onClick={() => openProfile(topDesk.lead)}>
+                    <b>{topDesk.name}</b> leads the fund at{' '}
+                    <b>{fmtSignedPct(topDesk.roiPct)} ROI</b> under{' '}
+                    <button
+                      type="button"
+                      className="ox-prose-a"
+                      onClick={() => openProfile(topDesk.lead)}
+                    >
                       {topDesk.lead.display_name}
                     </button>
                     .
@@ -491,19 +587,35 @@ export function OrgFinalClient() {
           </div>
           <div className="ox2-statcell">
             <div className="ox-stat-label">Leadership</div>
-            <div className="ox-stat-value">{loading ? <Skel w={18} h={17} /> : stats.leadership}</div>
+            <div className="ox-stat-value">
+              {loading ? <Skel w={18} h={17} /> : stats.leadership}
+            </div>
+          </div>
+          <div className="ox2-statcell">
+            <div className="ox-stat-label">Vacancies</div>
+            <div className={`ox-stat-value${vacancies > 0 ? ' warn' : ''}`}>
+              {loading ? <Skel w={18} h={17} /> : vacancies}
+            </div>
           </div>
           <div className="ox2-statcell">
             <div className="ox-stat-label">Top desk</div>
-            <div className="ox-stat-value pos">{loading ? <Skel w={48} h={17} /> : fmtSignedPct(stats.topRoi)}</div>
+            <div className="ox-stat-value pos">
+              {loading ? <Skel w={48} h={17} /> : fmtSignedPct(stats.topRoi)}
+            </div>
           </div>
           <div className="ox2-statcell">
             <div className="ox-stat-label">Avg desk ROI</div>
-            <div className="ox-stat-value pos">{loading ? <Skel w={48} h={17} /> : fmtSignedPct(stats.avgRoi)}</div>
+            <div className="ox-stat-value pos">
+              {loading ? <Skel w={48} h={17} /> : fmtSignedPct(stats.avgRoi)}
+            </div>
           </div>
           {canManage && (
             <div className="ox2-addcell">
-              <button type="button" className="ox-ghostpill" onClick={() => router.push('/org-team-hub/assignments')}>
+              <button
+                type="button"
+                className="ox-ghostpill"
+                onClick={() => router.push('/org-team-hub/assignments')}
+              >
                 <Plus size={13} strokeWidth={2} /> Add member
               </button>
             </div>
@@ -522,13 +634,50 @@ export function OrgFinalClient() {
               </span>
               <span className="ox-key">
                 <span className="ox-dot pm" />
-                Portfolio management
+                Sector head
               </span>
               <span className="ox-key">
                 <span className="ox-dot an" />
-                Analysts
+                Analyst
+              </span>
+              <span className="ox-key">
+                <span className="ox-dot vac" />
+                Vacant
               </span>
             </div>
+          </div>
+
+          <div className="ox-viewbar">
+            <div className="ox-seg" role="tablist" aria-label="Chart layout">
+              {[
+                { id: 'tiers', label: 'Tiers', Icon: Network },
+                { id: 'radial', label: 'Radial', Icon: Radar },
+                { id: 'columns', label: 'Columns', Icon: Columns3 },
+              ].map(({ id, label, Icon }) => (
+                <button
+                  key={id}
+                  type="button"
+                  role="tab"
+                  aria-selected={layout === id}
+                  className={`ox-segbtn${layout === id ? ' active' : ''}`}
+                  onClick={() => setLayout(id)}
+                >
+                  <Icon size={13} strokeWidth={1.9} />
+                  {label}
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              className={`ox-committee-btn${committee ? ' active' : ''}`}
+              aria-pressed={committee}
+              onClick={() => setCommittee((v) => !v)}
+              disabled={loading || committeeCount === 0}
+            >
+              <Gavel size={13} strokeWidth={1.9} />
+              Committee overlay
+              {committeeCount > 0 && <span className="ox-committee-count">{committeeCount}</span>}
+            </button>
           </div>
 
           {loading ? (
@@ -537,8 +686,29 @@ export function OrgFinalClient() {
               <div className="ox2-vline" />
               <Skel w="100%" h={150} style={{ borderRadius: 10, maxWidth: 1318 }} />
             </div>
+          ) : layout === 'radial' ? (
+            <RadialView
+              president={president}
+              innerNodes={[vp, ...execs].filter(Boolean)}
+              desks={desks}
+              committee={committee}
+              initials={initials}
+              clsOf={clsOf}
+              tierOf={tierOf}
+              isCommittee={isCommittee}
+              fmtSignedPct={fmtSignedPct}
+              onOpen={openProfile}
+            />
+          ) : layout === 'columns' ? (
+            <ColumnsView
+              leadershipNodes={leadershipNodes}
+              desks={desks}
+              committee={committee}
+              Node={Node}
+              fmtSignedPct={fmtSignedPct}
+            />
           ) : (
-            <div className="ox2-bandchart">
+            <div className={`ox2-bandchart${committee ? ' ic-mode' : ''}`}>
               <div className="ox2-row">
                 <Node m={president} big />
                 {president && vp && <span className="ox2-hlink" style={{ alignSelf: 'center' }} />}
@@ -629,7 +799,9 @@ export function OrgFinalClient() {
 
               {showDesks &&
                 desks.map((d) => {
-                  const rowMembers = (d.lead ? [d.lead, ...d.analysts] : d.analysts).filter(matches);
+                  const rowMembers = (d.lead ? [d.lead, ...d.analysts] : d.analysts).filter(
+                    matches,
+                  );
                   if (rowMembers.length === 0) return null;
                   return (
                     <div key={d.teamId} className="oxr-seg">
@@ -642,7 +814,9 @@ export function OrgFinalClient() {
                           </div>
                         </div>
                         <div className="oxr-seg-meta">
-                          <span className={`oxr-seg-roi${d.roiPct != null && d.roiPct < 0 ? ' neg' : ''}`}>
+                          <span
+                            className={`oxr-seg-roi${d.roiPct != null && d.roiPct < 0 ? ' neg' : ''}`}
+                          >
                             {fmtSignedPct(d.roiPct)}
                           </span>
                           <span className="oxr-seg-count">{d.members.length}</span>

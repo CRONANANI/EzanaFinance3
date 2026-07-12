@@ -848,6 +848,382 @@ body.light-mode .ox-root {
   }
 }
 
+/* ── Header summary line (N members · N desks · N vacancies) ── */
+.ox2-summaryline {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 12px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--ox-muted);
+  font-variant-numeric: tabular-nums;
+}
+.ox2-summaryline b {
+  color: var(--ox-text);
+  font-weight: 700;
+}
+.ox2-summaryline .vac b {
+  color: var(--warning);
+}
+.ox2-summary-sep {
+  color: var(--ox-ghost);
+}
+.ox-stat-value.warn {
+  color: var(--warning);
+}
+
+/* ── Vacant legend swatch ──────────────────────────────────── */
+.ox-dot.vac {
+  background: transparent;
+  border: 1px dashed var(--ox-faint);
+}
+
+/* ── View toggle + committee overlay control bar ───────────── */
+.ox-viewbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+.ox-seg {
+  display: inline-flex;
+  border: 1px solid var(--ox-line-strong);
+  border-radius: 999px;
+  padding: 3px;
+  gap: 2px;
+}
+.ox-segbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ox-muted);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
+}
+.ox-segbtn:hover {
+  color: var(--ox-text-2);
+}
+.ox-segbtn.active {
+  background: var(--org-primary, var(--emerald));
+  color: var(--org-on-primary, #06241a);
+}
+.ox-committee-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 34px;
+  padding: 0 15px;
+  border-radius: 999px;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid var(--ox-line-strong);
+  color: var(--ox-muted);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease,
+    color 0.12s ease;
+}
+.ox-committee-btn:hover:not(:disabled) {
+  border-color: var(--purple);
+  color: var(--text-primary, var(--ox-text));
+}
+.ox-committee-btn.active {
+  background: var(--purple-bg);
+  border-color: var(--purple);
+  color: var(--purple);
+}
+.ox-committee-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.ox-committee-count {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--purple-bg);
+  color: var(--purple);
+}
+
+/* ── Investment-committee overlay marking ──────────────────── */
+.ox-node-ic {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--purple-bg);
+  color: var(--purple);
+  flex-shrink: 0;
+}
+.ic-mode .ox-node:not(.ic),
+.ic-mode .ox2-lead:not(.ic),
+.ic-mode .ox2-member-row,
+.ic-mode .ox-vacant,
+.ic-mode .oxrad-node:not(.ic) {
+  opacity: 0.34;
+}
+.ic-mode .ox-node.ic,
+.ic-mode .oxrad-node.ic {
+  border-color: var(--purple);
+}
+.ic-mode .ox2-lead.ic {
+  outline: 1px solid var(--purple);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* ── Vacant seat card (shared) ─────────────────────────────── */
+.ox-vacant {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 11px;
+  border: 1px dashed var(--ox-line-hover);
+  border-radius: 10px;
+  background: transparent;
+  width: 100%;
+  min-width: 0;
+}
+.ox-vacant-ic {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px dashed var(--ox-faint);
+  color: var(--ox-faint);
+  flex-shrink: 0;
+}
+.ox-vacant-tx {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.ox-vacant-nm {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--ox-muted);
+}
+.ox-vacant-rl {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ox-ghost);
+  margin-top: 1px;
+}
+
+/* Vacant row inside a Tiers desk card */
+.ox2-member-row.vacant {
+  cursor: default;
+}
+.ox2-member-vacdot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px dashed var(--ox-faint);
+  flex-shrink: 0;
+}
+.ox2-member-nm.vacant {
+  color: var(--ox-faint);
+  font-style: italic;
+}
+
+/* ── Columns layout ────────────────────────────────────────── */
+.oxc-wrap {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  overflow-x: auto;
+  padding: 2px 2px 8px;
+  align-items: flex-start;
+}
+.oxc-col {
+  flex: 0 0 216px;
+  border: 1px solid var(--ox-line-2);
+  border-radius: 12px;
+  background: var(--ox-seg);
+  overflow: hidden;
+}
+.oxc-lead {
+  border-color: var(--ox-line-strong);
+}
+.oxc-col-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 13px;
+  border-bottom: 1px solid var(--ox-line);
+}
+.oxc-col-tag {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ox-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.oxc-col-roi {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--emerald);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+.oxc-col-roi.neg {
+  color: var(--negative);
+}
+.oxc-col-count {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ox-faint);
+  flex-shrink: 0;
+}
+.oxc-col-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+}
+.oxc-col-body .ox-node {
+  border-radius: 8px;
+}
+
+/* ── Radial layout ─────────────────────────────────────────── */
+.oxrad-scroll {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  overflow: auto;
+}
+.oxrad {
+  position: relative;
+  flex-shrink: 0;
+}
+.oxrad-spokes {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.oxrad-spoke {
+  stroke: var(--ox-line-hover);
+  stroke-width: 1;
+}
+.oxrad-spoke.faint {
+  stroke: var(--ox-line);
+}
+.oxrad-node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  width: 128px;
+  padding: 9px 10px;
+  border: 1px solid var(--ox-line-2);
+  border-radius: 10px;
+  background: var(--ox-card);
+  cursor: pointer;
+  text-align: center;
+  transition:
+    border-color 0.12s ease,
+    background 0.12s ease;
+}
+.oxrad-node:hover:not(:disabled) {
+  border-color: var(--ox-line-hover);
+  background: var(--ox-card-hover);
+}
+.oxrad-node.hub {
+  width: 150px;
+  border-color: var(--ox-line-strong);
+  z-index: 2;
+}
+.oxrad-node.vacant {
+  border-style: dashed;
+  cursor: default;
+}
+.oxrad-nm {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ox-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.oxrad-nm.vacant {
+  color: var(--ox-faint);
+  font-style: italic;
+  font-weight: 500;
+}
+.oxrad-rl {
+  font-size: 9px;
+  color: var(--ox-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.oxrad-desk-tag {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ox-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.oxrad-desk-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-variant-numeric: tabular-nums;
+}
+.oxrad-roi {
+  color: var(--emerald);
+  font-weight: 600;
+}
+.oxrad-roi.neg {
+  color: var(--negative);
+}
+.oxrad-open {
+  color: var(--warning);
+}
+
 /* ── responsive ────────────────────────────────────────────── */
 @media (max-width: 1000px) {
   .oxr-grid {
