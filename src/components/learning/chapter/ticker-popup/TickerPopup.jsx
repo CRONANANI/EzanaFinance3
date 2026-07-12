@@ -1,10 +1,18 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useTickerPopup } from './TickerPopupContext';
-import StockPriceChart from '@/components/research/StockPriceChart';
 import './ticker-popup.css';
+
+/* StockPriceChart pulls in Recharts and only renders inside this popup, which
+   opens on ticker interaction. Defer it (ssr:false, default export) so Recharts
+   loads on first popup open; reserved height matches .lc-ticker-popup-chart. */
+const StockPriceChart = dynamic(() => import('@/components/research/StockPriceChart'), {
+  ssr: false,
+  loading: () => <div aria-hidden style={{ height: 180, width: '100%' }} />,
+});
 
 export function TickerPopup() {
   const { activeTicker, anchorElement, closeTicker } = useTickerPopup();

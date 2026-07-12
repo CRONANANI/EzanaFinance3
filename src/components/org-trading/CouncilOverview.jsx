@@ -1,10 +1,17 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useOrg } from '@/contexts/OrgContext';
 import { PositionRow } from './PositionRow';
-import { FlagComposerModal } from './FlagComposerModal';
 import { AddPositionModal } from './add-position/AddPositionModal';
+
+/* FlagComposerModal only mounts when a flag is being composed (openFlagModal
+   truthy) — defer its code until then. Overlay modal: null fallback is safe. */
+const FlagComposerModal = dynamic(
+  () => import('./FlagComposerModal').then((m) => ({ default: m.FlagComposerModal })),
+  { loading: () => null },
+);
 import {
   MOCK_TEAM_PERFORMANCE,
   MOCK_TMT_HOLDINGS,
@@ -102,7 +109,7 @@ export function CouncilOverview() {
         {MOCK_TEAM_PERFORMANCE.map((team) => {
           const holdings = buildTeamHoldings(team.team_id);
           const pm = MOCK_MEMBERS.find(
-            (m) => m.role === 'portfolio_manager' && m.team_id === team.team_id
+            (m) => m.role === 'portfolio_manager' && m.team_id === team.team_id,
           );
           const teamDbId = dbTeamIdFromMockTeamId(orgTeams, team.team_id);
 
@@ -111,7 +118,9 @@ export function CouncilOverview() {
               <div className="ot-team-card-header">
                 <div>
                   <div className="ot-team-card-name">{team.team_name}</div>
-                  <div style={{ fontSize: '0.65rem', color: '#8b949e' }}>PM: {pm?.name || 'Unassigned'}</div>
+                  <div style={{ fontSize: '0.65rem', color: '#8b949e' }}>
+                    PM: {pm?.name || 'Unassigned'}
+                  </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <div className="ot-team-card-aum">${(team.value / 1000).toFixed(1)}K</div>

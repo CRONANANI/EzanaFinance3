@@ -1,9 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { useOrg } from '@/contexts/OrgContext';
-import { OpportunityAnalysisModal } from './OpportunityAnalysisModal';
 import './market-opportunities.css';
+
+/* Only mounts once the user opens an opportunity (selectedEvent truthy), so
+   defer its code until then. Overlay modal — null fallback is safe. Named. */
+const OpportunityAnalysisModal = dynamic(
+  () => import('./OpportunityAnalysisModal').then((m) => ({ default: m.OpportunityAnalysisModal })),
+  { loading: () => null },
+);
 
 export function MarketOpportunities() {
   const { isOrgUser, orgRole, isLoading: orgLoading } = useOrg();
@@ -85,7 +92,10 @@ export function MarketOpportunities() {
         ) : items.length === 0 ? (
           <div className="mkt-opps-empty">
             <i className="bi bi-binoculars" />
-            <p>No {activeTab === 'windfalls' ? 'opportunities' : 'risks'} detected for your profile right now.</p>
+            <p>
+              No {activeTab === 'windfalls' ? 'opportunities' : 'risks'} detected for your profile
+              right now.
+            </p>
           </div>
         ) : (
           <div className="mkt-opps-list">

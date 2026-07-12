@@ -1,10 +1,17 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useOrg } from '@/contexts/OrgContext';
 import { PositionRow } from './PositionRow';
-import { FlagComposerModal } from './FlagComposerModal';
 import { AddPositionModal } from './add-position/AddPositionModal';
+
+/* FlagComposerModal only mounts when a flag is being composed (openFlagModal
+   truthy) — defer its code until then. Overlay modal: null fallback is safe. */
+const FlagComposerModal = dynamic(
+  () => import('./FlagComposerModal').then((m) => ({ default: m.FlagComposerModal })),
+  { loading: () => null },
+);
 import { PositionThread } from '@/components/org/social2/PositionThread';
 import {
   MOCK_TEAM_PERFORMANCE,
@@ -127,7 +134,9 @@ export function TeamPortfolioView({ teamId: dbTeamId, memberRole, memberEmail })
           </div>
           <div style={{ textAlign: 'right' }}>
             <div className="ot-team-card-aum">${(team.value / 1000).toFixed(1)}K</div>
-            <div className={`ot-team-card-change ${team.change_pct >= 0 ? 'positive' : 'negative'}`}>
+            <div
+              className={`ot-team-card-change ${team.change_pct >= 0 ? 'positive' : 'negative'}`}
+            >
               {team.change_pct >= 0 ? '+' : ''}
               {team.change_pct.toFixed(1)}% today
             </div>
@@ -219,7 +228,10 @@ export function TeamPortfolioView({ teamId: dbTeamId, memberRole, memberEmail })
             }}
           >
             <div style={{ fontSize: '0.875rem', fontWeight: 700, color: '#f0f6fc' }}>
-              <i className="bi bi-chat-left-text" style={{ marginRight: '0.5rem', color: '#10b981' }} />
+              <i
+                className="bi bi-chat-left-text"
+                style={{ marginRight: '0.5rem', color: '#10b981' }}
+              />
               Discussion
             </div>
             <select
@@ -250,7 +262,12 @@ export function TeamPortfolioView({ teamId: dbTeamId, memberRole, memberEmail })
       {memberRole === 'analyst' && otherHoldings.length > 0 && (
         <div className="ot-team-card" style={{ marginTop: '1.5rem', opacity: 0.65 }}>
           <div
-            style={{ marginBottom: '0.75rem', fontSize: '0.875rem', fontWeight: 700, color: '#8b949e' }}
+            style={{
+              marginBottom: '0.75rem',
+              fontSize: '0.875rem',
+              fontWeight: 700,
+              color: '#8b949e',
+            }}
           >
             Other Team Positions ({otherHoldings.length})
           </div>

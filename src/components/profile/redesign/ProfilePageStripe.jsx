@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
 import { useMockPortfolio } from '@/hooks/useMockPortfolio';
@@ -15,7 +16,6 @@ import { IdentityHero } from './IdentityHero';
 import { CreatorTrackRecord } from './CreatorTrackRecord';
 import { PerfStats } from './PerfStats';
 import { Achievements } from './Achievements';
-import { PerfChart } from './PerfChart';
 import { EloRatingCard } from './EloRatingCard';
 import { WaysToImprove } from './WaysToImprove';
 import { TradeNotesPanel } from './TradeNotesPanel';
@@ -29,6 +29,14 @@ import {
 } from './mappers';
 
 import './profile-redesign.css';
+
+/* PerfChart pulls in Recharts and sits below the fold (renders only when
+   showChart is true, after PerfStats + Achievements). Defer it so Recharts
+   leaves the profile bundle; reserved height ≈ card (header + 240px chart). */
+const PerfChart = dynamic(() => import('./PerfChart').then((m) => ({ default: m.PerfChart })), {
+  ssr: false,
+  loading: () => <div aria-hidden style={{ minHeight: 340, width: '100%' }} />,
+});
 
 export function ProfilePageStripe({ username }) {
   const { user } = useAuth();

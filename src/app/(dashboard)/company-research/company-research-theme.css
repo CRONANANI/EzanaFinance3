@@ -374,3 +374,43 @@ body.light-mode .cr-news-chain-dot {
 .cr-news-chain-scroll::-webkit-scrollbar-thumb:hover {
   background: rgba(16, 185, 129, 0.3);
 }
+
+/* -------------------------------------------------------------------------
+   Entrance fades for the research data cards (StockQuote, Earnings, Key
+   Metrics, Competitors, Company Overview, Analyst Recommendations).
+
+   These replace gratuitous framer-motion `initial/animate` opacity(+y) fades
+   so those components can drop the framer-motion runtime import. The end
+   state is fully visible, so if the animation is ever unavailable the content
+   still renders correctly (graceful degradation). Honors reduced-motion.
+   ------------------------------------------------------------------------- */
+@keyframes cr-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes cr-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.research-fade-in {
+  animation: cr-fade-in 0.3s ease-out both;
+}
+.research-fade-up {
+  animation: cr-fade-up 0.3s ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .research-fade-in,
+  .research-fade-up {
+    animation: none;
+  }
+}

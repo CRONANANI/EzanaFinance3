@@ -12,10 +12,21 @@
  */
 
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { getModelConfig } from '@/lib/ai/analysis-prompts';
 import { getModelStripVariables } from '@/lib/research/modelStripVariables';
 import { ModelVariableStrip } from '@/components/research/models/ModelVariableStrip';
-import { EarningsAnalysisCard } from '@/components/research/models/EarningsAnalysisCard';
+
+/* EarningsAnalysisCard pulls in Recharts and only renders when the user opens
+   the "earnings" model (modelId === 'earnings'), so defer it to keep Recharts
+   out of this panel's initial bundle. Named export; reserved height ≈ card. */
+const EarningsAnalysisCard = dynamic(
+  () =>
+    import('@/components/research/models/EarningsAnalysisCard').then((m) => ({
+      default: m.EarningsAnalysisCard,
+    })),
+  { ssr: false, loading: () => <div aria-hidden style={{ minHeight: 480, width: '100%' }} /> },
+);
 import { CompsAnalysisCard } from '@/components/research/models/CompsAnalysisCard';
 import DCFInteractiveModel from './dcf/DCFInteractiveModel';
 import { incrementAnalysesRun } from '@/lib/beginner-profile';

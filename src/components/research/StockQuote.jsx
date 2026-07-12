@@ -1,7 +1,6 @@
 'use client';
 
 import { useQuote } from '@/hooks/useFinnhub';
-import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, Clock, RefreshCw } from 'lucide-react';
 
 function formatPrice(v) {
@@ -16,25 +15,17 @@ export function StockQuote({ symbol }) {
   if (!symbol) return null;
   if (loading) {
     return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-6"
-      >
+      <div className="research-fade-in research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-6">
         <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
           <div className="w-5 h-5 border-2 border-emerald-500/50 border-t-emerald-500 rounded-full animate-spin" />
           Loading quote...
         </div>
-      </motion.div>
+      </div>
     );
   }
   if (error || !data || data.c === 0) {
     return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-6"
-      >
+      <div className="research-fade-in research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-6">
         <div className="text-center py-8">
           <TrendingUp className="w-12 h-12 text-gray-600 mx-auto mb-3" />
           <p className="text-gray-500 dark:text-gray-400">Quote data not available</p>
@@ -47,7 +38,7 @@ export function StockQuote({ symbol }) {
             Retry
           </button>
         </div>
-      </motion.div>
+      </div>
     );
   }
 
@@ -63,11 +54,7 @@ export function StockQuote({ symbol }) {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-6"
-    >
+    <div className="research-fade-up research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Stock Quote</h3>
         <div className="flex items-center gap-2">
@@ -86,11 +73,17 @@ export function StockQuote({ symbol }) {
         </div>
       </div>
       <div className="mb-6">
-        <p className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight sm:text-3xl md:text-4xl">{formatPrice(price)}</p>
-        <div className={`flex items-center gap-2 mt-2 ${isPositive ? 'text-emerald-600 dark:text-emerald-500' : 'text-red-600 dark:text-red-500'}`}>
+        <p className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight sm:text-3xl md:text-4xl">
+          {formatPrice(price)}
+        </p>
+        <div
+          className={`flex items-center gap-2 mt-2 ${isPositive ? 'text-emerald-600 dark:text-emerald-500' : 'text-red-600 dark:text-red-500'}`}
+        >
           {isPositive ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
           <span className="font-semibold text-lg">
-            {isPositive ? '+' : ''}{formatPrice(change)} ({isPositive ? '+' : ''}{Number(changePct).toFixed(2)}%)
+            {isPositive ? '+' : ''}
+            {formatPrice(change)} ({isPositive ? '+' : ''}
+            {Number(changePct).toFixed(2)}%)
           </span>
         </div>
       </div>
@@ -105,7 +98,9 @@ export function StockQuote({ symbol }) {
         </div>
         <div className="bg-gray-100 dark:bg-[#161b22] rounded-xl p-3">
           <p className="text-xs text-gray-500 mb-1">Day High</p>
-          <p className="text-emerald-600 dark:text-emerald-400 font-semibold">{formatPrice(data.h)}</p>
+          <p className="text-emerald-600 dark:text-emerald-400 font-semibold">
+            {formatPrice(data.h)}
+          </p>
         </div>
         <div className="bg-gray-100 dark:bg-[#161b22] rounded-xl p-3">
           <p className="text-xs text-gray-500 mb-1">Day Low</p>
@@ -116,7 +111,9 @@ export function StockQuote({ symbol }) {
         <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
           <div className="flex justify-between text-xs text-gray-500 mb-2">
             <span>Day Range</span>
-            <span>{formatPrice(data.l)} - {formatPrice(data.h)}</span>
+            <span>
+              {formatPrice(data.l)} - {formatPrice(data.h)}
+            </span>
           </div>
           <div className="relative h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
             <div className="absolute h-full bg-gradient-to-r from-red-500 via-yellow-500 to-emerald-500 rounded-full w-full" />
@@ -130,6 +127,6 @@ export function StockQuote({ symbol }) {
           </div>
         </div>
       )}
-    </motion.div>
+    </div>
   );
 }

@@ -1,8 +1,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { AnimatePresence, motion } from 'framer-motion';
-import { InteractiveGlobe } from '@/components/ui/interactive-globe';
+
+/* InteractiveGlobe is a large (~1950-line) client-only canvas visualization.
+   Defer it (ssr:false) so its code + geo data leave the shared/critical bundle;
+   the reserved square keeps CLS at 0 while it loads. Named export. */
+const InteractiveGlobe = dynamic(
+  () => import('@/components/ui/interactive-globe').then((m) => ({ default: m.InteractiveGlobe })),
+  {
+    ssr: false,
+    loading: () => (
+      <div aria-hidden style={{ width: '100%', maxWidth: 460, aspectRatio: '1 / 1' }} />
+    ),
+  },
+);
 
 const HERO_NOTIFICATIONS = [
   {

@@ -1,7 +1,6 @@
 'use client';
 
 import { useStockMetric } from '@/hooks/useFinnhub';
-import { motion } from 'framer-motion';
 import { MetricInfo } from '@/components/beginner/MetricInfo';
 
 function fmt(v) {
@@ -37,11 +36,7 @@ export function KeyMetrics({ symbol }) {
   if (!symbol) return null;
   if (loading) {
     return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-4"
-      >
+      <div className="research-fade-in research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-4">
         <div
           className="flex items-center gap-2"
           style={{
@@ -53,16 +48,12 @@ export function KeyMetrics({ symbol }) {
           <div className="w-4 h-4 border-2 border-emerald-500/50 border-t-emerald-500 rounded-full animate-spin" />
           Loading metrics...
         </div>
-      </motion.div>
+      </div>
     );
   }
   if (error || !data?.metric) {
     return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-4"
-      >
+      <div className="research-fade-in research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-4">
         <p
           style={{
             fontSize: '0.6875rem',
@@ -72,7 +63,7 @@ export function KeyMetrics({ symbol }) {
         >
           Key metrics unavailable.
         </p>
-      </motion.div>
+      </div>
     );
   }
 
@@ -80,11 +71,7 @@ export function KeyMetrics({ symbol }) {
   const entries = Object.entries(metric).filter(([, v]) => v != null && v !== '');
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl"
-    >
+    <div className="research-fade-up research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl">
       <div
         style={{ padding: '0.75rem 1.25rem', borderBottom: '1px solid rgba(16, 185, 129, 0.06)' }}
       >
@@ -144,6 +131,6 @@ export function KeyMetrics({ symbol }) {
           ))}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

@@ -1,7 +1,6 @@
 'use client';
 
 import { useRecommendation, usePriceTarget } from '@/hooks/useFinnhub';
-import { motion } from 'framer-motion';
 import { TrendingUp, Minus, TrendingDown, Users } from 'lucide-react';
 
 export function AnalystRecommendations({ symbol }) {
@@ -13,11 +12,7 @@ export function AnalystRecommendations({ symbol }) {
   if (!symbol) return null;
   if (isLoading) {
     return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-4"
-      >
+      <div className="research-fade-in research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-4">
         <div
           className="flex items-center gap-2"
           style={{
@@ -29,17 +24,13 @@ export function AnalystRecommendations({ symbol }) {
           <div className="w-4 h-4 border-2 border-emerald-500/50 border-t-emerald-500 rounded-full animate-spin" />
           Loading analyst data...
         </div>
-      </motion.div>
+      </div>
     );
   }
 
   if ((!recommendations || recommendations.length === 0) && !priceTarget?.targetMean) {
     return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-4"
-      >
+      <div className="research-fade-in research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-4">
         <div className="text-center py-4">
           <Users className="w-8 h-8 text-gray-600 mx-auto mb-2" />
           <p
@@ -52,7 +43,7 @@ export function AnalystRecommendations({ symbol }) {
             Analyst data not available
           </p>
         </div>
-      </motion.div>
+      </div>
     );
   }
 
@@ -105,11 +96,7 @@ export function AnalystRecommendations({ symbol }) {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl"
-    >
+    <div className="research-fade-up research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl">
       <div
         style={{
           display: 'flex',
@@ -373,6 +360,6 @@ export function AnalystRecommendations({ symbol }) {
           </p>
         )}
       </div>
-    </motion.div>
+    </div>
   );
 }

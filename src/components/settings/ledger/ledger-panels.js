@@ -1,13 +1,4 @@
-import {
-  ProfilePanel,
-  PasswordPanel,
-  FamilyPanel,
-  PlanPanel,
-  BillingPanel,
-  EmailPanel,
-  IntegrationsPanel,
-  ApiPanel,
-} from '@/components/settings/SettingsPanels';
+import dynamic from 'next/dynamic';
 import { MyRoleAccessPanel } from '@/components/settings/MyRoleAccessPanel';
 import { OrgAdminPanel } from '@/components/settings/org/OrgAdminPanel';
 import { NotificationsWithOrg } from '@/components/settings/org/NotificationsWithOrg';
@@ -17,6 +8,26 @@ import { PartnerManagementPanel } from '@/components/settings/PartnerManagementP
 import { MyDetailsLedger } from './panels/MyDetailsLedger';
 import { AppearanceLedger } from './panels/AppearanceLedger';
 import { wrapLegacyPanel } from './legacy-bridge';
+
+/* SettingsPanels.jsx is one ~1644-line client module. The Ledger only ever
+   renders the active tab's panel, so each panel is deferred via next/dynamic —
+   keeping that module out of the initial /settings chunk (it must be dynamic
+   here AND in every other importer, or the module gets pulled back in). The
+   reserved-height fallback keeps the tab swap CLS≈0. All are named exports. */
+const ledgerPanelFallback = () => <div aria-hidden style={{ minHeight: 480, width: '100%' }} />;
+const dynLedgerPanel = (name) =>
+  dynamic(
+    () => import('@/components/settings/SettingsPanels').then((m) => ({ default: m[name] })),
+    { loading: ledgerPanelFallback },
+  );
+const ProfilePanel = dynLedgerPanel('ProfilePanel');
+const PasswordPanel = dynLedgerPanel('PasswordPanel');
+const FamilyPanel = dynLedgerPanel('FamilyPanel');
+const PlanPanel = dynLedgerPanel('PlanPanel');
+const BillingPanel = dynLedgerPanel('BillingPanel');
+const EmailPanel = dynLedgerPanel('EmailPanel');
+const IntegrationsPanel = dynLedgerPanel('IntegrationsPanel');
+const ApiPanel = dynLedgerPanel('ApiPanel');
 
 export const LEDGER_PAGE_META = {
   'my-details': {

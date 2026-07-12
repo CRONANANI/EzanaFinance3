@@ -1,11 +1,21 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import { User, Upload, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/lib/supabase-browser';
 import { useAuth } from '@/components/AuthProvider';
-import { DeleteAccountModal } from '@/components/settings/SettingsPanels';
 import { LedgerField, LedgerSelect, LedgerRow, LedgerSaveBar } from '../primitives';
+
+/* DeleteAccountModal is an overlay that only mounts once the user opens it, and
+   it lives in the large SettingsPanels.jsx module — defer it so that module
+   isn't pulled into this panel's chunk. Overlay modal: null fallback is safe
+   (no in-flow layout to reserve). Named export. */
+const DeleteAccountModal = dynamic(
+  () =>
+    import('@/components/settings/SettingsPanels').then((m) => ({ default: m.DeleteAccountModal })),
+  { loading: () => null },
+);
 
 export function MyDetailsLedger({ onSave, settings, updateSetting, saving }) {
   const { user } = useAuth();

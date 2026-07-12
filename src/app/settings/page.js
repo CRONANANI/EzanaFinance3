@@ -1,32 +1,46 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState, Suspense } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import {
-  MyDetailsPanel,
-  AppearancePanel,
-  ProfilePanel,
-  PasswordPanel,
-  FamilyPanel,
-  PlanPanel,
-  BillingPanel,
-  EmailPanel,
-  NotificationsPanel,
-  IntegrationsPanel,
-  PlatformChangelogPanel,
-  ApiPanel,
-  OrgSettingsPanel,
-  MyRoleAccessPanel,
-  DataRequestPanel,
-  PartnerManagementPanel,
-} from '@/components/settings';
+/* Panels that live in their own (small) modules — import directly rather than
+   through the barrel so the barrel doesn't drag SettingsPanels.jsx back into
+   the initial chunk. */
+import { OrgSettingsPanel } from '@/components/settings/OrgSettingsPanel';
+import { MyRoleAccessPanel } from '@/components/settings/MyRoleAccessPanel';
+import { DataRequestPanel } from '@/components/settings/DataRequestPanel';
+import { PlatformChangelogPanel } from '@/components/settings/PlatformChangelogPanel';
+import { PartnerManagementPanel } from '@/components/settings/PartnerManagementPanel';
 import { usePartner } from '@/contexts/PartnerContext';
 import { useUserSettings } from '@/contexts/SettingsContext';
 import { useOrg } from '@/contexts/OrgContext';
 import { SettingsLedger } from '@/components/settings/ledger/SettingsLedger';
 import './settings.css';
 import './settings-partner.css';
+
+/* The account settings panels all live in one ~1644-line client module
+   (SettingsPanels.jsx). Only the active tab's panel ever renders, so we defer
+   the whole module via next/dynamic — it leaves the initial /settings route JS
+   and loads a tick after the shell paints. The reserved-height fallback keeps
+   CLS≈0 during the tab swap. All are named exports. */
+const panelFallback = () => <div aria-hidden style={{ minHeight: 480, width: '100%' }} />;
+const dynPanel = (name) =>
+  dynamic(
+    () => import('@/components/settings/SettingsPanels').then((m) => ({ default: m[name] })),
+    { loading: panelFallback },
+  );
+const MyDetailsPanel = dynPanel('MyDetailsPanel');
+const AppearancePanel = dynPanel('AppearancePanel');
+const ProfilePanel = dynPanel('ProfilePanel');
+const PasswordPanel = dynPanel('PasswordPanel');
+const FamilyPanel = dynPanel('FamilyPanel');
+const PlanPanel = dynPanel('PlanPanel');
+const BillingPanel = dynPanel('BillingPanel');
+const EmailPanel = dynPanel('EmailPanel');
+const NotificationsPanel = dynPanel('NotificationsPanel');
+const IntegrationsPanel = dynPanel('IntegrationsPanel');
+const ApiPanel = dynPanel('ApiPanel');
 
 const USE_LEDGER = process.env.NEXT_PUBLIC_SETTINGS_LEDGER !== '0';
 

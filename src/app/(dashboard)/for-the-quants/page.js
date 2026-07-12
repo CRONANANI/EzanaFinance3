@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -16,13 +17,29 @@ import {
 } from '@/lib/for-the-quants-mock-data';
 import { VisualStrategyBuilder } from '@/components/quants/VisualStrategyBuilder';
 import { DatasetRegistryCard } from '@/components/quants/DatasetRegistryCard';
-import { StrategyComparisonCard } from '@/components/quants/StrategyComparisonCard';
-import { BacktestResultsCard } from '@/components/quants/BacktestResultsCard';
 import { TechnicalScannerCard } from '@/components/quants/TechnicalScannerCard';
 import { CorrelationMatrixCard } from '@/components/quants/CorrelationMatrixCard';
 import { PairsTradingCard } from '@/components/quants/PairsTradingCard';
 import { CoursePreviewSection } from '@/components/learning/CoursePreviewSection';
 import { getCoursesForQuantsPreview } from '@/lib/learning-curriculum';
+
+/* BacktestResultsCard and StrategyComparisonCard both render Recharts charts
+   and sit well below the fold on this long page. Defer them so Recharts leaves
+   the route's critical bundle; reserved heights ≈ each card's footprint. */
+const BacktestResultsCard = dynamic(
+  () =>
+    import('@/components/quants/BacktestResultsCard').then((m) => ({
+      default: m.BacktestResultsCard,
+    })),
+  { ssr: false, loading: () => <div aria-hidden style={{ minHeight: 460, width: '100%' }} /> },
+);
+const StrategyComparisonCard = dynamic(
+  () =>
+    import('@/components/quants/StrategyComparisonCard').then((m) => ({
+      default: m.StrategyComparisonCard,
+    })),
+  { ssr: false, loading: () => <div aria-hidden style={{ minHeight: 360, width: '100%' }} /> },
+);
 
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';

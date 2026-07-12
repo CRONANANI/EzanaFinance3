@@ -1,14 +1,24 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { CalendarDays, List, Plus } from 'lucide-react';
 import './assignments2.css';
 import { AssignmentMetricsStrip } from './AssignmentMetricsStrip';
 import { AssignmentCalendar } from './AssignmentCalendar';
 import { AssignmentTabs } from './AssignmentTabs';
-import { AssignmentDrawer } from './AssignmentDrawer';
-import { AssignmentReviewModal } from './AssignmentReviewModal';
 import { AssignmentExport } from './AssignmentExport';
+
+/* AssignmentDrawer (drawerOpen) and AssignmentReviewModal (reviewId) only mount
+   on interaction — defer their code until opened. Overlays: null fallback safe. */
+const AssignmentDrawer = dynamic(
+  () => import('./AssignmentDrawer').then((m) => ({ default: m.AssignmentDrawer })),
+  { loading: () => null },
+);
+const AssignmentReviewModal = dynamic(
+  () => import('./AssignmentReviewModal').then((m) => ({ default: m.AssignmentReviewModal })),
+  { loading: () => null },
+);
 
 const emptyData = {
   orgName: 'Organization',

@@ -1,13 +1,24 @@
 'use client';
 
 import { useState, useMemo, useEffect, Suspense } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { PinnableCard } from '@/components/ui/PinnableCard';
 import { useChecklist } from '@/hooks/useChecklist';
 import { CoursePreviewSection } from '@/components/learning/CoursePreviewSection';
 import { getCoursesByTrack } from '@/lib/learning-curriculum';
-import { TopPerformingPoliticiansCard } from '@/components/capitol/TopPerformingPoliticiansCard';
+
+/* TopPerformingPoliticiansCard renders Recharts and sits in Row 2 (below the
+   fold). Defer it so Recharts leaves the route's critical bundle; reserved
+   height matches the PinnableCard (defaultH=3) so there's no layout shift. */
+const TopPerformingPoliticiansCard = dynamic(
+  () =>
+    import('@/components/capitol/TopPerformingPoliticiansCard').then((m) => ({
+      default: m.TopPerformingPoliticiansCard,
+    })),
+  { ssr: false, loading: () => <div aria-hidden style={{ minHeight: 360, width: '100%' }} /> },
+);
 
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';

@@ -2,6 +2,7 @@
 
 import '@/app/(dashboard)/community/community.css';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
 import { useMockPortfolio } from '@/hooks/useMockPortfolio';
@@ -9,13 +10,20 @@ import { supabase } from '@/lib/supabase-browser';
 import { MetricsGrid } from './MetricsGrid';
 import { AchievementsGrid } from './AchievementsGrid';
 import { ProfilePerformancePanel } from './ProfilePerformancePanel';
-import { ProfileEloCard } from './ProfileEloCard';
 import { ProfileTradeNotes } from './ProfileTradeNotes';
 import CopyRequestButton from './CopyRequestButton';
 import { useProfileActivity } from '@/hooks/useProfileActivity';
 import { computeProfileMetrics } from '@/lib/profile-metrics';
 import { CreatorBadge } from '@/components/community/redesign_v2/CreatorBadge';
 import './copy-request-button.css';
+
+/* ProfileEloCard renders a Recharts Elo-history area chart and lives in the
+   sidebar aside (below the fold on narrow viewports). Defer it so Recharts
+   leaves this bundle; reserved height keeps the sidebar from shifting. */
+const ProfileEloCard = dynamic(
+  () => import('./ProfileEloCard').then((m) => ({ default: m.ProfileEloCard })),
+  { ssr: false, loading: () => <div aria-hidden style={{ minHeight: 320, width: '100%' }} /> },
+);
 
 function badgePills(stats) {
   const pills = [];

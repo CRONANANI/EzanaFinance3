@@ -2,10 +2,17 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { Flag, Inbox, Plus } from 'lucide-react';
 import { useOrg } from '@/contexts/OrgContext';
-import { FlagComposerModal } from './FlagComposerModal';
 import { AddPositionModal } from './add-position/AddPositionModal';
+
+/* FlagComposerModal only mounts when a flag is being composed (openFlagModal
+   truthy) — defer its code until then. Overlay modal: null fallback is safe. */
+const FlagComposerModal = dynamic(
+  () => import('./FlagComposerModal').then((m) => ({ default: m.FlagComposerModal })),
+  { loading: () => null },
+);
 import {
   MOCK_TEAM_PERFORMANCE,
   MOCK_TMT_HOLDINGS,
