@@ -23,7 +23,9 @@ export function AcademicSummaryStrip() {
         const vio = vioRes.ok ? await vioRes.json().catch(() => ({})) : {};
         if (cancelled) return;
         const current = (coh.cohorts || []).find((c) => c.is_current && !c.archived);
-        const myOpen = (asg.assignments || []).filter((a) => a.mine && a.status !== 'graded').length;
+        const myOpen = (asg.assignments || []).filter(
+          (a) => a.mine && !['complete', 'graded'].includes(a.status),
+        ).length;
         const openViolations = (vio.violations || []).length;
         setData({
           current,
@@ -43,25 +45,43 @@ export function AcademicSummaryStrip() {
   if (!data) return null;
 
   return (
-    <div className="ac3-root" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', marginBottom: '1.25rem' }}>
-      <Link href="/org-team-hub/cohorts" className="ac3-card" style={{ textDecoration: 'none', flex: '1 1 180px' }}>
+    <div
+      className="ac3-root"
+      style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', marginBottom: '1.25rem' }}
+    >
+      <Link
+        href="/org-team-hub/cohorts"
+        className="ac3-card"
+        style={{ textDecoration: 'none', flex: '1 1 180px' }}
+      >
         <div className="ac3-meta">Current cohort</div>
         <div className="ac3-strong" style={{ fontSize: '0.95rem' }}>
           {data.current ? data.current.name : 'None set'}
         </div>
       </Link>
-      <Link href="/org-team-hub/assignments" className="ac3-card" style={{ textDecoration: 'none', flex: '1 1 180px' }}>
+      <Link
+        href="/org-team-hub/assignments"
+        className="ac3-card"
+        style={{ textDecoration: 'none', flex: '1 1 180px' }}
+      >
         <div className="ac3-meta">My open assignments</div>
         <div className="ac3-num ac3-strong" style={{ fontSize: '1.05rem' }}>
           {data.myOpen}
         </div>
       </Link>
       {data.canResolve && (
-        <Link href="/org-team-hub/compliance" className="ac3-card" style={{ textDecoration: 'none', flex: '1 1 180px' }}>
+        <Link
+          href="/org-team-hub/compliance"
+          className="ac3-card"
+          style={{ textDecoration: 'none', flex: '1 1 180px' }}
+        >
           <div className="ac3-meta">Open IPS violations</div>
           <div
             className="ac3-num ac3-strong"
-            style={{ fontSize: '1.05rem', color: data.openViolations ? 'var(--negative, #ef4444)' : undefined }}
+            style={{
+              fontSize: '1.05rem',
+              color: data.openViolations ? 'var(--negative, #ef4444)' : undefined,
+            }}
           >
             {data.openViolations}
           </div>

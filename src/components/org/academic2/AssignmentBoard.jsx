@@ -1,21 +1,37 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import './academic.css';
+import { CalendarDays, List, Plus } from 'lucide-react';
+import './assignments2.css';
+import { AssignmentMetricsStrip } from './AssignmentMetricsStrip';
+import { AssignmentCalendar } from './AssignmentCalendar';
+import { AssignmentTabs } from './AssignmentTabs';
+import { AssignmentDrawer } from './AssignmentDrawer';
+import { AssignmentReviewModal } from './AssignmentReviewModal';
+import { AssignmentExport } from './AssignmentExport';
 
-function fmtDue(iso) {
-  if (!iso) return 'No due date';
-  return `Due ${new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
-}
+const emptyData = {
+  orgName: 'Organization',
+  assignments: [],
+  metrics: {},
+  tab_counts: {},
+  roster: [],
+  teams: [],
+  cohorts: [],
+  roles: [],
+  templates: [],
+  viewer: { canAssign: false, userId: null },
+};
 
+/* Orchestrator for the Assignments 2a surface (calendar + tabbed list). */
 export function AssignmentBoard() {
-  const [assignments, setAssignments] = useState([]);
-  const [roster, setRoster] = useState([]);
-  const [viewer, setViewer] = useState({ canAssign: false, userId: null, types: [] });
+  const [data, setData] = useState(emptyData);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [form, setForm] = useState({ assigned_to: '', title: '', assignment_type: 'pitch', due_date: '' });
-  const [busy, setBusy] = useState(false);
+  const [view, setView] = useState('calendar'); // 2a: calendar active by default
+  const [tab, setTab] = useState('all');
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [reviewId, setReviewId] = useState(null);
 
   const load = useCallback(async () => {
     try {
@@ -24,14 +40,12 @@ export function AssignmentBoard() {
         setError('This page is for organizational members only.');
         return;
       }
-      const data = await res.json().catch(() => ({}));
+      const json = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(data?.error || 'Failed to load assignments.');
+        setError(json?.error || 'Failed to load assignments.');
         return;
       }
-      setAssignments(data.assignments || []);
-      setRoster(data.roster || []);
-      setViewer(data.viewer || {});
+      setData({ ...emptyData, ...json });
       setError('');
     } catch {
       setError('Could not connect.');
@@ -44,142 +58,108 @@ export function AssignmentBoard() {
     load();
   }, [load]);
 
-  const assign = async () => {
-    if (!form.assigned_to || !form.title.trim() || busy) return;
-    setBusy(true);
-    try {
-      const res = await fetch('/api/org/assignments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, due_date: form.due_date || null }),
-      });
-      if (res.ok) {
-        setForm({ assigned_to: '', title: '', assignment_type: 'pitch', due_date: '' });
-        await load();
-      }
-    } finally {
-      setBusy(false);
-    }
-  };
+  const { viewer } = data;
 
-  const setStatus = async (a, status) => {
-    await fetch('/api/org/assignments', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: a.id, status }),
-    });
-    load();
-  };
-
-  if (loading) return <div className="ac3-state">Loading assignments…</div>;
-  if (error) return <div className="ac3-state ac3-error">{error}</div>;
-
-  const mine = assignments.filter((a) => a.mine);
-  const others = assignments.filter((a) => !a.mine);
-
-  const Row = ({ a }) => (
-    <div className="ac3-row">
-      <div>
-        <span className="ac3-strong">{a.title}</span>
-        <div className="ac3-meta" style={{ textTransform: 'capitalize' }}>
-          {a.assignment_type}
-          {viewer.canAssign && !a.mine ? ` · ${a.assignee_name}` : ''} · {fmtDue(a.due_date)}
+  if (loading) {
+    return (
+      <div className="asg2-root">
+        <div className="asg2-metrics">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="asg2-skel" style={{ height: 80 }} />
+          ))}
         </div>
+        <div className="asg2-skel" style={{ height: 320 }} />
       </div>
-      <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
-        <span className={`ac3-pill ac3-pill--${a.status}`}>{a.status}</span>
-        {a.mine && a.status === 'assigned' && (
-          <button type="button" className="ac3-btn ac3-btn--ghost" onClick={() => setStatus(a, 'submitted')}>
-            Mark submitted
-          </button>
-        )}
-        {viewer.canAssign && a.status === 'submitted' && (
-          <button type="button" className="ac3-btn ac3-btn--ghost" onClick={() => setStatus(a, 'graded')}>
-            Mark graded
-          </button>
-        )}
-      </div>
-    </div>
-  );
+    );
+  }
+  if (error) return <div className="asg2-root asg2-state asg2-error">{error}</div>;
 
   return (
-    <div className="ac3-root">
-      <div className="ac3-header">
+    <div className="asg2-root">
+      <div className="asg2-header">
         <div>
-          <p className="ac3-eyebrow">Academic</p>
-          <h1 className="ac3-title">Assignments</h1>
-          <p className="ac3-sub">Faculty-assigned work — pitches, research, coverage, readings.</p>
+          <p className="asg2-eyebrow">Academic · {data.orgName}</p>
+          <h1 className="asg2-title">Assignments</h1>
+        </div>
+        <div className="asg2-header-actions">
+          <div className="asg2-seg" role="group" aria-label="View">
+            <button
+              type="button"
+              className={view === 'list' ? 'is-active' : ''}
+              onClick={() => setView('list')}
+              aria-pressed={view === 'list'}
+            >
+              <List size={14} aria-hidden="true" /> List
+            </button>
+            <button
+              type="button"
+              className={view === 'calendar' ? 'is-active' : ''}
+              onClick={() => setView('calendar')}
+              aria-pressed={view === 'calendar'}
+            >
+              <CalendarDays size={14} aria-hidden="true" /> Calendar
+            </button>
+          </div>
+          <AssignmentExport assignments={data.assignments} />
+          {viewer.canAssign && (
+            <button
+              type="button"
+              className="asg2-btn asg2-btn--primary"
+              onClick={() => setDrawerOpen(true)}
+            >
+              <Plus size={15} aria-hidden="true" /> New assignment
+            </button>
+          )}
         </div>
       </div>
 
-      {viewer.canAssign && (
-        <div className="ac3-card" style={{ marginBottom: '1.25rem' }}>
-          <div className="ac3-label">Assign work</div>
-          <div className="ac3-2col" style={{ flexWrap: 'wrap' }}>
-            <select
-              className="ac3-select"
-              value={form.assigned_to}
-              onChange={(e) => setForm((f) => ({ ...f, assigned_to: e.target.value }))}
-            >
-              <option value="">Assign to…</option>
-              {roster.map((m) => (
-                <option key={m.user_id} value={m.user_id}>
-                  {m.display_name} ({(m.role || '').replace('_', ' ')})
-                </option>
-              ))}
-            </select>
-            <select
-              className="ac3-select"
-              value={form.assignment_type}
-              onChange={(e) => setForm((f) => ({ ...f, assignment_type: e.target.value }))}
-            >
-              {(viewer.types || ['pitch', 'research', 'coverage', 'reading', 'other']).map((t) => (
-                <option key={t} value={t} style={{ textTransform: 'capitalize' }}>
-                  {t}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="ac3-2col" style={{ marginTop: '0.6rem' }}>
-            <input
-              className="ac3-input"
-              placeholder="Title, e.g. Pitch a healthcare name"
-              value={form.title}
-              onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-            />
-            <input
-              className="ac3-input"
-              type="date"
-              value={form.due_date}
-              onChange={(e) => setForm((f) => ({ ...f, due_date: e.target.value }))}
-            />
-          </div>
-          <div style={{ marginTop: '0.7rem', textAlign: 'right' }}>
-            <button type="button" className="ac3-btn ac3-btn--primary" onClick={assign} disabled={busy}>
-              Assign
-            </button>
-          </div>
+      <AssignmentMetricsStrip metrics={data.metrics} />
+
+      {view === 'calendar' ? (
+        <div className="asg2-body">
+          <AssignmentCalendar assignments={data.assignments} onOpen={(a) => setReviewId(a.id)} />
+          <AssignmentTabs
+            assignments={data.assignments}
+            tabCounts={data.tab_counts}
+            activeTab={tab}
+            onTab={setTab}
+            viewer={viewer}
+            onOpen={(a) => setReviewId(a.id)}
+            variant="compact"
+          />
         </div>
-      )}
-
-      <h3 className="ac3-title" style={{ fontSize: '1rem', margin: '0 0 0.6rem' }}>
-        My Assignments
-      </h3>
-      {mine.length === 0 ? (
-        <div className="ac3-state" style={{ padding: '1.25rem' }}>Nothing assigned to you.</div>
       ) : (
-        mine.map((a) => <Row key={a.id} a={a} />)
+        <AssignmentTabs
+          assignments={data.assignments}
+          tabCounts={data.tab_counts}
+          activeTab={tab}
+          onTab={setTab}
+          viewer={viewer}
+          onOpen={(a) => setReviewId(a.id)}
+          variant="full"
+        />
       )}
 
-      {viewer.canAssign && others.length > 0 && (
-        <>
-          <h3 className="ac3-title" style={{ fontSize: '1rem', margin: '1.5rem 0 0.6rem' }}>
-            Team Assignments
-          </h3>
-          {others.map((a) => (
-            <Row key={a.id} a={a} />
-          ))}
-        </>
+      {drawerOpen && (
+        <AssignmentDrawer
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          onCreated={load}
+          roster={data.roster}
+          teams={data.teams}
+          cohorts={data.cohorts}
+          roles={data.roles}
+          templates={data.templates}
+          viewer={viewer}
+        />
+      )}
+
+      {reviewId && (
+        <AssignmentReviewModal
+          assignmentId={reviewId}
+          onClose={() => setReviewId(null)}
+          onChanged={load}
+        />
       )}
     </div>
   );
