@@ -16,7 +16,17 @@ export { Tabs } from './Tabs';
 export { Tooltip } from './Tooltip';
 export { Dropdown, MenuItem, MenuDivider } from './Dropdown';
 export { Table, THead, TBody, TR, TH, TD } from './Table';
-export { Skeleton } from './Skeleton';
+export {
+  Skeleton,
+  SkeletonRegion,
+  SkeletonText,
+  SkeletonCard,
+  SkeletonTable,
+  SkeletonStatStrip,
+  SkeletonKanban,
+  SkeletonChart,
+  SkeletonNavRail,
+} from './Skeleton';
 export { Spinner } from './Spinner';
 export { Alert } from './Alert';
 export { EmptyState, ErrorState } from './EmptyState';

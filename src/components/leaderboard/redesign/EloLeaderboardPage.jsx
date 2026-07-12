@@ -9,7 +9,13 @@ import { DailyQuests } from './DailyQuests';
 import { FilterBar } from './FilterBar';
 import { StatsStrip } from './StatsStrip';
 import { LeaderboardTable } from './LeaderboardTable';
-import { LeaderboardSkeleton } from './LeaderboardSkeleton';
+import {
+  SkeletonRegion,
+  SkeletonText,
+  SkeletonCard,
+  SkeletonStatStrip,
+  SkeletonTable,
+} from '@/components/ds';
 import { EarnXpModal } from './EarnXpModal';
 import { EloThemeProvider, useEloTheme } from './EloThemeContext';
 import { MOCK_LEAGUE, MOCK_STATS, MOCK_QUESTS } from './mock-data';
@@ -156,7 +162,35 @@ function EloLeaderboardContent() {
   }, [users, query, sort, sortDir, range]);
 
   if (loading && users.length === 0) {
-    return <LeaderboardSkeleton />;
+    return (
+      <SkeletonRegion
+        label="Loading leaderboard…"
+        style={{ padding: '20px 28px 40px', minHeight: '60vh' }}
+      >
+        <div style={{ maxWidth: 520, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <SkeletonText lines={2} lastWidth="70%" />
+        </div>
+        <div
+          style={{
+            display: 'flex',
+            gap: 14,
+            flexWrap: 'wrap',
+            margin: '18px 0',
+          }}
+        >
+          <div style={{ flex: '1.6 1 280px' }}>
+            <SkeletonCard rows={3} />
+          </div>
+          <div style={{ flex: '1 1 300px' }}>
+            <SkeletonCard rows={4} />
+          </div>
+        </div>
+        <div style={{ marginBottom: 16 }}>
+          <SkeletonStatStrip tiles={4} />
+        </div>
+        <SkeletonTable rows={8} cols={7} />
+      </SkeletonRegion>
+    );
   }
 
   const currentUserId = me?.id;
