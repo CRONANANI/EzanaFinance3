@@ -1,8 +1,15 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { X, Loader2, FileText, Sparkles } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { X, Loader2, FileText, Sparkles, Paperclip, Upload, Download, Trash2 } from 'lucide-react';
 import './research2.css';
+
+function fmtBytes(n) {
+  if (!n) return '';
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${Math.round(n / 1024)} KB`;
+  return `${(n / (1024 * 1024)).toFixed(1)} MB`;
+}
 
 export const GICS_SECTORS = [
   'Energy',
@@ -53,6 +60,74 @@ export function NoteComposer({ open, onClose, onSaved, note = null, knownTickers
   const [error, setError] = useState('');
   const [blockers, setBlockers] = useState([]);
   const [tickerFocus, setTickerFocus] = useState(false);
+  const [attachments, setAttachments] = useState([]);
+  const [attBusy, setAttBusy] = useState(false);
+  const [attError, setAttError] = useState('');
+  const attFileRef = useRef(null);
+  const noteId = note?.id || null;
+
+  const loadAttachments = useCallback(async () => {
+    if (!noteId) {
+      setAttachments([]);
+      return;
+    }
+    try {
+      const res = await fetch(`/api/org/research-notes/${noteId}/attachments`, {
+        cache: 'no-store',
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) setAttachments(data.attachments || []);
+    } catch {
+      /* keep prior list */
+    }
+  }, [noteId]);
+
+  const uploadAttachment = async (file) => {
+    if (!file || !noteId) return;
+    setAttBusy(true);
+    setAttError('');
+    try {
+      const body = new FormData();
+      body.append('file', file);
+      const res = await fetch(`/api/org/research-notes/${noteId}/attachments`, {
+        method: 'POST',
+        body,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setAttError(data?.error || 'Upload failed.');
+        return;
+      }
+      await loadAttachments();
+    } catch {
+      setAttError('Could not connect.');
+    } finally {
+      setAttBusy(false);
+      if (attFileRef.current) attFileRef.current.value = '';
+    }
+  };
+
+  const deleteAttachment = async (attId) => {
+    if (!noteId) return;
+    setAttBusy(true);
+    setAttError('');
+    try {
+      const res = await fetch(
+        `/api/org/research-notes/${noteId}/attachments?attachmentId=${encodeURIComponent(attId)}`,
+        { method: 'DELETE' },
+      );
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setAttError(data?.error || 'Could not delete.');
+        return;
+      }
+      await loadAttachments();
+    } catch {
+      setAttError('Could not connect.');
+    } finally {
+      setAttBusy(false);
+    }
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -70,7 +145,10 @@ export function NoteComposer({ open, onClose, onSaved, note = null, knownTickers
     setError('');
     setBlockers([]);
     setTemplateId('');
-  }, [open, note]);
+    setAttError('');
+    setAttachments([]);
+    loadAttachments();
+  }, [open, note, loadAttachments]);
 
   useEffect(() => {
     if (!open) return;
@@ -374,6 +452,82 @@ export function NoteComposer({ open, onClose, onSaved, note = null, knownTickers
               placeholder="10-K FY25, sell-side notes…"
             />
           </div>
+        </div>
+
+        {/* Attachments — available once the document exists (edit mode). */}
+        <div className="rl2-field">
+          <label className="rl2-label">
+            <Paperclip size={12} style={{ verticalAlign: '-2px', marginRight: 4 }} />
+            Attachments
+          </label>
+          {!editing ? (
+            <div className="rl2-hint">
+              Save the draft first — you can attach files once the document exists.
+            </div>
+          ) : (
+            <>
+              {attachments.length === 0 ? (
+                <div className="rl2-hint">No attachments yet.</div>
+              ) : (
+                <div className="rl2-attach-list">
+                  {attachments.map((att) => (
+                    <div key={att.id} className="rl2-attach-row">
+                      <FileText size={14} className="rl2-attach-icon" />
+                      <span className="rl2-attach-name">{att.file_name}</span>
+                      <span className="rl2-attach-size rl2-num">{fmtBytes(att.size_bytes)}</span>
+                      {att.signed_url && (
+                        <a
+                          className="rl2-attach-act"
+                          href={att.signed_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          download={att.file_name}
+                          aria-label={`Download ${att.file_name}`}
+                        >
+                          <Download size={14} />
+                        </a>
+                      )}
+                      <button
+                        type="button"
+                        className="rl2-attach-act rl2-attach-act--danger"
+                        onClick={() => deleteAttachment(att.id)}
+                        disabled={attBusy}
+                        aria-label={`Delete ${att.file_name}`}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div style={{ marginTop: 8 }}>
+                <input
+                  ref={attFileRef}
+                  type="file"
+                  className="rl2-visually-hidden"
+                  accept=".pdf,.xlsx,.xls,.docx,.doc,.csv,.png,.jpg,.jpeg,.pptx"
+                  onChange={(e) => uploadAttachment(e.target.files?.[0])}
+                />
+                <button
+                  type="button"
+                  className="rl2-btn rl2-btn--sm"
+                  onClick={() => attFileRef.current?.click()}
+                  disabled={attBusy}
+                >
+                  {attBusy ? <Loader2 size={13} className="rl2-spin" /> : <Upload size={13} />}
+                  {attBusy ? 'Uploading…' : 'Attach file'}
+                </button>
+                <span className="rl2-hint" style={{ marginLeft: 8 }}>
+                  PDF, Office, CSV, or image · up to 25 MB
+                </span>
+              </div>
+              {attError && (
+                <div className="rl2-blocker" style={{ marginTop: 8 }}>
+                  {attError}
+                </div>
+              )}
+            </>
+          )}
         </div>
 
         {blockers.length > 0 && (

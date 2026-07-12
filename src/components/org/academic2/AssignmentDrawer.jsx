@@ -518,8 +518,8 @@ export function AssignmentDrawer({
         />
         {form.require_upload && (
           <div className="asg2-hint asg2-hint--disabled">
-            <Paperclip size={13} aria-hidden="true" /> File upload coming soon — no storage bucket
-            is provisioned yet.
+            <Paperclip size={13} aria-hidden="true" /> Assignees attach their deliverable from the
+            assignment view after it&apos;s created.
           </div>
         )}
 

@@ -1,7 +1,20 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { X, Send, Check, RotateCcw, Play, Upload, Paperclip, History, Award } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  X,
+  Send,
+  Check,
+  RotateCcw,
+  Play,
+  Upload,
+  Paperclip,
+  History,
+  Award,
+  Download,
+  Trash2,
+  FileText,
+} from 'lucide-react';
 import { typeMeta, STATUS_LABEL, fmtDue } from './AssignmentCard';
 
 function ts(iso) {
@@ -29,6 +42,74 @@ export function AssignmentReviewModal({ assignmentId, onClose, onChanged }) {
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
   const [rubric, setRubric] = useState({ score: '', max: '', comment: '' });
+  const [attachments, setAttachments] = useState([]);
+  const [attViewer, setAttViewer] = useState({ userId: null, canManage: false });
+  const [attBusy, setAttBusy] = useState(false);
+  const [attError, setAttError] = useState('');
+  const fileRef = useRef(null);
+
+  const loadAttachments = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/org/assignments/${assignmentId}/attachments`, {
+        cache: 'no-store',
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setAttachments(data.attachments || []);
+        setAttViewer(data.viewer || { userId: null, canManage: false });
+      }
+    } catch {
+      /* keep prior list */
+    }
+  }, [assignmentId]);
+
+  const uploadAttachment = async (file) => {
+    if (!file) return;
+    setAttBusy(true);
+    setAttError('');
+    try {
+      const body = new FormData();
+      body.append('file', file);
+      const res = await fetch(`/api/org/assignments/${assignmentId}/attachments`, {
+        method: 'POST',
+        body,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setAttError(data?.error || 'Upload failed.');
+        return;
+      }
+      await loadAttachments();
+      onChanged?.();
+    } catch {
+      setAttError('Could not connect.');
+    } finally {
+      setAttBusy(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
+  };
+
+  const deleteAttachment = async (attId) => {
+    setAttBusy(true);
+    setAttError('');
+    try {
+      const res = await fetch(
+        `/api/org/assignments/${assignmentId}/attachments?attachmentId=${encodeURIComponent(attId)}`,
+        { method: 'DELETE' },
+      );
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setAttError(data?.error || 'Could not delete.');
+        return;
+      }
+      await loadAttachments();
+      onChanged?.();
+    } catch {
+      setAttError('Could not connect.');
+    } finally {
+      setAttBusy(false);
+    }
+  };
 
   const load = useCallback(async () => {
     try {
@@ -54,7 +135,8 @@ export function AssignmentReviewModal({ assignmentId, onClose, onChanged }) {
 
   useEffect(() => {
     load();
-  }, [load]);
+    loadAttachments();
+  }, [load, loadAttachments]);
 
   const refresh = async () => {
     await load();
@@ -202,7 +284,7 @@ export function AssignmentReviewModal({ assignmentId, onClose, onChanged }) {
               </div>
             )}
 
-            {/* Attachments — metadata only; upload disabled (no bucket). */}
+            {/* Attachments — real upload/list/download/delete via signed URLs. */}
             <div>
               <p className="asg2-section-label">
                 <Paperclip
@@ -212,20 +294,68 @@ export function AssignmentReviewModal({ assignmentId, onClose, onChanged }) {
                 />
                 Attachments
               </p>
-              {detail.attachments?.length ? (
-                detail.attachments.map((att) => (
-                  <div key={att.id} className="asg2-attach-row">
-                    <Paperclip size={13} aria-hidden="true" />
-                    {att.file_name}
-                    <span className="asg2-attach-size asg2-num">{fmtBytes(att.size_bytes)}</span>
-                  </div>
-                ))
+              {attachments.length ? (
+                <div className="asg2-attach-list">
+                  {attachments.map((att) => {
+                    const canDelete = attViewer.canManage || att.uploaded_by === attViewer.userId;
+                    return (
+                      <div key={att.id} className="asg2-attach-row">
+                        <FileText size={14} aria-hidden="true" className="asg2-attach-icon" />
+                        <span className="asg2-attach-name">{att.file_name}</span>
+                        <span className="asg2-attach-size asg2-num">
+                          {fmtBytes(att.size_bytes)}
+                        </span>
+                        {att.signed_url && (
+                          <a
+                            className="asg2-attach-act"
+                            href={att.signed_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            download={att.file_name}
+                            aria-label={`Download ${att.file_name}`}
+                          >
+                            <Download size={14} aria-hidden="true" />
+                          </a>
+                        )}
+                        {canDelete && (
+                          <button
+                            type="button"
+                            className="asg2-attach-act asg2-attach-act--danger"
+                            onClick={() => deleteAttachment(att.id)}
+                            disabled={attBusy}
+                            aria-label={`Delete ${att.file_name}`}
+                          >
+                            <Trash2 size={14} aria-hidden="true" />
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               ) : (
-                <div className="asg2-hint">No attachments.</div>
+                <div className="asg2-hint">No attachments yet.</div>
               )}
-              <div className="asg2-hint asg2-hint--disabled" style={{ marginTop: '0.4rem' }}>
-                <Upload size={13} aria-hidden="true" /> File upload coming soon
-              </div>
+
+              <input
+                ref={fileRef}
+                type="file"
+                className="asg2-visually-hidden"
+                accept=".pdf,.xlsx,.xls,.docx,.doc,.csv,.png,.jpg,.jpeg,.pptx"
+                onChange={(e) => uploadAttachment(e.target.files?.[0])}
+              />
+              <button
+                type="button"
+                className="asg2-btn asg2-btn--sm"
+                style={{ marginTop: '0.5rem' }}
+                onClick={() => fileRef.current?.click()}
+                disabled={attBusy}
+              >
+                <Upload size={13} aria-hidden="true" /> {attBusy ? 'Uploading…' : 'Upload file'}
+              </button>
+              <span className="asg2-hint" style={{ marginLeft: '0.5rem' }}>
+                PDF, Office, CSV, or image · up to 25 MB
+              </span>
+              {attError && <div className="asg2-form-error">{attError}</div>}
             </div>
 
             {/* Version history */}
