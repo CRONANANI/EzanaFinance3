@@ -955,13 +955,25 @@ body.light-mode .thw-range.active {
   color: var(--text-faint);
 }
 .thw-axis {
-  display: flex;
-  justify-content: space-between;
+  position: relative;
+  height: 1.1rem;
+  margin: 8px 2px 6px;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 9.5px;
   color: var(--text-ghost);
-  padding: 8px 2px 6px;
+}
+.thw-tick {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+.thw-tick:first-child {
+  transform: translateX(0);
+}
+.thw-tick:last-child {
+  transform: translateX(-100%);
 }
 
 /* ── Loading skeleton ───────────────────────────────────────────── */

@@ -242,10 +242,51 @@ function fmtTipDate(dateStr) {
 }
 
 function sliceSnapshots(snapshots, range) {
-  if (range === 'YTD') return snapshots;
+  if (range === 'YTD') {
+    // Year-to-date: from Jan 1 of the current UTC year (not the whole series).
+    const jan1 = Date.UTC(new Date().getUTCFullYear(), 0, 1);
+    const pts = snapshots.filter((s) => Date.parse(s.date) >= jan1);
+    return pts.length >= 2 ? pts : snapshots;
+  }
   const cutoff = Date.now() - (RANGE_DAYS[range] || 365) * 86400000;
   const pts = snapshots.filter((s) => Date.parse(s.date) >= cutoff);
   return pts.length >= 2 ? pts : snapshots;
+}
+
+/* One axis tick per MONTH (day-granularity for 1M), each positioned at the real
+   x-coordinate of the point it names — not one label per snapshot. W matches
+   buildChart's 800-unit viewBox so the tick sits under its point. */
+function buildTicks(pts, range, W) {
+  const n = pts.length;
+  if (n === 0) return [];
+  const xAt = (i) => (n <= 1 ? 0 : (i / (n - 1)) * W);
+
+  if (range === '1M') {
+    const want = Math.min(6, n);
+    const step = (n - 1) / Math.max(1, want - 1);
+    return Array.from({ length: want }, (_, k) => {
+      const i = Math.round(k * step);
+      return { label: monthLabel(pts[i].date, true), x: xAt(i) };
+    });
+  }
+
+  const ticks = [];
+  let lastKey = null;
+  pts.forEach((p, i) => {
+    const d = new Date(`${p.date}T00:00:00Z`);
+    const key = `${d.getUTCFullYear()}-${d.getUTCMonth()}`;
+    if (key !== lastKey) {
+      ticks.push({ label: monthLabel(p.date, false), x: xAt(i) });
+      lastKey = key;
+    }
+  });
+
+  const MAX_TICKS = 12;
+  if (ticks.length > MAX_TICKS) {
+    const stride = Math.ceil(ticks.length / MAX_TICKS);
+    return ticks.filter((_, i) => i % stride === 0);
+  }
+  return ticks;
 }
 
 function FundChart({ snapshots, loading, showLabel = true }) {
@@ -257,12 +298,11 @@ function FundChart({ snapshots, loading, showLabel = true }) {
   const view = useMemo(() => {
     if (!live) return null;
     const pts = sliceSnapshots(live, range);
-    const withDay = range === '1M';
     const cur = pts.map((p) => p.value);
     const bench = pts.map((p) => p.benchmarkValue);
     const prev = bench.every((b) => b != null && Number.isFinite(b)) ? bench : null;
     return {
-      labels: pts.map((p) => monthLabel(p.date, withDay)),
+      ticks: buildTicks(pts, range, 800),
       dates: pts.map((p) => p.date),
       cur,
       prev,
@@ -402,9 +442,15 @@ function FundChart({ snapshots, loading, showLabel = true }) {
           </div>
         )}
       </div>
-      <div className="thw-axis">
-        {(view?.labels || []).map((l, i) => (
-          <span key={`${l}-${i}`}>{l}</span>
+      <div className="thw-axis" aria-hidden="true">
+        {(view?.ticks || []).map((t, i) => (
+          <span
+            key={`${t.label}-${i}`}
+            className="thw-tick"
+            style={{ left: `${(t.x / 800) * 100}%` }}
+          >
+            {t.label}
+          </span>
         ))}
       </div>
     </div>
