@@ -14,6 +14,7 @@ import {
   Inbox,
   CheckCircle2,
   CalendarClock,
+  ArrowRight,
 } from 'lucide-react';
 import { useOrg } from '@/contexts/OrgContext';
 
@@ -92,6 +93,9 @@ function PitchCard({ p }) {
 }
 
 function KanbanView({ board }) {
+  const archive = board.archive || [];
+  const exitedCount = archive.filter((p) => p.stage === 'exited').length;
+  const rejectedCount = archive.length - exitedCount;
   return (
     <>
       <div className="pw-board">
@@ -115,14 +119,27 @@ function KanbanView({ board }) {
 
       <div className="pw-archive">
         <div className="pw-archive-head">
-          <Archive size={13} /> Archive lane · {board.archive.length} — rejected & exited pitches
-          keep their reasons as teaching artifacts
+          <div className="pw-archive-head-l">
+            <Archive size={13} />
+            <span className="pw-archive-title">Archive</span>
+            <span className="pw-archive-counts">
+              <span className="pw-arc-count is-rejected">
+                <span className="pw-num">{rejectedCount}</span> rejected
+              </span>
+              <span className="pw-arc-count is-exited">
+                <span className="pw-num">{exitedCount}</span> exited
+              </span>
+            </span>
+          </div>
+          <Link href="/org-team-hub/pitch-archive" className="pw-archive-link">
+            Open archive <ArrowRight size={13} />
+          </Link>
         </div>
-        {board.archive.length === 0 ? (
+        {archive.length === 0 ? (
           <div className="pw-col-empty">Nothing archived yet.</div>
         ) : (
           <div className="pw-archive-row">
-            {board.archive.map((p) => (
+            {archive.map((p) => (
               <Link
                 key={p.id}
                 href={`/org-team-hub/pitches/${p.id}`}
@@ -361,6 +378,7 @@ export function PitchWorkspace({ refreshKey = 0 }) {
   const [sector, setSector] = useState('');
   const [analyst, setAnalyst] = useState('');
   const [conviction, setConviction] = useState('');
+  const [aging, setAging] = useState('');
   const [icNonce, setIcNonce] = useState(0);
 
   const load = useCallback(() => {
@@ -397,9 +415,10 @@ export function PitchWorkspace({ refreshKey = 0 }) {
         (p) =>
           (!sector || p.sector === sector) &&
           (!analyst || p.analyst_name === analyst) &&
-          (!conviction || Number(p.conviction_level) === Number(conviction)),
+          (!conviction || Number(p.conviction_level) === Number(conviction)) &&
+          (!aging || p.is_aging),
       ),
-    [sector, analyst, conviction],
+    [sector, analyst, conviction, aging],
   );
 
   const filteredBoard = useMemo(() => {
@@ -461,44 +480,63 @@ export function PitchWorkspace({ refreshKey = 0 }) {
         </div>
 
         {(view === 'kanban' || view === 'tracker') && (
-          <div className="pw-filters">
-            {data?.stale && (
-              <span className="pw-stale">
-                <AlertTriangle size={12} /> Prices stale (FMP unavailable)
-              </span>
+          <div className="pw-toolbar-right">
+            <div className="pw-filters">
+              {data?.stale && (
+                <span className="pw-stale">
+                  <AlertTriangle size={12} /> Prices stale (FMP unavailable)
+                </span>
+              )}
+              <select
+                value={sector}
+                onChange={(e) => setSector(e.target.value)}
+                aria-label="Sector"
+              >
+                <option value="">All sectors</option>
+                {sectors.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={analyst}
+                onChange={(e) => setAnalyst(e.target.value)}
+                aria-label="Analyst"
+              >
+                <option value="">All analysts</option>
+                {analysts.map((a) => (
+                  <option key={a} value={a}>
+                    {a}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={conviction}
+                onChange={(e) => setConviction(e.target.value)}
+                aria-label="Conviction"
+              >
+                <option value="">Any conviction</option>
+                {[5, 4, 3, 2, 1].map((c) => (
+                  <option key={c} value={c}>
+                    {c}★ conviction
+                  </option>
+                ))}
+              </select>
+              <select value={aging} onChange={(e) => setAging(e.target.value)} aria-label="Aging">
+                <option value="">All ages</option>
+                <option value="aging">Aging &gt;30d</option>
+              </select>
+            </div>
+            {view === 'kanban' && (
+              <div className="pw-summary" aria-live="polite">
+                <span className="pw-num">{data?.total_active ?? 0}</span> active
+                <span className="pw-summary-sep">·</span>
+                <span className={`pw-summary-aging${agingCount ? ' is-amber' : ''}`}>
+                  <span className="pw-num">{agingCount}</span> aging &gt;30d
+                </span>
+              </div>
             )}
-            <select value={sector} onChange={(e) => setSector(e.target.value)} aria-label="Sector">
-              <option value="">All sectors</option>
-              {sectors.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
-            <select
-              value={analyst}
-              onChange={(e) => setAnalyst(e.target.value)}
-              aria-label="Analyst"
-            >
-              <option value="">All analysts</option>
-              {analysts.map((a) => (
-                <option key={a} value={a}>
-                  {a}
-                </option>
-              ))}
-            </select>
-            <select
-              value={conviction}
-              onChange={(e) => setConviction(e.target.value)}
-              aria-label="Conviction"
-            >
-              <option value="">Any conviction</option>
-              {[5, 4, 3, 2, 1].map((c) => (
-                <option key={c} value={c}>
-                  {c}★ conviction
-                </option>
-              ))}
-            </select>
           </div>
         )}
       </div>

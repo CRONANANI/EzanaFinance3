@@ -27,7 +27,7 @@ function List({ rows, positive }) {
 /** Top 5 contributors / bottom 5 detractors, side by side. */
 export function ContributorsDetractors({ data }) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+    <div className="fa-cd-grid">
       <div className="fa-card" style={{ overflow: 'hidden', paddingBottom: '0.4rem' }}>
         <div className="fa-card-head">
           <h3 className="fa-card-t">

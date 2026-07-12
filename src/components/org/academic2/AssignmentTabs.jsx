@@ -30,15 +30,21 @@ function filterByTab(assignments, tab) {
 /* Tab row (live counts) + independently-scrolling compact list. */
 export function AssignmentTabs({
   assignments,
-  tabCounts,
   activeTab,
   onTab,
   viewer,
   onOpen,
   variant = 'compact',
 }) {
-  const list = filterByTab(assignments || [], activeTab);
-  const counts = tabCounts || {};
+  const all = assignments || [];
+  const list = filterByTab(all, activeTab);
+  // Live counts derived from the same filter each tab renders, so every badge
+  // equals exactly the number of cards shown (archived is excluded from
+  // All/Mine/Team/By me, and only counted under Archive).
+  const counts = TABS.reduce((acc, t) => {
+    acc[t.key] = filterByTab(all, t.key).length;
+    return acc;
+  }, {});
 
   return (
     <div className="asg2-rail">

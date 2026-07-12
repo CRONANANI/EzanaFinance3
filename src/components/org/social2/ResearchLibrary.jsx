@@ -1484,20 +1484,21 @@ export function ResearchLibrary() {
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search titles, abstracts, bodies…"
             />
-            <button
-              type="button"
-              className="rl2-btn rl2-btn--sm"
-              onClick={summarizeSet}
-              disabled={viewSummaryLoading || notes.length === 0}
-              title="AI summary of the current filtered set"
-            >
-              {viewSummaryLoading ? (
-                <Loader2 size={13} className="rl2-spin" />
-              ) : (
-                <Sparkles size={13} />
-              )}{' '}
-              Summarize view
-            </button>
+            {result?.semantic?.configured ? (
+              <span
+                className="rl2-semantic-pill"
+                title="Vector embeddings are configured — search blends keyword matching with semantic (AI) ranking."
+              >
+                <Sparkles size={12} /> Semantic + AI
+              </span>
+            ) : (
+              <span
+                className="rl2-keyword-hint"
+                title="Vector embeddings are not configured on this deployment; search runs keyword-only."
+              >
+                <Search size={12} /> Keyword
+              </span>
+            )}
           </div>
 
           <div className="rl2-filterbar">
@@ -1511,15 +1512,6 @@ export function ResearchLibrary() {
                 onToggle={toggleFilter}
               />
             ))}
-            {result?.semantic?.configured === false && (
-              <span
-                className="rl2-hint"
-                title="Vector embeddings are not configured on this deployment; search runs keyword-only."
-              >
-                Keyword search
-              </span>
-            )}
-            {result?.semantic?.enabled && <span className="rl2-hint">Semantic + keyword</span>}
           </div>
 
           {viewSummary && (
@@ -1531,6 +1523,30 @@ export function ResearchLibrary() {
                 </button>
               </div>
               <div style={{ marginTop: 8 }}>{viewSummary}</div>
+            </div>
+          )}
+
+          {!loading && notes.length > 0 && (
+            <div className="rl2-results-head">
+              <span className="rl2-results-count">
+                <span className="rl2-num">{notes.length}</span>{' '}
+                {notes.length === 1 ? 'Document' : 'Documents'} · Sorted by{' '}
+                {debouncedQ ? 'relevance' : 'recency'}
+              </span>
+              <button
+                type="button"
+                className="rl2-btn rl2-btn--sm"
+                onClick={summarizeSet}
+                disabled={viewSummaryLoading}
+                title="AI summary of the current filtered set"
+              >
+                {viewSummaryLoading ? (
+                  <Loader2 size={13} className="rl2-spin" />
+                ) : (
+                  <Sparkles size={13} />
+                )}{' '}
+                Summarize this set
+              </button>
             </div>
           )}
 

@@ -110,6 +110,40 @@
   outline-offset: 1px;
 }
 
+/* Right-hand group: filters + at-a-glance summary */
+.pw-toolbar-right {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 0.9rem;
+}
+.pw-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.pw-summary .pw-num {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+.pw-summary-sep {
+  color: var(--text-ghost);
+  margin: 0 0.1rem;
+}
+.pw-summary-aging {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.pw-summary-aging.is-amber,
+.pw-summary-aging.is-amber .pw-num {
+  color: var(--warning);
+}
+
 /* ── Kanban board: 7 columns, fit-to-frame, NO horizontal scroll ─────────── */
 .pw-board {
   display: grid;
@@ -294,12 +328,61 @@
 .pw-archive-head {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
   font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--text-muted);
+}
+.pw-archive-head-l {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.pw-archive-title {
+  color: var(--text-secondary);
+}
+.pw-archive-counts {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.pw-arc-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  letter-spacing: 0.02em;
+}
+.pw-arc-count .pw-num {
+  font-weight: 700;
+}
+.pw-arc-count.is-rejected {
+  color: var(--pink);
+}
+.pw-arc-count.is-exited {
+  color: var(--gold);
+}
+.pw-archive-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--emerald-text);
+  text-decoration: none;
+}
+.pw-archive-link:hover {
+  color: var(--emerald);
+}
+.pw-archive-link:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 .pw-archive-row {
   display: grid;

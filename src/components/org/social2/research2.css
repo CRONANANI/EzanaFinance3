@@ -196,6 +196,57 @@
   font-weight: 500;
 }
 
+/* semantic / keyword indicator — honest: pill only when embeddings configured */
+.rl2-semantic-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--purple);
+  background: var(--purple-bg);
+  border: 1px solid var(--border-primary);
+  border-radius: 7px;
+  padding: 3px 8px;
+}
+.rl2-keyword-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  border: 1px solid var(--border-primary);
+  border-radius: 7px;
+  padding: 3px 8px;
+}
+
+/* ── Results header ─────────────────────────────────────────────────────── */
+.rl2-results-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.rl2-results-count {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.rl2-results-count .rl2-num {
+  color: var(--text-secondary);
+}
+
 /* ── Filter bar ─────────────────────────────────────────────────────────── */
 .rl2-filterbar {
   display: flex;

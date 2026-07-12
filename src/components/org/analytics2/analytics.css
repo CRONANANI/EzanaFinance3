@@ -583,6 +583,16 @@
 }
 
 /* ── Contributors / detractors ── */
+.fa-cd-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+@media (max-width: 560px) {
+  .fa-cd-grid {
+    grid-template-columns: 1fr;
+  }
+}
 .fa-cd {
   display: flex;
   align-items: center;

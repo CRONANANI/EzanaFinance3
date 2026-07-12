@@ -120,7 +120,6 @@ export function AssignmentBoard() {
           <AssignmentCalendar assignments={data.assignments} onOpen={(a) => setReviewId(a.id)} />
           <AssignmentTabs
             assignments={data.assignments}
-            tabCounts={data.tab_counts}
             activeTab={tab}
             onTab={setTab}
             viewer={viewer}
@@ -131,7 +130,6 @@ export function AssignmentBoard() {
       ) : (
         <AssignmentTabs
           assignments={data.assignments}
-          tabCounts={data.tab_counts}
           activeTab={tab}
           onTab={setTab}
           viewer={viewer}
