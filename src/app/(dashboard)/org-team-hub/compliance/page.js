@@ -1,45 +1,201 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ShieldCheck, ShieldX, ShieldAlert } from 'lucide-react';
 import { IPSPolicyEditor } from '@/components/org/academic2/IPSPolicyEditor';
-import { ComplianceMonitor } from '@/components/org/academic2/ComplianceMonitor';
+import {
+  PreTradeGate,
+  RulesInForcePanel,
+  SectorCapacityPlanner,
+  OpenBreaches,
+  PersonalTradingPanel,
+  AttestationsPanel,
+  AuditLog,
+} from '@/components/org/academic2/ComplianceMonitor';
 import '@/components/org/academic2/academic.css';
+import '@/components/org/academic2/compliance2.css';
+
+const TABS = [
+  { id: 'gate', label: 'Pre-trade gate' },
+  { id: 'rules', label: 'Mandate Rules' },
+  { id: 'personal', label: 'Personal Trading' },
+  { id: 'attest', label: 'Attestations' },
+  { id: 'audit', label: 'Audit' },
+];
 
 export default function CompliancePage() {
-  const [tab, setTab] = useState('monitor');
+  const [tab, setTab] = useState('gate');
+  const [rules, setRules] = useState([]);
+  const [ruleTypes, setRuleTypes] = useState([]);
+  const [canEdit, setCanEdit] = useState(false);
+  const [violations, setViolations] = useState([]);
+  const [canResolve, setCanResolve] = useState(false);
+  const [positions, setPositions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const loadRules = useCallback(async () => {
+    const res = await fetch('/api/org/ips/rules', { cache: 'no-store' });
+    if (res.status === 403) throw new Error('member');
+    const data = await res.json().catch(() => ({}));
+    setRules(data.rules || []);
+    setRuleTypes(data.ruleTypes || []);
+    setCanEdit(!!data.viewer?.canEdit);
+  }, []);
+
+  const loadViolations = useCallback(async () => {
+    const res = await fetch('/api/org/ips/violations', { cache: 'no-store' });
+    if (res.status === 403) throw new Error('member');
+    const data = await res.json().catch(() => ({}));
+    setViolations(data.violations || []);
+    setCanResolve(!!data.viewer?.canResolve);
+  }, []);
+
+  const loadPositions = useCallback(async () => {
+    // Optional — planner degrades to honest-empty if this is unavailable.
+    try {
+      const res = await fetch('/api/org/positions', { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setPositions(data.positions || []);
+      }
+    } catch {
+      /* leave positions empty */
+    }
+  }, []);
+
+  const loadAll = useCallback(async () => {
+    setLoading(true);
+    try {
+      await Promise.all([loadRules(), loadViolations(), loadPositions()]);
+      setError('');
+    } catch (e) {
+      setError(
+        e?.message === 'member'
+          ? 'This page is for organizational members only.'
+          : 'Could not load compliance data.',
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [loadRules, loadViolations, loadPositions]);
+
+  useEffect(() => {
+    loadAll();
+  }, [loadAll]);
+
+  const resolveBreach = async (v) => {
+    await fetch('/api/org/ips/violations', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: v.id, resolved: true }),
+    });
+    loadViolations();
+  };
+
+  const activeRuleCount = useMemo(() => rules.filter((r) => r.is_active).length, [rules]);
+  const hardBreaches = useMemo(
+    () => violations.filter((v) => v.severity === 'block').length,
+    [violations],
+  );
+  const openBreaches = violations.length;
 
   return (
     <div className="dashboard-page-inset ac3-root">
       <div className="ac3-header">
         <div>
-          <p className="ac3-eyebrow">Academic</p>
+          <p className="ac3-eyebrow">Compliance</p>
           <h1 className="ac3-title">Compliance &amp; IPS</h1>
-          <p className="ac3-sub">Investment Policy Statement guardrails and live compliance.</p>
+          <p className="ac3-sub">
+            Investment Policy Statement guardrails, the pre-trade gate and the audit trail.
+          </p>
         </div>
+        {!loading &&
+          !error &&
+          (hardBreaches > 0 ? (
+            <div className="cmp2-breach-chip cmp2-breach-chip--hard">
+              <ShieldX size={16} aria-hidden />
+              <span className="cmp2-num">{hardBreaches}</span> hard{' '}
+              {hardBreaches === 1 ? 'breach' : 'breaches'} open
+            </div>
+          ) : openBreaches > 0 ? (
+            <div className="cmp2-breach-chip">
+              <ShieldAlert size={16} aria-hidden />
+              <span className="cmp2-num">{openBreaches}</span> open{' '}
+              {openBreaches === 1 ? 'flag' : 'flags'}
+            </div>
+          ) : (
+            <div className="cmp2-breach-chip cmp2-breach-chip--clear">
+              <ShieldCheck size={16} aria-hidden /> All clear
+            </div>
+          ))}
       </div>
 
       <div className="ac3-tabs" role="tablist" aria-label="Compliance views">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={tab === 'monitor'}
-          className={`ac3-tab${tab === 'monitor' ? ' is-active' : ''}`}
-          onClick={() => setTab('monitor')}
-        >
-          Monitor
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={tab === 'policy'}
-          className={`ac3-tab${tab === 'policy' ? ' is-active' : ''}`}
-          onClick={() => setTab('policy')}
-        >
-          Policy Rules
-        </button>
+        {TABS.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            role="tab"
+            aria-selected={tab === t.id}
+            className={`ac3-tab${tab === t.id ? ' is-active' : ''}`}
+            onClick={() => setTab(t.id)}
+          >
+            {t.label}
+            {t.id === 'gate' && hardBreaches > 0 && (
+              <span className="cmp2-tab-badge cmp2-tab-badge--hard">{hardBreaches}</span>
+            )}
+            {t.id === 'rules' && activeRuleCount > 0 && (
+              <span className="cmp2-tab-badge">{activeRuleCount}</span>
+            )}
+          </button>
+        ))}
       </div>
 
-      {tab === 'monitor' ? <ComplianceMonitor /> : <IPSPolicyEditor />}
+      {loading ? (
+        <div className="ac3-state">Loading compliance…</div>
+      ) : error ? (
+        <div className="ac3-state ac3-error">{error}</div>
+      ) : (
+        <>
+          {tab === 'gate' && (
+            <div className="cmp2-layout">
+              <div className="cmp2-col">
+                <div className="cmp2-panel">
+                  <div className="cmp2-panel-head">
+                    <h3 className="cmp2-panel-title">
+                      <ShieldCheck aria-hidden /> Pre-trade gate
+                    </h3>
+                  </div>
+                  <PreTradeGate rules={rules} />
+                </div>
+                <OpenBreaches
+                  violations={violations}
+                  canResolve={canResolve}
+                  onResolve={resolveBreach}
+                />
+              </div>
+              <div className="cmp2-col">
+                <RulesInForcePanel rules={rules} />
+                <SectorCapacityPlanner positions={positions} rules={rules} />
+              </div>
+            </div>
+          )}
+
+          {tab === 'rules' && (
+            <IPSPolicyEditor
+              rules={rules}
+              ruleTypes={ruleTypes}
+              canEdit={canEdit}
+              onChanged={loadRules}
+            />
+          )}
+
+          {tab === 'personal' && <PersonalTradingPanel />}
+          {tab === 'attest' && <AttestationsPanel />}
+          {tab === 'audit' && <AuditLog />}
+        </>
+      )}
     </div>
   );
 }

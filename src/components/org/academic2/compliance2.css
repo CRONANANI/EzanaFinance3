@@ -1,0 +1,425 @@
+/* ===========================================================================
+   Org Compliance (5-tab rebuild) — page-scoped styles, theme tokens ONLY.
+   Layers on top of academic.css (.ac3-*). Do NOT edit academic.css.
+   Text: Plus Jakarta Sans. Numbers: JetBrains Mono + tabular-nums.
+   =========================================================================== */
+
+.cmp2-num {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Header breach summary ──────────────────────────────────────────────── */
+.cmp2-breach-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.85rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-primary);
+  background: var(--surface-card);
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.cmp2-breach-chip .cmp2-num {
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+.cmp2-breach-chip--hard {
+  border-color: var(--danger-border, rgba(239, 68, 68, 0.4));
+  background: var(--danger-bg, rgba(239, 68, 68, 0.08));
+  color: var(--danger, #ef4444);
+}
+.cmp2-breach-chip--clear {
+  border-color: var(--emerald-border);
+  background: var(--emerald-bg);
+  color: var(--emerald-text);
+}
+
+/* ── Tab count badges (used on ac3-tab) ─────────────────────────────────── */
+.cmp2-tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.15rem;
+  height: 1.15rem;
+  padding: 0 0.35rem;
+  margin-left: 0.45rem;
+  border-radius: 9999px;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.66rem;
+  font-weight: 800;
+  background: var(--surface-card-hover);
+  color: var(--text-muted);
+  border: 1px solid var(--border-primary);
+}
+.cmp2-tab-badge--hard {
+  background: var(--danger-bg, rgba(239, 68, 68, 0.14));
+  color: var(--danger, #ef4444);
+  border-color: var(--danger-border, rgba(239, 68, 68, 0.4));
+}
+.ac3-tab.is-active .cmp2-tab-badge {
+  background: rgba(0, 0, 0, 0.18);
+  color: inherit;
+  border-color: transparent;
+}
+
+/* ── Two-column tab layout (main + side rail) ───────────────────────────── */
+.cmp2-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  gap: 1.1rem;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .cmp2-layout {
+    grid-template-columns: 1fr;
+  }
+}
+.cmp2-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  min-width: 0;
+}
+
+/* ── Panels ─────────────────────────────────────────────────────────────── */
+.cmp2-panel {
+  border: 1px solid var(--border-primary);
+  border-radius: 14px;
+  background: var(--surface-card);
+  padding: 1.05rem 1.1rem;
+}
+.cmp2-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+.cmp2-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+  margin: 0;
+}
+.cmp2-panel-title svg {
+  width: 1rem;
+  height: 1rem;
+  color: var(--text-muted);
+}
+.cmp2-panel-sub {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  margin: -0.4rem 0 0.85rem;
+  line-height: 1.5;
+}
+
+/* ── Severity pills (HARD / SOFT) ───────────────────────────────────────── */
+.cmp2-sev {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.16rem 0.5rem;
+  border-radius: 9999px;
+  white-space: nowrap;
+}
+.cmp2-sev svg {
+  width: 0.72rem;
+  height: 0.72rem;
+}
+.cmp2-sev--hard {
+  background: var(--danger-bg, rgba(239, 68, 68, 0.08));
+  border: 1px solid var(--danger-border, rgba(239, 68, 68, 0.4));
+  color: var(--danger, #ef4444);
+}
+.cmp2-sev--soft {
+  background: var(--warning-bg, rgba(251, 191, 36, 0.12));
+  border: 1px solid var(--warning, #f59e0b);
+  color: var(--warning, #d97706);
+}
+
+/* ── Check rows (pre-trade gate pass/fail) ──────────────────────────────── */
+.cmp2-check-row {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  margin-bottom: 0.5rem;
+}
+.cmp2-check-row:last-child {
+  margin-bottom: 0;
+}
+.cmp2-check-row--fail {
+  border-color: var(--danger-border, rgba(239, 68, 68, 0.4));
+  background: var(--danger-bg, rgba(239, 68, 68, 0.06));
+}
+.cmp2-check-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.cmp2-check-label {
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: var(--text-primary);
+}
+.cmp2-check-detail {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+.cmp2-result-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+.cmp2-result-icon svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+.cmp2-result-icon--pass svg {
+  color: var(--emerald-text, #10b981);
+}
+.cmp2-result-icon--fail svg {
+  color: var(--danger, #ef4444);
+}
+.cmp2-result-icon--na svg {
+  color: var(--text-muted);
+}
+
+/* ── Verdict banner ─────────────────────────────────────────────────────── */
+.cmp2-verdict {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: 12px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+.cmp2-verdict svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex-shrink: 0;
+}
+.cmp2-verdict--clear {
+  background: var(--emerald-bg);
+  border: 1px solid var(--emerald-border);
+  color: var(--emerald-text);
+}
+.cmp2-verdict--soft {
+  background: var(--warning-bg, rgba(251, 191, 36, 0.1));
+  border: 1px solid var(--warning, #f59e0b);
+  color: var(--warning, #d97706);
+}
+.cmp2-verdict--hard {
+  background: var(--danger-bg, rgba(239, 68, 68, 0.1));
+  border: 1px solid var(--danger-border, rgba(239, 68, 68, 0.4));
+  color: var(--danger, #ef4444);
+}
+
+/* ── Grouped rule section ───────────────────────────────────────────────── */
+.cmp2-group-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1.1rem 0 0.55rem;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.cmp2-group-head:first-child {
+  margin-top: 0;
+}
+
+/* ── Rules-in-force compact list ────────────────────────────────────────── */
+.cmp2-rule-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border-secondary);
+}
+.cmp2-rule-line:last-child {
+  border-bottom: none;
+}
+.cmp2-rule-line__label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  min-width: 0;
+}
+
+/* ── Sector capacity meters ─────────────────────────────────────────────── */
+.cmp2-meter {
+  margin-bottom: 0.85rem;
+}
+.cmp2-meter:last-child {
+  margin-bottom: 0;
+}
+.cmp2-meter-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.32rem;
+}
+.cmp2-meter-name {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.cmp2-meter-val {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+.cmp2-meter-track {
+  position: relative;
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--surface-card-hover);
+  border: 1px solid var(--border-secondary);
+  overflow: hidden;
+}
+.cmp2-meter-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 9999px;
+  transition: width 0.3s ease;
+}
+.cmp2-meter-fill--ok {
+  background: var(--emerald, #10b981);
+}
+.cmp2-meter-fill--warn {
+  background: var(--warning, #f59e0b);
+}
+.cmp2-meter-fill--over {
+  background: var(--danger, #ef4444);
+}
+.cmp2-meter-cap {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 2px;
+  background: var(--text-secondary);
+  opacity: 0.55;
+}
+
+/* ── Honest "not configured" flag banner ────────────────────────────────── */
+.cmp2-flag {
+  display: flex;
+  gap: 0.7rem;
+  padding: 1rem 1.1rem;
+  border-radius: 12px;
+  border: 1px dashed var(--info, #3b82f6);
+  background: var(--info-bg, rgba(59, 130, 246, 0.08));
+  color: var(--text-secondary);
+}
+.cmp2-flag svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  color: var(--info, #3b82f6);
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+.cmp2-flag h3 {
+  margin: 0 0 0.3rem;
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+.cmp2-flag p {
+  margin: 0 0 0.4rem;
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+.cmp2-flag p:last-child {
+  margin-bottom: 0;
+}
+.cmp2-flag code {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.72rem;
+  padding: 0.05rem 0.3rem;
+  border-radius: 5px;
+  background: var(--surface-card-hover);
+  color: var(--text-secondary);
+}
+.cmp2-flag ul {
+  margin: 0.2rem 0 0.4rem;
+  padding-left: 1.1rem;
+  font-size: 0.78rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+/* ── Audit table ────────────────────────────────────────────────────────── */
+.cmp2-audit-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+  margin-bottom: 0.9rem;
+}
+.cmp2-audit-toolbar .ac3-select {
+  width: auto;
+  min-width: 180px;
+}
+.cmp2-mono-cell {
+  font-family: var(--font-mono, monospace);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.cmp2-action-tag {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--emerald-text, #10b981);
+}
+
+/* ── Form grid for pre-trade gate ───────────────────────────────────────── */
+.cmp2-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.7rem;
+  margin-bottom: 0.9rem;
+}
+.cmp2-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.cmp2-inline-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-top: 0.7rem;
+}
+.cmp2-inline-note svg {
+  width: 0.85rem;
+  height: 0.85rem;
+  flex-shrink: 0;
+  margin-top: 0.12rem;
+}
