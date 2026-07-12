@@ -627,25 +627,38 @@ FROM generate_series(20,34) AS n
 ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================================
--- 11. FUND SNAPSHOTS — 32 weekly points so the vs-benchmark curve is real.
---     (The 8 pre-existing snapshots are untouched; these are additive.)
+-- 11. FUND SNAPSHOTS — 32 weekly points forming ONE coherent fund curve
+--     (~$700k → $835,300, S&P +11.4%). The demo org's prior snapshots (including
+--     8 pre-existing rows on a DIFFERENT value scale) are cleared first so the
+--     series is a single continuous line — interleaving the two scales rendered
+--     as a sawtooth. The delete is scoped STRICTLY to the demo org.
 -- ============================================================================
+DELETE FROM public.org_fund_snapshots
+ WHERE org_id = '84c0372a-6b0a-4126-963e-9b0aa6660570';   -- demo org ONLY
+
 INSERT INTO public.org_fund_snapshots
  (id, org_id, cohort_id, snapshot_date, total_value, total_cost, return_pct, benchmark_return_pct, alpha_pct, attribution, computed_at)
 SELECT
   ('da000000-0000-4000-a000-0000' || lpad(n::text,8,'0'))::uuid,
   '84c0372a-6b0a-4126-963e-9b0aa6660570','9e1f95d9-5978-442a-abdd-588482f94575',
   (current_date - ((32-n)*7))::date,
-  round((100000 + n*1500) * (1 + (n*0.60 + (n%3)*0.15)/100.0), 2),
-  100000 + n*1500,
-  round((n*0.60 + (n%3)*0.15)::numeric, 2),
-  round((n*0.45)::numeric, 2),
-  round((n*0.60 + (n%3)*0.15 - n*0.45)::numeric, 2),
+  round(v, 2),
+  700000,
+  round((v - 700000) / 700000.0 * 100, 2),
+  round((n - 1) * (11.4 / 31.0), 2),
+  round((v - 700000) / 700000.0 * 100 - (n - 1) * (11.4 / 31.0), 2),
   '{"TMT":0.4,"Healthcare":0.2,"Financials":0.15,"Energy":0.1,"Other":0.15}'::jsonb,
   now()
-FROM generate_series(1,32) AS n
--- Conflict on the natural key: if a weekly date coincides with one of the 8
--- pre-existing snapshots, skip (keep theirs) instead of aborting. Idempotent.
+FROM (
+  -- Linear ramp 700000→835300 across the 32 weeks + a gentle sinusoidal wiggle
+  -- (~0.35%, a couple of soft drawdowns), detrended so week 32 lands EXACTLY on
+  -- 835300. Smooth in value — no point is a spike off its neighbour.
+  SELECT n,
+         700000 + (n - 1) * (135300.0 / 31.0)
+           + 2600 * sin((n * 0.7)::double precision)::numeric
+           - 2600 * sin((32 * 0.7)::double precision)::numeric * (n - 1) / 31.0 AS v
+  FROM generate_series(1, 32) AS n
+) s
 ON CONFLICT (org_id, snapshot_date) DO NOTHING;
 
 -- ============================================================================
