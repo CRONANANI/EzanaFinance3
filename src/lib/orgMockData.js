@@ -1967,13 +1967,3 @@ export function getAnalystCoverage(analystId) {
 export function getSkillDevelopment(analystId) {
   return ANALYST_SKILL_DEVELOPMENT[analystId] || null;
 }
-
-export {
-  MOCK_PITCHES,
-  MOCK_PITCH_DELIVERABLES,
-  MOCK_PITCH_VOTES,
-  MOCK_PITCH_DISCUSSION,
-  MOCK_PITCH_STAGE_HISTORY,
-  MOCK_PITCH_HINDSIGHT,
-  PIPELINE_COLUMNS,
-} from './orgPitchMockData';

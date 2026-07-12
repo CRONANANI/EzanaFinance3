@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
+import { getAdminClient } from '@/lib/supabase';
 import { FmpAPI } from '@/lib/services/fmp';
-import { listPitches, setHindsight } from '@/lib/org-pitch-store';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 120;
@@ -16,10 +16,24 @@ export async function GET(request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const thirtyDaysAgo = Date.now() - 30 * 86400000;
-  const targets = listPitches().filter(
-    (p) => p.decision && p.decision_at && new Date(p.decision_at).getTime() < thirtyDaysAgo,
-  );
+  let supabase;
+  try {
+    supabase = getAdminClient();
+  } catch {
+    return NextResponse.json({ error: 'Server misconfigured' }, { status: 503 });
+  }
+
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString();
+  const { data: targets, error } = await supabase
+    .from('org_pitches')
+    .select('id, ticker, current_price_at_submission, decision, decision_at')
+    .not('decision', 'is', null)
+    .not('decision_at', 'is', null)
+    .lt('decision_at', thirtyDaysAgo);
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 
   let updated = 0;
   const errors = [];
@@ -32,7 +46,7 @@ export async function GET(request) {
     /* use default */
   }
 
-  for (const pitch of targets) {
+  for (const pitch of targets || []) {
     try {
       const quote = await FmpAPI.getQuote(pitch.ticker);
       const priceAt = pitch.current_price_at_submission || quote?.price;
@@ -40,20 +54,29 @@ export async function GET(request) {
       if (!priceAt) continue;
       const returnPct = ((current - priceAt) / priceAt) * 100;
       const alpha = returnPct - spyBench;
-      setHindsight(pitch.id, {
-        current_price: current,
-        price_at_decision: priceAt,
-        return_pct: Math.round(returnPct * 10) / 10,
-        benchmark_return_pct: spyBench,
-        alpha_pct: Math.round(alpha * 10) / 10,
-        current_state:
-          alpha > 5 ? 'outperforming' : alpha < -5 ? 'underperforming' : 'roughly_inline',
-      });
+      const { error: upsertError } = await supabase.from('org_pitch_hindsight').upsert(
+        {
+          pitch_id: pitch.id,
+          computed_at: new Date().toISOString(),
+          current_price: current,
+          price_at_decision: priceAt,
+          return_pct: Math.round(returnPct * 10) / 10,
+          benchmark_return_pct: spyBench,
+          alpha_pct: Math.round(alpha * 10) / 10,
+          current_state:
+            alpha > 5 ? 'outperforming' : alpha < -5 ? 'underperforming' : 'roughly_inline',
+        },
+        { onConflict: 'pitch_id' },
+      );
+      if (upsertError) {
+        errors.push({ pitch_id: pitch.id, error: upsertError.message });
+        continue;
+      }
       updated += 1;
     } catch (e) {
       errors.push({ pitch_id: pitch.id, error: e.message });
     }
   }
 
-  return NextResponse.json({ updated, total: targets.length, errors });
+  return NextResponse.json({ updated, total: (targets || []).length, errors });
 }

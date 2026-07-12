@@ -404,27 +404,33 @@ export const POST = withApiGuard(
     }
 
     // Pitch Pipeline tie (best-effort): a pitch assignment with a ticker seeds a
-    // draft idea in the pitch store (the same path POST /api/org/pitches uses).
+    // draft idea in org_pitches (the same shape POST /api/org/pitches uses).
     // Guarded so it never blocks assignment creation.
     let pitchDraftId = null;
     if (assignment_type === 'pitch' && assignment.ticker) {
       try {
-        const { createPitch } = await import('@/lib/org-pitch-store');
-        const draft = createPitch({
-          org_id: member.org_id,
-          team_id: member.team_id || null,
-          ticker: assignment.ticker,
-          company_name: assignment.ticker,
-          pitch_type: 'long',
-          thesis_short: `Assignment: ${title}`.slice(0, 280),
-          analyst_member_id: primary?.id || member.id,
-          time_horizon: null,
-          target_price: null,
-          expected_return_pct: null,
-        });
+        const now = new Date().toISOString();
+        const { data: draft } = await supabase
+          .from('org_pitches')
+          .insert({
+            org_id: member.org_id,
+            team_id: member.team_id || null,
+            ticker: assignment.ticker.toUpperCase(),
+            company_name: assignment.ticker,
+            pitch_type: 'long',
+            analyst_member_id: primary?.id || member.id,
+            stage: 'idea',
+            status: 'active',
+            thesis_short: `Assignment: ${title}`.slice(0, 280),
+            stage_entered_at: now,
+            created_at: now,
+            updated_at: now,
+          })
+          .select('id')
+          .single();
         pitchDraftId = draft?.id || null;
       } catch {
-        /* non-fatal — pitch store is optional */
+        /* non-fatal — pitch seeding is optional */
       }
     }
 

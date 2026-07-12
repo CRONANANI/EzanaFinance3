@@ -1,16 +1,17 @@
-import { MOCK_MEMBERS, MOCK_TEAMS, getMemberByEmail } from '@/lib/orgMockData';
-import { PIPELINE_COLUMNS } from '@/lib/orgPitchMockData';
-import {
-  listPitches,
-  getPitchRaw,
-  getDeliverablesForPitch,
-  getVotesForPitch,
-  getDiscussionForPitch,
-  getHistoryForPitch,
-  getHindsight,
-} from '@/lib/org-pitch-store';
+/**
+ * Pitch pipeline permission map, kanban column definitions, and archive read
+ * helpers — all backed by the real Supabase tables (org_pitches,
+ * org_pitch_hindsight, org_pitch_deliverables, ...). RLS scopes every row to the
+ * caller's org. This module no longer touches the in-memory mock store.
+ */
 
-export { PIPELINE_COLUMNS } from '@/lib/orgPitchMockData';
+import {
+  fetchPitches,
+  fetchDeliverablesMap,
+  loadDirectory,
+  enrichPitchRow,
+  fetchPitchDetail,
+} from '@/lib/org-pitch-api-helpers';
 
 export const PITCH_PERMISSIONS = {
   'pitch.submit': ['analyst', 'portfolio_manager', 'executive'],
@@ -23,37 +24,16 @@ export const PITCH_PERMISSIONS = {
   'pitch.withdraw': ['analyst'],
 };
 
-function memberName(id) {
-  return MOCK_MEMBERS.find((m) => m.id === id)?.name || 'Unknown';
-}
-
-function teamLabel(teamId) {
-  return MOCK_TEAMS.find((t) => t.id === teamId)?.name || 'Council';
-}
-
-function teamSlug(teamId) {
-  return MOCK_TEAMS.find((t) => t.id === teamId)?.slug || '';
-}
-
-function daysAgoLabel(iso) {
-  if (!iso) return '';
-  const d = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
-  if (d <= 0) return 'Today';
-  if (d === 1) return '1d ago';
-  return `${d}d ago`;
-}
-
-function formatHorizon(h) {
-  if (!h) return '';
-  if (h === 'long-term') return 'long';
-  return h;
-}
-
-export function resolveViewerMember(email, role) {
-  const byEmail = getMemberByEmail(email);
-  if (byEmail) return byEmail;
-  return MOCK_MEMBERS.find((m) => m.role === role) || MOCK_MEMBERS[0];
-}
+// Kanban column definitions (moved out of the mock module — a live constant the
+// board uses to bucket the 7 active stages into visual columns).
+export const PIPELINE_COLUMNS = [
+  { id: 'ideas', label: 'Ideas', stages: ['idea'] },
+  { id: 'research', label: 'Research', stages: ['research_approved', 'research_in_progress'] },
+  { id: 'pm_review', label: 'PM Review', stages: ['pm_review'] },
+  { id: 'committee', label: 'Committee', stages: ['committee_scheduled'] },
+  { id: 'voting', label: 'Voting', stages: ['committee_vote'] },
+  { id: 'decided', label: 'Decided', stages: ['decision'] },
+];
 
 export function hasPitchPermission(member, key) {
   if (!member) return false;
@@ -62,88 +42,57 @@ export function hasPitchPermission(member, key) {
   return roles.includes(member.role);
 }
 
-export function enrichPitch(pitch) {
-  const analyst = MOCK_MEMBERS.find((m) => m.id === pitch.analyst_member_id);
-  const pm = pitch.approving_pm_member_id
-    ? MOCK_MEMBERS.find((m) => m.id === pitch.approving_pm_member_id)
-    : null;
-  const deliverables = getDeliverablesForPitch(pitch.id);
-  const hindsight = getHindsight(pitch.id);
-
+/** Build the lightweight viewer used for archive scoping from an org member. */
+export function viewerFromMember(member) {
+  if (!member) return null;
   return {
-    ...pitch,
-    analyst_name: analyst?.name || 'Unknown',
-    analyst_initials: (analyst?.name || '?')
-      .split(' ')
-      .map((w) => w[0])
-      .join('')
-      .slice(0, 2),
-    pm_name: pm?.name || null,
-    team_name: teamLabel(pitch.team_id),
-    team_slug: teamSlug(pitch.team_id),
-    pitch_type_label: pitch.pitch_type?.charAt(0).toUpperCase() + pitch.pitch_type?.slice(1),
-    horizon_label: formatHorizon(pitch.time_horizon),
-    submitted_ago: daysAgoLabel(pitch.created_at),
-    deliverable_count: deliverables.length,
-    deliverables,
-    hindsight,
-    stage_label: stageLabel(pitch.stage),
-    status_label: statusLabel(pitch.status),
+    id: member.id,
+    role: member.role,
+    team_id: member.team_id || null,
   };
 }
 
-function stageLabel(stage) {
-  const map = {
-    idea: 'Idea submitted',
-    research_approved: 'Research approved',
-    research_in_progress: 'Research in progress',
-    pm_review: 'PM review',
-    committee_scheduled: 'Committee scheduled',
-    committee_vote: 'Committee vote',
-    decision: 'Decision',
-  };
-  return map[stage] || stage;
-}
-
-function statusLabel(status) {
-  const map = {
-    active: 'Active',
-    accepted: 'Accepted',
-    rejected: 'Rejected',
-    watchlist: 'Watchlist',
-    deferred: 'Deferred',
-    withdrawn: 'Withdrawn',
-  };
-  return map[status] || status;
-}
-
-export function filterPitchesForViewer(pitches, viewer, { teamId, stage, status } = {}) {
-  let list = [...pitches];
-
+function filterForViewer(list, viewer) {
+  if (!viewer) return list;
   if (viewer.role === 'analyst') {
-    list = list.filter((p) => p.analyst_member_id === viewer.id || p.team_id === viewer.team_id);
-  } else if (viewer.role === 'portfolio_manager') {
-    list = list.filter((p) => !viewer.team_id || p.team_id === viewer.team_id);
+    return list.filter((p) => p.analyst_member_id === viewer.id || p.team_id === viewer.team_id);
   }
-
-  if (teamId) list = list.filter((p) => p.team_id === teamId);
-  if (stage) list = list.filter((p) => p.stage === stage);
-  if (status) list = list.filter((p) => p.status === status);
-
+  if (viewer.role === 'portfolio_manager') {
+    return list.filter((p) => !viewer.team_id || p.team_id === viewer.team_id);
+  }
   return list;
 }
 
-export function getActivePitches(filters = {}) {
-  const viewer = filters.viewer;
-  let list = listPitches().filter((p) => p.status === 'active');
-  if (viewer) list = filterPitchesForViewer(list, viewer, filters);
-  return list.map(enrichPitch);
+/**
+ * Enrich raw org_pitches rows and attach their persisted hindsight snapshot
+ * (org_pitch_hindsight) so archive filters/analytics can read realized alpha.
+ */
+async function enrichWithHindsight(supabase, orgId, rows) {
+  if (!rows.length) return [];
+  const { memberMap, teamMap } = await loadDirectory(supabase, orgId);
+  const pitchIds = rows.map((r) => r.id);
+  const [delMap, hindRes] = await Promise.all([
+    fetchDeliverablesMap(supabase, pitchIds),
+    supabase.from('org_pitch_hindsight').select('*').in('pitch_id', pitchIds),
+  ]);
+  const hindMap = new Map((hindRes.data || []).map((h) => [h.pitch_id, h]));
+  return rows.map((r) => ({
+    ...enrichPitchRow(r, { memberMap, teamMap, deliverables: delMap.get(r.id) || [] }),
+    hindsight: hindMap.get(r.id) || null,
+  }));
 }
 
-export function getArchivedPitches(filters = {}) {
-  const viewer = filters.viewer;
-  let list = listPitches().filter((p) => p.status !== 'active');
-  if (viewer) list = filterPitchesForViewer(list, viewer, filters);
+/**
+ * Archive lane = every non-active pitch (rejected / withdrawn / accepted /
+ * watchlist / deferred / exited). Supports the same search operators + filters
+ * the UI relied on, now against real rows.
+ */
+export async function getArchivedPitches(supabase, orgId, filters = {}) {
+  if (!orgId) return [];
+  const all = await fetchPitches(supabase, orgId, { teamId: filters.team_id });
+  const rows = all.filter((p) => p.status !== 'active');
+  let list = await enrichWithHindsight(supabase, orgId, rows);
+  list = filterForViewer(list, filters.viewer);
 
   const q = (filters.search || '').trim().toLowerCase();
   if (q) {
@@ -154,7 +103,7 @@ export function getArchivedPitches(filters = {}) {
         p.thesis_short,
         p.thesis_full,
         p.decision_rationale,
-        memberName(p.analyst_member_id),
+        p.analyst_name,
       ]
         .filter(Boolean)
         .join(' ')
@@ -163,7 +112,7 @@ export function getArchivedPitches(filters = {}) {
       if (q.startsWith('decision:')) return p.decision === q.replace('decision:', '').trim();
       if (q.startsWith('analyst:')) {
         const name = q.replace('analyst:', '').trim();
-        return memberName(p.analyst_member_id).toLowerCase().includes(name);
+        return (p.analyst_name || '').toLowerCase().includes(name);
       }
       if (q.startsWith('year:')) {
         const year = q.replace('year:', '').trim();
@@ -171,15 +120,13 @@ export function getArchivedPitches(filters = {}) {
       }
       if (q.startsWith('outperformed:')) {
         const min = parseFloat(q.replace('outperformed:', '').replace('>', '').trim());
-        const h = getHindsight(p.id);
-        return h && h.alpha_pct >= min;
+        return p.hindsight && p.hindsight.alpha_pct >= min;
       }
       return false;
     });
   }
 
   if (filters.decision) list = list.filter((p) => p.decision === filters.decision);
-  if (filters.team_id) list = list.filter((p) => p.team_id === filters.team_id);
   if (filters.analyst_id) list = list.filter((p) => p.analyst_member_id === filters.analyst_id);
 
   const sort = filters.sort || 'recent';
@@ -189,100 +136,72 @@ export function getArchivedPitches(filters = {}) {
     return sort === 'oldest' ? db - da : da - db;
   });
 
-  return list.map(enrichPitch);
+  return list;
 }
 
-export function getPitchBoard(filters = {}) {
-  const active = getActivePitches(filters);
-  const columns = PIPELINE_COLUMNS.map((col) => ({
-    ...col,
-    pitches: active.filter((p) => col.stages.includes(p.stage)),
-  }));
-  return { columns, total_active: active.length };
-}
-
-export function getPitchById(pitchId) {
-  const pitch = getPitchRaw(pitchId);
-  if (!pitch) return null;
-  const enriched = enrichPitch(pitch);
-  const votes = getVotesForPitch(pitchId).map((v) => ({
-    ...v,
-    voter_name: memberName(v.voter_member_id),
-    voter_role: MOCK_MEMBERS.find((m) => m.id === v.voter_member_id)?.role,
-  }));
-  const discussion = getDiscussionForPitch(pitchId).map((d) => ({
-    ...d,
-    author_name: memberName(d.author_member_id),
-  }));
-  const history = getHistoryForPitch(pitchId).map((h) => ({
-    ...h,
-    actor_name: h.actor_member_id ? memberName(h.actor_member_id) : 'System',
-  }));
-  return {
-    ...enriched,
-    votes,
-    discussion,
-    history,
-    is_archived: pitch.status !== 'active',
-    permissions: buildPitchPermissions(pitch),
-  };
-}
-
-export function buildPitchPermissions(pitch) {
-  return {
-    can_edit_thesis:
-      pitch.status === 'active' &&
-      ['idea', 'research_approved', 'research_in_progress'].includes(pitch.stage),
-    can_upload_deliverable:
-      pitch.status === 'active' &&
-      ['research_in_progress', 'research_approved', 'pm_review'].includes(pitch.stage),
-    can_discuss: pitch.status === 'active',
-    can_vote: pitch.stage === 'committee_vote',
-    can_decide: pitch.stage === 'committee_vote' || pitch.stage === 'decision',
-  };
-}
-
-export function getPriorsForTicker(ticker) {
+/** Prior decided pitches for a ticker (archive "priors" rail). */
+export async function getPriorsForTicker(supabase, orgId, ticker) {
+  if (!orgId || !ticker) return [];
   const t = (ticker || '').toUpperCase();
-  return listPitches()
-    .filter((p) => p.ticker.toUpperCase() === t && p.status !== 'active')
-    .map(enrichPitch);
+  const all = await fetchPitches(supabase, orgId);
+  const rows = all.filter((p) => (p.ticker || '').toUpperCase() === t && p.status !== 'active');
+  return enrichWithHindsight(supabase, orgId, rows);
 }
 
-export function getArchiveAnalytics() {
-  const archived = listPitches().filter((p) => p.status !== 'active' && p.decision);
-  const accepted = archived.filter((p) => p.decision === 'accepted');
-  const rejected = archived.filter((p) => p.decision === 'rejected');
+/** Full detail for a single pitch (thin wrapper over the shared helper). */
+export async function getPitchById(supabase, orgId, pitchId) {
+  return fetchPitchDetail(supabase, orgId, pitchId);
+}
 
-  const withHindsight = archived
-    .map((p) => ({ pitch: p, h: getHindsight(p.id) }))
-    .filter((x) => x.h);
+/** Aggregate archive analytics (hit/miss rate, per-team counts) from real rows. */
+export async function getArchiveAnalytics(supabase, orgId) {
+  const empty = {
+    total_decided: 0,
+    accepted_count: 0,
+    rejected_count: 0,
+    watchlist_count: 0,
+    hit_rate_pct: 0,
+    miss_rate_pct: 0,
+    by_team: [],
+  };
+  if (!orgId) return empty;
+
+  const all = await fetchPitches(supabase, orgId);
+  const archivedRows = all.filter((p) => p.status !== 'active' && p.decision);
+  const enriched = await enrichWithHindsight(supabase, orgId, archivedRows);
+  const { teamMap } = await loadDirectory(supabase, orgId);
+
+  const accepted = enriched.filter((p) => p.decision === 'accepted');
+  const rejected = enriched.filter((p) => p.decision === 'rejected');
+  const withHindsight = enriched.filter((p) => p.hindsight);
 
   const hitRate =
     accepted.length > 0
-      ? (withHindsight.filter((x) => x.pitch.decision === 'accepted' && x.h.alpha_pct > 0).length /
+      ? (withHindsight.filter((p) => p.decision === 'accepted' && p.hindsight.alpha_pct > 0)
+          .length /
           accepted.length) *
         100
       : 0;
 
   const missRate =
     rejected.length > 0
-      ? (withHindsight.filter((x) => x.pitch.decision === 'rejected' && x.h.alpha_pct > 5).length /
+      ? (withHindsight.filter((p) => p.decision === 'rejected' && p.hindsight.alpha_pct > 5)
+          .length /
           rejected.length) *
         100
       : 0;
 
   return {
-    total_decided: archived.length,
+    total_decided: enriched.length,
     accepted_count: accepted.length,
     rejected_count: rejected.length,
-    watchlist_count: archived.filter((p) => p.decision === 'watchlist').length,
+    watchlist_count: enriched.filter((p) => p.decision === 'watchlist').length,
     hit_rate_pct: Math.round(hitRate * 10) / 10,
     miss_rate_pct: Math.round(missRate * 10) / 10,
-    by_team: MOCK_TEAMS.map((t) => ({
+    by_team: [...teamMap.values()].map((t) => ({
       team_id: t.id,
       team_name: t.name,
-      count: archived.filter((p) => p.team_id === t.id).length,
+      count: archivedRows.filter((p) => p.team_id === t.id).length,
     })),
   };
 }

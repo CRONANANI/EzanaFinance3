@@ -1,6 +1,9 @@
-import { MOCK_MEMBERS } from '@/lib/orgMockData';
-import { mockMemberIdToOrgMemberId } from '@/lib/org-trading-server';
-import { getPitchRaw } from '@/lib/org-pitch-store';
+/**
+ * Pitch pipeline stage-change notifications, backed by the real Supabase tables.
+ * Recipients are resolved from org_members (by role / team) and the pitch is read
+ * from org_pitches — no mock data. Delivery drops a message into
+ * org_direct_messages for the recipient.
+ */
 
 const STAGE_NOTIFY = {
   research_approved: { title: 'Research approved', audience: 'analyst' },
@@ -11,14 +14,19 @@ const STAGE_NOTIFY = {
   decision: { title: 'Pitch decided', audience: 'all' },
 };
 
-function memberLabel(id) {
-  return MOCK_MEMBERS.find((m) => m.id === id)?.name?.split(' ')[0] || 'Member';
+async function memberLabel(supabase, orgId, memberId) {
+  if (!memberId) return 'Member';
+  const { data } = await supabase
+    .from('org_members')
+    .select('display_name')
+    .eq('org_id', orgId)
+    .eq('id', memberId)
+    .maybeSingle();
+  return data?.display_name?.split(' ')[0] || 'Member';
 }
 
-async function notifyMember(supabase, orgId, recipientMockId, subject, body) {
-  if (!supabase || !orgId || !recipientMockId) return;
-  const recipientId = await mockMemberIdToOrgMemberId(supabase, orgId, recipientMockId);
-  if (!recipientId) return;
+async function notifyMember(supabase, orgId, recipientId, subject, body) {
+  if (!supabase || !orgId || !recipientId) return;
   try {
     await supabase.from('org_direct_messages').insert({
       org_id: orgId,
@@ -35,19 +43,34 @@ async function notifyMember(supabase, orgId, recipientMockId, subject, body) {
   }
 }
 
-function votersMockIds() {
-  return MOCK_MEMBERS.filter(
-    (m) => m.role === 'executive' || (m.role === 'portfolio_manager' && m.sub_role === 'Senior PM'),
-  ).map((m) => m.id);
+async function voterMemberIds(supabase, orgId) {
+  const { data } = await supabase
+    .from('org_members')
+    .select('id, role, sub_role')
+    .eq('org_id', orgId)
+    .eq('is_active', true);
+  return (data || [])
+    .filter(
+      (m) =>
+        m.role === 'executive' || (m.role === 'portfolio_manager' && m.sub_role === 'Senior PM'),
+    )
+    .map((m) => m.id);
 }
 
-export async function notifyStageChange(supabase, orgId, pitchId, toStage, actorMockId) {
-  const pitch = getPitchRaw(pitchId);
+export async function notifyStageChange(supabase, orgId, pitchId, toStage, actorId) {
+  if (!supabase || !orgId || !pitchId) return;
+
+  const { data: pitch } = await supabase
+    .from('org_pitches')
+    .select('id, ticker, team_id, analyst_member_id, decision, decision_rationale')
+    .eq('org_id', orgId)
+    .eq('id', pitchId)
+    .maybeSingle();
   if (!pitch) return;
 
   const cfg = STAGE_NOTIFY[toStage];
   const ticker = pitch.ticker;
-  const actor = memberLabel(actorMockId);
+  const actor = await memberLabel(supabase, orgId, actorId);
 
   if (toStage === 'research_approved') {
     await notifyMember(
@@ -58,20 +81,26 @@ export async function notifyStageChange(supabase, orgId, pitchId, toStage, actor
       `${actor} approved your ${ticker} pitch for research.`,
     );
   } else if (toStage === 'pm_review') {
-    const pm = MOCK_MEMBERS.find(
-      (m) => m.role === 'portfolio_manager' && m.team_id === pitch.team_id,
-    );
-    if (pm) {
+    const { data: pm } = await supabase
+      .from('org_members')
+      .select('id')
+      .eq('org_id', orgId)
+      .eq('role', 'portfolio_manager')
+      .eq('team_id', pitch.team_id)
+      .eq('is_active', true)
+      .maybeSingle();
+    if (pm?.id) {
+      const analyst = await memberLabel(supabase, orgId, pitch.analyst_member_id);
       await notifyMember(
         supabase,
         orgId,
         pm.id,
         `${ticker} pitch submitted for PM review`,
-        `${memberLabel(pitch.analyst_member_id)} submitted ${ticker} for your review.`,
+        `${analyst} submitted ${ticker} for your review.`,
       );
     }
   } else if (toStage === 'committee_scheduled' || toStage === 'committee_vote') {
-    for (const vid of votersMockIds()) {
+    for (const vid of await voterMemberIds(supabase, orgId)) {
       await notifyMember(
         supabase,
         orgId,

@@ -1,9 +1,9 @@
 /**
  * Supabase data-access layer for the Pitch Pipeline (2a).
  *
- * This is the port target: the pitch API routes call these helpers instead of
- * the in-memory org-pitch-store.js. Every read/write hits the real Supabase
- * tables (org_pitches, org_pitch_votes, org_pitch_deliverables,
+ * This is the port target: the pitch API routes call these helpers directly.
+ * Every read/write hits the real Supabase tables (org_pitches,
+ * org_pitch_votes, org_pitch_deliverables,
  * org_pitch_stage_history, org_pitch_discussion_messages, org_pitch_hindsight,
  * org_ic_meetings). RLS scopes rows to the caller's org; the state machine
  * (org-pitch-state-machine.js) stays authoritative for transitions.
@@ -431,31 +431,27 @@ export async function addDiscussionDb(supabase, pitch, payload) {
 }
 
 /**
- * Record a permanent, one-per-member ballot. RLS on org_pitch_votes allows
- * INSERT + SELECT only (no UPDATE) — so votes are immutable once cast; a repeat
- * vote is rejected rather than overwritten. Tally is recomputed onto the pitch
- * row (which IS updatable) after each insert.
+ * Cast (or change) a member's ballot. The unique index on
+ * (pitch_id, voter_member_id) plus the UPDATE RLS policy (members update own
+ * votes) makes this an UPSERT: a member re-voting overwrites their prior ballot
+ * rather than failing on the unique constraint. Tally is recomputed onto the
+ * pitch row afterward.
  */
 export async function castVoteDb(supabase, orgId, pitch, payload) {
-  const { data: existing } = await supabase
-    .from('org_pitch_votes')
-    .select('id')
-    .eq('pitch_id', pitch.id)
-    .eq('voter_member_id', payload.voter_member_id)
-    .maybeSingle();
-  if (existing) return { error: 'You have already voted on this pitch' };
-
   const { data, error } = await supabase
     .from('org_pitch_votes')
-    .insert({
-      pitch_id: pitch.id,
-      voter_member_id: payload.voter_member_id,
-      vote: payload.vote,
-      rationale: payload.rationale,
-      conviction_level: payload.conviction_level ?? null,
-      recused: payload.recused || false,
-      recusal_reason: payload.recusal_reason || null,
-    })
+    .upsert(
+      {
+        pitch_id: pitch.id,
+        voter_member_id: payload.voter_member_id,
+        vote: payload.vote,
+        rationale: payload.rationale,
+        conviction_level: payload.conviction_level ?? null,
+        recused: payload.recused || false,
+        recusal_reason: payload.recusal_reason || null,
+      },
+      { onConflict: 'pitch_id,voter_member_id' },
+    )
     .select()
     .single();
   if (error) return { error: error.message };
