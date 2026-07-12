@@ -43,7 +43,11 @@ export const GET = withApiGuard(
         display_name: m.display_name,
         role: m.role,
       })),
-      viewer: { userId: member.user_id, canAward: assertOrgRole(member, MANAGER_ROLES) },
+      viewer: {
+        userId: member.user_id,
+        memberId: member.id,
+        canAward: assertOrgRole(member, MANAGER_ROLES),
+      },
     });
   },
   { requireAuth: true },
@@ -103,6 +107,8 @@ export const POST = withApiGuard(
         title: title.slice(0, 120),
         reason: body?.reason ? String(body.reason).slice(0, 600) : null,
         period: body?.period ? String(body.period).slice(0, 40) : null,
+        is_award: !!body?.is_award, // gold award vs. standard badge
+        pitch_id: body?.pitch_id || null,
         auto_generated: false,
       })
       .select('*')

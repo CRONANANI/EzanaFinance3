@@ -23,6 +23,7 @@ export function AwardModal({ open, onClose, members = [], onAwarded }) {
   const [title, setTitle] = useState('');
   const [reason, setReason] = useState('');
   const [period, setPeriod] = useState('');
+  const [isAward, setIsAward] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -45,6 +46,7 @@ export function AwardModal({ open, onClose, members = [], onAwarded }) {
           title,
           reason: reason || null,
           period: period || null,
+          is_award: isAward,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -63,12 +65,21 @@ export function AwardModal({ open, onClose, members = [], onAwarded }) {
 
   return (
     <div className="sc2-overlay" onClick={(e) => e.target === e.currentTarget && onClose?.()}>
-      <div className="sc2-modal sc2-root" role="dialog" aria-modal="true" aria-label="Award recognition">
+      <div
+        className="sc2-modal sc2-root"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Award recognition"
+      >
         <h2 className="sc2-modal-title">Award recognition</h2>
 
         <div className="sc2-field">
           <label className="sc2-label">Recipient</label>
-          <select className="sc2-select" value={recipient} onChange={(e) => setRecipient(e.target.value)}>
+          <select
+            className="sc2-select"
+            value={recipient}
+            onChange={(e) => setRecipient(e.target.value)}
+          >
             <option value="">Choose a member…</option>
             {members.map((m) => (
               <option key={m.user_id} value={m.user_id}>
@@ -81,7 +92,11 @@ export function AwardModal({ open, onClose, members = [], onAwarded }) {
         <div className="sc2-row">
           <div className="sc2-field">
             <label className="sc2-label">Badge</label>
-            <select className="sc2-select" value={badgeType} onChange={(e) => setBadgeType(e.target.value)}>
+            <select
+              className="sc2-select"
+              value={badgeType}
+              onChange={(e) => setBadgeType(e.target.value)}
+            >
               {BADGE_TYPES.map((b) => (
                 <option key={b.key} value={b.key}>
                   {b.icon} {b.label}
@@ -121,13 +136,41 @@ export function AwardModal({ open, onClose, members = [], onAwarded }) {
           />
         </div>
 
-        {error && <div className="sc2-error" style={{ fontSize: '0.78rem' }}>{error}</div>}
+        <div className="sc2-field">
+          <label
+            className="sc2-label"
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}
+          >
+            <input
+              type="checkbox"
+              checked={isAward}
+              onChange={(e) => setIsAward(e.target.checked)}
+            />
+            Mark as a gold Award (distinct from a standard badge)
+          </label>
+        </div>
+
+        {error && (
+          <div className="sc2-error" style={{ fontSize: '0.78rem' }}>
+            {error}
+          </div>
+        )}
 
         <div className="sc2-modal-actions">
-          <button type="button" className="sc2-btn sc2-btn--ghost" onClick={onClose} disabled={saving}>
+          <button
+            type="button"
+            className="sc2-btn sc2-btn--ghost"
+            onClick={onClose}
+            disabled={saving}
+          >
             Cancel
           </button>
-          <button type="button" className="sc2-btn sc2-btn--primary" onClick={submit} disabled={saving}>
+          <button
+            type="button"
+            className="sc2-btn sc2-btn--primary"
+            onClick={submit}
+            disabled={saving}
+          >
             {saving ? 'Awarding…' : 'Award badge'}
           </button>
         </div>
