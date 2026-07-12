@@ -47,9 +47,11 @@ const ROLE_LABEL = {
   analyst: 'Analyst',
 };
 
+// `badge` keys map 1:1 to /api/org/nav-counts response keys. Command Center,
+// Fund Analytics, Reports and Team Permissions intentionally carry no badge.
 const COMMAND = [
   { href: '/org-team-hub', label: 'Command Center', Icon: LayoutDashboard, exact: true },
-  { href: '/org-trading', label: 'Trading Desk', Icon: Landmark },
+  { href: '/org-trading', label: 'Trading Desk', Icon: Landmark, badge: 'tradingDesk' },
   { href: '/org-team-hub/fund-analytics', label: 'Fund Analytics', Icon: LineChart },
   {
     href: '/org-team-hub/assignments',
@@ -60,19 +62,36 @@ const COMMAND = [
 ];
 
 const TOOLS = [
-  { href: '/org-team-hub/org-chart', label: 'Org Chart', Icon: Network },
+  { href: '/org-team-hub/org-chart', label: 'Org Chart', Icon: Network, badge: 'orgChart' },
   {
     href: '/org-team-hub/pitches',
     label: 'Pitch Pipeline',
     Icon: KanbanSquare,
     match: '/org-team-hub/pitch',
+    badge: 'pitchPipeline',
   },
-  { href: '/org-team-hub/research-library', label: 'Research Library', Icon: Library },
-  { href: '/org-team-hub/meetings', label: 'Meetings', Icon: Video },
-  { href: '/org-team-hub/recognition', label: 'Recognition', Icon: Award },
-  { href: '/org-team-hub/grades', label: 'Grades', Icon: ClipboardList },
-  { href: '/org-team-hub/competitions', label: 'Competitions', Icon: Trophy },
-  { href: '/org-team-hub/cohorts', label: 'Cohorts', Icon: GraduationCap, roles: ['executive'] },
+  {
+    href: '/org-team-hub/research-library',
+    label: 'Research Library',
+    Icon: Library,
+    badge: 'researchLibrary',
+  },
+  { href: '/org-team-hub/meetings', label: 'Meetings', Icon: Video, badge: 'meetings' },
+  { href: '/org-team-hub/recognition', label: 'Recognition', Icon: Award, badge: 'recognition' },
+  { href: '/org-team-hub/grades', label: 'Grades', Icon: ClipboardList, badge: 'grades' },
+  {
+    href: '/org-team-hub/competitions',
+    label: 'Competitions',
+    Icon: Trophy,
+    badge: 'competitions',
+  },
+  {
+    href: '/org-team-hub/cohorts',
+    label: 'Cohorts',
+    Icon: GraduationCap,
+    roles: ['executive'],
+    badge: 'cohorts',
+  },
   {
     href: '/org-team-hub/compliance',
     label: 'Compliance',
@@ -114,52 +133,29 @@ function itemActive(pathname, item) {
 
 export function OrgHubNav() {
   const pathname = usePathname();
-  const { orgData, orgRole, canManage, isLoading } = useOrg();
+  const { orgData, orgRole, isLoading } = useOrg();
   const member = orgData?.member || null;
-  const [badges, setBadges] = useState({ assignments: null, compliance: null });
+  const [counts, setCounts] = useState(null);
 
-  // Assignments {completed}/{total} — real, from the existing endpoint.
+  // ONE batched, count-only round trip for every badge (server decides tone).
+  // Re-fetched on route change so a count drops after you act on it (e.g. clear
+  // an assignment). Absent/null keys render no badge — never a 0.
   useEffect(() => {
     let alive = true;
     (async () => {
       try {
-        const res = await fetch('/api/org/assignments', { cache: 'no-store' });
+        const res = await fetch('/api/org/nav-counts', { cache: 'no-store' });
         if (!res.ok || !alive) return;
         const data = await res.json();
-        const list = Array.isArray(data.assignments) ? data.assignments : [];
-        const total = data.tab_counts?.all ?? list.length;
-        if (total > 0) {
-          const done = list.filter((a) => a.status === 'complete' || a.status === 'graded').length;
-          setBadges((b) => ({ ...b, assignments: `${done}/${total}` }));
-        }
+        if (alive) setCounts(data);
       } catch {
-        /* honest-empty: no badge when the count is unavailable */
+        /* honest-empty: no badges when counts are unavailable */
       }
     })();
     return () => {
       alive = false;
     };
-  }, []);
-
-  // Compliance open-breach count — managers only (they're the only ones who see the item).
-  useEffect(() => {
-    if (!canManage) return undefined;
-    let alive = true;
-    (async () => {
-      try {
-        const res = await fetch('/api/org/ips/violations', { cache: 'no-store' });
-        if (!res.ok || !alive) return;
-        const data = await res.json();
-        const open = Array.isArray(data.violations) ? data.violations.length : 0;
-        if (open > 0) setBadges((b) => ({ ...b, compliance: open }));
-      } catch {
-        /* no badge on failure */
-      }
-    })();
-    return () => {
-      alive = false;
-    };
-  }, [canManage]);
+  }, [pathname]);
 
   const renderItem = (item) => {
     if (item.roles && !item.roles.includes(orgRole)) return null;
@@ -168,7 +164,7 @@ export function OrgHubNav() {
     const cls = ['ohn-nav-item', active ? 'active' : '', item.highlight ? 'highlight' : '']
       .filter(Boolean)
       .join(' ');
-    const badgeVal = item.badge ? badges[item.badge] : null;
+    const badge = item.badge ? counts?.[item.badge] : null;
     return (
       <a
         key={item.href}
@@ -178,11 +174,7 @@ export function OrgHubNav() {
       >
         <Icon size={15} strokeWidth={1.8} />
         <span>{item.label}</span>
-        {badgeVal != null && (
-          <span className={`ohn-badge${item.badge === 'compliance' ? ' ohn-badge--danger' : ''}`}>
-            {badgeVal}
-          </span>
-        )}
+        {badge && <span className={`ohn-badge ohn-badge--${badge.tone}`}>{badge.value}</span>}
       </a>
     );
   };

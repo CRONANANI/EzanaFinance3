@@ -142,8 +142,9 @@
   outline-offset: 2px;
 }
 
-/* Badges — real counts only (see OrgHubNav). Emerald pill for Assignments,
-   danger pill for open Compliance breaches. */
+/* Badges — real, actionable counts only (see /api/org/nav-counts). Four tones,
+   server-decided. Tabular-nums so "5/19" / "13" don't jitter; right-aligned and
+   never wrapping — the label truncates before the badge shrinks. */
 .ohn-badge {
   margin-left: auto;
   flex-shrink: 0;
@@ -153,10 +154,23 @@
   line-height: 1.4;
   padding: 1px 7px;
   border-radius: 999px;
+  border: 1px solid transparent;
+  font-variant-numeric: tabular-nums;
+}
+.ohn-badge--accent {
   background: var(--emerald-bg);
   color: var(--emerald);
-  border: 1px solid var(--emerald-border);
-  font-variant-numeric: tabular-nums;
+  border-color: var(--emerald-border);
+}
+.ohn-badge--neutral {
+  background: var(--surface-card-hover);
+  color: var(--text-secondary);
+  border-color: var(--border-primary);
+}
+.ohn-badge--warning {
+  background: color-mix(in srgb, var(--warning) 15%, transparent);
+  color: var(--warning);
+  border-color: color-mix(in srgb, var(--warning) 34%, transparent);
 }
 .ohn-badge--danger {
   background: color-mix(in srgb, var(--danger) 14%, transparent);
