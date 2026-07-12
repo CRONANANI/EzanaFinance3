@@ -1,0 +1,783 @@
+/* ============================================================================
+   Cohort 1a — member lifecycle, ATS, onboarding, alumni.
+   Tokens only (theme-variables.css) so per-university brand overrides flow
+   through. Gold = achievement / permanent record; emerald = active / current —
+   never mixed on one surface. Numerics use JetBrains Mono + tabular-nums.
+   ============================================================================ */
+
+.c2-root {
+  --c2-radius: 12px;
+  color: var(--text-secondary);
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+.c2-num {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+.c2-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+}
+.c2-eyebrow {
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--emerald-text);
+  font-weight: 700;
+  margin: 0 0 0.25rem;
+}
+.c2-title {
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.1;
+}
+.c2-sub {
+  color: var(--text-muted);
+  margin: 0.35rem 0 0;
+  font-size: 0.9rem;
+  max-width: 60ch;
+}
+
+/* ── Cohort selector ───────────────────────────────────────────────────── */
+.c2-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.c2-select,
+.c2-input {
+  background: var(--surface-card);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  color: var(--text-primary);
+  padding: 0.5rem 0.7rem;
+  font-size: 0.88rem;
+  font-family: inherit;
+  outline: none;
+}
+.c2-select:focus,
+.c2-input:focus {
+  border-color: var(--emerald-border);
+  box-shadow: 0 0 0 3px var(--emerald-glow);
+}
+
+/* ── Buttons ───────────────────────────────────────────────────────────── */
+.c2-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid var(--border-primary);
+  background: var(--surface-card);
+  color: var(--text-secondary);
+  border-radius: 10px;
+  padding: 0.5rem 0.8rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    opacity 0.15s;
+}
+.c2-btn:hover {
+  background: var(--surface-card-hover);
+}
+.c2-btn:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+.c2-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.c2-btn--primary {
+  background: var(--emerald);
+  border-color: var(--emerald);
+  color: #04120c;
+}
+.c2-btn--primary:hover {
+  background: var(--emerald-hover);
+}
+.c2-btn--gold {
+  background: var(--gold-bg);
+  border-color: var(--gold-border);
+  color: var(--gold-text);
+}
+.c2-btn--danger {
+  color: var(--danger, #ef4444);
+  border-color: color-mix(in srgb, var(--danger, #ef4444) 30%, transparent);
+}
+.c2-btn--sm {
+  padding: 0.32rem 0.55rem;
+  font-size: 0.78rem;
+}
+.c2-btn--ghost {
+  background: transparent;
+}
+
+/* ── Tabs ──────────────────────────────────────────────────────────────── */
+.c2-tabs {
+  display: flex;
+  gap: 0.25rem;
+  border-bottom: 1px solid var(--border-primary);
+  margin-bottom: 1rem;
+  overflow-x: auto;
+}
+.c2-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.6rem 0.9rem;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.9rem;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.c2-tab:hover {
+  color: var(--text-secondary);
+}
+.c2-tab--active {
+  color: var(--text-primary);
+  border-bottom-color: var(--emerald);
+}
+.c2-tab-count {
+  font-size: 0.72rem;
+  background: var(--emerald-bg);
+  color: var(--emerald-text);
+  border-radius: 999px;
+  padding: 0.05rem 0.45rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+.c2-tab--active .c2-tab-count {
+  background: var(--emerald);
+  color: #04120c;
+}
+
+/* ── Stat strip ────────────────────────────────────────────────────────── */
+.c2-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+.c2-stat {
+  background: var(--surface-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--c2-radius);
+  padding: 0.8rem 0.9rem;
+}
+.c2-stat-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 0.3rem;
+}
+.c2-stat-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+.c2-stat--warn .c2-stat-value {
+  color: var(--warning);
+}
+
+/* ── Kanban board ──────────────────────────────────────────────────────── */
+.c2-board {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+.c2-col {
+  flex: 0 0 250px;
+  min-width: 250px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--c2-radius);
+  padding: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.c2-col-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+}
+.c2-col-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+.c2-card {
+  background: var(--surface-card-hover);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  padding: 0.6rem;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    transform 0.05s;
+}
+.c2-card:hover {
+  border-color: var(--emerald-border);
+}
+.c2-card:active {
+  transform: scale(0.99);
+}
+.c2-card-name {
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+.c2-card-meta {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+}
+.c2-card-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-top: 0.45rem;
+}
+
+/* Star / aggregate = GOLD (a scored assessment is a record). */
+.c2-star {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  color: var(--gold-text);
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.c2-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.7rem;
+  padding: 0.12rem 0.4rem;
+  border-radius: 6px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-primary);
+  color: var(--text-muted);
+}
+.c2-progress-mini {
+  font-size: 0.72rem;
+  color: var(--info);
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+.c2-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--emerald-bg);
+  color: var(--emerald-text);
+  font-size: 0.72rem;
+  font-weight: 700;
+  flex: 0 0 auto;
+}
+
+/* ── Archive lanes ─────────────────────────────────────────────────────── */
+.c2-lanes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+.c2-lane {
+  background: var(--surface-card);
+  border: 1px dashed var(--border-primary);
+  border-radius: var(--c2-radius);
+  padding: 0.7rem;
+}
+.c2-lane summary {
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.c2-lane-item {
+  border-top: 1px solid var(--border-primary);
+  padding: 0.5rem 0 0.2rem;
+  margin-top: 0.5rem;
+  font-size: 0.82rem;
+}
+.c2-reason {
+  color: var(--warning);
+  font-size: 0.75rem;
+  margin-top: 0.15rem;
+}
+
+/* ── Pills (lifecycle) ─────────────────────────────────────────────────── */
+.c2-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.12rem 0.5rem;
+  border-radius: 999px;
+  text-transform: capitalize;
+}
+.c2-pill--active {
+  background: var(--emerald-bg);
+  color: var(--emerald-text);
+  border: 1px solid var(--emerald-border);
+}
+.c2-pill--onboarding {
+  background: var(--info-bg);
+  color: var(--info);
+  border: 1px solid color-mix(in srgb, var(--info) 25%, transparent);
+}
+.c2-pill--on_leave {
+  background: var(--surface-card);
+  color: var(--text-muted);
+  border: 1px solid var(--border-primary);
+}
+.c2-pill--graduating {
+  background: var(--gold-bg);
+  color: var(--gold-text);
+  border: 1px solid var(--gold-border);
+}
+.c2-pill--alumni {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-primary);
+}
+.c2-pill--departed {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-primary);
+  text-decoration: line-through;
+}
+.c2-pill--blocked {
+  background: var(--warning-bg);
+  color: var(--warning);
+  border: 1px solid color-mix(in srgb, var(--warning) 30%, transparent);
+}
+
+/* ── Grid of cards (roster / alumni) ───────────────────────────────────── */
+.c2-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+}
+.c2-mcard {
+  background: var(--surface-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--c2-radius);
+  padding: 0.85rem;
+  cursor: pointer;
+}
+.c2-mcard:hover {
+  border-color: var(--emerald-border);
+}
+.c2-mcard-head {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+.c2-mcard-stats {
+  display: flex;
+  gap: 0.9rem;
+  margin-top: 0.6rem;
+  font-size: 0.78rem;
+}
+.c2-mcard-stats b {
+  display: block;
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.95rem;
+}
+
+/* ── Table ─────────────────────────────────────────────────────────────── */
+.c2-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--c2-radius);
+}
+.c2-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+}
+.c2-table th,
+.c2-table td {
+  padding: 0.55rem 0.7rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-primary);
+  white-space: nowrap;
+}
+.c2-table th {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
+}
+.c2-table tbody tr:hover {
+  background: var(--surface-card-hover);
+}
+.c2-table tbody tr:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: -2px;
+}
+
+/* ── Filter / toolbar ──────────────────────────────────────────────────── */
+.c2-toolbar {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.c2-toolbar .c2-spacer {
+  flex: 1;
+}
+.c2-toggle-group {
+  display: inline-flex;
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.c2-toggle-group button {
+  background: var(--surface-card);
+  border: none;
+  color: var(--text-muted);
+  padding: 0.45rem 0.6rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+.c2-toggle-group button.is-on {
+  background: var(--emerald-bg);
+  color: var(--emerald-text);
+}
+
+/* ── Overlay / modal / slide-over ──────────────────────────────────────── */
+.c2-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  z-index: 1000;
+  padding: 1rem;
+}
+.c2-modal {
+  margin: auto;
+  width: 100%;
+  max-width: 720px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--bg-elevated, var(--surface-card));
+  border: 1px solid var(--border-primary);
+  border-radius: 14px;
+  padding: 1.25rem;
+}
+.c2-slideover {
+  margin: 0 0 0 auto;
+  width: 100%;
+  max-width: 460px;
+  height: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+  background: var(--bg-elevated, var(--surface-card));
+  border-left: 1px solid var(--border-primary);
+  padding: 1.25rem;
+}
+.c2-modal,
+.c2-slideover {
+  background-color: #0d1117;
+}
+:root[data-theme='light'] .c2-modal,
+:root[data-theme='light'] .c2-slideover {
+  background-color: #ffffff;
+}
+.c2-modal-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.c2-modal-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 1.25rem;
+  flex-wrap: wrap;
+}
+.c2-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  font-weight: 700;
+  margin: 1rem 0 0.4rem;
+}
+
+/* ── Rubric ────────────────────────────────────────────────────────────── */
+.c2-rubric-row {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 0.6rem;
+  align-items: start;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border-primary);
+}
+.c2-scorebtns {
+  display: inline-flex;
+  gap: 0.25rem;
+}
+.c2-scorebtn {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--border-primary);
+  background: var(--surface-card);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+}
+.c2-scorebtn.is-on {
+  background: var(--gold-bg);
+  border-color: var(--gold-border);
+  color: var(--gold-text);
+  font-weight: 700;
+}
+.c2-locked {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-style: italic;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* ── Funnel ────────────────────────────────────────────────────────────── */
+.c2-funnel-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0.3rem 0;
+}
+.c2-funnel-track {
+  flex: 1;
+  height: 22px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-primary);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.c2-funnel-fill {
+  height: 100%;
+  background: var(--emerald);
+  opacity: 0.85;
+}
+.c2-funnel-label {
+  width: 90px;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+.c2-funnel-val {
+  width: 84px;
+  text-align: right;
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* ── Mentor pairing (two columns) ──────────────────────────────────────── */
+.c2-mentor-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.9rem;
+}
+.c2-panel {
+  background: var(--surface-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--c2-radius);
+  padding: 0.85rem;
+}
+
+/* ── Placement banner (GOLD, permanent record) ─────────────────────────── */
+.c2-banner {
+  background: var(--gold-bg);
+  border: 1px solid var(--gold-border);
+  border-radius: 16px;
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+.c2-banner-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.c2-banner-headline {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--gold-text);
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+.c2-banner-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.6rem;
+  margin-top: 0.9rem;
+}
+.c2-dest {
+  background: var(--surface-card);
+  border: 1px solid var(--gold-border);
+  border-radius: 10px;
+  padding: 0.6rem 0.7rem;
+}
+.c2-dest b {
+  font-size: 1.25rem;
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+.c2-dest span {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+/* Frozen scorecard = gold */
+.c2-frozen {
+  background: var(--gold-bg);
+  border: 1px solid var(--gold-border);
+  border-radius: 10px;
+  padding: 0.6rem 0.7rem;
+  color: var(--gold-text);
+}
+
+/* ── States ────────────────────────────────────────────────────────────── */
+.c2-empty {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  border: 1px dashed var(--border-primary);
+  border-radius: var(--c2-radius);
+  color: var(--text-muted);
+}
+.c2-empty svg {
+  opacity: 0.5;
+  margin-bottom: 0.5rem;
+}
+.c2-state {
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+.c2-error {
+  color: var(--danger, #ef4444);
+}
+.c2-note {
+  background: var(--info-bg);
+  border: 1px solid color-mix(in srgb, var(--info) 25%, transparent);
+  color: var(--text-secondary);
+  border-radius: 10px;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.82rem;
+  margin: 0.5rem 0;
+}
+.c2-note--warn {
+  background: var(--warning-bg);
+  border-color: color-mix(in srgb, var(--warning) 30%, transparent);
+}
+
+/* ── Responsive ────────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .c2-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .c2-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .c2-col {
+    flex-basis: 220px;
+    min-width: 220px;
+  }
+}
+@media (max-width: 640px) {
+  .c2-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+  .c2-grid {
+    grid-template-columns: 1fr;
+  }
+  .c2-lanes,
+  .c2-mentor-cols {
+    grid-template-columns: 1fr;
+  }
+  .c2-slideover,
+  .c2-modal {
+    max-width: 100%;
+    border-radius: 0;
+    max-height: 100%;
+    height: 100%;
+  }
+  .c2-mobile-hide {
+    display: none;
+  }
+}
+
+/* ── Print (placement banner → PDF) ────────────────────────────────────── */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .c2-print-area,
+  .c2-print-area * {
+    visibility: visible;
+  }
+  .c2-print-area {
+    position: absolute;
+    inset: 0;
+    padding: 1rem;
+  }
+  .c2-no-print {
+    display: none !important;
+  }
+}

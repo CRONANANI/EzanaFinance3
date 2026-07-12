@@ -1,20 +1,51 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import {
+  Plus,
+  GraduationCap,
+  Archive,
+  ChevronDown,
+  Users,
+  ClipboardList,
+  ListChecks,
+  Award,
+} from 'lucide-react';
+import { ApplicantPipeline } from './ApplicantPipeline';
+import { CohortRoster } from './CohortRoster';
+import { OnboardingChecklist } from './OnboardingChecklist';
+import { AlumniDirectory } from './AlumniDirectory';
 import { CohortArchiveView } from './CohortArchiveView';
-import './academic.css';
+import './cohort2.css';
+
+const TABS = [
+  { key: 'recruitment', label: 'Recruitment', icon: ClipboardList },
+  { key: 'roster', label: 'Roster', icon: Users },
+  { key: 'onboarding', label: 'Onboarding', icon: ListChecks },
+  { key: 'alumni', label: 'Alumni', icon: Award },
+];
+
+const STATUS_SUFFIX = {
+  recruiting: 'Recruiting',
+  active: 'Active',
+  graduating: 'Graduating',
+  alumni: 'Alumni',
+  archived: 'Archived',
+};
 
 export function CohortManager() {
   const [cohorts, setCohorts] = useState([]);
-  const [viewer, setViewer] = useState({ isExecutive: false });
+  const [viewer, setViewer] = useState({ canManage: false, isExecutive: false });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [name, setName] = useState('');
-  const [termType, setTermType] = useState('semester');
-  const [busy, setBusy] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
+  const [tab, setTab] = useState('recruitment');
+  const [counts, setCounts] = useState({});
+  const [creating, setCreating] = useState(false);
+  const [graduating, setGraduating] = useState(false);
   const [viewArchive, setViewArchive] = useState(null);
 
-  const load = useCallback(async () => {
+  const loadCohorts = useCallback(async () => {
     try {
       const res = await fetch('/api/org/cohorts', { cache: 'no-store' });
       if (res.status === 403) {
@@ -26,9 +57,11 @@ export function CohortManager() {
         setError(data?.error || 'Failed to load cohorts.');
         return;
       }
-      setCohorts(data.cohorts || []);
+      const list = data.cohorts || [];
+      setCohorts(list);
       setViewer(data.viewer || {});
       setError('');
+      setSelectedId((prev) => prev || list.find((c) => c.is_current)?.id || list[0]?.id || null);
     } catch {
       setError('Could not connect.');
     } finally {
@@ -37,142 +70,378 @@ export function CohortManager() {
   }, []);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    loadCohorts();
+  }, [loadCohorts]);
 
-  const create = async () => {
-    if (!name.trim() || busy) return;
+  const setCount = useCallback(
+    (key, n) => setCounts((c) => (c[key] === n ? c : { ...c, [key]: n })),
+    [],
+  );
+  // Stable per-tab callbacks — inline arrows would change identity each render
+  // and are in the tab components' fetch-effect deps (would loop).
+  const onCountRecruit = useCallback((n) => setCount('recruitment', n), [setCount]);
+  const onCountRoster = useCallback((n) => setCount('roster', n), [setCount]);
+  const onCountOnboarding = useCallback((n) => setCount('onboarding', n), [setCount]);
+  const onCountAlumni = useCallback((n) => setCount('alumni', n), [setCount]);
+  const goRecruit = useCallback(() => setTab('recruitment'), []);
+
+  if (loading) return <div className="c2-root c2-state">Loading cohorts…</div>;
+  if (error) return <div className="c2-root c2-state c2-error">{error}</div>;
+
+  const selected = cohorts.find((c) => c.id === selectedId) || null;
+  const canManage = !!viewer.canManage;
+
+  return (
+    <div className="c2-root">
+      <div className="c2-header">
+        <div>
+          <p className="c2-eyebrow">People</p>
+          <h1 className="c2-title">Cohort</h1>
+          <p className="c2-sub">
+            The member lifecycle end to end — recruit, onboard, run, and graduate each class into
+            the alumni record.
+          </p>
+        </div>
+        <div className="c2-selector">
+          {cohorts.length > 0 && (
+            <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
+              <select
+                className="c2-select"
+                value={selectedId || ''}
+                onChange={(e) => setSelectedId(e.target.value)}
+                aria-label="Select cohort"
+                style={{ paddingRight: 28 }}
+              >
+                {cohorts.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                    {c.status ? ` · ${STATUS_SUFFIX[c.status] || c.status}` : ''}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown
+                size={14}
+                style={{
+                  position: 'absolute',
+                  right: 8,
+                  pointerEvents: 'none',
+                  color: 'var(--text-muted)',
+                }}
+              />
+            </div>
+          )}
+          {viewer.isExecutive && (
+            <button
+              type="button"
+              className="c2-btn c2-btn--primary"
+              onClick={() => setCreating(true)}
+            >
+              <Plus size={15} /> New cohort
+            </button>
+          )}
+          {viewer.isExecutive && selected && !selected.archived && (
+            <button
+              type="button"
+              className="c2-btn c2-btn--gold"
+              onClick={() => setGraduating(true)}
+            >
+              <GraduationCap size={15} /> Graduate
+            </button>
+          )}
+          {selected?.archived && (
+            <button type="button" className="c2-btn" onClick={() => setViewArchive(selected)}>
+              <Archive size={15} /> Track record
+            </button>
+          )}
+        </div>
+      </div>
+
+      {cohorts.length === 0 ? (
+        <div className="c2-empty">
+          <Users size={30} />
+          <p>No cohorts yet.</p>
+          {viewer.isExecutive ? (
+            <button
+              type="button"
+              className="c2-btn c2-btn--primary"
+              onClick={() => setCreating(true)}
+            >
+              <Plus size={15} /> Create the first cohort
+            </button>
+          ) : (
+            <p style={{ fontSize: '0.82rem' }}>An executive needs to create a cohort first.</p>
+          )}
+        </div>
+      ) : (
+        <>
+          <div className="c2-tabs" role="tablist">
+            {TABS.map((t) => {
+              const Icon = t.icon;
+              return (
+                <button
+                  key={t.key}
+                  role="tab"
+                  aria-selected={tab === t.key}
+                  className={`c2-tab ${tab === t.key ? 'c2-tab--active' : ''}`}
+                  onClick={() => setTab(t.key)}
+                >
+                  <Icon size={15} /> {t.label}
+                  {counts[t.key] != null && <span className="c2-tab-count">{counts[t.key]}</span>}
+                </button>
+              );
+            })}
+          </div>
+
+          {selected && (
+            <div key={selected.id}>
+              {tab === 'recruitment' && (
+                <ApplicantPipeline
+                  cohortId={selected.id}
+                  canManage={canManage}
+                  onCount={onCountRecruit}
+                />
+              )}
+              {tab === 'roster' && (
+                <CohortRoster
+                  cohortId={selected.id}
+                  canManage={canManage}
+                  onCount={onCountRoster}
+                  onGoRecruit={goRecruit}
+                />
+              )}
+              {tab === 'onboarding' && (
+                <OnboardingChecklist
+                  cohortId={selected.id}
+                  canManage={canManage}
+                  onCount={onCountOnboarding}
+                />
+              )}
+              {tab === 'alumni' && (
+                <AlumniDirectory
+                  cohortId={selected.id}
+                  canManage={canManage}
+                  onCount={onCountAlumni}
+                />
+              )}
+            </div>
+          )}
+        </>
+      )}
+
+      {creating && (
+        <CreateCohortModal
+          onClose={() => setCreating(false)}
+          onCreated={(id) => {
+            setCreating(false);
+            setSelectedId(id);
+            loadCohorts();
+          }}
+        />
+      )}
+      {graduating && selected && (
+        <GraduateModal
+          cohort={selected}
+          onClose={() => setGraduating(false)}
+          onDone={() => (setGraduating(false), loadCohorts())}
+        />
+      )}
+      {viewArchive && (
+        <CohortArchiveView cohort={viewArchive} onClose={() => setViewArchive(null)} />
+      )}
+    </div>
+  );
+}
+
+function CreateCohortModal({ onClose, onCreated }) {
+  const [f, setF] = useState({
+    name: '',
+    term_type: 'year',
+    entry_term: '',
+    expected_grad_term: '',
+    status: 'recruiting',
+    onboarding_gate: true,
+  });
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+  const set = (k, v) => setF((s) => ({ ...s, [k]: v }));
+
+  const submit = async () => {
+    if (!f.name.trim()) {
+      setErr('Name required');
+      return;
+    }
     setBusy(true);
     try {
       const res = await fetch('/api/org/cohorts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, term_type: termType, is_current: cohorts.length === 0 }),
+        body: JSON.stringify({ ...f, is_current: true }),
       });
-      if (res.ok) {
-        setName('');
-        await load();
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setErr(j?.error || 'Failed');
+        return;
       }
+      onCreated(j.cohort?.id);
     } finally {
       setBusy(false);
     }
   };
 
-  const setCurrent = async (cohort) => {
-    await fetch('/api/org/cohorts', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cohort_id: cohort.id, is_current: true }),
-    });
-    load();
-  };
+  return (
+    <div className="c2-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="c2-modal" role="dialog" aria-modal="true" style={{ maxWidth: 460 }}>
+        <h2 className="c2-modal-title">New cohort</h2>
+        <div className="c2-label">Name</div>
+        <input
+          className="c2-input"
+          style={{ width: '100%' }}
+          placeholder="Class of 2028"
+          value={f.name}
+          onChange={(e) => set('name', e.target.value)}
+        />
+        <div className="c2-label">Term type</div>
+        <select
+          className="c2-select"
+          style={{ width: '100%' }}
+          value={f.term_type}
+          onChange={(e) => set('term_type', e.target.value)}
+        >
+          <option value="semester">Semester</option>
+          <option value="quarter">Quarter</option>
+          <option value="year">Year</option>
+        </select>
+        <div className="c2-label">Entry term</div>
+        <input
+          className="c2-input"
+          style={{ width: '100%' }}
+          placeholder="Fall 2026"
+          value={f.entry_term}
+          onChange={(e) => set('entry_term', e.target.value)}
+        />
+        <div className="c2-label">Expected graduation</div>
+        <input
+          className="c2-input"
+          style={{ width: '100%' }}
+          placeholder="Spring 2028"
+          value={f.expected_grad_term}
+          onChange={(e) => set('expected_grad_term', e.target.value)}
+        />
+        <label
+          style={{
+            display: 'flex',
+            gap: '0.4rem',
+            alignItems: 'center',
+            margin: '0.7rem 0',
+            fontSize: '0.85rem',
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={f.onboarding_gate}
+            onChange={(e) => set('onboarding_gate', e.target.checked)}
+          />
+          Onboarding gate (block live pitches until onboarding complete)
+        </label>
+        {err && <div className="c2-note c2-note--warn">{err}</div>}
+        <div className="c2-modal-actions">
+          <button type="button" className="c2-btn" onClick={onClose} disabled={busy}>
+            Cancel
+          </button>
+          <button type="button" className="c2-btn c2-btn--primary" onClick={submit} disabled={busy}>
+            Create
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
-  const archive = async (cohort) => {
-    const ok = window.confirm(
-      `Archive "${cohort.name}"?\n\nThis snapshots the fund's current track record (roster, positions, pitch outcomes) for the historical record and graduates members flagged as graduating (they become inactive). This cannot be undone.`,
-    );
-    if (!ok) return;
+function GraduateModal({ cohort, onClose, onDone }) {
+  const [busy, setBusy] = useState(false);
+  const [gate, setGate] = useState(null); // {required, published, missing[]}
+  const [err, setErr] = useState('');
+
+  const run = async (force) => {
     setBusy(true);
+    setErr('');
     try {
       const res = await fetch(`/api/org/cohorts/${cohort.id}/archive`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ graduate: true }),
+        body: JSON.stringify({ graduate: true, force }),
       });
-      if (res.ok) await load();
+      const j = await res.json().catch(() => ({}));
+      if (res.status === 409 && j?.gate === 'handoff_docs') {
+        setGate(j);
+        return;
+      }
+      if (!res.ok) {
+        setErr(j?.error || 'Failed');
+        return;
+      }
+      onDone();
     } finally {
       setBusy(false);
     }
   };
 
-  if (loading) return <div className="ac3-state">Loading cohorts…</div>;
-  if (error) return <div className="ac3-state ac3-error">{error}</div>;
-
-  const active = cohorts.filter((c) => !c.archived);
-  const archived = cohorts.filter((c) => c.archived);
-
   return (
-    <div className="ac3-root">
-      <div className="ac3-header">
-        <div>
-          <p className="ac3-eyebrow">Academic</p>
-          <h1 className="ac3-title">Cohorts</h1>
-          <p className="ac3-sub">Academic terms — archive on graduation to preserve track record.</p>
+    <div className="c2-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="c2-modal" role="dialog" aria-modal="true" style={{ maxWidth: 500 }}>
+        <h2 className="c2-modal-title">
+          <GraduationCap size={18} /> Graduate {cohort.name}
+        </h2>
+        <p className="c2-sub" style={{ marginTop: 0 }}>
+          Snapshots the fund track record, freezes graduating members into the alumni record (final
+          rating from the Ezana Rating), and moves the cohort to alumni. Members flagged
+          &quot;graduating&quot; in the roster are the ones who graduate.
+        </p>
+
+        {gate && (
+          <div className="c2-note c2-note--warn">
+            <b>
+              Handoff docs incomplete — {gate.published} of {gate.required} published.
+            </b>
+            <div style={{ marginTop: '0.4rem' }}>
+              Missing coverage handoffs:
+              <ul style={{ margin: '0.3rem 0 0 1rem' }}>
+                {gate.missing.map((m, i) => (
+                  <li key={i}>
+                    {m.member_name || 'Member'} · {m.sector}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+        {err && <div className="c2-note c2-note--warn">{err}</div>}
+
+        <div className="c2-modal-actions">
+          <button type="button" className="c2-btn" onClick={onClose} disabled={busy}>
+            Cancel
+          </button>
+          {gate ? (
+            <button
+              type="button"
+              className="c2-btn c2-btn--danger"
+              onClick={() => run(true)}
+              disabled={busy}
+            >
+              Graduate anyway
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="c2-btn c2-btn--gold"
+              onClick={() => run(false)}
+              disabled={busy}
+            >
+              {busy ? 'Working…' : 'Graduate cohort'}
+            </button>
+          )}
         </div>
       </div>
-
-      {viewer.isExecutive && (
-        <div className="ac3-toolbar">
-          <input
-            className="ac3-input"
-            style={{ maxWidth: 260 }}
-            placeholder="New cohort, e.g. Fall 2026"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-          <select className="ac3-select" style={{ maxWidth: 150 }} value={termType} onChange={(e) => setTermType(e.target.value)}>
-            <option value="semester">Semester</option>
-            <option value="quarter">Quarter</option>
-            <option value="year">Year</option>
-          </select>
-          <button type="button" className="ac3-btn ac3-btn--primary" onClick={create} disabled={busy}>
-            <i className="bi bi-plus-lg" aria-hidden /> Create cohort
-          </button>
-        </div>
-      )}
-
-      {active.length === 0 ? (
-        <div className="ac3-state">No active cohorts yet.</div>
-      ) : (
-        active.map((c) => (
-          <div key={c.id} className="ac3-row">
-            <div>
-              <span className="ac3-strong">{c.name}</span>{' '}
-              {c.is_current && <span className="ac3-pill ac3-pill--current">current</span>}
-              <div className="ac3-meta" style={{ textTransform: 'capitalize' }}>
-                {c.term_type}
-                {c.starts_on ? ` · starts ${c.starts_on}` : ''}
-              </div>
-            </div>
-            {viewer.isExecutive && (
-              <div style={{ display: 'flex', gap: '0.4rem' }}>
-                {!c.is_current && (
-                  <button type="button" className="ac3-btn ac3-btn--ghost" onClick={() => setCurrent(c)}>
-                    Set current
-                  </button>
-                )}
-                <button type="button" className="ac3-btn ac3-btn--danger" onClick={() => archive(c)} disabled={busy}>
-                  <i className="bi bi-archive" aria-hidden /> Archive
-                </button>
-              </div>
-            )}
-          </div>
-        ))
-      )}
-
-      {archived.length > 0 && (
-        <>
-          <h3 className="ac3-title" style={{ fontSize: '1.1rem', margin: '1.5rem 0 0.75rem' }}>
-            Archived
-          </h3>
-          {archived.map((c) => (
-            <div key={c.id} className="ac3-row">
-              <div>
-                <span className="ac3-strong">{c.name}</span>{' '}
-                <span className="ac3-pill ac3-pill--archived">archived</span>
-                <div className="ac3-meta">
-                  {c.archived_at ? new Date(c.archived_at).toLocaleDateString() : ''}
-                </div>
-              </div>
-              <button type="button" className="ac3-btn" onClick={() => setViewArchive(c)}>
-                View track record
-              </button>
-            </div>
-          ))}
-        </>
-      )}
-
-      {viewArchive && <CohortArchiveView cohort={viewArchive} onClose={() => setViewArchive(null)} />}
     </div>
   );
 }
