@@ -979,67 +979,60 @@ export default function OrgTeamHubPage() {
 
   return (
     <div className="thw-root">
-      <div className="thw-shell">
-        <SidebarNav
-          identityName={identityName}
-          identityTitle={identityTitle}
-          onGo={(href) => router.push(href)}
+      {/* The shared OrgHubNav rail is now provided by org-team-hub/layout.js. */}
+      <main className="thw-main">
+        <header className="thw-header">
+          <div className="thw-header-lede">
+            <div className="thw-eyebrow">Team Hub · Fall 2026</div>
+            <h1 className="thw-h1">Command Center</h1>
+          </div>
+          <div className="thw-search" onClick={() => searchRef.current?.focus()}>
+            <Search size={15} strokeWidth={1.8} />
+            <input
+              ref={searchRef}
+              type="text"
+              className="thw-search-input"
+              placeholder="Jump to anything…"
+              aria-label="Jump to anything"
+            />
+            <span className="thw-kbd">⌘K</span>
+          </div>
+        </header>
+
+        <CalendarStrip
+          items={calendarItems}
+          loading={loading}
+          onOpen={() => router.push('/org-team-hub/meetings')}
+          onOpenAll={() => router.push('/org-team-hub/meetings')}
         />
 
-        <main className="thw-main">
-          <header className="thw-header">
-            <div className="thw-header-lede">
-              <div className="thw-eyebrow">Team Hub · Fall 2026</div>
-              <h1 className="thw-h1">Command Center</h1>
-            </div>
-            <div className="thw-search" onClick={() => searchRef.current?.focus()}>
-              <Search size={15} strokeWidth={1.8} />
-              <input
-                ref={searchRef}
-                type="text"
-                className="thw-search-input"
-                placeholder="Jump to anything…"
-                aria-label="Jump to anything"
-              />
-              <span className="thw-kbd">⌘K</span>
-            </div>
-          </header>
+        <CommandHero
+          fund={fund}
+          snapshots={fundSnapshots}
+          tasksData={tasksData}
+          loading={loading}
+          onOpenTrading={() => router.push('/org-trading')}
+        />
 
-          <CalendarStrip
-            items={calendarItems}
-            loading={loading}
-            onOpen={() => router.push('/org-team-hub/meetings')}
-            onOpenAll={() => router.push('/org-team-hub/meetings')}
-          />
+        <SectorDesk
+          sectors={summary?.sectors}
+          loading={loading}
+          onOpen={() => router.push('/org-team-hub/fund-analytics')}
+        />
 
-          <CommandHero
-            fund={fund}
-            snapshots={fundSnapshots}
+        <div className="thw-bottom">
+          <TaskManagement
             tasksData={tasksData}
             loading={loading}
-            onOpenTrading={() => router.push('/org-trading')}
+            onStatusChange={handleStatusChange}
           />
-
-          <SectorDesk
-            sectors={summary?.sectors}
+          <Deadlines
+            tasksData={tasksData}
             loading={loading}
-            onOpen={() => router.push('/org-team-hub/fund-analytics')}
+            onOpenBoard={() => router.push('/org-team-hub/assignments')}
           />
-
-          <div className="thw-bottom">
-            <TaskManagement
-              tasksData={tasksData}
-              loading={loading}
-              onStatusChange={handleStatusChange}
-            />
-            <Deadlines
-              tasksData={tasksData}
-              loading={loading}
-              onOpenBoard={() => router.push('/org-team-hub/assignments')}
-            />
-          </div>
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
   );
 }

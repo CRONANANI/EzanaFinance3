@@ -1,0 +1,208 @@
+/* ============================================================================
+   Shared org shell — the sticky left rail + main column rendered on EVERY org
+   page (the org-team-hub route group + the Trading Desk). The dashboard shell
+   (.dashboard-main-content) already provides the 1600px / 2rem envelope, so this
+   fills it without adding a second inset. Tokens only; light AND dark.
+   ============================================================================ */
+.org-shell {
+  display: grid;
+  grid-template-columns: 212px minmax(0, 1fr);
+  gap: 26px;
+  align-items: start;
+  font-family: var(--font-sans);
+}
+.org-shell-main {
+  min-width: 0;
+}
+
+/* ── Sidebar (OrgHubNav) ─────────────────────────────────────────────────── */
+.ohn-sidebar {
+  position: sticky;
+  top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-self: start;
+}
+
+/* User card */
+.ohn-vp {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 14px;
+  border: 1px solid var(--border-primary);
+  border-radius: 14px;
+  background: var(--surface-card);
+}
+.ohn-vp-avatar {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--emerald);
+  background: var(--emerald-bg);
+  border: 1.5px solid var(--emerald-border);
+}
+.ohn-vp-meta {
+  min-width: 0;
+}
+.ohn-vp-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--emerald);
+}
+.ohn-vp-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Grouped sections */
+.ohn-nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ohn-nav-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--text-ghost);
+  padding: 0 10px 6px;
+}
+.ohn-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 500;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background 0.12s ease-out,
+    color 0.12s ease-out;
+}
+.ohn-nav-item svg {
+  flex-shrink: 0;
+  color: var(--text-faint);
+  transition: color 0.12s ease-out;
+}
+.ohn-nav-item span {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ohn-nav-item:hover {
+  background: var(--surface-card-hover);
+  color: var(--text-primary);
+}
+.ohn-nav-item:hover svg {
+  color: var(--text-secondary);
+}
+.ohn-nav-item.active,
+.ohn-nav-item.active:hover {
+  background: var(--emerald-bg);
+  color: var(--emerald);
+  font-weight: 600;
+}
+.ohn-nav-item.active svg {
+  color: var(--emerald);
+}
+.ohn-nav-item.highlight {
+  color: var(--emerald);
+  font-weight: 600;
+}
+.ohn-nav-item:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+
+/* Badges — real counts only (see OrgHubNav). Emerald pill for Assignments,
+   danger pill for open Compliance breaches. */
+.ohn-badge {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.4;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--emerald-bg);
+  color: var(--emerald);
+  border: 1px solid var(--emerald-border);
+  font-variant-numeric: tabular-nums;
+}
+.ohn-badge--danger {
+  background: color-mix(in srgb, var(--danger) 14%, transparent);
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 32%, transparent);
+}
+
+/* Loading skeleton */
+.ohn-skel {
+  border-radius: 10px;
+  background: linear-gradient(
+    90deg,
+    var(--surface-card) 25%,
+    var(--surface-card-hover) 37%,
+    var(--surface-card) 63%
+  );
+  background-size: 400% 100%;
+  animation: ohn-shimmer 1.4s ease infinite;
+}
+.ohn-skel-vp {
+  height: 66px;
+}
+@keyframes ohn-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+/* Stack on narrow viewports — the rail becomes a wrapping row above the content. */
+@media (max-width: 900px) {
+  .org-shell {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .ohn-sidebar {
+    position: static;
+    flex-direction: column;
+  }
+  .ohn-nav-group {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .ohn-nav-label {
+    width: 100%;
+  }
+}
