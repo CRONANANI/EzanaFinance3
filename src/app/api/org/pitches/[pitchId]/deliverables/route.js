@@ -1,16 +1,27 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { addDeliverable, getDeliverablesForPitch } from '@/lib/org-pitch-store';
-import { getPitchRaw } from '@/lib/org-pitch-store';
-import { getPitchById } from '@/lib/org-pitches';
-import { getPitchApiContext } from '@/lib/org-pitch-api-helpers';
+import {
+  getPitchContext,
+  fetchPitchRaw,
+  fetchPitchDetail,
+  addDeliverableDb,
+} from '@/lib/org-pitch-api-helpers';
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export const GET = withApiGuard(
   async (request, user, context) => {
     const params = context?.params ?? {};
-    return NextResponse.json({ deliverables: getDeliverablesForPitch(params.pitchId) });
+    const { supabase, orgId } = await getPitchContext();
+    if (!orgId) return NextResponse.json({ deliverables: [] });
+
+    const { data } = await supabase
+      .from('org_pitch_deliverables')
+      .select('*')
+      .eq('pitch_id', params.pitchId)
+      .order('uploaded_at');
+    return NextResponse.json({ deliverables: data || [] });
   },
   { requireAuth: true },
 );
@@ -18,8 +29,10 @@ export const GET = withApiGuard(
 export const POST = withApiGuard(
   async (request, user, context) => {
     const params = context?.params ?? {};
-    const { viewer } = await getPitchApiContext();
-    const pitch = getPitchRaw(params.pitchId);
+    const { supabase, viewer, orgId } = await getPitchContext();
+    if (!orgId) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
+
+    const pitch = await fetchPitchRaw(supabase, orgId, params.pitchId);
     if (!pitch) return NextResponse.json({ error: 'Pitch not found' }, { status: 404 });
 
     const body = await request.json();
@@ -27,7 +40,7 @@ export const POST = withApiGuard(
       return NextResponse.json({ error: 'kind and title required' }, { status: 400 });
     }
 
-    addDeliverable(pitch.id, {
+    const result = await addDeliverableDb(supabase, orgId, pitch, {
       kind: body.kind,
       title: body.title,
       file_url: body.file_url,
@@ -36,11 +49,10 @@ export const POST = withApiGuard(
       uploaded_by_member_id: viewer.id,
       pinned_attachment_ref: body.pinned_attachment_ref,
     });
+    if (result.error) return NextResponse.json({ error: result.error }, { status: 400 });
 
-    return NextResponse.json({
-      deliverables: getDeliverablesForPitch(pitch.id),
-      pitch: getPitchById(pitch.id),
-    });
+    const detail = await fetchPitchDetail(supabase, orgId, pitch.id);
+    return NextResponse.json({ deliverables: detail.deliverables, pitch: detail });
   },
   { requireAuth: true },
 );

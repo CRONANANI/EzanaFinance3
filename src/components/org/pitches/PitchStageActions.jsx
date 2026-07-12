@@ -2,21 +2,25 @@
 
 import { useState } from 'react';
 import { useOrg } from '@/contexts/OrgContext';
-import { getMemberByEmail } from '@/lib/orgMockData';
 
 export function PitchStageActions({ pitch, onRefresh }) {
   const { orgData } = useOrg();
-  const viewer = getMemberByEmail(orgData?.member?.email) || {
-    role: 'analyst',
-    id: 'm10',
-    team_id: 't7',
+  const member = orgData?.member;
+  const viewer = {
+    role: member?.role || 'analyst',
+    id: member?.id || null,
+    team_id: member?.team_id || null,
   };
   const [note, setNote] = useState('');
   const [meetingAt, setMeetingAt] = useState('');
   const [dueAt, setDueAt] = useState('');
   const [busy, setBusy] = useState(false);
 
-  if (!pitch || pitch.is_archived) return null;
+  // In-portfolio holdings are "accepted" (is_archived) but still act-on-able:
+  // managers can mark them exited with a post-mortem. Truly archived
+  // (rejected / exited) pitches are read-only.
+  const isLivePortfolio = pitch?.stage === 'in_portfolio';
+  if (!pitch || (pitch.is_archived && !isLivePortfolio)) return null;
 
   const transition = async (to_stage, extra = {}) => {
     setBusy(true);
@@ -171,12 +175,29 @@ export function PitchStageActions({ pitch, onRefresh }) {
     );
   }
 
+  if (isLivePortfolio && ['portfolio_manager', 'executive'].includes(viewer.role)) {
+    actions.push(
+      <button
+        key="exit"
+        type="button"
+        className="op-btn op-btn--ghost"
+        disabled={busy || !note.trim()}
+        onClick={() => transition('exited', { note })}
+        title="Requires a post-mortem note"
+      >
+        Mark exited (post-mortem)
+      </button>,
+    );
+  }
+
   if (!actions.length) return null;
 
   return (
     <div className="op-stage-actions">
       <h3>Actions</h3>
-      {(pitch.stage === 'pm_review' || pitch.stage === 'idea') && (
+      {(pitch.stage === 'pm_review' ||
+        pitch.stage === 'idea' ||
+        pitch.stage === 'in_portfolio') && (
         <>
           <input
             className="op-search"

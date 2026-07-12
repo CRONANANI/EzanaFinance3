@@ -2,14 +2,15 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useOrg } from '@/contexts/OrgContext';
-import { getMemberByEmail, MOCK_TEAMS } from '@/lib/orgMockData';
 import { IPSCheckBanner } from '@/components/org/academic2/IPSCheckBanner';
 
 const STEPS = ['Identity', 'Thesis', 'Attachments', 'Review'];
 
 export function PitchComposer({ open, onClose, onCreated }) {
   const { orgData } = useOrg();
-  const viewer = getMemberByEmail(orgData?.member?.email) || { team_id: 't7', id: 'm10' };
+  // Real org member; team_id is a UUID FK. Omit it if unassigned so the server
+  // falls back to the member's own team rather than sending an invalid id.
+  const memberTeamId = orgData?.member?.team_id || null;
 
   const [step, setStep] = useState(0);
   const [ticker, setTicker] = useState('');
@@ -128,7 +129,7 @@ export function PitchComposer({ open, onClose, onCreated }) {
           why_now: whyNow,
           catalysts: catalysts.filter(Boolean),
           risks: risks.filter(Boolean),
-          team_id: viewer.team_id,
+          team_id: memberTeamId || undefined,
         }),
       });
       const data = await res.json();
@@ -144,7 +145,7 @@ export function PitchComposer({ open, onClose, onCreated }) {
 
   if (!open) return null;
 
-  const teamName = MOCK_TEAMS.find((t) => t.id === viewer.team_id)?.name;
+  const teamName = orgData?.team?.name || null;
 
   return (
     <div className="op-modal-overlay" onClick={onClose} role="presentation">

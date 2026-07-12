@@ -1,14 +1,18 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { FmpAPI } from '@/lib/services/fmp';
-import { getPitchRaw } from '@/lib/org-pitch-store';
+import { getPitchContext, fetchPitchRaw } from '@/lib/org-pitch-api-helpers';
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export const GET = withApiGuard(
   async (request, user, context) => {
     const params = context?.params ?? {};
-    const pitch = getPitchRaw(params.pitchId);
+    const { supabase, orgId } = await getPitchContext();
+    if (!orgId) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
+
+    const pitch = await fetchPitchRaw(supabase, orgId, params.pitchId);
     if (!pitch) return NextResponse.json({ error: 'Pitch not found' }, { status: 404 });
 
     const symbol = pitch.ticker;

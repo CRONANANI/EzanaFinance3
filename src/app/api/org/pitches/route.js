@@ -1,30 +1,50 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { FmpAPI } from '@/lib/services/fmp';
-import { createPitch } from '@/lib/org-pitch-store';
-import { getActivePitches, getPitchById } from '@/lib/org-pitches';
-import { getPitchApiContext, requirePermission } from '@/lib/org-pitch-api-helpers';
-import { notifyStageChange } from '@/lib/org-pitch-notifications';
+import {
+  getPitchContext,
+  requirePermission,
+  fetchPitches,
+  fetchDeliverablesMap,
+  loadDirectory,
+  enrichPitchRow,
+  insertPitch,
+  fetchPitchDetail,
+} from '@/lib/org-pitch-api-helpers';
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export const GET = withApiGuard(
-  async (request, user) => {
-    const { viewer } = await getPitchApiContext();
+  async (request) => {
+    const { supabase, orgId } = await getPitchContext();
+    if (!orgId) return NextResponse.json({ pitches: [] });
+
     const { searchParams } = new URL(request.url);
-    const pitches = getActivePitches({
-      viewer,
-      team_id: searchParams.get('team_id') || undefined,
-      stage: searchParams.get('stage') || undefined,
-    });
+    const teamId = searchParams.get('team_id') || undefined;
+    const stage = searchParams.get('stage') || undefined;
+
+    const rows = (await fetchPitches(supabase, orgId, { teamId, statuses: ['active'] })).filter(
+      (p) => !stage || p.stage === stage,
+    );
+    const delMap = await fetchDeliverablesMap(
+      supabase,
+      rows.map((r) => r.id),
+    );
+    const { memberMap, teamMap } = await loadDirectory(supabase, orgId);
+    const pitches = rows.map((r) =>
+      enrichPitchRow(r, { memberMap, teamMap, deliverables: delMap.get(r.id) || [] }),
+    );
     return NextResponse.json({ pitches });
   },
   { requireAuth: true },
 );
 
 export const POST = withApiGuard(
-  async (request, user) => {
-    const { supabase, member, viewer, orgId } = await getPitchApiContext();
+  async (request) => {
+    const { supabase, viewer, orgId } = await getPitchContext();
+    if (!orgId) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
+
     const denied = requirePermission(viewer, 'pitch.submit');
     if (denied) return NextResponse.json({ error: denied.error }, { status: denied.status });
 
@@ -35,20 +55,7 @@ export const POST = withApiGuard(
       return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
     }
 
-    const {
-      ticker,
-      pitch_type,
-      time_horizon,
-      target_price,
-      expected_return_pct,
-      thesis_short,
-      thesis_full,
-      why_now,
-      catalysts,
-      risks,
-      team_id,
-    } = body;
-
+    const { ticker, pitch_type, thesis_short } = body;
     if (!ticker || !pitch_type || !thesis_short?.trim()) {
       return NextResponse.json(
         { error: 'ticker, pitch_type, and thesis_short required' },
@@ -56,40 +63,51 @@ export const POST = withApiGuard(
       );
     }
 
+    // Resolve company + pitch price from FMP; never fabricate on failure.
     let company_name = body.company_name;
-    let current_price = body.current_price_at_submission;
+    let current_price = body.current_price_at_submission ?? null;
+    let sector = body.sector || null;
     try {
       const [profile, quote] = await Promise.all([
         FmpAPI.getCompanyProfile(ticker),
         FmpAPI.getQuote(ticker),
       ]);
       company_name = company_name || profile?.companyName || ticker;
+      sector = sector || profile?.sector || null;
       current_price = current_price ?? quote?.price ?? null;
     } catch {
       company_name = company_name || ticker;
     }
 
-    const pitch = createPitch({
-      org_id: orgId,
-      team_id: team_id || viewer.team_id,
+    const result = await insertPitch(supabase, orgId, viewer, {
+      team_id: body.team_id || viewer.team_id,
       ticker,
       company_name,
       pitch_type,
-      time_horizon,
-      target_price,
-      expected_return_pct,
+      sector,
+      time_horizon: body.time_horizon,
+      target_price: body.target_price,
+      pitch_price: current_price,
+      expected_return_pct: body.expected_return_pct,
       thesis_short: thesis_short.slice(0, 280),
-      thesis_full,
-      why_now,
-      catalysts: Array.isArray(catalysts) ? catalysts : [],
-      risks: Array.isArray(risks) ? risks : [],
+      thesis_full: body.thesis_full,
+      why_now: body.why_now,
+      variant_perception: body.variant_perception,
+      catalysts: Array.isArray(body.catalysts) ? body.catalysts : [],
+      risks: Array.isArray(body.risks) ? body.risks : [],
+      catalyst_date: body.catalyst_date,
+      valuation_method: body.valuation_method,
+      valuation_bull: body.valuation_bull,
+      valuation_base: body.valuation_base,
+      valuation_bear: body.valuation_bear,
+      conviction_level: body.conviction_level,
+      position_size_pct: body.position_size_pct,
       current_price_at_submission: current_price,
-      analyst_member_id: viewer.id,
     });
+    if (result.error) return NextResponse.json({ error: result.error }, { status: 400 });
 
-    await notifyStageChange(supabase, orgId, pitch.id, 'idea', viewer.id);
-
-    return NextResponse.json({ pitch: getPitchById(pitch.id) }, { status: 201 });
+    const detail = await fetchPitchDetail(supabase, orgId, result.pitch.id);
+    return NextResponse.json({ pitch: detail }, { status: 201 });
   },
   { requireAuth: true },
 );

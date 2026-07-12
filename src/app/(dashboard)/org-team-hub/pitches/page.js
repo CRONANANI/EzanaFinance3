@@ -3,10 +3,11 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useOrg } from '@/contexts/OrgContext';
-import { PitchPipelineBoard } from '@/components/org/pitches/PitchPipelineBoard';
+import { PitchWorkspace } from '@/components/org/pitches/PitchWorkspace';
 import { PitchComposer } from '@/components/org/pitches/PitchComposer';
 import '../team-hub.css';
 import '../org-pitches.css';
+import './pitch-workspace.css';
 
 export default function OrgPitchPipelinePage() {
   const { isOrgUser, isLoading } = useOrg();
@@ -50,7 +51,7 @@ export default function OrgPitchPipelinePage() {
         onClose={() => setComposerOpen(false)}
         onCreated={() => setBoardKey((k) => k + 1)}
       />
-      <PitchPipelineBoard key={boardKey} />
+      <PitchWorkspace refreshKey={boardKey} />
     </div>
   );
 }

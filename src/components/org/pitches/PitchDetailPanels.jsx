@@ -2,9 +2,6 @@
 
 import { useState } from 'react';
 import { useOrg } from '@/contexts/OrgContext';
-import { getMemberByEmail } from '@/lib/orgMockData';
-import { PitchSupportingData } from './PitchSupportingData';
-import { PitchStageActions } from './PitchStageActions';
 
 export function PitchDeliverablesPanel({ pitch, onRefresh }) {
   const [title, setTitle] = useState('');
@@ -56,8 +53,6 @@ export function PitchDeliverablesPanel({ pitch, onRefresh }) {
 }
 
 export function PitchDiscussionPanel({ pitch, onRefresh }) {
-  const { orgData } = useOrg();
-  const viewer = getMemberByEmail(orgData?.member?.email) || { id: 'm10' };
   const [body, setBody] = useState('');
 
   const post = async () => {
@@ -99,8 +94,8 @@ export function PitchDiscussionPanel({ pitch, onRefresh }) {
 
 export function PitchVotingPanel({ pitch, onRefresh }) {
   const { orgData } = useOrg();
-  const viewer = getMemberByEmail(orgData?.member?.email) || { id: 'm1' };
-  const myVote = pitch.votes?.find((v) => v.voter_member_id === viewer.id);
+  const myId = orgData?.member?.id || null;
+  const myVote = pitch.votes?.find((v) => v.voter_member_id === myId);
   const [vote, setVote] = useState('yes');
   const [rationale, setRationale] = useState('');
   const [conviction, setConviction] = useState(3);
