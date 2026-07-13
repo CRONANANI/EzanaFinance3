@@ -1300,7 +1300,13 @@ function LineageView({ knownTickers, onOpenNote }) {
 }
 
 /* ── Main ─────────────────────────────────────────────────────────────────*/
-export function ResearchLibrary() {
+export function ResearchLibrary({ initialData = null }) {
+  // Server-rendered initial-mount payload (from the shared bootstrap loader),
+  // when present. `initialData.library` is the exact hybrid-search result the
+  // client would otherwise fetch on mount — seed state from it and skip the
+  // mount fetch. When absent/null we keep the client bootstrap fetch below.
+  const seededLibrary = initialData?.library || null;
+
   const [view, setView] = useState('library'); // library | ticker | lineage
   const [q, setQ] = useState('');
   const [debouncedQ, setDebouncedQ] = useState('');
@@ -1312,9 +1318,12 @@ export function ResearchLibrary() {
     author: [],
     ticker: [],
   });
-  const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [result, setResult] = useState(seededLibrary);
+  const [loading, setLoading] = useState(!seededLibrary);
   const [error, setError] = useState('');
+  // True once the initial-mount data is in hand (seeded or fetched) so the
+  // interaction-driven search effect below never double-fetches the mount load.
+  const bootstrappedRef = useRef(!!seededLibrary);
   const [composerOpen, setComposerOpen] = useState(false);
   const [editNote, setEditNote] = useState(null);
   const [detailId, setDetailId] = useState(null);
@@ -1326,6 +1335,47 @@ export function ResearchLibrary() {
     const t = setTimeout(() => setDebouncedQ(q), 300);
     return () => clearTimeout(t);
   }, [q]);
+
+  // INITIAL MOUNT — ONE batched bootstrap round-trip (was: the mount search
+  // fetch). Skipped entirely when the server seeded `initialData`. This client
+  // fetch is the MANDATORY fallback safety net and must never be removed.
+  useEffect(() => {
+    if (bootstrappedRef.current) return; // already seeded from initialData
+    let alive = true;
+    (async () => {
+      try {
+        const res = await fetch('/api/org/research-notes/bootstrap', { cache: 'no-store' });
+        if (res.status === 403) {
+          if (alive) {
+            setError('This page is for organizational members only.');
+            setLoading(false);
+          }
+          return;
+        }
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          if (alive) {
+            setError(data?.error || 'Failed to load library.');
+            setLoading(false);
+          }
+          return;
+        }
+        if (alive) {
+          setResult(data.library);
+          setError('');
+        }
+      } catch {
+        if (alive) setError('Could not connect.');
+      } finally {
+        if (alive) setLoading(false);
+        bootstrappedRef.current = true;
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const load = useCallback(async () => {
     const params = new URLSearchParams();
@@ -1357,7 +1407,16 @@ export function ResearchLibrary() {
     }
   }, [debouncedQ, filters]);
 
+  // Interaction-driven reloads (a new search query, a changed filter, or
+  // returning to the library view). Stays on the separate /search endpoint —
+  // only the INITIAL load is batched into /bootstrap above. The first run is
+  // skipped so we don't re-fetch what the mount bootstrap already loaded.
+  const skipFirstSearch = useRef(true);
   useEffect(() => {
+    if (skipFirstSearch.current) {
+      skipFirstSearch.current = false;
+      return;
+    }
     if (view === 'library') load();
   }, [load, view]);
 

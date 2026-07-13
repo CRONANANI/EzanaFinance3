@@ -6,6 +6,8 @@
  * the dossier, the lineage view and the write paths all agree on shapes.
  */
 
+import { embedViaSupabase, supaEmbedConfigured } from '@/lib/embeddings-gte';
+
 export const MANAGER_ROLES = ['executive', 'portfolio_manager'];
 
 export const DOC_TYPES = [
@@ -314,4 +316,35 @@ export async function librarySearch(supabase, member, searchParams, deps = {}) {
       canManage: isManager,
     },
   };
+}
+
+/**
+ * One-pass loader for the Research Library's INITIAL-mount payload. Shared by
+ * the `/bootstrap` route (client fallback) and the research-library server page
+ * so both agree on the exact shape `ResearchLibrary` seeds its state from — no
+ * duplication, no drift.
+ *
+ * Audit of the component: on mount only the `library` view renders, so the only
+ * data consumed is the hybrid library search result (`{ notes, facets,
+ * authorNames, semantic, viewer }`). The ticker dossier, coverage-lineage
+ * overview and the per-note detail drawer all fetch on demand when the user
+ * navigates to them — they are deliberately NOT prefetched here so behavior and
+ * the honest-empty states stay identical. Batched via `Promise.all` so any
+ * future mount dataset joins the same single round-trip.
+ *
+ * @param {import('@supabase/supabase-js').SupabaseClient} supabase user-scoped client
+ * @param {{ org_id: string, user_id: string, role: string }} member
+ * @param {URLSearchParams} [searchParams]
+ * @returns {Promise<{ library: object } | { error: string }>}
+ */
+export async function loadResearchBootstrap(supabase, member, searchParams) {
+  const params = searchParams instanceof URLSearchParams ? searchParams : new URLSearchParams();
+  const [library] = await Promise.all([
+    librarySearch(supabase, member, params, {
+      embedFn: embedViaSupabase,
+      embedConfigured: supaEmbedConfigured(),
+    }),
+  ]);
+  if (library?.error) return { error: library.error };
+  return { library };
 }
