@@ -1094,17 +1094,19 @@ function Rail({
 }
 
 /* ── Root ─────────────────────────────────────────────────────────────────── */
-export function MeetingMode() {
+export function MeetingMode({ initialData = null }) {
   const { orgData } = useOrg();
   const orgName = orgData?.org?.name || orgData?.org?.university_name || 'Team Hub';
 
-  const [payload, setPayload] = useState({
-    meetings: [],
-    sentimentTrend: [],
-    recordersConnected: false,
-    viewer: {},
-  });
-  const [loading, setLoading] = useState(true);
+  const [payload, setPayload] = useState(
+    initialData || {
+      meetings: [],
+      sentimentTrend: [],
+      recordersConnected: false,
+      viewer: {},
+    },
+  );
+  const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState('');
 
   const [mode, setMode] = useState('upcoming');
@@ -1136,8 +1138,11 @@ export function MeetingMode() {
   }, []);
 
   useEffect(() => {
+    // Seeded from the server component → skip the mount fetch. When there's no
+    // initialData (e.g. non-member 403 path) keep the client fetch as fallback.
+    if (initialData) return;
     load();
-  }, [load]);
+  }, [load, initialData]);
 
   const meetings = useMemo(() => payload.meetings || [], [payload.meetings]);
   const viewer = payload.viewer || {};

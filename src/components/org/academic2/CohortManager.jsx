@@ -33,12 +33,17 @@ const STATUS_SUFFIX = {
   archived: 'Archived',
 };
 
-export function CohortManager() {
-  const [cohorts, setCohorts] = useState([]);
-  const [viewer, setViewer] = useState({ canManage: false, isExecutive: false });
-  const [loading, setLoading] = useState(true);
+export function CohortManager({ initialData = null }) {
+  const [cohorts, setCohorts] = useState(initialData?.cohorts || []);
+  const [viewer, setViewer] = useState(
+    initialData?.viewer || { canManage: false, isExecutive: false },
+  );
+  const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState('');
-  const [selectedId, setSelectedId] = useState(null);
+  const [selectedId, setSelectedId] = useState(() => {
+    const list = initialData?.cohorts || [];
+    return list.find((c) => c.is_current)?.id || list[0]?.id || null;
+  });
   const [tab, setTab] = useState('recruitment');
   const [counts, setCounts] = useState({});
   const [creating, setCreating] = useState(false);
@@ -70,8 +75,11 @@ export function CohortManager() {
   }, []);
 
   useEffect(() => {
+    // Seeded from the server component → skip the mount fetch. When there's no
+    // initialData (e.g. non-member 403 path) keep the client fetch as fallback.
+    if (initialData) return;
     loadCohorts();
-  }, [loadCohorts]);
+  }, [loadCohorts, initialData]);
 
   const setCount = useCallback(
     (key, n) => setCounts((c) => (c[key] === n ? c : { ...c, [key]: n })),

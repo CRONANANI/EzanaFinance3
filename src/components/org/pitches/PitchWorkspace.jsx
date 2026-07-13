@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import {
   LayoutGrid,
@@ -367,19 +367,24 @@ function IcView({ data, canManage, onScheduled }) {
   );
 }
 
-export function PitchWorkspace({ refreshKey = 0 }) {
+export function PitchWorkspace({ refreshKey = 0, initialData = null }) {
   const { orgData } = useOrg();
   const role = orgData?.member?.role || 'analyst';
   const canManage = MANAGER_ROLES.includes(role);
 
   const [view, setView] = useState('kanban');
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // Seed from the server-rendered kanban payload (first paint has data); the
+  // client fetch below stays the authoritative refetch path for every change.
+  const [data, setData] = useState(initialData);
+  const [loading, setLoading] = useState(!initialData);
   const [sector, setSector] = useState('');
   const [analyst, setAnalyst] = useState('');
   const [conviction, setConviction] = useState('');
   const [aging, setAging] = useState('');
   const [icNonce, setIcNonce] = useState(0);
+  // When seeded, skip exactly the first mount fetch (view is still the default
+  // 'kanban' the server rendered). Any later view/refresh change refetches.
+  const skipInitialFetch = useRef(!!initialData);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -392,6 +397,10 @@ export function PitchWorkspace({ refreshKey = 0 }) {
   }, [view]);
 
   useEffect(() => {
+    if (skipInitialFetch.current) {
+      skipInitialFetch.current = false;
+      return;
+    }
     let cancelled = false;
     load().then(() => !cancelled);
     return () => {

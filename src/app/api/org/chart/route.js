@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { createServerSupabase } from '@/lib/supabase-server';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
-import { ORG_TIERS, tierOf, canEditMember, assignableTiers } from '@/lib/org-hierarchy';
+import { loadChart } from './_loader';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -25,10 +25,9 @@ const GICS_SECTORS = [
 
 const MANAGER_ROLES = ['executive', 'portfolio_manager'];
 
-const MEMBER_FIELDS =
-  'id, user_id, display_name, title, role, sub_role, tier, team_id, reports_to, term_start, term_end, is_graduating';
-
-/* ── GET: flat member array + sector coverage + university name ──────────── */
+/* ── GET: flat member array + sector coverage + university name ────────────
+   The read + shaping lives in `_loader.js` so the Org Chart server page can
+   seed the same payload for first paint without a client round-trip. */
 export const GET = withApiGuard(
   async () => {
     const supabase = createServerSupabase();
@@ -37,62 +36,11 @@ export const GET = withApiGuard(
       return NextResponse.json({ error: 'Not an active organization member' }, { status: 403 });
     }
 
-    const orgId = member.org_id;
-
-    const [{ data: members, error: membersErr }, { data: coverage }, { data: org }] =
-      await Promise.all([
-        supabase
-          .from('org_members')
-          .select(MEMBER_FIELDS)
-          .eq('org_id', orgId)
-          .eq('is_active', true),
-        supabase
-          .from('org_sector_coverage')
-          .select('member_id, sector, is_primary')
-          .eq('org_id', orgId),
-        supabase
-          .from('organizations')
-          .select('university_name, name')
-          .eq('id', orgId)
-          .maybeSingle(),
-      ]);
-
-    if (membersErr) {
+    const { error, payload } = await loadChart(supabase, member);
+    if (error) {
       return NextResponse.json({ error: 'Failed to load members' }, { status: 500 });
     }
-
-    // Group sector coverage by member so the client gets a `sectors` array.
-    const sectorsByMember = new Map();
-    for (const row of coverage || []) {
-      if (!sectorsByMember.has(row.member_id)) sectorsByMember.set(row.member_id, []);
-      sectorsByMember.get(row.member_id).push({ sector: row.sector, isPrimary: row.is_primary });
-    }
-
-    // Hierarchical edit rights: flag each member the viewer may re-role.
-    const membersById = new Map((members || []).map((m) => [m.id, m]));
-    const viewerRow = membersById.get(member.id) || member;
-    const shaped = (members || []).map((m) => ({
-      ...m,
-      tier: tierOf(m).id,
-      sectors: sectorsByMember.get(m.id) || [],
-      editable: canEditMember(viewerRow, m, membersById),
-    }));
-
-    return NextResponse.json({
-      universityName: org?.university_name || org?.name || 'Organization',
-      orgId,
-      sectors: GICS_SECTORS,
-      tiers: ORG_TIERS,
-      viewer: {
-        memberId: member.id,
-        role: member.role,
-        subRole: member.sub_role,
-        tier: tierOf(viewerRow).id,
-        canManage: MANAGER_ROLES.includes(member.role),
-        assignableTiers: assignableTiers(viewerRow),
-      },
-      members: shaped,
-    });
+    return NextResponse.json(payload);
   },
   { requireAuth: true },
 );
@@ -143,7 +91,10 @@ export const PATCH = withApiGuard(
     if ('reports_to' in body) {
       // Guard against a member reporting to themselves (a trivial cycle).
       if (body.reports_to && body.reports_to === targetId) {
-        return NextResponse.json({ error: 'A member cannot report to themselves' }, { status: 400 });
+        return NextResponse.json(
+          { error: 'A member cannot report to themselves' },
+          { status: 400 },
+        );
       }
       update.reports_to = body.reports_to || null;
     }

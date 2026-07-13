@@ -1,201 +1,39 @@
-'use client';
+import { createServerSupabase } from '@/lib/supabase-server';
+import { getCurrentOrgMember } from '@/lib/org-trading-server';
+import { loadIpsRules } from '@/app/api/org/ips/rules/_loader';
+import { loadIpsViolations } from '@/app/api/org/ips/violations/_loader';
+import { ComplianceClient } from './ComplianceClient';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ShieldCheck, ShieldX, ShieldAlert } from 'lucide-react';
-import { IPSPolicyEditor } from '@/components/org/academic2/IPSPolicyEditor';
-import {
-  PreTradeGate,
-  RulesInForcePanel,
-  SectorCapacityPlanner,
-  OpenBreaches,
-  PersonalTradingPanel,
-  AttestationsPanel,
-  AuditLog,
-} from '@/components/org/academic2/ComplianceMonitor';
-import '@/components/org/academic2/academic.css';
-import '@/components/org/academic2/compliance2.css';
+export const dynamic = 'force-dynamic';
 
-const TABS = [
-  { id: 'gate', label: 'Pre-trade gate' },
-  { id: 'rules', label: 'Mandate Rules' },
-  { id: 'personal', label: 'Personal Trading' },
-  { id: 'attest', label: 'Attestations' },
-  { id: 'audit', label: 'Audit' },
-];
+/* Server component: seed the initial rules + violations payloads (same shapes
+   the client mount fetches produce) so first paint has data. The 5-tab
+   interactive shell — including the best-effort positions fetch, the pre-trade
+   gate, resolve action, and the exec-gated rule editor / audit views — stays
+   client-side in ComplianceClient, which keeps its own mount fetch as the
+   fallback when initialData is null (non-member / load failure). */
+export default async function CompliancePage() {
+  const supabase = createServerSupabase();
+  const member = await getCurrentOrgMember(supabase);
 
-export default function CompliancePage() {
-  const [tab, setTab] = useState('gate');
-  const [rules, setRules] = useState([]);
-  const [ruleTypes, setRuleTypes] = useState([]);
-  const [canEdit, setCanEdit] = useState(false);
-  const [violations, setViolations] = useState([]);
-  const [canResolve, setCanResolve] = useState(false);
-  const [positions, setPositions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  const loadRules = useCallback(async () => {
-    const res = await fetch('/api/org/ips/rules', { cache: 'no-store' });
-    if (res.status === 403) throw new Error('member');
-    const data = await res.json().catch(() => ({}));
-    setRules(data.rules || []);
-    setRuleTypes(data.ruleTypes || []);
-    setCanEdit(!!data.viewer?.canEdit);
-  }, []);
-
-  const loadViolations = useCallback(async () => {
-    const res = await fetch('/api/org/ips/violations', { cache: 'no-store' });
-    if (res.status === 403) throw new Error('member');
-    const data = await res.json().catch(() => ({}));
-    setViolations(data.violations || []);
-    setCanResolve(!!data.viewer?.canResolve);
-  }, []);
-
-  const loadPositions = useCallback(async () => {
-    // Optional — planner degrades to honest-empty if this is unavailable.
-    try {
-      const res = await fetch('/api/org/positions', { cache: 'no-store' });
-      if (res.ok) {
-        const data = await res.json().catch(() => ({}));
-        setPositions(data.positions || []);
-      }
-    } catch {
-      /* leave positions empty */
+  let initialData = null;
+  if (member) {
+    const [rulesRes, violationsRes] = await Promise.all([
+      loadIpsRules(supabase, member),
+      loadIpsViolations(supabase, member),
+    ]);
+    // Seed only when BOTH primary reads succeed; otherwise fall back to the
+    // client load so its error handling (incl. the member-only gate) is intact.
+    if (!rulesRes.error && !violationsRes.error) {
+      initialData = {
+        rules: rulesRes.payload.rules,
+        ruleTypes: rulesRes.payload.ruleTypes,
+        canEdit: rulesRes.payload.viewer.canEdit,
+        violations: violationsRes.payload.violations,
+        canResolve: violationsRes.payload.viewer.canResolve,
+      };
     }
-  }, []);
+  }
 
-  const loadAll = useCallback(async () => {
-    setLoading(true);
-    try {
-      await Promise.all([loadRules(), loadViolations(), loadPositions()]);
-      setError('');
-    } catch (e) {
-      setError(
-        e?.message === 'member'
-          ? 'This page is for organizational members only.'
-          : 'Could not load compliance data.',
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [loadRules, loadViolations, loadPositions]);
-
-  useEffect(() => {
-    loadAll();
-  }, [loadAll]);
-
-  const resolveBreach = async (v) => {
-    await fetch('/api/org/ips/violations', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: v.id, resolved: true }),
-    });
-    loadViolations();
-  };
-
-  const activeRuleCount = useMemo(() => rules.filter((r) => r.is_active).length, [rules]);
-  const hardBreaches = useMemo(
-    () => violations.filter((v) => v.severity === 'block').length,
-    [violations],
-  );
-  const openBreaches = violations.length;
-
-  return (
-    <div className="dashboard-page-inset ac3-root">
-      <div className="ac3-header">
-        <div>
-          <p className="ac3-eyebrow">Compliance</p>
-          <h1 className="ac3-title">Compliance &amp; IPS</h1>
-          <p className="ac3-sub">
-            Investment Policy Statement guardrails, the pre-trade gate and the audit trail.
-          </p>
-        </div>
-        {!loading &&
-          !error &&
-          (hardBreaches > 0 ? (
-            <div className="cmp2-breach-chip cmp2-breach-chip--hard">
-              <ShieldX size={16} aria-hidden />
-              <span className="cmp2-num">{hardBreaches}</span> hard{' '}
-              {hardBreaches === 1 ? 'breach' : 'breaches'} open
-            </div>
-          ) : openBreaches > 0 ? (
-            <div className="cmp2-breach-chip">
-              <ShieldAlert size={16} aria-hidden />
-              <span className="cmp2-num">{openBreaches}</span> open{' '}
-              {openBreaches === 1 ? 'flag' : 'flags'}
-            </div>
-          ) : (
-            <div className="cmp2-breach-chip cmp2-breach-chip--clear">
-              <ShieldCheck size={16} aria-hidden /> All clear
-            </div>
-          ))}
-      </div>
-
-      <div className="ac3-tabs" role="tablist" aria-label="Compliance views">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            role="tab"
-            aria-selected={tab === t.id}
-            className={`ac3-tab${tab === t.id ? ' is-active' : ''}`}
-            onClick={() => setTab(t.id)}
-          >
-            {t.label}
-            {t.id === 'gate' && hardBreaches > 0 && (
-              <span className="cmp2-tab-badge cmp2-tab-badge--hard">{hardBreaches}</span>
-            )}
-            {t.id === 'rules' && activeRuleCount > 0 && (
-              <span className="cmp2-tab-badge">{activeRuleCount}</span>
-            )}
-          </button>
-        ))}
-      </div>
-
-      {loading ? (
-        <div className="ac3-state">Loading compliance…</div>
-      ) : error ? (
-        <div className="ac3-state ac3-error">{error}</div>
-      ) : (
-        <>
-          {tab === 'gate' && (
-            <div className="cmp2-layout">
-              <div className="cmp2-col">
-                <div className="cmp2-panel">
-                  <div className="cmp2-panel-head">
-                    <h3 className="cmp2-panel-title">
-                      <ShieldCheck aria-hidden /> Pre-trade gate
-                    </h3>
-                  </div>
-                  <PreTradeGate rules={rules} />
-                </div>
-                <OpenBreaches
-                  violations={violations}
-                  canResolve={canResolve}
-                  onResolve={resolveBreach}
-                />
-              </div>
-              <div className="cmp2-col">
-                <RulesInForcePanel rules={rules} />
-                <SectorCapacityPlanner positions={positions} rules={rules} />
-              </div>
-            </div>
-          )}
-
-          {tab === 'rules' && (
-            <IPSPolicyEditor
-              rules={rules}
-              ruleTypes={ruleTypes}
-              canEdit={canEdit}
-              onChanged={loadRules}
-            />
-          )}
-
-          {tab === 'personal' && <PersonalTradingPanel />}
-          {tab === 'attest' && <AttestationsPanel />}
-          {tab === 'audit' && <AuditLog />}
-        </>
-      )}
-    </div>
-  );
+  return <ComplianceClient initialData={initialData} />;
 }

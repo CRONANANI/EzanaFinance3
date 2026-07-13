@@ -2,41 +2,23 @@ import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { createServerSupabase } from '@/lib/supabase-server';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
+import { loadIpsRules, RULE_TYPES } from './_loader';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const RULE_TYPES = [
-  'max_position_pct',
-  'max_sector_pct',
-  'min_positions',
-  'max_positions',
-  'prohibited_ticker',
-  'prohibited_sector',
-  'min_market_cap',
-  'max_single_trade_pct',
-  'cash_floor_pct',
-];
-
-/* GET /api/org/ips/rules — list rules (any member). */
+/* GET /api/org/ips/rules — list rules (any member).
+   The read lives in `_loader.js` so the Compliance server page can seed the
+   same payload for first paint without a client round-trip. */
 export const GET = withApiGuard(
   async () => {
     const supabase = createServerSupabase();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
 
-    const { data, error } = await supabase
-      .from('org_ips_rules')
-      .select('*')
-      .eq('org_id', member.org_id)
-      .order('created_at', { ascending: true });
+    const { error, payload } = await loadIpsRules(supabase, member);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-
-    return NextResponse.json({
-      rules: data || [],
-      ruleTypes: RULE_TYPES,
-      viewer: { canEdit: member.role === 'executive' },
-    });
+    return NextResponse.json(payload);
   },
   { requireAuth: true },
 );
@@ -73,7 +55,10 @@ export const POST = withApiGuard(
 
     const ruleType = body?.rule_type;
     if (!RULE_TYPES.includes(ruleType) || !body?.rule_value) {
-      return NextResponse.json({ error: 'Valid rule_type and rule_value required' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Valid rule_type and rule_value required' },
+        { status: 400 },
+      );
     }
 
     const { data, error } = await supabase

@@ -2,13 +2,16 @@ import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { createServerSupabase } from '@/lib/supabase-server';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
+import { loadIpsViolations } from './_loader';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 const MANAGER_ROLES = ['executive', 'portfolio_manager'];
 
-/* GET /api/org/ips/violations?all=1 — violations (open by default). */
+/* GET /api/org/ips/violations?all=1 — violations (open by default).
+   The read lives in `_loader.js` so the Compliance server page can seed the
+   same payload for first paint without a client round-trip. */
 export const GET = withApiGuard(
   async (request) => {
     const supabase = createServerSupabase();
@@ -18,21 +21,9 @@ export const GET = withApiGuard(
     const { searchParams } = new URL(request.url);
     const includeResolved = searchParams.get('all') === '1';
 
-    let query = supabase
-      .from('org_ips_violations')
-      .select('*')
-      .eq('org_id', member.org_id)
-      .order('created_at', { ascending: false })
-      .limit(200);
-    if (!includeResolved) query = query.eq('resolved', false);
-
-    const { data, error } = await query;
+    const { error, payload } = await loadIpsViolations(supabase, member, { includeResolved });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-
-    return NextResponse.json({
-      violations: data || [],
-      viewer: { canResolve: assertOrgRole(member, MANAGER_ROLES) },
-    });
+    return NextResponse.json(payload);
   },
   { requireAuth: true },
 );

@@ -33,10 +33,14 @@ const emptyData = {
   viewer: { canAssign: false, userId: null },
 };
 
-/* Orchestrator for the Assignments 2a surface (calendar + tabbed list). */
-export function AssignmentBoard() {
-  const [data, setData] = useState(emptyData);
-  const [loading, setLoading] = useState(true);
+/* Orchestrator for the Assignments 2a surface (calendar + tabbed list).
+   `initialData` (optional) is the server-rendered payload from
+   GET /api/org/assignments; when present we seed state and skip the mount
+   fetch. When absent (non-member / SSR unavailable) the client fetch below
+   runs unchanged as the authoritative fallback. */
+export function AssignmentBoard({ initialData = null }) {
+  const [data, setData] = useState(initialData ? { ...emptyData, ...initialData } : emptyData);
+  const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState('');
   const [view, setView] = useState('calendar'); // 2a: calendar active by default
   const [tab, setTab] = useState('all');
@@ -65,8 +69,11 @@ export function AssignmentBoard() {
   }, []);
 
   useEffect(() => {
+    // Seeded from the server → skip the initial fetch. `load` is still used by
+    // the drawer/review-modal refresh callbacks below.
+    if (initialData) return;
     load();
-  }, [load]);
+  }, [initialData, load]);
 
   const { viewer } = data;
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Download } from 'lucide-react';
 import { useOrg } from '@/contexts/OrgContext';
@@ -45,16 +45,20 @@ function Skeleton() {
   );
 }
 
-export function FundDashboard() {
+export function FundDashboard({ initialData = null }) {
   const router = useRouter();
   const { fundName, universityName } = useOrg();
   const [period, setPeriod] = useState('semester');
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // Seed from the server-rendered payload (default period 'semester') so first
+  // paint has data; the client fetch below stays the authoritative refetch path.
+  const [data, setData] = useState(initialData);
+  const [loading, setLoading] = useState(!initialData);
   const [refetching, setRefetching] = useState(false);
   const [error, setError] = useState('');
   const [scorecardFor, setScorecardFor] = useState(null);
   const [exporting, setExporting] = useState(false);
+  // When seeded, skip exactly the initial mount fetch; period changes still refetch.
+  const skipInitialFetch = useRef(!!initialData);
 
   const load = useCallback(async (p, isRefetch) => {
     if (isRefetch) setRefetching(true);
@@ -80,6 +84,10 @@ export function FundDashboard() {
   }, []);
 
   useEffect(() => {
+    if (skipInitialFetch.current) {
+      skipInitialFetch.current = false;
+      return;
+    }
     load(period, false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

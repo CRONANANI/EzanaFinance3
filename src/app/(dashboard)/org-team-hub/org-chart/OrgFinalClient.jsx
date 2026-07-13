@@ -80,14 +80,14 @@ function Skel({ w = 80, h = 14, style }) {
 }
 
 /* ── page ─────────────────────────────────────────────────────── */
-export function OrgFinalClient() {
+export function OrgFinalClient({ initialData = null }) {
   const router = useRouter();
   const { toast } = useToast();
   const { isOrgUser, isLoading, fundName, universityName } = useOrg();
 
-  const [chart, setChart] = useState(null);
-  const [summary, setSummary] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [chart, setChart] = useState(initialData?.chart ?? null);
+  const [summary, setSummary] = useState(initialData?.summary ?? null);
+  const [loading, setLoading] = useState(!initialData);
   const [layout, setLayout] = useState('tiers'); // tiers | radial | columns
   const [committee, setCommittee] = useState(false); // investment-committee overlay
   const [filter, setFilter] = useState('all'); // all | exec | pm | an
@@ -98,6 +98,8 @@ export function OrgFinalClient() {
   const editRef = useRef(null);
 
   useEffect(() => {
+    // Seeded from the server → skip the mount fetch entirely.
+    if (initialData) return undefined;
     if (!isOrgUser || isLoading) return undefined;
     let alive = true;
     (async () => {
@@ -113,7 +115,7 @@ export function OrgFinalClient() {
     return () => {
       alive = false;
     };
-  }, [isOrgUser, isLoading]);
+  }, [isOrgUser, isLoading, initialData]);
 
   // Close the role popover on outside click.
   useEffect(() => {

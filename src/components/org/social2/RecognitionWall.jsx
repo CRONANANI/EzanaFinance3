@@ -9,13 +9,13 @@ import { WeightsEditor } from './WeightsEditor';
 import './social.css';
 import './recognition2.css';
 
-export function RecognitionWall() {
-  const [members, setMembers] = useState([]);
-  const [canAward, setCanAward] = useState(false);
-  const [viewerMemberId, setViewerMemberId] = useState(null);
+export function RecognitionWall({ initialData = null }) {
+  const [members, setMembers] = useState(initialData?.members || []);
+  const [canAward, setCanAward] = useState(initialData?.canAward || false);
+  const [viewerMemberId, setViewerMemberId] = useState(initialData?.viewerMemberId || null);
   const [selectedMemberId, setSelectedMemberId] = useState(null);
-  const [recent, setRecent] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [recent, setRecent] = useState(initialData?.recent || []);
+  const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [weightsOpen, setWeightsOpen] = useState(false);
@@ -52,8 +52,11 @@ export function RecognitionWall() {
   }, []);
 
   useEffect(() => {
+    // Seeded from the server component → skip the mount fetch. When there's no
+    // initialData (e.g. non-member 403 path) keep the client fetch as fallback.
+    if (initialData) return;
     loadMeta();
-  }, [loadMeta]);
+  }, [loadMeta, initialData]);
 
   const runAction = async (kind) => {
     setBusy(kind);

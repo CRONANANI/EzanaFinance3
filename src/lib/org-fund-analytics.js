@@ -13,6 +13,14 @@
  * so it is derived through `org_pitches.ticker → analyst_member_id`.
  */
 
+import { assertOrgRole } from '@/lib/org-trading-server';
+import {
+  computeFundPerformance,
+  attributionByAnalyst,
+  attributionBySector,
+  attributionByPitch,
+} from '@/lib/org-attribution';
+
 const finite = (v) => (Number.isFinite(Number(v)) ? Number(v) : null);
 const avg = (arr) => (arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null);
 
@@ -419,4 +427,40 @@ export async function buildFundAnalytics(supabase, orgId, period = 'semester') {
     // TODO(cash): no cash field in schema yet — tile hidden until one exists.
     cash: null,
   };
+}
+
+const FUND_PERIODS = ['semester', 'ytd', 'inception'];
+
+/**
+ * Assemble the FULL `GET /api/org/analytics/fund` response payload for an
+ * already-resolved active member. Shared verbatim by the GET route and the SSR
+ * page so the seeded first paint and the client refetch never drift. Returns
+ * `{ payload, performance, byAnalyst, bySector, byPitch }` — the route reuses the
+ * raw pieces for its (manager-only, opt-in) daily snapshot upsert.
+ */
+export async function loadFundAnalytics(supabase, member, requestedPeriod) {
+  const orgId = member.org_id;
+  const period = FUND_PERIODS.includes(requestedPeriod) ? requestedPeriod : 'semester';
+
+  const [performance, byAnalyst, bySector, byPitch, extended] = await Promise.all([
+    computeFundPerformance(supabase, orgId),
+    attributionByAnalyst(supabase, orgId),
+    attributionBySector(supabase, orgId),
+    attributionByPitch(supabase, orgId),
+    buildFundAnalytics(supabase, orgId, period),
+  ]);
+
+  const payload = {
+    performance,
+    attribution: { byAnalyst, bySector, byPitch },
+    // Extended `1b` blocks — period-scoped, honest-empty (null/[] when absent).
+    ...extended,
+    viewer: {
+      memberId: member.id,
+      role: member.role,
+      canReport: assertOrgRole(member, ['executive', 'portfolio_manager']),
+    },
+  };
+
+  return { payload, performance, byAnalyst, bySector, byPitch };
 }

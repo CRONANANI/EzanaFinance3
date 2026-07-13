@@ -2,15 +2,7 @@ import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { createServerSupabase } from '@/lib/supabase-server';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
-import {
-  computeFundPerformance,
-  attributionByAnalyst,
-  attributionBySector,
-  attributionByPitch,
-} from '@/lib/org-attribution';
-import { buildFundAnalytics } from '@/lib/org-fund-analytics';
-
-const PERIODS = ['semester', 'ytd', 'inception'];
+import { loadFundAnalytics } from '@/lib/org-fund-analytics';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -26,15 +18,12 @@ export const GET = withApiGuard(
 
     const { searchParams } = new URL(request.url);
     const reqPeriod = searchParams.get('period');
-    const period = PERIODS.includes(reqPeriod) ? reqPeriod : 'semester';
 
-    const [performance, byAnalyst, bySector, byPitch, extended] = await Promise.all([
-      computeFundPerformance(supabase, orgId),
-      attributionByAnalyst(supabase, orgId),
-      attributionBySector(supabase, orgId),
-      attributionByPitch(supabase, orgId),
-      buildFundAnalytics(supabase, orgId, period),
-    ]);
+    const { payload, performance, byAnalyst, bySector, byPitch } = await loadFundAnalytics(
+      supabase,
+      member,
+      reqPeriod,
+    );
 
     // Best-effort daily snapshot cache (managers only; ignore RLS failures).
     if (assertOrgRole(member, ['executive', 'portfolio_manager'])) {
@@ -55,17 +44,7 @@ export const GET = withApiGuard(
       }
     }
 
-    return NextResponse.json({
-      performance,
-      attribution: { byAnalyst, bySector, byPitch },
-      // Extended `1b` blocks — period-scoped, honest-empty (null/[] when absent).
-      ...extended,
-      viewer: {
-        memberId: member.id,
-        role: member.role,
-        canReport: assertOrgRole(member, ['executive', 'portfolio_manager']),
-      },
-    });
+    return NextResponse.json(payload);
   },
   { requireAuth: true },
 );
