@@ -125,6 +125,25 @@ function roleEyebrow(title, role) {
   return base.toUpperCase().replace(/\s+OF\s+/g, ' · ');
 }
 
+// "Noah Raymond-Leigh" → "Noah R-Leigh". Keeps the given name intact and
+// initialises each part of a long surname so the ~210px rail never has to
+// ellipsis a real person's name. Short names (≤16 chars) are left untouched.
+function compactName(name) {
+  const full = (name || '').trim();
+  if (!full) return 'Member';
+  if (full.length <= 16) return full;
+  const parts = full.split(/\s+/);
+  if (parts.length < 2) return full;
+  const given = parts[0];
+  const surname = parts.slice(1).join(' ');
+  const segs = surname.split('-');
+  if (segs.length > 1) {
+    const abbrev = segs.map((s, i) => (i === segs.length - 1 ? s : `${s[0]}.`)).join('-');
+    return `${given} ${abbrev}`.replace(/\.-/g, '-'); // "Noah R-Leigh"
+  }
+  return `${given} ${surname[0]}.`; // "Noah R."
+}
+
 function itemActive(pathname, item) {
   if (!pathname) return false;
   if (item.exact) return pathname === item.href;
@@ -189,8 +208,10 @@ export function OrgHubNav() {
         <div className="ohn-vp">
           <div className="ohn-vp-avatar">{initials(member?.display_name) || 'EZ'}</div>
           <div className="ohn-vp-meta">
+            <div className="ohn-vp-name" title={member?.display_name || undefined}>
+              {compactName(member?.display_name)}
+            </div>
             <div className="ohn-vp-eyebrow">{roleEyebrow(member?.title, orgRole)}</div>
-            <div className="ohn-vp-name">{member?.display_name || 'Member'}</div>
           </div>
         </div>
       )}
