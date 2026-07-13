@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Star,
   FileText,
@@ -52,8 +52,8 @@ function StatStrip({ stats }) {
     <div className="c2-stats">
       {tiles.map((t) => (
         <div key={t.label} className="c2-stat">
-          <div className="c2-stat-label">{t.label}</div>
           <div className="c2-stat-value">{t.value}</div>
+          <div className="c2-stat-label">{t.label}</div>
         </div>
       ))}
     </div>
@@ -67,6 +67,19 @@ export function ApplicantPipeline({ cohortId, canManage, onCount }) {
   const [active, setActive] = useState(null); // active applicant id
   const [adding, setAdding] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [funnelOpen, setFunnelOpen] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
+  const funnelRef = useRef(null);
+  const formRef = useRef(null);
+
+  // Toolbar Funnel / Form-builder buttons reveal the existing panels below and
+  // scroll them into view (they are not re-implemented — just made visible).
+  const reveal = (ref, setOpen) => {
+    setOpen(true);
+    requestAnimationFrame(() =>
+      ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+    );
+  };
 
   const load = useCallback(async () => {
     if (!cohortId) return;
@@ -133,27 +146,41 @@ export function ApplicantPipeline({ cohortId, canManage, onCount }) {
   if (error) return <div className="c2-state c2-error">{error}</div>;
 
   const activeApplicant = applicants.find((a) => a.id === active) || null;
+  // Representative applicant for the rubric summary — derived from real data
+  // (prefer one with panel activity, else the first applicant). No hardcoded pick.
+  const sampleApplicant = applicants.find((a) => a.interviewer_count > 0) || applicants[0] || null;
 
   return (
     <div>
       <StatStrip stats={data?.stats} />
 
       <div className="c2-toolbar">
-        <button
-          type="button"
-          className={`c2-btn ${data?.blind ? 'c2-btn--gold' : ''}`}
-          onClick={toggleBlind}
-          disabled={!canManage || busy}
-          title={
-            canManage
-              ? 'Hide name/school until the interview stage (redacted server-side)'
-              : 'Managers only'
-          }
-        >
-          {data?.blind ? <EyeOff size={15} /> : <Eye size={15} />}
-          Blind screening {data?.blind ? 'ON' : 'OFF'}
-        </button>
+        <div className="c2-blind">
+          <button
+            type="button"
+            role="switch"
+            aria-checked={!!data?.blind}
+            aria-label="Blind screening"
+            className={`c2-switch ${data?.blind ? 'is-on' : ''}`}
+            onClick={toggleBlind}
+            disabled={!canManage || busy}
+            title={canManage ? 'Toggle blind screening' : 'Managers only'}
+          />
+          <div className="c2-blind-text">
+            <span className="c2-blind-title">
+              {data?.blind ? <EyeOff size={14} /> : <Eye size={14} />} Blind screening{' '}
+              {data?.blind ? 'ON' : 'OFF'}
+            </span>
+            <span className="c2-blind-sub">Names, schools &amp; photos hidden until Interview</span>
+          </div>
+        </div>
         <div className="c2-spacer" />
+        <button type="button" className="c2-btn" onClick={() => reveal(funnelRef, setFunnelOpen)}>
+          <TrendingUp size={15} /> Funnel
+        </button>
+        <button type="button" className="c2-btn" onClick={() => reveal(formRef, setFormOpen)}>
+          <ClipboardList size={15} /> Form builder
+        </button>
         {canManage && (
           <button type="button" className="c2-btn c2-btn--primary" onClick={() => setAdding(true)}>
             <Plus size={15} /> Add applicant
@@ -192,8 +219,22 @@ export function ApplicantPipeline({ cohortId, canManage, onCount }) {
         </>
       )}
 
-      <FunnelSection cohortId={cohortId} />
-      <FormBuilder cohortId={cohortId} canManage={canManage} />
+      <div className="c2-bottom-row">
+        <div ref={funnelRef} className="c2-bottom-cell">
+          <FunnelSection cohortId={cohortId} open={funnelOpen} onToggle={setFunnelOpen} />
+        </div>
+        <div className="c2-bottom-cell">
+          <RubricSummaryCard applicant={sampleApplicant} />
+        </div>
+      </div>
+      <div ref={formRef}>
+        <FormBuilder
+          cohortId={cohortId}
+          canManage={canManage}
+          open={formOpen}
+          onToggle={setFormOpen}
+        />
+      </div>
 
       {activeApplicant && (
         <ApplicantModal
@@ -772,7 +813,7 @@ function AddApplicantModal({ cohortId, onClose, onAdded }) {
   );
 }
 
-function FunnelSection({ cohortId }) {
+function FunnelSection({ cohortId, open, onToggle }) {
   const [f, setF] = useState(null);
   useEffect(() => {
     fetch(`/api/org/applicants/funnel?cohort_id=${cohortId}`, { cache: 'no-store' })
@@ -783,7 +824,7 @@ function FunnelSection({ cohortId }) {
   if (!f || f.total === 0) return null;
   const max = f.funnel[0]?.count || 1;
   return (
-    <details className="c2-panel" style={{ marginTop: '1.25rem' }}>
+    <details className="c2-panel" open={open} onToggle={(e) => onToggle?.(e.currentTarget.open)}>
       <summary style={{ cursor: 'pointer', fontWeight: 700, color: 'var(--text-primary)' }}>
         <TrendingUp size={15} style={{ verticalAlign: 'middle' }} /> Funnel &amp; sources ·{' '}
         {f.conversion_pct == null ? '—' : `${f.conversion_pct}%`} accepted
@@ -834,6 +875,133 @@ function FunnelSection({ cohortId }) {
   );
 }
 
+/* ── Rubric summary (Δ6) — read-only projection of the SAME scores endpoint the
+   applicant modal uses (not a fork of the interactive scorer). Anti-anchoring is
+   enforced server-side: unrevealed / unsubmitted interviewer cells arrive empty
+   and render as "—". Aggregate ★ = weighted mean of SUBMITTED scores only. ── */
+function RubricSummaryCard({ applicant }) {
+  const [scoreData, setScoreData] = useState(null);
+
+  useEffect(() => {
+    if (!applicant?.id) {
+      setScoreData(null);
+      return;
+    }
+    let alive = true;
+    fetch(`/api/org/applicants/${applicant.id}/scores`, { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((j) => alive && setScoreData(j))
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [applicant?.id]);
+
+  // One column per interviewer (own scores first if present), labelled I1·I2·I3…
+  const cols = useMemo(() => {
+    if (!scoreData) return [];
+    const list = [];
+    if ((scoreData.my?.rows || []).length) list.push({ key: 'me', rows: scoreData.my.rows });
+    for (const o of scoreData.others || [])
+      list.push({ key: o.interviewer_id, rows: o.rows || [] });
+    return list.map((c, i) => ({ ...c, label: `I${i + 1}` }));
+  }, [scoreData]);
+
+  const cellScore = (col, crit) => {
+    const row = (col.rows || []).find((r) => r.criterion === crit);
+    return row ? Number(row.score) : null;
+  };
+  // Per-criterion aggregate: weighted mean of the SUBMITTED (visible) scores.
+  const critAggregate = (crit) => {
+    let w = 0;
+    let wx = 0;
+    for (const col of cols) {
+      const row = (col.rows || []).find((r) => r.criterion === crit);
+      if (row) {
+        const ww = Number(row.weight) || 1;
+        w += ww;
+        wx += ww * Number(row.score);
+      }
+    }
+    return w ? Math.round((wx / w) * 100) / 100 : null;
+  };
+
+  const name = applicant
+    ? applicant.blinded
+      ? `Applicant ${applicant.initials}`
+      : applicant.full_name
+    : null;
+  const meta = applicant
+    ? [applicant.program, applicant.year].filter(Boolean).join(' · ') ||
+      (applicant.blinded ? 'Blind screening' : '—')
+    : '';
+
+  return (
+    <div className="c2-panel c2-rubric-sum">
+      <div className="c2-rubric-sum-head">
+        <div>
+          <div className="c2-rubric-sum-title">
+            <ClipboardList size={15} /> Rubric summary
+          </div>
+          <div className="c2-card-meta">
+            {applicant ? `${name} · ${meta}` : 'No scored applicant yet.'}
+          </div>
+        </div>
+        <span className="c2-star">
+          <Star size={14} fill="currentColor" />{' '}
+          {scoreData?.aggregate_star != null ? scoreData.aggregate_star.toFixed(2) : '—'}
+        </span>
+      </div>
+
+      {!applicant ? (
+        <p className="c2-rubric-sum-empty">
+          Scores appear here once interviewers submit their rubric.
+        </p>
+      ) : (
+        <>
+          <div className="c2-table-wrap">
+            <table className="c2-table c2-rubric-matrix">
+              <thead>
+                <tr>
+                  <th>Criterion</th>
+                  {cols.map((c) => (
+                    <th key={c.key} className="c2-num">
+                      {c.label}
+                    </th>
+                  ))}
+                  <th className="c2-num">★</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(scoreData?.criteria || []).map((crit) => (
+                  <tr key={crit}>
+                    <td>{CRITERION_LABEL[crit] || crit}</td>
+                    {cols.map((c) => {
+                      const s = cellScore(c, crit);
+                      return (
+                        <td key={c.key} className="c2-num">
+                          {s == null ? '—' : s}
+                        </td>
+                      );
+                    })}
+                    <td className="c2-num c2-rubric-agg">
+                      {critAggregate(crit) == null ? '—' : critAggregate(crit).toFixed(2)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="c2-rubric-sum-foot">
+            Panel · {scoreData?.scores_in ?? 0} of {scoreData?.interviewer_count ?? 0} submitted ·
+            unsubmitted shown as —
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 const FIELD_KINDS = [
   { kind: 'short_text', label: 'Short text' },
   { kind: 'long_text', label: 'Long text' },
@@ -842,7 +1010,7 @@ const FIELD_KINDS = [
   { kind: 'ticker', label: 'Ticker picker' },
 ];
 
-function FormBuilder({ cohortId, canManage }) {
+function FormBuilder({ cohortId, canManage, open, onToggle }) {
   const [forms, setForms] = useState([]);
   const [form, setForm] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -900,7 +1068,12 @@ function FormBuilder({ cohortId, canManage }) {
   };
 
   return (
-    <details className="c2-panel" style={{ marginTop: '1rem' }}>
+    <details
+      className="c2-panel"
+      style={{ marginTop: '1rem' }}
+      open={open}
+      onToggle={(e) => onToggle?.(e.currentTarget.open)}
+    >
       <summary style={{ cursor: 'pointer', fontWeight: 700, color: 'var(--text-primary)' }}>
         <ClipboardList size={15} style={{ verticalAlign: 'middle' }} /> Application form builder
       </summary>

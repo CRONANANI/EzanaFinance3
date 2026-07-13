@@ -179,21 +179,24 @@
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
   border-radius: var(--c2-radius);
-  padding: 0.8rem 0.9rem;
+  padding: 0.6rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+}
+.c2-stat-value {
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
 }
 .c2-stat-label {
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text-muted);
-  margin-bottom: 0.3rem;
-}
-.c2-stat-value {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  font-family: 'JetBrains Mono', monospace;
-  font-variant-numeric: tabular-nums;
+  margin-top: 0.2rem;
 }
 .c2-stat--warn .c2-stat-value {
   color: var(--warning);
@@ -725,6 +728,264 @@
 .c2-note--warn {
   background: var(--warning-bg);
   border-color: color-mix(in srgb, var(--warning) 30%, transparent);
+}
+
+/* ── Cohort pill selector + dropdown (Δ4) ──────────────────────────────── */
+.c2-cohort-select {
+  position: relative;
+  display: inline-flex;
+}
+.c2-cohort-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--surface-card);
+  border: 1px solid var(--border-primary);
+  border-radius: 999px;
+  padding: 0.4rem 0.55rem 0.4rem 0.9rem;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+.c2-cohort-pill:hover {
+  background: var(--surface-card-hover);
+  border-color: var(--emerald-border);
+}
+.c2-cohort-pill:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+.c2-cohort-pill-name {
+  white-space: nowrap;
+}
+.c2-cohort-chev {
+  color: var(--text-muted);
+  flex: 0 0 auto;
+}
+.c2-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+}
+.c2-cohort-menu {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  right: 0;
+  z-index: 50;
+  min-width: 260px;
+  max-width: 340px;
+  background: var(--bg-elevated, var(--surface-card));
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+  padding: 0.4rem;
+}
+.c2-cohort-menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  max-height: 300px;
+  overflow-y: auto;
+}
+.c2-cohort-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 0.6rem;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 0.86rem;
+  cursor: pointer;
+}
+.c2-cohort-menu-item:hover {
+  background: var(--surface-card-hover);
+}
+.c2-cohort-menu-item.is-active {
+  color: var(--text-primary);
+}
+.c2-cohort-menu-name {
+  font-weight: 600;
+  flex: 1;
+}
+.c2-cohort-menu-check {
+  color: var(--emerald-text);
+  flex: 0 0 auto;
+}
+.c2-cohort-menu-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin-top: 0.35rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid var(--border-primary);
+}
+.c2-cohort-menu-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 0.6rem;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.c2-cohort-menu-action:hover {
+  background: var(--surface-card-hover);
+}
+.c2-cohort-menu-action--gold {
+  color: var(--gold-text);
+}
+
+/* Status pill variants used by the selector (recruiting / archived). */
+.c2-pill--recruiting {
+  background: var(--emerald-bg);
+  color: var(--emerald-text);
+  border: 1px solid var(--emerald-border);
+}
+.c2-pill--archived {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-primary);
+}
+
+/* ── Blind-screening switch (Δ5) ───────────────────────────────────────── */
+.c2-blind {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.c2-switch {
+  position: relative;
+  width: 38px;
+  height: 21px;
+  border-radius: 9999px;
+  border: 1px solid var(--border-primary);
+  background: color-mix(in srgb, var(--text-muted) 18%, transparent);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+.c2-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--text-secondary);
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease;
+}
+.c2-switch.is-on {
+  background: color-mix(in srgb, var(--emerald) 45%, transparent);
+  border-color: var(--emerald);
+}
+.c2-switch.is-on::after {
+  transform: translateX(17px);
+  background: var(--emerald);
+}
+.c2-switch:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.c2-switch:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+.c2-blind-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+.c2-blind-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.c2-blind-sub {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+/* ── Bottom row: funnel + rubric summary (Δ6) ──────────────────────────── */
+.c2-bottom-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.9rem;
+  margin-top: 1.25rem;
+  align-items: start;
+}
+.c2-bottom-cell {
+  min-width: 0;
+}
+.c2-rubric-sum {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.c2-rubric-sum-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+.c2-rubric-sum-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 0.92rem;
+}
+.c2-rubric-matrix th,
+.c2-rubric-matrix td {
+  text-align: right;
+}
+.c2-rubric-matrix th:first-child,
+.c2-rubric-matrix td:first-child {
+  text-align: left;
+}
+.c2-rubric-agg {
+  color: var(--gold-text);
+  font-weight: 700;
+}
+.c2-rubric-sum-foot {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  padding: 0.5rem 0.1rem 0;
+}
+.c2-rubric-sum-empty {
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  margin: 0;
+}
+@media (max-width: 900px) {
+  .c2-bottom-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ── Responsive ────────────────────────────────────────────────────────── */

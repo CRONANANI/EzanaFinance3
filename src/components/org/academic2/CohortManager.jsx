@@ -6,6 +6,7 @@ import {
   GraduationCap,
   Archive,
   ChevronDown,
+  Check,
   Users,
   ClipboardList,
   ListChecks,
@@ -19,8 +20,8 @@ import { CohortArchiveView } from './CohortArchiveView';
 import './cohort2.css';
 
 const TABS = [
-  { key: 'recruitment', label: 'Recruitment', icon: ClipboardList },
   { key: 'roster', label: 'Roster', icon: Users },
+  { key: 'recruitment', label: 'Recruitment', icon: ClipboardList },
   { key: 'onboarding', label: 'Onboarding', icon: ListChecks },
   { key: 'alumni', label: 'Alumni', icon: Award },
 ];
@@ -33,6 +34,18 @@ const STATUS_SUFFIX = {
   archived: 'Archived',
 };
 
+// The default cohort. Recruitment concerns the cohort you're recruiting INTO
+// (status='recruiting'), not the one currently running (is_current). Only the
+// default changes — a manual selection still sticks.
+function defaultCohortId(list, tab) {
+  if (!list?.length) return null;
+  if (tab === 'recruitment') {
+    const recruiting = list.find((c) => c.status === 'recruiting');
+    if (recruiting) return recruiting.id;
+  }
+  return list.find((c) => c.is_current)?.id || list[0]?.id || null;
+}
+
 export function CohortManager({ initialData = null }) {
   const [cohorts, setCohorts] = useState(initialData?.cohorts || []);
   const [viewer, setViewer] = useState(
@@ -40,12 +53,12 @@ export function CohortManager({ initialData = null }) {
   );
   const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState('');
-  const [selectedId, setSelectedId] = useState(() => {
-    const list = initialData?.cohorts || [];
-    return list.find((c) => c.is_current)?.id || list[0]?.id || null;
-  });
+  const [selectedId, setSelectedId] = useState(() =>
+    defaultCohortId(initialData?.cohorts || [], 'recruitment'),
+  );
   const [tab, setTab] = useState('recruitment');
   const [counts, setCounts] = useState({});
+  const [menuOpen, setMenuOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [graduating, setGraduating] = useState(false);
   const [viewArchive, setViewArchive] = useState(null);
@@ -66,7 +79,7 @@ export function CohortManager({ initialData = null }) {
       setCohorts(list);
       setViewer(data.viewer || {});
       setError('');
-      setSelectedId((prev) => prev || list.find((c) => c.is_current)?.id || list[0]?.id || null);
+      setSelectedId((prev) => prev || defaultCohortId(list, 'recruitment'));
     } catch {
       setError('Could not connect.');
     } finally {
@@ -112,54 +125,95 @@ export function CohortManager({ initialData = null }) {
         </div>
         <div className="c2-selector">
           {cohorts.length > 0 && (
-            <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
-              <select
-                className="c2-select"
-                value={selectedId || ''}
-                onChange={(e) => setSelectedId(e.target.value)}
-                aria-label="Select cohort"
-                style={{ paddingRight: 28 }}
+            <div className="c2-cohort-select">
+              <button
+                type="button"
+                className="c2-cohort-pill"
+                aria-haspopup="menu"
+                aria-expanded={menuOpen}
+                onClick={() => setMenuOpen((o) => !o)}
               >
-                {cohorts.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                    {c.status ? ` · ${STATUS_SUFFIX[c.status] || c.status}` : ''}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown
-                size={14}
-                style={{
-                  position: 'absolute',
-                  right: 8,
-                  pointerEvents: 'none',
-                  color: 'var(--text-muted)',
-                }}
-              />
+                <span className="c2-cohort-pill-name">{selected?.name || 'Select cohort'}</span>
+                {selected?.status && (
+                  <span className={`c2-pill c2-pill--${selected.status}`}>
+                    {STATUS_SUFFIX[selected.status] || selected.status}
+                  </span>
+                )}
+                <ChevronDown size={15} className="c2-cohort-chev" />
+              </button>
+              {menuOpen && (
+                <>
+                  <div className="c2-menu-backdrop" onClick={() => setMenuOpen(false)} />
+                  <div className="c2-cohort-menu" role="menu">
+                    <div className="c2-cohort-menu-list">
+                      {cohorts.map((c) => (
+                        <button
+                          key={c.id}
+                          type="button"
+                          role="menuitemradio"
+                          aria-checked={c.id === selectedId}
+                          className={`c2-cohort-menu-item ${c.id === selectedId ? 'is-active' : ''}`}
+                          onClick={() => {
+                            setSelectedId(c.id);
+                            setMenuOpen(false);
+                          }}
+                        >
+                          <span className="c2-cohort-menu-name">{c.name}</span>
+                          {c.status && (
+                            <span className={`c2-pill c2-pill--${c.status}`}>
+                              {STATUS_SUFFIX[c.status] || c.status}
+                            </span>
+                          )}
+                          {c.id === selectedId && (
+                            <Check size={14} className="c2-cohort-menu-check" />
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                    {(viewer.isExecutive || selected?.archived) && (
+                      <div className="c2-cohort-menu-actions">
+                        {viewer.isExecutive && (
+                          <button
+                            type="button"
+                            className="c2-cohort-menu-action"
+                            onClick={() => {
+                              setMenuOpen(false);
+                              setCreating(true);
+                            }}
+                          >
+                            <Plus size={15} /> New cohort
+                          </button>
+                        )}
+                        {viewer.isExecutive && selected && !selected.archived && (
+                          <button
+                            type="button"
+                            className="c2-cohort-menu-action c2-cohort-menu-action--gold"
+                            onClick={() => {
+                              setMenuOpen(false);
+                              setGraduating(true);
+                            }}
+                          >
+                            <GraduationCap size={15} /> Graduate {selected.name}
+                          </button>
+                        )}
+                        {selected?.archived && (
+                          <button
+                            type="button"
+                            className="c2-cohort-menu-action"
+                            onClick={() => {
+                              setMenuOpen(false);
+                              setViewArchive(selected);
+                            }}
+                          >
+                            <Archive size={15} /> Track record
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
-          )}
-          {viewer.isExecutive && (
-            <button
-              type="button"
-              className="c2-btn c2-btn--primary"
-              onClick={() => setCreating(true)}
-            >
-              <Plus size={15} /> New cohort
-            </button>
-          )}
-          {viewer.isExecutive && selected && !selected.archived && (
-            <button
-              type="button"
-              className="c2-btn c2-btn--gold"
-              onClick={() => setGraduating(true)}
-            >
-              <GraduationCap size={15} /> Graduate
-            </button>
-          )}
-          {selected?.archived && (
-            <button type="button" className="c2-btn" onClick={() => setViewArchive(selected)}>
-              <Archive size={15} /> Track record
-            </button>
           )}
         </div>
       </div>
