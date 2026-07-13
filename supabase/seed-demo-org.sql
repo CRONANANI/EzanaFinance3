@@ -570,6 +570,44 @@ INSERT INTO public.org_applicants
  ('d8000000-0000-4000-a000-000000000028','84c0372a-6b0a-4126-963e-9b0aa6660570','d3000000-0000-4000-a000-000000002027','Zoe Martin','zoe.m@ezanatest.edu','Finance','Junior','seed://resumes/28.pdf','seed://pitches/28.pdf','{}'::jsonb,'declined','referral','Accepted a competing consulting club offer.', now()-interval '25 days',NULL)
 ON CONFLICT (id) DO NOTHING;
 
+-- ── 9c. APPLICANTS (top-up) — 40 more into Class of 2027 for the design's
+--    density. Realistic narrowing funnel (Applied widest). ids d8000000-…041+
+--    (no collision with 001-028; teardown-covered by the d8000000-% pattern).
+--    Names/program/year/source/applied_at all vary so the funnel + "Applied Nd
+--    ago" + by-source breakdown are real; no per-stage numbers are hardcoded.
+INSERT INTO public.org_applicants
+ (id, org_id, cohort_id, full_name, email, program, year, resume_url, sample_pitch_url, responses, stage, source, rejected_reason, applied_at, provisioned_member_id)
+SELECT
+  ('d8000000-0000-4000-a000-0000' || lpad((40+n)::text,8,'0'))::uuid,
+  '84c0372a-6b0a-4126-963e-9b0aa6660570',
+  'd3000000-0000-4000-a000-000000002027',
+  nm,
+  lower(replace(nm,' ','.')) || (40+n) || '@ezanatest.edu',
+  (ARRAY['Finance','Commerce','Economics','Mathematics','Bio + Finance','CompSci','Accounting'])[1+((n-1)%7)],
+  (ARRAY['Freshman','Sophomore','Junior','Senior'])[1+((n-1)%4)],
+  CASE WHEN (n%7)=0 THEN NULL ELSE 'seed://resumes/'||(40+n)||'.pdf' END,
+  CASE WHEN n>=32 THEN 'seed://pitches/'||(40+n)||'.pdf' ELSE NULL END,
+  '{}'::jsonb,
+  CASE WHEN n<=24 THEN 'applied' WHEN n<=31 THEN 'screened' WHEN n<=34 THEN 'interview'
+       WHEN n=35 THEN 'pitch' WHEN n=36 THEN 'offer' WHEN n=37 THEN 'accepted'
+       WHEN n<=39 THEN 'rejected' ELSE 'declined' END,
+  (ARRAY['career_fair','club_email','referral','linkedin','professor','info_session'])[1+((n-1)%6)],
+  CASE WHEN n IN (38,39) THEN 'Screening bar not met this cycle; encouraged to reapply.'
+       WHEN n=40 THEN 'Declined — accepted a competing club offer.' ELSE NULL END,
+  now() - ((2 + (n % 18)) || ' days')::interval,
+  NULL
+FROM (
+  SELECT n, (ARRAY[
+    'Aiden Brooks','Bella Cruz','Caleb Reyes','Daria Volkov','Eli Stone','Farah Karim','Gavin Lee','Hana Suzuki',
+    'Ian Walsh','Jade Nakamura','Kyle Petrov','Lena Fischer','Marco Bianchi','Nadia Haddad','Oscar Lindqvist','Paige Turner',
+    'Quentin Rowe','Rosa Delgado','Sam Okafor','Tara Singh','Umar Farouk','Vera Ilic','Will Zhang','Xenia Popa',
+    'Yusuf Demir','Zara Malik','Adam Novak','Bianca Rossi','Cody Marsh','Devi Rao',
+    'Elena Sokolova','Felix Braun','Gia Romano','Hugo Martins','Ines Costa','Jonah Weiss','Kaya Yilmaz','Luca Greco',
+    'Maya Iyer','Nolan Pierce'])[n] AS nm
+  FROM generate_series(1,40) AS n
+) s
+ON CONFLICT (id) DO NOTHING;
+
 -- ── 9a. APPLICANT SCORES — multiple interviewers; some submitted_at NULL
 --    (unsubmitted → notes stay private in the API → proves anti-anchoring).
 INSERT INTO public.org_applicant_scores (id, org_id, applicant_id, interviewer_id, criterion, score, weight, notes, submitted_at, created_at) VALUES
@@ -588,6 +626,28 @@ INSERT INTO public.org_applicant_scores (id, org_id, applicant_id, interviewer_i
  -- Uma Krishnan (offer)
  ('d8a00000-0000-4000-a000-000000000010','84c0372a-6b0a-4126-963e-9b0aa6660570','d8000000-0000-4000-a000-000000000021','e8e3758f-9a71-4efb-9532-228ae257d09e','technical',4.0,1,'Recommend offer.', now()-interval '21 days', now()-interval '22 days'),
  ('d8a00000-0000-4000-a000-000000000011','84c0372a-6b0a-4126-963e-9b0aa6660570','d8000000-0000-4000-a000-000000000021','d1000000-0000-4000-a000-000000000007','communication',4.5,1,'Polished.', now()-interval '21 days', now()-interval '22 days')
+ON CONFLICT (id) DO NOTHING;
+
+-- ── 9d. APPLICANT SCORES (top-up) — for new top-up applicants: one fully-scored
+--    (3/3 submitted), two partially-scored (a 2-of-3 with an unsubmitted NULL row
+--    → the rubric "—" / anti-anchoring state). Aggregate ★ is the weighted mean
+--    of SUBMITTED rows only. Interviewers are existing members. ids d8a00000-…041+
+INSERT INTO public.org_applicant_scores (id, org_id, applicant_id, interviewer_id, criterion, score, weight, notes, submitted_at, created_at) VALUES
+ -- top-up interview applicant #072 — fully scored (3 of 3 submitted)
+ ('d8a00000-0000-4000-a000-000000000041','84c0372a-6b0a-4126-963e-9b0aa6660570','d8000000-0000-4000-a000-000000000072','e09e4c06-dd92-4190-82b6-bb75b0f8c3be','technical',4.0,1,'Sharp on comps.', now()-interval '11 days', now()-interval '12 days'),
+ ('d8a00000-0000-4000-a000-000000000042','84c0372a-6b0a-4126-963e-9b0aa6660570','d8000000-0000-4000-a000-000000000072','e8e3758f-9a71-4efb-9532-228ae257d09e','communication',4.5,1,'Articulate.', now()-interval '11 days', now()-interval '12 days'),
+ ('d8a00000-0000-4000-a000-000000000043','84c0372a-6b0a-4126-963e-9b0aa6660570','d8000000-0000-4000-a000-000000000072','d1000000-0000-4000-a000-000000000006','culture_fit',4.0,1,'Collaborative.', now()-interval '11 days', now()-interval '12 days'),
+ -- top-up interview applicant #073 — 2 of 3 (one interviewer not submitted → —)
+ ('d8a00000-0000-4000-a000-000000000044','84c0372a-6b0a-4126-963e-9b0aa6660570','d8000000-0000-4000-a000-000000000073','e09e4c06-dd92-4190-82b6-bb75b0f8c3be','technical',3.5,1,'Reasonable.', now()-interval '10 days', now()-interval '11 days'),
+ ('d8a00000-0000-4000-a000-000000000045','84c0372a-6b0a-4126-963e-9b0aa6660570','d8000000-0000-4000-a000-000000000073','d1000000-0000-4000-a000-000000000005','prior_experience',4.0,1,'Good background.', now()-interval '10 days', now()-interval '11 days'),
+ ('d8a00000-0000-4000-a000-000000000046','84c0372a-6b0a-4126-963e-9b0aa6660570','d8000000-0000-4000-a000-000000000073','d1000000-0000-4000-a000-000000000011','communication',3.0,1,'PRIVATE draft — not submitted.',NULL, now()-interval '10 days'),
+ -- top-up pitch applicant #075 — 2 of 3 (one unsubmitted → —)
+ ('d8a00000-0000-4000-a000-000000000047','84c0372a-6b0a-4126-963e-9b0aa6660570','d8000000-0000-4000-a000-000000000075','e8e3758f-9a71-4efb-9532-228ae257d09e','technical',4.5,1,'Strong pitch.', now()-interval '9 days', now()-interval '10 days'),
+ ('d8a00000-0000-4000-a000-000000000048','84c0372a-6b0a-4126-963e-9b0aa6660570','d8000000-0000-4000-a000-000000000075','e09e4c06-dd92-4190-82b6-bb75b0f8c3be','communication',4.0,1,'Handled Q&A well.', now()-interval '9 days', now()-interval '10 days'),
+ ('d8a00000-0000-4000-a000-000000000049','84c0372a-6b0a-4126-963e-9b0aa6660570','d8000000-0000-4000-a000-000000000075','d1000000-0000-4000-a000-000000000007','culture_fit',4.5,1,'PRIVATE — will submit after panel.',NULL, now()-interval '9 days'),
+ -- top-up offer applicant #076 — fully scored (2 of 2 submitted)
+ ('d8a00000-0000-4000-a000-000000000050','84c0372a-6b0a-4126-963e-9b0aa6660570','d8000000-0000-4000-a000-000000000076','e8e3758f-9a71-4efb-9532-228ae257d09e','technical',4.0,1,'Recommend offer.', now()-interval '8 days', now()-interval '9 days'),
+ ('d8a00000-0000-4000-a000-000000000051','84c0372a-6b0a-4126-963e-9b0aa6660570','d8000000-0000-4000-a000-000000000076','d1000000-0000-4000-a000-000000000006','communication',4.5,1,'Polished and prepared.', now()-interval '8 days', now()-interval '9 days')
 ON CONFLICT (id) DO NOTHING;
 
 -- ── 9b. APPLICATION FORM (one; blind_screening available but off) ───────────
