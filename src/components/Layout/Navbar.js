@@ -598,12 +598,10 @@ export function Navbar() {
           <Link href="/home" className="nav-brand nav-home-btn" title="Home">
             <EzanaNavLogo />
           </Link>
-          <div className="nav-bell-checklist-wrap">
-            <div className="nn-wrapper">
-              <NavNotifications />
-            </div>
-            {isAuthenticated && <ChecklistProgressIcon />}
+          <div className="nn-wrapper">
+            <NavNotifications />
           </div>
+          {isAuthenticated && <ChecklistProgressIcon />}
         </div>
 
         <AnimatedNav

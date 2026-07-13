@@ -709,7 +709,10 @@ body.light-mode .nav-logo-img {
 .nav-left-zone {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  /* ONE gap, applied uniformly between logo · bell · checklist — they're now
+     direct siblings (the removed bell/checklist wrapper had added a smaller
+     second gap between the bell and the checklist). */
+  gap: 0.75rem;
   flex-shrink: 0;
   flex-grow: 0;
 }
@@ -719,13 +722,9 @@ body.light-mode .nav-logo-img {
   }
 }
 
-/* Bell + checklist wrapper — keep both vertically centered with the logo */
-.nav-bell-checklist-wrap {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-.nav-bell-checklist-wrap .nn-wrapper {
+/* Notifications component's own centering wrapper (de-scoped from the removed
+   bell/checklist wrapper so it stands alone). */
+.nn-wrapper {
   display: flex;
   align-items: center;
 }
