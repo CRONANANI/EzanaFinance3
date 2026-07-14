@@ -4,6 +4,7 @@ import { getPitchContext, fetchPitchRaw, fetchPitchDetail } from '@/lib/org-pitc
 import { STAGE_CONFIG, canAdvanceStage, canOverrideStage } from '@/lib/pitch/stage-config';
 import { evaluateGates, allGatesPass } from '@/lib/pitch/gates';
 import { buildGateContext } from '@/lib/pitch/gate-context';
+import { applyTransitionSideEffects } from '@/lib/pitch/side-effects';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -121,6 +122,9 @@ export const POST = withApiGuard(
 
     const { error: updErr } = await supabase.from('org_pitches').update(updates).eq('id', pitch.id);
     if (updErr) return NextResponse.json({ error: updErr.message }, { status: 500 });
+
+    // Side effects (spec §3.3) — best-effort, never rolls back the transition.
+    await applyTransitionSideEffects(supabase, orgId, pitch, fromStage, toStage, actor);
 
     const detail = await fetchPitchDetail(supabase, orgId, pitch.id);
     return NextResponse.json({ pitch: detail, from: fromStage, to: toStage, override });

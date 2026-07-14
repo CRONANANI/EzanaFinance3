@@ -1,26 +1,12 @@
-'use client';
+import { redirect } from 'next/navigation';
 
-import { useOrg } from '@/contexts/OrgContext';
-import { PitchDetailClient } from '@/components/org/pitches/PitchDetailClient';
-import '../../team-hub.css';
-import '../../org-pitches.css';
-
-export default function OrgPitchDetailPage({ params }) {
-  const { isOrgUser, isLoading } = useOrg();
+/**
+ * Deep-link fallback (spec Part 4.3). The pitch detail now opens as a modal on
+ * the Pipeline page via the shallow `?pitch=<id>` route. This route is kept so
+ * existing links, notifications, and emails still work — it redirects into the
+ * modal rather than rendering a separate page.
+ */
+export default function OrgPitchDetailRedirect({ params }) {
   const pitchId = params?.pitchId;
-
-  if (isLoading) return <div style={{ padding: '2rem', color: '#888' }}>Loading…</div>;
-  if (!isOrgUser) {
-    return (
-      <div style={{ padding: '2rem', color: '#888' }}>
-        This page is for organizational members only.
-      </div>
-    );
-  }
-
-  return (
-    <div className="dashboard-page-inset th-page">
-      <PitchDetailClient pitchId={pitchId} />
-    </div>
-  );
+  redirect(`/org-team-hub/pitches?pitch=${pitchId}`);
 }

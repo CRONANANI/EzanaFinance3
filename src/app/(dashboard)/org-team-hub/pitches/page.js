@@ -2,9 +2,11 @@ import { createServerSupabase } from '@/lib/supabase-server';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 import { loadPitchBoard } from '@/lib/org-pitch-api-helpers';
 import { PitchPipelineClient } from '@/components/org/pitches/PitchPipelineClient';
+import { PitchModalHost } from '@/components/org/pitches/PitchModalHost';
 import '../team-hub.css';
 import '../org-pitches.css';
 import './pitch-workspace.css';
+import './pitch-modal.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,5 +20,10 @@ export default async function OrgPitchPipelinePage() {
     ? await loadPitchBoard(supabase, member.org_id, { view: 'kanban' })
     : null;
 
-  return <PitchPipelineClient initialBoard={initialBoard} />;
+  return (
+    <>
+      <PitchPipelineClient initialBoard={initialBoard} />
+      <PitchModalHost />
+    </>
+  );
 }

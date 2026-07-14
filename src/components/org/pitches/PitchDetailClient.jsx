@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useOrg } from '@/contexts/OrgContext';
 import { PitchSupportingData } from './PitchSupportingData';
 import { PitchStageActions } from './PitchStageActions';
 import { PitchGatePanel } from './PitchGatePanel';
@@ -10,6 +11,22 @@ import {
   PitchDiscussionPanel,
   PitchVotingPanel,
 } from './PitchDetailPanels';
+import { stagePanels } from '@/lib/pitch/stage-views';
+import { SignoffPanel } from './panels/SignoffPanel';
+import { CrossDeskPanel } from './panels/CrossDeskPanel';
+import { DeskMeetingPanel } from './panels/DeskMeetingPanel';
+import { ModelChecklistPanel } from './panels/ModelChecklistPanel';
+import { VotePanel } from './panels/VotePanel';
+import { PerformancePanel } from './panels/PerformancePanel';
+
+const STAGE_PANEL_COMPONENTS = {
+  signoff: SignoffPanel,
+  cross_desk: CrossDeskPanel,
+  desk_meeting: DeskMeetingPanel,
+  model_checklist: ModelChecklistPanel,
+  vote: VotePanel,
+  performance: PerformancePanel,
+};
 
 const TABS = [
   { id: 'thesis', label: 'Thesis' },
@@ -20,7 +37,15 @@ const TABS = [
   { id: 'decision', label: 'Decision' },
 ];
 
-export function PitchDetailClient({ pitchId }) {
+export function PitchDetailClient({ pitchId, inModal = false }) {
+  const { orgData } = useOrg();
+  const m = orgData?.member;
+  const viewer = {
+    id: m?.id || null,
+    role: m?.role || 'analyst',
+    tier: m?.tier || null,
+    team_id: m?.team_id || null,
+  };
   const [pitch, setPitch] = useState(null);
   const [tab, setTab] = useState('thesis');
   const [loading, setLoading] = useState(true);
@@ -72,12 +97,14 @@ export function PitchDetailClient({ pitchId }) {
 
   return (
     <div className="op-page">
-      <Link
-        href={pitch.is_archived ? '/org-team-hub/pitch-archive' : '/org-team-hub/pitches'}
-        className="op-back"
-      >
-        <i className="bi bi-arrow-left" /> Back to {pitch.is_archived ? 'Archive' : 'Pipeline'}
-      </Link>
+      {!inModal && (
+        <Link
+          href={pitch.is_archived ? '/org-team-hub/pitch-archive' : '/org-team-hub/pitches'}
+          className="op-back"
+        >
+          <i className="bi bi-arrow-left" /> Back to {pitch.is_archived ? 'Archive' : 'Pipeline'}
+        </Link>
+      )}
 
       {pitch.is_archived && pitch.decision_at && (
         <div className="op-detail-banner">
@@ -104,6 +131,14 @@ export function PitchDetailClient({ pitchId }) {
       </div>
 
       <PitchGatePanel pitch={pitch} onSelectTab={gateTabToModalTab} onAdvanced={onRefresh} />
+
+      {/* Stage-specific panels (spec §5.2) — driven by the stage-view matrix. */}
+      {stagePanels(pitch.stage).map((id) => {
+        const Panel = STAGE_PANEL_COMPONENTS[id];
+        return Panel ? (
+          <Panel key={id} pitch={pitch} viewer={viewer} onRefresh={() => load()} />
+        ) : null;
+      })}
 
       <PitchStageActions pitch={pitch} onRefresh={onRefresh} />
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { MOCK_TEAMS } from '@/lib/orgMockData';
 
 function cardSubtitle(pitch) {
@@ -30,6 +31,7 @@ function cardSubtitle(pitch) {
 }
 
 export function PitchPipelineBoard({ teamFilter = '' }) {
+  const router = useRouter();
   const [board, setBoard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [teamId, setTeamId] = useState(teamFilter);
@@ -88,7 +90,19 @@ export function PitchPipelineBoard({ teamFilter = '' }) {
             </div>
             <div className="op-column-body">
               {col.pitches.map((p) => (
-                <Link key={p.id} href={`/org-team-hub/pitches/${p.id}`} className="op-card">
+                <Link
+                  key={p.id}
+                  href={`/org-team-hub/pitches/${p.id}`}
+                  className="op-card"
+                  onClick={(e) => {
+                    // Left-click opens the modal in place (shallow route); cmd/ctrl
+                    // click keeps the deep-link (which redirects into the modal).
+                    if (!e.metaKey && !e.ctrlKey && !e.shiftKey) {
+                      e.preventDefault();
+                      router.push(`/org-team-hub/pitches?pitch=${p.id}`, { scroll: false });
+                    }
+                  }}
+                >
                   <div className="op-card-ticker">{p.ticker}</div>
                   <div className="op-card-meta">
                     {p.analyst_name?.split(' ')[0]} · {p.team_name?.split(',')[0] || p.team_name}
