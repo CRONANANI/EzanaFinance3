@@ -4,7 +4,7 @@
 
 .account-locked-shell {
   min-height: 100vh;
-  background-color: #0a0e13;
+  background-color: var(--app-bg);
   color: #f0f6fc;
   font-family: var(--font-geist-sans, system-ui, -apple-system, sans-serif);
 }
@@ -17,11 +17,11 @@
   padding: 2rem 1.5rem;
   background:
     radial-gradient(ellipse 60% 50% at 50% 0%, rgba(239, 68, 68, 0.08) 0%, transparent 70%),
-    #0a0e13;
+    var(--app-bg);
 }
 
 .acl-card {
-  background: rgba(15, 20, 25, 0.85);
+  background: var(--surface-card);
   border: 1px solid rgba(239, 68, 68, 0.2);
   border-radius: 16px;
   padding: 2.5rem 2rem;
@@ -116,7 +116,7 @@
 }
 
 .acl-meta {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--bg-tertiary);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 10px;
   padding: 0.875rem 1rem;

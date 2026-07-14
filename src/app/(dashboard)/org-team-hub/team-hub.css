@@ -115,7 +115,9 @@
   border: 1px solid rgba(99, 102, 241, 0.08);
   border-radius: 16px;
   overflow: hidden;
-  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
 /* Allow Type → Models flyout to extend past card bounds */
@@ -438,7 +440,7 @@
 .th-modal {
   width: 100%;
   max-width: 520px;
-  background: #161b22;
+  background: var(--bg-secondary);
   border: 1px solid rgba(99, 102, 241, 0.2);
   border-radius: 16px;
   padding: 1.5rem;
@@ -482,7 +484,9 @@
   padding: 2rem;
   text-align: center;
   cursor: pointer;
-  transition: border-color 0.2s, background 0.2s;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
   margin-bottom: 1rem;
 }
 
@@ -871,7 +875,9 @@
   color: #9ca3af;
   cursor: pointer;
   font-family: inherit;
-  transition: border-color 0.15s, color 0.15s;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
 }
 
 .th-filter-dd-trigger:hover {
@@ -904,7 +910,7 @@
   padding: 0.35rem;
   border-radius: 10px;
   border: 1px solid rgba(99, 102, 241, 0.2);
-  background: #0d1117;
+  background: var(--bg-secondary);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
 }
 
@@ -1026,12 +1032,14 @@
   padding: 0.35rem;
   border-radius: 10px;
   border: 1px solid rgba(99, 102, 241, 0.22);
-  background: #0d1117;
+  background: var(--bg-secondary);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transition: opacity 0.12s ease, visibility 0.12s ease;
+  transition:
+    opacity 0.12s ease,
+    visibility 0.12s ease;
 }
 
 .th-type-models-wrap:hover .th-type-flyout,
@@ -1297,11 +1305,26 @@ body.light-mode .th-file-icon {
   color: #4f46e5;
 }
 
-body.light-mode .th-file-icon.pdf { color: #dc2626; background: rgba(220, 38, 38, 0.06); }
-body.light-mode .th-file-icon.pptx { color: #ea580c; background: rgba(234, 88, 12, 0.06); }
-body.light-mode .th-file-icon.xlsx { color: #16a34a; background: rgba(22, 163, 74, 0.06); }
-body.light-mode .th-file-icon.video { color: #9333ea; background: rgba(147, 51, 234, 0.06); }
-body.light-mode .th-file-icon.doc { color: #2563eb; background: rgba(37, 99, 235, 0.06); }
+body.light-mode .th-file-icon.pdf {
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.06);
+}
+body.light-mode .th-file-icon.pptx {
+  color: #ea580c;
+  background: rgba(234, 88, 12, 0.06);
+}
+body.light-mode .th-file-icon.xlsx {
+  color: #16a34a;
+  background: rgba(22, 163, 74, 0.06);
+}
+body.light-mode .th-file-icon.video {
+  color: #9333ea;
+  background: rgba(147, 51, 234, 0.06);
+}
+body.light-mode .th-file-icon.doc {
+  color: #2563eb;
+  background: rgba(37, 99, 235, 0.06);
+}
 
 body.light-mode .th-file-actions {
   color: #9ca3af;

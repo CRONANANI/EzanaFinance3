@@ -16,14 +16,18 @@
 }
 
 @keyframes rpm-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .rpm-card {
   width: 100%;
   max-width: 440px;
-  background: #0f1419;
+  background: var(--bg-secondary);
   border: 1px solid rgba(16, 185, 129, 0.2);
   border-radius: 16px;
   overflow: hidden;
@@ -35,8 +39,14 @@
 }
 
 @keyframes rpm-slide-up {
-  from { opacity: 0; transform: translateY(12px) scale(0.97); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 body.light-mode .rpm-card,
@@ -89,7 +99,9 @@ body.light-mode .rpm-header-title,
   border-radius: 4px;
   transition: color 0.15s;
 }
-.rpm-close:hover { color: #ef4444; }
+.rpm-close:hover {
+  color: #ef4444;
+}
 
 .rpm-steps {
   display: flex;
@@ -103,7 +115,9 @@ body.light-mode .rpm-header-title,
   height: 8px;
   border-radius: 50%;
   background: rgba(107, 114, 128, 0.3);
-  transition: background 0.3s, transform 0.3s;
+  transition:
+    background 0.3s,
+    transform 0.3s;
 }
 
 .rpm-step-dot.active {
@@ -183,7 +197,9 @@ body.light-mode .rpm-amount-input,
   color: #0f172a;
 }
 
-.rpm-amount-input::placeholder { color: #4b5563; }
+.rpm-amount-input::placeholder {
+  color: #4b5563;
+}
 
 .rpm-preset-row {
   display: flex;
@@ -254,31 +270,47 @@ body.light-mode .rpm-preset:hover,
   background: #10b981;
   color: #fff;
 }
-.rpm-btn-primary:hover:not(:disabled) { background: #059669; }
-.rpm-btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+.rpm-btn-primary:hover:not(:disabled) {
+  background: #059669;
+}
+.rpm-btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 
 .rpm-btn-outline {
   background: transparent;
   color: #10b981;
   border: 1px solid rgba(16, 185, 129, 0.3);
 }
-.rpm-btn-outline:hover:not(:disabled) { background: rgba(16, 185, 129, 0.08); }
-.rpm-btn-outline:disabled { opacity: 0.5; cursor: not-allowed; }
+.rpm-btn-outline:hover:not(:disabled) {
+  background: rgba(16, 185, 129, 0.08);
+}
+.rpm-btn-outline:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 .rpm-btn-ghost {
   background: transparent;
   color: #6b7280;
 }
-.rpm-btn-ghost:hover { color: #f0f6fc; }
+.rpm-btn-ghost:hover {
+  color: #f0f6fc;
+}
 
 body.light-mode .rpm-btn-ghost:hover,
-.light .rpm-btn-ghost:hover { color: #0f172a; }
+.light .rpm-btn-ghost:hover {
+  color: #0f172a;
+}
 
 .rpm-btn-danger {
   background: #ef4444;
   color: #fff;
 }
-.rpm-btn-danger:hover { background: #dc2626; }
+.rpm-btn-danger:hover {
+  background: #dc2626;
+}
 
 .rpm-warning {
   font-size: 0.75rem;

@@ -1478,7 +1478,7 @@ body.light-mode .echo-article-page .echo-article-related-link {
   text-decoration: none;
   color: inherit;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-card);
   border: 1px solid rgba(255, 255, 255, 0.06);
   transition: all 200ms ease;
 }
@@ -1680,7 +1680,7 @@ body:not(.light-mode) .echo-trend-row-meta {
   color: #9ca3af;
 }
 body:not(.light-mode) .echo-article-card {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--surface-card);
   border-color: rgba(255, 255, 255, 0.08);
 }
 body:not(.light-mode) .echo-latest-col,
@@ -1820,7 +1820,7 @@ body.light-mode .echo-article-page .echo-stat-value {
   margin: 2rem 0;
   padding: 1.25rem;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-card);
   border: 1px solid rgba(255, 255, 255, 0.06);
   min-height: 420px;
 }
@@ -2347,7 +2347,7 @@ body.light-mode .echo-article-page .echo-comment-text {
 }
 
 .echo-article-page .echo-sector-chart-wrap {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-card);
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   padding: 1rem 0.5rem;
@@ -2711,7 +2711,7 @@ body.light-mode .echo-map-chip {
 .echo-hero-image-img--infographic {
   max-height: none;
   object-fit: contain;
-  background: #0d1117;
+  background: var(--app-bg);
   padding: 0;
 }
 
@@ -3204,13 +3204,13 @@ body.light-mode .echo-archive-empty h2 {
   display: flex;
   gap: 1.25rem;
   padding: 1.25rem 1.5rem;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-card);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 10px;
   transition: background 0.15s;
 }
 .echo-archive-card:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--surface-card-hover);
 }
 body.light-mode .echo-archive-card {
   background: #ffffff;
@@ -3972,7 +3972,7 @@ body.light-mode .echo-community-reactions {
 }
 
 .echo-sentiment-bar {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-card);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 14px;
   padding: 16px 22px;

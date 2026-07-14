@@ -760,7 +760,7 @@
 .ma-settings-select {
   width: 100%;
   padding: 0.5rem 0.625rem;
-  background: #0a0e13;
+  background: var(--bg-secondary);
   border: 1px solid rgba(16, 185, 129, 0.15);
   border-radius: 6px;
   color: #f0f6fc;
@@ -1039,7 +1039,7 @@ body.light-mode .ma-ticker-sep {
   position: relative;
   padding: 0.75rem 1rem;
   margin-bottom: 0.5rem;
-  background: #0a0e13;
+  background: var(--surface-card);
   border: 1px solid rgba(16, 185, 129, 0.06);
   border-radius: 6px;
 }
@@ -1051,7 +1051,7 @@ body.light-mode .ma-ticker-sep {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #0a0e13;
+  background: var(--app-bg);
   border: 2px solid rgba(16, 185, 129, 0.4);
   transform: translateX(-50%);
 }
@@ -1393,7 +1393,7 @@ body.light-mode .ma-ticker-sep {
 }
 
 .ma-city-source-card {
-  background: #111;
+  background: var(--surface-card);
   border: 1px solid #222;
   border-radius: 8px;
   padding: 12px;
@@ -2384,7 +2384,7 @@ body.light-mode .sentinel-related-markets-toggle:hover {
     position: fixed;
     inset: 0;
     z-index: 9999;
-    background: #0a0e13;
+    background: var(--app-bg);
     align-items: center;
     justify-content: center;
     padding: 2rem;

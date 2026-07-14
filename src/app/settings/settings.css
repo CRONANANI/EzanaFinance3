@@ -9,7 +9,7 @@
 /* ── Page container ── */
 .settings-page {
   min-height: 100vh;
-  background: #0a0e13;
+  background: var(--app-bg);
 }
 
 /* ── Settings header (navbar hidden on /settings) ── */
@@ -440,7 +440,7 @@ select.settings-input {
 /* Dropdown option items — explicit dark-mode styling */
 select.settings-input option,
 .settings-input option {
-  background-color: #0d1117;
+  background-color: var(--bg-secondary);
   color: #f0f6fc;
   padding: 0.5rem;
   font-size: 0.875rem;
@@ -1050,7 +1050,7 @@ body.light-mode .settings-danger-card .settings-danger-text p {
     position: sticky;
     top: 60px;
     z-index: 100;
-    background: #0a0e13;
+    background: var(--bg-secondary);
     border-bottom: 1px solid rgba(16, 185, 129, 0.08);
     padding: 0.75rem 1rem;
   }
@@ -1086,7 +1086,7 @@ body.light-mode .settings-danger-card .settings-danger-text p {
     top: 100%;
     left: 1rem;
     right: 1rem;
-    background: rgba(22, 27, 34, 0.98);
+    background: var(--bg-secondary);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(16, 185, 129, 0.12);
     border-radius: 14px;
@@ -1201,7 +1201,7 @@ body.light-mode .settings-danger-card .settings-danger-text p {
 }
 
 .settings-push-card--muted {
-  background: rgba(15, 20, 28, 0.5);
+  background: var(--surface-card);
   border-color: rgba(255, 255, 255, 0.06);
 }
 
@@ -1601,7 +1601,7 @@ body.light-mode .settings-data-request-hint strong {
 .settings-delete-modal {
   max-width: 520px;
   width: 100%;
-  background: #0d1117;
+  background: var(--bg-secondary);
   border: 1px solid rgba(239, 68, 68, 0.3);
   border-radius: 14px;
   padding: 2rem;

@@ -116,7 +116,7 @@
 
 body.dark-mode .dcf-assumptions-toolbar,
 .dark .dcf-assumptions-toolbar {
-  background: #0d1117;
+  background: var(--bg-tertiary);
   border-bottom-color: rgba(255, 255, 255, 0.08);
 }
 
@@ -184,7 +184,7 @@ body.dark-mode .dcf-toolbar-section-label,
 
 body.dark-mode .dcf-chip,
 .dark .dcf-chip {
-  background: #161b22;
+  background: var(--surface-card);
   border-color: rgba(255, 255, 255, 0.08);
   color: #e5e7eb;
 }
@@ -260,7 +260,7 @@ body.dark-mode .dcf-chip-value,
 
 body.dark-mode .dcf-chip-popover,
 .dark .dcf-chip-popover {
-  background: #161b22;
+  background: var(--bg-secondary);
   border-color: rgba(16, 185, 129, 0.5);
   box-shadow: 0 10px 32px rgba(0, 0, 0, 0.4);
 }
@@ -362,7 +362,7 @@ body.dark-mode .dcf-slider::-webkit-slider-thumb,
 
 body.dark-mode .dcf-chart-area,
 .dark .dcf-chart-area {
-  background: #0d1117;
+  background: var(--surface-card);
 }
 
 .dcf-chart-area .dcf-chart-root {
@@ -738,7 +738,9 @@ body.dark-mode .dcf-delta-row-track,
   top: 2px;
   bottom: 2px;
   border-radius: 3px;
-  transition: width 0.4s ease, left 0.4s ease;
+  transition:
+    width 0.4s ease,
+    left 0.4s ease;
   z-index: 0;
 }
 
@@ -1025,8 +1027,12 @@ body.light-mode .dcf-mode-btn.is-active {
 }
 
 @keyframes rdcf-spin {
-  from { transform: rotate(0); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .rdcf-error {
@@ -1078,19 +1084,25 @@ body.light-mode .dcf-mode-btn.is-active {
   background: rgba(16, 185, 129, 0.06);
   border-color: rgba(16, 185, 129, 0.25);
 }
-.rdcf-verdict--bull .rdcf-verdict-label { color: #059669; }
+.rdcf-verdict--bull .rdcf-verdict-label {
+  color: #059669;
+}
 
 .rdcf-verdict--bear {
   background: rgba(239, 68, 68, 0.06);
   border-color: rgba(239, 68, 68, 0.25);
 }
-.rdcf-verdict--bear .rdcf-verdict-label { color: #dc2626; }
+.rdcf-verdict--bear .rdcf-verdict-label {
+  color: #dc2626;
+}
 
 .rdcf-verdict--neutral {
   background: rgba(100, 116, 139, 0.06);
   border-color: rgba(100, 116, 139, 0.25);
 }
-.rdcf-verdict--neutral .rdcf-verdict-label { color: #475569; }
+.rdcf-verdict--neutral .rdcf-verdict-label {
+  color: #475569;
+}
 
 /* Comparison rows */
 .rdcf-comparison {
@@ -1109,7 +1121,9 @@ body.light-mode .dcf-mode-btn.is-active {
   font-size: 0.8125rem;
 }
 
-.rdcf-comparison-row:last-child { border-bottom: none; }
+.rdcf-comparison-row:last-child {
+  border-bottom: none;
+}
 
 .rdcf-comparison-row--implied {
   background: rgba(59, 130, 246, 0.04);
@@ -1125,8 +1139,12 @@ body.light-mode .dcf-mode-btn.is-active {
   color: var(--text-primary, #0f172a);
 }
 
-.rdcf-comparison-value.rdcf-up { color: #dc2626; }
-.rdcf-comparison-value.rdcf-down { color: #059669; }
+.rdcf-comparison-value.rdcf-up {
+  color: #dc2626;
+}
+.rdcf-comparison-value.rdcf-down {
+  color: #059669;
+}
 
 /* Convergence history */
 .rdcf-history {
@@ -1166,34 +1184,46 @@ body.light-mode .dcf-mode-btn.is-active {
 
 /* ─── Dark mode overrides ────────────────────────────────── */
 body.dark-mode .rdcf-title,
-.dark .rdcf-title { color: #f0f6fc; }
+.dark .rdcf-title {
+  color: #f0f6fc;
+}
 
 body.dark-mode .rdcf-input-card,
 .dark .rdcf-input-card {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-card);
   border-color: rgba(255, 255, 255, 0.06);
 }
 
 body.dark-mode .rdcf-input-value,
-.dark .rdcf-input-value { color: #f0f6fc; }
+.dark .rdcf-input-value {
+  color: #f0f6fc;
+}
 
 body.dark-mode .rdcf-comparison,
 .dark .rdcf-comparison {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-card);
   border-color: rgba(255, 255, 255, 0.05);
 }
 
 body.dark-mode .rdcf-comparison-value,
-.dark .rdcf-comparison-value { color: #f0f6fc; }
+.dark .rdcf-comparison-value {
+  color: #f0f6fc;
+}
 
 body.dark-mode .rdcf-comparison-row,
-.dark .rdcf-comparison-row { border-color: rgba(255, 255, 255, 0.05); }
+.dark .rdcf-comparison-row {
+  border-color: rgba(255, 255, 255, 0.05);
+}
 
 body.dark-mode .rdcf-history-row,
-.dark .rdcf-history-row { background: rgba(255, 255, 255, 0.02); }
+.dark .rdcf-history-row {
+  background: var(--bg-tertiary);
+}
 
 body.dark-mode .rdcf-fixed-list > span:not(:nth-child(even)),
-.dark .rdcf-fixed-list > span:not(:nth-child(even)) { color: #e2e8f0; }
+.dark .rdcf-fixed-list > span:not(:nth-child(even)) {
+  color: #e2e8f0;
+}
 
 /* ════════════════════════════════════════════════════════════
    DCF — Dark mode contrast fixes (force-dark-theme / body:not(.light-mode))
@@ -1212,7 +1242,7 @@ body:not(.light-mode) .dcf-chart-header h4 {
 }
 
 body:not(.light-mode) .dcf-chart-footer {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--bg-tertiary);
   border-color: rgba(255, 255, 255, 0.06);
 }
 
@@ -1256,7 +1286,7 @@ body:not(.light-mode) .dcf-peer-toggle {
 }
 
 body:not(.light-mode) .dcf-assumptions-toolbar {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--bg-tertiary);
   border-bottom-color: rgba(255, 255, 255, 0.06);
 }
 

@@ -1789,8 +1789,8 @@ body.light-mode .landing-page .hero-waitlist .waitlist-input::placeholder {
    ════════════════════════════════════════════════════════════ */
 
 select option {
-  background-color: #0d1117;
-  color: #f0f6fc;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
 }
 
 body.light-mode select option {

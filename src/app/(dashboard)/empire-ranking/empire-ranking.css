@@ -9,17 +9,17 @@
  * white. Values verified with the dev auditor in src/lib/a11y.
  */
 .er-page {
-  --er-text-primary: #f0f6fc;   /* headings, card titles */
-  --er-text-body:    #e2e8f0;   /* primary body / value text */
-  --er-text-muted:   #9ca3af;   /* secondary labels, axis ticks, subtitle */
-  --er-text-faint:   #cbd5e1;   /* legend, small captions on chart */
-  --er-text-label:   #9ca3af;   /* uppercase labels (cycle stats, controls) */
-  --er-accent:       #d4af37;   /* gold accent */
-  --er-accent-soft:  #e6c35a;
-  --er-surface:      rgba(212, 175, 55, 0.02);
+  --er-text-primary: #f0f6fc; /* headings, card titles */
+  --er-text-body: #e2e8f0; /* primary body / value text */
+  --er-text-muted: #9ca3af; /* secondary labels, axis ticks, subtitle */
+  --er-text-faint: #cbd5e1; /* legend, small captions on chart */
+  --er-text-label: #9ca3af; /* uppercase labels (cycle stats, controls) */
+  --er-accent: #d4af37; /* gold accent */
+  --er-accent-soft: #e6c35a;
+  --er-surface: rgba(212, 175, 55, 0.02);
   --er-surface-inset: rgba(0, 0, 0, 0.2);
-  --er-border-soft:  rgba(212, 175, 55, 0.08);
-  --er-border:       rgba(212, 175, 55, 0.15);
+  --er-border-soft: rgba(212, 175, 55, 0.08);
+  --er-border: rgba(212, 175, 55, 0.15);
   --er-border-hover: rgba(212, 175, 55, 0.35);
 
   display: flex;
@@ -30,16 +30,16 @@
 
 body.light-mode .er-page {
   --er-text-primary: #111827;
-  --er-text-body:    #1f2937;
-  --er-text-muted:   #4b5563;
-  --er-text-faint:   #374151;
-  --er-text-label:   #4b5563;
-  --er-accent:       #b3902f;
-  --er-accent-soft:  #c9a548;
-  --er-surface:      #ffffff;
+  --er-text-body: #1f2937;
+  --er-text-muted: #4b5563;
+  --er-text-faint: #374151;
+  --er-text-label: #4b5563;
+  --er-accent: #b3902f;
+  --er-accent-soft: #c9a548;
+  --er-surface: #ffffff;
   --er-surface-inset: #fafafa;
-  --er-border-soft:  rgba(17, 24, 39, 0.08);
-  --er-border:       rgba(212, 175, 55, 0.22);
+  --er-border-soft: rgba(17, 24, 39, 0.08);
+  --er-border: rgba(212, 175, 55, 0.22);
   --er-border-hover: rgba(212, 175, 55, 0.5);
 }
 
@@ -183,7 +183,9 @@ body.light-mode .er-page {
   line-height: 1;
   padding: 0.15rem 0.35rem;
   border-radius: 6px;
-  transition: color 0.15s, background 0.15s;
+  transition:
+    color 0.15s,
+    background 0.15s;
 }
 
 .er-layers-from-map-dismiss:hover {
@@ -235,7 +237,10 @@ body.light-mode .er-page {
   color: var(--er-text-muted);
   cursor: pointer;
   font-family: inherit;
-  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    color 0.15s,
+    background 0.15s;
 }
 
 .er-pill-toggle:hover {
@@ -306,7 +311,9 @@ body.light-mode .er-pill-toggle--active {
   border: 1px solid var(--er-border-soft);
   border-radius: 14px;
   overflow: hidden;
-  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
 .er-card:hover {
@@ -477,7 +484,9 @@ body.light-mode .er-select {
   font-size: 0.72rem;
   text-align: left;
   cursor: pointer;
-  transition: background-color 0.12s, color 0.12s;
+  transition:
+    background-color 0.12s,
+    color 0.12s;
 }
 
 .er-big-cycle-legend__item:hover,
@@ -730,7 +739,9 @@ body.light-mode .er-chip-group {
   border: none;
   color: var(--er-text-muted);
   cursor: pointer;
-  transition: color 0.15s, background 0.15s;
+  transition:
+    color 0.15s,
+    background 0.15s;
 }
 
 .er-chip:hover {
@@ -772,7 +783,7 @@ body.light-mode .er-chip--active {
   min-width: 180px;
   max-height: 280px;
   overflow-y: auto;
-  background: #161b22;
+  background: var(--bg-secondary);
   border: 1px solid var(--er-border);
   border-radius: 8px;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);

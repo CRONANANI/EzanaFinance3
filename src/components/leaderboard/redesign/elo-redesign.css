@@ -23,7 +23,7 @@ body:not(.light-mode) .elo-page-wrap a:focus-visible {
 
 html:not(.light-mode) .elo-skeleton-shimmer,
 body:not(.light-mode) .elo-skeleton-shimmer {
-  background: linear-gradient(90deg, #161b22 25%, #21262d 50%, #161b22 75%) !important;
+  background: linear-gradient(90deg, var(--bg-tertiary) 25%, #21262d 50%, var(--bg-tertiary) 75%);
   background-size: 200% 100% !important;
 }
 

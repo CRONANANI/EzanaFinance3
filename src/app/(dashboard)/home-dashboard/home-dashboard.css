@@ -1657,7 +1657,7 @@ body.light-mode .db-sector-drawer-item {
   position: absolute;
   pointer-events: none;
   transform: translate(-50%, -100%);
-  background: rgba(13, 17, 23, 0.96);
+  background: var(--bg-secondary);
   color: #f0f6fc;
   padding: 0.5rem 0.75rem;
   border-radius: 8px;
@@ -1811,7 +1811,7 @@ body.light-mode .db-sector-legend-pct {
 }
 
 .db-skel-card {
-  background: var(--card, rgba(255, 255, 255, 0.02));
+  background: var(--surface-card);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 14px;
   padding: 1.5rem;

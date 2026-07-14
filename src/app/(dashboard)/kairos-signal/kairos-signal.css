@@ -68,7 +68,7 @@
 }
 
 .kairos-select {
-  background: #111;
+  background: var(--inset);
   border: 1px solid #333;
   border-radius: 8px;
   color: #e2e8f0;
@@ -100,7 +100,9 @@
   cursor: pointer;
   background: transparent;
   color: #6b7280;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 .kairos-tf-btn:hover {
@@ -128,11 +130,13 @@
 
 /* ── Cards ─────────────────────────────────────────────────── */
 .kairos-card {
-  background: #111;
+  background: var(--surface-card);
   border: 1px solid #222;
   border-radius: 12px;
   overflow: hidden;
-  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
 .kairos-card:hover {
@@ -293,7 +297,7 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.65rem 0.85rem;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--bg-tertiary);
   border-radius: 8px;
   border-left: 3px solid #10b981;
   margin-bottom: 0.75rem;
@@ -404,7 +408,7 @@
 .kairos-windows-cell {
   height: 22px;
   border-radius: 3px;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--bg-tertiary);
   display: flex;
   align-items: center;
   justify-content: center;

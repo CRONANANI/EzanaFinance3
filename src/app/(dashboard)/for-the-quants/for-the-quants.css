@@ -849,7 +849,7 @@ body.light-mode .ftq-pm-input {
 }
 
 .ftq-btn-primary--accent {
-  background: linear-gradient(135deg, #10b981, #059669) !important;
+  background: linear-gradient(135deg, #10b981, #059669);
 }
 
 /* ── Templates ── */

@@ -86,7 +86,7 @@
 }
 
 .ot-team-card {
-  background: rgba(13, 17, 23, 0.6);
+  background: var(--surface-card);
   border: 1px solid rgba(99, 102, 241, 0.15);
   border-radius: 12px;
   padding: 1rem;
@@ -215,7 +215,7 @@
 }
 
 .ot-modal {
-  background: #0d1117;
+  background: var(--bg-secondary);
   border: 1px solid rgba(99, 102, 241, 0.25);
   border-radius: 12px;
   width: 100%;
@@ -263,7 +263,7 @@
   padding: 0.75rem;
   border-radius: 8px;
   border: 2px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-card);
   color: #c9d1d9;
   font-weight: 700;
   cursor: pointer;
@@ -304,7 +304,7 @@
 .ot-form-textarea {
   width: 100%;
   padding: 0.6rem 0.75rem;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--inset);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 6px;
   color: #f0f6fc;
@@ -412,7 +412,7 @@
   display: flex;
   gap: 0.75rem;
   padding: 1rem;
-  background: rgba(13, 17, 23, 0.6);
+  background: var(--surface-card);
   border: 1px solid rgba(99, 102, 241, 0.12);
   border-radius: 8px;
   cursor: pointer;
@@ -475,7 +475,7 @@
 }
 
 .ot-flag-detail {
-  background: rgba(13, 17, 23, 0.7);
+  background: var(--surface-card);
   border: 1px solid rgba(99, 102, 241, 0.18);
   border-radius: 12px;
   padding: 1.5rem;

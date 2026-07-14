@@ -5,7 +5,7 @@
    ────────────────────────────────────────────────────────────────── */
 
 .pm-related {
-  background: #0a0e13;
+  background: var(--bg-secondary);
   border: 1px solid rgba(16, 185, 129, 0.12);
   border-radius: 12px;
   padding: 1.25rem;

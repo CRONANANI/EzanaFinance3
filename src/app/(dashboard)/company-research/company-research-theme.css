@@ -61,7 +61,7 @@ body.light-mode .dcf-interactive-root:hover {
 /* ══ Stock analysis model tiles (carousel + sidebar) — card surfaces, gold premium row ══ */
 .model-metric-card.cr-model-tile {
   position: relative;
-  background: var(--card, #0d1117) !important;
+  background: var(--surface-card);
   border: 1px solid var(--border, rgba(148, 163, 184, 0.25)) !important;
 }
 
@@ -89,7 +89,7 @@ body:not(.light-mode) .model-metric-card.cr-model-tile--premium {
 }
 
 .model-metric-card.cr-model-tile--premium .model-metric-icon {
-  background: rgba(212, 175, 55, 0.12) !important;
+  background: rgba(212, 175, 55, 0.12);
   color: #d4af37 !important;
   border: 1px solid rgba(212, 175, 55, 0.35);
 }
@@ -110,7 +110,7 @@ body:not(.light-mode) .model-metric-card.cr-model-tile--premium .model-metric-ic
   box-shadow:
     0 0 0 1px rgba(212, 175, 55, 0.35),
     0 4px 18px rgba(0, 0, 0, 0.12);
-  background: var(--card, #0d1117) !important;
+  background: var(--surface-card);
 }
 
 body.light-mode .model-metric-card.cr-model-tile--premium.active {
@@ -141,7 +141,7 @@ body:not(.light-mode) .cr-model-premium-star {
    ═══════════════════════════════════════════ */
 
 .cr-news-chain-card {
-  background: var(--db-card, #0d1117);
+  background: var(--surface-card);
   border: 1px solid var(--db-card-border, rgba(48, 54, 61, 0.6));
   border-radius: 12px;
   overflow: hidden;

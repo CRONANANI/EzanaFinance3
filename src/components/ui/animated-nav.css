@@ -89,7 +89,7 @@
 /* Dropdown panel */
 .animated-nav-dropdown {
   min-width: 240px;
-  background: #161b22;
+  background: var(--app-bg);
   border: 1px solid rgba(16, 185, 129, 0.1);
   border-radius: 14px;
   padding: 0.5rem;

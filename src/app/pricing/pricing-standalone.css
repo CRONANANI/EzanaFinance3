@@ -872,14 +872,14 @@
 /* ── Dark-mode fallback (only if user forces dark; landing page normally
       stays light so this is defense-in-depth, not the default render) ── */
 body:not(.light-mode) .pricing-page--standalone {
-  background: #0a0e13;
+  background: var(--app-bg);
   color: #f0f6fc;
 }
 body:not(.light-mode) .pricing-page--standalone .plan-card,
 body:not(.light-mode) .pricing-page--standalone .comparison-table-wrap,
 body:not(.light-mode) .pricing-page--standalone .pricing-partner-rate,
 body:not(.light-mode) .pricing-page--standalone .pricing-bottom-cta-card {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-card);
   border-color: rgba(255, 255, 255, 0.08);
 }
 /* FAQ stays seamless in dark too — transparent rows, light hairline divider

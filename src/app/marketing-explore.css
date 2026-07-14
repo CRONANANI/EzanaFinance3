@@ -111,7 +111,7 @@
 }
 
 .mkt-card {
-  background: #0d1117;
+  background: var(--surface-card);
   border: 1px solid var(--border-primary);
   border-radius: 16px;
   padding: 1.5rem;

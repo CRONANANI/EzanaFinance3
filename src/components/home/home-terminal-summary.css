@@ -1212,7 +1212,7 @@ body.light-mode .hts-week-standing-row {
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: #0a0e13;
+  background: var(--bg-tertiary);
   border: 2px solid rgba(16, 185, 129, 0.4);
 }
 .hts-chain-header {

@@ -119,7 +119,7 @@
 
 /* ── Form card ── */
 .sa-card {
-  background: #0d1117;
+  background: var(--surface-card);
   border: 1px solid rgba(212, 175, 55, 0.08);
   border-radius: 12px;
   padding: 1.25rem 1.5rem;

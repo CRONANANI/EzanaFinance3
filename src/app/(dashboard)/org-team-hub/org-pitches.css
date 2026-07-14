@@ -107,7 +107,7 @@
 
 .op-column {
   min-width: 140px;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-card);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 10px;
   display: flex;
@@ -183,7 +183,7 @@
   padding: 1rem 1.1rem;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-card);
   text-decoration: none;
   color: inherit;
   display: block;
@@ -356,7 +356,7 @@
 }
 
 .op-modal {
-  background: #0d1117;
+  background: var(--bg-secondary);
   border: 1px solid rgba(99, 102, 241, 0.25);
   border-radius: 14px;
   max-width: 560px;
@@ -551,7 +551,7 @@
   padding: 0.75rem;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-card);
 }
 
 .op-fmp-card h3 {

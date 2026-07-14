@@ -182,17 +182,19 @@ body.dark-mode .lc3-quiz-progress-label,
 
 /* Option states — unanswered, selected, correct, incorrect */
 .lc3-opt {
-  transition: background 0.2s, border-color 0.2s;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
 }
 
 .lc3-opt.correct {
-  background: rgba(16, 185, 129, 0.12) !important;
+  background: rgba(16, 185, 129, 0.12);
   border-color: #10b981 !important;
   color: #059669;
 }
 
 .lc3-opt.incorrect {
-  background: rgba(239, 68, 68, 0.10) !important;
+  background: rgba(239, 68, 68, 0.1);
   border-color: #ef4444 !important;
   color: #dc2626;
 }
@@ -238,7 +240,7 @@ body.dark-mode .lc3-quiz-progress-label,
 }
 
 .lc3-feedback.right {
-  background: rgba(16, 185, 129, 0.10);
+  background: rgba(16, 185, 129, 0.1);
   border: 1px solid rgba(16, 185, 129, 0.3);
   color: #065f46;
 }

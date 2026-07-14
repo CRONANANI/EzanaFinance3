@@ -177,7 +177,7 @@
 }
 
 .cl-entry-content {
-  background: #0a0e13;
+  background: var(--surface-card);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 8px;
   padding: 0.5rem 0.65rem;
@@ -190,7 +190,7 @@
 
 .cl-entry.is-pinned .cl-entry-content {
   border-color: rgba(212, 175, 55, 0.3);
-  background: #0a0e13;
+  background: var(--surface-card);
   box-shadow: inset 0 0 0 1px rgba(212, 175, 55, 0.08);
 }
 

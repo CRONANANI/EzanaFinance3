@@ -114,7 +114,7 @@
 .partner-auth-page .auth-error,
 .partner-auth-page .pauth-error {
   color: #dc2626 !important;
-  background: rgba(239, 68, 68, 0.08) !important;
+  background: rgba(239, 68, 68, 0.08);
   border-color: rgba(239, 68, 68, 0.25) !important;
 }
 
