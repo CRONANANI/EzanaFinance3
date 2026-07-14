@@ -468,6 +468,7 @@ export function CouncilTradingDesk() {
           mockTeamId={openFlagModal.mockTeamId}
           teamDbId={openFlagModal.teamDbId}
           position={openFlagModal.position}
+          currentMember={orgData?.member}
           onClose={() => setOpenFlagModal(null)}
           onSuccess={() => {
             setOpenFlagModal(null);

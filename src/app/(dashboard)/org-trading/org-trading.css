@@ -1026,3 +1026,439 @@
     border-top: 1px solid var(--ctd-border);
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   Flag Position — "1b" two-column dossier composer + resolution loop.
+   Tokens with module-matched fallbacks; JetBrains Mono tabular-nums on
+   every figure via .ot-num. Dark modal floats on the Council desk.
+   ═══════════════════════════════════════════════════════════════════ */
+.ot-num {
+  font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.ot-modal-dossier {
+  max-width: 760px;
+  background: var(--surface-card, #0d1117);
+}
+
+.ot-dossier-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.ot-flag-icon.green {
+  color: var(--emerald, #10b981);
+}
+.ot-flag-icon.red {
+  color: var(--negative, #ef4444);
+}
+.ot-ticker-chip {
+  padding: 2px 8px;
+  border-radius: 5px;
+  background: var(--bg-tertiary, rgba(255, 255, 255, 0.06));
+  border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.1));
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-primary, #f0f6fc);
+}
+.ot-dossier-sub {
+  font-size: 0.72rem;
+  color: var(--text-muted, #8b949e);
+}
+
+.ot-dossier-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.ot-dossier-rail {
+  background: var(--bg-primary, #0a0e13);
+  border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.08));
+  border-radius: 10px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.ot-dossier-pl {
+  border-radius: 8px;
+  padding: 0.75rem;
+  border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.08));
+}
+.ot-dossier-pl.pos {
+  color: var(--positive, #10b981);
+}
+.ot-dossier-pl.neg {
+  color: var(--negative, #ef4444);
+}
+.ot-dossier-pl-head {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+.ot-dossier-pl-dollar {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-top: 0.15rem;
+}
+.ot-dossier-pl-bench {
+  font-size: 0.68rem;
+  color: var(--text-muted, #8b949e);
+  margin-top: 0.35rem;
+}
+
+.ot-dossier-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+.ot-dossier-stat {
+  background: var(--surface-card, rgba(255, 255, 255, 0.02));
+  border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.06));
+  border-radius: 6px;
+  padding: 0.5rem 0.6rem;
+}
+.ot-dossier-stat-label {
+  display: block;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted, #8b949e);
+}
+.ot-dossier-stat-value {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary, #f0f6fc);
+}
+
+.ot-dossier-thesis-text {
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--text-secondary, #d1d5db);
+  margin: 0.35rem 0 0;
+  line-height: 1.4;
+}
+.ot-dossier-muted {
+  font-size: 0.75rem;
+  color: var(--text-muted, #8b949e);
+  margin: 0.35rem 0 0;
+}
+
+.ot-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  padding: 0.5rem 0.7rem;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+.ot-banner.amber {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: var(--warning, #f59e0b);
+}
+.ot-banner.red {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: var(--negative, #ef4444);
+}
+
+.ot-dossier-evidence-btn {
+  margin-top: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  border: 1px dashed var(--border-primary, rgba(255, 255, 255, 0.15));
+  background: transparent;
+  color: var(--text-secondary, #c9d1d9);
+  font-size: 0.72rem;
+  cursor: pointer;
+}
+.ot-dossier-evidence-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.ot-dossier-routes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.ot-routed-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.ot-routed-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: #fff;
+  background: var(--indigo, #6366f1);
+  flex-shrink: 0;
+}
+.ot-routed-name {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--text-primary, #f0f6fc);
+}
+.ot-routed-role {
+  font-size: 0.64rem;
+  color: var(--text-muted, #8b949e);
+}
+
+.ot-dossier-compose {
+  min-width: 0;
+}
+.ot-flag-color-btn span {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.2;
+}
+.ot-flag-color-btn span small {
+  font-size: 0.6rem;
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+.ot-seg-row {
+  display: flex;
+  gap: 0.4rem;
+}
+.ot-seg {
+  flex: 1;
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.1));
+  background: var(--surface-card, rgba(255, 255, 255, 0.02));
+  color: var(--text-secondary, #c9d1d9);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ot-seg.is-selected {
+  border-color: var(--indigo, #6366f1);
+  background: rgba(99, 102, 241, 0.15);
+  color: var(--text-primary, #f0f6fc);
+}
+.ot-seg.high.is-selected {
+  border-color: var(--negative, #ef4444);
+  background: rgba(239, 68, 68, 0.16);
+  color: var(--negative, #ef4444);
+  font-weight: 800;
+}
+
+.ot-char-hint {
+  font-size: 0.65rem;
+  color: var(--text-muted, #8b949e);
+  margin-top: 0.25rem;
+  text-align: right;
+}
+.ot-char-hint.ok {
+  color: var(--positive, #10b981);
+}
+
+.ot-form-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+.ot-check {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.76rem;
+  color: var(--text-secondary, #c9d1d9);
+  cursor: pointer;
+}
+.ot-inline-select {
+  min-width: 130px;
+}
+
+.ot-dossier-footer {
+  align-items: center;
+  justify-content: space-between;
+}
+.ot-dossier-footnote {
+  font-size: 0.68rem;
+  color: var(--text-muted, #8b949e);
+}
+.ot-dossier-footer-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+.ot-cta-green {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+.ot-cta-red {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+/* ── Detail panel — the answer path ── */
+.ot-flag-detail-toprow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.ot-status-pill {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: var(--bg-tertiary, rgba(255, 255, 255, 0.06));
+  color: var(--text-muted, #8b949e);
+  border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.1));
+}
+.ot-status-pill.status-open {
+  color: var(--warning, #f59e0b);
+  border-color: rgba(245, 158, 11, 0.4);
+}
+.ot-status-pill.status-accepted {
+  color: var(--positive, #10b981);
+  border-color: rgba(16, 185, 129, 0.4);
+}
+.ot-status-pill.status-rejected {
+  color: var(--negative, #ef4444);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+.ot-status-pill.status-escalated {
+  color: var(--indigo, #6366f1);
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
+.ot-flag-reasonline {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary, #e2e8f0);
+  margin: 0.75rem 0;
+}
+.ot-flag-detail-body {
+  font-size: 0.825rem;
+  color: var(--text-secondary, #d1d5db);
+  white-space: pre-wrap;
+  margin: 0.75rem 0;
+  line-height: 1.5;
+}
+
+.ot-evidence-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.ot-evidence-chip {
+  font-size: 0.66rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--indigo, #818cf8);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+}
+
+.ot-flag-routeline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  font-size: 0.72rem;
+  color: var(--text-muted, #8b949e);
+  padding: 0.6rem 0;
+  border-top: 1px solid var(--border-primary, rgba(255, 255, 255, 0.05));
+  margin-top: 0.5rem;
+}
+.ot-due {
+  font-weight: 700;
+  color: var(--text-secondary, #c9d1d9);
+}
+.ot-due.urgent {
+  color: var(--warning, #f59e0b);
+}
+
+.ot-answer-block {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-primary, rgba(255, 255, 255, 0.05));
+}
+.ot-answer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.ot-answer-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 0.85rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.15));
+  background: var(--surface-card, rgba(255, 255, 255, 0.02));
+  color: var(--text-secondary, #c9d1d9);
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ot-answer-btn.accept {
+  border-color: rgba(16, 185, 129, 0.4);
+  color: var(--positive, #10b981);
+}
+.ot-answer-btn.reject {
+  border-color: rgba(239, 68, 68, 0.4);
+  color: var(--negative, #ef4444);
+}
+.ot-answer-btn.escalate {
+  border-color: rgba(99, 102, 241, 0.4);
+  color: var(--indigo, #818cf8);
+}
+.ot-answer-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ot-resolution-note {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  border-left: 3px solid var(--border-primary, #6366f1);
+  background: var(--surface-card, rgba(255, 255, 255, 0.03));
+  font-size: 0.75rem;
+  color: var(--text-secondary, #c9d1d9);
+}
+.ot-resolution-note.status-accepted {
+  border-left-color: var(--positive, #10b981);
+}
+.ot-resolution-note.status-rejected {
+  border-left-color: var(--negative, #ef4444);
+}
+.ot-resolution-text {
+  display: block;
+  margin-top: 0.4rem;
+  white-space: pre-wrap;
+  color: var(--text-secondary, #d1d5db);
+}
+
+@media (max-width: 640px) {
+  .ot-dossier-grid {
+    grid-template-columns: 1fr;
+  }
+}
