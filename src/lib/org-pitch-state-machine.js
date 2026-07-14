@@ -6,33 +6,19 @@
  * IC Vote / Approved / In Portfolio / Exited) are mapped in the UI ONLY.
  */
 
-// Internal stage key -> design-facing label (single source of truth for the map).
-export const DESIGN_STAGE_LABELS = {
-  idea: 'Idea',
-  research_approved: 'Screening',
-  research_in_progress: 'Deep Dive',
-  pm_review: 'Model Complete',
-  committee_scheduled: 'Pitch Scheduled',
-  committee_vote: 'IC Vote',
-  decision: 'Approved',
-  in_portfolio: 'In Portfolio',
-  exited: 'Exited',
-};
+// Stage labels + the active ladder now come from the new stage machine
+// (src/lib/pitch/stages.js) so there is ONE source of truth after the stage
+// rename migration. Re-exported here to preserve this module's import surface.
+import { STAGE_LABELS, FORWARD_ORDER, stageLabel } from '@/lib/pitch/stages';
 
-// The 7 active kanban stages (idea -> decision). in_portfolio/exited live in the
-// tracker + archive lane respectively, never as kanban columns.
-export const ACTIVE_STAGES = [
-  'idea',
-  'research_approved',
-  'research_in_progress',
-  'pm_review',
-  'committee_scheduled',
-  'committee_vote',
-  'decision',
-];
+export const DESIGN_STAGE_LABELS = STAGE_LABELS;
+
+// Active kanban stages: idea → approved (in_portfolio/exited/rejected are the
+// tracker + archive lanes, never kanban columns).
+export const ACTIVE_STAGES = FORWARD_ORDER.filter((s) => s !== 'in_portfolio' && s !== 'exited');
 
 export function designStageLabel(stage) {
-  return DESIGN_STAGE_LABELS[stage] || stage;
+  return stageLabel(stage);
 }
 
 export const STAGE_TRANSITIONS = [

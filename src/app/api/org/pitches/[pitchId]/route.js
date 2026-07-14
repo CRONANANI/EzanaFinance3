@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { canEditThesis } from '@/lib/org-pitch-state-machine';
+import { isThesisFrozen } from '@/lib/pitch/stages';
 import {
   getPitchContext,
   fetchPitchRaw,
@@ -36,8 +36,13 @@ export const PATCH = withApiGuard(
     if (pitch.analyst_member_id !== viewer.id && viewer.role === 'analyst') {
       return NextResponse.json({ error: 'Only the authoring analyst can edit' }, { status: 403 });
     }
-    if (!canEditThesis(pitch)) {
-      return NextResponse.json({ error: 'Thesis locked after PM review stage' }, { status: 400 });
+    // The thesis freezes at cross_desk_review — cross-desk PMs and the IC vote
+    // on a thesis that cannot change. Post-freeze edits go via Request Changes.
+    if (isThesisFrozen(pitch.stage)) {
+      return NextResponse.json(
+        { error: 'Thesis is frozen at Cross-Desk Review. Use Request Changes to reopen.' },
+        { status: 400 },
+      );
     }
 
     const body = await request.json();
