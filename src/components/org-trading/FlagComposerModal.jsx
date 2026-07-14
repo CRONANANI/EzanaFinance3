@@ -376,7 +376,7 @@ export function FlagComposerModal({
               </label>
               <select
                 id="ot-flag-reason"
-                className="ot-form-input"
+                className="ot-form-select"
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
               >
@@ -413,7 +413,7 @@ export function FlagComposerModal({
               </label>
               <select
                 id="ot-flag-action"
-                className="ot-form-input"
+                className="ot-form-select"
                 value={action}
                 onChange={(e) => setAction(e.target.value)}
               >
@@ -460,7 +460,7 @@ export function FlagComposerModal({
                 </label>
                 <select
                   id="ot-flag-due"
-                  className="ot-form-input"
+                  className="ot-form-select"
                   value={responseHours}
                   onChange={(e) => setResponseHours(Number(e.target.value))}
                 >

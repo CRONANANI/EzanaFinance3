@@ -1,7 +1,7 @@
 .org-trading-page {
   min-height: 100vh;
   background: var(--bg-primary);
-  color: #f0f6fc;
+  color: var(--text-primary);
 }
 
 .ot-hero {
@@ -36,13 +36,13 @@
 .ot-hero h1 {
   margin: 0;
   font-size: 1.4rem;
-  color: #f0f6fc;
+  color: var(--text-primary);
 }
 
 .ot-hero-sub {
   margin: 0.25rem 0 0;
   font-size: 0.825rem;
-  color: #c9d1d9;
+  color: var(--text-secondary);
 }
 
 .ot-perm-pill {
@@ -66,7 +66,7 @@
   background: rgba(99, 102, 241, 0.12);
   border: 1px solid rgba(99, 102, 241, 0.3);
   border-radius: 8px;
-  color: #c9d1d9;
+  color: var(--text-secondary);
   font-size: 0.825rem;
   font-weight: 600;
   text-decoration: none;
@@ -75,7 +75,7 @@
 
 .ot-inbox-link:hover {
   background: rgba(99, 102, 241, 0.2);
-  color: #f0f6fc;
+  color: var(--text-primary);
 }
 
 .ot-council-grid {
@@ -110,13 +110,13 @@
 .ot-team-card-name {
   font-size: 0.9rem;
   font-weight: 700;
-  color: #f0f6fc;
+  color: var(--text-primary);
 }
 
 .ot-team-card-aum {
   font-size: 1.25rem;
   font-weight: 800;
-  color: #f0f6fc;
+  color: var(--text-primary);
 }
 
 .ot-team-card-change {
@@ -139,7 +139,7 @@
 
 .ot-team-positions-table th {
   text-align: left;
-  color: #8b949e;
+  color: var(--text-muted);
   font-weight: 600;
   text-transform: uppercase;
   font-size: 0.625rem;
@@ -151,7 +151,7 @@
 .ot-team-positions-table td {
   padding: 0.5rem;
   border-bottom: 1px solid rgba(99, 102, 241, 0.05);
-  color: #d1d5db;
+  color: var(--text-body);
 }
 
 .ot-team-positions-table tr:hover {
@@ -166,7 +166,7 @@
   background: rgba(99, 102, 241, 0.1);
   border: 1px solid rgba(99, 102, 241, 0.25);
   border-radius: 4px;
-  color: #c9d1d9;
+  color: var(--text-secondary);
   font-size: 0.65rem;
   font-weight: 600;
   cursor: pointer;
@@ -175,7 +175,7 @@
 
 .ot-position-flag-btn:hover {
   background: rgba(99, 102, 241, 0.2);
-  color: #f0f6fc;
+  color: var(--text-primary);
 }
 
 .ot-position-flag-btn:disabled {
@@ -236,20 +236,20 @@
 .ot-modal-title {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #f0f6fc;
+  color: var(--text-primary);
   margin: 0;
 }
 
 .ot-modal-close {
   background: none;
   border: none;
-  color: #8b949e;
+  color: var(--text-muted);
   font-size: 1.25rem;
   cursor: pointer;
 }
 
 .ot-modal-close:hover {
-  color: #f0f6fc;
+  color: var(--text-primary);
 }
 
 .ot-flag-color-row {
@@ -262,9 +262,9 @@
   flex: 1;
   padding: 0.75rem;
   border-radius: 8px;
-  border: 2px solid rgba(255, 255, 255, 0.08);
+  border: 2px solid var(--border-primary);
   background: var(--surface-card);
-  color: #c9d1d9;
+  color: var(--text-secondary);
   font-weight: 700;
   cursor: pointer;
   transition: all 0.15s;
@@ -296,19 +296,47 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #8b949e;
+  color: var(--text-muted);
   margin-bottom: 0.4rem;
 }
 
 .ot-form-input,
+.ot-form-select,
 .ot-form-textarea {
   width: 100%;
   padding: 0.6rem 0.75rem;
-  background: var(--inset);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--surface-input, var(--inset));
+  border: 1px solid var(--border-primary);
   border-radius: 6px;
-  color: #f0f6fc;
+  color: var(--text-primary);
   font-size: 0.825rem;
+}
+
+.ot-form-input::placeholder,
+.ot-form-textarea::placeholder {
+  /* Spec suggested --text-faint, but that fails the AA target this same task
+     sets for the MESSAGE placeholder in BOTH themes (#94a3b8 on #f3f4f6 /
+     #6b7280 on #0a0e13). --text-muted stays clearly secondary yet clears ~4.5:1. */
+  color: var(--text-muted);
+}
+
+/* <select> needs its own treatment — the native arrow does NOT inherit color,
+   so hide it and paint a themeable chevron. (Mid-grey reads on both the light
+   #f7faf9 and dark input fills; a chevron is an affordance, not body text.) */
+.ot-form-select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 2rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238b949e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.6rem center;
+  cursor: pointer;
+}
+
+/* The dropdown list itself: some browsers (Safari) won't inherit — set both. */
+.ot-form-select option {
+  background: var(--surface-card);
+  color: var(--text-primary);
 }
 
 .ot-form-textarea {
@@ -317,9 +345,10 @@
 }
 
 .ot-form-input:focus,
+.ot-form-select:focus,
 .ot-form-textarea:focus {
   outline: none;
-  border-color: rgba(99, 102, 241, 0.5);
+  border-color: var(--border-focus);
 }
 
 .ot-attachment-list {
@@ -355,7 +384,7 @@
 .ot-attachment-label {
   flex: 1;
   font-size: 0.75rem;
-  color: #d1d5db;
+  color: var(--text-body);
 }
 
 .ot-attachment-kind-pill {
@@ -374,7 +403,7 @@
   gap: 0.5rem;
   margin-top: 1.25rem;
   padding-top: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid var(--border-secondary);
 }
 
 .ot-btn-primary {
@@ -396,9 +425,9 @@
 .ot-btn-secondary {
   padding: 0.6rem 1.25rem;
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid var(--border-input);
   border-radius: 6px;
-  color: #c9d1d9;
+  color: var(--text-secondary);
   cursor: pointer;
 }
 
@@ -423,7 +452,7 @@
   border-color: rgba(99, 102, 241, 0.3);
 }
 .ot-inbox-item.unread {
-  border-left: 3px solid #6366f1;
+  border-left: 3px solid var(--indigo);
 }
 
 .ot-inbox-item-flag {
@@ -433,10 +462,10 @@
   flex-shrink: 0;
 }
 .ot-inbox-item-flag.green {
-  background: #10b981;
+  background: var(--emerald);
 }
 .ot-inbox-item-flag.red {
-  background: #ef4444;
+  background: var(--negative);
 }
 
 .ot-inbox-item-body {
@@ -446,20 +475,20 @@
 
 .ot-inbox-item-meta {
   font-size: 0.65rem;
-  color: #8b949e;
+  color: var(--text-muted);
   margin-bottom: 0.2rem;
 }
 
 .ot-inbox-item-subject {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #f0f6fc;
+  color: var(--text-primary);
   margin: 0 0 0.25rem;
 }
 
 .ot-inbox-item-snippet {
   font-size: 0.75rem;
-  color: #c9d1d9;
+  color: var(--text-secondary);
   margin: 0;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -470,7 +499,7 @@
 .ot-inbox-empty {
   padding: 3rem 1rem;
   text-align: center;
-  color: #8b949e;
+  color: var(--text-muted);
   font-size: 0.875rem;
 }
 
@@ -493,7 +522,7 @@
   flex-direction: column;
   gap: 0.75rem;
   padding: 1rem 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid var(--border-secondary);
 }
 
 .ot-flag-message {
@@ -505,13 +534,13 @@
 
 .ot-flag-message-author {
   font-size: 0.7rem;
-  color: #8b949e;
+  color: var(--text-muted);
   margin-bottom: 0.25rem;
 }
 
 .ot-flag-message-body {
   font-size: 0.8rem;
-  color: #d1d5db;
+  color: var(--text-body);
   margin: 0;
   white-space: pre-wrap;
 }
@@ -522,7 +551,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: var(--accent-emerald, #10b981);
+  background: var(--emerald);
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -1078,7 +1107,10 @@
 }
 
 .ot-dossier-rail {
-  background: var(--bg-primary);
+  /* One surface with the modal shell — distinguished by its border, not a
+     different fill (the modal shell is the only opaque layer; the rail rides
+     on it, transparent in dark / white in light like every other card). */
+  background: var(--surface-card);
   border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.08));
   border-radius: 10px;
   padding: 1rem;
