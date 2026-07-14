@@ -17,9 +17,10 @@ export const runtime = 'nodejs';
 export const GET = withApiGuard(
   async (request, user, context) => {
     const params = context?.params ?? {};
-    const { supabase, viewer, orgId } = await getPitchContext();
+    const { supabase, viewer, member, orgId } = await getPitchContext();
     if (!orgId || !viewer)
       return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
+    const actor = { ...viewer, tier: member?.tier || null };
 
     const pitch = await fetchPitchRaw(supabase, orgId, params.pitchId);
     if (!pitch) return NextResponse.json({ error: 'Pitch not found' }, { status: 404 });
@@ -27,7 +28,9 @@ export const GET = withApiGuard(
     const cfg = STAGE_CONFIG[pitch.stage];
     const ctx = await buildGateContext(supabase, orgId, pitch);
     const gates = evaluateGates(pitch.stage, pitch, ctx);
-    const passedCount = gates.filter((g) => g.status === 'pass').length;
+    // canAdvance = every HARD gate passes; soft gates warn but never block.
+    const hardFail = gates.filter((x) => x.severity === 'hard' && x.status !== 'pass').length;
+    const passedCount = gates.filter((x) => x.status === 'pass').length;
 
     return NextResponse.json({
       stage: pitch.stage,
@@ -37,9 +40,10 @@ export const GET = withApiGuard(
       gates,
       passedCount,
       total: gates.length,
-      allPass: gates.length === 0 || passedCount === gates.length,
-      canAdvance: !!cfg && canAdvanceStage(pitch.stage, viewer.role),
-      canOverride: !!cfg && canOverrideStage(pitch.stage, viewer.role),
+      allPass: hardFail === 0,
+      hasWarnings: gates.some((x) => x.severity === 'soft' && x.status !== 'pass'),
+      canAdvance: !!cfg && canAdvanceStage(pitch.stage, actor),
+      canOverride: !!cfg && canOverrideStage(pitch.stage, actor),
     });
   },
   { requireAuth: true },

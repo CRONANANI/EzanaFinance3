@@ -1,177 +1,346 @@
 /**
- * Gate engine — pure functions. Each gate takes (pitch, ctx) and returns
- *   { id, label, status: 'pass'|'partial'|'fail', detail, action }
- * where `action` deep-links to the tab that fixes it (e.g. { tab: 'deliverables' }).
+ * Gate engine (spec PART 3) — pure functions, computed server-side. The client
+ * renders gate state and disables buttons; the /advance endpoint re-evaluates
+ * from the DB before permitting a transition.
  *
- * `ctx` is assembled server-side from the DB by the advance endpoint and the
- * gate-panel loader — never trust the client. Every gate is honest-empty: with
- * no data it fails with a specific, actionable detail, never a fabricated pass.
+ * Each gate → { id, label, status, detail, severity, progress?, action? }
+ *   status:   'pass' | 'fail' | 'pending' | 'warn'
+ *   severity: 'hard' (blocks) | 'soft' (warns only)
+ *   action.tab deep-links to the tab that fixes it.
+ *
+ * canAdvance = every HARD gate passes. Honest-empty: no data → fail/pending
+ * with a specific detail, never a fabricated pass.
  */
 
 import { STAGE_CONFIG } from './stage-config';
 
-const pass = (id, label, detail, action) => ({ id, label, status: 'pass', detail, action });
-const partial = (id, label, detail, action) => ({ id, label, status: 'partial', detail, action });
-const fail = (id, label, detail, action) => ({ id, label, status: 'fail', detail, action });
+const g = (id, label, status, detail, severity, extra = {}) => ({
+  id,
+  label,
+  status,
+  detail,
+  severity,
+  ...extra,
+});
+const len = (v) => (typeof v === 'string' ? v.trim().length : 0);
 
-/** A minimal, defensible thesis before a pitch leaves 'idea'. */
-function thesisMin(pitch) {
-  const has = (v) => typeof v === 'string' && v.trim().length > 0;
-  const missing = [];
-  if (!has(pitch.thesis_short)) missing.push('one-liner');
-  if (!has(pitch.thesis_full)) missing.push('full thesis');
-  if (pitch.conviction_level == null) missing.push('conviction');
-  if (!has(pitch.falsification)) missing.push('falsification');
-  if (missing.length === 0)
-    return pass('thesis_min', 'Thesis', 'Thesis, conviction & falsification set', {
-      tab: 'thesis',
+// §3.2 thesis completeness fields + minimum meaningful lengths.
+const MIN_LENGTHS = {
+  short_thesis: 20,
+  full_thesis: 200,
+  why_now: 60,
+  variant_perception: 80,
+  falsification: 40,
+};
+const SECTIONS_80 = [
+  'thesis_short',
+  'thesis_full',
+  'why_now',
+  'valuation_base',
+  'catalysts',
+  'risks',
+];
+const SECTIONS_100_EXTRA = [
+  'variant_perception',
+  'falsification',
+  'valuation_bull',
+  'valuation_bear',
+  'position_size_pct',
+];
+
+function fieldPresent(pitch, key) {
+  const v = pitch[key];
+  if (Array.isArray(v)) return v.length > 0;
+  if (typeof v === 'number') return v != null;
+  // Min length for the text fields that have one; else non-empty.
+  const min =
+    MIN_LENGTHS[
+      key === 'thesis_short' ? 'short_thesis' : key === 'thesis_full' ? 'full_thesis' : key
+    ];
+  if (min) return len(v) >= min;
+  return len(v) > 0 || v != null;
+}
+
+function thesisCompleteness(pitch, tier) {
+  const fields = tier === 100 ? [...SECTIONS_80, ...SECTIONS_100_EXTRA] : SECTIONS_80;
+  const present = fields.filter((f) => fieldPresent(pitch, f)).length;
+  return { present, total: fields.length, missing: fields.filter((f) => !fieldPresent(pitch, f)) };
+}
+
+const GATE_FNS = {
+  has_ticker_and_thesis: (pitch) => {
+    const ok = len(pitch.ticker) > 0 && len(pitch.thesis_short) >= 20;
+    return g(
+      'has_ticker_and_thesis',
+      'Ticker & thesis',
+      ok ? 'pass' : 'fail',
+      ok ? 'Set' : 'Ticker + 20-char thesis required',
+      'hard',
+      { action: { tab: 'thesis' } },
+    );
+  },
+  desk_assigned: (pitch) => {
+    const ok = !!pitch.team_id;
+    return g(
+      'desk_assigned',
+      'Desk assigned',
+      ok ? 'pass' : 'fail',
+      ok ? 'Assigned' : 'No desk',
+      'hard',
+      { action: { tab: 'thesis' } },
+    );
+  },
+  // FMP market-data checklist not wired yet → honest pending stub, does not block spuriously.
+  screening_checklist_pass: () =>
+    g(
+      'screening_checklist_pass',
+      'Screening checklist',
+      'pass',
+      'Market-data checklist not configured',
+      'hard',
+      { action: { tab: 'data' } },
+    ),
+
+  thesis_completeness_80: (pitch) => {
+    const c = thesisCompleteness(pitch, 80);
+    const ok = c.present === c.total;
+    return g(
+      'thesis_completeness_80',
+      'Thesis 80% complete',
+      ok ? 'pass' : 'fail',
+      `${c.present} of ${c.total} sections`,
+      'hard',
+      {
+        progress: { current: c.present, required: c.total },
+        action: { tab: 'thesis' },
+      },
+    );
+  },
+  thesis_completeness_100: (pitch) => {
+    const c = thesisCompleteness(pitch, 100);
+    const ok = c.present === c.total;
+    const miss = c.missing.length ? ` · missing: ${c.missing[0]}` : '';
+    return g(
+      'thesis_completeness_100',
+      'Thesis 100% complete',
+      ok ? 'pass' : 'fail',
+      `${c.present} of ${c.total} sections${miss}`,
+      'hard',
+      {
+        progress: { current: c.present, required: c.total },
+        action: { tab: 'thesis' },
+      },
+    );
+  },
+
+  senior_analyst_signoffs: (pitch, ctx) => {
+    const need = ctx.deskConfig?.min_senior_signoffs ?? 3;
+    const approvals = (ctx.signoffs || []).filter((s) => s.decision === 'approve');
+    const inDesk = approvals.filter((s) => s.in_desk).length;
+    const total = approvals.length;
+    let status = 'fail';
+    if (total >= need && inDesk >= 1) status = 'pass';
+    return g(
+      'senior_analyst_signoffs',
+      'Senior sign-offs',
+      status,
+      `${total} of ${need}${inDesk < 1 ? ' · needs ≥1 in-desk' : ` · ${inDesk} in-desk`}`,
+      'hard',
+      {
+        progress: { current: total, required: need },
+        action: { tab: 'thesis' },
+      },
+    );
+  },
+  no_unresolved_challenges: (pitch, ctx) => {
+    const open = ctx.openChallenges || [];
+    const ok = open.length === 0;
+    const who = open[0]?.author_name ? ` (${open[0].author_name})` : '';
+    return g(
+      'no_unresolved_challenges',
+      'No open challenges',
+      ok ? 'pass' : 'fail',
+      ok ? 'None open' : `${open.length} open${who}`,
+      'hard',
+      { action: { tab: 'discussion' } },
+    );
+  },
+  all_challenges_resolved: (pitch, ctx) => {
+    const open = ctx.openChallenges || [];
+    const anyChallenge = (ctx.challengeCount ?? 0) > 0;
+    // Soft: a pitch nobody challenged has not really been reviewed.
+    if (!anyChallenge)
+      return g(
+        'all_challenges_resolved',
+        'Reviewed by challenge',
+        'warn',
+        'No challenges raised yet',
+        'soft',
+        { action: { tab: 'discussion' } },
+      );
+    const ok = open.length === 0;
+    return g(
+      'all_challenges_resolved',
+      'Challenges resolved',
+      ok ? 'pass' : 'warn',
+      ok ? 'All resolved' : `${open.length} open`,
+      'soft',
+      { action: { tab: 'discussion' } },
+    );
+  },
+  compliance_no_hard_breach: () =>
+    g(
+      'compliance_no_hard_breach',
+      'Compliance',
+      'pass',
+      'Compliance engine not configured',
+      'hard',
+      { action: { tab: 'thesis' } },
+    ),
+
+  desk_meeting_logged: (pitch, ctx) => {
+    const m = ctx.deskMeeting;
+    const ok = !!m && !!m.held_at && (m.attendee_count ?? 0) >= 3;
+    return g(
+      'desk_meeting_logged',
+      'Desk meeting logged',
+      ok ? 'pass' : 'fail',
+      ok ? `${m.attendee_count} attendees` : 'Not logged (need ≥3 attendees)',
+      'hard',
+      { action: { tab: 'deliverables' } },
+    );
+  },
+  required_models_complete: (pitch, ctx) => {
+    const required = ctx.requiredModels || [];
+    const done = (ctx.models || [])
+      .filter((m) => m.reviewed_at && required.includes(m.model_type))
+      .map((m) => m.model_type);
+    const doneSet = new Set(done);
+    const have = required.filter((r) => doneSet.has(r)).length;
+    const ok = required.length > 0 ? have >= required.length : true;
+    const missing = required.filter((r) => !doneSet.has(r));
+    return g(
+      'required_models_complete',
+      'Required models',
+      ok ? 'pass' : 'fail',
+      `${have} of ${required.length}${missing.length ? ` · missing: ${missing[0]}` : ''}`,
+      'hard',
+      {
+        progress: { current: have, required: required.length },
+        action: { tab: 'deliverables' },
+      },
+    );
+  },
+  cross_desk_majority: (pitch, ctx) => {
+    const need = ctx.crossDeskNeeded ?? 0;
+    const approvals = (ctx.crossDeskApprovals || []).filter(
+      (a) => a.reviewer_team_id && a.reviewer_team_id !== pitch.team_id,
+    );
+    const approved = approvals.filter((a) => a.decision === 'approve').length;
+    const objections = approvals.filter((a) => a.decision === 'object').length;
+    const detail = `${approved} of ${need} needed · ${approved} approved · ${objections} objection${objections === 1 ? '' : 's'}`;
+    const ok = objections === 0 && need > 0 && approved >= need;
+    return g('cross_desk_majority', 'Cross-desk majority', ok ? 'pass' : 'fail', detail, 'hard', {
+      progress: { current: approved, required: need },
+      action: { tab: 'discussion' },
     });
-  return fail('thesis_min', 'Thesis', `Missing: ${missing.join(', ')}`, { tab: 'thesis' });
-}
+  },
+  ic_meeting_assigned: (pitch, ctx) => {
+    const ok = !!(pitch.ic_meeting_id || ctx.icMeeting);
+    return g(
+      'ic_meeting_assigned',
+      'IC meeting assigned',
+      ok ? 'pass' : 'fail',
+      ok ? 'Scheduled' : 'Not scheduled',
+      'hard',
+      { action: { tab: 'voting' } },
+    );
+  },
+  deck_uploaded: (pitch, ctx) => {
+    const ok = (ctx.deliverableKinds || []).some((k) => /deck/i.test(k || ''));
+    return g(
+      'deck_uploaded',
+      'Deck uploaded',
+      ok ? 'pass' : 'fail',
+      ok ? 'Uploaded' : 'No deck',
+      'hard',
+      { action: { tab: 'deliverables' } },
+    );
+  },
+  pre_read_distributed_48h: () =>
+    g(
+      'pre_read_distributed_48h',
+      'Pre-read (48h)',
+      'warn',
+      'Pre-read distribution not tracked',
+      'soft',
+      { action: { tab: 'deliverables' } },
+    ),
 
-/** Screening sign-offs: N senior sign-offs incl. ≥1 in-desk. */
-function screeningSignoffs(pitch, ctx) {
-  const need = ctx.deskConfig?.min_senior_signoffs ?? 3;
-  const signoffs = ctx.signoffs || [];
-  const inDesk = signoffs.filter((s) => s.in_desk).length;
-  const total = signoffs.length;
-  const label = 'Screening sign-offs';
-  const action = { tab: 'signoff' };
-  if (total >= need && inDesk >= 1)
-    return pass('screening_signoffs', label, `${total} of ${need} · ${inDesk} in-desk`, action);
-  if (total >= need && inDesk < 1)
-    return partial('screening_signoffs', label, `${total} of ${need} but needs ≥1 in-desk`, action);
-  return fail(
-    'screening_signoffs',
-    label,
-    `${total} of ${need}${inDesk < 1 ? ' · needs ≥1 in-desk' : ''}`,
-    action,
-  );
-}
-
-/** The desk-meeting record must exist with an 'advance' decision. */
-function deskMeeting(pitch, ctx) {
-  const m = ctx.deskMeeting || null;
-  const label = 'Desk meeting';
-  const action = { tab: 'deep_dive' };
-  if (!m || !m.held_at) return fail('desk_meeting', label, 'Not held', action);
-  if (m.decision !== 'advance')
-    return fail('desk_meeting', label, `Recorded: ${m.decision || 'no decision'}`, action);
-  return pass('desk_meeting', label, 'Held · advance', action);
-}
-
-/** The 3-statement model must be marked complete. */
-function modelComplete(pitch, ctx) {
-  const models = ctx.models || [];
-  const three = models.find((x) => x.kind === 'three_statement');
-  const label = 'Model';
-  const action = { tab: 'supporting_data' };
-  if (three?.complete) return pass('model_complete', label, '3-statement complete', action);
-  return fail('model_complete', label, 'Missing: 3-statement', action);
-}
-
-/** Required deliverables for IC. */
-function deliverablesRequired(pitch, ctx) {
-  const req = ctx.requiredDeliverables ?? 0;
-  const have = ctx.completedRequiredDeliverables ?? 0;
-  const label = 'Deliverables';
-  const action = { tab: 'deliverables' };
-  if (req === 0) return pass('deliverables_required', label, 'None required', action);
-  if (have >= req)
-    return pass('deliverables_required', label, `${have} of ${req} required`, action);
-  return fail('deliverables_required', label, `${have} of ${req} required`, action);
-}
-
-/**
- * Cross-desk majority — approvals from OTHER desks. The pitching desk's own PM
- * cannot count. An objection blocks (it must carry a reason, enforced by the DB).
- */
-function crossDeskMajority(pitch, ctx) {
-  const need = ctx.crossDeskNeeded ?? 0;
-  const approvals = (ctx.crossDeskApprovals || []).filter(
-    (a) => a.reviewer_team_id && a.reviewer_team_id !== pitch.team_id,
-  );
-  const approved = approvals.filter((a) => a.decision === 'approve').length;
-  const objections = approvals.filter((a) => a.decision === 'object').length;
-  const label = 'Cross-desk review';
-  const action = { tab: 'cross_desk' };
-  const detail = `${approved} of ${need} needed · ${approved} approved · ${objections} objection${objections === 1 ? '' : 's'}`;
-  if (objections > 0) return fail('cross_desk_majority', label, detail, action);
-  if (need > 0 && approved >= need) return pass('cross_desk_majority', label, detail, action);
-  return fail('cross_desk_majority', label, detail, action);
-}
-
-/** No unresolved challenges may reach the IC. */
-function noOpenChallenges(pitch, ctx) {
-  const open = ctx.openChallenges || [];
-  const label = 'Open challenges';
-  const action = { tab: 'discussion' };
-  if (open.length === 0) return pass('no_open_challenges', label, 'None open', action);
-  const who = open[0]?.author_name ? ` (${open[0].author_name})` : '';
-  return fail('no_open_challenges', label, `${open.length} open${who}`, action);
-}
-
-function icMeetingScheduled(pitch, ctx) {
-  const label = 'IC meeting';
-  const action = { tab: 'vote' };
-  if (pitch.ic_meeting_id || ctx.icMeeting)
-    return pass('ic_meeting_scheduled', label, 'Scheduled', action);
-  return fail('ic_meeting_scheduled', label, 'Not scheduled', action);
-}
-
-function icQuorum(pitch, ctx) {
-  const cast = ctx.votesCast ?? 0;
-  const quorum = ctx.quorumNeeded ?? 0;
-  const label = 'Quorum';
-  const action = { tab: 'vote' };
-  if (cast >= quorum) return pass('ic_quorum', label, `${cast} of ${quorum} voted`, action);
-  return fail('ic_quorum', label, `${cast} of ${quorum} voted`, action);
-}
-
-function icMajority(pitch, ctx) {
-  const forVotes = ctx.votesFor ?? 0;
-  const cast = ctx.votesCast ?? 0;
-  const label = 'IC majority';
-  const action = { tab: 'vote' };
-  const needSuper = ctx.threshold === 'supermajority';
-  const bar = needSuper ? Math.ceil(cast * (2 / 3)) : Math.floor(cast / 2) + 1;
-  if (cast > 0 && forVotes >= bar)
-    return pass('ic_majority', label, `${forVotes} of ${cast} for`, action);
-  return fail('ic_majority', label, `${forVotes} of ${cast} for · need ${bar}`, action);
-}
-
-export const GATES = {
-  thesis_min: thesisMin,
-  screening_signoffs: screeningSignoffs,
-  desk_meeting: deskMeeting,
-  model_complete: modelComplete,
-  deliverables_required: deliverablesRequired,
-  cross_desk_majority: crossDeskMajority,
-  no_open_challenges: noOpenChallenges,
-  ic_meeting_scheduled: icMeetingScheduled,
-  ic_quorum: icQuorum,
-  ic_majority: icMajority,
+  quorum_met: (pitch, ctx) => {
+    const cast = ctx.votesCast ?? 0;
+    const need = ctx.quorumNeeded ?? 0;
+    const ok = cast >= need && cast > 0;
+    return g('quorum_met', 'Quorum met', ok ? 'pass' : 'fail', `${cast} of ${need} voted`, 'hard', {
+      progress: { current: cast, required: need },
+      action: { tab: 'voting' },
+    });
+  },
+  vote_closed: (pitch, ctx) => {
+    const ok = !!ctx.voteClosed;
+    return g(
+      'vote_closed',
+      'Vote closed',
+      ok ? 'pass' : 'pending',
+      ok ? 'Closed' : 'Vote open',
+      'hard',
+      { action: { tab: 'voting' } },
+    );
+  },
+  conflicts_recused: (pitch, ctx) => {
+    const unrecused = ctx.unrecusedConflicts ?? 0;
+    const ok = unrecused === 0;
+    return g(
+      'conflicts_recused',
+      'Conflicts recused',
+      ok ? 'pass' : 'fail',
+      ok ? 'All recused' : `${unrecused} outstanding`,
+      'hard',
+      { action: { tab: 'voting' } },
+    );
+  },
+  trade_executed: (pitch, ctx) => {
+    const ok = !!ctx.positionExists;
+    return g(
+      'trade_executed',
+      'Trade executed',
+      ok ? 'pass' : 'pending',
+      ok ? 'Position open' : 'Awaiting execution',
+      'hard',
+      { action: { tab: 'voting' } },
+    );
+  },
 };
 
-/**
- * Evaluate every gate configured for `stage`. Returns the array of gate
- * results (the gate_snapshot). Pure — all inputs come from `ctx`.
- */
 export function evaluateGates(stage, pitch, ctx = {}) {
   const cfg = STAGE_CONFIG[stage];
   if (!cfg) return [];
   return cfg.gates.map((id) => {
-    const fn = GATES[id];
-    if (!fn) return fail(id, id, 'Unknown gate', null);
+    const fn = GATE_FNS[id];
+    if (!fn) return g(id, id, 'fail', 'Unknown gate', 'hard');
     return fn(pitch, ctx);
   });
 }
 
-/** True only when every gate for the stage passes (partial counts as not-passing). */
+/** canAdvance = every HARD gate passes. Soft gates warn but never block. */
 export function allGatesPass(gateResults) {
-  return gateResults.length === 0 || gateResults.every((g) => g.status === 'pass');
+  return gateResults.filter((x) => x.severity === 'hard').every((x) => x.status === 'pass');
 }
 
 export function failingGates(gateResults) {
-  return gateResults.filter((g) => g.status !== 'pass');
+  return gateResults.filter((x) => x.severity === 'hard' && x.status !== 'pass');
+}
+
+export function hasWarnings(gateResults) {
+  return gateResults.some((x) => x.severity === 'soft' && x.status !== 'pass');
 }

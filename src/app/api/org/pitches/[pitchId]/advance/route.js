@@ -19,9 +19,11 @@ const OVERRIDE_MIN_CHARS = 20;
 export const POST = withApiGuard(
   async (request, user, context) => {
     const params = context?.params ?? {};
-    const { supabase, viewer, orgId } = await getPitchContext();
+    const { supabase, viewer, member, orgId } = await getPitchContext();
     if (!orgId || !viewer)
       return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
+    // Authorization keys off the fine-grained tier, not just the coarse role.
+    const actor = { ...viewer, tier: member?.tier || null };
 
     const pitch = await fetchPitchRaw(supabase, orgId, params.pitchId);
     if (!pitch) return NextResponse.json({ error: 'Pitch not found' }, { status: 404 });
@@ -37,7 +39,7 @@ export const POST = withApiGuard(
 
     // Reject is a terminal side-exit, not a forward advance.
     if (body.reject) {
-      if (!canAdvanceStage(fromStage, viewer.role)) {
+      if (!canAdvanceStage(fromStage, actor)) {
         return NextResponse.json({ error: 'Your role cannot move this pitch.' }, { status: 403 });
       }
       await supabase.from('org_pitch_stage_transition').insert({
@@ -66,7 +68,7 @@ export const POST = withApiGuard(
     }
 
     // Role gate — enforced regardless of what the client posts.
-    if (!canAdvanceStage(fromStage, viewer.role)) {
+    if (!canAdvanceStage(fromStage, actor)) {
       return NextResponse.json({ error: 'Your role cannot advance this pitch.' }, { status: 403 });
     }
 
@@ -86,7 +88,7 @@ export const POST = withApiGuard(
         );
       }
       // ic_vote is NEVER overridable — overrideRoles is []. This blocks the CIO too.
-      if (!canOverrideStage(fromStage, viewer.role)) {
+      if (!canOverrideStage(fromStage, actor)) {
         return NextResponse.json({ error: 'This stage cannot be overridden.' }, { status: 403 });
       }
       if (reason.length < OVERRIDE_MIN_CHARS) {
