@@ -189,7 +189,7 @@ body.light-mode .beta-lock-meta strong {
   color: #c9d1d9;
 }
 .beta-lock-btn--secondary:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--surface-card-hover);
 }
 body.light-mode .beta-lock-btn--secondary {
   color: #475569;

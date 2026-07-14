@@ -44,7 +44,7 @@
   max-height: 85vh;
   display: flex;
   flex-direction: column;
-  background: var(--bg-secondary, #0d1117);
+  background: var(--bg-secondary);
   color: var(--text-primary, #f0f6fc);
   border: 1px solid var(--border-primary, rgba(16, 185, 129, 0.12));
   border-radius: 14px;
@@ -243,7 +243,7 @@ body.light-mode .nwd-dialog {
 .nwd-color.on {
   border-color: var(--text-primary, #f0f6fc);
   transform: scale(1.1);
-  box-shadow: 0 0 0 2px var(--bg-secondary, #0d1117);
+  box-shadow: 0 0 0 2px var(--bg-secondary);
 }
 
 body.light-mode .nwd-color.on {

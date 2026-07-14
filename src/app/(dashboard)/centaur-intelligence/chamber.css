@@ -70,7 +70,7 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: rgba(148, 163, 184, 0.25);
+  background: var(--bg-tertiary);
 }
 
 .cc-quorum-dot.is-lit {
@@ -273,7 +273,7 @@
 }
 
 .cc-modal-btn--ghost {
-  background: rgba(148, 163, 184, 0.08);
+  background: var(--bg-tertiary);
   border-color: rgba(148, 163, 184, 0.2);
   color: #e2e8f0;
 }

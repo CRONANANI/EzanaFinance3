@@ -2,7 +2,7 @@
    Profile ELO Card — appears in profile aside above performance panel
    ════════════════════════════════════════════════════════════ */
 .pec-card {
-  background: var(--bg-secondary, #0d1117);
+  background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
   border-radius: 14px;
   padding: 1.25rem;
@@ -24,7 +24,7 @@
 
 .pec-skeleton-tier,
 .pec-skeleton-rating {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--bg-tertiary);
   border-radius: 8px;
   animation: pec-pulse 1.6s ease-in-out infinite;
 }
@@ -142,7 +142,7 @@
 
 .pec-progress-bar {
   height: 6px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-tertiary);
   border-radius: 999px;
   overflow: hidden;
 }
@@ -184,14 +184,14 @@
   justify-content: center;
   font-size: 0.75rem;
   color: var(--text-muted, #8b949e);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--bg-tertiary);
   border-radius: 8px;
   text-align: center;
   padding: 0 1rem;
 }
 
 .pec-spark-tooltip {
-  background: var(--bg-secondary, #0d1117);
+  background: var(--bg-secondary);
   border: 1px solid rgba(16, 185, 129, 0.3);
   border-radius: 6px;
   padding: 0.4rem 0.6rem;
@@ -259,7 +259,7 @@
 
 .pec-breakdown-bar {
   height: 5px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--bg-tertiary);
   border-radius: 999px;
   overflow: hidden;
 }
@@ -300,7 +300,7 @@
   gap: 0.65rem;
   align-items: flex-start;
   padding: 0.5rem 0.65rem;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--bg-tertiary);
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.04);
   transition: all 150ms ease;
@@ -321,7 +321,7 @@
   justify-content: center;
   border: 1px solid;
   font-size: 0.875rem;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--bg-tertiary);
 }
 
 .pec-improvement-body {

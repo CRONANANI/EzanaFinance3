@@ -55,7 +55,7 @@
   font-size: 0.875rem;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-input);
   color: var(--text-primary, #f0f6fc);
   font-family: inherit;
 }
@@ -78,7 +78,7 @@
   text-align: center;
   color: var(--text-muted, #8b949e);
   font-size: 0.875rem;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-card);
   border-radius: 10px;
 }
 
@@ -97,7 +97,7 @@
   align-items: center;
   gap: 1rem;
   padding: 0.75rem 1rem;
-  background: var(--bg-secondary, #0d1117);
+  background: var(--bg-secondary);
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 10px;
   transition: border-color 150ms ease;
@@ -131,7 +131,9 @@
 }
 
 .pmp-avatar--partner {
-  box-shadow: 0 0 0 2px #d4af37, 0 0 8px rgba(212, 175, 55, 0.3);
+  box-shadow:
+    0 0 0 2px #d4af37,
+    0 0 8px rgba(212, 175, 55, 0.3);
 }
 
 .pmp-user-text {

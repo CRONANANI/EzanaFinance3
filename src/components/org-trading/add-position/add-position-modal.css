@@ -15,7 +15,7 @@
 }
 
 .apm-org-card {
-  background: var(--bg-secondary, #0d1117);
+  background: var(--bg-secondary);
   border: 1px solid var(--border-color, rgba(99, 102, 241, 0.25));
   border-radius: 12px;
   width: min(640px, 100%);
@@ -86,7 +86,9 @@
   padding: 18px 14px;
   text-align: center;
   cursor: pointer;
-  transition: border-color 120ms, transform 120ms;
+  transition:
+    border-color 120ms,
+    transform 120ms;
   font-family: inherit;
   color: var(--text-primary, #f0f6fc);
 }

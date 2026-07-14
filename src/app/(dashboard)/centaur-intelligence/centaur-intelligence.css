@@ -107,7 +107,9 @@ body.light-mode .ci-page .er-card-body {
     rgba(10, 14, 19, 0.97) 100%
   ) !important;
   border: 1px solid rgba(212, 175, 55, 0.45) !important;
-  box-shadow: 0 0 32px rgba(212, 175, 55, 0.08), inset 0 1px 0 rgba(212, 175, 55, 0.2);
+  box-shadow:
+    0 0 32px rgba(212, 175, 55, 0.08),
+    inset 0 1px 0 rgba(212, 175, 55, 0.2);
 }
 
 .ci-page .er-hero.ci-hero-centered h1 {
@@ -336,7 +338,7 @@ body.light-mode .ci-dalio-name {
 .chat-bubble-assistant {
   align-self: flex-start;
   background: rgba(212, 175, 55, 0.08);
-  border-left: 3px solid #D4AF37;
+  border-left: 3px solid #d4af37;
   padding: 0.75rem 1rem;
   border-radius: 8px;
 }
@@ -438,7 +440,9 @@ button:active:not(:disabled) {
   background: linear-gradient(165deg, #0d0f14 0%, #0a0c10 100%);
   border: 1px solid rgba(212, 175, 55, 0.45);
   border-radius: 14px;
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(212, 175, 55, 0.08) inset;
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.65),
+    0 0 0 1px rgba(212, 175, 55, 0.08) inset;
 }
 
 .sentinel-modal-header {
@@ -476,7 +480,7 @@ button:active:not(:disabled) {
 
 .sentinel-modal-close {
   flex-shrink: 0;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--bg-tertiary);
   border: 1px solid rgba(212, 175, 55, 0.25);
   color: #d1d5db;
   width: 36px;
@@ -670,4 +674,3 @@ button:active:not(:disabled) {
   margin-top: 0.75rem;
   border-top: 1px solid rgba(212, 175, 55, 0.1);
 }
-

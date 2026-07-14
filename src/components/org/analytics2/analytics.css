@@ -159,7 +159,7 @@
 }
 .an4-state--neutral,
 .an4-state--inline {
-  background: rgba(148, 163, 184, 0.16);
+  background: var(--bg-tertiary);
   color: var(--text-muted);
 }
 

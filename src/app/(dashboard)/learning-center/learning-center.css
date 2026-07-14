@@ -1026,7 +1026,7 @@ body:not(.light-mode) .lc-dq-bonus {
 }
 
 body:not(.light-mode) .lc-dq-bonus-icon {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--bg-tertiary);
 }
 
 /* ── Track Towers ──────────────────────────────────────────────── */
@@ -1051,7 +1051,7 @@ body:not(.light-mode) .lc-tower[data-track-color] {
 }
 
 body:not(.light-mode) .lc-tower-tier {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--bg-tertiary);
 }
 
 body:not(.light-mode) .lc-tower-footer {
@@ -1073,7 +1073,7 @@ body:not(.light-mode) .lc-bookmarks {
 }
 
 body:not(.light-mode) .lc-hero-stat {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-card);
   border: 1px solid var(--border);
 }
 
@@ -1088,7 +1088,7 @@ body:not(.light-mode) .lc-btn-secondary {
 }
 
 body:not(.light-mode) .lc-btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--surface-card-hover);
   border-color: var(--border-strong);
 }
 

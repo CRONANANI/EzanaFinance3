@@ -719,7 +719,7 @@ a.db-icon-btn {
 
 .db-profits-bar-track {
   height: 8px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--bg-tertiary);
   border-radius: 999px;
   overflow: hidden;
   position: relative;
@@ -1490,10 +1490,10 @@ body.light-mode .db-hero-tf-pill.active {
   transition: background 0.12s ease;
 }
 .db-sector-item--clickable:hover {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-card-hover);
 }
 .db-sector-item--clickable.is-expanded {
-  background: rgba(255, 255, 255, 0.035);
+  background: var(--surface-card-hover);
 }
 
 .db-sector-drawer {

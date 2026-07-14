@@ -1,6 +1,6 @@
 .org-trading-page {
   min-height: 100vh;
-  background: var(--bg-primary, #0a0e13);
+  background: var(--bg-primary);
   color: #f0f6fc;
 }
 
@@ -1040,7 +1040,7 @@
 
 .ot-modal-dossier {
   max-width: 760px;
-  background: var(--surface-card, #0d1117);
+  background: var(--bg-secondary);
 }
 
 .ot-dossier-title {
@@ -1078,7 +1078,7 @@
 }
 
 .ot-dossier-rail {
-  background: var(--bg-primary, #0a0e13);
+  background: var(--bg-primary);
   border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.08));
   border-radius: 10px;
   padding: 1rem;

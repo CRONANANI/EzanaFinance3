@@ -1,7 +1,7 @@
 .ag-card {
   border-radius: 14px;
   border: 1px solid var(--border-primary, rgba(16, 185, 129, 0.12));
-  background: var(--bg-secondary, #0d1117);
+  background: var(--bg-secondary);
   padding: 1rem;
   font-family: var(--font-sans);
 }
@@ -244,7 +244,7 @@ body.light-mode .ag-card {
   width: 100%;
   max-width: 420px;
   border-radius: 16px;
-  background: var(--bg-secondary, #0d1117);
+  background: var(--bg-secondary);
   border: 1px solid var(--border-primary, rgba(16, 185, 129, 0.18));
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   padding: 1.25rem 1.25rem 1.375rem;

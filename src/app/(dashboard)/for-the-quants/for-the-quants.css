@@ -677,7 +677,7 @@ body.light-mode .ftq-pm-input {
 .ftq-vb-name {
   width: 100%;
   padding: 0.5rem 0.75rem;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--surface-input);
   border: 1px solid rgba(99, 102, 241, 0.2);
   border-radius: 6px;
   color: #f0f6fc;
@@ -717,7 +717,7 @@ body.light-mode .ftq-pm-input {
 
 .ftq-vb-select {
   padding: 0.3rem 0.5rem;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--surface-input);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 4px;
   color: #d1d5db;
@@ -746,7 +746,7 @@ body.light-mode .ftq-pm-input {
 .ftq-vb-input-sm {
   width: 60px;
   padding: 0.2rem 0.4rem;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--surface-input);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 4px;
   color: #f0f6fc;
@@ -960,7 +960,7 @@ body.light-mode .ftq-pm-input {
   display: flex;
   gap: 0.6rem;
   padding: 0.6rem;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--bg-tertiary);
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 8px;
   align-items: flex-start;
@@ -1126,7 +1126,7 @@ body.light-mode .ftq-pm-input {
   align-items: center;
   gap: 0.4rem;
   padding: 0.45rem 0.6rem;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--bg-tertiary);
   cursor: pointer;
   border: none;
   width: 100%;

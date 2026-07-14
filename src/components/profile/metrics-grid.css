@@ -18,7 +18,7 @@
   padding: 0.75rem;
   border-radius: 12px;
   border: 1px solid var(--border-primary, rgba(16, 185, 129, 0.12));
-  background: var(--bg-secondary, #0d1117);
+  background: var(--bg-secondary);
 }
 
 body.light-mode .mg-card {

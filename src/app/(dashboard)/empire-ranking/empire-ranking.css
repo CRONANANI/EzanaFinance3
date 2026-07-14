@@ -264,7 +264,7 @@ body.light-mode .er-pill-toggle--active {
 .er-analytics-bar-track {
   height: 6px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--bg-tertiary);
   overflow: hidden;
 }
 
@@ -491,7 +491,7 @@ body.light-mode .er-select {
 
 .er-big-cycle-legend__item:hover,
 .er-big-cycle-legend__item--hovered {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--surface-card-hover);
   color: var(--er-text-primary);
 }
 

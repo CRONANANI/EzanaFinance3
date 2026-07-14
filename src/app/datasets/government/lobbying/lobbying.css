@@ -407,7 +407,7 @@
 }
 .lbx-lb-track {
   height: 16px;
-  background: rgba(148, 163, 184, 0.12);
+  background: var(--bg-tertiary);
   border-radius: 5px;
   overflow: hidden;
 }

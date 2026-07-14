@@ -76,14 +76,14 @@
   height: 28px;
   border: none;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-tertiary);
   color: var(--text-muted, #8b949e);
   cursor: pointer;
   font-size: 0.75rem;
 }
 
 .pcl-admin-cancel:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--surface-card-hover);
   color: var(--text-primary, #f0f6fc);
 }
 
@@ -106,7 +106,7 @@
   font-size: 0.8125rem;
   border-radius: 6px;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-input);
   color: var(--text-primary, #f0f6fc);
   font-family: inherit;
 }
@@ -328,7 +328,7 @@ body.light-mode .pcl-empty {
   border-bottom: 1px solid rgba(16, 185, 129, 0.12);
   position: sticky;
   top: 0;
-  background: var(--bg-primary, #0a0e13);
+  background: var(--bg-primary);
   z-index: 1;
 }
 

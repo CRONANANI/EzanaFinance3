@@ -44,7 +44,7 @@
   font-size: 0.625rem;
   padding: 0.05rem 0.4rem;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--bg-tertiary);
   font-variant-numeric: tabular-nums;
 }
 
@@ -57,7 +57,7 @@
   text-align: center;
   color: var(--text-muted, #8b949e);
   font-size: 0.875rem;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-card);
   border-radius: 8px;
 }
 .kev-state-error {
@@ -74,7 +74,7 @@
 }
 
 .kev-row {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-card);
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 12px;
   padding: 0.85rem 1rem;
@@ -112,7 +112,7 @@
   align-items: center;
   justify-content: center;
   font-size: 1rem;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--bg-tertiary);
   color: var(--text-secondary, #e2e8f0);
 }
 
@@ -143,7 +143,7 @@
   letter-spacing: 0.06em;
   color: var(--text-muted, #8b949e);
   padding: 0.1rem 0.45rem;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--bg-tertiary);
   border-radius: 4px;
 }
 
@@ -249,7 +249,7 @@
 
 .kev-detail-rationales li {
   padding: 0.4rem 0.65rem;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--bg-tertiary);
   border-left: 2px solid rgba(16, 185, 129, 0.3);
   border-radius: 4px;
 }
@@ -268,7 +268,7 @@
 .kev-region-chip {
   padding: 0.2rem 0.55rem;
   font-size: 0.6875rem;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--bg-tertiary);
   color: var(--text-secondary, #e2e8f0);
   border-radius: 4px;
 }

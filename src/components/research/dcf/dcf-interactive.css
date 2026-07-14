@@ -715,7 +715,7 @@ body.dark-mode .dcf-delta-row-label,
 }
 body.dark-mode .dcf-delta-row-track,
 .dark .dcf-delta-row-track {
-  background: rgba(148, 163, 184, 0.12);
+  background: var(--surface-card);
 }
 
 .dcf-delta-row.primary .dcf-delta-row-track {
@@ -805,7 +805,7 @@ body.dark-mode .dcf-delta-row-track,
   justify-content: center;
   gap: 0.4rem;
   padding: 0.3rem 0.75rem;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--bg-tertiary);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 6px;
   color: var(--text-muted, #8b949e);
@@ -1277,7 +1277,7 @@ body:not(.light-mode) .dcf-close-btn {
 }
 
 body:not(.light-mode) .dcf-close-btn:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--surface-card-hover);
   color: #f0f6fc;
 }
 

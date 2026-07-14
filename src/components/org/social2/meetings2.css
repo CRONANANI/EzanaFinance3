@@ -186,7 +186,7 @@
   right: 0;
   border: 1px solid var(--border-primary);
   border-radius: 10px;
-  background: var(--surface-card, #fff);
+  background: var(--surface-card);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
   overflow: hidden;
 }
@@ -955,7 +955,7 @@
   width: 288px;
   border: 1px solid var(--border-primary);
   border-radius: 12px;
-  background: var(--surface-card, #fff);
+  background: var(--surface-card);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
   padding: 0.85rem 0.9rem;
 }
@@ -1043,7 +1043,7 @@
   max-width: 460px;
   border-radius: 16px;
   border: 1px solid var(--border-primary);
-  background: var(--surface-card, #fff);
+  background: var(--surface-card);
   padding: 1.3rem 1.4rem;
 }
 .mt2-modal__title {

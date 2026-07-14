@@ -124,7 +124,7 @@
   color: #818cf8;
 }
 .ac3-pill--assigned {
-  background: rgba(148, 163, 184, 0.16);
+  background: var(--bg-tertiary);
   border: 1px solid var(--border-secondary);
   color: var(--text-muted);
 }
@@ -258,7 +258,7 @@
 .ac3-modal {
   width: 100%;
   max-width: 520px;
-  background: var(--bg-secondary, #0d1218);
+  background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
   border-radius: 16px;
   padding: 1.5rem;

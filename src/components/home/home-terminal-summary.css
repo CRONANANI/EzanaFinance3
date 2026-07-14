@@ -594,7 +594,7 @@ body.light-mode .home-terminal-body {
   font-size: 0.5625rem;
   font-weight: 600;
   color: var(--home-muted-soft);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--bg-tertiary);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 999px;
   cursor: pointer;
@@ -1978,7 +1978,7 @@ body.light-mode .hts-events-warn {
   align-items: center;
   gap: 0.4rem;
   padding: 0.3rem 0.6rem;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--bg-tertiary);
   border: 1px solid rgba(16, 185, 129, 0.15);
   border-radius: 8px;
   font-size: 0.6875rem;
@@ -2024,7 +2024,7 @@ body.light-mode .hts-events-warn {
 }
 
 .hts-week-legend-item:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--surface-card-hover);
   border-color: rgba(255, 255, 255, 0.06);
 }
 
@@ -2136,7 +2136,7 @@ body.light-mode .hts-week-legend-item.is-off .hts-week-legend-label {
   flex-direction: column;
   gap: 0.85rem;
   /* --bg-secondary / --border-primary swap in theme-variables; old --card-bg / --card-border were never defined → always white fallback in dark mode. */
-  background: var(--bg-secondary, #0d1117);
+  background: var(--bg-secondary);
   border: 1px solid var(--border-primary, rgba(16, 185, 129, 0.08));
   border-radius: 12px;
 }

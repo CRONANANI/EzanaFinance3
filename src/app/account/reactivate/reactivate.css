@@ -4,7 +4,7 @@
   align-items: center;
   justify-content: center;
   padding: 2rem;
-  background: var(--app-bg, #0a0e13);
+  background: var(--app-bg);
 }
 
 .reactivate-card {

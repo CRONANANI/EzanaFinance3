@@ -246,7 +246,7 @@ body.light-mode .sdm-section-header h3 {
   border-radius: 8px;
   text-decoration: none;
   color: inherit;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--bg-tertiary);
   border: 1px solid rgba(255, 255, 255, 0.04);
   transition:
     background 150ms ease,
@@ -333,7 +333,7 @@ body.light-mode .sdm-performer-price {
   border-radius: 8px;
   text-decoration: none;
   color: inherit;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--bg-tertiary);
   border: 1px solid rgba(255, 255, 255, 0.04);
   transition:
     background 150ms ease,

@@ -13,7 +13,7 @@ body.light-mode .perf-axis-tick {
 }
 
 .perf-tooltip {
-  background: var(--bg-secondary, #0d1117);
+  background: var(--bg-secondary);
   border: 1px solid rgba(16, 185, 129, 0.3);
   border-radius: 6px;
   padding: 0.5rem 0.75rem;

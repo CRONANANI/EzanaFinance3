@@ -79,7 +79,7 @@
   padding: 0.45rem 0.75rem;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--surface-input);
   color: #f0f6fc;
   font-size: 0.78rem;
 }
@@ -233,7 +233,7 @@
 }
 
 .op-decision--deferred {
-  background: rgba(148, 163, 184, 0.15);
+  background: var(--bg-tertiary);
   color: #94a3b8;
 }
 
@@ -425,7 +425,7 @@
   padding: 0.5rem;
   border-radius: 6px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--surface-input);
   color: #f0f6fc;
   font-size: 0.8rem;
 }
@@ -537,7 +537,7 @@
   padding: 0.5rem;
   border-radius: 6px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--surface-input);
   color: #f0f6fc;
 }
 
@@ -588,7 +588,7 @@
 .op-vote-row {
   margin-bottom: 0.75rem;
   padding: 0.65rem;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--bg-tertiary);
   border-radius: 8px;
 }
 

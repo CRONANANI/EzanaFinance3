@@ -19,7 +19,10 @@
   background: var(--surface-input, rgba(16, 185, 129, 0.04));
   border: 1px solid var(--border-input, rgba(16, 185, 129, 0.12));
   border-radius: 12px;
-  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s,
+    background 0.15s;
 }
 
 .us-input-box.focus,
@@ -60,7 +63,9 @@
   background: transparent;
   color: var(--text-muted, #8b949e);
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 .us-clear:hover {
@@ -75,7 +80,7 @@
   left: 0;
   right: 0;
   z-index: 50;
-  background: var(--bg-secondary, #0d1117);
+  background: var(--bg-secondary);
   border: 1px solid var(--border-primary, rgba(16, 185, 129, 0.14));
   border-radius: 12px;
   box-shadow: var(--shadow-lg, 0 12px 40px rgba(0, 0, 0, 0.4));
@@ -92,8 +97,14 @@ body.light-mode .us-panel {
 }
 
 @keyframes usFade {
-  from { opacity: 0; transform: translateY(-4px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .us-state {
@@ -126,7 +137,9 @@ body.light-mode .us-panel {
 }
 
 @keyframes usSpin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .us-section-head {
@@ -274,7 +287,13 @@ body.light-mode .us-panel {
 }
 
 @media (max-width: 560px) {
-  .us-wrap { max-width: 100%; }
-  .us-handle { display: none; }
-  .us-row { padding: 0.5rem 0.6rem; }
+  .us-wrap {
+    max-width: 100%;
+  }
+  .us-handle {
+    display: none;
+  }
+  .us-row {
+    padding: 0.5rem 0.6rem;
+  }
 }

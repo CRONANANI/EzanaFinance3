@@ -1,5 +1,5 @@
 .ptn-section {
-  background: var(--bg-secondary, #0d1117);
+  background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
   border-radius: 14px;
   padding: 1.25rem;
@@ -56,7 +56,7 @@
 }
 
 .ptn-item {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--bg-tertiary);
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 10px;
   padding: 0.75rem 0.85rem;
@@ -83,7 +83,7 @@
   font-size: 0.625rem;
   color: var(--text-muted, #8b949e);
   padding: 0.1rem 0.4rem;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--bg-tertiary);
   border-radius: 4px;
 }
 
@@ -107,7 +107,7 @@
   justify-content: center;
 }
 .ptn-item-actions button:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--surface-card-hover);
   color: var(--text-primary, #f0f6fc);
 }
 .ptn-item-actions .ptn-danger:hover {
@@ -151,7 +151,7 @@
   text-transform: uppercase;
   border-radius: 5px;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-input);
   color: var(--text-primary, #f0f6fc);
   width: 100px;
   font-variant-numeric: tabular-nums;
@@ -175,7 +175,7 @@
   font-size: 0.8125rem;
   border-radius: 5px;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-input);
   color: var(--text-primary, #f0f6fc);
   font-family: inherit;
   resize: vertical;

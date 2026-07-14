@@ -167,10 +167,9 @@
 /* Fixed column widths so Price / 24h / Mkt cap (or Vol) line up under headers — avoid `auto` + mixed content widths */
 .am-page .am-table-head {
   display: grid;
-  grid-template-columns: minmax(0, 1.45fr) minmax(4.75rem, 1fr) minmax(3.5rem, 0.75fr) minmax(
-      4.25rem,
-      1.05fr
-    ) 72px;
+  grid-template-columns:
+    minmax(0, 1.45fr) minmax(4.75rem, 1fr) minmax(3.5rem, 0.75fr) minmax(4.25rem, 1.05fr)
+    72px;
   gap: 0.5rem;
   align-items: center;
   padding: 0.5rem 0.75rem;
@@ -185,10 +184,9 @@
 
 .am-page .am-table-row {
   display: grid;
-  grid-template-columns: minmax(0, 1.45fr) minmax(4.75rem, 1fr) minmax(3.5rem, 0.75fr) minmax(
-      4.25rem,
-      1.05fr
-    ) 72px;
+  grid-template-columns:
+    minmax(0, 1.45fr) minmax(4.75rem, 1fr) minmax(3.5rem, 0.75fr) minmax(4.25rem, 1.05fr)
+    72px;
   gap: 0.5rem;
   align-items: center;
   padding: 0.45rem 0.75rem;
@@ -476,7 +474,7 @@
   flex: 1;
   height: 8px;
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--bg-tertiary);
   overflow: hidden;
 }
 

@@ -9,7 +9,7 @@
   width: 380px;
   max-height: 78vh;
   transform: translateY(-50%) translateX(20px);
-  background: var(--bg-secondary, #0d1117);
+  background: var(--bg-secondary);
   border: 1px solid rgba(16, 185, 129, 0.2);
   border-radius: 16px;
   padding: 1.25rem 1.25rem 1rem;
@@ -45,7 +45,7 @@ body.light-mode .lc-ticker-popup {
   height: 28px;
   border: none;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-tertiary);
   color: var(--text-muted);
   cursor: pointer;
   display: flex;
@@ -55,7 +55,7 @@ body.light-mode .lc-ticker-popup {
   transition: all 150ms ease;
 }
 .lc-ticker-popup-close:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--surface-card-hover);
   color: var(--text-primary);
 }
 
@@ -130,7 +130,7 @@ body.light-mode .lc-ticker-popup {
 }
 
 .lc-ticker-popup-meta {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-card);
   border: 1px solid var(--border-primary);
   border-radius: 8px;
   padding: 0.65rem 0.8rem;

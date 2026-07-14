@@ -996,7 +996,7 @@ body.light-mode .onboarding-org-role-badge {
   background: var(--nav-bg-solid, #ffffff);
 }
 .iq-container--partner .iq-card {
-  background: var(--surface-card, #ffffff);
+  background: var(--surface-card);
   border-color: var(--border-primary, #e5e7eb);
   color: var(--text-primary, #111827);
 }

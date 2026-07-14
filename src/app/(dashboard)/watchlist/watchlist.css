@@ -1098,7 +1098,7 @@ body.light-mode .wl-side-search input {
      The previous `--card` token was never declared, so the dropdown was
      painting at 98% opacity in both themes — text was hard to read because
      content behind the panel bled through. Now fully opaque and theme-aware. */
-  background: var(--bg-secondary, #0d1117);
+  background: var(--bg-secondary);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
   overflow: hidden;
 }
@@ -1576,7 +1576,7 @@ body.light-mode .wl-chart-axis-tick {
 }
 
 .wl-chart-tooltip {
-  background: var(--bg-secondary, #0d1117);
+  background: var(--bg-secondary);
   border: 1px solid rgba(16, 185, 129, 0.3);
   border-radius: 6px;
   padding: 0.45rem 0.7rem;

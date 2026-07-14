@@ -7,7 +7,7 @@
 
 .pricing-page--standalone {
   min-height: 100vh;
-  background: var(--bg-primary, #ffffff);
+  background: var(--bg-primary);
   color: var(--text-primary, #0f172a);
   /* Match the rest of the app: Plus Jakarta Sans for text (was 'Inter'). */
   font-family: var(
@@ -83,7 +83,7 @@
   gap: 2px;
   padding: 4px;
   border-radius: 9999px;
-  background: var(--surface-card, #ffffff);
+  background: var(--surface-card);
   border: 1px solid var(--border-primary, rgba(0, 0, 0, 0.08));
   box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.06));
 }
@@ -162,7 +162,7 @@
   display: flex;
   flex-direction: column;
   padding: 1.75rem 1.5rem;
-  background: var(--surface-card, #ffffff);
+  background: var(--surface-card);
   border: 1px solid var(--border-primary, rgba(0, 0, 0, 0.08));
   border-radius: 18px;
   box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.06));
@@ -330,7 +330,7 @@
   margin-top: auto;
   border-radius: 10px;
   border: 1px solid var(--border-primary, rgba(0, 0, 0, 0.1));
-  background: var(--surface-card, #ffffff);
+  background: var(--surface-card);
   color: var(--text-primary, #0f172a);
   font-size: 0.8125rem;
   font-weight: 700;
@@ -446,7 +446,7 @@
 }
 
 .comparison-table-wrap {
-  background: var(--surface-card, #ffffff);
+  background: var(--surface-card);
   border: 1px solid var(--border-primary, rgba(0, 0, 0, 0.08));
   border-radius: 14px;
   box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.06));
@@ -653,8 +653,7 @@
   text-align: center;
   border-radius: 20px;
   background:
-    radial-gradient(ellipse at top, rgba(16, 185, 129, 0.08), transparent 60%),
-    var(--surface-card, #ffffff);
+    radial-gradient(ellipse at top, rgba(16, 185, 129, 0.08), transparent 60%), var(--surface-card);
   border: none; /* outline removed per handoff */
   box-shadow:
     0 20px 60px rgba(16, 185, 129, 0.1),
@@ -834,7 +833,7 @@
   padding: 0.6rem 0.85rem; /* was 0.85rem 0.95rem (Fix 2) */
   border: none; /* outline removed per handoff — layout preserved */
   border-radius: 12px;
-  background: var(--surface-card, #ffffff);
+  background: var(--surface-card);
 }
 .pricing-partner-rate-value {
   display: inline-flex;

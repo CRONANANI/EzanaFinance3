@@ -117,12 +117,15 @@
   font-size: 0.8125rem;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-input);
   color: var(--text-primary, #f0f6fc);
   cursor: pointer;
 }
 
-.bp-search { cursor: text; min-width: 220px; }
+.bp-search {
+  cursor: text;
+  min-width: 220px;
+}
 
 .bp-category-select:focus,
 .bp-search:focus {
@@ -149,7 +152,7 @@
   gap: 0.75rem;
   padding: 1rem 1.1rem;
   border-radius: 12px;
-  background: var(--bg-secondary, #0d1117);
+  background: var(--bg-secondary);
   border: 1px solid rgba(255, 255, 255, 0.04);
   text-align: left;
   cursor: pointer;
@@ -186,12 +189,36 @@
   border: 2px solid;
 }
 
-.bp-tile-icon.tier-bronze.on { background: rgba(205, 127, 50, 0.12); border-color: rgba(205, 127, 50, 0.4); color: #cd7f32; }
-.bp-tile-icon.tier-silver.on { background: rgba(192, 192, 192, 0.12); border-color: rgba(192, 192, 192, 0.4); color: #c0c0c0; }
-.bp-tile-icon.tier-gold.on { background: rgba(212, 168, 83, 0.14); border-color: rgba(212, 168, 83, 0.5); color: #d4a853; }
-.bp-tile-icon.tier-platinum.on { background: rgba(229, 228, 226, 0.12); border-color: rgba(229, 228, 226, 0.45); color: #e5e4e2; }
-.bp-tile-icon.tier-diamond.on { background: rgba(185, 242, 255, 0.14); border-color: rgba(185, 242, 255, 0.5); color: #b9f2ff; }
-.bp-tile-icon.off { background: rgba(107, 114, 128, 0.06); border-color: rgba(107, 114, 128, 0.2); color: #6b7280; }
+.bp-tile-icon.tier-bronze.on {
+  background: rgba(205, 127, 50, 0.12);
+  border-color: rgba(205, 127, 50, 0.4);
+  color: #cd7f32;
+}
+.bp-tile-icon.tier-silver.on {
+  background: rgba(192, 192, 192, 0.12);
+  border-color: rgba(192, 192, 192, 0.4);
+  color: #c0c0c0;
+}
+.bp-tile-icon.tier-gold.on {
+  background: rgba(212, 168, 83, 0.14);
+  border-color: rgba(212, 168, 83, 0.5);
+  color: #d4a853;
+}
+.bp-tile-icon.tier-platinum.on {
+  background: rgba(229, 228, 226, 0.12);
+  border-color: rgba(229, 228, 226, 0.45);
+  color: #e5e4e2;
+}
+.bp-tile-icon.tier-diamond.on {
+  background: rgba(185, 242, 255, 0.14);
+  border-color: rgba(185, 242, 255, 0.5);
+  color: #b9f2ff;
+}
+.bp-tile-icon.off {
+  background: rgba(107, 114, 128, 0.06);
+  border-color: rgba(107, 114, 128, 0.2);
+  color: #6b7280;
+}
 
 .bp-tile-body {
   flex: 1;
@@ -265,13 +292,17 @@
 }
 
 @keyframes bp-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .bp-modal {
   position: relative;
-  background: var(--bg-secondary, #0d1117);
+  background: var(--bg-secondary);
   border: 1px solid rgba(16, 185, 129, 0.2);
   border-radius: 16px;
   padding: 2rem 1.75rem 1.75rem;
@@ -282,8 +313,14 @@
 }
 
 @keyframes bp-modal-in {
-  from { opacity: 0; transform: scale(0.94); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .bp-modal-close {
@@ -319,12 +356,36 @@
   border: 2px solid;
 }
 
-.bp-modal-icon.tier-bronze.on { background: rgba(205, 127, 50, 0.15); border-color: rgba(205, 127, 50, 0.5); color: #cd7f32; }
-.bp-modal-icon.tier-silver.on { background: rgba(192, 192, 192, 0.15); border-color: rgba(192, 192, 192, 0.5); color: #c0c0c0; }
-.bp-modal-icon.tier-gold.on { background: rgba(212, 168, 83, 0.15); border-color: rgba(212, 168, 83, 0.5); color: #d4a853; }
-.bp-modal-icon.tier-platinum.on { background: rgba(229, 228, 226, 0.15); border-color: rgba(229, 228, 226, 0.5); color: #e5e4e2; }
-.bp-modal-icon.tier-diamond.on { background: rgba(185, 242, 255, 0.16); border-color: rgba(185, 242, 255, 0.55); color: #b9f2ff; }
-.bp-modal-icon.off { background: rgba(107, 114, 128, 0.08); border-color: rgba(107, 114, 128, 0.3); color: #6b7280; }
+.bp-modal-icon.tier-bronze.on {
+  background: rgba(205, 127, 50, 0.15);
+  border-color: rgba(205, 127, 50, 0.5);
+  color: #cd7f32;
+}
+.bp-modal-icon.tier-silver.on {
+  background: rgba(192, 192, 192, 0.15);
+  border-color: rgba(192, 192, 192, 0.5);
+  color: #c0c0c0;
+}
+.bp-modal-icon.tier-gold.on {
+  background: rgba(212, 168, 83, 0.15);
+  border-color: rgba(212, 168, 83, 0.5);
+  color: #d4a853;
+}
+.bp-modal-icon.tier-platinum.on {
+  background: rgba(229, 228, 226, 0.15);
+  border-color: rgba(229, 228, 226, 0.5);
+  color: #e5e4e2;
+}
+.bp-modal-icon.tier-diamond.on {
+  background: rgba(185, 242, 255, 0.16);
+  border-color: rgba(185, 242, 255, 0.55);
+  color: #b9f2ff;
+}
+.bp-modal-icon.off {
+  background: rgba(107, 114, 128, 0.08);
+  border-color: rgba(107, 114, 128, 0.3);
+  color: #6b7280;
+}
 
 .bp-modal-title {
   margin: 0 0 0.3rem;
@@ -352,7 +413,7 @@
 .bp-modal-crit {
   font-size: 0.75rem;
   color: var(--text-muted, #8b949e);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--bg-tertiary);
   border-radius: 8px;
   padding: 0.65rem 0.85rem;
   margin-bottom: 1rem;
@@ -380,19 +441,43 @@
 }
 
 .bp-modal-prog {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--bg-tertiary);
   color: var(--text-muted, #8b949e);
 }
 
 /* Light mode */
-body.light-mode .bp-title { color: #0f172a; }
-body.light-mode .bp-tile { background: #ffffff; border-color: rgba(0, 0, 0, 0.06); }
-body.light-mode .bp-tile-name { color: #0f172a; }
-body.light-mode .bp-modal { background: #ffffff; border-color: rgba(16, 185, 129, 0.3); }
-body.light-mode .bp-modal-title { color: #0f172a; }
-body.light-mode .bp-modal-desc { color: #1e293b; }
-body.light-mode .bp-progress-bar { background: rgba(0, 0, 0, 0.06); }
+body.light-mode .bp-title {
+  color: #0f172a;
+}
+body.light-mode .bp-tile {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.06);
+}
+body.light-mode .bp-tile-name {
+  color: #0f172a;
+}
+body.light-mode .bp-modal {
+  background: #ffffff;
+  border-color: rgba(16, 185, 129, 0.3);
+}
+body.light-mode .bp-modal-title {
+  color: #0f172a;
+}
+body.light-mode .bp-modal-desc {
+  color: #1e293b;
+}
+body.light-mode .bp-progress-bar {
+  background: rgba(0, 0, 0, 0.06);
+}
 body.light-mode .bp-search,
-body.light-mode .bp-category-select { background: #ffffff; border-color: rgba(0, 0, 0, 0.12); color: #0f172a; }
-body.light-mode .bp-tile-cat { color: #64748b; }
-body.light-mode .bp-tile-desc { color: #475569; }
+body.light-mode .bp-category-select {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.12);
+  color: #0f172a;
+}
+body.light-mode .bp-tile-cat {
+  color: #64748b;
+}
+body.light-mode .bp-tile-desc {
+  color: #475569;
+}

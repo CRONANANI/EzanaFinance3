@@ -10,7 +10,10 @@
   background: rgba(16, 185, 129, 0.08);
   color: #10b981;
   cursor: pointer;
-  transition: background 150ms ease, border-color 150ms ease, transform 100ms ease;
+  transition:
+    background 150ms ease,
+    border-color 150ms ease,
+    transform 100ms ease;
 }
 
 .profile-copy-btn:hover:not(:disabled) {
@@ -41,7 +44,7 @@
 
 .profile-copy-btn-cooldown {
   border-color: rgba(148, 163, 184, 0.3);
-  background: rgba(148, 163, 184, 0.08);
+  background: var(--bg-tertiary);
   color: #94a3b8;
 }
 

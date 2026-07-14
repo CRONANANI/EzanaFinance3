@@ -265,7 +265,7 @@
   padding: 0.8rem 0.85rem;
   border: 1px solid var(--border-primary);
   border-radius: 14px;
-  background: var(--surface-card, var(--bg-secondary, #0d1218));
+  background: var(--surface-card);
   box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.15));
   cursor: pointer;
   text-align: center;
@@ -312,7 +312,7 @@
   color: #3b82f6;
 }
 .oc2-pill--analyst {
-  background: rgba(148, 163, 184, 0.16);
+  background: var(--bg-tertiary);
   border: 1px solid rgba(148, 163, 184, 0.4);
   color: var(--text-muted, #94a3b8);
 }

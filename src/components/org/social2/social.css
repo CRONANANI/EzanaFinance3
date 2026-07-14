@@ -253,7 +253,7 @@
   padding: 0.3rem;
   border-radius: 10px;
   border: 1px solid var(--border-primary);
-  background: var(--bg-secondary, #0d1218);
+  background: var(--bg-secondary);
   box-shadow: var(--shadow-lg, 0 8px 24px rgba(0, 0, 0, 0.3));
 }
 .sc2-emoji-menu button {
@@ -283,7 +283,7 @@
 .sc2-modal {
   width: 100%;
   max-width: 560px;
-  background: var(--bg-secondary, #0d1218);
+  background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
   border-radius: 16px;
   padding: 1.5rem;
@@ -353,7 +353,7 @@
   overflow-y: auto;
   border: 1px solid var(--border-primary);
   border-radius: 10px;
-  background: var(--bg-secondary, #0d1218);
+  background: var(--bg-secondary);
   box-shadow: var(--shadow-lg, 0 8px 24px rgba(0, 0, 0, 0.3));
 }
 .sc2-mention-item {
@@ -585,7 +585,7 @@
   border: 1px solid var(--emerald-border, rgba(16, 185, 129, 0.4));
 }
 .sc2-status--scheduled {
-  background: rgba(148, 163, 184, 0.16);
+  background: var(--bg-tertiary);
   color: var(--text-muted);
   border: 1px solid var(--border-secondary);
 }

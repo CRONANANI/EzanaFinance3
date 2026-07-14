@@ -659,7 +659,7 @@ body.light-mode .stc-input {
   gap: 0.5rem;
   padding: 0.3rem 0.55rem;
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--bg-tertiary);
 }
 
 body.light-mode .stc-breakdown li {
@@ -719,7 +719,7 @@ body.light-mode .stc-aw-copy {
   gap: 0.4rem;
   padding: 0.3rem 0.5rem;
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--bg-tertiary);
 }
 
 body.light-mode .stc-aw-row {
@@ -784,7 +784,7 @@ body.light-mode .mpv-body-text {
   width: 100%;
   border-radius: 6px;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--bg-tertiary);
   border: 1px solid rgba(16, 185, 129, 0.12);
 }
 
