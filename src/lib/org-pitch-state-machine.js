@@ -21,10 +21,18 @@ export function designStageLabel(stage) {
   return stageLabel(stage);
 }
 
+// Stage names match the DB after 20260728000000_pitch_stage_machine.sql:
+//   idea → screening → deep_dive → cross_desk_review → pitch_scheduled →
+//   ic_vote → approved → in_portfolio → exited (+ terminal rejected).
+// Remap from the old vocabulary (reported in the commit):
+//   research_approved→screening; research_in_progress & pm_review→deep_dive
+//   (their intra-stage hops collapse away); committee_scheduled→pitch_scheduled;
+//   committee_vote→ic_vote; decision→approved. The old pm_review→committee_scheduled
+//   model+memo/meeting gate splits across the new cross_desk_review step.
 export const STAGE_TRANSITIONS = [
   {
     from: 'idea',
-    to: 'research_approved',
+    to: 'screening',
     permission: 'pitch.approve_research',
     roles: ['portfolio_manager', 'executive'],
   },
@@ -36,51 +44,43 @@ export const STAGE_TRANSITIONS = [
     requireNote: true,
   },
   {
-    from: 'research_approved',
-    to: 'research_in_progress',
+    from: 'screening',
+    to: 'deep_dive',
     permission: 'pitch.submit',
     roles: ['analyst', 'portfolio_manager', 'executive'],
     auto: true,
   },
   {
-    from: 'research_in_progress',
-    to: 'pm_review',
-    permission: 'pitch.submit',
-    roles: ['analyst'],
-    minDeliverables: 1,
-  },
-  {
-    from: 'pm_review',
-    to: 'research_in_progress',
+    from: 'deep_dive',
+    to: 'cross_desk_review',
     permission: 'pitch.review_pm',
     roles: ['portfolio_manager', 'executive'],
-    requireNote: true,
-  },
-  {
-    from: 'pm_review',
-    to: 'committee_scheduled',
-    permission: 'pitch.review_pm',
-    roles: ['portfolio_manager', 'executive'],
-    requireMeetingAt: true,
-    // Gate: cannot schedule to IC without an attached model AND memo.
+    // Gate: cannot leave deep dive without an attached model AND memo.
     requireDeliverableKinds: ['model', 'memo'],
   },
   {
-    from: 'committee_scheduled',
-    to: 'committee_vote',
+    from: 'cross_desk_review',
+    to: 'pitch_scheduled',
+    permission: 'pitch.review_pm',
+    roles: ['portfolio_manager', 'executive'],
+    requireMeetingAt: true,
+  },
+  {
+    from: 'pitch_scheduled',
+    to: 'ic_vote',
     permission: 'pitch.schedule_committee',
     roles: ['executive'],
   },
   {
-    from: 'committee_vote',
-    to: 'decision',
+    from: 'ic_vote',
+    to: 'approved',
     permission: 'pitch.final_decision',
     roles: ['executive'],
     minVotes: 1,
   },
   // ── Post-approval lifecycle (2a additions) ──────────────────────────────
   {
-    from: 'decision',
+    from: 'approved',
     to: 'in_portfolio',
     permission: 'pitch.assign_monitor',
     roles: ['portfolio_manager', 'executive'],
@@ -95,10 +95,7 @@ export const STAGE_TRANSITIONS = [
 ];
 
 export function canEditThesis(pitch) {
-  return (
-    pitch.status === 'active' &&
-    ['idea', 'research_approved', 'research_in_progress'].includes(pitch.stage)
-  );
+  return pitch.status === 'active' && ['idea', 'screening', 'deep_dive'].includes(pitch.stage);
 }
 
 export function findTransition(from, to) {
