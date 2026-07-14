@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { PitchSupportingData } from './PitchSupportingData';
 import { PitchStageActions } from './PitchStageActions';
+import { PitchGatePanel } from './PitchGatePanel';
 import {
   PitchDeliverablesPanel,
   PitchDiscussionPanel,
@@ -50,10 +51,24 @@ export function PitchDetailClient({ pitchId }) {
   if (!pitch) return <div className="op-empty">Pitch not found.</div>;
 
   const visibleTabs = TABS.filter((t) => {
-    if (t.id === 'voting') return pitch.stage === 'committee_vote' || pitch.votes?.length > 0;
-    if (t.id === 'decision') return pitch.status !== 'active' || pitch.stage === 'decision';
+    if (t.id === 'voting') return pitch.stage === 'ic_vote' || pitch.votes?.length > 0;
+    if (t.id === 'decision')
+      return pitch.status !== 'active' || pitch.stage === 'approved' || pitch.stage === 'rejected';
     return true;
   });
+
+  // Deep-link a failing gate to the tab that fixes it (gate tab ids → modal tabs).
+  const gateTabToModalTab = (gt) => {
+    const map = {
+      supporting_data: 'data',
+      vote: 'voting',
+      cross_desk: 'discussion',
+      signoff: 'thesis',
+      deep_dive: 'data',
+    };
+    const target = map[gt] || gt;
+    if (TABS.some((t) => t.id === target)) setTab(target);
+  };
 
   return (
     <div className="op-page">
@@ -87,6 +102,8 @@ export function PitchDetailClient({ pitchId }) {
           </p>
         </div>
       </div>
+
+      <PitchGatePanel pitch={pitch} onSelectTab={gateTabToModalTab} onAdvanced={onRefresh} />
 
       <PitchStageActions pitch={pitch} onRefresh={onRefresh} />
 
