@@ -115,14 +115,6 @@ body.light-mode .nwd-dialog {
   gap: 1.25rem;
 }
 
-.nwd-body::-webkit-scrollbar {
-  width: 8px;
-}
-.nwd-body::-webkit-scrollbar-thumb {
-  background: var(--scrollbar-thumb, rgba(16, 185, 129, 0.15));
-  border-radius: 8px;
-}
-
 /* Field blocks */
 .nwd-field {
   display: flex;

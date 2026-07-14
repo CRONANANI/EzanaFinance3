@@ -288,23 +288,6 @@ body.light-mode .ci-dalio-name {
   background: #ffffff;
 }
 
-.chat-messages::-webkit-scrollbar {
-  width: 6px;
-}
-
-.chat-messages::-webkit-scrollbar-track {
-  background: #f3f4f6;
-}
-
-.chat-messages::-webkit-scrollbar-thumb {
-  background: #d1d5db;
-  border-radius: 3px;
-}
-
-.chat-messages::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
-}
-
 .chat-bubble {
   display: flex;
   flex-direction: column;

@@ -566,11 +566,6 @@
   padding: 0.5rem 0.875rem;
   border-bottom: 1px solid rgba(16, 185, 129, 0.06);
   overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.ma-panel-tabs::-webkit-scrollbar {
-  display: none;
 }
 
 .ma-panel-tab {
@@ -597,8 +592,6 @@
 .ma-panel-list {
   flex: 1;
   overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(16, 185, 129, 0.15) transparent;
 }
 
 .ma-panel-item {
@@ -1202,8 +1195,6 @@ body.light-mode .ma-ticker-sep {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(16, 185, 129, 0.15) transparent;
 }
 
 .ma-city-panel-section-label {

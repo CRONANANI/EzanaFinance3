@@ -475,15 +475,6 @@ a.itc-sf {
   overflow-y: auto;
   overflow-x: hidden;
   min-height: 0;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(16, 185, 129, 0.12) transparent;
-}
-.itc-body::-webkit-scrollbar {
-  width: 3px;
-}
-.itc-body::-webkit-scrollbar-thumb {
-  background: rgba(16, 185, 129, 0.12);
-  border-radius: 2px;
 }
 .itc-body-pad {
   padding: 0 1.25rem 0.75rem;
@@ -695,10 +686,6 @@ a.itc-sf {
   gap: 0.35rem;
   padding: 0 1.25rem 0.6rem;
   overflow-x: auto;
-  scrollbar-width: none;
-}
-.itc-pol-tabs::-webkit-scrollbar {
-  display: none;
 }
 .itc-pol-tab {
   display: flex;

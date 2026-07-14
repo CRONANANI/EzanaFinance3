@@ -261,15 +261,6 @@
   flex: 1;
   overflow-y: auto;
   max-height: 460px;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(16, 185, 129, 0.1) transparent;
-}
-.nn-list::-webkit-scrollbar {
-  width: 3px;
-}
-.nn-list::-webkit-scrollbar-thumb {
-  background: rgba(16, 185, 129, 0.15);
-  border-radius: 2px;
 }
 
 /* Empty state */
@@ -896,11 +887,7 @@ body .nn-dropdown.nnx-panel {
   gap: 6px;
   padding: 10px 16px;
   overflow-x: auto;
-  scrollbar-width: none;
   border-bottom: 1px solid var(--border-primary, rgba(0, 0, 0, 0.08));
-}
-.nnx-tabs::-webkit-scrollbar {
-  display: none;
 }
 .nnx-tab {
   display: inline-flex;

@@ -15,11 +15,6 @@ body.light-mode {
   color: var(--text-secondary);
 }
 
-/* ── Scrollbar ── */
-body.light-mode ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.12);
-}
-
 /* ══════════════════════════════
    NAVBAR
    ══════════════════════════════ */
@@ -552,8 +547,12 @@ body.light-mode .mobile-nav-link:hover {
 /* ══════════════════════════════
    GLOBAL OVERRIDES
    ══════════════════════════════ */
-body.light-mode .positive { color: var(--positive) !important; }
-body.light-mode .negative { color: var(--negative) !important; }
+body.light-mode .positive {
+  color: var(--positive) !important;
+}
+body.light-mode .negative {
+  color: var(--negative) !important;
+}
 
 /* Selection highlight */
 body.light-mode ::selection {
@@ -612,7 +611,9 @@ body.light-mode ::selection {
   left: 0;
   font-size: 1rem;
   color: #fbbf24;
-  transition: opacity 0.3s, transform 0.3s;
+  transition:
+    opacity 0.3s,
+    transform 0.3s;
 }
 
 /* Moon icon */
@@ -622,7 +623,9 @@ body.light-mode ::selection {
   left: 0;
   font-size: 1rem;
   color: #60a5fa;
-  transition: opacity 0.3s, transform 0.3s;
+  transition:
+    opacity 0.3s,
+    transform 0.3s;
 }
 
 /* Dark mode: show sun, hide moon */

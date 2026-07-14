@@ -1094,44 +1094,34 @@ html:has(.landing-page) body:not(.light-mode) {
   padding-top: 0 !important;
 }
 
-/* ═══ Emerald scrollbar (utility + Chain View) — track transparent, green thumb ═══ */
-.custom-scrollbar,
-.chain-view-scroll {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(16, 185, 129, 0.3) transparent;
+/* ─────────────────────────────────────────────────────────────
+   Hide scrollbar chrome app-wide. Scrolling still works — wheel,
+   trackpad, touch, and keyboard are unaffected. We hide the BAR,
+   not the OVERFLOW: never use overflow:hidden to make a bar vanish,
+   that clips content (e.g. the org chart's 7th desk card).
+   (This replaced the old green .custom-scrollbar / .chain-view-scroll
+   bar; those classes now defer to this single global behaviour.)
+   ───────────────────────────────────────────────────────────── */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* legacy Edge/IE */
+}
+*::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none; /* Chrome, Safari, Edge */
 }
 
-.custom-scrollbar::-webkit-scrollbar,
-.chain-view-scroll::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+html,
+body {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
-
-.custom-scrollbar::-webkit-scrollbar-track,
-.chain-view-scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb,
-.chain-view-scroll::-webkit-scrollbar-thumb {
-  background: rgba(16, 185, 129, 0.3);
-  border-radius: 3px;
-  transition: background 0.2s ease;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover,
-.chain-view-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(16, 185, 129, 0.5);
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:active,
-.chain-view-scroll::-webkit-scrollbar-thumb:active {
-  background: #10b981;
-}
-
-.custom-scrollbar::-webkit-scrollbar-corner,
-.chain-view-scroll::-webkit-scrollbar-corner {
-  background: transparent;
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
 }
 
 @keyframes taskCompletionSlideIn {

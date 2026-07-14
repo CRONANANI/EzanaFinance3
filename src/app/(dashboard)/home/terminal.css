@@ -126,12 +126,7 @@
   gap: 0;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
   height: 100%;
-}
-
-.t-indices-scroll::-webkit-scrollbar {
-  display: none;
 }
 
 .t-index-item {
@@ -261,16 +256,6 @@
   overflow-x: hidden;
   padding: 0.75rem;
   min-height: 0;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(16, 185, 129, 0.2) transparent;
-}
-
-.t-panel-body::-webkit-scrollbar {
-  width: 4px;
-}
-.t-panel-body::-webkit-scrollbar-thumb {
-  background: rgba(16, 185, 129, 0.2);
-  border-radius: 2px;
 }
 
 /* ── HOLDINGS TABLE ── */

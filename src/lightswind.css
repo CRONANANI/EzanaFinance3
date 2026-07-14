@@ -126,7 +126,6 @@
 }
 
 @keyframes neon-bounce {
-
   0%,
   100% {
     transform: translateY(0);
@@ -176,7 +175,7 @@
 /* Animated Gradient Border Button Property and Animation */
 /* @property MUST be defined at the global scope, not inside a rule */
 @property --border-angle {
-  syntax: "<angle>";
+  syntax: '<angle>';
   inherits: true;
   initial-value: 0turn;
 }
@@ -226,7 +225,6 @@
 }
 
 @keyframes AnimatedCartBtnbox {
-
   0%,
   40% {
     top: -20%;
@@ -256,7 +254,6 @@
 }
 
 @keyframes AnimatedCartBtntxt2 {
-
   0%,
   80% {
     opacity: 0;
@@ -333,8 +330,6 @@
 
 /* Global Scrollbar Styling */
 * {
-  scrollbar-width: thin;
-  scrollbar-color: hsl(var(--scrollbar-thumb)) hsl(var(--scrollbar-track));
   /* Apply font family globally */
   box-sizing: border-box;
   /* Good practice for all elements */
@@ -358,7 +353,7 @@ body {
 
 .command-dialog-open::after,
 .popover-open::after {
-  content: "";
+  content: '';
   position: fixed;
   inset: 0;
   z-index: 39;
@@ -386,14 +381,8 @@ body {
 
 /* Hide Scrollbar Utility */
 .scrollbar-hide {
-  scrollbar-width: none;
   -ms-overflow-style: none;
   /* For IE and Edge */
-}
-
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-  /* For Chrome, Safari, and Opera */
 }
 
 /* Custom Card Component Styling */
@@ -492,11 +481,14 @@ body {
   --border-angle: 0turn;
   background:
     conic-gradient(from var(--border-angle), #000, #000) padding-box,
-    conic-gradient(from var(--border-angle),
-      transparent 25%,
-      #08f,
-      rgb(1, 206, 46) 99%,
-      transparent) border-box;
+    conic-gradient(
+        from var(--border-angle),
+        transparent 25%,
+        #08f,
+        rgb(1, 206, 46) 99%,
+        transparent
+      )
+      border-box;
   animation: bg-spin 3s linear infinite;
   border: 1px solid transparent;
   background-origin: border-box;
@@ -559,62 +551,12 @@ body {
   overflow: hidden;
 }
 
-/* Custom Scrollbar Styling */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-  border-radius: 10px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: rgba(120, 120, 120, 0.3);
-  border-radius: 10px;
-  transition: all 0.2s ease;
-}
-
-.custom-scrollbar:hover::-webkit-scrollbar-thumb {
-  background-color: rgba(120, 120, 120, 0.5);
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(120, 120, 120, 0.7);
-}
-
-.custom-scrollbar::-webkit-scrollbar-corner {
-  background: transparent;
-}
-
 /* Flex Wrap Tabs Layout */
 .flex-wrap-tabs {
   display: flex;
   flex-wrap: wrap;
   gap: 0.25rem;
   /* 4px */
-}
-
-/* Sidebar Scrollable Syntax Scrollbar */
-.sidebar-scrollable-syntax::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-.sidebar-scrollable-syntax::-webkit-scrollbar-track {
-  background-color: #f0f0f0;
-  border-radius: 10px;
-}
-
-.sidebar-scrollable-syntax::-webkit-scrollbar-thumb {
-  background-color: #505050;
-  border-radius: 10px;
-  border: 2px solid #f0f0f0;
-}
-
-.sidebar-scrollable-syntax::-webkit-scrollbar-thumb:hover {
-  background-color: #b3b3b3;
 }
 
 /* ==========================================================================

@@ -141,7 +141,6 @@
   max-height: calc(100vh - var(--ea-nav) - 32px);
   overflow-y: auto;
   overscroll-behavior: contain;
-  scrollbar-width: thin;
 }
 .ea-sidenav-head {
   margin: 0 0 0.6rem;
@@ -983,11 +982,7 @@
     margin: 0;
     border-left: none;
     overflow-x: auto;
-    scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
-  }
-  .ea-legend::-webkit-scrollbar {
-    display: none;
   }
   .ea-legend li {
     flex-shrink: 0;

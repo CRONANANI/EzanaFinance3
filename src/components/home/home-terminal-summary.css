@@ -967,17 +967,6 @@ body.light-mode .hts-week-index-legend-btn.is-active {
 
 .hts-week-community {
   overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(16, 185, 129, 0.35) transparent;
-}
-
-.hts-week-community::-webkit-scrollbar {
-  width: 6px;
-}
-
-.hts-week-community::-webkit-scrollbar-thumb {
-  background: rgba(16, 185, 129, 0.35);
-  border-radius: 3px;
 }
 
 /* —— Responsive —— */
@@ -1741,14 +1730,6 @@ body.light-mode .hts-events-warn {
   max-height: 320px;
   overflow-y: auto;
   padding-right: 0.15rem;
-}
-
-.hts-events-day-list::-webkit-scrollbar {
-  width: 4px;
-}
-.hts-events-day-list::-webkit-scrollbar-thumb {
-  background: rgba(16, 185, 129, 0.2);
-  border-radius: 2px;
 }
 
 .hts-events-day-group {

@@ -70,8 +70,6 @@
   top: 60px;
   height: calc(100vh - 60px);
   overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(16, 185, 129, 0.1) transparent;
 }
 
 .settings-sidebar-header {

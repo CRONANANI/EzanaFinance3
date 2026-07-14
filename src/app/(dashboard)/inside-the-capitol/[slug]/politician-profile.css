@@ -575,7 +575,6 @@
     overflow-x: auto;
     padding-bottom: 0.25rem;
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
   }
 }
 

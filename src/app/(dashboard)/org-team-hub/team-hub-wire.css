@@ -1031,7 +1031,6 @@ body.light-mode .thw-range.active {
   }
   .thw-cal-viewport {
     overflow-x: auto;
-    scrollbar-width: thin;
   }
   .thw-cal-track {
     transform: none !important;

@@ -674,11 +674,6 @@ body.light-mode .mobile-auth-drawer .mobile-drawer-logout:hover {
     flex-wrap: nowrap;
     gap: 0.5rem;
     padding-bottom: 0.5rem;
-    scrollbar-width: none;
-  }
-
-  .learning-tabs::-webkit-scrollbar {
-    display: none;
   }
 
   .learning-tabs .tab-btn,

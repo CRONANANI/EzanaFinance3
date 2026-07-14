@@ -361,20 +361,6 @@ body.light-mode .cr-news-chain-dot {
   background: #ffffff;
 }
 
-.cr-news-chain-scroll::-webkit-scrollbar {
-  width: 4px;
-}
-.cr-news-chain-scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-.cr-news-chain-scroll::-webkit-scrollbar-thumb {
-  background: rgba(16, 185, 129, 0.15);
-  border-radius: 2px;
-}
-.cr-news-chain-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(16, 185, 129, 0.3);
-}
-
 /* -------------------------------------------------------------------------
    Entrance fades for the research data cards (StockQuote, Earnings, Key
    Metrics, Competitors, Company Overview, Analyst Recommendations).

@@ -339,11 +339,7 @@
   overflow-x: auto;
   gap: 22px;
   margin-top: 16px;
-  scrollbar-width: none; /* Firefox */
   -webkit-overflow-scrolling: touch;
-}
-.eth-catnav::-webkit-scrollbar {
-  display: none; /* WebKit */
 }
 .eth-catnav button {
   background: none;

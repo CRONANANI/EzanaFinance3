@@ -351,7 +351,6 @@ body.sidebar-open .ma-fullscreen {
   padding: 0.5rem 0.875rem;
   border-bottom: 1px solid rgba(16, 185, 129, 0.06);
   overflow-x: auto;
-  scrollbar-width: none;
   flex-shrink: 0;
 }
 
@@ -380,8 +379,6 @@ body.sidebar-open .ma-fullscreen {
 .ma-panel-list {
   flex: 1;
   overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(16, 185, 129, 0.15) transparent;
   min-height: 0;
 }
 
@@ -568,12 +565,7 @@ body.sidebar-open .ma-fullscreen {
   gap: 0.75rem;
   padding: 0 1rem;
   overflow-x: auto;
-  scrollbar-width: none;
   z-index: 5;
-}
-
-.ma-bottom-cards::-webkit-scrollbar {
-  display: none;
 }
 
 .ma-bottom-card {

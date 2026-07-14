@@ -2655,11 +2655,6 @@ body.light-mode .echo-article-page .echo-sector-tooltip-era {
     flex-wrap: nowrap;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-
-  .echo-map-filter-row::-webkit-scrollbar {
-    display: none;
   }
 
   .echo-map-filter-label {

@@ -160,8 +160,6 @@
   overflow: hidden;
   max-height: 380px;
   overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(16, 185, 129, 0.42) rgba(16, 185, 129, 0.08);
 }
 
 /* Fixed column widths so Price / 24h / Mkt cap (or Vol) line up under headers — avoid `auto` + mixed content widths */

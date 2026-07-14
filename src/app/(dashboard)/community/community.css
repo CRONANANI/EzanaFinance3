@@ -928,19 +928,6 @@ html.light-mode .ezana-theme .lpill.on {
   }
 }
 
-/* hide scrollbars inside artboards */
-.ezana-theme ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-.ezana-theme ::-webkit-scrollbar-thumb {
-  background: var(--border-input);
-  border-radius: 999px;
-}
-.ezana-theme ::-webkit-scrollbar-track {
-  background: transparent;
-}
-
 /* small icon helpers */
 .ez-icon-sm {
   font-size: 13px;
