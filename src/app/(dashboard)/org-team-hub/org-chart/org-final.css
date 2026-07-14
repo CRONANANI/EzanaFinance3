@@ -13,15 +13,15 @@
   min-height: 100vh;
   font-family: var(--font-sans);
 
-  --ox-canvas: #0a0a0c;
-  --ox-card: #0e0f12;
-  --ox-card-hover: #14161a;
-  --ox-seg: #0c0d10;
-  --ox-line: rgba(255, 255, 255, 0.07);
-  --ox-line-2: rgba(255, 255, 255, 0.09);
-  --ox-line-strong: rgba(255, 255, 255, 0.12);
-  --ox-line-hover: rgba(255, 255, 255, 0.22);
-  --ox-row-hover: rgba(255, 255, 255, 0.025);
+  --ox-canvas: var(--app-bg);
+  --ox-card: var(--surface-card);
+  --ox-card-hover: var(--surface-card-hover);
+  --ox-seg: var(--bg-tertiary);
+  --ox-line: var(--border-primary);
+  --ox-line-2: var(--border-primary);
+  --ox-line-strong: var(--border-secondary, var(--border-primary));
+  --ox-line-hover: var(--emerald-border, var(--border-primary));
+  --ox-row-hover: var(--surface-card-hover);
   --ox-wash: rgba(99, 102, 241, 0.06);
   --ox-wash-hover: rgba(99, 102, 241, 0.1);
   --ox-indigo-text: #a5b4fc;
