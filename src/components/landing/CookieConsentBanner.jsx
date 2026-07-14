@@ -111,15 +111,17 @@ export function CookieConsentBanner() {
 
   return (
     <div className="cookie-banner" role="dialog" aria-label="Cookie consent" aria-modal="false">
-      <div className="cookie-banner-inner">
+      <div className={`cookie-banner-inner ${showCustomize ? 'is-customize' : 'is-row'}`}>
         {!showCustomize ? (
           <>
             <div className="cookie-banner-text">
-              <h2 className="cookie-banner-title">We value your privacy</h2>
+              {/* Title inlined into the body as a lead-in so the row stays short
+                  (OPTION B.1); the semantic heading is kept visually-hidden. */}
+              <h2 className="cookie-banner-sr">We value your privacy</h2>
               <p className="cookie-banner-body">
-                We use cookies to keep you signed in, remember your preferences, and (with your
-                permission) understand how you use Ezana. You can accept all, reject all, or pick
-                what&apos;s on. Read our{' '}
+                <strong>We value your privacy.</strong> We use cookies to keep you signed in,
+                remember your preferences, and (with your permission) understand how you use Ezana.
+                You can accept all, reject all, or pick what&apos;s on. Read our{' '}
                 <Link href="/privacy-policy" className="cookie-banner-link">
                   Privacy Policy
                 </Link>{' '}

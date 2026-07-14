@@ -6,7 +6,7 @@
 
 .cookie-banner {
   position: fixed;
-  bottom: 20px;
+  bottom: 16px;
   left: 20px;
   right: 20px;
   z-index: 9000;
@@ -26,7 +26,7 @@
   border: 1px solid rgba(13, 24, 33, 0.08);
   border-radius: 14px;
   box-shadow: 0 10px 30px -10px rgba(13, 24, 33, 0.18);
-  padding: 8px 20px;
+  padding: 10px 20px;
   font-family: var(--font-sans, 'Plus Jakarta Sans', system-ui, sans-serif);
 
   /* Outer box renders glass but does not capture clicks; children do. */
@@ -59,6 +59,58 @@ body:not(.light-mode) .cookie-banner {
   body:not(.light-mode) .cookie-banner {
     background: rgba(17, 20, 24, 0.96);
   }
+}
+
+/* Visually-hidden heading — keeps the dialog's semantic <h2> when the visible
+   title is inlined into the body copy (OPTION B.1). */
+.cookie-banner-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Consent view: ONE horizontal row (text left · buttons right) ──────────
+   Removes the stacked height AND gives the copy the full banner width. Scoped
+   to `.is-row` so the Customize view (`.is-customize`) keeps stacking. */
+.cookie-banner-inner.is-row {
+  display: flex;
+  align-items: center; /* vertically centre the text against the buttons */
+  justify-content: space-between;
+  gap: 24px;
+}
+.cookie-banner-inner.is-row .cookie-banner-text {
+  text-align: left;
+  margin-bottom: 0; /* the stack gap is gone */
+  min-width: 0; /* let the text shrink rather than push the buttons off */
+  flex: 1;
+}
+.cookie-banner-inner.is-row .cookie-banner-body {
+  font-size: 13px; /* never below 13px — legibility/compliance for consent copy */
+  line-height: 1.35;
+  margin: 0;
+  max-width: none; /* remove the 1000px cap */
+  /* NB: this copy (~210 chars) cannot fit one line beside the buttons at 1280px
+     without clipping legal text, so it is allowed to wrap (to ~2 lines). The
+     ~40% height cut comes from putting the text BESIDE the buttons, not above
+     them — a forced nowrap here would truncate consent copy. */
+}
+.cookie-banner-inner.is-row .cookie-banner-actions {
+  flex-wrap: nowrap; /* keep the 3 buttons on one row */
+  flex-shrink: 0; /* buttons keep their size; the text yields instead */
+}
+/* The inlined title lead-in ("We value your privacy.") — emphasised. */
+.cookie-banner-inner.is-row .cookie-banner-body strong {
+  color: var(--foreground, #0a0e13);
+  font-weight: 600;
+}
+body:not(.light-mode) .cookie-banner-inner.is-row .cookie-banner-body strong {
+  color: #f0f6fc;
 }
 
 /* ── Text block ──────────────────────────────────────────── */
@@ -191,6 +243,15 @@ body:not(.light-mode) .cookie-banner-cat-row strong {
     border-bottom: none;
     padding: 10px 14px;
     padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+  /* Stack the horizontal consent row again on phones (correct there). */
+  .cookie-banner-inner.is-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .cookie-banner-inner.is-row .cookie-banner-text {
+    text-align: center;
   }
   .cookie-banner-text {
     margin-bottom: 8px;
