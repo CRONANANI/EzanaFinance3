@@ -1230,7 +1230,11 @@ body.light-mode .th-type-models-wrap:hover .th-type-models-row {
    ════════════════════════════════════════════════════════════ */
 
 body.light-mode .th-page {
-  background: #f9fafb;
+  /* The .th-page content wrapper is a page canvas — it must let the white app
+     shell show through, not paint its own grey. Painting #f9fafb here created a
+     grey slab inside the white shell (the seam that ran through every org tab's
+     stats / board / archive). Canvas → transparent; cards inside stay distinct. */
+  background: transparent;
 }
 
 body.light-mode .th-card-header-left span {

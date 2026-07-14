@@ -657,7 +657,12 @@ body.light-mode .op-inline-form textarea {
 body.light-mode .op-fmp-card,
 body.light-mode .op-archive-card,
 body.light-mode .op-column {
-  background: #f8fafc;
+  /* Stat tiles, archive cards, and Kanban columns are cards/canvas — they must
+     match the white page (var(--surface-card) = #fff in light), NOT a grey token
+     (#f8fafc was the band). Their base border is a dark-only white rgba that is
+     invisible on white, so give them a themed hairline to stay distinct. */
+  background: var(--surface-card);
+  border-color: var(--border-primary);
 }
 
 body.light-mode .op-hero h1,
