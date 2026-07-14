@@ -1099,6 +1099,127 @@
   color: var(--text-muted, #8b949e);
 }
 
+/* ── Header position switcher — flag another position without reopening ── */
+.ot-switcher {
+  position: relative;
+  min-width: 0;
+}
+.ot-switcher-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 100%;
+  padding: 0.3rem 0.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-primary);
+  background: var(--surface-input, var(--inset));
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+.ot-switcher-trigger:hover {
+  border-color: var(--border-hover);
+}
+.ot-switcher-trigger:focus-visible {
+  outline: none;
+  border-color: var(--border-focus);
+}
+.ot-switcher-sub {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.ot-switcher-trigger svg {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.ot-pos {
+  color: var(--positive, #10b981);
+}
+.ot-neg {
+  color: var(--negative, #ef4444);
+}
+
+.ot-switcher-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 20;
+  width: max(320px, 100%);
+  max-width: 420px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  box-shadow: var(--shadow-lg);
+  padding: 0.5rem;
+}
+.ot-switcher-search {
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  margin-bottom: 0.4rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-primary);
+  background: var(--surface-input, var(--inset));
+  color: var(--text-primary);
+  font-size: 0.8rem;
+}
+.ot-switcher-search::placeholder {
+  color: var(--text-muted);
+}
+.ot-switcher-search:focus {
+  outline: none;
+  border-color: var(--border-focus);
+}
+.ot-switcher-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 280px;
+  overflow-y: auto;
+}
+.ot-switcher-empty {
+  padding: 0.75rem 0.6rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.ot-switcher-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.45rem 0.5rem;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  text-align: left;
+  cursor: pointer;
+}
+.ot-switcher-option.is-active {
+  background: var(--surface-card-hover);
+}
+.ot-switcher-option.is-current {
+  outline: 1px solid var(--border-focus);
+}
+.ot-switcher-option-meta {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+.ot-switcher-option-pl {
+  flex-shrink: 0;
+  font-weight: 700;
+}
+
 .ot-dossier-grid {
   display: grid;
   grid-template-columns: 280px 1fr;

@@ -1709,6 +1709,86 @@ export function getTotalPortfolioValue() {
 }
 
 /**
+ * Per-team holdings from the mock universe (TMT uses its real breakdown; the
+ * other sleeves are derived so each sums to ~team.value). Shared by the Council
+ * desk table AND the flaggable-positions endpoint so both build ONE book.
+ * @param {string} teamId — MOCK_TEAMS id (t1…t7)
+ */
+export function buildTeamHoldings(teamId) {
+  if (teamId === 't7') {
+    return MOCK_TMT_HOLDINGS.map((h) => ({
+      ticker: h.ticker,
+      shares: h.shares,
+      avg_cost: h.avg_cost,
+      current_price: h.current_price,
+      analyst_id: h.analyst,
+      coverage_status: h.coverage_status,
+      sector: h.sector,
+    }));
+  }
+  const team = MOCK_TEAM_PERFORMANCE.find((t) => t.team_id === teamId);
+  if (!team) return [];
+  const totalValue = team.value;
+  const tickerCount = team.top_holdings.length;
+  const avgPositionValue = totalValue / tickerCount;
+  return team.top_holdings.map((ticker, i) => {
+    const variance = 0.85 + i * 0.1;
+    const positionValue = avgPositionValue * variance;
+    const current_price = 50 + (ticker.charCodeAt(0) % 100) + i * 12;
+    const shares = Math.round(positionValue / current_price);
+    const avg_cost = current_price * (1 - team.ytd_return / 100);
+    return {
+      ticker,
+      shares,
+      avg_cost: Number(avg_cost.toFixed(2)),
+      current_price: Number(current_price.toFixed(2)),
+      analyst_id: null,
+      coverage_status: 'active',
+      sector: team.team_name,
+    };
+  });
+}
+
+/**
+ * Flatten every sector sleeve into ONE position book, each row tagged with its
+ * sector team plus computed value / cost / P&L. Deterministic (no randomness),
+ * so the client desk and the server endpoint produce identical rows.
+ */
+export function buildOrgPositionBook() {
+  const rows = [];
+  for (const team of MOCK_TEAM_PERFORMANCE) {
+    for (const h of buildTeamHoldings(team.team_id)) {
+      const value = h.shares * h.current_price;
+      const cost = h.shares * h.avg_cost;
+      rows.push({
+        ...h,
+        sectorId: team.team_id,
+        sectorName: team.team_name,
+        value,
+        cost,
+        pl: value - cost,
+        plPct: cost > 0 ? ((value - cost) / cost) * 100 : 0,
+      });
+    }
+  }
+  return rows;
+}
+
+/**
+ * Display name of the covering analyst for a ticker — coverage pipeline first,
+ * then any analyst on the sector team. Mirrors the derivation the flag modal
+ * uses for the left rail, so the switcher row and the rail agree.
+ */
+export function coveringAnalystNameForPosition(ticker, mockTeamId) {
+  const coverage = MOCK_TMT_RESEARCH_PIPELINE.find((r) => r.ticker === ticker);
+  const analyst =
+    (coverage && MOCK_MEMBERS.find((m) => m.id === coverage.analyst_id)) ||
+    MOCK_MEMBERS.find((m) => m.role === 'analyst' && m.team_id === mockTeamId) ||
+    null;
+  return analyst?.name || null;
+}
+
+/**
  * Effective permissions: PERMISSION_TIERS defaults plus optional DB overrides (org_member_permissions).
  */
 /**
