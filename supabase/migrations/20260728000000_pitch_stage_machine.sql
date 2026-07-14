@@ -93,18 +93,26 @@ CREATE TABLE IF NOT EXISTS public.org_pitch_signoff (
 CREATE INDEX IF NOT EXISTS idx_pitch_signoff_pitch ON public.org_pitch_signoff(pitch_id);
 
 -- ── 6) org_desk_meeting — the structured deep-dive record ────────────────────
+-- Structured deep-dive record (spec §2.4) — an artifact, not a checkbox.
 CREATE TABLE IF NOT EXISTS public.org_desk_meeting (
-  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  pitch_id      uuid NOT NULL REFERENCES public.org_pitches(id) ON DELETE CASCADE,
-  org_id        uuid NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
-  held_at       timestamptz,
-  attendees     jsonb DEFAULT '[]'::jsonb,   -- member ids present
-  bull_points   text,
-  bear_points   text,
-  decision      text CHECK (decision IN ('advance', 'more_work', 'kill')),
-  notes         text,
-  recorded_by   uuid REFERENCES public.org_members(id) ON DELETE SET NULL,
-  created_at    timestamptz DEFAULT now()
+  id                  uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  pitch_id            uuid NOT NULL REFERENCES public.org_pitches(id) ON DELETE CASCADE,
+  org_id              uuid NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
+  held_at             timestamptz,
+  attendee_ids        uuid[] DEFAULT '{}',          -- members present (the gate needs >=3)
+  attendees           jsonb DEFAULT '[]'::jsonb,    -- back-compat display list
+  compliance_notes    text,
+  sector_weight_notes text,                         -- current vs target weight with this position
+  headwinds           text,
+  tailwinds           text,
+  proposed_sizing_pct numeric(5, 2),
+  bull_points         text,
+  bear_points         text,
+  decision            text CHECK (decision IN ('advance', 'more_work', 'kill')),
+  notes               text,
+  logged_by           uuid REFERENCES public.org_members(id) ON DELETE SET NULL,
+  recorded_by         uuid REFERENCES public.org_members(id) ON DELETE SET NULL,
+  created_at          timestamptz DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_desk_meeting_pitch ON public.org_desk_meeting(pitch_id);
 
