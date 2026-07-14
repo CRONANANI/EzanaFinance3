@@ -96,6 +96,7 @@
   padding: 0 10px 6px;
 }
 .ohn-nav-item {
+  position: relative; /* anchors the active-state left bar */
   display: flex;
   align-items: center;
   gap: 10px;
@@ -135,9 +136,20 @@
 }
 .ohn-nav-item.active,
 .ohn-nav-item.active:hover {
-  background: var(--emerald-bg);
+  background: transparent; /* no filled rectangle — the left bar signals active */
   color: var(--emerald);
   font-weight: 600;
+}
+/* Full-height 2px emerald bar on the left edge of the active row. */
+.ohn-nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  border-radius: 0 2px 2px 0;
+  background: var(--emerald);
 }
 .ohn-nav-item.active svg {
   color: var(--emerald);
