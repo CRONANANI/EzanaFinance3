@@ -1,6 +1,7 @@
 import {
   MOCK_MEMBERS,
   MOCK_TEAMS,
+  MOCK_TMT_RESEARCH_PIPELINE,
   dbTeamIdFromMockTeamId,
   getMemberByEmail,
   mockTeamIdFromDbTeams,
@@ -73,10 +74,53 @@ export async function buildRoutingProfile(member, supabase) {
   };
 }
 
-export async function resolveRecipientOrgMemberId(supabase, orgId, routingProfile, ticker, mockTeamId) {
+export async function resolveRecipientOrgMemberId(
+  supabase,
+  orgId,
+  routingProfile,
+  ticker,
+  mockTeamId,
+) {
   const recipientMockId = resolveFlagRecipient(routingProfile, ticker, mockTeamId);
   if (!recipientMockId) return null;
   return mockMemberIdToOrgMemberId(supabase, orgId, recipientMockId);
+}
+
+/** Coverage pipeline entry for a ticker (carries the covering analyst + thesis). */
+export function findFlagCoverage(ticker) {
+  return MOCK_TMT_RESEARCH_PIPELINE.find((r) => r.ticker === ticker) || null;
+}
+
+/**
+ * Auto-derive BOTH flag recipients from the org chart — the covering analyst
+ * (from the research coverage pipeline, falling back to any analyst on the
+ * sector team) and the sector head (the team's portfolio manager). The client
+ * never sets these; the routing is decided here so a raiser cannot re-point a
+ * flag at a friendlier reviewer.
+ *
+ * @returns {Promise<{ coveringAnalystOrgId: string|null, sectorHeadOrgId: string|null, coverage: object|null }>}
+ */
+export async function resolveFlagRouting(supabase, orgId, ticker, mockTeamId) {
+  const coverage = findFlagCoverage(ticker);
+
+  let coveringAnalystOrgId = null;
+  if (coverage?.analyst_id) {
+    coveringAnalystOrgId = await mockMemberIdToOrgMemberId(supabase, orgId, coverage.analyst_id);
+  }
+  if (!coveringAnalystOrgId && mockTeamId) {
+    const teamAnalyst = MOCK_MEMBERS.find((m) => m.role === 'analyst' && m.team_id === mockTeamId);
+    if (teamAnalyst) {
+      coveringAnalystOrgId = await mockMemberIdToOrgMemberId(supabase, orgId, teamAnalyst.id);
+    }
+  }
+
+  let sectorHeadOrgId = null;
+  if (mockTeamId) {
+    const pm = MOCK_MEMBERS.find((m) => m.role === 'portfolio_manager' && m.team_id === mockTeamId);
+    if (pm) sectorHeadOrgId = await mockMemberIdToOrgMemberId(supabase, orgId, pm.id);
+  }
+
+  return { coveringAnalystOrgId, sectorHeadOrgId, coverage };
 }
 
 /** Resolve request team id: prefer UUID; ignore mock keys. */

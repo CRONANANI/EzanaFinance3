@@ -6,6 +6,9 @@ import { getCurrentOrgMember } from '@/lib/org-trading-server';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
+const EVIDENCE_TYPES = ['chart', 'doc', 'news', 'model', 'link'];
+
+/** POST /api/org-trading/flags/[flagId]/evidence — attach evidence to a flag. */
 export const POST = withApiGuard(
   async (request, user, context) => {
     const params = context?.params ?? {};
@@ -16,12 +19,11 @@ export const POST = withApiGuard(
     const flagId = params.flagId;
     const { data: flag, error: flagErr } = await supabase
       .from('org_position_flags')
-      .select('id, org_id, raiser_member_id, recipient_member_id')
+      .select('id, org_id')
       .eq('id', flagId)
       .maybeSingle();
 
     if (flagErr || !flag) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-    // Threaded comments are public within the org — any active org member can post.
     if (flag.org_id !== member.org_id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
@@ -33,19 +35,32 @@ export const POST = withApiGuard(
       return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
     }
 
-    const { body } = payload;
-    if (!body || String(body).trim() === '') {
-      return NextResponse.json({ error: 'Body required' }, { status: 400 });
+    const { type, ref, caption } = payload;
+    if (!EVIDENCE_TYPES.includes(type)) {
+      return NextResponse.json(
+        { error: `type must be one of ${EVIDENCE_TYPES.join(', ')}` },
+        { status: 400 },
+      );
+    }
+    if (!ref || String(ref).trim() === '') {
+      return NextResponse.json({ error: 'ref is required' }, { status: 400 });
     }
 
     const { data, error } = await supabase
-      .from('org_flag_messages')
-      .insert({ flag_id: flagId, author_member_id: member.id, body })
+      .from('org_flag_evidence')
+      .insert({
+        flag_id: flagId,
+        org_id: flag.org_id,
+        type,
+        ref: String(ref).trim(),
+        caption: caption || null,
+        created_by: member.id,
+      })
       .select()
       .single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    return NextResponse.json({ message: data });
+    return NextResponse.json({ evidence: data });
   },
   { requireAuth: true },
 );

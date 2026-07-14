@@ -100,6 +100,10 @@
     {
       "path": "/api/cron/index-prediction-markets?maxMarkets=400",
       "schedule": "30 */2 * * *"
+    },
+    {
+      "path": "/api/cron/org-flag-outcomes",
+      "schedule": "0 6 * * *"
     }
   ]
 }
