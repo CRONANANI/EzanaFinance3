@@ -119,9 +119,9 @@
   color: var(--emerald-text, #10b981);
 }
 .ac3-pill--archived {
-  background: rgba(99, 102, 241, 0.14);
-  border: 1px solid rgba(99, 102, 241, 0.35);
-  color: #818cf8;
+  background: var(--emerald-bg, rgba(16, 185, 129, 0.14));
+  border: 1px solid var(--emerald-border, rgba(16, 185, 129, 0.4));
+  color: var(--emerald-text, #10b981);
 }
 .ac3-pill--assigned {
   background: var(--bg-tertiary);
