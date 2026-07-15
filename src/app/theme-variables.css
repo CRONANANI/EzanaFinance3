@@ -85,6 +85,26 @@
   --cyan: #06b6d4;
   --cyan-bg: rgba(6, 182, 212, 0.12);
 
+  /* ── Button semantics (one Button kit, app-wide) ──────────────────────────
+     These reference the theme tokens above. Because CSS custom properties
+     resolve lazily AT USE, a single definition here is correct in both themes:
+     inside body.light-mode, --emerald / --surface-card / --danger / etc. are
+     redefined, so a --btn-* that references them flips automatically — no
+     per-theme duplication (which would only invite drift). The two literals
+     (#ffffff button text, 0.5 disabled opacity) are theme-independent. */
+  --btn-primary-bg: var(--emerald);
+  --btn-primary-fg: #ffffff;
+  --btn-primary-bg-hover: var(--emerald-hover);
+  --btn-secondary-bg: var(--surface-card);
+  --btn-secondary-fg: var(--text-primary);
+  --btn-secondary-bg-hover: var(--surface-card-hover);
+  --btn-outline-border: var(--border-primary);
+  --btn-ghost-bg-hover: var(--surface-card-hover);
+  --btn-destructive-bg: var(--danger);
+  --btn-destructive-fg: #ffffff;
+  --btn-ring: var(--emerald);
+  --btn-disabled-opacity: 0.5;
+
   /* ── Radius scale ── */
   --radius-sm: 4px;
   --radius-md: 8px;

@@ -1,9 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: [
-    './src/**/*.{js,ts,jsx,tsx,mdx}',
-    './app-legacy/**/*.{html,js,css}',
-  ],
+  content: ['./src/**/*.{js,ts,jsx,tsx,mdx}', './app-legacy/**/*.{html,js,css}'],
   darkMode: 'class',
   theme: {
     extend: {
@@ -14,14 +11,14 @@ module.exports = {
         '5xl': '3440px',
       },
       maxWidth: {
-        container: "1280px",
+        container: '1280px',
       },
       animation: {
-        marquee: "marquee var(--duration, 40s) linear infinite",
+        marquee: 'marquee var(--duration, 40s) linear infinite',
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'spin-slow': 'spin 4s linear infinite',
-        'fadeInScale': 'fadeInScale 0.5s ease-out',
+        fadeInScale: 'fadeInScale 0.5s ease-out',
         'spin-glow': 'spin-glow 4s linear infinite',
       },
       keyframes: {
@@ -30,8 +27,8 @@ module.exports = {
           to: { transform: 'rotate(360deg)' },
         },
         marquee: {
-          from: { transform: "translateX(0)" },
-          to: { transform: "translateX(calc(-50% - var(--gap, 1rem) / 2))" },
+          from: { transform: 'translateX(0)' },
+          to: { transform: 'translateX(calc(-50% - var(--gap, 1rem) / 2))' },
         },
         'accordion-down': {
           from: { height: '0' },
@@ -48,9 +45,13 @@ module.exports = {
       },
       colors: {
         primary: {
-          DEFAULT: '#10b981',
-          foreground: '#ffffff',
-          hover: '#34d399',
+          DEFAULT: 'var(--btn-primary-bg)',
+          foreground: 'var(--btn-primary-fg)',
+          hover: 'var(--btn-primary-bg-hover)',
+        },
+        secondary: {
+          DEFAULT: 'var(--btn-secondary-bg)',
+          foreground: 'var(--btn-secondary-fg)',
         },
         app: 'var(--app-bg)',
         background: '#0f1419',
@@ -59,17 +60,27 @@ module.exports = {
         'card-foreground': '#ffffff',
         accent: 'rgba(16, 185, 129, 0.15)',
         'accent-foreground': '#10b981',
-        destructive: '#ef4444',
+        destructive: {
+          DEFAULT: 'var(--btn-destructive-bg)',
+          foreground: 'var(--btn-destructive-fg)',
+        },
         muted: 'rgba(17, 24, 39, 0.4)',
         'muted-foreground': '#6b7280',
         border: 'rgba(16, 185, 129, 0.1)',
         input: 'rgba(17, 24, 39, 0.6)',
-        ring: '#10b981',
+        ring: 'var(--btn-ring)',
         popover: 'rgba(26, 35, 50, 0.98)',
         'popover-foreground': '#ffffff',
       },
       fontFamily: {
-        sans: ['Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        sans: [
+          'Plus Jakarta Sans',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'Segoe UI',
+          'Roboto',
+          'sans-serif',
+        ],
       },
       borderRadius: {
         sm: '0.5rem',
@@ -79,6 +90,5 @@ module.exports = {
       },
     },
   },
-  plugins: [
-    require('lightswind/plugin'),require("tailwindcss-animate")],
+  plugins: [require('lightswind/plugin'), require('tailwindcss-animate')],
 };
