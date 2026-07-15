@@ -22,8 +22,8 @@
   --ox-line-strong: var(--border-secondary, var(--border-primary));
   --ox-line-hover: var(--emerald-border, var(--border-primary));
   --ox-row-hover: var(--surface-card-hover);
-  --ox-wash: rgba(99, 102, 241, 0.06);
-  --ox-wash-hover: rgba(99, 102, 241, 0.1);
+  --ox-wash: var(--emerald-bg);
+  --ox-wash-hover: var(--emerald-bg-hover);
   --ox-indigo-text: #a5b4fc;
 
   /* Editorial text scale (kept consistent across modes). */
@@ -46,8 +46,8 @@ body.light-mode .ox-root {
   --ox-line-strong: rgba(0, 0, 0, 0.12);
   --ox-line-hover: rgba(0, 0, 0, 0.2);
   --ox-row-hover: rgba(0, 0, 0, 0.025);
-  --ox-wash: rgba(99, 102, 241, 0.06);
-  --ox-wash-hover: rgba(99, 102, 241, 0.1);
+  --ox-wash: var(--emerald-bg);
+  --ox-wash-hover: var(--emerald-bg-hover);
   --ox-indigo-text: #4f46e5;
 
   --ox-text: #0b0d10;
@@ -773,7 +773,7 @@ body.light-mode .ox-root {
   background: var(--ox-wash);
 }
 .oxr-roleopt.sel {
-  border-color: rgba(99, 102, 241, 0.35);
+  border-color: var(--emerald-border);
   background: var(--ox-wash);
   color: var(--ox-text);
 }
@@ -940,13 +940,13 @@ body.light-mode .ox-root {
     color 0.12s ease;
 }
 .ox-committee-btn:hover:not(:disabled) {
-  border-color: var(--purple);
+  border-color: var(--emerald);
   color: var(--text-primary, var(--ox-text));
 }
 .ox-committee-btn.active {
-  background: var(--purple-bg);
-  border-color: var(--purple);
-  color: var(--purple);
+  background: var(--emerald-bg);
+  border-color: var(--emerald);
+  color: var(--emerald);
 }
 .ox-committee-btn:disabled {
   opacity: 0.5;
@@ -958,8 +958,8 @@ body.light-mode .ox-root {
   font-weight: 700;
   padding: 1px 6px;
   border-radius: 999px;
-  background: var(--purple-bg);
-  color: var(--purple);
+  background: var(--emerald-bg);
+  color: var(--emerald);
 }
 
 /* ── Investment-committee overlay marking ──────────────────── */
@@ -971,8 +971,8 @@ body.light-mode .ox-root {
   letter-spacing: 0.1em;
   padding: 1px 5px;
   border-radius: 4px;
-  background: var(--purple-bg);
-  color: var(--purple);
+  background: var(--emerald-bg);
+  color: var(--emerald);
   flex-shrink: 0;
 }
 .ic-mode .ox-node:not(.ic),
@@ -984,10 +984,10 @@ body.light-mode .ox-root {
 }
 .ic-mode .ox-node.ic,
 .ic-mode .oxrad-node.ic {
-  border-color: var(--purple);
+  border-color: var(--emerald);
 }
 .ic-mode .ox2-lead.ic {
-  outline: 1px solid var(--purple);
+  outline: 1px solid var(--emerald);
   outline-offset: 3px;
   border-radius: 6px;
 }

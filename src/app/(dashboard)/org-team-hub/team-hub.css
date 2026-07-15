@@ -1,4 +1,4 @@
-/* Team Hub — org dashboard (indigo accent #6366f1) */
+/* Team Hub — org dashboard (emerald accent) */
 
 .th-page {
   display: flex;
@@ -13,11 +13,11 @@
   border-radius: 16px;
   background: linear-gradient(
     135deg,
-    rgba(99, 102, 241, 0.08) 0%,
-    rgba(99, 102, 241, 0.03) 50%,
+    var(--emerald-bg) 0%,
+    var(--emerald-bg) 50%,
     rgba(10, 14, 19, 0.95) 100%
   );
-  border: 1px solid rgba(99, 102, 241, 0.15);
+  border: 1px solid var(--emerald-border);
   padding: 1.25rem 2rem;
   display: flex;
   align-items: center;
@@ -36,13 +36,13 @@
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: rgba(99, 102, 241, 0.12);
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  background: var(--emerald-bg);
+  border: 1px solid var(--emerald-border);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.25rem;
-  color: #6366f1;
+  color: var(--emerald-text);
   flex-shrink: 0;
 }
 
@@ -111,9 +111,9 @@
 
 /* ── Card styling (extends .db-card) ──────────────────────── */
 .th-card {
-  background: rgba(99, 102, 241, 0.02);
-  border: 1px solid rgba(99, 102, 241, 0.08);
-  border-radius: 16px;
+  background: var(--emerald-bg);
+  border: 1px solid var(--emerald-border);
+  border-radius: 14px;
   overflow: hidden;
   transition:
     border-color 0.25s ease,
@@ -126,7 +126,7 @@
 }
 
 .th-card:hover {
-  border-color: rgba(99, 102, 241, 0.2);
+  border-color: var(--emerald-border);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
@@ -135,7 +135,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.85rem 1.25rem;
-  border-bottom: 1px solid rgba(99, 102, 241, 0.06);
+  border-bottom: 1px solid var(--emerald-border);
 }
 
 .th-card-header-left {
@@ -145,7 +145,7 @@
 }
 
 .th-card-header-left i {
-  color: #6366f1;
+  color: var(--emerald-text);
   font-size: 0.95rem;
 }
 
@@ -172,7 +172,7 @@
   justify-content: space-between;
   gap: 0.75rem;
   padding: 0.65rem 0;
-  border-bottom: 1px solid rgba(99, 102, 241, 0.05);
+  border-bottom: 1px solid var(--emerald-border);
 }
 
 .th-task-row:last-child {
@@ -238,7 +238,7 @@
   font-size: 0.78rem;
   border-radius: 8px;
   background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(99, 102, 241, 0.12);
+  border: 1px solid var(--emerald-border);
   color: #e2e8f0;
   font-family: inherit;
 }
@@ -249,7 +249,7 @@
 
 .th-file-search:focus {
   outline: none;
-  border-color: #6366f1;
+  border-color: var(--emerald);
 }
 
 .th-upload-btn {
@@ -261,7 +261,7 @@
   font-weight: 700;
   border-radius: 8px;
   border: none;
-  background: #6366f1;
+  background: var(--emerald);
   color: #fff;
   cursor: pointer;
   font-family: inherit;
@@ -277,7 +277,7 @@
   font-size: 0.65rem;
   font-weight: 600;
   border-radius: 6px;
-  border: 1px solid rgba(99, 102, 241, 0.15);
+  border: 1px solid var(--emerald-border);
   background: transparent;
   color: #8b949e;
   cursor: pointer;
@@ -290,9 +290,9 @@
 }
 
 .th-filter-btn.active {
-  background: rgba(99, 102, 241, 0.12);
-  border-color: rgba(99, 102, 241, 0.3);
-  color: #818cf8;
+  background: var(--emerald-bg);
+  border-color: var(--emerald-border);
+  color: var(--emerald-text);
 }
 
 .th-file-list {
@@ -307,7 +307,7 @@
   align-items: center;
   gap: 0.65rem;
   padding: 0.6rem 0;
-  border-bottom: 1px solid rgba(99, 102, 241, 0.05);
+  border-bottom: 1px solid var(--emerald-border);
 }
 
 .th-file-row:last-child {
@@ -407,7 +407,7 @@
   width: 28px;
   height: 28px;
   border-radius: 6px;
-  border: 1px solid rgba(99, 102, 241, 0.1);
+  border: 1px solid var(--emerald-border);
   background: transparent;
   color: #6b7280;
   cursor: pointer;
@@ -419,9 +419,9 @@
 }
 
 .th-icon-btn:hover {
-  border-color: rgba(99, 102, 241, 0.3);
-  color: #818cf8;
-  background: rgba(99, 102, 241, 0.06);
+  border-color: var(--emerald-border);
+  color: var(--emerald-text);
+  background: var(--emerald-bg-hover);
 }
 
 /* ── Upload modal ──────────────────────────────────────────── */
@@ -441,7 +441,7 @@
   width: 100%;
   max-width: 520px;
   background: var(--bg-secondary);
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  border: 1px solid var(--emerald-border);
   border-radius: 16px;
   padding: 1.5rem;
   box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
@@ -465,8 +465,8 @@
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  border: 1px solid rgba(99, 102, 241, 0.15);
-  background: rgba(99, 102, 241, 0.06);
+  border: 1px solid var(--emerald-border);
+  background: var(--emerald-bg);
   color: #9ca3af;
   cursor: pointer;
   display: flex;
@@ -479,7 +479,7 @@
 }
 
 .th-dropzone {
-  border: 2px dashed rgba(99, 102, 241, 0.25);
+  border: 2px dashed var(--emerald-border);
   border-radius: 12px;
   padding: 2rem;
   text-align: center;
@@ -492,13 +492,13 @@
 
 .th-dropzone:hover,
 .th-dropzone.dragover {
-  border-color: #6366f1;
-  background: rgba(99, 102, 241, 0.04);
+  border-color: var(--emerald);
+  background: var(--emerald-bg-hover);
 }
 
 .th-dropzone i {
   font-size: 2rem;
-  color: #6366f1;
+  color: var(--emerald-text);
   display: block;
   margin-bottom: 0.5rem;
 }
@@ -537,7 +537,7 @@
   font-size: 0.8125rem;
   border-radius: 8px;
   background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(99, 102, 241, 0.12);
+  border: 1px solid var(--emerald-border);
   color: #e2e8f0;
   font-family: inherit;
 }
@@ -545,7 +545,7 @@
 .th-form-select:focus,
 .th-form-input:focus {
   outline: none;
-  border-color: #6366f1;
+  border-color: var(--emerald);
 }
 
 .th-recipient-chips {
@@ -563,15 +563,15 @@
   font-size: 0.65rem;
   font-weight: 600;
   border-radius: 6px;
-  background: rgba(99, 102, 241, 0.12);
-  border: 1px solid rgba(99, 102, 241, 0.2);
-  color: #818cf8;
+  background: var(--emerald-bg);
+  border: 1px solid var(--emerald-border);
+  color: var(--emerald-text);
 }
 
 .th-chip button {
   background: none;
   border: none;
-  color: #818cf8;
+  color: var(--emerald-text);
   cursor: pointer;
   font-size: 0.6rem;
   padding: 0;
@@ -585,7 +585,7 @@
   font-weight: 700;
   border-radius: 10px;
   border: none;
-  background: #6366f1;
+  background: var(--emerald);
   color: #fff;
   cursor: pointer;
   font-family: inherit;
@@ -619,18 +619,18 @@
 }
 
 .th-member-row:hover {
-  background: rgba(99, 102, 241, 0.06);
+  background: var(--emerald-bg-hover);
 }
 
 .th-member-row.selected {
-  background: rgba(99, 102, 241, 0.1);
+  background: var(--emerald-bg);
 }
 
 .th-member-check {
   width: 18px;
   height: 18px;
   border-radius: 4px;
-  border: 1.5px solid rgba(99, 102, 241, 0.3);
+  border: 1.5px solid var(--emerald-border);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -641,8 +641,8 @@
 }
 
 .th-member-row.selected .th-member-check {
-  background: #6366f1;
-  border-color: #6366f1;
+  background: var(--emerald);
+  border-color: var(--emerald);
   color: #fff;
 }
 
@@ -654,8 +654,8 @@
 }
 
 .th-stat-card {
-  background: rgba(99, 102, 241, 0.03);
-  border: 1px solid rgba(99, 102, 241, 0.08);
+  background: var(--emerald-bg);
+  border: 1px solid var(--emerald-border);
   border-radius: 12px;
   padding: 0.85rem 1rem;
   text-align: center;
@@ -706,8 +706,8 @@
 .th-ranking-card {
   flex: 0 0 auto;
   min-width: 160px;
-  background: rgba(99, 102, 241, 0.03);
-  border: 1px solid rgba(99, 102, 241, 0.1);
+  background: var(--emerald-bg);
+  border: 1px solid var(--emerald-border);
   border-radius: 12px;
   padding: 0.75rem 1rem;
   text-align: center;
@@ -715,13 +715,13 @@
 }
 
 .th-ranking-card:hover {
-  border-color: rgba(99, 102, 241, 0.25);
+  border-color: var(--emerald-border);
 }
 
 .th-ranking-rank {
   font-size: 0.6rem;
   font-weight: 800;
-  color: #6366f1;
+  color: var(--emerald-text);
   margin-bottom: 0.2rem;
 }
 
@@ -767,8 +767,8 @@
   font-weight: 700;
   padding: 1px 5px;
   border-radius: 4px;
-  background: rgba(99, 102, 241, 0.1);
-  color: #818cf8;
+  background: var(--emerald-bg);
+  color: var(--emerald-text);
 }
 
 /* ── Task + File side by side ──────────────────────────────── */
@@ -825,7 +825,7 @@
 .th-filter-divider {
   width: 1px;
   height: 28px;
-  background: rgba(99, 102, 241, 0.12);
+  background: var(--emerald-border);
   margin: 0 0.15rem 0.15rem;
   align-self: flex-end;
 }
@@ -837,7 +837,7 @@
   font-size: 0.72rem;
   font-weight: 600;
   border-radius: 8px;
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  border: 1px solid var(--emerald-border);
   background: rgba(10, 14, 19, 0.9);
   color: #e2e8f0;
   cursor: pointer;
@@ -850,8 +850,8 @@
 
 .th-filter-select:focus {
   outline: none;
-  border-color: #6366f1;
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+  border-color: var(--emerald);
+  box-shadow: 0 0 0 2px var(--emerald-border);
 }
 
 /* ── Custom dropdowns (Team, Type) ────────────────────────── */
@@ -870,7 +870,7 @@
   font-size: 0.72rem;
   font-weight: 600;
   border-radius: 8px;
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  border: 1px solid var(--emerald-border);
   background: rgba(10, 14, 19, 0.9);
   color: #9ca3af;
   cursor: pointer;
@@ -881,17 +881,17 @@
 }
 
 .th-filter-dd-trigger:hover {
-  border-color: rgba(99, 102, 241, 0.35);
+  border-color: var(--emerald-border);
   color: #e2e8f0;
 }
 
 .th-filter-dd-trigger.open {
-  border-color: #6366f1;
+  border-color: var(--emerald);
   color: #e2e8f0;
 }
 
 .th-filter-dd-trigger.has-value {
-  color: #818cf8;
+  color: var(--emerald-text);
 }
 
 .th-filter-dd-chevron {
@@ -909,7 +909,7 @@
   overflow-y: auto;
   padding: 0.35rem;
   border-radius: 10px;
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  border: 1px solid var(--emerald-border);
   background: var(--bg-secondary);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
 }
@@ -936,13 +936,13 @@
 }
 
 .th-filter-dd-item:hover {
-  background: rgba(99, 102, 241, 0.12);
+  background: var(--emerald-bg-hover);
   color: #f0f6fc;
 }
 
 .th-filter-dd-item.active {
-  background: rgba(99, 102, 241, 0.18);
-  color: #a5b4fc;
+  background: var(--emerald-bg);
+  color: var(--emerald-text);
 }
 
 .th-filter-dd-clear {
@@ -952,7 +952,7 @@
   margin-bottom: 0.25rem;
   font-size: 0.65rem;
   font-weight: 600;
-  color: #818cf8;
+  color: var(--emerald-text);
   background: transparent;
   border: none;
   border-radius: 6px;
@@ -968,7 +968,7 @@
 .th-filter-dd-clear--inline {
   margin-top: 0.25rem;
   margin-bottom: 0;
-  border-top: 1px solid rgba(99, 102, 241, 0.1);
+  border-top: 1px solid var(--emerald-border);
   padding-top: 0.5rem;
 }
 
@@ -984,17 +984,17 @@
 }
 
 .th-filter-dd-checkrow:hover {
-  background: rgba(99, 102, 241, 0.08);
+  background: var(--emerald-bg-hover);
 }
 
 .th-filter-dd-checkrow input {
-  accent-color: #6366f1;
+  accent-color: var(--emerald);
 }
 
 /* Type → Models + flyout submenu */
 .th-type-models-wrap {
   position: relative;
-  border-top: 1px solid rgba(99, 102, 241, 0.08);
+  border-top: 1px solid var(--emerald-border);
   margin-top: 0.25rem;
   padding-top: 0.25rem;
 }
@@ -1012,7 +1012,7 @@
 }
 
 .th-type-models-wrap:hover .th-type-models-row {
-  background: rgba(99, 102, 241, 0.08);
+  background: var(--emerald-bg-hover);
   color: #e2e8f0;
 }
 
@@ -1031,7 +1031,7 @@
   min-width: 10.5rem;
   padding: 0.35rem;
   border-radius: 10px;
-  border: 1px solid rgba(99, 102, 241, 0.22);
+  border: 1px solid var(--emerald-border);
   background: var(--bg-secondary);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
   opacity: 0;
@@ -1056,7 +1056,7 @@
     top: auto;
     margin: 0.2rem 0 0.35rem 0.5rem;
     padding-left: 0.5rem;
-    border-left: 2px solid rgba(99, 102, 241, 0.2);
+    border-left: 2px solid var(--emerald-border);
     border-radius: 0 8px 8px 0;
     box-shadow: none;
     min-width: 0;
@@ -1109,12 +1109,12 @@ body.light-mode .th-card {
 }
 
 body.light-mode .th-card:hover {
-  border-color: rgba(99, 102, 241, 0.3);
+  border-color: var(--emerald-border);
 }
 
 body.light-mode .th-hero {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.06) 0%, rgba(249, 250, 251, 0.95) 100%);
-  border-color: rgba(99, 102, 241, 0.12);
+  background: linear-gradient(135deg, var(--emerald-bg) 0%, rgba(249, 250, 251, 0.95) 100%);
+  border-color: var(--emerald-border);
 }
 
 body.light-mode .th-file-search {
@@ -1129,7 +1129,7 @@ body.light-mode .th-modal {
 }
 
 body.light-mode .th-dropzone {
-  border-color: rgba(99, 102, 241, 0.2);
+  border-color: var(--emerald-border);
 }
 
 body.light-mode .th-form-select,
@@ -1153,8 +1153,8 @@ body.light-mode .th-hero-sub {
 }
 
 body.light-mode .th-ranking-card {
-  background: rgba(99, 102, 241, 0.04);
-  border-color: rgba(99, 102, 241, 0.1);
+  background: var(--emerald-bg);
+  border-color: var(--emerald-border);
 }
 
 body.light-mode .th-ranking-name {
@@ -1166,8 +1166,8 @@ body.light-mode .th-ranking-value {
 }
 
 body.light-mode .th-ticker-pill {
-  background: rgba(99, 102, 241, 0.08);
-  color: #4f46e5;
+  background: var(--emerald-bg);
+  color: var(--emerald-text);
 }
 
 body.light-mode .th-filter-label {
@@ -1183,12 +1183,12 @@ body.light-mode .th-filter-dd-trigger {
 
 body.light-mode .th-filter-dd-trigger:hover,
 body.light-mode .th-filter-dd-trigger.open {
-  border-color: rgba(99, 102, 241, 0.45);
+  border-color: var(--emerald-border);
   color: #111827;
 }
 
 body.light-mode .th-filter-dd-trigger.has-value {
-  color: #4f46e5;
+  color: var(--emerald-text);
 }
 
 body.light-mode .th-filter-dd-panel,
@@ -1203,13 +1203,13 @@ body.light-mode .th-filter-dd-item {
 }
 
 body.light-mode .th-filter-dd-item:hover {
-  background: rgba(99, 102, 241, 0.08);
+  background: var(--emerald-bg-hover);
   color: #111827;
 }
 
 body.light-mode .th-filter-dd-item.active {
-  background: rgba(99, 102, 241, 0.12);
-  color: #4338ca;
+  background: var(--emerald-bg);
+  color: var(--emerald-text);
 }
 
 body.light-mode .th-filter-dd-checkrow {
@@ -1221,7 +1221,7 @@ body.light-mode .th-type-models-row {
 }
 
 body.light-mode .th-type-models-wrap:hover .th-type-models-row {
-  background: rgba(99, 102, 241, 0.06);
+  background: var(--emerald-bg-hover);
   color: #111827;
 }
 
@@ -1242,7 +1242,7 @@ body.light-mode .th-card-header-left span {
 }
 
 body.light-mode .th-card-header-left i {
-  color: #4f46e5;
+  color: var(--emerald-text);
 }
 
 body.light-mode .th-card-body {
@@ -1258,8 +1258,8 @@ body.light-mode .th-icon-btn {
 body.light-mode .th-card-actions button:hover,
 body.light-mode .th-icon-btn:hover {
   color: #111827;
-  background: rgba(99, 102, 241, 0.08);
-  border-color: rgba(99, 102, 241, 0.3);
+  background: var(--emerald-bg-hover);
+  border-color: var(--emerald-border);
 }
 
 body.light-mode .th-stat-card {
@@ -1280,8 +1280,8 @@ body.light-mode .th-hero-stat-label {
 }
 
 body.light-mode .th-hero-icon {
-  background: rgba(99, 102, 241, 0.08);
-  color: #4f46e5;
+  background: var(--emerald-bg);
+  color: var(--emerald-text);
 }
 
 body.light-mode .th-task-row {
@@ -1297,7 +1297,7 @@ body.light-mode .th-file-row {
 }
 
 body.light-mode .th-file-row:hover {
-  background: rgba(99, 102, 241, 0.03);
+  background: var(--emerald-bg-hover);
 }
 
 body.light-mode .th-file-meta {
@@ -1305,8 +1305,8 @@ body.light-mode .th-file-meta {
 }
 
 body.light-mode .th-file-icon {
-  background: rgba(99, 102, 241, 0.06);
-  color: #4f46e5;
+  background: var(--emerald-bg);
+  color: var(--emerald-text);
 }
 
 body.light-mode .th-file-icon.pdf {
@@ -1354,9 +1354,9 @@ body.light-mode .th-badge.pending {
 }
 
 body.light-mode .th-chip {
-  background: rgba(99, 102, 241, 0.06);
-  color: #4338ca;
-  border-color: rgba(99, 102, 241, 0.15);
+  background: var(--emerald-bg);
+  color: var(--emerald-text);
+  border-color: var(--emerald-border);
 }
 
 body.light-mode .th-compact-card {
@@ -1374,18 +1374,18 @@ body.light-mode .th-member-list {
 }
 
 body.light-mode .th-upload-btn {
-  background: rgba(99, 102, 241, 0.08);
-  border-color: rgba(99, 102, 241, 0.2);
-  color: #4338ca;
+  background: var(--emerald-bg);
+  border-color: var(--emerald-border);
+  color: var(--emerald-text);
 }
 
 body.light-mode .th-upload-btn:hover {
-  background: rgba(99, 102, 241, 0.15);
-  color: #3730a3;
+  background: var(--emerald-bg-hover);
+  color: var(--emerald-text);
 }
 
 body.light-mode .th-submit-btn {
-  background: #4f46e5;
+  background: var(--emerald);
   color: #fff;
 }
 
@@ -1402,7 +1402,7 @@ body.light-mode .th-modal-overlay {
 }
 
 body.light-mode .th-ranking-rank {
-  color: #4f46e5;
+  color: var(--emerald-text);
 }
 
 body.light-mode .th-ranking-roi.positive {
@@ -1429,9 +1429,9 @@ body.light-mode .th-filter-btn {
 
 body.light-mode .th-filter-btn:hover,
 body.light-mode .th-filter-btn.active {
-  background: rgba(99, 102, 241, 0.08);
-  color: #4338ca;
-  border-color: rgba(99, 102, 241, 0.3);
+  background: var(--emerald-bg-hover);
+  color: var(--emerald-text);
+  border-color: var(--emerald-border);
 }
 
 body.light-mode .th-filter-divider {
