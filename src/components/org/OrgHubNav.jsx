@@ -19,7 +19,7 @@
  * show no separate Archive item in the rail.
  */
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useOrg } from '@/contexts/OrgContext';
@@ -156,31 +156,49 @@ export function OrgHubNav() {
   const { orgData, orgRole, isLoading } = useOrg();
   const member = orgData?.member || null;
   const [counts, setCounts] = useState(null);
+  // Optimistic active nav: highlight the clicked item immediately, before the
+  // new segment resolves, so navigation acknowledges the click instantly.
+  const [optimisticHref, setOptimisticHref] = useState(null);
 
   // ONE batched, count-only round trip for every badge (server decides tone).
-  // Re-fetched on route change so a count drops after you act on it (e.g. clear
-  // an assignment). Absent/null keys render no badge — never a 0.
+  // Absent/null keys render no badge — never a 0.
+  const fetchCounts = useCallback(async () => {
+    try {
+      const res = await fetch('/api/org/nav-counts');
+      if (!res.ok) return;
+      setCounts(await res.json());
+    } catch {
+      /* honest-empty: no badges when counts are unavailable */
+    }
+  }, []);
+
+  // Fetch ONCE on mount — the sidebar lives in the layout and persists across
+  // navigations, so this must not re-run per route (that fired an uncached
+  // request every hop). Refresh instead on a 60s poll and whenever a mutation
+  // dispatches 'ezana:org-nav-counts-refresh' (e.g. after submitting an
+  // assignment or resolving a breach), so a count still drops when you act.
   useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        const res = await fetch('/api/org/nav-counts', { cache: 'no-store' });
-        if (!res.ok || !alive) return;
-        const data = await res.json();
-        if (alive) setCounts(data);
-      } catch {
-        /* honest-empty: no badges when counts are unavailable */
-      }
-    })();
+    fetchCounts();
+    const poll = setInterval(fetchCounts, 60000);
+    const onRefresh = () => fetchCounts();
+    window.addEventListener('ezana:org-nav-counts-refresh', onRefresh);
     return () => {
-      alive = false;
+      clearInterval(poll);
+      window.removeEventListener('ezana:org-nav-counts-refresh', onRefresh);
     };
+  }, [fetchCounts]);
+
+  // Once the real route resolves, drop the optimistic override.
+  useEffect(() => {
+    setOptimisticHref(null);
   }, [pathname]);
 
   const renderItem = (item) => {
     if (item.roles && !item.roles.includes(orgRole)) return null;
     const { Icon } = item;
-    const active = itemActive(pathname, item);
+    // While an optimistic click is pending, ONLY the clicked item reads active
+    // (single highlight); otherwise fall back to the route-matched state.
+    const active = optimisticHref ? optimisticHref === item.href : itemActive(pathname, item);
     const cls = ['ohn-nav-item', active ? 'active' : '', item.highlight ? 'highlight' : '']
       .filter(Boolean)
       .join(' ');
@@ -192,6 +210,7 @@ export function OrgHubNav() {
         prefetch
         className={cls}
         aria-current={active ? 'page' : undefined}
+        onClick={() => setOptimisticHref(item.href)}
       >
         <Icon size={15} strokeWidth={1.8} />
         <span>{item.label}</span>
