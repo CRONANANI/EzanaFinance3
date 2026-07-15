@@ -42,9 +42,9 @@
   font-size: 0.78rem;
   font-weight: 600;
   text-decoration: none;
-  border: 1px solid rgba(99, 102, 241, 0.25);
-  background: rgba(99, 102, 241, 0.12);
-  color: #a5b4fc;
+  border: 1px solid var(--emerald-border);
+  background: var(--emerald-bg);
+  color: var(--emerald-text);
   cursor: pointer;
   transition:
     background 0.15s,
@@ -52,8 +52,8 @@
 }
 
 .op-btn:hover {
-  background: rgba(99, 102, 241, 0.2);
-  border-color: rgba(99, 102, 241, 0.4);
+  background: var(--emerald-bg-hover);
+  border-color: var(--emerald-border);
 }
 
 .op-btn--ghost {
@@ -109,7 +109,7 @@
   min-width: 140px;
   background: var(--surface-card);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 10px;
+  border-radius: 14px;
   display: flex;
   flex-direction: column;
   max-height: 70vh;
@@ -139,8 +139,8 @@
   display: block;
   padding: 0.55rem 0.6rem;
   border-radius: 8px;
-  background: rgba(99, 102, 241, 0.06);
-  border: 1px solid rgba(99, 102, 241, 0.15);
+  background: var(--emerald-bg);
+  border: 1px solid var(--emerald-border);
   text-decoration: none;
   color: inherit;
   transition:
@@ -149,7 +149,7 @@
 }
 
 .op-card:hover {
-  border-color: rgba(99, 102, 241, 0.35);
+  border-color: var(--emerald-border);
   transform: translateY(-1px);
 }
 
@@ -181,7 +181,7 @@
 
 .op-archive-card {
   padding: 1rem 1.1rem;
-  border-radius: 12px;
+  border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: var(--surface-card);
   text-decoration: none;
@@ -191,7 +191,7 @@
 }
 
 .op-archive-card:hover {
-  border-color: rgba(99, 102, 241, 0.3);
+  border-color: var(--emerald-border);
 }
 
 .op-archive-top {
@@ -264,7 +264,7 @@
   gap: 0.75rem;
   margin-top: 0.6rem;
   font-size: 0.68rem;
-  color: #6366f1;
+  color: var(--emerald-text);
 }
 
 /* Detail */
@@ -299,8 +299,8 @@
 }
 
 .op-tab--active {
-  color: #a5b4fc;
-  border-bottom-color: #6366f1;
+  color: var(--emerald-text);
+  border-bottom-color: var(--emerald);
 }
 
 .op-panel {
@@ -340,7 +340,7 @@
 }
 
 .op-back:hover {
-  color: #a5b4fc;
+  color: var(--emerald-text);
 }
 
 /* Modal + composer */
@@ -357,7 +357,7 @@
 
 .op-modal {
   background: var(--bg-secondary);
-  border: 1px solid rgba(99, 102, 241, 0.25);
+  border: 1px solid var(--emerald-border);
   border-radius: 14px;
   max-width: 560px;
   width: 100%;
@@ -401,8 +401,8 @@
 }
 
 .op-step.active {
-  background: rgba(99, 102, 241, 0.2);
-  color: #a5b4fc;
+  background: var(--emerald-bg);
+  color: var(--emerald-text);
 }
 
 .op-step.done {
@@ -456,7 +456,7 @@
 }
 
 .op-search-dropdown button:hover {
-  background: rgba(99, 102, 241, 0.12);
+  background: var(--emerald-bg-hover);
 }
 
 .op-priors-box {
@@ -504,10 +504,10 @@
 
 .op-stage-actions {
   padding: 1rem;
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  border: 1px solid var(--emerald-border);
   border-radius: 10px;
   margin-bottom: 1rem;
-  background: rgba(99, 102, 241, 0.04);
+  background: var(--emerald-bg);
 }
 
 .op-stage-actions h3 {
@@ -550,7 +550,7 @@
 .op-fmp-card {
   padding: 0.75rem;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
+  border-radius: 14px;
   background: var(--surface-card);
 }
 
@@ -617,7 +617,7 @@
   flex-wrap: wrap;
   gap: 1rem;
   padding: 0.75rem 1rem;
-  background: rgba(99, 102, 241, 0.06);
+  background: var(--emerald-bg);
   border-radius: 8px;
   font-size: 0.75rem;
   color: #9ca3af;
