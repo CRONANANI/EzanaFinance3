@@ -1,32 +1,12 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
-import { Facebook, Instagram, Linkedin, Send } from 'lucide-react';
+import { Facebook, Instagram, Linkedin } from 'lucide-react';
 import { EzanaNavLogo } from '@/components/brand/EzanaNavLogo';
+import { NewsletterSignup } from '@/components/landing/NewsletterSignup';
 import './footer-section.css';
 
 export function FooterSection({ onContactClick }) {
-  const [email, setEmail] = useState('');
-  const [status, setStatus] = useState('idle');
-
-  const handleNewsletterSubmit = async (e) => {
-    e.preventDefault();
-    if (!email || status === 'submitting') return;
-    setStatus('submitting');
-    try {
-      const res = await fetch('/api/newsletter/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, step: 'email' }),
-      });
-      setStatus(res.ok ? 'done' : 'error');
-      if (res.ok) setEmail('');
-    } catch {
-      setStatus('error');
-    }
-  };
-
   return (
     <footer className="landing-footer">
       <div className="landing-footer-inner">
@@ -38,36 +18,7 @@ export function FooterSection({ onContactClick }) {
             </Link>
             <h3>Stay connected</h3>
             <p>Join our newsletter for product updates, market insights, and platform news.</p>
-            <form className="landing-footer-newsletter" onSubmit={handleNewsletterSubmit}>
-              <label htmlFor="footer-newsletter-email" className="sr-only">
-                Email address
-              </label>
-              <input
-                id="footer-newsletter-email"
-                type="email"
-                placeholder="Enter your email"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-              <button
-                type="submit"
-                className="landing-footer-send"
-                aria-label="Subscribe"
-                disabled={status === 'submitting'}
-              >
-                <Send className="h-4 w-4" strokeWidth={2} />
-              </button>
-            </form>
-            {status === 'done' && (
-              <p className="landing-footer-newsletter-msg">Thanks — check your inbox to confirm.</p>
-            )}
-            {status === 'error' && (
-              <p className="landing-footer-newsletter-msg landing-footer-newsletter-msg--err">
-                Something went wrong. Try again.
-              </p>
-            )}
+            <NewsletterSignup source="landing_footer" />
           </div>
 
           <div className="landing-footer-col">

@@ -1,0 +1,97 @@
+/* Newsletter confirm / unsubscribe result pages. Token-driven; light + dark. */
+.nl-status {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.25rem;
+  background: var(--app-bg);
+  font-family: var(--font-sans);
+}
+
+.nl-status-card {
+  width: 100%;
+  max-width: 460px;
+  padding: 2rem;
+  border-radius: 16px;
+  border: 1px solid var(--border-primary);
+  background: var(--surface-card);
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+}
+
+.nl-status-title {
+  margin: 0 0 0.75rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+
+.nl-status-body {
+  margin: 0 0 1.25rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.nl-status-link {
+  display: inline-block;
+  padding: 9px 18px;
+  border-radius: 999px;
+  background: var(--emerald);
+  color: #ffffff;
+  font-size: 0.825rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.nl-status-link:hover {
+  background: var(--emerald-hover);
+}
+
+.nl-status-reason {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 1.25rem;
+  text-align: left;
+}
+.nl-status-reason-label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+.nl-status-reason-input {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-input, var(--border-primary));
+  background: var(--surface-input, var(--inset));
+  color: var(--text-primary);
+  font-size: 0.825rem;
+  font-family: var(--font-sans);
+  resize: vertical;
+}
+.nl-status-reason-input:focus {
+  outline: none;
+  border-color: var(--border-focus);
+}
+.nl-status-reason-btn {
+  align-self: flex-start;
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border-primary);
+  background: var(--surface-card-hover);
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.nl-status-reason-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.nl-status-note {
+  margin: 0 0 1.25rem;
+  font-size: 0.82rem;
+  color: var(--emerald-text, var(--emerald));
+}
