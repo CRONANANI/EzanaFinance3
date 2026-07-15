@@ -1,0 +1,149 @@
+/* ════════════════════════════════════════════════════════════════════════
+   Org design system — the canonical primitives every org-team-hub page shares.
+   Lifted VERBATIM from the Command Center (team-hub-wire.css `.thw-*`) with
+   generic, reusable names so no page has to roll its own card/button/pill again.
+
+   House values (from the Command Center, the reference implementation):
+     • Card:  1px var(--border-primary) border, 14px radius, var(--surface-card)
+              fill — cards are defined by their BORDER, not a lighter fill.
+     • Pill:  9999px, JetBrains Mono tabular-nums.
+     • Button: emerald primary (#fff label, the same emerald fill the Command
+              Center uses on its active range control), 9px radius.
+   Tokens only (the one exception is #fff LABEL text on the emerald/danger fills —
+   the Command Center itself uses #fff there, and there is no white token).
+   Light + dark both flow from the tokens. No !important.
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* ── Card — border-defined on the surface token, 14px radius ─────────────── */
+.org-card {
+  border: 1px solid var(--border-primary);
+  border-radius: 14px;
+  background: var(--surface-card);
+  transition: border-color 0.15s ease-out;
+}
+.org-card:hover {
+  border-color: var(--border-hover);
+}
+.org-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 13px 20px;
+  border-bottom: 1px solid var(--border-secondary);
+}
+.org-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.org-card-title svg {
+  color: var(--emerald);
+}
+.org-card-body {
+  padding: 6px 20px 14px;
+}
+.org-card-foot {
+  padding: 12px 20px;
+  border-top: 1px solid var(--border-secondary);
+}
+
+/* ── Buttons — ONE family, emerald primary. No indigo/purple, ever. ──────── */
+.org-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 9px;
+  padding: 8px 14px;
+  border: 1px solid transparent;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  transition:
+    background 0.12s ease-out,
+    border-color 0.12s ease-out,
+    color 0.12s ease-out;
+}
+.org-btn svg {
+  flex-shrink: 0;
+}
+.org-btn--primary {
+  background: var(--emerald);
+  color: #fff;
+  border-color: var(--emerald);
+}
+.org-btn--primary:hover:not(:disabled) {
+  background: var(--emerald-hover);
+  border-color: var(--emerald-hover);
+}
+.org-btn--secondary {
+  background: var(--surface-card);
+  color: var(--text-primary);
+  border-color: var(--border-primary);
+}
+.org-btn--secondary:hover:not(:disabled) {
+  background: var(--surface-card-hover);
+  border-color: var(--border-hover);
+}
+.org-btn--ghost {
+  background: transparent;
+  color: var(--text-secondary);
+}
+.org-btn--ghost:hover:not(:disabled) {
+  background: var(--surface-card-hover);
+  color: var(--text-primary);
+}
+.org-btn--danger {
+  background: var(--danger);
+  color: #fff;
+  border-color: var(--danger);
+}
+.org-btn--danger:hover:not(:disabled) {
+  opacity: 0.9;
+}
+.org-btn:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.org-btn:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+
+/* ── Pills / chips — 9999px, mono tabular-nums (Command Center .thw-pill) ── */
+.org-pill {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  border: 1px solid var(--border-primary);
+  background: var(--surface-card);
+  color: var(--text-secondary);
+}
+.org-pill.pos {
+  color: var(--emerald);
+  background: var(--emerald-bg);
+  border-color: var(--emerald-border);
+}
+.org-pill.neg {
+  color: var(--negative);
+  background: var(--negative-bg);
+  border-color: var(--negative);
+}
+.org-pill.mut {
+  color: var(--text-faint);
+}
+
+/* ── Numeric helper — every figure stays JetBrains Mono tabular-nums ─────── */
+.org-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
