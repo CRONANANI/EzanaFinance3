@@ -15,6 +15,30 @@
   min-width: 0;
 }
 
+/* Subtle content-only transition on navigation. The .org-shell-fade node is
+   keyed by pathname in the layout, so it remounts (replaying this) ONCE per
+   navigation; the persistent rail (.ohn-sidebar) sits outside it and never
+   animates. Skeleton and resolved content share the same pathname key, so the
+   skeleton→content swap does NOT re-trigger the fade — no double-animation. */
+.org-shell-fade {
+  animation: org-shell-fade-in 160ms ease-out both;
+}
+@keyframes org-shell-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .org-shell-fade {
+    animation: none;
+  }
+}
+
 /* ── Sidebar (OrgHubNav) ─────────────────────────────────────────────────── */
 .ohn-sidebar {
   position: sticky;
