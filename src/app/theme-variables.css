@@ -100,7 +100,7 @@
   --btn-secondary-bg-hover: var(--surface-card-hover);
   --btn-outline-border: var(--border-primary);
   --btn-ghost-bg-hover: var(--surface-card-hover);
-  --btn-destructive-bg: var(--danger);
+  --btn-destructive-bg: var(--negative); /* flips #ef4444 dark → #dc2626 light */
   --btn-destructive-fg: #ffffff;
   --btn-ring: var(--emerald);
   --btn-disabled-opacity: 0.5;
