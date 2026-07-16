@@ -1,20 +1,16 @@
 'use client';
 
 import { Fragment, useEffect, useRef, useState } from 'react';
-import dynamic from 'next/dynamic';
 import { ArrowRight, BarChart3, CheckCircle2 } from 'lucide-react';
+import { HeroDottedMap } from './HeroDottedMap';
 import './landing-hero.css';
 
-// Defer the heavy animated world map (client-only) so the hero headline + CTA
-// paint immediately; the map fills in a beat later into reserved space (no
-// layout shift). WorldMap is a named export.
-const WorldMap = dynamic(
-  () => import('@/components/ui/world-map').then((m) => ({ default: m.WorldMap })),
-  {
-    ssr: false,
-    loading: () => <div aria-hidden style={{ minHeight: '320px', width: '100%' }} />,
-  },
-);
+// The dotted continents render as a static, SSR'd layer (HeroDottedMap) so they
+// paint with the page — in step with the inline signal-routes overlay — instead
+// of popping in a few seconds later from the old `ssr:false` world-map chunk.
+// The hero never used the interactive map's pan/zoom/hover, so none of that
+// (or its ~1,300-line chunk) ships here anymore. The heavy interactive
+// <WorldMap> is unchanged on /market-analysis.
 
 /**
  * Landing hero — "Global Signal" (Column × Ezana hybrid).
@@ -223,11 +219,8 @@ export function LandingHero() {
           (1840×820 aspect) so the hero layout doesn't shift. */}
       <div className="lp-map" aria-hidden="true">
         <div className="lp-map-worldmap">
-          <WorldMap
-            lineColor="#10b981"
+          <HeroDottedMap
             dotColor={mapDense ? 'rgba(4, 120, 87, 0.92)' : 'rgba(5, 150, 105, 0.7)'}
-            hideControls
-            hideFinancialDots
           />
         </div>
         <div className="lp-map-layers" dangerouslySetInnerHTML={{ __html: ROUTES_HTML }} />
