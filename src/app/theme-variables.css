@@ -168,6 +168,24 @@
   --font-serif: 'Newsreader', Georgia, 'Times New Roman', serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
 
+  /* ── Broadsheet type kit ──────────────────────────────────────────────────
+     The home page's editorial ("broadsheet") type treatment, promoted here for
+     app-wide reuse (esp. the org app). METRICS ONLY — these are theme-
+     independent (font-size / weight / tracking), so they live once in :root and
+     need no light/dark override. All COLOURS still route through the theme
+     tokens above/below (--text-*, --surface-*, --border-*, --emerald,
+     --negative), so dark mode is preserved. Deliberately NOT prefixed `--bs-*`:
+     those stay private to broadsheet.css; the org app must never reference a
+     raw `--bs-*` light value. Weights cluster at 700/600/500 — nothing 800. */
+  --type-kicker-size: 9.5px; /* tiny uppercase kicker / eyebrow label */
+  --type-kicker-tracking: 0.16em;
+  --type-kicker-weight: 700;
+  --type-label-size: 10px; /* slightly larger caps section label */
+  --type-label-tracking: 0.14em;
+  --weight-strong: 700;
+  --weight-medium: 600;
+  --weight-regular: 500;
+
   /* Native form control chrome (dropdowns, date inputs, scrollbars) */
   color-scheme: dark;
 
