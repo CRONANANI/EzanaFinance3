@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Search,
   Plus,
@@ -234,6 +235,7 @@ function openDoc(note, print) {
 
 /* ── Detail drawer ─────────────────────────────────────────────────────────*/
 function DetailDrawer({ noteId, viewer, knownTickers, onClose, onChanged, onEdit, onOpenTicker }) {
+  const [mounted, setMounted] = useState(false);
   const [note, setNote] = useState(null);
   const [supersededBy, setSupersededBy] = useState(null);
   const [versions, setVersions] = useState([]);
@@ -343,6 +345,23 @@ function DetailDrawer({ noteId, viewer, knownTickers, onClose, onChanged, onEdit
       alive = false;
     };
   }, [noteId, reload]);
+
+  // Portal only after mount (SSR-safe), Esc-to-close, and lock the background
+  // scroll so the board behind doesn't scroll under the modal.
+  useEffect(() => {
+    setMounted(true);
+    const onKey = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKey);
+    const { style } = document.body;
+    const prevOverflow = style.overflow;
+    style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      style.overflow = prevOverflow;
+    };
+  }, [onClose]);
 
   const author = note && note.author_id === viewer?.userId;
   const canEdit = author || canManage;
@@ -493,9 +512,16 @@ function DetailDrawer({ noteId, viewer, knownTickers, onClose, onChanged, onEdit
     fetch(`/api/org/research-notes/${noteId}/download`, { method: 'POST' }).catch(() => {});
   };
 
-  return (
-    <div className="rl2-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="rl2-drawer rl2-root" role="dialog" aria-modal="true">
+  if (!mounted) return null;
+
+  return createPortal(
+    <div className="rl2-overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+      <div
+        className="rl2-drawer rl2-root"
+        role="dialog"
+        aria-modal="true"
+        onMouseDown={(e) => e.stopPropagation()}
+      >
         <div className="rl2-drawer-head">
           <div style={{ minWidth: 0 }}>
             {note && (
@@ -520,403 +546,408 @@ function DetailDrawer({ noteId, viewer, knownTickers, onClose, onChanged, onEdit
           </button>
         </div>
 
-        {err && <div className="rl2-blocker">{err}</div>}
+        <div className="rl2-drawer-body">
+          {err && <div className="rl2-blocker">{err}</div>}
 
-        {note && note.status === 'superseded' && (
-          <div className="rl2-blocker">
-            This document has been superseded{supersededBy ? ` by "${supersededBy.title}"` : ''}. It
-            stays readable as institutional memory.
-          </div>
-        )}
-
-        {note && (
-          <>
-            {/* AI summary */}
-            <div className="rl2-section">
-              <div className="rl2-section-title">
-                <Sparkles size={13} /> AI summary
-              </div>
-              {summary ? (
-                <div className="rl2-ai-box">{summary}</div>
-              ) : (
-                <button
-                  type="button"
-                  className="rl2-btn rl2-btn--sm"
-                  onClick={runSummary}
-                  disabled={summaryLoading}
-                >
-                  {summaryLoading ? (
-                    <Loader2 size={13} className="rl2-spin" />
-                  ) : (
-                    <Sparkles size={13} />
-                  )}
-                  {summaryLoading ? 'Summarizing…' : 'Generate summary'}
-                </button>
-              )}
+          {note && note.status === 'superseded' && (
+            <div className="rl2-blocker">
+              This document has been superseded{supersededBy ? ` by "${supersededBy.title}"` : ''}.
+              It stays readable as institutional memory.
             </div>
+          )}
 
-            {/* Metadata */}
-            <div className="rl2-section">
-              <div className="rl2-section-title">Details</div>
-              <div className="rl2-meta-grid">
-                <div className="rl2-meta-item">
-                  <div className="k">Author</div>
-                  <div className="v">
-                    {note.author_name}
-                    {note.author_role ? ` · ${String(note.author_role).replace(/_/g, ' ')}` : ''}
-                  </div>
+          {note && (
+            <>
+              {/* AI summary */}
+              <div className="rl2-section">
+                <div className="rl2-section-title">
+                  <Sparkles size={13} /> AI summary
                 </div>
-                <div className="rl2-meta-item">
-                  <div className="k">Published</div>
-                  <div className="v rl2-num">
-                    {note.published_at ? fmtDate(note.published_at) : '—'}
-                  </div>
-                </div>
-                <div className="rl2-meta-item">
-                  <div className="k">Ticker</div>
-                  <div className="v">
-                    {note.ticker ? (
-                      <button
-                        type="button"
-                        className="rl2-pill rl2-pill--ticker"
-                        onClick={() => onOpenTicker(note.ticker)}
-                      >
-                        {note.ticker}
-                      </button>
+                {summary ? (
+                  <div className="rl2-ai-box">{summary}</div>
+                ) : (
+                  <button
+                    type="button"
+                    className="rl2-btn rl2-btn--sm"
+                    onClick={runSummary}
+                    disabled={summaryLoading}
+                  >
+                    {summaryLoading ? (
+                      <Loader2 size={13} className="rl2-spin" />
                     ) : (
-                      '—'
+                      <Sparkles size={13} />
                     )}
-                  </div>
-                </div>
-                <div className="rl2-meta-item">
-                  <div className="k">Sector</div>
-                  <div className="v">{note.sector || '—'}</div>
-                </div>
-                <div className="rl2-meta-item">
-                  <div className="k">Term</div>
-                  <div className="v">{note.term || '—'}</div>
-                </div>
-                <div className="rl2-meta-item">
-                  <div className="k">Version</div>
-                  <div className="v rl2-num">v{note.version || 1}</div>
-                </div>
-                <div className="rl2-meta-item">
-                  <div className="k">Views</div>
-                  <div className="v rl2-num">{note.view_count || 0}</div>
-                </div>
-                <div className="rl2-meta-item">
-                  <div className="k">Downloads</div>
-                  <div className="v rl2-num">{note.download_count || 0}</div>
-                </div>
-                {note.pitch_id && (
+                    {summaryLoading ? 'Summarizing…' : 'Generate summary'}
+                  </button>
+                )}
+              </div>
+
+              {/* Metadata */}
+              <div className="rl2-section">
+                <div className="rl2-section-title">Details</div>
+                <div className="rl2-meta-grid">
                   <div className="rl2-meta-item">
-                    <div className="k">Linked pitch</div>
+                    <div className="k">Author</div>
                     <div className="v">
-                      <a href="/org-team-hub/pitches" style={{ color: 'var(--emerald-text)' }}>
-                        View pitch <ExternalLink size={10} />
-                      </a>
+                      {note.author_name}
+                      {note.author_role ? ` · ${String(note.author_role).replace(/_/g, ' ')}` : ''}
                     </div>
                   </div>
-                )}
-              </div>
-            </div>
-
-            {/* Abstract + body */}
-            {note.abstract && (
-              <div className="rl2-section">
-                <div className="rl2-section-title">Abstract</div>
-                <div className="rl2-body-render">{note.abstract}</div>
-              </div>
-            )}
-            <div className="rl2-section">
-              <div className="rl2-section-title">Document</div>
-              <div className="rl2-body-render">{note.body}</div>
-              {note.citations && (
-                <div className="rl2-hint" style={{ marginTop: 10 }}>
-                  <strong>Sources:</strong> {note.citations}
-                </div>
-              )}
-            </div>
-
-            {/* Attachments — real upload/list/download/delete via signed URLs. */}
-            <div className="rl2-section">
-              <div className="rl2-section-title">
-                <Paperclip size={13} /> Attachments
-              </div>
-              {attachments.length === 0 ? (
-                <div className="rl2-hint">No attachments yet.</div>
-              ) : (
-                <div className="rl2-attach-list">
-                  {attachments.map((att) => {
-                    const canDelete = canManage || att.uploaded_by === viewer?.userId;
-                    return (
-                      <div key={att.id} className="rl2-attach-row">
-                        <FileText size={14} className="rl2-attach-icon" />
-                        <span className="rl2-attach-name">{att.file_name}</span>
-                        <span className="rl2-attach-size rl2-num">{fmtBytes(att.size_bytes)}</span>
-                        {att.signed_url && (
-                          <a
-                            className="rl2-attach-act"
-                            href={att.signed_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            download={att.file_name}
-                            aria-label={`Download ${att.file_name}`}
-                          >
-                            <Download size={14} />
-                          </a>
-                        )}
-                        {canDelete && (
-                          <button
-                            type="button"
-                            className="rl2-attach-act rl2-attach-act--danger"
-                            onClick={() => deleteAttachment(att.id)}
-                            disabled={attBusy}
-                            aria-label={`Delete ${att.file_name}`}
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-              {canEdit && note.status !== 'superseded' && (
-                <div style={{ marginTop: 10 }}>
-                  <input
-                    ref={attFileRef}
-                    type="file"
-                    className="rl2-visually-hidden"
-                    accept=".pdf,.xlsx,.xls,.docx,.doc,.csv,.png,.jpg,.jpeg,.pptx"
-                    onChange={(e) => uploadAttachment(e.target.files?.[0])}
-                  />
-                  <button
-                    type="button"
-                    className="rl2-btn rl2-btn--sm"
-                    onClick={() => attFileRef.current?.click()}
-                    disabled={attBusy}
-                  >
-                    {attBusy ? <Loader2 size={13} className="rl2-spin" /> : <Upload size={13} />}
-                    {attBusy ? 'Uploading…' : 'Attach file'}
-                  </button>
-                  <span className="rl2-hint" style={{ marginLeft: 8 }}>
-                    PDF, Office, CSV, or image · up to 25 MB
-                  </span>
-                </div>
-              )}
-              {attError && (
-                <div className="rl2-blocker" style={{ marginTop: 8 }}>
-                  {attError}
-                </div>
-              )}
-            </div>
-
-            {/* Actions */}
-            <div className="rl2-section">
-              <div className="rl2-drawer-actions">
-                <button
-                  type="button"
-                  className="rl2-btn rl2-btn--sm"
-                  onClick={() => openDoc(note, false)}
-                >
-                  <ExternalLink size={13} /> Open
-                </button>
-                <button type="button" className="rl2-btn rl2-btn--sm" onClick={exportPdf}>
-                  <Download size={13} /> Export PDF
-                </button>
-                {canEdit && note.status !== 'superseded' && (
-                  <button
-                    type="button"
-                    className="rl2-btn rl2-btn--sm"
-                    onClick={() => onEdit(note)}
-                  >
-                    <Pencil size={13} /> Edit
-                  </button>
-                )}
-                {canEdit && note.status === 'draft' && (
-                  <button
-                    type="button"
-                    className="rl2-btn rl2-btn--sm"
-                    onClick={() => setStatus('under_review')}
-                    disabled={busy}
-                  >
-                    <MessageSquare size={13} /> Submit for review
-                  </button>
-                )}
-                {canEdit && note.status === 'under_review' && (
-                  <button
-                    type="button"
-                    className="rl2-btn rl2-btn--sm rl2-btn--ghost"
-                    onClick={() => setStatus('draft')}
-                    disabled={busy}
-                  >
-                    Back to draft
-                  </button>
-                )}
-                {canEdit && note.status !== 'published' && (
-                  <button
-                    type="button"
-                    className="rl2-btn rl2-btn--sm rl2-btn--primary"
-                    onClick={publish}
-                    disabled={busy}
-                  >
-                    <ShieldCheck size={13} /> Publish
-                  </button>
-                )}
-                {canEdit && note.status === 'published' && (
-                  <button
-                    type="button"
-                    className="rl2-btn rl2-btn--sm"
-                    onClick={supersede}
-                    disabled={busy}
-                  >
-                    <Clock size={13} /> Supersede
-                  </button>
-                )}
-                {canManage && (
-                  <button
-                    type="button"
-                    className="rl2-btn rl2-btn--sm"
-                    onClick={toggleExemplar}
-                    disabled={busy}
-                  >
-                    <Award size={13} /> {note.is_exemplar ? 'Unset exemplar' : 'Mark exemplar'}
-                  </button>
-                )}
-                {canManage && (
-                  <button
-                    type="button"
-                    className="rl2-btn rl2-btn--sm"
-                    onClick={togglePin}
-                    disabled={busy}
-                  >
-                    <Star size={13} /> {note.pinned ? 'Unpin' : 'Pin'}
-                  </button>
-                )}
-              </div>
-              {blockers.length > 0 && (
-                <div className="rl2-blocker" style={{ marginTop: 10 }}>
-                  <strong>Publish blocked:</strong>
-                  <ul style={{ margin: '6px 0 0', paddingLeft: 18 }}>
-                    {blockers.map((b) => (
-                      <li key={b.code}>{b.message}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-
-            {/* Version history */}
-            <div className="rl2-section">
-              <div className="rl2-section-title">
-                <History size={13} /> Version history
-              </div>
-              {versions.length === 0 ? (
-                <div className="rl2-hint">No prior versions — this is the original.</div>
-              ) : (
-                versions.map((v) => (
-                  <div key={v.id} className="rl2-vrow">
-                    <span className="rl2-vnum">v{v.version}</span>
-                    <span style={{ flex: 1 }}>{v.title}</span>
-                    <span className="rl2-crow-meta">
-                      {v.editor_name} · {timeAgo(v.created_at)}
-                    </span>
+                  <div className="rl2-meta-item">
+                    <div className="k">Published</div>
+                    <div className="v rl2-num">
+                      {note.published_at ? fmtDate(note.published_at) : '—'}
+                    </div>
                   </div>
-                ))
-              )}
-            </div>
-
-            {/* Review / comments */}
-            <div className="rl2-section">
-              <div className="rl2-section-title">
-                <MessageSquare size={13} /> Review thread
-                {openBlocks > 0 && (
-                  <span className="rl2-pill rl2-status-under_review" style={{ marginLeft: 6 }}>
-                    {openBlocks} open block{openBlocks > 1 ? 's' : ''}
-                  </span>
-                )}
-              </div>
-              {comments.length === 0 && <div className="rl2-hint">No comments yet.</div>}
-              {comments.map((c) => (
-                <div key={c.id} className="rl2-crow">
-                  <div className="rl2-crow-head">
-                    <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>
-                      {c.author_name}
-                      {c.is_review_block && (
-                        <span
-                          className="rl2-pill rl2-status-under_review"
-                          style={{ marginLeft: 6 }}
+                  <div className="rl2-meta-item">
+                    <div className="k">Ticker</div>
+                    <div className="v">
+                      {note.ticker ? (
+                        <button
+                          type="button"
+                          className="rl2-pill rl2-pill--ticker"
+                          onClick={() => onOpenTicker(note.ticker)}
                         >
-                          Block
-                        </span>
+                          {note.ticker}
+                        </button>
+                      ) : (
+                        '—'
                       )}
-                      {c.resolved && (
-                        <span className="rl2-pill rl2-status-published" style={{ marginLeft: 6 }}>
-                          Resolved
-                        </span>
-                      )}
-                    </span>
-                    <span className="rl2-crow-meta">{timeAgo(c.created_at)}</span>
+                    </div>
                   </div>
-                  <div style={{ color: 'var(--text-body)', fontSize: '0.84rem' }}>{c.body}</div>
-                  {(c.author_id === viewer?.userId || canManage) && (
+                  <div className="rl2-meta-item">
+                    <div className="k">Sector</div>
+                    <div className="v">{note.sector || '—'}</div>
+                  </div>
+                  <div className="rl2-meta-item">
+                    <div className="k">Term</div>
+                    <div className="v">{note.term || '—'}</div>
+                  </div>
+                  <div className="rl2-meta-item">
+                    <div className="k">Version</div>
+                    <div className="v rl2-num">v{note.version || 1}</div>
+                  </div>
+                  <div className="rl2-meta-item">
+                    <div className="k">Views</div>
+                    <div className="v rl2-num">{note.view_count || 0}</div>
+                  </div>
+                  <div className="rl2-meta-item">
+                    <div className="k">Downloads</div>
+                    <div className="v rl2-num">{note.download_count || 0}</div>
+                  </div>
+                  {note.pitch_id && (
+                    <div className="rl2-meta-item">
+                      <div className="k">Linked pitch</div>
+                      <div className="v">
+                        <a href="/org-team-hub/pitches" style={{ color: 'var(--emerald-text)' }}>
+                          View pitch <ExternalLink size={10} />
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Abstract + body */}
+              {note.abstract && (
+                <div className="rl2-section">
+                  <div className="rl2-section-title">Abstract</div>
+                  <div className="rl2-body-render">{note.abstract}</div>
+                </div>
+              )}
+              <div className="rl2-section">
+                <div className="rl2-section-title">Document</div>
+                <div className="rl2-body-render">{note.body}</div>
+                {note.citations && (
+                  <div className="rl2-hint" style={{ marginTop: 10 }}>
+                    <strong>Sources:</strong> {note.citations}
+                  </div>
+                )}
+              </div>
+
+              {/* Attachments — real upload/list/download/delete via signed URLs. */}
+              <div className="rl2-section">
+                <div className="rl2-section-title">
+                  <Paperclip size={13} /> Attachments
+                </div>
+                {attachments.length === 0 ? (
+                  <div className="rl2-hint">No attachments yet.</div>
+                ) : (
+                  <div className="rl2-attach-list">
+                    {attachments.map((att) => {
+                      const canDelete = canManage || att.uploaded_by === viewer?.userId;
+                      return (
+                        <div key={att.id} className="rl2-attach-row">
+                          <FileText size={14} className="rl2-attach-icon" />
+                          <span className="rl2-attach-name">{att.file_name}</span>
+                          <span className="rl2-attach-size rl2-num">
+                            {fmtBytes(att.size_bytes)}
+                          </span>
+                          {att.signed_url && (
+                            <a
+                              className="rl2-attach-act"
+                              href={att.signed_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              download={att.file_name}
+                              aria-label={`Download ${att.file_name}`}
+                            >
+                              <Download size={14} />
+                            </a>
+                          )}
+                          {canDelete && (
+                            <button
+                              type="button"
+                              className="rl2-attach-act rl2-attach-act--danger"
+                              onClick={() => deleteAttachment(att.id)}
+                              disabled={attBusy}
+                              aria-label={`Delete ${att.file_name}`}
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                {canEdit && note.status !== 'superseded' && (
+                  <div style={{ marginTop: 10 }}>
+                    <input
+                      ref={attFileRef}
+                      type="file"
+                      className="rl2-visually-hidden"
+                      accept=".pdf,.xlsx,.xls,.docx,.doc,.csv,.png,.jpg,.jpeg,.pptx"
+                      onChange={(e) => uploadAttachment(e.target.files?.[0])}
+                    />
+                    <button
+                      type="button"
+                      className="rl2-btn rl2-btn--sm"
+                      onClick={() => attFileRef.current?.click()}
+                      disabled={attBusy}
+                    >
+                      {attBusy ? <Loader2 size={13} className="rl2-spin" /> : <Upload size={13} />}
+                      {attBusy ? 'Uploading…' : 'Attach file'}
+                    </button>
+                    <span className="rl2-hint" style={{ marginLeft: 8 }}>
+                      PDF, Office, CSV, or image · up to 25 MB
+                    </span>
+                  </div>
+                )}
+                {attError && (
+                  <div className="rl2-blocker" style={{ marginTop: 8 }}>
+                    {attError}
+                  </div>
+                )}
+              </div>
+
+              {/* Actions */}
+              <div className="rl2-section">
+                <div className="rl2-drawer-actions">
+                  <button
+                    type="button"
+                    className="rl2-btn rl2-btn--sm"
+                    onClick={() => openDoc(note, false)}
+                  >
+                    <ExternalLink size={13} /> Open
+                  </button>
+                  <button type="button" className="rl2-btn rl2-btn--sm" onClick={exportPdf}>
+                    <Download size={13} /> Export PDF
+                  </button>
+                  {canEdit && note.status !== 'superseded' && (
+                    <button
+                      type="button"
+                      className="rl2-btn rl2-btn--sm"
+                      onClick={() => onEdit(note)}
+                    >
+                      <Pencil size={13} /> Edit
+                    </button>
+                  )}
+                  {canEdit && note.status === 'draft' && (
+                    <button
+                      type="button"
+                      className="rl2-btn rl2-btn--sm"
+                      onClick={() => setStatus('under_review')}
+                      disabled={busy}
+                    >
+                      <MessageSquare size={13} /> Submit for review
+                    </button>
+                  )}
+                  {canEdit && note.status === 'under_review' && (
                     <button
                       type="button"
                       className="rl2-btn rl2-btn--sm rl2-btn--ghost"
-                      style={{ alignSelf: 'flex-start' }}
-                      onClick={() => resolveComment(c)}
+                      onClick={() => setStatus('draft')}
                       disabled={busy}
                     >
-                      {c.resolved ? 'Reopen' : 'Resolve'}
+                      Back to draft
+                    </button>
+                  )}
+                  {canEdit && note.status !== 'published' && (
+                    <button
+                      type="button"
+                      className="rl2-btn rl2-btn--sm rl2-btn--primary"
+                      onClick={publish}
+                      disabled={busy}
+                    >
+                      <ShieldCheck size={13} /> Publish
+                    </button>
+                  )}
+                  {canEdit && note.status === 'published' && (
+                    <button
+                      type="button"
+                      className="rl2-btn rl2-btn--sm"
+                      onClick={supersede}
+                      disabled={busy}
+                    >
+                      <Clock size={13} /> Supersede
+                    </button>
+                  )}
+                  {canManage && (
+                    <button
+                      type="button"
+                      className="rl2-btn rl2-btn--sm"
+                      onClick={toggleExemplar}
+                      disabled={busy}
+                    >
+                      <Award size={13} /> {note.is_exemplar ? 'Unset exemplar' : 'Mark exemplar'}
+                    </button>
+                  )}
+                  {canManage && (
+                    <button
+                      type="button"
+                      className="rl2-btn rl2-btn--sm"
+                      onClick={togglePin}
+                      disabled={busy}
+                    >
+                      <Star size={13} /> {note.pinned ? 'Unpin' : 'Pin'}
                     </button>
                   )}
                 </div>
-              ))}
-              <div className="rl2-inline-form">
-                <textarea
-                  className="rl2-textarea"
-                  rows={2}
-                  value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
-                  placeholder="Add a review comment…"
-                />
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    gap: 8,
-                    flexWrap: 'wrap',
-                  }}
-                >
-                  {canManage ? (
-                    <label className="rl2-chk">
-                      <input
-                        type="checkbox"
-                        checked={isBlock}
-                        onChange={(e) => setIsBlock(e.target.checked)}
-                      />{' '}
-                      Blocks publish until resolved
-                    </label>
-                  ) : (
-                    <span />
+                {blockers.length > 0 && (
+                  <div className="rl2-blocker" style={{ marginTop: 10 }}>
+                    <strong>Publish blocked:</strong>
+                    <ul style={{ margin: '6px 0 0', paddingLeft: 18 }}>
+                      {blockers.map((b) => (
+                        <li key={b.code}>{b.message}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+
+              {/* Version history */}
+              <div className="rl2-section">
+                <div className="rl2-section-title">
+                  <History size={13} /> Version history
+                </div>
+                {versions.length === 0 ? (
+                  <div className="rl2-hint">No prior versions — this is the original.</div>
+                ) : (
+                  versions.map((v) => (
+                    <div key={v.id} className="rl2-vrow">
+                      <span className="rl2-vnum">v{v.version}</span>
+                      <span style={{ flex: 1 }}>{v.title}</span>
+                      <span className="rl2-crow-meta">
+                        {v.editor_name} · {timeAgo(v.created_at)}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* Review / comments */}
+              <div className="rl2-section">
+                <div className="rl2-section-title">
+                  <MessageSquare size={13} /> Review thread
+                  {openBlocks > 0 && (
+                    <span className="rl2-pill rl2-status-under_review" style={{ marginLeft: 6 }}>
+                      {openBlocks} open block{openBlocks > 1 ? 's' : ''}
+                    </span>
                   )}
-                  <button
-                    type="button"
-                    className="rl2-btn rl2-btn--sm"
-                    onClick={addComment}
-                    disabled={busy || !commentText.trim()}
+                </div>
+                {comments.length === 0 && <div className="rl2-hint">No comments yet.</div>}
+                {comments.map((c) => (
+                  <div key={c.id} className="rl2-crow">
+                    <div className="rl2-crow-head">
+                      <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>
+                        {c.author_name}
+                        {c.is_review_block && (
+                          <span
+                            className="rl2-pill rl2-status-under_review"
+                            style={{ marginLeft: 6 }}
+                          >
+                            Block
+                          </span>
+                        )}
+                        {c.resolved && (
+                          <span className="rl2-pill rl2-status-published" style={{ marginLeft: 6 }}>
+                            Resolved
+                          </span>
+                        )}
+                      </span>
+                      <span className="rl2-crow-meta">{timeAgo(c.created_at)}</span>
+                    </div>
+                    <div style={{ color: 'var(--text-body)', fontSize: '0.84rem' }}>{c.body}</div>
+                    {(c.author_id === viewer?.userId || canManage) && (
+                      <button
+                        type="button"
+                        className="rl2-btn rl2-btn--sm rl2-btn--ghost"
+                        style={{ alignSelf: 'flex-start' }}
+                        onClick={() => resolveComment(c)}
+                        disabled={busy}
+                      >
+                        {c.resolved ? 'Reopen' : 'Resolve'}
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <div className="rl2-inline-form">
+                  <textarea
+                    className="rl2-textarea"
+                    rows={2}
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    placeholder="Add a review comment…"
+                  />
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      gap: 8,
+                      flexWrap: 'wrap',
+                    }}
                   >
-                    Comment
-                  </button>
+                    {canManage ? (
+                      <label className="rl2-chk">
+                        <input
+                          type="checkbox"
+                          checked={isBlock}
+                          onChange={(e) => setIsBlock(e.target.checked)}
+                        />{' '}
+                        Blocks publish until resolved
+                      </label>
+                    ) : (
+                      <span />
+                    )}
+                    <button
+                      type="button"
+                      className="rl2-btn rl2-btn--sm"
+                      onClick={addComment}
+                      disabled={busy || !commentText.trim()}
+                    >
+                      Comment
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          </>
-        )}
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 

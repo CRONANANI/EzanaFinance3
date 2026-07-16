@@ -594,45 +594,81 @@
   }
 }
 
-/* ── Detail drawer ──────────────────────────────────────────────────────── */
+/* ── Detail modal (centered, portaled — matches the pitch modal .pmodal) ─── */
 .rl2-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 60;
+  z-index: 1000;
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: center;
+  padding: 3vh 2vw;
+  background: var(--bg-overlay, rgba(0, 0, 0, 0.6));
+  backdrop-filter: blur(2px);
+  animation: rl2-overlay-in 0.14s ease-out;
 }
 .rl2-drawer {
-  width: min(620px, 100%);
-  height: 100%;
+  position: relative;
+  width: 90vw;
+  max-width: 860px;
+  height: auto;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
   background: var(--surface-card);
-  border-left: 1px solid var(--border-primary);
-  overflow-y: auto;
-  padding: 22px;
-  animation: rl2-slide 0.2s ease;
+  border: 1px solid var(--border-primary);
+  border-radius: 14px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  padding: 0;
+  animation: rl2-modal-in 0.16s ease-out;
 }
-@media (max-width: 640px) {
-  .rl2-drawer {
-    padding: 16px;
-  }
-}
-@keyframes rl2-slide {
+/* Calm entrance — fade + a tiny rise, not a slide-from-right. */
+@keyframes rl2-overlay-in {
   from {
-    transform: translateX(24px);
-    opacity: 0.4;
+    opacity: 0;
   }
   to {
-    transform: translateX(0);
     opacity: 1;
   }
 }
+@keyframes rl2-modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rl2-overlay,
+  .rl2-drawer {
+    animation: none;
+  }
+}
 .rl2-drawer-head {
+  flex-shrink: 0;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 12px;
-  margin-bottom: 12px;
+  padding: 20px 22px;
+  border-bottom: 1px solid var(--border-secondary);
+}
+.rl2-drawer-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 20px 22px;
+}
+@media (max-width: 640px) {
+  .rl2-drawer-head,
+  .rl2-drawer-body {
+    padding: 16px;
+  }
 }
 .rl2-drawer-title {
   font-size: 1.25rem;
