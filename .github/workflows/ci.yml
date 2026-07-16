@@ -49,6 +49,13 @@ jobs:
         # rule for legacy Supabase modules. Warnings do not fail the build
         # during the Phase 2 migration; errors still do.
         run: npm run lint
+
+      - name: CSS var() fallback guard
+        # Bans hardcoded colour fallbacks inside var() on surface/neutral/text
+        # tokens (e.g. var(--surface-card, rgba(255,255,255,.02))). Those
+        # fallbacks paint the wrong colour in a broken scope — the "lighter
+        # slab in dark mode" bug class. Hard-fails so a new one can't land.
+        run: npm run lint:css
   # See note below about why a `build` job is intentionally absent.
 
   # NOTE: a `build` job that runs `next build` is intentionally NOT added in

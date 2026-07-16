@@ -10,6 +10,7 @@
     "lint:fix": "next lint --fix",
     "lint:ds": "node scripts/check-ds-hex.mjs",
     "lint:a11y": "node scripts/check-a11y.mjs",
+    "lint:css": "node scripts/check-var-fallbacks.mjs",
     "format": "prettier --write \".\"",
     "format:check": "prettier --check \"docs/**/*.md\" \"package.json\" \".eslintrc.json\" \".prettierrc.json\" \".github/**/*.{yml,yaml}\"",
     "format:check:all": "prettier --check \".\"",
@@ -24,6 +25,9 @@
     ],
     "*.{json,md,mdx,css,scss,yml,yaml}": [
       "prettier --write"
+    ],
+    "*.{css,scss}": [
+      "node scripts/check-var-fallbacks.mjs"
     ]
   },
   "dependencies": {
