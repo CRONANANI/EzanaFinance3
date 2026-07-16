@@ -375,8 +375,8 @@
 }
 
 .op-modal {
-  background: var(--bg-secondary);
-  border: 1px solid var(--emerald-border);
+  background: var(--app-bg);
+  border: 1px solid var(--emerald);
   border-radius: 14px;
   max-width: 560px;
   width: 100%;

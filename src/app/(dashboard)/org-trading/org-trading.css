@@ -215,8 +215,8 @@
 }
 
 .ot-modal {
-  background: var(--bg-secondary);
-  border: 1px solid rgba(99, 102, 241, 0.25);
+  background: var(--app-bg);
+  border: 1px solid var(--emerald);
   border-radius: 12px;
   width: 100%;
   max-width: 640px;

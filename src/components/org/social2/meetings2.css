@@ -1042,8 +1042,8 @@
   width: 100%;
   max-width: 460px;
   border-radius: 16px;
-  border: 1px solid var(--border-primary);
-  background: var(--surface-card);
+  border: 1px solid var(--emerald);
+  background: var(--app-bg);
   padding: 1.3rem 1.4rem;
 }
 .mt2-modal__title {

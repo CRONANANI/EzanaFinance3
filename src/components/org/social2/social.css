@@ -283,8 +283,8 @@
 .sc2-modal {
   width: 100%;
   max-width: 560px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
+  background: var(--app-bg);
+  border: 1px solid var(--emerald);
   border-radius: 16px;
   padding: 1.5rem;
   box-shadow: var(--shadow-xl, 0 20px 60px rgba(0, 0, 0, 0.45));
