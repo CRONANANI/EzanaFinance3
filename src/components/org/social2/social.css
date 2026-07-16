@@ -32,7 +32,7 @@
 }
 .sc2-title {
   font-size: clamp(1.35rem, 2.6vw, 1.9rem);
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.02em;
   margin: 0;
   color: var(--text-primary);
@@ -291,7 +291,7 @@
 }
 .sc2-modal-title {
   font-size: 1.1rem;
-  font-weight: 800;
+  font-weight: 700;
   margin: 0 0 1rem;
   color: var(--text-primary);
 }
@@ -462,7 +462,7 @@
   align-items: center;
   gap: 0.4rem;
   font-size: 0.68rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--emerald-text, #10b981);
@@ -517,7 +517,7 @@
   font-size: 1.3rem;
 }
 .sc2-recog-title {
-  font-weight: 800;
+  font-weight: 700;
   font-size: 0.9rem;
   color: var(--text-primary);
 }
@@ -557,7 +557,7 @@
 }
 .sc2-panel-title {
   font-size: 0.8rem;
-  font-weight: 800;
+  font-weight: 700;
   margin: 0 0 0.75rem;
   color: var(--text-primary);
 }
@@ -573,7 +573,7 @@
 }
 .sc2-status {
   font-size: 0.62rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   padding: 0.12rem 0.5rem;

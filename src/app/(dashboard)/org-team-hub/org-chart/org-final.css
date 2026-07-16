@@ -123,7 +123,7 @@ body.light-mode .ox-root {
 }
 .ox-h1 {
   font-size: 40px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.025em;
   color: var(--ox-text);
   margin: 14px 0 0;
@@ -235,7 +235,7 @@ body.light-mode .ox-root {
 }
 .ox-sec-title {
   font-size: 23px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--ox-text);
   margin: 0;

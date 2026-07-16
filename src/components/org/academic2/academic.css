@@ -31,7 +31,7 @@
 }
 .ac3-title {
   font-size: clamp(1.35rem, 2.6vw, 1.9rem);
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.02em;
   margin: 0;
   color: var(--text-primary);
@@ -107,7 +107,7 @@
 }
 .ac3-pill {
   font-size: 0.62rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   padding: 0.12rem 0.5rem;
@@ -266,7 +266,7 @@
 }
 .ac3-modal-title {
   font-size: 1.05rem;
-  font-weight: 800;
+  font-weight: 700;
   margin: 0 0 1rem;
   color: var(--text-primary);
 }

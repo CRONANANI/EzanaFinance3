@@ -31,7 +31,7 @@
 }
 .an4-title {
   font-size: clamp(1.35rem, 2.6vw, 1.9rem);
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.02em;
   margin: 0;
   color: var(--text-primary);
@@ -95,7 +95,7 @@
 }
 .an4-panel-title {
   font-size: 0.8rem;
-  font-weight: 800;
+  font-weight: 700;
   margin: 0 0 0.75rem;
   color: var(--text-primary);
 }
@@ -310,11 +310,8 @@
 /* ── Card ── (matches Trading Desk `.ctd-card`) */
 .fa-card {
   border: 1px solid var(--border-primary);
-  border-radius: 16px;
+  border-radius: 8px;
   background: var(--surface-card);
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.04),
-    0 1px 3px rgba(0, 0, 0, 0.05);
 }
 .fa-card-pad {
   padding: 1rem 1.1rem;
@@ -323,9 +320,9 @@
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
+  font-size: var(--type-kicker-size);
+  font-weight: var(--type-kicker-weight);
+  letter-spacing: var(--type-kicker-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
   margin: 0;
@@ -548,7 +545,7 @@
   justify-content: center;
   font-family: var(--font-mono, monospace);
   font-size: 0.6rem;
-  font-weight: 800;
+  font-weight: 700;
   background: var(--emerald-bg, rgba(16, 185, 129, 0.14));
   color: var(--emerald-text, #10b981);
   flex-shrink: 0;
@@ -652,7 +649,7 @@
 }
 .fa-cbanner .bt {
   font-size: 0.78rem;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--text-primary);
 }
 .fa-cbanner .bd {
@@ -698,7 +695,7 @@
 }
 .fa-callout b {
   color: var(--text-primary);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 /* ── Sector vs target ── */
@@ -783,7 +780,7 @@
   align-items: center;
   padding: 0 0.6rem;
   color: #04130d;
-  font-weight: 800;
+  font-weight: 700;
   font-size: 0.72rem;
   min-width: 40px;
 }

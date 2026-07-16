@@ -48,7 +48,7 @@
 
 .th-hero h1 {
   font-size: 1.35rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #f0f6fc;
   margin: 0;
   letter-spacing: -0.02em;
@@ -113,10 +113,7 @@
 .th-card {
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 16px;
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.04),
-    0 1px 3px rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
   overflow: hidden;
   transition:
     border-color 0.25s ease,
@@ -153,9 +150,9 @@
 }
 
 .th-card-header-left span {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
+  font-size: var(--type-kicker-size);
+  font-weight: var(--type-kicker-weight);
+  letter-spacing: var(--type-kicker-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
 }
@@ -461,7 +458,7 @@
 
 .th-modal-header h2 {
   font-size: 1rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #f0f6fc;
   margin: 0;
 }
