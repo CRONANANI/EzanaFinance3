@@ -152,12 +152,17 @@
   gap: 0.45rem;
 }
 
+/* Pitch pipeline card — Trading Desk `.ctd-card` skeleton: neutral surface,
+   border-defined, 16px, two-layer shadow (hover lifts to emerald). */
 .op-card {
   display: block;
   padding: 0.55rem 0.6rem;
-  border-radius: 8px;
-  background: var(--emerald-bg);
-  border: 1px solid var(--emerald-border);
+  border-radius: 16px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-primary);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 1px 3px rgba(0, 0, 0, 0.05);
   text-decoration: none;
   color: inherit;
   transition:
@@ -172,20 +177,20 @@
 
 .op-card-ticker {
   font-size: 0.9rem;
-  font-weight: 800;
-  color: #f0f6fc;
+  font-weight: 700;
+  color: var(--text-primary);
 }
 
 .op-card-meta {
   font-size: 0.62rem;
-  color: #9ca3af;
+  color: var(--text-muted);
   margin-top: 0.2rem;
   line-height: 1.35;
 }
 
 .op-card-foot {
   font-size: 0.58rem;
-  color: #6b7280;
+  color: var(--text-faint);
   margin-top: 0.35rem;
 }
 
@@ -198,9 +203,12 @@
 
 .op-archive-card {
   padding: 1rem 1.1rem;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  border: 1px solid var(--border-primary);
   background: var(--surface-card);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 1px 3px rgba(0, 0, 0, 0.05);
   text-decoration: none;
   color: inherit;
   display: block;
@@ -222,7 +230,7 @@
 .op-archive-title {
   font-size: 0.95rem;
   font-weight: 700;
-  color: #f0f6fc;
+  color: var(--text-primary);
   margin: 0;
 }
 
@@ -682,7 +690,3 @@ body.light-mode .op-column {
   border-color: var(--border-primary);
 }
 
-body.light-mode .op-card-ticker,
-body.light-mode .op-archive-title {
-  color: #1e293b;
-}
