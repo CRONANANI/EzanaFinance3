@@ -588,8 +588,8 @@
   --ctd-sec-t7: var(--emerald, #10b981);
 
   --ctd-card: var(--surface-card, transparent);
-  --ctd-border: var(--border-primary, rgba(16, 185, 129, 0.12));
-  color: var(--text-primary, #f0f6fc);
+  --ctd-border: var(--border-primary);
+  color: var(--text-primary);
   font-family: var(--font-sans, 'Plus Jakarta Sans', system-ui, sans-serif);
 }
 
@@ -634,7 +634,7 @@
   font-size: 1.6rem;
   font-weight: 800;
   letter-spacing: -0.02em;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 .ctd-role-pill {
   display: inline-flex;
@@ -653,7 +653,7 @@
   margin: 0;
   max-width: 46rem;
   font-size: 0.85rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 .ctd-header-actions {
   display: flex;
@@ -678,11 +678,11 @@
 .ctd-btn-outline {
   background: transparent;
   border: 1px solid var(--ctd-border);
-  color: var(--text-secondary, #e2e8f0);
+  color: var(--text-secondary);
 }
 .ctd-btn-outline:hover {
   border-color: var(--emerald-border, rgba(16, 185, 129, 0.35));
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 .ctd-btn-primary {
   background: var(--emerald, #10b981);
@@ -734,7 +734,7 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 
 /* Allocation donut */
@@ -748,7 +748,7 @@
   height: 100%;
 }
 .ctd-donut-track {
-  stroke: var(--border-secondary, rgba(16, 185, 129, 0.08));
+  stroke: var(--border-secondary);
 }
 .ctd-donut-center {
   position: absolute;
@@ -762,13 +762,13 @@
 .ctd-donut-total {
   font-size: 1.35rem;
   font-weight: 800;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 .ctd-donut-label {
   font-size: 0.62rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 
 /* Today / Unrealized */
@@ -822,12 +822,12 @@
   align-items: center;
   gap: 0.4rem;
   font-size: 0.75rem;
-  color: var(--text-secondary, #e2e8f0);
+  color: var(--text-secondary);
 }
 .ctd-roi-bar-track {
   height: 8px;
   border-radius: 9999px;
-  background: var(--surface-input, rgba(16, 185, 129, 0.06));
+  background: var(--surface-input);
   overflow: hidden;
 }
 .ctd-roi-bar {
@@ -859,7 +859,7 @@
 .ctd-kpi {
   padding: 0.6rem 0.75rem;
   border-radius: 12px;
-  background: var(--surface-input, rgba(16, 185, 129, 0.05));
+  background: var(--surface-input);
   border: 1px solid var(--ctd-border);
   display: flex;
   flex-direction: column;
@@ -872,7 +872,7 @@
 .ctd-kpi-value {
   font-size: 1rem;
   font-weight: 800;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 .ctd-kpi-amber .ctd-kpi-value {
   color: var(--amber, #f59e0b);
@@ -881,7 +881,7 @@
   font-size: 0.62rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 
 /* ── Sector filter chips ── */
@@ -899,7 +899,7 @@
   border-radius: 9999px;
   border: 1px solid var(--ctd-border);
   background: transparent;
-  color: var(--text-secondary, #e2e8f0);
+  color: var(--text-secondary);
   font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
@@ -936,21 +936,21 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   border-bottom: 1px solid var(--ctd-border);
   white-space: nowrap;
 }
 .ctd-table td {
   padding: 0.65rem 1rem;
-  border-bottom: 1px solid var(--border-secondary, rgba(16, 185, 129, 0.06));
-  color: var(--text-body, #cdd7e2);
+  border-bottom: 1px solid var(--border-secondary);
+  color: var(--text-body);
   white-space: nowrap;
 }
 .ctd-table tbody tr:last-child td {
   border-bottom: none;
 }
 .ctd-table tbody tr:hover {
-  background: var(--surface-card-hover, rgba(16, 185, 129, 0.04));
+  background: var(--surface-card-hover);
 }
 /* Scoped to .ctd-table (0-2-1) so it out-specifies `.ctd-table th` (0-1-1) and
    right-aligns BOTH the numeric headers and their cells — columns line up.
@@ -961,13 +961,13 @@
 }
 .ctd-ticker {
   font-weight: 700;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 .ctd-sector-cell {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  color: var(--text-secondary, #e2e8f0);
+  color: var(--text-secondary);
 }
 .ctd-pl {
   font-weight: 700;
@@ -984,7 +984,7 @@
   border-radius: 8px;
   border: 1px solid var(--ctd-border);
   background: transparent;
-  color: var(--text-secondary, #e2e8f0);
+  color: var(--text-secondary);
   font-size: 0.7rem;
   font-weight: 600;
   cursor: pointer;
@@ -995,7 +995,7 @@
 }
 .ctd-flag-btn:hover:not(:disabled) {
   border-color: var(--emerald-border, rgba(16, 185, 129, 0.35));
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 .ctd-flag-btn:disabled {
   opacity: 0.4;
@@ -1088,15 +1088,15 @@
 .ot-ticker-chip {
   padding: 2px 8px;
   border-radius: 5px;
-  background: var(--bg-tertiary, rgba(255, 255, 255, 0.06));
-  border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.1));
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
   font-size: 0.8rem;
   font-weight: 700;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 .ot-dossier-sub {
   font-size: 0.72rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 
 /* ── Header position switcher — flag another position without reopening ── */
@@ -1232,7 +1232,7 @@
      different fill (the modal shell is the only opaque layer; the rail rides
      on it, transparent in dark / white in light like every other card). */
   background: var(--surface-card);
-  border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.08));
+  border: 1px solid var(--border-primary);
   border-radius: 10px;
   padding: 1rem;
   display: flex;
@@ -1243,7 +1243,7 @@
 .ot-dossier-pl {
   border-radius: 8px;
   padding: 0.75rem;
-  border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.08));
+  border: 1px solid var(--border-primary);
 }
 .ot-dossier-pl.pos {
   color: var(--positive, #10b981);
@@ -1265,7 +1265,7 @@
 }
 .ot-dossier-pl-bench {
   font-size: 0.68rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   margin-top: 0.35rem;
 }
 
@@ -1275,8 +1275,8 @@
   gap: 0.5rem;
 }
 .ot-dossier-stat {
-  background: var(--surface-card, rgba(255, 255, 255, 0.02));
-  border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.06));
+  background: var(--surface-card);
+  border: 1px solid var(--border-primary);
   border-radius: 6px;
   padding: 0.5rem 0.6rem;
 }
@@ -1285,24 +1285,24 @@
   font-size: 0.6rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 .ot-dossier-stat-value {
   font-size: 0.95rem;
   font-weight: 700;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 
 .ot-dossier-thesis-text {
   font-size: 0.8rem;
   font-style: italic;
-  color: var(--text-secondary, #d1d5db);
+  color: var(--text-secondary);
   margin: 0.35rem 0 0;
   line-height: 1.4;
 }
 .ot-dossier-muted {
   font-size: 0.75rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   margin: 0.35rem 0 0;
 }
 
@@ -1333,9 +1333,9 @@
   gap: 0.35rem;
   padding: 0.4rem 0.6rem;
   border-radius: 6px;
-  border: 1px dashed var(--border-primary, rgba(255, 255, 255, 0.15));
+  border: 1px dashed var(--border-primary);
   background: transparent;
-  color: var(--text-secondary, #c9d1d9);
+  color: var(--text-secondary);
   font-size: 0.72rem;
   cursor: pointer;
 }
@@ -1369,11 +1369,11 @@
 .ot-routed-name {
   font-size: 0.76rem;
   font-weight: 600;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 .ot-routed-role {
   font-size: 0.64rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 
 .ot-dossier-compose {
@@ -1399,9 +1399,9 @@
   flex: 1;
   padding: 0.5rem;
   border-radius: 6px;
-  border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.1));
-  background: var(--surface-card, rgba(255, 255, 255, 0.02));
-  color: var(--text-secondary, #c9d1d9);
+  border: 1px solid var(--border-primary);
+  background: var(--surface-card);
+  color: var(--text-secondary);
   font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
@@ -1409,7 +1409,7 @@
 .ot-seg.is-selected {
   border-color: var(--indigo, #6366f1);
   background: rgba(99, 102, 241, 0.15);
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 .ot-seg.high.is-selected {
   border-color: var(--negative, #ef4444);
@@ -1420,7 +1420,7 @@
 
 .ot-char-hint {
   font-size: 0.65rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   margin-top: 0.25rem;
   text-align: right;
 }
@@ -1440,7 +1440,7 @@
   align-items: center;
   gap: 0.4rem;
   font-size: 0.76rem;
-  color: var(--text-secondary, #c9d1d9);
+  color: var(--text-secondary);
   cursor: pointer;
 }
 .ot-inline-select {
@@ -1453,7 +1453,7 @@
 }
 .ot-dossier-footnote {
   font-size: 0.68rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 .ot-dossier-footer-actions {
   display: flex;
@@ -1479,9 +1479,9 @@
   letter-spacing: 0.05em;
   padding: 2px 7px;
   border-radius: 4px;
-  background: var(--bg-tertiary, rgba(255, 255, 255, 0.06));
-  color: var(--text-muted, #8b949e);
-  border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.1));
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+  border: 1px solid var(--border-primary);
 }
 .ot-status-pill.status-open {
   color: var(--warning, #f59e0b);
@@ -1503,12 +1503,12 @@
 .ot-flag-reasonline {
   font-size: 0.78rem;
   font-weight: 600;
-  color: var(--text-secondary, #e2e8f0);
+  color: var(--text-secondary);
   margin: 0.75rem 0;
 }
 .ot-flag-detail-body {
   font-size: 0.825rem;
-  color: var(--text-secondary, #d1d5db);
+  color: var(--text-secondary);
   white-space: pre-wrap;
   margin: 0.75rem 0;
   line-height: 1.5;
@@ -1535,14 +1535,14 @@
   gap: 0.75rem;
   flex-wrap: wrap;
   font-size: 0.72rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   padding: 0.6rem 0;
-  border-top: 1px solid var(--border-primary, rgba(255, 255, 255, 0.05));
+  border-top: 1px solid var(--border-primary);
   margin-top: 0.5rem;
 }
 .ot-due {
   font-weight: 700;
-  color: var(--text-secondary, #c9d1d9);
+  color: var(--text-secondary);
 }
 .ot-due.urgent {
   color: var(--warning, #f59e0b);
@@ -1551,7 +1551,7 @@
 .ot-answer-block {
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px solid var(--border-primary, rgba(255, 255, 255, 0.05));
+  border-top: 1px solid var(--border-primary);
 }
 .ot-answer-actions {
   display: flex;
@@ -1564,9 +1564,9 @@
   gap: 0.35rem;
   padding: 0.5rem 0.85rem;
   border-radius: 6px;
-  border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.15));
-  background: var(--surface-card, rgba(255, 255, 255, 0.02));
-  color: var(--text-secondary, #c9d1d9);
+  border: 1px solid var(--border-primary);
+  background: var(--surface-card);
+  color: var(--text-secondary);
   font-size: 0.76rem;
   font-weight: 600;
   cursor: pointer;
@@ -1592,10 +1592,10 @@
   margin-top: 1rem;
   padding: 0.75rem 1rem;
   border-radius: 6px;
-  border-left: 3px solid var(--border-primary, #6366f1);
-  background: var(--surface-card, rgba(255, 255, 255, 0.03));
+  border-left: 3px solid var(--border-primary);
+  background: var(--surface-card);
   font-size: 0.75rem;
-  color: var(--text-secondary, #c9d1d9);
+  color: var(--text-secondary);
 }
 .ot-resolution-note.status-accepted {
   border-left-color: var(--positive, #10b981);
@@ -1607,7 +1607,7 @@
   display: block;
   margin-top: 0.4rem;
   white-space: pre-wrap;
-  color: var(--text-secondary, #d1d5db);
+  color: var(--text-secondary);
 }
 
 @media (max-width: 640px) {
