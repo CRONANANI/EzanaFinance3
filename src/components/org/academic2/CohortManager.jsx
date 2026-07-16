@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Plus,
   GraduationCap,
@@ -34,6 +34,11 @@ const STATUS_SUFFIX = {
   archived: 'Archived',
 };
 
+// Landing tab. Roster is the primary view, so the page opens on it and — via
+// defaultCohortId below — on the active (is_current) cohort, not the recruiting
+// one. Keep the initial tab and the seeded cohort derived from the SAME value.
+const INITIAL_TAB = 'roster';
+
 // The default cohort. Recruitment concerns the cohort you're recruiting INTO
 // (status='recruiting'), not the one currently running (is_current). Only the
 // default changes — a manual selection still sticks.
@@ -54,9 +59,12 @@ export function CohortManager({ initialData = null }) {
   const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState('');
   const [selectedId, setSelectedId] = useState(() =>
-    defaultCohortId(initialData?.cohorts || [], 'recruitment'),
+    defaultCohortId(initialData?.cohorts || [], INITIAL_TAB),
   );
-  const [tab, setTab] = useState('recruitment');
+  const [tab, setTab] = useState(INITIAL_TAB);
+  // True once the user manually chooses a cohort — after that, tab changes no
+  // longer move the default cohort (their pick sticks).
+  const userPickedRef = useRef(false);
   const [counts, setCounts] = useState({});
   const [menuOpen, setMenuOpen] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -79,7 +87,7 @@ export function CohortManager({ initialData = null }) {
       setCohorts(list);
       setViewer(data.viewer || {});
       setError('');
-      setSelectedId((prev) => prev || defaultCohortId(list, 'recruitment'));
+      setSelectedId((prev) => prev || defaultCohortId(list, INITIAL_TAB));
     } catch {
       setError('Could not connect.');
     } finally {
@@ -93,6 +101,17 @@ export function CohortManager({ initialData = null }) {
     if (initialData) return;
     loadCohorts();
   }, [loadCohorts, initialData]);
+
+  // The default cohort follows the active tab: Recruitment → the recruiting
+  // cohort, every other tab → the active (is_current) cohort. A manual pick
+  // overrides this for the rest of the session (userPickedRef).
+  useEffect(() => {
+    if (userPickedRef.current) return;
+    const next = defaultCohortId(cohorts, tab);
+    if (next && next !== selectedId) setSelectedId(next);
+    // selectedId intentionally omitted — this only re-derives on tab/data change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, cohorts]);
 
   const setCount = useCallback(
     (key, n) => setCounts((c) => (c[key] === n ? c : { ...c, [key]: n })),
@@ -154,6 +173,7 @@ export function CohortManager({ initialData = null }) {
                           aria-checked={c.id === selectedId}
                           className={`c2-cohort-menu-item ${c.id === selectedId ? 'is-active' : ''}`}
                           onClick={() => {
+                            userPickedRef.current = true;
                             setSelectedId(c.id);
                             setMenuOpen(false);
                           }}
@@ -295,6 +315,7 @@ export function CohortManager({ initialData = null }) {
           onClose={() => setCreating(false)}
           onCreated={(id) => {
             setCreating(false);
+            userPickedRef.current = true;
             setSelectedId(id);
             loadCohorts();
           }}
