@@ -13,13 +13,13 @@
   font-size: 1.625rem;
   font-weight: 800;
   margin: 0 0 0.35rem;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 
 .elo-lb-subtitle {
   margin: 0;
   font-size: 0.875rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 
 .elo-lb-controls {
@@ -45,14 +45,14 @@
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: transparent;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   cursor: pointer;
   transition: all 150ms ease;
 }
 
 .elo-lb-tier-pill:hover {
   border-color: rgba(16, 185, 129, 0.4);
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 
 .elo-lb-tier-pill.is-active {
@@ -69,7 +69,7 @@
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: var(--surface-input);
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
   text-align: center;
   transition:
     border-color 150ms ease,
@@ -84,7 +84,7 @@
 
 .elo-lb-search::placeholder {
   text-align: center;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 
 .elo-lb-table-wrap {
@@ -98,7 +98,7 @@
 .elo-lb-empty {
   padding: 2rem;
   text-align: center;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   font-size: 0.875rem;
 }
 
@@ -114,7 +114,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   text-align: left;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   background: var(--bg-tertiary);
@@ -150,7 +150,7 @@
 .elo-lb-rank {
   text-align: center;
   font-weight: 700;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   font-variant-numeric: tabular-nums;
 }
 
@@ -180,7 +180,7 @@
   align-items: center;
   gap: 0.55rem;
   text-decoration: none;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 
 .elo-lb-avatar {
@@ -203,7 +203,7 @@
 
 .elo-lb-user-name {
   font-weight: 600;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 
 .elo-lb-user-link:hover .elo-lb-user-name {
@@ -212,7 +212,7 @@
 
 .elo-lb-user-handle {
   font-size: 0.75rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   margin-left: 0.4rem;
 }
 
@@ -235,7 +235,7 @@
 
 .elo-lb-peak {
   text-align: center;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   font-variant-numeric: tabular-nums;
 }
 
@@ -270,7 +270,7 @@
 
 .elo-lb-page-info {
   font-size: 0.8125rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   font-variant-numeric: tabular-nums;
 }
 

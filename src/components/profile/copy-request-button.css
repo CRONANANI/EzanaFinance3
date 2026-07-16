@@ -57,5 +57,5 @@
 .profile-copy-btn-loading {
   border-color: rgba(255, 255, 255, 0.1);
   background: transparent;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }

@@ -19,7 +19,7 @@
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 
 .ptn-add-btn {
@@ -43,7 +43,7 @@
   padding: 1.25rem;
   text-align: center;
   font-size: 0.8125rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 
 .ptn-list {
@@ -81,7 +81,7 @@
   align-items: center;
   gap: 0.2rem;
   font-size: 0.625rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   padding: 0.1rem 0.4rem;
   background: var(--bg-tertiary);
   border-radius: 4px;
@@ -98,7 +98,7 @@
   height: 24px;
   border: none;
   background: transparent;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   cursor: pointer;
   border-radius: 4px;
   font-size: 0.6875rem;
@@ -108,7 +108,7 @@
 }
 .ptn-item-actions button:hover {
   background: var(--surface-card-hover);
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 .ptn-item-actions .ptn-danger:hover {
   background: rgba(239, 68, 68, 0.15);
@@ -118,14 +118,14 @@
 .ptn-body {
   margin: 0 0 0.4rem;
   font-size: 0.8125rem;
-  color: var(--text-secondary, #e2e8f0);
+  color: var(--text-secondary);
   line-height: 1.5;
   font-style: italic;
 }
 
 .ptn-meta {
   font-size: 0.6875rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 
 .ptn-form {
@@ -152,7 +152,7 @@
   border-radius: 5px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: var(--surface-input);
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
   width: 100px;
   font-variant-numeric: tabular-nums;
 }
@@ -167,7 +167,7 @@
   align-items: center;
   gap: 0.3rem;
   font-size: 0.75rem;
-  color: var(--text-secondary, #e2e8f0);
+  color: var(--text-secondary);
 }
 
 .ptn-form-body {
@@ -176,14 +176,14 @@
   border-radius: 5px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: var(--surface-input);
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
   font-family: inherit;
   resize: vertical;
 }
 
 .ptn-form-meta {
   font-size: 0.625rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   text-align: right;
 }
 
@@ -204,7 +204,7 @@
 .ptn-btn-secondary {
   background: transparent;
   border-color: rgba(255, 255, 255, 0.1);
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 .ptn-btn-primary {
   background: #10b981;

@@ -18,7 +18,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   font-size: 0.875rem;
 }
 
@@ -59,7 +59,7 @@
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 
 .pec-head-link {
@@ -101,7 +101,7 @@
 .pec-peak-value {
   font-size: 1.125rem;
   font-weight: 700;
-  color: var(--text-secondary, #e2e8f0);
+  color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
   line-height: 1;
 }
@@ -111,7 +111,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 
 /* Tier badge */
@@ -136,7 +136,7 @@
 
 .pec-tier-progress-text {
   font-size: 0.6875rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   font-weight: 600;
 }
 
@@ -166,7 +166,7 @@
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   display: flex;
   align-items: center;
   gap: 0.3rem;
@@ -183,7 +183,7 @@
   align-items: center;
   justify-content: center;
   font-size: 0.75rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   background: var(--bg-tertiary);
   border-radius: 8px;
   text-align: center;
@@ -199,13 +199,13 @@
 }
 
 .pec-spark-tooltip-date {
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   margin-bottom: 0.15rem;
 }
 
 .pec-spark-tooltip-rating {
   font-weight: 800;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
   font-variant-numeric: tabular-nums;
 }
 
@@ -254,7 +254,7 @@
 
 .pec-breakdown-label {
   font-weight: 700;
-  color: var(--text-secondary, #e2e8f0);
+  color: var(--text-secondary);
 }
 
 .pec-breakdown-bar {
@@ -340,7 +340,7 @@
 .pec-improvement-title {
   font-size: 0.75rem;
   font-weight: 700;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 
 .pec-improvement-points {
@@ -352,7 +352,7 @@
 .pec-improvement-desc {
   margin: 0 0 0.35rem;
   font-size: 0.6875rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   line-height: 1.4;
 }
 

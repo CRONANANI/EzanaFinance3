@@ -48,25 +48,25 @@
   margin: 0 0 10px;
   font-size: 0.875rem;
   line-height: 1.5;
-  color: var(--text-secondary, #334155);
+  color: var(--text-secondary);
 }
 
 :is(.dark, body:not(.light-mode)) .task-guide-message {
-  color: var(--text-secondary, #cbd5e1);
+  color: var(--text-secondary);
 }
 
 .task-guide-dismiss {
   background: transparent;
-  border: 1px solid var(--border-secondary, rgba(148, 163, 184, 0.35));
+  border: 1px solid var(--border-secondary);
   border-radius: 6px;
-  color: var(--text-muted, #64748b);
+  color: var(--text-muted);
   font-size: 0.75rem;
   padding: 4px 12px;
   cursor: pointer;
 }
 
 :is(.dark, body:not(.light-mode)) .task-guide-dismiss {
-  color: var(--text-muted, #9ca3af);
+  color: var(--text-muted);
   border-color: rgba(148, 163, 184, 0.25);
 }
 

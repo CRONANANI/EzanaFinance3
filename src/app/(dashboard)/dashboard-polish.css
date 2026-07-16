@@ -37,7 +37,7 @@ body.light-mode.dashboard-page {
   border-bottom: 1px solid rgba(16, 185, 129, 0.06);
   font-size: var(--dash-section-header-size);
   font-weight: var(--dash-section-header-weight);
-  color: var(--foreground, #f0f6fc);
+  color: var(--foreground);
 }
 .dashboard-page .dash-card-body {
   padding: 1rem 1.25rem;

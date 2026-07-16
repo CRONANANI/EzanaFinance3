@@ -62,7 +62,7 @@ body.light-mode .dcf-interactive-root:hover {
 .model-metric-card.cr-model-tile {
   position: relative;
   background: var(--surface-card);
-  border: 1px solid var(--border, rgba(148, 163, 184, 0.25)) !important;
+  border: 1px solid var(--border) !important;
 }
 
 body.light-mode .model-metric-card.cr-model-tile {
@@ -160,7 +160,7 @@ body:not(.light-mode) .cr-model-premium-star {
   font-size: 0.8125rem;
   font-weight: 800;
   font-family: var(--font-mono, monospace);
-  color: var(--home-heading, #f0f6fc);
+  color: var(--home-heading);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }

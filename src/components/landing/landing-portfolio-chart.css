@@ -11,12 +11,12 @@
 }
 
 .lpc-axis-tick {
-  fill: var(--text-secondary, #e2e8f0);
+  fill: var(--text-secondary);
   opacity: 0.85;
 }
 
 body.light-mode .landing-page .lpc-axis-tick {
-  fill: var(--text-secondary, #1e293b);
+  fill: var(--text-secondary);
 }
 
 .lpc-tooltip {
@@ -29,14 +29,14 @@ body.light-mode .landing-page .lpc-axis-tick {
 
 .lpc-tooltip-date {
   font-size: 0.6875rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   margin-bottom: 0.2rem;
 }
 
 .lpc-tooltip-value {
   font-size: 0.875rem;
   font-weight: 800;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
   font-variant-numeric: tabular-nums;
 }
 

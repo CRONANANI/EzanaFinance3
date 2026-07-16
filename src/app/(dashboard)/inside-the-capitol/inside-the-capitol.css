@@ -173,7 +173,7 @@
 .itc-unusual-name {
   font-size: 0.8125rem;
   font-weight: 700;
-  color: var(--foreground, #f0f6fc);
+  color: var(--foreground);
   text-decoration: none;
   display: inline-block;
 }
@@ -183,7 +183,7 @@
 .itc-unusual-meta,
 .itc-unusual-stocks {
   font-size: 0.6875rem;
-  color: var(--muted-foreground, #9ca3af);
+  color: var(--muted-foreground);
   margin: 0.2rem 0 0;
   line-height: 1.45;
 }
@@ -217,12 +217,12 @@
   text-decoration: underline;
 }
 .itc-bipart-co {
-  color: var(--muted-foreground, #9ca3af);
+  color: var(--muted-foreground);
   font-weight: 500;
 }
 .itc-bipart-meta {
   font-size: 0.6875rem;
-  color: var(--muted-foreground, #9ca3af);
+  color: var(--muted-foreground);
   margin: 0;
   line-height: 1.5;
   display: flex;
@@ -252,7 +252,7 @@
 }
 .itc-bipart-total {
   font-weight: 600;
-  color: var(--foreground, #e5e7eb);
+  color: var(--foreground);
 }
 
 .itc-earn-row {
@@ -276,17 +276,17 @@
   text-decoration: underline;
 }
 .itc-earn-date {
-  color: var(--muted-foreground, #9ca3af);
+  color: var(--muted-foreground);
   font-weight: 500;
 }
 .itc-earn-line {
   font-size: 0.6875rem;
-  color: var(--muted-foreground, #9ca3af);
+  color: var(--muted-foreground);
   margin: 0 0 0.35rem;
   line-height: 1.45;
 }
 .itc-earn-line a {
-  color: var(--foreground, #f0f6fc);
+  color: var(--foreground);
   font-weight: 600;
   text-decoration: none;
 }
@@ -635,7 +635,7 @@ a.itc-sf {
 }
 .itc-ins-time {
   font-size: 0.6rem;
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
 }
 .itc-ins-cat {
   font-size: 0.55rem;
@@ -672,7 +672,7 @@ a.itc-sf {
 .itc-ins-title {
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--foreground, #f0f6fc);
+  color: var(--foreground);
   line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -775,7 +775,7 @@ a.itc-sf {
 .itc-pol-name {
   font-size: 1rem;
   font-weight: 700;
-  color: var(--foreground, #f0f6fc);
+  color: var(--foreground);
   text-decoration: none;
   display: block;
   transition: color 0.2s;
@@ -785,7 +785,7 @@ a.itc-sf {
 }
 .itc-pol-meta {
   font-size: 0.6875rem;
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
   display: flex;
   align-items: center;
   gap: 0.3rem;
@@ -807,14 +807,14 @@ a.itc-sf {
 .itc-pol-num-v {
   font-size: 0.95rem;
   font-weight: 800;
-  color: var(--foreground, #f0f6fc);
+  color: var(--foreground);
   font-feature-settings: 'tnum' 1;
   display: block;
 }
 .itc-pol-num-l {
   font-size: 0.5625rem;
   font-weight: 600;
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -832,7 +832,7 @@ a.itc-sf {
   left: 8px;
   font-size: 0.5625rem;
   font-weight: 600;
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   z-index: 1;
@@ -867,7 +867,7 @@ a.itc-sf {
 }
 .itc-bz-time {
   font-size: 0.6rem;
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
   text-align: center;
   white-space: nowrap;
 }
@@ -876,7 +876,7 @@ a.itc-sf {
 }
 .itc-bz-text {
   font-size: 0.8rem;
-  color: var(--foreground, #f0f6fc);
+  color: var(--foreground);
   line-height: 1.5;
   margin-bottom: 5px;
 }
@@ -997,7 +997,7 @@ a.itc-sf {
 .itc-fil-name {
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--foreground, #f0f6fc);
+  color: var(--foreground);
   text-decoration: none;
   display: block;
   transition: color 0.2s;
@@ -1007,7 +1007,7 @@ a.itc-sf {
 }
 .itc-fil-meta {
   font-size: 0.6rem;
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
   display: block;
 }
 .itc-fil-tickers {

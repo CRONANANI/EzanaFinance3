@@ -29,7 +29,7 @@
   border-radius: 6px;
   border: 1px solid rgba(255, 255, 255, 0.06);
   background: transparent;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   cursor: pointer;
 }
 
@@ -51,7 +51,7 @@
 .cri-loading {
   padding: 0.75rem 0.5rem;
   font-size: 0.8125rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 
 .cri-list {
@@ -65,7 +65,7 @@
 
 .cri-empty {
   padding: 0.75rem 0.5rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   font-size: 0.8125rem;
   font-style: italic;
 }
@@ -83,7 +83,7 @@
 
 .cri-row-name {
   font-weight: 600;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
   text-decoration: none;
   flex: 1;
   min-width: 0;
@@ -95,7 +95,7 @@
 
 .cri-row-status {
   font-size: 0.6875rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-weight: 700;

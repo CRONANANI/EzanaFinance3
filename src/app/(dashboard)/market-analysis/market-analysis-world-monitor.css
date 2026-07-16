@@ -2299,7 +2299,7 @@ body.light-mode .ma-ticker-sep {
   border-left: 3px solid #f59e0b;
   border-radius: 4px;
   font-size: 0.75rem;
-  color: var(--text-secondary, #c9d1d9);
+  color: var(--text-secondary);
   font-style: italic;
 }
 .isr-article-disclaimer {

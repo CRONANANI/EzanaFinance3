@@ -217,7 +217,7 @@ body {
   .main-nav .mobile-hamburger i,
   .partner-nav .mobile-hamburger,
   .partner-nav .mobile-hamburger i {
-    color: var(--primary, #10b981);
+    color: var(--primary);
   }
   .main-nav .mobile-hamburger:hover,
   .main-nav .mobile-hamburger:focus-visible,
@@ -274,7 +274,7 @@ body {
     height: 40px;
     border: none;
     background: transparent;
-    color: var(--primary, #10b981);
+    color: var(--primary);
     font-size: 1.35rem;
     cursor: pointer;
     border-radius: 8px;
@@ -705,7 +705,7 @@ body.light-mode .mobile-auth-drawer .mobile-drawer-logout:hover {
   .course-table tr {
     display: flex;
     flex-direction: column;
-    background: var(--card, rgba(17, 24, 39, 0.6));
+    background: var(--card);
     border: 1px solid var(--card-border, rgba(16, 185, 129, 0.15));
     border-radius: 12px;
     padding: 1rem;
@@ -726,7 +726,7 @@ body.light-mode .mobile-auth-drawer .mobile-drawer-logout:hover {
   .course-table td::before {
     content: attr(data-label);
     font-weight: 600;
-    color: var(--muted-foreground, #8b949e);
+    color: var(--muted-foreground);
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.04em;
@@ -770,10 +770,10 @@ body.light-mode .mobile-auth-drawer .mobile-drawer-logout:hover {
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
-    background: var(--accent, rgba(16, 185, 129, 0.1));
-    border: 1px solid var(--primary, #10b981);
+    background: var(--accent);
+    border: 1px solid var(--primary);
     border-radius: 8px;
-    color: var(--primary, #10b981);
+    color: var(--primary);
     font-size: 0.875rem;
     font-weight: 600;
     cursor: pointer;
@@ -1471,7 +1471,7 @@ body.light-mode .mobile-auth-drawer .mobile-drawer-logout:hover {
   .learning-course-table tr {
     display: flex;
     flex-direction: column;
-    background: var(--card, rgba(17, 24, 39, 0.6));
+    background: var(--card);
     border: 1px solid var(--card-border, rgba(16, 185, 129, 0.15));
     border-radius: 12px;
     padding: 1rem;
@@ -1490,7 +1490,7 @@ body.light-mode .mobile-auth-drawer .mobile-drawer-logout:hover {
   .learning-course-table td::before {
     content: attr(data-label);
     font-weight: 600;
-    color: var(--muted-foreground, #8b949e);
+    color: var(--muted-foreground);
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.04em;
@@ -1506,13 +1506,13 @@ body.light-mode .mobile-auth-drawer .mobile-drawer-logout:hover {
     font-size: 1rem;
     font-weight: 600;
     padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--border, rgba(16, 185, 129, 0.1));
+    border-bottom: 1px solid var(--border);
   }
 
   .learning-course-table td:last-child {
     justify-content: flex-end;
     padding-top: 0.5rem;
-    border-top: 1px solid var(--border, rgba(16, 185, 129, 0.1));
+    border-top: 1px solid var(--border);
   }
 
   .course-table-wrap {

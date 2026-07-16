@@ -9,17 +9,17 @@
    * Theme-aware text tokens — fallbacks assume a dark dashboard surface.
    * body.light-mode overrides below flip to light-appropriate values.
    */
-  --bm-heading: var(--home-heading, #f0f6fc);
+  --bm-heading: var(--home-heading);
   --bm-text: var(--home-text, #e5e7eb);
-  --bm-muted: var(--home-muted, #cbd5e1);
+  --bm-muted: var(--home-muted);
   --bm-subtle: #94a3b8;
   --bm-border: rgba(148, 163, 184, 0.38);
 }
 
 body.light-mode .bm-page {
-  --bm-heading: var(--home-heading, #0f172a);
+  --bm-heading: var(--home-heading);
   --bm-text: var(--home-text, #1e293b);
-  --bm-muted: var(--home-muted, #475569);
+  --bm-muted: var(--home-muted);
   --bm-subtle: #64748b;
   --bm-border: rgba(15, 23, 42, 0.14);
 }

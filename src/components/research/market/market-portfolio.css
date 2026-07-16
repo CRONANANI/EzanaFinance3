@@ -64,7 +64,7 @@
   padding: 0.7rem 1rem;
   font-size: 1rem;
   font-weight: 700;
-  color: var(--home-muted, #8b949e);
+  color: var(--home-muted);
   background: transparent;
   border: none;
   border-radius: 8px;
@@ -80,7 +80,7 @@
 }
 
 .cpr-view-toggle-btn:hover {
-  color: var(--home-heading, #ffffff);
+  color: var(--home-heading);
 }
 
 .cpr-view-toggle-btn.is-active {
@@ -173,7 +173,7 @@ body.light-mode .cpr-page-eyebrow {
   font-weight: 700;
   padding: 0.25rem 0.55rem;
   border-radius: 6px;
-  color: var(--home-muted, #8b949e);
+  color: var(--home-muted);
   cursor: pointer;
   letter-spacing: 0.04em;
   transition:
@@ -182,7 +182,7 @@ body.light-mode .cpr-page-eyebrow {
 }
 
 .shm-range-btn:hover {
-  color: var(--home-heading, #ffffff);
+  color: var(--home-heading);
 }
 
 .shm-range-btn.is-active {
@@ -360,7 +360,7 @@ body.light-mode .shm-tile--clickable.shm-tile--clickable:hover {
 .shm-tile-name {
   font-size: 0.75rem;
   font-weight: 700;
-  color: var(--home-heading, #ffffff);
+  color: var(--home-heading);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -370,7 +370,7 @@ body.light-mode .shm-tile--clickable.shm-tile--clickable:hover {
   font-size: 1.125rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
-  color: var(--home-heading, #ffffff);
+  color: var(--home-heading);
   line-height: 1;
 }
 
@@ -415,7 +415,7 @@ body.light-mode .shm-tile {
   padding-top: 0.65rem;
   border-top: 1px solid rgba(148, 163, 184, 0.15);
   font-size: 0.7rem;
-  color: var(--home-body-muted, rgba(203, 213, 225, 0.7));
+  color: var(--home-body-muted);
   flex-wrap: wrap;
 }
 .shm-summary-item {
@@ -429,11 +429,11 @@ body.light-mode .shm-tile {
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--home-body-muted, rgba(148, 163, 184, 0.8));
+  color: var(--home-body-muted);
 }
 .shm-summary-name {
   font-weight: 600;
-  color: var(--home-heading, #f1f5f9);
+  color: var(--home-heading);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -496,7 +496,7 @@ body.light-mode .shm-summary-value--down {
   border-radius: 6px;
   font-size: 0.75rem;
   font-weight: 700;
-  color: var(--home-muted, #8b949e);
+  color: var(--home-muted);
   cursor: pointer;
 }
 
@@ -531,7 +531,7 @@ body.light-mode .stc-tab-btn.is-active {
 .stc-field-label {
   font-size: 0.6875rem;
   font-weight: 700;
-  color: var(--home-muted, #8b949e);
+  color: var(--home-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -543,7 +543,7 @@ body.light-mode .stc-tab-btn.is-active {
   border-radius: 8px;
   border: 1px solid rgba(16, 185, 129, 0.2);
   background: rgba(16, 185, 129, 0.04);
-  color: var(--home-heading, #ffffff);
+  color: var(--home-heading);
   font-size: 0.8125rem;
   font-family: inherit;
 }
@@ -619,7 +619,7 @@ body.light-mode .stc-input {
   font-size: 0.6875rem;
   font-weight: 700;
   text-transform: uppercase;
-  color: var(--home-muted, #8b949e);
+  color: var(--home-muted);
   letter-spacing: 0.05em;
 }
 
@@ -638,7 +638,7 @@ body.light-mode .stc-input {
 
 .stc-result-detail {
   font-size: 0.75rem;
-  color: var(--home-muted, #8b949e);
+  color: var(--home-muted);
 }
 
 .stc-breakdown {
@@ -668,7 +668,7 @@ body.light-mode .stc-breakdown li {
 
 .stc-breakdown-sym {
   font-weight: 700;
-  color: var(--home-heading, #ffffff);
+  color: var(--home-heading);
 }
 
 body.light-mode .stc-breakdown-sym {
@@ -699,7 +699,7 @@ body.light-mode .stc-breakdown-sym {
   margin: 0;
   font-size: 0.75rem;
   line-height: 1.5;
-  color: var(--home-muted, #b9c2cc);
+  color: var(--home-muted);
 }
 
 body.light-mode .stc-aw-copy {
@@ -727,14 +727,14 @@ body.light-mode .stc-aw-row {
 }
 
 .stc-aw-row-label {
-  color: var(--home-muted, #8b949e);
+  color: var(--home-muted);
   font-weight: 600;
 }
 
 .stc-aw-row-value {
   font-weight: 800;
   font-variant-numeric: tabular-nums;
-  color: var(--home-heading, #ffffff);
+  color: var(--home-heading);
 }
 
 body.light-mode .stc-aw-row-value {
@@ -759,7 +759,7 @@ body.light-mode .stc-aw-row-value {
 
 .stc-demo-banner {
   font-size: 0.6875rem;
-  color: var(--home-muted, #8b949e);
+  color: var(--home-muted);
   padding: 0.35rem 0.6rem;
   border-radius: 6px;
   border: 1px dashed rgba(16, 185, 129, 0.2);
@@ -770,7 +770,7 @@ body.light-mode .stc-aw-row-value {
 .mpv-body-text {
   margin: 0;
   font-size: 0.8125rem;
-  color: var(--home-muted, #b9c2cc);
+  color: var(--home-muted);
   line-height: 1.5;
 }
 
@@ -799,7 +799,7 @@ body.light-mode .mpv-body-text {
   gap: 0.5rem 1rem;
   font-size: 0.6875rem;
   font-variant-numeric: tabular-nums;
-  color: var(--home-muted, #8b949e);
+  color: var(--home-muted);
 }
 
 .mpv-allocation-legend span {
@@ -821,7 +821,7 @@ body.light-mode .mpv-body-text {
   border-radius: 8px;
   border: 1px solid rgba(16, 185, 129, 0.2);
   background: rgba(16, 185, 129, 0.04);
-  color: var(--home-heading, #ffffff);
+  color: var(--home-heading);
   font-size: 0.8125rem;
   font-family: inherit;
   resize: vertical;
@@ -893,7 +893,7 @@ body.light-mode .mpv-textarea {
 .mc-lock-title {
   font-size: 0.875rem;
   font-weight: 800;
-  color: var(--home-heading, #ffffff);
+  color: var(--home-heading);
 }
 
 body.light-mode .mc-lock-title {
@@ -903,7 +903,7 @@ body.light-mode .mc-lock-title {
 .mc-lock-copy {
   margin: 0;
   font-size: 0.75rem;
-  color: var(--home-muted, #8b949e);
+  color: var(--home-muted);
   max-width: 260px;
   line-height: 1.45;
 }

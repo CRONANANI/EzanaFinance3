@@ -86,7 +86,7 @@
 .asg2-btn--primary {
   background: var(--emerald);
   border-color: var(--emerald);
-  color: var(--bg-primary, #04130d);
+  color: var(--bg-primary);
 }
 .asg2-btn--primary:hover {
   background: color-mix(in srgb, var(--emerald) 88%, #000);
@@ -130,7 +130,7 @@
 }
 .asg2-seg button.is-active {
   background: var(--emerald);
-  color: var(--bg-primary, #04130d);
+  color: var(--bg-primary);
 }
 
 /* ── Metrics strip ──────────────────────────────────────────────────────── */

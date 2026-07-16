@@ -684,7 +684,7 @@ a.db-icon-btn {
 .db-profits-summary-value {
   font-size: 1.25rem;
   font-weight: 800;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
   line-height: 1;
@@ -693,7 +693,7 @@ a.db-icon-btn {
 .db-profits-summary-label {
   font-size: 0.6875rem;
   font-weight: 600;
-  color: var(--db-muted, #8b949e);
+  color: var(--db-muted);
 }
 
 /* Per-company P&L bars */
@@ -713,7 +713,7 @@ a.db-icon-btn {
 
 .db-profits-bar-symbol {
   font-weight: 800;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
   font-variant-numeric: tabular-nums;
 }
 
@@ -737,7 +737,7 @@ a.db-icon-btn {
   font-variant-numeric: tabular-nums;
   text-align: right;
   min-width: 56px;
-  color: var(--text-secondary, #e2e8f0);
+  color: var(--text-secondary);
 }
 
 body.light-mode .db-profits-summary-value {
@@ -1601,7 +1601,7 @@ body.light-mode .db-sector-drawer-item {
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: var(--db-muted, #6b7280);
+  color: var(--db-muted);
 }
 
 .db-sector-body {
@@ -1754,7 +1754,7 @@ body.light-mode .db-sector-pie-tooltip-pct {
 .db-sector-legend-name {
   flex: 1;
   min-width: 0;
-  color: var(--db-muted-soft, #d1d5db);
+  color: var(--db-muted-soft);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1762,7 +1762,7 @@ body.light-mode .db-sector-pie-tooltip-pct {
 
 .db-sector-legend-pct {
   font-weight: 700;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
 }
@@ -1882,7 +1882,7 @@ body.light-mode .db-skel-bar {
 .db-hero-stat-muted {
   font-size: 0.95rem;
   font-weight: 600;
-  color: var(--db-muted, #8b949e);
+  color: var(--db-muted);
   letter-spacing: 0.01em;
 }
 
@@ -1892,7 +1892,7 @@ body.light-mode .db-hero-stat-muted {
 }
 
 .db-hero-change.is-muted {
-  color: var(--db-muted, #8b949e);
+  color: var(--db-muted);
   font-weight: 600;
 }
 
@@ -2019,7 +2019,7 @@ body.light-mode .db-hero-change.is-muted {
   margin: 0;
   font-size: 0.95rem;
   font-weight: 600;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
   letter-spacing: -0.01em;
   display: inline-flex;
   align-items: center;
@@ -2047,7 +2047,7 @@ body.light-mode .db-hero-change.is-muted {
 
 /* Light-mode contrast */
 body.light-mode .db-hero-card-title {
-  color: var(--text-primary, #0f172a);
+  color: var(--text-primary);
 }
 
 body.light-mode .db-hero-card-header {
@@ -2130,7 +2130,7 @@ body.light-mode .market-pulse-sector-row:hover {
 /* The chevron icon at the right edge of each row */
 .db-sector-legend-chevron {
   font-size: 0.625rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   margin-left: 0.3rem;
   transition: color 200ms ease;
   flex-shrink: 0;
@@ -2180,18 +2180,18 @@ body.light-mode .market-pulse-sector-row:hover {
 
 .db-sector-holding-symbol {
   font-weight: 800;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
   font-variant-numeric: tabular-nums;
 }
 
 .db-sector-holding-qty {
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   font-size: 0.625rem;
 }
 
 .db-sector-holding-value {
   font-weight: 600;
-  color: var(--text-secondary, #e2e8f0);
+  color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
   text-align: right;
 }

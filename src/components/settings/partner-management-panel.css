@@ -12,12 +12,12 @@
   margin: 0 0 0.25rem;
   font-size: 1.5rem;
   font-weight: 800;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 .pmp-subtitle {
   margin: 0 0 0.5rem;
   font-size: 0.875rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   line-height: 1.5;
 }
 
@@ -26,7 +26,7 @@
   align-items: center;
   gap: 0.5rem;
   font-size: 0.75rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 
 .pmp-summary-stat strong {
@@ -44,7 +44,7 @@
 .pmp-search-icon {
   position: absolute;
   left: 0.85rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   font-size: 0.875rem;
   pointer-events: none;
 }
@@ -56,7 +56,7 @@
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: var(--surface-input);
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
   font-family: inherit;
 }
 
@@ -76,7 +76,7 @@
 .pmp-empty {
   padding: 2rem;
   text-align: center;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   font-size: 0.875rem;
   background: var(--surface-card);
   border-radius: 10px;
@@ -143,7 +143,7 @@
 .pmp-user-name {
   font-size: 0.875rem;
   font-weight: 700;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   gap: 0.4rem;
@@ -166,7 +166,7 @@
 
 .pmp-user-meta {
   font-size: 0.6875rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 
 .pmp-toggle {

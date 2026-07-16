@@ -84,7 +84,7 @@ body.light-mode .sdm-header {
   font-size: 1.5rem;
   font-weight: 700;
   letter-spacing: -0.02em;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 
 .sdm-heading-meta {
@@ -98,7 +98,7 @@ body.light-mode .sdm-header {
 .sdm-sector-index-label {
   font-size: 0.6875rem;
   font-weight: 600;
-  color: var(--text-secondary, #9ca3af);
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -144,7 +144,7 @@ body.light-mode .sdm-title {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   padding: 0.5rem 0.7rem;
-  color: var(--text-secondary, #9ca3af);
+  color: var(--text-secondary);
   cursor: pointer;
   transition:
     background 150ms ease,
@@ -216,7 +216,7 @@ body.light-mode .sdm-section + .sdm-section {
   margin: 0;
   font-size: 1rem;
   font-weight: 700;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 
 body.light-mode .sdm-section-header h3 {
@@ -225,7 +225,7 @@ body.light-mode .sdm-section-header h3 {
 
 .sdm-section-meta {
   font-size: 0.75rem;
-  color: var(--text-secondary, #9ca3af);
+  color: var(--text-secondary);
 }
 
 .sdm-performer-list,
@@ -278,7 +278,7 @@ body.light-mode .sdm-performer-row:hover {
 .sdm-performer-symbol {
   font-size: 0.875rem;
   font-weight: 700;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
   letter-spacing: -0.01em;
 }
 
@@ -288,7 +288,7 @@ body.light-mode .sdm-performer-symbol {
 
 .sdm-performer-name {
   font-size: 0.75rem;
-  color: var(--text-secondary, #9ca3af);
+  color: var(--text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -305,7 +305,7 @@ body.light-mode .sdm-performer-symbol {
 .sdm-performer-price {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 
 body.light-mode .sdm-performer-price {
@@ -361,7 +361,7 @@ body.light-mode .sdm-news-row {
 .sdm-news-title {
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
   line-height: 1.35;
 }
 
@@ -371,7 +371,7 @@ body.light-mode .sdm-news-title {
 
 .sdm-news-summary {
   font-size: 0.75rem;
-  color: var(--text-secondary, #9ca3af);
+  color: var(--text-secondary);
   line-height: 1.5;
 }
 
@@ -412,7 +412,7 @@ body.light-mode .sdm-news-title {
   gap: 0.5rem;
   padding: 2rem;
   font-size: 0.875rem;
-  color: var(--text-secondary, #9ca3af);
+  color: var(--text-secondary);
 }
 
 .sdm-error {

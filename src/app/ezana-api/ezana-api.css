@@ -10,9 +10,9 @@
 .ea-page {
   --ea-emerald: var(--emerald, #10b981);
   --ea-emerald-text: var(--emerald-text, #059669);
-  --ea-ink: var(--text-primary, #0f172a);
-  --ea-muted: var(--text-muted, #64748b);
-  --ea-border: var(--border-primary, rgba(0, 0, 0, 0.1));
+  --ea-ink: var(--text-primary);
+  --ea-muted: var(--text-muted);
+  --ea-border: var(--border-primary);
   --ea-surface: #ffffff;
   --ea-code-tint: rgba(0, 0, 0, 0.04);
   --ea-nav: 88px;

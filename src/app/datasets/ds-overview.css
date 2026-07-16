@@ -134,7 +134,7 @@
     border-color 0.15s ease;
 }
 .dsx-legend-chip:hover {
-  border-color: var(--border-hover, rgba(16, 185, 129, 0.3));
+  border-color: var(--border-hover);
 }
 .dsx-legend-chip.is-active {
   background: var(--emerald-bg);
@@ -636,7 +636,7 @@
     transform 0.15s ease;
 }
 .dsx-catcard:hover {
-  border-color: var(--border-hover, rgba(16, 185, 129, 0.3));
+  border-color: var(--border-hover);
   transform: translateY(-2px);
 }
 .dsx-catcard-name {

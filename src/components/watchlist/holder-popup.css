@@ -60,7 +60,7 @@
   border: none;
   border-radius: 50%;
   background: var(--bg-tertiary);
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   cursor: pointer;
   font-size: 0.875rem;
   display: flex;
@@ -71,7 +71,7 @@
 
 .hp-close:hover {
   background: var(--surface-card-hover);
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 
 .hp-head {
@@ -131,7 +131,7 @@
   margin: 0 0 0.25rem;
   font-size: 1.125rem;
   font-weight: 800;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   gap: 0.4rem;
@@ -152,11 +152,11 @@
 
 .hp-sub {
   font-size: 0.8125rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 
 .hp-sub strong {
-  color: var(--text-secondary, #e2e8f0);
+  color: var(--text-secondary);
   font-weight: 700;
 }
 
@@ -183,14 +183,14 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   margin-bottom: 0.25rem;
 }
 
 .hp-stat-value {
   font-size: 1.25rem;
   font-weight: 800;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
   line-height: 1;
@@ -206,7 +206,7 @@
 .hp-stat-sub {
   margin-top: 0.3rem;
   font-size: 0.6875rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   font-variant-numeric: tabular-nums;
 }
 
@@ -240,7 +240,7 @@
 .hp-note-text {
   margin: 0;
   font-size: 0.8125rem;
-  color: var(--text-secondary, #e2e8f0);
+  color: var(--text-secondary);
   line-height: 1.55;
   font-style: italic;
 }

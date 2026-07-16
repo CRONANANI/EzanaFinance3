@@ -52,7 +52,7 @@ body.light-mode .reactivate-card {
 .reactivate-card h1 {
   font-size: 1.5rem;
   font-weight: 800;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
   margin: 0 0 0.75rem;
 }
 
@@ -62,7 +62,7 @@ body.light-mode .reactivate-card h1 {
 
 .reactivate-card p {
   font-size: 0.95rem;
-  color: var(--text-secondary, #d1d5db);
+  color: var(--text-secondary);
   margin: 0 0 1.5rem;
   line-height: 1.6;
 }
@@ -100,7 +100,7 @@ body.light-mode .reactivate-card p {
 .reactivate-link {
   display: block;
   font-size: 0.85rem;
-  color: var(--text-faint, #6b7280);
+  color: var(--text-faint);
   text-decoration: none;
 }
 

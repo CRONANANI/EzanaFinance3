@@ -212,12 +212,12 @@
   right: 50%;
   width: 50%;
   height: 22px;
-  border-top: 1.5px solid var(--border-strong, rgba(127, 127, 127, 0.35));
+  border-top: 1.5px solid var(--border-strong);
 }
 .oc2-tree li::after {
   right: auto;
   left: 50%;
-  border-left: 1.5px solid var(--border-strong, rgba(127, 127, 127, 0.35));
+  border-left: 1.5px solid var(--border-strong);
 }
 .oc2-tree li:only-child::after,
 .oc2-tree li:only-child::before {
@@ -231,7 +231,7 @@
   border: 0 none;
 }
 .oc2-tree li:last-child::before {
-  border-right: 1.5px solid var(--border-strong, rgba(127, 127, 127, 0.35));
+  border-right: 1.5px solid var(--border-strong);
   border-radius: 0 6px 0 0;
 }
 .oc2-tree li:first-child::after {
@@ -244,7 +244,7 @@
   left: 50%;
   width: 0;
   height: 22px;
-  border-left: 1.5px solid var(--border-strong, rgba(127, 127, 127, 0.35));
+  border-left: 1.5px solid var(--border-strong);
 }
 /* The root row has no incoming connector. */
 .oc2-tree > ul {
@@ -277,7 +277,7 @@
 }
 .oc2-node:hover,
 .oc2-node:focus-visible {
-  border-color: var(--border-hover, rgba(16, 185, 129, 0.4));
+  border-color: var(--border-hover);
   box-shadow: var(--shadow-md, 0 4px 14px rgba(0, 0, 0, 0.25));
   transform: translateY(-2px);
   outline: none;
@@ -314,7 +314,7 @@
 .oc2-pill--analyst {
   background: var(--bg-tertiary);
   border: 1px solid rgba(148, 163, 184, 0.4);
-  color: var(--text-muted, #94a3b8);
+  color: var(--text-muted);
 }
 .oc2-node-sectors {
   display: flex;
@@ -326,7 +326,7 @@
   font-size: 0.6rem;
   padding: 0.08rem 0.4rem;
   border-radius: 6px;
-  background: var(--surface-input, rgba(127, 127, 127, 0.08));
+  background: var(--surface-input);
   border: 1px solid var(--border-secondary);
   color: var(--text-body, var(--text-secondary));
 }

@@ -603,7 +603,7 @@
   align-items: center;
   justify-content: center;
   padding: 3vh 2vw;
-  background: var(--bg-overlay, rgba(0, 0, 0, 0.6));
+  background: var(--bg-overlay);
   backdrop-filter: blur(2px);
   animation: rl2-overlay-in 0.14s ease-out;
 }

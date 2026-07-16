@@ -42,7 +42,7 @@
 .kea-quickactions-label {
   font-size: 0.6875rem;
   font-weight: 700;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   margin-right: 0.2rem;
 }
 
@@ -57,7 +57,7 @@
 }
 
 .kea-chip-title {
-  color: var(--text-secondary, #e2e8f0);
+  color: var(--text-secondary);
   font-weight: 600;
 }
 
@@ -67,7 +67,7 @@
   border: none;
   background: var(--bg-tertiary);
   border-radius: 50%;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   cursor: pointer;
   font-size: 0.625rem;
   display: inline-flex;
@@ -86,7 +86,7 @@
 
 .kea-quickactions-more {
   font-size: 0.625rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   font-style: italic;
 }
 
@@ -106,7 +106,7 @@
   margin: 0;
   font-size: 0.875rem;
   font-weight: 700;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 .kea-form-close {
   width: 24px;
@@ -114,13 +114,13 @@
   border: none;
   background: var(--bg-tertiary);
   border-radius: 50%;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   cursor: pointer;
   font-size: 0.875rem;
 }
 .kea-form-close:hover {
   background: var(--surface-card-hover);
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 
 .kea-field {
@@ -136,7 +136,7 @@
 .kea-field span {
   font-size: 0.6875rem;
   font-weight: 700;
-  color: var(--text-secondary, #e2e8f0);
+  color: var(--text-secondary);
 }
 
 .kea-field input,
@@ -147,7 +147,7 @@
   border-radius: 5px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: var(--surface-input);
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
   font-family: inherit;
 }
 
@@ -162,7 +162,7 @@
   align-items: center;
   font-size: 0.6875rem;
   font-weight: 700;
-  color: var(--text-secondary, #e2e8f0);
+  color: var(--text-secondary);
 }
 
 .kea-impact-add {
@@ -189,7 +189,7 @@
   border-radius: 4px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: var(--surface-input);
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 
 .kea-impact-remove {
@@ -233,10 +233,10 @@
 .kea-btn-secondary {
   background: transparent;
   border-color: rgba(255, 255, 255, 0.1);
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 .kea-btn-secondary:hover {
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
   border-color: rgba(255, 255, 255, 0.25);
 }
 .kea-btn-primary {

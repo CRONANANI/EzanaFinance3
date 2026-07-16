@@ -127,8 +127,8 @@
   font-size: 0.75rem;
 }
 .wl-strip-badge.stk {
-  background: var(--muted, rgba(17, 24, 39, 0.5));
-  color: var(--foreground, #f0f6fc);
+  background: var(--muted);
+  color: var(--foreground);
   border: 1px solid rgba(16, 185, 129, 0.1);
   font-size: 0.5rem;
   font-weight: 800;
@@ -140,7 +140,7 @@
 .wl-strip-name {
   font-size: 0.6875rem;
   font-weight: 700;
-  color: var(--foreground, #f0f6fc);
+  color: var(--foreground);
   display: block;
   white-space: nowrap;
   overflow: hidden;
@@ -148,7 +148,7 @@
 }
 .wl-strip-sub {
   font-size: 0.5625rem;
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
   display: flex;
   align-items: center;
   gap: 0.25rem;
@@ -176,7 +176,7 @@
 .wl-strip-price {
   font-size: 0.9375rem;
   font-weight: 800;
-  color: var(--foreground, #f0f6fc);
+  color: var(--foreground);
   font-feature-settings: 'tnum' 1;
   letter-spacing: -0.02em;
   display: block;
@@ -195,7 +195,7 @@
 }
 
 .wl-strip-ytd-label {
-  color: var(--muted-foreground, #6b7280) !important;
+  color: var(--muted-foreground) !important;
   font-weight: 600 !important;
   letter-spacing: 0.04em;
 }
@@ -210,7 +210,7 @@
   top: 0;
   font-size: 0.625rem;
   font-weight: 600;
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   z-index: 1;
@@ -218,7 +218,7 @@
 
 .wl-portfolio-hint {
   font-size: 0.75rem;
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
   max-width: 12rem;
   text-align: right;
 }
@@ -236,7 +236,7 @@
   padding: 1px 5px;
   border-radius: 3px;
   background: rgba(16, 185, 129, 0.06);
-  color: var(--muted-foreground, #8b949e);
+  color: var(--muted-foreground);
   white-space: nowrap;
 }
 
@@ -269,15 +269,15 @@
   flex-wrap: wrap;
 }
 .wl-bc-home {
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
   font-weight: 600;
 }
 .wl-bc i.bi-chevron-right {
   font-size: 0.5rem;
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
 }
 .wl-bc-cur {
-  color: var(--foreground, #f0f6fc);
+  color: var(--foreground);
   font-weight: 700;
 }
 .wl-bc-tag {
@@ -336,7 +336,7 @@
   gap: 0.35rem 0.5rem;
   font-size: 0.9375rem;
   font-weight: 700;
-  color: var(--foreground, #f0f6fc);
+  color: var(--foreground);
   line-height: 1.25;
 }
 .wl-ticker-strong {
@@ -345,7 +345,7 @@
   letter-spacing: 0.02em;
 }
 .wl-ticker-sep {
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
   font-weight: 600;
 }
 .wl-co-full-name {
@@ -443,7 +443,7 @@
 .wl-big-price {
   font-size: 2.125rem;
   font-weight: 800;
-  color: var(--foreground, #f0f6fc);
+  color: var(--foreground);
   font-feature-settings: 'tnum' 1;
   letter-spacing: -0.03em;
   line-height: 1.1;
@@ -451,7 +451,7 @@
 .wl-bond-etf-note {
   display: inline-flex;
   margin-left: 0.5rem;
-  color: var(--text-secondary, #8b949e);
+  color: var(--text-secondary);
   font-size: 0.7em;
   cursor: help;
   vertical-align: middle;
@@ -461,7 +461,7 @@
 }
 .wl-price-meta {
   font-size: 0.75rem;
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
   margin-top: 2px;
 }
 .wl-big-chg {
@@ -488,7 +488,7 @@
   padding: 0.3rem 0.65rem;
   font-size: 0.6875rem;
   font-weight: 600;
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
   background: transparent;
   border: 1px solid transparent;
   border-radius: 6px;
@@ -496,7 +496,7 @@
   transition: all 0.2s;
 }
 .wl-tr:hover {
-  color: var(--foreground, #f0f6fc);
+  color: var(--foreground);
   background: rgba(16, 185, 129, 0.06);
 }
 .wl-tr.on {
@@ -511,7 +511,7 @@
   height: 300px;
   border-radius: 8px;
   overflow: hidden;
-  background: var(--muted, rgba(17, 24, 39, 0.3));
+  background: var(--muted);
   border: 1px solid rgba(16, 185, 129, 0.05);
 }
 
@@ -519,7 +519,7 @@
 .wl-top-assets h4 {
   font-size: 0.6875rem;
   font-weight: 700;
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   margin: 0 0 0.5rem;
@@ -536,7 +536,7 @@
   border-radius: 6px;
   background: rgba(16, 185, 129, 0.06);
   border: 1px solid rgba(16, 185, 129, 0.12);
-  color: var(--foreground, #f0f6fc);
+  color: var(--foreground);
   display: flex;
   align-items: center;
   gap: 0.3rem;
@@ -571,7 +571,7 @@
 .wl-cmp-hdr span {
   font-size: 0.5625rem;
   font-weight: 700;
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -591,12 +591,12 @@
 .wl-cmp-name {
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--foreground, #f0f6fc);
+  color: var(--foreground);
 }
 .wl-cmp-val {
   font-size: 0.6875rem;
   font-weight: 600;
-  color: var(--foreground, #f0f6fc);
+  color: var(--foreground);
   font-feature-settings: 'tnum' 1;
 }
 .wl-cmp-chg {
@@ -656,7 +656,7 @@
 .wl-side-hdr h3 {
   font-size: 0.875rem;
   font-weight: 800;
-  color: var(--foreground, #f0f6fc);
+  color: var(--foreground);
   margin: 0;
 }
 
@@ -714,21 +714,21 @@
   top: 50%;
   transform: translateY(-50%);
   font-size: 0.75rem;
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
 }
 .wl-side-search input {
   width: 100%;
   padding: 0.5rem 0.75rem 0.5rem 2rem;
   font-size: 0.75rem;
-  background: var(--muted, rgba(17, 24, 39, 0.4));
+  background: var(--muted);
   border: 1px solid rgba(16, 185, 129, 0.1);
   border-radius: 8px;
-  color: var(--foreground, #f0f6fc);
+  color: var(--foreground);
   outline: none;
   transition: border-color 0.2s;
 }
 .wl-side-search input::placeholder {
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
 }
 .wl-side-search input:focus {
   border-color: rgba(16, 185, 129, 0.4);
@@ -744,7 +744,7 @@
   padding: 0.3rem 0.25rem;
   font-size: 0.5625rem;
   font-weight: 700;
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
   background: transparent;
   border: 1px solid transparent;
   border-radius: 6px;
@@ -754,7 +754,7 @@
   letter-spacing: 0.04em;
 }
 .wl-st:hover {
-  color: var(--foreground, #f0f6fc);
+  color: var(--foreground);
   background: rgba(16, 185, 129, 0.04);
 }
 .wl-st.on {
@@ -812,8 +812,8 @@
 .wl-si-tk {
   font-size: 0.5625rem;
   font-weight: 800;
-  color: var(--foreground, #f0f6fc);
-  background: var(--muted, rgba(17, 24, 39, 0.5));
+  color: var(--foreground);
+  background: var(--muted);
   padding: 0.25rem 0.35rem;
   border-radius: 5px;
   border: 1px solid rgba(16, 185, 129, 0.1);
@@ -859,7 +859,7 @@
 .wl-si-name {
   font-size: 0.6875rem;
   font-weight: 600;
-  color: var(--foreground, #f0f6fc);
+  color: var(--foreground);
   display: block;
   white-space: nowrap;
   overflow: hidden;
@@ -867,7 +867,7 @@
 }
 .wl-si-sub {
   font-size: 0.5rem;
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
   display: block;
 }
 
@@ -883,7 +883,7 @@
 .wl-si-price {
   font-size: 0.6875rem;
   font-weight: 700;
-  color: var(--foreground, #f0f6fc);
+  color: var(--foreground);
   font-feature-settings: 'tnum' 1;
   display: block;
 }
@@ -1020,13 +1020,13 @@ body.light-mode .wl-side-search input {
   background: rgba(16, 185, 129, 0.04);
   border-bottom: 1px solid rgba(16, 185, 129, 0.08);
   font-weight: 700;
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 .wl-comp-row {
   border-bottom: 1px solid rgba(16, 185, 129, 0.04);
-  color: var(--foreground, #f0f6fc);
+  color: var(--foreground);
 }
 .wl-comp-row:last-child {
   border-bottom: none;
@@ -1059,8 +1059,8 @@ body.light-mode .wl-side-search input {
   padding: 0.45rem 0.65rem;
   font-size: 0.6875rem;
   font-weight: 700;
-  color: var(--foreground, #f0f6fc);
-  background: var(--muted, rgba(17, 24, 39, 0.4));
+  color: var(--foreground);
+  background: var(--muted);
   border: 1px solid rgba(16, 185, 129, 0.12);
   border-radius: 8px;
   cursor: pointer;
@@ -1102,7 +1102,7 @@ body.light-mode .wl-side-search input {
   padding: 0.5rem 0.65rem;
   font-size: 0.6875rem;
   text-align: left;
-  color: var(--text-secondary, #e2e8f0);
+  color: var(--text-secondary);
   background: transparent;
   border: none;
   border-bottom: 1px solid rgba(16, 185, 129, 0.06);
@@ -1121,7 +1121,7 @@ body.light-mode .wl-side-search input {
 }
 .wl-wl-meta {
   font-size: 0.5625rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 
 /* Watchlist search (suggestions) */
@@ -1138,7 +1138,7 @@ body.light-mode .wl-side-search input {
   left: 0.65rem;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
   pointer-events: none;
 }
 .wl-search-clear {
@@ -1148,7 +1148,7 @@ body.light-mode .wl-side-search input {
   transform: translateY(-50%);
   background: none;
   border: none;
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
   cursor: pointer;
   padding: 0.2rem;
   display: flex;
@@ -1156,7 +1156,7 @@ body.light-mode .wl-side-search input {
   justify-content: center;
 }
 .wl-search-clear:hover {
-  color: var(--foreground, #f0f6fc);
+  color: var(--foreground);
 }
 .wl-search-dropdown {
   position: absolute;
@@ -1166,7 +1166,7 @@ body.light-mode .wl-side-search input {
   z-index: 50;
   border-radius: 8px;
   border: 1px solid rgba(16, 185, 129, 0.15);
-  background: var(--card, rgba(22, 27, 34, 0.98));
+  background: var(--card);
   max-height: 320px;
   overflow-y: auto;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
@@ -1175,7 +1175,7 @@ body.light-mode .wl-side-search input {
   padding: 0.75rem;
   text-align: center;
   font-size: 0.75rem;
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
 }
 .wl-search-result-block {
   border-bottom: 1px solid rgba(16, 185, 129, 0.06);
@@ -1209,7 +1209,7 @@ body.light-mode .wl-side-search input {
 }
 .wl-search-nm {
   font-size: 0.6875rem;
-  color: var(--foreground, #e2e8f0);
+  color: var(--foreground);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1218,7 +1218,7 @@ body.light-mode .wl-side-search input {
 .wl-search-sec {
   display: none;
   font-size: 0.5625rem;
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
 }
 @media (min-width: 380px) {
   .wl-search-sec {
@@ -1263,7 +1263,7 @@ body.light-mode .wl-side-search input {
 .wl-search-pick-label {
   margin: 0 0 0.35rem;
   font-size: 0.5625rem;
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
 }
 .wl-search-tk-inline {
   color: #10b981;
@@ -1282,7 +1282,7 @@ body.light-mode .wl-side-search input {
   border-radius: 999px;
   border: 1px solid rgba(16, 185, 129, 0.2);
   background: transparent;
-  color: var(--foreground, #e2e8f0);
+  color: var(--foreground);
   cursor: pointer;
   transition:
     border-color 0.15s,
@@ -1379,7 +1379,7 @@ body.light-mode .wl-strip-asset {
   top: calc(100% + 6px);
   left: 0;
   min-width: 200px;
-  background: var(--card, #0d1117);
+  background: var(--card);
   border: 1px solid rgba(16, 185, 129, 0.3);
   border-radius: 10px;
   box-shadow: 0 10px 32px rgba(0, 0, 0, 0.4);
@@ -1414,7 +1414,7 @@ body.light-mode .wl-class-menu {
   background: transparent;
   border: none;
   border-radius: 6px;
-  color: var(--foreground, #f0f6fc);
+  color: var(--foreground);
   font-size: 0.8125rem;
   font-weight: 500;
   font-family: inherit;
@@ -1437,7 +1437,7 @@ body.light-mode .wl-class-menu {
   font-size: 0.875rem;
   width: 16px;
   text-align: center;
-  color: var(--muted-foreground, #94a3b8);
+  color: var(--muted-foreground);
 }
 
 .wl-class-menu-item.is-active i {
@@ -1477,7 +1477,7 @@ body.light-mode .wl-class-menu-check {
   justify-content: center;
   padding: 1.5rem;
   font-size: 0.8125rem;
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
   font-style: italic;
 }
 
@@ -1558,12 +1558,12 @@ body.light-mode .wl-wl-opt {
    ════════════════════════════════════════════════════════════ */
 
 .wl-chart-axis-tick {
-  fill: var(--text-secondary, #e2e8f0);
+  fill: var(--text-secondary);
   opacity: 0.85;
 }
 
 body.light-mode .wl-chart-axis-tick {
-  fill: var(--text-secondary, #1e293b);
+  fill: var(--text-secondary);
 }
 
 .wl-chart-tooltip {
@@ -1577,13 +1577,13 @@ body.light-mode .wl-chart-axis-tick {
 
 .wl-chart-tooltip-label {
   font-size: 0.625rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   margin-bottom: 0.15rem;
 }
 
 .wl-chart-tooltip-value {
   font-weight: 800;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
   font-variant-numeric: tabular-nums;
 }
 

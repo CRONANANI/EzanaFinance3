@@ -164,7 +164,7 @@
 .mkt-opps-item-headline {
   font-size: 0.725rem;
   font-weight: 600;
-  color: var(--home-heading, #f0f6fc);
+  color: var(--home-heading);
   margin: 0;
   line-height: 1.35;
   display: -webkit-box;
@@ -179,7 +179,7 @@
   gap: 0.4rem;
   margin-top: 0.2rem;
   font-size: 0.575rem;
-  color: var(--home-muted, #6b7280);
+  color: var(--home-muted);
 }
 
 .mkt-opps-item-ticker {
@@ -300,7 +300,7 @@ body.light-mode .mkt-opps-footer {
 .mkt-modal-title {
   font-size: 0.95rem;
   font-weight: 700;
-  color: var(--home-heading, #f0f6fc);
+  color: var(--home-heading);
   margin: 0;
   line-height: 1.35;
 }
@@ -311,7 +311,7 @@ body.light-mode .mkt-opps-footer {
   gap: 0.5rem;
   margin-top: 0.3rem;
   font-size: 0.65rem;
-  color: var(--home-muted, #6b7280);
+  color: var(--home-muted);
 }
 
 .mkt-modal-ticker {
@@ -327,7 +327,7 @@ body.light-mode .mkt-opps-footer {
 .mkt-modal-close {
   background: transparent;
   border: none;
-  color: var(--home-muted, #8b949e);
+  color: var(--home-muted);
   font-size: 1rem;
   cursor: pointer;
   padding: 0.3rem;
@@ -488,13 +488,13 @@ body.light-mode .mkt-opps-footer {
 .mkt-modal-kpi-value {
   font-size: 0.95rem;
   font-weight: 800;
-  color: var(--home-heading, #f0f6fc);
+  color: var(--home-heading);
   font-variant-numeric: tabular-nums;
 }
 
 .mkt-modal-kpi-sub {
   font-size: 0.55rem;
-  color: var(--home-muted, #6b7280);
+  color: var(--home-muted);
 }
 
 .mkt-modal-news-list {
@@ -545,7 +545,7 @@ body.light-mode .mkt-opps-footer {
 .mkt-modal-news-title {
   font-size: 0.7rem;
   font-weight: 600;
-  color: var(--home-heading, #f0f6fc);
+  color: var(--home-heading);
   margin: 0;
   line-height: 1.35;
   display: -webkit-box;
@@ -556,7 +556,7 @@ body.light-mode .mkt-opps-footer {
 
 .mkt-modal-news-source {
   font-size: 0.55rem;
-  color: var(--home-muted, #6b7280);
+  color: var(--home-muted);
 }
 
 .mkt-modal-news-arrow {

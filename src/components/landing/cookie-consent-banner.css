@@ -22,7 +22,7 @@
   -webkit-backdrop-filter: blur(14px) saturate(140%);
   backdrop-filter: blur(14px) saturate(140%);
 
-  color: var(--foreground, #0a0e13);
+  color: var(--foreground);
   border: 1px solid rgba(13, 24, 33, 0.08);
   border-radius: 14px;
   box-shadow: 0 10px 30px -10px rgba(13, 24, 33, 0.18);
@@ -106,7 +106,7 @@ body:not(.light-mode) .cookie-banner {
 }
 /* The inlined title lead-in ("We value your privacy.") — emphasised. */
 .cookie-banner-inner.is-row .cookie-banner-body strong {
-  color: var(--foreground, #0a0e13);
+  color: var(--foreground);
   font-weight: 600;
 }
 body:not(.light-mode) .cookie-banner-inner.is-row .cookie-banner-body strong {
@@ -128,7 +128,7 @@ body:not(.light-mode) .cookie-banner-inner.is-row .cookie-banner-body strong {
   font-size: 13px;
   line-height: 1.45;
   margin: 0;
-  color: var(--muted-foreground, #5b6470);
+  color: var(--muted-foreground);
   /* Wider cap so the copy flows across ~two lines on the now full-width banner. */
   max-width: 1000px;
   margin-left: auto;
@@ -169,7 +169,7 @@ body:not(.light-mode) .cookie-banner-link {
 }
 .cookie-banner-btn--ghost {
   background: transparent;
-  color: var(--foreground, #0a0e13);
+  color: var(--foreground);
   border-color: rgba(13, 24, 33, 0.16);
 }
 .cookie-banner-btn--ghost:hover {
@@ -210,11 +210,11 @@ body:not(.light-mode) .cookie-banner-btn--ghost:hover {
   align-items: flex-start;
   font-size: 12.5px;
   line-height: 1.5;
-  color: var(--muted-foreground, #5b6470);
+  color: var(--muted-foreground);
   cursor: pointer;
 }
 .cookie-banner-cat-row strong {
-  color: var(--foreground, #0a0e13);
+  color: var(--foreground);
   font-weight: 600;
 }
 body:not(.light-mode) .cookie-banner-cat-row {

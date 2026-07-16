@@ -573,7 +573,7 @@ body.light-mode ::selection {
   height: 32px;
   border-radius: 10px;
   background: transparent;
-  border: 1px solid var(--border-primary, rgba(16, 185, 129, 0.08));
+  border: 1px solid var(--border-primary);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -585,7 +585,7 @@ body.light-mode ::selection {
 
 .theme-toggle-btn:hover {
   background: var(--emerald-bg, rgba(16, 185, 129, 0.08));
-  border-color: var(--border-hover, rgba(16, 185, 129, 0.2));
+  border-color: var(--border-hover);
 }
 
 /* Icon wrapper — handles the rotation animation */

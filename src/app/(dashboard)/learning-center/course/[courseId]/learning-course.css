@@ -454,7 +454,7 @@ body.light-mode .lc3-results-badge.fail {
 }
 .lc3-review-text {
   flex: 1;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 .lc3-review-detail {
   margin: 0.5rem 0 0 1.625rem;
@@ -466,13 +466,13 @@ body.light-mode .lc3-results-badge.fail {
   color: #f87171;
 }
 .lc3-review-your span {
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 .lc3-review-correct {
   color: #10b981;
 }
 .lc3-review-correct span {
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
   font-weight: 600;
 }
 .lc3-review-explanation {

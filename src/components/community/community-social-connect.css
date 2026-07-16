@@ -21,13 +21,13 @@
 .comm-social-connect .comm-social-connect__title {
   font-size: 0.9375rem;
   font-weight: 800;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
   margin: 0 0 0.25rem;
   letter-spacing: -0.02em;
 }
 
 .comm-social-connect .comm-social-connect__subtitle {
-  color: var(--text-faint, #6b7280);
+  color: var(--text-faint);
   font-size: 0.75rem;
   margin: 0;
   line-height: 1.45;
@@ -77,14 +77,14 @@
   display: block;
   font-size: 0.8125rem;
   font-weight: 700;
-  color: var(--text-secondary, #e2e8f0);
+  color: var(--text-secondary);
   margin: 0;
 }
 
 .comm-social-connect .comm-social-connect__hint {
   display: block;
   font-size: 0.625rem;
-  color: var(--text-faint, #6b7280);
+  color: var(--text-faint);
   margin: 0.1rem 0 0;
 }
 
@@ -137,7 +137,7 @@
 .comm-social-connect .comm-social-connect__footer p {
   margin: 0;
   font-size: 0.625rem;
-  color: var(--text-faint, #6b7280);
+  color: var(--text-faint);
   line-height: 1.4;
 }
 
