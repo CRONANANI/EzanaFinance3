@@ -168,7 +168,7 @@ body:not(.light-mode) .apm-card {
 }
 
 body:not(.light-mode) .apm-broker-tile {
-  background: #161a20;
+  background: var(--surface-card);
   border-color: rgba(255, 255, 255, 0.08);
 }
 
