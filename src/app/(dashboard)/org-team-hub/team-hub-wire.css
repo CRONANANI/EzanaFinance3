@@ -422,6 +422,13 @@ body.light-mode .thw-root {
 }
 .thw-cal-viewport {
   overflow: hidden;
+  /* Symmetric horizontal inset so the first card's left border/glyph aren't
+     shaved by the clip edge (and the last card isn't shaved on the right).
+     overflow:hidden clips at the padding box, so this insets the track; the
+     track/card widths and the page transform are all %-based on the (now
+     narrower) content width, so paging stays aligned. */
+  padding-left: 6px;
+  padding-right: 6px;
 }
 .thw-cal-track {
   display: flex;
@@ -438,11 +445,11 @@ body.light-mode .thw-root {
 .thw-cal-card {
   flex: 0 0 auto;
   width: calc((100% - 48px) / 5); /* 5 per page, 4 × 12px gaps */
-  min-height: 84px;
+  min-height: 50px; /* was 84px → ~40% thinner */
   display: flex;
   flex-direction: column;
   text-align: left;
-  padding: 10px 12px;
+  padding: 7px 12px; /* was 10px 12px — trim vertical to match */
   border: 1px solid var(--border-primary);
   border-top: 2px solid var(--emerald);
   border-radius: 10px;
@@ -472,14 +479,16 @@ body.light-mode .thw-root {
   font-weight: 600;
   color: var(--text-primary);
   line-height: 1.25;
-  margin: 6px 0 auto;
+  margin: 4px 0 auto; /* was 6px — tighter for the shorter card */
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  /* Clamp to a single line so the shorter (50px) card holds a uniform height
+     and the tag below is never pushed out / clipped. */
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 .thw-cal-tag {
-  margin-top: 8px;
+  margin-top: 5px; /* was 8px */
   align-self: flex-start;
   max-width: 100%;
   font-family: var(--font-mono);
