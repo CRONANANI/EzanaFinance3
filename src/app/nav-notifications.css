@@ -21,11 +21,12 @@
    ══════════════════════════════ */
 .nn-bell-btn {
   position: relative;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 40px;
   height: 40px;
+  padding: 0; /* glyph sits dead-centre in the 40px box — no asymmetric inset */
   border-radius: 10px;
   background: transparent;
   border: 1px solid transparent;

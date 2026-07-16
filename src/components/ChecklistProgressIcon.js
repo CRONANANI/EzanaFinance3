@@ -80,7 +80,7 @@ export function ChecklistProgressIcon() {
         className="checklist-trigger-btn"
         aria-expanded={isOpen}
       >
-        <Check size={15} strokeWidth={2.4} style={{ color: '#10b981' }} aria-hidden />
+        <Check size={15} strokeWidth={2.4} style={{ color: 'var(--emerald)' }} aria-hidden />
         <span className="cl2-mono">
           {completedCount}/{totalTasks}
         </span>

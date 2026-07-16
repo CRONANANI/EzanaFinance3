@@ -731,9 +731,9 @@ body.light-mode .nav-logo-img {
 .checklist-trigger-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.18rem; /* was 0.25rem — tighter icon↔count */
   line-height: 1;
-  padding: 0.25rem 0.4rem;
+  padding: 0.25rem 0.28rem; /* was 0.25rem 0.4rem — ~30% narrower box */
   background: transparent;
   border: none;
   cursor: pointer;
