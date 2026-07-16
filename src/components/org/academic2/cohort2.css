@@ -236,7 +236,7 @@
   color: var(--text-muted);
 }
 .c2-card {
-  background: var(--surface-card-hover);
+  background: var(--surface-card);
   border: 1px solid var(--border-primary);
   border-radius: 10px;
   padding: 0.6rem;

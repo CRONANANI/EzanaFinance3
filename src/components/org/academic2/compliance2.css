@@ -50,7 +50,7 @@
   font-family: var(--font-mono, monospace);
   font-size: 0.66rem;
   font-weight: 800;
-  background: var(--surface-card-hover);
+  background: var(--surface-card);
   color: var(--text-muted);
   border: 1px solid var(--border-primary);
 }

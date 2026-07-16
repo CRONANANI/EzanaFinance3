@@ -15,14 +15,17 @@
   font-family: var(--font-sans);
 
   /* ── DARK (default) ── */
-  --bg-primary: #0a0a0c;
-  --bg-deep: #0a0a0c;
+  /* Flat surface: the Command Center rides on the app page colour (#0a0e13, the
+     tone behind the sidebar) rather than its own darker palette, and cards show
+     the page through (transparent + border) instead of a lighter grey fill. */
+  --bg-primary: var(--app-bg);
+  --bg-deep: var(--app-bg);
   --text-primary: #f0f6fc;
   --text-secondary: #e2e8f0;
   --text-muted: #8b949e;
   --text-faint: #6b7280;
   --text-ghost: #565d66;
-  --surface-card: #0e0f12;
+  --surface-card: transparent;
   --surface-card-hover: #14161a;
   --border-primary: rgba(255, 255, 255, 0.09);
   --border-secondary: rgba(255, 255, 255, 0.06);
@@ -487,7 +490,7 @@ body.light-mode .thw-root {
   color: var(--text-muted);
   padding: 2px 6px;
   border-radius: 4px;
-  background: var(--surface-card-hover);
+  background: var(--surface-card);
   border: 1px solid var(--border-secondary);
   white-space: nowrap;
   overflow: hidden;

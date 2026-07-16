@@ -649,7 +649,7 @@ body.light-mode .op-form input,
 body.light-mode .op-form textarea,
 body.light-mode .op-form select,
 body.light-mode .op-inline-form textarea {
-  background: #f8fafc;
+  background: var(--surface-card);
   color: #1e293b;
   border-color: rgba(0, 0, 0, 0.12);
 }

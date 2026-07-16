@@ -55,7 +55,7 @@
 /* ── View toggle ────────────────────────────────────────────────────────── */
 .rl2-toggle {
   display: inline-flex;
-  background: var(--surface-card-hover);
+  background: var(--surface-card);
   border: 1px solid var(--border-primary);
   border-radius: 10px;
   padding: 3px;
@@ -786,7 +786,7 @@
 .rl2-textarea,
 .rl2-select {
   width: 100%;
-  background: var(--surface-card-hover);
+  background: var(--surface-card);
   border: 1px solid var(--border-primary);
   border-radius: 9px;
   padding: 9px 11px;
@@ -1035,7 +1035,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: var(--surface-card-hover);
+  background: var(--surface-card);
   border: 1px solid var(--border-primary);
   border-radius: 20px;
   padding: 5px 11px;

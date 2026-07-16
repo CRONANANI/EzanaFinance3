@@ -111,7 +111,7 @@
 
 /* ── Card styling (extends .db-card) ──────────────────────── */
 .th-card {
-  background: var(--emerald-bg);
+  background: var(--surface-card);
   border: 1px solid var(--emerald-border);
   border-radius: 14px;
   overflow: hidden;
@@ -838,7 +838,7 @@
   font-weight: 600;
   border-radius: 8px;
   border: 1px solid var(--emerald-border);
-  background: rgba(10, 14, 19, 0.9);
+  background: var(--app-bg);
   color: #e2e8f0;
   cursor: pointer;
   font-family: inherit;
@@ -871,7 +871,7 @@
   font-weight: 600;
   border-radius: 8px;
   border: 1px solid var(--emerald-border);
-  background: rgba(10, 14, 19, 0.9);
+  background: var(--app-bg);
   color: #9ca3af;
   cursor: pointer;
   font-family: inherit;
@@ -1104,8 +1104,8 @@
 
 /* ── Light mode ────────────────────────────────────────────── */
 body.light-mode .th-card {
-  background: #fafafa;
-  border-color: #e5e7eb;
+  background: var(--surface-card);
+  border-color: var(--border-primary);
 }
 
 body.light-mode .th-card:hover {
@@ -1125,7 +1125,7 @@ body.light-mode .th-file-search {
 
 body.light-mode .th-modal {
   background: #fff;
-  border-color: #e5e7eb;
+  border-color: var(--border-primary);
 }
 
 body.light-mode .th-dropzone {
@@ -1134,7 +1134,7 @@ body.light-mode .th-dropzone {
 
 body.light-mode .th-form-select,
 body.light-mode .th-form-input {
-  background: #f9fafb;
+  background: var(--surface-card);
   border-color: #d1d5db;
   color: #111827;
 }
@@ -1194,7 +1194,7 @@ body.light-mode .th-filter-dd-trigger.has-value {
 body.light-mode .th-filter-dd-panel,
 body.light-mode .th-type-flyout {
   background: #fff;
-  border-color: #e5e7eb;
+  border-color: var(--border-primary);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
 }
 
@@ -1264,7 +1264,7 @@ body.light-mode .th-icon-btn:hover {
 
 body.light-mode .th-stat-card {
   background: #ffffff;
-  border-color: #e5e7eb;
+  border-color: var(--border-primary);
 }
 
 body.light-mode .th-stat-label {
@@ -1285,7 +1285,7 @@ body.light-mode .th-hero-icon {
 }
 
 body.light-mode .th-task-row {
-  border-bottom-color: #e5e7eb;
+  border-bottom-color: var(--border-primary);
 }
 
 body.light-mode .th-task-meta {
@@ -1293,7 +1293,7 @@ body.light-mode .th-task-meta {
 }
 
 body.light-mode .th-file-row {
-  border-bottom-color: #e5e7eb;
+  border-bottom-color: var(--border-primary);
 }
 
 body.light-mode .th-file-row:hover {
@@ -1361,7 +1361,7 @@ body.light-mode .th-chip {
 
 body.light-mode .th-compact-card {
   background: #ffffff;
-  border-color: #e5e7eb;
+  border-color: var(--border-primary);
 }
 
 body.light-mode .th-member-row {
@@ -1435,7 +1435,7 @@ body.light-mode .th-filter-btn.active {
 }
 
 body.light-mode .th-filter-divider {
-  background: #e5e7eb;
+  background: var(--border-primary);
 }
 
 body.light-mode .th-form-label {
