@@ -10,6 +10,8 @@
   padding: 3vh 2vw;
   background: var(--bg-overlay, rgba(0, 0, 0, 0.6));
   backdrop-filter: blur(2px);
+  /* Subtle, fast entrance — the dim fades in place (the page never moves). */
+  animation: pmodal-overlay-in 0.14s ease-out;
 }
 .pmodal {
   position: relative;
@@ -23,6 +25,33 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  animation: pmodal-in 0.16s ease-out;
+}
+
+/* Calm entrance: ~150ms opacity + a tiny lift. No bounce, scale, or spring. */
+@keyframes pmodal-overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes pmodal-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pmodal-overlay,
+  .pmodal {
+    animation: none;
+  }
 }
 .pmodal-close {
   position: absolute;
@@ -47,6 +76,8 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  /* The only scroll region — don't chain past its ends to the page behind. */
+  overscroll-behavior: contain;
   padding: 1.5rem 1.75rem 2rem;
 }
 @media (max-width: 1024px) {
