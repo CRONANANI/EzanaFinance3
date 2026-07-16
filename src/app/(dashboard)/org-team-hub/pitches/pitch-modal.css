@@ -75,10 +75,29 @@
 .pmodal-body {
   flex: 1;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
+  /* Body itself never scrolls: the hero/tabs/actions pin and only the content
+     region (.pdc-scroll) scrolls — so switching tabs never moves the chrome. */
+  overflow: hidden;
+  padding: 1.5rem 1.75rem 2rem;
+}
+
+/* In the modal, PitchDetailClient fills the body height so its content region
+   can flex-scroll while the fixed top stays put. */
+.op-page--modal {
+  flex: 1;
+  min-height: 0;
+}
+.op-page--modal .pdc-fixed-top {
+  flex-shrink: 0;
+}
+.op-page--modal .pdc-scroll {
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
   /* The only scroll region — don't chain past its ends to the page behind. */
   overscroll-behavior: contain;
-  padding: 1.5rem 1.75rem 2rem;
 }
 @media (max-width: 1024px) {
   .pmodal-overlay {

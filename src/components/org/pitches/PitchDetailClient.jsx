@@ -96,7 +96,7 @@ export function PitchDetailClient({ pitchId, inModal = false }) {
   };
 
   return (
-    <div className="op-page">
+    <div className={`op-page${inModal ? ' op-page--modal' : ''}`}>
       {!inModal && (
         <Link
           href={pitch.is_archived ? '/org-team-hub/pitch-archive' : '/org-team-hub/pitches'}
@@ -118,44 +118,49 @@ export function PitchDetailClient({ pitchId, inModal = false }) {
         </div>
       )}
 
-      <div className="op-hero">
-        <div>
-          <h1>
-            {pitch.ticker} · {pitch.company_name}
-          </h1>
-          <p className="op-hero-sub">
-            {pitch.team_name} · {pitch.pitch_type_label} · {pitch.horizon_label} ·{' '}
-            {pitch.stage_label}
-          </p>
+      {/* Fixed top: compact hero + tabs + stage actions pin here; only the
+          content region below scrolls (in the modal). */}
+      <div className="pdc-fixed-top">
+        <div className="op-hero">
+          <div>
+            <h1>
+              {pitch.ticker} · {pitch.company_name}
+            </h1>
+            <p className="op-hero-sub">
+              {pitch.team_name} · {pitch.pitch_type_label} · {pitch.horizon_label} ·{' '}
+              {pitch.stage_label}
+            </p>
+          </div>
         </div>
+
+        <div className="op-tabs">
+          {visibleTabs.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              className={`op-tab ${tab === t.id ? 'op-tab--active' : ''}`}
+              onClick={() => setTab(t.id)}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        <PitchStageActions pitch={pitch} onRefresh={onRefresh} />
       </div>
 
-      <PitchGatePanel pitch={pitch} onSelectTab={gateTabToModalTab} onAdvanced={onRefresh} />
+      <div className="pdc-scroll">
+        <PitchGatePanel pitch={pitch} onSelectTab={gateTabToModalTab} onAdvanced={onRefresh} />
 
-      {/* Stage-specific panels (spec §5.2) — driven by the stage-view matrix. */}
-      {stagePanels(pitch.stage).map((id) => {
-        const Panel = STAGE_PANEL_COMPONENTS[id];
-        return Panel ? (
-          <Panel key={id} pitch={pitch} viewer={viewer} onRefresh={() => load()} />
-        ) : null;
-      })}
+        {/* Stage-specific panels (spec §5.2) — driven by the stage-view matrix. */}
+        {stagePanels(pitch.stage).map((id) => {
+          const Panel = STAGE_PANEL_COMPONENTS[id];
+          return Panel ? (
+            <Panel key={id} pitch={pitch} viewer={viewer} onRefresh={() => load()} />
+          ) : null;
+        })}
 
-      <PitchStageActions pitch={pitch} onRefresh={onRefresh} />
-
-      <div className="op-tabs">
-        {visibleTabs.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            className={`op-tab ${tab === t.id ? 'op-tab--active' : ''}`}
-            onClick={() => setTab(t.id)}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-
-      <div className="op-panel">
+        <div className="op-panel">
         {tab === 'thesis' && (
           <>
             <h3>Short thesis</h3>
@@ -246,6 +251,7 @@ export function PitchDetailClient({ pitchId, inModal = false }) {
             )}
           </>
         )}
+        </div>
       </div>
     </div>
   );
