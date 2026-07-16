@@ -10,7 +10,7 @@
    * body.light-mode overrides below flip to light-appropriate values.
    */
   --bm-heading: var(--home-heading);
-  --bm-text: var(--home-text, #e5e7eb);
+  --bm-text: var(--text-secondary);
   --bm-muted: var(--home-muted);
   --bm-subtle: #94a3b8;
   --bm-border: rgba(148, 163, 184, 0.38);
@@ -18,7 +18,7 @@
 
 body.light-mode .bm-page {
   --bm-heading: var(--home-heading);
-  --bm-text: var(--home-text, #1e293b);
+  --bm-text: var(--text-secondary);
   --bm-muted: var(--home-muted);
   --bm-subtle: #64748b;
   --bm-border: rgba(15, 23, 42, 0.14);
@@ -313,7 +313,7 @@ body.light-mode .bm-lm-footer {
   width: 100%;
   max-width: 580px;
   max-height: 88vh;
-  background: var(--db-card, #0d1117);
+  background: var(--bg-secondary);
   border: 1.5px solid #d4af37;
   border-radius: 16px;
   display: flex;

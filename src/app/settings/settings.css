@@ -1781,7 +1781,7 @@ body.light-mode .settings-delete-modal__input:focus {
   justify-content: space-between;
   gap: 1rem;
   padding: 0.75rem 0;
-  border-bottom: 1px solid var(--settings-border, rgba(255, 255, 255, 0.08));
+  border-bottom: 1px solid var(--border-primary);
 }
 
 .settings-alert--success {
@@ -1797,7 +1797,7 @@ body.light-mode .settings-delete-modal__input:focus {
 }
 .settings-billing-toggle {
   display: inline-flex;
-  background: var(--card-bg, #f3f4f6);
+  background: var(--bg-tertiary);
   border-radius: 8px;
   padding: 4px;
   gap: 4px;
@@ -1859,7 +1859,7 @@ body.light-mode .settings-delete-modal__input:focus {
   z-index: 1000;
 }
 .settings-modal {
-  background: var(--card-bg, white);
+  background: var(--bg-secondary);
   border-radius: 12px;
   max-width: 480px;
   width: 90%;

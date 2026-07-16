@@ -927,13 +927,13 @@
 
 .echo-feed-row-meta {
   font-size: 0.75rem;
-  color: var(--text-tertiary, #64748b);
+  color: var(--text-faint);
   margin: 0;
 }
 
 .echo-feed-row-engage {
   font-size: 0.75rem;
-  color: var(--text-tertiary, #64748b);
+  color: var(--text-faint);
   margin: 0;
 }
 
@@ -960,7 +960,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.07em;
-  color: var(--text-tertiary, #64748b);
+  color: var(--text-faint);
   margin: 0 0 0.65rem;
 }
 
@@ -1012,7 +1012,7 @@
 
 .echo-trend-row-meta {
   font-size: 0.7rem;
-  color: var(--text-tertiary, #64748b);
+  color: var(--text-faint);
   margin: 0;
 }
 
@@ -2612,7 +2612,7 @@ body.light-mode .echo-article-page .echo-sector-tooltip-era {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--echo-map-label, #8b949e);
+  color: var(--text-muted);
   flex-shrink: 0;
   min-width: 52px;
 }

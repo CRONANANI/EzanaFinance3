@@ -25,7 +25,7 @@
 }
 
 .sdm-panel {
-  background: var(--card-bg, #0f1419);
+  background: var(--bg-secondary);
   border: 1px solid rgba(16, 185, 129, 0.18);
   border-radius: 12px;
   width: 100%;
@@ -380,7 +380,7 @@ body.light-mode .sdm-news-title {
   align-items: center;
   gap: 0.5rem;
   font-size: 0.6875rem;
-  color: var(--text-tertiary, #6b7280);
+  color: var(--text-faint);
 }
 
 .sdm-news-source {
@@ -389,7 +389,7 @@ body.light-mode .sdm-news-title {
 }
 
 .sdm-news-arrow {
-  color: var(--text-tertiary, #6b7280);
+  color: var(--text-faint);
   font-size: 0.7rem;
   flex-shrink: 0;
   margin-top: 0.2rem;

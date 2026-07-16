@@ -706,7 +706,7 @@ body.light-mode .mobile-auth-drawer .mobile-drawer-logout:hover {
     display: flex;
     flex-direction: column;
     background: var(--card);
-    border: 1px solid var(--card-border, rgba(16, 185, 129, 0.15));
+    border: 1px solid var(--border-primary);
     border-radius: 12px;
     padding: 1rem;
     gap: 0.5rem;
@@ -1472,7 +1472,7 @@ body.light-mode .mobile-auth-drawer .mobile-drawer-logout:hover {
     display: flex;
     flex-direction: column;
     background: var(--card);
-    border: 1px solid var(--card-border, rgba(16, 185, 129, 0.15));
+    border: 1px solid var(--border-primary);
     border-radius: 12px;
     padding: 1rem;
     gap: 0.5rem;

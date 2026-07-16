@@ -19,7 +19,7 @@
 .cl-title {
   font-size: 1.125rem;
   font-weight: 800;
-  color: var(--db-heading, #f0f6fc);
+  color: var(--text-primary);
   margin: 0;
 }
 
@@ -69,7 +69,7 @@
 
 .cl-filter-pill:hover {
   border-color: rgba(255, 255, 255, 0.15);
-  color: var(--db-heading, #f0f6fc);
+  color: var(--text-primary);
 }
 
 .cl-filter-pill.is-active {
@@ -141,14 +141,14 @@
   height: 16px;
   border-radius: 50%;
   background: #10b981;
-  border: 3px solid var(--db-page, #0a0e13);
+  border: 3px solid var(--bg-primary);
   z-index: 2;
 }
 
 .cl-date-label {
   font-size: 0.6875rem;
   font-weight: 700;
-  color: var(--db-heading, #f0f6fc);
+  color: var(--text-primary);
 }
 
 .cl-date-count {
@@ -172,7 +172,7 @@
   height: 10px;
   border-radius: 50%;
   border: 2px solid #3b82f6;
-  background: var(--db-page, #0a0e13);
+  background: var(--bg-primary);
   z-index: 2;
 }
 
@@ -234,7 +234,7 @@
 .cl-entry-title {
   font-size: 0.6875rem;
   font-weight: 700;
-  color: var(--db-heading, #f0f6fc);
+  color: var(--text-primary);
   margin: 0 0 0.2rem;
   line-height: 1.35;
 }

@@ -3,7 +3,7 @@
    ════════════════════════════════════════════════════════════ */
 
 .mkt-opps-card {
-  background: var(--db-card, #0d1117);
+  background: var(--bg-secondary);
   border: 1.5px solid #d4af37;
   border-radius: 14px;
   overflow: hidden;
@@ -251,7 +251,7 @@ body.light-mode .mkt-opps-footer {
 }
 
 .mkt-modal {
-  background: var(--db-card, #0d1117);
+  background: var(--bg-secondary);
   border: 1.5px solid #d4af37;
   border-radius: 16px;
   width: 100%;
@@ -436,7 +436,7 @@ body.light-mode .mkt-opps-footer {
 .mkt-modal-context {
   font-size: 0.8rem;
   line-height: 1.6;
-  color: var(--home-text, #c9d1d9);
+  color: var(--text-secondary);
   margin: 0;
 }
 
@@ -451,7 +451,7 @@ body.light-mode .mkt-opps-footer {
   align-items: center;
   gap: 0.5rem;
   font-size: 0.725rem;
-  color: var(--home-text, #c9d1d9);
+  color: var(--text-secondary);
 }
 
 .mkt-modal-factor-dot {
@@ -586,7 +586,7 @@ body.light-mode .mkt-opps-footer {
 
 .mkt-modal-insight-text {
   font-size: 0.775rem;
-  color: var(--home-text, #c9d1d9);
+  color: var(--text-secondary);
   margin: 0;
   line-height: 1.5;
 }

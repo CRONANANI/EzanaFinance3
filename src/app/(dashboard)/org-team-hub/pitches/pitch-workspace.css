@@ -1813,7 +1813,7 @@
   cursor: pointer;
 }
 .pdmeet-pick:hover {
-  background: var(--surface-hover, rgba(127, 127, 127, 0.1));
+  background: var(--surface-card-hover);
 }
 .pdmeet-pick-role {
   margin-left: auto;

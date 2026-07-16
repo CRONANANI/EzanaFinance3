@@ -130,7 +130,7 @@
   align-items: center;
   padding: 1.75rem 1.25rem 1.25rem;
   background: var(--surface-card);
-  border: 1px solid var(--card-border, rgba(16, 185, 129, 0.1));
+  border: 1px solid var(--border-primary);
   border-radius: var(--radius-md, 1rem);
   backdrop-filter: blur(12px);
   text-align: center;
@@ -227,7 +227,7 @@
 .pp-info-card {
   padding: 1rem 1.25rem;
   background: var(--surface-card);
-  border: 1px solid var(--card-border, rgba(16, 185, 129, 0.1));
+  border: 1px solid var(--border-primary);
   border-radius: var(--radius-md, 1rem);
   backdrop-filter: blur(12px);
 }
@@ -588,7 +588,7 @@
 .pp-perf {
   padding: 1.25rem 1.5rem;
   background: var(--surface-card);
-  border: 1px solid var(--card-border, rgba(16, 185, 129, 0.1));
+  border: 1px solid var(--border-primary);
   border-radius: var(--radius-md, 1rem);
   backdrop-filter: blur(12px);
 }
@@ -665,7 +665,7 @@
 .pp-card {
   padding: 1.25rem;
   background: var(--surface-card);
-  border: 1px solid var(--card-border, rgba(16, 185, 129, 0.1));
+  border: 1px solid var(--border-primary);
   border-radius: var(--radius-md, 1rem);
   backdrop-filter: blur(12px);
 }

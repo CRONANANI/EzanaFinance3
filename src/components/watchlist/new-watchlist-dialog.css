@@ -606,7 +606,7 @@ body.light-mode .nwd-footer {
   font-size: 0.7rem;
   font-weight: 600;
   border-radius: 999px;
-  border: 1px solid var(--border-subtle, rgba(148, 163, 184, 0.25));
+  border: 1px solid var(--border-secondary);
   background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
@@ -640,7 +640,7 @@ body.light-mode .nwd-footer {
   font-size: 0.7rem;
   font-weight: 500;
   border-radius: 999px;
-  border: 1px dashed var(--border-subtle, rgba(148, 163, 184, 0.35));
+  border: 1px dashed var(--border-secondary);
   background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
