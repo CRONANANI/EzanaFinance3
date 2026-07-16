@@ -71,7 +71,7 @@
 
 .th-hero-stat-value {
   font-size: 1.1rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #f0f6fc;
 }
 
@@ -109,11 +109,14 @@
   }
 }
 
-/* ── Card styling (extends .db-card) ──────────────────────── */
+/* ── Card styling — Trading Desk `.ctd-card` skeleton ──────── */
 .th-card {
   background: var(--surface-card);
-  border: 1px solid var(--emerald-border);
-  border-radius: 14px;
+  border: 1px solid var(--border-primary);
+  border-radius: 16px;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 1px 3px rgba(0, 0, 0, 0.05);
   overflow: hidden;
   transition:
     border-color 0.25s ease,
@@ -150,9 +153,11 @@
 }
 
 .th-card-header-left span {
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: #f0f6fc;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
 }
 
 .th-card-actions {
@@ -663,7 +668,7 @@
 
 .th-stat-value {
   font-size: 1.15rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #f0f6fc;
 }
 
@@ -720,7 +725,7 @@
 
 .th-ranking-rank {
   font-size: 0.6rem;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--emerald-text);
   margin-bottom: 0.2rem;
 }
@@ -737,7 +742,7 @@
 
 .th-ranking-roi {
   font-size: 0.85rem;
-  font-weight: 800;
+  font-weight: 700;
   margin-bottom: 0.15rem;
   font-feature-settings: 'tnum' 1;
 }
@@ -1235,10 +1240,6 @@ body.light-mode .th-page {
      grey slab inside the white shell (the seam that ran through every org tab's
      stats / board / archive). Canvas → transparent; cards inside stay distinct. */
   background: transparent;
-}
-
-body.light-mode .th-card-header-left span {
-  color: #111827;
 }
 
 body.light-mode .th-card-header-left i {
