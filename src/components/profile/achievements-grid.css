@@ -1,6 +1,6 @@
 .ag-card {
   border-radius: 14px;
-  border: 1px solid var(--border-primary, rgba(16, 185, 129, 0.12));
+  border: 1px solid var(--border-primary);
   background: var(--bg-secondary);
   padding: 1rem;
   font-family: var(--font-sans);
@@ -33,12 +33,12 @@ body.light-mode .ag-card {
   margin: 0;
   font-size: 0.9375rem;
   font-weight: 700;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 
 .ag-count {
   font-size: 0.6875rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   font-weight: 600;
 }
 
@@ -46,7 +46,7 @@ body.light-mode .ag-card {
   width: 100%;
   height: 4px;
   border-radius: 999px;
-  background: var(--surface-card, rgba(107, 114, 128, 0.18));
+  background: var(--surface-card);
   margin-bottom: 0.75rem;
   overflow: hidden;
 }
@@ -60,7 +60,7 @@ body.light-mode .ag-card {
 .ag-empty {
   padding: 1.25rem 0.5rem;
   text-align: center;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   font-size: 0.8125rem;
 }
 
@@ -85,8 +85,8 @@ body.light-mode .ag-card {
   gap: 0.375rem;
   padding: 0.625rem 0.75rem;
   text-align: left;
-  border: 1px solid var(--border-secondary, rgba(107, 114, 128, 0.18));
-  background: var(--surface-card, rgba(16, 185, 129, 0.02));
+  border: 1px solid var(--border-secondary);
+  background: var(--surface-card);
   border-radius: 10px;
   cursor: pointer;
   transition:
@@ -94,7 +94,7 @@ body.light-mode .ag-card {
     transform 0.15s,
     background 0.15s;
   font-family: inherit;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
   min-width: 0;
   overflow: hidden;
 }
@@ -129,8 +129,8 @@ body.light-mode .ag-card {
 }
 
 .ag-tile-icon.off {
-  background: var(--surface-card-hover, rgba(107, 114, 128, 0.25));
-  color: var(--text-muted, #8b949e);
+  background: var(--surface-card-hover);
+  color: var(--text-muted);
 }
 
 .ag-tile-icon.tier-bronze.on {
@@ -158,9 +158,9 @@ body.light-mode .ag-card {
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   padding: 2px 6px;
-  border: 1px solid var(--border-secondary, rgba(107, 114, 128, 0.22));
+  border: 1px solid var(--border-secondary);
   border-radius: 999px;
   min-width: 0;
   max-width: 100%;
@@ -178,7 +178,7 @@ body.light-mode .ag-card {
   font-size: 0.8125rem;
   font-weight: 600;
   line-height: 1.25;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
   min-width: 0;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -189,12 +189,12 @@ body.light-mode .ag-card {
 }
 
 .ag-tile.off .ag-tile-name {
-  color: var(--text-secondary, #e2e8f0);
+  color: var(--text-secondary);
 }
 
 .ag-tile-meta {
   font-size: 0.625rem;
-  color: var(--text-faint, #6b7280);
+  color: var(--text-faint);
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -204,7 +204,7 @@ body.light-mode .ag-card {
 .ag-tile-bar {
   width: 100%;
   height: 3px;
-  background: var(--surface-card, rgba(107, 114, 128, 0.2));
+  background: var(--surface-card);
   border-radius: 999px;
   overflow: hidden;
   margin-top: 2px;
@@ -245,7 +245,7 @@ body.light-mode .ag-card {
   max-width: 420px;
   border-radius: 16px;
   background: var(--bg-secondary);
-  border: 1px solid var(--border-primary, rgba(16, 185, 129, 0.18));
+  border: 1px solid var(--border-primary);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   padding: 1.25rem 1.25rem 1.375rem;
   text-align: center;
@@ -267,7 +267,7 @@ body.light-mode .ag-modal {
   border-radius: 50%;
   border: none;
   background: transparent;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -275,8 +275,8 @@ body.light-mode .ag-modal {
 }
 
 .ag-modal-close:hover {
-  background: var(--surface-card-hover, rgba(107, 114, 128, 0.2));
-  color: var(--text-primary, #f0f6fc);
+  background: var(--surface-card-hover);
+  color: var(--text-primary);
 }
 
 .ag-modal-icon {
@@ -291,8 +291,8 @@ body.light-mode .ag-modal {
 }
 
 .ag-modal-icon.off {
-  background: var(--surface-card-hover, rgba(107, 114, 128, 0.25));
-  color: var(--text-muted, #8b949e);
+  background: var(--surface-card-hover);
+  color: var(--text-muted);
 }
 
 .ag-modal-icon.tier-bronze.on {
@@ -319,7 +319,7 @@ body.light-mode .ag-modal {
   margin: 0;
   font-size: 1.125rem;
   font-weight: 700;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 
 .ag-modal-cat {
@@ -335,21 +335,21 @@ body.light-mode .ag-modal {
   margin: 0.625rem 0 0.75rem;
   font-size: 0.8125rem;
   line-height: 1.45;
-  color: var(--text-secondary, #e2e8f0);
+  color: var(--text-secondary);
 }
 
 .ag-modal-crit {
   font-size: 0.75rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   padding: 0.5rem 0.75rem;
-  background: var(--surface-card, rgba(16, 185, 129, 0.03));
-  border: 1px solid var(--border-secondary, rgba(107, 114, 128, 0.18));
+  background: var(--surface-card);
+  border: 1px solid var(--border-secondary);
   border-radius: 8px;
   text-align: left;
 }
 
 .ag-modal-crit span {
-  color: var(--text-secondary, #e2e8f0);
+  color: var(--text-secondary);
   font-weight: 600;
 }
 
@@ -363,7 +363,7 @@ body.light-mode .ag-modal {
 .ag-modal-prog {
   margin-top: 0.625rem;
   font-size: 0.75rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 
 /* ════════════════════════════════════════════════════════════

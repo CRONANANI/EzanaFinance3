@@ -1,6 +1,6 @@
 .pc-card {
   border-radius: 14px;
-  border: 1px solid var(--border-primary, rgba(16, 185, 129, 0.12));
+  border: 1px solid var(--border-primary);
   background: var(--bg-secondary);
   padding: 1rem 1rem 0.75rem;
   font-family: var(--font-sans);
@@ -22,21 +22,21 @@ body.light-mode .pc-card {
 .pc-title {
   font-size: 0.9375rem;
   font-weight: 700;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
   margin: 0;
 }
 
 .pc-subtitle {
   margin: 2px 0 0;
   font-size: 0.6875rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 
 .pc-range {
   display: inline-flex;
   gap: 2px;
-  background: var(--surface-card, rgba(16, 185, 129, 0.04));
-  border: 1px solid var(--border-secondary, rgba(107, 114, 128, 0.15));
+  background: var(--surface-card);
+  border: 1px solid var(--border-secondary);
   border-radius: 8px;
   padding: 2px;
 }
@@ -45,7 +45,7 @@ body.light-mode .pc-card {
   appearance: none;
   background: transparent;
   border: none;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   font-size: 0.6875rem;
   font-weight: 600;
   padding: 4px 9px;
@@ -58,7 +58,7 @@ body.light-mode .pc-card {
 }
 
 .pc-range-btn:hover {
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 
 .pc-range-btn.on {
@@ -73,7 +73,7 @@ body.light-mode .pc-card {
 
 .pc-tooltip {
   background: var(--bg-secondary);
-  border: 1px solid var(--border-primary, rgba(16, 185, 129, 0.25));
+  border: 1px solid var(--border-primary);
   border-radius: 8px;
   padding: 0.5rem 0.625rem;
   font-size: 0.75rem;
@@ -88,7 +88,7 @@ body.light-mode .pc-tooltip {
 
 .pc-tooltip-date {
   font-size: 0.6875rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   margin-bottom: 4px;
 }
 
@@ -107,18 +107,18 @@ body.light-mode .pc-tooltip {
 }
 
 .pc-tooltip-name {
-  color: var(--text-secondary, #e2e8f0);
+  color: var(--text-secondary);
 }
 
 .pc-tooltip-val {
   font-variant-numeric: tabular-nums;
   font-weight: 600;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 
 .pc-note {
   font-size: 0.6875rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   margin: 0.25rem 0 0;
   text-align: center;
   font-style: italic;

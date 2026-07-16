@@ -13,14 +13,14 @@
   margin: 0 0 0.2rem;
   font-size: 1.125rem;
   font-weight: 800;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
   letter-spacing: -0.02em;
 }
 
 .pcl-subtitle {
   margin: 0;
   font-size: 0.75rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 
 /* Admin form */
@@ -68,7 +68,7 @@
   margin: 0;
   font-size: 0.875rem;
   font-weight: 700;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 
 .pcl-admin-cancel {
@@ -77,14 +77,14 @@
   border: none;
   border-radius: 50%;
   background: var(--bg-tertiary);
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   cursor: pointer;
   font-size: 0.75rem;
 }
 
 .pcl-admin-cancel:hover {
   background: var(--surface-card-hover);
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 
 .pcl-admin-field {
@@ -96,7 +96,7 @@
 .pcl-admin-field span {
   font-size: 0.75rem;
   font-weight: 700;
-  color: var(--text-secondary, #e2e8f0);
+  color: var(--text-secondary);
 }
 
 .pcl-admin-field input,
@@ -107,7 +107,7 @@
   border-radius: 6px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: var(--surface-input);
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
   font-family: inherit;
 }
 
@@ -128,7 +128,7 @@
   align-items: center;
   gap: 0.4rem;
   font-size: 0.8125rem;
-  color: var(--text-secondary, #e2e8f0);
+  color: var(--text-secondary);
   cursor: pointer;
 }
 
@@ -160,11 +160,11 @@
 .pcl-btn-secondary {
   background: transparent;
   border-color: rgba(255, 255, 255, 0.1);
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 .pcl-btn-secondary:hover {
   border-color: rgba(255, 255, 255, 0.25);
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 
 .pcl-btn-primary {
@@ -234,7 +234,7 @@
 
 .pcl-entry-date {
   font-size: 0.75rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   font-variant-numeric: tabular-nums;
 }
 
@@ -242,12 +242,12 @@
   margin: 0 0 0.4rem;
   font-size: 1rem;
   font-weight: 800;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 
 .pcl-entry-body {
   font-size: 0.875rem;
-  color: var(--text-secondary, #e2e8f0);
+  color: var(--text-secondary);
   line-height: 1.55;
 }
 
@@ -269,7 +269,7 @@
 .pcl-empty {
   padding: 1.25rem;
   text-align: center;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   font-size: 0.75rem;
   background: var(--surface-card);
   border: 1px dashed rgba(255, 255, 255, 0.06);
@@ -343,7 +343,7 @@ body.light-mode .pcl-empty {
 
 .pcl-day-count {
   font-size: 0.5625rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   font-variant-numeric: tabular-nums;
 }
 
@@ -354,6 +354,6 @@ body.light-mode .pcl-empty {
 }
 
 body.light-mode .pcl-day-header {
-  background: var(--bg-primary, #f4f7f5);
+  background: var(--bg-primary);
   border-bottom-color: rgba(16, 185, 129, 0.2);
 }

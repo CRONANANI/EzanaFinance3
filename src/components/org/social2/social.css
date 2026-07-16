@@ -64,7 +64,7 @@
   text-decoration: none;
 }
 .sc2-btn:hover {
-  border-color: var(--border-hover, rgba(16, 185, 129, 0.4));
+  border-color: var(--border-hover);
   transform: translateY(-1px);
 }
 .sc2-btn--primary {
@@ -185,7 +185,7 @@
   padding: 0.1rem 0.45rem;
   border-radius: 6px;
   border: 1px solid var(--border-secondary);
-  background: var(--surface-input, rgba(127, 127, 127, 0.08));
+  background: var(--surface-input);
   color: var(--text-body, var(--text-secondary));
 }
 .sc2-tag--ticker {
@@ -265,7 +265,7 @@
   border-radius: 6px;
 }
 .sc2-emoji-menu button:hover {
-  background: var(--surface-card-hover, rgba(16, 185, 129, 0.08));
+  background: var(--surface-card-hover);
 }
 
 /* ── Modal ──────────────────────────────────────────────────────────────── */
@@ -273,7 +273,7 @@
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background: var(--bg-overlay, rgba(0, 0, 0, 0.6));
+  background: var(--bg-overlay);
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -372,7 +372,7 @@
 }
 .sc2-mention-item:hover,
 .sc2-mention-item.is-active {
-  background: var(--surface-card-hover, rgba(16, 185, 129, 0.08));
+  background: var(--surface-card-hover);
 }
 .sc2-mention-role {
   font-size: 0.66rem;

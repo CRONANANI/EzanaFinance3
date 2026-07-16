@@ -993,27 +993,27 @@ body.light-mode .onboarding-org-role-badge {
    Surfaces and text use theme tokens so it reads correctly in light AND dark.
    ───────────────────────────────────────────────────────────────────────── */
 .iq-container--partner {
-  background: var(--nav-bg-solid, #ffffff);
+  background: var(--nav-bg-solid);
 }
 .iq-container--partner .iq-card {
   background: var(--surface-card);
-  border-color: var(--border-primary, #e5e7eb);
-  color: var(--text-primary, #111827);
+  border-color: var(--border-primary);
+  color: var(--text-primary);
 }
 .iq-container--partner .iq-question,
 .iq-container--partner .iq-result-title {
-  color: var(--text-primary, #111827);
+  color: var(--text-primary);
 }
 .iq-container--partner .iq-option-btn {
-  background: var(--surface-card-hover, #f9fafb);
-  border-color: var(--border-primary, #e5e7eb);
-  color: var(--text-primary, #1f2937);
+  background: var(--surface-card-hover);
+  border-color: var(--border-primary);
+  color: var(--text-primary);
 }
 .iq-container--partner .iq-option-label {
-  color: var(--text-secondary, #374151);
+  color: var(--text-secondary);
 }
 .iq-container--partner .iq-result-desc {
-  color: var(--text-muted, #6b7280);
+  color: var(--text-muted);
 }
 
 /* Gold / champagne accent */

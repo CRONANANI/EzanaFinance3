@@ -18,7 +18,7 @@
 }
 
 body:not(.light-mode) .apm-card {
-  background: var(--bg-elevated, #0d1117);
+  background: var(--bg-elevated);
 }
 
 .apm-close {
@@ -82,9 +82,9 @@ body:not(.light-mode) .apm-card {
   gap: 8px;
   min-height: 124px;
   padding: 14px 12px 12px;
-  border: 1px solid var(--border, #e5e7eb);
+  border: 1px solid var(--border);
   border-radius: 10px;
-  background: var(--background, #ffffff);
+  background: var(--background);
   cursor: pointer;
   transition:
     border-color 0.15s,
@@ -125,7 +125,7 @@ body:not(.light-mode) .apm-card {
   font-size: 12.5px;
   font-weight: 600;
   text-align: center;
-  color: var(--text-primary, #111);
+  color: var(--text-primary);
   line-height: 1.25;
   white-space: nowrap;
   overflow: hidden;
@@ -163,7 +163,7 @@ body:not(.light-mode) .apm-card {
 .apm-broker-grid-loading {
   padding: 60px 20px;
   text-align: center;
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
   font-size: 14px;
 }
 
@@ -391,7 +391,7 @@ body:not(.light-mode) .apm-broker-name {
   gap: 16px;
   margin-bottom: 18px;
   padding-bottom: 18px;
-  border-bottom: 1px solid var(--border-primary, rgba(255, 255, 255, 0.08));
+  border-bottom: 1px solid var(--border-primary);
 }
 
 .apm-choice-broker-logo {
@@ -402,7 +402,7 @@ body:not(.light-mode) .apm-broker-name {
   align-items: center;
   justify-content: center;
   border-radius: 14px;
-  background: var(--bg-tertiary, rgba(255, 255, 255, 0.04));
+  background: var(--bg-tertiary);
   overflow: hidden;
 }
 
@@ -416,7 +416,7 @@ body:not(.light-mode) .apm-broker-name {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--text-muted, #6b7280);
+  color: var(--text-muted);
   margin-bottom: 4px;
 }
 
@@ -432,7 +432,7 @@ body:not(.light-mode) .apm-broker-name {
 .apm-choice-sub {
   font-size: 14px;
   line-height: 1.55;
-  color: var(--text-muted, #6b7280);
+  color: var(--text-muted);
   margin: 0 0 20px;
   text-align: left;
 }
@@ -444,8 +444,8 @@ body:not(.light-mode) .apm-broker-name {
   width: 100%;
   padding: 18px 20px;
   margin: 0 0 12px;
-  background: var(--surface-card, rgba(255, 255, 255, 0.03));
-  border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.08));
+  background: var(--surface-card);
+  border: 1px solid var(--border-primary);
   border-radius: 14px;
   color: inherit;
   text-align: left;
@@ -505,14 +505,14 @@ body:not(.light-mode) .apm-broker-name {
 .apm-provider-btn-desc {
   font-size: 13px;
   line-height: 1.5;
-  color: var(--text-muted, #9ca3af);
+  color: var(--text-muted);
   margin: 0;
 }
 
 .apm-provider-btn-arrow {
   flex-shrink: 0;
   font-size: 22px;
-  color: var(--text-muted, #6b7280);
+  color: var(--text-muted);
   transition: all 0.18s ease;
   line-height: 1;
 }

@@ -8,7 +8,7 @@
   align-items: center;
   justify-content: center;
   padding: 3vh 2vw;
-  background: var(--bg-overlay, rgba(0, 0, 0, 0.6));
+  background: var(--bg-overlay);
   backdrop-filter: blur(2px);
   /* Subtle, fast entrance — the dim fades in place (the page never moves). */
   animation: pmodal-overlay-in 0.14s ease-out;
@@ -18,8 +18,8 @@
   width: 90vw;
   max-width: 1400px;
   height: 88vh;
-  background: var(--bg-secondary, #0a0e13);
-  border: 1px solid var(--border-primary, rgba(16, 185, 129, 0.12));
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
   border-radius: 14px;
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
   overflow: hidden;
@@ -64,13 +64,13 @@
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.1));
+  border: 1px solid var(--border-primary);
   background: var(--surface-card, transparent);
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   cursor: pointer;
 }
 .pmodal-close:hover {
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 .pmodal-body {
   flex: 1;

@@ -16,7 +16,7 @@
 
 .apm-org-card {
   background: var(--bg-secondary);
-  border: 1px solid var(--border-color, rgba(99, 102, 241, 0.25));
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   width: min(640px, 100%);
   max-height: 90vh;
@@ -31,12 +31,12 @@
   align-items: center;
   justify-content: space-between;
   padding: 18px 22px;
-  border-bottom: 1px solid var(--border-color, rgba(99, 102, 241, 0.18));
+  border-bottom: 1px solid var(--border-color);
 }
 .apm-org-header h2 {
   font-size: 17px;
   font-weight: 700;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
   letter-spacing: -0.01em;
   margin: 0;
 }
@@ -45,7 +45,7 @@
   border: none;
   cursor: pointer;
   font-size: 12px;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -59,14 +59,14 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   font-size: 16px;
   padding: 6px;
   border-radius: 6px;
 }
 .apm-org-close:hover {
-  background: var(--bg-tertiary, rgba(99, 102, 241, 0.1));
-  color: var(--text-primary, #f0f6fc);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
 }
 
 .apm-org-body {
@@ -80,8 +80,8 @@
   gap: 12px;
 }
 .apm-org-mode-tile {
-  background: var(--bg-tertiary, rgba(99, 102, 241, 0.06));
-  border: 1px solid var(--border-color, rgba(99, 102, 241, 0.2));
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
   border-radius: 10px;
   padding: 18px 14px;
   text-align: center;
@@ -90,7 +90,7 @@
     border-color 120ms,
     transform 120ms;
   font-family: inherit;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 .apm-org-mode-tile:hover {
   border-color: var(--accent-emerald, #10b981);
@@ -105,12 +105,12 @@
 .apm-org-mode-label {
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
   margin-bottom: 4px;
 }
 .apm-org-mode-desc {
   font-size: 11px;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   line-height: 1.4;
 }
 
@@ -129,7 +129,7 @@
   flex-direction: column;
   gap: 4px;
   font-size: 11px;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   font-weight: 500;
 }
 .apm-org-form label > span {
@@ -137,12 +137,12 @@
 }
 
 .apm-org-input {
-  background: var(--bg-primary, rgba(255, 255, 255, 0.04));
-  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   padding: 9px 11px;
   font-size: 13px;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
   font-family: 'Plus Jakarta Sans', sans-serif;
 }
 .apm-org-input:focus {
@@ -174,14 +174,14 @@
   color: #fff;
 }
 .apm-org-btn-primary:disabled {
-  background: var(--bg-tertiary, rgba(255, 255, 255, 0.08));
-  color: var(--text-muted, #8b949e);
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
   cursor: not-allowed;
 }
 .apm-org-btn-ghost {
   background: transparent;
-  color: var(--text-muted, #8b949e);
-  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.15));
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
 }
 .apm-org-btn-ghost:hover {
   color: var(--accent-emerald, #10b981);
@@ -194,19 +194,19 @@
   align-items: flex-start;
   gap: 14px;
   font-size: 12px;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   line-height: 1.5;
 }
 .apm-org-csv-help code {
   font-family: 'JetBrains Mono', monospace;
-  background: var(--bg-tertiary, rgba(99, 102, 241, 0.12));
+  background: var(--bg-tertiary);
   padding: 1px 5px;
   border-radius: 3px;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
   font-size: 11px;
 }
 .apm-org-file-zone {
-  border: 1px dashed var(--border-color, rgba(99, 102, 241, 0.3));
+  border: 1px dashed var(--border-color);
   border-radius: 8px;
   padding: 18px;
   text-align: center;
@@ -248,8 +248,8 @@
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
-  background: var(--bg-tertiary, rgba(99, 102, 241, 0.06));
-  border: 1px solid var(--border-color, rgba(99, 102, 241, 0.2));
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   cursor: pointer;
 }
@@ -263,7 +263,7 @@
 .apm-org-account-name {
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -280,13 +280,13 @@
 }
 .apm-org-account-meta {
   font-size: 11px;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   margin-top: 2px;
 }
 .apm-org-account-balance {
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 
 .apm-org-error {
@@ -309,7 +309,7 @@
 }
 .apm-org-empty {
   font-size: 13px;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   text-align: center;
   padding: 20px 10px;
   line-height: 1.6;

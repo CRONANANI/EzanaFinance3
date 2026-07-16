@@ -666,14 +666,14 @@
 
 /* ── Gate Panel — the advancement checklist. Tokens only; mono numerics. ── */
 .pgate {
-  border: 1px solid var(--border-primary, rgba(16, 185, 129, 0.12));
+  border: 1px solid var(--border-primary);
   border-radius: 10px;
   background: var(--surface-card, transparent);
   padding: 0.85rem 1rem;
   margin: 0.75rem 0 1rem;
 }
 .pgate--loading {
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   font-size: 0.8rem;
 }
 .pgate-head {
@@ -687,13 +687,13 @@
   font-variant-numeric: tabular-nums;
   font-size: 1rem;
   font-weight: 700;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 .pgate-count-label {
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 .pgate-list {
   list-style: none;
@@ -710,7 +710,7 @@
   padding: 0.4rem 0.5rem;
   border-radius: 6px;
   background: var(--surface-card, transparent);
-  border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.06));
+  border: 1px solid var(--border-primary);
 }
 .pgate-ic.pass {
   color: var(--positive, #10b981);
@@ -724,14 +724,14 @@
 .pgate-row-label {
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--text-secondary, #e2e8f0);
+  color: var(--text-secondary);
 }
 .pgate-row-detail {
   margin-left: auto;
   font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
   font-variant-numeric: tabular-nums;
   font-size: 0.72rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 .pgate-fix {
   display: inline-flex;
@@ -741,7 +741,7 @@
   font-weight: 600;
   padding: 2px 8px;
   border-radius: 5px;
-  border: 1px solid var(--border-hover, rgba(16, 185, 129, 0.2));
+  border: 1px solid var(--border-hover);
   background: transparent;
   color: var(--emerald, #10b981);
   cursor: pointer;
@@ -757,7 +757,7 @@
   gap: 0.5rem;
   margin-top: 0.75rem;
   padding-top: 0.6rem;
-  border-top: 1px solid var(--border-primary, rgba(255, 255, 255, 0.05));
+  border-top: 1px solid var(--border-primary);
 }
 .pgate-advance {
   display: inline-flex;
@@ -775,8 +775,8 @@
 .pgate-advance:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  background: var(--bg-tertiary, rgba(255, 255, 255, 0.06));
-  color: var(--text-muted, #8b949e);
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
 }
 .pgate-override-btn {
   display: inline-flex;
@@ -797,7 +797,7 @@
 .pgate-override-label {
   display: block;
   font-size: 0.7rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   margin-bottom: 0.35rem;
 }
 .pgate-override-input {
@@ -805,9 +805,9 @@
   min-height: 60px;
   padding: 0.5rem 0.6rem;
   border-radius: 6px;
-  border: 1px solid var(--border-input, rgba(255, 255, 255, 0.1));
-  background: var(--inset, rgba(255, 255, 255, 0.04));
-  color: var(--text-primary, #f0f6fc);
+  border: 1px solid var(--border-input);
+  background: var(--inset);
+  color: var(--text-primary);
   font-size: 0.8rem;
   resize: vertical;
 }
@@ -820,9 +820,9 @@
 .pgate-override-cancel {
   padding: 0.5rem 1rem;
   border-radius: 7px;
-  border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.15));
+  border: 1px solid var(--border-primary);
   background: transparent;
-  color: var(--text-secondary, #c9d1d9);
+  color: var(--text-secondary);
   font-size: 0.8rem;
   cursor: pointer;
 }
@@ -836,12 +836,12 @@
   gap: 0.75rem;
   padding: 0.9rem 1rem;
   border-radius: 10px;
-  border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.15));
-  background: var(--surface-card, rgba(255, 255, 255, 0.03));
+  border: 1px solid var(--border-primary);
+  background: var(--surface-card);
 }
 .pmodel--loading,
 .pmodel--empty {
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   font-size: 0.8rem;
 }
 .pmodel-head {
@@ -854,17 +854,17 @@
   font-family: var(--font-sans);
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 .pmodel-count {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
-  color: var(--text-secondary, #c9d1d9);
+  color: var(--text-secondary);
 }
 .pmodel-empty-note {
   font-size: 0.78rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   margin: 0;
 }
 .pmodel-error {
@@ -886,8 +886,8 @@
   gap: 0.5rem;
   padding: 0.6rem 0.7rem;
   border-radius: 8px;
-  border: 1px solid var(--border-secondary, rgba(255, 255, 255, 0.08));
-  background: var(--inset, rgba(255, 255, 255, 0.04));
+  border: 1px solid var(--border-secondary);
+  background: var(--inset);
 }
 .pmodel-row--complete {
   border-color: var(--emerald-border, rgba(16, 185, 129, 0.35));
@@ -909,24 +909,24 @@
   color: var(--warning, #f59e0b);
 }
 .pmodel-ic-fail {
-  color: var(--text-faint, #6e7681);
+  color: var(--text-faint);
 }
 .pmodel-name {
   font-size: 0.82rem;
   font-weight: 600;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 .pmodel-ver {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 0.68rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 .pmodel-state {
   margin-left: auto;
   font-size: 0.7rem;
   font-weight: 500;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 .pmodel-state--complete {
   color: var(--emerald-text, #34d399);
@@ -946,7 +946,7 @@
   gap: 0.3rem;
   max-width: 100%;
   font-size: 0.7rem;
-  color: var(--text-secondary, #c9d1d9);
+  color: var(--text-secondary);
   text-decoration: none;
 }
 .pmodel-file:hover {
@@ -971,9 +971,9 @@
   min-width: 0;
   padding: 0.4rem 0.55rem;
   border-radius: 6px;
-  border: 1px solid var(--border-input, rgba(255, 255, 255, 0.1));
-  background: var(--surface-input, rgba(255, 255, 255, 0.04));
-  color: var(--text-primary, #f0f6fc);
+  border: 1px solid var(--border-input);
+  background: var(--surface-input);
+  color: var(--text-primary);
   font-family: var(--font-mono);
   font-size: 0.72rem;
 }
@@ -1001,13 +1001,13 @@
   cursor: not-allowed;
 }
 .pmodel-btn--attach {
-  border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.15));
+  border: 1px solid var(--border-primary);
   background: transparent;
-  color: var(--text-secondary, #c9d1d9);
+  color: var(--text-secondary);
 }
 .pmodel-btn--attach:not(:disabled):hover {
-  border-color: var(--border-hover, rgba(255, 255, 255, 0.25));
-  color: var(--text-primary, #f0f6fc);
+  border-color: var(--border-hover);
+  color: var(--text-primary);
 }
 .pmodel-btn--review {
   border: 1px solid var(--emerald-border, rgba(16, 185, 129, 0.35));
@@ -1295,22 +1295,22 @@
    ============================================================================ */
 .pspanel {
   font-family: var(--font-sans, system-ui, sans-serif);
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 .psignoff {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
   padding: 0.9rem 1rem;
-  border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.1));
+  border: 1px solid var(--border-primary);
   border-radius: 12px;
-  background: var(--surface, rgba(255, 255, 255, 0.03));
+  background: var(--surface);
 }
 .psignoff--loading,
 .psignoff--empty {
   padding: 1rem;
   font-size: 0.82rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 .psignoff-num {
   font-family: var(--font-mono);
@@ -1332,7 +1332,7 @@
   font-weight: 600;
   letter-spacing: 0.02em;
   text-transform: uppercase;
-  color: var(--text-secondary, #c9d1d9);
+  color: var(--text-secondary);
 }
 .psignoff-title svg {
   color: var(--emerald, #10b981);
@@ -1346,14 +1346,14 @@
 .psignoff-count {
   font-size: 0.82rem;
   font-weight: 600;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
   white-space: nowrap;
 }
 .psignoff-bar {
   flex: 1;
   height: 6px;
   border-radius: 999px;
-  background: var(--inset, rgba(255, 255, 255, 0.06));
+  background: var(--inset);
   overflow: hidden;
 }
 .psignoff-bar-fill {
@@ -1373,7 +1373,7 @@
   align-items: center;
   gap: 0.35rem;
   font-size: 0.72rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   margin: 0;
 }
 .psignoff-hint-ok {
@@ -1394,7 +1394,7 @@
 }
 .psignoff-empty-rows {
   font-size: 0.78rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   padding: 0.5rem 0;
 }
 .psignoff-row {
@@ -1404,11 +1404,11 @@
   gap: 0.75rem;
   padding: 0.5rem 0.6rem;
   border-radius: 8px;
-  border: 1px solid var(--border-input, rgba(255, 255, 255, 0.07));
-  background: var(--inset, rgba(255, 255, 255, 0.02));
+  border: 1px solid var(--border-input);
+  background: var(--inset);
 }
 .psignoff-row.has-signed {
-  border-color: var(--border-primary, rgba(255, 255, 255, 0.12));
+  border-color: var(--border-primary);
 }
 .psignoff-who {
   display: flex;
@@ -1419,7 +1419,7 @@
 .psignoff-name {
   font-size: 0.82rem;
   font-weight: 500;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 .psignoff-you {
   color: var(--emerald, #10b981);
@@ -1430,7 +1430,7 @@
   align-items: center;
   gap: 0.4rem;
   font-size: 0.68rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 .psignoff-tag {
   padding: 0.05rem 0.35rem;
@@ -1445,8 +1445,8 @@
   background: var(--emerald-soft, rgba(16, 185, 129, 0.12));
 }
 .psignoff-tag.out {
-  color: var(--text-muted, #8b949e);
-  background: var(--inset, rgba(255, 255, 255, 0.05));
+  color: var(--text-muted);
+  background: var(--inset);
 }
 
 /* ── Per-scope state chips ─────────────────────────────────────────────── */
@@ -1463,9 +1463,9 @@
   border-radius: 6px;
   font-size: 0.68rem;
   font-weight: 500;
-  border: 1px solid var(--border-input, rgba(255, 255, 255, 0.08));
-  color: var(--text-muted, #8b949e);
-  background: var(--inset, rgba(255, 255, 255, 0.02));
+  border: 1px solid var(--border-input);
+  color: var(--text-muted);
+  background: var(--inset);
 }
 .psignoff-scope.approve {
   color: var(--emerald, #10b981);
@@ -1487,20 +1487,20 @@
   flex-direction: column;
   gap: 0.5rem;
   padding-top: 0.6rem;
-  border-top: 1px solid var(--border-input, rgba(255, 255, 255, 0.07));
+  border-top: 1px solid var(--border-input);
 }
 .psignoff-comment-label {
   font-size: 0.7rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 .psignoff-comment {
   width: 100%;
   min-height: 46px;
   padding: 0.5rem 0.6rem;
   border-radius: 7px;
-  border: 1px solid var(--border-input, rgba(255, 255, 255, 0.1));
-  background: var(--inset, rgba(255, 255, 255, 0.04));
-  color: var(--text-primary, #f0f6fc);
+  border: 1px solid var(--border-input);
+  background: var(--inset);
+  color: var(--text-primary);
   font-family: inherit;
   font-size: 0.8rem;
   resize: vertical;
@@ -1523,15 +1523,15 @@
   font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
-  border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.15));
+  border: 1px solid var(--border-primary);
   background: transparent;
-  color: var(--text-secondary, #c9d1d9);
+  color: var(--text-secondary);
   transition:
     background 0.15s ease,
     border-color 0.15s ease;
 }
 .psignoff-btn:hover:not(:disabled) {
-  border-color: var(--text-secondary, #c9d1d9);
+  border-color: var(--text-secondary);
 }
 .psignoff-btn:disabled {
   opacity: 0.5;
@@ -1562,9 +1562,9 @@
 .psignoff-noteligible {
   margin: 0;
   padding-top: 0.5rem;
-  border-top: 1px solid var(--border-input, rgba(255, 255, 255, 0.07));
+  border-top: 1px solid var(--border-input);
   font-size: 0.74rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 
 @media (max-width: 640px) {
@@ -1640,7 +1640,7 @@
   gap: 0.3rem;
   font-size: 0.72rem;
   color: var(--text-secondary);
-  background: var(--inset, rgba(127, 127, 127, 0.08));
+  background: var(--inset);
   border: 1px solid var(--border-primary);
   border-radius: 999px;
   padding: 0.2rem 0.55rem;
@@ -1699,7 +1699,7 @@
 .pdmeet-chip {
   font-size: 0.72rem;
   color: var(--text-secondary);
-  background: var(--inset, rgba(127, 127, 127, 0.08));
+  background: var(--inset);
   border: 1px solid var(--border-primary);
   border-radius: 999px;
   padding: 0.18rem 0.55rem;
@@ -1776,7 +1776,7 @@
   padding: 0.5rem 0.6rem;
   border-radius: 7px;
   border: 1px solid var(--border-input, var(--border-primary));
-  background: var(--inset, rgba(127, 127, 127, 0.05));
+  background: var(--inset);
   color: var(--text-primary);
   font-size: 0.82rem;
   font-family: inherit;
@@ -1800,7 +1800,7 @@
   list-style: none;
   border: 1px solid var(--border-input, var(--border-primary));
   border-radius: 7px;
-  background: var(--inset, rgba(127, 127, 127, 0.05));
+  background: var(--inset);
 }
 .pdmeet-pick {
   display: flex;
@@ -1888,12 +1888,12 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 
 /* Quorum */
 .pvote-quorum {
-  border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.1));
+  border: 1px solid var(--border-primary);
   border-radius: 10px;
   background: var(--surface-card, transparent);
   padding: 0.85rem 1rem;
@@ -1902,7 +1902,7 @@
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  color: var(--text-secondary, #c9d1d9);
+  color: var(--text-secondary);
   margin-bottom: 0.5rem;
 }
 .pvote-quorum-title {
@@ -1935,12 +1935,12 @@
 .pvote-quorum-count .pvote-num {
   font-size: 1.35rem;
   font-weight: 700;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 .pvote-quorum-sep,
 .pvote-quorum-label {
   font-size: 0.72rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 .pvote-quorum-label {
   text-transform: uppercase;
@@ -1949,7 +1949,7 @@
 .pvote-quorum-bar {
   height: 6px;
   border-radius: 999px;
-  background: var(--bg-tertiary, rgba(255, 255, 255, 0.08));
+  background: var(--bg-tertiary);
   overflow: hidden;
 }
 .pvote-quorum-fill {
@@ -1965,15 +1965,15 @@
 .pvote-quorum-note {
   margin: 0.5rem 0 0;
   font-size: 0.72rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 
 /* Recusal */
 .pvote-recusal {
-  border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.08));
+  border: 1px solid var(--border-primary);
   border-radius: 9px;
   padding: 0.6rem 0.8rem;
-  background: var(--inset, rgba(255, 255, 255, 0.03));
+  background: var(--inset);
 }
 .pvote-recusal-head {
   display: flex;
@@ -2001,25 +2001,25 @@
 .pvote-recusal-name {
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--text-secondary, #c9d1d9);
+  color: var(--text-secondary);
 }
 .pvote-recusal-reason {
   font-size: 0.74rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 .pvote-recusal-none {
   margin: 0;
   font-size: 0.74rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 
 /* Ballot list */
 .pvote-empty {
-  border: 1px dashed var(--border-primary, rgba(255, 255, 255, 0.15));
+  border: 1px dashed var(--border-primary);
   border-radius: 10px;
   padding: 1.75rem 1rem;
   text-align: center;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2029,7 +2029,7 @@
   margin: 0;
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--text-secondary, #c9d1d9);
+  color: var(--text-secondary);
 }
 .pvote-empty span {
   font-size: 0.74rem;
@@ -2043,7 +2043,7 @@
   gap: 0.5rem;
 }
 .pvote-row {
-  border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.08));
+  border: 1px solid var(--border-primary);
   border-radius: 9px;
   padding: 0.6rem 0.75rem;
   background: var(--surface-card, transparent);
@@ -2056,7 +2056,7 @@
 .pvote-voter {
   font-size: 0.82rem;
   font-weight: 600;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
   display: flex;
   align-items: baseline;
   gap: 0.4rem;
@@ -2065,7 +2065,7 @@
   font-size: 0.68rem;
   font-weight: 500;
   text-transform: capitalize;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 .pvote-badge {
   margin-left: auto;
@@ -2089,8 +2089,8 @@
 }
 .pvote-badge.abstain,
 .pvote-badge.sealed {
-  color: var(--text-muted, #8b949e);
-  background: var(--bg-tertiary, rgba(255, 255, 255, 0.06));
+  color: var(--text-muted);
+  background: var(--bg-tertiary);
 }
 .pvote-badge.recused {
   color: var(--warning, #f59e0b);
@@ -2100,12 +2100,12 @@
   margin: 0.45rem 0 0;
   font-size: 0.78rem;
   line-height: 1.45;
-  color: var(--text-secondary, #c9d1d9);
+  color: var(--text-secondary);
 }
 
 /* Cast form */
 .pvote-cast {
-  border-top: 1px solid var(--border-primary, rgba(255, 255, 255, 0.08));
+  border-top: 1px solid var(--border-primary);
   padding-top: 0.9rem;
 }
 .pvote-choices {
@@ -2123,9 +2123,9 @@
   gap: 0.4rem;
   padding: 0.6rem 0.75rem;
   border-radius: 8px;
-  border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.12));
+  border: 1px solid var(--border-primary);
   background: var(--surface-card, transparent);
-  color: var(--text-secondary, #c9d1d9);
+  color: var(--text-secondary);
   font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
@@ -2134,10 +2134,10 @@
     background 0.15s ease;
 }
 .pvote-choice:hover {
-  border-color: var(--border-hover, rgba(255, 255, 255, 0.25));
+  border-color: var(--border-hover);
 }
 .pvote-choice:focus-visible {
-  outline: 2px solid var(--border-focus, #10b981);
+  outline: 2px solid var(--border-focus);
   outline-offset: 1px;
 }
 .pvote-choice.buy.is-active {
@@ -2151,15 +2151,15 @@
   color: var(--negative, #ef4444);
 }
 .pvote-choice.abstain.is-active {
-  border-color: var(--text-muted, #8b949e);
-  background: var(--bg-tertiary, rgba(255, 255, 255, 0.08));
-  color: var(--text-primary, #f0f6fc);
+  border-color: var(--text-muted);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
 }
 .pvote-rationale-label {
   display: block;
   font-size: 0.74rem;
   font-weight: 600;
-  color: var(--text-secondary, #c9d1d9);
+  color: var(--text-secondary);
   margin-bottom: 0.35rem;
 }
 .pvote-req {
@@ -2174,15 +2174,15 @@
   min-height: 72px;
   padding: 0.55rem 0.65rem;
   border-radius: 7px;
-  border: 1px solid var(--border-input, rgba(255, 255, 255, 0.1));
-  background: var(--inset, rgba(255, 255, 255, 0.04));
-  color: var(--text-primary, #f0f6fc);
+  border: 1px solid var(--border-input);
+  background: var(--inset);
+  color: var(--text-primary);
   font-size: 0.82rem;
   font-family: inherit;
   resize: vertical;
 }
 .pvote-rationale-input:focus-visible {
-  outline: 2px solid var(--border-focus, #10b981);
+  outline: 2px solid var(--border-focus);
   outline-offset: 1px;
 }
 .pvote-error {
@@ -2211,8 +2211,8 @@
 .pvote-submit:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  background: var(--bg-tertiary, rgba(255, 255, 255, 0.06));
-  color: var(--text-muted, #8b949e);
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
 }
 .pvote-voted-note,
 .pvote-closed-note {
@@ -2221,7 +2221,7 @@
   gap: 0.35rem;
   margin: 0;
   font-size: 0.74rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 .pvote-voted-note {
   color: var(--emerald-text, #10b981);
@@ -2240,7 +2240,7 @@
   font-variant-numeric: tabular-nums;
 }
 .pperf-muted {
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 .pperf-subhead {
   display: flex;
@@ -2251,10 +2251,10 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 .pperf-block {
-  border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.08));
+  border: 1px solid var(--border-primary);
   border-radius: 10px;
   background: var(--surface-card, transparent);
   padding: 0.85rem 1rem;
@@ -2262,7 +2262,7 @@
 .pperf-empty-line {
   margin: 0;
   font-size: 0.76rem;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 
 /* Flags */
@@ -2306,12 +2306,12 @@
   font-size: 0.68rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 .pperf-price-val {
   font-size: 1rem;
   font-weight: 700;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 .pperf-price-val .pperf-muted {
   font-size: 0.76rem;
@@ -2323,7 +2323,7 @@
   gap: 0.5rem;
   margin-top: 0.75rem;
   padding-top: 0.7rem;
-  border-top: 1px solid var(--border-primary, rgba(255, 255, 255, 0.06));
+  border-top: 1px solid var(--border-primary);
 }
 .pperf-stat {
   display: inline-flex;
@@ -2332,10 +2332,10 @@
   font-size: 0.78rem;
   padding: 0.3rem 0.6rem;
   border-radius: 7px;
-  background: var(--bg-tertiary, rgba(255, 255, 255, 0.04));
+  background: var(--bg-tertiary);
 }
 .pperf-stat-label {
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
   font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -2354,7 +2354,7 @@
 .pperf-fals {
   border-radius: 10px;
   padding: 0.9rem 1rem;
-  border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.1));
+  border: 1px solid var(--border-primary);
 }
 .pperf-fals.is-intact {
   border-left: 3px solid var(--emerald, #10b981);
@@ -2368,7 +2368,7 @@
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  color: var(--text-secondary, #c9d1d9);
+  color: var(--text-secondary);
   margin-bottom: 0.5rem;
 }
 .pperf-fals-title {
@@ -2403,10 +2403,10 @@
   font-size: 0.86rem;
   line-height: 1.5;
   font-weight: 600;
-  color: var(--text-primary, #f0f6fc);
+  color: var(--text-primary);
 }
 blockquote.pperf-fals-text {
-  border-left: 2px solid var(--border-primary, rgba(255, 255, 255, 0.2));
+  border-left: 2px solid var(--border-primary);
   padding-left: 0.7rem;
   font-style: italic;
   font-weight: 500;
@@ -2416,7 +2416,7 @@ blockquote.pperf-fals-text {
   align-items: center;
   gap: 0.4rem;
   font-size: 0.76rem;
-  color: var(--text-secondary, #c9d1d9);
+  color: var(--text-secondary);
 }
 .pperf-review.overdue {
   color: var(--warning, #f59e0b);
@@ -2442,7 +2442,7 @@ blockquote.pperf-fals-text {
   gap: 0.5rem;
   font-size: 0.82rem;
   line-height: 1.45;
-  color: var(--text-secondary, #c9d1d9);
+  color: var(--text-secondary);
 }
 .pperf-dot {
   flex: none;
