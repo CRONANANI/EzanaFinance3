@@ -16,7 +16,7 @@
 }
 
 body:not(.light-mode) .mcs-card {
-  background: #0d1218;
+  background: var(--surface-card);
 }
 
 .mcs-card:hover {
