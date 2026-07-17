@@ -8,6 +8,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { BrandMark } from '@/components/home/brokerage-brand-marks';
+import { BrokerageTradeInfo } from '@/components/landing/BrokerageTradeInfo';
 import './brokerage-logos.css';
 
 const BROKERAGE_LOGOS = [
@@ -81,6 +82,10 @@ export function BrokerageLogos() {
       <p className="bl-subheading">
         Securely link 1,000+ brokerages and crypto exchanges via SnapTrade &amp; Plaid. Read
         holdings or place trades from supported brokers — without leaving Ezana.
+      </p>
+      <p className="bl-subheading bl-partners">
+        SnapTrade and Plaid are our trusted data partners.
+        <BrokerageTradeInfo />
       </p>
 
       <div className="bl-carousel-mask">

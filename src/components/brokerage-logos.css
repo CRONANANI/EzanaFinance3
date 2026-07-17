@@ -194,3 +194,53 @@ body.light-mode .bl-heading {
     font-size: 13px; /* 13 × 1.2 = 15.6px → content 45.6px, comfortably under 60px */
   }
 }
+
+/* ── Trusted-partners line + trading-info popup ─────────────────────────── */
+.bl-partners {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.bl-info-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 999px;
+  transition: color 0.15s ease-out;
+}
+.bl-info-btn:hover,
+.bl-info-btn:focus-visible {
+  color: var(--emerald);
+  outline: none;
+}
+/* Radix Popover.Content ships unstyled — provide the full themed surface here. */
+.bl-info-pop {
+  max-width: 260px;
+  padding: 10px 12px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  box-shadow: var(--shadow-lg);
+  z-index: 60;
+}
+.bl-info-link {
+  color: var(--emerald);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.bl-info-link:hover {
+  text-decoration: underline;
+}
