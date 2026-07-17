@@ -163,7 +163,7 @@
   aspect-ratio: 1 / 1;
   position: relative;
   overflow: hidden;
-  background: linear-gradient(160deg, #0e1a16 0%, #0f2a22 45%, #103a2c 100%);
+  background: var(--emerald-bg);
 }
 
 .echo-v3-hero-cover-img {
@@ -701,7 +701,7 @@
   top: 8px;
   right: 8px;
   z-index: 10;
-  background: rgba(10, 14, 19, 0.75);
+  background: var(--bg-overlay);
   color: var(--gold);
   border: 1px solid var(--gold-border);
   border-radius: var(--radius-md);
@@ -718,7 +718,7 @@
 }
 
 .echo-v3-admin-archive-btn:hover {
-  background: rgba(10, 14, 19, 0.9);
+  background: var(--bg-overlay);
 }
 
 .echo-v3-admin-archive-btn:disabled {
@@ -2786,8 +2786,8 @@ body.light-mode .echo-inline-image-caption {
 .echo-africa-map {
   margin: 2.5rem 0;
   padding: 1.75rem;
-  background: linear-gradient(180deg, #0a0e13 0%, #0d1117 100%);
-  border: 1px solid #1f2937;
+  background: var(--surface-card);
+  border: 1px solid var(--border-primary);
   border-radius: 14px;
   position: relative;
 }
@@ -2859,7 +2859,7 @@ body.light-mode .echo-africa-country {
 }
 
 .echo-africa-tooltip {
-  background: rgba(13, 17, 23, 0.95);
+  background: var(--bg-secondary);
   border: 1px solid rgba(16, 185, 129, 0.3);
   border-radius: 10px;
   padding: 1rem 1.25rem;
@@ -3471,7 +3471,7 @@ body.light-mode .echo-archive-card-notes {
 .echo-chart-cta-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(10, 14, 19, 0.55);
+  background: var(--bg-overlay);
   backdrop-filter: blur(2px);
   z-index: 10;
   border-radius: 12px;
@@ -3641,7 +3641,7 @@ body.light-mode .echo-archive-card-notes {
 .echo-auth-prompt-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(10, 14, 19, 0.7);
+  background: var(--bg-overlay);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;

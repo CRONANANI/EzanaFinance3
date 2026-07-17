@@ -308,7 +308,7 @@ select.echo-input {
   right: -2px;
   font-size: 0.75rem;
   color: #10b981;
-  background: #0a0e13;
+  background: var(--bg-primary);
   border-radius: 50%;
   padding: 1px;
 }
