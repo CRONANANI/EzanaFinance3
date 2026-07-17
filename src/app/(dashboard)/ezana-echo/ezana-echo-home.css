@@ -13,9 +13,10 @@
   padding-bottom: 8px;
   /* The gap above the "Ezana Echo" title is the dashboard shell's
      `padding-top: calc(navbar-height + 1.5rem)` (see (dashboard)/layout.css).
-     Pull the page up by 0.6rem so ~0.9rem of that extra remains (1.5rem →
-     0.9rem, ~40% less) — tight to the nav without tucking the title under it. */
-  margin-top: -0.6rem;
+     Pull the page up by 1.05rem so ~0.45rem of that extra remains (1.5rem →
+     0.45rem, ~half of the previous ~0.9rem) — the hero sits ~50% closer to the
+     nav, still clear of the 64px bar so the title isn't tucked under it. */
+  margin-top: -1.05rem;
 }
 .eth-page *,
 .eth-page *::before,
@@ -652,11 +653,13 @@
 }
 
 /* On mobile the dashboard shell drops its top padding to `navbar + 1rem`
-   (see (dashboard)/layout.css), so the full -1.5rem pull would tuck the title
-   under the fixed navbar. Ease the pull back on small screens. */
+   (see (dashboard)/layout.css), so the full desktop pull would tuck the title
+   under the fixed navbar. Trim it modestly here (a smaller cut than desktop) —
+   the hero sits a little closer to the nav while the title stays clearly below
+   the bar (still ~0.6rem clear of the 1rem pad). */
 @media (max-width: 768px) {
   .eth-page {
-    margin-top: -0.25rem;
+    margin-top: -0.4rem;
   }
 }
 
