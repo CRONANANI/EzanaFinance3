@@ -587,7 +587,7 @@
   --ctd-sec-t6: #64748b;
   --ctd-sec-t7: var(--emerald, #10b981);
 
-  --ctd-card: var(--surface-card, transparent);
+  --ctd-card: var(--surface-card);
   --ctd-border: var(--border-primary);
   color: var(--text-primary);
   font-family: var(--font-sans, 'Plus Jakarta Sans', system-ui, sans-serif);
@@ -603,6 +603,12 @@
   background: var(--ctd-card);
   border: 1px solid var(--ctd-border);
   border-radius: 16px;
+  /* Dark = flat, border-defined: no shadow, so a transparent card on #0a0e13
+     doesn't ring into a lighter slab. Light restores the subtle lift below. */
+  box-shadow: none;
+}
+body.light-mode .ctd-card,
+html.light-mode .ctd-card {
   box-shadow:
     0 1px 2px rgba(0, 0, 0, 0.04),
     0 1px 3px rgba(0, 0, 0, 0.05);

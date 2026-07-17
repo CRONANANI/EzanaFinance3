@@ -144,13 +144,17 @@
   border: 1px solid var(--border-primary);
   border-radius: 16px; /* was 12px — match Command Center .thw-card */
   background: var(--surface-card); /* dropped the , transparent fallback */
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.04),
-    0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: none; /* dark = flat (no slab); light lift restored below */
   transition:
     border-color 0.15s ease-out,
     box-shadow 0.15s ease-out;
   padding: 12px 20px; /* match .thw-card body padding → same height */
+}
+body.light-mode .asg2-metric,
+html.light-mode .asg2-metric {
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 1px 3px rgba(0, 0, 0, 0.05);
 }
 .asg2-metric-label {
   font-size: 0.66rem;
