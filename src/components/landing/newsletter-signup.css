@@ -21,16 +21,16 @@
 }
 .nl-signup-field-icon {
   position: absolute;
-  left: 10px;
-  color: var(--text-faint);
+  left: 11px;
+  color: var(--text-muted);
   pointer-events: none;
 }
 .nl-signup-input {
   width: 100%;
-  padding: 9px 12px 9px 32px;
+  padding: 9px 12px 9px 30px;
   border-radius: 8px;
-  border: 1px solid var(--border-input, var(--border-primary));
-  background: var(--surface-input, var(--inset));
+  border: 1px solid var(--border-input);
+  background: var(--surface-input);
   color: var(--text-primary);
   font-size: 13px;
   font-family: var(--font-sans);
