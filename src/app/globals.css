@@ -2213,6 +2213,15 @@ html:has(.landing-page) .navbar .logo,
   background: var(--emerald-bg);
   outline: none;
 }
+/* Non-live ("Soon") datasets: muted, non-interactive — no hover affordance. */
+.navbar .nav-datasets-item--soon {
+  cursor: default;
+  opacity: 0.55;
+}
+.navbar .nav-datasets-item--soon:hover,
+.navbar .nav-datasets-item--soon:focus-visible {
+  background: none;
+}
 
 .nav-datasets-item-icon {
   flex-shrink: 0;

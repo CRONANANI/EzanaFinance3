@@ -416,17 +416,33 @@ export function Navbar() {
                             />
                             {col.heading}
                           </p>
-                          {col.items.map((item) => (
-                            <a
-                              key={item.label}
-                              href={item.href}
-                              className="nav-datasets-item"
-                              role="menuitem"
-                            >
-                              <span className="nav-datasets-item-label">{item.label}</span>
-                              {!item.live && <span className="nav-datasets-soon">Soon</span>}
-                            </a>
-                          ))}
+                          {col.items.map((item) =>
+                            item.live ? (
+                              <a
+                                key={item.label}
+                                href={item.href}
+                                className="nav-datasets-item"
+                                role="menuitem"
+                              >
+                                <span className="nav-datasets-item-label">{item.label}</span>
+                              </a>
+                            ) : (
+                              // Non-live datasets render as a <span>, not an <a>, so they
+                              // can't navigate by construction; disabled to assistive tech
+                              // and skipped by keyboard as an action.
+                              <span
+                                key={item.label}
+                                className="nav-datasets-item nav-datasets-item--soon"
+                                role="menuitem"
+                                aria-disabled="true"
+                                tabIndex={-1}
+                                title="Coming soon"
+                              >
+                                <span className="nav-datasets-item-label">{item.label}</span>
+                                <span className="nav-datasets-soon">Soon</span>
+                              </span>
+                            ),
+                          )}
                         </div>
                       );
                     })}

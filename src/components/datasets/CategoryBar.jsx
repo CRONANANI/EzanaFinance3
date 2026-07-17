@@ -48,16 +48,29 @@ export default function CategoryBar({ active, activeItem }) {
           </button>
           {openCat === cat.id && (
             <div className="dscat-menu">
-              {cat.items.map((it) => (
-                <a
-                  key={it.label}
-                  href={it.href}
-                  className={`dscat-item ${it.label === activeItem ? 'is-active' : ''}`}
-                >
-                  <span>{it.label}</span>
-                  {!it.live && <span className="dscat-soon">Soon</span>}
-                </a>
-              ))}
+              {cat.items.map((it) =>
+                it.live ? (
+                  <a
+                    key={it.label}
+                    href={it.href}
+                    className={`dscat-item ${it.label === activeItem ? 'is-active' : ''}`}
+                  >
+                    <span>{it.label}</span>
+                  </a>
+                ) : (
+                  // Non-live: a <span>, not an <a> — can't navigate; disabled to AT.
+                  <span
+                    key={it.label}
+                    className="dscat-item dscat-item--soon"
+                    aria-disabled="true"
+                    tabIndex={-1}
+                    title="Coming soon"
+                  >
+                    <span>{it.label}</span>
+                    <span className="dscat-soon">Soon</span>
+                  </span>
+                ),
+              )}
             </div>
           )}
         </div>
