@@ -293,10 +293,25 @@ export default function PersonalizationRadar({ sourceDetails }) {
           const px = ((CX + lr * Math.cos(a)) / 1120) * 100;
           const py = ((CY + lr * Math.sin(a)) / 760) * 100;
           const cosA = Math.cos(a);
+          const sinA = Math.sin(a); // vertical component of the node's angle
+
+          // Horizontal anchor — flip so the popup never runs off the left/right.
           let translateX = '-50%';
           if (cosA > 0.25) translateX = '0%';
           else if (cosA < -0.25) translateX = '-100%';
-          return { left: `${px}%`, top: `${py}%`, transform: `translate(${translateX}, 8px)` };
+
+          // Vertical anchor — mirror the horizontal flip: for a bottom-half node
+          // (sinA > 0) anchor the popup's BOTTOM to the node and grow UPWARD so it
+          // never clips off the bottom; side nodes center; top nodes stay below.
+          let translateY = '8px';
+          if (sinA > 0.25) translateY = 'calc(-100% - 8px)';
+          else if (Math.abs(sinA) <= 0.25) translateY = '-50%';
+
+          return {
+            left: `${px}%`,
+            top: `${py}%`,
+            transform: `translate(${translateX}, ${translateY})`,
+          };
         })()
       : null;
 
