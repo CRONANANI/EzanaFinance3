@@ -13,10 +13,12 @@
   padding-bottom: 8px;
   /* The gap above the "Ezana Echo" title is the dashboard shell's
      `padding-top: calc(navbar-height + 1.5rem)` (see (dashboard)/layout.css).
-     Pull the page up by 1.05rem so ~0.45rem of that extra remains (1.5rem →
-     0.45rem, ~half of the previous ~0.9rem) — the hero sits ~50% closer to the
-     nav, still clear of the 64px bar so the title isn't tucked under it. */
-  margin-top: -1.05rem;
+     Pull the page up by 0.85rem so ~0.65rem of that extra remains (1.5rem →
+     0.65rem) — the hero still sits much closer to the nav (well under half the
+     original 1.5rem extra), but with enough headroom that the serif wordmark's
+     cap-height/ascenders clear the 64px bar. (-1.05rem overshot and clipped the
+     tops of tall glyphs; -0.85rem keeps it tight without the clip.) */
+  margin-top: -0.85rem;
 }
 .eth-page *,
 .eth-page *::before,
