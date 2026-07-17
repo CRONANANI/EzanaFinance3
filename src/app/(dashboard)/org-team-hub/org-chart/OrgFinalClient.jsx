@@ -202,10 +202,6 @@ export function OrgFinalClient({ initialData = null }) {
 
   const perf = summary?.performance || null;
   const roiValues = desks.map((d) => d.roiPct).filter((r) => r != null && Number.isFinite(r));
-  const topDesk = useMemo(
-    () => desks.filter((d) => d.roiPct != null).sort((a, b) => b.roiPct - a.roiPct)[0] || null,
-    [desks],
-  );
   const stats = {
     members: members.length,
     desks: desks.length,
@@ -523,58 +519,6 @@ export function OrgFinalClient({ initialData = null }) {
               </>
             )}
           </div>
-          <p className="ox-prose">
-            {loading ? (
-              <Skel w={520} h={16} />
-            ) : (
-              <>
-                {stats.members} member{stats.members === 1 ? '' : 's'} across {stats.desks} sector
-                desk{stats.desks === 1 ? '' : 's'}.{' '}
-                {president && (
-                  <>
-                    <button
-                      type="button"
-                      className="ox-prose-a"
-                      onClick={() => openProfile(president)}
-                    >
-                      {president.display_name}
-                    </button>{' '}
-                    presides
-                  </>
-                )}
-                {vp && (
-                  <>
-                    , with{' '}
-                    <button type="button" className="ox-prose-a" onClick={() => openProfile(vp)}>
-                      {vp.display_name}
-                    </button>{' '}
-                    running operations
-                  </>
-                )}
-                {execs.length > 0 && (
-                  <>
-                    {' '}
-                    and {execs.length} executive{execs.length === 1 ? '' : 's'} overseeing the desks
-                  </>
-                )}
-                {president && '. '}
-                {topDesk && topDesk.lead && (
-                  <>
-                    <b>{topDesk.name}</b> leads the fund at{' '}
-                    <b>{fmtSignedPct(topDesk.roiPct)} ROI</b> under{' '}
-                    <button
-                      type="button"
-                      className="ox-prose-a"
-                      onClick={() => openProfile(topDesk.lead)}
-                    >
-                      {topDesk.lead.display_name}
-                    </button>
-                    .
-                  </>
-                )}
-              </>
-            )}
-          </p>
         </header>
 
         {/* Stats line */}

@@ -26,20 +26,19 @@
   --ox-wash-hover: var(--emerald-bg-hover);
   --ox-indigo-text: #a5b4fc;
 
-  /* Editorial text scale (kept consistent across modes). */
-  --ox-text: #f0f6fc;
-  --ox-text-2: #e2e8f0;
-  --ox-muted: #8b949e;
-  --ox-faint: #6b7280;
-  --ox-ghost: #4b5563;
+  /* Editorial text scale — global tokens (dark values are identical). */
+  --ox-text: var(--text-primary);
+  --ox-text-2: var(--text-secondary);
+  --ox-muted: var(--text-muted);
+  --ox-faint: var(--text-faint);
+  --ox-ghost: var(--text-ghost);
 
   background: var(--ox-canvas);
   color: var(--ox-text-2);
 }
 body.light-mode .ox-root {
-  --ox-canvas: #ffffff;
-  --ox-card: #ffffff;
-  --ox-card-hover: #f3f4f6;
+  /* --ox-canvas/--ox-card/--ox-card-hover flow from their global tokens (their
+     light values are identical), so no override is needed here. */
   --ox-seg: #ffffff;
   --ox-line: rgba(0, 0, 0, 0.08);
   --ox-line-2: rgba(0, 0, 0, 0.1);
@@ -49,12 +48,8 @@ body.light-mode .ox-root {
   --ox-wash: var(--emerald-bg);
   --ox-wash-hover: var(--emerald-bg-hover);
   --ox-indigo-text: #4f46e5;
-
-  --ox-text: #0b0d10;
-  --ox-text-2: #374151;
-  --ox-muted: #6b7280;
-  --ox-faint: #94928a;
-  --ox-ghost: #9aa0a6;
+  /* --ox-text* now flow from the global text tokens (both modes) — no light
+     overrides needed. */
 }
 .ox-root * {
   box-sizing: border-box;
@@ -129,34 +124,6 @@ body.light-mode .ox-root {
   margin: 14px 0 0;
   line-height: 1.05;
 }
-.ox-prose {
-  font-size: 14px;
-  line-height: 1.7;
-  color: var(--ox-text-2);
-  margin: 16px auto 0;
-  max-width: 660px;
-  text-wrap: pretty;
-}
-.ox-prose b {
-  color: var(--ox-text);
-  font-weight: 600;
-}
-.ox-prose-a {
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  font: inherit;
-  color: var(--emerald);
-  font-weight: 600;
-  text-decoration: underline;
-  text-decoration-color: rgba(16, 185, 129, 0.4);
-  text-underline-offset: 3px;
-}
-.ox-prose-a:hover {
-  text-decoration-color: var(--emerald);
-}
-
 /* ── Stats line ────────────────────────────────────────────── */
 .ox2-statsline {
   display: flex;
@@ -271,7 +238,7 @@ body.light-mode .ox-root {
   background: var(--warning);
 }
 .ox-dot.pm {
-  background: var(--indigo, #6366f1);
+  background: var(--indigo);
 }
 .ox-dot.an {
   background: var(--emerald);
