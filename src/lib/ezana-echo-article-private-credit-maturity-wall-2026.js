@@ -123,10 +123,10 @@ export const privateCreditMaturityWallArticle2026 = {
   excerpt:
     'A Reuters analysis of 74 business development companies found only about $15 billion of roughly $84 billion in assets mature this year — under 20% — with the refinancing wall clustered in 2028 and 2029. Amend-and-extend deals pushed the pressure out, but software exposure, rising payment-in-kind income, and the first-ever net BDC outflow complicate the calm.',
   heroImage: {
-    src: '/echo/private-credit-hero.png',
-    alt: 'A pink "Private Credit" piggy bank balanced on a cracking plank labeled "Market," supported by classical columns — illustrating structural strain in the private credit market.',
+    src: '/echo/private-credit-hero.jpg',
+    alt: 'The City of London financial district skyline, with the Gherkin, Tower 42, and the Leadenhall Building rising among cranes under a blue sky.',
     caption:
-      'The private credit market has ballooned through the low-rate era; now a wall of maturities tests how much weight the structure can bear. (Illustration)',
+      'The private credit market has ballooned through the low-rate era; now a wall of maturities tests how much weight the structure can bear.',
   },
   contentBlocks: [
     {

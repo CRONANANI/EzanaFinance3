@@ -62,8 +62,8 @@ export const criticalMineralsArticle2026 = {
   excerpt:
     'A handful of countries hold decisive shares of the minerals the energy transition runs on — South Africa 83% of platinum-group metals, Morocco 69% of phosphate, the DRC roughly half of cobalt, and China about 48% of rare earths. USGS reserve data turns the map of the future economy into a short list of single-country chokepoints.',
   heroImage: {
-    src: '/echo/critical-minerals-hero.png',
-    alt: 'Miner’s dirt-covered gloved hands cupping a piece of raw, silver-grey critical-mineral ore over dark rubble.',
+    src: '/echo/critical-minerals-hero.jpg',
+    alt: 'Gloved hands cupping several pieces of raw, silver-grey critical-mineral ore against a snowy mountain backdrop.',
     caption:
       'The minerals behind batteries, chips, and defense hardware come out of the ground in a handful of countries — and the reserve map is far more concentrated than the finished-goods economy it feeds. (Theme image)',
   },
