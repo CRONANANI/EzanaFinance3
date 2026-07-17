@@ -341,7 +341,9 @@ export function Navbar() {
   if (showLandingNav) {
     return (
       <nav ref={landingNavRef} className="navbar navbar-sticky">
-        <div className="nav-container nav-container-centered">
+        <div
+          className={`nav-container nav-container-centered${isEzanaEcho ? ' nav-container-echo' : ''}`}
+        >
           <Link
             href="/"
             className="logo logo-centered nav-brand nav-home-btn"

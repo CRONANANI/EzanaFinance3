@@ -943,6 +943,14 @@ html:has(.landing-page) body:not(.light-mode) {
   padding: 0 var(--app-shell-pad);
   position: relative;
 }
+/* Echo shares the CONTENT envelope (1600) instead of the 1400 marketing cap,
+   so the logo lands on the hero's left edge and Login / Become a Partner land
+   on its right edge. Side padding is already --app-shell-pad (2rem, same as the
+   Echo content shell), so only the cap changes. Echo-scoped — the true
+   marketing pages keep the 1400 centered nav. */
+.navbar .nav-container-centered.nav-container-echo {
+  max-width: var(--app-shell-max);
+}
 
 /* Logo stays on the left */
 .navbar .nav-container-centered .logo {
