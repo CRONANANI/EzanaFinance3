@@ -137,6 +137,7 @@ export async function POST(request) {
       title: it.title,
       url: it.url || null,
       date: it.date || null,
+      match_type: it.matchType || null,
       similarity: it.similarity != null ? Number(it.similarity.toFixed(3)) : null,
     })),
     disclaimer: DISCLAIMER,

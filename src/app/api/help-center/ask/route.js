@@ -62,17 +62,28 @@ function mergeSources(semantic, keyword) {
 }
 
 async function keywordSearch(admin, query, audience) {
+  const cols = 'audience, slug, title, category, url, content';
+  // Lexical branch: full-text over the tsv column (title+body). Merges with an
+  // ILIKE-on-title fallback so exact identifiers/terms tsquery may miss still hit.
   const term = query.replace(/[%,]/g, ' ').trim();
   if (!term) return [];
-  let q = admin
+
+  let ftq = admin
     .from('help_center_articles')
-    .select('audience, slug, title, category, url, content')
-    .or(`title.ilike.%${term}%,content.ilike.%${term}%`)
+    .select(cols)
+    .textSearch('tsv', query, { type: 'websearch', config: 'english' })
     .limit(MAX_SOURCES);
-  if (audience) q = q.eq('audience', audience);
-  const { data, error } = await q;
-  if (error) return [];
-  return Array.isArray(data) ? data : [];
+  if (audience) ftq = ftq.eq('audience', audience);
+
+  let ilq = admin.from('help_center_articles').select(cols).ilike('title', `%${term}%`).limit(MAX_SOURCES);
+  if (audience) ilq = ilq.eq('audience', audience);
+
+  const [ft, il] = await Promise.all([ftq, ilq]);
+  const byKey = new Map();
+  for (const r of [...(ft.data || []), ...(il.data || [])]) {
+    byKey.set(`${r.audience}:${r.slug}`, r);
+  }
+  return [...byKey.values()].slice(0, MAX_SOURCES);
 }
 
 async function synthesize(query, sources) {

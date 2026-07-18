@@ -67,6 +67,7 @@ export async function retrieve(query, ctx = {}, opts = {}) {
         .join(' '),
       url: '/inside-the-capitol',
       similarity: null,
+      matchType: 'structured',
       date: r.transaction_date || null,
       meta: {
         politician: r.politician_name || null,

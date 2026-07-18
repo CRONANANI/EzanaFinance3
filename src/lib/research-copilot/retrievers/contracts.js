@@ -73,6 +73,7 @@ export async function retrieve(query, ctx = {}, opts = {}) {
         .join(' '),
       url: '/datasets/government/contracts',
       similarity: null,
+      matchType: 'structured',
       date: r.action_date || null,
       meta: {
         recipient: r.recipient_name || null,

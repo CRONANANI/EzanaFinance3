@@ -18,10 +18,35 @@
  *   - queryEmbedding : the query embedded once (384-dim) | null (semantic corpora)
  *
  * Result (vectors stripped before return):
- *   { corpus, id, title, snippet, url, similarity, date, meta }
- *   - similarity : 0..1 cosine for semantic rows; null for structured rows
+ *   { corpus, id, title, snippet, url, similarity, matchType, date, meta }
+ *   - similarity : 0..1 cosine for semantic rows; null for lexical/structured rows
+ *   - matchType  : 'semantic' | 'lexical' | 'both' | 'structured' — which branch
+ *                  produced the row (semantic corpora run BOTH vector + lexical
+ *                  passes and merge; structured corpora are SQL-filtered)
  *   - date       : ISO/timestamp used for recency ranking of structured rows
  */
+
+/**
+ * Merge a semantic pass and a lexical pass for ONE corpus, deduping by id and
+ * tagging matchType. A row found by both branches → 'both' (and keeps the
+ * semantic similarity). This is why every semantic retriever runs both: exact
+ * identifiers (tickers, award IDs, names) hit lexically where vectors miss.
+ */
+export function mergeBranches(semantic = [], lexical = []) {
+  const byId = new Map();
+  for (const r of semantic) byId.set(String(r.id), { ...r, matchType: 'semantic' });
+  for (const r of lexical) {
+    const key = String(r.id);
+    const prev = byId.get(key);
+    if (prev) {
+      prev.matchType = 'both';
+      if (prev.similarity == null && r.similarity != null) prev.similarity = r.similarity;
+    } else {
+      byId.set(key, { ...r, matchType: 'lexical' });
+    }
+  }
+  return [...byId.values()];
+}
 
 /** Collapse whitespace and cap a snippet length for context budgeting. */
 export function snippet(text, max = 320) {

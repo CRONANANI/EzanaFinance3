@@ -42,6 +42,8 @@ export async function retrieve(query, ctx = {}, opts = {}) {
     // Notes arrive pre-ranked by relevance (keyword + semantic); librarySearch
     // strips the per-row score, so approximate similarity by rank for the merge.
     similarity: Math.max(0.5, 0.85 - i * 0.05),
+    // librarySearch already runs both keyword AND semantic branches internally.
+    matchType: 'both',
     date: n.published_at || n.created_at || null,
     meta: {
       ticker: n.ticker || null,
