@@ -254,30 +254,39 @@ export async function getContractRollups({ fiscalYear = null, limit = 2000 } = {
 
     let recQ = supabase
       .from('gov_contract_recipient_rollup')
-      .select('fiscal_year, recipient_name, awarding_agency, agency_bucket, total_amount, award_count')
+      .select('fiscal_year, recipient_name, awarding_agency, total_amount, award_count')
       .order('total_amount', { ascending: false })
       .limit(Math.min(Math.max(Number(limit) || 2000, 1), 5000));
     if (fiscalYear) recQ = recQ.eq('fiscal_year', Number(fiscalYear));
 
-    const [{ data: recRows, error: recErr }, { data: covRows }] = await Promise.all([
-      recQ,
-      supabase
-        .from('gov_contract_coverage')
-        .select('fiscal_year, award_count, total_amount')
-        .order('fiscal_year', { ascending: true }),
-    ]);
+    let agencyQ = supabase
+      .from('gov_contract_agency_rollup')
+      .select('fiscal_year, awarding_agency, total_amount, award_count');
+    if (fiscalYear) agencyQ = agencyQ.eq('fiscal_year', Number(fiscalYear));
+
+    const [{ data: recRows, error: recErr }, { data: agencyRows }, { data: covRows }] =
+      await Promise.all([
+        recQ,
+        agencyQ,
+        supabase
+          .from('gov_contract_coverage')
+          .select('fiscal_year, award_count, total_amount')
+          .order('fiscal_year', { ascending: true }),
+      ]);
 
     if (recErr || !Array.isArray(recRows) || recRows.length === 0) return null;
 
-    // Group rollup rows into the client's recipient shape.
+    // Group rollup rows into the client's recipient shape, keyed on the RAW
+    // awarding_agency (no regex bucketing — the raw official names are the source
+    // of truth: "Department of the Treasury", "Department of the Interior", …).
     const map = new Map();
     for (const r of recRows) {
       const key = r.recipient_name || 'Unknown';
-      const bucket = r.agency_bucket || 'Other';
+      const agency = r.awarding_agency || 'Unknown';
       const val = Number(r.total_amount) || 0;
       let rec = map.get(key);
       if (!rec) {
-        rec = { name: key, agency: bucket, ticker: null, total: 0, count: 0, awards: [], _maxAward: 0 };
+        rec = { name: key, agency, ticker: null, total: 0, count: 0, awards: [], _maxAward: 0 };
         map.set(key, rec);
       }
       rec.total += val;
@@ -285,18 +294,28 @@ export async function getContractRollups({ fiscalYear = null, limit = 2000 } = {
       rec.awards.push({
         value: val,
         year: Number(r.fiscal_year),
-        agencyName: r.awarding_agency,
+        agencyName: agency,
         awardId: null,
         date: null,
       });
       if (val >= rec._maxAward) {
         rec._maxAward = val;
-        rec.agency = bucket; // primary agency = bucket of the largest rollup row
+        rec.agency = agency; // primary agency = raw agency of the largest rollup row
       }
     }
     const recipients = [...map.values()].map((r) => ({
       ...r,
       avg: r.count ? r.total / r.count : 0,
+    }));
+
+    // Full per-(fiscal_year, agency) totals — drives the complete, FY-aware
+    // sidebar list and the top-10 spend ranking. TRUE totals (all recipients),
+    // not just the top-N kept in the recipient rollup.
+    const agencyRollup = (agencyRows || []).map((a) => ({
+      fiscalYear: Number(a.fiscal_year),
+      agency: a.awarding_agency || 'Unknown',
+      total: Number(a.total_amount) || 0,
+      count: Number(a.award_count) || 0,
     }));
 
     // Coverage window from the coverage table.
@@ -319,7 +338,7 @@ export async function getContractRollups({ fiscalYear = null, limit = 2000 } = {
       maxFy: fiscalYears[fiscalYears.length - 1] ?? null,
     };
 
-    return { recipients, coverage, source: 'rollup' };
+    return { recipients, agencyRollup, coverage, source: 'rollup' };
   } catch {
     return null;
   }

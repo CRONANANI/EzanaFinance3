@@ -11,7 +11,7 @@
  *  - YoY and quarterly series → derived from the loaded award dates where the
  *    data supports it, else an honest empty state.
  */
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 import {
   LayoutGrid,
   PieChart as PieIcon,
@@ -24,13 +24,19 @@ import {
 } from 'lucide-react';
 import CategoryBar from '@/components/datasets/CategoryBar';
 import ContractsExplorer from './ContractsExplorer';
-// Agency taxonomy is the shared single source of truth (server rollup sync +
-// this client agree). 14 named buckets + Other, all colored by theme tokens.
-import { AGENCIES, AGENCY_ORDER, normalizeAgency } from '@/lib/gov-agency-taxonomy';
+// Positional palette: raw awarding_agency strings are the source of truth (no
+// regex bucketing); colors bind to spend-rank slots (top 10) + Other.
+import {
+  buildSlotMap,
+  colorForAgency,
+  OTHER_COLOR,
+  OTHER_LABEL,
+  MAX_SLOTS,
+} from '@/lib/gov-agency-palette';
 import './gov-contracts.css';
 
 const SEED_QUERY = `FROM gov.contracts
-WHERE fiscal_year = 2008 AND awarding_agency = "DoD"
+WHERE fiscal_year = 2008 AND awarding_agency = "Department of Defense"
 SELECT recipient, awarding_agency, SUM(award_amount) AS total
 GROUP BY recipient, awarding_agency
 ORDER BY total DESC
@@ -63,7 +69,7 @@ function aggregate(awards) {
   const map = new Map();
   for (const a of awards) {
     const key = a.recipient || 'Unknown';
-    const agency = normalizeAgency(a.agency);
+    const agency = a.agency || 'Unknown'; // raw awarding_agency (no bucketing)
     const val = Number(a.amountValue) || parseAmount(a.amount) || 0;
     const year = (() => {
       const d = new Date(a.date);
@@ -107,23 +113,63 @@ export default function GovContractsClient({
   );
   const coverageObj = rollup?.coverage || coverage;
 
-  const [agencyFilter, setAgencyFilter] = useState('all');
+  // Multi-select agencies (raw names); empty Set = all agencies.
+  const [selectedAgencies, setSelectedAgencies] = useState(() => new Set());
+  const [agencySearch, setAgencySearch] = useState('');
   const [minValue, setMinValue] = useState(0); // in billions
   const [fiscalYear, setFiscalYear] = useState('all');
   const [heroView, setHeroView] = useState('treemap');
   const [selected, setSelected] = useState(null);
   const [queryOpen, setQueryOpen] = useState(false);
 
-  // agency counts (real)
-  const agencyCounts = useMemo(() => {
-    const c = { all: recipients.length };
-    for (const r of recipients) c[r.agency] = (c[r.agency] || 0) + 1;
-    return c;
-  }, [recipients]);
+  // Debounce the agency search box (the list can be 80-100+ long).
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(agencySearch.trim().toLowerCase()), 200);
+    return () => clearTimeout(t);
+  }, [agencySearch]);
 
-  // ALL fiscal years present (newest first) — from coverage when available,
-  // else derived from the loaded rows. No cap (was .slice(0, 3), which hid every
-  // year but the latest three and kept FY2008 from ever appearing).
+  // Complete, fiscal-year-aware agency list (raw names) with true totals+counts,
+  // sorted by spend desc. From the agency rollup (all agencies), else derived
+  // from the loaded recipients as a fallback.
+  const agencyTotals = useMemo(() => {
+    const m = new Map();
+    const rows = rollup?.agencyRollup;
+    if (rows && rows.length) {
+      for (const a of rows) {
+        if (fiscalYear !== 'all' && a.fiscalYear !== Number(fiscalYear)) continue;
+        const cur = m.get(a.agency) || { agency: a.agency, total: 0, count: 0 };
+        cur.total += a.total;
+        cur.count += a.count;
+        m.set(a.agency, cur);
+      }
+    } else {
+      for (const r of recipients) {
+        if (fiscalYear !== 'all' && !r.awards.some((a) => a.year === Number(fiscalYear))) continue;
+        const cur = m.get(r.agency) || { agency: r.agency, total: 0, count: 0 };
+        cur.total += r.total;
+        cur.count += r.count;
+        m.set(r.agency, cur);
+      }
+    }
+    return [...m.values()].sort((x, y) => y.total - x.total);
+  }, [rollup, recipients, fiscalYear]);
+
+  // Colors are positional: rank the CURRENT view's agencies (selected ones when
+  // filtering, else all) by spend and bind the top 10 to slots; the rest → Other.
+  const colorRanking = useMemo(() => {
+    if (selectedAgencies.size) return agencyTotals.filter((a) => selectedAgencies.has(a.agency));
+    return agencyTotals;
+  }, [agencyTotals, selectedAgencies]);
+  const slotMap = useMemo(() => buildSlotMap(colorRanking), [colorRanking]);
+  const topSet = useMemo(
+    () => new Set(colorRanking.slice(0, MAX_SLOTS).map((a) => a.agency)),
+    [colorRanking],
+  );
+  const colorOf = useCallback((agency) => colorForAgency(slotMap, agency), [slotMap]);
+
+  // ALL fiscal years present (newest first). No cap (was .slice(0, 3), which hid
+  // every year but the latest three and kept FY2008 from ever appearing).
   const years = useMemo(() => {
     if (coverageObj?.fiscalYears?.length) {
       return [...coverageObj.fiscalYears].sort((a, b) => b - a);
@@ -132,31 +178,49 @@ export default function GovContractsClient({
     return [...s].sort((a, b) => b - a);
   }, [coverageObj, recipients]);
 
+  // Recipients matching the current filters, each tagged with a vizAgency that
+  // folds non-top-10 agencies into a single "Other" series for the charts.
   const filtered = useMemo(() => {
     return recipients
-      .filter((r) => (agencyFilter === 'all' ? true : r.agency === agencyFilter))
+      .filter((r) => (selectedAgencies.size ? selectedAgencies.has(r.agency) : true))
       .filter((r) => r.total >= minValue * 1e9)
       .filter((r) =>
         fiscalYear === 'all' ? true : r.awards.some((a) => a.year === Number(fiscalYear)),
       )
+      .map((r) => ({ ...r, vizAgency: topSet.has(r.agency) ? r.agency : OTHER_LABEL }))
       .sort((a, b) => b.total - a.total);
-  }, [recipients, agencyFilter, minValue, fiscalYear]);
+  }, [recipients, selectedAgencies, minValue, fiscalYear, topSet]);
 
   const totalObligated = useMemo(() => recipients.reduce((s, r) => s + r.total, 0), [recipients]);
   const totalAwards = useMemo(() => recipients.reduce((s, r) => s + r.count, 0), [recipients]);
-  const largestAgency = useMemo(() => {
-    const byAgency = {};
-    for (const r of recipients) byAgency[r.agency] = (byAgency[r.agency] || 0) + r.total;
-    let top = null;
-    for (const [ag, v] of Object.entries(byAgency)) if (!top || v > top.v) top = { ag, v };
-    return top
-      ? { ...top, pct: totalObligated ? Math.round((top.v / totalObligated) * 100) : 0 }
-      : null;
-  }, [recipients, totalObligated]);
+  const largestAgency = agencyTotals[0]
+    ? {
+        ag: agencyTotals[0].agency,
+        pct: totalObligated ? Math.round((agencyTotals[0].total / totalObligated) * 100) : 0,
+      }
+    : null;
 
-  const label = agencyFilter === 'all' ? 'All agencies' : AGENCIES[agencyFilter].label;
+  const label =
+    selectedAgencies.size === 0
+      ? 'All agencies'
+      : selectedAgencies.size === 1
+        ? [...selectedAgencies][0]
+        : `${selectedAgencies.size} agencies`;
 
-  const toggleAgency = (ag) => setAgencyFilter((cur) => (cur === ag ? 'all' : ag));
+  const toggleAgency = (ag) =>
+    setSelectedAgencies((cur) => {
+      const next = new Set(cur);
+      if (next.has(ag)) next.delete(ag);
+      else next.add(ag);
+      return next;
+    });
+  const clearAgencies = () => setSelectedAgencies(new Set());
+
+  // Agency chips for the rail: full list, filtered by the search box.
+  const visibleAgencyChips = useMemo(() => {
+    if (!debouncedSearch) return agencyTotals;
+    return agencyTotals.filter((a) => a.agency.toLowerCase().includes(debouncedSearch));
+  }, [agencyTotals, debouncedSearch]);
 
   return (
     <div className="gcx-page">
@@ -184,7 +248,7 @@ export default function GovContractsClient({
 
       {queryOpen && (
         <EzanaQLBuilder
-          activeFilters={{ agencyFilter, fiscalYear, minValue }}
+          activeFilters={{ agencies: [...selectedAgencies], fiscalYear, minValue }}
           onClose={() => setQueryOpen(false)}
         />
       )}
@@ -196,22 +260,45 @@ export default function GovContractsClient({
             {queryOpen ? 'Close builder' : 'Generate report'}
           </button>
           <FilterGroup title="Awarding agency">
-            <RailChip
-              active={agencyFilter === 'all'}
-              onClick={() => setAgencyFilter('all')}
-              label="All"
-              count={agencyCounts.all}
-            />
-            {AGENCY_ORDER.filter((a) => agencyCounts[a]).map((a) => (
-              <RailChip
-                key={a}
-                active={agencyFilter === a}
-                onClick={() => toggleAgency(a)}
-                label={AGENCIES[a].label}
-                color={AGENCIES[a].color}
-                count={agencyCounts[a] || 0}
+            <div className="gcx-agency-search">
+              <i className="bi bi-search" aria-hidden="true" />
+              <input
+                type="search"
+                value={agencySearch}
+                onChange={(e) => setAgencySearch(e.target.value)}
+                placeholder={`Search ${agencyTotals.length} agencies…`}
+                className="gcx-agency-search-input"
+                aria-label="Search awarding agencies"
               />
-            ))}
+            </div>
+            <div className="gcx-agency-head">
+              <span className="gcx-agency-count gcx-mono">
+                {selectedAgencies.size ? `${selectedAgencies.size} selected` : `${agencyTotals.length} agencies`}
+              </span>
+              {selectedAgencies.size > 0 && (
+                <button type="button" className="gcx-agency-clear" onClick={clearAgencies}>
+                  Clear
+                </button>
+              )}
+            </div>
+            <div className="gcx-agency-list">
+              {visibleAgencyChips.length === 0 ? (
+                <div className="gcx-rail-note">No agency matches “{agencySearch}”.</div>
+              ) : (
+                visibleAgencyChips.map((a) => (
+                  <RailChip
+                    key={a.agency}
+                    active={selectedAgencies.has(a.agency)}
+                    onClick={() => toggleAgency(a.agency)}
+                    label={a.agency}
+                    // Slot color when this agency is in the top 10 of the current
+                    // view; a neutral dot otherwise, so rail and chart agree.
+                    color={topSet.has(a.agency) ? colorOf(a.agency) : OTHER_COLOR}
+                    count={a.count}
+                  />
+                ))
+              )}
+            </div>
           </FilterGroup>
 
           <FilterGroup title="Min award value">
@@ -264,13 +351,18 @@ export default function GovContractsClient({
             <StatCard label="Awards (loaded)" value={fmtInt(totalAwards)} sub="in current slice" />
             <StatCard
               label="Largest awarding agency"
-              value={largestAgency ? AGENCIES[largestAgency.ag].label : '—'}
+              value={largestAgency ? largestAgency.ag : '—'}
               sub={largestAgency ? `${largestAgency.pct}% of value` : ''}
-              color={largestAgency ? AGENCIES[largestAgency.ag].color : undefined}
+              color={largestAgency ? colorOf(largestAgency.ag) : undefined}
             />
           </div>
 
-          <AgencyLegend agencyFilter={agencyFilter} onPick={toggleAgency} counts={agencyCounts} />
+          <AgencyLegend
+            ranking={colorRanking}
+            selected={selectedAgencies}
+            onPick={toggleAgency}
+            colorOf={colorOf}
+          />
 
           <section className="gcx-card gcx-hero">
             <div className="gcx-hero-head">
@@ -295,9 +387,9 @@ export default function GovContractsClient({
             {filtered.length === 0 ? (
               <div className="gcx-empty">No recipients match the current filters.</div>
             ) : heroView === 'treemap' ? (
-              <Treemap recipients={filtered} onPick={setSelected} />
+              <Treemap recipients={filtered} onPick={setSelected} colorOf={colorOf} />
             ) : (
-              <ShareDonut recipients={filtered} total={totalObligated} />
+              <ShareDonut recipients={filtered} colorOf={colorOf} />
             )}
           </section>
 
@@ -310,7 +402,7 @@ export default function GovContractsClient({
               <h2 className="gcx-hero-title">Leading contractors · {label}</h2>
               <span className="gcx-list-count">{filtered.length} shown</span>
             </div>
-            <ContractorList recipients={filtered.slice(0, 25)} onPick={setSelected} />
+            <ContractorList recipients={filtered.slice(0, 25)} onPick={setSelected} colorOf={colorOf} />
           </section>
 
           {/* Full-table, server-paginated explorer (all 15 FYs, real filters) —
@@ -319,7 +411,9 @@ export default function GovContractsClient({
         </main>
       </div>
 
-      {selected && <DrillModal recipient={selected} onClose={() => setSelected(null)} />}
+      {selected && (
+        <DrillModal recipient={selected} onClose={() => setSelected(null)} colorOf={colorOf} />
+      )}
     </div>
   );
 }
@@ -329,7 +423,7 @@ function AwardTicker({ awards }) {
   const items = useMemo(() => {
     const list = awards
       .map((a) => ({
-        agency: AGENCIES[normalizeAgency(a.agency)].label,
+        agency: a.agency || '—',
         name: a.recipient,
         value: fmtUSD(Number(a.amountValue) || parseAmount(a.amount) || 0),
       }))
@@ -386,27 +480,39 @@ function StatCard({ label, value, sub, color }) {
   );
 }
 
-function AgencyLegend({ agencyFilter, onPick, counts }) {
+// Legend shows only the <=10 visible series (spend rank) + "Other" when the
+// tail is non-empty — never all 30-100 agencies.
+function AgencyLegend({ ranking, selected, onPick, colorOf }) {
+  const top = ranking.slice(0, MAX_SLOTS);
+  const hasOther = ranking.length > MAX_SLOTS;
+  const otherTotal = ranking.slice(MAX_SLOTS).reduce((s, a) => s + a.total, 0);
+  const grand = ranking.reduce((s, a) => s + a.total, 0) || 1;
   return (
     <div className="gcx-legend">
-      {AGENCY_ORDER.filter((a) => counts[a]).map((a) => (
+      {top.map((a) => (
         <button
-          key={a}
+          key={a.agency}
           type="button"
-          className={`gcx-legend-chip ${agencyFilter === a ? 'is-active' : ''}`}
-          onClick={() => onPick(a)}
-          style={agencyFilter === a ? { borderColor: AGENCIES[a].color } : undefined}
+          className={`gcx-legend-chip ${selected.has(a.agency) ? 'is-active' : ''}`}
+          onClick={() => onPick(a.agency)}
+          style={selected.has(a.agency) ? { borderColor: colorOf(a.agency) } : undefined}
         >
-          <span className="gcx-dot" style={{ background: AGENCIES[a].color }} />
-          {AGENCIES[a].label}
+          <span className="gcx-dot" style={{ background: colorOf(a.agency) }} />
+          {a.agency}
         </button>
       ))}
+      {hasOther && (
+        <span className="gcx-legend-chip gcx-legend-other" title="Agencies outside the top 10">
+          <span className="gcx-dot" style={{ background: OTHER_COLOR }} />
+          {OTHER_LABEL} · {Math.round((otherTotal / grand) * 100)}%
+        </span>
+      )}
     </div>
   );
 }
 
 /* ────────────────────────── Treemap ────────────────────────── */
-function Treemap({ recipients, onPick }) {
+function Treemap({ recipients, onPick, colorOf }) {
   // Wider viewBox keeps the aspect ratio balanced (not too tall) now that the
   // page/main column is wider (1440px max). viewBox scales uniformly, so tiles
   // don't distort — this just tunes the width:height proportion.
@@ -415,14 +521,21 @@ function Treemap({ recipients, onPick }) {
   const GAP = 3;
   const maxValue = Math.max(...recipients.map((r) => r.total), 1);
 
-  // group by agency, order columns by agency order then total
+  // Group by vizAgency (top-10 raw name, or "Other"); order columns by spend,
+  // Other always last.
   const byAgency = {};
-  for (const r of recipients) (byAgency[r.agency] ||= []).push(r);
-  const columns = AGENCY_ORDER.filter((a) => byAgency[a]).map((a) => ({
-    agency: a,
-    items: byAgency[a].sort((x, y) => y.total - x.total),
-    total: byAgency[a].reduce((s, x) => s + x.total, 0),
-  }));
+  for (const r of recipients) (byAgency[r.vizAgency] ||= []).push(r);
+  const columns = Object.keys(byAgency)
+    .map((a) => ({
+      agency: a,
+      items: byAgency[a].sort((x, y) => y.total - x.total),
+      total: byAgency[a].reduce((s, x) => s + x.total, 0),
+    }))
+    .sort((x, y) => {
+      if (x.agency === OTHER_LABEL) return 1;
+      if (y.agency === OTHER_LABEL) return -1;
+      return y.total - x.total;
+    });
   const grandTotal = columns.reduce((s, c) => s + c.total, 0) || 1;
 
   // Column widths: give every present agency a readable MINIMUM width so a
@@ -482,15 +595,15 @@ function Treemap({ recipients, onPick }) {
               width={t.w}
               height={t.h}
               rx={5}
-              fill={AGENCIES[t.agency].color}
+              fill={colorOf(t.agency)}
               fillOpacity={opacity}
-              stroke={AGENCIES[t.agency].color}
+              stroke={colorOf(t.agency)}
               strokeOpacity={0.35}
             />
             {big && (
               <>
                 <text x={t.x + 8} y={t.y + 16} className="gcx-tl-tag">
-                  {AGENCIES[t.agency].label}
+                  {trim(t.agency, t.w)}
                 </text>
                 <text x={t.x + 8} y={t.y + 32} className="gcx-tl-name">
                   {trim(t.r.name, t.w)}
@@ -537,13 +650,16 @@ function donutSegments(data, total) {
     return seg;
   });
 }
-function ShareDonut({ recipients, total }) {
+function ShareDonut({ recipients, colorOf }) {
   const byAgency = {};
-  for (const r of recipients) byAgency[r.agency] = (byAgency[r.agency] || 0) + r.total;
-  const data = AGENCY_ORDER.filter((a) => byAgency[a]).map((a) => ({
-    agency: a,
-    value: byAgency[a],
-  }));
+  for (const r of recipients) byAgency[r.vizAgency] = (byAgency[r.vizAgency] || 0) + r.total;
+  const data = Object.keys(byAgency)
+    .map((a) => ({ agency: a, value: byAgency[a] }))
+    .sort((x, y) => {
+      if (x.agency === OTHER_LABEL) return 1;
+      if (y.agency === OTHER_LABEL) return -1;
+      return y.value - x.value;
+    });
   const sum = data.reduce((s, d) => s + d.value, 0);
   const segs = donutSegments(data, sum);
   return (
@@ -557,7 +673,7 @@ function ShareDonut({ recipients, total }) {
             cy={90}
             r={70}
             fill="none"
-            stroke={AGENCIES[s.agency].color}
+            stroke={colorOf(s.agency)}
             strokeWidth={30}
             strokeDasharray={`${s.dash} ${s.gap}`}
             strokeDashoffset={s.offset}
@@ -576,8 +692,8 @@ function ShareDonut({ recipients, total }) {
           .sort((a, b) => b.value - a.value)
           .map((d) => (
             <div className="gcx-donut-row" key={d.agency}>
-              <span className="gcx-dot" style={{ background: AGENCIES[d.agency].color }} />
-              <span className="gcx-donut-name">{AGENCIES[d.agency].label}</span>
+              <span className="gcx-dot" style={{ background: colorOf(d.agency) }} />
+              <span className="gcx-donut-name">{d.agency}</span>
               <span className="gcx-mono gcx-donut-val">{fmtUSD(d.value)}</span>
               <span className="gcx-mono gcx-donut-pct">
                 {sum ? Math.round((d.value / sum) * 100) : 0}%
@@ -591,16 +707,15 @@ function ShareDonut({ recipients, total }) {
 
 /* Modal donut: this recipient's awards split by awarding agency (center = top
    agency %). Every award carries an agency, so this is always derivable. */
-function AgencyBreakdown({ awards }) {
+function AgencyBreakdown({ awards, colorOf }) {
   const byAgency = {};
   for (const a of awards) {
-    const ag = normalizeAgency(a.agencyName);
+    const ag = a.agencyName || 'Unknown';
     byAgency[ag] = (byAgency[ag] || 0) + (Number(a.value) || 0);
   }
-  const data = AGENCY_ORDER.filter((ag) => byAgency[ag]).map((ag) => ({
-    agency: ag,
-    value: byAgency[ag],
-  }));
+  const data = Object.keys(byAgency)
+    .map((ag) => ({ agency: ag, value: byAgency[ag] }))
+    .sort((x, y) => y.value - x.value);
   const sum = data.reduce((s, d) => s + d.value, 0);
   if (!sum) return <div className="gcx-empty">No agency data.</div>;
   const segs = donutSegments(data, sum);
@@ -620,7 +735,7 @@ function AgencyBreakdown({ awards }) {
               cy={75}
               r={58}
               fill="none"
-              stroke={AGENCIES[s.agency].color}
+              stroke={colorOf(s.agency)}
               strokeWidth={26}
               strokeDasharray={`${frac * C} ${C - frac * C}`}
               strokeDashoffset={(s.offset / (2 * Math.PI * 70)) * C}
@@ -632,7 +747,7 @@ function AgencyBreakdown({ awards }) {
           {topPct}%
         </text>
         <text x={75} y={88} className="gcx-donut-c2">
-          {AGENCIES[top.agency].label}
+          {trim(top.agency, 90)}
         </text>
       </svg>
       <div className="gcx-donut-list">
@@ -640,8 +755,8 @@ function AgencyBreakdown({ awards }) {
           .sort((a, b) => b.value - a.value)
           .map((d) => (
             <div className="gcx-donut-row" key={d.agency}>
-              <span className="gcx-dot" style={{ background: AGENCIES[d.agency].color }} />
-              <span className="gcx-donut-name">{AGENCIES[d.agency].label}</span>
+              <span className="gcx-dot" style={{ background: colorOf(d.agency) }} />
+              <span className="gcx-donut-name">{d.agency}</span>
               <span className="gcx-mono gcx-donut-val">{fmtUSD(d.value)}</span>
               <span className="gcx-mono gcx-donut-pct">{Math.round((d.value / sum) * 100)}%</span>
             </div>
@@ -652,7 +767,7 @@ function AgencyBreakdown({ awards }) {
 }
 
 /* ────────────────────────── Contractor list ────────────────────────── */
-function ContractorList({ recipients, onPick }) {
+function ContractorList({ recipients, onPick, colorOf }) {
   const max = Math.max(...recipients.map((r) => r.total), 1);
   return (
     <div className="gcx-rows">
@@ -662,15 +777,15 @@ function ContractorList({ recipients, onPick }) {
           <span className="gcx-row-main">
             <span className="gcx-row-name">{r.name}</span>
             <span className="gcx-row-meta">
-              <span className="gcx-dot" style={{ background: AGENCIES[r.agency].color }} />
-              {AGENCIES[r.agency].label}
+              <span className="gcx-dot" style={{ background: colorOf(r.agency) }} />
+              {r.agency}
               {r.ticker ? ` · ${r.ticker}` : ''}
             </span>
           </span>
           <span className="gcx-row-bar">
             <span
               className="gcx-row-bar-fill"
-              style={{ width: `${(r.total / max) * 100}%`, background: AGENCIES[r.agency].color }}
+              style={{ width: `${(r.total / max) * 100}%`, background: colorOf(r.agency) }}
             />
           </span>
           <span className="gcx-row-val gcx-mono">{fmtUSD(r.total)}</span>
@@ -681,7 +796,7 @@ function ContractorList({ recipients, onPick }) {
 }
 
 /* ────────────────────────── Drill-down modal ────────────────────────── */
-function DrillModal({ recipient: r, onClose }) {
+function DrillModal({ recipient: r, onClose, colorOf }) {
   useEffect(() => {
     const onEsc = (e) => e.key === 'Escape' && onClose();
     document.addEventListener('keydown', onEsc);
@@ -711,12 +826,12 @@ function DrillModal({ recipient: r, onClose }) {
         aria-modal="true"
       >
         <div className="gcx-modal-left">
-          <div className="gcx-badge" style={{ background: AGENCIES[r.agency].color }}>
+          <div className="gcx-badge" style={{ background: colorOf(r.agency) }}>
             {initials}
           </div>
           <h3 className="gcx-modal-name">{r.name}</h3>
           <p className="gcx-modal-sub">
-            {AGENCIES[r.agency].label} · {r.ticker || 'HQ not available'}
+            {r.agency} · {r.ticker || 'HQ not available'}
           </p>
           <div className="gcx-modal-grid">
             <MiniStat label="Total awarded" value={fmtUSD(r.total)} />
@@ -749,7 +864,7 @@ function DrillModal({ recipient: r, onClose }) {
           </button>
           <div className="gcx-modal-h">Award value over time</div>
           {series.length ? (
-            <AreaChart series={series} color={AGENCIES[r.agency].color} />
+            <AreaChart series={series} color={colorOf(r.agency)} />
           ) : (
             <div className="gcx-empty">No dated awards for this recipient in the loaded slice.</div>
           )}
@@ -757,7 +872,7 @@ function DrillModal({ recipient: r, onClose }) {
           <div className="gcx-modal-h" style={{ marginTop: 18 }}>
             Breakdown by agency
           </div>
-          <AgencyBreakdown awards={r.awards} />
+          <AgencyBreakdown awards={r.awards} colorOf={colorOf} />
 
           <div className="gcx-modal-actions">
             <button type="button" className="gcx-btn gcx-btn-primary">
@@ -840,13 +955,15 @@ function AreaChart({ series, color }) {
 }
 
 /* ────────────────────────── EzanaQL builder ────────────────────────── */
-function seedFromFilters({ agencyFilter, fiscalYear }) {
+function seedFromFilters({ agencies = [], fiscalYear }) {
   const conds = [];
   if (fiscalYear !== 'all') conds.push(`fiscal_year = ${fiscalYear}`);
-  if (agencyFilter !== 'all') conds.push(`awarding_agency = "${agencyFilter}"`);
+  if (agencies.length === 1) conds.push(`awarding_agency = "${agencies[0]}"`);
+  else if (agencies.length > 1)
+    conds.push(`awarding_agency IN (${agencies.map((a) => `"${a}"`).join(', ')})`);
   const where = conds.length ? `\nWHERE ${conds.join(' AND ')}` : '';
   return `FROM gov.contracts${where}
-SELECT recipient, awarding_agency, SUM(award_value) AS total
+SELECT recipient, awarding_agency, SUM(award_amount) AS total
 GROUP BY recipient, awarding_agency
 ORDER BY total DESC
 LIMIT 10;`;

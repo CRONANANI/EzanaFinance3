@@ -1170,3 +1170,64 @@
     flex: 1 1 100%;
   }
 }
+
+/* ── Agency filter: search + complete scrollable list ─────────────── */
+.gcx-agency-search {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 34px;
+  padding: 0 10px;
+  margin-bottom: 8px;
+  border: 1px solid var(--border-input);
+  background: var(--surface-input);
+  border-radius: 9px;
+  color: var(--text-faint);
+}
+.gcx-agency-search:focus-within {
+  border-color: var(--emerald);
+}
+.gcx-agency-search-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  outline: none;
+}
+.gcx-agency-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 0.7rem;
+}
+.gcx-agency-count {
+  color: var(--text-faint);
+}
+.gcx-agency-clear {
+  border: none;
+  background: none;
+  color: var(--emerald-text);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+.gcx-agency-clear:hover {
+  text-decoration: underline;
+}
+/* Scrollable so a 30-100+ agency list can't push the rest of the rail away. */
+.gcx-agency-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+.gcx-legend-other {
+  cursor: default;
+  opacity: 0.85;
+}
