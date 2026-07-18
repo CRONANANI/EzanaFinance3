@@ -80,11 +80,26 @@ export function currentFederalFiscalYear(now = new Date()) {
   const m = now.getUTCMonth(); // 0 = Jan … 9 = Oct
   // October, November and December belong to the *next* fiscal year.
   const fyEndYear = m >= 9 ? y + 1 : y;
-  return {
-    fyEndYear,
-    start_date: `${fyEndYear - 1}-10-01`,
-    end_date: `${fyEndYear}-09-30`,
-  };
+  return fyWindow(fyEndYear, now);
+}
+
+/**
+ * The USAspending time_period window for any federal fiscal year.
+ * US FYs run Oct 1 → Sep 30, named for the *ending* year, so FY`y` is
+ * `(y-1)-10-01` → `y-09-30`. For an in-progress FY (end date in the future),
+ * `end_date` is clamped to today so we never request a future window.
+ *
+ * @param {number} fyEndYear e.g. 2026 → { start_date:'2025-10-01', end_date:'2026-09-30' }
+ * @returns {{ fyEndYear:number, start_date:string, end_date:string, partial:boolean }}
+ */
+export function fyWindow(fyEndYear, now = new Date()) {
+  const start_date = `${fyEndYear - 1}-10-01`;
+  const fyEnd = `${fyEndYear}-09-30`;
+  const today = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}-${String(
+    now.getUTCDate(),
+  ).padStart(2, '0')}`;
+  const partial = today < fyEnd;
+  return { fyEndYear, start_date, end_date: partial ? today : fyEnd, partial };
 }
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];

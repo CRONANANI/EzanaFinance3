@@ -1,5 +1,9 @@
 import { formatDisplayDate } from '@/lib/usaspending';
-import { getContractAwardsWithFallback, contractFreshnessNote } from '@/lib/usaspending-store';
+import {
+  getContractAwardsWithFallback,
+  getContractCoverage,
+  contractFreshnessNote,
+} from '@/lib/usaspending-store';
 import { CONTRACT_AWARDS_SAMPLE } from '../government-sample';
 import GovContractsClient from './GovContractsClient';
 
@@ -23,7 +27,12 @@ export const metadata = {
 };
 
 export default async function GovernmentContractsPage() {
-  const { rows, source, syncedAt } = await getContractAwardsWithFallback({ limit: 200 });
+  // Coverage (per-FY counts + FY2012-FY2026 window) is fetched alongside the
+  // display slice. Both resolve to empty/fallback rather than throwing.
+  const [{ rows, source, syncedAt }, coverage] = await Promise.all([
+    getContractAwardsWithFallback({ limit: 200 }),
+    getContractCoverage(),
+  ]);
 
   const usingSample = source === null;
   const awardRows = usingSample
@@ -35,6 +44,7 @@ export default async function GovernmentContractsPage() {
       awards={awardRows}
       isLive={!usingSample}
       note={contractFreshnessNote(source ?? 'sample', syncedAt)}
+      coverage={coverage && coverage.total > 0 ? coverage : null}
     />
   );
 }

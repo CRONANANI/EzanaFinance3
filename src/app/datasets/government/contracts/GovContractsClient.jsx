@@ -109,7 +109,7 @@ function aggregate(awards) {
   return [...map.values()].map((r) => ({ ...r, avg: r.count ? r.total / r.count : 0 }));
 }
 
-export default function GovContractsClient({ awards = [], isLive = false, note = '' }) {
+export default function GovContractsClient({ awards = [], isLive = false, note = '', coverage = null }) {
   const recipients = useMemo(() => aggregate(awards), [awards]);
 
   const [agencyFilter, setAgencyFilter] = useState('all');
@@ -170,6 +170,15 @@ export default function GovContractsClient({ awards = [], isLive = false, note =
           Federal contract awards from USAspending.gov, aggregated by recipient and awarding agency.
           {isLive ? '' : ' Showing sample data — live source unavailable.'}
         </p>
+        {coverage && coverage.minFy && coverage.maxFy ? (
+          <p className="gcx-sub">
+            Indexed coverage:{' '}
+            <strong>
+              FY{coverage.minFy}&ndash;FY{coverage.maxFy}
+            </strong>{' '}
+            · {coverage.total.toLocaleString()} awards.
+          </p>
+        ) : null}
       </header>
 
       {queryOpen && (
