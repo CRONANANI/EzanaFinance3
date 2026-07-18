@@ -92,6 +92,7 @@ function isMarketingBrandLockedLightPath(pathname) {
   if (pathname.startsWith('/brokerages-integrations')) return true;
   if (pathname.startsWith('/datasets')) return true;
   if (pathname.startsWith('/ezana-api')) return true;
+  if (pathname.startsWith('/ezana-echo')) return true; // Echo is a public marketing surface — always light
   // Public legal pages render light like the rest of the marketing site.
   if (pathname === '/privacy-policy') return true;
   if (pathname === '/terms-of-service') return true;

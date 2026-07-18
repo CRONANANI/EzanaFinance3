@@ -66,9 +66,10 @@ export default async function RootLayout({ children }) {
   const nonce = headers().get('x-nonce') || undefined;
 
   /* Public marketing routes (/, /pricing, /help-center, /datasets,
-     /brokerages-integrations) render LIGHT by spec regardless of the user's
-     stored theme preference — match the blocking inline script below so the
-     SSR class agrees with the first-paint class (no dark flash). */
+     /brokerages-integrations, /ezana-api, /ezana-echo) render LIGHT by spec
+     regardless of the user's stored theme preference — match the blocking
+     inline script below so the SSR class agrees with the first-paint class
+     (no dark flash). */
   const isMarketingLightRoute =
     pathname === '/' ||
     pathname === '' ||
@@ -77,6 +78,7 @@ export default async function RootLayout({ children }) {
     pathname.startsWith('/brokerages-integrations') ||
     pathname.startsWith('/datasets') ||
     pathname.startsWith('/ezana-api') ||
+    pathname.startsWith('/ezana-echo') ||
     pathname === '/privacy-policy' ||
     pathname === '/terms-of-service' ||
     pathname === '/accessibility';
@@ -131,7 +133,7 @@ export default async function RootLayout({ children }) {
                before paint so the navbar/page don't briefly flash dark.
                Matches isMarketingBrandLockedLightPath in ThemeProvider and
                the SSR class in this layout. */
-            var marketingLightRoutes = ['/', '/pricing', '/help-center', '/brokerages-integrations', '/datasets', '/ezana-api', '/privacy-policy', '/terms-of-service', '/accessibility'];
+            var marketingLightRoutes = ['/', '/pricing', '/help-center', '/brokerages-integrations', '/datasets', '/ezana-api', '/ezana-echo', '/privacy-policy', '/terms-of-service', '/accessibility'];
             try {
               var path = window.location.pathname || '/';
               for (var i = 0; i < marketingLightRoutes.length; i++) {
