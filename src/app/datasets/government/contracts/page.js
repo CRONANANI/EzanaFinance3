@@ -2,6 +2,7 @@ import { formatDisplayDate } from '@/lib/usaspending';
 import {
   getContractAwardsWithFallback,
   getContractCoverage,
+  getContractRollups,
   contractFreshnessNote,
 } from '@/lib/usaspending-store';
 import { CONTRACT_AWARDS_SAMPLE } from '../government-sample';
@@ -27,24 +28,29 @@ export const metadata = {
 };
 
 export default async function GovernmentContractsPage() {
-  // Coverage (per-FY counts + FY2012-FY2026 window) is fetched alongside the
-  // display slice. Both resolve to empty/fallback rather than throwing.
-  const [{ rows, source, syncedAt }, coverage] = await Promise.all([
+  // Primary path: pre-aggregated BigQuery rollups (all fiscal years, scales to
+  // millions of rows). Falls back to the raw-award slice + coverage RPC when the
+  // rollups aren't populated yet. All resolve to null/empty rather than throwing.
+  const [rollup, { rows, source, syncedAt }, coverage] = await Promise.all([
+    getContractRollups({ limit: 2000 }),
     getContractAwardsWithFallback({ limit: 200 }),
     getContractCoverage(),
   ]);
 
-  const usingSample = source === null;
+  const usingSample = !rollup && source === null;
   const awardRows = usingSample
     ? CONTRACT_AWARDS_SAMPLE.map((r) => ({ ...r, date: formatDisplayDate(r.date) }))
     : rows;
 
+  const noteSource = rollup ? 'rollup' : (source ?? 'sample');
+
   return (
     <GovContractsClient
       awards={awardRows}
-      isLive={!usingSample}
-      note={contractFreshnessNote(source ?? 'sample', syncedAt)}
+      isLive={Boolean(rollup) || !usingSample}
+      note={contractFreshnessNote(noteSource, syncedAt)}
       coverage={coverage && coverage.total > 0 ? coverage : null}
+      rollup={rollup}
     />
   );
 }

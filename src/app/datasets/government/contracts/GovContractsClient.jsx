@@ -24,32 +24,14 @@ import {
 } from 'lucide-react';
 import CategoryBar from '@/components/datasets/CategoryBar';
 import ContractsExplorer from './ContractsExplorer';
+// Agency taxonomy is the shared single source of truth (server rollup sync +
+// this client agree). 14 named buckets + Other, all colored by theme tokens.
+import { AGENCIES, AGENCY_ORDER, normalizeAgency } from '@/lib/gov-agency-taxonomy';
 import './gov-contracts.css';
 
-/* ── Agency color buckets (design key; SVG fills use the CSS tokens) ── */
-const AGENCIES = {
-  DoD: { label: 'DoD', color: 'var(--positive)' },
-  DoE: { label: 'DoE', color: 'var(--warning)' },
-  NASA: { label: 'NASA', color: 'var(--info)' },
-  HHS: { label: 'HHS', color: 'var(--purple)' },
-  GSA: { label: 'GSA', color: 'var(--pink)' },
-  Other: { label: 'Other', color: 'var(--text-faint)' },
-};
-const AGENCY_ORDER = ['DoD', 'DoE', 'NASA', 'HHS', 'GSA', 'Other'];
-
-function normalizeAgency(name) {
-  const s = String(name || '').toLowerCase();
-  if (/defen|army|navy|air force|marine|dod|military/.test(s)) return 'DoD';
-  if (/energy|nuclear/.test(s)) return 'DoE';
-  if (/aeronautic|nasa|space/.test(s)) return 'NASA';
-  if (/health|human services|hhs|medic/.test(s)) return 'HHS';
-  if (/general services|gsa/.test(s)) return 'GSA';
-  return 'Other';
-}
-
 const SEED_QUERY = `FROM gov.contracts
-WHERE fiscal_year = 2026 AND awarding_agency = "DoD"
-SELECT recipient, awarding_agency, SUM(award_value) AS total
+WHERE fiscal_year = 2008 AND awarding_agency = "DoD"
+SELECT recipient, awarding_agency, SUM(award_amount) AS total
 GROUP BY recipient, awarding_agency
 ORDER BY total DESC
 LIMIT 10;`;
@@ -110,8 +92,20 @@ function aggregate(awards) {
   return [...map.values()].map((r) => ({ ...r, avg: r.count ? r.total / r.count : 0 }));
 }
 
-export default function GovContractsClient({ awards = [], isLive = false, note = '', coverage = null }) {
-  const recipients = useMemo(() => aggregate(awards), [awards]);
+export default function GovContractsClient({
+  awards = [],
+  isLive = false,
+  note = '',
+  coverage = null,
+  rollup = null,
+}) {
+  // Prefer pre-aggregated BigQuery rollups (scales to millions of rows); fall
+  // back to client-side aggregation of the small live-award slice.
+  const recipients = useMemo(
+    () => (rollup && rollup.recipients && rollup.recipients.length ? rollup.recipients : aggregate(awards)),
+    [rollup, awards],
+  );
+  const coverageObj = rollup?.coverage || coverage;
 
   const [agencyFilter, setAgencyFilter] = useState('all');
   const [minValue, setMinValue] = useState(0); // in billions
@@ -127,10 +121,16 @@ export default function GovContractsClient({ awards = [], isLive = false, note =
     return c;
   }, [recipients]);
 
+  // ALL fiscal years present (newest first) — from coverage when available,
+  // else derived from the loaded rows. No cap (was .slice(0, 3), which hid every
+  // year but the latest three and kept FY2008 from ever appearing).
   const years = useMemo(() => {
+    if (coverageObj?.fiscalYears?.length) {
+      return [...coverageObj.fiscalYears].sort((a, b) => b - a);
+    }
     const s = new Set(recipients.flatMap((r) => r.awards.map((a) => a.year)).filter(Boolean));
-    return [...s].sort((a, b) => b - a).slice(0, 3);
-  }, [recipients]);
+    return [...s].sort((a, b) => b - a);
+  }, [coverageObj, recipients]);
 
   const filtered = useMemo(() => {
     return recipients
@@ -171,13 +171,13 @@ export default function GovContractsClient({ awards = [], isLive = false, note =
           Federal contract awards from USAspending.gov, aggregated by recipient and awarding agency.
           {isLive ? '' : ' Showing sample data — live source unavailable.'}
         </p>
-        {coverage && coverage.minFy && coverage.maxFy ? (
+        {coverageObj && coverageObj.minFy && coverageObj.maxFy ? (
           <p className="gcx-sub">
             Indexed coverage:{' '}
             <strong>
-              FY{coverage.minFy}&ndash;FY{coverage.maxFy}
+              FY{coverageObj.minFy}&ndash;FY{coverageObj.maxFy}
             </strong>{' '}
-            · {coverage.total.toLocaleString()} awards.
+            · {coverageObj.total.toLocaleString()} awards.
           </p>
         ) : null}
       </header>

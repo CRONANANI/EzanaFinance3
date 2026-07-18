@@ -239,8 +239,97 @@ export async function getContractAwardsPage(params = {}) {
   }
 }
 
+/**
+ * Read the pre-aggregated BigQuery rollups from Supabase and shape them for the
+ * Government Contracts client (recipients in the same shape aggregate() emits,
+ * plus the full coverage window). The heavy lifting happened in the sync cron;
+ * this just pulls small rollup tables. Resolves to null when the rollups are
+ * empty/unreachable so the page falls back to the raw-award path.
+ *
+ * @returns {Promise<{ recipients: object[], coverage: object, source: 'rollup' }|null>}
+ */
+export async function getContractRollups({ fiscalYear = null, limit = 2000 } = {}) {
+  try {
+    const supabase = getAnonClient();
+
+    let recQ = supabase
+      .from('gov_contract_recipient_rollup')
+      .select('fiscal_year, recipient_name, awarding_agency, agency_bucket, total_amount, award_count')
+      .order('total_amount', { ascending: false })
+      .limit(Math.min(Math.max(Number(limit) || 2000, 1), 5000));
+    if (fiscalYear) recQ = recQ.eq('fiscal_year', Number(fiscalYear));
+
+    const [{ data: recRows, error: recErr }, { data: covRows }] = await Promise.all([
+      recQ,
+      supabase
+        .from('gov_contract_coverage')
+        .select('fiscal_year, award_count, total_amount')
+        .order('fiscal_year', { ascending: true }),
+    ]);
+
+    if (recErr || !Array.isArray(recRows) || recRows.length === 0) return null;
+
+    // Group rollup rows into the client's recipient shape.
+    const map = new Map();
+    for (const r of recRows) {
+      const key = r.recipient_name || 'Unknown';
+      const bucket = r.agency_bucket || 'Other';
+      const val = Number(r.total_amount) || 0;
+      let rec = map.get(key);
+      if (!rec) {
+        rec = { name: key, agency: bucket, ticker: null, total: 0, count: 0, awards: [], _maxAward: 0 };
+        map.set(key, rec);
+      }
+      rec.total += val;
+      rec.count += Number(r.award_count) || 0;
+      rec.awards.push({
+        value: val,
+        year: Number(r.fiscal_year),
+        agencyName: r.awarding_agency,
+        awardId: null,
+        date: null,
+      });
+      if (val >= rec._maxAward) {
+        rec._maxAward = val;
+        rec.agency = bucket; // primary agency = bucket of the largest rollup row
+      }
+    }
+    const recipients = [...map.values()].map((r) => ({
+      ...r,
+      avg: r.count ? r.total / r.count : 0,
+    }));
+
+    // Coverage window from the coverage table.
+    const counts = {};
+    let total = 0;
+    for (const c of covRows || []) {
+      const fy = Number(c.fiscal_year);
+      const n = Number(c.award_count) || 0;
+      counts[fy] = n;
+      total += n;
+    }
+    const fiscalYears = Object.keys(counts)
+      .map(Number)
+      .sort((a, b) => a - b);
+    const coverage = {
+      fiscalYears,
+      counts,
+      total,
+      minFy: fiscalYears[0] ?? null,
+      maxFy: fiscalYears[fiscalYears.length - 1] ?? null,
+    };
+
+    return { recipients, coverage, source: 'rollup' };
+  } catch {
+    return null;
+  }
+}
+
 /** Freshness / source line shown above the table for each data source. */
 export function contractFreshnessNote(source, syncedAt) {
+  if (source === 'rollup') {
+    return 'Federal contract awards via USAspending.gov (U.S. Treasury), aggregated from BigQuery into Ezana rollups.';
+  }
   if (source === 'hosted') {
     const when = syncedAt ? formatDisplayDate(syncedAt) : 'recently';
     return `Federal contract data via USAspending.gov (U.S. Treasury) — synced ${when}.`;
