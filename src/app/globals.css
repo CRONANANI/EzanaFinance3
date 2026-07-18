@@ -951,6 +951,15 @@ html:has(.landing-page) body:not(.light-mode) {
 .navbar .nav-container-centered.nav-container-echo {
   max-width: var(--app-shell-max);
 }
+/* The logo PNG has transparent whitespace on the left of the falcon mark, so
+   although the SVG/image box's left edge already lines up with the content
+   shell (and the "Ezana Echo" title's "E"), the *visible* mark sits inset a few
+   px to the right. Pull the image left by that inset so the falcon's leftmost
+   pixel lands on the title's left edge. Echo-scoped so other marketing navs
+   (e.g. the landing page) keep their logo placement. */
+.navbar .nav-container-echo .logo.nav-home-btn {
+  margin-left: -6px;
+}
 
 /* Logo stays on the left */
 .navbar .nav-container-centered .logo {

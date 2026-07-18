@@ -13,12 +13,11 @@
   padding-bottom: 8px;
   /* The gap above the "Ezana Echo" title is the dashboard shell's
      `padding-top: calc(navbar-height + 1.5rem)` (see (dashboard)/layout.css).
-     Pull the page up by 0.85rem so ~0.65rem of that extra remains (1.5rem →
-     0.65rem) — the hero still sits much closer to the nav (well under half the
-     original 1.5rem extra), but with enough headroom that the serif wordmark's
-     cap-height/ascenders clear the 64px bar. (-1.05rem overshot and clipped the
-     tops of tall glyphs; -0.85rem keeps it tight without the clip.) */
-  margin-top: -0.85rem;
+     Pull the page up by 0.95rem so ~0.55rem of that extra remains (1.5rem →
+     0.55rem) — the hero sits closer to the nav than before. The clip is fixed
+     at the glyph level (.eth-intro-title line-height 1.25 + 6px top pad), so
+     this tighter pull no longer shaves the serif cap-height. */
+  margin-top: -0.95rem;
 }
 .eth-page *,
 .eth-page *::before,
@@ -52,10 +51,12 @@
   letter-spacing: -0.015em;
   color: var(--text-primary);
   margin: 0;
-  /* 1.05 cropped the top of tall glyphs; 1.2 + a 2px safety pad gives the
-     serif cap-height/ascenders room so the wordmark never clips. */
-  line-height: 1.2;
-  padding-top: 2px;
+  /* Serif ascenders/cap-height need real headroom at this font-size, or the
+     tops shave when the page pull sits the wordmark close to the nav. 1.25
+     line-height + a 6px top pad clears the glyph tops fully, which lets the
+     .eth-page pull go tighter (-0.95rem) without clipping. */
+  line-height: 1.25;
+  padding-top: 6px;
 }
 .eth-intro-title span {
   color: var(--emerald);
