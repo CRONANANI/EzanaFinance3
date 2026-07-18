@@ -3,7 +3,6 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import {
-  Search,
   BookOpen,
   Activity,
   Wallet,
@@ -20,6 +19,7 @@ import {
   Scale,
 } from 'lucide-react';
 import { USER_CATEGORIES, USER_ARTICLES } from '@/lib/help-center-content';
+import HelpSearchAsk from '@/components/help-center/HelpSearchAsk';
 import '../help-center.css';
 
 const BASE = '/help-center/user';
@@ -113,19 +113,7 @@ export default function UserHelpCenterPage() {
           <p className="hc-subtitle mb-8 text-lg">
             Search our help center or browse categories below
           </p>
-          <div className="relative">
-            <Search className="hc-input-icon absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2" />
-            <input
-              type="search"
-              placeholder="Search for help..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="hc-input"
-            />
-            <kbd className="hc-kbd absolute right-4 top-1/2 hidden -translate-y-1/2 rounded px-2 py-1 text-xs md:inline">
-              ⌘K
-            </kbd>
-          </div>
+          <HelpSearchAsk audience="user" value={searchQuery} onChange={setSearchQuery} />
         </div>
       </section>
 
