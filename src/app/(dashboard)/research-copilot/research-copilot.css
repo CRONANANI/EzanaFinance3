@@ -1,0 +1,231 @@
+/* Research copilot — analyst-facing cross-corpus Q&A surface. Theme-token only
+   (light + dark inherit from theme-variables.css); no hardcoded hex. */
+
+.rc-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px 20px 80px;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+}
+
+.rc-head {
+  margin-bottom: 24px;
+}
+.rc-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 6px;
+}
+.rc-sub {
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  margin: 0;
+}
+
+/* Question box */
+.rc-form {
+  position: relative;
+  margin-bottom: 12px;
+}
+.rc-input {
+  width: 100%;
+  min-height: 60px;
+  resize: vertical;
+  border-radius: 14px;
+  border: 1px solid var(--border-input);
+  background: var(--surface-input);
+  color: var(--text-primary);
+  padding: 16px 120px 16px 16px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  outline: none;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease;
+}
+.rc-input:focus {
+  border-color: var(--emerald);
+  box-shadow: 0 0 0 3px var(--emerald-glow);
+}
+.rc-input::placeholder {
+  color: var(--text-faint);
+}
+.rc-ask {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 10px;
+  border: 1px solid var(--emerald-border);
+  background: var(--emerald);
+  color: #ffffff; /* on-emerald label — matches .hc-btn-primary convention */
+  font-weight: 600;
+  font-size: 0.86rem;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+.rc-ask:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.rc-hint {
+  color: var(--text-faint);
+  font-size: 0.78rem;
+  margin: 0 0 24px;
+}
+.rc-examples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 24px;
+}
+.rc-example {
+  border: 1px solid var(--border-primary);
+  background: var(--surface-card);
+  color: var(--text-secondary);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.rc-example:hover {
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
+/* Corpora chips */
+.rc-corpora {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.rc-chip {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--border-primary);
+  color: var(--text-muted);
+}
+.rc-chip--used {
+  border-color: var(--emerald-border);
+  background: var(--emerald-bg);
+  color: var(--emerald-text);
+}
+
+/* Answer card */
+.rc-answer {
+  border: 1px solid var(--border-primary);
+  background: var(--surface-card);
+  border-radius: 16px;
+  padding: 22px;
+  margin-bottom: 20px;
+}
+.rc-answer-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--emerald-text);
+  margin-bottom: 12px;
+}
+.rc-answer-body p {
+  margin: 0 0 12px;
+  font-size: 0.94rem;
+  line-height: 1.62;
+  color: var(--text-primary);
+}
+.rc-answer-body p:last-child {
+  margin-bottom: 0;
+}
+.rc-disclaimer {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-primary);
+  font-size: 0.76rem;
+  color: var(--text-faint);
+}
+.rc-advice-flag {
+  margin-top: 10px;
+  font-size: 0.78rem;
+  color: var(--negative, var(--text-secondary));
+}
+
+/* Sources grouped by corpus */
+.rc-sources-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-faint);
+  margin: 0 0 10px;
+}
+.rc-corpus-group {
+  margin-bottom: 16px;
+}
+.rc-corpus-name {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin: 0 0 6px;
+}
+.rc-source {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--border-primary);
+  background: var(--surface-card);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  text-decoration: none;
+  color: var(--text-primary);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.rc-source:hover {
+  border-color: var(--border-hover);
+  background: var(--surface-card-hover);
+}
+.rc-source-marker {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-faint);
+  flex-shrink: 0;
+}
+.rc-source-title {
+  font-size: 0.86rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rc-source-sim {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-faint);
+}
+
+.rc-empty,
+.rc-error,
+.rc-loading {
+  border: 1px solid var(--border-primary);
+  background: var(--surface-card);
+  border-radius: 16px;
+  padding: 20px 22px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+.rc-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
