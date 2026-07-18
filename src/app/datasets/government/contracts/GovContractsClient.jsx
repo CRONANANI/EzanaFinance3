@@ -389,7 +389,7 @@ export default function GovContractsClient({
             ) : heroView === 'treemap' ? (
               <Treemap recipients={filtered} onPick={setSelected} colorOf={colorOf} />
             ) : (
-              <ShareDonut recipients={filtered} colorOf={colorOf} />
+              <ShareDonut ranking={colorRanking} colorOf={colorOf} />
             )}
           </section>
 
@@ -650,16 +650,13 @@ function donutSegments(data, total) {
     return seg;
   });
 }
-function ShareDonut({ recipients, colorOf }) {
-  const byAgency = {};
-  for (const r of recipients) byAgency[r.vizAgency] = (byAgency[r.vizAgency] || 0) + r.total;
-  const data = Object.keys(byAgency)
-    .map((a) => ({ agency: a, value: byAgency[a] }))
-    .sort((x, y) => {
-      if (x.agency === OTHER_LABEL) return 1;
-      if (y.agency === OTHER_LABEL) return -1;
-      return y.value - x.value;
-    });
+// Share/pie is driven by the TRUE per-agency totals (summed across the current
+// fiscal-year selection), not loaded-recipient sums — so it matches
+// SUM(total_amount) GROUP BY awarding_agency. Top 10 by spend + a single Other.
+function ShareDonut({ ranking, colorOf }) {
+  const top = ranking.slice(0, MAX_SLOTS).map((a) => ({ agency: a.agency, value: a.total }));
+  const otherTotal = ranking.slice(MAX_SLOTS).reduce((s, a) => s + a.total, 0);
+  const data = otherTotal > 0 ? [...top, { agency: OTHER_LABEL, value: otherTotal }] : top;
   const sum = data.reduce((s, d) => s + d.value, 0);
   const segs = donutSegments(data, sum);
   return (
@@ -684,22 +681,20 @@ function ShareDonut({ recipients, colorOf }) {
           {fmtUSD(sum)}
         </text>
         <text x={90} y={102} className="gcx-donut-c2">
-          obligated (loaded)
+          obligated
         </text>
       </svg>
       <div className="gcx-donut-list">
-        {data
-          .sort((a, b) => b.value - a.value)
-          .map((d) => (
-            <div className="gcx-donut-row" key={d.agency}>
-              <span className="gcx-dot" style={{ background: colorOf(d.agency) }} />
-              <span className="gcx-donut-name">{d.agency}</span>
-              <span className="gcx-mono gcx-donut-val">{fmtUSD(d.value)}</span>
-              <span className="gcx-mono gcx-donut-pct">
-                {sum ? Math.round((d.value / sum) * 100) : 0}%
-              </span>
-            </div>
-          ))}
+        {data.map((d) => (
+          <div className="gcx-donut-row" key={d.agency}>
+            <span className="gcx-dot" style={{ background: colorOf(d.agency) }} />
+            <span className="gcx-donut-name">{d.agency}</span>
+            <span className="gcx-mono gcx-donut-val">{fmtUSD(d.value)}</span>
+            <span className="gcx-mono gcx-donut-pct">
+              {sum ? Math.round((d.value / sum) * 100) : 0}%
+            </span>
+          </div>
+        ))}
       </div>
     </div>
   );
