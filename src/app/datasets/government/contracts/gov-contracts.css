@@ -1005,3 +1005,168 @@
     display: none;
   }
 }
+
+/* ── Full-table server-paginated explorer ─────────────────────────── */
+.gcx-exp {
+  margin-top: 18px;
+}
+.gcx-exp-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.gcx-exp-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.gcx-exp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.72rem;
+  color: var(--text-faint);
+}
+.gcx-exp-grow {
+  flex: 1 1 200px;
+}
+.gcx-exp-select,
+.gcx-exp-search {
+  height: 38px;
+  border: 1px solid var(--border-input);
+  background: var(--surface-input);
+  border-radius: 10px;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+}
+.gcx-exp-select {
+  padding: 0 12px;
+}
+.gcx-exp-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  color: var(--text-faint);
+}
+.gcx-exp-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  outline: none;
+}
+.gcx-exp-select:focus,
+.gcx-exp-search:focus-within {
+  border-color: var(--emerald);
+}
+.gcx-exp-tablewrap {
+  overflow-x: auto;
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+}
+.gcx-exp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+}
+.gcx-exp-table th,
+.gcx-exp-table td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-primary);
+  white-space: nowrap;
+}
+.gcx-exp-table th {
+  color: var(--text-faint);
+  font-weight: 600;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.gcx-exp-table tbody tr:last-child td {
+  border-bottom: none;
+}
+.gcx-exp-table tbody tr:hover {
+  background: var(--surface-card-hover);
+}
+.gcx-exp-recipient {
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-primary);
+}
+.gcx-exp-num {
+  text-align: right;
+}
+.gcx-exp-sort {
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+.gcx-exp-sort:hover {
+  color: var(--text-primary);
+}
+.gcx-exp-state {
+  text-align: center;
+  color: var(--text-faint);
+  padding: 28px 12px;
+}
+.gcx-exp-spin {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 6px;
+  animation: gcx-exp-spin 0.8s linear infinite;
+}
+@keyframes gcx-exp-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.gcx-exp-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+.gcx-exp-pagebtns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.gcx-exp-pagebtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  width: 32px;
+  border: 1px solid var(--border-primary);
+  background: var(--surface-card);
+  border-radius: 8px;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.gcx-exp-pagebtn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.gcx-exp-pagebtn:not(:disabled):hover {
+  border-color: var(--border-hover);
+}
+@media (max-width: 640px) {
+  .gcx-exp-field {
+    flex: 1 1 100%;
+  }
+}

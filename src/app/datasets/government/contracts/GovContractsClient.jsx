@@ -23,6 +23,7 @@ import {
   Star,
 } from 'lucide-react';
 import CategoryBar from '@/components/datasets/CategoryBar';
+import ContractsExplorer from './ContractsExplorer';
 import './gov-contracts.css';
 
 /* ── Agency color buckets (design key; SVG fills use the CSS tokens) ── */
@@ -311,6 +312,10 @@ export default function GovContractsClient({ awards = [], isLive = false, note =
             </div>
             <ContractorList recipients={filtered.slice(0, 25)} onPick={setSelected} />
           </section>
+
+          {/* Full-table, server-paginated explorer (all 15 FYs, real filters) —
+              scales past the overview slice above via /api/datasets/contracts. */}
+          <ContractsExplorer coverage={coverage} />
         </main>
       </div>
 
