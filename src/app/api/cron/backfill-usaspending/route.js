@@ -3,7 +3,7 @@ import { getAdminClient } from '@/lib/supabase';
 import { fyWindow, isPlausibleAward, tickerForRecipient, parseIsoYmd } from '@/lib/usaspending';
 
 /**
- * Resumable historical backfill of federal contract awards, FY2012-FY2026, from
+ * Resumable historical backfill of federal contract awards, FY2008-FY2026, from
  * USAspending into public.usaspending_contract_awards. Separate from the
  * incremental cron (ingest-usaspending). CRON_SECRET bearer (or ?key=).
  *
@@ -31,7 +31,7 @@ const TABLE = 'usaspending_contract_awards';
 const PROGRESS = 'ingest_progress';
 const JOB = 'backfill-usaspending';
 
-const START_FY = 2012;
+const START_FY = 2008;
 const END_FY = 2026;
 const PAGE_LIMIT = 100; // API max page size
 const MAX_PAGE_INDEX = 100; // API hard cap: page*limit <= 10,000
@@ -194,7 +194,7 @@ export async function GET(request) {
   const syncedAt = new Date().toISOString();
   const nowYear = new Date().getUTCFullYear();
 
-  // Resume from checkpoint (or start at FY2012, month 0, page 1).
+  // Resume from checkpoint (or start at FY2008, month 0, page 1).
   const { data: ck } = await admin.from(PROGRESS).select('*').eq('job', JOB).maybeSingle();
   let fy = ck?.fiscal_year || START_FY;
   let month = ck?.sub_window || 0;

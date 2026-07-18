@@ -10,7 +10,7 @@ import { ChevronLeft, ChevronRight, Loader2, Search } from 'lucide-react';
  * so it scales past the old ~200-row cap and exposes all 15 fiscal years. No
  * client-side loading of the whole table.
  */
-const FALLBACK_FYS = Array.from({ length: 15 }, (_, i) => 2012 + i); // FY2012..FY2026
+const FALLBACK_FYS = Array.from({ length: 19 }, (_, i) => 2008 + i); // FY2008..FY2026
 const PAGE_SIZE = 25;
 const SORTS = [
   { key: 'amount', label: 'Award amount' },
