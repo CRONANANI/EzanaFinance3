@@ -191,14 +191,44 @@ export default function GovContractsClient({
       .sort((a, b) => b.total - a.total);
   }, [recipients, selectedAgencies, minValue, fiscalYear, topSet]);
 
-  const totalObligated = useMemo(() => recipients.reduce((s, r) => s + r.total, 0), [recipients]);
-  const totalAwards = useMemo(() => recipients.reduce((s, r) => s + r.count, 0), [recipients]);
+  // TRUE total across all agencies for the current FY selection (complete agency
+  // rollup) — NOT the truncated top-N recipient sum, which understated the total
+  // and pushed Defense's share past 100%.
+  const totalObligatedTrue = useMemo(
+    () => agencyTotals.reduce((s, a) => s + a.total, 0),
+    [agencyTotals],
+  );
+  const totalAwards = useMemo(() => agencyTotals.reduce((s, a) => s + a.count, 0), [agencyTotals]);
   const largestAgency = agencyTotals[0]
     ? {
         ag: agencyTotals[0].agency,
-        pct: totalObligated ? Math.round((agencyTotals[0].total / totalObligated) * 100) : 0,
+        // Same (complete) denominator as the numerator → ≤ 100 by construction;
+        // clamp as a belt-and-suspenders guard.
+        pct: totalObligatedTrue
+          ? Math.min(100, Math.round((agencyTotals[0].total / totalObligatedTrue) * 100))
+          : 0,
       }
     : null;
+
+  // The treemap can only carry legible labels for a handful of tiles, so it shows
+  // a top-N by obligated value, capped PER AGENCY so one agency (Defense) can't
+  // contribute hundreds of slivers. The long tail lives in the "Leading
+  // contractors" list below — nothing hidden; the caption states "Top N of M".
+  const treemapRecipients = useMemo(() => {
+    const TREEMAP_MAX = 40;
+    const PER_COL_MAX = 8;
+    const perCol = new Map();
+    const out = [];
+    for (const r of filtered) {
+      // filtered is already sorted by total desc
+      const n = perCol.get(r.vizAgency) || 0;
+      if (n >= PER_COL_MAX) continue;
+      perCol.set(r.vizAgency, n + 1);
+      out.push(r);
+      if (out.length >= TREEMAP_MAX) break;
+    }
+    return out;
+  }, [filtered]);
 
   const label =
     selectedAgencies.size === 0
@@ -345,10 +375,10 @@ export default function GovContractsClient({
           <div className="gcx-stats">
             <StatCard
               label="Total obligated"
-              value={fmtUSD(totalObligated)}
-              sub={isLive ? `${fmtInt(recipients.length)} recipients` : 'sample'}
+              value={fmtUSD(totalObligatedTrue)}
+              sub={isLive ? `${fmtInt(agencyTotals.length)} agencies` : 'sample'}
             />
-            <StatCard label="Awards (loaded)" value={fmtInt(totalAwards)} sub="in current slice" />
+            <StatCard label="Awards" value={fmtInt(totalAwards)} sub="in current selection" />
             <StatCard
               label="Largest awarding agency"
               value={largestAgency ? largestAgency.ag : '—'}
@@ -387,7 +417,13 @@ export default function GovContractsClient({
             {filtered.length === 0 ? (
               <div className="gcx-empty">No recipients match the current filters.</div>
             ) : heroView === 'treemap' ? (
-              <Treemap recipients={filtered} onPick={setSelected} colorOf={colorOf} />
+              <>
+                <Treemap recipients={treemapRecipients} onPick={setSelected} colorOf={colorOf} />
+                <p className="gcx-treemap-cap">
+                  Top {treemapRecipients.length.toLocaleString()} of{' '}
+                  {filtered.length.toLocaleString()} recipients by obligated value — full list below.
+                </p>
+              </>
             ) : (
               <ShareDonut ranking={colorRanking} colorOf={colorOf} />
             )}
@@ -513,16 +549,16 @@ function AgencyLegend({ ranking, selected, onPick, colorOf }) {
 
 /* ────────────────────────── Treemap ────────────────────────── */
 function Treemap({ recipients, onPick, colorOf }) {
-  // Wider viewBox keeps the aspect ratio balanced (not too tall) now that the
-  // page/main column is wider (1440px max). viewBox scales uniformly, so tiles
-  // don't distort — this just tunes the width:height proportion.
+  // recipients is a per-agency-capped top-N (from the parent), so every tile can
+  // carry a legible label. Taller viewBox gives each tile real height.
   const W = 1100;
-  const H = 440;
+  const H = 520;
   const GAP = 3;
+  const MIN_TILE_H = 22; // never render a sliver
   const maxValue = Math.max(...recipients.map((r) => r.total), 1);
 
   // Group by vizAgency (top-10 raw name, or "Other"); order columns by spend,
-  // Other always last.
+  // Other always last. Drop any empty column.
   const byAgency = {};
   for (const r of recipients) (byAgency[r.vizAgency] ||= []).push(r);
   const columns = Object.keys(byAgency)
@@ -531,36 +567,50 @@ function Treemap({ recipients, onPick, colorOf }) {
       items: byAgency[a].sort((x, y) => y.total - x.total),
       total: byAgency[a].reduce((s, x) => s + x.total, 0),
     }))
+    .filter((c) => c.items.length > 0)
     .sort((x, y) => {
       if (x.agency === OTHER_LABEL) return 1;
       if (y.agency === OTHER_LABEL) return -1;
       return y.total - x.total;
     });
-  const grandTotal = columns.reduce((s, c) => s + c.total, 0) || 1;
 
-  // Column widths: give every present agency a readable MINIMUM width so a
-  // dominant agency (DoD) can't crush the rest into slivers, then distribute the
-  // remaining width proportionally to each agency's total. Falls back to purely
-  // proportional if the minimums wouldn't fit.
+  // Column widths: a readable MINIMUM for every column, proportional remainder by
+  // spend, then CAP any single column at 35% of W and redistribute the excess so
+  // Defense stays largest but can't crush the rest.
   const totalGaps = GAP * Math.max(0, columns.length - 1);
   const avail = W - totalGaps;
-  const MIN_COL = 100;
+  const grandTotal = columns.reduce((s, c) => s + c.total, 0) || 1;
+  const MIN_COL = 130;
+  const MAX_COL = 0.35 * W;
   const useMin = MIN_COL * columns.length <= avail;
   const remainder = useMin ? avail - MIN_COL * columns.length : avail;
+  let widths = columns.map((c) =>
+    useMin
+      ? MIN_COL + (c.total / grandTotal) * remainder
+      : Math.max(24, (c.total / grandTotal) * avail),
+  );
+  const capped = widths.map((w) => Math.min(w, MAX_COL));
+  const excess = widths.reduce((s, w) => s + w, 0) - capped.reduce((s, w) => s + w, 0);
+  if (excess > 0) {
+    const room = capped.map((w) => Math.max(0, MAX_COL - w));
+    const roomSum = room.reduce((s, r) => s + r, 0) || 1;
+    widths = capped.map((w, i) => w + excess * (room[i] / roomSum));
+  } else {
+    widths = capped;
+  }
 
   let x = 0;
   const tiles = [];
-  columns.forEach((col) => {
-    const colW = useMin
-      ? MIN_COL + (col.total / grandTotal) * remainder
-      : Math.max(24, (col.total / grandTotal) * avail);
-    // Recipient tiles fill the column height proportionally, with a readable
-    // minimum so a tall stack of tiny awards still shows a hover target.
+  columns.forEach((col, ci) => {
+    const colW = widths[ci];
+    // Tile heights are proportional WITHIN the column's shown items, with a hard
+    // readable minimum. Capped item counts keep the minimums from overflowing.
+    const itemsTotal = col.items.reduce((s, r) => s + r.total, 0) || 1;
     const colGaps = GAP * Math.max(0, col.items.length - 1);
     const colInner = H - colGaps;
     let y = 0;
     col.items.forEach((r) => {
-      const h = Math.max(3, (r.total / col.total) * colInner);
+      const h = Math.max(MIN_TILE_H, (r.total / itemsTotal) * colInner);
       tiles.push({ r, x, y, w: colW, h, agency: col.agency });
       y += h + GAP;
     });
@@ -576,9 +626,9 @@ function Treemap({ recipients, onPick, colorOf }) {
     >
       {tiles.map((t, i) => {
         const opacity = 0.14 + 0.5 * (t.r.total / maxValue);
-        const big = t.w > 120 && t.h > 54;
-        const med = !big && t.w > 90 && t.h > 30;
-        const small = !big && !med && t.h > 16;
+        const big = t.w > 110 && t.h > 44;
+        const med = !big && t.w > 80 && t.h > 26;
+        const small = !big && !med && t.h > 14;
         return (
           <g
             key={`${t.r.name}-${i}`}

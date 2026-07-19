@@ -1231,3 +1231,10 @@
   cursor: default;
   opacity: 0.85;
 }
+
+/* Treemap caption: states the shown top-N vs the full filtered count. */
+.gcx-treemap-cap {
+  margin: 8px 2px 0;
+  font-size: 0.72rem;
+  color: var(--text-faint);
+}
