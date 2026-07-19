@@ -221,7 +221,7 @@
   align-items: flex-start;
 }
 .gcx-rail {
-  width: 148px;
+  width: 240px; /* was 148px — 148 truncated nearly every agency name */
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -373,7 +373,7 @@
 /* ── Agency composition rows ── */
 .gcx-arow {
   display: flex;
-  align-items: center;
+  align-items: flex-start; /* names can now wrap to multiple lines */
   gap: 9px;
   width: 100%;
   padding: 8px 6px;
@@ -410,9 +410,10 @@
   font-size: 12px;
   font-weight: 600;
   color: var(--text-secondary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.3;
+  /* Ellipsis removed: the 240px rail is wide enough to wrap names in full. */
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 .gcx-arow-count {
   font-size: 10px;
@@ -422,6 +423,9 @@
   font-size: 12px;
   font-weight: 700;
   color: var(--text-primary);
+  flex-shrink: 0;
+  white-space: nowrap;
+  padding-top: 1px;
 }
 .gcx-arow.is-active .gcx-arow-share {
   color: var(--emerald);
@@ -1139,6 +1143,14 @@
 }
 
 /* ── responsive ── */
+/* Mid-size screens: trim the rail a touch so it doesn't crowd the treemap. At
+   200px the two longest names wrap to three lines — still nothing cut off. */
+@media (max-width: 1200px) and (min-width: 901px) {
+  .gcx-rail {
+    width: 200px;
+  }
+}
+
 @media (max-width: 900px) {
   .gcx-stats {
     grid-template-columns: 1fr;
