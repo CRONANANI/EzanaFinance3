@@ -250,40 +250,19 @@ export default function GovContractsClient({
     [totalObligatedTrue],
   );
 
-  // YoY deltas render ONLY when the prior fiscal year is genuinely present in the
-  // rollup. With a single year loaded there is nothing to compare against, so the
-  // delta is omitted rather than fabricated. Year-agnostic: as FY2009+ load, the
-  // prior-year agency totals become computable from the same agencyRollup source.
-  const priorFyTotals = useMemo(() => {
-    if (fiscalYear === 'all') return null;
-    const prior = Number(fiscalYear) - 1;
-    if (!years.includes(prior)) return null;
+  // Award count per fiscal year, oldest → newest. Feeds the card-2 sparkline,
+  // which renders only when 2+ years exist (one point is not a trend).
+  const countSeries = useMemo(() => {
     const rows = rollup?.agencyRollup;
-    if (!rows || !rows.length) return null;
+    if (!rows?.length) return [];
     const m = new Map();
     for (const a of rows) {
-      if (a.fiscalYear !== prior) continue;
-      const cur = m.get(a.agency) || { agency: a.agency, total: 0, count: 0 };
-      cur.total += a.total;
-      cur.count += a.count;
-      m.set(a.agency, cur);
+      m.set(a.fiscalYear, (m.get(a.fiscalYear) || 0) + a.count);
     }
-    return m.size ? [...m.values()] : null;
-  }, [fiscalYear, years, rollup]);
-
-  const obligatedDelta = useMemo(() => {
-    if (!priorFyTotals) return null;
-    const prev = priorFyTotals.reduce((s, a) => s + a.total, 0);
-    const diff = totalObligatedTrue - prev;
-    return diff > 0 ? `+${fmtUSD(diff)}` : null; // only positive deltas use the up arrow
-  }, [priorFyTotals, totalObligatedTrue]);
-
-  const awardsDelta = useMemo(() => {
-    if (!priorFyTotals) return null;
-    const prev = priorFyTotals.reduce((s, a) => s + a.count, 0);
-    const diff = totalAwards - prev;
-    return diff > 0 ? `+${fmtInt(diff)}` : null;
-  }, [priorFyTotals, totalAwards]);
+    return [...m.entries()]
+      .sort((x, y) => x[0] - y[0])
+      .map(([year, count]) => ({ year, count }));
+  }, [rollup]);
 
   const label =
     selectedAgencies.size === 0
@@ -425,34 +404,18 @@ export default function GovContractsClient({
             <MetricCard
               label="Total obligated"
               value={fmtUSD(totalObligatedTrue)}
-              delta={obligatedDelta}
-              meta={isLive ? `${fmtInt(agencyTotals.length)} agencies` : 'sample'}
               accent="var(--emerald)"
+              visual={<ShareStrip ranking={colorRanking} colorOf={colorOf} total={totalObligatedTrue} />}
+              meta={isLive ? `${fmtInt(agencyTotals.length)} agencies` : 'sample'}
             />
             <MetricCard
               label="Awards"
               value={fmtInt(totalAwards)}
-              delta={awardsDelta}
-              meta="in current selection"
               accent="var(--info)"
+              visual={<CountSpark series={countSeries} />}
+              meta="in current selection"
             />
-            {largestAgency ? (
-              <GaugeCard
-                label="Largest agency"
-                name={largestAgency.ag}
-                meta={`${fmtUSD(agencyTotals[0].total)} of value`}
-                pct={largestAgency.pct}
-                accent={colorOf(largestAgency.ag)}
-              />
-            ) : (
-              <MetricCard
-                label="Largest agency"
-                value="—"
-                meta=""
-                accent="var(--border-primary)"
-                mono={false}
-              />
-            )}
+            <DispersionCard agencyTotals={agencyTotals} colorOf={colorOf} />
           </div>
 
           <AgencyLegend
@@ -559,6 +522,7 @@ function AwardTicker({ awards }) {
  * keystroke. Purely an entry point — it runs nothing on its own.
  */
 function EzanaQLTeaser({ onStart, hidden }) {
+  const [teaserFocused, setTeaserFocused] = useState(false);
   if (hidden) return null;
   const start = (value) => {
     if (!value) return;
@@ -574,9 +538,16 @@ function EzanaQLTeaser({ onStart, hidden }) {
         <span className="gcx-ql-ai-badge">
           <Sparkles size={12} /> Ezana AI
         </span>
+        {!teaserFocused && (
+          <span className="gcx-ql-ai-caret" aria-hidden="true">
+            |
+          </span>
+        )}
         <input
           className="gcx-ql-ai-input"
           value=""
+          onFocus={() => setTeaserFocused(true)}
+          onBlur={() => setTeaserFocused(false)}
           onChange={(e) => start(e.target.value)}
           onPaste={(e) => {
             e.preventDefault();
@@ -649,70 +620,114 @@ function AgencyRow({ agency, count, share, color, active, onClick }) {
   );
 }
 
-function MetricCard({ label, value, delta, meta, accent, mono = true }) {
+/**
+ * Centered metric card. `visual` is an optional node rendered between the value
+ * and the meta line.
+ */
+function MetricCard({ label, value, meta, visual, accent }) {
   return (
     <div className="gcx-metric" style={accent ? { '--gcx-accent': accent } : undefined}>
       <div className="gcx-metric-label">{label}</div>
-      <div className="gcx-metric-row">
-        <span className={`gcx-metric-value ${mono ? 'gcx-mono' : ''}`}>{value}</span>
-        {delta && (
-          <span className="gcx-metric-delta gcx-mono">
-            <i className="bi bi-arrow-up" aria-hidden="true" />
-            {delta}
-          </span>
-        )}
-      </div>
+      <div className="gcx-metric-value gcx-mono">{value}</div>
+      {visual}
       {meta && <div className="gcx-metric-meta">{meta}</div>}
     </div>
   );
 }
 
-function GaugeCard({ label, name, meta, pct, accent }) {
-  const R = 13; // 32x32 gauge — keeps card 3 at the reduced height
-  const C = 2 * Math.PI * R;
-  const offset = C * (1 - Math.min(100, Math.max(0, pct)) / 100);
+/**
+ * Composition strip — the top agencies' share of obligated value as a single
+ * segmented bar. Reuses the positional slot colors so it reads as a compressed
+ * echo of the treemap, not a new encoding.
+ */
+function ShareStrip({ ranking, colorOf, total }) {
+  if (!total || !ranking.length) return null;
+  const top = ranking.slice(0, 6);
+  const rest = ranking.slice(6).reduce((s, a) => s + a.total, 0);
+  const segs = [
+    ...top.map((a) => ({ key: a.agency, w: (a.total / total) * 100, c: colorOf(a.agency) })),
+    ...(rest > 0 ? [{ key: '__rest', w: (rest / total) * 100, c: 'var(--text-faint)' }] : []),
+  ];
   return (
-    <div
-      className="gcx-metric gcx-metric-gauge"
-      style={accent ? { '--gcx-accent': accent } : undefined}
-    >
-      <svg
-        width="32"
-        height="32"
-        viewBox="0 0 32 32"
-        className="gcx-gauge"
-        role="img"
-        aria-label={`${pct}% of value`}
-      >
-        <circle cx="16" cy="16" r={R} className="gcx-gauge-track" fill="none" strokeWidth="4" />
-        <circle
-          cx="16"
-          cy="16"
-          r={R}
-          fill="none"
-          strokeWidth="4"
-          strokeLinecap="round"
-          className="gcx-gauge-arc"
-          strokeDasharray={C}
-          strokeDashoffset={offset}
-          transform="rotate(-90 16 16)"
-        />
-        <text
-          x="16"
-          y="16"
-          className="gcx-gauge-text gcx-mono"
-          textAnchor="middle"
-          dominantBaseline="central"
-        >
-          {pct}%
-        </text>
-      </svg>
-      <div className="gcx-metric-gauge-body">
-        <div className="gcx-metric-label">{label}</div>
-        <div className="gcx-metric-name">{name}</div>
-        {meta && <div className="gcx-metric-meta gcx-mono">{meta}</div>}
-      </div>
+    <div className="gcx-mstrip" aria-hidden="true">
+      {segs.map((s) => (
+        <span key={s.key} className="gcx-mstrip-seg" style={{ width: `${s.w}%`, background: s.c }} />
+      ))}
     </div>
+  );
+}
+
+/**
+ * Sparkline of award COUNT per fiscal year. Honest by construction: renders
+ * nothing until at least two fiscal years are loaded, since one point is not a
+ * trend.
+ */
+function CountSpark({ series }) {
+  if (!series || series.length < 2) return null;
+  const W = 96;
+  const H = 22;
+  const max = Math.max(...series.map((p) => p.count), 1);
+  const min = Math.min(...series.map((p) => p.count), 0);
+  const span = max - min || 1;
+  const pts = series.map((p, i) => {
+    const x = (i / (series.length - 1)) * W;
+    const y = H - ((p.count - min) / span) * H;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  });
+  return (
+    <svg
+      className="gcx-mspark"
+      viewBox={`0 0 ${W} ${H}`}
+      width={W}
+      height={H}
+      role="img"
+      aria-label="Award count by fiscal year"
+    >
+      <polyline
+        points={pts.join(' ')}
+        fill="none"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="gcx-mspark-line"
+      />
+    </svg>
+  );
+}
+
+/**
+ * Award CONCENTRATION — the share of awards going to the agency with the most
+ * awards, contrasted with its average award size. Deliberately NOT the "% of
+ * obligated value" gauge (that number already appears in the legend bar, the
+ * agency rail, and the treemap). Award-count concentration is a different, more
+ * revealing cut — an agency can hold a small share of dollars while issuing the
+ * overwhelming majority of individual awards.
+ */
+function DispersionCard({ agencyTotals, colorOf }) {
+  const stat = useMemo(() => {
+    if (!agencyTotals.length) return null;
+    const totalAwards = agencyTotals.reduce((s, a) => s + a.count, 0);
+    if (!totalAwards) return null;
+    const byCount = [...agencyTotals].sort((a, b) => b.count - a.count);
+    const leader = byCount[0];
+    return {
+      agency: leader.agency,
+      pct: Math.round((leader.count / totalAwards) * 100),
+      avg: leader.count ? leader.total / leader.count : 0,
+    };
+  }, [agencyTotals]);
+
+  if (!stat) {
+    return <MetricCard label="Award concentration" value="—" meta="" />;
+  }
+  return (
+    <MetricCard
+      label="Most awards issued"
+      value={`${stat.pct}%`}
+      accent={colorOf(stat.agency)}
+      visual={<div className="gcx-metric-name">{stat.agency}</div>}
+      meta={`${fmtUSD(stat.avg)} average award`}
+    />
   );
 }
 
@@ -1253,6 +1268,7 @@ LIMIT 10;`;
 
 function EzanaQLBuilder({ activeFilters, seedPrompt = '', onClose }) {
   const [prompt, setPrompt] = useState(seedPrompt);
+  const [promptFocused, setPromptFocused] = useState(false);
   const promptRef = useRef(null);
   const [code, setCode] = useState(() => seedFromFilters(activeFilters) || SEED_QUERY);
   const [result, setResult] = useState(null);
@@ -1362,11 +1378,18 @@ function EzanaQLBuilder({ activeFilters, seedPrompt = '', onClose }) {
         <span className="gcx-ql-ai-badge">
           <Sparkles size={12} /> Ezana AI
         </span>
+        {!prompt && !promptFocused && (
+          <span className="gcx-ql-ai-caret" aria-hidden="true">
+            |
+          </span>
+        )}
         <input
           ref={promptRef}
           className="gcx-ql-ai-input"
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
+          onFocus={() => setPromptFocused(true)}
+          onBlur={() => setPromptFocused(false)}
           placeholder="Describe the report in plain English — e.g. “Top 10 defense contractors this fiscal year, with YoY change” — and we’ll write the EzanaQL"
         />
         <button

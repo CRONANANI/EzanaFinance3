@@ -436,91 +436,82 @@
   line-height: 1.45;
 }
 
-/* ── Metric cards (compact — ~half height) ── */
+/* ── Metric cards (centered, with a visual) ── */
 .gcx-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  gap: 14px;
 }
 .gcx-metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* centered per design direction */
+  justify-content: center;
+  gap: 4px;
+  text-align: center;
+  padding: 12px 14px;
   border: 1px solid var(--border-primary);
   border-top: 3px solid var(--gcx-accent, var(--emerald));
-  border-radius: var(--radius-lg);
-  padding: 8px 14px;
+  border-radius: var(--radius-lg, 12px);
   background: transparent;
   box-shadow: var(--shadow-sm);
+  min-height: 96px;
 }
 .gcx-metric-label {
-  font-family: var(--font-mono);
-  font-size: 9px;
+  font-family: var(--font-mono, monospace);
+  font-size: 9.5px;
   font-weight: 500;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-muted);
 }
-.gcx-metric-row {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
-  margin-top: 2px;
-}
 .gcx-metric-value {
-  font-size: 17px;
-  line-height: 1.1;
+  font-size: 22px;
   font-weight: 700;
   letter-spacing: -0.02em;
+  line-height: 1.1;
   color: var(--text-primary);
-  min-width: 0;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-.gcx-metric-delta {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--emerald);
-  flex-shrink: 0;
-}
-.gcx-metric-meta {
-  font-size: 10px;
-  color: var(--text-faint);
-  margin-top: 0;
-}
-
-.gcx-metric-gauge {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.gcx-metric-gauge-body {
-  min-width: 0;
-}
-.gcx-gauge {
-  flex-shrink: 0;
-}
-.gcx-gauge-track {
-  stroke: var(--border-primary);
-}
-.gcx-gauge-arc {
-  stroke: var(--gcx-accent, var(--emerald));
-}
-.gcx-gauge-text {
-  font-size: 9px;
-  font-weight: 700;
-  fill: var(--text-primary);
 }
 .gcx-metric-name {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
-  line-height: 1.15;
-  color: var(--emerald);
+  line-height: 1.2;
+  color: var(--gcx-accent, var(--emerald));
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.gcx-metric-meta {
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  color: var(--text-faint);
+}
+
+/* Composition strip (card 1) */
+.gcx-mstrip {
+  display: flex;
+  width: 100%;
+  max-width: 150px;
+  height: 6px;
+  border-radius: 9999px;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  margin: 2px 0;
+}
+.gcx-mstrip-seg {
+  height: 100%;
+  min-width: 1px;
+}
+
+/* Sparkline (card 2) */
+.gcx-mspark {
+  display: block;
+  margin: 2px 0;
+}
+.gcx-mspark-line {
+  stroke: var(--gcx-accent, var(--emerald));
 }
 
 /* ── Legend composition bar ── */
@@ -1036,10 +1027,10 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  background: rgba(16, 185, 129, 0.045);
-  border: 1px solid var(--emerald-border);
-  border-radius: var(--radius-md, 8px);
-  padding: 8px 10px;
+  background: transparent; /* was rgba(16,185,129,0.045) — pill chrome removed */
+  border: none; /* was 1px solid var(--emerald-border) */
+  border-radius: 0;
+  padding: 8px 0; /* side padding removed with the frame */
   margin-bottom: 12px;
 }
 .gcx-ql-ai-badge {
@@ -1059,8 +1050,27 @@
   font-size: 12.5px;
   color: var(--text-primary);
 }
+/* Mirrors .gcx-reportbtn: no fill, no border, emerald text on a 2px emerald
+   underline. Overrides the .gcx-btn-primary fill it also carries. */
 .gcx-ql-gen {
   white-space: nowrap;
+  background: transparent;
+  color: var(--emerald);
+  border: none;
+  border-bottom: 2px solid var(--emerald);
+  border-radius: 6px 6px 0 0;
+  box-shadow: none;
+  padding: 6px 10px;
+  font-weight: 600;
+  transition: background 0.15s ease;
+}
+.gcx-ql-gen:hover:not(:disabled) {
+  background: var(--emerald-bg);
+  color: var(--emerald);
+}
+.gcx-ql-gen:disabled {
+  opacity: 0.55;
+  cursor: default;
 }
 .gcx-ql-editor {
   display: flex;
@@ -1498,4 +1508,33 @@
 }
 .gcx-qlteaser-ai {
   margin-bottom: 0;
+}
+
+/* Blinking affordance caret — signals the field is typable. Sits inline before
+   the placeholder text and hides on focus or once the user has typed. */
+.gcx-ql-ai-caret {
+  flex-shrink: 0;
+  font-family: var(--font-mono, monospace);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--emerald);
+  animation: gcx-caret-blink 1.1s step-end infinite;
+  pointer-events: none;
+  user-select: none;
+  margin-right: -4px;
+}
+@keyframes gcx-caret-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gcx-ql-ai-caret {
+    animation: none;
+    opacity: 1;
+  }
 }
