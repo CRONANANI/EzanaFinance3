@@ -230,6 +230,54 @@ export default function GovContractsClient({
     return out;
   }, [filtered]);
 
+  // Agency share of the complete (true) obligated total — same denominator as
+  // the largest-agency %, so shares never sum past 100. Sub-0.1% reads "<0.1%".
+  const shareOf = useCallback(
+    (total) => {
+      if (!totalObligatedTrue) return '—';
+      const pct = (total / totalObligatedTrue) * 100;
+      if (pct >= 10) return `${Math.round(pct)}%`;
+      if (pct >= 0.1) return `${pct.toFixed(1)}%`;
+      return '<0.1%';
+    },
+    [totalObligatedTrue],
+  );
+
+  // YoY deltas render ONLY when the prior fiscal year is genuinely present in the
+  // rollup. With a single year loaded there is nothing to compare against, so the
+  // delta is omitted rather than fabricated. Year-agnostic: as FY2009+ load, the
+  // prior-year agency totals become computable from the same agencyRollup source.
+  const priorFyTotals = useMemo(() => {
+    if (fiscalYear === 'all') return null;
+    const prior = Number(fiscalYear) - 1;
+    if (!years.includes(prior)) return null;
+    const rows = rollup?.agencyRollup;
+    if (!rows || !rows.length) return null;
+    const m = new Map();
+    for (const a of rows) {
+      if (a.fiscalYear !== prior) continue;
+      const cur = m.get(a.agency) || { agency: a.agency, total: 0, count: 0 };
+      cur.total += a.total;
+      cur.count += a.count;
+      m.set(a.agency, cur);
+    }
+    return m.size ? [...m.values()] : null;
+  }, [fiscalYear, years, rollup]);
+
+  const obligatedDelta = useMemo(() => {
+    if (!priorFyTotals) return null;
+    const prev = priorFyTotals.reduce((s, a) => s + a.total, 0);
+    const diff = totalObligatedTrue - prev;
+    return diff > 0 ? `+${fmtUSD(diff)}` : null; // only positive deltas use the up arrow
+  }, [priorFyTotals, totalObligatedTrue]);
+
+  const awardsDelta = useMemo(() => {
+    if (!priorFyTotals) return null;
+    const prev = priorFyTotals.reduce((s, a) => s + a.count, 0);
+    const diff = totalAwards - prev;
+    return diff > 0 ? `+${fmtInt(diff)}` : null;
+  }, [priorFyTotals, totalAwards]);
+
   const label =
     selectedAgencies.size === 0
       ? 'All agencies'
@@ -289,77 +337,67 @@ export default function GovContractsClient({
           <button type="button" className="gcx-reportbtn" onClick={() => setQueryOpen((o) => !o)}>
             {queryOpen ? 'Close builder' : 'Generate report'}
           </button>
-          <FilterGroup title="Awarding agency">
+          <FilterGroup title="Fiscal year">
+            <FiscalYearSelect value={fiscalYear} years={years} onChange={setFiscalYear} />
+          </FilterGroup>
+
+          <FilterGroup
+            title="Min award value"
+            meta={minValue >= 130 ? '≥ $130B+' : `≥ $${minValue}B`}
+          >
+            <input
+              type="range"
+              min={0}
+              max={130}
+              step={1}
+              value={minValue}
+              onChange={(e) => setMinValue(Number(e.target.value))}
+              className="gcx-slider"
+              aria-label="Minimum total award value in billions"
+            />
+            <div className="gcx-slider-ends gcx-mono">
+              <span>$0B</span>
+              <span>$130B+</span>
+            </div>
+          </FilterGroup>
+
+          <FilterGroup title="Awarding agency" meta={agencyTotals.length}>
             <div className="gcx-agency-search">
               <i className="bi bi-search" aria-hidden="true" />
               <input
                 type="search"
                 value={agencySearch}
                 onChange={(e) => setAgencySearch(e.target.value)}
-                placeholder={`Search ${agencyTotals.length} agencies…`}
+                placeholder="Filter agencies"
                 className="gcx-agency-search-input"
                 aria-label="Search awarding agencies"
               />
             </div>
-            <div className="gcx-agency-head">
-              <span className="gcx-agency-count gcx-mono">
-                {selectedAgencies.size ? `${selectedAgencies.size} selected` : `${agencyTotals.length} agencies`}
-              </span>
-              {selectedAgencies.size > 0 && (
+            {selectedAgencies.size > 0 && (
+              <div className="gcx-agency-head">
+                <span className="gcx-agency-count gcx-mono">{selectedAgencies.size} selected</span>
                 <button type="button" className="gcx-agency-clear" onClick={clearAgencies}>
                   Clear
                 </button>
-              )}
-            </div>
+              </div>
+            )}
             <div className="gcx-agency-list">
               {visibleAgencyChips.length === 0 ? (
                 <div className="gcx-rail-note">No agency matches “{agencySearch}”.</div>
               ) : (
                 visibleAgencyChips.map((a) => (
-                  <RailChip
+                  <AgencyRow
                     key={a.agency}
+                    agency={a.agency}
+                    count={a.count}
+                    share={shareOf(a.total)}
+                    color={topSet.has(a.agency) ? colorOf(a.agency) : OTHER_COLOR}
                     active={selectedAgencies.has(a.agency)}
                     onClick={() => toggleAgency(a.agency)}
-                    label={a.agency}
-                    // Slot color when this agency is in the top 10 of the current
-                    // view; a neutral dot otherwise, so rail and chart agree.
-                    color={topSet.has(a.agency) ? colorOf(a.agency) : OTHER_COLOR}
-                    count={a.count}
                   />
                 ))
               )}
             </div>
-          </FilterGroup>
-
-          <FilterGroup title="Min award value">
-            <input
-              type="range"
-              min={0}
-              max={130}
-              value={minValue}
-              onChange={(e) => setMinValue(Number(e.target.value))}
-              className="gcx-slider"
-              aria-label="Minimum total award value in billions"
-            />
-            <div className="gcx-slider-val">
-              ≥ <span className="gcx-mono">${minValue}B</span>
-            </div>
-          </FilterGroup>
-
-          <FilterGroup title="Fiscal year">
-            <RailChip
-              active={fiscalYear === 'all'}
-              onClick={() => setFiscalYear('all')}
-              label="All years"
-            />
-            {years.map((y) => (
-              <RailChip
-                key={y}
-                active={fiscalYear === String(y)}
-                onClick={() => setFiscalYear(String(y))}
-                label={`FY${y}`}
-              />
-            ))}
           </FilterGroup>
 
           <FilterGroup title="Contract type">
@@ -373,18 +411,37 @@ export default function GovContractsClient({
         {/* main column */}
         <main className="gcx-main">
           <div className="gcx-stats">
-            <StatCard
+            <MetricCard
               label="Total obligated"
               value={fmtUSD(totalObligatedTrue)}
-              sub={isLive ? `${fmtInt(agencyTotals.length)} agencies` : 'sample'}
+              delta={obligatedDelta}
+              meta={isLive ? `${fmtInt(agencyTotals.length)} agencies` : 'sample'}
+              accent="var(--emerald)"
             />
-            <StatCard label="Awards" value={fmtInt(totalAwards)} sub="in current selection" />
-            <StatCard
-              label="Largest awarding agency"
-              value={largestAgency ? largestAgency.ag : '—'}
-              sub={largestAgency ? `${largestAgency.pct}% of value` : ''}
-              color={largestAgency ? colorOf(largestAgency.ag) : undefined}
+            <MetricCard
+              label="Awards"
+              value={fmtInt(totalAwards)}
+              delta={awardsDelta}
+              meta="in current selection"
+              accent="var(--info)"
             />
+            {largestAgency ? (
+              <GaugeCard
+                label="Largest agency"
+                name={largestAgency.ag}
+                meta={`${fmtUSD(agencyTotals[0].total)} of value`}
+                pct={largestAgency.pct}
+                accent={colorOf(largestAgency.ag)}
+              />
+            ) : (
+              <MetricCard
+                label="Largest agency"
+                value="—"
+                meta=""
+                accent="var(--border-primary)"
+                mono={false}
+              />
+            )}
           </div>
 
           <AgencyLegend
@@ -485,64 +542,189 @@ function AwardTicker({ awards }) {
 }
 
 /* ────────────────────────── Rail bits ────────────────────────── */
-function FilterGroup({ title, children }) {
+function FilterGroup({ title, meta, children }) {
   return (
     <div className="gcx-fg">
-      <div className="gcx-fg-title">{title}</div>
+      <div className="gcx-fg-head">
+        <div className="gcx-fg-title">{title}</div>
+        {meta != null && <span className="gcx-fg-meta gcx-mono">{meta}</span>}
+      </div>
       {children}
     </div>
   );
 }
-function RailChip({ active, onClick, label, count, color }) {
+// Fiscal year as a native select (years derived from coverage — never hardcoded).
+function FiscalYearSelect({ value, years, onChange }) {
   return (
-    <button type="button" className={`gcx-chip ${active ? 'is-active' : ''}`} onClick={onClick}>
-      <span className="gcx-chip-label">
-        {color && <span className="gcx-dot" style={{ background: color }} />}
-        {label}
-      </span>
-      {count != null && <span className="gcx-chip-count gcx-mono">{count}</span>}
-    </button>
-  );
-}
-function StatCard({ label, value, sub, color }) {
-  return (
-    <div className="gcx-card gcx-stat">
-      <div className="gcx-stat-label">{label}</div>
-      <div className="gcx-stat-value gcx-mono" style={color ? { color } : undefined}>
-        {value}
-      </div>
-      {sub && <div className="gcx-stat-sub gcx-mono">{sub}</div>}
+    <div className="gcx-select-wrap">
+      <select
+        className="gcx-select"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        aria-label="Fiscal year"
+      >
+        <option value="all">All years</option>
+        {years.map((y) => (
+          <option key={y} value={String(y)}>
+            FY{y}
+          </option>
+        ))}
+      </select>
+      <i className="bi bi-chevron-down gcx-select-caret" aria-hidden="true" />
     </div>
   );
 }
 
-// Legend shows only the <=10 visible series (spend rank) + "Other" when the
-// tail is non-empty — never all 30-100 agencies.
+// Dense agency "composition" row: color rail, name, award count, share %.
+function AgencyRow({ agency, count, share, color, active, onClick }) {
+  return (
+    <button
+      type="button"
+      className={`gcx-arow ${active ? 'is-active' : ''}`}
+      onClick={onClick}
+      aria-pressed={active}
+    >
+      <span className="gcx-arow-rail" style={{ background: color }} aria-hidden="true" />
+      <span className="gcx-arow-mid">
+        <span className="gcx-arow-name">{agency}</span>
+        <span className="gcx-arow-count gcx-mono">{count.toLocaleString()} awards</span>
+      </span>
+      <span className="gcx-arow-share gcx-mono">{share}</span>
+    </button>
+  );
+}
+
+function MetricCard({ label, value, delta, meta, accent, mono = true }) {
+  return (
+    <div className="gcx-metric" style={accent ? { '--gcx-accent': accent } : undefined}>
+      <div className="gcx-metric-label">{label}</div>
+      <div className="gcx-metric-row">
+        <span className={`gcx-metric-value ${mono ? 'gcx-mono' : ''}`}>{value}</span>
+        {delta && (
+          <span className="gcx-metric-delta gcx-mono">
+            <i className="bi bi-arrow-up" aria-hidden="true" />
+            {delta}
+          </span>
+        )}
+      </div>
+      {meta && <div className="gcx-metric-meta">{meta}</div>}
+    </div>
+  );
+}
+
+function GaugeCard({ label, name, meta, pct, accent }) {
+  const R = 18;
+  const C = 2 * Math.PI * R; // 113.1
+  const offset = C * (1 - Math.min(100, Math.max(0, pct)) / 100);
+  return (
+    <div
+      className="gcx-metric gcx-metric-gauge"
+      style={accent ? { '--gcx-accent': accent } : undefined}
+    >
+      <svg
+        width="44"
+        height="44"
+        viewBox="0 0 44 44"
+        className="gcx-gauge"
+        role="img"
+        aria-label={`${pct}% of value`}
+      >
+        <circle cx="22" cy="22" r={R} className="gcx-gauge-track" fill="none" strokeWidth="6" />
+        <circle
+          cx="22"
+          cy="22"
+          r={R}
+          fill="none"
+          strokeWidth="6"
+          strokeLinecap="round"
+          className="gcx-gauge-arc"
+          strokeDasharray={C}
+          strokeDashoffset={offset}
+          transform="rotate(-90 22 22)"
+        />
+        <text
+          x="22"
+          y="22"
+          className="gcx-gauge-text gcx-mono"
+          textAnchor="middle"
+          dominantBaseline="central"
+        >
+          {pct}%
+        </text>
+      </svg>
+      <div className="gcx-metric-gauge-body">
+        <div className="gcx-metric-label">{label}</div>
+        <div className="gcx-metric-name">{name}</div>
+        {meta && <div className="gcx-metric-meta gcx-mono">{meta}</div>}
+      </div>
+    </div>
+  );
+}
+
+// Legend: a single 100%-composition bar (<=10 visible series + Other) with a
+// centered, toggleable label row. Segment and label share the same onPick, so
+// they stay in sync with selectedAgencies (no separate visibility set).
 function AgencyLegend({ ranking, selected, onPick, colorOf }) {
   const top = ranking.slice(0, MAX_SLOTS);
   const hasOther = ranking.length > MAX_SLOTS;
   const otherTotal = ranking.slice(MAX_SLOTS).reduce((s, a) => s + a.total, 0);
   const grand = ranking.reduce((s, a) => s + a.total, 0) || 1;
+
+  const series = [
+    ...top.map((a) => ({
+      key: a.agency,
+      label: a.agency,
+      total: a.total,
+      color: colorOf(a.agency),
+      pick: true,
+    })),
+    ...(hasOther && otherTotal > 0
+      ? [{ key: OTHER_LABEL, label: OTHER_LABEL, total: otherTotal, color: OTHER_COLOR, pick: false }]
+      : []),
+  ];
+  if (series.length === 0) return null;
+
+  const pctOf = (t) => (t / grand) * 100;
+  const fmtPct = (p) => (p >= 10 ? `${Math.round(p)}%` : p >= 0.1 ? `${p.toFixed(1)}%` : '<0.1%');
+  // "Dimmed" = a selection exists and this series is not part of it.
+  const dimmed = (s) => selected.size > 0 && !(s.pick && selected.has(s.key));
+
   return (
     <div className="gcx-legend">
-      {top.map((a) => (
-        <button
-          key={a.agency}
-          type="button"
-          className={`gcx-legend-chip ${selected.has(a.agency) ? 'is-active' : ''}`}
-          onClick={() => onPick(a.agency)}
-          style={selected.has(a.agency) ? { borderColor: colorOf(a.agency) } : undefined}
-        >
-          <span className="gcx-dot" style={{ background: colorOf(a.agency) }} />
-          {a.agency}
-        </button>
-      ))}
-      {hasOther && (
-        <span className="gcx-legend-chip gcx-legend-other" title="Agencies outside the top 10">
-          <span className="gcx-dot" style={{ background: OTHER_COLOR }} />
-          {OTHER_LABEL} · {Math.round((otherTotal / grand) * 100)}%
-        </span>
-      )}
+      <div className="gcx-compbar" role="img" aria-label="Agency share of obligated value">
+        {series.map((s) => (
+          <button
+            key={s.key}
+            type="button"
+            className={`gcx-compseg ${dimmed(s) ? 'is-dim' : ''}`}
+            style={{ width: `${pctOf(s.total)}%`, background: s.color }}
+            onClick={s.pick ? () => onPick(s.key) : undefined}
+            disabled={!s.pick}
+            title={`${s.label} · ${fmtPct(pctOf(s.total))}`}
+            aria-label={`${s.label}, ${fmtPct(pctOf(s.total))}`}
+          />
+        ))}
+      </div>
+      <div className="gcx-legend-labels">
+        {series.map((s) => (
+          <button
+            key={s.key}
+            type="button"
+            className={`gcx-legend-label ${dimmed(s) ? 'is-dim' : ''}`}
+            onClick={s.pick ? () => onPick(s.key) : undefined}
+            disabled={!s.pick}
+            aria-pressed={s.pick ? selected.has(s.key) : undefined}
+          >
+            <span
+              className="gcx-legend-chip-dot"
+              style={{ background: s.color }}
+              aria-hidden="true"
+            />
+            <span className="gcx-legend-name">{s.label}</span>
+            <span className="gcx-legend-pct gcx-mono">{fmtPct(pctOf(s.total))}</span>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

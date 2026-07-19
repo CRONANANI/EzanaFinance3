@@ -259,16 +259,61 @@
   gap: 18px;
 }
 
-/* ── filter groups ── */
+/* ── Filter group head ── */
+.gcx-fg-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
 .gcx-fg-title {
-  font-family: var(--font-mono, monospace);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
+  color: var(--text-muted);
+}
+.gcx-fg-meta {
+  font-size: 10px;
+  color: var(--text-faint);
+}
+
+/* ── Fiscal year select ── */
+.gcx-select-wrap {
+  position: relative;
+}
+.gcx-select {
+  width: 100%;
+  padding: 9px 30px 9px 12px;
+  border: 1px solid var(--emerald-border);
+  background: var(--emerald-bg);
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--emerald);
-  margin-bottom: 9px;
-  padding: 0 9px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.gcx-select:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+/* Native option lists are OS-rendered; force readable colors where supported. */
+.gcx-select option {
+  color: var(--text-primary);
+  background: var(--bg-primary);
+}
+.gcx-select-caret {
+  position: absolute;
+  right: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-size: 11px;
+  color: var(--emerald);
 }
 .gcx-chip {
   display: flex;
@@ -311,14 +356,75 @@
   border-radius: 50%;
   flex-shrink: 0;
 }
+/* ── Slider ── */
 .gcx-slider {
   width: 100%;
   accent-color: var(--emerald);
+  cursor: pointer;
 }
-.gcx-slider-val {
+.gcx-slider-ends {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  font-size: 10px;
+  color: var(--text-faint);
+}
+
+/* ── Agency composition rows ── */
+.gcx-arow {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 8px 6px;
+  border: none;
+  border-bottom: 1px solid var(--border-primary);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.gcx-arow:hover {
+  background: var(--bg-tertiary);
+}
+.gcx-arow.is-active {
+  background: var(--emerald-bg);
+}
+.gcx-arow:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: -2px;
+}
+.gcx-arow-rail {
+  width: 3px;
+  align-self: stretch;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+.gcx-arow-mid {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+.gcx-arow-name {
   font-size: 12px;
-  color: var(--text-muted);
-  margin-top: 6px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gcx-arow-count {
+  font-size: 10px;
+  color: var(--text-faint);
+}
+.gcx-arow-share {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.gcx-arow.is-active .gcx-arow-share {
+  color: var(--emerald);
 }
 .gcx-rail-note {
   font-size: 11.5px;
@@ -326,56 +432,172 @@
   line-height: 1.45;
 }
 
-/* ── stat cards ── */
+/* ── Metric cards ── */
 .gcx-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
+  gap: 16px;
 }
-.gcx-stat {
-  padding: 12px 15px;
+.gcx-metric {
+  border: 1px solid var(--border-primary);
+  border-top: 3px solid var(--gcx-accent, var(--emerald));
+  border-radius: var(--radius-lg);
+  padding: 12px 16px;
+  background: transparent;
+  box-shadow: var(--shadow-sm);
 }
-.gcx-stat-label {
-  font-size: 11.5px;
+.gcx-metric-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: var(--text-muted);
-  margin-bottom: 5px;
 }
-.gcx-stat-value {
-  font-size: 22px;
+.gcx-metric-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+}
+.gcx-metric-value {
+  font-size: 24px;
   font-weight: 700;
+  letter-spacing: -0.02em;
   color: var(--text-primary);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.gcx-stat-sub {
+.gcx-metric-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--emerald);
+  flex-shrink: 0;
+}
+.gcx-metric-meta {
   font-size: 11px;
   color: var(--text-faint);
-  margin-top: 3px;
+  margin-top: 2px;
 }
 
-/* ── legend strip ── */
+.gcx-metric-gauge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.gcx-metric-gauge-body {
+  min-width: 0;
+}
+.gcx-gauge {
+  flex-shrink: 0;
+}
+.gcx-gauge-track {
+  stroke: var(--border-primary);
+}
+.gcx-gauge-arc {
+  stroke: var(--gcx-accent, var(--emerald));
+}
+.gcx-gauge-text {
+  font-size: 11px;
+  font-weight: 700;
+  fill: var(--text-primary);
+}
+.gcx-metric-name {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--emerald);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Legend composition bar ── */
 .gcx-legend {
+  margin-top: 20px;
+  padding: 18px 20px;
+  background: transparent;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-xl);
+}
+.gcx-compbar {
+  display: flex;
+  height: 20px;
+  border-radius: 9999px;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px var(--border-primary);
+}
+.gcx-compseg {
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  min-width: 2px;
+}
+.gcx-compseg + .gcx-compseg {
+  border-left: 1px solid var(--bg-primary);
+}
+.gcx-compseg.is-dim {
+  opacity: 0.25;
+}
+.gcx-compseg:disabled {
+  cursor: default;
+}
+.gcx-compseg:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+.gcx-legend-labels {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 8px;
-  background: var(--bg-tertiary);
-  border-radius: var(--radius-pill, 9999px);
-  padding: 8px 12px;
+  gap: 6px 16px;
+  margin-top: 14px;
 }
-.gcx-legend-chip {
+.gcx-legend-label {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-pill, 9999px);
-  padding: 4px 11px;
-  font-size: 12px;
-  color: var(--text-secondary);
+  border: none;
+  background: transparent;
+  padding: 0;
   cursor: pointer;
+  transition: opacity 0.15s;
 }
-.gcx-legend-chip.is-active {
-  color: var(--emerald);
+.gcx-legend-label.is-dim {
+  opacity: 0.45;
+}
+.gcx-legend-label.is-dim .gcx-legend-name {
+  text-decoration: line-through;
+}
+.gcx-legend-label:disabled {
+  cursor: default;
+}
+.gcx-legend-label:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+.gcx-legend-chip-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.gcx-legend-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+.gcx-legend-pct {
+  font-size: 11px;
   font-weight: 600;
+  color: var(--text-faint);
 }
 
 /* ── hero ── */
@@ -917,6 +1139,9 @@
 
 /* ── responsive ── */
 @media (max-width: 900px) {
+  .gcx-stats {
+    grid-template-columns: 1fr;
+  }
   .gcx-body {
     flex-direction: column;
   }
@@ -1226,10 +1451,6 @@
   max-height: 320px;
   overflow-y: auto;
   padding-right: 2px;
-}
-.gcx-legend-other {
-  cursor: default;
-  opacity: 0.85;
 }
 
 /* Treemap caption: states the shown top-N vs the full filtered count. */
