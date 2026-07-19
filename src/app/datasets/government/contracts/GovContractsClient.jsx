@@ -11,7 +11,7 @@
  *  - YoY and quarterly series → derived from the loaded award dates where the
  *    data supports it, else an honest empty state.
  */
-import { useMemo, useState, useEffect, useCallback } from 'react';
+import { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import {
   LayoutGrid,
   PieChart as PieIcon,
@@ -121,6 +121,13 @@ export default function GovContractsClient({
   const [heroView, setHeroView] = useState('treemap');
   const [selected, setSelected] = useState(null);
   const [queryOpen, setQueryOpen] = useState(false);
+  const [querySeed, setQuerySeed] = useState(''); // text handed off from the teaser
+
+  // Typing in the teaser opens the full builder and carries the keystroke over.
+  const startBuilder = useCallback((seed) => {
+    setQuerySeed(seed || '');
+    setQueryOpen(true);
+  }, []);
 
   // Debounce the agency search box (the list can be 80-100+ long).
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -309,32 +316,36 @@ export default function GovContractsClient({
       <header className="gcx-header">
         <p className="gcx-eyebrow">DATASETS · USASPENDING.GOV</p>
         <h1 className="gcx-title">Government contracts</h1>
-        <p className="gcx-sub">
-          Federal contract awards from USAspending.gov, aggregated by recipient and awarding agency.
-          {isLive ? '' : ' Showing sample data — live source unavailable.'}
-        </p>
-        {coverageObj && coverageObj.minFy && coverageObj.maxFy ? (
-          <p className="gcx-sub">
-            Indexed coverage:{' '}
-            <strong>
-              FY{coverageObj.minFy}&ndash;FY{coverageObj.maxFy}
-            </strong>{' '}
-            · {coverageObj.total.toLocaleString()} awards.
-          </p>
-        ) : null}
       </header>
+
+      <EzanaQLTeaser onStart={startBuilder} hidden={queryOpen} />
 
       {queryOpen && (
         <EzanaQLBuilder
           activeFilters={{ agencies: [...selectedAgencies], fiscalYear, minValue }}
-          onClose={() => setQueryOpen(false)}
+          seedPrompt={querySeed}
+          onClose={() => {
+            setQueryOpen(false);
+            setQuerySeed('');
+          }}
         />
       )}
 
       <div className="gcx-body">
         {/* filter rail */}
         <aside className="gcx-rail">
-          <button type="button" className="gcx-reportbtn" onClick={() => setQueryOpen((o) => !o)}>
+          <button
+            type="button"
+            className="gcx-reportbtn"
+            onClick={() => {
+              if (queryOpen) {
+                setQueryOpen(false);
+                setQuerySeed('');
+              } else {
+                startBuilder('');
+              }
+            }}
+          >
             {queryOpen ? 'Close builder' : 'Generate report'}
           </button>
           <FilterGroup title="Fiscal year">
@@ -542,6 +553,50 @@ function AwardTicker({ awards }) {
 }
 
 /* ────────────────────────── Rail bits ────────────────────────── */
+/**
+ * Slim always-visible preview of the EzanaQL report builder. Typing here opens
+ * the full builder below and hands off the text, so the user never loses a
+ * keystroke. Purely an entry point — it runs nothing on its own.
+ */
+function EzanaQLTeaser({ onStart, hidden }) {
+  if (hidden) return null;
+  const start = (value) => {
+    if (!value) return;
+    onStart(value);
+  };
+  return (
+    <section className="gcx-card gcx-qlteaser">
+      <div className="gcx-qlteaser-head">
+        <span className="gcx-ql-title">EzanaQL report builder</span>
+        <span className="gcx-ql-beta">BETA</span>
+      </div>
+      <div className="gcx-ql-ai gcx-qlteaser-ai">
+        <span className="gcx-ql-ai-badge">
+          <Sparkles size={12} /> Ezana AI
+        </span>
+        <input
+          className="gcx-ql-ai-input"
+          value=""
+          onChange={(e) => start(e.target.value)}
+          onPaste={(e) => {
+            e.preventDefault();
+            start(e.clipboardData.getData('text'));
+          }}
+          placeholder="Describe the report in plain English — e.g. “Top 10 defense contractors this fiscal year, with YoY change” — and we’ll write the EzanaQL"
+          aria-label="Describe the report you want"
+        />
+        <button
+          type="button"
+          className="gcx-btn gcx-btn-primary gcx-ql-gen"
+          onClick={() => onStart('')}
+        >
+          Generate EzanaQL
+        </button>
+      </div>
+    </section>
+  );
+}
+
 function FilterGroup({ title, meta, children }) {
   return (
     <div className="gcx-fg">
@@ -613,8 +668,8 @@ function MetricCard({ label, value, delta, meta, accent, mono = true }) {
 }
 
 function GaugeCard({ label, name, meta, pct, accent }) {
-  const R = 18;
-  const C = 2 * Math.PI * R; // 113.1
+  const R = 13; // 32x32 gauge — keeps card 3 at the reduced height
+  const C = 2 * Math.PI * R;
   const offset = C * (1 - Math.min(100, Math.max(0, pct)) / 100);
   return (
     <div
@@ -622,29 +677,29 @@ function GaugeCard({ label, name, meta, pct, accent }) {
       style={accent ? { '--gcx-accent': accent } : undefined}
     >
       <svg
-        width="44"
-        height="44"
-        viewBox="0 0 44 44"
+        width="32"
+        height="32"
+        viewBox="0 0 32 32"
         className="gcx-gauge"
         role="img"
         aria-label={`${pct}% of value`}
       >
-        <circle cx="22" cy="22" r={R} className="gcx-gauge-track" fill="none" strokeWidth="6" />
+        <circle cx="16" cy="16" r={R} className="gcx-gauge-track" fill="none" strokeWidth="4" />
         <circle
-          cx="22"
-          cy="22"
+          cx="16"
+          cy="16"
           r={R}
           fill="none"
-          strokeWidth="6"
+          strokeWidth="4"
           strokeLinecap="round"
           className="gcx-gauge-arc"
           strokeDasharray={C}
           strokeDashoffset={offset}
-          transform="rotate(-90 22 22)"
+          transform="rotate(-90 16 16)"
         />
         <text
-          x="22"
-          y="22"
+          x="16"
+          y="16"
           className="gcx-gauge-text gcx-mono"
           textAnchor="middle"
           dominantBaseline="central"
@@ -1196,13 +1251,25 @@ ORDER BY total DESC
 LIMIT 10;`;
 }
 
-function EzanaQLBuilder({ activeFilters, onClose }) {
-  const [prompt, setPrompt] = useState('');
+function EzanaQLBuilder({ activeFilters, seedPrompt = '', onClose }) {
+  const [prompt, setPrompt] = useState(seedPrompt);
+  const promptRef = useRef(null);
   const [code, setCode] = useState(() => seedFromFilters(activeFilters) || SEED_QUERY);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
   const [genBusy, setGenBusy] = useState(false);
+
+  // Mounted from the teaser: focus and put the caret after the handed-off text.
+  useEffect(() => {
+    const el = promptRef.current;
+    if (!el) return;
+    el.focus();
+    const n = el.value.length;
+    el.setSelectionRange(n, n);
+    // Mount-only: re-running on prompt change would fight the user's caret.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const run = async () => {
     setBusy(true);
@@ -1296,6 +1363,7 @@ function EzanaQLBuilder({ activeFilters, onClose }) {
           <Sparkles size={12} /> Ezana AI
         </span>
         <input
+          ref={promptRef}
           className="gcx-ql-ai-input"
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}

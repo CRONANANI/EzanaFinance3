@@ -143,7 +143,7 @@
 /* ── header ── */
 .gcx-header {
   text-align: center;
-  margin-bottom: 22px;
+  margin-bottom: 16px; /* was 22px — no longer carries body copy */
 }
 .gcx-eyebrow {
   font-family: var(--font-mono, monospace);
@@ -432,23 +432,23 @@
   line-height: 1.45;
 }
 
-/* ── Metric cards ── */
+/* ── Metric cards (compact — ~half height) ── */
 .gcx-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  gap: 12px;
 }
 .gcx-metric {
   border: 1px solid var(--border-primary);
   border-top: 3px solid var(--gcx-accent, var(--emerald));
   border-radius: var(--radius-lg);
-  padding: 12px 16px;
+  padding: 8px 14px;
   background: transparent;
   box-shadow: var(--shadow-sm);
 }
 .gcx-metric-label {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 500;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -459,10 +459,11 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 8px;
-  margin-top: 6px;
+  margin-top: 2px;
 }
 .gcx-metric-value {
-  font-size: 24px;
+  font-size: 17px;
+  line-height: 1.1;
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--text-primary);
@@ -481,15 +482,15 @@
   flex-shrink: 0;
 }
 .gcx-metric-meta {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--text-faint);
-  margin-top: 2px;
+  margin-top: 0;
 }
 
 .gcx-metric-gauge {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 .gcx-metric-gauge-body {
   min-width: 0;
@@ -504,12 +505,12 @@
   stroke: var(--gcx-accent, var(--emerald));
 }
 .gcx-gauge-text {
-  font-size: 11px;
+  font-size: 9px;
   font-weight: 700;
   fill: var(--text-primary);
 }
 .gcx-metric-name {
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 700;
   line-height: 1.15;
   color: var(--emerald);
@@ -1458,4 +1459,19 @@
   margin: 8px 2px 0;
   font-size: 0.72rem;
   color: var(--text-faint);
+}
+
+/* ── EzanaQL teaser (inline preview above the body) ────────── */
+.gcx-qlteaser {
+  padding: 14px 18px;
+  margin-bottom: 18px;
+}
+.gcx-qlteaser-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 12px;
+}
+.gcx-qlteaser-ai {
+  margin-bottom: 0;
 }
