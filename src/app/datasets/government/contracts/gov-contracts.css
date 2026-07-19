@@ -264,7 +264,7 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  margin-bottom: 10px;
+  margin-bottom: 7px; /* was 10px */
 }
 .gcx-fg-title {
   font-family: var(--font-mono);
@@ -273,6 +273,10 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-muted);
+  /* flex + text-align center the label within the head (the head keeps the
+     optional meta on the right for the agency / min-value groups). */
+  flex: 1;
+  text-align: center;
 }
 .gcx-fg-meta {
   font-size: 10px;
@@ -285,17 +289,21 @@
 }
 .gcx-select {
   width: 100%;
-  padding: 9px 30px 9px 12px;
+  padding: 4px 26px 4px 12px; /* was 9px 30px 9px 12px — ~50% vertical */
+  height: 26px; /* ~half the previous ~44px */
+  line-height: 1;
   border: 1px solid var(--emerald-border);
   background: var(--emerald-bg);
   border-radius: var(--radius-md);
   font-family: inherit;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
   color: var(--emerald);
   cursor: pointer;
   appearance: none;
   -webkit-appearance: none;
+  text-align: center; /* centers the selected value */
+  text-align-last: center; /* required in Chrome/Edge for <select> */
 }
 .gcx-select:focus-visible {
   outline: 2px solid var(--emerald);
@@ -436,37 +444,37 @@
   line-height: 1.45;
 }
 
-/* ── Metric cards (centered, with a visual) ── */
+/* ── Metric cards (centered, with a visual — compact ~half height) ── */
 .gcx-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
+  gap: 12px;
 }
 .gcx-metric {
   display: flex;
   flex-direction: column;
   align-items: center; /* centered per design direction */
   justify-content: center;
-  gap: 4px;
+  gap: 2px;
   text-align: center;
-  padding: 12px 14px;
+  padding: 7px 12px;
   border: 1px solid var(--border-primary);
   border-top: 3px solid var(--gcx-accent, var(--emerald));
   border-radius: var(--radius-lg, 12px);
   background: transparent;
   box-shadow: var(--shadow-sm);
-  min-height: 96px;
+  min-height: 52px; /* was 96px — the real driver of the change */
 }
 .gcx-metric-label {
   font-family: var(--font-mono, monospace);
-  font-size: 9.5px;
+  font-size: 8.5px;
   font-weight: 500;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-muted);
 }
 .gcx-metric-value {
-  font-size: 22px;
+  font-size: 16px;
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.1;
@@ -477,7 +485,7 @@
   white-space: nowrap;
 }
 .gcx-metric-name {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   line-height: 1.2;
   color: var(--gcx-accent, var(--emerald));
@@ -486,7 +494,7 @@
 }
 .gcx-metric-meta {
   font-family: var(--font-mono, monospace);
-  font-size: 10px;
+  font-size: 9px;
   color: var(--text-faint);
 }
 
@@ -494,11 +502,11 @@
 .gcx-mstrip {
   display: flex;
   width: 100%;
-  max-width: 150px;
-  height: 6px;
+  max-width: 120px;
+  height: 4px;
   border-radius: 9999px;
   overflow: hidden;
-  margin: 2px 0;
+  margin: 1px 0;
 }
 .gcx-mstrip-seg {
   height: 100%;
@@ -508,7 +516,7 @@
 /* Sparkline (card 2) */
 .gcx-mspark {
   display: block;
-  margin: 2px 0;
+  margin: 1px 0;
 }
 .gcx-mspark-line {
   stroke: var(--gcx-accent, var(--emerald));
@@ -994,9 +1002,13 @@
   border-radius: 0;
   box-shadow: none;
 }
+/* Header row centered; the close button is absolutely positioned so the title
+   stays truly centered instead of offset by the button's width. */
 .gcx-ql-head {
+  position: relative;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 9px;
   margin-bottom: 14px;
 }
@@ -1017,20 +1029,26 @@
   padding: 2px 6px;
 }
 .gcx-ql-x {
-  margin-left: auto;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 0; /* was auto — would fight justify-content: center */
   background: none;
   border: none;
   color: var(--text-muted);
   cursor: pointer;
+  line-height: 0;
 }
 .gcx-ql-ai {
   display: flex;
   align-items: center;
-  gap: 10px;
-  background: transparent; /* was rgba(16,185,129,0.045) — pill chrome removed */
-  border: none; /* was 1px solid var(--emerald-border) */
+  justify-content: center; /* centers the whole group */
+  gap: 8px;
+  background: transparent; /* pill chrome removed */
+  border: none;
   border-radius: 0;
-  padding: 8px 0; /* side padding removed with the frame */
+  padding: 6px 0;
   margin-bottom: 12px;
 }
 .gcx-ql-ai-badge {
@@ -1042,13 +1060,23 @@
   color: var(--emerald);
   white-space: nowrap;
 }
+/* Bounded field wrapper: caps the input's width so the generate button sits
+   beside the text, and anchors the blinking caret to the input's own line. */
+.gcx-ql-ai-field {
+  position: relative;
+  display: flex;
+  flex: 0 1 560px;
+  min-width: 0;
+}
 .gcx-ql-ai-input {
-  flex: 1;
+  flex: 1 1 auto;
+  min-width: 0;
   background: none;
   border: none;
   outline: none;
   font-size: 12.5px;
   color: var(--text-primary);
+  text-align: center; /* matches the centered surface */
 }
 /* Mirrors .gcx-reportbtn: no fill, no border, emerald text on a 2px emerald
    underline. Overrides the .gcx-btn-primary fill it also carries. */
@@ -1503,25 +1531,27 @@
 .gcx-qlteaser-head {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 9px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 .gcx-qlteaser-ai {
   margin-bottom: 0;
 }
 
-/* Blinking affordance caret — signals the field is typable. Sits inline before
-   the placeholder text and hides on focus or once the user has typed. */
+/* Blinking affordance caret — signals the field is typable. Anchored to the
+   left of the input's own (centered) line; hides on focus or once typed. */
 .gcx-ql-ai-caret {
-  flex-shrink: 0;
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
   font-family: var(--font-mono, monospace);
   font-size: 13px;
-  font-weight: 400;
   color: var(--emerald);
   animation: gcx-caret-blink 1.1s step-end infinite;
   pointer-events: none;
   user-select: none;
-  margin-right: -4px;
 }
 @keyframes gcx-caret-blink {
   0%,

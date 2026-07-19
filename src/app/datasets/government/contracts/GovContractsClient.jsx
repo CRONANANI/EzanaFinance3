@@ -538,24 +538,26 @@ function EzanaQLTeaser({ onStart, hidden }) {
         <span className="gcx-ql-ai-badge">
           <Sparkles size={12} /> Ezana AI
         </span>
-        {!teaserFocused && (
-          <span className="gcx-ql-ai-caret" aria-hidden="true">
-            |
-          </span>
-        )}
-        <input
-          className="gcx-ql-ai-input"
-          value=""
-          onFocus={() => setTeaserFocused(true)}
-          onBlur={() => setTeaserFocused(false)}
-          onChange={(e) => start(e.target.value)}
-          onPaste={(e) => {
-            e.preventDefault();
-            start(e.clipboardData.getData('text'));
-          }}
-          placeholder="Describe the report in plain English — e.g. “Top 10 defense contractors this fiscal year, with YoY change” — and we’ll write the EzanaQL"
-          aria-label="Describe the report you want"
-        />
+        <span className="gcx-ql-ai-field">
+          {!teaserFocused && (
+            <span className="gcx-ql-ai-caret" aria-hidden="true">
+              |
+            </span>
+          )}
+          <input
+            className="gcx-ql-ai-input"
+            value=""
+            onFocus={() => setTeaserFocused(true)}
+            onBlur={() => setTeaserFocused(false)}
+            onChange={(e) => start(e.target.value)}
+            onPaste={(e) => {
+              e.preventDefault();
+              start(e.clipboardData.getData('text'));
+            }}
+            placeholder="Describe the report in plain English — e.g. “Top 10 defense contractors this fiscal year, with YoY change” — and we’ll write the EzanaQL"
+            aria-label="Describe the report you want"
+          />
+        </span>
         <button
           type="button"
           className="gcx-btn gcx-btn-primary gcx-ql-gen"
@@ -664,8 +666,8 @@ function ShareStrip({ ranking, colorOf, total }) {
  */
 function CountSpark({ series }) {
   if (!series || series.length < 2) return null;
-  const W = 96;
-  const H = 22;
+  const W = 80;
+  const H = 14;
   const max = Math.max(...series.map((p) => p.count), 1);
   const min = Math.min(...series.map((p) => p.count), 0);
   const span = max - min || 1;
@@ -1378,20 +1380,22 @@ function EzanaQLBuilder({ activeFilters, seedPrompt = '', onClose }) {
         <span className="gcx-ql-ai-badge">
           <Sparkles size={12} /> Ezana AI
         </span>
-        {!prompt && !promptFocused && (
-          <span className="gcx-ql-ai-caret" aria-hidden="true">
-            |
-          </span>
-        )}
-        <input
-          ref={promptRef}
-          className="gcx-ql-ai-input"
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          onFocus={() => setPromptFocused(true)}
-          onBlur={() => setPromptFocused(false)}
-          placeholder="Describe the report in plain English — e.g. “Top 10 defense contractors this fiscal year, with YoY change” — and we’ll write the EzanaQL"
-        />
+        <span className="gcx-ql-ai-field">
+          {!prompt && !promptFocused && (
+            <span className="gcx-ql-ai-caret" aria-hidden="true">
+              |
+            </span>
+          )}
+          <input
+            ref={promptRef}
+            className="gcx-ql-ai-input"
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            onFocus={() => setPromptFocused(true)}
+            onBlur={() => setPromptFocused(false)}
+            placeholder="Describe the report in plain English — e.g. “Top 10 defense contractors this fiscal year, with YoY change” — and we’ll write the EzanaQL"
+          />
+        </span>
         <button
           type="button"
           className="gcx-btn gcx-btn-primary gcx-ql-gen"
