@@ -992,9 +992,16 @@
 }
 
 /* ── EzanaQL builder ── */
+/* Borderless: the builder is a full-width working surface, not a card. The
+   emerald AI row and the editor panel carry their own borders, so the outer
+   card chrome only added a competing frame. Overrides .gcx-card. */
 .gcx-ql {
-  padding: 16px 18px;
+  padding: 16px 0;
   margin-bottom: 18px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
 }
 .gcx-ql-head {
   display: flex;
@@ -1474,9 +1481,14 @@
 }
 
 /* ── EzanaQL teaser (inline preview above the body) ────────── */
+/* Match the borderless builder so the teaser reads as the same surface. */
 .gcx-qlteaser {
-  padding: 14px 18px;
+  padding: 14px 0;
   margin-bottom: 18px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
 }
 .gcx-qlteaser-head {
   display: flex;
