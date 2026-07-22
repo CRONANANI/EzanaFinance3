@@ -153,39 +153,60 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.ohn-nav-item:hover {
-  background: var(--surface-card-hover);
+/* ── Nav pills ─────────────────────────────────────────────────────────────
+   Command Center is a permanent solid pill in the university's primary color.
+   The selected page is a softer translucent pill in the same color (color-mix
+   off ONE --org-primary source, so the two can never drift). All colors come
+   from --org-* (set by OrgThemeProvider) and fall back to Ezana emerald, so
+   consumer / non-org users are unchanged. */
+
+/* Hover on an inactive, non-anchor row: faint brand wash, not gray. */
+.ohn-nav-item:not(.active):not(.anchor):hover {
+  background: color-mix(in srgb, var(--org-primary, var(--emerald)) 8%, transparent);
   color: var(--text-primary);
 }
-.ohn-nav-item:hover svg {
+.ohn-nav-item:not(.active):not(.anchor):hover svg {
   color: var(--text-secondary);
 }
-.ohn-nav-item.active,
-.ohn-nav-item.active:hover {
-  background: transparent; /* no filled rectangle — the left bar signals active */
-  color: var(--emerald);
+
+/* Anchor: Command Center — always a solid brand pill (wins when also active). */
+.ohn-nav-item.anchor,
+.ohn-nav-item.anchor:hover {
+  background: var(--org-primary, var(--emerald));
+  color: var(--org-on-primary, #fff);
   font-weight: 600;
 }
-/* Full-height 2px emerald bar on the left edge of the active row. */
+.ohn-nav-item.anchor svg {
+  color: var(--org-on-primary, #fff);
+}
+
+/* Selected page: translucent brand pill in the same hue. --org-ink keeps the
+   text legible on the dark canvas even when the primary is very dark (Queen's
+   navy, U of T navy). */
+.ohn-nav-item.active:not(.anchor),
+.ohn-nav-item.active:not(.anchor):hover {
+  background: color-mix(in srgb, var(--org-primary, var(--emerald)) 16%, transparent);
+  color: var(--org-ink, var(--emerald));
+  font-weight: 600;
+}
+.ohn-nav-item.active:not(.anchor) svg {
+  color: var(--org-ink, var(--emerald));
+}
+
+/* The old left-edge bar is retired in favor of the pill fills. */
 .ohn-nav-item.active::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  border-radius: 0 2px 2px 0;
-  background: var(--emerald);
+  content: none;
 }
-.ohn-nav-item.active svg {
-  color: var(--emerald);
-}
+
+/* Team Permissions stays an Ezana-system emerald accent (not a per-page state). */
 .ohn-nav-item.highlight {
   color: var(--emerald);
   font-weight: 600;
 }
+
+/* Keyboard focus ring follows the brand too. */
 .ohn-nav-item:focus-visible {
-  outline: 2px solid var(--emerald);
+  outline: 2px solid var(--org-primary, var(--emerald));
   outline-offset: 2px;
 }
 

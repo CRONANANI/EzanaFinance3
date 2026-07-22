@@ -6,8 +6,10 @@
  *
  * - User card from the real org member (useOrg) — never fabricated; skeleton
  *   while the membership resolves.
- * - Two labelled groups (COMMAND / TOOLS), ordered per the design.
- * - Lucide icons only. Emerald active state (route-matched via usePathname).
+ * - One flat, unlabelled list. Command Center is a permanent pill in the
+ *   university's primary color; the active page is a translucent pill in the
+ *   same hue (both from the --org-* variables, Ezana emerald fallback).
+ * - Lucide icons only. Active state route-matched via usePathname.
  * - Badges are REAL: Assignments shows {completed}/{total} from
  *   /api/org/assignments; Compliance shows an open-breach count from
  *   /api/org/ips/violations. If a count can't be fetched, NO badge renders.
@@ -48,21 +50,15 @@ const ROLE_LABEL = {
   analyst: 'Analyst',
 };
 
-// `badge` keys map 1:1 to /api/org/nav-counts response keys. Command Center,
-// Fund Analytics, Reports and Team Permissions intentionally carry no badge.
-const COMMAND = [
-  { href: '/org-team-hub', label: 'Command Center', Icon: LayoutDashboard, exact: true },
+// Single ordered nav list. Command Center leads and is always accent-filled
+// (`anchor`); every other page is a normal row that fills with the university
+// color only when active. `badge` keys map 1:1 to /api/org/nav-counts response
+// keys. Role gating (roles: [...]) is unchanged and still applied in renderItem.
+const NAV_ITEMS = [
+  { href: '/org-team-hub', label: 'Command Center', Icon: LayoutDashboard, exact: true, anchor: true },
   { href: '/org-trading', label: 'Trading Desk', Icon: Landmark, badge: 'tradingDesk' },
   { href: '/org-team-hub/fund-analytics', label: 'Fund Analytics', Icon: LineChart },
-  {
-    href: '/org-team-hub/assignments',
-    label: 'Assignments',
-    Icon: ClipboardCheck,
-    badge: 'assignments',
-  },
-];
-
-const TOOLS = [
+  { href: '/org-team-hub/assignments', label: 'Assignments', Icon: ClipboardCheck, badge: 'assignments' },
   { href: '/org-team-hub/org-chart', label: 'Org Chart', Icon: Network, badge: 'orgChart' },
   {
     href: '/org-team-hub/pitches',
@@ -80,12 +76,7 @@ const TOOLS = [
   { href: '/org-team-hub/meetings', label: 'Meetings', Icon: Video, badge: 'meetings' },
   { href: '/org-team-hub/recognition', label: 'Recognition', Icon: Award, badge: 'recognition' },
   { href: '/org-team-hub/grades', label: 'Grades', Icon: ClipboardList, badge: 'grades' },
-  {
-    href: '/org-team-hub/competitions',
-    label: 'Competitions',
-    Icon: Trophy,
-    badge: 'competitions',
-  },
+  { href: '/org-team-hub/competitions', label: 'Competitions', Icon: Trophy, badge: 'competitions' },
   {
     href: '/org-team-hub/cohorts',
     label: 'Cohorts',
@@ -199,7 +190,12 @@ export function OrgHubNav() {
     // While an optimistic click is pending, ONLY the clicked item reads active
     // (single highlight); otherwise fall back to the route-matched state.
     const active = optimisticHref ? optimisticHref === item.href : itemActive(pathname, item);
-    const cls = ['ohn-nav-item', active ? 'active' : '', item.highlight ? 'highlight' : '']
+    const cls = [
+      'ohn-nav-item',
+      item.anchor ? 'anchor' : '',
+      active ? 'active' : '',
+      item.highlight ? 'highlight' : '',
+    ]
       .filter(Boolean)
       .join(' ');
     const badge = item.badge ? counts?.[item.badge] : null;
@@ -235,14 +231,8 @@ export function OrgHubNav() {
         </div>
       )}
 
-      <nav className="ohn-nav-group" aria-label="Command">
-        <div className="ohn-nav-label">Command</div>
-        {COMMAND.map(renderItem)}
-      </nav>
-
-      <nav className="ohn-nav-group" aria-label="Tools">
-        <div className="ohn-nav-label">Tools</div>
-        {TOOLS.map(renderItem)}
+      <nav className="ohn-nav-group" aria-label="Team Hub pages">
+        {NAV_ITEMS.map(renderItem)}
       </nav>
     </aside>
   );
