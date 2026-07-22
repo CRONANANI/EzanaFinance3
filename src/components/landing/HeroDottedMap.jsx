@@ -1,43 +1,60 @@
 'use client';
 
-import { useMemo } from 'react';
 import Image from 'next/image';
 import DottedMap from 'dotted-map';
 
 /**
  * Static dotted-continents layer for the landing hero.
  *
- * It renders the SAME DottedMap output the interactive `<WorldMap>` produces,
- * but none of its interactive machinery (proj4 country shapes, the power-map
- * hook, pan/zoom/hover). The hero only ever needed a static picture — it passes
- * `hideControls` + `hideFinancialDots`.
+ * The DottedMap output is DETERMINISTIC: fixed height, fixed grid, two known
+ * dot colors. So both variants are generated ONCE at module scope and cached,
+ * rather than inside render.
  *
- * Crucially it is imported NORMALLY (no `next/dynamic` + `ssr:false`), so the
- * dotted map is computed during render — including on the server — and ships in
- * the initial HTML. It paints the instant the page does, in step with the
- * inline signal-routes overlay, instead of popping in seconds later from a
- * separate `ssr:false` chunk that only computed after hydration.
+ * This matters because getSVG() emits thousands of <circle> nodes and then
+ * encodeURIComponent()s the result — a main-thread block measured in hundreds
+ * of ms. Previously it ran on the server, again on hydration, and a THIRD time
+ * when `mapDense` flipped after mount on mobile (the dotColor prop invalidated
+ * the useMemo mid-paint). That third run was the visible jank.
  *
- * `dotColor` (including the mobile `mapDense` swap) is passed through unchanged,
- * and the markup reuses the same `.world-map-*` class names the interactive
- * component uses, so the existing hero CSS sizes it identically — no layout
- * shift, no visual change, only timing.
+ * Module scope evaluates once per process on the server and once per page load
+ * in the browser, and the `mapDense` flip is now a cache hit rather than a
+ * regeneration.
  */
-// DottedMap({ height: 170, grid: 'diagonal' }) is deterministic; these fixed
-// params always yield a 337×170 viewBox (the intrinsic size we hand next/image).
 const MAP_WIDTH = 337;
 const MAP_HEIGHT = 170;
 
-export function HeroDottedMap({ dotColor = 'rgba(5, 150, 105, 0.7)' }) {
-  const dataUrl = useMemo(() => {
-    const svg = new DottedMap({ height: 170, grid: 'diagonal' }).getSVG({
-      radius: 0.18,
-      color: dotColor,
-      shape: 'circle',
-      backgroundColor: 'transparent',
-    });
-    return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
-  }, [dotColor]);
+const DOT_SPARSE = 'rgba(5, 150, 105, 0.7)';
+const DOT_DENSE = 'rgba(4, 120, 87, 0.92)';
+
+function buildDataUrl(color) {
+  const svg = new DottedMap({ height: 170, grid: 'diagonal' }).getSVG({
+    radius: 0.18,
+    color,
+    shape: 'circle',
+    backgroundColor: 'transparent',
+  });
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+}
+
+// Generated once, at module evaluation — never during render.
+const CACHE = new Map([
+  [DOT_SPARSE, buildDataUrl(DOT_SPARSE)],
+  [DOT_DENSE, buildDataUrl(DOT_DENSE)],
+]);
+
+function getDataUrl(color) {
+  let url = CACHE.get(color);
+  if (!url) {
+    // Defensive: an unexpected color still works, and is cached after the first
+    // call rather than regenerating on every render.
+    url = buildDataUrl(color);
+    CACHE.set(color, url);
+  }
+  return url;
+}
+
+export function HeroDottedMap({ dotColor = DOT_SPARSE }) {
+  const dataUrl = getDataUrl(dotColor);
 
   return (
     <div className="world-map-container">
@@ -51,6 +68,7 @@ export function HeroDottedMap({ dotColor = 'rgba(5, 150, 105, 0.7)' }) {
           draggable={false}
           unoptimized
           loading="eager"
+          priority
           style={{ objectFit: 'contain' }}
         />
       </div>

@@ -164,7 +164,13 @@ export function LandingHero() {
   const [go, setGo] = useState(false);
   // On phones the dotted continents read too faint, so darken/strengthen the dot
   // colour at mobile widths only (desktop stays at the lighter tuned value).
-  const [mapDense, setMapDense] = useState(false);
+  // Initialize from the same media query the effect below watches, so the first
+  // paint already uses the correct variant on mobile — no post-mount src swap /
+  // repaint of the (now module-cached) map.
+  const [mapDense, setMapDense] = useState(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return false;
+    return window.matchMedia('(max-width: 480px)').matches;
+  });
   const valueRef = useRef(null);
 
   useEffect(() => {

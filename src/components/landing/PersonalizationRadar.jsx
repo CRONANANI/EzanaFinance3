@@ -89,7 +89,9 @@ function MobileRadarFlow({ dims, sourceDetails, accentColor }) {
                 <span
                   className={cn(
                     'min-w-0 text-[11px] font-medium leading-tight sm:text-xs',
-                    longLabel ? 'line-clamp-2 [overflow-wrap:anywhere]' : 'whitespace-nowrap',
+                    // No line-clamp: long labels wrap in full and the min-h-10
+                    // pill grows to fit, instead of clipping the longer names.
+                    longLabel ? '[overflow-wrap:anywhere]' : 'whitespace-nowrap',
                   )}
                 >
                   {nm}

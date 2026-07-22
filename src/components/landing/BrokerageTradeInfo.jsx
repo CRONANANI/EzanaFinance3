@@ -24,7 +24,7 @@ export function BrokerageTradeInfo() {
         <button
           type="button"
           className="bl-info-btn"
-          aria-label="Which brokerages allow trading from Ezana?"
+          aria-label="About our data partners and which brokerages support trading"
           onMouseEnter={() => setOpen(true)}
         >
           <Info size={14} aria-hidden />
@@ -32,7 +32,10 @@ export function BrokerageTradeInfo() {
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Content className="bl-info-pop" side="top" align="center" sideOffset={8}>
-          <span>Only select brokerages allow users to place trades from Ezana.</span>{' '}
+          <span>
+            SnapTrade and Plaid are our trusted data partners. Only select brokerages allow users to
+            place trades from Ezana.
+          </span>{' '}
           <a href="/help-center/user/article/supported-brokerages" className="bl-info-link">
             See which ones →
           </a>

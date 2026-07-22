@@ -80,11 +80,8 @@ export function BrokerageLogos() {
         Connect your brokerage account
       </h2>
       <p className="bl-subheading">
-        Securely link 1,000+ brokerages and crypto exchanges via SnapTrade &amp; Plaid. Read
-        holdings or place trades from supported brokers — without leaving Ezana.
-      </p>
-      <p className="bl-subheading bl-partners">
-        SnapTrade and Plaid are our trusted data partners.
+        Securely link 1,000+ brokerages and crypto exchanges. Read holdings or place trades from
+        supported brokers — without leaving Ezana.
         <BrokerageTradeInfo />
       </p>
 

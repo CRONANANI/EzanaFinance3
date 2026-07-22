@@ -1760,3 +1760,17 @@ body.light-mode .mobile-auth-drawer .mobile-drawer-logout:hover {
     gap: 0.5rem !important;
   }
 }
+
+/* ── Landing hero: peek the next section's eyebrow above the fold ── */
+@media (max-width: 768px) {
+  /* Trim the hero so the "Connect your accounts" eyebrow begins to appear at
+     the bottom — a scroll affordance. 88svh (not vh) so the cut doesn't shift
+     as mobile browser chrome collapses on scroll. */
+  .landing-page .lp-hero {
+    min-height: 88svh;
+  }
+  /* Pull the brokerage section up slightly so its eyebrow lands in that gap. */
+  .landing-page .bl-section {
+    padding-top: 28px;
+  }
+}

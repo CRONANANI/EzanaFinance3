@@ -207,6 +207,10 @@ body.light-mode .bl-heading {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  /* Glue the ⓘ to the final word ("Ezana.") so it can't wrap alone onto a new
+     line, and align it optically with the surrounding text. */
+  vertical-align: middle;
+  margin-left: 4px;
   width: 18px;
   height: 18px;
   padding: 0;

@@ -124,3 +124,14 @@
     opacity: 0;
   }
 }
+
+@media (max-width: 768px) {
+  /* Cards stack single-column on mobile, so `margin-top: auto` collapses and
+     the visual crowds the description. Match the gap ABOVE the visual to the
+     16px that already sits below it, so each visual is evenly framed. The base
+     `margin-top: auto` is preserved for the desktop shared-baseline alignment. */
+  .feature-viz {
+    margin-top: 16px;
+    padding-top: 16px;
+  }
+}
