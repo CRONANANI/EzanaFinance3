@@ -158,8 +158,9 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId,
         alignItems: 'center',
         justifyContent: 'center',
         padding: '1rem',
-        background: 'rgba(0,0,0,0.72)',
-        backdropFilter: 'blur(4px)',
+        // No scrim/blur — the page behind stays crisp; the modal's own elevation
+        // (shadow + border) separates it from the canvas instead of dimming it.
+        background: 'transparent',
       }}
       onClick={(e) => {
         if (e.target === e.currentTarget) handleClose();

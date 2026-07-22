@@ -617,6 +617,9 @@
   font-family: var(--font-mono, monospace);
   font-variant-numeric: tabular-nums;
   font-weight: 700;
+  /* Match the Analyst Leaderboard's number size (.an4-table = 0.8rem); Top
+     Contributors previously inherited a larger size and read oversized. */
+  font-size: 0.8rem;
   text-align: right;
 }
 

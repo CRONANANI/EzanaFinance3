@@ -184,7 +184,7 @@ export function FundDashboard({ initialData = null }) {
             position: 'fixed',
             inset: 0,
             zIndex: 1000,
-            background: 'var(--bg-overlay, rgba(0,0,0,0.6))',
+            background: 'transparent', // no canvas dimming — modal elevation separates it
             display: 'flex',
             alignItems: 'flex-start',
             justifyContent: 'center',

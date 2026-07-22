@@ -856,38 +856,58 @@ html.light-mode .ctd-card {
 }
 
 /* KPI chips 2×2 */
+/* Match Command Center .thw-card: 16px radius, surface-card fill, flat in dark
+   with a light-mode lift. Centered content per design. */
 .ctd-hero-kpis {
   display: grid;
-  grid-template-columns: repeat(2, minmax(84px, 1fr));
-  gap: 0.6rem;
-  align-content: center;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
 }
 .ctd-kpi {
-  padding: 0.6rem 0.75rem;
-  border-radius: 12px;
-  background: var(--surface-input);
-  border: 1px solid var(--ctd-border);
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.35rem;
+  border: 1px solid var(--border-primary);
+  border-radius: 16px;
+  background: var(--surface-card);
+  box-shadow: none; /* dark = flat, slab-free */
+  padding: 12px 20px;
 }
-.ctd-kpi-amber {
-  background: var(--amber-bg, rgba(245, 158, 11, 0.12));
-  border-color: rgba(245, 158, 11, 0.35);
+body.light-mode .ctd-kpi,
+html.light-mode .ctd-kpi {
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 1px 3px rgba(0, 0, 0, 0.05);
 }
 .ctd-kpi-value {
-  font-size: 1rem;
-  font-weight: 800;
+  font-family: var(--font-mono, monospace);
+  font-variant-numeric: tabular-nums;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1;
   color: var(--text-primary);
 }
-.ctd-kpi-amber .ctd-kpi-value {
-  color: var(--amber, #f59e0b);
+.ctd-kpi-sub {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  line-height: 1.15;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .ctd-kpi-label {
-  font-size: 0.62rem;
-  text-transform: uppercase;
+  font-size: 0.66rem;
+  font-weight: 700;
   letter-spacing: 0.06em;
+  text-transform: uppercase;
   color: var(--text-muted);
+}
+.ctd-kpi-amber .ctd-kpi-value {
+  color: var(--warning);
 }
 
 /* ── Sector filter chips ── */

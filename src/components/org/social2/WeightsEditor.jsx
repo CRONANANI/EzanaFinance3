@@ -106,7 +106,7 @@ export function WeightsEditor({ open, onClose, onSaved }) {
       style={{
         position: 'fixed',
         inset: 0,
-        background: 'rgba(0,0,0,0.5)',
+        background: 'transparent', // no canvas dimming — modal elevation separates it
         display: 'grid',
         placeItems: 'center',
         zIndex: 60,

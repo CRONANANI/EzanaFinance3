@@ -142,13 +142,16 @@
 }
 .asg2-metric {
   border: 1px solid var(--border-primary);
-  border-radius: 16px; /* was 12px — match Command Center .thw-card */
-  background: var(--surface-card); /* dropped the , transparent fallback */
+  border-radius: 12px; /* smaller card, tighter radius reads better */
+  background: var(--surface-card);
   box-shadow: none; /* dark = flat (no slab); light lift restored below */
   transition:
     border-color 0.15s ease-out,
     box-shadow 0.15s ease-out;
-  padding: 12px 20px; /* match .thw-card body padding → same height */
+  padding: 5px 16px; /* ~60% shorter card (was 12px 20px) */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 body.light-mode .asg2-metric,
 html.light-mode .asg2-metric {
@@ -157,17 +160,17 @@ html.light-mode .asg2-metric {
     0 1px 3px rgba(0, 0, 0, 0.05);
 }
 .asg2-metric-label {
-  font-size: 0.66rem;
+  font-size: 0.6rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text-muted);
-  margin: 0 0 0.35rem;
+  margin: 0 0 0.15rem;
 }
 .asg2-metric-value {
   font-family: var(--font-mono, monospace);
   font-variant-numeric: tabular-nums;
-  font-size: 1.5rem;
+  font-size: 1.05rem;
   font-weight: 700;
   line-height: 1;
   color: var(--text-primary);

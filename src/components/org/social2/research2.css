@@ -603,8 +603,9 @@
   align-items: center;
   justify-content: center;
   padding: 3vh 2vw;
-  background: var(--bg-overlay);
-  backdrop-filter: blur(2px);
+  /* No scrim/blur — the page behind stays crisp; the drawer's own elevation
+     (shadow + border) separates it from the canvas. */
+  background: transparent;
   animation: rl2-overlay-in 0.14s ease-out;
 }
 .rl2-drawer {
@@ -853,7 +854,7 @@
 .rl2-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
+  background: transparent; /* no canvas dimming — modal elevation separates it */
   z-index: 70;
   display: flex;
   align-items: flex-start;

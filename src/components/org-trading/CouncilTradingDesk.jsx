@@ -167,22 +167,20 @@ export function CouncilTradingDesk() {
   );
   const unrealized = useMemo(() => positions.reduce((s, p) => s + p.pl, 0), [positions]);
 
-  /* Per-sector unrealized ROI, ranked — from the position book, not hardcoded. */
-  const sectorRoi = useMemo(() => {
-    const agg = {};
-    for (const p of positions) {
-      if (!agg[p.sectorId]) agg[p.sectorId] = { id: p.sectorId, mkt: 0, cost: 0 };
-      agg[p.sectorId].mkt += p.value;
-      agg[p.sectorId].cost += p.cost;
-    }
-    return Object.values(agg)
-      .map((a) => ({
-        id: a.id,
-        name: SECTOR_SHORT[a.id],
-        roi: a.cost > 0 ? ((a.mkt - a.cost) / a.cost) * 100 : 0,
-      }))
-      .sort((a, b) => b.roi - a.roi);
-  }, [positions]);
+  /* Per-sector return, ranked. Sourced from the SAME shared field every other
+     org page uses (MOCK_TEAM_PERFORMANCE.ytd_return) so a sector's headline
+     return is identical across the whole org app (Command Center, Fund
+     Analytics, here). The desk previously recomputed an unrealized ROI from
+     positions, which diverged from the YTD figure shown elsewhere. */
+  const sectorRoi = useMemo(
+    () =>
+      MOCK_TEAM_PERFORMANCE.map((t) => ({
+        id: t.team_id,
+        name: SECTOR_SHORT[t.team_id],
+        roi: t.ytd_return,
+      })).sort((a, b) => b.roi - a.roi),
+    [],
+  );
   const roiMax = useMemo(() => Math.max(1, ...sectorRoi.map((s) => Math.abs(s.roi))), [sectorRoi]);
 
   const flaggedCount = useMemo(
@@ -205,7 +203,7 @@ export function CouncilTradingDesk() {
       value: String(flaggedCount),
       amber: flaggedCount > 0,
     },
-    { key: 'top', label: 'Top book', value: `${topBook.name} · ${fmtK(topBook.value)}` },
+    { key: 'top', label: 'Top book', value: fmtK(topBook.value), sub: topBook.name },
   ];
 
   return (
@@ -272,7 +270,7 @@ export function CouncilTradingDesk() {
         </div>
 
         <div className="ctd-hero-zone ctd-hero-roi">
-          <span className="ctd-zone-label">Sector performance · unrealized ROI</span>
+          <span className="ctd-zone-label">Sector performance · YTD return</span>
           <ul className="ctd-roi-list">
             {sectorRoi.map((s) => (
               <li key={s.id} className="ctd-roi-item">
@@ -301,6 +299,7 @@ export function CouncilTradingDesk() {
           {kpis.map((k) => (
             <div key={k.key} className={`ctd-kpi ${k.amber ? 'ctd-kpi-amber' : ''}`}>
               <span className="ctd-kpi-value ctd-num">{k.value}</span>
+              {k.sub && <span className="ctd-kpi-sub">{k.sub}</span>}
               <span className="ctd-kpi-label">{k.label}</span>
             </div>
           ))}
