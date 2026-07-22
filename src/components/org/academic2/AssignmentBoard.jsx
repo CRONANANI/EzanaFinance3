@@ -130,6 +130,8 @@ export function AssignmentBoard({ initialData = null }) {
         </div>
       </div>
 
+      {data.scope_label && <p className="asg2-scope-note">{data.scope_label}</p>}
+
       <AssignmentMetricsStrip metrics={data.metrics} />
 
       {view === 'calendar' ? (

@@ -19,7 +19,7 @@ import {
 } from './_shared';
 
 export const ROSTER_COLS =
-  'id, user_id, display_name, role, sub_role, title, team_id, cohort_id, is_active';
+  'id, user_id, display_name, role, sub_role, title, team_id, cohort_id, is_active, reports_to';
 
 /**
  * Build the full Assignments GET payload for a resolved org member.
@@ -62,45 +62,91 @@ export async function loadAssignments(supabase, member) {
   const rosterList = roster || [];
   const byUserId = new Map(rosterList.map((m) => [m.user_id, m]));
 
-  // Child rows for the visible assignments (RLS-scoped).
-  let assigneeRows = [];
-  let commentRows = [];
-  let submissionRows = [];
-  let attachmentRows = [];
-  if (ids.length) {
-    const [{ data: asg }, { data: com }, { data: sub }, { data: att }] = await Promise.all([
-      supabase
-        .from('org_assignment_assignees')
-        .select('assignment_id, target_type, target_id, target_role')
-        .eq('org_id', orgId)
-        .in('assignment_id', ids),
-      supabase
-        .from('org_assignment_comments')
-        .select('assignment_id')
-        .eq('org_id', orgId)
-        .in('assignment_id', ids),
-      supabase
-        .from('org_assignment_submissions')
-        .select('assignment_id, version')
-        .eq('org_id', orgId)
-        .in('assignment_id', ids),
-      supabase
-        .from('org_assignment_attachments')
-        .select('assignment_id')
-        .eq('org_id', orgId)
-        .in('assignment_id', ids),
-    ]);
-    assigneeRows = asg || [];
-    commentRows = com || [];
-    submissionRows = sub || [];
-    attachmentRows = att || [];
-  }
+  // Direct reports of the viewer: members whose reports_to points at M. Used to
+  // surface work M has delegated to their immediate subordinates (a CIO sees
+  // their PMs'/Ops Managers' assignments; a PM sees their analysts'). Direct
+  // only — not the full subtree. Non-managers have an empty set, so the same
+  // code path gives everyone just their own work.
+  const directReportIds = new Set(
+    rosterList.filter((r) => r.reports_to === member.id).map((r) => r.id),
+  );
 
+  // Assignee targets for ALL assignments first — needed to decide relevance
+  // before we fetch the heavier child rows only for the visible subset.
+  let assigneeRows = [];
+  if (ids.length) {
+    const { data: asg } = await supabase
+      .from('org_assignment_assignees')
+      .select('assignment_id, target_type, target_id, target_role')
+      .eq('org_id', orgId)
+      .in('assignment_id', ids);
+    assigneeRows = asg || [];
+  }
   const targetsByAssignment = new Map();
   for (const r of assigneeRows) {
     if (!targetsByAssignment.has(r.assignment_id)) targetsByAssignment.set(r.assignment_id, []);
     targetsByAssignment.get(r.assignment_id).push(r);
   }
+
+  // Resolve an assignment's targets to concrete members (with the legacy
+  // single-assignee fallback), memoized so relevance + enrichment share it.
+  const peopleCache = new Map();
+  const peopleFor = (a) => {
+    if (peopleCache.has(a.id)) return peopleCache.get(a.id);
+    let people = resolveTargetsToMembers(targetsByAssignment.get(a.id) || [], rosterList);
+    if (people.length === 0 && a.assigned_to && byUserId.has(a.assigned_to)) {
+      people = [byUserId.get(a.assigned_to)];
+    }
+    peopleCache.set(a.id, people);
+    return people;
+  };
+
+  // ── Relevance filter — server-side narrowing ON TOP OF RLS ──────────────────
+  // An assignment is relevant to the viewer M when ANY of:
+  //   1. M is an assignee (direct/role/team/cohort, or the legacy assigned_to),
+  //   2. M created / assigned it, or
+  //   3. one of M's DIRECT reports is an assignee.
+  // RLS still guarantees org isolation; this only narrows within the org. Lights
+  // up as each university's reports_to hierarchy is populated at onboarding —
+  // until then everyone correctly sees just their own work (empty reports set).
+  const isRelevant = (a) => {
+    if (a.created_by === member.user_id || a.assigned_by === member.user_id) return true;
+    if (a.assigned_to === member.user_id) return true;
+    const people = peopleFor(a);
+    if (people.some((p) => p.id === member.id)) return true;
+    for (const p of people) if (directReportIds.has(p.id)) return true;
+    return false;
+  };
+  const relevantAssignments = assignments.filter(isRelevant);
+  const relevantIds = relevantAssignments.map((a) => a.id);
+
+  // Child rows ONLY for the visible assignments (RLS-scoped + a small perf win).
+  let commentRows = [];
+  let submissionRows = [];
+  let attachmentRows = [];
+  if (relevantIds.length) {
+    const [{ data: com }, { data: sub }, { data: att }] = await Promise.all([
+      supabase
+        .from('org_assignment_comments')
+        .select('assignment_id')
+        .eq('org_id', orgId)
+        .in('assignment_id', relevantIds),
+      supabase
+        .from('org_assignment_submissions')
+        .select('assignment_id, version')
+        .eq('org_id', orgId)
+        .in('assignment_id', relevantIds),
+      supabase
+        .from('org_assignment_attachments')
+        .select('assignment_id')
+        .eq('org_id', orgId)
+        .in('assignment_id', relevantIds),
+    ]);
+    commentRows = com || [];
+    submissionRows = sub || [];
+    attachmentRows = att || [];
+  }
+
   const countBy = (list) => {
     const m = new Map();
     for (const r of list) m.set(r.assignment_id, (m.get(r.assignment_id) || 0) + 1);
@@ -114,13 +160,11 @@ export async function loadAssignments(supabase, member) {
   }
 
   const now = Date.now();
-  const enriched = assignments.map((a) => {
+  // Enrich ONLY the relevant assignments — so metrics + tab counts below reflect
+  // the filtered set the board shows, not org-wide totals.
+  const enriched = relevantAssignments.map((a) => {
     const targets = targetsByAssignment.get(a.id) || [];
-    let people = resolveTargetsToMembers(targets, rosterList);
-    // Fallback: legacy single-assignee rows with no assignee targets yet.
-    if (people.length === 0 && a.assigned_to && byUserId.has(a.assigned_to)) {
-      people = [byUserId.get(a.assigned_to)];
-    }
+    const people = peopleFor(a);
     const assignees = people.map((m) => ({
       member_id: m.id,
       user_id: m.user_id,
@@ -207,11 +251,18 @@ export async function loadAssignments(supabase, member) {
     if (m.sub_role) roleSet.add(m.sub_role);
   }
 
+  // Honest scope caption for the board — why the viewer sees what they see.
+  const scopeLabel =
+    directReportIds.size > 0
+      ? "Your assignments and those you've delegated to your direct reports."
+      : 'Your assignments.';
+
   const payload = {
     orgName: org?.university_name || org?.name || 'Organization',
     assignments: enriched,
     metrics,
     tab_counts,
+    scope_label: scopeLabel,
     roster: rosterList.map((m) => ({
       member_id: m.id,
       user_id: m.user_id,

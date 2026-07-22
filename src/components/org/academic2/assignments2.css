@@ -54,6 +54,15 @@
   gap: 0.6rem;
 }
 
+/* Honest caption explaining the viewer's assignment scope (own work, plus any
+   delegated to direct reports). Muted so it reads as context, not a heading. */
+.asg2-scope-note {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--text-muted);
+  margin: 0 0 1rem;
+}
+
 /* ── Buttons ────────────────────────────────────────────────────────────── */
 .asg2-btn {
   display: inline-flex;
