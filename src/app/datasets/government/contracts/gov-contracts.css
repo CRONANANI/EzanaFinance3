@@ -1161,59 +1161,81 @@
 }
 .gcx-ql-ai {
   display: flex;
-  align-items: center;
-  justify-content: center; /* centers the whole group */
+  align-items: stretch; /* was center — centering floated the button's
+                           bottom border up into the input's text baseline */
+  justify-content: center;
   gap: 8px;
-  background: transparent; /* pill chrome removed */
+  background: transparent;
   border: none;
   border-radius: 0;
   padding: 6px 0;
   margin-bottom: 12px;
+  font-family: var(--font-sans);
 }
 .gcx-ql-ai-badge {
   display: inline-flex;
   align-items: center;
   gap: 5px;
+  flex: 0 0 auto; /* never shrink the badge */
   font-size: 11px;
   font-weight: 600;
   color: var(--emerald);
   white-space: nowrap;
 }
-/* Bounded field wrapper: caps the input's width so the generate button sits
-   beside the text, and anchors the blinking caret to the input's own line. */
 .gcx-ql-ai-field {
   position: relative;
   display: flex;
-  flex: 0 1 560px;
+  align-items: center;
+  flex: 1 1 auto; /* was 0 1 560px — the fixed basis capped the field while
+                     the placeholder kept running, reading as a hard cut */
   min-width: 0;
+  max-width: 560px;
+  height: 34px; /* shared row height with the button */
 }
 .gcx-ql-ai-input {
   flex: 1 1 auto;
+  width: 100%;
   min-width: 0;
+  height: 100%;
   background: none;
   border: none;
   outline: none;
+  font-family: inherit;
   font-size: 12.5px;
   color: var(--text-primary);
-  text-align: center; /* matches the centered surface */
+  text-align: center;
+  text-overflow: ellipsis; /* honest truncation instead of a hard cut */
 }
-/* Mirrors .gcx-reportbtn: no fill, no border, emerald text on a 2px emerald
-   underline. Overrides the .gcx-btn-primary fill it also carries. */
+.gcx-ql-ai-input::placeholder {
+  color: var(--text-ghost);
+  text-overflow: ellipsis;
+}
 .gcx-ql-gen {
+  flex: 0 0 auto; /* never shrink or wrap the CTA */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px; /* matches .gcx-ql-ai-field so the underline sits on the
+                   row's baseline, not through the placeholder */
   white-space: nowrap;
   background: transparent;
   color: var(--emerald);
   border: none;
   border-bottom: 2px solid var(--emerald);
-  border-radius: 6px 6px 0 0;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
   box-shadow: none;
-  padding: 6px 10px;
+  padding: 0 10px;
+  font-family: inherit;
   font-weight: 600;
   transition: background 0.15s ease;
 }
 .gcx-ql-gen:hover:not(:disabled) {
   background: var(--emerald-bg);
   color: var(--emerald);
+}
+.gcx-ql-gen:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
 }
 .gcx-ql-gen:disabled {
   opacity: 0.55;
@@ -1370,16 +1392,39 @@
   }
   /* EzanaQL builder: ≥16px inputs so iOS doesn't zoom on focus; let the AI row
      and the action button row wrap instead of overflowing. */
-  .gcx-ql-code,
-  .gcx-ql-ai-input {
+  .gcx-ql-code {
     font-size: 16px;
   }
   .gcx-ql-ai {
     flex-wrap: wrap;
+    row-gap: 10px;
+  }
+  /* The order/basis rules previously targeted .gcx-ql-ai-input, which is not
+     a flex child of .gcx-ql-ai — the field wrapper is. They were inert. */
+  .gcx-ql-ai-badge {
+    order: 1;
+  }
+  .gcx-ql-ai-field {
+    order: 2;
+    flex: 1 1 auto;
+    max-width: none;
+  }
+  .gcx-ql-gen {
+    order: 3;
+    flex: 1 1 100%;
+    height: 36px; /* touch target */
   }
   .gcx-ql-ai-input {
-    flex-basis: 100%;
-    order: 3;
+    font-size: 16px; /* keep — prevents iOS Safari zoom on focus */
+    text-align: left;
+  }
+  .gcx-ql-ai-input::placeholder {
+    text-align: left;
+  }
+  /* Input is left-aligned here, so the caret returns to the left edge. */
+  .gcx-ql-ai-caret {
+    left: 0;
+    transform: translateY(-50%);
   }
   .gcx-ql-actions {
     flex-direction: column;
@@ -1407,6 +1452,22 @@
   }
   .gcx-row-bar {
     display: none;
+  }
+  /* EzanaQL AI row: stack fully — badge, field, then full-width button. */
+  .gcx-ql-ai {
+    flex-direction: column;
+    align-items: stretch;
+    row-gap: 8px;
+  }
+  .gcx-ql-ai-badge {
+    justify-content: center;
+  }
+  .gcx-ql-ai-field {
+    height: 32px;
+    width: 100%;
+  }
+  .gcx-ql-gen {
+    width: 100%;
   }
 }
 
@@ -1666,9 +1727,9 @@
    left of the input's own (centered) line; hides on focus or once typed. */
 .gcx-ql-ai-caret {
   position: absolute;
-  left: 0;
+  left: 50%;
   top: 50%;
-  transform: translateY(-50%);
+  transform: translate(-50%, -50%);
   font-family: var(--font-mono, monospace);
   font-size: 13px;
   color: var(--emerald);

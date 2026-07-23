@@ -554,7 +554,7 @@ function EzanaQLTeaser({ onStart, hidden }) {
               e.preventDefault();
               start(e.clipboardData.getData('text'));
             }}
-            placeholder="Describe the report in plain English — e.g. “Top 10 defense contractors this fiscal year, with YoY change” — and we’ll write the EzanaQL"
+            placeholder="Describe the report in plain English — we'll write the EzanaQL"
             aria-label="Describe the report you want"
           />
         </span>
@@ -1527,7 +1527,7 @@ function EzanaQLBuilder({ activeFilters, seedPrompt = '', onClose }) {
             onChange={(e) => setPrompt(e.target.value)}
             onFocus={() => setPromptFocused(true)}
             onBlur={() => setPromptFocused(false)}
-            placeholder="Describe the report in plain English — e.g. “Top 10 defense contractors this fiscal year, with YoY change” — and we’ll write the EzanaQL"
+            placeholder="Describe the report in plain English — we'll write the EzanaQL"
           />
         </span>
         <button
