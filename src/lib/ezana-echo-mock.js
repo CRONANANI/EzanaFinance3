@@ -32,8 +32,10 @@ import { trumpPortfolio2026 } from './ezana-echo-article-trump-portfolio-2026.js
 import { peterThiel2026 } from './ezana-echo-article-peter-thiel-2026.js';
 import { privateCreditMaturityWallArticle2026 } from './ezana-echo-article-private-credit-maturity-wall-2026.js';
 import { criticalMineralsArticle2026 } from './ezana-echo-article-critical-minerals-2026.js';
+import { ballroomDonorsContracts2026 } from './ezana-echo-article-ballroom-donors-contracts-2026.js';
 
 const ARTICLES = [
+  ballroomDonorsContracts2026,
   criticalMineralsArticle2026,
   peterThiel2026,
   trumpPortfolio2026,
