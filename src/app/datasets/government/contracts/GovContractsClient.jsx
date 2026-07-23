@@ -581,24 +581,158 @@ function FilterGroup({ title, meta, children }) {
     </div>
   );
 }
-// Fiscal year as a native select (years derived from coverage — never hardcoded).
+// Fiscal year selector. Custom listbox (not a native <select>) so the popup
+// can carry the design system; years still derive from coverage, never hardcoded.
 function FiscalYearSelect({ value, years, onChange }) {
+  const [open, setOpen] = useState(false);
+  const [activeIdx, setActiveIdx] = useState(0);
+  const wrapRef = useRef(null);
+  const triggerRef = useRef(null);
+  const listRef = useRef(null);
+
+  const options = useMemo(
+    () => [
+      { value: 'all', label: 'All years', mono: false },
+      ...years.map((y) => ({ value: String(y), label: `FY${y}`, mono: true })),
+    ],
+    [years],
+  );
+
+  const selectedIdx = Math.max(
+    0,
+    options.findIndex((o) => o.value === value),
+  );
+  const selected = options[selectedIdx];
+
+  // Sync the keyboard cursor to the current selection each time the panel opens.
+  useEffect(() => {
+    if (open) setActiveIdx(selectedIdx);
+  }, [open, selectedIdx]);
+
+  // Outside pointerdown closes the panel.
+  useEffect(() => {
+    if (!open) return undefined;
+    const onDown = (e) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('pointerdown', onDown);
+    return () => document.removeEventListener('pointerdown', onDown);
+  }, [open]);
+
+  // Keep the active option scrolled into view during keyboard navigation.
+  useEffect(() => {
+    if (!open || !listRef.current) return;
+    const el = listRef.current.querySelector(`[data-idx="${activeIdx}"]`);
+    if (el) el.scrollIntoView({ block: 'nearest' });
+  }, [open, activeIdx]);
+
+  const close = (refocus = true) => {
+    setOpen(false);
+    if (refocus) triggerRef.current?.focus();
+  };
+
+  const commit = (idx) => {
+    onChange(options[idx].value);
+    close();
+  };
+
+  const onKeyDown = (e) => {
+    if (!open) {
+      if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        setOpen(true);
+      }
+      return;
+    }
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setActiveIdx((i) => Math.min(i + 1, options.length - 1));
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setActiveIdx((i) => Math.max(i - 1, 0));
+        break;
+      case 'Home':
+        e.preventDefault();
+        setActiveIdx(0);
+        break;
+      case 'End':
+        e.preventDefault();
+        setActiveIdx(options.length - 1);
+        break;
+      case 'Enter':
+      case ' ':
+        e.preventDefault();
+        commit(activeIdx);
+        break;
+      case 'Escape':
+        e.preventDefault();
+        close();
+        break;
+      case 'Tab':
+        close(false);
+        break;
+      default:
+        break;
+    }
+  };
+
   return (
-    <div className="gcx-select-wrap">
-      <select
+    <div className="gcx-select-wrap" ref={wrapRef}>
+      <button
+        ref={triggerRef}
+        type="button"
         className="gcx-select"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
         aria-label="Fiscal year"
+        onClick={() => setOpen((o) => !o)}
+        onKeyDown={onKeyDown}
       >
-        <option value="all">All years</option>
-        {years.map((y) => (
-          <option key={y} value={String(y)}>
-            FY{y}
-          </option>
-        ))}
-      </select>
-      <i className="bi bi-chevron-down gcx-select-caret" aria-hidden="true" />
+        <span className={selected?.mono ? 'gcx-select-val gcx-num' : 'gcx-select-val'}>
+          {selected?.label ?? 'All years'}
+        </span>
+      </button>
+      <i
+        className={`bi bi-chevron-down gcx-select-caret ${open ? 'is-open' : ''}`}
+        aria-hidden="true"
+      />
+
+      {open && (
+        <div
+          ref={listRef}
+          className="gcx-menu"
+          role="listbox"
+          tabIndex={-1}
+          aria-label="Fiscal year"
+          aria-activedescendant={`gcx-fy-opt-${activeIdx}`}
+          onKeyDown={onKeyDown}
+        >
+          {options.map((o, i) => {
+            const isSel = o.value === value;
+            return (
+              <div
+                key={o.value}
+                id={`gcx-fy-opt-${i}`}
+                data-idx={i}
+                role="option"
+                aria-selected={isSel}
+                className={`gcx-menu-item ${i === activeIdx ? 'is-active' : ''} ${
+                  isSel ? 'is-selected' : ''
+                }`}
+                onMouseEnter={() => setActiveIdx(i)}
+                onClick={() => commit(i)}
+              >
+                <span className="gcx-menu-check" aria-hidden="true">
+                  {isSel ? <i className="bi bi-check2" /> : null}
+                </span>
+                <span className={o.mono ? 'gcx-num' : undefined}>{o.label}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

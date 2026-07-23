@@ -304,41 +304,143 @@
 .gcx-select-wrap {
   position: relative;
 }
+
+/* Trigger: size intentionally frozen at the previous native-select metrics. */
 .gcx-select {
   width: 100%;
-  padding: 4px 26px 4px 12px; /* was 9px 30px 9px 12px — ~50% vertical */
-  height: 26px; /* ~half the previous ~44px */
+  padding: 4px 26px 4px 12px;
+  height: 26px;
   line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid var(--emerald-border);
   background: var(--emerald-bg);
   border-radius: var(--radius-md);
-  font-family: inherit;
+  font-family: var(--font-sans);
   font-size: 12.5px;
   font-weight: 600;
   color: var(--emerald);
   cursor: pointer;
   appearance: none;
   -webkit-appearance: none;
-  text-align: center; /* centers the selected value */
-  text-align-last: center; /* required in Chrome/Edge for <select> */
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+.gcx-select:hover {
+  background: var(--emerald-bg-hover);
+  border-color: var(--border-hover);
 }
 .gcx-select:focus-visible {
   outline: 2px solid var(--emerald);
   outline-offset: 2px;
 }
-/* Native option lists are OS-rendered; force readable colors where supported. */
-.gcx-select option {
-  color: var(--text-primary);
-  background: var(--bg-primary);
+.gcx-select-val {
+  display: inline-block;
 }
 .gcx-select-caret {
   position: absolute;
   right: 11px;
-  top: 50%;
+  top: 13px;
   transform: translateY(-50%);
   pointer-events: none;
   font-size: 11px;
   color: var(--emerald);
+  transition: transform 0.15s ease;
+}
+.gcx-select-caret.is-open {
+  transform: translateY(-50%) rotate(180deg);
+}
+
+/* Brand rule: JetBrains Mono, tabular figures, for every numeric value. */
+.gcx-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* ── Fiscal year popup (21st.dev-style panel, Ezana tokens) ── */
+.gcx-menu {
+  position: absolute;
+  z-index: 50;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 100%;
+  max-height: 288px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 4px;
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  box-shadow: var(--shadow-lg);
+  animation: gcx-menu-in 0.15s ease-out;
+  transform-origin: top center;
+}
+@keyframes gcx-menu-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+.gcx-menu-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--text-secondary);
+  cursor: default;
+  user-select: none;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.gcx-menu-item.is-active {
+  background: var(--emerald-bg-hover);
+  color: var(--text-primary);
+}
+.gcx-menu-item.is-selected {
+  color: var(--emerald);
+  font-weight: 600;
+}
+/* Fixed 14px slot keeps unchecked labels optically aligned with checked ones. */
+.gcx-menu-check {
+  flex: 0 0 14px;
+  width: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: var(--emerald);
+}
+.gcx-menu::-webkit-scrollbar {
+  width: 6px;
+}
+.gcx-menu::-webkit-scrollbar-thumb {
+  background: var(--text-ghost);
+  border-radius: var(--radius-sm);
+}
+@media (prefers-reduced-motion: reduce) {
+  .gcx-menu {
+    animation: none;
+  }
+  .gcx-select,
+  .gcx-select-caret,
+  .gcx-menu-item {
+    transition: none;
+  }
 }
 .gcx-chip {
   display: flex;
