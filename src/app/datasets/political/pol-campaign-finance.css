@@ -6,6 +6,10 @@
 
 .pcf-section {
   margin-top: 28px;
+  /* These sections render inside .ptx-page (which carries the overflow guard);
+     min-width:0 lets their flex/grid children shrink instead of widening the
+     page. See marketing-explore.css for the full rationale. */
+  min-width: 0;
 }
 .pcf-section-head {
   display: flex;
@@ -143,6 +147,7 @@
 .pcf-table-wrap {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  max-width: 100%;
 }
 .pcf-table {
   width: 100%;

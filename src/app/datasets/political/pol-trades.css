@@ -1,6 +1,20 @@
 /* Congressional trading — Political Trade Tracker 1a. Light mode, tokens only.
    Mirrors the Government Contracts page family (margins, cards, rail, ticker). */
 
+/* Overflow containment — see marketing-explore.css for the full rationale.
+   clip (not hidden) so position:sticky descendants keep working; min-width:0
+   lets flex/grid children shrink instead of propping the page past the
+   viewport. The root keeps its own max-width — only these two are added. */
+.ptx-page {
+  overflow-x: clip;
+  min-width: 0;
+}
+.ptx-page img,
+.ptx-page svg,
+.ptx-page canvas {
+  max-width: 100%;
+}
+
 .ptx-page {
   max-width: var(--marketing-shell-max);
   margin: 0 auto;
@@ -496,6 +510,8 @@
 }
 .ptx-table-wrap {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
 }
 .ptx-table {
   width: 100%;

@@ -2,6 +2,20 @@
    1440px page / 32px margins, centered header. Tokens only; the campaign-finance
    cards themselves are styled by pol-campaign-finance.css (shared component). */
 
+/* Overflow containment — see marketing-explore.css for the full rationale.
+   clip (not hidden) so position:sticky descendants keep working; min-width:0
+   lets flex/grid children shrink instead of propping the page past the
+   viewport. The root keeps its own max-width — only these two are added. */
+.cfr-page {
+  overflow-x: clip;
+  min-width: 0;
+}
+.cfr-page img,
+.cfr-page svg,
+.cfr-page canvas {
+  max-width: 100%;
+}
+
 .cfr-page {
   max-width: var(--marketing-shell-max);
   margin: 0 auto;

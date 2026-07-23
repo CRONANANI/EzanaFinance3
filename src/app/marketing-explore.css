@@ -8,6 +8,29 @@
   -webkit-font-smoothing: antialiased;
 }
 
+/* ── Overflow containment ──────────────────────────────────────────
+   A block container expands to fit an overflowing child unless told
+   otherwise. The dataset table sets min-width:720px, so without this
+   guard it forces .mkt-main — and the whole page — past the viewport
+   on any phone. min-width:0 lets flex/grid children shrink below their
+   content width instead of propping the parent open.
+   `clip` rather than `hidden`: hidden creates a scroll container and
+   silently breaks position:sticky descendants (table headers).
+   NB: .mkt-main keeps its own max-width:1100px (desktop column) — only
+   min-width:0 is added here, never max-width:100%, which would widen it. */
+.mkt-page {
+  overflow-x: clip;
+  min-width: 0;
+}
+.mkt-main {
+  min-width: 0;
+}
+.mkt-page img,
+.mkt-page svg,
+.mkt-page canvas {
+  max-width: 100%;
+}
+
 .mkt-top {
   display: flex;
   align-items: center;
@@ -564,6 +587,8 @@ body.light-mode .mkt-card {
 /* primary data table */
 .mkt-ds-table-wrap {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
   border: 1px solid var(--border-primary);
   border-radius: 14px;
   background: var(--surface-card);
@@ -703,6 +728,22 @@ body.light-mode .mkt-ds-table-wrap {
 @media (max-width: 640px) {
   .mkt-ds-search-row {
     grid-template-columns: 1fr;
+  }
+  /* Long entity/company names break rather than setting a min-content floor
+     that props the table (and page) wider than the viewport. */
+  .mkt-ds-entity {
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Buy back horizontal room on the smallest phones; keep the heading from
+     clipping when a single long word can't fit 360px. */
+  .mkt-main {
+    padding: 1.5rem 0.75rem 2.5rem;
+  }
+  .mkt-h1 {
+    overflow-wrap: anywhere;
   }
 }
 

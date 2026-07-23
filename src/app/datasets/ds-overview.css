@@ -2,6 +2,20 @@
    tokens only. Mirrors the Government Contracts / Congressional Trading family
    (1440px margins, shared CategoryBar + ticker, cards, hairline dividers). */
 
+/* Overflow containment — see marketing-explore.css for the full rationale.
+   clip (not hidden) so position:sticky descendants keep working; min-width:0
+   lets flex/grid children shrink instead of propping the page past the
+   viewport. The root keeps its own max-width — only these two are added. */
+.dsx-page {
+  overflow-x: clip;
+  min-width: 0;
+}
+.dsx-page img,
+.dsx-page svg,
+.dsx-page canvas {
+  max-width: 100%;
+}
+
 .dsx-page {
   max-width: var(--marketing-shell-max);
   margin: 0 auto;

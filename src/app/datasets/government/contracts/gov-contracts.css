@@ -1,6 +1,20 @@
 /* Government Contracts — Option 1b. Light mode, tokens only (no hardcoded hex
    except the gold/agency accents which come from CSS custom properties). */
 
+/* Overflow containment — see marketing-explore.css for the full rationale.
+   clip (not hidden) so position:sticky descendants keep working; min-width:0
+   lets flex/grid children shrink instead of propping the page past the
+   viewport. Kept separate from the root's token-pinning block below. */
+.gcx-page {
+  overflow-x: clip;
+  min-width: 0;
+}
+.gcx-page img,
+.gcx-page svg,
+.gcx-page canvas {
+  max-width: 100%;
+}
+
 .gcx-page {
   max-width: var(--marketing-shell-max);
   margin: 0 auto;
@@ -68,6 +82,9 @@
   left: 0;
   margin-top: 6px;
   min-width: 230px;
+  /* Cap to the viewport so the absolutely-positioned menu can't push the page
+     wider than a phone screen; desktop is governed by min-width. */
+  max-width: calc(100vw - 24px);
   background: var(--bg-primary);
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-lg, 12px);
@@ -1163,6 +1180,8 @@
 }
 .gcx-ql-table-wrap {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-md, 8px);
 }
@@ -1349,6 +1368,8 @@
 }
 .gcx-exp-tablewrap {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
   border: 1px solid var(--border-primary);
   border-radius: 12px;
 }

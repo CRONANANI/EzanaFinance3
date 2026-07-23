@@ -4,6 +4,20 @@
    palette lives here as page-scoped CSS variables (tokenized, never hardcoded in
    JS). Bar length encodes disclosed dollars; segments encode targeting ACTIVITY. */
 
+/* Overflow containment — see marketing-explore.css for the full rationale.
+   clip (not hidden) so position:sticky descendants keep working; min-width:0
+   lets flex/grid children shrink instead of propping the page past the
+   viewport. The root keeps its own max-width — only these two are added. */
+.lbx-page {
+  overflow-x: clip;
+  min-width: 0;
+}
+.lbx-page img,
+.lbx-page svg,
+.lbx-page canvas {
+  max-width: 100%;
+}
+
 .lbx-page {
   max-width: var(--marketing-shell-max);
   margin: 0 auto;
@@ -582,6 +596,7 @@
 .lbx-table-wrap {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  max-width: 100%;
 }
 .lbx-table {
   width: 100%;
