@@ -21,6 +21,8 @@ function applyNonOrg(set) {
   set.orgRole(null);
   set.orgData(null);
   set.permissionOverrides([]);
+  set.orgRoles([]);
+  set.primaryRoleName(null);
 }
 
 export function OrgProvider({ children }) {
@@ -29,6 +31,10 @@ export function OrgProvider({ children }) {
   const [orgRole, setOrgRole] = useState(null);
   const [orgData, setOrgData] = useState(null);
   const [permissionOverrides, setPermissionOverrides] = useState([]);
+  // Per-university roles resolved server-side (union-of-permissions model).
+  // Additive to orgRole (the tier); the tier still drives all existing gates.
+  const [orgRoles, setOrgRoles] = useState([]);
+  const [primaryRoleName, setPrimaryRoleName] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   // Guards against overlapping/re-entrant runs (auth context can churn
   // `user`/`isAuthenticated` during boot, re-triggering the effect).
@@ -40,6 +46,8 @@ export function OrgProvider({ children }) {
       orgRole: setOrgRole,
       orgData: setOrgData,
       permissionOverrides: setPermissionOverrides,
+      orgRoles: setOrgRoles,
+      primaryRoleName: setPrimaryRoleName,
     };
 
     // Wait for auth to settle before deciding org status. Running while `user`
@@ -80,6 +88,8 @@ export function OrgProvider({ children }) {
       setPermissionOverrides(
         Array.isArray(payload.permissionOverrides) ? payload.permissionOverrides : [],
       );
+      setOrgRoles(Array.isArray(payload.orgRoles) ? payload.orgRoles : []);
+      setPrimaryRoleName(payload.primaryRoleName ?? null);
     } catch (err) {
       console.error('[Org] Status check error:', err);
       applyNonOrg(set);
@@ -133,6 +143,11 @@ export function OrgProvider({ children }) {
     isExecutive: orgRole === 'executive',
     isPortfolioManager: orgRole === 'portfolio_manager',
     isAnalyst: orgRole === 'analyst',
+    // Per-university roles + display title. Existing keys stay for compatibility;
+    // these are additive. Display `primaryRoleName` where a human-readable title
+    // is wanted (falls back to null until an org's roles are defined).
+    orgRoles,
+    primaryRoleName,
     canManage: orgRole === 'executive' || orgRole === 'portfolio_manager',
     permissions: effectivePermissions,
     hasPermission,

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { getUserClient } from '@/lib/supabase';
+import { getEffectivePermissions } from '@/lib/org-roles-server';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -76,6 +77,21 @@ export const GET = withApiGuard(
       .select('permission_key')
       .eq('org_member_id', member.id);
 
+    // 5) per-university roles + union-of-permissions (Shopify-style). Additive:
+    //    orgRole (the tier) below is untouched. When the org hasn't been migrated
+    //    or the member holds no org_roles, getEffectivePermissions returns the
+    //    legacy tier path (roles: [], primaryRole: null), so nothing regresses.
+    //    Wrapped so a missing org_roles table can never break status resolution.
+    let orgRoles = [];
+    let primaryRoleName = null;
+    try {
+      const resolved = await getEffectivePermissions(supabase, member);
+      orgRoles = resolved.roles;
+      primaryRoleName = resolved.primaryRole;
+    } catch {
+      /* pre-migration / no roles → keep legacy tier behaviour */
+    }
+
     return NextResponse.json({
       isOrgUser: true,
       orgRole: member.role,
@@ -86,6 +102,8 @@ export const GET = withApiGuard(
         teams: teams || [],
       },
       permissionOverrides: (permRows || []).map((p) => p.permission_key),
+      orgRoles,
+      primaryRoleName,
     });
   },
   { requireAuth: false },
