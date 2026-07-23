@@ -17,8 +17,8 @@ export const ballroomDonorsContracts2026 = {
   excerpt:
     'Public Citizen found that 14 of 27 known corporate donors to the $400 million White House ballroom won more than $50 billion in new or expanded federal contracts in six months. Lockheed Martin took $43.8 billion of it. The concentration is the story — and the disclosure gap is the reason it matters.',
   heroImage: {
-    src: '/echo/ballroom-donors-hero.jpg',
-    alt: 'Senior White House officials in the Roosevelt Room during a policy briefing',
+    src: '/echo/trumpkushner.jpg',
+    alt: 'Jared Kushner in the foreground with President Trump speaking, slightly out of focus, at a White House meeting',
     caption:
       'The White House has disclosed 21 corporate ballroom donors; news outlets identified six more. The funding agreement permits donors to remain anonymous.',
   },
@@ -44,7 +44,7 @@ export const ballroomDonorsContracts2026 = {
     },
     {
       type: 'paragraph',
-      text: 'The distinction between the report’s two headline numbers matters more than either in isolation. The $50 billion figure covers new or increased [[kw:federal-contract-obligation]]contract obligations[[/kw]] over a six-month window beginning with the October 2025 East Wing demolition. The separate $338 billion figure covers all federal contracts held by 19 of the 27 donors over five and a half years. Lockheed’s $43.8 billion is 87% of the first number and roughly 13% of the second. Coverage that cites the $43.8 billion against the wrong denominator overstates a concentration that is already striking on its own terms.',
+      text: 'The distinction between the report’s two headline numbers matters more than either in isolation. The $50 billion figure covers new or increased contract obligations over a six-month window beginning with the October 2025 East Wing demolition. The separate $338 billion figure covers all federal contracts held by 19 of the 27 donors over five and a half years. Lockheed’s $43.8 billion is 87% of the first number and roughly 13% of the second. Coverage that cites the $43.8 billion against the wrong denominator overstates a concentration that is already striking on its own terms.',
     },
     {
       type: 'paragraph',
@@ -71,7 +71,7 @@ export const ballroomDonorsContracts2026 = {
       variant: 'horizontal-bar',
       title: 'New or expanded federal contracts by ballroom donor',
       caption:
-        'Six-month window following the October 2025 East Wing demolition, in millions of USD. Log-scale differences are severe: Lockheed Martin is roughly 307x Caterpillar. Source: Public Citizen, "Ballroom Billions," June 4, 2026; per-company figures as reported by Fortune, June 9, 2026.',
+        'Six-month window following the October 2025 East Wing demolition, in millions of USD. The spread is severe: Lockheed Martin is roughly 307x Caterpillar. Source: Public Citizen, "Ballroom Billions," June 4, 2026; per-company figures as reported by Fortune, June 9, 2026.',
       data: [
         { x: 'Lockheed Martin', value: 43800 },
         { x: 'Booz Allen Hamilton', value: 4200 },
@@ -90,7 +90,7 @@ export const ballroomDonorsContracts2026 = {
     },
     {
       type: 'paragraph',
-      text: 'The Lockheed figure also deserves scrutiny on its own terms. Large defense awards are typically [[kw:idiq-contract]]indefinite-delivery vehicles[[/kw]] with ceiling values spanning many years, and they move through multi-year source-selection processes that begin long before any given quarter. A $43.8 billion obligation recorded in a six-month window does not mean $43.8 billion was spent in six months, nor that the award decision was made in that window. Any serious reading of the number has to separate the obligation date from the procurement timeline that produced it.',
+      text: 'The Lockheed figure also deserves scrutiny on its own terms. Large defense awards are typically indefinite-delivery vehicles with ceiling values spanning many years, and they move through multi-year source-selection processes that begin long before any given quarter. A $43.8 billion obligation recorded in a six-month window does not mean $43.8 billion was spent in six months, nor that the award decision was made in that window. Any serious reading of the number has to separate the obligation date from the procurement timeline that produced it.',
     },
     {
       type: 'heading',
@@ -156,12 +156,9 @@ export const ballroomDonorsContracts2026 = {
   tickers: ['LMT', 'BAH', 'PLTR', 'MSFT', 'AMZN', 'HPQ', 'CAT', 'GOOGL', 'CMCSA'],
   entities: {
     people: [],
-    terms: [
-      { id: 'federal-contract-obligation', label: 'Federal Contract Obligation' },
-      { id: 'idiq-contract', label: 'IDIQ Contract' },
-    ],
+    terms: [],
   },
-  readTime: 7,
+  readTime: 9,
   publishedAt: '2026-07-23',
   featured: true,
   likes: 0,
