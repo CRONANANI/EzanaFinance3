@@ -485,8 +485,11 @@ export default function GovContractsClient({
               <>
                 <Treemap recipients={treemapRecipients} onPick={setSelected} colorOf={colorOf} />
                 <p className="gcx-treemap-cap">
-                  Top {treemapRecipients.length.toLocaleString()} of{' '}
-                  {filtered.length.toLocaleString()} recipients by obligated value — full list below.
+                  {/* Rollup rows are trimmed to a top slice per year (see
+                      getContractRollups), so `filtered.length` is "recipients
+                      sent", not "recipients that exist" — don't claim an "of N"
+                      total the page can no longer substantiate. */}
+                  Top {treemapRecipients.length.toLocaleString()} recipients by obligated value.
                 </p>
               </>
             ) : (
@@ -501,7 +504,7 @@ export default function GovContractsClient({
           <section className="gcx-card gcx-list">
             <div className="gcx-list-head">
               <h2 className="gcx-hero-title">Leading contractors · {label}</h2>
-              <span className="gcx-list-count">{filtered.length} shown</span>
+              <span className="gcx-list-count">{Math.min(filtered.length, 25).toLocaleString()} shown</span>
             </div>
             <ContractorList recipients={filtered.slice(0, 25)} onPick={setSelected} colorOf={colorOf} />
           </section>

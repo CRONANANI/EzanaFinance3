@@ -297,6 +297,39 @@ export async function getContractRollups({ fiscalYear = null, limit = 40000 } = 
 
     if (recRows.length === 0) return null;
 
+    // The client renders at most ~65 recipients for the selected year (treemap
+    // caps at 40, the list at 25). Shipping ~1,000 rows PER YEAR into the RSC
+    // payload cost ~2.6 MB at 11 fiscal years and grows with the backfill —
+    // which is what broke the page. Keep the top slice of EACH year so per-year
+    // views stay correct and distinct, and drop the tail nothing renders.
+    const PER_YEAR_KEEP = 120;
+    const PER_YEAR_AGENCY_KEEP = 12; // so filtering to a small agency isn't empty
+    const byYear = new Map();
+    for (const r of recRows) {
+      const fy = Number(r.fiscal_year);
+      const arr = byYear.get(fy) || [];
+      arr.push(r);
+      byYear.set(fy, arr);
+    }
+    const trimmed = [];
+    for (const [, arr] of byYear) {
+      arr.sort((a, b) => (Number(b.total_amount) || 0) - (Number(a.total_amount) || 0));
+      const kept = new Set();
+      const perAgency = new Map();
+      // Pass 1: overall top-N for this year.
+      for (const r of arr.slice(0, PER_YEAR_KEEP)) kept.add(r);
+      // Pass 2: guarantee each agency has a few rows, so agency-filtered views
+      // are never empty just because that agency is small.
+      for (const r of arr) {
+        const ag = r.awarding_agency || 'Unknown';
+        const n = perAgency.get(ag) || 0;
+        if (n >= PER_YEAR_AGENCY_KEEP) continue;
+        perAgency.set(ag, n + 1);
+        kept.add(r);
+      }
+      trimmed.push(...kept);
+    }
+
     // ~65 agencies/year. At 19 fiscal years this approaches Supabase's 1,000-row
     // default cap — page it the same way as the recipients if a year goes missing
     // from the sidebar.
@@ -321,7 +354,7 @@ export async function getContractRollups({ fiscalYear = null, limit = 40000 } = 
     // "All years" is selected. Agency stays the RAW awarding_agency (no regex
     // bucketing — the official names are the source of truth).
     const map = new Map();
-    for (const r of recRows) {
+    for (const r of trimmed) {
       const name = r.recipient_name || 'Unknown';
       const agency = r.awarding_agency || 'Unknown';
       const fy = Number(r.fiscal_year);

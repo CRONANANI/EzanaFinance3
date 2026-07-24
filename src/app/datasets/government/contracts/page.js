@@ -53,6 +53,19 @@ export default async function GovernmentContractsPage() {
     awardsRes.status === 'fulfilled' ? awardsRes.value : { rows: [], source: null, syncedAt: null };
   const coverage = coverageRes.status === 'fulfilled' ? coverageRes.value : null;
 
+  // Dev-only tripwire: `rollup` is serialized into the RSC payload on every
+  // request. Trimming per year (getContractRollups) keeps this small; if it
+  // creeps back up, surface it here instead of shipping a multi-MB payload.
+  if (process.env.NODE_ENV !== 'production' && rollup?.recipients) {
+    const kb = Math.round(JSON.stringify(rollup).length / 1024);
+    if (kb > 900) {
+      console.warn(
+        `[gov-contracts] rollup payload ${kb} KB — this is serialized into the RSC ` +
+          `payload on every request. Lower PER_YEAR_KEEP in getContractRollups.`,
+      );
+    }
+  }
+
   const usingSample = !rollup && source === null;
   const awardRows = usingSample
     ? CONTRACT_AWARDS_SAMPLE.map((r) => ({ ...r, date: formatDisplayDate(r.date) }))
