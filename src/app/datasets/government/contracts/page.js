@@ -3,6 +3,7 @@ import {
   getContractAwardsWithFallback,
   getContractCoverage,
   getContractRollups,
+  getRecentAwardFeed,
   contractFreshnessNote,
 } from '@/lib/usaspending-store';
 import { CONTRACT_AWARDS_SAMPLE } from '../government-sample';
@@ -42,16 +43,18 @@ export default async function GovernmentContractsPage() {
   // null rather than taking down the whole page. Previously an unhandled
   // rejection (or a timeout) rendered the generic error boundary instead of the
   // sample-data fallback the page was designed to have.
-  const [rollupRes, awardsRes, coverageRes] = await Promise.allSettled([
+  const [rollupRes, awardsRes, coverageRes, recentRes] = await Promise.allSettled([
     getContractRollups({ limit: 40000 }),
     getContractAwardsWithFallback({ limit: 200 }),
     getContractCoverage(),
+    getRecentAwardFeed({ limit: 60 }),
   ]);
 
   const rollup = rollupRes.status === 'fulfilled' ? rollupRes.value : null;
   const { rows, source, syncedAt } =
     awardsRes.status === 'fulfilled' ? awardsRes.value : { rows: [], source: null, syncedAt: null };
   const coverage = coverageRes.status === 'fulfilled' ? coverageRes.value : null;
+  const recentAwards = recentRes.status === 'fulfilled' ? recentRes.value : [];
 
   // Dev-only tripwire: `rollup` is serialized into the RSC payload on every
   // request. Trimming per year (getContractRollups) keeps this small; if it
@@ -80,6 +83,7 @@ export default async function GovernmentContractsPage() {
       note={contractFreshnessNote(noteSource, syncedAt)}
       coverage={coverage && coverage.total > 0 ? coverage : null}
       rollup={rollup}
+      recentAwards={recentAwards}
     />
   );
 }

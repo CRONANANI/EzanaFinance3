@@ -5,6 +5,7 @@ import {
   getFiscalYearCoverage,
   getAgencyTotals,
   getTopRecipients,
+  getRecentAwards,
 } from '@/lib/bigquery-contracts';
 import { normalizeAgency } from '@/lib/gov-agency-taxonomy';
 
@@ -157,6 +158,58 @@ export async function GET(request) {
     processed.push(fy);
   }
 
+  // Rolling display feed: the ticker's "newest awards". Delete-then-insert so
+  // the table stays ~200 rows and never accumulates stale awards — BigQuery is
+  // the archive, this is not. Pulls only the latest one or two fiscal years, so
+  // the ORDER BY action_date scans one or two partitions, not the whole table.
+  let recentRows = 0;
+  const latestFys = allFys.slice(-2);
+  if (latestFys.length) {
+    const recent = await getRecentAwards({ limit: 200, fiscalYears: latestFys });
+    bytesBilled += recent.bytesBilled || 0;
+    if (recent.error) {
+      errors.push(`recent awards: ${recent.error}`);
+    } else if (recent.rows.length) {
+      const feedRows = recent.rows.map((r) => ({
+        generated_award_id: r.generated_award_id,
+        award_id_piid: r.award_id_piid ?? null,
+        recipient_name: String(r.recipient_name || 'Unknown'),
+        recipient_parent_name: r.recipient_parent_name ?? null,
+        awarding_agency: String(r.awarding_agency || 'Unknown'),
+        awarding_sub_agency: r.awarding_sub_agency ?? null,
+        funding_agency: r.funding_agency ?? null,
+        award_amount: num(r.award_amount),
+        // BigQuery DATE comes back as { value: 'YYYY-MM-DD' }.
+        action_date: r.action_date?.value ?? r.action_date,
+        fiscal_year: Number(r.fiscal_year),
+        naics_code: r.naics_code ?? null,
+        naics_description: r.naics_description ?? null,
+        psc_code: r.psc_code ?? null,
+        psc_description: r.psc_description ?? null,
+        pop_state: r.pop_state ?? null,
+        pop_city: r.pop_city ?? null,
+        description: r.description ?? null,
+        synced_at: syncedAt,
+      }));
+      // Replace the whole feed. The delete + insert are not transactional here,
+      // but the table is display-only and refreshed every run, so a brief empty
+      // window (ticker simply hides) is acceptable.
+      const { error: delErr } = await admin
+        .from('gov_contract_recent_awards')
+        .delete()
+        .neq('generated_award_id', '');
+      if (delErr) errors.push(`recent awards delete: ${delErr.message}`);
+      const rRes = await upsertChunked(
+        admin,
+        'gov_contract_recent_awards',
+        feedRows,
+        'generated_award_id',
+      );
+      recentRows = rRes.count;
+      errors.push(...rRes.errors);
+    }
+  }
+
   // Advance the checkpoint to the last FY fully processed this run.
   const newLastFy = processed.length ? processed[processed.length - 1] : lastFy;
   const done = allFys.length > 0 && newLastFy != null && newLastFy >= allFys[allFys.length - 1];
@@ -178,6 +231,7 @@ export async function GET(request) {
     coverage_years: allFys.length,
     recipient_rows: recipientRows,
     agency_rows: agencyRows,
+    recent_awards_rows: recentRows,
     bytes_billed: bytesBilled,
     errors: errors.slice(0, 20),
   });

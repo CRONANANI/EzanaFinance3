@@ -139,7 +139,32 @@
   align-items: baseline;
   gap: 9px;
   padding: 11px 20px;
+  /* Now a <button>: reset the UA chrome but keep the separator. */
+  border: none;
   border-right: 1px solid var(--border-primary);
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+/* Interactive ticker: pause the marquee on focus too (not just hover) so a
+   keyboard user can reach and click an item. */
+.gcx-ticker:focus-within .gcx-ticker-track {
+  animation-play-state: paused;
+}
+.gcx-titem:hover .gcx-tn {
+  text-decoration: underline;
+}
+.gcx-titem:focus-visible {
+  /* Inset so the outline isn't clipped by the ticker's overflow: hidden. */
+  outline: 2px solid var(--emerald);
+  outline-offset: -2px;
+}
+/* A perpetually scrolling strip is a vestibular trigger — stop it on request. */
+@media (prefers-reduced-motion: reduce) {
+  .gcx-ticker-track {
+    animation: none;
+  }
 }
 .gcx-titem .gcx-ta {
   font-size: 11px;
@@ -1750,5 +1775,118 @@
   .gcx-ql-ai-caret {
     animation: none;
     opacity: 1;
+  }
+}
+
+/* ── Award detail modal: facts grid + labeled AI analysis ────────────── */
+.gcx-award-modal .gcx-modal-left {
+  overflow-y: auto;
+}
+.gcx-facts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 16px;
+  margin: 14px 0 4px;
+}
+.gcx-fact-k {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.gcx-fact-v {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-top: 2px;
+  overflow-wrap: anywhere;
+}
+.gcx-fact-v.gcx-mono {
+  font-variant-numeric: tabular-nums;
+}
+.gcx-award-desc {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
+/* Analysis zone — visually separated from the computed facts by a distinct,
+   emerald-tinted surface + divider, so generated commentary is never mistaken
+   for reported fact. */
+.gcx-ai {
+  border-top: 1px solid var(--border-primary);
+  margin-top: 4px;
+  padding: 14px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--emerald) 6%, transparent);
+}
+.gcx-ai-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--emerald);
+}
+.gcx-ai-disclaimer {
+  margin: 6px 0 12px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+.gcx-ai-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+.gcx-ai-error {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+.gcx-ai-summary {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-primary);
+  margin: 0 0 12px;
+}
+.gcx-ai-sector-list {
+  list-style: none;
+  margin: 6px 0 12px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.gcx-ai-sector-list li {
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+.gcx-ai-sector-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.gcx-ai-uncertainty {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-muted);
+  font-style: italic;
+  margin: 0;
+}
+.gcx-spin {
+  animation: gcx-exp-spin 0.8s linear infinite;
+}
+
+@media (max-width: 640px) {
+  .gcx-facts {
+    grid-template-columns: 1fr;
   }
 }

@@ -248,6 +248,46 @@ export async function getContractAwardsPage(params = {}) {
  *
  * @returns {Promise<{ recipients: object[], coverage: object, source: 'rollup' }|null>}
  */
+/**
+ * Newest awards for the ticker. Small, capped table refreshed by the rollup
+ * cron — not the bounded `usaspending_contract_awards` sample, which is ordered
+ * by amount rather than date. Returns [] on any error so the ticker just hides.
+ */
+export async function getRecentAwardFeed({ limit = 60 } = {}) {
+  try {
+    const supabase = getAnonClient();
+    const { data, error } = await supabase
+      .from('gov_contract_recent_awards')
+      .select(
+        'generated_award_id, award_id_piid, recipient_name, recipient_parent_name, awarding_agency, awarding_sub_agency, funding_agency, award_amount, action_date, fiscal_year, naics_code, naics_description, psc_code, psc_description, pop_state, pop_city, description',
+      )
+      .order('action_date', { ascending: false })
+      .limit(Math.min(Math.max(Number(limit) || 60, 1), 200));
+    if (error || !data?.length) return [];
+    return data.map((r) => ({
+      id: r.generated_award_id,
+      piid: r.award_id_piid,
+      recipient: r.recipient_name,
+      parent: r.recipient_parent_name,
+      agency: r.awarding_agency,
+      subAgency: r.awarding_sub_agency,
+      fundingAgency: r.funding_agency,
+      amount: Number(r.award_amount) || 0,
+      date: r.action_date,
+      fiscalYear: r.fiscal_year,
+      naics: r.naics_code,
+      naicsLabel: r.naics_description,
+      psc: r.psc_code,
+      pscLabel: r.psc_description,
+      state: r.pop_state,
+      city: r.pop_city,
+      description: r.description,
+    }));
+  } catch {
+    return [];
+  }
+}
+
 export async function getContractRollups({ fiscalYear = null, limit = 40000 } = {}) {
   try {
     const supabase = getAnonClient();

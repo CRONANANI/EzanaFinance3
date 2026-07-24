@@ -82,3 +82,29 @@ export async function getTopRecipients({ fiscalYear, agency = null, limit = 1000
     LIMIT @lim`;
   return runQuery(query, params);
 }
+
+/**
+ * Most recent awards across the corpus, for the page ticker.
+ *
+ * Filters on fiscal_year (the partition column) before ordering by action_date,
+ * so this scans one or two partitions rather than all 19. Without the partition
+ * predicate, ORDER BY action_date would scan the entire table.
+ */
+export async function getRecentAwards({ limit = 200, fiscalYears = [] } = {}) {
+  const fys = (fiscalYears || []).map(Number).filter(Boolean);
+  if (!fys.length) return { rows: [], bytesBilled: null, error: 'no fiscal years supplied' };
+
+  const query = `
+    SELECT generated_award_id, award_id_piid, recipient_name, recipient_parent_name,
+           awarding_agency, awarding_sub_agency, funding_agency,
+           award_amount, action_date, fiscal_year,
+           naics_code, naics_description, psc_code, psc_description,
+           pop_state, pop_city, description
+    FROM ${TABLE}
+    WHERE fiscal_year IN UNNEST(@fys)
+      AND award_amount > 0
+      AND recipient_name IS NOT NULL
+    ORDER BY action_date DESC, award_amount DESC
+    LIMIT @lim`;
+  return runQuery(query, { fys, lim: Number(limit) || 200 });
+}

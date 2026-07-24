@@ -21,6 +21,7 @@ import {
   Play,
   FileDown,
   Star,
+  Loader2,
 } from 'lucide-react';
 import CategoryBar from '@/components/datasets/CategoryBar';
 import ContractsExplorer from './ContractsExplorer';
@@ -104,6 +105,7 @@ export default function GovContractsClient({
   note = '',
   coverage = null,
   rollup = null,
+  recentAwards = [],
 }) {
   // ── State first ──────────────────────────────────────────────────────
   // These must be declared BEFORE any useMemo that references them: a memo's
@@ -116,6 +118,7 @@ export default function GovContractsClient({
   const [fiscalYear, setFiscalYear] = useState('all');
   const [heroView, setHeroView] = useState('treemap');
   const [selected, setSelected] = useState(null);
+  const [selectedAward, setSelectedAward] = useState(null); // ticker → award detail modal
   const [queryOpen, setQueryOpen] = useState(false);
   const [querySeed, setQuerySeed] = useState(''); // text handed off from the teaser
 
@@ -328,7 +331,7 @@ export default function GovContractsClient({
     <div className="gcx-page">
       <CategoryBar active="capitol" activeItem="Government Contracts" />
 
-      <AwardTicker awards={awards} />
+      <AwardTicker awards={recentAwards} onSelect={setSelectedAward} />
 
       <header className="gcx-header">
         <p className="gcx-eyebrow">DATASETS · USASPENDING.GOV</p>
@@ -522,35 +525,201 @@ export default function GovContractsClient({
       {selected && (
         <DrillModal recipient={selected} onClose={() => setSelected(null)} colorOf={colorOf} />
       )}
+
+      {selectedAward && (
+        <AwardDetailModal award={selectedAward} onClose={() => setSelectedAward(null)} />
+      )}
     </div>
   );
 }
 
 /* ────────────────────────── Award ticker ────────────────────────── */
-function AwardTicker({ awards }) {
+/* Newest awards from gov_contract_recent_awards (see getRecentAwardFeed) — the
+   genuinely most recent, not the largest-by-amount sample the ticker showed
+   before. Items are buttons: clicking one opens its detail modal. */
+function AwardTicker({ awards, onSelect }) {
   const items = useMemo(() => {
-    const list = awards
-      .map((a) => ({
-        agency: a.agency || '—',
-        name: a.recipient,
-        value: fmtUSD(Number(a.amountValue) || parseAmount(a.amount) || 0),
-      }))
-      .filter((x) => x.name)
-      .slice(0, 24);
-    return list.length ? [...list, ...list] : []; // duplicate for a seamless loop
+    const list = (awards || []).filter((a) => a.recipient && a.amount > 0).slice(0, 30);
+    return list.length ? [...list, ...list] : []; // duplicated for a seamless loop
   }, [awards]);
 
   if (!items.length) return null;
+
   return (
-    <div className="gcx-ticker" aria-hidden="true">
+    <div className="gcx-ticker">
       <div className="gcx-ticker-track">
         {items.map((it, i) => (
-          <div className="gcx-titem" key={i}>
+          <button
+            type="button"
+            className="gcx-titem"
+            key={`${it.id}-${i}`}
+            onClick={() => onSelect(it)}
+            aria-label={`${it.recipient}, ${fmtUSD(it.amount)} from ${it.agency}. Open award detail.`}
+          >
             <span className="gcx-ta gcx-mono">{it.agency}</span>
-            <span className="gcx-tn">{it.name}</span>
-            <span className="gcx-tv gcx-mono">{it.value}</span>
-          </div>
+            <span className="gcx-tn">{it.recipient}</span>
+            <span className="gcx-tv gcx-mono">{fmtUSD(it.amount)}</span>
+          </button>
         ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────── Award detail + AI analysis ─────────────────────── */
+function fmtAwardDate(d) {
+  if (!d) return '—';
+  // action_date is a plain 'YYYY-MM-DD' string; render without a TZ shift.
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(d));
+  if (!m) return String(d);
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${months[Number(m[2]) - 1]} ${Number(m[3])}, ${m[1]}`;
+}
+
+function AwardFact({ label, value, mono }) {
+  if (value == null || value === '') return null;
+  return (
+    <div className="gcx-fact">
+      <div className="gcx-fact-k">{label}</div>
+      <div className={`gcx-fact-v${mono ? ' gcx-mono' : ''}`}>{value}</div>
+    </div>
+  );
+}
+
+/* On-demand, explicitly-labeled AI analysis. Fetches when mounted; the API takes
+   only the award id and builds its prompt server-side from the DB record. */
+function AwardAnalysis({ awardId }) {
+  const [state, setState] = useState('loading'); // loading | error | ready
+  const [data, setData] = useState(null);
+  const [nonce, setNonce] = useState(0); // bump to retry
+
+  useEffect(() => {
+    let alive = true;
+    setState('loading');
+    setData(null);
+    (async () => {
+      try {
+        const res = await fetch('/api/gov-contracts/award-analysis', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ generatedAwardId: awardId }),
+        });
+        const json = await res.json().catch(() => ({}));
+        if (!alive) return;
+        if (!res.ok || !json.analysis) {
+          setState('error');
+          return;
+        }
+        setData(json.analysis);
+        setState('ready');
+      } catch {
+        if (alive) setState('error');
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [awardId, nonce]);
+
+  return (
+    <div className="gcx-ai">
+      <div className="gcx-ai-badge">
+        <Sparkles size={13} aria-hidden="true" /> AI-generated analysis
+      </div>
+      <p className="gcx-ai-disclaimer">
+        Generated by Claude from this award&apos;s public USAspending record. Not investment
+        advice, not reported fact, and not verified against outside sources.
+      </p>
+
+      {state === 'loading' && (
+        <div className="gcx-ai-loading">
+          <Loader2 size={15} className="gcx-spin" aria-hidden="true" /> Analyzing this award…
+        </div>
+      )}
+
+      {state === 'error' && (
+        <div className="gcx-ai-error">
+          <span>Analysis is unavailable right now.</span>
+          <button type="button" className="gcx-btn" onClick={() => setNonce((n) => n + 1)}>
+            Retry
+          </button>
+        </div>
+      )}
+
+      {state === 'ready' && data && (
+        <div className="gcx-ai-body">
+          {data.summary && <p className="gcx-ai-summary">{data.summary}</p>}
+          {Array.isArray(data.sectors) && data.sectors.length > 0 && (
+            <div className="gcx-ai-sectors">
+              <div className="gcx-modal-h">Sectors and supply chains it may touch</div>
+              <ul className="gcx-ai-sector-list">
+                {data.sectors.map((s, i) => (
+                  <li key={i}>
+                    <span className="gcx-ai-sector-name">{s.name}</span>
+                    {s.why ? <span className="gcx-ai-sector-why"> — {s.why}</span> : null}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {data.uncertainty && <p className="gcx-ai-uncertainty">{data.uncertainty}</p>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AwardDetailModal({ award: a, onClose }) {
+  useEffect(() => {
+    const onEsc = (e) => e.key === 'Escape' && onClose();
+    document.addEventListener('keydown', onEsc);
+    return () => document.removeEventListener('keydown', onEsc);
+  }, [onClose]);
+
+  const pop = [a.city, a.state].filter(Boolean).join(', ');
+  const naics = [a.naics, a.naicsLabel].filter(Boolean).join(' · ');
+  const psc = [a.psc, a.pscLabel].filter(Boolean).join(' · ');
+
+  return (
+    <div className="gcx-modal-backdrop" onClick={onClose}>
+      <div className="gcx-modal gcx-award-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+        <div className="gcx-modal-left">
+          <div className="gcx-modal-h">Award facts</div>
+          <h3 className="gcx-modal-name">{a.recipient}</h3>
+          <p className="gcx-modal-sub">
+            {a.agency}
+            {a.subAgency ? ` · ${a.subAgency}` : ''}
+          </p>
+          <div className="gcx-facts">
+            <AwardFact label="Amount" value={fmtUSD(a.amount)} mono />
+            <AwardFact label="Action date" value={fmtAwardDate(a.date)} mono />
+            <AwardFact label="Fiscal year" value={a.fiscalYear ? `FY${a.fiscalYear}` : null} mono />
+            <AwardFact label="PIID" value={a.piid} mono />
+            <AwardFact label="Recipient parent" value={a.parent} />
+            <AwardFact label="Funding agency" value={a.fundingAgency} />
+            <AwardFact label="NAICS" value={naics} />
+            <AwardFact label="PSC" value={psc} />
+            <AwardFact label="Place of performance" value={pop} />
+          </div>
+          {a.description ? (
+            <div className="gcx-modal-section">
+              <div className="gcx-modal-h">Description</div>
+              <p className="gcx-award-desc">{a.description}</p>
+            </div>
+          ) : (
+            <div className="gcx-modal-section">
+              <div className="gcx-modal-h">Description</div>
+              <div className="gcx-rail-note">Not provided in the USAspending record.</div>
+            </div>
+          )}
+        </div>
+
+        <div className="gcx-modal-right">
+          <button type="button" className="gcx-modal-x" onClick={onClose} aria-label="Close">
+            <X size={18} />
+          </button>
+          <AwardAnalysis awardId={a.id} />
+        </div>
       </div>
     </div>
   );
