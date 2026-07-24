@@ -105,6 +105,20 @@ export default function GovContractsClient({
   coverage = null,
   rollup = null,
 }) {
+  // ── State first ──────────────────────────────────────────────────────
+  // These must be declared BEFORE any useMemo that references them: a memo's
+  // dependency array is evaluated eagerly on every render, so a `const` read
+  // from above its declaration throws a temporal-dead-zone ReferenceError.
+  // `recipients` became fiscalYear-aware in 8ecb19b, which is what surfaced it.
+  const [selectedAgencies, setSelectedAgencies] = useState(() => new Set());
+  const [agencySearch, setAgencySearch] = useState('');
+  const [minValue, setMinValue] = useState(0); // in billions
+  const [fiscalYear, setFiscalYear] = useState('all');
+  const [heroView, setHeroView] = useState('treemap');
+  const [selected, setSelected] = useState(null);
+  const [queryOpen, setQueryOpen] = useState(false);
+  const [querySeed, setQuerySeed] = useState(''); // text handed off from the teaser
+
   // Prefer pre-aggregated BigQuery rollups (scales to millions of rows); fall
   // back to client-side aggregation of the small live-award slice.
   // Rollup rows are per (fiscal_year, recipient, agency). Collapse them for the
@@ -145,16 +159,6 @@ export default function GovContractsClient({
     return [...m.values()].map((r) => ({ ...r, avg: r.count ? r.total / r.count : 0 }));
   }, [rollup, awards, fiscalYear]);
   const coverageObj = rollup?.coverage || coverage;
-
-  // Multi-select agencies (raw names); empty Set = all agencies.
-  const [selectedAgencies, setSelectedAgencies] = useState(() => new Set());
-  const [agencySearch, setAgencySearch] = useState('');
-  const [minValue, setMinValue] = useState(0); // in billions
-  const [fiscalYear, setFiscalYear] = useState('all');
-  const [heroView, setHeroView] = useState('treemap');
-  const [selected, setSelected] = useState(null);
-  const [queryOpen, setQueryOpen] = useState(false);
-  const [querySeed, setQuerySeed] = useState(''); // text handed off from the teaser
 
   // Typing in the teaser opens the full builder and carries the keystroke over.
   const startBuilder = useCallback((seed) => {
