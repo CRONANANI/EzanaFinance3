@@ -107,10 +107,43 @@ export default function GovContractsClient({
 }) {
   // Prefer pre-aggregated BigQuery rollups (scales to millions of rows); fall
   // back to client-side aggregation of the small live-award slice.
-  const recipients = useMemo(
-    () => (rollup && rollup.recipients && rollup.recipients.length ? rollup.recipients : aggregate(awards)),
-    [rollup, awards],
-  );
+  // Rollup rows are per (fiscal_year, recipient, agency). Collapse them for the
+  // CURRENT view: a specific year keeps just that year's rows; "All years" sums
+  // a recipient across every year. Doing this here — rather than filtering a
+  // pre-summed list — is what makes per-year totals correct.
+  const recipients = useMemo(() => {
+    const rows = rollup?.recipients;
+    // Fallback path: aggregate() emits recipients WITHOUT a fiscalYear field, so
+    // scope it the old way (inclusion by award year) — its total stays all-years,
+    // which is the degraded raw-award path's existing behavior.
+    if (!rows || !rows.length) {
+      const agg = aggregate(awards);
+      return fiscalYear === 'all'
+        ? agg
+        : agg.filter((r) => r.awards.some((a) => a.year === Number(fiscalYear)));
+    }
+
+    const scoped =
+      fiscalYear === 'all' ? rows : rows.filter((r) => r.fiscalYear === Number(fiscalYear));
+
+    const m = new Map();
+    for (const r of scoped) {
+      const key = r.name;
+      let rec = m.get(key);
+      if (!rec) {
+        rec = { ...r, total: 0, count: 0, awards: [], _maxAward: 0 };
+        m.set(key, rec);
+      }
+      rec.total += r.total;
+      rec.count += r.count;
+      rec.awards.push(...r.awards);
+      if (r.total >= rec._maxAward) {
+        rec._maxAward = r.total;
+        rec.agency = r.agency; // primary agency = the one with the largest spend
+      }
+    }
+    return [...m.values()].map((r) => ({ ...r, avg: r.count ? r.total / r.count : 0 }));
+  }, [rollup, awards, fiscalYear]);
   const coverageObj = rollup?.coverage || coverage;
 
   // Multi-select agencies (raw names); empty Set = all agencies.
@@ -191,12 +224,13 @@ export default function GovContractsClient({
     return recipients
       .filter((r) => (selectedAgencies.size ? selectedAgencies.has(r.agency) : true))
       .filter((r) => r.total >= minValue * 1e9)
-      .filter((r) =>
-        fiscalYear === 'all' ? true : r.awards.some((a) => a.year === Number(fiscalYear)),
-      )
+      // No fiscal-year filter here: `recipients` is already scoped to the
+      // selected year (see the memo above). The previous `.some(a => a.year ===
+      // fy)` check admitted a recipient based on one year while still rendering
+      // their all-years total.
       .map((r) => ({ ...r, vizAgency: topSet.has(r.agency) ? r.agency : OTHER_LABEL }))
       .sort((a, b) => b.total - a.total);
-  }, [recipients, selectedAgencies, minValue, fiscalYear, topSet]);
+  }, [recipients, selectedAgencies, minValue, topSet]);
 
   // TRUE total across all agencies for the current FY selection (complete agency
   // rollup) — NOT the truncated top-N recipient sum, which understated the total

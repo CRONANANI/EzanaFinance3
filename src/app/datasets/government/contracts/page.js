@@ -32,7 +32,7 @@ export default async function GovernmentContractsPage() {
   // millions of rows). Falls back to the raw-award slice + coverage RPC when the
   // rollups aren't populated yet. All resolve to null/empty rather than throwing.
   const [rollup, { rows, source, syncedAt }, coverage] = await Promise.all([
-    getContractRollups({ limit: 2000 }),
+    getContractRollups({ limit: 40000 }),
     getContractAwardsWithFallback({ limit: 200 }),
     getContractCoverage(),
   ]);

@@ -248,52 +248,90 @@ export async function getContractAwardsPage(params = {}) {
  *
  * @returns {Promise<{ recipients: object[], coverage: object, source: 'rollup' }|null>}
  */
-export async function getContractRollups({ fiscalYear = null, limit = 2000 } = {}) {
+export async function getContractRollups({ fiscalYear = null, limit = 40000 } = {}) {
   try {
     const supabase = getAnonClient();
 
-    let recQ = supabase
-      .from('gov_contract_recipient_rollup')
-      .select('fiscal_year, recipient_name, awarding_agency, total_amount, award_count')
-      .order('total_amount', { ascending: false })
-      .limit(Math.min(Math.max(Number(limit) || 2000, 1), 5000));
-    if (fiscalYear) recQ = recQ.eq('fiscal_year', Number(fiscalYear));
+    // The recipient rollup holds ~1,000 rows PER fiscal year. A single ordered
+    // .limit() returns the biggest rows across ALL years, which truncates the
+    // mid-tier recipients that make each year distinct and leaves the same
+    // defense primes on top of every view. Page through instead, ordered by a
+    // stable key so pages don't overlap or skip.
+    const PAGE = 1000;
+    const hardCap = Math.min(Math.max(Number(limit) || 40000, 1), 60000);
+    const recRows = [];
+    for (let from = 0; from < hardCap; from += PAGE) {
+      let q = supabase
+        .from('gov_contract_recipient_rollup')
+        .select('fiscal_year, recipient_name, awarding_agency, total_amount, award_count')
+        // Stable, unique ordering across the composite PK — ordering by
+        // total_amount alone is not deterministic between pages when values tie.
+        .order('fiscal_year', { ascending: true })
+        .order('recipient_name', { ascending: true })
+        .order('awarding_agency', { ascending: true })
+        .range(from, from + PAGE - 1);
+      if (fiscalYear) q = q.eq('fiscal_year', Number(fiscalYear));
 
+      const { data, error } = await q;
+      if (error) return null;
+      if (!data || data.length === 0) break;
+      recRows.push(...data);
+      if (data.length < PAGE) break; // last page
+    }
+
+    if (recRows.length === 0) return null;
+
+    // ~65 agencies/year. At 19 fiscal years this approaches Supabase's 1,000-row
+    // default cap — page it the same way as the recipients if a year goes missing
+    // from the sidebar.
     let agencyQ = supabase
       .from('gov_contract_agency_rollup')
-      .select('fiscal_year, awarding_agency, total_amount, award_count');
+      .select('fiscal_year, awarding_agency, total_amount, award_count')
+      .range(0, 4999);
     if (fiscalYear) agencyQ = agencyQ.eq('fiscal_year', Number(fiscalYear));
 
-    const [{ data: recRows, error: recErr }, { data: agencyRows }, { data: covRows }] =
-      await Promise.all([
-        recQ,
-        agencyQ,
-        supabase
-          .from('gov_contract_coverage')
-          .select('fiscal_year, award_count, total_amount')
-          .order('fiscal_year', { ascending: true }),
-      ]);
+    const [{ data: agencyRows }, { data: covRows }] = await Promise.all([
+      agencyQ,
+      supabase
+        .from('gov_contract_coverage')
+        .select('fiscal_year, award_count, total_amount')
+        .order('fiscal_year', { ascending: true }),
+    ]);
 
-    if (recErr || !Array.isArray(recRows) || recRows.length === 0) return null;
-
-    // Group rollup rows into the client's recipient shape, keyed on the RAW
-    // awarding_agency (no regex bucketing — the raw official names are the source
-    // of truth: "Department of the Treasury", "Department of the Interior", …).
+    // Key on (fiscal_year, recipient, agency) — NOT recipient alone. Keying on
+    // the name collapsed a recipient's rows from every year into one entry whose
+    // total was the all-years sum, so a single-year view showed multi-year
+    // figures. Per-year identity is preserved here; the client aggregates when
+    // "All years" is selected. Agency stays the RAW awarding_agency (no regex
+    // bucketing — the official names are the source of truth).
     const map = new Map();
     for (const r of recRows) {
-      const key = r.recipient_name || 'Unknown';
+      const name = r.recipient_name || 'Unknown';
       const agency = r.awarding_agency || 'Unknown';
+      const fy = Number(r.fiscal_year);
       const val = Number(r.total_amount) || 0;
+      const cnt = Number(r.award_count) || 0;
+      const key = `${fy}|${name}|${agency}`;
+
       let rec = map.get(key);
       if (!rec) {
-        rec = { name: key, agency, ticker: null, total: 0, count: 0, awards: [], _maxAward: 0 };
+        rec = {
+          name,
+          agency,
+          fiscalYear: fy,
+          ticker: null,
+          total: 0,
+          count: 0,
+          awards: [],
+          _maxAward: 0,
+        };
         map.set(key, rec);
       }
       rec.total += val;
-      rec.count += Number(r.award_count) || 0;
+      rec.count += cnt;
       rec.awards.push({
         value: val,
-        year: Number(r.fiscal_year),
+        year: fy,
         agencyName: agency,
         awardId: null,
         date: null,
