@@ -252,31 +252,47 @@ export async function getContractRollups({ fiscalYear = null, limit = 40000 } = 
   try {
     const supabase = getAnonClient();
 
-    // The recipient rollup holds ~1,000 rows PER fiscal year. A single ordered
-    // .limit() returns the biggest rows across ALL years, which truncates the
-    // mid-tier recipients that make each year distinct and leaves the same
-    // defense primes on top of every view. Page through instead, ordered by a
-    // stable key so pages don't overlap or skip.
+    // The recipient rollup holds ~1,000 rows PER fiscal year, so a single
+    // ordered .limit() would truncate across years (see 8ecb19b). We must read
+    // every row — but SEQUENTIAL paging costs one round-trip per 1,000 rows,
+    // which grew past the function timeout as the backfill added years.
+    // Count first, then fetch all pages CONCURRENTLY: wall time is now one
+    // round-trip regardless of how many fiscal years are loaded.
     const PAGE = 1000;
-    const hardCap = Math.min(Math.max(Number(limit) || 40000, 1), 60000);
-    const recRows = [];
-    for (let from = 0; from < hardCap; from += PAGE) {
-      let q = supabase
-        .from('gov_contract_recipient_rollup')
-        .select('fiscal_year, recipient_name, awarding_agency, total_amount, award_count')
-        // Stable, unique ordering across the composite PK — ordering by
-        // total_amount alone is not deterministic between pages when values tie.
-        .order('fiscal_year', { ascending: true })
-        .order('recipient_name', { ascending: true })
-        .order('awarding_agency', { ascending: true })
-        .range(from, from + PAGE - 1);
-      if (fiscalYear) q = q.eq('fiscal_year', Number(fiscalYear));
 
-      const { data, error } = await q;
+    let countQ = supabase
+      .from('gov_contract_recipient_rollup')
+      .select('fiscal_year', { count: 'exact', head: true });
+    if (fiscalYear) countQ = countQ.eq('fiscal_year', Number(fiscalYear));
+
+    const { count: totalRows, error: countErr } = await countQ;
+    if (countErr) return null;
+    if (!totalRows) return null;
+
+    const hardCap = Math.min(Math.max(Number(limit) || 40000, 1), 60000);
+    const target = Math.min(totalRows, hardCap);
+    const pageCount = Math.ceil(target / PAGE);
+
+    const pages = await Promise.all(
+      Array.from({ length: pageCount }, (_, i) => {
+        let q = supabase
+          .from('gov_contract_recipient_rollup')
+          .select('fiscal_year, recipient_name, awarding_agency, total_amount, award_count')
+          // Stable, unique ordering across the composite PK — ordering by
+          // total_amount alone is not deterministic between pages when values tie.
+          .order('fiscal_year', { ascending: true })
+          .order('recipient_name', { ascending: true })
+          .order('awarding_agency', { ascending: true })
+          .range(i * PAGE, i * PAGE + PAGE - 1);
+        if (fiscalYear) q = q.eq('fiscal_year', Number(fiscalYear));
+        return q;
+      }),
+    );
+
+    const recRows = [];
+    for (const { data, error } of pages) {
       if (error) return null;
-      if (!data || data.length === 0) break;
-      recRows.push(...data);
-      if (data.length < PAGE) break; // last page
+      if (data) recRows.push(...data);
     }
 
     if (recRows.length === 0) return null;
