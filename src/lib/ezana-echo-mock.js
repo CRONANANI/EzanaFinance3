@@ -33,8 +33,10 @@ import { peterThiel2026 } from './ezana-echo-article-peter-thiel-2026.js';
 import { privateCreditMaturityWallArticle2026 } from './ezana-echo-article-private-credit-maturity-wall-2026.js';
 import { criticalMineralsArticle2026 } from './ezana-echo-article-critical-minerals-2026.js';
 import { ballroomDonorsContracts2026 } from './ezana-echo-article-ballroom-donors-contracts-2026.js';
+import { fdaPeptidesBpc157Article2026 } from './ezana-echo-article-fda-peptides-bpc157-2026.js';
 
 const ARTICLES = [
+  fdaPeptidesBpc157Article2026,
   ballroomDonorsContracts2026,
   criticalMineralsArticle2026,
   peterThiel2026,
@@ -122,6 +124,8 @@ export const ECHO_TRENDING = {
 
 /** @type {Record<string, { id: string; author: { name: string; initials: string; id?: string }; content: string; createdAt: string }[]>} */
 export const ECHO_MOCK_COMMENTS_BY_ARTICLE = {
+  // No seeded comments — the "No one's written in yet" empty state handles this.
+  'fda-peptides-bpc157-compounding-vote-2026': [],
   'critical-minerals-reserve-concentration-2026': [
     {
       id: 'c-minerals-1',

@@ -41,7 +41,7 @@ Articles use `contentBlocks` — an array of typed blocks that the `EchoArticleC
 
 - **Volume**: 3–5 sentences per paragraph (60–120 words)
 - **Tone**: Professional financial journalism — Bloomberg/FT style. Authoritative, data-driven, no hedging language. First sentence states the fact; subsequent sentences provide context and analysis.
-- **Keywords**: Use `[[kw:keyword-id]]visible text[[/kw]]` to link to the Echo keyword popup system AND to mark a political/economic term that should appear (highlighted green) in the Metadata sidebar. 2–4 keywords per article maximum.
+- **Keywords**: Use `[[kw:keyword-id]]visible text[[/kw]]` to link to the Echo keyword popup system AND to mark a political/economic term that should appear (highlighted green) in the Metadata sidebar. **8–10 keywords per article, spread evenly** — roughly one per 150–200 words, never two in the same paragraph, and at least one in each h2 section. Each keyword id is marked exactly once (its first occurrence is the scroll anchor).
 - **People**: Use `[[person:person-id]]Visible Name[[/person]]` to mark the FIRST significant mention of a notable person. This both (a) gives the mention a scroll anchor and (b) registers the person in the Metadata sidebar. Mark each person once (their first substantive mention).
 - **anchorId** (optional): A stable id used as a scroll target. Auto-generated from the first `kw`/`person` in the block if omitted, but set it explicitly when an entity's canonical reference is in this block.
 
@@ -179,6 +179,8 @@ Articles can link to the Echo keyword popup system using inline markup:
 
 Keywords are defined in `src/lib/echo-keywords.js`. Keyword-marked spans render in the Echo green accent and, on hover/click, open the keyword popup. As of the layout update, every `kw` term ALSO appears in the Metadata sidebar's "Terms" group and is click-to-scroll linked back to its in-article anchor.
 
+**Standard: 8–10 keywords per article, spread evenly** — roughly one per 150–200 words, at least one in each h2 section, and never two in the same paragraph. **Every keyword must resolve to an entry in `echo-keywords.js`.** An unresolved `[[kw:...]]` renders as literal markup in the body text — always add the definition before shipping the article.
+
 If the article introduces a new concept that warrants a keyword popup, add the keyword definition there with:
 
 - `term`: Display name
@@ -277,6 +279,7 @@ Before publishing an article, verify:
 - [ ] Tickers array has 5–10 relevant symbols
 - [ ] Read time is calculated (words ÷ 230)
 - [ ] Category is set correctly
+- [ ] **8–10 keywords, evenly spread, at least one per h2 section, none doubled in a paragraph, all resolving to `echo-keywords.js` entries**
 - [ ] **`entities.people` and `entities.terms` populated; each id has a matching `[[person:id]]` / `[[kw:id]]` marked occurrence in the body**
 - [ ] **Notable people marked once with `[[person:id]]`; political/economic terms marked with `[[kw:id]]`**
 - [ ] Article is imported and registered in ezana-echo-mock.js

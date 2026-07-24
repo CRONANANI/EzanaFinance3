@@ -852,3 +852,38 @@ body.light-mode .echo-comments-composer {
     justify-content: center;
   }
 }
+
+/* ── Transparent footer surfaces ──────────────────────────────────
+   These panels used --bg-secondary/--bg-tertiary, which read as a grey slab
+   against the article canvas. Going transparent lets the page background show
+   through; the 1px var(--border-primary) border still defines each card's edge.
+   Text keeps its --text-* tokens, which invert with the theme, so contrast
+   holds in both light and dark mode. (Appended so these win over the filled
+   declarations above without editing them in place.) */
+.echo-worthit-tile {
+  background: transparent;
+}
+
+.echo-footer-more-from {
+  background: transparent;
+  /* Inset highlight assumed a filled surface; on transparent it reads as a
+     stray line — drop it here for the same reason as the composer below. */
+  box-shadow: none;
+}
+body.light-mode .echo-footer-more-from {
+  box-shadow: none;
+}
+
+.echo-more-input {
+  background: transparent;
+}
+
+.echo-comments-composer {
+  background: transparent;
+  /* Inset highlight assumed a filled surface; on transparent it reads as a
+     stray line. */
+  box-shadow: none;
+}
+body.light-mode .echo-comments-composer {
+  box-shadow: none;
+}

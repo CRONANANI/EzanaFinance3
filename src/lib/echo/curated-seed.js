@@ -20,8 +20,10 @@ import { peterThiel2026 } from '@/lib/ezana-echo-article-peter-thiel-2026.js';
 import { privateCreditMaturityWallArticle2026 } from '@/lib/ezana-echo-article-private-credit-maturity-wall-2026.js';
 import { criticalMineralsArticle2026 } from '@/lib/ezana-echo-article-critical-minerals-2026.js';
 import { ballroomDonorsContracts2026 } from '@/lib/ezana-echo-article-ballroom-donors-contracts-2026.js';
+import { fdaPeptidesBpc157Article2026 } from '@/lib/ezana-echo-article-fda-peptides-bpc157-2026.js';
 
 const SOURCE = [
+  fdaPeptidesBpc157Article2026,
   ballroomDonorsContracts2026,
   criticalMineralsArticle2026,
   peterThiel2026,

@@ -2361,6 +2361,236 @@ export const KEYWORDS = {
     courseId: 'geopolitics-101-1',
     courseTitle: 'Resources and Power',
   },
+
+  /* ════════════════════════════════════════════════════════════════════════
+     FDA peptide compounding vote article keywords
+     ════════════════════════════════════════════════════════════════════════ */
+
+  'advisory-committee': {
+    id: 'advisory-committee',
+    term: 'FDA Advisory Committee',
+    definition:
+      'A panel of outside experts the FDA convenes to review a question and vote a recommendation. The vote is ADVISORY: the FDA is not obliged to follow it, and historically follows advisory committees most but not all of the time. A recommendation is the start of a process, not a decision.',
+    template: 'comparison',
+    templateData: {
+      title: 'An advisory vote is not an approval',
+      headers: ['', 'Advisory-committee vote', 'FDA approval / listing'],
+      rows: [
+        { label: 'Binding?', cells: ['No — recommendation only', 'Yes — the legal decision'] },
+        { label: 'Who decides', cells: ['Outside expert panel', 'FDA itself, after review'] },
+        { label: 'What follows', cells: ['FDA may accept or decline', 'The change takes effect'] },
+      ],
+      footnote:
+        'Here the FDA’s own staff recommended AGAINST the peptides the panel voted to recommend.',
+    },
+    realWorld:
+      'The 8–6 BPC-157 vote was an advisory-committee recommendation, not an FDA action. The agency can still decline it, and its scientists had argued to.',
+    courseId: 'policy-101-1',
+    courseTitle: 'How Regulators Decide',
+  },
+
+  '503a-bulks-list': {
+    id: '503a-bulks-list',
+    term: '503A Bulks List',
+    definition:
+      'The roster of bulk drug substances that a 503A compounding pharmacy is permitted to use in patient-specific preparations. Inclusion permits compounding with the substance; it is NOT an FDA approval and certifies nothing about safety or efficacy. Adding a substance requires formal rulemaking, not just a committee vote.',
+    template: 'timeline',
+    templateData: {
+      title: 'The path from a vote to the 503A list',
+      events: [
+        { year: 'Step 1', label: 'Advisory committee votes', detail: 'A recommendation only' },
+        { year: 'Step 2', label: 'FDA decides', detail: 'May accept or decline the recommendation' },
+        { year: 'Step 3', label: 'Proposed rule', detail: 'Notice-and-comment rulemaking opens' },
+        { year: 'Step 4', label: 'Public comment', detail: 'Often months; can change or halt the rule' },
+        { year: 'Step 5', label: 'Final rule', detail: 'Only now is the substance actually added' },
+      ],
+    },
+    realWorld:
+      'The peptide vote cleared Step 1 only. Every later step can reverse it, and none had started when the stock moved 13%.',
+    courseId: 'policy-101-1',
+    courseTitle: 'How Regulators Decide',
+  },
+
+  'compounding-pharmacy': {
+    id: 'compounding-pharmacy',
+    term: 'Compounding Pharmacy',
+    definition:
+      'A pharmacy that prepares a customized medication for a specific patient — a different dose, an allergen removed, a swallowable form. Compounded drugs require a prescription and are NOT reviewed by the FDA for quality, safety, or efficacy the way an approved drug is. 503A pharmacies serve individual prescriptions; 503B outsourcing facilities make larger batches under tighter FDA oversight.',
+    template: 'comparison',
+    templateData: {
+      title: '503A vs 503B compounding',
+      headers: ['', '503A pharmacy', '503B outsourcing facility'],
+      rows: [
+        { label: 'Scale', cells: ['Patient-specific prescriptions', 'Larger batches, can be office stock'] },
+        { label: 'FDA oversight', cells: ['State-board led; lighter', 'Registers with FDA; cGMP'] },
+        { label: 'Reviewed for efficacy?', cells: ['No', 'No'] },
+      ],
+      footnote:
+        'Neither route reviews a drug for efficacy — the point compounding is not meant to become a second approval path.',
+    },
+    realWorld:
+      'The vote concerned the 503A list — widening what pharmacies may compound, not approving a peptide as a drug.',
+    courseId: 'policy-101-1',
+    courseTitle: 'How Regulators Decide',
+  },
+
+  'peptide-therapeutics': {
+    id: 'peptide-therapeutics',
+    term: 'Peptide Therapeutics',
+    definition:
+      'Peptides are short chains of amino acids; some are established medicines (insulin, GLP-1 drugs) built on large, well-characterized trials. Characterization — knowing exactly which molecule you have and at what purity — is the floor beneath any safety or efficacy claim. When multiple different molecules are sold under one name, that floor is missing.',
+    template: 'comparison',
+    templateData: {
+      title: 'Well-characterized vs "same name, different molecule"',
+      headers: ['', 'Approved peptide drug', 'BPC-157 as sold'],
+      rows: [
+        { label: 'Identity', cells: ['One defined molecule', 'Multiple molecules under one name'] },
+        { label: 'Human data', cells: ['Large controlled trials', 'Roughly 30 humans tested'] },
+        { label: 'Purity standard', cells: ['Specified and enforced', 'Not established'] },
+      ],
+      footnote:
+        'FDA staff asked, on the record, "What is BPC-157?" — characterization is exactly what was disputed.',
+    },
+    realWorld:
+      'If a peptide is not well-characterized, an approval or listing in one form need not describe what a pharmacy compounds or a consumer buys.',
+    courseId: 'tech-fundamentals-6',
+    courseTitle: 'Reading the Science',
+  },
+
+  'bpc-157': {
+    id: 'bpc-157',
+    term: 'BPC-157',
+    definition:
+      'A peptide marketed for injury recovery and widely sold outside approved channels. At the July 2026 committee it was reviewed specifically for ulcerative colitis. The evidence FDA staff located was thin: one 46-person conference abstract using an enema formulation, not the injectable form sold, and roughly 30 humans tested with the substance overall. This entry is descriptive and makes no efficacy claim.',
+    template: 'timeline',
+    templateData: {
+      title: 'The BPC-157 evidence base, as the FDA described it',
+      events: [
+        { year: 'Indication', label: 'Reviewed for ulcerative colitis', detail: 'Not general "healing"' },
+        { year: 'Trial', label: '46-person meeting abstract', detail: 'Administered as an enema' },
+        { year: 'Form sold', label: 'Injection', detail: 'Not the route the abstract studied' },
+        { year: 'Humans tested', label: '~30 total', detail: 'vs hundreds of thousands for GLP-1s' },
+        { year: 'Safety', label: '3 adverse-event reports', detail: 'Following injection; under-reported' },
+      ],
+    },
+    realWorld:
+      'The gap between BPC-157’s online popularity and its evidence base is the core tension of the vote.',
+    courseId: 'tech-fundamentals-6',
+    courseTitle: 'Reading the Science',
+  },
+
+  'notice-and-comment-rulemaking': {
+    id: 'notice-and-comment-rulemaking',
+    term: 'Notice-and-Comment Rulemaking',
+    definition:
+      'The formal process a US agency must follow to make or change a binding rule: publish a proposed rule, take public comment, respond, and issue a final rule. It typically runs many months to years, and can be narrowed, delayed, or abandoned along the way. It is the real gate standing between an advisory vote and any change to the 503A list.',
+    template: 'timeline',
+    templateData: {
+      title: 'How a federal rule is actually made',
+      events: [
+        { year: 'NPRM', label: 'Proposed rule published', detail: 'Agency states the intended change' },
+        { year: 'Comment', label: 'Public comment period', detail: 'Often 30–60+ days, frequently extended' },
+        { year: 'Review', label: 'Agency responds', detail: 'Must address substantive comments' },
+        { year: 'Final', label: 'Final rule issued', detail: 'Or withdrawn — completion is not guaranteed' },
+      ],
+    },
+    realWorld:
+      'None of this had begun on July 23. The market priced an outcome that depends on a process that had not started.',
+    courseId: 'policy-101-1',
+    courseTitle: 'How Regulators Decide',
+  },
+
+  'cash-pay-healthcare': {
+    id: 'cash-pay-healthcare',
+    term: 'Cash-Pay Healthcare',
+    definition:
+      'Care and products a patient pays for directly, outside insurance and pharmacy-benefit reimbursement. Compounded peptides are largely cash-pay, which lets a category grow without touching the rebate and formulary economics that pharmacy-benefit managers monetize — and also means it does not ride existing insurance rails.',
+    template: 'comparison',
+    templateData: {
+      title: 'Cash-pay vs insured channels',
+      headers: ['', 'Cash-pay (compounded peptides)', 'Insured / PBM channel'],
+      rows: [
+        { label: 'Who pays', cells: ['Patient, directly', 'Insurer, with rebates'] },
+        { label: 'Grows via', cells: ['Demand + price', 'Formulary access + coverage'] },
+        { label: 'PBM exposure', cells: ['Largely outside it', 'Central to it'] },
+      ],
+      footnote:
+        'This is why WBA/CVS exposure to a compounded-peptide market is real but diluted.',
+    },
+    realWorld:
+      'A cash-pay boom can lift telehealth platforms while barely touching the pharmacy-benefit businesses next to them.',
+    courseId: 'valuation-101-2',
+    courseTitle: 'Business Models and Margins',
+  },
+
+  'regulatory-catalyst': {
+    id: 'regulatory-catalyst',
+    term: 'Regulatory Catalyst',
+    definition:
+      'A regulatory event — a vote, a designation, a ruling — that moves a stock. Markets often reprice hard on non-binding steps because a bullish headline compresses a long, uncertain, reversible process into one word. The size of the move can far exceed the actual change in probability the event delivered.',
+    template: 'comparison',
+    templateData: {
+      title: 'Binding vs non-binding catalysts',
+      headers: ['', 'Non-binding (this vote)', 'Binding (a final rule / approval)'],
+      rows: [
+        { label: 'Changes the odds by', cells: ['A little', 'A lot'] },
+        { label: 'Reversible?', cells: ['Yes', 'Rarely'] },
+        { label: 'Typical price reaction', cells: ['Often outsized', 'Priced more fully'] },
+      ],
+      footnote:
+        'HIMS moved ~13% on a recommendation that binds no one and starts no rule.',
+    },
+    realWorld:
+      'The move bought an option on a rulemaking that had not begun — the classic shape of a mispriced procedural catalyst.',
+    courseId: 'stocks-intermediate-4',
+    courseTitle: 'Catalysts and Event Risk',
+  },
+
+  'adverse-event-reporting': {
+    id: 'adverse-event-reporting',
+    term: 'Adverse Event Reporting',
+    definition:
+      'The system (in the US, the FDA’s FAERS database) through which harms from a drug are reported after use. Reports are voluntary for consumers and heavily under-reported for compounded and consumer-sold products, so a low count is a weak signal in both directions: not proof of safety, and not proof of harm. Three reports is a small number that should be read with that caveat.',
+    template: 'comparison',
+    templateData: {
+      title: 'What a low adverse-event count does and does not mean',
+      headers: ['', 'What it is NOT', 'What it IS'],
+      rows: [
+        { label: 'A safety guarantee', cells: ['No', '—'] },
+        { label: 'Evidence of harm', cells: ['No', '—'] },
+        { label: 'A weak, under-reported signal', cells: ['—', 'Yes'] },
+      ],
+      footnote:
+        'Compounded and consumer products are under-reported, so absence of reports is not evidence of absence of harm.',
+    },
+    realWorld:
+      'The FDA cited three adverse-event reports after BPC-157 injection — enough to note, too few to conclude much from either way.',
+    courseId: 'tech-fundamentals-6',
+    courseTitle: 'Reading the Science',
+  },
+
+  'total-addressable-market': {
+    id: 'total-addressable-market',
+    term: 'Total Addressable Market',
+    definition:
+      'The full revenue a product or category could theoretically capture. TAM estimates are built from stacked assumptions — adoption, price, capture rate — so two credible firms can produce very different numbers for the same market. Treat a TAM as a scenario, not a measurement.',
+    template: 'comparison',
+    templateData: {
+      title: 'Two firms, one market, a billion dollars apart',
+      headers: ['', 'Leerink', 'Needham'],
+      rows: [
+        { label: 'Market size', cells: ['~$2.2B', 'Up to $3.3B'] },
+        { label: 'Key assumption', cells: ['~20% Hims capture', 'Higher category size'] },
+        { label: 'Certainty', cells: ['Scenario', 'Scenario'] },
+      ],
+      footnote:
+        'The spread comes from assumptions about rulemaking, characterization, and reimbursement that are not yet resolved.',
+    },
+    realWorld:
+      'A $2.2B vs $3.3B gap for the same peptide market shows how much of a TAM is assumption rather than fact.',
+    courseId: 'valuation-101-1',
+    courseTitle: 'Sizing a Market',
+  },
 };
 
 export function getKeywordById(id) {
