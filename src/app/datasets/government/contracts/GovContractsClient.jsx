@@ -46,6 +46,10 @@ LIMIT 10;`;
 /* ── formatting ── */
 function fmtUSD(v) {
   const n = Number(v) || 0;
+  // Trillions FIRST — these are sequential returns, so a >= 1e12 value would
+  // otherwise match the billion branch and render as "$10977.5B". Two decimals
+  // at this scale: $10.98T keeps ~$500B of precision that $11.0T would discard.
+  if (n >= 1e12) return `$${(n / 1e12).toFixed(2)}T`;
   if (n >= 1e9) return `$${(n / 1e9).toFixed(1)}B`;
   if (n >= 1e6) return `$${(n / 1e6).toFixed(1)}M`;
   if (n >= 1e3) return `$${(n / 1e3).toFixed(0)}K`;
