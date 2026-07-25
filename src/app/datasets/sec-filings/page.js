@@ -1,60 +1,34 @@
-'use client';
+import { getSecFilings } from '@/lib/sec-filings-store';
+import { INSIDER_TRADES_SAMPLE } from './sec-filings-sample';
+import { SecFilingsClient } from './SecFilingsClient';
 
-import { Building, Search, TrendingUp } from 'lucide-react';
-import { DatasetDashboard } from '@/components/marketing/DatasetDashboard';
-import { Ticker, EntityName, TxnBadge } from '@/components/marketing/DatasetTable';
-import { INSIDER_TRADES_SAMPLE, TOP_INSIDER_BUYS } from './sec-filings-sample';
+/**
+ * SEC filings dataset page — three live tabbed feeds (Insider / Institutional /
+ * Activist) read from Supabase (populated by ingest-sec-filings). The page never
+ * calls EDGAR directly. Sample insider rows remain the honest empty-state
+ * fallback until the live table is populated.
+ */
+export const revalidate = 600;
 
-const config = {
-  title: 'SEC filings data',
-  lead: 'Insider transactions, institutional 13F holdings, executive compensation, and ETF holdings — parsed from EDGAR and normalized into one consistent schema.',
-  searches: [
-    {
-      id: 'company',
-      label: 'Company search',
-      placeholder: 'Search by ticker…',
-      icon: Building,
-      keys: ['ticker'],
-    },
-    {
-      id: 'insider',
-      label: 'Insider search',
-      placeholder: 'Search by name or role…',
-      icon: Search,
-      keys: ['insider', 'role'],
-    },
-  ],
-  highlight: {
-    badge: 'New',
-    icon: TrendingUp,
-    title: 'Largest insider buys (30 days)',
-    desc: 'Open-market purchases by officers and directors — the buys insiders make with their own money, ranked by dollar value.',
-    items: TOP_INSIDER_BUYS,
-  },
-  table: {
-    caption: 'Recent insider transactions (Form 4)',
-    columns: [
-      { key: 'insider', label: 'Insider', render: (v) => <EntityName>{v}</EntityName> },
-      { key: 'ticker', label: 'Company', render: (v) => <Ticker symbol={v} /> },
-      { key: 'role', label: 'Role' },
-      { key: 'transaction', label: 'Transaction', render: (v) => <TxnBadge type={v} /> },
-      { key: 'shares', label: 'Shares', align: 'right', mono: true },
-      { key: 'value', label: 'Value', align: 'right', mono: true },
-      { key: 'date', label: 'Filed', mono: true },
-    ],
-    rows: INSIDER_TRADES_SAMPLE,
-  },
-  sampleNote: 'Sample of recent filings — full live dataset available in the app.',
-  source: {
-    title: 'How we source it',
-    body: [
-      'Sourced directly from SEC EDGAR — Forms 3/4/5 for insider transactions, 13F filings for institutional holdings, and DEF 14A for executive compensation — supplemented by Financial Modeling Prep.',
-      'Filings are parsed, normalized, and linked to tickers. Disclosure timing follows SEC deadlines, so a small lag between transaction and filing is inherent to the data, not Ezana processing.',
-    ],
-  },
-  cta: { href: '/auth/login', label: 'Explore in the app' },
+export const metadata = {
+  title: 'SEC filings | Ezana',
+  description:
+    'Live SEC EDGAR filings — insider (Form 4), institutional (13F), and activist (13D/13G) — synced into Ezana.',
 };
 
-export default function SecFilingsDatasetPage() {
-  return <DatasetDashboard config={config} />;
+export default async function SecFilingsDatasetPage() {
+  const [insiderRes, instRes, activistRes] = await Promise.allSettled([
+    getSecFilings({ family: 'insider', limit: 50 }),
+    getSecFilings({ family: 'institutional', limit: 50 }),
+    getSecFilings({ family: 'activist', limit: 50 }),
+  ]);
+  const val = (r) => (r.status === 'fulfilled' && Array.isArray(r.value) ? r.value : []);
+
+  const feeds = {
+    insider: val(insiderRes),
+    institutional: val(instRes),
+    activist: val(activistRes),
+  };
+
+  return <SecFilingsClient feeds={feeds} insiderSample={INSIDER_TRADES_SAMPLE} />;
 }

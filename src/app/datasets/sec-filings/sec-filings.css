@@ -1,0 +1,115 @@
+/* Page-scoped styles for the SEC filings dataset page. Tokens only; the page
+   root is .mkt-page (from marketing-explore.css), so the overflow guards and the
+   .mkt-ds-table scroll wrapper carry over to mobile. */
+
+.secf-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 1.25rem;
+}
+.secf-tab {
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  border: 1px solid var(--border-primary);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+.secf-tab:hover {
+  border-color: color-mix(in srgb, var(--emerald) 40%, var(--border-primary));
+  color: var(--text-primary);
+}
+.secf-tab.is-active {
+  background: color-mix(in srgb, var(--emerald) 12%, transparent);
+  border-color: color-mix(in srgb, var(--emerald) 45%, transparent);
+  color: var(--emerald-text, var(--emerald));
+}
+.secf-tab:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+
+.secf-table td,
+.secf-table th {
+  vertical-align: middle;
+}
+.secf-form {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.secf-mono {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.secf-muted {
+  color: var(--text-faint);
+}
+.secf-link-cell {
+  text-align: right;
+  white-space: nowrap;
+}
+.secf-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--emerald-text, var(--emerald));
+  text-decoration: none;
+}
+.secf-link:hover {
+  text-decoration: underline;
+}
+
+.secf-sample-note {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--warning);
+  background: color-mix(in srgb, var(--warning) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--warning) 30%, transparent);
+  border-radius: 8px;
+  padding: 6px 12px;
+  margin-bottom: 12px;
+}
+.secf-empty {
+  padding: 2.5rem 1rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  border: 1px dashed var(--border-primary);
+  border-radius: 12px;
+}
+
+.secf-source {
+  margin-top: 2rem;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+  max-width: 65ch;
+}
+.secf-source-h {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin: 0 0 0.4rem;
+}

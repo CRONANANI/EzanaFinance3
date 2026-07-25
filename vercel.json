@@ -86,6 +86,10 @@
       "schedule": "0 7 * * *"
     },
     {
+      "path": "/api/cron/ingest-sec-filings?days=7",
+      "schedule": "0 8 * * *"
+    },
+    {
       "path": "/api/cron/ingest-lobbying?years=2026,2025,2024&pagesPerQuarter=20",
       "schedule": "0 */3 * * *"
     },
