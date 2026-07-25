@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { ExternalLink } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ExternalLink, X, Loader2 } from 'lucide-react';
 import { Ticker, EntityName, TxnBadge } from '@/components/marketing/DatasetTable';
 import '../../marketing-explore.css';
 import './sec-filings.css';
@@ -25,8 +25,20 @@ function fmtFiled(iso) {
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   return `${months[Number(m[2]) - 1]} ${Number(m[3])}, ${m[1]}`;
 }
+function fmtUSD(v) {
+  const n = Number(v) || 0;
+  if (n >= 1e12) return `$${(n / 1e12).toFixed(2)}T`;
+  if (n >= 1e9) return `$${(n / 1e9).toFixed(2)}B`;
+  if (n >= 1e6) return `$${(n / 1e6).toFixed(1)}M`;
+  if (n >= 1e3) return `$${(n / 1e3).toFixed(0)}K`;
+  return `$${n.toFixed(0)}`;
+}
+function fmtInt(v) {
+  return v == null ? '—' : (Number(v) || 0).toLocaleString('en-US');
+}
 
-function LiveFeed({ rows }) {
+function LiveFeed({ rows, family, onOpen }) {
+  const hasDetail = family === 'institutional' || family === 'activist';
   return (
     <div className="mkt-ds-table-wrap">
       <table className="mkt-ds-table secf-table">
@@ -36,13 +48,21 @@ function LiveFeed({ rows }) {
             <th>Form</th>
             <th>Subject</th>
             <th>Filed</th>
-            <th aria-label="Link" />
+            <th aria-label="Actions" />
           </tr>
         </thead>
         <tbody>
           {rows.map((r) => (
             <tr key={r.accession_no}>
-              <td className="mkt-ds-entity">{r.filer_name}</td>
+              <td className="mkt-ds-entity">
+                {hasDetail ? (
+                  <button type="button" className="secf-rowbtn" onClick={() => onOpen(r)}>
+                    {r.filer_name}
+                  </button>
+                ) : (
+                  r.filer_name
+                )}
+              </td>
               <td>
                 <span className="secf-form">{r.form_type}</span>
               </td>
@@ -65,6 +85,158 @@ function LiveFeed({ rows }) {
           ))}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+/* Detail card fetched on open. 13F → holdings table (sortable by value);
+   13D/13G → subject + percent-of-class. Parsed rows come from Supabase, never
+   fabricated — an unparsed filing shows an honest "not parsed yet" state. */
+function SecDetailModal({ filing, onClose }) {
+  const [state, setState] = useState('loading'); // loading | error | ready
+  const [holdings, setHoldings] = useState([]);
+  const [position, setPosition] = useState(null);
+  const [sortDesc, setSortDesc] = useState(true);
+
+  useEffect(() => {
+    const onEsc = (e) => e.key === 'Escape' && onClose();
+    document.addEventListener('keydown', onEsc);
+    return () => document.removeEventListener('keydown', onEsc);
+  }, [onClose]);
+
+  useEffect(() => {
+    let alive = true;
+    setState('loading');
+    (async () => {
+      try {
+        const res = await fetch(
+          `/api/sec-filings/detail?accession=${encodeURIComponent(filing.accession_no)}`,
+        );
+        const json = await res.json().catch(() => ({}));
+        if (!alive) return;
+        if (!res.ok) {
+          setState('error');
+          return;
+        }
+        setHoldings(Array.isArray(json.holdings) ? json.holdings : []);
+        setPosition(json.position || null);
+        setState('ready');
+      } catch {
+        if (alive) setState('error');
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [filing.accession_no]);
+
+  const sorted = [...holdings].sort((a, b) =>
+    sortDesc ? b.value_usd - a.value_usd : a.value_usd - b.value_usd,
+  );
+  const is13F = filing.form_family === 'institutional';
+
+  return (
+    <div className="secf-modal-backdrop" onClick={onClose}>
+      <div className="secf-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+        <div className="secf-modal-head">
+          <div>
+            <div className="secf-modal-eyebrow">
+              <span className="secf-form">{filing.form_type}</span> · filed {fmtFiled(filing.filed_at)}
+            </div>
+            <h2 className="secf-modal-title">{filing.filer_name}</h2>
+          </div>
+          <button type="button" className="secf-modal-x" onClick={onClose} aria-label="Close">
+            <X size={18} />
+          </button>
+        </div>
+
+        {state === 'loading' && (
+          <div className="secf-empty">
+            <Loader2 size={16} className="secf-spin" aria-hidden="true" /> Loading detail…
+          </div>
+        )}
+        {state === 'error' && <div className="secf-empty">Detail is unavailable right now.</div>}
+
+        {state === 'ready' && is13F && (
+          sorted.length ? (
+            <div className="mkt-ds-table-wrap">
+              <table className="mkt-ds-table secf-table">
+                <thead>
+                  <tr>
+                    <th>Issuer</th>
+                    <th>Ticker</th>
+                    <th
+                      className="secf-sortable"
+                      onClick={() => setSortDesc((d) => !d)}
+                      aria-sort={sortDesc ? 'descending' : 'ascending'}
+                    >
+                      Value {sortDesc ? '▼' : '▲'}
+                    </th>
+                    <th style={{ textAlign: 'right' }}>Shares</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sorted.map((h, i) => (
+                    <tr key={`${h.cusip || h.name_of_issuer}-${i}`}>
+                      <td className="mkt-ds-entity">{h.name_of_issuer}</td>
+                      <td>
+                        {h.ticker ? <Ticker symbol={h.ticker} /> : <span className="secf-muted">—</span>}
+                      </td>
+                      <td className="gcx-mono secf-mono">{fmtUSD(h.value_usd)}</td>
+                      <td className="gcx-mono secf-mono" style={{ textAlign: 'right' }}>
+                        {fmtInt(h.shares)}
+                        {h.put_call ? ` (${h.put_call})` : ''}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="secf-empty">
+              Holdings not parsed yet — the positions table appears after the next holdings sync.
+            </div>
+          )
+        )}
+
+        {state === 'ready' && !is13F && (
+          position ? (
+            <div className="secf-position">
+              <div className="secf-fact">
+                <div className="secf-fact-k">Subject</div>
+                <div className="secf-fact-v">{position.subject_name || '—'}</div>
+              </div>
+              <div className="secf-fact">
+                <div className="secf-fact-k">Percent of class</div>
+                <div className="secf-fact-v gcx-mono">
+                  {position.percent_of_class != null ? `${position.percent_of_class}%` : '—'}
+                </div>
+              </div>
+              <div className="secf-fact">
+                <div className="secf-fact-k">Shares</div>
+                <div className="secf-fact-v gcx-mono">{fmtInt(position.shares)}</div>
+              </div>
+            </div>
+          ) : (
+            <div className="secf-empty">
+              Stake not parsed yet — subject and percent-of-class appear after the next holdings sync.
+            </div>
+          )
+        )}
+
+        <div className="secf-modal-foot">
+          {filing.primary_doc_url ? (
+            <a
+              className="secf-link"
+              href={filing.primary_doc_url}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              View filing on SEC.gov <ExternalLink size={12} aria-hidden="true" />
+            </a>
+          ) : null}
+        </div>
+      </div>
     </div>
   );
 }
@@ -122,6 +294,7 @@ function InsiderSample({ rows }) {
 
 export function SecFilingsClient({ feeds, insiderSample = [] }) {
   const [tab, setTab] = useState('insider');
+  const [detail, setDetail] = useState(null);
   const rows = feeds?.[tab] || [];
 
   return (
@@ -154,7 +327,7 @@ export function SecFilingsClient({ feeds, insiderSample = [] }) {
 
         <section className="mkt-ds-section" aria-live="polite">
           {rows.length > 0 ? (
-            <LiveFeed rows={rows} />
+            <LiveFeed rows={rows} family={tab} onOpen={setDetail} />
           ) : tab === 'insider' && insiderSample.length ? (
             <InsiderSample rows={insiderSample} />
           ) : (
@@ -172,6 +345,8 @@ export function SecFilingsClient({ feeds, insiderSample = [] }) {
           </p>
         </section>
       </main>
+
+      {detail && <SecDetailModal filing={detail} onClose={() => setDetail(null)} />}
     </div>
   );
 }

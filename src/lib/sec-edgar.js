@@ -104,6 +104,29 @@ export function edgarUrls({ accessionNo, cik, primaryDoc }) {
   return { indexUrl, primaryDocUrl, base };
 }
 
+/** The filing's directory listing (JSON) — lists every document in the filing. */
+export async function getFilingIndexJson({ cik, accessionNo }) {
+  const { base } = edgarUrls({ accessionNo, cik });
+  return secFetch(`${base}/index.json`);
+}
+
+/**
+ * Locate the 13F INFORMATION TABLE XML within a filing's directory. Prefers a
+ * name that looks like an info table; falls back to an .xml that isn't the
+ * primary (cover) doc. Returns null when none is present.
+ */
+export function find13FInfoTableUrl(indexJson, { cik, accessionNo }) {
+  const { base } = edgarUrls({ accessionNo, cik });
+  const items = indexJson?.directory?.item || [];
+  const xmls = items.filter((it) => /\.xml$/i.test(it?.name || ''));
+  const named = xmls.find((it) =>
+    /info.?table|informationtable|form13f.*table/i.test(it.name),
+  );
+  const chosen =
+    named || xmls.find((it) => !/primary_?doc/i.test(it.name)) || xmls[0] || null;
+  return chosen ? `${base}/${chosen.name}` : null;
+}
+
 /** Strip the " (CIK 000...) (Filer)" suffix EDGAR appends to display names. */
 export function cleanFilerName(name) {
   return String(name || '')

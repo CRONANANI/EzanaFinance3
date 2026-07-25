@@ -90,6 +90,10 @@
       "schedule": "0 8 * * *"
     },
     {
+      "path": "/api/cron/ingest-sec-holdings?max13f=12&maxActivist=15",
+      "schedule": "30 8 * * *"
+    },
+    {
       "path": "/api/cron/ingest-lobbying?years=2026,2025,2024&pagesPerQuarter=20",
       "schedule": "0 */3 * * *"
     },

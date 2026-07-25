@@ -40,3 +40,35 @@ export async function getSecFilings({ family, limit = 50 } = {}) {
     return [];
   }
 }
+
+/** Parsed 13F positions for one filing, largest value first. [] on any error. */
+export async function get13FHoldings({ accessionNo }) {
+  try {
+    const supabase = getAnonClient();
+    const { data, error } = await supabase
+      .from('sec_13f_holdings')
+      .select('name_of_issuer, cusip, ticker, value_usd, shares, share_type, put_call')
+      .eq('accession_no', accessionNo)
+      .order('value_usd', { ascending: false });
+    if (error || !data) return [];
+    return data;
+  } catch {
+    return [];
+  }
+}
+
+/** Parsed 13D/13G stake for one filing, or null. */
+export async function getActivistPosition({ accessionNo }) {
+  try {
+    const supabase = getAnonClient();
+    const { data, error } = await supabase
+      .from('sec_activist_positions')
+      .select('subject_name, subject_cik, subject_ticker, percent_of_class, shares')
+      .eq('accession_no', accessionNo)
+      .maybeSingle();
+    if (error) return null;
+    return data || null;
+  } catch {
+    return null;
+  }
+}
