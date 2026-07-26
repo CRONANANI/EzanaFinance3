@@ -1168,3 +1168,31 @@ body.light-mode .mkt-ds-table-wrap {
     white-space: normal;
   }
 }
+
+/* ── Standalone dataset page shell (DatasetDashboard) ──────────────────
+   Full-bleed chrome (CategoryBar + DatasetTicker) above a centered content
+   column, mirroring the Government Contracts page's placement: nav flush to
+   the top, ticker directly beneath, hero/table in a centered column below.
+   overflow-x: clip (not hidden) keeps position:sticky descendants working. */
+.dsx-page {
+  overflow-x: clip;
+  min-width: 0;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+.dsx-page img,
+.dsx-page svg,
+.dsx-page canvas {
+  max-width: 100%;
+}
+.dsx-main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2.5rem 2rem 4rem;
+  min-width: 0;
+}
+@media (max-width: 480px) {
+  .dsx-main {
+    padding: 1.5rem 1rem 2.5rem;
+  }
+}

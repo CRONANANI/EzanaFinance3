@@ -16,6 +16,17 @@ const STANDALONE_ROUTES = new Set([
   '/datasets/government/contracts',
   '/datasets/government/lobbying',
   '/datasets/political',
+  // DatasetDashboard now draws its own full-bleed CategoryBar + ticker (and the
+  // bespoke sec-filings client draws the same chrome), so these opt out of the
+  // marketing shell too — no "Back to home" bar, no old pill row, matching the
+  // Government Contracts page.
+  '/datasets/institutional',
+  '/datasets/activist',
+  '/datasets/sec-filings',
+  '/datasets/alternative',
+  '/datasets/global',
+  '/datasets/markets',
+  '/datasets/prediction-markets',
 ]);
 
 export default function DatasetsLayout({ children }) {

@@ -54,7 +54,10 @@ export function DatasetDashboard({ config, children }) {
   const HighlightIcon = highlight?.icon;
 
   return (
-    <>
+    <div className="dsx-page">
+      {/* Full-bleed chrome above a centered content column — same placement as
+          the Government Contracts page (nav flush to top, ticker directly
+          beneath, content centered below). */}
       <CategoryBar active={activeCategory} activeItem={activeItem} />
       {ticker?.items?.length ? (
         <DatasetTicker
@@ -64,7 +67,8 @@ export function DatasetDashboard({ config, children }) {
         />
       ) : null}
 
-      <div className="mkt-hero">
+      <div className="dsx-main">
+        <div className="mkt-hero">
         <p className="mkt-eyebrow">{eyebrow}</p>
         <h1 className="mkt-h1">{title}</h1>
         <p className="mkt-lead">{lead}</p>
@@ -188,6 +192,7 @@ export function DatasetDashboard({ config, children }) {
           <ArrowRight size={18} aria-hidden />
         </Link>
       </div>
-    </>
+      </div>
+    </div>
   );
 }
