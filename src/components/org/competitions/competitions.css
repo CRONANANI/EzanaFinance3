@@ -1223,3 +1223,17 @@
   line-height: 1.5;
   white-space: pre-wrap;
 }
+
+/* ── Phase 7: recruiting consent ── */
+.pcx-talent-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 2px;
+  border-top: 1px solid var(--border-primary);
+  font-size: 13px;
+}
+.pcx-talent-row .pcx-roster-main {
+  margin-right: auto;
+}

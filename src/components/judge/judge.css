@@ -410,3 +410,60 @@
   margin-top: 2px;
   flex: none;
 }
+
+/* talent flagging */
+.jx-talent {
+  margin: 22px 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-primary);
+}
+.jx-talent-note {
+  margin: 0 0 12px;
+  font-size: 12.5px;
+  color: var(--text-faint);
+}
+.jx-talent-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.jx-talent-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md, 8px);
+  background: var(--bg-secondary);
+}
+.jx-talent-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.jx-talent-role {
+  color: var(--text-faint);
+  font-weight: 400;
+}
+.jx-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--border-primary);
+  border-radius: 999px;
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.jx-flag.is-on {
+  border-color: transparent;
+  background: var(--org-primary, var(--emerald));
+  color: var(--org-on-primary, #fff);
+}

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, FileText, Download, Lock, CheckCircle2, Loader2 } from 'lucide-react';
+import { ArrowLeft, FileText, Download, Lock, CheckCircle2, Loader2, Flag } from 'lucide-react';
 import { weightedTotal } from '@/lib/competitions/scoring';
 import { JudgeShell } from './JudgeLanding';
 import './judge.css';
@@ -11,6 +11,7 @@ export function JudgeScorecard({ token, teamId }) {
   const [state, setState] = useState('loading'); // loading | error | denied | ready
   const [data, setData] = useState(null);
   const [scores, setScores] = useState({});
+  const [members, setMembers] = useState([]);
   const [comment, setComment] = useState('');
   const [attribute, setAttribute] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -31,6 +32,7 @@ export function JudgeScorecard({ token, teamId }) {
         if (!res.ok) return setState('error');
         setData(json);
         setScores(json.myScores || {});
+        setMembers(json.teamMembers || []);
         setComment(json.comment || '');
         setSubmitted(!!json.submitted);
         setState('ready');
@@ -248,6 +250,30 @@ export function JudgeScorecard({ token, teamId }) {
         ) : null}
       </section>
 
+      {members.length ? (
+        <section className="jx-talent">
+          <h2 className="jx-section">Flag talent</h2>
+          <p className="jx-talent-note">Private to you. Shared with your firm only if the student later opts in to firm recruiting.</p>
+          <ul className="jx-talent-list">
+            {members.map((m) => (
+              <li key={m.id} className="jx-talent-row">
+                <span className="jx-talent-name">
+                  {m.full_name}
+                  {m.role_on_team ? <span className="jx-talent-role"> · {m.role_on_team}</span> : null}
+                </span>
+                <button
+                  type="button"
+                  className={`jx-flag ${m.flagged ? 'is-on' : ''}`}
+                  onClick={() => flagMember(m)}
+                >
+                  <Flag size={13} aria-hidden="true" /> {m.flagged ? 'Flagged' : 'Flag'}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
       {error ? <p className="jx-error">{error}</p> : null}
       {!submitted ? (
         <button type="button" className="jx-submit" onClick={submit} disabled={submitting}>
@@ -256,4 +282,20 @@ export function JudgeScorecard({ token, teamId }) {
       ) : null}
     </JudgeShell>
   );
+
+  async function flagMember(m) {
+    const flag = !m.flagged;
+    let note = m.note || '';
+    if (flag) note = window.prompt('Optional note (why you’re flagging them):', note) ?? '';
+    setMembers((ms) => ms.map((x) => (x.id === m.id ? { ...x, flagged: flag, note } : x)));
+    try {
+      await fetch('/api/competitions/judge/flag', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-judge-token': token },
+        body: JSON.stringify({ action: flag ? 'flag' : 'unflag', team_member_id: m.id, note }),
+      });
+    } catch {
+      /* best-effort; the toggle reflects intent */
+    }
+  }
 }

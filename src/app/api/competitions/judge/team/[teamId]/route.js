@@ -31,6 +31,14 @@ export const GET = withApiGuard(
       .maybeSingle();
     if (!team) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
+    // Team members + the judge's own flags (Phase 7) — flags are private to the judge.
+    const [{ data: members }, { data: myFlags }] = await Promise.all([
+      admin.from('pitch_team_members').select('id, full_name, role_on_team').eq('team_id', teamId).order('full_name', { ascending: true }),
+      admin.from('pitch_talent_flags').select('pitch_team_member_id, note').eq('judge_id', judge.id),
+    ]);
+    const flagByMember = new Map((myFlags || []).map((f) => [f.pitch_team_member_id, f.note]));
+    const teamMembers = (members || []).map((m) => ({ id: m.id, full_name: m.full_name, role_on_team: m.role_on_team, flagged: flagByMember.has(m.id), note: flagByMember.get(m.id) || '' }));
+
     const [{ data: criteria }, { data: rawDeliverables }, { data: scores }, { data: summary }] = await Promise.all([
       admin
         .from('pitch_rubric_criteria')
@@ -71,6 +79,7 @@ export const GET = withApiGuard(
       team,
       criteria: criteria || [],
       deliverables,
+      teamMembers,
       myScores,
       comment: summary?.comment || '',
       submitted: !!summary?.submitted,

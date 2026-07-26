@@ -1,8 +1,8 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, CheckCircle2, Circle, Upload, FileText, Loader2, Info } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Circle, Upload, FileText, Loader2, Info, Plus, Trash2, ShieldCheck } from 'lucide-react';
 import { createClient } from '@/lib/supabase-browser';
 import { requiredDeliverableKinds } from '@/lib/competitions/onboarding';
 import './competitions.css';
@@ -168,6 +168,106 @@ export function DeliverablesClient({ competition, team, config, initialDeliverab
           );
         })}
       </div>
+
+      <TalentPanel teamId={team.id} />
     </div>
+  );
+}
+
+/* Team roster + recruiting consent (Phase 7). Opt-in only, default none, revocable.
+   Managed by the team's own org members. */
+function TalentPanel({ teamId }) {
+  const [members, setMembers] = useState([]);
+  const [loaded, setLoaded] = useState(false);
+  const [name, setName] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const res = await fetch(`/api/org/pitch-teams/${teamId}/members`, { cache: 'no-store' });
+      if (alive && res.ok) {
+        const json = await res.json();
+        setMembers(json.members || []);
+      }
+      if (alive) setLoaded(true);
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [teamId]);
+
+  const call = async (payload) => {
+    setBusy(true);
+    try {
+      const res = await fetch(`/api/org/pitch-teams/${teamId}/members`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      return res.ok ? res.json() : null;
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const addMember = async (e) => {
+    e.preventDefault();
+    if (!name.trim()) return;
+    const json = await call({ action: 'add', full_name: name.trim() });
+    if (json?.member) {
+      setMembers((m) => [...m, json.member]);
+      setName('');
+    }
+  };
+  const removeMember = async (id) => {
+    if (await call({ action: 'remove', member_id: id })) setMembers((m) => m.filter((x) => x.id !== id));
+  };
+  const setConsent = async (m, consented, scope) => {
+    const json = await call({ action: 'consent', member_id: m.id, consented, scope });
+    if (json) setMembers((ms) => ms.map((x) => (x.id === m.id ? { ...x, optin: { consented, consent_scope: consented ? scope : 'none' } } : x)));
+  };
+
+  if (!loaded) return null;
+
+  return (
+    <section className="pcx-card-block" style={{ marginTop: 20 }}>
+      <h2 className="pcx-block-title"><ShieldCheck size={15} aria-hidden="true" /> Team & recruiting consent</h2>
+      <p className="pcx-muted pcx-note">
+        Opt-in only. By default nothing about a member is shared. A member can allow judges (or judges
+        and sponsoring firms) to see their pitch as a recruiting signal — and can revoke it any time.
+      </p>
+      <ul className="pcx-roster">
+        {members.length === 0 ? <li className="pcx-muted">No team members added yet.</li> : null}
+        {members.map((m) => {
+          const on = m.optin?.consented;
+          const scope = m.optin?.consent_scope || 'none';
+          return (
+            <li key={m.id} className="pcx-talent-row">
+              <span className="pcx-roster-main">{m.full_name}</span>
+              <label className="pcx-check-row" style={{ margin: 0 }}>
+                <input type="checkbox" checked={!!on} disabled={busy} onChange={(e) => setConsent(m, e.target.checked, e.target.checked ? 'judges_only' : 'none')} />
+                Recruiting opt-in
+              </label>
+              {on ? (
+                <select className="pcx-input pcx-input--sm" value={scope} disabled={busy} onChange={(e) => setConsent(m, true, e.target.value)} aria-label="Consent scope">
+                  <option value="judges_only">Judges only</option>
+                  <option value="sponsoring_firms">Judges & sponsoring firms</option>
+                </select>
+              ) : null}
+              <button type="button" className="pcx-iconbtn pcx-danger" onClick={() => removeMember(m.id)} disabled={busy} aria-label={`Remove ${m.full_name}`}>
+                <Trash2 size={14} />
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+      <form className="pcx-inline-form pcx-inline-form--sm" onSubmit={addMember}>
+        <input className="pcx-input" placeholder="Add team member name" value={name} onChange={(e) => setName(e.target.value)} />
+        <button type="submit" className="pcx-btn" disabled={busy || !name.trim()}>
+          <Plus size={14} /> Add
+        </button>
+      </form>
+    </section>
   );
 }
