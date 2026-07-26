@@ -100,19 +100,19 @@ export const DATASET_TAXONOMY = [
     items: [
       // orbital sources
       {
-        label: '13F Filings',
-        description: 'SEC quarterly institutional investor holdings and changes',
-        href: '/datasets/sec-filings',
-        live: false,
-        source: 'SEC EDGAR · Quiver',
+        label: 'Institutional',
+        description: 'SEC quarterly 13F institutional investor holdings and position changes',
+        href: '/datasets/institutional',
+        live: true,
+        source: 'SEC EDGAR — 13F-HR',
         sourceType: 'gov',
       },
       {
-        label: '13D / 13G Filings',
-        description: 'SEC filings for significant investor positions and stakes',
-        href: '/datasets/sec-filings',
-        live: false,
-        source: 'SEC EDGAR',
+        label: 'Activist',
+        description: 'SEC 13D / 13G filings — significant investor stakes and activist positions',
+        href: '/datasets/activist',
+        live: true,
+        source: 'SEC EDGAR — SC 13D/13G',
         sourceType: 'gov',
       },
       {
@@ -136,7 +136,7 @@ export const DATASET_TAXONOMY = [
         label: 'Insider Trading', // was "SEC & Institutional"
         description: 'Corporate officer and director Form 4 transactions',
         href: '/datasets/sec-filings',
-        live: false,
+        live: true,
         source: 'SEC EDGAR — Form 4',
         sourceType: 'gov',
       },
