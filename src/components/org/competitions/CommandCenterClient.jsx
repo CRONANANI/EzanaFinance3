@@ -124,6 +124,24 @@ export function CommandCenterClient({ initialCompetition, initialStructure, canM
         </div>
       </header>
 
+      <div className="pcx-cc-links">
+        {canManage ? (
+          <>
+            <Link href={`/org-competitions/${competition.slug}/config`} className="pcx-btn">
+              Onboarding config
+            </Link>
+            <Link href={`/org-competitions/${competition.slug}/requests`} className="pcx-btn">
+              Join requests
+            </Link>
+          </>
+        ) : null}
+        {!competition.isHost ? (
+          <Link href={`/org-competitions/${competition.slug}/deliverables`} className="pcx-btn">
+            My deliverables
+          </Link>
+        ) : null}
+      </div>
+
       {error ? <p className="pcx-error pcx-error--banner">{error}</p> : null}
 
       <nav className="pcx-tabs" role="tablist" aria-label="Command center sections">
