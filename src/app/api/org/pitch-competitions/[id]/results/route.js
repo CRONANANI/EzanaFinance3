@@ -4,6 +4,7 @@ import { getUserClient, getAdminClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 import { canManageCompetition } from '@/lib/competitions/permissions';
 import { computeResults, teamCriterionBreakdown, teamFeedback } from '@/lib/competitions/results';
+import { awardCompetitionBadges } from '@/lib/competitions/badges';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -103,6 +104,8 @@ export const POST = withApiGuard(
     }
     if (action === 'publish') {
       await supabase.from('pitch_competitions').update({ results_visible: true }).eq('id', comp.id);
+      // Publishing grants the trophies (service-role; idempotent).
+      await awardCompetitionBadges(admin, comp.id);
     }
     if (action === 'unpublish') {
       await supabase.from('pitch_competitions').update({ results_visible: false }).eq('id', comp.id);

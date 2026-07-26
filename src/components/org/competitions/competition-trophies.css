@@ -1,0 +1,61 @@
+/* Competition trophies on a member profile. Winner gets a gold treatment; other
+   tiers use the theme's accent tokens. Tokens only. */
+.ctr-wrap {
+  margin-top: 14px;
+}
+.ctr-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-faint);
+  margin-bottom: 10px;
+}
+.ctr-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+.ctr-badge {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 13px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md, 8px);
+  background: var(--bg-secondary);
+}
+.ctr-badge-place {
+  font-weight: 700;
+  font-size: 13.5px;
+  color: var(--text-primary);
+}
+.ctr-badge-rank {
+  color: var(--text-faint);
+  font-weight: 500;
+}
+.ctr-badge-comp {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.ctr-badge-role {
+  font-size: 11px;
+  color: var(--text-faint);
+}
+/* Gold winner treatment (amber accent token). */
+.ctr-gold {
+  border-color: color-mix(in srgb, var(--warning) 45%, transparent);
+  background: color-mix(in srgb, var(--warning) 10%, transparent);
+}
+.ctr-gold svg {
+  color: var(--warning);
+}
+.ctr-silver svg {
+  color: var(--info);
+}
+.ctr-accent svg {
+  color: var(--org-primary, var(--emerald));
+}
+.ctr-mut svg {
+  color: var(--text-faint);
+}

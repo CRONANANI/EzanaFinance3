@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useToast } from '@/contexts/ToastContext';
 import { useTheme } from '@/components/ThemeProvider';
 import { AnalystScorecard } from '@/components/org/analytics2/AnalystScorecard';
+import { CompetitionTrophies } from '@/components/org/competitions/CompetitionTrophies';
 import {
   MOCK_TEAMS,
   getOrgMemberReportsTo,
@@ -250,6 +251,8 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId,
               )}
             </div>
           )}
+
+          {/^[0-9a-f-]{36}$/i.test(member.id || '') && <CompetitionTrophies memberId={member.id} />}
 
           <SectionTitle isDark={isDark}>Contact</SectionTitle>
           <p style={{ color: body, fontSize: '0.8125rem', margin: '0 0 1rem' }}>
