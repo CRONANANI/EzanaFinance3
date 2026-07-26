@@ -94,6 +94,10 @@
       "schedule": "30 8 * * *"
     },
     {
+      "path": "/api/cron/compute-whale-moves?maxFilings=20&maxActivist=25",
+      "schedule": "0 9 * * *"
+    },
+    {
       "path": "/api/cron/ingest-lobbying?years=2026,2025,2024&pagesPerQuarter=20",
       "schedule": "0 */3 * * *"
     },

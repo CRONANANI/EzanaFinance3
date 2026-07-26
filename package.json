@@ -11,6 +11,7 @@
     "lint:ds": "node scripts/check-ds-hex.mjs",
     "lint:a11y": "node scripts/check-a11y.mjs",
     "lint:css": "node scripts/check-var-fallbacks.mjs",
+    "test:whale": "node scripts/check-whale-score.mjs",
     "format": "prettier --write \".\"",
     "format:check": "prettier --check \"docs/**/*.md\" \"package.json\" \".eslintrc.json\" \".prettierrc.json\" \".github/**/*.{yml,yaml}\"",
     "format:check:all": "prettier --check \".\"",

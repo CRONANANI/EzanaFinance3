@@ -149,11 +149,12 @@ export const DATASET_TAXONOMY = [
         sourceType: 'gov',
       },
       {
-        label: 'Whale Moves', // was "SEC & Institutional" (13D/13G-adjacent)
-        description: 'Large activist and block positions as they cross reporting thresholds',
-        href: '/datasets/sec-filings',
-        live: false,
-        source: 'SEC EDGAR — 13D/13G',
+        label: 'Whale Moves', // composite-scored 13F changes + 13D/13G stakes
+        description:
+          "Institutional and activist bets ranked by conviction — position as a share of the filer's own book, newness, and concentration — not raw size",
+        href: '/datasets/whale-moves',
+        live: true,
+        source: 'SEC EDGAR — 13F / 13D/13G (Ezana composite score)',
         sourceType: 'gov',
       },
       {

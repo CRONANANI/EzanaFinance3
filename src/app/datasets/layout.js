@@ -23,6 +23,7 @@ const STANDALONE_ROUTES = new Set([
   '/datasets/institutional',
   '/datasets/activist',
   '/datasets/sec-filings',
+  '/datasets/whale-moves',
   '/datasets/alternative',
   '/datasets/global',
   '/datasets/markets',
