@@ -41,9 +41,9 @@ export const DATASET_TAXONOMY = [
       {
         label: 'US House Financial Disclosures',
         description: 'Official House member trades and holdings disclosed under the STOCK Act',
-        href: '/datasets/political',
-        live: false,
-        source: 'House Clerk disclosures · FMP/Quiver',
+        href: '/datasets/house-disclosures',
+        live: true,
+        source: 'House Clerk disclosures (disclosures-clerk.house.gov)',
         sourceType: 'gov',
       },
       {

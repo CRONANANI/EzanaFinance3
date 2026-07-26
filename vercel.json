@@ -102,6 +102,14 @@
       "schedule": "0 */3 * * *"
     },
     {
+      "path": "/api/cron/ingest-house-disclosures?years=2026,2025",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/parse-house-ptrs?max=15",
+      "schedule": "30 6 * * *"
+    },
+    {
       "path": "/api/cron/ingest-lobbying?years=2026,2025&mode=rescan&rescanPages=5",
       "schedule": "0 5 * * 0"
     },

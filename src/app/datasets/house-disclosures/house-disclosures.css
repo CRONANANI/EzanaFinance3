@@ -1,0 +1,289 @@
+/* House financial disclosures (Capitol Watch) — tokens only. Rides the shared
+   .mkt-page / .mkt-main chrome; these classes style the filing-type chips, the
+   filter controls, the clickable PTR rows, and the trade-detail modal. Light/dark
+   come from the theme tokens. */
+
+.hdx-muted {
+  color: var(--text-faint);
+}
+.hdx-mono {
+  font-variant-numeric: tabular-nums;
+}
+.hdx-spin {
+  animation: hdx-spin 0.8s linear infinite;
+}
+@keyframes hdx-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.hdx-sample-note {
+  margin: 4px 0 8px;
+  padding: 10px 14px;
+  border: 1px solid var(--border-primary);
+  border-left: 3px solid var(--emerald);
+  border-radius: var(--radius-md, 8px);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ── filing-type chip ── */
+.hdx-type {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+}
+.hdx-type--ptr {
+  color: var(--emerald);
+  background: color-mix(in srgb, var(--emerald) 12%, transparent);
+  border-color: color-mix(in srgb, var(--emerald) 30%, transparent);
+}
+
+/* ── transaction-type chip (modal) ── */
+.hdx-tx {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+.hdx-tx--buy {
+  color: var(--emerald);
+  background: color-mix(in srgb, var(--emerald) 12%, transparent);
+}
+.hdx-tx--sell {
+  color: var(--warning);
+  background: color-mix(in srgb, var(--warning) 14%, transparent);
+}
+.hdx-tx--ind {
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+}
+
+/* ── amount bracket ── */
+.hdx-bracket {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.hdx-est {
+  color: var(--text-faint);
+  font-size: 12px;
+}
+
+/* ── controls ── */
+.hdx-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+.hdx-control {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.hdx-control--search {
+  flex: 1 1 240px;
+  min-width: 200px;
+}
+.hdx-control-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.hdx-search-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md, 8px);
+  background: var(--bg-secondary);
+  color: var(--text-faint);
+}
+.hdx-input {
+  border: none;
+  background: none;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 13px;
+  width: 100%;
+  outline: none;
+}
+.hdx-select {
+  appearance: none;
+  padding: 8px 12px;
+  min-width: 180px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md, 8px);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.hdx-search-field:focus-within,
+.hdx-select:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 1px;
+}
+.hdx-count {
+  margin-left: auto;
+  align-self: center;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* ── clickable PTR rows ── */
+.hdx-row-clickable {
+  cursor: pointer;
+}
+.hdx-row-clickable:hover {
+  background: var(--bg-secondary);
+}
+.hdx-row-clickable:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: -2px;
+}
+.hdx-link-cell {
+  text-align: right;
+  white-space: nowrap;
+}
+.hdx-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--emerald);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.hdx-link:hover {
+  text-decoration: underline;
+}
+
+/* ── modal ── */
+.hdx-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: color-mix(in srgb, var(--text-primary) 45%, transparent);
+}
+.hdx-modal {
+  width: min(760px, 100%);
+  max-height: 88vh;
+  overflow: auto;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: var(--shadow-lg, 0 20px 60px rgba(15, 23, 42, 0.25));
+  padding: 20px;
+}
+.hdx-modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.hdx-modal-eyebrow {
+  font-size: 12px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.hdx-modal-title {
+  margin: 4px 0 2px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.hdx-modal-sub {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.hdx-modal-x {
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  flex: none;
+}
+.hdx-modal-x:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+.hdx-bracket-note {
+  margin: 0 0 14px;
+  padding: 8px 12px;
+  border-radius: var(--radius-md, 8px);
+  background: var(--bg-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+.hdx-empty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 20px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  justify-content: center;
+}
+.hdx-modal-foot {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-primary);
+  font-size: 12px;
+}
+
+/* ── source ── */
+.hdx-source {
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg, 12px);
+  background: var(--bg-secondary);
+  padding: 18px;
+}
+.hdx-source p {
+  margin: 0 0 12px;
+  color: var(--text-secondary);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+.hdx-source p:last-child {
+  margin-bottom: 0;
+}
+.hdx-source strong {
+  color: var(--text-primary);
+}
+
+@media (max-width: 560px) {
+  .hdx-select {
+    min-width: 140px;
+  }
+  .hdx-count {
+    margin-left: 0;
+    width: 100%;
+  }
+}
