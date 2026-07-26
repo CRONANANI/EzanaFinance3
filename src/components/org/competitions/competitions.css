@@ -1194,3 +1194,32 @@
 .pcx-live-offset .pcx-input--num {
   width: 60px;
 }
+
+/* ── Phase 6: announcements ── */
+.pcx-announce {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.pcx-announce-item {
+  padding: 10px 12px;
+  border: 1px solid var(--border-primary);
+  border-left: 3px solid var(--org-primary, var(--emerald));
+  border-radius: var(--radius-md, 8px);
+  background: var(--bg-primary);
+}
+.pcx-announce-title {
+  font-weight: 700;
+  font-size: 13.5px;
+  color: var(--text-primary);
+}
+.pcx-announce-body {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  white-space: pre-wrap;
+}

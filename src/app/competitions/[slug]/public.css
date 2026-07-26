@@ -1,0 +1,138 @@
+/* Public competition page — outside the auth shell, no dashboard chrome. Shareable
+   marketing surface. Theme tokens only (light/dark aware). */
+
+.pubx-page {
+  min-height: 100vh;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  padding: 48px 20px 60px;
+}
+.pubx-container {
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+.pubx-hero {
+  text-align: center;
+  padding: 20px 0 30px;
+  border-bottom: 1px solid var(--border-primary);
+}
+.pubx-eyebrow {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--emerald);
+}
+.pubx-title {
+  margin: 0;
+  font-size: 38px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--text-primary);
+}
+.pubx-host {
+  margin: 12px 0 0;
+  font-size: 15px;
+  color: var(--text-secondary);
+}
+.pubx-theme {
+  margin: 6px 0 0;
+  font-size: 15px;
+  color: var(--text-faint);
+}
+.pubx-facts {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 20px 0;
+}
+.pubx-fact {
+  padding: 5px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--border-primary);
+  background: var(--bg-secondary);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.pubx-cta {
+  margin-top: 8px;
+}
+.pubx-btn {
+  display: inline-block;
+  padding: 13px 26px;
+  border-radius: var(--radius-md, 8px);
+  background: var(--emerald);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.pubx-btn:hover {
+  filter: brightness(0.96);
+}
+.pubx-invite {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.pubx-section {
+  padding: 26px 0;
+  border-bottom: 1px solid var(--border-primary);
+}
+.pubx-h2 {
+  margin: 0 0 14px;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-faint);
+  text-align: center;
+}
+.pubx-blurb {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--text-primary);
+  text-align: center;
+  white-space: pre-wrap;
+}
+.pubx-sponsors {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+}
+.pubx-sponsor {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md, 8px);
+  background: var(--bg-secondary);
+  text-decoration: none;
+  color: var(--text-primary);
+}
+.pubx-sponsor-logo {
+  max-height: 34px;
+  max-width: 140px;
+}
+.pubx-sponsor-name {
+  font-weight: 700;
+  font-size: 15px;
+}
+.pubx-sponsor-tier {
+  font-size: 11px;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.pubx-footer {
+  margin-top: 30px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-faint);
+}

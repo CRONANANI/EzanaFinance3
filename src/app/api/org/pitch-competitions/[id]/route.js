@@ -60,9 +60,10 @@ export const PATCH = withApiGuard(
     }
 
     const patch = {};
-    for (const key of ['name', 'description', 'theme', 'rules_url', 'starts_at', 'ends_at']) {
+    for (const key of ['name', 'description', 'theme', 'rules_url', 'starts_at', 'ends_at', 'public_blurb', 'banner_path']) {
       if (key in body) patch[key] = body[key] || null;
     }
+    if ('is_public' in body) patch.is_public = !!body.is_public;
     if ('format' in body && ['showcase', 'single_elim', 'round_robin'].includes(body.format)) {
       patch.format = body.format;
     }

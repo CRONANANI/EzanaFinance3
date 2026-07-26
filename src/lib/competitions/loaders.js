@@ -8,7 +8,7 @@
  */
 
 const COMPETITION_COLUMNS =
-  'id, host_org_id, name, slug, description, format, theme, rules_url, status, results_visible, starts_at, ends_at, created_at';
+  'id, host_org_id, name, slug, description, format, theme, rules_url, status, results_visible, starts_at, ends_at, created_at, is_public, public_blurb';
 
 /** Competitions visible to the caller, newest first. Each is tagged isHost. */
 export async function loadCompetitions(supabase, orgId) {

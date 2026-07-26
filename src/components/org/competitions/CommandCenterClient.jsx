@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -14,6 +14,7 @@ import {
   Gavel,
   SlidersHorizontal,
   LayoutDashboard,
+  Megaphone,
   Loader2,
 } from 'lucide-react';
 import { StatusPill } from './CompetitionsListClient';
@@ -171,14 +172,17 @@ export function CommandCenterClient({ initialCompetition, initialStructure, canM
       </nav>
 
       {tab === 'overview' && (
-        <OverviewTab
-          competition={competition}
-          counts={c}
-          readiness={readiness}
-          canManage={canManage}
-          busy={busy}
-          onAdvance={patchCompetition}
-        />
+        <>
+          <OverviewTab
+            competition={competition}
+            counts={c}
+            readiness={readiness}
+            canManage={canManage}
+            busy={busy}
+            onAdvance={patchCompetition}
+          />
+          <AnnouncementsPanel compId={compId} canManage={canManage} />
+        </>
       )}
       {tab === 'structure' && (
         <StructureTab structure={structure} canManage={canManage} busy={busy} act={act} />
@@ -245,6 +249,74 @@ function Stat({ label, value, sub }) {
       <div className="pcx-stat-label">{label}</div>
       {sub ? <div className="pcx-stat-sub">{sub}</div> : null}
     </div>
+  );
+}
+
+/* ─────────────── Announcements ─────────────── */
+function AnnouncementsPanel({ compId, canManage }) {
+  const [items, setItems] = useState([]);
+  const [form, setForm] = useState({ title: '', body: '' });
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const res = await fetch(`/api/org/pitch-competitions/${compId}/announcements`, { cache: 'no-store' });
+      if (alive && res.ok) {
+        const json = await res.json();
+        setItems(json.announcements || []);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [compId]);
+
+  const post = async (e) => {
+    e.preventDefault();
+    if (!form.title.trim()) return;
+    setBusy(true);
+    try {
+      const res = await fetch(`/api/org/pitch-competitions/${compId}/announcements`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: form.title.trim(), body: form.body.trim() || null }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setItems((a) => [json.announcement, ...a]);
+        setForm({ title: '', body: '' });
+      }
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <section className="pcx-card-block">
+      <h2 className="pcx-block-title"><Megaphone size={15} aria-hidden="true" /> Announcements</h2>
+      {canManage ? (
+        <form className="pcx-stack-form" onSubmit={post}>
+          <input className="pcx-input" placeholder="Announcement title (e.g. Room 2 moved to 3pm)" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+          <textarea className="pcx-input pcx-textarea" rows={2} placeholder="Details (optional)" value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} />
+          <button type="submit" className="pcx-btn pcx-btn--primary" disabled={busy || !form.title.trim()}>
+            <Plus size={15} /> Post to all registered teams
+          </button>
+        </form>
+      ) : null}
+      {items.length === 0 ? (
+        <p className="pcx-muted">No announcements yet.</p>
+      ) : (
+        <ul className="pcx-announce">
+          {items.map((a) => (
+            <li key={a.id} className="pcx-announce-item">
+              <div className="pcx-announce-title">{a.title}</div>
+              {a.body ? <p className="pcx-announce-body">{a.body}</p> : null}
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }
 
