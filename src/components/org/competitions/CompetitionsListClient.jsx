@@ -137,11 +137,16 @@ export function CompetitionsListClient({ initial, canManage }) {
             councils, line up judges, and set the rubric — all from one place.
           </p>
         </div>
-        {canManage ? (
-          <button type="button" className="pcx-btn pcx-btn--primary" onClick={() => setCreating(true)}>
-            <Plus size={16} /> New competition
-          </button>
-        ) : null}
+        <div className="pcx-cc-links" style={{ marginBottom: 0 }}>
+          <Link href="/org-competitions/council" className="pcx-btn">
+            <Trophy size={15} /> Council ranking
+          </Link>
+          {canManage ? (
+            <button type="button" className="pcx-btn pcx-btn--primary" onClick={() => setCreating(true)}>
+              <Plus size={16} /> New competition
+            </button>
+          ) : null}
+        </div>
       </header>
 
       {competitions.length === 0 ? (

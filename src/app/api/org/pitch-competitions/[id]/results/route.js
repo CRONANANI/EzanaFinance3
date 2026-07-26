@@ -5,6 +5,7 @@ import { getCurrentOrgMember } from '@/lib/org-trading-server';
 import { canManageCompetition } from '@/lib/competitions/permissions';
 import { computeResults, teamCriterionBreakdown, teamFeedback } from '@/lib/competitions/results';
 import { awardCompetitionBadges } from '@/lib/competitions/badges';
+import { recomputeCouncilElo } from '@/lib/council-elo/recompute';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -104,8 +105,13 @@ export const POST = withApiGuard(
     }
     if (action === 'publish') {
       await supabase.from('pitch_competitions').update({ results_visible: true }).eq('id', comp.id);
-      // Publishing grants the trophies (service-role; idempotent).
+      // Publishing grants the trophies + refreshes council ELO (both idempotent).
       await awardCompetitionBadges(admin, comp.id);
+      try {
+        await recomputeCouncilElo(admin);
+      } catch {
+        /* ELO refresh is best-effort here; the daily cron reconciles it anyway */
+      }
     }
     if (action === 'unpublish') {
       await supabase.from('pitch_competitions').update({ results_visible: false }).eq('id', comp.id);

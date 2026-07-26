@@ -22,7 +22,8 @@
     "seed:learning": "node scripts/seed-learning.mjs",
     "backfill:changelog": "node scripts/backfill-changelog.mjs",
     "optimize-president-images": "node scripts/optimize-president-images.js",
-    "test:recruiting": "node scripts/check-recruiting-consent.mjs"
+    "test:recruiting": "node scripts/check-recruiting-consent.mjs",
+    "test:council": "node scripts/check-council-elo.mjs"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,mjs,cjs}": [
