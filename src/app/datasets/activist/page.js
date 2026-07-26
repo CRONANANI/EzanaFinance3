@@ -52,6 +52,17 @@ const config = {
     ],
   },
   cta: { href: '/auth/login', label: 'Explore in the app' },
+  activeCategory: 'titans',
+  activeItem: 'Activist',
+  ticker: {
+    ariaLabel: 'Latest 13D / 13G filings',
+    items: ACTIVIST_SAMPLE.slice(0, 20).map((r) => ({
+      id: r.id,
+      lead: r.filer,
+      main: r.subject || r.ticker,
+      value: r.percent,
+    })),
+  },
 };
 
 export default function ActivistDatasetPage() {

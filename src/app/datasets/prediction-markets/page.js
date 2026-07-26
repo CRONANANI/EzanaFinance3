@@ -45,6 +45,8 @@ const config = {
     ],
   },
   cta: { href: '/auth/login', label: 'Explore in the app' },
+  activeCategory: 'hive',
+  activeItem: 'Prediction Markets',
 };
 
 export default function PredictionMarketsDatasetPage() {

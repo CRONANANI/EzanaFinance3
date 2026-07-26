@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { ExternalLink, X, Loader2 } from 'lucide-react';
 import { Ticker, EntityName, TxnBadge } from '@/components/marketing/DatasetTable';
+import CategoryBar from '@/components/datasets/CategoryBar';
+import DatasetTicker from '@/components/datasets/DatasetTicker';
 import '../../marketing-explore.css';
 import './sec-filings.css';
 
@@ -297,8 +299,35 @@ export function SecFilingsClient({ feeds, insiderSample = [] }) {
   const [detail, setDetail] = useState(null);
   const rows = feeds?.[tab] || [];
 
+  // Ticker: the current tab's live rows, or the insider sample when the live
+  // feed is empty. Interactive (opens the detail modal) for the tabs that have
+  // a parsed detail view; decorative otherwise. Omitted entirely when empty.
+  const hasDetail = tab === 'institutional' || tab === 'activist';
+  const tickerItems = rows.length
+    ? rows.slice(0, 20).map((r) => ({
+        id: r.accession_no,
+        lead: r.form_type,
+        main: r.filer_name,
+        value: r.ticker || null,
+        _row: r,
+      }))
+    : tab === 'insider'
+      ? insiderSample.slice(0, 20).map((r) => ({
+          id: r.id,
+          lead: r.role,
+          main: r.insider,
+          value: r.value,
+        }))
+      : [];
+
   return (
     <div className="mkt-page">
+      <CategoryBar active="titans" activeItem="Insider Trading" />
+      <DatasetTicker
+        items={tickerItems}
+        ariaLabel="Latest SEC filings"
+        onSelect={rows.length && hasDetail ? (it) => setDetail(it._row) : undefined}
+      />
       <main className="mkt-main">
         <div className="mkt-hero">
           <p className="mkt-eyebrow">SEC · EDGAR</p>

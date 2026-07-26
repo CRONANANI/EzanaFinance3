@@ -57,6 +57,8 @@ const config = {
     ],
   },
   cta: { href: '/auth/login', label: 'Explore in the app' },
+  activeCategory: 'lighthouse',
+  activeItem: 'Global & Macro',
 };
 
 export default function GlobalDatasetPage() {

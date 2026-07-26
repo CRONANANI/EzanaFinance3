@@ -1,0 +1,77 @@
+/* Page-agnostic dataset ticker — the contracts AwardTicker generalized. Classes
+   are dsx- (not the contracts-scoped gcx-). Motion matches gov-contracts'
+   gcx-tick (52s) so the shared ticker and the contracts ticker scroll at the
+   same speed. Tokens only. */
+
+.dsx-ticker {
+  overflow: hidden;
+  border-bottom: 1px solid var(--border-primary);
+  white-space: nowrap;
+}
+.dsx-ticker-track {
+  display: inline-flex;
+  width: max-content;
+  animation: dsx-tick 52s linear infinite;
+}
+.dsx-ticker:hover .dsx-ticker-track,
+.dsx-ticker:focus-within .dsx-ticker-track {
+  animation-play-state: paused;
+}
+@keyframes dsx-tick {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+/* A perpetually scrolling strip is a vestibular trigger — stop it on request. */
+@media (prefers-reduced-motion: reduce) {
+  .dsx-ticker-track {
+    animation: none;
+  }
+}
+
+.dsx-titem {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  background: none;
+  border: none;
+  border-right: 1px solid var(--border-primary);
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.dsx-titem.is-static {
+  cursor: default;
+}
+.dsx-titem:hover:not(.is-static) .dsx-tmain {
+  text-decoration: underline;
+}
+.dsx-titem:focus-visible {
+  /* Inset so the outline isn't clipped by the ticker's overflow: hidden. */
+  outline: 2px solid var(--emerald);
+  outline-offset: -2px;
+}
+.dsx-tlead {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.dsx-tmain {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.dsx-tval {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.dsx-mono {
+  font-family: var(--font-mono, monospace);
+  font-variant-numeric: tabular-nums;
+}

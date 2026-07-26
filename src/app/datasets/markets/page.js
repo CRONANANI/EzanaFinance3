@@ -52,6 +52,8 @@ const config = {
     ],
   },
   cta: { href: '/auth/login', label: 'Explore in the app' },
+  activeCategory: 'titans',
+  activeItem: 'Prices & Fundamentals',
 };
 
 export default function MarketsDatasetPage() {

@@ -52,6 +52,19 @@ const config = {
     ],
   },
   cta: { href: '/auth/login', label: 'Explore in the app' },
+  activeCategory: 'titans',
+  activeItem: 'Institutional',
+  ticker: {
+    ariaLabel: 'Latest 13F holdings',
+    // Fed from the page's sample rows (live EDGAR is a separate build). No
+    // onSelect yet — decorative until the live detail view exists.
+    items: INSTITUTIONAL_SAMPLE.slice(0, 20).map((r) => ({
+      id: r.id,
+      lead: r.fund,
+      main: r.issuer || r.ticker,
+      value: r.value,
+    })),
+  },
 };
 
 export default function InstitutionalDatasetPage() {

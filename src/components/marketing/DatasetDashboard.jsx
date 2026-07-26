@@ -3,6 +3,8 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
+import CategoryBar from '@/components/datasets/CategoryBar';
+import DatasetTicker from '@/components/datasets/DatasetTicker';
 import { DatasetTable } from './DatasetTable';
 
 /**
@@ -28,6 +30,9 @@ export function DatasetDashboard({ config, children }) {
     cta,
     onRowClick,
     getRowLabel,
+    activeCategory, // taxonomy dimension id, e.g. 'titans' — highlights the nav
+    activeItem, // taxonomy item label, e.g. 'Institutional'
+    ticker, // optional: { items, onSelect?, ariaLabel? } — omitted → no strip
   } = config;
 
   const [terms, setTerms] = useState({});
@@ -50,6 +55,15 @@ export function DatasetDashboard({ config, children }) {
 
   return (
     <>
+      <CategoryBar active={activeCategory} activeItem={activeItem} />
+      {ticker?.items?.length ? (
+        <DatasetTicker
+          items={ticker.items}
+          onSelect={ticker.onSelect}
+          ariaLabel={ticker.ariaLabel}
+        />
+      ) : null}
+
       <div className="mkt-hero">
         <p className="mkt-eyebrow">{eyebrow}</p>
         <h1 className="mkt-h1">{title}</h1>

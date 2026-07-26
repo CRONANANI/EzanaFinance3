@@ -52,6 +52,8 @@ const config = {
     ],
   },
   cta: { href: '/auth/login', label: 'Explore in the app' },
+  activeCategory: 'eyes',
+  activeItem: 'Satellite Imagery',
 };
 
 export default function AlternativeDatasetPage() {
