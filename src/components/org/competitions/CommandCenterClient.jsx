@@ -139,9 +139,14 @@ export function CommandCenterClient({ initialCompetition, initialStructure, canM
           </>
         ) : null}
         {!competition.isHost ? (
-          <Link href={`/org-competitions/${competition.slug}/deliverables`} className="pcx-btn">
-            My deliverables
-          </Link>
+          <>
+            <Link href={`/org-competitions/${competition.slug}/deliverables`} className="pcx-btn">
+              My deliverables
+            </Link>
+            <Link href={`/org-competitions/${competition.slug}/results`} className="pcx-btn">
+              Results
+            </Link>
+          </>
         ) : null}
       </div>
 

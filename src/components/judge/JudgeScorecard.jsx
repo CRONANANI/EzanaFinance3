@@ -12,6 +12,7 @@ export function JudgeScorecard({ token, teamId }) {
   const [data, setData] = useState(null);
   const [scores, setScores] = useState({});
   const [comment, setComment] = useState('');
+  const [attribute, setAttribute] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [savingId, setSavingId] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -82,7 +83,7 @@ export function JudgeScorecard({ token, teamId }) {
       const res = await fetch('/api/competitions/judge/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-judge-token': token },
-        body: JSON.stringify({ team_id: teamId, comment }),
+        body: JSON.stringify({ team_id: teamId, comment, attribute_comment: attribute }),
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -238,6 +239,13 @@ export function JudgeScorecard({ token, teamId }) {
           disabled={ro}
           placeholder="Feedback for the team…"
         />
+        {!submitted ? (
+          <label className="jx-attribute">
+            <input type="checkbox" checked={attribute} onChange={(e) => setAttribute(e.target.checked)} />
+            Share my name with this team. By default your feedback is shown anonymously as “Judge from
+            [your firm].”
+          </label>
+        ) : null}
       </section>
 
       {error ? <p className="jx-error">{error}</p> : null}

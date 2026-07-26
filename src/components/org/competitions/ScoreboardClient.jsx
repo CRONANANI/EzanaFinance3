@@ -32,14 +32,33 @@ export function ScoreboardClient({ competition }) {
   }, [load]);
 
   const toggleReveal = async () => {
+    if (resultsVisible && !window.confirm('Hide results from competitors again?')) return;
     setBusy(true);
     try {
-      const res = await fetch(`/api/org/pitch-competitions/${competition.id}`, {
-        method: 'PATCH',
+      // Publish recomputes results then reveals; unpublish re-hides.
+      const res = await fetch(`/api/org/pitch-competitions/${competition.id}/results`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ results_visible: !resultsVisible }),
+        body: JSON.stringify({ action: resultsVisible ? 'unpublish' : 'publish' }),
       });
-      if (res.ok) setResultsVisible((v) => !v);
+      if (res.ok) {
+        setResultsVisible((v) => !v);
+        load();
+      }
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const recompute = async () => {
+    setBusy(true);
+    try {
+      await fetch(`/api/org/pitch-competitions/${competition.id}/results`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'compute' }),
+      });
+      await load();
     } finally {
       setBusy(false);
     }
@@ -59,6 +78,12 @@ export function ScoreboardClient({ competition }) {
           <button type="button" className="pcx-btn" onClick={load} disabled={busy}>
             <RefreshCw size={14} /> Refresh
           </button>
+          <button type="button" className="pcx-btn" onClick={recompute} disabled={busy}>
+            Recompute
+          </button>
+          <Link href={`/org-competitions/${competition.slug}/results`} className="pcx-btn">
+            Results view
+          </Link>
           <button type="button" className={`pcx-btn ${resultsVisible ? '' : 'pcx-btn--primary'}`} onClick={toggleReveal} disabled={busy}>
             {resultsVisible ? <EyeOff size={14} /> : <Eye size={14} />} {resultsVisible ? 'Hide results' : 'Reveal results'}
           </button>

@@ -32,6 +32,7 @@ export const POST = withApiGuard(
         judge_id: judge.id,
         team_id: teamId,
         comment: body?.comment ? String(body.comment) : null,
+        attribute_comment: !!body?.attribute_comment,
         submitted: true,
         submitted_at: now,
         updated_at: now,
