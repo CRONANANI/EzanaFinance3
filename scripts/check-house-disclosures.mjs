@@ -45,6 +45,7 @@ test('index: parses columns, labels, state/district, PTR + electronic flags', ()
   assert.equal(annual.is_electronic, false); // short DocID → scanned
   assert.equal(annual.filing_type_label, 'Annual Report');
   assert.equal(annual.suffix, 'Jr');
+  assert.equal(annual.pdf_url, null); // non-PTR filings use a different Clerk path
 });
 
 test('index: skips malformed/short lines, requires DocID + last + type', () => {

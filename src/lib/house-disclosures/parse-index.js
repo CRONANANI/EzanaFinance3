@@ -20,7 +20,7 @@ export const FILING_TYPE_LABELS = {
   W: 'Withdrawal',
   D: 'New Filer Report',
   T: 'Termination Report',
-  H: 'Hearing/Other',
+  H: 'Other',
 };
 
 /** 'M/D/YYYY' → 'YYYY-MM-DD', or null when unparseable. */
@@ -58,11 +58,12 @@ export function parseHouseIndexTxt(text) {
     const [prefix, last, first, suffix, filingType, stateDst, year, filingDate, docId] = c.map((x) =>
       x.trim(),
     );
-    if (!docId || !last || !filingType) continue;
+    if (!docId || !last) continue;
 
     const st = (stateDst.match(/^[A-Z]{2}/) || [])[0] || null;
     const dist = st ? stateDst.slice(2) || null : null;
     const yr = Number(year);
+    const isPtr = filingType === 'P';
 
     rows.push({
       doc_id: docId,
@@ -77,8 +78,10 @@ export function parseHouseIndexTxt(text) {
       district: dist,
       filing_year: Number.isFinite(yr) ? yr : null,
       filing_date: toISO(filingDate),
-      pdf_url: ptrPdfUrl(year, docId), // only trusted for is_ptr rows (see note above)
-      is_ptr: filingType === 'P',
+      // PTR PDFs live under /ptr-pdfs/<YEAR>/<DocID>.pdf. Only meaningful for PTRs;
+      // annual/other filings use a different Clerk path, so leave those null.
+      pdf_url: isPtr ? ptrPdfUrl(year, docId) : null,
+      is_ptr: isPtr,
       is_electronic: isElectronicDocId(docId),
     });
   }
