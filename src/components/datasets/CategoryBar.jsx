@@ -54,6 +54,7 @@ export default function CategoryBar({ active, activeItem }) {
                     key={it.label}
                     href={it.href}
                     className={`dscat-item ${it.label === activeItem ? 'is-active' : ''}`}
+                    style={{ '--dscat-item-color': cat.color }}
                   >
                     <span>{it.label}</span>
                   </a>
@@ -65,6 +66,7 @@ export default function CategoryBar({ active, activeItem }) {
                     aria-disabled="true"
                     tabIndex={-1}
                     title="Coming soon"
+                    style={{ '--dscat-item-color': cat.color }}
                   >
                     <span>{it.label}</span>
                     <span className="dscat-soon">Soon</span>

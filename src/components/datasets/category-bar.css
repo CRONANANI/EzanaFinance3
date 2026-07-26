@@ -62,7 +62,9 @@
   padding: 8px 10px;
   font-family: var(--font-sans, sans-serif);
   font-size: 12.5px;
-  color: var(--text-secondary);
+  /* Item text takes its parent category's color (the same color as the category
+     dot), passed in from cat.color as --dscat-item-color. */
+  color: var(--dscat-item-color, var(--text-secondary));
   text-decoration: none;
   border-radius: var(--radius-md, 8px);
 }
@@ -78,7 +80,9 @@
   background: none;
 }
 .dscat-item.is-active {
-  color: var(--emerald);
+  /* Active row: its category color, bolded — not a hardcoded emerald that would
+     be wrong for non-emerald categories. */
+  color: var(--dscat-item-color, var(--emerald));
   font-weight: 600;
 }
 /* roadmap (live:false) dataset — muted "Soon" pill, never shown as live */
