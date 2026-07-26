@@ -24,6 +24,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import CategoryBar from '@/components/datasets/CategoryBar';
+import DatasetTicker from '@/components/datasets/DatasetTicker';
 import ContractsExplorer from './ContractsExplorer';
 // Positional palette: raw awarding_agency strings are the source of truth (no
 // regex bucketing); colors bind to spend-rank slots (top 10) + Other.
@@ -335,7 +336,23 @@ export default function GovContractsClient({
     <div className="gcx-page">
       <CategoryBar active="capitol" activeItem="Government Contracts" />
 
-      <AwardTicker awards={recentAwards} onSelect={setSelectedAward} />
+      {/* Shared, full-bleed dataset ticker (same component + speed as every other
+          dataset page). Awards map to the generic item shape; _award carries the
+          full record so a click still opens the award-analysis modal. */}
+      <DatasetTicker
+        ariaLabel="Latest contract awards"
+        items={recentAwards
+          .filter((a) => a.recipient && a.amount > 0)
+          .slice(0, 30)
+          .map((a) => ({
+            id: a.id,
+            lead: a.agency,
+            main: a.recipient,
+            value: fmtUSD(a.amount),
+            _award: a,
+          }))}
+        onSelect={(it) => setSelectedAward(it._award)}
+      />
 
       <header className="gcx-header">
         <p className="gcx-eyebrow">DATASETS · USASPENDING.GOV</p>
@@ -533,39 +550,6 @@ export default function GovContractsClient({
       {selectedAward && (
         <AwardDetailModal award={selectedAward} onClose={() => setSelectedAward(null)} />
       )}
-    </div>
-  );
-}
-
-/* ────────────────────────── Award ticker ────────────────────────── */
-/* Newest awards from gov_contract_recent_awards (see getRecentAwardFeed) — the
-   genuinely most recent, not the largest-by-amount sample the ticker showed
-   before. Items are buttons: clicking one opens its detail modal. */
-function AwardTicker({ awards, onSelect }) {
-  const items = useMemo(() => {
-    const list = (awards || []).filter((a) => a.recipient && a.amount > 0).slice(0, 30);
-    return list.length ? [...list, ...list] : []; // duplicated for a seamless loop
-  }, [awards]);
-
-  if (!items.length) return null;
-
-  return (
-    <div className="gcx-ticker">
-      <div className="gcx-ticker-track">
-        {items.map((it, i) => (
-          <button
-            type="button"
-            className="gcx-titem"
-            key={`${it.id}-${i}`}
-            onClick={() => onSelect(it)}
-            aria-label={`${it.recipient}, ${fmtUSD(it.amount)} from ${it.agency}. Open award detail.`}
-          >
-            <span className="gcx-ta gcx-mono">{it.agency}</span>
-            <span className="gcx-tn">{it.recipient}</span>
-            <span className="gcx-tv gcx-mono">{fmtUSD(it.amount)}</span>
-          </button>
-        ))}
-      </div>
     </div>
   );
 }

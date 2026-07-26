@@ -108,83 +108,17 @@
   font-weight: 600;
 }
 
-/* ── award ticker (white marquee, thin emerald underline) ── */
-.gcx-ticker {
-  overflow: hidden;
-  background: #fff;
-  border-bottom: 1.5px solid var(--emerald);
-  margin-bottom: 20px;
-  white-space: nowrap;
-}
-.gcx-ticker-track {
-  display: inline-flex;
-  width: max-content;
-  /* ~30% slower than the original 40s (per design tweak). Scoped to this page's
-     own AwardTicker — not the shared am2 MarqueeTicker, which isn't used here. */
-  animation: gcx-tick 52s linear infinite;
-}
-.gcx-ticker:hover .gcx-ticker-track {
-  animation-play-state: paused;
-}
-@keyframes gcx-tick {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
-.gcx-titem {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 9px;
-  padding: 11px 20px;
-  /* Now a <button>: reset the UA chrome but keep the separator. */
-  border: none;
-  border-right: 1px solid var(--border-primary);
-  background: none;
-  font: inherit;
-  color: inherit;
-  cursor: pointer;
-}
-/* Interactive ticker: pause the marquee on focus too (not just hover) so a
-   keyboard user can reach and click an item. */
-.gcx-ticker:focus-within .gcx-ticker-track {
-  animation-play-state: paused;
-}
-.gcx-titem:hover .gcx-tn {
-  text-decoration: underline;
-}
-.gcx-titem:focus-visible {
-  /* Inset so the outline isn't clipped by the ticker's overflow: hidden. */
-  outline: 2px solid var(--emerald);
-  outline-offset: -2px;
-}
-/* A perpetually scrolling strip is a vestibular trigger — stop it on request. */
-@media (prefers-reduced-motion: reduce) {
-  .gcx-ticker-track {
-    animation: none;
-  }
-}
-.gcx-titem .gcx-ta {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-.gcx-titem .gcx-tn {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-.gcx-titem .gcx-tv {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--emerald);
-}
+/* The award ticker now uses the shared, full-bleed DatasetTicker (.dsx-ticker in
+   src/components/datasets/dataset-ticker.css) so every dataset page scrolls at
+   the same canonical speed and spans the viewport edge-to-edge. The old
+   page-scoped .gcx-ticker marquee was removed with it. */
 
 /* ── header ── */
 .gcx-header {
   text-align: center;
+  /* The shared ticker carries no bottom margin (it's full-bleed via transform),
+     so the header supplies the gap that .gcx-ticker's margin-bottom used to. */
+  margin-top: 20px;
   margin-bottom: 16px; /* was 22px — no longer carries body copy */
 }
 .gcx-eyebrow {

@@ -1,16 +1,33 @@
-/* Page-agnostic dataset ticker — the contracts AwardTicker generalized. Classes
-   are dsx- (not the contracts-scoped gcx-). Motion matches gov-contracts'
-   gcx-tick (52s) so the shared ticker and the contracts ticker scroll at the
-   same speed. Tokens only. */
+/* Page-agnostic dataset ticker — the single source of truth for EVERY dataset
+   page's scrolling strip (including Government Contracts, which used to carry its
+   own gcx-ticker marquee). Classes are dsx-. Full-bleed at one canonical 52s
+   speed; change the width/speed here and all pages move together. Tokens only. */
 
 .dsx-ticker {
   overflow: hidden;
-  border-bottom: 1px solid var(--border-primary);
+  border-bottom: 1.5px solid var(--emerald);
   white-space: nowrap;
+
+  /* Full-bleed: the strip spans the whole viewport edge-to-edge on EVERY dataset
+     page, matching the Institutional reference. Most pages (.dsx-page) already
+     render it outside the centered column so width:100% would suffice — but the
+     Government Contracts root (.gcx-page) is max-width + 32px-padded, so plain
+     width can't reach the viewport edge there. The 100vw breakout works in both:
+     .dsx-page and .gcx-page are each centered in the viewport, so margin-left:50%
+     + translateX(-50%) lands the left edge at 0 regardless of the parent's
+     padding/max-width. 100vw includes the scrollbar (~15px overflow), but every
+     ticker root sets overflow-x: clip, so it's clipped — no horizontal scroll. */
+  width: 100vw;
+  margin-left: 50%;
+  transform: translateX(-50%);
 }
 .dsx-ticker-track {
   display: inline-flex;
   width: max-content;
+  /* THE canonical dataset ticker speed — every dataset page (including Government
+     Contracts) inherits this one value. Change it here and all pages move
+     together. 52s matches the tuned Government Contracts cadence (~30% slower
+     than the original 40s). */
   animation: dsx-tick 52s linear infinite;
 }
 .dsx-ticker:hover .dsx-ticker-track,
