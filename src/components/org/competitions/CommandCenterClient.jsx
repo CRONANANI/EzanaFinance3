@@ -125,6 +125,9 @@ export function CommandCenterClient({ initialCompetition, initialStructure, canM
       </header>
 
       <div className="pcx-cc-links">
+        <Link href={`/org-competitions/${competition.slug}/live`} className="pcx-btn">
+          Live board
+        </Link>
         {canManage ? (
           <>
             <Link href={`/org-competitions/${competition.slug}/config`} className="pcx-btn">

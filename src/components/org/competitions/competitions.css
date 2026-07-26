@@ -1049,3 +1049,148 @@
     grid-template-columns: 110px 1fr 62px;
   }
 }
+
+/* ── Phase 5: live board ── */
+.pcx-projector {
+  max-width: 1400px;
+}
+.pcx-projector .pcx-h1 {
+  font-size: 32px;
+}
+.pcx-projector .pcx-live-room-name {
+  font-size: 20px;
+}
+.pcx-projector .pcx-live-team-name {
+  font-size: 18px;
+}
+.pcx-live-dot {
+  color: var(--danger, var(--warning));
+}
+.pcx-live-alert {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md, 8px);
+  background: color-mix(in srgb, var(--org-primary, var(--emerald)) 16%, transparent);
+  color: var(--org-ink, var(--emerald));
+  font-weight: 700;
+  font-size: 15px;
+}
+.pcx-live-round {
+  margin-bottom: 22px;
+}
+.pcx-live-rooms {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+.pcx-live-room {
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg, 12px);
+  background: var(--bg-secondary);
+  padding: 14px 16px;
+}
+.pcx-live-room.is-done {
+  opacity: 0.62;
+}
+.pcx-live-room-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.pcx-live-room-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.pcx-live-room-meta {
+  display: flex;
+  gap: 14px;
+  margin: 6px 0 12px;
+  font-size: 12px;
+  color: var(--text-faint);
+}
+.pcx-live-room-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.pcx-live-teams {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.pcx-live-team {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-md, 8px);
+  background: var(--bg-primary);
+}
+.pcx-live-team.is-presenting {
+  background: color-mix(in srgb, var(--org-primary, var(--emerald)) 12%, transparent);
+}
+.pcx-live-team.is-on_deck {
+  background: color-mix(in srgb, var(--warning) 10%, transparent);
+}
+.pcx-live-team.is-complete {
+  opacity: 0.6;
+}
+.pcx-live-team.is-mine {
+  outline: 2px solid var(--org-primary, var(--emerald));
+  outline-offset: -1px;
+}
+.pcx-live-team-name {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-right: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.pcx-you {
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  background: var(--org-primary, var(--emerald));
+  color: var(--org-on-primary, #fff);
+}
+.pcx-live-team-status {
+  font-size: 12px;
+  font-weight: 600;
+}
+.pcx-live-team-status.pcx-pos {
+  color: var(--org-ink, var(--emerald));
+}
+.pcx-live-team-status.pcx-warn {
+  color: var(--warning);
+}
+.pcx-live-team-status.pcx-mut {
+  color: var(--text-faint);
+}
+.pcx-live-team-status.pcx-done {
+  color: var(--info);
+}
+.pcx-live-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-primary);
+}
+.pcx-live-offset {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.pcx-live-offset .pcx-input--num {
+  width: 60px;
+}
