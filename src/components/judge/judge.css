@@ -1,0 +1,397 @@
+/* Account-less judge experience — mobile-first, minimal chrome, no dashboard nav.
+   Theme tokens only; the accent carries the host org's colour when present, else
+   Ezana emerald. Designed to feel premium on a phone in a scoring room. */
+
+.jx-page {
+  min-height: 100vh;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  padding: 20px 16px 60px;
+}
+.jx-container {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.jx-loading,
+.jx-empty {
+  padding: 40px 0;
+  text-align: center;
+  color: var(--text-secondary);
+}
+.jx-denied {
+  text-align: center;
+  padding: 70px 20px;
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.jx-denied h1 {
+  font-size: 20px;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* header */
+.jx-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--org-on-primary, #fff);
+  background: var(--org-primary, var(--emerald));
+}
+.jx-head {
+  margin-bottom: 18px;
+}
+.jx-head--team {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.jx-title {
+  margin: 10px 0 2px;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.15;
+}
+.jx-sub {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+.jx-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  text-decoration: none;
+  margin-bottom: 12px;
+}
+
+/* rooms */
+.jx-rooms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+.jx-room {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 13px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md, 8px);
+  background: var(--bg-secondary);
+}
+.jx-room-name {
+  font-weight: 700;
+  font-size: 13.5px;
+  color: var(--text-primary);
+}
+.jx-room-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+.jx-section {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-faint);
+  margin: 0 0 10px;
+}
+
+/* team list */
+.jx-teams {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.jx-team {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg, 12px);
+  background: var(--bg-secondary);
+  text-decoration: none;
+  transition: border-color 0.15s, transform 0.12s;
+}
+.jx-team:hover {
+  border-color: var(--org-primary, var(--emerald));
+  transform: translateY(-1px);
+}
+.jx-team-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-right: auto;
+}
+.jx-team-name {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text-primary);
+}
+.jx-team-meta {
+  font-size: 12.5px;
+  color: var(--text-faint);
+}
+.jx-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.jx-status.jx-mut {
+  color: var(--text-faint);
+}
+.jx-status.jx-warn {
+  color: var(--warning);
+}
+.jx-status.jx-ok {
+  color: var(--org-primary, var(--emerald));
+}
+.jx-team-score {
+  margin-left: 4px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+.jx-team-arrow {
+  color: var(--text-faint);
+  flex: none;
+}
+
+/* running total */
+.jx-total {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  padding: 8px 14px;
+  border-radius: var(--radius-md, 8px);
+  background: color-mix(in srgb, var(--org-primary, var(--emerald)) 12%, transparent);
+  flex: none;
+}
+.jx-total-num {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--org-ink, var(--emerald));
+  font-variant-numeric: tabular-nums;
+}
+.jx-total-label {
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+.jx-submitted-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md, 8px);
+  background: color-mix(in srgb, var(--org-primary, var(--emerald)) 12%, transparent);
+  color: var(--org-ink, var(--emerald));
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+/* materials */
+.jx-materials {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 18px 0 24px;
+}
+.jx-material-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-faint);
+  margin-bottom: 8px;
+}
+.jx-pdf {
+  width: 100%;
+  height: 460px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md, 8px);
+  background: var(--bg-secondary);
+}
+.jx-thesis-text {
+  margin: 0;
+  padding: 14px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md, 8px);
+  background: var(--bg-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+}
+.jx-files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.jx-dl {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 14px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md, 8px);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.jx-dl:hover {
+  border-color: var(--org-primary, var(--emerald));
+}
+
+/* rubric */
+.jx-rubric {
+  border-top: 1px solid var(--border-primary);
+  padding-top: 20px;
+}
+.jx-crit {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border-primary);
+}
+.jx-crit-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.jx-crit-label {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.jx-crit-weight {
+  font-size: 12px;
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+}
+.jx-crit-desc {
+  margin: 4px 0 10px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+.jx-crit-input {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.jx-crit-input input[type='range'] {
+  flex: 1;
+  accent-color: var(--org-primary, var(--emerald));
+}
+.jx-num {
+  width: 64px;
+  padding: 7px 9px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md, 8px);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 14px;
+  text-align: center;
+}
+.jx-crit-max {
+  font-size: 13px;
+  color: var(--text-faint);
+  flex: none;
+}
+
+/* comment + submit */
+.jx-comment {
+  margin: 22px 0 18px;
+}
+.jx-comment-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+.jx-comment-box {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md, 8px);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 14px;
+  resize: vertical;
+}
+.jx-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: var(--radius-md, 8px);
+  background: var(--org-primary, var(--emerald));
+  color: var(--org-on-primary, #fff);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.jx-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.jx-error {
+  color: var(--danger, var(--warning));
+  font-size: 13px;
+  margin: 8px 0;
+}
+.jx-spin {
+  animation: jx-spin 0.8s linear infinite;
+}
+@keyframes jx-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (min-width: 640px) {
+  .jx-page {
+    padding: 40px 24px 80px;
+  }
+}

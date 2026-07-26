@@ -13,6 +13,8 @@
     "lint:css": "node scripts/check-var-fallbacks.mjs",
     "test:whale": "node scripts/check-whale-score.mjs",
     "test:house": "node scripts/check-house-disclosures.mjs",
+    "test:competitions": "node scripts/check-competition-onboarding.mjs",
+    "test:judging": "node scripts/check-judge-scoring.mjs",
     "format": "prettier --write \".\"",
     "format:check": "prettier --check \"docs/**/*.md\" \"package.json\" \".eslintrc.json\" \".prettierrc.json\" \".github/**/*.{yml,yaml}\"",
     "format:check:all": "prettier --check \".\"",

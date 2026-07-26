@@ -863,3 +863,47 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Phase 3 host bits: judge links + reveal tag ── */
+.pcx-btn--sm {
+  padding: 5px 10px;
+  font-size: 12px;
+}
+.pcx-judge {
+  list-style: none;
+  border-top: 1px solid var(--border-primary);
+  padding: 4px 0;
+}
+.pcx-judge-row {
+  border-top: none;
+}
+.pcx-judge-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pcx-judge-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 4px 0 8px;
+}
+.pcx-judge-link .pcx-input {
+  flex: 1;
+  min-width: 220px;
+}
+.pcx-reveal-tag {
+  display: inline-block;
+  margin-bottom: 16px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+.pcx-reveal-tag.is-live {
+  background: color-mix(in srgb, var(--org-primary, var(--emerald)) 14%, transparent);
+  color: var(--org-ink, var(--emerald));
+}

@@ -133,6 +133,9 @@ export function CommandCenterClient({ initialCompetition, initialStructure, canM
             <Link href={`/org-competitions/${competition.slug}/requests`} className="pcx-btn">
               Join requests
             </Link>
+            <Link href={`/org-competitions/${competition.slug}/scoreboard`} className="pcx-btn">
+              Scoreboard
+            </Link>
           </>
         ) : null}
         {!competition.isHost ? (
@@ -173,7 +176,7 @@ export function CommandCenterClient({ initialCompetition, initialStructure, canM
         <StructureTab structure={structure} canManage={canManage} busy={busy} act={act} />
       )}
       {tab === 'invitations' && (
-        <InvitationsTab structure={structure} canManage={canManage} busy={busy} act={act} />
+        <InvitationsTab structure={structure} canManage={canManage} busy={busy} act={act} compId={compId} />
       )}
       {tab === 'rubric' && (
         <RubricTab compId={compId} rubric={structure.rubric} canManage={canManage} onSaved={refetch} />
@@ -424,11 +427,32 @@ function RoomCard({ room, unassigned, judges, canManage, busy, act }) {
 }
 
 /* ─────────────── Invitations ─────────────── */
-function InvitationsTab({ structure, canManage, busy, act }) {
+function InvitationsTab({ structure, canManage, busy, act, compId }) {
   const [team, setTeam] = useState({ team_name: '', invite_email: '', ticker: '', side: '' });
   const [judge, setJudge] = useState({ full_name: '', email: '', firm: '', title: '' });
+  const [links, setLinks] = useState({}); // judgeId -> raw link (shown once)
+  const [tokenBusy, setTokenBusy] = useState(null);
   const teams = structure.teams || [];
   const judges = structure.judges || [];
+
+  const manageToken = async (judgeId, action) => {
+    setTokenBusy(judgeId);
+    try {
+      const res = await fetch(`/api/org/pitch-competitions/${compId}/judges/${judgeId}/token`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (res.ok && json.link) {
+        setLinks((l) => ({ ...l, [judgeId]: json.link }));
+      } else if (res.ok && action === 'revoke') {
+        setLinks((l) => ({ ...l, [judgeId]: '__revoked__' }));
+      }
+    } finally {
+      setTokenBusy(null);
+    }
+  };
 
   const submitTeam = (e) => {
     e.preventDefault();
@@ -516,13 +540,34 @@ function InvitationsTab({ structure, canManage, busy, act }) {
         <ul className="pcx-roster">
           {judges.length === 0 ? <li className="pcx-muted">No judges yet.</li> : null}
           {judges.map((j) => (
-            <li key={j.id} className="pcx-roster-row">
-              <span className="pcx-roster-main">{j.full_name}</span>
-              <span className="pcx-roster-meta">{[j.title, j.firm].filter(Boolean).join(', ') || j.email}</span>
-              {canManage ? (
-                <button type="button" className="pcx-iconbtn pcx-danger" onClick={() => act({ action: 'remove_judge', judge_id: j.id })} disabled={busy} aria-label={`Remove ${j.full_name}`}>
-                  <Trash2 size={14} />
-                </button>
+            <li key={j.id} className="pcx-judge">
+              <div className="pcx-roster-row pcx-judge-row">
+                <span className="pcx-roster-main">{j.full_name}</span>
+                <span className="pcx-roster-meta">{[j.title, j.firm].filter(Boolean).join(', ') || j.email}</span>
+                {canManage ? (
+                  <div className="pcx-judge-actions">
+                    <button type="button" className="pcx-btn pcx-btn--sm" onClick={() => manageToken(j.id, 'generate')} disabled={tokenBusy === j.id}>
+                      {tokenBusy === j.id ? <Loader2 size={13} className="pcx-spin" /> : null} {links[j.id] && links[j.id] !== '__revoked__' ? 'Regenerate' : 'Generate link'}
+                    </button>
+                    <button type="button" className="pcx-btn pcx-btn--sm" onClick={() => manageToken(j.id, 'revoke')} disabled={tokenBusy === j.id}>
+                      Revoke
+                    </button>
+                    <button type="button" className="pcx-iconbtn pcx-danger" onClick={() => act({ action: 'remove_judge', judge_id: j.id })} disabled={busy} aria-label={`Remove ${j.full_name}`}>
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+              {links[j.id] === '__revoked__' ? (
+                <p className="pcx-muted pcx-judge-link">Link revoked — the judge can no longer access their scorecard.</p>
+              ) : links[j.id] ? (
+                <div className="pcx-judge-link">
+                  <input className="pcx-input pcx-input--sm" readOnly value={links[j.id]} onFocus={(e) => e.target.select()} aria-label="Judge magic link" />
+                  <button type="button" className="pcx-btn pcx-btn--sm" onClick={() => navigator.clipboard?.writeText(links[j.id])}>
+                    Copy
+                  </button>
+                  <span className="pcx-muted">Shown once — copy it now.</span>
+                </div>
               ) : null}
             </li>
           ))}
