@@ -9,20 +9,37 @@ import {
 } from '@/lib/orgMockData';
 import { isValidUuid } from '@/lib/uuid';
 
-export async function getCurrentOrgMember(supabase) {
+/**
+ * Resolve the caller's active org membership. A user can be an active member of
+ * MORE THAN ONE org (a student in their home council who also judges/joins
+ * elsewhere; staff across programs), so this must NOT use `.maybeSingle()` — that
+ * returns null when several rows match, silently locking multi-org users out of
+ * every org page. Instead it fetches all active memberships (earliest join first)
+ * and deterministically picks one: an explicitly requested `preferredOrgId` if the
+ * user belongs to it, else the earliest-joined membership (a stable default).
+ *
+ * Returns the chosen membership plus `email` and `memberships` (all active rows,
+ * for a future org switcher), or null when the user has no active membership.
+ *
+ * @param supabase a Supabase client bound to the caller
+ * @param {string|null} preferredOrgId prefer the membership in this org when present
+ */
+export async function getCurrentOrgMember(supabase, preferredOrgId = null) {
   const {
     data: { user },
     error: authErr,
   } = await supabase.auth.getUser();
   if (authErr || !user) return null;
-  const { data: member, error } = await supabase
+  const { data: rows, error } = await supabase
     .from('org_members')
     .select('*')
     .eq('user_id', user.id)
     .eq('is_active', true)
-    .maybeSingle();
-  if (error || !member) return null;
-  return { ...member, email: user.email || null };
+    .order('joined_at', { ascending: true }); // stable: earliest membership first
+  if (error || !rows || rows.length === 0) return null;
+
+  const member = (preferredOrgId && rows.find((r) => r.org_id === preferredOrgId)) || rows[0];
+  return { ...member, email: user.email || null, memberships: rows };
 }
 
 /**
