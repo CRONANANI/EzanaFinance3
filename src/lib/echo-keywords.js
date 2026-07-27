@@ -2591,6 +2591,190 @@ export const KEYWORDS = {
     courseId: 'valuation-101-1',
     courseTitle: 'Sizing a Market',
   },
+
+  /* ════════════════════════════════════════════════════════════════════════
+     Africa refining / Dangote inflection article keywords
+     ════════════════════════════════════════════════════════════════════════ */
+
+  'downstream-sector': {
+    id: 'downstream-sector',
+    term: 'Downstream Sector',
+    definition:
+      'The refining, processing, and distribution end of the oil and gas industry — turning crude into gasoline, diesel, jet fuel, and petrochemicals and getting them to buyers. It is where raw barrels become finished, higher-value products.',
+    template: 'schema',
+    templateData: {
+      title: 'The three stages of the oil value chain',
+      nodes: [
+        { label: 'Upstream', sectors: ['Exploration', 'Drilling', 'Crude extraction'], color: '#f59e0b' },
+        { label: 'Midstream', sectors: ['Pipelines', 'Storage', 'Tanker transport'], color: '#3b82f6' },
+        { label: 'Downstream', sectors: ['Refining', 'Fuel distribution', 'Petrochemicals'], color: '#10b981' },
+      ],
+    },
+    realWorld:
+      "Africa long exported upstream (raw crude) and imported downstream (finished fuel). Building refineries captures the downstream value — and margin — at home.",
+  },
+
+  'single-train-refinery': {
+    id: 'single-train-refinery',
+    term: 'Single-Train Refinery',
+    definition:
+      'A refinery built as one continuous, integrated processing line rather than several smaller parallel units ("trains"). It shares utilities, hydrogen, and heat across the whole plant, lowering cost per barrel — but an outage can idle the entire facility at once.',
+    template: 'comparison',
+    templateData: {
+      title: 'Single-train vs multi-train refining',
+      headers: ['Design', 'Cost per barrel', 'Outage risk'],
+      rows: [
+        { label: 'Single-train', cells: ['Lower (shared utilities)', 'High — one fault idles all'] },
+        { label: 'Multi-train', cells: ['Higher (duplicated units)', 'Lower — units fail independently'] },
+      ],
+      footnote:
+        'Dangote is the first single-train refinery to run at 650,000 bpd — a scale no other single line had reached.',
+    },
+  },
+
+  'refining-capacity': {
+    id: 'refining-capacity',
+    term: 'Refining Capacity',
+    definition:
+      'The volume of crude a refinery can process, measured in barrels per day (bpd). It sets the ceiling on how much finished fuel a plant — or a country — can make, but the ceiling is only reached when the plant runs reliably.',
+    template: 'comparison',
+    templateData: {
+      title: "The world's largest single-site refineries",
+      headers: ['Site', 'Capacity', 'Status'],
+      rows: [
+        { label: 'Jamnagar (India)', cells: ['~1.36M bpd', 'Current record holder'] },
+        { label: 'Dangote (Nigeria)', cells: ['650k → 1.4M planned', 'Would take the record'] },
+      ],
+      footnote:
+        "At its planned 1.4M bpd, Dangote would surpass Jamnagar as the largest refining capacity at one site.",
+    },
+  },
+
+  'foreign-exchange-reserves': {
+    id: 'foreign-exchange-reserves',
+    term: 'Foreign-Exchange Reserves',
+    definition:
+      'The hard-currency (mostly US dollar) holdings a country keeps to pay for imports and defend its currency. Fuel imports drain reserves every time a cargo lands; refining domestically removes that recurring dollar demand.',
+    template: 'comparison',
+    templateData: {
+      title: 'How domestic refining eases FX pressure',
+      headers: ['Fuel sourcing', 'Dollar demand', 'Effect on local currency'],
+      rows: [
+        { label: 'Import refined fuel', cells: ['Recurring — every cargo', 'Persistent downward pressure'] },
+        { label: 'Refine at home', cells: ['Reduced / can earn dollars', 'Relieves pressure on the naira'] },
+      ],
+      footnote:
+        'Analysts estimate domestic refining could save Nigeria up to $10 billion a year in FX.',
+    },
+  },
+
+  'crude-oil-benchmark': {
+    id: 'crude-oil-benchmark',
+    term: 'Crude-Oil Benchmark',
+    definition:
+      'A reference crude grade whose price sets the basis for pricing other barrels. Brent and WTI are the global benchmarks; regional grades like Nigeria\'s Bonny Light trade at a differential to them based on quality and location.',
+    template: 'comparison',
+    templateData: {
+      title: 'Major crude benchmarks',
+      headers: ['Benchmark', 'Region', 'Grade'],
+      rows: [
+        { label: 'Brent', cells: ['North Sea / global', 'Light, sweet'] },
+        { label: 'WTI', cells: ['US (Cushing)', 'Light, sweet'] },
+        { label: 'Bonny Light', cells: ['Nigeria', 'Light, very low sulfur'] },
+      ],
+      footnote:
+        'African barrels are typically priced at a differential to Brent, which anchors Atlantic-basin crude.',
+    },
+  },
+
+  'refined-product-exports': {
+    id: 'refined-product-exports',
+    term: 'Refined-Product Exports',
+    definition:
+      'Sales of finished fuels — gasoline, diesel, jet fuel — rather than raw crude. Exporting products instead of crude captures the refining margin domestically and shifts a country up the value chain.',
+    template: 'comparison',
+    templateData: {
+      title: 'Exporting crude vs exporting product',
+      headers: ['Export type', 'Value captured', 'Who earns the margin'],
+      rows: [
+        { label: 'Raw crude', cells: ['Extraction only', 'The foreign refiner'] },
+        { label: 'Refined product', cells: ['Extraction + refining', 'The domestic refiner'] },
+      ],
+      footnote:
+        'A West Africa that exports product rather than crude keeps the refining margin on the continent.',
+    },
+  },
+
+  'coal-to-liquids': {
+    id: 'coal-to-liquids',
+    term: 'Coal-to-Liquids (CTL)',
+    definition:
+      'A process that synthesizes liquid fuels from coal rather than crude oil, using gasification and Fischer-Tropsch synthesis. It is energy-intensive and carbon-heavy, and economical only in specific circumstances — such as a country with abundant coal and constrained oil access.',
+    template: 'comparison',
+    templateData: {
+      title: 'Coal-to-liquids vs conventional refining',
+      headers: ['Feedstock', 'Process', 'Carbon intensity'],
+      rows: [
+        { label: 'CTL (Secunda)', cells: ['Coal', 'Gasification + Fischer-Tropsch', 'Very high'] },
+        { label: 'Crude refining', cells: ['Crude oil', 'Distillation + cracking', 'Lower'] },
+      ],
+      footnote:
+        "South Africa's Secunda is the world's largest commercial coal-to-liquids plant, a legacy of sanctions-era fuel self-sufficiency.",
+    },
+  },
+
+  'nameplate-capacity': {
+    id: 'nameplate-capacity',
+    term: 'Nameplate Capacity',
+    definition:
+      'The rate a plant is designed to process under ideal conditions — the number "on the plate." Achieved output is what it actually delivers; for aging or poorly maintained refineries the gap between the two can be enormous.',
+    template: 'comparison',
+    templateData: {
+      title: 'Nameplate vs achieved output',
+      headers: ['Measure', 'What it is', 'Example'],
+      rows: [
+        { label: 'Nameplate', cells: ['Designed max rate', 'Port Harcourt: 210k bpd'] },
+        { label: 'Achieved', cells: ['Actual throughput', 'Often a small fraction, or zero'] },
+      ],
+      footnote:
+        "A chunk of Africa's 3.5M bpd headline is nameplate capacity awaiting rehabilitation — not delivered barrels.",
+    },
+  },
+
+  'import-substitution': {
+    id: 'import-substitution',
+    term: 'Import Substitution',
+    definition:
+      'An economic strategy of producing domestically what a country previously imported, to keep spending and jobs at home and reduce external dependence. Refining fuel locally instead of importing it is a textbook case.',
+    template: 'comparison',
+    templateData: {
+      title: 'Importing vs substituting fuel supply',
+      headers: ['Approach', 'Supply chain', 'Economic effect'],
+      rows: [
+        { label: 'Import fuel', cells: ['Long — overseas refiners', 'Spending and margin leave the country'] },
+        { label: 'Substitute (refine locally)', cells: ['Short — regional', 'Spending and jobs stay home'] },
+      ],
+      footnote:
+        'South Africa, Ghana, and Kenya sourcing Dangote product is import substitution at a regional scale.',
+    },
+  },
+
+  'crack-spread': {
+    id: 'crack-spread',
+    term: 'Crack Spread',
+    definition:
+      "A refiner's core margin: the difference between the price of the crude it buys and the combined value of the refined products it sells. It is the single biggest driver of independent refiners' profitability.",
+    template: 'formula',
+    templateData: {
+      formula: 'Crack Spread = Value of Refined Products − Cost of Crude',
+      example: {
+        title: 'Simplified 3-2-1 crack',
+        substitution: '3 barrels crude in → 2 barrels gasoline + 1 barrel distillate out; the margin is the spread.',
+      },
+    },
+    realWorld:
+      'Independent refiners like Valero live and die by the crack spread — when product values outrun crude costs, margins expand regardless of the absolute oil price.',
+  },
 };
 
 export function getKeywordById(id) {

@@ -187,7 +187,7 @@ export const fdaPeptidesBpc157Article2026 = {
   },
   readTime: 9,
   publishedAt: '2026-07-24',
-  featured: true,
+  featured: false,
   likes: 0,
   comments: 0,
   reads: 0,

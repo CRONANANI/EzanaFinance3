@@ -21,8 +21,10 @@ import { privateCreditMaturityWallArticle2026 } from '@/lib/ezana-echo-article-p
 import { criticalMineralsArticle2026 } from '@/lib/ezana-echo-article-critical-minerals-2026.js';
 import { ballroomDonorsContracts2026 } from '@/lib/ezana-echo-article-ballroom-donors-contracts-2026.js';
 import { fdaPeptidesBpc157Article2026 } from '@/lib/ezana-echo-article-fda-peptides-bpc157-2026.js';
+import { africaRefiningArticle2026 } from '@/lib/ezana-echo-article-africa-refining-2026.js';
 
 const SOURCE = [
+  africaRefiningArticle2026,
   fdaPeptidesBpc157Article2026,
   ballroomDonorsContracts2026,
   criticalMineralsArticle2026,
@@ -49,10 +51,12 @@ const SEED_READS = {
   'africa-billion-dollar-companies-2026': 4200,
 };
 
+// Strip inline entity markup ([[kw:…]]…[[/kw]] and [[person:…]]…[[/person]]) so
+// the plaintext body carries no raw tags — used for the search-indexed body.
 function stripKw(s) {
   return String(s || '')
-    .replace(/\[\[kw:[^\]]+\]\]/g, '')
-    .replace(/\[\[\/kw\]\]/g, '');
+    .replace(/\[\[(?:kw|person):[^\]]+\]\]/g, '')
+    .replace(/\[\[\/(?:kw|person)\]\]/g, '');
 }
 
 // Plaintext body from blocks/paragraphs — satisfies NOT NULL + powers search.
