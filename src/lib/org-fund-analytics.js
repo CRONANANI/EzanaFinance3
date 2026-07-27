@@ -35,11 +35,39 @@ export function resolveMemberName(member) {
 }
 
 async function getTeams(supabase, orgId) {
+  // NOTE: org_teams has no `sector` column — selecting it made PostgREST reject
+  // the whole query, so this silently returned [] for every org (blank PM names
+  // and analyst sleeves). A team's sector is derived from its holdings instead
+  // (see teamSectorMap), which is the only place sector actually lives.
   const { data } = await supabase
     .from('org_teams')
-    .select('id, name, sector, slug')
+    .select('id, name, slug')
     .eq('org_id', orgId);
   return data || [];
+}
+
+/**
+ * Derive each team's sector from its portfolio holdings — the dominant sector by
+ * value. org_teams carries no sector column; org_team_portfolios does, so the
+ * sleeve label / PM-by-sector mapping are reconstructed from the book itself.
+ * @param {Array<{team_id?: string, sector?: string, value?: number}>} positions
+ * @returns {Map<string, string>} team_id → sector
+ */
+function teamSectorMap(positions) {
+  const byTeam = new Map(); // team_id → Map(sector → summed value)
+  for (const p of positions) {
+    if (!p.team_id || !p.sector) continue;
+    const secs = byTeam.get(p.team_id) || new Map();
+    secs.set(p.sector, (secs.get(p.sector) || 0) + (Number(p.value) || 0));
+    byTeam.set(p.team_id, secs);
+  }
+  const out = new Map();
+  for (const [teamId, secs] of byTeam) {
+    let best = null;
+    for (const [sector, val] of secs) if (!best || val > best.val) best = { sector, val };
+    if (best) out.set(teamId, best.sector);
+  }
+  return out;
 }
 
 async function getMembers(supabase, orgId) {
@@ -262,11 +290,13 @@ export async function sectorVsTarget(supabase, orgId) {
   ]);
   const { total, map } = sectorWeights(positions);
   if (total <= 0) return [];
+  const teamSector = teamSectorMap(positions);
   const pmBySector = new Map();
   for (const t of teams) {
     const pm = members.find((m) => m.team_id === t.id && m.role === 'portfolio_manager');
-    if (t.sector)
-      pmBySector.set(t.sector, { pm_name: pm ? resolveMemberName(pm) : null, team_id: t.id });
+    const sector = teamSector.get(t.id);
+    if (sector)
+      pmBySector.set(sector, { pm_name: pm ? resolveMemberName(pm) : null, team_id: t.id });
   }
   return [...map.entries()]
     .map(([sector, s]) => {
@@ -294,6 +324,7 @@ export async function analystLeaderboard(supabase, orgId) {
     getPitches(supabase, orgId),
   ]);
   const teamById = new Map(teams.map((t) => [t.id, t]));
+  const teamSector = teamSectorMap(positions);
   // Contribution per analyst = Σ P/L of positions whose ticker they pitched.
   const analystByTicker = new Map();
   for (const p of pitches)
@@ -333,7 +364,7 @@ export async function analystLeaderboard(supabase, orgId) {
         member_id: m.id,
         name: resolveMemberName(m),
         avatar_url: null, // no avatar column in org_members
-        sleeve: team?.sector || team?.name || null,
+        sleeve: (m.team_id && teamSector.get(m.team_id)) || team?.name || null,
         pitches: a.count,
         hit_rate_pct: a.decided > 0 ? (a.up / a.decided) * 100 : null,
         avg_return_pct: avg(a.returns),
