@@ -76,7 +76,7 @@ const NAV_ITEMS = [
   { href: '/org-team-hub/meetings', label: 'Meetings', Icon: Video, badge: 'meetings' },
   { href: '/org-team-hub/recognition', label: 'Recognition', Icon: Award, badge: 'recognition' },
   { href: '/org-team-hub/grades', label: 'Grades', Icon: ClipboardList, badge: 'grades' },
-  { href: '/org-team-hub/competitions', label: 'Competitions', Icon: Trophy, badge: 'competitions' },
+  { href: '/org-competitions', label: 'Competitions', Icon: Trophy, badge: 'competitions' },
   {
     href: '/org-team-hub/cohorts',
     label: 'Cohorts',
