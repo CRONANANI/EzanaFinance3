@@ -1115,3 +1115,38 @@ body.light-mode .thw-range.active {
     display: none;
   }
 }
+
+/* ── Flat-canvas test — Command Center only ─────────────────────────────────
+   The card CONTAINERS carry no fill, no outline, and no lift in either theme,
+   so content sits directly on the page canvas (--bg-primary) and spacing +
+   typography define grouping instead of boxes.
+
+   This is scoped to the four container classes rather than flipping the shared
+   `--surface-card` token, because that token also fills chrome that must keep
+   its surface per the "don't change inputs/chrome" rule — the search box, pills,
+   badges, the hover tooltip, and list rows all read `--surface-card`. Flattening
+   just the containers leaves every internal divider, the list-item emerald
+   accents, and all focus rings intact. */
+.thw-card,
+.thw-chart-card,
+.thw-vp,
+.thw-cal-card,
+body.light-mode .thw-card,
+html.light-mode .thw-card,
+body.light-mode .thw-chart-card,
+html.light-mode .thw-chart-card,
+body.light-mode .thw-cal-card,
+html.light-mode .thw-cal-card {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+/* Keep the week-strip day cards' emerald top accent — brand + affordance, not
+   card chrome — and drop the hover fill so the flat look holds on hover too. */
+.thw-cal-card {
+  border-top: 2px solid var(--emerald);
+}
+.thw-cal-card:hover {
+  background: transparent;
+  border-top: 2px solid var(--emerald);
+}
