@@ -621,7 +621,8 @@
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background: color-mix(in srgb, var(--text-primary) 45%, transparent);
+  background: transparent; /* no page dimming, light or dark — the modal's own solid
+     bg + border + shadow give enough separation */
 }
 .pcx-modal {
   width: min(460px, 100%);
