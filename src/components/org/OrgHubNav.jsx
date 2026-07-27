@@ -37,6 +37,7 @@ import {
   Award,
   ClipboardList,
   Trophy,
+  Medal,
   GraduationCap,
   ShieldCheck,
   FileBarChart2,
@@ -77,6 +78,9 @@ const NAV_ITEMS = [
   { href: '/org-team-hub/recognition', label: 'Recognition', Icon: Award, badge: 'recognition' },
   { href: '/org-team-hub/grades', label: 'Grades', Icon: ClipboardList, badge: 'grades' },
   { href: '/org-competitions', label: 'Competitions', Icon: Trophy, badge: 'competitions' },
+  // Cross-university leaderboard (public route, admin-read). A normal internal
+  // link — it renders outside per-org scoping by design.
+  { href: '/council-rankings', label: 'Council Rankings', Icon: Medal },
   {
     href: '/org-team-hub/cohorts',
     label: 'Cohorts',

@@ -1,13 +1,10 @@
-import Link from 'next/link';
 import { getAdminClient } from '@/lib/supabase';
+import { WEIGHTS } from '@/lib/council-elo/model';
+import RankingsTable from './RankingsTable';
 import './council-rankings.css';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'University Council Rankings — Ezana' };
-
-const TIER_LABEL = { emerging: 'Emerging', competitive: 'Competitive', established: 'Established', elite: 'Elite', dynasty: 'Dynasty' };
-
-const fmtRatio = (v, suffix = '') => (v == null ? '—' : `${Number(v).toFixed(suffix === '%' ? 1 : 2)}${suffix}`);
 
 export default async function CouncilRankingsPage() {
   const admin = getAdminClient();
@@ -29,6 +26,24 @@ export default async function CouncilRankingsPage() {
   const moveById = new Map();
   for (const t of txns || []) if (!moveById.has(t.org_id)) moveById.set(t.org_id, t.delta); // latest per org
 
+  // Assemble plain, serializable rows for the interactive client table.
+  const tableRows = rows.map((r) => {
+    const org = orgById.get(r.org_id);
+    const m = metricById.get(r.org_id);
+    return {
+      orgId: r.org_id,
+      name: org?.university_name || org?.name || 'Council',
+      tier: r.tier,
+      rating: r.current_rating,
+      comp: r.competition_rating,
+      fund: r.fund_rating,
+      roi: m?.roi_pct ?? null,
+      sharpe: m?.sharpe ?? null,
+      selfReported: !!m?.self_reported,
+      move: moveById.get(r.org_id) || 0,
+    };
+  });
+
   return (
     <div className="crx-page">
       <div className="crx-container">
@@ -36,59 +51,19 @@ export default async function CouncilRankingsPage() {
           <p className="crx-eyebrow">Ezana</p>
           <h1 className="crx-title">University Council Rankings</h1>
           <p className="crx-sub">
-            Ranked by competition results (judged) and fund performance ratios. We show ROI and Sharpe —
-            never dollar amounts.
+            Ranked by competition results (judged) and fund performance ratios. Competition is weighted{' '}
+            {Math.round(WEIGHTS.blend.competition * 100)}% and fund {Math.round(WEIGHTS.blend.fund * 100)}%,
+            because judged results are externally verified and fund ratios are self-reported. We show ROI
+            and Sharpe — never dollar amounts.
           </p>
         </header>
 
-        {rows.length === 0 ? (
+        {tableRows.length === 0 ? (
           <p className="crx-empty">Rankings will appear here once councils compete and report their ratios.</p>
         ) : (
-          <div className="crx-table-wrap">
-            <table className="crx-table">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Council</th>
-                  <th>Tier</th>
-                  <th className="crx-num">Rating</th>
-                  <th className="crx-num">Comp</th>
-                  <th className="crx-num">Fund</th>
-                  <th className="crx-num">ROI</th>
-                  <th className="crx-num">Sharpe</th>
-                  <th className="crx-num">Move</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((r, i) => {
-                  const org = orgById.get(r.org_id);
-                  const m = metricById.get(r.org_id);
-                  const move = moveById.get(r.org_id) || 0;
-                  return (
-                    <tr key={r.org_id}>
-                      <td className="crx-rank">{i + 1}</td>
-                      <td>
-                        <Link href={`/council-rankings/${r.org_id}`} className="crx-council">
-                          {org?.university_name || org?.name || 'Council'}
-                        </Link>
-                        {m?.self_reported ? <span className="crx-flag" title="Fund ratios are self-reported">self-reported</span> : null}
-                      </td>
-                      <td><span className={`crx-tier crx-tier--${r.tier}`}>{TIER_LABEL[r.tier] || r.tier}</span></td>
-                      <td className="crx-num crx-strong">{r.current_rating}</td>
-                      <td className="crx-num">{r.competition_rating}</td>
-                      <td className="crx-num">{r.fund_rating}</td>
-                      <td className="crx-num">{fmtRatio(m?.roi_pct, '%')}</td>
-                      <td className="crx-num">{fmtRatio(m?.sharpe)}</td>
-                      <td className={`crx-num ${move > 0 ? 'crx-up' : move < 0 ? 'crx-down' : ''}`}>
-                        {move > 0 ? `+${move}` : move || '—'}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          <RankingsTable rows={tableRows} />
         )}
+
         <footer className="crx-footer">
           Fund ratios are self-reported by councils and flagged as such. Competition results are verified
           by competition judges. Powered by Ezana.

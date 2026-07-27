@@ -253,8 +253,176 @@
   font-size: 12px;
   color: var(--text-faint);
 }
+
+/* ── Rank-by toggle (list page) ─────────────────────────────────────────── */
+.crx-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.crx-toolbar-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-faint);
+  margin-right: 2px;
+}
+.crx-toggle {
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border-primary);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.crx-toggle:hover {
+  color: var(--text-primary);
+  border-color: color-mix(in srgb, var(--emerald) 40%, var(--border-primary));
+}
+.crx-toggle.is-active {
+  background: color-mix(in srgb, var(--emerald) 16%, transparent);
+  border-color: color-mix(in srgb, var(--emerald) 45%, transparent);
+  color: var(--emerald);
+}
+.crx-toggle:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+
+/* ── Contribution split bar (list row) ──────────────────────────────────── */
+.crx-split-col {
+  min-width: 130px;
+}
+.crx-cbar {
+  display: flex;
+  height: 8px;
+  width: 120px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--bg-tertiary);
+}
+.crx-cbar-comp {
+  background: var(--emerald);
+}
+.crx-cbar-fund {
+  background: color-mix(in srgb, var(--info) 70%, transparent);
+}
+.crx-legend {
+  display: flex;
+  gap: 18px;
+  justify-content: center;
+  margin-top: 12px;
+  font-size: 11.5px;
+  color: var(--text-faint);
+}
+.crx-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.crx-legend-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  display: inline-block;
+}
+.crx-legend-swatch--comp {
+  background: var(--emerald);
+}
+.crx-legend-swatch--fund {
+  background: color-mix(in srgb, var(--info) 70%, transparent);
+}
+
+/* ── Weighted contribution bar (detail page) ────────────────────────────── */
+.crx-note--top {
+  margin: 0 0 14px;
+}
+.crx-contrib {
+  display: flex;
+  height: 30px;
+  border-radius: var(--radius-md, 8px);
+  overflow: hidden;
+  margin-bottom: 16px;
+  border: 1px solid var(--border-primary);
+}
+.crx-contrib-comp,
+.crx-contrib-fund {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  overflow: hidden;
+}
+.crx-contrib-comp {
+  background: color-mix(in srgb, var(--emerald) 88%, black 4%);
+}
+.crx-contrib-fund {
+  background: color-mix(in srgb, var(--info) 65%, transparent);
+}
+.crx-contrib-inner {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--on-emerald, #fff);
+  white-space: nowrap;
+  padding: 0 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Ratio emphasis + tags (Sharpe weighted most) ───────────────────────── */
+.crx-ratio--emphasize {
+  border-color: color-mix(in srgb, var(--emerald) 45%, var(--border-primary));
+  background: color-mix(in srgb, var(--emerald) 8%, var(--bg-secondary));
+}
+.crx-ratio-tag {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--emerald);
+  background: color-mix(in srgb, var(--emerald) 14%, transparent);
+  vertical-align: middle;
+}
+.crx-flag--inline {
+  margin-left: 10px;
+  vertical-align: middle;
+}
+
+/* ── Component badge in rating history ──────────────────────────────────── */
+.crx-hcomp {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 1px 7px;
+  border-radius: 999px;
+  color: var(--text-faint);
+  background: var(--bg-tertiary);
+}
+.crx-hcomp--competition {
+  color: var(--emerald);
+  background: color-mix(in srgb, var(--emerald) 13%, transparent);
+}
+.crx-hcomp--fund {
+  color: var(--info);
+  background: color-mix(in srgb, var(--info) 13%, transparent);
+}
+
 @media (max-width: 560px) {
   .crx-split {
     grid-template-columns: 1fr;
+  }
+  .crx-hcomp {
+    display: none;
+  }
+  .crx-contrib-inner {
+    font-size: 10px;
   }
 }
