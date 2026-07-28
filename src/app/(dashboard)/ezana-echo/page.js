@@ -74,6 +74,52 @@ function initialsOf(name = '') {
     .toUpperCase();
 }
 
+/* Reusable article card — shared by the per-category rows and the filtered grid,
+   so the two arrangements render identical cards (no second card component). */
+function ArticleCard({ a, isAdmin, onArchive, archivingId }) {
+  return (
+    <div className="eth-card-wrap">
+      {isAdmin && (
+        <button
+          type="button"
+          className="eth-archive-btn"
+          onClick={(e) => onArchive(a.id, e)}
+          disabled={archivingId === a.id}
+          title="Archive this article"
+        >
+          <Archive size={13} aria-hidden />
+          {archivingId === a.id ? '…' : 'Archive'}
+        </button>
+      )}
+      <Link href={`/ezana-echo/${a.id}`} className="eth-card">
+        <div className="eth-card-img">
+          {a.heroImage?.src ? (
+            <img
+              src={a.heroImage.src}
+              alt={a.heroImage.alt || a.title}
+              loading="lazy"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          ) : null}
+        </div>
+        <div className="eth-card-body">
+          <h3 className="eth-card-title">{a.title}</h3>
+          <div className="eth-card-foot">
+            <span>{a.author}</span>
+            <span className="sep">·</span>
+            <span>{formatPublishedShort(a.publishedAt)}</span>
+            <span className="sep">·</span>
+            <span>{a.readTime} min</span>
+          </div>
+          <div className="eth-card-category">{getCategoryLabel(a.category)}</div>
+        </div>
+      </Link>
+    </div>
+  );
+}
+
 function Byline({ article, dark }) {
   return (
     <div className="eth-byline">
@@ -196,18 +242,36 @@ export default function EzanaEchoPage() {
     return list;
   }, [feedSource, cat, activeTag]);
 
+  // Default "All" view = the featured hero + Top Stories + one a16z-style row per
+  // category. Selecting a category (or arriving via ?tag=) collapses to a single
+  // focused grid instead.
+  const isDefaultView = cat === 'all' && !activeTag;
+
+  // Per-category rows (default view). Order follows the CATEGORIES array. Top
+  // Stories are excluded so the same article never appears twice on the page
+  // (the featured story is already excluded via feedSource).
+  const categoryRows = useMemo(() => {
+    const topIds = new Set(topStories.map((a) => a.id));
+    const rowSource = feedSource.filter((a) => !topIds.has(a.id));
+    return CATEGORIES.map((c) => ({
+      id: c.id,
+      label: c.label,
+      items: rowSource.filter((a) => a.category === c.id).slice(0, 4),
+    })).filter((row) => row.items.length > 0);
+  }, [feedSource, topStories]);
+
   const heroHref = featured ? `/ezana-echo/${featured.id}` : '#';
 
   return (
     <div className="eth-page">
-      <div className="eth-wrap">
-        {/* Intro (the global navbar carries the top chrome — no masthead band) */}
-        <div className="eth-intro">
-          <div>
-            <h1 className="eth-intro-title">
-              Ezana <span>Echo</span>
-            </h1>
-          </div>
+      {/* Two-row masthead — replaces the (suppressed) marketing top nav on Echo.
+          Row 1: the wordmark. Row 2: small logo · category nav · Login / Become
+          a Partner, so the filters sit between the logo and the login actions. */}
+      <header className="eth-masthead">
+        <div className="eth-masthead-top">
+          <h1 className="eth-wordmark">
+            Ezana <span>Echo</span>
+          </h1>
           {isAdmin && (
             <Link href="/ezana-echo/archived" className="eth-archived-btn">
               View archived
@@ -215,9 +279,54 @@ export default function EzanaEchoPage() {
             </Link>
           )}
         </div>
+        <div className="eth-navbar">
+          <a href="/" className="eth-nav-logo" aria-label="Ezana Echo home">
+            Ezana <span>Echo</span>
+          </a>
+          <nav className="eth-navcats" aria-label="Filter by category">
+            <button
+              type="button"
+              className={cat === 'all' ? 'active' : ''}
+              onClick={() => {
+                setCat('all');
+                setActiveTag(null);
+              }}
+            >
+              All
+            </button>
+            {CATEGORIES.map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                className={cat === c.id ? 'active' : ''}
+                onClick={() => {
+                  setCat(c.id);
+                  setActiveTag(null);
+                }}
+              >
+                {c.label}
+              </button>
+            ))}
+          </nav>
+          <div className="eth-nav-actions">
+            <a href="/auth/login" className="eth-nav-login">
+              Login
+            </a>
+            <div className="eth-nav-partner">
+              <a href="/auth/partner/apply" className="eth-nav-partnerbtn">
+                Become a Partner
+              </a>
+              <span className="eth-nav-partnertag">
+                Become a partner to publish articles to the Echo.
+              </span>
+            </div>
+          </div>
+        </div>
+      </header>
 
-        {/* Split featured hero + ranked Top Stories rail */}
-        {featured && (
+      <div className="eth-wrap">
+        {/* Split featured hero + ranked Top Stories rail (default view only) */}
+        {isDefaultView && featured && (
           <section className="eth-hero">
             {isAdmin && (
               <button
@@ -280,112 +389,83 @@ export default function EzanaEchoPage() {
           </section>
         )}
 
-        {/* The Feed — controls + nav-style category filter (no dotted pills) */}
-        <div className="eth-controls">
-          <h2>{cat === 'all' ? 'The Feed' : getCategoryLabel(cat)}</h2>
-          <span className="eth-count">
-            {filtered.length} {filtered.length === 1 ? 'story' : 'stories'}
-          </span>
-        </div>
-
-        <nav className="eth-catnav" aria-label="Filter by category">
-          <button
-            type="button"
-            className={cat === 'all' ? 'active' : ''}
-            onClick={() => {
-              setCat('all');
-              setActiveTag(null);
-            }}
-          >
-            All
-          </button>
-          {CATEGORIES.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              className={cat === c.id ? 'active' : ''}
-              onClick={() => {
-                setCat(c.id);
-                setActiveTag(null);
-              }}
-            >
-              {c.label}
-            </button>
-          ))}
-        </nav>
-
-        {activeTag && (
-          <div className="eth-tag-banner">
-            <span>Filtered by tag:</span>
-            <span className="eth-tag-chip">{getTag(activeTag).label}</span>
-            <button type="button" className="eth-tag-clear" onClick={() => setActiveTag(null)}>
-              Clear
-            </button>
-          </div>
-        )}
-
-        {/* Dense article grid */}
-        {filtered.length ? (
-          <div className="eth-grid">
-            {filtered.map((a) => (
-              <div key={a.id} className="eth-card-wrap">
-                {isAdmin && (
+        {isDefaultView ? (
+          /* a16z-style layout: one horizontal row per non-empty category. */
+          <div className="eth-rows">
+            {categoryRows.map((row) => (
+              <section className="eth-row" key={row.id}>
+                <div className="eth-row-head">
+                  <h2 className="eth-row-title">{row.label}</h2>
                   <button
                     type="button"
-                    className="eth-archive-btn"
-                    onClick={(e) => handleArchive(a.id, e)}
-                    disabled={archivingId === a.id}
-                    title="Archive this article"
+                    className="eth-row-viewall"
+                    onClick={() => setCat(row.id)}
                   >
-                    <Archive size={13} aria-hidden />
-                    {archivingId === a.id ? '…' : 'Archive'}
+                    VIEW ALL <span aria-hidden>→</span>
                   </button>
-                )}
-                <Link href={`/ezana-echo/${a.id}`} className="eth-card">
-                  <div className="eth-card-img">
-                    {a.heroImage?.src ? (
-                      <img
-                        src={a.heroImage.src}
-                        alt={a.heroImage.alt || a.title}
-                        loading="lazy"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                        }}
-                      />
-                    ) : null}
-                  </div>
-                  <div className="eth-card-body">
-                    <h3 className="eth-card-title">{a.title}</h3>
-                    <div className="eth-card-foot">
-                      <span>{a.author}</span>
-                      <span className="sep">·</span>
-                      <span>{formatPublishedShort(a.publishedAt)}</span>
-                      <span className="sep">·</span>
-                      <span>{a.readTime} min</span>
-                    </div>
-                    {/* Category moved off the image → below the author, sized to match. */}
-                    <div className="eth-card-category">{getCategoryLabel(a.category)}</div>
-                  </div>
-                </Link>
-              </div>
+                </div>
+                <div className="eth-row-track">
+                  {row.items.map((a) => (
+                    <ArticleCard
+                      key={a.id}
+                      a={a}
+                      isAdmin={isAdmin}
+                      onArchive={handleArchive}
+                      archivingId={archivingId}
+                    />
+                  ))}
+                </div>
+              </section>
             ))}
           </div>
         ) : (
-          <div className="eth-empty">
-            No stories in this section yet.
-            {(cat !== 'all' || activeTag) && (
-              <button
-                type="button"
-                className="eth-empty-clear"
-                onClick={() => {
-                  setCat('all');
-                  setActiveTag(null);
-                }}
-              >
-                Clear filter
-              </button>
+          /* Filtered view — the page collapses to just this category (or tag). */
+          <>
+            <div className="eth-controls">
+              <h2>{activeTag ? 'The Feed' : getCategoryLabel(cat)}</h2>
+              <span className="eth-count">
+                {filtered.length} {filtered.length === 1 ? 'story' : 'stories'}
+              </span>
+            </div>
+
+            {activeTag && (
+              <div className="eth-tag-banner">
+                <span>Filtered by tag:</span>
+                <span className="eth-tag-chip">{getTag(activeTag).label}</span>
+                <button type="button" className="eth-tag-clear" onClick={() => setActiveTag(null)}>
+                  Clear
+                </button>
+              </div>
             )}
-          </div>
+
+            {filtered.length ? (
+              <div className="eth-grid">
+                {filtered.map((a) => (
+                  <ArticleCard
+                    key={a.id}
+                    a={a}
+                    isAdmin={isAdmin}
+                    onArchive={handleArchive}
+                    archivingId={archivingId}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="eth-empty">
+                No stories in this section yet.
+                <button
+                  type="button"
+                  className="eth-empty-clear"
+                  onClick={() => {
+                    setCat('all');
+                    setActiveTag(null);
+                  }}
+                >
+                  Clear filter
+                </button>
+              </div>
+            )}
+          </>
         )}
 
         {/* Newsletter band (presentational — wire to real signup later) */}

@@ -676,3 +676,241 @@
     transform: none;
   }
 }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   a16z-style masthead + category rows
+   Row 1: the "Ezana Echo" wordmark. Row 2: small logo · category nav · Login /
+   Become a Partner (filters sit between the logo and the login actions). Below
+   the featured hero + Top Stories, one horizontal row per non-empty category.
+   Theme tokens only — no hardcoded hex.
+   ════════════════════════════════════════════════════════════════════════════ */
+.eth-masthead {
+  padding-top: 2px;
+  margin-bottom: 6px;
+}
+.eth-masthead-top {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 0 14px;
+}
+.eth-wordmark {
+  font-family: var(--font-serif);
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  color: var(--text-primary);
+  margin: 0;
+}
+.eth-wordmark span {
+  color: var(--emerald);
+}
+.eth-masthead-top .eth-archived-btn {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Row 2 — the category nav bar (logo left · filters · actions right). */
+.eth-navbar {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 11px 0;
+  border-top: 1px solid var(--border-primary);
+  border-bottom: 1px solid var(--border-primary);
+}
+.eth-nav-logo {
+  flex-shrink: 0;
+  font-family: var(--font-serif);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+.eth-nav-logo span {
+  color: var(--emerald);
+}
+.eth-navcats {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 18px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.eth-navcats::-webkit-scrollbar {
+  display: none;
+}
+.eth-navcats button {
+  position: relative;
+  background: none;
+  border: none;
+  padding: 4px 0;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.14s ease;
+}
+.eth-navcats button:hover {
+  color: var(--text-primary);
+}
+.eth-navcats button.active {
+  color: var(--emerald);
+}
+.eth-navcats button.active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--emerald);
+}
+.eth-nav-actions {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+.eth-nav-login {
+  padding-top: 7px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.14s ease;
+}
+.eth-nav-login:hover {
+  color: var(--emerald);
+}
+.eth-nav-partner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  max-width: 190px;
+}
+.eth-nav-partnerbtn {
+  display: inline-block;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: var(--emerald);
+  color: var(--bg-primary);
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: filter 0.14s ease;
+}
+.eth-nav-partnerbtn:hover {
+  filter: brightness(1.06);
+}
+.eth-nav-partnertag {
+  font-size: 11px;
+  line-height: 1.3;
+  text-align: right;
+  color: var(--emerald);
+}
+
+/* Per-category rows (a16z style). */
+.eth-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 34px;
+  margin-top: 30px;
+}
+.eth-row-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 12px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--border-primary);
+}
+.eth-row-title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--text-primary);
+}
+.eth-row-viewall {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  white-space: nowrap;
+  transition: color 0.14s ease;
+}
+.eth-row-viewall:hover {
+  color: var(--emerald);
+}
+.eth-row-track {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 4px;
+}
+.eth-row-track::-webkit-scrollbar {
+  display: none;
+}
+.eth-row-track > .eth-card-wrap {
+  flex: 0 0 calc((100% - 3 * 24px) / 4);
+  min-width: 210px;
+  scroll-snap-align: start;
+}
+
+@media (max-width: 720px) {
+  .eth-navbar {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .eth-nav-logo {
+    order: 1;
+  }
+  .eth-nav-actions {
+    order: 2;
+    margin-left: auto;
+    align-items: center;
+  }
+  .eth-nav-partner {
+    max-width: 150px;
+  }
+  .eth-navcats {
+    order: 3;
+    flex-basis: 100%;
+  }
+  .eth-wordmark {
+    font-size: 26px;
+  }
+  .eth-row-title {
+    font-size: 18px;
+  }
+}
