@@ -58,8 +58,17 @@ async function routeAfterSession(supabase, router, type, redirectParam) {
     return;
   }
 
-  // Resolve partner status for every flow so partners land in the partner
-  // experience even when they arrive through the standard (non-partner) sign-in.
+  // ── Three-way post-login routing (destination = the door they came through,
+  //    NOT mere membership; regular /home no longer bounces org members) ──
+  //    1. Partner  → /partner-home         (partner_role / active partner row)
+  //    2. Org      → /org-team-hub          (org login sets redirect=/org-team-hub,
+  //                                          carried in redirectParam below)
+  //    3. Regular  → redirectParam or /home (org members included — they stay in
+  //                                          the regular app; a /home banner links
+  //                                          to Team Hub opt-in)
+  // Partner takes precedence: a partner who is also an org member lands in the
+  // partner app. Resolve partner status for every flow so partners land right
+  // even when arriving through the standard (non-partner) sign-in.
   let isPartner = !!user.user_metadata?.partner_role;
   if (!isPartner) {
     const { data: partner } = await supabase

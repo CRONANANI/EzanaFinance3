@@ -354,16 +354,14 @@ function MiniCalendar({ cells, dayToCategories, today, monthTitle, legend }) {
 export default function HomePage() {
   const router = useRouter();
   const { user } = useAuth();
-  const { isOrgUser, orgData, isLoading: orgLoading } = useOrg();
+  const { isOrgUser, orgData } = useOrg();
 
-  // Org (university) users use Team Hub as their dashboard — send them there
-  // instead of the regular member home. Wait for org status to resolve so
-  // non-org users are never bounced.
-  useEffect(() => {
-    if (!orgLoading && isOrgUser) {
-      router.replace('/org-team-hub');
-    }
-  }, [orgLoading, isOrgUser, router]);
+  // Being a member of an org must NOT trap the user in the org app — membership
+  // ("is a member of some org") is not the same as "wants the org app right now."
+  // So the regular home no longer force-redirects org members to Team Hub; it
+  // instead offers a dismissible one-click bridge (banner below). Org members who
+  // want the org app enter via org login, or click "Open Team Hub".
+  const [teamHubBannerDismissed, setTeamHubBannerDismissed] = useState(false);
   const {
     connected: plaidConnected,
     summary: plaidSummary,
@@ -1351,6 +1349,27 @@ export default function HomePage() {
           })}
         </div>
       </div>
+
+      {/* Opt-in bridge to the org app — shown to org members, never coercive.
+          Replaces the old auto-redirect so members can use the regular app. */}
+      {isOrgUser && !teamHubBannerDismissed && (
+        <div className="bs-orgbridge" role="status">
+          <span className="bs-orgbridge-text">
+            You&apos;re a member of {orgData?.name || 'your investment council'}.
+          </span>
+          <Link href="/org-team-hub" className="bs-orgbridge-cta">
+            Open Team Hub →
+          </Link>
+          <button
+            type="button"
+            className="bs-orgbridge-x"
+            aria-label="Dismiss"
+            onClick={() => setTeamHubBannerDismissed(true)}
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* ═══ BAND 0 — HERO ═══ */}
       <section className="bs-band bs-band--light">
