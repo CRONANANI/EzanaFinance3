@@ -1867,7 +1867,10 @@ function SemiFinancialsTable({ title, caption }) {
     text: isDark ? '#c9d1d9' : '#4b5563',
     heading: isDark ? '#f0f6fc' : '#111827',
     border: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb',
-    headerBg: isDark ? '#161b22' : '#1e293b',
+    // Ezana brand emerald, single colour in both themes (was theme-split navy).
+    // Uses the darker emerald (#059669 = --emerald-hover) for cleaner white-text
+    // contrast on the filled header bar; header text/arrows are already #fff.
+    headerBg: '#059669',
     rowBg: isDark ? 'rgba(255,255,255,0.02)' : '#f9fafb',
   };
 
