@@ -1,29 +1,26 @@
-'use client';
-
-import { usePathname } from 'next/navigation';
-import { OrgHubNav } from '@/components/org/OrgHubNav';
+import { redirect } from 'next/navigation';
+import { getUserClient } from '@/lib/supabase';
+import { getCurrentOrgMember } from '@/lib/org-trading-server';
+import OrgTeamHubShell from './OrgTeamHubShell';
 
 /**
- * Org shell — renders the shared OrgHubNav rail beside every org-team-hub page.
- * The dashboard shell (.dashboard-main-content) already provides the 1600px /
- * 2rem envelope, so .org-shell just lays out the rail + main inside it (no
- * double inset). See src/components/org/org-shell.css.
+ * Server-side access gate for the ENTIRE org (Team Hub) experience.
  *
- * The content region is keyed by pathname so each new segment remounts and
- * replays a subtle fade-in (org-shell.css). Keying by pathname — not by the
- * skeleton→content swap — means the fade plays ONCE per navigation, and the
- * persistent rail (OrgHubNav, outside the keyed node) never animates.
+ * Layer 1 of defense-in-depth: this runs before any /org-team-hub/* page
+ * renders, so a non-member is redirected to /home BEFORE any org chrome is sent
+ * — the gate can't be bypassed by disabling JS. Layer 2 (RLS scoped to
+ * auth_org_ids() on every org table) remains the data backstop.
+ *
+ * Access is determined by MEMBERSHIP, enforced here — not by which login form
+ * was used. So an org login by a non-member, or a non-member visiting the URL
+ * directly, both land back on /home. The interactive shell (rail + fade) stays a
+ * client component in OrgTeamHubShell; only the gate is server-side.
  */
-export default function OrgTeamHubLayout({ children }) {
-  const pathname = usePathname();
-  return (
-    <div className="org-shell">
-      <OrgHubNav />
-      <div className="org-shell-main">
-        <div key={pathname} className="org-shell-fade">
-          {children}
-        </div>
-      </div>
-    </div>
-  );
+export default async function OrgTeamHubLayout({ children }) {
+  const supabase = getUserClient();
+  const member = await getCurrentOrgMember(supabase);
+  if (!member) {
+    redirect('/home');
+  }
+  return <OrgTeamHubShell>{children}</OrgTeamHubShell>;
 }

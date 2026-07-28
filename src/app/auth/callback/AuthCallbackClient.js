@@ -7,6 +7,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase-browser';
+import { isActivePartner } from '@/lib/partner-access';
 
 function authErrorPath(flow, type) {
   if (type === 'partner') return '/auth/partner-login';
@@ -67,18 +68,9 @@ async function routeAfterSession(supabase, router, type, redirectParam) {
   //                                          the regular app; a /home banner links
   //                                          to Team Hub opt-in)
   // Partner takes precedence: a partner who is also an org member lands in the
-  // partner app. Resolve partner status for every flow so partners land right
-  // even when arriving through the standard (non-partner) sign-in.
-  let isPartner = !!user.user_metadata?.partner_role;
-  if (!isPartner) {
-    const { data: partner } = await supabase
-      .from('partners')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('status', 'active')
-      .maybeSingle();
-    isPartner = !!partner;
-  }
+  // partner app. Resolved via the SHARED isActivePartner helper so the router and
+  // the server-side partner route gate admit exactly the same users.
+  const isPartner = await isActivePartner(supabase, user);
 
   if (type === 'partner' && !isPartner) {
     await supabase.auth.signOut();
