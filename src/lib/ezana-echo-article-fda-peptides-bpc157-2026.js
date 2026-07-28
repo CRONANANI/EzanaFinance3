@@ -167,7 +167,7 @@ export const fdaPeptidesBpc157Article2026 = {
     },
   ],
   author: 'Ezana Finance Editorial',
-  category: 'markets',
+  category: 'markets-companies',
   tags: ['markets', 'regulation', 'companies', 'science-health', 'policy'],
   tickers: ['HIMS', 'LLY', 'NVO', 'WBA', 'CVS', 'AMZN', 'TDOC', 'OSCR'],
   entities: {

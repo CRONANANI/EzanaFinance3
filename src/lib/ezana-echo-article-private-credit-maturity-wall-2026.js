@@ -300,7 +300,7 @@ export const privateCreditMaturityWallArticle2026 = {
     },
   ],
   author: 'Ezana Finance Editorial',
-  category: 'markets',
+  category: 'markets-companies',
   tags: ['markets', 'private-credit', 'fixed-income', 'analysis', 'macro'],
   tickers: ['ARCC', 'BXSL', 'OBDC', 'FSK', 'BBDC', 'GBDC', 'HTGC', 'BIZD'],
   entities: {

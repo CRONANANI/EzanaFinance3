@@ -151,7 +151,7 @@ export const dataConsolidationArticle2026 = {
     },
   ],
   author: 'Ezana Finance Editorial',
-  category: 'tech-infrastructure',
+  category: 'tech-founders',
   tags: ['markets', 'technology', 'deals-dealmakers', 'macro', 'analysis'],
   tickers: ['CRM', 'SNOW', 'DDOG', 'MSFT', 'GOOGL', 'META', 'ORCL', 'PLTR'],
   entities: {

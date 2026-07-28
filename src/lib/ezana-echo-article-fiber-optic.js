@@ -624,7 +624,7 @@ export const fiberOpticArticle = {
     },
   ],
   author: 'Ezana Finance Editorial',
-  category: 'tech-infrastructure',
+  category: 'tech-founders',
   tags: ['markets', 'technology', 'ai', 'infrastructure', 'semiconductors'],
   tickers: ['GLW', 'COMM', 'COHR', 'META', 'NVDA', 'AVGO', 'MSFT', 'AMZN'],
   entities: {

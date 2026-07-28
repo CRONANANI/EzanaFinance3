@@ -12,34 +12,33 @@ import { EzanaNavLogo } from '@/components/brand/EzanaNavLogo';
 import './ezana-echo.css';
 import './ezana-echo-home.css';
 
-/* The 12 canonical Echo categories (id → label), shown as filter chips. "All"
-   is prepended in the nav. Article `category` ids must match one of these. */
+/* The 6 Echo categories (id → label), shown as filter chips. "All" is prepended
+   in the nav. Article `category` ids must match one of these. */
 const CATEGORIES = [
-  { id: 'markets', label: 'Markets' },
-  { id: 'public-policy', label: 'Public Policy' },
+  { id: 'markets-companies', label: 'Markets & Companies' },
+  { id: 'politics-policy', label: 'Politics & Policy' },
+  { id: 'tech-founders', label: 'Tech & Founders' },
+  { id: 'commodities-energy', label: 'Commodities & Energy' },
   { id: 'crypto', label: 'Crypto' },
-  { id: 'commodities', label: 'Commodities' },
-  { id: 'inside-the-capitol', label: 'Inside the Capitol' },
-  { id: 'companies-earnings', label: 'Companies & Earnings' },
-  { id: 'tech-infrastructure', label: 'Tech & Infrastructure' },
   { id: 'global-emerging', label: 'Global & Emerging Markets' },
-  { id: 'deals-dealmakers', label: 'Deals & Dealmakers' },
-  { id: 'founders-power', label: 'Founders & Power Players' },
-  { id: 'science-health', label: 'Science & Health' },
-  { id: 'quant-data', label: 'Quant & Data' },
 ];
 
 /* Accent for the category eyebrow dot. Emerald-forward per the design system;
    anything unmapped falls back to emerald. */
 const CAT_ACCENT = {
+  'markets-companies': '#10b981',
+  'politics-policy': '#d4a853',
+  'tech-founders': '#22d3ee',
+  'commodities-energy': '#f59e0b',
+  crypto: '#818cf8',
+  'global-emerging': '#2dd4bf',
+  // legacy ids retained so any not-yet-resorted content still gets an accent
   markets: '#10b981',
   'public-policy': '#d4a853',
-  crypto: '#818cf8',
   commodities: '#f59e0b',
   'inside-the-capitol': '#34d399',
   'companies-earnings': '#10b981',
   'tech-infrastructure': '#22d3ee',
-  'global-emerging': '#2dd4bf',
   'deals-dealmakers': '#a78bfa',
   'founders-power': '#d4a853',
   'science-health': '#2dd4bf',
@@ -77,9 +76,9 @@ function initialsOf(name = '') {
 
 /* Reusable article card — shared by the per-category rows and the filtered grid,
    so the two arrangements render identical cards (no second card component). */
-function ArticleCard({ a, isAdmin, onArchive, archivingId }) {
+function ArticleCard({ a, isAdmin, onArchive, archivingId, notch }) {
   return (
-    <div className="eth-card-wrap">
+    <div className={`eth-card-wrap${notch ? ` eth-card--notch-${notch}` : ''}`}>
       {isAdmin && (
         <button
           type="button"
@@ -243,41 +242,33 @@ export default function EzanaEchoPage() {
     return list;
   }, [feedSource, cat, activeTag]);
 
-  // Default "All" view = the featured hero + Top Stories + one a16z-style row per
-  // category. Selecting a category (or arriving via ?tag=) collapses to a single
-  // focused grid instead.
-  const isDefaultView = cat === 'all' && !activeTag;
+  // Article of the Month = the flagged/featured article (the DB-backed `featured`
+  // flag drives it — not a hardcoded id), falling back to the most recent story.
+  // It becomes the circular centerpiece; the two side columns hold everything else.
+  const articleOfMonth = useMemo(
+    () => featured || feedSource[0] || null,
+    [featured, feedSource],
+  );
 
-  // Per-category rows (default view). Order follows the CATEGORIES array. Top
-  // Stories are excluded so the same article never appears twice on the page
-  // (the featured story is already excluded via feedSource).
-  const categoryRows = useMemo(() => {
-    const topIds = new Set(topStories.map((a) => a.id));
-    const rowSource = feedSource.filter((a) => !topIds.has(a.id));
-    return CATEGORIES.map((c) => ({
-      id: c.id,
-      label: c.label,
-      items: rowSource.filter((a) => a.category === c.id).slice(0, 4),
-    })).filter((row) => row.items.length > 0);
-  }, [feedSource, topStories]);
+  // The card pool for the two columns = the current filter's articles, minus the
+  // centerpiece so it never appears twice. `filtered` already excludes `featured`.
+  const columnPool = useMemo(
+    () => filtered.filter((a) => a.id !== articleOfMonth?.id),
+    [filtered, articleOfMonth],
+  );
 
-  const heroHref = featured ? `/ezana-echo/${featured.id}` : '#';
+  // Split newest-first into two vertical columns (0,2,4… left · 1,3,5… right), so
+  // each column descends from most-recent at its top.
+  const leftCol = useMemo(() => columnPool.filter((_, i) => i % 2 === 0), [columnPool]);
+  const rightCol = useMemo(() => columnPool.filter((_, i) => i % 2 === 1), [columnPool]);
 
   return (
     <div className="eth-page">
-      {/* Two-row header (replaces the suppressed marketing nav on Echo).
-          Row 1: centered logo + brand, with Login / Become a Partner on the
-          right. Row 2: the category filters spread across the full content
-          width. Generous vertical space so the serif wordmark never clips. */}
+      {/* Header (marketing nav is suppressed on Echo). Logo + brand on the left,
+          aligned to the card column's left edge; Login / Become a Partner on the
+          right with centers aligned to the brand. The "Publish to the Echo →"
+          note sits ABOVE the partner button. */}
       <header className="eth-masthead">
-        {isAdmin ? (
-          <Link href="/ezana-echo/archived" className="eth-archived-btn eth-masthead-admin">
-            View archived
-            <span className="eth-archived-count">{archivedCount}</span>
-          </Link>
-        ) : (
-          <span className="eth-masthead-admin" aria-hidden />
-        )}
         <Link href="/" className="eth-masthead-brand" aria-label="Ezana Echo home">
           <EzanaNavLogo width={44} height={37} priority />
           <span className="eth-masthead-name">
@@ -285,21 +276,27 @@ export default function EzanaEchoPage() {
           </span>
         </Link>
         <div className="eth-masthead-auth">
+          {isAdmin && (
+            <Link href="/ezana-echo/archived" className="eth-archived-btn">
+              View archived
+              <span className="eth-archived-count">{archivedCount}</span>
+            </Link>
+          )}
           <a href="/auth/login" className="eth-login">
             Login
           </a>
-          <div className="eth-partner-wrap">
-            <a href="/auth/partner/apply" className="eth-partner-btn">
-              Become a Partner
-            </a>
+          <div className="eth-partner-stack">
             <a href="/auth/partner/apply" className="eth-partner-note">
               Publish to the Echo →
+            </a>
+            <a href="/auth/partner/apply" className="eth-partner-btn">
+              Become a Partner
             </a>
           </div>
         </div>
       </header>
 
-      <nav className="eth-navcats" aria-label="Filter by category">
+      <nav className="eth-catnav" aria-label="Filter by category">
         <button
           type="button"
           className={cat === 'all' ? 'active' : ''}
@@ -326,147 +323,74 @@ export default function EzanaEchoPage() {
       </nav>
 
       <div className="eth-wrap">
-        {/* Split featured hero + ranked Top Stories rail (default view only) */}
-        {isDefaultView && featured && (
-          <section className="eth-hero">
-            {isAdmin && (
-              <button
-                type="button"
-                className="eth-archive-btn"
-                onClick={(e) => handleArchive(featured.id, e)}
-                disabled={archivingId === featured.id}
-                title="Archive this article"
-              >
-                <Archive size={13} aria-hidden />
-                {archivingId === featured.id ? 'Archiving…' : 'Archive'}
-              </button>
-            )}
-            <Link href={heroHref} className="eth-feat">
-              {featured.heroImage?.src ? (
-                <img
-                  className="eth-feat-img"
-                  src={featured.heroImage.src}
-                  alt={featured.heroImage.alt || featured.title}
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
-              ) : (
-                <span className="eth-feat-fallback" />
-              )}
-              <span className="eth-feat-scrim" />
-              <div className="eth-feat-body">
-                <span className="eth-eyebrow eth-feat-kicker">
-                  <span className="dot" style={{ background: catAccent(featured.category) }} />
-                  {getCategoryLabel(featured.category)} · The Big Read
-                </span>
-                <h2 className="eth-feat-title">{featured.title}</h2>
-                {featured.excerpt && <p className="eth-feat-dek">{featured.excerpt}</p>}
-                <Byline article={featured} dark />
-              </div>
-            </Link>
-
-            <div className="eth-rail">
-              <div className="eth-rail-head">
-                <span className="eth-rail-title">Top Stories</span>
-                <span className="eth-rail-live">
-                  <i />
-                  LATEST
-                </span>
-              </div>
-              {topStories.map((a, i) => (
-                <Link key={a.id} href={`/ezana-echo/${a.id}`} className="eth-rank">
-                  <span className="eth-rank-n">{String(i + 1).padStart(2, '0')}</span>
-                  <div>
-                    <CatEyebrow slug={a.category} />
-                    <h4 className="eth-rank-title">{a.title}</h4>
-                    <div className="eth-rank-meta">
-                      {a.author} <span>·</span> {a.readTime} min
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </section>
+        {activeTag && (
+          <div className="eth-tag-banner">
+            <span>Filtered by tag:</span>
+            <span className="eth-tag-chip">{getTag(activeTag).label}</span>
+            <button type="button" className="eth-tag-clear" onClick={() => setActiveTag(null)}>
+              Clear
+            </button>
+          </div>
         )}
 
-        {isDefaultView ? (
-          /* a16z-style layout: one horizontal row per non-empty category. */
-          <div className="eth-rows">
-            {categoryRows.map((row) => (
-              <section className="eth-row" key={row.id}>
-                <div className="eth-row-head">
-                  <h2 className="eth-row-title">{row.label}</h2>
-                  <button
-                    type="button"
-                    className="eth-row-viewall"
-                    onClick={() => setCat(row.id)}
-                  >
-                    VIEW ALL <span aria-hidden>→</span>
-                  </button>
-                </div>
-                <div className="eth-row-track">
-                  {row.items.map((a) => (
-                    <ArticleCard
-                      key={a.id}
-                      a={a}
-                      isAdmin={isAdmin}
-                      onArchive={handleArchive}
-                      archivingId={archivingId}
-                    />
-                  ))}
-                </div>
-              </section>
+        {/* Centerpiece wireframe: two vertical columns of article cards
+            (newest→oldest) flanking the circular "Article of the Month". The top
+            card of each column is notched so the circle appears to cut into it
+            (desktop only; the warp is dropped on mobile). */}
+        <div className="eth-centerpiece">
+          <div className="eth-col eth-col-left">
+            {leftCol.map((a, i) => (
+              <ArticleCard
+                key={a.id}
+                a={a}
+                isAdmin={isAdmin}
+                onArchive={handleArchive}
+                archivingId={archivingId}
+                notch={i === 0 ? 'right' : null}
+              />
             ))}
           </div>
-        ) : (
-          /* Filtered view — the page collapses to just this category (or tag). */
-          <>
-            <div className="eth-controls">
-              <h2>{activeTag ? 'The Feed' : getCategoryLabel(cat)}</h2>
-              <span className="eth-count">
-                {filtered.length} {filtered.length === 1 ? 'story' : 'stories'}
+
+          {articleOfMonth && (
+            <Link href={`/ezana-echo/${articleOfMonth.id}`} className="eth-circle">
+              <span className="eth-circle-eyebrow">Article of the Month</span>
+              <h2 className="eth-circle-title">{articleOfMonth.title}</h2>
+              <span className="eth-circle-meta">
+                {articleOfMonth.author} · {articleOfMonth.readTime} min
               </span>
-            </div>
+            </Link>
+          )}
 
-            {activeTag && (
-              <div className="eth-tag-banner">
-                <span>Filtered by tag:</span>
-                <span className="eth-tag-chip">{getTag(activeTag).label}</span>
-                <button type="button" className="eth-tag-clear" onClick={() => setActiveTag(null)}>
-                  Clear
-                </button>
-              </div>
-            )}
+          <div className="eth-col eth-col-right">
+            {rightCol.map((a, i) => (
+              <ArticleCard
+                key={a.id}
+                a={a}
+                isAdmin={isAdmin}
+                onArchive={handleArchive}
+                archivingId={archivingId}
+                notch={i === 0 ? 'left' : null}
+              />
+            ))}
+          </div>
+        </div>
 
-            {filtered.length ? (
-              <div className="eth-grid">
-                {filtered.map((a) => (
-                  <ArticleCard
-                    key={a.id}
-                    a={a}
-                    isAdmin={isAdmin}
-                    onArchive={handleArchive}
-                    archivingId={archivingId}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="eth-empty">
-                No stories in this section yet.
-                <button
-                  type="button"
-                  className="eth-empty-clear"
-                  onClick={() => {
-                    setCat('all');
-                    setActiveTag(null);
-                  }}
-                >
-                  Clear filter
-                </button>
-              </div>
+        {columnPool.length === 0 && (
+          <div className="eth-empty">
+            No stories in this section yet.
+            {(cat !== 'all' || activeTag) && (
+              <button
+                type="button"
+                className="eth-empty-clear"
+                onClick={() => {
+                  setCat('all');
+                  setActiveTag(null);
+                }}
+              >
+                Clear filter
+              </button>
             )}
-          </>
+          </div>
         )}
 
         {/* Newsletter band (presentational — wire to real signup later) */}

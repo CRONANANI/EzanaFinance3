@@ -151,7 +151,7 @@ export const ballroomDonorsContracts2026 = {
     },
   ],
   author: 'Ezana Finance Editorial',
-  category: 'inside-the-capitol',
+  category: 'politics-policy',
   tags: ['policy', 'regulation', 'markets', 'companies', 'macro'],
   tickers: ['LMT', 'BAH', 'PLTR', 'MSFT', 'AMZN', 'HPQ', 'CAT', 'GOOGL', 'CMCSA'],
   entities: {
