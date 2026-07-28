@@ -162,7 +162,8 @@ export const ballroomDonorsContracts2026 = {
   publishedAt: '2026-07-23',
   // Featured hero relinquished to the newer FDA-peptides story (only one
   // home-page featured hero at a time).
-  featured: false,
+  featured: true,
+  articleOfMonth: true,
   likes: 0,
   comments: 0,
   reads: 0,

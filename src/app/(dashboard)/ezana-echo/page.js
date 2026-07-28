@@ -74,11 +74,13 @@ function initialsOf(name = '') {
     .toUpperCase();
 }
 
-/* Reusable article card — shared by the per-category rows and the filtered grid,
-   so the two arrangements render identical cards (no second card component). */
-function ArticleCard({ a, isAdmin, onArchive, archivingId, notch }) {
+/* Board card — hero image on top, title + meta below. Used in the 6-column board.
+   `notch` ('l' | 'r') applies the radial-mask cutout so the card wraps the circle.
+   A missing/broken hero falls back to the emerald-tinted placeholder (the hero
+   box keeps its own background), so the grid never breaks. */
+function BoardCard({ a, notch, isAdmin, onArchive, archivingId }) {
   return (
-    <div className={`eth-card-wrap${notch ? ` eth-card--notch-${notch}` : ''}`}>
+    <div className={`eth-bcard-wrap${notch ? ` eth-bcard--notch-${notch}` : ''}`}>
       {isAdmin && (
         <button
           type="button"
@@ -91,8 +93,8 @@ function ArticleCard({ a, isAdmin, onArchive, archivingId, notch }) {
           {archivingId === a.id ? '…' : 'Archive'}
         </button>
       )}
-      <Link href={`/ezana-echo/${a.id}`} className="eth-card">
-        <div className="eth-card-img">
+      <Link href={`/ezana-echo/${a.id}`} className="eth-bcard">
+        <div className="eth-bcard-hero">
           {a.heroImage?.src ? (
             <img
               src={a.heroImage.src}
@@ -104,16 +106,11 @@ function ArticleCard({ a, isAdmin, onArchive, archivingId, notch }) {
             />
           ) : null}
         </div>
-        <div className="eth-card-body">
-          <h3 className="eth-card-title">{a.title}</h3>
-          <div className="eth-card-foot">
-            <span>{a.author}</span>
-            <span className="sep">·</span>
-            <span>{formatPublishedShort(a.publishedAt)}</span>
-            <span className="sep">·</span>
-            <span>{a.readTime} min</span>
+        <div className="eth-bcard-body">
+          <h3 className="eth-bcard-title">{a.title}</h3>
+          <div className="eth-bcard-meta">
+            {formatPublishedShort(a.publishedAt)} · {a.readTime} MIN
           </div>
-          <div className="eth-card-category">{getCategoryLabel(a.category)}</div>
         </div>
       </Link>
     </div>
@@ -242,25 +239,26 @@ export default function EzanaEchoPage() {
     return list;
   }, [feedSource, cat, activeTag]);
 
-  // Article of the Month = the flagged/featured article (the DB-backed `featured`
-  // flag drives it — not a hardcoded id), falling back to the most recent story.
-  // It becomes the circular centerpiece; the two side columns hold everything else.
+  // Article of the Month = the flagged article (the `articleOfMonth` flag first,
+  // then the DB-backed `featured` flag, then most-recent) — never a hardcoded id.
+  // It becomes the circular centerpiece and is excluded from the columns.
   const articleOfMonth = useMemo(
-    () => featured || feedSource[0] || null,
-    [featured, feedSource],
+    () => allArticles.find((a) => a.articleOfMonth) || featured || feedSource[0] || null,
+    [allArticles, featured, feedSource],
   );
 
-  // The card pool for the two columns = the current filter's articles, minus the
-  // centerpiece so it never appears twice. `filtered` already excludes `featured`.
-  const columnPool = useMemo(
-    () => filtered.filter((a) => a.id !== articleOfMonth?.id),
-    [filtered, articleOfMonth],
-  );
-
-  // Split newest-first into two vertical columns (0,2,4… left · 1,3,5… right), so
-  // each column descends from most-recent at its top.
-  const leftCol = useMemo(() => columnPool.filter((_, i) => i % 2 === 0), [columnPool]);
-  const rightCol = useMemo(() => columnPool.filter((_, i) => i % 2 === 1), [columnPool]);
+  // Six category columns, each = that category's articles (minus the centerpiece)
+  // sorted newest-first. Empty categories (Crypto) render an honest empty state.
+  const columns = useMemo(() => {
+    const pool = allArticles.filter((a) => a.id !== articleOfMonth?.id);
+    return CATEGORIES.map((c) => ({
+      id: c.id,
+      label: c.label,
+      items: pool
+        .filter((a) => a.category === c.id)
+        .sort((x, y) => String(y.publishedAt).localeCompare(String(x.publishedAt))),
+    }));
+  }, [allArticles, articleOfMonth]);
 
   return (
     <div className="eth-page">
@@ -296,102 +294,57 @@ export default function EzanaEchoPage() {
         </div>
       </header>
 
-      <nav className="eth-catnav" aria-label="Filter by category">
-        <button
-          type="button"
-          className={cat === 'all' ? 'active' : ''}
-          onClick={() => {
-            setCat('all');
-            setActiveTag(null);
-          }}
-        >
-          All
-        </button>
-        {CATEGORIES.map((c) => (
-          <button
-            key={c.id}
-            type="button"
-            className={cat === c.id ? 'active' : ''}
-            onClick={() => {
-              setCat(c.id);
-              setActiveTag(null);
-            }}
-          >
-            {c.label}
-          </button>
-        ))}
-      </nav>
-
       <div className="eth-wrap">
-        {activeTag && (
-          <div className="eth-tag-banner">
-            <span>Filtered by tag:</span>
-            <span className="eth-tag-chip">{getTag(activeTag).label}</span>
-            <button type="button" className="eth-tag-clear" onClick={() => setActiveTag(null)}>
-              Clear
-            </button>
-          </div>
-        )}
-
-        {/* Centerpiece wireframe: two vertical columns of article cards
-            (newest→oldest) flanking the circular "Article of the Month". The top
-            card of each column is notched so the circle appears to cut into it
-            (desktop only; the warp is dropped on mobile). */}
-        <div className="eth-centerpiece">
-          <div className="eth-col eth-col-left">
-            {leftCol.map((a, i) => (
-              <ArticleCard
-                key={a.id}
-                a={a}
-                isAdmin={isAdmin}
-                onArchive={handleArchive}
-                archivingId={archivingId}
-                notch={i === 0 ? 'right' : null}
-              />
-            ))}
-          </div>
+        {/* Six category columns of hero-image cards (newest-first per column). A
+            green-filled pulsating "Article of the Month" circle is centered over
+            the middle columns; the cards nearest it are notched to wrap around it
+            (desktop only). Crypto with no articles shows an honest empty state. */}
+        <div className="eth-board">
+          {columns.map((col, ci) => {
+            const notchIdx = Math.min(1, col.items.length - 1);
+            return (
+              <div className="eth-col" key={col.id}>
+                <div className="eth-col-head">
+                  <span className="eth-col-dot" aria-hidden />
+                  {col.label}
+                </div>
+                {col.items.length ? (
+                  col.items.map((a, i) => (
+                    <BoardCard
+                      key={a.id}
+                      a={a}
+                      isAdmin={isAdmin}
+                      onArchive={handleArchive}
+                      archivingId={archivingId}
+                      notch={
+                        ci === 2 && i === notchIdx
+                          ? 'r'
+                          : ci === 3 && i === notchIdx
+                            ? 'l'
+                            : null
+                      }
+                    />
+                  ))
+                ) : (
+                  <div className="eth-col-empty">No articles yet</div>
+                )}
+              </div>
+            );
+          })}
 
           {articleOfMonth && (
             <Link href={`/ezana-echo/${articleOfMonth.id}`} className="eth-circle">
               <span className="eth-circle-eyebrow">Article of the Month</span>
               <h2 className="eth-circle-title">{articleOfMonth.title}</h2>
+              {articleOfMonth.excerpt && (
+                <span className="eth-circle-sub">{articleOfMonth.excerpt}</span>
+              )}
               <span className="eth-circle-meta">
-                {articleOfMonth.author} · {articleOfMonth.readTime} min
+                {articleOfMonth.author || 'Ezana Editorial'} · {articleOfMonth.readTime} MIN
               </span>
             </Link>
           )}
-
-          <div className="eth-col eth-col-right">
-            {rightCol.map((a, i) => (
-              <ArticleCard
-                key={a.id}
-                a={a}
-                isAdmin={isAdmin}
-                onArchive={handleArchive}
-                archivingId={archivingId}
-                notch={i === 0 ? 'left' : null}
-              />
-            ))}
-          </div>
         </div>
-
-        {columnPool.length === 0 && (
-          <div className="eth-empty">
-            No stories in this section yet.
-            {(cat !== 'all' || activeTag) && (
-              <button
-                type="button"
-                className="eth-empty-clear"
-                onClick={() => {
-                  setCat('all');
-                  setActiveTag(null);
-                }}
-              >
-                Clear filter
-              </button>
-            )}
-          </div>
-        )}
 
         {/* Newsletter band (presentational — wire to real signup later) */}
         <div className="eth-news">

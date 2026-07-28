@@ -766,109 +766,186 @@
   filter: brightness(1.06);
 }
 
-/* Category filters — centered row of chips below the header. */
-.eth-catnav {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  padding: 14px 0 18px;
-}
-.eth-catnav button {
-  position: relative;
-  background: none;
-  border: 1px solid transparent;
-  padding: 5px 12px;
-  border-radius: 999px;
-  font-family: var(--font-sans);
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-muted);
-  white-space: nowrap;
-  cursor: pointer;
-  transition:
-    color 0.14s ease,
-    border-color 0.14s ease,
-    background 0.14s ease;
-}
-.eth-catnav button:hover {
-  color: var(--text-primary);
-  border-color: var(--border-primary);
-}
-.eth-catnav button.active {
-  color: var(--emerald);
-  border-color: color-mix(in srgb, var(--emerald) 45%, transparent);
-  background: color-mix(in srgb, var(--emerald) 12%, transparent);
-}
-
-/* ── Circular centerpiece wireframe ─────────────────────────────────────────
-   Two vertical card columns flanking a larger circular "Article of the Month".
-   The circle is absolutely centered and overlaps the columns' inner edges; the
-   top card of each column is notched (CSS radial-gradient mask) so the circle
-   appears to cut into it. Wireframe — structure over pixel-perfection. */
-.eth-centerpiece {
+/* ── 6-column category board with a green circular centerpiece ───────────────
+   Each of the 6 categories is a column (header + a vertical stack of its
+   hero-image cards, newest at top). A green-filled pulsating "Article of the
+   Month" circle is absolutely centered over the middle columns; the cards
+   nearest it are notched (radial mask) so it appears to nest into them. */
+.eth-board {
   position: relative;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px 260px; /* the 260px column-gap holds the circle; 340px circle overlaps
-                      ~40px into each column so it visibly cuts into the top cards */
+  grid-template-columns: repeat(6, 1fr);
+  gap: 16px;
   margin-top: 8px;
 }
 .eth-col {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 14px;
   min-width: 0;
 }
+.eth-col-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 42px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--emerald);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+.eth-col-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--emerald);
+  flex-shrink: 0;
+}
+.eth-col-empty {
+  padding: 22px 12px;
+  border: 1px dashed var(--border-primary);
+  border-radius: 10px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+/* Board card — hero image on top, title + meta below. */
+.eth-bcard-wrap {
+  position: relative;
+}
+.eth-bcard {
+  display: block;
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  overflow: hidden;
+  background: transparent;
+  text-decoration: none;
+  transition:
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+.eth-bcard:hover {
+  border-color: var(--emerald);
+  transform: translateY(-2px);
+}
+.eth-bcard-hero {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  /* emerald-tinted placeholder shows if the image is missing/broken */
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--emerald) 55%, black 8%),
+    color-mix(in srgb, var(--emerald) 22%, transparent)
+  );
+}
+.eth-bcard-hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.eth-bcard-body {
+  padding: 12px 14px 14px;
+}
+.eth-bcard-title {
+  margin: 0 0 9px;
+  font-family: var(--font-serif);
+  font-size: 14px;
+  line-height: 1.3;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.eth-bcard:hover .eth-bcard-title {
+  color: var(--emerald);
+}
+.eth-bcard-meta {
+  font-family: var(--font-mono, monospace);
+  font-size: 9.5px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+/* The notch: a concave cutout on the card's inner edge so the circle nests in. */
+.eth-bcard--notch-r {
+  -webkit-mask: radial-gradient(circle 175px at right center, transparent 0 170px, #000 171px);
+  mask: radial-gradient(circle 175px at right center, transparent 0 170px, #000 171px);
+}
+.eth-bcard--notch-l {
+  -webkit-mask: radial-gradient(circle 175px at left center, transparent 0 170px, #000 171px);
+  mask: radial-gradient(circle 175px at left center, transparent 0 170px, #000 171px);
+}
+
+/* Green-filled pulsating Article-of-the-Month circle (no image). White text on
+   the always-green fill; the deep/dark emerald shades are derived from --emerald
+   via color-mix so nothing is a hardcoded brand hex. */
 .eth-circle {
   position: absolute;
   left: 50%;
-  top: 24px;
+  top: 340px;
   transform: translateX(-50%);
   z-index: 5;
-  width: 340px;
-  height: 340px;
+  width: 330px;
+  height: 330px;
   border-radius: 50%;
   border: 3px solid var(--emerald);
-  background: var(--bg-primary);
+  background: radial-gradient(
+    circle at 38% 32%,
+    var(--emerald) 0%,
+    color-mix(in srgb, var(--emerald) 78%, black) 58%,
+    color-mix(in srgb, var(--emerald) 55%, black) 100%
+  );
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 40px;
+  padding: 44px;
   text-decoration: none;
+  color: #fff;
   animation: eth-pulse 2.6s ease-in-out infinite;
 }
 .eth-circle-eyebrow {
   font-family: var(--font-sans);
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--emerald);
-  margin-bottom: 10px;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 14px;
 }
 .eth-circle-title {
+  margin: 0 0 12px;
   font-family: var(--font-serif);
-  font-size: 17px;
+  font-size: 21px;
+  line-height: 1.28;
   font-weight: 700;
-  line-height: 1.25;
-  color: var(--text-primary);
-  margin: 0;
+  color: #fff;
   display: -webkit-box;
-  -webkit-line-clamp: 4;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.eth-circle-sub {
+  margin-bottom: 14px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.9);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 .eth-circle-meta {
-  margin-top: 12px;
-  font-size: 11.5px;
-  color: var(--text-faint);
-}
-.eth-circle:hover .eth-circle-title {
-  color: var(--emerald);
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.75);
 }
 @keyframes eth-pulse {
   0%,
@@ -876,23 +953,13 @@
     box-shadow: 0 0 0 0 color-mix(in srgb, var(--emerald) 45%, transparent);
   }
   50% {
-    box-shadow: 0 0 0 18px color-mix(in srgb, var(--emerald) 0%, transparent);
+    box-shadow: 0 0 0 24px color-mix(in srgb, var(--emerald) 0%, transparent);
   }
 }
 @media (prefers-reduced-motion: reduce) {
   .eth-circle {
     animation: none;
   }
-}
-/* The notch: a circular transparent cutout on the card's inner edge so the
-   centerpiece nests into it. 185px radius ≈ the 170px circle radius + a gap. */
-.eth-card--notch-right {
-  -webkit-mask: radial-gradient(circle 170px at calc(100% + 40px) 180px, transparent 0 168px, #000 169px);
-  mask: radial-gradient(circle 170px at calc(100% + 40px) 180px, transparent 0 168px, #000 169px);
-}
-.eth-card--notch-left {
-  -webkit-mask: radial-gradient(circle 170px at -40px 180px, transparent 0 168px, #000 169px);
-  mask: radial-gradient(circle 170px at -40px 180px, transparent 0 168px, #000 169px);
 }
 
 /* Per-category rows (a16z style). */
@@ -955,36 +1022,36 @@
   scroll-snap-align: start;
 }
 
-@media (max-width: 860px) {
-  /* Stack the centerpiece: circle on top (smaller, still pulsing), then the
-     cards. The desktop warp/notch is dropped on mobile. */
-  .eth-centerpiece {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
+/* ≤1100px: collapse to 3 columns; the circle drops into the flow (static),
+   centered, and the notch is removed. */
+@media (max-width: 1100px) {
+  .eth-board {
+    grid-template-columns: repeat(3, 1fr);
   }
   .eth-circle {
-    order: -1;
     position: static;
     transform: none;
-    margin: 0 auto 8px;
-    width: 260px;
-    height: 260px;
-    padding: 28px;
+    order: -1;
+    margin: 8px auto 20px;
+    width: 300px;
+    height: 300px;
+    padding: 36px;
+    grid-column: 1 / -1;
   }
   .eth-circle-title {
-    font-size: 15px;
+    font-size: 18px;
   }
-  .eth-col {
-    gap: 24px;
-  }
-  .eth-col-right {
-    margin-top: 24px;
-  }
-  .eth-card--notch-left,
-  .eth-card--notch-right {
+  .eth-bcard--notch-l,
+  .eth-bcard--notch-r {
     -webkit-mask: none;
     mask: none;
+  }
+}
+
+/* ≤640px: single column; circle static on top. */
+@media (max-width: 640px) {
+  .eth-board {
+    grid-template-columns: 1fr;
   }
 }
 
