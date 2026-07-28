@@ -4,7 +4,6 @@ import { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Archive } from 'lucide-react';
 import { formatPublishedShort } from '@/lib/echo-format';
-import { getTag } from '@/lib/echo-tag-taxonomy';
 import { useAuth } from '@/components/AuthProvider';
 import { isAdminUserClient } from '@/lib/admin-helpers-client';
 import { EzanaNavLogo } from '@/components/brand/EzanaNavLogo';
@@ -12,8 +11,8 @@ import { EzanaNavLogo } from '@/components/brand/EzanaNavLogo';
 import './ezana-echo.css';
 import './ezana-echo-home.css';
 
-/* The 6 Echo categories (id → label), shown as filter chips. "All" is prepended
-   in the nav. Article `category` ids must match one of these. */
+/* The 6 Echo categories (id → label). Each renders as a column on the homepage
+   board. Article `category` ids must match one of these. */
 const CATEGORIES = [
   { id: 'markets-companies', label: 'Markets & Companies' },
   { id: 'politics-policy', label: 'Politics & Policy' },
@@ -22,57 +21,6 @@ const CATEGORIES = [
   { id: 'crypto', label: 'Crypto' },
   { id: 'global-emerging', label: 'Global & Emerging Markets' },
 ];
-
-/* Accent for the category eyebrow dot. Emerald-forward per the design system;
-   anything unmapped falls back to emerald. */
-const CAT_ACCENT = {
-  'markets-companies': '#10b981',
-  'politics-policy': '#d4a853',
-  'tech-founders': '#22d3ee',
-  'commodities-energy': '#f59e0b',
-  crypto: '#818cf8',
-  'global-emerging': '#2dd4bf',
-  // legacy ids retained so any not-yet-resorted content still gets an accent
-  markets: '#10b981',
-  'public-policy': '#d4a853',
-  commodities: '#f59e0b',
-  'inside-the-capitol': '#34d399',
-  'companies-earnings': '#10b981',
-  'tech-infrastructure': '#22d3ee',
-  'deals-dealmakers': '#a78bfa',
-  'founders-power': '#d4a853',
-  'science-health': '#2dd4bf',
-  'quant-data': '#818cf8',
-};
-
-const CATEGORY_LABELS = Object.fromEntries(CATEGORIES.map((c) => [c.id, c.label]));
-/* Proper label for a category id — never shows a raw kebab id. Falls back to a
-   title-cased version for any legacy/unknown id. */
-const getCategoryLabel = (id) =>
-  CATEGORY_LABELS[id] ||
-  (id || '')
-    .split('-')
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(' ');
-const catAccent = (slug) => CAT_ACCENT[slug] || 'var(--emerald)';
-
-function CatEyebrow({ slug }) {
-  return (
-    <span className="eth-eyebrow" style={{ color: catAccent(slug) }}>
-      <span className="dot" style={{ background: catAccent(slug) }} />
-      {getCategoryLabel(slug)}
-    </span>
-  );
-}
-
-function initialsOf(name = '') {
-  return name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
-}
 
 /* Board card — hero image on top, title + meta below. Used in the 6-column board.
    `notch` ('l' | 'r') applies the radial-mask cutout so the card wraps the circle.
@@ -117,21 +65,6 @@ function BoardCard({ a, notch, isAdmin, onArchive, archivingId }) {
   );
 }
 
-function Byline({ article, dark }) {
-  return (
-    <div className="eth-byline">
-      <span className="eth-avatar">{initialsOf(article.author)}</span>
-      <span
-        className="eth-byline-meta"
-        style={dark ? { color: 'rgba(226,232,240,0.7)' } : undefined}
-      >
-        <b style={dark ? { color: '#fff' } : undefined}>{article.author}</b> ·{' '}
-        {formatPublishedShort(article.publishedAt)} · {article.readTime} min
-      </span>
-    </div>
-  );
-}
-
 export default function EzanaEchoPage() {
   const { user } = useAuth();
   const isAdmin = isAdminUserClient(user);
@@ -139,17 +72,8 @@ export default function EzanaEchoPage() {
   const [archivedCount, setArchivedCount] = useState(0);
   const [archivingId, setArchivingId] = useState(null);
 
-  const [cat, setCat] = useState('all');
-  const [activeTag, setActiveTag] = useState(null);
-
   const [rawArticles, setRawArticles] = useState([]);
   const [featuredRaw, setFeaturedRaw] = useState(null);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const tagFromUrl = new URLSearchParams(window.location.search).get('tag');
-    if (tagFromUrl) setActiveTag(tagFromUrl);
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -223,21 +147,12 @@ export default function EzanaEchoPage() {
     [featuredRaw, archivedSet],
   );
 
-  // Feed = everything except the featured story (so it isn't duplicated).
+  // Feed = everything except the featured story (so the Article of the Month
+  // isn't also listed in a column).
   const feedSource = useMemo(
     () => allArticles.filter((a) => a.id !== featured?.id),
     [allArticles, featured],
   );
-
-  // Ranked "Top Stories" rail — first three of the feed (hub is newest-first).
-  // Trimmed from five so the rail's height matches the ~50%-shorter hero.
-  const topStories = useMemo(() => feedSource.slice(0, 3), [feedSource]);
-
-  const filtered = useMemo(() => {
-    let list = cat === 'all' ? feedSource : feedSource.filter((a) => a.category === cat);
-    if (activeTag) list = list.filter((a) => a.tags?.includes(activeTag));
-    return list;
-  }, [feedSource, cat, activeTag]);
 
   // Article of the Month = the flagged article (the `articleOfMonth` flag first,
   // then the DB-backed `featured` flag, then most-recent) — never a hardcoded id.
