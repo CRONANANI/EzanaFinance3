@@ -26,8 +26,8 @@
   --text-faint: #6b7280;
   --text-ghost: #565d66;
   --surface-card: transparent;
-  --surface-card-hover: #14161a;
-  --border-primary: rgba(255, 255, 255, 0.09);
+  --surface-card-hover: color-mix(in srgb, var(--text-primary) 6%, transparent);
+  --border-primary: rgba(255, 255, 255, 0.14);
   --border-secondary: rgba(255, 255, 255, 0.06);
   --border-hover: rgba(255, 255, 255, 0.22);
   --border-input: rgba(255, 255, 255, 0.1);
@@ -57,9 +57,9 @@ body.light-mode .thw-root {
   --text-muted: #6b7280;
   --text-faint: #6b7280;
   --text-ghost: #9aa0a6;
-  --surface-card: #f9fafb;
-  --surface-card-hover: #f3f4f6;
-  --border-primary: rgba(0, 0, 0, 0.1);
+  --surface-card: transparent;
+  --surface-card-hover: color-mix(in srgb, var(--text-primary) 4%, transparent);
+  --border-primary: rgba(0, 0, 0, 0.14);
   --border-secondary: rgba(0, 0, 0, 0.06);
   --border-hover: rgba(0, 0, 0, 0.18);
   --border-input: rgba(0, 0, 0, 0.12);
@@ -971,7 +971,9 @@ body.light-mode .thw-range.active {
   gap: 1px;
   padding: 4px 9px;
   border-radius: 7px;
-  background: var(--surface-card);
+  /* Popover: keep a SOLID fill (not the transparent card token) so the tooltip
+     stays readable floating over the chart. */
+  background: var(--app-bg);
   border: 1px solid var(--border-hover);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
   pointer-events: none;
@@ -1116,37 +1118,19 @@ body.light-mode .thw-range.active {
   }
 }
 
-/* ── Flat-canvas test — Command Center only ─────────────────────────────────
-   The card CONTAINERS carry no fill, no outline, and no lift in either theme,
-   so content sits directly on the page canvas (--bg-primary) and spacing +
-   typography define grouping instead of boxes.
-
-   This is scoped to the four container classes rather than flipping the shared
-   `--surface-card` token, because that token also fills chrome that must keep
-   its surface per the "don't change inputs/chrome" rule — the search box, pills,
-   badges, the hover tooltip, and list rows all read `--surface-card`. Flattening
-   just the containers leaves every internal divider, the list-item emerald
-   accents, and all focus rings intact. */
-.thw-card,
-.thw-chart-card,
-.thw-vp,
-.thw-cal-card,
+/* ── Outlined transparent cards on a same-colour canvas (both themes) ─────────
+   The spec: cards keep a visible 1px --border-primary outline but carry NO fill
+   and NO lift, so the page colour shows through (card == canvas == --app-bg) and
+   light and dark read identically. The transparent fill comes from
+   `--surface-card: transparent` (now set in BOTH theme blocks above); the base
+   card rules already supply the border. This block only removes the light-mode
+   box-shadow lift so light matches the flat dark treatment. Chrome (search,
+   pills, badges, tooltip) keeps its own surface and is untouched. */
 body.light-mode .thw-card,
 html.light-mode .thw-card,
 body.light-mode .thw-chart-card,
 html.light-mode .thw-chart-card,
 body.light-mode .thw-cal-card,
 html.light-mode .thw-cal-card {
-  background: transparent;
-  border: none;
   box-shadow: none;
-}
-/* Keep the week-strip day cards' emerald top accent — brand + affordance, not
-   card chrome — and drop the hover fill so the flat look holds on hover too. */
-.thw-cal-card {
-  border-top: 2px solid var(--emerald);
-}
-.thw-cal-card:hover {
-  background: transparent;
-  border-top: 2px solid var(--emerald);
 }

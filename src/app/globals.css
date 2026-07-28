@@ -2802,3 +2802,20 @@ html:has(.landing-page) .landing-footer button {
   position: relative;
   z-index: 1;
 }
+
+/* ============================================================================
+   Canonical card pattern — outlined, transparent, same-colour canvas.
+   A content card carries a visible 1px outline but NO fill and NO lift, so the
+   page colour shows through: card background == page canvas == --app-bg, in both
+   light and dark mode. Pages can adopt `.ez-card` directly, or set the same three
+   declarations (background: var(--card-bg); border: 1px solid var(--card-border);
+   box-shadow: none) on their own card containers. This is for CONTENT CARDS only
+   — inputs, dropdowns, popovers/modals, the sidebar and the ticker keep their own
+   solid backgrounds for legibility.
+   ============================================================================ */
+.ez-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: none;
+}

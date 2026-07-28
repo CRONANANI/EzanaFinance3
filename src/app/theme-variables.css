@@ -39,6 +39,13 @@
   --surface-input: transparent; /* was rgba(16,185,129,0.04) */
   --surface-input-focus: rgba(16, 185, 129, 0.06);
 
+  /* ── Canonical card pattern (see .ez-card in globals.css) ──
+     A content card is an OUTLINED, TRANSPARENT surface that sits on the page
+     colour — card == canvas == --app-bg, in both light and dark. --card-border
+     resolves to the per-theme --border-primary, so it flips automatically. */
+  --card-bg: transparent;
+  --card-border: var(--border-primary);
+
   /* ── Borders ── */
   --border-primary: rgba(16, 185, 129, 0.08);
   --border-secondary: rgba(16, 185, 129, 0.06);
