@@ -7,6 +7,7 @@ import { formatPublishedShort } from '@/lib/echo-format';
 import { getTag } from '@/lib/echo-tag-taxonomy';
 import { useAuth } from '@/components/AuthProvider';
 import { isAdminUserClient } from '@/lib/admin-helpers-client';
+import { EzanaNavLogo } from '@/components/brand/EzanaNavLogo';
 
 import './ezana-echo.css';
 import './ezana-echo-home.css';
@@ -264,65 +265,65 @@ export default function EzanaEchoPage() {
 
   return (
     <div className="eth-page">
-      {/* Two-row masthead — replaces the (suppressed) marketing top nav on Echo.
-          Row 1: the wordmark. Row 2: small logo · category nav · Login / Become
-          a Partner, so the filters sit between the logo and the login actions. */}
+      {/* Two-row header (replaces the suppressed marketing nav on Echo).
+          Row 1: centered logo + brand, with Login / Become a Partner on the
+          right. Row 2: the category filters spread across the full content
+          width. Generous vertical space so the serif wordmark never clips. */}
       <header className="eth-masthead">
-        <div className="eth-masthead-top">
-          <h1 className="eth-wordmark">
+        {isAdmin ? (
+          <Link href="/ezana-echo/archived" className="eth-archived-btn eth-masthead-admin">
+            View archived
+            <span className="eth-archived-count">{archivedCount}</span>
+          </Link>
+        ) : (
+          <span className="eth-masthead-admin" aria-hidden />
+        )}
+        <Link href="/" className="eth-masthead-brand" aria-label="Ezana Echo home">
+          <EzanaNavLogo width={44} height={37} priority />
+          <span className="eth-masthead-name">
             Ezana <span>Echo</span>
-          </h1>
-          {isAdmin && (
-            <Link href="/ezana-echo/archived" className="eth-archived-btn">
-              View archived
-              <span className="eth-archived-count">{archivedCount}</span>
-            </Link>
-          )}
-        </div>
-        <div className="eth-navbar">
-          <a href="/" className="eth-nav-logo" aria-label="Ezana Echo home">
-            Ezana <span>Echo</span>
+          </span>
+        </Link>
+        <div className="eth-masthead-auth">
+          <a href="/auth/login" className="eth-login">
+            Login
           </a>
-          <nav className="eth-navcats" aria-label="Filter by category">
-            <button
-              type="button"
-              className={cat === 'all' ? 'active' : ''}
-              onClick={() => {
-                setCat('all');
-                setActiveTag(null);
-              }}
-            >
-              All
-            </button>
-            {CATEGORIES.map((c) => (
-              <button
-                key={c.id}
-                type="button"
-                className={cat === c.id ? 'active' : ''}
-                onClick={() => {
-                  setCat(c.id);
-                  setActiveTag(null);
-                }}
-              >
-                {c.label}
-              </button>
-            ))}
-          </nav>
-          <div className="eth-nav-actions">
-            <a href="/auth/login" className="eth-nav-login">
-              Login
+          <div className="eth-partner-wrap">
+            <a href="/auth/partner/apply" className="eth-partner-btn">
+              Become a Partner
             </a>
-            <div className="eth-nav-partner">
-              <a href="/auth/partner/apply" className="eth-nav-partnerbtn">
-                Become a Partner
-              </a>
-              <span className="eth-nav-partnertag">
-                Become a partner to publish articles to the Echo.
-              </span>
-            </div>
+            <a href="/auth/partner/apply" className="eth-partner-note">
+              Publish to the Echo →
+            </a>
           </div>
         </div>
       </header>
+
+      <nav className="eth-navcats" aria-label="Filter by category">
+        <button
+          type="button"
+          className={cat === 'all' ? 'active' : ''}
+          onClick={() => {
+            setCat('all');
+            setActiveTag(null);
+          }}
+        >
+          All
+        </button>
+        {CATEGORIES.map((c) => (
+          <button
+            key={c.id}
+            type="button"
+            className={cat === c.id ? 'active' : ''}
+            onClick={() => {
+              setCat(c.id);
+              setActiveTag(null);
+            }}
+          >
+            {c.label}
+          </button>
+        ))}
+      </nav>
 
       <div className="eth-wrap">
         {/* Split featured hero + ranked Top Stories rail (default view only) */}
