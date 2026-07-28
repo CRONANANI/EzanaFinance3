@@ -179,7 +179,7 @@ export const africaRefiningArticle2026 = {
   },
   readTime: 8,
   publishedAt: '2026-07-27',
-  featured: true,
+  featured: false,
   likes: 0,
   comments: 0,
   reads: 0,

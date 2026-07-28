@@ -22,8 +22,10 @@ import { criticalMineralsArticle2026 } from '@/lib/ezana-echo-article-critical-m
 import { ballroomDonorsContracts2026 } from '@/lib/ezana-echo-article-ballroom-donors-contracts-2026.js';
 import { fdaPeptidesBpc157Article2026 } from '@/lib/ezana-echo-article-fda-peptides-bpc157-2026.js';
 import { africaRefiningArticle2026 } from '@/lib/ezana-echo-article-africa-refining-2026.js';
+import { dataConsolidationArticle2026 } from '@/lib/ezana-echo-article-data-consolidation-2026.js';
 
 const SOURCE = [
+  dataConsolidationArticle2026,
   africaRefiningArticle2026,
   fdaPeptidesBpc157Article2026,
   ballroomDonorsContracts2026,

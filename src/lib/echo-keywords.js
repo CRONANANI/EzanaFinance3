@@ -2775,6 +2775,185 @@ export const KEYWORDS = {
     realWorld:
       'Independent refiners like Valero live and die by the crack spread — when product values outrun crude costs, margins expand regardless of the absolute oil price.',
   },
+
+  /* ════════════════════════════════════════════════════════════════════════
+     Data-pipeline consolidation article keywords
+     ════════════════════════════════════════════════════════════════════════ */
+
+  'reverse-acquihire': {
+    id: 'reverse-acquihire',
+    term: 'Reverse-Acquihire',
+    definition:
+      'A deal in which an acquirer hires a startup\'s founders and key team and licenses its data or IP, without buying the company itself. It captures the talent and the data pipeline while leaving the corporate shell — and the merger-review trigger — behind.',
+    template: 'comparison',
+    templateData: {
+      title: 'Three ways to absorb a startup',
+      headers: ['Structure', 'What is acquired', 'Merger review?'],
+      rows: [
+        { label: 'Full acquisition', cells: ['The whole company', 'Yes, if over the threshold'] },
+        { label: 'Acquihire', cells: ['The company, mainly for its team', 'Often, if reportable'] },
+        { label: 'Reverse-acquihire', cells: ['Team hired + data/IP licensed', 'Structured to avoid it'] },
+      ],
+      footnote:
+        'Over $40B flowed through reverse-acquihires (Mar 2024–mid 2026), drawing FTC and Senate scrutiny.',
+    },
+  },
+
+  'data-moat': {
+    id: 'data-moat',
+    term: 'Data Moat',
+    definition:
+      'A competitive advantage rooted in proprietary, hard-to-replicate data rather than in an algorithm. As models commoditize, the exclusive dataset a model runs on becomes the defensible asset that appreciates with use.',
+    template: 'comparison',
+    templateData: {
+      title: 'Model vs data as the moat',
+      headers: ['Asset', 'Defensibility', 'Trend'],
+      rows: [
+        { label: 'The model', cells: ['Low — open weights close the gap', 'Commoditizing'] },
+        { label: 'Proprietary data', cells: ['High — cannot be scraped or reproduced', 'Appreciating'] },
+      ],
+      footnote: 'Acquirers pay for governed data because the right to use it is itself scarce.',
+    },
+  },
+
+  'workflow-lock-in': {
+    id: 'workflow-lock-in',
+    term: 'Workflow Lock-In',
+    definition:
+      "A moat created by owning the position inside a customer's daily workflow — the system of record where the work actually happens. The switching costs of ripping that out, plus the accumulated interaction data, make the incumbent hard to displace regardless of who has the better model.",
+    template: 'comparison',
+    templateData: {
+      title: 'Model in isolation vs embedded in the workflow',
+      headers: ['Deployment', 'Value', 'Replaceable?'],
+      rows: [
+        { label: 'Model on a blank page', cells: ['A demo', 'Easily'] },
+        { label: 'Model in the system of record', cells: ['A product', 'High switching cost'] },
+      ],
+      footnote: "Salesforce's 2026 targets were workflow-embedded SaaS, not model labs.",
+    },
+  },
+
+  'data-governance': {
+    id: 'data-governance',
+    term: 'Data Governance',
+    definition:
+      'The ownership, licensing, lineage and liability rules that determine who is allowed to move which data through which pipelines. In a data-defined market, the right to use data legally is part of the moat — governed data beats scraped data.',
+    template: 'schema',
+    templateData: {
+      title: 'The four questions of data governance',
+      nodes: [
+        { label: 'Ownership', sectors: ['Who owns the dataset'], color: '#10b981' },
+        { label: 'Licensing', sectors: ['Who may move / use it'], color: '#3b82f6' },
+        { label: 'Lineage', sectors: ['Where it came from'], color: '#a855f7' },
+        { label: 'Liability', sectors: ['Who is responsible'], color: '#f59e0b' },
+      ],
+    },
+    realWorld:
+      "Increasingly a company's edge is not 'who has the best model' but 'who is allowed to run a model on the best data.'",
+  },
+
+  'hart-scott-rodino': {
+    id: 'hart-scott-rodino',
+    term: 'Hart-Scott-Rodino (HSR)',
+    definition:
+      'The U.S. law requiring parties to a large merger or acquisition to notify antitrust regulators and wait before closing, so deals can be reviewed. It is triggered by a size-of-transaction threshold, adjusted annually.',
+    template: 'formula',
+    templateData: {
+      formula: 'Deal value > HSR threshold → reportable + waiting period',
+      example: {
+        title: '2026 threshold',
+        substitution: 'Size-of-transaction test ≈ $133.9M (adjusted). Below it, many deals avoid mandatory review.',
+      },
+    },
+    realWorld:
+      'Reverse-acquihires can move the data and talent an acquirer wants while structuring around the reportable-acquisition trigger.',
+  },
+
+  'sahm-rule': {
+    id: 'sahm-rule',
+    term: 'Sahm Rule',
+    definition:
+      'A real-time recession signal: it flags a downturn when the three-month average unemployment rate rises at least half a percentage point above its lowest point of the prior twelve months. It has historically triggered early in recessions.',
+    template: 'formula',
+    templateData: {
+      formula: 'Trigger = (3-mo avg unemployment) − (12-mo low) ≥ 0.50',
+      example: {
+        title: 'Mid-2026 reading',
+        substitution: 'Currently ≈ 0.10 against a 0.50 trigger — nowhere near a recession signal.',
+      },
+    },
+    realWorld:
+      'At 0.10 the Sahm Rule is one of several indicators saying the 2026 macro backdrop is benign, not recessionary.',
+  },
+
+  'yield-curve-inversion': {
+    id: 'yield-curve-inversion',
+    term: 'Yield-Curve Inversion',
+    definition:
+      'When short-term government bond yields rise above long-term yields — an unusual state that has historically been one of the most reliable leading indicators of recession, typically preceding downturns by several months to two years.',
+    template: 'comparison',
+    templateData: {
+      title: 'Normal vs inverted yield curve',
+      headers: ['State', 'Short vs long yields', 'Signal'],
+      rows: [
+        { label: 'Normal', cells: ['Long > short', 'Expansion-consistent'] },
+        { label: 'Inverted', cells: ['Short > long', 'Historically precedes recessions'] },
+      ],
+      footnote: 'The NY Fed recession model is built on the yield-curve spread.',
+    },
+  },
+
+  'acquihire': {
+    id: 'acquihire',
+    term: 'Acquihire',
+    definition:
+      'An acquisition made primarily to obtain a company\'s employees rather than its products or revenue — "acquisition-hire." The company is bought and usually wound down; the team is retained.',
+    template: 'comparison',
+    templateData: {
+      title: 'Acquihire vs reverse-acquihire',
+      headers: ['Feature', 'Acquihire', 'Reverse-acquihire'],
+      rows: [
+        { label: 'Company purchased?', cells: ['Yes', 'No'] },
+        { label: 'Primary target', cells: ['The team', 'The team + licensed data/IP'] },
+        { label: 'Review exposure', cells: ['Standard', 'Structured to avoid'] },
+      ],
+      footnote: 'The reverse structure is the newer, antitrust-avoiding variant.',
+    },
+  },
+
+  'infrastructure-lock-in': {
+    id: 'infrastructure-lock-in',
+    term: 'Infrastructure Lock-In',
+    definition:
+      'A moat created by becoming the compute or data substrate that other software depends on. Once workloads, pipelines and integrations are built on your layer, migrating off is costly — so the dependency itself is the durable advantage.',
+    template: 'comparison',
+    templateData: {
+      title: 'Application layer vs infrastructure layer',
+      headers: ['Layer', 'Example', 'Stickiness'],
+      rows: [
+        { label: 'Application', cells: ['A single AI feature', 'Swappable'] },
+        { label: 'Infrastructure', cells: ['The data/compute substrate', 'Deeply embedded'] },
+      ],
+      footnote: 'Snowflake, Datadog and Palantir are public proxies for the substrate layer.',
+    },
+  },
+
+  'leading-vs-lagging-indicators': {
+    id: 'leading-vs-lagging-indicators',
+    term: 'Leading vs Lagging Indicators',
+    definition:
+      'Leading indicators move before the economy does (yield curve, new orders, corporate deal-making); lagging indicators confirm a turn after it happens (unemployment, GDP). The tension in 2026 is whether aggressive consolidation is a leading signal the lagging macro data has not yet registered.',
+    template: 'comparison',
+    templateData: {
+      title: 'Leading vs lagging',
+      headers: ['Type', 'Timing', 'Examples'],
+      rows: [
+        { label: 'Leading', cells: ['Moves first', 'Yield curve, orders, M&A behavior'] },
+        { label: 'Lagging', cells: ['Confirms later', 'Unemployment, GDP'] },
+      ],
+      footnote: 'Is pipeline-consolidation a leading warning, or decoupled from the cycle? Present-day evidence is benign.',
+    },
+  },
 };
 
 export function getKeywordById(id) {

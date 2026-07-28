@@ -35,8 +35,10 @@ import { criticalMineralsArticle2026 } from './ezana-echo-article-critical-miner
 import { ballroomDonorsContracts2026 } from './ezana-echo-article-ballroom-donors-contracts-2026.js';
 import { fdaPeptidesBpc157Article2026 } from './ezana-echo-article-fda-peptides-bpc157-2026.js';
 import { africaRefiningArticle2026 } from './ezana-echo-article-africa-refining-2026.js';
+import { dataConsolidationArticle2026 } from './ezana-echo-article-data-consolidation-2026.js';
 
 const ARTICLES = [
+  dataConsolidationArticle2026,
   africaRefiningArticle2026,
   fdaPeptidesBpc157Article2026,
   ballroomDonorsContracts2026,
@@ -127,6 +129,7 @@ export const ECHO_TRENDING = {
 /** @type {Record<string, { id: string; author: { name: string; initials: string; id?: string }; content: string; createdAt: string }[]>} */
 export const ECHO_MOCK_COMMENTS_BY_ARTICLE = {
   // No seeded comments — the "No one's written in yet" empty state handles this.
+  'acquirers-buy-the-pipeline-not-the-model-2026': [],
   'africa-refining-capacity-dangote-inflection-2026': [],
   'fda-peptides-bpc157-compounding-vote-2026': [],
   'critical-minerals-reserve-concentration-2026': [
