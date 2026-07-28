@@ -228,7 +228,7 @@ export const semiconductorArticle = {
       type: 'chart',
       variant: 'semi-financials-table',
       title: 'U.S. Semiconductor Industry: Financial Comparison (TTM)',
-      caption: 'Company filings, trailing twelve months',
+      caption: 'Company filings, trailing twelve months (2026)',
     },
 
     { type: 'heading', text: 'The Talent Problem', level: 2 },

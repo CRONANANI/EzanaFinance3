@@ -1868,9 +1868,9 @@ function SemiFinancialsTable({ title, caption }) {
     heading: isDark ? '#f0f6fc' : '#111827',
     border: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb',
     // Ezana brand emerald, single colour in both themes (was theme-split navy).
-    // Uses the darker emerald (#059669 = --emerald-hover) for cleaner white-text
-    // contrast on the filled header bar; header text/arrows are already #fff.
-    headerBg: '#059669',
+    // Deep emerald-700 (#047857) so the small white header labels have strong,
+    // WCAG-AA+ contrast on the filled bar; header text/arrows are pure white.
+    headerBg: '#047857',
     rowBg: isDark ? 'rgba(255,255,255,0.02)' : '#f9fafb',
   };
 
@@ -1891,16 +1891,16 @@ function SemiFinancialsTable({ title, caption }) {
   const cols = [
     { key: 'company', label: 'Company', align: 'left', format: (v) => v },
     { key: 'type', label: 'Type', align: 'left', format: (v) => v },
-    { key: 'revenue', label: 'Revenue TTM', align: 'right', format: (v) => `$${v}B` },
+    { key: 'revenue', label: 'Revenue TTM (2026)', align: 'right', format: (v) => `$${v}B` },
     {
       key: 'netIncome',
-      label: 'Net Income TTM',
+      label: 'Net Income TTM (2026)',
       align: 'right',
       format: (v) => (v < 0 ? `-$${Math.abs(v)}B` : `$${v}B`),
     },
     {
       key: 'marketCap',
-      label: 'Market Cap',
+      label: 'Market Cap (2026)',
       align: 'right',
       format: (v) => (v >= 1000 ? `$${(v / 1000).toFixed(1)}T` : `$${v}B`),
     },
@@ -1933,13 +1933,14 @@ function SemiFinancialsTable({ title, caption }) {
                   scope="col"
                   onClick={() => sortable(c.key) && toggleSort(c.key)}
                   style={{
-                    padding: '8px 12px',
+                    padding: '10px 12px',
                     textAlign: c.align,
-                    color: '#fff',
+                    color: '#ffffff',
                     fontWeight: 700,
-                    fontSize: '0.6rem',
+                    fontSize: '0.68rem',
                     textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
+                    letterSpacing: '0.04em',
+                    textShadow: '0 1px 2px rgba(0,0,0,0.35)',
                     cursor: sortable(c.key) ? 'pointer' : 'default',
                     whiteSpace: 'nowrap',
                     userSelect: 'none',
