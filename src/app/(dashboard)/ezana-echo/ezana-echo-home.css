@@ -274,9 +274,11 @@
    One coherent geometric system driven by CSS variables (no magic numbers): the
    EchoFeatureCircle's radius plus a gap gives the carve radius, so the IMAGES of
    the 4 cards nearest the circle (EchoArticleCard `carve` prop) curve away and
-   leave real page-space around it — no overlap, no clipped text. Card + feature
-   styling live in their own scoped CSS (echo-card.css / echo-feature.css); this
-   section owns only the board grid, column headers, and the circle's placement. */
+   leave real page-space around it — no overlap, no clipped text. The circle and
+   those four carves share ONE center by construction (the center cluster's 2x2,
+   below), not by a guessed pixel offset. Card + feature styling live in their own
+   scoped CSS (echo-card.css / echo-feature.css); this section owns the board grid,
+   the column headers, and the center-cluster layout. */
 .eth-board {
   position: relative;
   display: grid;
@@ -286,13 +288,13 @@
 
   /* The shared geometry. --echo-carve-r is deliberately LARGER than the circle
      radius (radius + gap) — that surplus is exactly the white-space gap between a
-     carved card image and the circle. Tune --echo-circle-y to the row seam once
-     rendered; everything else follows from the diameter + gap. */
+     carved card image and the circle. The circle is NOT placed by a guessed pixel
+     offset: it is grid-centered inside the center cluster's 2x2 (see below), so
+     its center and all four carve centers are the same point by construction. */
   --echo-circle-d: 300px; /* featured diameter */
   --echo-circle-r: 150px; /* radius */
   --echo-carve-gap: 22px; /* page-space between each carved image and the circle */
   --echo-carve-r: calc(var(--echo-circle-r) + var(--echo-carve-gap));
-  --echo-circle-y: 300px; /* circle CENTER offset from the board top */
 }
 .eth-col {
   display: flex;
@@ -332,33 +334,87 @@
   color: var(--text-faint);
 }
 
-/* The ONLY absolute placement on the board: the featured circle, centered on the
-   seam of the two middle columns and driven entirely by the shared variables (no
-   stray pixel offsets). Its intrinsic look lives in echo-feature.css. */
-.eth-board .echo-feature {
+/* ── Center cluster (the two middle categories) ───────────────────────────────
+   The circle overlaps four cards, so those four must share ONE exact center with
+   it — otherwise the carves miss and the mismatched cuts read as a white disc.
+   We guarantee that structurally: the two middle categories render as a cluster
+   spanning two board columns; the top card of each (2x2) forms a grid whose four
+   inner corners meet at one point, and the circle is grid-centered on that point
+   (left/top:50%). No guessed pixel offset — the circle's center IS the seam. */
+.eth-center-cluster {
+  grid-column: span 2;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+.eth-cluster-heads,
+.eth-cluster-rest {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  min-width: 0;
+}
+.eth-cluster-feature {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  /* Zero gap so the four inner corners meet EXACTLY at the center point the circle
+     is centered on — the carve gap comes from --echo-carve-r, not from grid gap. */
+  gap: 0;
+  min-width: 0;
+}
+/* Equal-height top cards so the 2x2 row seam sits exactly at 50% (the circle's
+   vertical center) regardless of how long each title runs. */
+.eth-cluster-feature .echo-card__title {
+  height: calc(1.28em * 2);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.eth-cluster-circle {
   position: absolute;
   left: 50%;
-  top: var(--echo-circle-y);
+  top: 50%;
   transform: translate(-50%, -50%);
   z-index: 3;
 }
+/* Fallback placement when data is too sparse to build the 2x2 (a middle category
+   with < 2 articles): the circle rides in-flow, centered, un-carved. */
+.eth-feature-standalone {
+  grid-column: 1 / -1;
+  justify-self: center;
+  margin: 4px auto 24px;
+}
 
 /* ── Responsive ──────────────────────────────────────────────────────────────
-   Desktop (>1100px): 6-col grid, large centered circle, carves active.
-   Tablet (≤1100px): 3-col grid, the circle drops in-flow (smaller, still a
-   circle) and carves switch off (echo-card.css) — no overlap.
-   Mobile (≤640px): single column; the feature becomes a normal rectangular
-   featured card on top of the feed. */
+   Desktop (>1100px): 6-col grid, the cluster spans the two middle columns and the
+   circle is grid-centered in its 2x2 with carves active.
+   Tablet (≤1100px): 2-col grid, the cluster goes full-width; its circle drops
+   in-flow (still a circle) above the two middle columns, carves off (echo-card.css).
+   Mobile (≤640px): single column; the feature becomes a rectangular card on top. */
 @media (max-width: 1100px) {
   .eth-board {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
   }
-  .eth-board .echo-feature {
+  .eth-center-cluster {
+    grid-column: 1 / -1;
+  }
+  .eth-cluster-feature {
+    gap: 20px; /* restore normal spacing once the circle is no longer overlaid */
+  }
+  .eth-cluster-feature .echo-card__title {
+    height: auto;
+    -webkit-line-clamp: unset;
+  }
+  .eth-cluster-circle {
     position: static;
     transform: none;
     order: -1;
     grid-column: 1 / -1;
-    margin: 4px auto 24px;
+    justify-self: center;
+    margin: 4px auto;
     width: 260px;
     height: 260px;
   }
@@ -367,15 +423,23 @@
   .eth-board {
     grid-template-columns: 1fr;
   }
-  .eth-board .echo-feature {
+  .eth-cluster-heads,
+  .eth-cluster-rest,
+  .eth-cluster-feature {
+    grid-template-columns: 1fr;
+  }
+  .eth-cluster-circle {
     width: 100%;
     height: auto;
     aspect-ratio: 16 / 10;
     border-radius: 14px;
     margin: 4px 0 20px;
   }
-  .eth-board .echo-feature .echo-feature__title {
-    font-size: 22px;
+  .eth-feature-standalone {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 10;
+    border-radius: 14px;
   }
 }
 

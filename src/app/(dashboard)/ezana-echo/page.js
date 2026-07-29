@@ -22,6 +22,39 @@ const CATEGORIES = [
   { id: 'global-emerging', label: 'Global & Emerging Markets' },
 ];
 
+/* Centered column header: emerald dot beside the label, full-width underline. */
+function ColHead({ label }) {
+  return (
+    <div className="eth-col-head">
+      <span className="eth-col-dot" aria-hidden />
+      {label}
+    </div>
+  );
+}
+
+/* A single category column: header + newest-first stack of cards (no carves —
+   carved cards live only inside the center cluster's 2x2). */
+function CategoryColumn({ col, admin }) {
+  return (
+    <div className="eth-col">
+      <ColHead label={col.label} />
+      {col.items.length ? (
+        col.items.map((a) => (
+          <EchoArticleCard
+            key={a.id}
+            article={a}
+            isAdmin={admin.isAdmin}
+            onArchive={admin.onArchive}
+            archivingId={admin.archivingId}
+          />
+        ))
+      ) : (
+        <div className="eth-col-empty">No articles yet</div>
+      )}
+    </div>
+  );
+}
+
 export default function EzanaEchoPage() {
   const { user } = useAuth();
   const isAdmin = isAdminUserClient(user);
@@ -132,6 +165,16 @@ export default function EzanaEchoPage() {
     }));
   }, [allArticles, articleOfMonth]);
 
+  // The two middle categories form the center cluster. Its top 2x2 of cards is
+  // what the featured circle is grid-centered on, so the circle and all four
+  // carves share one exact center. Needs ≥2 cards in each middle column and a
+  // featured article; otherwise we fall back to plain columns + an in-flow circle.
+  const admin = { isAdmin, onArchive: handleArchive, archivingId };
+  const midL = columns[2];
+  const midR = columns[3];
+  const canCluster =
+    Boolean(articleOfMonth) && midL.items.length >= 2 && midR.items.length >= 2;
+
   return (
     <div className="eth-page">
       {/* Header (marketing nav is suppressed on Echo). Logo + brand on the left,
@@ -167,49 +210,59 @@ export default function EzanaEchoPage() {
       </header>
 
       <div className="eth-wrap">
-        {/* Six category columns of EchoArticleCards (newest-first per column).
-            The EchoFeatureCircle (hero image + single emerald ring + pulse) is
-            centered on the seam of the two middle columns; the images of the 4
-            cards whose corners meet it are carved (via the card's `carve` prop)
-            so the cards sculpt around the circle with a real gap. Bodies sit
-            above the circle, so titles are never clipped. Crypto with no articles
-            shows an honest empty state. */}
+        {/* Category board. The two middle categories render as a center cluster
+            whose top four cards (a 2x2) sculpt around the featured circle: the
+            circle is grid-centered on the 2x2's shared inner corner, and each of
+            the four cards carves the corner facing that same point — so the circle
+            and all four carves share ONE center by construction (no pixel guess,
+            no overlap, no white disc). The other four categories are plain columns.
+            Card bodies sit above the circle, so titles are never clipped. */}
         <div className="eth-board">
-          {columns.map((col, ci) => {
-            // The circle sits on the seam between the two middle columns (ci 2 & 3)
-            // and between the top two card rows. The upper card of each middle
-            // column is bitten at its lower corner facing the circle; the lower
-            // card is bitten at its upper corner facing the circle.
-            const carveFor = (i) => {
-              if (ci === 2) return i === 0 ? 'br' : i === 1 ? 'tr' : null;
-              if (ci === 3) return i === 0 ? 'bl' : i === 1 ? 'tl' : null;
-              return null;
-            };
-            return (
-              <div className="eth-col" key={col.id}>
-                <div className="eth-col-head">
-                  <span className="eth-col-dot" aria-hidden />
-                  {col.label}
-                </div>
-                {col.items.length ? (
-                  col.items.map((a, i) => (
-                    <EchoArticleCard
-                      key={a.id}
-                      article={a}
-                      carve={carveFor(i)}
-                      isAdmin={isAdmin}
-                      onArchive={handleArchive}
-                      archivingId={archivingId}
-                    />
-                  ))
-                ) : (
-                  <div className="eth-col-empty">No articles yet</div>
-                )}
-              </div>
-            );
-          })}
+          {canCluster ? (
+            <>
+              <CategoryColumn col={columns[0]} admin={admin} />
+              <CategoryColumn col={columns[1]} admin={admin} />
 
-          {articleOfMonth && <EchoFeatureCircle article={articleOfMonth} />}
+              <div className="eth-center-cluster">
+                <div className="eth-cluster-heads">
+                  <ColHead label={midL.label} />
+                  <ColHead label={midR.label} />
+                </div>
+                {/* 2x2: [L0 | R0] / [L1 | R1]; each carves the corner facing center. */}
+                <div className="eth-cluster-feature">
+                  <EchoArticleCard article={midL.items[0]} carve="br" {...admin} />
+                  <EchoArticleCard article={midR.items[0]} carve="bl" {...admin} />
+                  <EchoArticleCard article={midL.items[1]} carve="tr" {...admin} />
+                  <EchoArticleCard article={midR.items[1]} carve="tl" {...admin} />
+                  <EchoFeatureCircle article={articleOfMonth} className="eth-cluster-circle" />
+                </div>
+                <div className="eth-cluster-rest">
+                  <div className="eth-col">
+                    {midL.items.slice(2).map((a) => (
+                      <EchoArticleCard key={a.id} article={a} {...admin} />
+                    ))}
+                  </div>
+                  <div className="eth-col">
+                    {midR.items.slice(2).map((a) => (
+                      <EchoArticleCard key={a.id} article={a} {...admin} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <CategoryColumn col={columns[4]} admin={admin} />
+              <CategoryColumn col={columns[5]} admin={admin} />
+            </>
+          ) : (
+            <>
+              {columns.map((col) => (
+                <CategoryColumn key={col.id} col={col} admin={admin} />
+              ))}
+              {articleOfMonth && (
+                <EchoFeatureCircle article={articleOfMonth} className="eth-feature-standalone" />
+              )}
+            </>
+          )}
         </div>
 
         {/* Newsletter band (presentational — wire to real signup later) */}

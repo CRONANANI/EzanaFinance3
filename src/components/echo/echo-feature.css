@@ -13,7 +13,9 @@
   border-radius: 50%;
   border: 2px solid var(--emerald);
   overflow: hidden;
-  background: transparent;
+  /* Emerald tint (never white) shows only if the hero image is missing/broken —
+     the image covers it when present. No white backing disc. */
+  background: var(--emerald-bg);
   text-decoration: none;
   animation: echo-pulse 3s ease-in-out infinite;
 }

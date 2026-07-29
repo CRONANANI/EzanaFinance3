@@ -15,12 +15,12 @@ function truncate(text, max) {
  * white text legible. Rendered as a Link so it is natively keyboard-focusable and
  * activatable. Sizing/placement come from the shared --echo-circle-* variables.
  */
-export function EchoFeatureCircle({ article }) {
+export function EchoFeatureCircle({ article, className = '' }) {
   if (!article) return null;
   return (
     <Link
       href={`/ezana-echo/${article.id}`}
-      className="echo-feature"
+      className={`echo-feature${className ? ` ${className}` : ''}`}
       aria-label={`Article of the Month: ${article.title}`}
     >
       {article.heroImage?.src ? (
