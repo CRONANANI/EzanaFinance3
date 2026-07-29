@@ -23,12 +23,13 @@ const CATEGORIES = [
 ];
 
 /* Board card — hero image on top, title + meta below. Used in the 6-column board.
-   `notch` ('l' | 'r') applies the radial-mask cutout so the card wraps the circle.
-   A missing/broken hero falls back to the emerald-tinted placeholder (the hero
-   box keeps its own background), so the grid never breaks. */
-function BoardCard({ a, notch, isAdmin, onArchive, archivingId }) {
+   `carve` ('br' | 'tr' | 'bl' | 'tl') applies a radial-mask bite to the HERO IMAGE
+   only (never the body/text) so the card's image curves away from the centerpiece
+   circle, leaving a gap. A missing/broken hero falls back to the emerald-tinted
+   placeholder (the hero box keeps its own background), so the grid never breaks. */
+function BoardCard({ a, carve, isAdmin, onArchive, archivingId }) {
   return (
-    <div className={`eth-bcard-wrap${notch ? ` eth-bcard--notch-${notch}` : ''}`}>
+    <div className={`eth-bcard-wrap${carve ? ` eth-bcard--carve-${carve}` : ''}`}>
       {isAdmin && (
         <button
           type="button"
@@ -212,12 +213,23 @@ export default function EzanaEchoPage() {
       <div className="eth-wrap">
         {/* Six category columns of hero-image cards (newest-first per column). An
             image-filled "Article of the Month" circle (green outline + emerald
-            pulse) is centered over the middle columns; the hero images of the
-            cards nearest it are notched to wrap around it (their titles are never
-            clipped, desktop only). Crypto with no articles shows an empty state. */}
+            pulse) is centered over the middle columns; the hero images of the 4
+            cards nearest it are carved so the cards curve away, leaving a gap the
+            circle nestles into (bodies sit above the circle, so titles are never
+            clipped — desktop only). Crypto with no articles shows an empty state. */}
         <div className="eth-board">
           {columns.map((col, ci) => {
-            const notchIdx = Math.min(1, col.items.length - 1);
+            // The circle sits on the seam between the two middle columns (ci 2 & 3),
+            // vertically centered on the boundary between the 2nd and 3rd cards. The
+            // card just ABOVE that boundary is bitten at its lower corner facing the
+            // circle; the card just BELOW is bitten at its upper corner.
+            const upperIdx = Math.min(1, col.items.length - 1); // card above the seam
+            const lowerIdx = col.items.length > 2 ? 2 : -1; // card below the seam
+            const carveFor = (i) => {
+              if (ci === 2) return i === upperIdx ? 'br' : i === lowerIdx ? 'tr' : null;
+              if (ci === 3) return i === upperIdx ? 'bl' : i === lowerIdx ? 'tl' : null;
+              return null;
+            };
             return (
               <div className="eth-col" key={col.id}>
                 <div className="eth-col-head">
@@ -232,13 +244,7 @@ export default function EzanaEchoPage() {
                       isAdmin={isAdmin}
                       onArchive={handleArchive}
                       archivingId={archivingId}
-                      notch={
-                        ci === 2 && i === notchIdx
-                          ? 'r'
-                          : ci === 3 && i === notchIdx
-                            ? 'l'
-                            : null
-                      }
+                      carve={carveFor(i)}
                     />
                   ))
                 ) : (

@@ -306,17 +306,26 @@
   filter: brightness(1.06);
 }
 
-/* ── 6-column category board with a green circular centerpiece ───────────────
+/* ── 6-column category board with a circular image centerpiece ───────────────
    Each of the 6 categories is a column (header + a vertical stack of its
-   hero-image cards, newest at top). A green-filled pulsating "Article of the
-   Month" circle is absolutely centered over the middle columns; the cards
-   nearest it are notched (radial mask) so it appears to nest into them. */
+   hero-image cards, newest at top). An image-filled "Article of the Month"
+   circle (emerald outline + pulse) is absolutely centered over the middle
+   columns; the 4 nearest cards have their hero images carved (radial mask, radius
+   = circle radius + a gap) so the circle nestles into clean page-space between
+   them rather than overlapping their content. */
 .eth-board {
   position: relative;
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 16px;
   margin-top: 8px;
+  /* Centerpiece geometry (tune these to shift/resize the circle + its gap). The
+     carve radius is the circle radius PLUS a gap, so the 4 nearest cards' hero
+     images curve away from the circle leaving even page-space around it. */
+  --eth-circle-d: 330px; /* circle diameter */
+  --eth-circle-top: 330px; /* circle offset from board top */
+  --eth-carve-gap: 22px; /* clean space between each carved image edge and the circle */
+  --eth-carve-r: calc(var(--eth-circle-d) / 2 + var(--eth-carve-gap));
 }
 .eth-col {
   display: flex;
@@ -393,6 +402,8 @@
   display: block;
 }
 .eth-bcard-body {
+  position: relative;
+  z-index: 6; /* above the circle (z-index 5) — a title is never covered/clipped */
   padding: 10px 13px 12px;
 }
 .eth-bcard-title {
@@ -413,34 +424,82 @@
   text-transform: uppercase;
   color: var(--text-muted);
 }
-/* The notch cuts ONLY the hero IMAGE of the flanking card (never the card or its
-   text), so the circle's images tuck around the centerpiece while every title
-   stays fully readable. */
-.eth-bcard--notch-r .eth-bcard-hero {
-  -webkit-mask: radial-gradient(circle 175px at right center, transparent 0 170px, #000 171px);
-  mask: radial-gradient(circle 175px at right center, transparent 0 170px, #000 171px);
+/* Carve: the 4 cards nearest the circle have their HERO IMAGE (never the body or
+   its text) bitten at the corner facing the circle, with a cut radius LARGER than
+   the circle (radius + gap). That larger radius is what leaves a clean band of
+   page-space between each card's curved image edge and the circle — the circle
+   nestles into that negative space instead of overlapping card content. Bodies
+   are never masked and sit above the circle in the stack, so every title stays
+   fully readable.
+     carve-br → card left of & above the circle  (bite bottom-right of its image)
+     carve-tr → card left of & below the circle   (bite top-right)
+     carve-bl → card right of & above the circle  (bite bottom-left)
+     carve-tl → card right of & below the circle  (bite top-left) */
+.eth-bcard--carve-br .eth-bcard-hero {
+  -webkit-mask: radial-gradient(
+    circle var(--eth-carve-r) at bottom right,
+    transparent 0 var(--eth-carve-r),
+    #000 calc(var(--eth-carve-r) + 1px)
+  );
+  mask: radial-gradient(
+    circle var(--eth-carve-r) at bottom right,
+    transparent 0 var(--eth-carve-r),
+    #000 calc(var(--eth-carve-r) + 1px)
+  );
 }
-.eth-bcard--notch-l .eth-bcard-hero {
-  -webkit-mask: radial-gradient(circle 175px at left center, transparent 0 170px, #000 171px);
-  mask: radial-gradient(circle 175px at left center, transparent 0 170px, #000 171px);
+.eth-bcard--carve-tr .eth-bcard-hero {
+  -webkit-mask: radial-gradient(
+    circle var(--eth-carve-r) at top right,
+    transparent 0 var(--eth-carve-r),
+    #000 calc(var(--eth-carve-r) + 1px)
+  );
+  mask: radial-gradient(
+    circle var(--eth-carve-r) at top right,
+    transparent 0 var(--eth-carve-r),
+    #000 calc(var(--eth-carve-r) + 1px)
+  );
+}
+.eth-bcard--carve-bl .eth-bcard-hero {
+  -webkit-mask: radial-gradient(
+    circle var(--eth-carve-r) at bottom left,
+    transparent 0 var(--eth-carve-r),
+    #000 calc(var(--eth-carve-r) + 1px)
+  );
+  mask: radial-gradient(
+    circle var(--eth-carve-r) at bottom left,
+    transparent 0 var(--eth-carve-r),
+    #000 calc(var(--eth-carve-r) + 1px)
+  );
+}
+.eth-bcard--carve-tl .eth-bcard-hero {
+  -webkit-mask: radial-gradient(
+    circle var(--eth-carve-r) at top left,
+    transparent 0 var(--eth-carve-r),
+    #000 calc(var(--eth-carve-r) + 1px)
+  );
+  mask: radial-gradient(
+    circle var(--eth-carve-r) at top left,
+    transparent 0 var(--eth-carve-r),
+    #000 calc(var(--eth-carve-r) + 1px)
+  );
 }
 
 /* Article-of-the-Month circle: filled with the article's HERO IMAGE, green
-   OUTLINE only (no green fill). A dark gradient overlay keeps the white text
-   legible. The ONLY ring is the 3px emerald border + the emerald pulse — no
-   oversized white halo. */
+   OUTLINE only (no green fill, no white backing disc). A dark gradient overlay
+   keeps the white text legible. The ONLY things that render are the image, the
+   3px emerald border, and the emerald pulse — no oversized white halo/disc. */
 .eth-circle {
   position: absolute;
   left: 50%;
-  top: 340px;
+  top: var(--eth-circle-top);
   transform: translateX(-50%);
   z-index: 5;
-  width: 330px;
-  height: 330px;
+  width: var(--eth-circle-d);
+  height: var(--eth-circle-d);
   border-radius: 50%;
   border: 3px solid var(--emerald);
   overflow: hidden;
-  background: var(--bg-primary);
+  background: transparent;
   text-decoration: none;
   animation: eth-pulse 2.6s ease-in-out infinite;
 }
@@ -495,10 +554,10 @@
 @keyframes eth-pulse {
   0%,
   100% {
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--emerald) 45%, transparent);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--emerald) 40%, transparent);
   }
   50% {
-    box-shadow: 0 0 0 24px color-mix(in srgb, var(--emerald) 0%, transparent);
+    box-shadow: 0 0 0 18px color-mix(in srgb, var(--emerald) 0%, transparent);
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -527,8 +586,11 @@
   .eth-circle-title {
     font-size: 18px;
   }
-  .eth-bcard--notch-l .eth-bcard-hero,
-  .eth-bcard--notch-r .eth-bcard-hero {
+  /* Circle drops into the flow — no card should stay carved. */
+  .eth-bcard--carve-br .eth-bcard-hero,
+  .eth-bcard--carve-tr .eth-bcard-hero,
+  .eth-bcard--carve-bl .eth-bcard-hero,
+  .eth-bcard--carve-tl .eth-bcard-hero {
     -webkit-mask: none;
     mask: none;
   }
