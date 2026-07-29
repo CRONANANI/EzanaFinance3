@@ -2,11 +2,11 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Archive } from 'lucide-react';
-import { formatPublishedShort } from '@/lib/echo-format';
 import { useAuth } from '@/components/AuthProvider';
 import { isAdminUserClient } from '@/lib/admin-helpers-client';
 import { EzanaNavLogo } from '@/components/brand/EzanaNavLogo';
+import { EchoArticleCard } from '@/components/echo/EchoArticleCard';
+import { EchoFeatureCircle } from '@/components/echo/EchoFeatureCircle';
 
 import './ezana-echo.css';
 import './ezana-echo-home.css';
@@ -21,50 +21,6 @@ const CATEGORIES = [
   { id: 'crypto', label: 'Crypto' },
   { id: 'global-emerging', label: 'Global & Emerging Markets' },
 ];
-
-/* Board card — hero image on top, title + meta below. Used in the 6-column board.
-   `carve` ('br' | 'tr' | 'bl' | 'tl') applies a radial-mask bite to the HERO IMAGE
-   only (never the body/text) so the card's image curves away from the centerpiece
-   circle, leaving a gap. A missing/broken hero falls back to the emerald-tinted
-   placeholder (the hero box keeps its own background), so the grid never breaks. */
-function BoardCard({ a, carve, isAdmin, onArchive, archivingId }) {
-  return (
-    <div className={`eth-bcard-wrap${carve ? ` eth-bcard--carve-${carve}` : ''}`}>
-      {isAdmin && (
-        <button
-          type="button"
-          className="eth-archive-btn"
-          onClick={(e) => onArchive(a.id, e)}
-          disabled={archivingId === a.id}
-          title="Archive this article"
-        >
-          <Archive size={13} aria-hidden />
-          {archivingId === a.id ? '…' : 'Archive'}
-        </button>
-      )}
-      <Link href={`/ezana-echo/${a.id}`} className="eth-bcard">
-        <div className="eth-bcard-hero">
-          {a.heroImage?.src ? (
-            <img
-              src={a.heroImage.src}
-              alt={a.heroImage.alt || a.title}
-              loading="lazy"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-              }}
-            />
-          ) : null}
-        </div>
-        <div className="eth-bcard-body">
-          <h3 className="eth-bcard-title">{a.title}</h3>
-          <div className="eth-bcard-meta">
-            {formatPublishedShort(a.publishedAt)} · {a.readTime} MIN
-          </div>
-        </div>
-      </Link>
-    </div>
-  );
-}
 
 export default function EzanaEchoPage() {
   const { user } = useAuth();
@@ -211,23 +167,22 @@ export default function EzanaEchoPage() {
       </header>
 
       <div className="eth-wrap">
-        {/* Six category columns of hero-image cards (newest-first per column). An
-            image-filled "Article of the Month" circle (green outline + emerald
-            pulse) is centered over the middle columns; the hero images of the 4
-            cards nearest it are carved so the cards curve away, leaving a gap the
-            circle nestles into (bodies sit above the circle, so titles are never
-            clipped — desktop only). Crypto with no articles shows an empty state. */}
+        {/* Six category columns of EchoArticleCards (newest-first per column).
+            The EchoFeatureCircle (hero image + single emerald ring + pulse) is
+            centered on the seam of the two middle columns; the images of the 4
+            cards whose corners meet it are carved (via the card's `carve` prop)
+            so the cards sculpt around the circle with a real gap. Bodies sit
+            above the circle, so titles are never clipped. Crypto with no articles
+            shows an honest empty state. */}
         <div className="eth-board">
           {columns.map((col, ci) => {
-            // The circle sits on the seam between the two middle columns (ci 2 & 3),
-            // vertically centered on the boundary between the 2nd and 3rd cards. The
-            // card just ABOVE that boundary is bitten at its lower corner facing the
-            // circle; the card just BELOW is bitten at its upper corner.
-            const upperIdx = Math.min(1, col.items.length - 1); // card above the seam
-            const lowerIdx = col.items.length > 2 ? 2 : -1; // card below the seam
+            // The circle sits on the seam between the two middle columns (ci 2 & 3)
+            // and between the top two card rows. The upper card of each middle
+            // column is bitten at its lower corner facing the circle; the lower
+            // card is bitten at its upper corner facing the circle.
             const carveFor = (i) => {
-              if (ci === 2) return i === upperIdx ? 'br' : i === lowerIdx ? 'tr' : null;
-              if (ci === 3) return i === upperIdx ? 'bl' : i === lowerIdx ? 'tl' : null;
+              if (ci === 2) return i === 0 ? 'br' : i === 1 ? 'tr' : null;
+              if (ci === 3) return i === 0 ? 'bl' : i === 1 ? 'tl' : null;
               return null;
             };
             return (
@@ -238,13 +193,13 @@ export default function EzanaEchoPage() {
                 </div>
                 {col.items.length ? (
                   col.items.map((a, i) => (
-                    <BoardCard
+                    <EchoArticleCard
                       key={a.id}
-                      a={a}
+                      article={a}
+                      carve={carveFor(i)}
                       isAdmin={isAdmin}
                       onArchive={handleArchive}
                       archivingId={archivingId}
-                      carve={carveFor(i)}
                     />
                   ))
                 ) : (
@@ -254,27 +209,7 @@ export default function EzanaEchoPage() {
             );
           })}
 
-          {articleOfMonth && (
-            <Link href={`/ezana-echo/${articleOfMonth.id}`} className="eth-circle">
-              {articleOfMonth.heroImage?.src ? (
-                <img
-                  className="eth-circle-img"
-                  src={articleOfMonth.heroImage.src}
-                  alt={articleOfMonth.heroImage.alt || articleOfMonth.title}
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
-              ) : null}
-              <div className="eth-circle-overlay">
-                <span className="eth-circle-eyebrow">Article of the Month</span>
-                <h2 className="eth-circle-title">{articleOfMonth.title}</h2>
-                <span className="eth-circle-meta">
-                  {formatPublishedShort(articleOfMonth.publishedAt)} · {articleOfMonth.readTime} MIN
-                </span>
-              </div>
-            </Link>
-          )}
+          {articleOfMonth && <EchoFeatureCircle article={articleOfMonth} />}
         </div>
 
         {/* Newsletter band (presentational — wire to real signup later) */}

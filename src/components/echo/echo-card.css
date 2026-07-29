@@ -1,0 +1,155 @@
+/* ══════════════════════════════════════════════════════════════
+   EchoArticleCard — reusable hero-image card (image on top, text below).
+   ~12% shorter than the previous card (16:9 image, tighter body). Its IMAGE
+   can be sculpted to curve around the featured circle; TEXT is never masked.
+   The carve geometry (--echo-carve-r / --echo-cx / --echo-cy) cascades from the
+   board, so the card stays coherent with the circle without magic numbers.
+   ══════════════════════════════════════════════════════════════ */
+.echo-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  overflow: hidden;
+  background: transparent;
+  transition:
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+.echo-card:hover {
+  border-color: var(--emerald);
+  transform: translateY(-2px);
+}
+.echo-card__link {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+}
+.echo-card__img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  /* emerald-tinted placeholder shows if the image is missing/broken */
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--emerald) 55%, black 8%),
+    color-mix(in srgb, var(--emerald) 22%, transparent)
+  );
+}
+.echo-card__img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.echo-card__body {
+  position: relative;
+  /* Editorial text always sits above the decorative feature circle (z-index 3),
+     so a title is never hidden or clipped by it — not a z-index war, a single
+     deliberate rule. */
+  z-index: 4;
+  padding: 11px 13px 13px;
+}
+.echo-card__title {
+  margin: 0 0 8px;
+  font-family: var(--font-serif);
+  font-size: 13.5px;
+  line-height: 1.28;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.echo-card:hover .echo-card__title {
+  color: var(--emerald);
+}
+.echo-card__meta {
+  margin: 0;
+  font-family: var(--font-mono, monospace);
+  font-size: 9.5px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* Admin archive control (revealed on hover/focus) */
+.echo-card__archive {
+  position: absolute;
+  z-index: 5;
+  top: 12px;
+  right: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: var(--radius-md);
+  background: var(--bg-overlay);
+  backdrop-filter: blur(4px);
+  border: 1px solid var(--border-hover);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 0.14s ease,
+    color 0.14s ease;
+}
+.echo-card:hover .echo-card__archive,
+.echo-card__archive:focus-visible {
+  opacity: 1;
+}
+.echo-card__archive:hover {
+  color: var(--negative);
+  border-color: var(--negative);
+}
+.echo-card__archive[disabled] {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* ── Sculpt: mask the IMAGE only (never the body/text). The transparent radius
+   (--echo-carve-r) is LARGER than the circle radius, so a clean page-space gap
+   appears between the card's curved image edge and the featured circle. The cut
+   is anchored at the corner facing the circle (--echo-cx / --echo-cy). */
+.echo-card--carve-br .echo-card__img,
+.echo-card--carve-tr .echo-card__img,
+.echo-card--carve-bl .echo-card__img,
+.echo-card--carve-tl .echo-card__img {
+  -webkit-mask: radial-gradient(
+    circle var(--echo-carve-r) at var(--echo-cx) var(--echo-cy),
+    transparent 0 var(--echo-carve-r),
+    #000 calc(var(--echo-carve-r) + 1px)
+  );
+  mask: radial-gradient(
+    circle var(--echo-carve-r) at var(--echo-cx) var(--echo-cy),
+    transparent 0 var(--echo-carve-r),
+    #000 calc(var(--echo-carve-r) + 1px)
+  );
+}
+.echo-card--carve-br {
+  --echo-cx: 100%;
+  --echo-cy: 100%;
+}
+.echo-card--carve-tr {
+  --echo-cx: 100%;
+  --echo-cy: 0%;
+}
+.echo-card--carve-bl {
+  --echo-cx: 0%;
+  --echo-cy: 100%;
+}
+.echo-card--carve-tl {
+  --echo-cx: 0%;
+  --echo-cy: 0%;
+}
+
+/* Below desktop the circle drops into the flow — no card stays carved. */
+@media (max-width: 1100px) {
+  .echo-card--carve-br .echo-card__img,
+  .echo-card--carve-tr .echo-card__img,
+  .echo-card--carve-bl .echo-card__img,
+  .echo-card--carve-tl .echo-card__img {
+    -webkit-mask: none;
+    mask: none;
+  }
+}

@@ -1,0 +1,52 @@
+import Link from 'next/link';
+import { Archive } from 'lucide-react';
+import { formatPublishedShort } from '@/lib/echo-format';
+
+import './echo-card.css';
+
+/**
+ * Reusable Echo article card — hero image on top, serif title + mono meta below.
+ * Semantic <article> wrapping a Link so the whole card is one keyboard-focusable
+ * target. `carve` ('br' | 'tr' | 'bl' | 'tl') masks the IMAGE ONLY so the card's
+ * image curves away from the featured circle (the title/meta are never masked).
+ * Admins get an inline archive control.
+ */
+export function EchoArticleCard({ article, carve = null, isAdmin = false, onArchive, archivingId }) {
+  const carveClass = carve ? ` echo-card--carve-${carve}` : '';
+  return (
+    <article className={`echo-card${carveClass}`}>
+      {isAdmin && (
+        <button
+          type="button"
+          className="echo-card__archive"
+          onClick={(e) => onArchive?.(article.id, e)}
+          disabled={archivingId === article.id}
+          title="Archive this article"
+        >
+          <Archive size={13} aria-hidden />
+          {archivingId === article.id ? '…' : 'Archive'}
+        </button>
+      )}
+      <Link href={`/ezana-echo/${article.id}`} className="echo-card__link">
+        <div className="echo-card__img">
+          {article.heroImage?.src ? (
+            <img
+              src={article.heroImage.src}
+              alt={article.heroImage.alt || article.title}
+              loading="lazy"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          ) : null}
+        </div>
+        <div className="echo-card__body">
+          <h3 className="echo-card__title">{article.title}</h3>
+          <p className="echo-card__meta">
+            {formatPublishedShort(article.publishedAt)} · {article.readTime} MIN
+          </p>
+        </div>
+      </Link>
+    </article>
+  );
+}
