@@ -327,6 +327,8 @@
 .eth-col-head {
   display: flex;
   align-items: center;
+  justify-content: center;
+  text-align: center;
   gap: 6px;
   min-height: 42px;
   padding-bottom: 10px;
@@ -375,7 +377,7 @@
 }
 .eth-bcard-hero {
   width: 100%;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 16 / 9; /* shorter card */
   overflow: hidden;
   /* emerald-tinted placeholder shows if the image is missing/broken */
   background: linear-gradient(
@@ -391,13 +393,13 @@
   display: block;
 }
 .eth-bcard-body {
-  padding: 12px 14px 14px;
+  padding: 10px 13px 12px;
 }
 .eth-bcard-title {
-  margin: 0 0 9px;
+  margin: 0 0 8px;
   font-family: var(--font-serif);
-  font-size: 14px;
-  line-height: 1.3;
+  font-size: 13.5px;
+  line-height: 1.28;
   font-weight: 700;
   color: var(--text-primary);
 }
@@ -411,19 +413,22 @@
   text-transform: uppercase;
   color: var(--text-muted);
 }
-/* The notch: a concave cutout on the card's inner edge so the circle nests in. */
-.eth-bcard--notch-r {
+/* The notch cuts ONLY the hero IMAGE of the flanking card (never the card or its
+   text), so the circle's images tuck around the centerpiece while every title
+   stays fully readable. */
+.eth-bcard--notch-r .eth-bcard-hero {
   -webkit-mask: radial-gradient(circle 175px at right center, transparent 0 170px, #000 171px);
   mask: radial-gradient(circle 175px at right center, transparent 0 170px, #000 171px);
 }
-.eth-bcard--notch-l {
+.eth-bcard--notch-l .eth-bcard-hero {
   -webkit-mask: radial-gradient(circle 175px at left center, transparent 0 170px, #000 171px);
   mask: radial-gradient(circle 175px at left center, transparent 0 170px, #000 171px);
 }
 
-/* Green-filled pulsating Article-of-the-Month circle (no image). White text on
-   the always-green fill; the deep/dark emerald shades are derived from --emerald
-   via color-mix so nothing is a hardcoded brand hex. */
+/* Article-of-the-Month circle: filled with the article's HERO IMAGE, green
+   OUTLINE only (no green fill). A dark gradient overlay keeps the white text
+   legible. The ONLY ring is the 3px emerald border + the emerald pulse — no
+   oversized white halo. */
 .eth-circle {
   position: absolute;
   left: 50%;
@@ -434,21 +439,30 @@
   height: 330px;
   border-radius: 50%;
   border: 3px solid var(--emerald);
-  background: radial-gradient(
-    circle at 38% 32%,
-    var(--emerald) 0%,
-    color-mix(in srgb, var(--emerald) 78%, black) 58%,
-    color-mix(in srgb, var(--emerald) 55%, black) 100%
-  );
+  overflow: hidden;
+  background: var(--bg-primary);
+  text-decoration: none;
+  animation: eth-pulse 2.6s ease-in-out infinite;
+}
+.eth-circle-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.eth-circle-overlay {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
   padding: 44px;
-  text-decoration: none;
   color: #fff;
-  animation: eth-pulse 2.6s ease-in-out infinite;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.68) 100%);
 }
 .eth-circle-eyebrow {
   font-family: var(--font-sans);
@@ -457,7 +471,7 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.85);
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 .eth-circle-title {
   margin: 0 0 12px;
@@ -467,25 +481,16 @@
   font-weight: 700;
   color: #fff;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
-}
-.eth-circle-sub {
-  margin-bottom: 14px;
-  font-size: 12px;
-  line-height: 1.5;
-  color: rgba(255, 255, 255, 0.9);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 .eth-circle-meta {
   font-family: var(--font-mono, monospace);
   font-size: 10px;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(255, 255, 255, 0.85);
 }
 @keyframes eth-pulse {
   0%,
@@ -522,8 +527,8 @@
   .eth-circle-title {
     font-size: 18px;
   }
-  .eth-bcard--notch-l,
-  .eth-bcard--notch-r {
+  .eth-bcard--notch-l .eth-bcard-hero,
+  .eth-bcard--notch-r .eth-bcard-hero {
     -webkit-mask: none;
     mask: none;
   }

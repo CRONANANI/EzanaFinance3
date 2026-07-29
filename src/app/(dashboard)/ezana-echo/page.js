@@ -210,10 +210,11 @@ export default function EzanaEchoPage() {
       </header>
 
       <div className="eth-wrap">
-        {/* Six category columns of hero-image cards (newest-first per column). A
-            green-filled pulsating "Article of the Month" circle is centered over
-            the middle columns; the cards nearest it are notched to wrap around it
-            (desktop only). Crypto with no articles shows an honest empty state. */}
+        {/* Six category columns of hero-image cards (newest-first per column). An
+            image-filled "Article of the Month" circle (green outline + emerald
+            pulse) is centered over the middle columns; the hero images of the
+            cards nearest it are notched to wrap around it (their titles are never
+            clipped, desktop only). Crypto with no articles shows an empty state. */}
         <div className="eth-board">
           {columns.map((col, ci) => {
             const notchIdx = Math.min(1, col.items.length - 1);
@@ -249,14 +250,23 @@ export default function EzanaEchoPage() {
 
           {articleOfMonth && (
             <Link href={`/ezana-echo/${articleOfMonth.id}`} className="eth-circle">
-              <span className="eth-circle-eyebrow">Article of the Month</span>
-              <h2 className="eth-circle-title">{articleOfMonth.title}</h2>
-              {articleOfMonth.excerpt && (
-                <span className="eth-circle-sub">{articleOfMonth.excerpt}</span>
-              )}
-              <span className="eth-circle-meta">
-                {articleOfMonth.author || 'Ezana Editorial'} · {articleOfMonth.readTime} MIN
-              </span>
+              {articleOfMonth.heroImage?.src ? (
+                <img
+                  className="eth-circle-img"
+                  src={articleOfMonth.heroImage.src}
+                  alt={articleOfMonth.heroImage.alt || articleOfMonth.title}
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+              ) : null}
+              <div className="eth-circle-overlay">
+                <span className="eth-circle-eyebrow">Article of the Month</span>
+                <h2 className="eth-circle-title">{articleOfMonth.title}</h2>
+                <span className="eth-circle-meta">
+                  {formatPublishedShort(articleOfMonth.publishedAt)} · {articleOfMonth.readTime} MIN
+                </span>
+              </div>
             </Link>
           )}
         </div>
