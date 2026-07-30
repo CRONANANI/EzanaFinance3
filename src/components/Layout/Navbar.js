@@ -106,6 +106,7 @@ export function Navbar() {
     pathname?.includes('/for-the-quants') ||
     pathname?.includes('/betting-markets') ||
     pathname?.includes('/ezana-echo') ||
+    pathname?.includes('/sonar') ||
     pathname?.includes('/alternative-markets') ||
     pathname?.includes('/centaur-intelligence') ||
     pathname?.includes('/kairos-signal');
@@ -159,6 +160,13 @@ export function Navbar() {
       dropdown: true,
       isActive: isResearchActive,
       items: [
+        {
+          id: 21,
+          title: 'Ezana Sonar',
+          description: 'Ping anything — cross-dataset intelligence',
+          url: '/sonar',
+          icon: 'bi-broadcast-pin',
+        },
         {
           id: 22,
           title: 'Company & Portfolio Research',

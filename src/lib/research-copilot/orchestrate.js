@@ -44,6 +44,10 @@ export async function orchestrate(query, options = {}) {
     perCorpusCap = DEFAULT_PER_CORPUS_CAP,
     perRetriever = DEFAULT_PER_RETRIEVER,
     charBudget = DEFAULT_CHAR_BUDGET,
+    // Optional allow-list of corpus names. When provided, only those retrievers
+    // run (still subject to the org-member gate below). Omit for all corpora —
+    // so existing callers (the research copilot) are unchanged.
+    allowCorpora = null,
   } = options;
 
   const q = String(query || '').trim();
@@ -55,8 +59,12 @@ export async function orchestrate(query, options = {}) {
   const entities = extractEntities(q);
   const ctx = { admin, supabaseUser, member, entities, queryEmbedding };
 
-  // Only run org-scoped retrievers when we have an org member.
-  const allowed = RETRIEVERS.filter((r) => r.scope !== 'org' || Boolean(member));
+  // Only run org-scoped retrievers when we have an org member; and, when an
+  // allow-list is given (e.g. Sonar's entitlement gate), only those corpora.
+  const allowSet = Array.isArray(allowCorpora) ? new Set(allowCorpora) : null;
+  const allowed = RETRIEVERS.filter(
+    (r) => (r.scope !== 'org' || Boolean(member)) && (!allowSet || allowSet.has(r.corpus)),
+  );
   const corporaSearched = allowed.map((r) => r.corpus);
 
   // Fan out concurrently; a retriever that throws contributes nothing.

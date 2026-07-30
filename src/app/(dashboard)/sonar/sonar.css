@@ -1,0 +1,377 @@
+/* ══════════════════════════════════════════════════════════════
+   Ezana Sonar — the intelligence surface. Emerald accents, Plus Jakarta Sans UI,
+   JetBrains Mono for numbers/tickers/markers. Theme tokens throughout. The sweep
+   is the brand moment (a radial ping), and it respects reduced-motion.
+   ══════════════════════════════════════════════════════════════ */
+.sonar-page {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 8px 0 64px;
+  font-family: var(--font-sans);
+  color: var(--text-secondary);
+}
+.sonar-hero {
+  text-align: center;
+  padding: 28px 0 18px;
+}
+.sonar-kicker {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--emerald);
+}
+.sonar-title {
+  font-family: var(--font-serif, var(--font-sans));
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 10px 0 6px;
+}
+.sonar-sub {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-muted);
+  max-width: 580px;
+  margin: 0 auto;
+}
+.sonar-form {
+  display: flex;
+  gap: 10px;
+  margin: 24px auto 0;
+  max-width: 640px;
+}
+.sonar-input {
+  flex: 1;
+  min-width: 0;
+  height: 52px;
+  padding: 0 18px;
+  border-radius: 12px;
+  border: 1px solid var(--border-input);
+  background: var(--surface-input);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 15px;
+}
+.sonar-input::placeholder {
+  color: var(--text-ghost);
+}
+.sonar-input:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 1px;
+  border-color: var(--emerald);
+}
+.sonar-btn {
+  height: 52px;
+  padding: 0 24px;
+  border-radius: 12px;
+  border: none;
+  background: var(--emerald);
+  color: #fff;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: filter 0.14s ease;
+  white-space: nowrap;
+}
+.sonar-btn:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+.sonar-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.sonar-quota {
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+  margin-top: 12px;
+}
+
+/* Available / locked dataset chips (pre-query context) */
+.sonar-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 7px;
+  margin: 18px auto 0;
+  max-width: 680px;
+}
+.sonar-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border-primary);
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.sonar-chip--on {
+  border-color: color-mix(in srgb, var(--emerald) 45%, transparent);
+  color: var(--text-primary);
+}
+.sonar-chip--on::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--emerald);
+}
+.sonar-chip--locked {
+  color: var(--text-ghost);
+  border-style: dashed;
+}
+
+/* Sonar sweep (loading) */
+.sonar-sweep {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding: 52px 0;
+}
+.sonar-radar {
+  position: relative;
+  width: 132px;
+  height: 132px;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--emerald) 30%, transparent);
+}
+.sonar-radar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    color-mix(in srgb, var(--emerald) 42%, transparent),
+    transparent 42%
+  );
+  animation: sonar-spin 1.4s linear infinite;
+}
+.sonar-radar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--emerald) 55%, transparent);
+  animation: sonar-ping 1.8s ease-out infinite;
+}
+.sonar-sweep-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--emerald);
+}
+@keyframes sonar-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes sonar-ping {
+  0% {
+    transform: scale(0.5);
+    opacity: 0.85;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sonar-radar::before,
+  .sonar-radar::after {
+    animation: none;
+  }
+  .sonar-radar::before {
+    opacity: 0.5;
+  }
+}
+
+/* Results */
+.sonar-results {
+  margin-top: 30px;
+}
+.sonar-readline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+.sonar-readline b {
+  color: var(--text-primary);
+  text-transform: none;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.sonar-tag {
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border-primary);
+  color: var(--emerald);
+}
+.sonar-briefing {
+  border: 1px solid var(--border-primary);
+  border-left: 3px solid var(--emerald);
+  border-radius: 12px;
+  background: var(--surface-card, var(--bg-secondary));
+  padding: 18px 20px;
+  font-size: 14.5px;
+  line-height: 1.62;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+}
+.sonar-note {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px dashed var(--border-primary);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.sonar-note--warn {
+  border-color: color-mix(in srgb, var(--warning, #d4a853) 50%, transparent);
+  color: var(--text-secondary);
+}
+
+/* Dataset-sourced sections */
+.sonar-section {
+  margin-top: 20px;
+}
+.sonar-section-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-primary);
+  margin-bottom: 10px;
+}
+.sonar-section-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+.sonar-section-source {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-muted);
+}
+.sonar-source {
+  display: flex;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--border-primary) 60%, transparent);
+}
+.sonar-source:last-child {
+  border-bottom: none;
+}
+.sonar-marker {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--emerald);
+  padding-top: 1px;
+}
+.sonar-source-body {
+  min-width: 0;
+}
+.sonar-source-title {
+  font-size: 13.5px;
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+a.sonar-source-title:hover {
+  color: var(--emerald);
+}
+.sonar-source-meta {
+  margin-top: 2px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.sonar-source-snip {
+  margin-top: 4px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+/* "What Sonar searched" manifest + upgrade */
+.sonar-manifest {
+  margin-top: 28px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  border: 1px solid var(--border-primary);
+  background: var(--bg-secondary);
+}
+.sonar-manifest-title {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+.sonar-manifest-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.sonar-upgrade {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-primary);
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+.sonar-upgrade a {
+  color: var(--emerald);
+  font-weight: 600;
+  text-decoration: none;
+}
+.sonar-upgrade a:hover {
+  text-decoration: underline;
+}
+.sonar-disclaimer {
+  margin-top: 18px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-ghost);
+  text-align: center;
+}
+.sonar-error {
+  margin-top: 20px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--negative, #ef4444) 40%, transparent);
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+@media (max-width: 640px) {
+  .sonar-form {
+    flex-direction: column;
+  }
+  .sonar-btn {
+    width: 100%;
+  }
+}
