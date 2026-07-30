@@ -11,33 +11,89 @@ import { EchoFeatureCircle } from '@/components/echo/EchoFeatureCircle';
 import './ezana-echo.css';
 import './ezana-echo-home.css';
 
-/* The 6 Echo categories (id → label). Each renders as a column on the homepage
-   board. Article `category` ids must match one of these. */
+/* The 6 Echo categories (id → label → subcategories). Each renders as a column on
+   the homepage board; `subs` power the per-column subcategory filter. Article
+   `category` ids must match one of these; an optional `subcategory` on an article
+   is what the filter checks (articles without one always show). */
 const CATEGORIES = [
-  { id: 'markets-companies', label: 'Markets & Companies' },
-  { id: 'politics-policy', label: 'Politics & Policy' },
-  { id: 'tech-founders', label: 'Tech & Founders' },
-  { id: 'commodities-energy', label: 'Commodities & Energy' },
-  { id: 'crypto', label: 'Crypto' },
-  { id: 'global-emerging', label: 'Global & Emerging Markets' },
+  {
+    id: 'markets-companies',
+    label: 'Markets & Companies',
+    subs: ['Equities', 'Earnings', 'M&A', 'IPOs', 'Credit'],
+  },
+  {
+    id: 'politics-policy',
+    label: 'Politics & Policy',
+    subs: ['Congress', 'Regulation', 'Elections', 'Trade Policy'],
+  },
+  {
+    id: 'tech-founders',
+    label: 'Tech & Founders',
+    subs: ['AI', 'Semiconductors', 'Founders', 'Infrastructure', 'Startups'],
+  },
+  {
+    id: 'commodities-energy',
+    label: 'Commodities & Energy',
+    subs: ['Oil & Gas', 'Metals', 'Critical Minerals', 'Renewables'],
+  },
+  { id: 'crypto', label: 'Crypto', subs: ['Bitcoin', 'Stablecoins', 'DeFi', 'Regulation'] },
+  {
+    id: 'global-emerging',
+    label: 'Global & Emerging Markets',
+    subs: ['Africa', 'Asia', 'LatAm', 'Sovereign Funds'],
+  },
 ];
 
-/* Centered column header: emerald dot beside the label, full-width underline. */
-function ColHead({ label }) {
+/* Centered column header: emerald dot beside the label, full-width underline, and
+   a two-line toggle that opens a checkbox popover to filter the column's
+   subcategories (all on by default). */
+function ColHead({ category, filter }) {
+  const { activeSubs, openFilter, onOpenFilter, onToggleSub } = filter;
+  const subs = category.subs || [];
+  const open = openFilter === category.id;
+  const active = activeSubs[category.id] || [];
   return (
-    <div className="eth-col-head">
-      <span className="eth-col-dot" aria-hidden />
-      {label}
+    <div className="eth-col-head-wrap">
+      <div className="eth-col-head">
+        <span className="eth-col-dot" aria-hidden />
+        {category.label}
+      </div>
+      {subs.length > 0 && (
+        <button
+          type="button"
+          className="eth-subfilter-toggle"
+          aria-label={`Filter ${category.label}`}
+          aria-expanded={open}
+          onClick={() => onOpenFilter(open ? null : category.id)}
+        >
+          <span />
+          <span />
+        </button>
+      )}
+      {open && (
+        <div className="eth-subfilter-pop" role="menu">
+          {subs.map((s) => (
+            <label key={s} className="eth-subfilter-item">
+              <input
+                type="checkbox"
+                checked={active.includes(s)}
+                onChange={() => onToggleSub(category.id, s)}
+              />
+              {s}
+            </label>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
 /* A single category column: header + newest-first stack of cards (no carves —
    carved cards live only inside the center cluster's 2x2). */
-function CategoryColumn({ col, admin }) {
+function CategoryColumn({ col, admin, filter }) {
   return (
     <div className="eth-col">
-      <ColHead label={col.label} />
+      <ColHead category={col} filter={filter} />
       {col.items.length ? (
         col.items.map((a) => (
           <EchoArticleCard
@@ -64,6 +120,29 @@ export default function EzanaEchoPage() {
 
   const [rawArticles, setRawArticles] = useState([]);
   const [featuredRaw, setFeaturedRaw] = useState(null);
+
+  // Per-category subcategory filter: all subs active by default; `openFilter`
+  // tracks which column's popover is open.
+  const [openFilter, setOpenFilter] = useState(null);
+  const [activeSubs, setActiveSubs] = useState(() =>
+    Object.fromEntries(CATEGORIES.map((c) => [c.id, c.subs])),
+  );
+  const toggleSub = (catId, sub) =>
+    setActiveSubs((prev) => {
+      const cur = prev[catId] || [];
+      const next = cur.includes(sub) ? cur.filter((s) => s !== sub) : [...cur, sub];
+      return { ...prev, [catId]: next };
+    });
+
+  // Close the open subcategory popover on outside-click.
+  useEffect(() => {
+    if (!openFilter) return undefined;
+    const onDown = (e) => {
+      if (!e.target.closest('.eth-col-head-wrap')) setOpenFilter(null);
+    };
+    document.addEventListener('mousedown', onDown);
+    return () => document.removeEventListener('mousedown', onDown);
+  }, [openFilter]);
 
   useEffect(() => {
     let cancelled = false;
@@ -159,21 +238,37 @@ export default function EzanaEchoPage() {
     return CATEGORIES.map((c) => ({
       id: c.id,
       label: c.label,
+      subs: c.subs,
       items: pool
         .filter((a) => a.category === c.id)
         .sort((x, y) => String(y.publishedAt).localeCompare(String(x.publishedAt))),
     }));
   }, [allArticles, articleOfMonth]);
 
-  // The two middle categories form the center cluster. Its top 2x2 of cards is
-  // what the featured circle is grid-centered on, so the circle and all four
-  // carves share one exact center. Needs ≥2 cards in each middle column and a
-  // featured article; otherwise we fall back to plain columns + an in-flow circle.
+  // Apply the subcategory filter: an article shows unless it carries a
+  // `subcategory` that has been unchecked for its column.
+  const displayColumns = useMemo(
+    () =>
+      columns.map((c) => ({
+        ...c,
+        items: c.items.filter(
+          (a) => !a.subcategory || (activeSubs[c.id] || []).includes(a.subcategory),
+        ),
+      })),
+    [columns, activeSubs],
+  );
+
+  // The two middle categories form the center cluster. The featured circle is
+  // grid-centered on ROWS 2–3 of those columns (positional, not article-bound), so
+  // row 1 sits above it normally. Needs ≥3 cards in each middle column (rows 2–3
+  // plus row 1) and a featured article; otherwise fall back to plain columns + an
+  // in-flow circle.
   const admin = { isAdmin, onArchive: handleArchive, archivingId };
-  const midL = columns[2];
-  const midR = columns[3];
+  const filter = { activeSubs, openFilter, onOpenFilter: setOpenFilter, onToggleSub: toggleSub };
+  const midL = displayColumns[2];
+  const midR = displayColumns[3];
   const canCluster =
-    Boolean(articleOfMonth) && midL.items.length >= 2 && midR.items.length >= 2;
+    Boolean(articleOfMonth) && midL.items.length >= 3 && midR.items.length >= 3;
 
   return (
     <div className="eth-page">
@@ -210,53 +305,60 @@ export default function EzanaEchoPage() {
       </header>
 
       <div className="eth-wrap">
-        {/* Category board. The two middle categories render as a center cluster
-            whose top four cards (a 2x2) sculpt around the featured circle: the
-            circle is grid-centered on the 2x2's shared inner corner, and each of
-            the four cards carves the corner facing that same point — so the circle
-            and all four carves share ONE center by construction (no pixel guess,
-            no overlap, no white disc). The other four categories are plain columns.
-            Card bodies sit above the circle, so titles are never clipped. */}
+        {/* Category board. The two middle categories render as a center cluster:
+            row 1 sits normally above the circle, then ROWS 2–3 form a 2x2 that
+            sculpts around the featured circle — the circle is grid-centered on the
+            2x2's shared inner corner and each of the four cards carves the corner
+            facing that same point, so the circle and all four carves share ONE
+            center by construction (no pixel guess, no white corners). The other
+            four categories are plain columns. Each header carries a subcategory
+            filter; card bodies sit above the circle, so titles are never clipped. */}
         <div className="eth-board">
           {canCluster ? (
             <>
-              <CategoryColumn col={columns[0]} admin={admin} />
-              <CategoryColumn col={columns[1]} admin={admin} />
+              <CategoryColumn col={displayColumns[0]} admin={admin} filter={filter} />
+              <CategoryColumn col={displayColumns[1]} admin={admin} filter={filter} />
 
               <div className="eth-center-cluster">
                 <div className="eth-cluster-heads">
-                  <ColHead label={midL.label} />
-                  <ColHead label={midR.label} />
+                  <ColHead category={midL} filter={filter} />
+                  <ColHead category={midR} filter={filter} />
                 </div>
-                {/* 2x2: [L0 | R0] / [L1 | R1]; each carves the corner facing center. */}
+                {/* Row 1: normal cards above the circle. */}
+                <div className="eth-cluster-top">
+                  <EchoArticleCard article={midL.items[0]} {...admin} />
+                  <EchoArticleCard article={midR.items[0]} {...admin} />
+                </div>
+                {/* Rows 2–3: the carved 2x2 [L1 | R1] / [L2 | R2]; each carves the
+                    corner facing the circle grid-centered on the shared point. */}
                 <div className="eth-cluster-feature">
-                  <EchoArticleCard article={midL.items[0]} carve="br" {...admin} />
-                  <EchoArticleCard article={midR.items[0]} carve="bl" {...admin} />
-                  <EchoArticleCard article={midL.items[1]} carve="tr" {...admin} />
-                  <EchoArticleCard article={midR.items[1]} carve="tl" {...admin} />
+                  <EchoArticleCard article={midL.items[1]} carve="br" {...admin} />
+                  <EchoArticleCard article={midR.items[1]} carve="bl" {...admin} />
+                  <EchoArticleCard article={midL.items[2]} carve="tr" {...admin} />
+                  <EchoArticleCard article={midR.items[2]} carve="tl" {...admin} />
                   <EchoFeatureCircle article={articleOfMonth} className="eth-cluster-circle" />
                 </div>
                 <div className="eth-cluster-rest">
                   <div className="eth-col">
-                    {midL.items.slice(2).map((a) => (
+                    {midL.items.slice(3).map((a) => (
                       <EchoArticleCard key={a.id} article={a} {...admin} />
                     ))}
                   </div>
                   <div className="eth-col">
-                    {midR.items.slice(2).map((a) => (
+                    {midR.items.slice(3).map((a) => (
                       <EchoArticleCard key={a.id} article={a} {...admin} />
                     ))}
                   </div>
                 </div>
               </div>
 
-              <CategoryColumn col={columns[4]} admin={admin} />
-              <CategoryColumn col={columns[5]} admin={admin} />
+              <CategoryColumn col={displayColumns[4]} admin={admin} filter={filter} />
+              <CategoryColumn col={displayColumns[5]} admin={admin} filter={filter} />
             </>
           ) : (
             <>
-              {columns.map((col) => (
-                <CategoryColumn key={col.id} col={col} admin={admin} />
+              {displayColumns.map((col) => (
+                <CategoryColumn key={col.id} col={col} admin={admin} filter={filter} />
               ))}
               {articleOfMonth && (
                 <EchoFeatureCircle article={articleOfMonth} className="eth-feature-standalone" />

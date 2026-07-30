@@ -13,13 +13,28 @@
   border-radius: 10px;
   overflow: hidden;
   background: transparent;
+  transform-style: preserve-3d;
   transition:
-    border-color 0.15s ease,
-    transform 0.15s ease;
+    transform 0.18s ease-out,
+    box-shadow 0.18s ease-out,
+    border-color 0.15s ease;
+}
+/* Gravity/magnetic hover — the corner nearest the cursor lifts. The tilt vars are
+   set per-card by a mousemove handler (EchoArticleCard); carved cards are excluded
+   so their mask stays locked to the circle. */
+.echo-card:not([class*='echo-card--carve']) {
+  transform: perspective(700px) rotateX(var(--tiltX, 0deg)) rotateY(var(--tiltY, 0deg))
+    translateZ(calc(var(--lift, 0) * 6px));
 }
 .echo-card:hover {
   border-color: var(--emerald);
-  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+}
+@media (prefers-reduced-motion: reduce) {
+  .echo-card {
+    transform: none !important;
+    transition: border-color 0.15s ease;
+  }
 }
 .echo-card__link {
   display: flex;
@@ -107,14 +122,18 @@
   cursor: default;
 }
 
-/* ── Sculpt: mask the IMAGE only (never the body/text). The transparent radius
-   (--echo-carve-r) is LARGER than the circle radius, so a clean page-space gap
-   appears between the card's curved image edge and the featured circle. The cut
-   is anchored at the corner facing the circle (--echo-cx / --echo-cy). */
-.echo-card--carve-br .echo-card__img,
-.echo-card--carve-tr .echo-card__img,
-.echo-card--carve-bl .echo-card__img,
-.echo-card--carve-tl .echo-card__img {
+/* ── Sculpt: mask the WHOLE card (box, border, background, image) — not just the
+   image — so nothing of the card's chrome survives inside the carve. Masking only
+   the image left the card's border/rounded corner showing as a white arc in the
+   gap; cutting the whole card removes it. The transparent radius (--echo-carve-r)
+   is LARGER than the circle radius, so a clean page-space gap appears between the
+   card's curved edge and the featured circle. The cut is anchored at the corner
+   facing the circle (--echo-cx / --echo-cy), i.e. the card's image/edge zone — the
+   title/meta sit away from it and stay fully visible. */
+.echo-card--carve-br,
+.echo-card--carve-tr,
+.echo-card--carve-bl,
+.echo-card--carve-tl {
   -webkit-mask: radial-gradient(
     circle var(--echo-carve-r) at var(--echo-cx) var(--echo-cy),
     transparent 0 var(--echo-carve-r),
@@ -145,10 +164,10 @@
 
 /* Below desktop the circle drops into the flow — no card stays carved. */
 @media (max-width: 1100px) {
-  .echo-card--carve-br .echo-card__img,
-  .echo-card--carve-tr .echo-card__img,
-  .echo-card--carve-bl .echo-card__img,
-  .echo-card--carve-tl .echo-card__img {
+  .echo-card--carve-br,
+  .echo-card--carve-tr,
+  .echo-card--carve-bl,
+  .echo-card--carve-tl {
     -webkit-mask: none;
     mask: none;
   }

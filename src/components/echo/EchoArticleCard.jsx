@@ -13,8 +13,34 @@ import './echo-card.css';
  */
 export function EchoArticleCard({ article, carve = null, isAdmin = false, onArchive, archivingId }) {
   const carveClass = carve ? ` echo-card--carve-${carve}` : '';
+
+  // Gravity hover: tilt the card toward the cursor so the nearest corner lifts.
+  // Carved cards are excluded — their mask is locked to the circle, so we never
+  // transform them.
+  const gravity = !carve;
+  const handleMove = (e) => {
+    const el = e.currentTarget;
+    const r = el.getBoundingClientRect();
+    const px = (e.clientX - r.left) / r.width - 0.5;
+    const py = (e.clientY - r.top) / r.height - 0.5;
+    const max = 6;
+    el.style.setProperty('--tiltX', `${(-py * max).toFixed(2)}deg`);
+    el.style.setProperty('--tiltY', `${(px * max).toFixed(2)}deg`);
+    el.style.setProperty('--lift', '1');
+  };
+  const handleLeave = (e) => {
+    const el = e.currentTarget;
+    el.style.setProperty('--tiltX', '0deg');
+    el.style.setProperty('--tiltY', '0deg');
+    el.style.setProperty('--lift', '0');
+  };
+
   return (
-    <article className={`echo-card${carveClass}`}>
+    <article
+      className={`echo-card${carveClass}`}
+      onMouseMove={gravity ? handleMove : undefined}
+      onMouseLeave={gravity ? handleLeave : undefined}
+    >
       {isAdmin && (
         <button
           type="button"

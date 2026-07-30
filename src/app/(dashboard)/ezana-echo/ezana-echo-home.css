@@ -302,12 +302,22 @@
   gap: 20px;
   min-width: 0;
 }
+/* Header wrap: centered label with an emerald underline, plus a two-line filter
+   toggle underneath that opens the subcategory popover. */
+.eth-col-head-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
 .eth-col-head {
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
   gap: 7px;
+  width: 100%;
   min-height: 40px;
   padding-bottom: 10px;
   border-bottom: 2px solid var(--emerald);
@@ -317,6 +327,60 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text-primary);
+}
+.eth-subfilter-toggle {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.eth-subfilter-toggle span {
+  display: block;
+  width: 16px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--text-muted);
+  transition: background 0.15s ease;
+}
+.eth-subfilter-toggle:hover span,
+.eth-subfilter-toggle[aria-expanded='true'] span {
+  background: var(--emerald);
+}
+.eth-subfilter-pop {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 6px;
+  z-index: 20;
+  min-width: 160px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 10px 12px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  box-shadow: var(--shadow-lg, 0 10px 30px rgba(0, 0, 0, 0.15));
+}
+.eth-subfilter-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.eth-subfilter-item input {
+  accent-color: var(--emerald);
 }
 .eth-col-dot {
   width: 7px;
@@ -338,9 +402,10 @@
    The circle overlaps four cards, so those four must share ONE exact center with
    it — otherwise the carves miss and the mismatched cuts read as a white disc.
    We guarantee that structurally: the two middle categories render as a cluster
-   spanning two board columns; the top card of each (2x2) forms a grid whose four
-   inner corners meet at one point, and the circle is grid-centered on that point
-   (left/top:50%). No guessed pixel offset — the circle's center IS the seam. */
+   spanning two board columns. Row 1 (`.eth-cluster-top`) sits normally above the
+   circle; rows 2–3 (`.eth-cluster-feature`) form a 2x2 whose four inner corners
+   meet at one point, and the circle is grid-centered on that point (left/top:50%).
+   No guessed pixel offset — the circle's center IS the seam. */
 .eth-center-cluster {
   grid-column: span 2;
   display: flex;
@@ -349,6 +414,7 @@
   min-width: 0;
 }
 .eth-cluster-heads,
+.eth-cluster-top,
 .eth-cluster-rest {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -424,6 +490,7 @@
     grid-template-columns: 1fr;
   }
   .eth-cluster-heads,
+  .eth-cluster-top,
   .eth-cluster-rest,
   .eth-cluster-feature {
     grid-template-columns: 1fr;
