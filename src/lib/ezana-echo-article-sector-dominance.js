@@ -257,6 +257,7 @@ export const sectorDominanceArticle = {
   ],
   author: 'Ezana Finance Editorial',
   category: 'markets-companies',
+  subcategory: 'Equities',
   tags: ['markets', 'history', 'sector-rotation', 'technology', 'energy', 'macro'],
   tickers: ['SPY', 'XLK', 'XLE', 'XLF', 'XLI'],
   entities: {

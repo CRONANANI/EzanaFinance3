@@ -193,6 +193,7 @@ export const iranWarCommoditiesArticle2026 = {
   ],
   author: 'Ezana Finance Editorial',
   category: 'commodities-energy',
+  subcategory: 'Oil & Gas',
   tags: ['markets', 'policy', 'geopolitics', 'commodities', 'energy', 'macro'],
   tickers: ['USO', 'XLE', 'XOM', 'CVX', 'EOG', 'AA', 'CF', 'NTR', 'GLD'],
   entities: {

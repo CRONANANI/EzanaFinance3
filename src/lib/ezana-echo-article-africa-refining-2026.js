@@ -160,6 +160,7 @@ export const africaRefiningArticle2026 = {
   ],
   author: 'Ezana Finance Editorial',
   category: 'commodities-energy',
+  subcategory: 'Oil & Gas',
   tags: ['markets', 'commodities', 'energy', 'macro', 'geopolitics'],
   tickers: ['XOM', 'CVX', 'SHEL', 'TTE', 'BP', 'SU', 'VLO', 'OXY'],
   entities: {

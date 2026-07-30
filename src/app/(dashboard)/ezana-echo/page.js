@@ -44,6 +44,47 @@ const CATEGORIES = [
   },
 ];
 
+/* REQUIREMENT: every Echo article MUST carry a `subcategory` (one of its category's
+   `subs`). Homepage articles come from the DB, so this map is the authoritative
+   id→subcategory source until `subcategory` is carried through the echo_articles
+   pipeline; the same value also lives on each article's source file
+   (src/lib/ezana-echo-article-*.js). When adding an article, tag it in BOTH places. */
+const ARTICLE_SUBCATEGORY = {
+  'nvidia-worlds-second-most-valuable-asset-2026': 'Equities',
+  'private-credit-maturity-wall-2026': 'Credit',
+  'fda-peptides-bpc157-compounding-vote-2026': 'Equities',
+  'dominating-us-stock-market-sectors-through-the-times': 'Equities',
+  'hantavirus-from-four-corners-to-open-sea': 'Equities',
+  'ballroom-donors-federal-contracts-2026': 'Congress',
+  'trump-portfolio-q1-2026': 'Congress',
+  'peter-thiel-worldview-2026': 'Founders',
+  'silicon-shield-taiwan-semiconductor-dominance': 'Semiconductors',
+  'fiber-optic-cable-ai-boom-benny-fazio': 'Infrastructure',
+  'acquirers-buy-the-pipeline-not-the-model-2026': 'AI',
+  'critical-minerals-reserve-concentration-2026': 'Critical Minerals',
+  'best-performing-commodities-iran-war-2026': 'Oil & Gas',
+  'africa-refining-capacity-dangote-inflection-2026': 'Oil & Gas',
+  'africa-billion-dollar-companies-2026': 'Africa',
+};
+
+/* Global time-window filter options (applies to all 6 columns). Default 'all'. */
+const TIME_WINDOWS = [
+  { id: 'all', label: 'All' },
+  { id: '7d', label: '7D', days: 7 },
+  { id: '30d', label: '30D', days: 30 },
+  { id: '90d', label: '90D', days: 90 },
+  { id: '1y', label: '1Y', days: 365 },
+];
+
+function withinWindow(publishedAt, windowId) {
+  if (windowId === 'all' || !publishedAt) return true;
+  const win = TIME_WINDOWS.find((w) => w.id === windowId);
+  if (!win?.days) return true;
+  const then = new Date(publishedAt).getTime();
+  if (Number.isNaN(then)) return true;
+  return Date.now() - then <= win.days * 86400000;
+}
+
 /* Centered column header: emerald dot beside the label, full-width underline, and
    a two-line toggle that opens a checkbox popover to filter the column's
    subcategories (all on by default). */
@@ -54,10 +95,7 @@ function ColHead({ category, filter }) {
   const active = activeSubs[category.id] || [];
   return (
     <div className="eth-col-head-wrap">
-      <div className="eth-col-head">
-        <span className="eth-col-dot" aria-hidden />
-        {category.label}
-      </div>
+      <div className="eth-col-head">{category.label}</div>
       {subs.length > 0 && (
         <button
           type="button"
@@ -70,6 +108,7 @@ function ColHead({ category, filter }) {
           <span />
         </button>
       )}
+      <div className="eth-col-rule" aria-hidden />
       {open && (
         <div className="eth-subfilter-pop" role="menu">
           {subs.map((s) => (
@@ -124,6 +163,7 @@ export default function EzanaEchoPage() {
   // Per-category subcategory filter: all subs active by default; `openFilter`
   // tracks which column's popover is open.
   const [openFilter, setOpenFilter] = useState(null);
+  const [timeWindow, setTimeWindow] = useState('all');
   const [activeSubs, setActiveSubs] = useState(() =>
     Object.fromEntries(CATEGORIES.map((c) => [c.id, c.subs])),
   );
@@ -241,21 +281,27 @@ export default function EzanaEchoPage() {
       subs: c.subs,
       items: pool
         .filter((a) => a.category === c.id)
-        .sort((x, y) => String(y.publishedAt).localeCompare(String(x.publishedAt))),
+        .sort((x, y) => String(y.publishedAt).localeCompare(String(x.publishedAt)))
+        // Ensure every article carries a subcategory (from its own field or the
+        // authoritative map) so the subcategory filter has something to match.
+        .map((a) => ({ ...a, subcategory: a.subcategory || ARTICLE_SUBCATEGORY[a.id] || null })),
     }));
   }, [allArticles, articleOfMonth]);
 
-  // Apply the subcategory filter: an article shows unless it carries a
-  // `subcategory` that has been unchecked for its column.
+  // Apply both filters together: the global time window AND the per-column
+  // subcategory picker. An article shows only if it falls in the window and its
+  // subcategory (if any) is still checked for its column.
   const displayColumns = useMemo(
     () =>
       columns.map((c) => ({
         ...c,
         items: c.items.filter(
-          (a) => !a.subcategory || (activeSubs[c.id] || []).includes(a.subcategory),
+          (a) =>
+            withinWindow(a.publishedAt, timeWindow) &&
+            (!a.subcategory || (activeSubs[c.id] || []).includes(a.subcategory)),
         ),
       })),
-    [columns, activeSubs],
+    [columns, activeSubs, timeWindow],
   );
 
   // The two middle categories form the center cluster. The featured circle is
@@ -305,6 +351,24 @@ export default function EzanaEchoPage() {
       </header>
 
       <div className="eth-wrap">
+        {/* Global time-window filter — applies to all 6 columns, combines with the
+            per-column subcategory filters. */}
+        <div className="eth-toolbar">
+          <span className="eth-toolbar-label">Window</span>
+          <div className="eth-timefilter" role="group" aria-label="Time window">
+            {TIME_WINDOWS.map((w) => (
+              <button
+                key={w.id}
+                type="button"
+                aria-pressed={timeWindow === w.id}
+                onClick={() => setTimeWindow(w.id)}
+              >
+                {w.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Category board. The two middle categories render as a center cluster:
             row 1 sits normally above the circle, then ROWS 2–3 form a 2x2 that
             sculpts around the featured circle — the circle is grid-centered on the

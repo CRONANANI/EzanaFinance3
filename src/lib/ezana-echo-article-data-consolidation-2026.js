@@ -152,6 +152,7 @@ export const dataConsolidationArticle2026 = {
   ],
   author: 'Ezana Finance Editorial',
   category: 'tech-founders',
+  subcategory: 'AI',
   tags: ['markets', 'technology', 'deals-dealmakers', 'macro', 'analysis'],
   tickers: ['CRM', 'SNOW', 'DDOG', 'MSFT', 'GOOGL', 'META', 'ORCL', 'PLTR'],
   entities: {

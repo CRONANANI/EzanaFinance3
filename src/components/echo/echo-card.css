@@ -9,14 +9,17 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--border-primary);
-  border-radius: 10px;
+  /* Wall-to-wall board: no card box — the only separator between stacked cards is
+     a thin bottom rule. */
+  border: none;
+  border-bottom: 1px solid var(--border-primary);
+  border-radius: 0;
   overflow: hidden;
   background: transparent;
   transform-style: preserve-3d;
   transition:
     transform 0.18s ease-out,
-    box-shadow 0.18s ease-out,
+    background 0.15s ease,
     border-color 0.15s ease;
 }
 /* Gravity/magnetic hover — the corner nearest the cursor lifts. The tilt vars are
@@ -27,8 +30,7 @@
     translateZ(calc(var(--lift, 0) * 6px));
 }
 .echo-card:hover {
-  border-color: var(--emerald);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+  background: color-mix(in srgb, var(--emerald) 5%, transparent);
 }
 @media (prefers-reduced-motion: reduce) {
   .echo-card {
@@ -60,11 +62,10 @@
 }
 .echo-card__body {
   position: relative;
-  /* Editorial text always sits above the decorative feature circle (z-index 3),
-     so a title is never hidden or clipped by it — not a z-index war, a single
-     deliberate rule. */
   z-index: 4;
-  padding: 11px 13px 13px;
+  /* Wall-to-wall: images run edge-to-edge; text gets a small inner inset so it
+     never touches the viewport edge. */
+  padding: 11px 16px 14px;
 }
 .echo-card__title {
   margin: 0 0 8px;
@@ -122,18 +123,18 @@
   cursor: default;
 }
 
-/* ── Sculpt: mask the WHOLE card (box, border, background, image) — not just the
-   image — so nothing of the card's chrome survives inside the carve. Masking only
-   the image left the card's border/rounded corner showing as a white arc in the
-   gap; cutting the whole card removes it. The transparent radius (--echo-carve-r)
-   is LARGER than the circle radius, so a clean page-space gap appears between the
-   card's curved edge and the featured circle. The cut is anchored at the corner
-   facing the circle (--echo-cx / --echo-cy), i.e. the card's image/edge zone — the
-   title/meta sit away from it and stay fully visible. */
-.echo-card--carve-br,
-.echo-card--carve-tr,
-.echo-card--carve-bl,
-.echo-card--carve-tl {
+/* ── Sculpt: mask the IMAGE only. Now that the wall-to-wall board removed the card
+   box (no border/background/rounded corner), the old "white corner" chrome can't
+   show through the carve, so we carve just the image — which keeps the mask off
+   the title/meta entirely. In the cluster the four carved cards are laid out so
+   the circle's vertical span lands only on image (tall images; upper cards flip
+   image-to-bottom — see ezana-echo-home.css), so no text is ever under the circle.
+   The transparent radius (--echo-carve-r) exceeds the circle radius for a clean
+   page-space gap; the cut is anchored at the corner facing the circle. */
+.echo-card--carve-br .echo-card__img,
+.echo-card--carve-tr .echo-card__img,
+.echo-card--carve-bl .echo-card__img,
+.echo-card--carve-tl .echo-card__img {
   -webkit-mask: radial-gradient(
     circle var(--echo-carve-r) at var(--echo-cx) var(--echo-cy),
     transparent 0 var(--echo-carve-r),
@@ -164,10 +165,10 @@
 
 /* Below desktop the circle drops into the flow — no card stays carved. */
 @media (max-width: 1100px) {
-  .echo-card--carve-br,
-  .echo-card--carve-tr,
-  .echo-card--carve-bl,
-  .echo-card--carve-tl {
+  .echo-card--carve-br .echo-card__img,
+  .echo-card--carve-tr .echo-card__img,
+  .echo-card--carve-bl .echo-card__img,
+  .echo-card--carve-tl .echo-card__img {
     -webkit-mask: none;
     mask: none;
   }

@@ -206,6 +206,7 @@ export const hantavirusArticle = {
   ],
   author: 'Ezana Finance Editorial',
   category: 'markets-companies',
+  subcategory: 'Equities',
   tags: ['markets', 'public-health', 'biotech', 'healthcare'],
   featured: false,
   readTime: 8,

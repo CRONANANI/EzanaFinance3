@@ -186,6 +186,7 @@ export const criticalMineralsArticle2026 = {
   ],
   author: 'Ezana Finance Editorial',
   category: 'commodities-energy',
+  subcategory: 'Critical Minerals',
   tags: ['commodities', 'critical-minerals', 'geopolitics', 'energy-transition', 'analysis'],
   tickers: ['MP', 'ALB', 'SQM', 'FCX', 'VALE', 'BHP', 'RIO', 'CCJ', 'REMX', 'LIT'],
   entities: {

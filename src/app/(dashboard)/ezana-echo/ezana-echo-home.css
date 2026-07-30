@@ -283,7 +283,13 @@
   position: relative;
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 20px;
+  /* Wall-to-wall: the board breaks out of the padded shell envelope to span the
+     full viewport width; columns touch with thin-line separators (no card boxes,
+     no grid gaps). */
+  gap: 0;
+  width: 100vw;
+  max-width: 100vw;
+  margin-left: calc(50% - 50vw);
   margin-top: 12px;
 
   /* The shared geometry. --echo-carve-r is deliberately LARGER than the circle
@@ -296,37 +302,48 @@
   --echo-carve-gap: 22px; /* page-space between each carved image and the circle */
   --echo-carve-r: calc(var(--echo-circle-r) + var(--echo-carve-gap));
 }
+/* Thin vertical separator between the 6 columns (the cluster counts as one). */
+.eth-board > * + * {
+  border-left: 1px solid var(--border-primary);
+}
 .eth-col {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 0; /* stacked cards separated by their own thin bottom rule */
   min-width: 0;
 }
-/* Header wrap: centered label with an emerald underline, plus a two-line filter
-   toggle underneath that opens the subcategory popover. */
+.eth-col > .echo-card:last-child {
+  border-bottom: none;
+}
+/* Header wrap: centered plain label (no pill, no dot), then the two-line filter
+   toggle, then the emerald underline — top to bottom. */
 .eth-col-head-wrap {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
+  padding: 2px 12px 0;
 }
 .eth-col-head {
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
-  gap: 7px;
   width: 100%;
-  min-height: 40px;
-  padding-bottom: 10px;
-  border-bottom: 2px solid var(--emerald);
+  min-height: 22px;
   font-family: var(--font-sans);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text-primary);
+}
+/* The emerald underline now sits BELOW the filter toggle (full column width). */
+.eth-col-rule {
+  width: 100%;
+  height: 0;
+  border-bottom: 2px solid var(--emerald);
 }
 .eth-subfilter-toggle {
   display: flex;
@@ -382,13 +399,6 @@
 .eth-subfilter-item input {
   accent-color: var(--emerald);
 }
-.eth-col-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--emerald);
-  flex-shrink: 0;
-}
 .eth-col-empty {
   padding: 22px 12px;
   border: 1px dashed var(--border-primary);
@@ -396,6 +406,50 @@
   text-align: center;
   font-size: 12px;
   color: var(--text-faint);
+}
+
+/* ── Toolbar: global time-window filter (applies to all 6 columns) ──────────── */
+.eth-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+.eth-toolbar-label {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.eth-timefilter {
+  display: inline-flex;
+  border: 1px solid var(--border-primary);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.eth-timefilter button {
+  padding: 5px 12px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  cursor: pointer;
+  transition:
+    background 0.14s ease,
+    color 0.14s ease;
+}
+.eth-timefilter button + button {
+  border-left: 1px solid var(--border-primary);
+}
+.eth-timefilter button:hover {
+  color: var(--text-primary);
+}
+.eth-timefilter button[aria-pressed='true'] {
+  background: var(--emerald);
+  color: #fff;
 }
 
 /* ── Center cluster (the two middle categories) ───────────────────────────────
@@ -418,8 +472,15 @@
 .eth-cluster-rest {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 0;
   min-width: 0;
+}
+/* Thin divider between the two middle categories (Tech | Commodities), matching
+   the between-column lines. The feature row omits it — the circle sits there. */
+.eth-cluster-heads > :nth-child(2),
+.eth-cluster-top > :nth-child(2),
+.eth-cluster-rest > :nth-child(2) {
+  border-left: 1px solid var(--border-primary);
 }
 .eth-cluster-feature {
   position: relative;
@@ -438,6 +499,18 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+/* Title-clip fix: the four carved cards get TALL images so the circle's whole
+   vertical span (±radius from the seam) lands only on image. The upper two cards
+   flip image-to-bottom (title on top), the lower two keep image-on-top (title on
+   bottom) — so every title sits clear of the circle, above or below it. */
+.eth-cluster-feature .echo-card__img {
+  aspect-ratio: auto;
+  height: 190px; /* ≥ circle radius (150) + margin, so text never falls under it */
+}
+.eth-cluster-feature .echo-card:nth-child(1) .echo-card__link,
+.eth-cluster-feature .echo-card:nth-child(2) .echo-card__link {
+  flex-direction: column-reverse;
 }
 .eth-cluster-circle {
   position: absolute;
@@ -474,6 +547,16 @@
     height: auto;
     -webkit-line-clamp: unset;
   }
+  /* No circle overlay below desktop → cards return to normal (image-on-top,
+     standard aspect); undo the title-clip flip/tall-image treatment. */
+  .eth-cluster-feature .echo-card__img {
+    aspect-ratio: 16 / 9;
+    height: auto;
+  }
+  .eth-cluster-feature .echo-card:nth-child(1) .echo-card__link,
+  .eth-cluster-feature .echo-card:nth-child(2) .echo-card__link {
+    flex-direction: column;
+  }
   .eth-cluster-circle {
     position: static;
     transform: none;
@@ -489,11 +572,20 @@
   .eth-board {
     grid-template-columns: 1fr;
   }
+  /* Single stacked column — vertical separators would read as stray left rules. */
+  .eth-board > * + * {
+    border-left: none;
+  }
   .eth-cluster-heads,
   .eth-cluster-top,
   .eth-cluster-rest,
   .eth-cluster-feature {
     grid-template-columns: 1fr;
+  }
+  .eth-cluster-heads > :nth-child(2),
+  .eth-cluster-top > :nth-child(2),
+  .eth-cluster-rest > :nth-child(2) {
+    border-left: none;
   }
   .eth-cluster-circle {
     width: 100%;

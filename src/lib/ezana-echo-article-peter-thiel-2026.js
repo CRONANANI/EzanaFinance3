@@ -32,6 +32,7 @@ export const peterThiel2026 = {
       'Thiel and Palantir at the center of a cross-sector network spanning Silicon Valley, Washington, and the UK. Diagram is illustrative; link colors denote reported relationship type (business, personal, strategic association), not chains of command. Compiled from public reporting and the June 2026 Dialog leak verified by WIRED.',
   },
   category: 'tech-founders',
+  subcategory: 'Founders',
   author: 'Ezana Finance Editorial',
   tickers: ['PLTR', 'META', 'TSLA', 'NVDA', 'MSFT', 'ORCL', 'PYPL', 'AMD'],
   entities: {

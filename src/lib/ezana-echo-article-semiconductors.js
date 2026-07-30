@@ -249,6 +249,7 @@ export const semiconductorArticle = {
   ],
   author: 'Ezana Finance Editorial',
   category: 'tech-founders',
+  subcategory: 'Semiconductors',
   tags: ['markets', 'technology', 'semiconductors', 'geopolitics', 'policy'],
   featured: false,
   readTime: 10,
