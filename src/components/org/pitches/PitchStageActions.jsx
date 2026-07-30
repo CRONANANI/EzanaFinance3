@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useOrg } from '@/contexts/OrgContext';
+import { DateSelector } from '@/components/ui/DateSelector';
 
 export function PitchStageActions({ pitch, onRefresh }) {
   const { orgData } = useOrg();
@@ -207,13 +208,12 @@ export function PitchStageActions({ pitch, onRefresh }) {
             style={{ marginBottom: 8, width: '100%' }}
           />
           {pitch.stage === 'idea' && (
-            <input
-              type="date"
-              className="op-search"
+            <DateSelector
+              mode="single"
               value={dueAt ? dueAt.slice(0, 10) : ''}
-              onChange={(e) => setDueAt(e.target.value ? `${e.target.value}T23:59:00Z` : '')}
-              style={{ marginBottom: 8, width: '100%' }}
-              aria-label="Research due date"
+              onChange={(iso) => setDueAt(iso ? `${iso}T23:59:00Z` : '')}
+              placeholder="Research due date"
+              style={{ marginBottom: 8 }}
             />
           )}
         </>

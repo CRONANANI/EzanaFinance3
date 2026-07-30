@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { DateSelector } from '@/components/ui/DateSelector';
 
 const STEPS = ['Personal Info', 'Address', 'Disclosures', 'Review'];
 const FUNDING_SOURCES = [
@@ -76,7 +77,7 @@ export function AccountOpeningForm({ onSuccess, getToken }) {
             <div className="trd-field"><label>Last Name</label><input className="trd-input" value={form.lastName} onChange={(e) => u('lastName', e.target.value)} placeholder="Doe" /></div>
           </div>
           <div className="trd-row">
-            <div className="trd-field"><label>Date of Birth</label><input className="trd-input" type="date" value={form.dateOfBirth} onChange={(e) => u('dateOfBirth', e.target.value)} /></div>
+            <div className="trd-field"><label>Date of Birth</label><DateSelector mode="single" value={form.dateOfBirth} onChange={(iso) => u('dateOfBirth', iso)} /></div>
             <div className="trd-field"><label>SSN</label><input className="trd-input" type="password" value={form.taxId} onChange={(e) => u('taxId', e.target.value)} placeholder="XXX-XX-XXXX" maxLength={11} /></div>
           </div>
           <div className="trd-row single">

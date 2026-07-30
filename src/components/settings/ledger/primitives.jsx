@@ -2,9 +2,27 @@
 
 import { ChevronDown } from 'lucide-react';
 import { useId } from 'react';
+import { DateSelector } from '@/components/ui/DateSelector';
 
 export function LedgerField({ label, mono, full, type = 'text', ...input }) {
   const id = useId();
+  // Date fields route through the unified DateSelector (single-date). We keep the
+  // caller's event-shaped onChange (`e.target.value`) working by synthesizing one.
+  if (type === 'date') {
+    const { value, onChange, variant = 'default', disabled } = input;
+    return (
+      <div className={`sl-field ${full ? 'is-full' : ''}`}>
+        <span className="sl-flabel">{label}</span>
+        <DateSelector
+          mode="single"
+          variant={variant}
+          value={value || ''}
+          disabled={disabled}
+          onChange={(iso) => onChange?.({ target: { value: iso } })}
+        />
+      </div>
+    );
+  }
   return (
     <div className={`sl-field ${full ? 'is-full' : ''}`}>
       <label htmlFor={id} className="sl-flabel">

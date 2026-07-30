@@ -8,6 +8,7 @@ import { ManageBillingButton } from '@/components/ManageBillingButton';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useAuth } from '@/components/AuthProvider';
+import { DateSelector } from '@/components/ui/DateSelector';
 import { NotificationPreferences } from './NotificationPreferences';
 import { useBeginnerLevelContext } from '@/contexts/BeginnerLevelContext';
 import { MfaSetupPanel } from './MfaSetupPanel';
@@ -260,11 +261,10 @@ export function MyDetailsPanel({ onSave, settings, updateSetting }) {
         <div className="settings-row">
           <div className="settings-field">
             <label className="settings-label">Date of birth</label>
-            <input
-              type="date"
-              className="settings-input"
+            <DateSelector
+              mode="single"
               value={settings?.date_of_birth || ''}
-              onChange={(e) => updateSetting('date_of_birth', e.target.value)}
+              onChange={(iso) => updateSetting('date_of_birth', iso)}
             />
           </div>
           <div className="settings-field">

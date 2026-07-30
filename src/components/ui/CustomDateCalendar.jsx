@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 
+import './custom-date-calendar.css';
+
 const BRAND = { default: '#10b981', partner: '#d4a853', org: '#10b981' };
 const DAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 const MONTHS = [
@@ -45,10 +47,9 @@ function fmt(d) {
 }
 
 /** Build the 6-week grid (Mon-first) for a given month */
-function buildDays(viewDate) {
-  const first = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1);
-  // Monday-first offset
-  const offset = (first.getDay() + 6) % 7;
+function buildDays(year, month) {
+  const first = new Date(year, month, 1);
+  const offset = (first.getDay() + 6) % 7; // Monday-first offset
   const start = new Date(first);
   start.setDate(first.getDate() - offset);
   const days = [];
@@ -60,16 +61,51 @@ function buildDays(viewDate) {
   return days;
 }
 
-export function CustomDateCalendar({ variant = 'default', value, onChange, onClose }) {
+/**
+ * CustomDateCalendar — the unified Ezana calendar behind DateSelector.
+ *
+ * Props
+ * - variant:              'default' | 'partner' | 'org'   — brand color (emerald/gold)
+ * - value:                { start, end } | null           — current selection
+ * - onChange:             range mode → (range:{start,end}); single mode → (date:Date)
+ * - onClose:              () => void
+ * - mode:                 'range' (default) | 'single'
+ * - numberOfMonths:       1 (default) | 2                 — months shown side by side
+ * - showMonthYearDropdowns: boolean                       — month + year quick-nav selects
+ */
+export function CustomDateCalendar({
+  variant = 'default',
+  value,
+  onChange,
+  onClose,
+  mode = 'range',
+  numberOfMonths = 1,
+  showMonthYearDropdowns = false,
+}) {
   const brand = BRAND[variant] || BRAND.default;
-  const [viewDate, setViewDate] = useState(value?.start || new Date());
+  const initial = value?.start || new Date();
+  const [viewYear, setViewYear] = useState(initial.getFullYear());
+  const [viewMonth, setViewMonth] = useState(initial.getMonth());
   const [range, setRange] = useState({ start: value?.start || null, end: value?.end || null });
   const [hoverDate, setHoverDate] = useState(null);
 
-  const days = buildDays(viewDate);
   const today = new Date();
+  const months = Math.max(1, Math.min(2, numberOfMonths));
+  const thisYear = today.getFullYear();
+  const years = [];
+  for (let y = thisYear - 5; y <= thisYear + 5; y++) years.push(y);
+
+  const shiftView = (delta) => {
+    const d = new Date(viewYear, viewMonth + delta, 1);
+    setViewYear(d.getFullYear());
+    setViewMonth(d.getMonth());
+  };
 
   const handleDayClick = (day) => {
+    if (mode === 'single') {
+      onChange(startOfDay(day));
+      return;
+    }
     if (!range.start || (range.start && range.end)) {
       setRange({ start: startOfDay(day), end: null });
     } else if (day >= range.start) {
@@ -80,7 +116,7 @@ export function CustomDateCalendar({ variant = 'default', value, onChange, onClo
   };
 
   const inRange = (day) => {
-    if (!range.start) return false;
+    if (mode === 'single' || !range.start) return false;
     const end = range.end || hoverDate;
     if (!end) return false;
     const lo = range.start < end ? range.start : end;
@@ -92,228 +128,146 @@ export function CustomDateCalendar({ variant = 'default', value, onChange, onClo
     if (range.start && range.end) onChange(range);
   };
 
-  return (
-    <div
-      onClick={onClose}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 9999,
-        background: 'rgba(0,0,0,0.5)',
-        display: 'flex',
-        alignItems: 'flex-start',
-        justifyContent: 'center',
-        paddingTop: '8vh',
-        fontFamily: 'var(--font-sans, "Plus Jakarta Sans", system-ui)',
-      }}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          background: 'var(--bg-secondary, #0d1117)',
-          border: '1px solid var(--border-primary, rgba(16,185,129,0.1))',
-          borderRadius: 12,
-          padding: 20,
-          width: 340,
-          maxWidth: '92vw',
-          boxShadow: '0 12px 40px rgba(0,0,0,0.3)',
-        }}
-      >
-        {/* Header */}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: 14,
-          }}
-        >
-          <span
-            style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary, #f0f6fc)' }}
-          >
-            Custom Date Range
-          </span>
-          <button
-            onClick={onClose}
-            aria-label="Close"
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              fontSize: '1.25rem',
-              lineHeight: 1,
-              color: 'var(--text-muted, #8b949e)',
-            }}
-          >
-            ×
-          </button>
-        </div>
+  const selectedSingle = mode === 'single' ? value?.start || null : null;
 
-        {/* Month nav */}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: 10,
-          }}
-        >
+  const renderMonth = (offset) => {
+    const base = new Date(viewYear, viewMonth + offset, 1);
+    const y = base.getFullYear();
+    const m = base.getMonth();
+    const days = buildDays(y, m);
+    return (
+      <div className="ezdp-month" key={offset}>
+        <div className="ezdp-monthnav">
           <button
-            onClick={() =>
-              setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1))
-            }
+            type="button"
+            className={`ezdp-navbtn${offset === 0 ? '' : ' ezdp-navbtn--ghost'}`}
+            onClick={() => shiftView(-1)}
             aria-label="Previous month"
-            style={navBtn}
+            aria-hidden={offset !== 0}
+            tabIndex={offset === 0 ? 0 : -1}
           >
             ‹
           </button>
-          <span
-            style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary, #f0f6fc)' }}
-          >
-            {MONTHS[viewDate.getMonth()]} {viewDate.getFullYear()}
+          <span className="ezdp-monthlabel">
+            {MONTHS[m]} {y}
           </span>
           <button
-            onClick={() =>
-              setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1))
-            }
+            type="button"
+            className={`ezdp-navbtn${offset === months - 1 ? '' : ' ezdp-navbtn--ghost'}`}
+            onClick={() => shiftView(1)}
             aria-label="Next month"
-            style={navBtn}
+            aria-hidden={offset !== months - 1}
+            tabIndex={offset === months - 1 ? 0 : -1}
           >
             ›
           </button>
         </div>
-
-        {/* Day labels */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(7, 1fr)',
-            gap: 2,
-            marginBottom: 6,
-          }}
-        >
+        <div className="ezdp-weekdays">
           {DAY_LABELS.map((d, i) => (
-            <div
-              key={i}
-              style={{
-                textAlign: 'center',
-                fontSize: '0.65rem',
-                fontWeight: 600,
-                color: 'var(--text-muted, #8b949e)',
-              }}
-            >
+            <div className="ezdp-weekday" key={i}>
               {d}
             </div>
           ))}
         </div>
-
-        {/* Days grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2 }}>
+        <div className="ezdp-grid">
           {days.map((day, i) => {
-            const isCurrentMonth = day.getMonth() === viewDate.getMonth();
+            const isCurrentMonth = day.getMonth() === m;
             const isStart = isSameDay(day, range.start);
             const isEnd = isSameDay(day, range.end);
-            const isEdge = isStart || isEnd;
+            const isSingle = isSameDay(day, selectedSingle);
+            const isEdge = isStart || isEnd || isSingle;
             const within = inRange(day) && !isEdge;
             const isToday = isSameDay(day, today);
+            const cls = ['ezdp-day'];
+            if (!isCurrentMonth) cls.push('ezdp-day--outside');
+            if (within) cls.push('ezdp-day--in-range');
+            if (isEdge) cls.push('ezdp-day--selected');
+            if (isStart && range.end) cls.push('ezdp-day--range-start');
+            if (isEnd) cls.push('ezdp-day--range-end');
+            if (isToday) cls.push('ezdp-day--today');
             return (
               <button
+                type="button"
                 key={i}
+                className={cls.join(' ')}
                 onClick={() => handleDayClick(day)}
-                onMouseEnter={() => range.start && !range.end && setHoverDate(day)}
-                style={{
-                  height: 32,
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                  fontSize: '0.78rem',
-                  fontWeight: isEdge ? 700 : 500,
-                  fontFamily: 'var(--font-mono, "JetBrains Mono", monospace)',
-                  background: isEdge ? brand : within ? `${brand}22` : 'transparent',
-                  color: isEdge
-                    ? '#fff'
-                    : isCurrentMonth
-                      ? 'var(--text-primary, #f0f6fc)'
-                      : 'var(--text-ghost, #4b5563)',
-                  opacity: isCurrentMonth ? 1 : 0.4,
-                  outline: isToday && !isEdge ? `1px solid ${brand}` : 'none',
-                  transition: 'background 0.12s',
-                }}
+                onMouseEnter={() => mode === 'range' && range.start && !range.end && setHoverDate(day)}
               >
                 {day.getDate()}
               </button>
             );
           })}
         </div>
+      </div>
+    );
+  };
 
-        {/* Selected range readout */}
-        <div
-          style={{
-            marginTop: 14,
-            padding: '8px 10px',
-            borderRadius: 6,
-            background: 'var(--bg-tertiary, #161b22)',
-            fontSize: '0.72rem',
-            color: 'var(--text-secondary, #e2e8f0)',
-            textAlign: 'center',
-            fontFamily: 'var(--font-mono, "JetBrains Mono", monospace)',
-          }}
-        >
-          {range.start ? fmt(range.start) : 'Start'} → {range.end ? fmt(range.end) : 'End'}
-        </div>
-
-        {/* Actions */}
-        <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
-          <button
-            onClick={onClose}
-            style={{
-              flex: 1,
-              padding: '8px 0',
-              borderRadius: 6,
-              border: '1px solid var(--border-primary, rgba(16,185,129,0.1))',
-              background: 'transparent',
-              color: 'var(--text-primary, #f0f6fc)',
-              fontWeight: 600,
-              fontSize: '0.8rem',
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-            }}
-          >
-            Cancel
-          </button>
-          <button
-            onClick={apply}
-            disabled={!range.start || !range.end}
-            style={{
-              flex: 1,
-              padding: '8px 0',
-              borderRadius: 6,
-              border: 'none',
-              background: range.start && range.end ? brand : 'var(--text-ghost, #4b5563)',
-              color: '#fff',
-              fontWeight: 700,
-              fontSize: '0.8rem',
-              cursor: range.start && range.end ? 'pointer' : 'not-allowed',
-              fontFamily: 'inherit',
-            }}
-          >
-            Apply
+  return (
+    <div className="ezdp-overlay" onClick={onClose}>
+      <div className="ezdp-panel" style={{ '--brand': brand }} onClick={(e) => e.stopPropagation()}>
+        <div className="ezdp-head">
+          <span className="ezdp-title">{mode === 'single' ? 'Select Date' : 'Custom Date Range'}</span>
+          <button type="button" className="ezdp-close" onClick={onClose} aria-label="Close">
+            ×
           </button>
         </div>
+
+        {showMonthYearDropdowns && (
+          <div className="ezdp-nav-selects">
+            <select
+              className="ezdp-select"
+              value={viewMonth}
+              onChange={(e) => setViewMonth(Number(e.target.value))}
+              aria-label="Month"
+            >
+              {MONTHS.map((name, i) => (
+                <option key={name} value={i}>
+                  {name}
+                </option>
+              ))}
+            </select>
+            <select
+              className="ezdp-select"
+              value={viewYear}
+              onChange={(e) => setViewYear(Number(e.target.value))}
+              aria-label="Year"
+            >
+              {years.map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        <div className="ezdp-months">
+          {Array.from({ length: months }, (_, i) => renderMonth(i))}
+        </div>
+
+        {mode === 'range' && (
+          <>
+            <div className="ezdp-readout">
+              {range.start ? fmt(range.start) : 'Start'} → {range.end ? fmt(range.end) : 'End'}
+            </div>
+            <div className="ezdp-actions">
+              <button type="button" className="ezdp-btn ezdp-btn--ghost" onClick={onClose}>
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="ezdp-btn ezdp-btn--apply"
+                onClick={apply}
+                disabled={!range.start || !range.end}
+              >
+                Apply
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
 }
-
-const navBtn = {
-  background: 'none',
-  border: 'none',
-  cursor: 'pointer',
-  fontSize: '1.1rem',
-  color: 'var(--text-primary, #f0f6fc)',
-  padding: '2px 8px',
-  borderRadius: 4,
-  lineHeight: 1,
-};
 
 export default CustomDateCalendar;

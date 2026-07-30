@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { DateSelector } from '@/components/ui/DateSelector';
 
 const STEPS = [
   'Personal',
@@ -213,7 +214,7 @@ export function OpenBrokerageWizard() {
             <div className="trd-row">
               <div className="trd-field">
                 <label>Date of birth</label>
-                <input className="trd-input" type="date" value={form.date_of_birth} onChange={(e) => u('date_of_birth', e.target.value)} />
+                <DateSelector mode="single" value={form.date_of_birth} onChange={(iso) => u('date_of_birth', iso)} />
               </div>
               <div className="trd-field">
                 <label>SSN (digits only)</label>

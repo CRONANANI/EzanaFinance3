@@ -3,24 +3,109 @@
 import { useState } from 'react';
 import { CustomDateCalendar } from '@/components/ui/CustomDateCalendar';
 
+function toISO(date) {
+  if (!date) return '';
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+function parseISO(iso) {
+  if (!iso) return null;
+  const [y, m, d] = String(iso).split('-').map(Number);
+  if (!y || !m || !d) return null;
+  return new Date(y, m - 1, d);
+}
+function fmtDisplay(date) {
+  return date
+    ? date.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })
+    : '';
+}
+
 /**
- * DateSelector — unified, theme-aware date range selector.
- * Single source of truth for ALL date selection across the platform
- * (regular user, partner, and organization versions).
+ * SingleDateField — a form-style single-date input that opens the unified
+ * calendar. Emits/accepts an ISO 'YYYY-MM-DD' string so it drops in for a raw
+ * <input type="date"> without changing the caller's stored format.
+ */
+function SingleDateField({
+  value,
+  onChange,
+  variant = 'default',
+  numberOfMonths = 1,
+  showMonthYearDropdowns = true,
+  disabled = false,
+  placeholder = 'Select date',
+  className,
+  style,
+}) {
+  const [open, setOpen] = useState(false);
+  const accentColor = variant === 'partner' ? '#d4a853' : '#10b981';
+  const date = parseISO(value);
+  return (
+    <>
+      <button
+        type="button"
+        className={`ezdp-field${className ? ` ${className}` : ''}`}
+        style={{ '--brand': accentColor, ...style }}
+        onClick={() => !disabled && setOpen(true)}
+        disabled={disabled}
+        aria-haspopup="dialog"
+      >
+        <svg
+          className="ezdp-field__icon"
+          width="15"
+          height="15"
+          viewBox="0 0 16 16"
+          fill="none"
+          aria-hidden
+        >
+          <path
+            d="M5.5 0.5V2H10.5V0.5H12V2H14H15.5V3.5V13.5C15.5 14.88 14.38 16 13 16H3C1.62 16 0.5 14.88 0.5 13.5V3.5V2H2H4V0.5H5.5ZM2 7.5V13.5C2 14.05 2.45 14.5 3 14.5H13C13.55 14.5 14 14.05 14 13.5V7.5H2Z"
+            fill="currentColor"
+          />
+        </svg>
+        <span className={`ezdp-field__value${date ? '' : ' ezdp-field__value--placeholder'}`}>
+          {date ? fmtDisplay(date) : placeholder}
+        </span>
+      </button>
+      {open && (
+        <CustomDateCalendar
+          variant={variant}
+          mode="single"
+          numberOfMonths={numberOfMonths}
+          showMonthYearDropdowns={showMonthYearDropdowns}
+          value={date ? { start: date, end: date } : null}
+          onChange={(d) => {
+            onChange(toISO(d));
+            setOpen(false);
+          }}
+          onClose={() => setOpen(false)}
+        />
+      )}
+    </>
+  );
+}
+
+/**
+ * DateSelector — unified, theme-aware date selector. Single source of truth for
+ * ALL date selection across the platform (regular user, partner, organization).
  *
  * Props
- * - ranges:             string[]                          — preset labels to render
- * - value:              string                            — currently selected label
- * - onChange:           (range: string) => void
- * - size:               'xs' | 'sm' | 'md'               — defaults to 'sm'
- * - variant:            'default' | 'partner' | 'org'     — brand variant
+ * - mode:               'range' (default) | 'single'      — pill/range picker vs a single-date field
+ * - ranges:             string[]                          — preset labels (range mode)
+ * - value:              string                            — selected label (range) or ISO date (single)
+ * - onChange:           (range: string) => void  |  (isoDate: string) => void
+ * - size:               'xs' | 'sm' | 'md' | 'lg'         — defaults to 'sm' (range mode)
+ * - variant:            'default' | 'partner' | 'org'     — brand variant (emerald/gold)
  * - inactiveTextColor:  string                            — text color for non-selected pills
- * - showCustomDateButton: boolean                         — show the custom date range picker (default true)
+ * - showCustomDateButton: boolean                         — show the custom range picker (default true)
  * - onCustomDateChange: (range: {start,end}|null) => void — fires when a custom range is applied
- * - className:          string
- * - style:              CSSProperties
+ * - numberOfMonths:     1 (default) | 2                   — months shown in the calendar
+ * - showMonthYearDropdowns: boolean                       — month + year quick-nav in the calendar
+ * - disabled, placeholder, className, style               — (single mode) field passthroughs
  */
 export function DateSelector({
+  mode = 'range',
   ranges,
   value,
   onChange,
@@ -29,12 +114,33 @@ export function DateSelector({
   inactiveTextColor,
   showCustomDateButton = true,
   onCustomDateChange,
+  numberOfMonths = 1,
+  showMonthYearDropdowns = false,
+  disabled = false,
+  placeholder,
   className,
   style,
 }) {
   const [showCalendar, setShowCalendar] = useState(false);
 
   const accentColor = variant === 'partner' ? '#d4a853' : '#10b981';
+
+  if (mode === 'single') {
+    return (
+      <SingleDateField
+        value={value}
+        onChange={onChange}
+        variant={variant}
+        numberOfMonths={numberOfMonths}
+        showMonthYearDropdowns={showMonthYearDropdowns}
+        disabled={disabled}
+        placeholder={placeholder}
+        className={className}
+        style={style}
+      />
+    );
+  }
+
   const inactiveColor =
     inactiveTextColor || (variant === 'partner' ? '#a8956f' : 'var(--text-muted, #8b949e)');
 
@@ -121,6 +227,9 @@ export function DateSelector({
       {showCalendar && (
         <CustomDateCalendar
           variant={variant}
+          mode="range"
+          numberOfMonths={numberOfMonths}
+          showMonthYearDropdowns={showMonthYearDropdowns}
           value={null}
           onChange={(range) => {
             if (range && range.start && range.end) {

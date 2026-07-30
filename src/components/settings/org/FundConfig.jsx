@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
+import { DateSelector } from '@/components/ui/DateSelector';
 
 const TERM_TYPES = [
   { v: 'semester', l: 'Semester' },
@@ -115,20 +116,20 @@ export function FundConfig() {
               </div>
               <div className="settings-field">
                 <label className="settings-label">Term start</label>
-                <input
-                  type="date"
-                  className="settings-input"
+                <DateSelector
+                  mode="single"
+                  variant="org"
                   value={cfg.term_start || ''}
-                  onChange={(e) => set('term_start', e.target.value)}
+                  onChange={(iso) => set('term_start', iso)}
                 />
               </div>
               <div className="settings-field">
                 <label className="settings-label">Term end</label>
-                <input
-                  type="date"
-                  className="settings-input"
+                <DateSelector
+                  mode="single"
+                  variant="org"
                   value={cfg.term_end || ''}
-                  onChange={(e) => set('term_end', e.target.value)}
+                  onChange={(iso) => set('term_end', iso)}
                 />
               </div>
             </div>

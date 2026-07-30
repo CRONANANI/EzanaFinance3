@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { X, Search, Paperclip, Check } from 'lucide-react';
+import { DateSelector } from '@/components/ui/DateSelector';
 import { TYPE_META } from './AssignmentCard';
 
 const TYPE_ORDER = ['pitch', 'research', 'coverage', 'reading', 'model', 'meeting_prep', 'other'];
@@ -303,12 +304,10 @@ export function AssignmentDrawer({
           <label className="asg2-label" htmlFor="asg2-due">
             Due date
           </label>
-          <input
-            id="asg2-due"
-            className="asg2-input"
-            type="date"
+          <DateSelector
+            mode="single"
             value={form.due_date}
-            onChange={(e) => set({ due_date: e.target.value })}
+            onChange={(iso) => set({ due_date: iso })}
           />
         </div>
 

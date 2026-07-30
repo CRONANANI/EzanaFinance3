@@ -7,6 +7,7 @@ import {
   getDirection,
   RESOLVABLE_STATUSES,
 } from '@/lib/creator-calls';
+import { DateSelector } from '@/components/ui/DateSelector';
 import { page, shape, type as typeTokens } from './profile-design-tokens';
 
 const EMPTY_FORM = {
@@ -367,11 +368,12 @@ export function CreatorTrackRecord({ creatorId, canCreate = false }) {
               onChange={(e) => setForm({ ...form, target_price: e.target.value })}
             />
           </div>
-          <input
+          <DateSelector
+            mode="single"
             style={inputStyle}
-            type="date"
+            placeholder="Resolves on"
             value={form.resolves_at}
-            onChange={(e) => setForm({ ...form, resolves_at: e.target.value })}
+            onChange={(iso) => setForm({ ...form, resolves_at: iso })}
           />
           <textarea
             style={{ ...inputStyle, resize: 'vertical', minHeight: 52 }}
