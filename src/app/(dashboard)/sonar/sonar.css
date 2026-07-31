@@ -15,31 +15,34 @@
   inset: 0;
   z-index: -1;
   pointer-events: none;
+  /* Base = --bg-primary (white in light, near-black in dark — auto-flips); the
+     bands = the emerald token at decreasing alpha. No hardcoded hex. */
   background: radial-gradient(
     circle at 50% 42%,
-    #ffffff 0 15%,
-    rgba(16, 185, 129, 0.2) 23%,
-    #ffffff 30%,
-    rgba(16, 185, 129, 0.16) 40%,
-    #ffffff 47%,
-    rgba(16, 185, 129, 0.12) 58%,
-    #ffffff 66%,
-    rgba(16, 185, 129, 0.085) 78%,
-    #ffffff 90%
+    var(--bg-primary) 0 15%,
+    color-mix(in srgb, var(--emerald) 20%, transparent) 23%,
+    var(--bg-primary) 30%,
+    color-mix(in srgb, var(--emerald) 16%, transparent) 40%,
+    var(--bg-primary) 47%,
+    color-mix(in srgb, var(--emerald) 12%, transparent) 58%,
+    var(--bg-primary) 66%,
+    color-mix(in srgb, var(--emerald) 8.5%, transparent) 78%,
+    var(--bg-primary) 90%
   );
 }
+/* Dark mode: slightly stronger bands over the (now dark) base. */
 .dark .sonar-rings {
   background: radial-gradient(
     circle at 50% 42%,
-    #0a0e13 0 15%,
-    rgba(16, 185, 129, 0.24) 23%,
-    #0a0e13 30%,
-    rgba(16, 185, 129, 0.2) 40%,
-    #0a0e13 47%,
-    rgba(16, 185, 129, 0.15) 58%,
-    #0a0e13 66%,
-    rgba(16, 185, 129, 0.1) 78%,
-    #0a0e13 90%
+    var(--bg-primary) 0 15%,
+    color-mix(in srgb, var(--emerald) 24%, transparent) 23%,
+    var(--bg-primary) 30%,
+    color-mix(in srgb, var(--emerald) 20%, transparent) 40%,
+    var(--bg-primary) 47%,
+    color-mix(in srgb, var(--emerald) 15%, transparent) 58%,
+    var(--bg-primary) 66%,
+    color-mix(in srgb, var(--emerald) 10%, transparent) 78%,
+    var(--bg-primary) 90%
   );
 }
 
@@ -97,7 +100,7 @@
   border: 1.5px solid color-mix(in srgb, var(--emerald) 35%, transparent);
   background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
   backdrop-filter: blur(10px);
-  box-shadow: 0 12px 40px rgba(5, 150, 105, 0.14);
+  box-shadow: 0 12px 40px color-mix(in srgb, var(--emerald) 16%, transparent);
   transition: border-color 0.15s ease;
 }
 .sonar-qbar:focus-within {
@@ -239,26 +242,16 @@
 }
 .sonar-badge--person,
 .sonar-badge--ticker {
-  background: rgba(16, 185, 129, 0.14);
-  color: #047857;
+  background: var(--emerald-bg);
+  color: var(--emerald);
 }
 .sonar-badge--policy {
-  background: rgba(59, 130, 246, 0.14);
-  color: #1d4ed8;
+  background: var(--info-bg);
+  color: var(--info);
 }
 .sonar-badge--topic {
-  background: rgba(217, 119, 6, 0.16);
-  color: #b45309;
-}
-.dark .sonar-badge--person,
-.dark .sonar-badge--ticker {
-  color: #34d399;
-}
-.dark .sonar-badge--policy {
-  color: #93c5fd;
-}
-.dark .sonar-badge--topic {
-  color: #fcd34d;
+  background: var(--warning-bg);
+  color: var(--amber);
 }
 
 .sonar-quota {
@@ -532,6 +525,151 @@ a.sonar-mod-rowtitle:hover {
   line-height: 1.3;
 }
 
+/* Markets Snapshot — metric cards with a colored top border + a lead sparkline */
+.sonar-metrics {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 12px;
+}
+.sonar-metric {
+  border: 1px solid var(--border-primary);
+  border-top: 3px solid var(--emerald);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  background: transparent;
+}
+.sonar-metric--blue {
+  border-top-color: var(--info);
+}
+.sonar-metric--grey {
+  border-top-color: var(--text-faint);
+}
+.sonar-metric-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.sonar-metric-ticker {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+.sonar-metric-chg {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  font-weight: 600;
+}
+.sonar-metric-chg--pos {
+  color: var(--positive);
+}
+.sonar-metric-chg--neg {
+  color: var(--negative);
+}
+.sonar-metric-price {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 24px;
+  color: var(--text-primary);
+  margin-top: 4px;
+}
+.sonar-metric--sec .sonar-metric-price {
+  font-size: 19px;
+}
+.sonar-metric-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.sonar-spark {
+  width: 100%;
+  height: 34px;
+  margin-top: 8px;
+  display: block;
+}
+.sonar-spark polyline {
+  fill: none;
+  stroke: var(--emerald);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Relevant News — divided rows with a placeholder thumbnail */
+.sonar-news {
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.sonar-news-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 11px 14px;
+  text-decoration: none;
+}
+.sonar-news-row + .sonar-news-row {
+  border-top: 1px solid var(--border-secondary);
+}
+.sonar-news-row:hover {
+  background: var(--surface-card-hover);
+}
+.sonar-news-thumb {
+  width: 52px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-tertiary);
+  flex-shrink: 0;
+}
+.sonar-news-head {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--text-primary);
+}
+.sonar-news-row:hover .sonar-news-head {
+  color: var(--emerald);
+}
+.sonar-news-meta {
+  display: block;
+  margin-top: 3px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+/* Upcoming Catalysts — date + description rows */
+.sonar-cat-row {
+  display: flex;
+  gap: 12px;
+  padding: 9px 0;
+}
+.sonar-cat-row + .sonar-cat-row {
+  border-top: 1px solid var(--border-secondary);
+}
+.sonar-cat-date {
+  flex-shrink: 0;
+  width: 56px;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.sonar-cat-date--soon {
+  color: var(--emerald);
+}
+.sonar-cat-desc {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
 /* Key Entities chips */
 .sonar-entities {
   display: flex;
@@ -627,10 +765,10 @@ a.sonar-mod-rowtitle:hover {
   margin-top: 16px;
   padding: 14px 16px;
   border-radius: 12px;
-  border: 1px solid rgba(190, 40, 40, 0.35);
+  border: 1px solid color-mix(in srgb, var(--negative) 35%, transparent);
   background: color-mix(in srgb, var(--bg-primary) 80%, transparent);
   backdrop-filter: blur(6px);
-  color: var(--negative, #b91c1c);
+  color: var(--negative);
   font-size: 13px;
 }
 .sonar-disclaimer {
@@ -691,10 +829,16 @@ a.sonar-mod-rowtitle:hover {
   .sonar-grid {
     grid-template-columns: 1fr;
   }
+  .sonar-metrics {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 @media (max-width: 640px) {
   .sonar-h1 {
     font-size: 30px;
+  }
+  .sonar-metrics {
+    grid-template-columns: 1fr;
   }
   .sonar-hero {
     padding: 5vh 16px 32px;

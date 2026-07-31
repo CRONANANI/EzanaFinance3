@@ -11,6 +11,11 @@ import {
   KeyEntities,
   PingNext,
 } from '@/components/sonar/SonarSections';
+import {
+  MarketsSnapshot,
+  RelevantNews,
+  UpcomingCatalysts,
+} from '@/components/sonar/SonarDataSections';
 
 import './sonar.css';
 
@@ -139,6 +144,19 @@ export default function SonarPage() {
     ? result.sections.reduce((n, s) => n + s.items.length, 0)
     : 0;
 
+  // Tickers the query surfaced — drives the live market/news/catalyst modules.
+  const tickers = (() => {
+    if (!result) return [];
+    const out = [];
+    if (result.classification === 'ticker' && result.query) out.push(result.query.toUpperCase());
+    for (const s of result.sections || []) {
+      for (const it of s.items) {
+        if (it.ticker && !out.includes(it.ticker)) out.push(it.ticker);
+      }
+    }
+    return out;
+  })();
+
   return (
     <>
       <div className="sonar-rings" aria-hidden />
@@ -242,10 +260,13 @@ export default function SonarPage() {
 
                   <div className="sonar-grid">
                     <div className="sonar-col">
+                      <MarketsSnapshot tickers={tickers} />
+                      <RelevantNews tickers={tickers} query={result.query} />
                       <EchoResults sections={result.sections || []} />
                       <PredictionMarkets sections={result.sections || []} locked={result.locked} />
                     </div>
                     <div className="sonar-col">
+                      <UpcomingCatalysts tickers={tickers} />
                       <GovernmentSignal sections={result.sections || []} />
                       <KeyEntities sections={result.sections || []} subject={result.query} />
                       <PingNext sections={result.sections || []} onPick={runQuery} />
