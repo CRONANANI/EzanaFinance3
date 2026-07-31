@@ -16,8 +16,19 @@ import {
   RelevantNews,
   UpcomingCatalysts,
 } from '@/components/sonar/SonarDataSections';
+import { supabase } from '@/lib/supabase-browser';
 
 import './sonar.css';
+
+/** Current Supabase session access token (JWT), or null when signed out. Sent as a
+    Bearer header (with credentials) on the authed Sonar fetches — matching the app's
+    established pattern (e.g. select-plan/page.js) so getAuthUser accepts the request. */
+async function getAccessToken() {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  return session?.access_token || null;
+}
 
 const EXAMPLES = ['Lockheed Martin', 'Section 232 tariffs', 'Nancy Pelosi', 'critical minerals'];
 
@@ -69,7 +80,12 @@ export default function SonarPage() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch('/api/sonar/entitlements', { cache: 'no-store' });
+        const token = await getAccessToken();
+        const res = await fetch('/api/sonar/entitlements', {
+          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+          credentials: 'include',
+          cache: 'no-store',
+        });
         if (res.ok) setEntitlements(await res.json());
       } catch {
         /* non-fatal */
@@ -108,9 +124,19 @@ export default function SonarPage() {
     setPhase('searching');
     const t0 = Date.now();
     try {
+      const token = await getAccessToken();
+      if (!token) {
+        setError('Sign in to use Sonar.');
+        setPhase('error');
+        return;
+      }
       const res = await fetch('/api/sonar/query', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: 'include',
         body: JSON.stringify({ query }),
       });
       const data = await res.json().catch(() => null);
