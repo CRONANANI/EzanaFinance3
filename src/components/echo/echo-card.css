@@ -16,21 +16,21 @@
   border-radius: 0;
   overflow: hidden;
   background: transparent;
-  transform-style: preserve-3d;
+  /* Flat rendering — a 3D perspective context was sub-pixel-clipping title first
+     characters at the card edge, so the hover is now a plain translateY lift. */
+  transform-style: flat;
   transition:
-    transform 0.18s ease-out,
+    transform 0.15s ease,
     background 0.15s ease,
     border-color 0.15s ease;
 }
-/* Gravity/magnetic hover — the corner nearest the cursor lifts. The tilt vars are
-   set per-card by a mousemove handler (EchoArticleCard); carved cards are excluded
-   so their mask stays locked to the circle. */
-.echo-card:not([class*='echo-card--carve']) {
-  transform: perspective(700px) rotateX(var(--tiltX, 0deg)) rotateY(var(--tiltY, 0deg))
-    translateZ(calc(var(--lift, 0) * 6px));
-}
 .echo-card:hover {
   background: color-mix(in srgb, var(--emerald) 5%, transparent);
+}
+/* Lift on hover — never the carved cluster cards (their mask is locked to the
+   circle; a transform would detach it). */
+.echo-card:not([class*='echo-card--carve']):hover {
+  transform: translateY(-2px);
 }
 @media (prefers-reduced-motion: reduce) {
   .echo-card {
@@ -69,7 +69,8 @@
   flex-direction: column;
   gap: 8px;
   flex: 1;
-  padding: 12px 16px 14px;
+  /* Extra left/right inset so the title never sits at the card's clip boundary. */
+  padding: 12px 18px 14px;
 }
 /* Uniform card height: every title reserves the SAME 3-line block (clamped, with a
    min-height) so a 1-line and a 3-line title produce the same card height — rows
@@ -85,6 +86,7 @@
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  overflow-wrap: anywhere; /* a long first word wraps instead of clipping */
   min-height: calc(1.3em * 3);
 }
 .echo-card:hover .echo-card__title {

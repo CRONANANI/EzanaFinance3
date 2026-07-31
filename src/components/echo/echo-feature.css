@@ -41,7 +41,8 @@
   text-align: center;
   padding: 40px;
   color: #fff;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0.65) 100%);
+  /* Darker so the white text is legible over any busy hero image. */
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0.78) 100%);
 }
 .echo-feature__eyebrow {
   font-family: var(--font-sans);
@@ -51,6 +52,7 @@
   text-transform: uppercase;
   margin-bottom: 12px;
   color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 .echo-feature__title {
   margin: 0 0 10px;
@@ -63,7 +65,7 @@
   -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
 }
 .echo-feature__sub {
   margin: 0 0 12px;
@@ -82,6 +84,7 @@
   letter-spacing: 0.03em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.8);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 @keyframes echo-pulse {
   0%,
