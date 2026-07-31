@@ -9,10 +9,9 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  /* Wall-to-wall board: no card box — the only separator between stacked cards is
-     a thin bottom rule. */
+  /* Wall-to-wall board, no card box. Separation between stacked cards comes from
+     the column's uniform gap (not a rule), so spacing is identical page-wide. */
   border: none;
-  border-bottom: 1px solid var(--border-primary);
   border-radius: 0;
   /* NOT hidden — the card's clip box was shaving serif/italic title first glyphs at
      x=0. The image clips itself (.echo-card__img), so the card needn't. */
@@ -77,15 +76,19 @@
 /* Uniform card height: every title reserves the SAME 3-line block (clamped, with a
    min-height) so a 1-line and a 3-line title produce the same card height — rows
    align across columns and tall titles can't push a neighbor into overlap. */
+/* FIXED 2-line title block at 14px — every title is exactly two lines tall (clamped,
+   ellipsis on overflow) whether it's 1 or 2+ lines, so titles and everything below
+   them align across a row and all non-cluster cards share one height. Matches the
+   cluster cards' 2-line treatment. */
 .echo-card__title {
   margin: 0;
   font-family: var(--font-serif);
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.3;
   font-weight: 700;
   color: var(--text-primary);
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   /* line-clamp requires overflow:hidden on the title itself; the 1px/2px inset
      keeps its own clip box from shaving serif/italic first & last glyphs. */
@@ -93,13 +96,15 @@
   overflow-wrap: anywhere;
   padding-left: 1px;
   padding-right: 2px;
-  min-height: calc(1.3em * 3);
+  height: calc(1.3em * 2);
+  min-height: 0;
 }
 .echo-card:hover .echo-card__title {
   color: var(--emerald);
 }
 .echo-card__meta {
-  margin-top: auto; /* pin the date/read-time to the bottom of every card */
+  /* Fixed title height already aligns meta across cards — no auto-push needed. */
+  margin-top: 0;
   font-family: var(--font-mono, monospace);
   font-size: 10px;
   letter-spacing: 0.02em;

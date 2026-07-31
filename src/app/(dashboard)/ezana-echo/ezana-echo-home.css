@@ -313,12 +313,9 @@
 .eth-col {
   display: flex;
   flex-direction: column;
-  gap: 0; /* stacked cards separated by their own thin bottom rule */
+  gap: 28px; /* uniform vertical spacing between ALL stacked cards, page-wide */
   min-width: 0; /* keep for grid sizing… */
   overflow: visible; /* …but never clip column content (titles) */
-}
-.eth-col > .echo-card:last-child {
-  border-bottom: none;
 }
 /* Header wrap: centered plain label (no pill, no dot), then the two-line filter
    toggle, then the emerald underline — top to bottom. */
