@@ -43,7 +43,11 @@ async function semanticPass(admin, query, ctx, limit, threshold) {
     match_threshold: threshold,
     match_count: limit,
   });
-  if (error || !Array.isArray(data)) return [];
+  if (error) {
+    console.error('[sonar] markets semantic RPC failed', { message: error.message });
+    return [];
+  }
+  if (!Array.isArray(data)) return [];
   return data.map(toResult);
 }
 
@@ -54,7 +58,11 @@ async function lexicalPass(admin, query, limit) {
     .in('status', ['active', 'true'])
     .textSearch('tsv', query, { type: 'websearch', config: 'english' })
     .limit(limit);
-  if (error || !Array.isArray(data)) return [];
+  if (error) {
+    console.error('[sonar] markets lexical query failed', { message: error.message });
+    return [];
+  }
+  if (!Array.isArray(data)) return [];
   return data.map(toResult);
 }
 
