@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { SonarQueryBar } from './SonarQueryBar';
 
 /**
@@ -19,6 +20,8 @@ export function SonarHero({
   quota,
   version,
 }) {
+  const [showAll, setShowAll] = useState(false);
+  const visibleRecent = showAll ? recent : recent?.slice(0, 3);
   return (
     <div className="sonar-hero">
       <div className="sonar-eyebrow">Ezana Sonar</div>
@@ -46,17 +49,28 @@ export function SonarHero({
 
       {recent?.length > 0 && (
         <div className="sonar-recent">
-          <div className="sonar-recent-title">Recent pings</div>
-          {recent.map((r, i) => (
+          <div className="sonar-recent-head">
+            <span className="sonar-recent-title">Recent pings</span>
+            {recent.length > 3 && (
+              <button
+                type="button"
+                className="sonar-recent-viewall"
+                onClick={() => setShowAll((v) => !v)}
+              >
+                {showAll ? 'Show less' : 'View all'}
+              </button>
+            )}
+          </div>
+          {visibleRecent.map((r, i) => (
             <button
               key={`${r.query}-${i}`}
               type="button"
               className="sonar-recent-row"
               onClick={() => onPick(r.query)}
             >
-              <span className={`sonar-badge sonar-badge--${r.type}`}>{r.typeLabel}</span>
+              <span className={`sonar-recent-dot sonar-recent-dot--${r.type}`} aria-hidden />
               <span className="sonar-recent-q">{r.query}</span>
-              <span className="sonar-recent-time">{r.rel}</span>
+              <span className={`sonar-badge sonar-badge--${r.type}`}>{r.typeLabel}</span>
             </button>
           ))}
         </div>

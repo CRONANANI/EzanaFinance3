@@ -184,8 +184,12 @@ export default function SonarPage() {
   })();
 
   return (
-    <>
-      <div className="sonar-rings" aria-hidden />
+    <div className="sonar-root">
+      {/* Radar rings — inside the isolated .sonar-root so they paint ABOVE the
+          dashboard shell's opaque background (which previously hid them entirely at
+          z-index:-1) but stay BEHIND the sonar content. Shown only in the hero; the
+          results view is clean like the design. */}
+      {phase === 'idle' && <div className="sonar-rings" aria-hidden />}
 
       <div className="sonar-page">
         {phase === 'idle' ? (
@@ -210,6 +214,7 @@ export default function SonarPage() {
                 onChange={setQueryText}
                 onSubmit={runQuery}
                 loading={loading}
+                compact
               />
             </div>
 
@@ -307,6 +312,6 @@ export default function SonarPage() {
           </>
         )}
       </div>
-    </>
+    </div>
   );
 }

@@ -1,15 +1,22 @@
 'use client';
 
-import { Search, Radar } from 'lucide-react';
+import { Search, Radar, Paperclip } from 'lucide-react';
 
 /**
  * SonarQueryBar — the Ping input pill. Search icon + text input + emerald Ping
  * button. Used in the hero and, compact, in the sticky results bar. Controlled by
- * the page (the page owns query state + the backend call). The attach affordance
- * is intentionally omitted — Sonar has no file-query path yet, and a dead button
- * would mislead.
+ * the page (the page owns query state + the backend call). The paperclip is a
+ * DECORATIVE affordance (aria-hidden, non-focusable) to match the design — Sonar
+ * has no file-query path yet, so it is deliberately not an interactive control.
  */
-export function SonarQueryBar({ value, onChange, onSubmit, loading = false, autoFocus = false }) {
+export function SonarQueryBar({
+  value,
+  onChange,
+  onSubmit,
+  loading = false,
+  autoFocus = false,
+  compact = false,
+}) {
   return (
     <form
       className="sonar-qbar"
@@ -30,6 +37,11 @@ export function SonarQueryBar({ value, onChange, onSubmit, loading = false, auto
         maxLength={800}
         autoFocus={autoFocus}
       />
+      {!compact && (
+        <span className="sonar-qbar-attach" aria-hidden>
+          <Paperclip size={17} />
+        </span>
+      )}
       <button className="sonar-ping-btn" type="submit" disabled={loading || !value.trim()}>
         <Radar size={15} aria-hidden />
         {loading ? 'Sweeping…' : 'Ping'}
