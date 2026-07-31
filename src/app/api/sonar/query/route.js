@@ -27,7 +27,21 @@ import {
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const ANTHROPIC_MODEL = 'claude-sonnet-4-5';
+// Synthesis model by plan depth so cost tracks revenue: cheap, versioned Haiku for
+// free/standard grounded summaries; a stronger model for paid "deep" synthesis.
+// (Grounded summarization doesn't need a frontier model — Haiku is plenty and ~10x
+// cheaper on the same Anthropic key.)
+function modelForDepth(depth) {
+  switch (depth) {
+    case 'deep':
+      return 'claude-sonnet-5';
+    case 'standard':
+    case 'summary':
+    default:
+      return 'claude-haiku-4-5-20251001';
+  }
+}
+
 const DISCLAIMER =
   'Sonar synthesizes sourced research from Ezana’s datasets — not financial advice or a recommendation to buy or sell any security.';
 
@@ -58,7 +72,7 @@ function buildContext(items) {
     .join('\n\n');
 }
 
-async function synthesize(query, items, maxTokens) {
+async function synthesize(query, items, maxTokens, model) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return { answer: null, degraded: 'no LLM key' };
   try {
@@ -70,7 +84,7 @@ async function synthesize(query, items, maxTokens) {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: ANTHROPIC_MODEL,
+        model,
         max_tokens: maxTokens,
         system: SYSTEM_PROMPT,
         messages: [
@@ -81,7 +95,19 @@ async function synthesize(query, items, maxTokens) {
         ],
       }),
     });
-    if (!res.ok) return { answer: null, degraded: `llm ${res.status}` };
+    if (!res.ok) {
+      // Log Anthropic's real error body (model access, request validity, …) — the
+      // status alone hid the cause. Logs the model + status + error text only, never
+      // the user's query/data.
+      let detail = '';
+      try {
+        detail = await res.text();
+      } catch {
+        /* ignore */
+      }
+      console.error('[sonar] synthesis LLM error', { model, status: res.status, detail });
+      return { answer: null, degraded: `llm ${res.status}` };
+    }
     const data = await res.json();
     const answer = data?.content?.[0]?.text?.trim();
     return answer ? { answer } : { answer: null, degraded: 'empty llm reply' };
@@ -184,7 +210,12 @@ export const POST = withApiGuard(
     let grounded = false;
     let degraded;
     if (marked.length) {
-      const out = await synthesize(query, marked, budget.maxTokens);
+      const out = await synthesize(
+        query,
+        marked,
+        budget.maxTokens,
+        modelForDepth(entitlements.depth),
+      );
       answer = out.answer;
       degraded = out.degraded;
       grounded = Boolean(answer);
