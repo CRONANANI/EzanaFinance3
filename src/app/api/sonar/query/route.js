@@ -30,7 +30,11 @@ export const dynamic = 'force-dynamic';
 // serverless headroom so the request doesn't time out mid-search.
 export const maxDuration = 60;
 
-// Synthesis model by plan depth so cost tracks revenue: cheap, versioned Haiku for
+// Versioned Haiku — the safe, cheap, confirmed-working model. Also the fallback
+// model when a richer request 400s (e.g. deep-tier model access or the web tool).
+const HAIKU_MODEL = 'claude-haiku-4-5-20251001';
+
+// Synthesis model by plan depth so cost tracks revenue: cheap Haiku for
 // free/standard grounded summaries; a stronger model for paid "deep" synthesis.
 // (Grounded summarization doesn't need a frontier model — Haiku is plenty and ~10x
 // cheaper on the same Anthropic key.)
@@ -41,7 +45,7 @@ function modelForDepth(depth) {
     case 'standard':
     case 'summary':
     default:
-      return 'claude-haiku-4-5-20251001';
+      return HAIKU_MODEL;
   }
 }
 
@@ -108,11 +112,25 @@ function parseAnthropicContent(content) {
   return { answer: text.trim(), webUsed, webSources };
 }
 
+function callAnthropic(body, apiKey) {
+  return fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify(body),
+  });
+}
+
 async function synthesize(query, items, maxTokens, model, webSearch) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return { answer: null, degraded: 'no LLM key' };
   try {
-    const body = {
+    // Base (dataset-only) request — no tools. Always valid; used directly and as the
+    // fail-safe retry so synthesis never hard-fails on a tool/model issue.
+    const baseBody = {
       model,
       max_tokens: maxTokens,
       system: SYSTEM_PROMPT,
@@ -123,24 +141,52 @@ async function synthesize(query, items, maxTokens, model, webSearch) {
         },
       ],
     };
-    // Anthropic's native web search tool (same key; returns citations; no third-party
-    // vendor). The versioned type is required by the API. NOTE (SOC 2 / Law 25): the
+
+    // Web search is ADDITIVE, never a hard dependency. It runs only when the plan
+    // entitles it AND it's turned on for this deployment (SONAR_WEB_SEARCH=true) —
+    // default off, so synthesis works even before web search is enabled in the
+    // Anthropic Console. Anthropic's native tool (same key; returns citations; no
+    // third-party vendor); the versioned type is required. NOTE (SOC 2 / Law 25): the
     // ping text is sent to Anthropic's web search — do not pass user PII beyond it.
-    if (webSearch?.enabled) {
-      body.tools = [
-        { type: 'web_search_20250305', name: 'web_search', max_uses: webSearch.maxUses },
-      ];
+    const webOn = Boolean(webSearch?.enabled) && process.env.SONAR_WEB_SEARCH === 'true';
+    const maxUses = Math.max(1, Number(webSearch?.maxUses) || 3); // valid positive int
+
+    let res;
+    if (webOn) {
+      const withTool = {
+        ...baseBody,
+        tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: maxUses }],
+      };
+      res = await callAnthropic(withTool, apiKey);
+      if (res.status === 400) {
+        // Tool likely unavailable (web search disabled for the org, etc.) — log and
+        // retry WITHOUT the tool so dataset-grounded synthesis still succeeds.
+        let detail = '';
+        try {
+          detail = await res.text();
+        } catch {
+          /* ignore */
+        }
+        console.warn('[sonar] web_search 400 — retrying without tool', { model, detail });
+        res = await callAnthropic(baseBody, apiKey);
+      }
+    } else {
+      res = await callAnthropic(baseBody, apiKey);
     }
 
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify(body),
-    });
+    // If the (possibly non-Haiku) model still 400s, retry once on the safe Haiku
+    // model — covers a deep-tier model the account can't access.
+    if (res.status === 400 && model !== HAIKU_MODEL) {
+      let detail = '';
+      try {
+        detail = await res.text();
+      } catch {
+        /* ignore */
+      }
+      console.warn('[sonar] model 400 — retrying on Haiku', { model, detail });
+      res = await callAnthropic({ ...baseBody, model: HAIKU_MODEL }, apiKey);
+    }
+
     if (!res.ok) {
       // Log Anthropic's real error body (model access, request validity, …) — the
       // status alone hid the cause. Logs the model + status + error text only, never
