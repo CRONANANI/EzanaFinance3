@@ -1,341 +1,637 @@
 /* ══════════════════════════════════════════════════════════════
-   Ezana Sonar — the intelligence surface. The animated input (SonarInput.jsx)
-   sits on a full-bleed "Echo Rings" emerald gradient (white core → mint → emerald
-   → deep emerald). Results render on an opaque theme "sheet" so token text stays
-   legible over the gradient in both themes. Reduced-motion aware.
+   Ezana Sonar — redesigned intelligence surface (Claude Design handoff).
+   Two states: a rings-gradient hero (pre-search) and a results state with a
+   sticky query bar + a streaming, cited "Live Briefing". Plus Jakarta Sans UI,
+   JetBrains Mono for all numerals/eyebrows, Newsreader serif for Echo headlines.
+   Theme tokens throughout; translucent panels so the rings read through. Reduced-
+   motion aware.
    ══════════════════════════════════════════════════════════════ */
 
-/* Echo Rings: a single radial-gradient of 12 concentric hard-stop rings, the
-   Ocean Rings recipe remapped to Ezana emerald with the white center preserved. */
-.sonar-gradient-bg {
+/* Rings gradient: a single radial-gradient of uneven fading emerald bands over a
+   white base (alpha decreases outward, 0.20 → 0.085 — deliberate). Dark mode uses
+   a dark base with slightly stronger bands. */
+.sonar-rings {
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background-color: #ffffff;
-  background-image: radial-gradient(
-    circle at 50% 50%,
-    #ffffff 0%,
-    #ffffff 6.83%,
-    #f2fdf7 8.33%,
-    #f2fdf7 15.17%,
-    #e5fcf0 16.67%,
-    #e5fcf0 23.5%,
-    #d8fae9 25%,
-    #d8fae9 31.83%,
-    #bdf3db 33.33%,
-    #bdf3db 40.17%,
-    #8ae2c0 41.67%,
-    #8ae2c0 48.5%,
-    #56d0a5 50%,
-    #56d0a5 56.83%,
-    #23bf8a 58.33%,
-    #23bf8a 65.17%,
-    #0ea976 66.67%,
-    #0ea976 73.5%,
-    #0b9066 75%,
-    #0b9066 81.83%,
-    #087756 83.33%,
-    #087756 90.17%,
-    #065f46 91.67%,
-    #065f46 98.5%
+  background: radial-gradient(
+    circle at 50% 42%,
+    #ffffff 0 15%,
+    rgba(16, 185, 129, 0.2) 23%,
+    #ffffff 30%,
+    rgba(16, 185, 129, 0.16) 40%,
+    #ffffff 47%,
+    rgba(16, 185, 129, 0.12) 58%,
+    #ffffff 66%,
+    rgba(16, 185, 129, 0.085) 78%,
+    #ffffff 90%
   );
 }
+.dark .sonar-rings {
+  background: radial-gradient(
+    circle at 50% 42%,
+    #0a0e13 0 15%,
+    rgba(16, 185, 129, 0.24) 23%,
+    #0a0e13 30%,
+    rgba(16, 185, 129, 0.2) 40%,
+    #0a0e13 47%,
+    rgba(16, 185, 129, 0.15) 58%,
+    #0a0e13 66%,
+    rgba(16, 185, 129, 0.1) 78%,
+    #0a0e13 90%
+  );
+}
+
 .sonar-page {
   position: relative;
   z-index: 1;
-  max-width: 880px;
-  margin: 0 auto;
-  padding: 8px 0 64px;
   font-family: var(--font-sans);
   color: var(--text-secondary);
 }
-.sonar-hero {
-  text-align: center;
-  padding: 34px 0 6px;
+.sonar-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }
+
+/* ── State 01 — pre-search hero ─────────────────────────────────────────────── */
+.sonar-hero {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 7vh 20px 40px;
+  text-align: center;
+}
+.sonar-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--emerald);
+}
+.sonar-h1 {
+  margin: 14px 0 0;
+  font-size: 40px;
+  line-height: 1.05;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+}
+.sonar-sub {
+  margin: 14px auto 0;
+  max-width: 480px;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+/* ── Query bar (pill) — used in the hero and, compact, in the sticky bar ─────── */
+.sonar-qbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 640px;
+  margin: 26px auto 0;
+  padding: 8px 8px 8px 16px;
+  border-radius: 9999px;
+  border: 1.5px solid color-mix(in srgb, var(--emerald) 35%, transparent);
+  background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 12px 40px rgba(5, 150, 105, 0.14);
+  transition: border-color 0.15s ease;
+}
+.sonar-qbar:focus-within {
+  border-color: var(--emerald);
+}
+.sonar-qbar-icon {
+  flex-shrink: 0;
+  color: var(--emerald);
+}
+.sonar-qbar-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  outline: none;
+  padding: 6px 0;
+}
+.sonar-qbar-input::placeholder {
+  color: var(--text-ghost);
+}
+.sonar-ping-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 9999px;
+  background: var(--emerald);
+  color: #fff;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: filter 0.14s ease;
+}
+.sonar-ping-btn:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+.sonar-ping-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Example query pills */
+.sonar-examples {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: 18px auto 0;
+  max-width: 620px;
+}
+.sonar-ex-pill {
+  padding: 6px 14px;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--emerald) 25%, transparent);
+  background: color-mix(in srgb, var(--bg-primary) 60%, transparent);
+  backdrop-filter: blur(6px);
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  transition:
+    border-color 0.14s ease,
+    color 0.14s ease;
+}
+.sonar-ex-pill:hover {
+  border-color: var(--emerald);
+  color: var(--text-primary);
+}
+
+/* Recent pings — translucent so the rings show through */
+.sonar-recent {
+  max-width: 560px;
+  margin: 28px auto 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border-primary);
+  background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
+  backdrop-filter: blur(10px);
+  text-align: left;
+}
+.sonar-recent-title {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.sonar-recent-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 4px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  border-radius: 8px;
+}
+.sonar-recent-row:hover {
+  background: color-mix(in srgb, var(--emerald) 7%, transparent);
+}
+.sonar-recent-row + .sonar-recent-row {
+  border-top: 1px solid color-mix(in srgb, var(--border-primary) 60%, transparent);
+}
+.sonar-recent-q {
+  flex: 1;
+  min-width: 0;
+  font-size: 13.5px;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sonar-recent-time {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-ghost);
+  flex-shrink: 0;
+}
+
+/* Type badge (Policy=blue, Person=emerald, Topic=amber, Ticker=emerald) */
+.sonar-badge {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.sonar-badge--person,
+.sonar-badge--ticker {
+  background: rgba(16, 185, 129, 0.14);
+  color: #047857;
+}
+.sonar-badge--policy {
+  background: rgba(59, 130, 246, 0.14);
+  color: #1d4ed8;
+}
+.sonar-badge--topic {
+  background: rgba(217, 119, 6, 0.16);
+  color: #b45309;
+}
+.dark .sonar-badge--person,
+.dark .sonar-badge--ticker {
+  color: #34d399;
+}
+.dark .sonar-badge--policy {
+  color: #93c5fd;
+}
+.dark .sonar-badge--topic {
+  color: #fcd34d;
+}
+
 .sonar-quota {
   text-align: center;
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.03em;
-  color: #065f46; /* deep-emerald reads on the light gradient core */
-  margin-top: 16px;
+  color: var(--text-muted);
+  margin-top: 20px;
 }
 
-/* Available / locked dataset chips (pre-query context) */
-.sonar-chips {
+/* ── State 02 — sticky query bar ────────────────────────────────────────────── */
+.sonar-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 30;
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 7px;
-  margin: 18px auto 0;
-  max-width: 680px;
-}
-.sonar-chip {
-  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  /* Frosted-light so chips read on the gradient core AND on the results sheet. */
-  border: 1px solid rgba(6, 95, 70, 0.22);
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(4px);
-  font-size: 11px;
-  color: #0b3b2e;
-  white-space: nowrap;
+  gap: 14px;
+  padding: 14px 4px;
+  margin-bottom: 10px;
+  background: color-mix(in srgb, var(--bg-primary) 82%, transparent);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-primary);
 }
-.sonar-chip--on {
-  border-color: rgba(6, 95, 70, 0.45);
-  color: #064e3b;
-}
-.sonar-chip--on::before {
-  content: '';
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--emerald);
-}
-.sonar-chip--locked {
-  color: rgba(6, 95, 70, 0.5);
-  border-style: dashed;
-}
-
-/* Sonar sweep (loading) */
-.sonar-sweep {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 18px;
-  padding: 52px 0;
-}
-.sonar-radar {
-  position: relative;
-  width: 132px;
-  height: 132px;
-  border-radius: 50%;
-  border: 1px solid color-mix(in srgb, var(--emerald) 30%, transparent);
-}
-.sonar-radar::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: conic-gradient(
-    from 0deg,
-    color-mix(in srgb, var(--emerald) 42%, transparent),
-    transparent 42%
-  );
-  animation: sonar-spin 1.4s linear infinite;
-}
-.sonar-radar::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  border: 1px solid color-mix(in srgb, var(--emerald) 55%, transparent);
-  animation: sonar-ping 1.8s ease-out infinite;
-}
-.sonar-sweep-label {
+.sonar-sticky-label {
   font-family: var(--font-mono);
   font-size: 12px;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.16em;
+  font-weight: 700;
   color: var(--emerald);
+  flex-shrink: 0;
 }
-@keyframes sonar-spin {
-  to {
-    transform: rotate(360deg);
-  }
+.sonar-sticky .sonar-qbar {
+  margin: 0;
+  max-width: none;
+  flex: 1;
+  padding: 5px 5px 5px 14px;
+  box-shadow: none;
 }
-@keyframes sonar-ping {
-  0% {
-    transform: scale(0.5);
-    opacity: 0.85;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 0;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .sonar-radar::before,
-  .sonar-radar::after {
-    animation: none;
-  }
-  .sonar-radar::before {
-    opacity: 0.5;
-  }
+.sonar-sticky .sonar-ping-btn {
+  height: 34px;
+  padding: 0 14px;
 }
 
-/* Opaque theme "sheet" the results render on, so token-colored text stays legible
-   over the emerald gradient in both light and dark themes. */
-.sonar-sheet {
-  margin-top: 26px;
-  padding: 20px 22px 24px;
+/* Body of the results state */
+.sonar-body {
+  padding: 4px 4px 40px;
+}
+
+/* ── Section 1 — Live Answer (Live Briefing) ────────────────────────────────── */
+.sonar-answer {
+  border: 1px solid color-mix(in srgb, var(--emerald) 30%, transparent);
   border-radius: 16px;
-  border: 1px solid var(--border-primary);
-  background: var(--bg-primary);
-  box-shadow: 0 18px 50px rgba(6, 95, 70, 0.16);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--emerald) 7%, color-mix(in srgb, var(--bg-primary) 86%, transparent)),
+    color-mix(in srgb, var(--bg-primary) 86%, transparent)
+  );
+  backdrop-filter: blur(10px);
+  padding: 18px 20px 16px;
 }
-
-/* Results */
-.sonar-results {
-  margin-top: 4px;
-}
-.sonar-readline {
+.sonar-answer-head {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
+}
+.sonar-ping-dot {
+  position: relative;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--emerald);
+  flex-shrink: 0;
+}
+.sonar-ping-dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--emerald);
+  animation: sonarPing 1.8s ease-out infinite;
+}
+.sonar-ping-dot--frozen::after {
+  animation: none;
+  opacity: 0;
+}
+.sonar-live-label {
   font-family: var(--font-mono);
   font-size: 11px;
-  letter-spacing: 0.04em;
-  color: var(--text-muted);
-  text-transform: uppercase;
-}
-.sonar-readline b {
-  color: var(--text-primary);
-  text-transform: none;
-  font-family: var(--font-sans);
-  font-size: 15px;
+  letter-spacing: 0.14em;
   font-weight: 700;
-  letter-spacing: 0;
+  text-transform: uppercase;
+  color: var(--text-primary);
 }
-.sonar-tag {
-  padding: 2px 8px;
-  border-radius: 999px;
-  border: 1px solid var(--border-primary);
-  color: var(--emerald);
+.sonar-answer-meta {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-muted);
 }
-.sonar-briefing {
-  border: 1px solid var(--border-primary);
-  border-left: 3px solid var(--emerald);
-  border-radius: 12px;
-  background: var(--surface-card, var(--bg-secondary));
-  padding: 18px 20px;
-  font-size: 14.5px;
+.sonar-answer-body {
+  font-size: 17px;
   line-height: 1.62;
   color: var(--text-primary);
   white-space: pre-wrap;
 }
-.sonar-note {
-  margin-top: 12px;
-  padding: 12px 14px;
-  border-radius: 10px;
-  border: 1px dashed var(--border-primary);
-  font-size: 13px;
-  color: var(--text-muted);
+.sonar-caret {
+  display: inline-block;
+  width: 2px;
+  height: 1.05em;
+  margin-left: 1px;
+  vertical-align: text-bottom;
+  background: var(--emerald);
+  animation: sonarCaret 1s step-end infinite;
 }
-.sonar-note--warn {
-  border-color: color-mix(in srgb, var(--warning, #d4a853) 50%, transparent);
-  color: var(--text-secondary);
-}
-
-/* Dataset-sourced sections */
-.sonar-section {
-  margin-top: 20px;
-}
-.sonar-section-head {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--border-primary);
-  margin-bottom: 10px;
-}
-.sonar-section-label {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--text-primary);
-}
-.sonar-section-source {
+.sonar-cite {
   font-family: var(--font-mono);
-  font-size: 10.5px;
-  color: var(--text-muted);
-}
-.sonar-source {
-  display: flex;
-  gap: 10px;
-  padding: 9px 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--border-primary) 60%, transparent);
-}
-.sonar-source:last-child {
-  border-bottom: none;
-}
-.sonar-marker {
-  flex-shrink: 0;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--emerald);
-  padding-top: 1px;
-}
-.sonar-source-body {
-  min-width: 0;
-}
-.sonar-source-title {
-  font-size: 13.5px;
-  color: var(--text-primary);
-  text-decoration: none;
+  font-size: 0.62em;
   font-weight: 600;
-}
-a.sonar-source-title:hover {
+  vertical-align: super;
   color: var(--emerald);
+  text-decoration: none;
+  padding: 0 1px;
 }
-.sonar-source-meta {
-  margin-top: 2px;
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  color: var(--text-muted);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-.sonar-source-snip {
-  margin-top: 4px;
-  font-size: 12.5px;
-  line-height: 1.5;
-  color: var(--text-muted);
+.sonar-cite:hover {
+  text-decoration: underline;
 }
 
-/* "What Sonar searched" manifest + upgrade */
+/* "Sonar searched" manifest — hit (dot) vs searched-no-hit (outline, no dot) */
 .sonar-manifest {
-  margin-top: 28px;
-  padding: 16px 18px;
-  border-radius: 12px;
-  border: 1px solid var(--border-primary);
-  background: var(--bg-secondary);
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid color-mix(in srgb, var(--border-primary) 70%, transparent);
 }
 .sonar-manifest-title {
   font-family: var(--font-mono);
-  font-size: 10.5px;
+  font-size: 10px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--text-muted);
-  margin-bottom: 10px;
+  margin-bottom: 9px;
 }
 .sonar-manifest-row {
   display: flex;
   flex-wrap: wrap;
   gap: 7px;
 }
-.sonar-upgrade {
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border-primary);
+.sonar-src-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  border: 1px solid var(--border-primary);
+  color: var(--text-muted);
+}
+.sonar-src-chip--hit {
+  border-color: color-mix(in srgb, var(--emerald) 45%, transparent);
+  background: color-mix(in srgb, var(--emerald) 10%, transparent);
+  color: var(--text-primary);
+}
+.sonar-src-chip--hit::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--emerald);
+}
+
+/* ── Dashboard grid + modules ───────────────────────────────────────────────── */
+.sonar-grid {
+  display: grid;
+  grid-template-columns: 1fr 330px;
+  gap: 20px;
+  margin-top: 20px;
+  align-items: start;
+}
+.sonar-col {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+.sonar-module {
+  position: relative;
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--bg-primary) 74%, transparent);
+  backdrop-filter: blur(8px);
+  padding: 14px 16px 16px;
+  animation: sonarSurface 0.5s ease-out both; /* stagger-in on results */
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+.sonar-col > .sonar-module:nth-child(2) {
+  animation-delay: 0.06s;
+}
+.sonar-col > .sonar-module:nth-child(3) {
+  animation-delay: 0.12s;
+}
+.sonar-module:hover {
+  border-color: color-mix(in srgb, var(--emerald) 20%, transparent);
+  background: color-mix(in srgb, var(--bg-primary) 80%, transparent);
+}
+.sonar-mod-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.sonar-mod-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.sonar-mod-source {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.sonar-mod-row {
+  display: flex;
+  gap: 10px;
+  padding: 9px 0;
+}
+.sonar-mod-row + .sonar-mod-row {
+  border-top: 1px solid color-mix(in srgb, var(--border-primary) 60%, transparent);
+}
+.sonar-mod-marker {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--emerald);
+}
+.sonar-mod-rowtitle {
+  font-size: 13.5px;
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+a.sonar-mod-rowtitle:hover {
+  color: var(--emerald);
+}
+.sonar-mod-meta {
+  margin-top: 3px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-muted);
+}
+.sonar-mod-snip {
+  margin-top: 4px;
   font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.sonar-echo-title {
+  font-family: var(--font-serif);
+  font-size: 15px;
+  line-height: 1.3;
+}
+
+/* Key Entities chips */
+.sonar-entities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.sonar-entity {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  border: 1px solid var(--border-primary);
+  font-size: 12px;
   color: var(--text-secondary);
 }
-.sonar-upgrade a {
+.sonar-entity-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--emerald);
+}
+
+/* Ping Next pills */
+.sonar-next {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.sonar-next-pill {
+  padding: 5px 12px;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--emerald) 30%, transparent);
+  background: color-mix(in srgb, var(--emerald) 8%, transparent);
   color: var(--emerald);
+  font-size: 12.5px;
   font-weight: 600;
+  cursor: pointer;
+}
+.sonar-next-pill:hover {
+  background: color-mix(in srgb, var(--emerald) 14%, transparent);
+}
+
+/* Gated section — blurred REAL data + overlay (never hidden) */
+.sonar-gated {
+  position: relative;
+  overflow: hidden;
+}
+.sonar-gated-content {
+  filter: blur(3.5px);
+  opacity: 0.5;
+  pointer-events: none;
+  user-select: none;
+}
+.sonar-gated-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  padding: 20px;
+  background: color-mix(in srgb, var(--bg-primary) 30%, transparent);
+}
+.sonar-gated-lock {
+  color: var(--emerald);
+}
+.sonar-gated-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.sonar-gated-cta {
+  padding: 6px 14px;
+  border-radius: 9999px;
+  background: var(--emerald);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 700;
   text-decoration: none;
 }
-.sonar-upgrade a:hover {
-  text-decoration: underline;
+
+.sonar-note {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px dashed var(--border-primary);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.sonar-error {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(190, 40, 40, 0.35);
+  background: color-mix(in srgb, var(--bg-primary) 80%, transparent);
+  backdrop-filter: blur(6px);
+  color: var(--negative, #b91c1c);
+  font-size: 13px;
 }
 .sonar-disclaimer {
   margin-top: 18px;
@@ -344,14 +640,69 @@ a.sonar-source-title:hover {
   color: var(--text-ghost);
   text-align: center;
 }
-.sonar-error {
-  margin-top: 20px;
-  padding: 14px 16px;
-  border-radius: 12px;
-  /* Frosted-light so it reads on the gradient (rendered outside the sheet). */
-  border: 1px solid rgba(190, 40, 40, 0.35);
-  background: rgba(255, 255, 255, 0.78);
-  backdrop-filter: blur(6px);
-  color: #7f1d1d;
-  font-size: 13px;
+
+/* Stagger-in for sections on results */
+.sonar-surface {
+  animation: sonarSurface 0.5s ease-out both;
+}
+
+@keyframes sonarPing {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+@keyframes sonarCaret {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+@keyframes sonarSurface {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sonar-ping-dot::after,
+  .sonar-caret {
+    animation: none;
+  }
+  .sonar-surface,
+  .sonar-module {
+    animation: none;
+  }
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .sonar-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 640px) {
+  .sonar-h1 {
+    font-size: 30px;
+  }
+  .sonar-hero {
+    padding: 5vh 16px 32px;
+  }
+  .sonar-answer-body {
+    font-size: 15.5px;
+  }
+  .sonar-sticky-label {
+    display: none;
+  }
 }

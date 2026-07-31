@@ -1,249 +1,264 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { SonarInput } from '@/components/sonar/SonarInput';
+import { SonarHero } from '@/components/sonar/SonarHero';
+import { SonarQueryBar } from '@/components/sonar/SonarQueryBar';
+import { SonarLiveAnswer } from '@/components/sonar/SonarLiveAnswer';
+import {
+  EchoResults,
+  GovernmentSignal,
+  PredictionMarkets,
+  KeyEntities,
+  PingNext,
+} from '@/components/sonar/SonarSections';
 
 import './sonar.css';
 
+const EXAMPLES = ['Lockheed Martin', 'Section 232 tariffs', 'Nancy Pelosi', 'critical minerals'];
+
+/** Classification → recent-ping/query-type badge (Policy=blue, Person=emerald, Topic=amber). */
+function badgeType(classification) {
+  switch (classification) {
+    case 'person':
+    case 'username':
+      return { type: 'person', label: 'Person' };
+    case 'policy':
+    case 'bill':
+      return { type: 'policy', label: 'Policy' };
+    case 'ticker':
+      return { type: 'ticker', label: 'Ticker' };
+    case 'organization':
+      return { type: 'topic', label: 'Firm' };
+    default:
+      return { type: 'topic', label: 'Topic' };
+  }
+}
+
+function relTime(ts) {
+  const s = Math.max(0, (Date.now() - ts) / 1000);
+  if (s < 60) return 'just now';
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
+}
+
 /**
- * Ezana Sonar — the universal intelligence surface. Type anything (a person, a
- * bank, a policy, a ticker, a bill, an @user) and get back a synthesized, cited
- * briefing assembled by cross-referencing Ezana's datasets. Companion to Echo:
- * Echo reflects the news, Sonar probes on demand. Everything the surface shows —
- * which datasets are searchable, the quota, the upgrade prompt — is driven by the
- * server-side entitlement matrix (plan tier × version).
+ * Ezana Sonar — redesigned intelligence surface. State 01 is a rings-gradient
+ * hero (Ping input, examples, recent pings, live quota); on submit it collapses to
+ * State 02: a sticky query bar, a streaming cited "Live Briefing" (from the real
+ * /api/sonar/query), and a dashboard of modules that render from the real response
+ * (Echo, Government Signal, Prediction Markets — gated when the plan doesn't
+ * include it, Key Entities, Ping Next). The API enforces the entitlement matrix.
  */
 export default function SonarPage() {
   const [entitlements, setEntitlements] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [queryText, setQueryText] = useState('');
+  const [phase, setPhase] = useState('idle'); // idle | searching | streaming | complete | error
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+  const [elapsedSec, setElapsedSec] = useState(null);
+  const [recent, setRecent] = useState([]);
 
-  // Pull the user's Sonar capabilities up front so the surface is honest about
-  // what it can (and can't yet) search before the first ping.
   useEffect(() => {
-    let cancelled = false;
     (async () => {
       try {
         const res = await fetch('/api/sonar/entitlements', { cache: 'no-store' });
-        if (!res.ok) return;
-        const data = await res.json();
-        if (!cancelled) setEntitlements(data);
+        if (res.ok) setEntitlements(await res.json());
       } catch {
-        /* non-fatal — the surface still works, just without the pre-query context */
+        /* non-fatal */
       }
     })();
-    return () => {
-      cancelled = true;
-    };
+    try {
+      const r = JSON.parse(localStorage.getItem('sonar_recent') || '[]');
+      if (Array.isArray(r)) setRecent(r);
+    } catch {
+      /* ignore */
+    }
   }, []);
 
-  async function runQuery(rawQuery) {
-    const q = String(rawQuery || '').trim();
-    if (!q || loading) return;
-    setLoading(true);
+  function pushRecent(query, classification) {
+    const bt = badgeType(classification);
+    setRecent((prev) => {
+      const next = [
+        { query, type: bt.type, typeLabel: bt.label, at: Date.now() },
+        ...prev.filter((p) => p.query !== query),
+      ].slice(0, 6);
+      try {
+        localStorage.setItem('sonar_recent', JSON.stringify(next));
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  }
+
+  async function runQuery(raw) {
+    const query = String(raw || '').trim();
+    if (!query || phase === 'searching' || phase === 'streaming') return;
+    setQueryText(query);
     setError(null);
     setResult(null);
+    setPhase('searching');
+    const t0 = Date.now();
     try {
       const res = await fetch('/api/sonar/query', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: q }),
+        body: JSON.stringify({ query }),
       });
       const data = await res.json().catch(() => null);
+      setElapsedSec(((Date.now() - t0) / 1000).toFixed(1));
       if (res.status === 429) {
         setError('Sonar is receiving a lot of pings right now. Try again in a moment.');
+        setPhase('error');
         return;
       }
       if (!res.ok) {
         setError(data?.error || 'Sonar could not complete that ping.');
+        setPhase('error');
         return;
       }
       setResult(data);
-      // Refresh quota after a successful ping.
-      if (data?.quota) {
-        setEntitlements((prev) => (prev ? { ...prev, quota: data.quota } : prev));
-      }
+      pushRecent(query, data.classification);
+      if (data.quota) setEntitlements((prev) => (prev ? { ...prev, quota: data.quota } : prev));
+      if (data.quotaExceeded) setPhase('complete');
+      else if (data.briefing) setPhase('streaming');
+      else setPhase('complete');
     } catch {
       setError('Network error — Sonar could not reach the datasets.');
-    } finally {
-      setLoading(false);
+      setPhase('error');
     }
   }
 
+  const loading = phase === 'searching' || phase === 'streaming';
   const quota = result?.quota || entitlements?.quota;
-  const available = entitlements?.available || [];
-  const preLocked = entitlements?.locked || [];
+  const qt = result?.classification ? badgeType(result.classification) : null;
+  const sourceCount = result?.sections
+    ? result.sections.reduce((n, s) => n + s.items.length, 0)
+    : 0;
 
   return (
     <>
-      {/* Full-bleed "Echo Rings" emerald gradient backdrop (white core → deep
-          emerald), fixed behind the Sonar content. */}
-      <div className="sonar-gradient-bg" aria-hidden />
+      <div className="sonar-rings" aria-hidden />
 
       <div className="sonar-page">
-        <div className="sonar-hero">
-          <SonarInput onSubmit={runQuery} loading={loading} />
+        {phase === 'idle' ? (
+          <SonarHero
+            value={queryText}
+            onChange={setQueryText}
+            onSubmit={runQuery}
+            loading={loading}
+            examples={EXAMPLES}
+            recent={recent.map((r) => ({ ...r, rel: relTime(r.at) }))}
+            onPick={runQuery}
+            quota={quota}
+            version={entitlements?.version}
+          />
+        ) : (
+          <>
+            <div className="sonar-sticky">
+              <span className="sonar-sticky-label">SONAR</span>
+              {qt && <span className={`sonar-badge sonar-badge--${qt.type}`}>{qt.label}</span>}
+              <SonarQueryBar
+                value={queryText}
+                onChange={setQueryText}
+                onSubmit={runQuery}
+                loading={loading}
+              />
+            </div>
 
-          {quota && (
-          <div className="sonar-quota">
-            {quota.remaining} of {quota.limit} pings left today
-            {entitlements?.version && entitlements.version !== 'regular'
-              ? ` · ${entitlements.version} scope`
-              : ''}
-          </div>
-        )}
+            <div className="sonar-body">
+              {error && <div className="sonar-error">{error}</div>}
 
-        {(available.length > 0 || preLocked.length > 0) && !result && !loading && (
-          <div className="sonar-chips">
-            {available.map((d) => (
-              <span key={d.id} className="sonar-chip sonar-chip--on" title={d.source}>
-                {d.label}
-              </span>
-            ))}
-            {preLocked.map((d) => (
-              <span key={d.id} className="sonar-chip sonar-chip--locked" title="Upgrade to unlock">
-                {d.label}
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
+              {phase === 'searching' && (
+                <div className="sonar-answer sonar-surface">
+                  <div className="sonar-answer-head">
+                    <span className="sonar-ping-dot" aria-hidden />
+                    <span className="sonar-live-label">Live Briefing</span>
+                    <span className="sonar-answer-meta">cross-referencing…</span>
+                  </div>
+                  <div className="sonar-answer-body" style={{ opacity: 0.6 }}>
+                    Sonar is sweeping Ezana’s datasets
+                    <span className="sonar-caret" aria-hidden />
+                  </div>
+                </div>
+              )}
 
-      {loading && (
-        <div className="sonar-sweep" role="status" aria-live="polite">
-          <div className="sonar-radar" aria-hidden />
-          <div className="sonar-sweep-label">Cross-referencing datasets…</div>
-        </div>
-      )}
+              {result?.quotaExceeded && (
+                <div className="sonar-answer sonar-surface">
+                  <div className="sonar-note">{result.message}</div>
+                  {result.locked?.length > 0 && (
+                    <div className="sonar-disclaimer" style={{ textAlign: 'left', marginTop: 10 }}>
+                      Upgrade to include {result.locked.map((d) => d.label).join(', ')}.{' '}
+                      <a href="/pricing" style={{ color: 'var(--emerald)' }}>
+                        See plans →
+                      </a>
+                    </div>
+                  )}
+                </div>
+              )}
 
-        {error && <div className="sonar-error">{error}</div>}
+              {result && !result.quotaExceeded && (
+                <>
+                  {result.briefing ? (
+                    <SonarLiveAnswer
+                      answer={result.briefing}
+                      sourceCount={sourceCount}
+                      elapsedSec={elapsedSec}
+                      searched={result.searched}
+                      onComplete={() => setPhase('complete')}
+                    />
+                  ) : (
+                    <div className="sonar-answer sonar-surface">
+                      <div className="sonar-answer-head">
+                        <span className="sonar-ping-dot sonar-ping-dot--frozen" aria-hidden />
+                        <span className="sonar-live-label">Live Briefing</span>
+                      </div>
+                      <div className="sonar-note">
+                        {result.empty
+                          ? `Ezana has limited data on “${result.query}” across the datasets Sonar searched — nothing was fabricated.`
+                          : `Synthesis is unavailable${result.degraded ? ` (${result.degraded})` : ''}; the sourced matches are below.`}
+                      </div>
+                      {result.searched?.length > 0 && (
+                        <div className="sonar-manifest">
+                          <div className="sonar-manifest-title">Sonar searched</div>
+                          <div className="sonar-manifest-row">
+                            {result.searched.map((d) => (
+                              <span
+                                key={d.id}
+                                className={`sonar-src-chip${d.used ? ' sonar-src-chip--hit' : ''}`}
+                                title={d.source}
+                              >
+                                {d.label}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
-        {result && !loading && (
-          <div className="sonar-sheet">
-            <SonarResult result={result} />
-          </div>
+                  <div className="sonar-grid">
+                    <div className="sonar-col">
+                      <EchoResults sections={result.sections || []} />
+                      <PredictionMarkets sections={result.sections || []} locked={result.locked} />
+                    </div>
+                    <div className="sonar-col">
+                      <GovernmentSignal sections={result.sections || []} />
+                      <KeyEntities sections={result.sections || []} subject={result.query} />
+                      <PingNext sections={result.sections || []} onPick={runQuery} />
+                    </div>
+                  </div>
+
+                  {result.disclaimer && <div className="sonar-disclaimer">{result.disclaimer}</div>}
+                </>
+              )}
+            </div>
+          </>
         )}
       </div>
     </>
-  );
-}
-
-function SonarResult({ result }) {
-  if (result.quotaExceeded) {
-    return (
-      <div className="sonar-results">
-        <div className="sonar-note sonar-note--warn">{result.message}</div>
-        <UpgradePrompt locked={result.locked} />
-      </div>
-    );
-  }
-
-  const {
-    query,
-    classification,
-    briefing,
-    grounded,
-    empty,
-    degraded,
-    advice_flagged: adviceFlagged,
-    sections = [],
-    searched = [],
-    locked = [],
-    disclaimer,
-  } = result;
-
-  return (
-    <div className="sonar-results">
-      <div className="sonar-readline">
-        Sonar read · <b>{query}</b>
-        {classification && classification !== 'unknown' && (
-          <span className="sonar-tag">{classification}</span>
-        )}
-      </div>
-
-      {empty ? (
-        <div className="sonar-note">
-          Ezana has limited data on <b>{query}</b> across the datasets Sonar searched. Nothing was
-          fabricated — try a related entity, ticker, or bill number.
-        </div>
-      ) : grounded ? (
-        <div className="sonar-briefing">{briefing}</div>
-      ) : (
-        <div className="sonar-note">
-          Synthesis is unavailable{degraded ? ` (${degraded})` : ''}, so Sonar is showing the raw
-          sourced matches below without a written briefing.
-        </div>
-      )}
-
-      {adviceFlagged && (
-        <div className="sonar-note sonar-note--warn">
-          Sonar presents sourced findings, not investment advice. Treat any directional language as
-          research, not a recommendation.
-        </div>
-      )}
-
-      {sections.map((sec) => (
-        <div className="sonar-section" key={sec.id}>
-          <div className="sonar-section-head">
-            <span className="sonar-section-label">{sec.label}</span>
-            <span className="sonar-section-source">{sec.source}</span>
-          </div>
-          {sec.items.map((it) => (
-            <div className="sonar-source" key={it.marker}>
-              <span className="sonar-marker">{it.marker}</span>
-              <div className="sonar-source-body">
-                {it.url ? (
-                  <a className="sonar-source-title" href={it.url} target="_blank" rel="noreferrer">
-                    {it.title}
-                  </a>
-                ) : (
-                  <span className="sonar-source-title">{it.title}</span>
-                )}
-                <div className="sonar-source-meta">
-                  {it.ticker && <span>{it.ticker}</span>}
-                  {it.date && <span>{String(it.date).slice(0, 10)}</span>}
-                  {it.similarity != null && <span>sim {it.similarity}</span>}
-                </div>
-                {it.snippet && <div className="sonar-source-snip">{it.snippet}</div>}
-              </div>
-            </div>
-          ))}
-        </div>
-      ))}
-
-      <div className="sonar-manifest">
-        <div className="sonar-manifest-title">What Sonar searched</div>
-        <div className="sonar-manifest-row">
-          {searched.length ? (
-            searched.map((d) => (
-              <span
-                key={d.id}
-                className={`sonar-chip${d.used ? ' sonar-chip--on' : ''}`}
-                title={d.used ? `${d.source} — returned matches` : `${d.source} — no matches`}
-              >
-                {d.label}
-              </span>
-            ))
-          ) : (
-            <span className="sonar-chip">No datasets available at your tier</span>
-          )}
-        </div>
-        <UpgradePrompt locked={locked} inline />
-      </div>
-
-      {disclaimer && <div className="sonar-disclaimer">{disclaimer}</div>}
-    </div>
-  );
-}
-
-function UpgradePrompt({ locked, inline }) {
-  if (!locked || locked.length === 0) return null;
-  const names = locked.map((d) => d.label).join(', ');
-  return (
-    <div className={inline ? 'sonar-upgrade' : 'sonar-note'}>
-      Upgrade to include {names}.{' '}
-      <a href="/pricing">See plans →</a>
-    </div>
   );
 }
