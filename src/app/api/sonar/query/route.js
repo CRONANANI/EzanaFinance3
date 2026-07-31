@@ -12,6 +12,7 @@ import {
   classifyQuery,
   CORPUS_TO_DATASET,
 } from '@/lib/sonar/retrieval';
+import { synthesizeWithFallback } from '@/lib/sonar/llm-providers';
 
 /**
  * POST /api/sonar/query — Ezana Sonar's cross-dataset intelligence surface.
@@ -79,133 +80,8 @@ function buildContext(items) {
     .join('\n\n');
 }
 
-/**
- * Parse the Messages response content blocks. With web search the response is NOT a
- * single text block — it interleaves `text` (which may carry web citations),
- * `server_tool_use` (the web_search calls), and `web_search_tool_result` (the hits).
- * Concatenate all text, detect whether web ran, and collect distinct web sources.
- */
-function parseAnthropicContent(content) {
-  const blocks = Array.isArray(content) ? content : [];
-  let text = '';
-  let webUsed = false;
-  const webSources = [];
-  const seen = new Set();
-  const addSource = (url, title) => {
-    if (!url || seen.has(url) || webSources.length >= 8) return;
-    seen.add(url);
-    webSources.push({ url, title: title || url });
-  };
-  for (const b of blocks) {
-    if (!b || typeof b !== 'object') continue;
-    if (b.type === 'text') {
-      text += b.text || '';
-      for (const c of b.citations || []) addSource(c.url, c.title);
-    } else if (b.type === 'server_tool_use' && b.name === 'web_search') {
-      webUsed = true;
-    } else if (b.type === 'web_search_tool_result') {
-      webUsed = true;
-      const results = Array.isArray(b.content) ? b.content : [];
-      for (const r of results) addSource(r?.url, r?.title);
-    }
-  }
-  return { answer: text.trim(), webUsed, webSources };
-}
-
-function callAnthropic(body, apiKey) {
-  return fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify(body),
-  });
-}
-
-async function synthesize(query, items, maxTokens, model, webSearch) {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return { answer: null, degraded: 'no LLM key' };
-  try {
-    // Base (dataset-only) request — no tools. Always valid; used directly and as the
-    // fail-safe retry so synthesis never hard-fails on a tool/model issue.
-    const baseBody = {
-      model,
-      max_tokens: maxTokens,
-      system: SYSTEM_PROMPT,
-      messages: [
-        {
-          role: 'user',
-          content: `Ezana dataset sources:\n\n${buildContext(items)}\n\n---\nPing: ${query}\n\nWrite the Sonar briefing using the Ezana dataset sources above AND live web search where it adds current context. Weight them equally. Cite every claim — dataset claims with their [S#] marker and dataset name, web claims with their source. If coverage is thin, say so.`,
-        },
-      ],
-    };
-
-    // Web search is ADDITIVE, never a hard dependency. It runs only when the plan
-    // entitles it AND it's turned on for this deployment (SONAR_WEB_SEARCH=true) —
-    // default off, so synthesis works even before web search is enabled in the
-    // Anthropic Console. Anthropic's native tool (same key; returns citations; no
-    // third-party vendor); the versioned type is required. NOTE (SOC 2 / Law 25): the
-    // ping text is sent to Anthropic's web search — do not pass user PII beyond it.
-    const webOn = Boolean(webSearch?.enabled) && process.env.SONAR_WEB_SEARCH === 'true';
-    const maxUses = Math.max(1, Number(webSearch?.maxUses) || 3); // valid positive int
-
-    let res;
-    if (webOn) {
-      const withTool = {
-        ...baseBody,
-        tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: maxUses }],
-      };
-      res = await callAnthropic(withTool, apiKey);
-      if (res.status === 400) {
-        // Tool likely unavailable (web search disabled for the org, etc.) — log and
-        // retry WITHOUT the tool so dataset-grounded synthesis still succeeds.
-        let detail = '';
-        try {
-          detail = await res.text();
-        } catch {
-          /* ignore */
-        }
-        console.warn('[sonar] web_search 400 — retrying without tool', { model, detail });
-        res = await callAnthropic(baseBody, apiKey);
-      }
-    } else {
-      res = await callAnthropic(baseBody, apiKey);
-    }
-
-    // If the (possibly non-Haiku) model still 400s, retry once on the safe Haiku
-    // model — covers a deep-tier model the account can't access.
-    if (res.status === 400 && model !== HAIKU_MODEL) {
-      let detail = '';
-      try {
-        detail = await res.text();
-      } catch {
-        /* ignore */
-      }
-      console.warn('[sonar] model 400 — retrying on Haiku', { model, detail });
-      res = await callAnthropic({ ...baseBody, model: HAIKU_MODEL }, apiKey);
-    }
-
-    if (!res.ok) {
-      // Log Anthropic's real error body (model access, request validity, …) — the
-      // status alone hid the cause. Logs the model + status + error text only, never
-      // the user's query/data.
-      let detail = '';
-      try {
-        detail = await res.text();
-      } catch {
-        /* ignore */
-      }
-      console.error('[sonar] synthesis LLM error', { model, status: res.status, detail });
-      return { answer: null, degraded: `llm ${res.status}` };
-    }
-    const data = await res.json();
-    const { answer, webUsed, webSources } = parseAnthropicContent(data?.content);
-    return answer ? { answer, webUsed, webSources } : { answer: null, degraded: 'empty llm reply' };
-  } catch (err) {
-    return { answer: null, degraded: err?.message || 'llm error' };
-  }
+function buildUserPrompt(query, items) {
+  return `Ezana dataset sources:\n\n${buildContext(items)}\n\n---\nPing: ${query}\n\nWrite the Sonar briefing using the Ezana dataset sources above AND live web search where it adds current context. Weight them equally. Cite every claim — dataset claims with their [S#] marker and dataset name, web claims with their source. If coverage is thin, say so.`;
 }
 
 function looksLikeAdvice(text) {
@@ -304,19 +180,30 @@ export const POST = withApiGuard(
     let degraded;
     let webUsed = false;
     let webSources = [];
+    let synthProvider = null;
     if (marked.length) {
-      const out = await synthesize(
-        query,
-        marked,
-        budget.maxTokens,
-        modelForDepth(entitlements.depth),
-        entitlements.webSearch,
-      );
+      // Multi-provider fallback: Anthropic (with web search) → Kimi → DeepSeek. If the
+      // primary is out of credits / rate-limited / down, synthesis fails over to a
+      // fallback so the briefing still renders; only if ALL fail is it degraded.
+      const out = await synthesizeWithFallback({
+        system: SYSTEM_PROMPT,
+        user: buildUserPrompt(query, marked),
+        maxTokens: budget.maxTokens,
+        model: modelForDepth(entitlements.depth),
+        fallbackModel: HAIKU_MODEL,
+        webSearch: entitlements.webSearch,
+      });
       answer = out.answer;
       degraded = out.degraded;
       grounded = Boolean(answer);
       webUsed = Boolean(out.webUsed);
       webSources = out.webSources || [];
+      synthProvider = out.provider || null;
+      // Chronic failover to a fallback signals the Anthropic account needs attention
+      // (billing/limits) — log it so the chain never silently masks that.
+      if (synthProvider && synthProvider !== 'anthropic') {
+        console.warn('[sonar] synthesis served by fallback provider', { provider: synthProvider });
+      }
     }
 
     // Surface "Live web" in the manifest when web search actually ran — a hit when
@@ -374,6 +261,7 @@ export const POST = withApiGuard(
       exportsEnabled: entitlements.exportsEnabled,
       briefing: answer,
       grounded,
+      synthProvider: synthProvider || undefined,
       empty: marked.length === 0,
       advice_flagged: answer ? looksLikeAdvice(answer) : false,
       degraded: degraded || undefined,
