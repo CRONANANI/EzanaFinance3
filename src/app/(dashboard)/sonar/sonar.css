@@ -1,9 +1,49 @@
 /* ══════════════════════════════════════════════════════════════
-   Ezana Sonar — the intelligence surface. Emerald accents, Plus Jakarta Sans UI,
-   JetBrains Mono for numbers/tickers/markers. Theme tokens throughout. The sweep
-   is the brand moment (a radial ping), and it respects reduced-motion.
+   Ezana Sonar — the intelligence surface. The animated input (SonarInput.jsx)
+   sits on a full-bleed "Echo Rings" emerald gradient (white core → mint → emerald
+   → deep emerald). Results render on an opaque theme "sheet" so token text stays
+   legible over the gradient in both themes. Reduced-motion aware.
    ══════════════════════════════════════════════════════════════ */
+
+/* Echo Rings: a single radial-gradient of 12 concentric hard-stop rings, the
+   Ocean Rings recipe remapped to Ezana emerald with the white center preserved. */
+.sonar-gradient-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-color: #ffffff;
+  background-image: radial-gradient(
+    circle at 50% 50%,
+    #ffffff 0%,
+    #ffffff 6.83%,
+    #f2fdf7 8.33%,
+    #f2fdf7 15.17%,
+    #e5fcf0 16.67%,
+    #e5fcf0 23.5%,
+    #d8fae9 25%,
+    #d8fae9 31.83%,
+    #bdf3db 33.33%,
+    #bdf3db 40.17%,
+    #8ae2c0 41.67%,
+    #8ae2c0 48.5%,
+    #56d0a5 50%,
+    #56d0a5 56.83%,
+    #23bf8a 58.33%,
+    #23bf8a 65.17%,
+    #0ea976 66.67%,
+    #0ea976 73.5%,
+    #0b9066 75%,
+    #0b9066 81.83%,
+    #087756 83.33%,
+    #087756 90.17%,
+    #065f46 91.67%,
+    #065f46 98.5%
+  );
+}
 .sonar-page {
+  position: relative;
+  z-index: 1;
   max-width: 880px;
   margin: 0 auto;
   padding: 8px 0 64px;
@@ -12,83 +52,15 @@
 }
 .sonar-hero {
   text-align: center;
-  padding: 28px 0 18px;
-}
-.sonar-kicker {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--emerald);
-}
-.sonar-title {
-  font-family: var(--font-serif, var(--font-sans));
-  font-size: 30px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 10px 0 6px;
-}
-.sonar-sub {
-  font-size: 14px;
-  line-height: 1.55;
-  color: var(--text-muted);
-  max-width: 580px;
-  margin: 0 auto;
-}
-.sonar-form {
-  display: flex;
-  gap: 10px;
-  margin: 24px auto 0;
-  max-width: 640px;
-}
-.sonar-input {
-  flex: 1;
-  min-width: 0;
-  height: 52px;
-  padding: 0 18px;
-  border-radius: 12px;
-  border: 1px solid var(--border-input);
-  background: var(--surface-input);
-  color: var(--text-primary);
-  font-family: var(--font-sans);
-  font-size: 15px;
-}
-.sonar-input::placeholder {
-  color: var(--text-ghost);
-}
-.sonar-input:focus-visible {
-  outline: 2px solid var(--emerald);
-  outline-offset: 1px;
-  border-color: var(--emerald);
-}
-.sonar-btn {
-  height: 52px;
-  padding: 0 24px;
-  border-radius: 12px;
-  border: none;
-  background: var(--emerald);
-  color: #fff;
-  font-family: var(--font-sans);
-  font-weight: 700;
-  font-size: 14px;
-  cursor: pointer;
-  transition: filter 0.14s ease;
-  white-space: nowrap;
-}
-.sonar-btn:hover:not(:disabled) {
-  filter: brightness(1.06);
-}
-.sonar-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+  padding: 34px 0 6px;
 }
 .sonar-quota {
   text-align: center;
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.03em;
-  color: var(--text-muted);
-  margin-top: 12px;
+  color: #065f46; /* deep-emerald reads on the light gradient core */
+  margin-top: 16px;
 }
 
 /* Available / locked dataset chips (pre-query context) */
@@ -106,14 +78,17 @@
   gap: 6px;
   padding: 4px 10px;
   border-radius: 999px;
-  border: 1px solid var(--border-primary);
+  /* Frosted-light so chips read on the gradient core AND on the results sheet. */
+  border: 1px solid rgba(6, 95, 70, 0.22);
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(4px);
   font-size: 11px;
-  color: var(--text-secondary);
+  color: #0b3b2e;
   white-space: nowrap;
 }
 .sonar-chip--on {
-  border-color: color-mix(in srgb, var(--emerald) 45%, transparent);
-  color: var(--text-primary);
+  border-color: rgba(6, 95, 70, 0.45);
+  color: #064e3b;
 }
 .sonar-chip--on::before {
   content: '';
@@ -123,7 +98,7 @@
   background: var(--emerald);
 }
 .sonar-chip--locked {
-  color: var(--text-ghost);
+  color: rgba(6, 95, 70, 0.5);
   border-style: dashed;
 }
 
@@ -193,9 +168,20 @@
   }
 }
 
+/* Opaque theme "sheet" the results render on, so token-colored text stays legible
+   over the emerald gradient in both light and dark themes. */
+.sonar-sheet {
+  margin-top: 26px;
+  padding: 20px 22px 24px;
+  border-radius: 16px;
+  border: 1px solid var(--border-primary);
+  background: var(--bg-primary);
+  box-shadow: 0 18px 50px rgba(6, 95, 70, 0.16);
+}
+
 /* Results */
 .sonar-results {
-  margin-top: 30px;
+  margin-top: 4px;
 }
 .sonar-readline {
   display: flex;
@@ -361,17 +347,11 @@ a.sonar-source-title:hover {
 .sonar-error {
   margin-top: 20px;
   padding: 14px 16px;
-  border-radius: 10px;
-  border: 1px solid color-mix(in srgb, var(--negative, #ef4444) 40%, transparent);
-  color: var(--text-secondary);
+  border-radius: 12px;
+  /* Frosted-light so it reads on the gradient (rendered outside the sheet). */
+  border: 1px solid rgba(190, 40, 40, 0.35);
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(6px);
+  color: #7f1d1d;
   font-size: 13px;
-}
-
-@media (max-width: 640px) {
-  .sonar-form {
-    flex-direction: column;
-  }
-  .sonar-btn {
-    width: 100%;
-  }
 }

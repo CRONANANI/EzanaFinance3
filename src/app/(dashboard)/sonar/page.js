@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { SonarInput } from '@/components/sonar/SonarInput';
 
 import './sonar.css';
 
@@ -14,7 +15,6 @@ import './sonar.css';
  */
 export default function SonarPage() {
   const [entitlements, setEntitlements] = useState(null);
-  const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
@@ -38,9 +38,8 @@ export default function SonarPage() {
     };
   }, []);
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    const q = query.trim();
+  async function runQuery(rawQuery) {
+    const q = String(rawQuery || '').trim();
     if (!q || loading) return;
     setLoading(true);
     setError(null);
@@ -77,32 +76,16 @@ export default function SonarPage() {
   const preLocked = entitlements?.locked || [];
 
   return (
-    <div className="sonar-page">
-      <div className="sonar-hero">
-        <div className="sonar-kicker">Ezana Sonar</div>
-        <h1 className="sonar-title">Ping anything. Get the whole field back.</h1>
-        <p className="sonar-sub">
-          Type a person, a bank, a government policy, a ticker, a bill number, or an @user. Sonar
-          cross-references Ezana&apos;s datasets and returns a synthesized, cited briefing — the
-          companion to Echo, on demand.
-        </p>
+    <>
+      {/* Full-bleed "Echo Rings" emerald gradient backdrop (white core → deep
+          emerald), fixed behind the Sonar content. */}
+      <div className="sonar-gradient-bg" aria-hidden />
 
-        <form className="sonar-form" onSubmit={handleSubmit}>
-          <input
-            className="sonar-input"
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Ping anything — a person, a bank, a policy, a ticker…"
-            aria-label="Sonar query"
-            maxLength={800}
-          />
-          <button className="sonar-btn" type="submit" disabled={loading || !query.trim()}>
-            {loading ? 'Sweeping…' : 'Ping'}
-          </button>
-        </form>
+      <div className="sonar-page">
+        <div className="sonar-hero">
+          <SonarInput onSubmit={runQuery} loading={loading} />
 
-        {quota && (
+          {quota && (
           <div className="sonar-quota">
             {quota.remaining} of {quota.limit} pings left today
             {entitlements?.version && entitlements.version !== 'regular'
@@ -134,10 +117,15 @@ export default function SonarPage() {
         </div>
       )}
 
-      {error && <div className="sonar-error">{error}</div>}
+        {error && <div className="sonar-error">{error}</div>}
 
-      {result && !loading && <SonarResult result={result} />}
-    </div>
+        {result && !loading && (
+          <div className="sonar-sheet">
+            <SonarResult result={result} />
+          </div>
+        )}
+      </div>
+    </>
   );
 }
 
