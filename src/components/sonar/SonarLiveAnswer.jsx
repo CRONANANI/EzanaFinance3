@@ -31,7 +31,14 @@ function renderWithCitations(text) {
   return parts;
 }
 
-export function SonarLiveAnswer({ answer, sourceCount, elapsedSec, searched = [], onComplete }) {
+export function SonarLiveAnswer({
+  answer,
+  sourceCount,
+  elapsedSec,
+  searched = [],
+  webSources = [],
+  onComplete,
+}) {
   const reduceMotion = useReducedMotion();
   const [shown, setShown] = useState(0);
 
@@ -92,6 +99,24 @@ export function SonarLiveAnswer({ answer, sourceCount, elapsedSec, searched = []
               </span>
             ))}
           </div>
+
+          {webSources.length > 0 && (
+            <div className="sonar-web-sources">
+              <span className="sonar-web-sources-label">Live web:</span>
+              {webSources.map((w, i) => (
+                <a
+                  key={w.url}
+                  className="sonar-web-source"
+                  href={w.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  title={w.url}
+                >
+                  {i + 1}. {w.title}
+                </a>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>

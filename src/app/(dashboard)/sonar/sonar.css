@@ -424,6 +424,34 @@
   background: var(--emerald);
 }
 
+/* Live-web citation links (from the web_search tool) */
+.sonar-web-sources {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 12px;
+  margin-top: 10px;
+}
+.sonar-web-sources-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.sonar-web-source {
+  max-width: 100%;
+  font-size: 11.5px;
+  color: var(--emerald);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sonar-web-source:hover {
+  text-decoration: underline;
+}
+
 /* ── Dashboard grid + modules ───────────────────────────────────────────────── */
 .sonar-grid {
   display: grid;

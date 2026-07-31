@@ -53,11 +53,14 @@ export const ALL_DATASET_IDS = Object.keys(SONAR_DATASETS);
  * @param {boolean} [ctx.isPartner]
  * @param {string|null} [ctx.orgRole]
  * @returns {{ datasets: string[], depth: 'summary'|'standard'|'deep', dailyQueries: number,
- *   exportsEnabled: boolean, userLookup: boolean, savedReports: number, planTier: number,
+ *   exportsEnabled: boolean, userLookup: boolean, savedReports: number,
+ *   webSearch: { enabled: boolean, maxUses: number }, planTier: number,
  *   version: string, orgRole: string|null }}
  */
 export function getSonarEntitlements({ planTier = 0, version = 'regular', isPartner = false, orgRole = null } = {}) {
-  // Free tier — the public-ish datasets, shallow synthesis, small quota.
+  // Free tier — the public-ish datasets, shallow synthesis, small quota, and light
+  // live web search (Anthropic's native tool is billed PER SEARCH on top of tokens,
+  // so `maxUses` is a real cost control — it rises with plan so cost tracks revenue).
   const base = {
     datasets: ['echo', 'congress', 'gov-contracts'],
     depth: 'summary', // summary | standard | deep
@@ -65,13 +68,15 @@ export function getSonarEntitlements({ planTier = 0, version = 'regular', isPart
     exportsEnabled: false,
     userLookup: false, // can you Sonar another *user*?
     savedReports: 0,
+    webSearch: { enabled: true, maxUses: 2 }, // light web search even on free
   };
 
-  // Plan tiers unlock datasets + depth + quota (+ exports/saved reports).
+  // Plan tiers unlock datasets + depth + quota (+ exports/saved reports/web depth).
   if (planTier >= 1) {
     base.depth = 'standard';
     base.dailyQueries = 30;
     base.datasets = [...base.datasets, 'prediction-markets', 'sec-filings'];
+    base.webSearch = { enabled: true, maxUses: 4 };
   }
   if (planTier >= 2) {
     base.depth = 'deep';
@@ -79,10 +84,12 @@ export function getSonarEntitlements({ planTier = 0, version = 'regular', isPart
     base.exportsEnabled = true;
     base.savedReports = 25;
     base.datasets = [...base.datasets, '13f', 'lobbying'];
+    base.webSearch = { enabled: true, maxUses: 6 };
   }
   if (planTier >= 4) {
     base.dailyQueries = 500;
     base.savedReports = 200;
+    base.webSearch = { enabled: true, maxUses: 8 };
   }
 
   // Version scopes (additive, and never cross-tenant — org data stays in-org and

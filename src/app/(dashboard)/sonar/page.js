@@ -252,6 +252,7 @@ export default function SonarPage() {
                       sourceCount={sourceCount}
                       elapsedSec={elapsedSec}
                       searched={result.searched}
+                      webSources={result.webSources}
                       onComplete={() => setPhase('complete')}
                     />
                   ) : (

@@ -26,6 +26,9 @@ import {
  */
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+// Web search + synthesis can take longer than a dataset-only synthesis; allow more
+// serverless headroom so the request doesn't time out mid-search.
+export const maxDuration = 60;
 
 // Synthesis model by plan depth so cost tracks revenue: cheap, versioned Haiku for
 // free/standard grounded summaries; a stronger model for paid "deep" synthesis.
@@ -45,13 +48,13 @@ function modelForDepth(depth) {
 const DISCLAIMER =
   'Sonar synthesizes sourced research from Ezana’s datasets — not financial advice or a recommendation to buy or sell any security.';
 
-const SYSTEM_PROMPT = `You are Ezana Sonar, a research/intelligence surface. A user "pings" a subject and you return a briefing assembled ONLY from the provided sources, which come from Ezana's datasets (Echo editorial, congressional trades, government contracts, prediction markets, and — for org members — their council's internal notes). Rules:
-- Ground EVERY claim in the provided sources and cite each inline with its marker, e.g. [S1], naming the dataset in prose.
-- Cross-reference across datasets: where sources corroborate or diverge, say so explicitly — the value is the join, not any single source.
-- If the sources are thin or don't cover the subject, say plainly "Ezana has limited data on X" — never fabricate, never fill gaps from outside knowledge.
+const SYSTEM_PROMPT = `You are Ezana Sonar, a research/intelligence surface. A user "pings" a subject and you return a briefing that draws on TWO equally-authoritative kinds of source: (1) Ezana's provided dataset sources (Echo editorial, congressional trades, government contracts, prediction markets, and — for org members — their council's internal notes), and (2) live web search results (use the web_search tool for current context when it helps). Rules:
+- Ground EVERY claim in a source and cite it. Cite dataset claims inline with their marker, e.g. [S1], naming the dataset in prose. Cite web claims to their web source (the web_search tool returns citations — attribute them).
+- Weight the two source kinds EQUALLY. Ezana's datasets are the differentiator (the cross-dataset join is the value), and live web adds current context — cross-reference them: where they corroborate or diverge, say so.
+- If neither the datasets nor the web cover the subject, say so plainly — never fabricate, never fill gaps with ungrounded knowledge.
 - Present findings only. Do NOT give financial or investment advice, price targets, or buy/sell/hold calls.
 - Open with a one-sentence headline read, then the analysis. Be concise, analytical, terminal-adjacent.
-- Never describe yourself as "AGI" or a general intelligence; you are a research surface over specific datasets.`;
+- Never describe yourself as "AGI" or a general intelligence; you are a research surface over specific datasets plus live web.`;
 
 function startOfUtcDayISO() {
   const d = new Date();
@@ -72,10 +75,63 @@ function buildContext(items) {
     .join('\n\n');
 }
 
-async function synthesize(query, items, maxTokens, model) {
+/**
+ * Parse the Messages response content blocks. With web search the response is NOT a
+ * single text block — it interleaves `text` (which may carry web citations),
+ * `server_tool_use` (the web_search calls), and `web_search_tool_result` (the hits).
+ * Concatenate all text, detect whether web ran, and collect distinct web sources.
+ */
+function parseAnthropicContent(content) {
+  const blocks = Array.isArray(content) ? content : [];
+  let text = '';
+  let webUsed = false;
+  const webSources = [];
+  const seen = new Set();
+  const addSource = (url, title) => {
+    if (!url || seen.has(url) || webSources.length >= 8) return;
+    seen.add(url);
+    webSources.push({ url, title: title || url });
+  };
+  for (const b of blocks) {
+    if (!b || typeof b !== 'object') continue;
+    if (b.type === 'text') {
+      text += b.text || '';
+      for (const c of b.citations || []) addSource(c.url, c.title);
+    } else if (b.type === 'server_tool_use' && b.name === 'web_search') {
+      webUsed = true;
+    } else if (b.type === 'web_search_tool_result') {
+      webUsed = true;
+      const results = Array.isArray(b.content) ? b.content : [];
+      for (const r of results) addSource(r?.url, r?.title);
+    }
+  }
+  return { answer: text.trim(), webUsed, webSources };
+}
+
+async function synthesize(query, items, maxTokens, model, webSearch) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return { answer: null, degraded: 'no LLM key' };
   try {
+    const body = {
+      model,
+      max_tokens: maxTokens,
+      system: SYSTEM_PROMPT,
+      messages: [
+        {
+          role: 'user',
+          content: `Ezana dataset sources:\n\n${buildContext(items)}\n\n---\nPing: ${query}\n\nWrite the Sonar briefing using the Ezana dataset sources above AND live web search where it adds current context. Weight them equally. Cite every claim — dataset claims with their [S#] marker and dataset name, web claims with their source. If coverage is thin, say so.`,
+        },
+      ],
+    };
+    // Anthropic's native web search tool (same key; returns citations; no third-party
+    // vendor). The versioned type is required by the API. NOTE (SOC 2 / Law 25): the
+    // ping text is sent to Anthropic's web search — do not pass user PII beyond it.
+    if (webSearch?.enabled) {
+      body.tools = [
+        { type: 'web_search_20250305', name: 'web_search', max_uses: webSearch.maxUses },
+      ];
+    }
+
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -83,17 +139,7 @@ async function synthesize(query, items, maxTokens, model) {
         'x-api-key': apiKey,
         'anthropic-version': '2023-06-01',
       },
-      body: JSON.stringify({
-        model,
-        max_tokens: maxTokens,
-        system: SYSTEM_PROMPT,
-        messages: [
-          {
-            role: 'user',
-            content: `Sources:\n\n${buildContext(items)}\n\n---\nPing: ${query}\n\nWrite the Sonar briefing using ONLY the sources above. Cite each claim with its [S#] marker and name the dataset. If coverage is thin, say so.`,
-          },
-        ],
-      }),
+      body: JSON.stringify(body),
     });
     if (!res.ok) {
       // Log Anthropic's real error body (model access, request validity, …) — the
@@ -109,8 +155,8 @@ async function synthesize(query, items, maxTokens, model) {
       return { answer: null, degraded: `llm ${res.status}` };
     }
     const data = await res.json();
-    const answer = data?.content?.[0]?.text?.trim();
-    return answer ? { answer } : { answer: null, degraded: 'empty llm reply' };
+    const { answer, webUsed, webSources } = parseAnthropicContent(data?.content);
+    return answer ? { answer, webUsed, webSources } : { answer: null, degraded: 'empty llm reply' };
   } catch (err) {
     return { answer: null, degraded: err?.message || 'llm error' };
   }
@@ -205,20 +251,37 @@ export const POST = withApiGuard(
       })
       .filter(Boolean);
 
-    // 6. Synthesize — grounded + cited. Honest empty-state when retrieval is dry.
+    // 6. Synthesize — grounded + cited, over the datasets AND (tiered) live web.
+    //    Honest empty-state when retrieval is dry.
     let answer = null;
     let grounded = false;
     let degraded;
+    let webUsed = false;
+    let webSources = [];
     if (marked.length) {
       const out = await synthesize(
         query,
         marked,
         budget.maxTokens,
         modelForDepth(entitlements.depth),
+        entitlements.webSearch,
       );
       answer = out.answer;
       degraded = out.degraded;
       grounded = Boolean(answer);
+      webUsed = Boolean(out.webUsed);
+      webSources = out.webSources || [];
+    }
+
+    // Surface "Live web" in the manifest when web search actually ran — a hit when
+    // it returned sources, otherwise searched-no-hit.
+    if (webUsed) {
+      searched.push({
+        id: 'web',
+        label: 'Live web',
+        source: 'Anthropic web search',
+        used: webSources.length > 0,
+      });
     }
 
     // Group retrieved items into dataset-labeled, cited sections.
@@ -270,6 +333,7 @@ export const POST = withApiGuard(
       degraded: degraded || undefined,
       sections,
       searched,
+      webSources,
       locked,
       quota: {
         limit: entitlements.dailyQueries,
