@@ -271,6 +271,16 @@ export function Navbar() {
       ],
     },
     {
+      // Sonar — the intelligence surface. Rendered as a green pill (variant
+      // 'sonar') so it stands out between Trading and Watchlist. Direct link.
+      id: 7,
+      title: 'Sonar',
+      url: '/sonar',
+      icon: 'bi-broadcast',
+      isActive: pathname?.includes('/sonar'),
+      variant: 'sonar',
+    },
+    {
       id: 4,
       title: 'Watchlist',
       url: '/watchlist',

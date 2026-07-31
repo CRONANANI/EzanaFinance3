@@ -267,6 +267,27 @@ body.light-mode .partner-nav .animated-nav-dropdown-item > i {
   color: var(--org-ink, #6366f1) !important;
 }
 
+/* Sonar — a filled green pill (emerald bg, white text + icon), distinct from the
+   plain nav links around it. Emerald comes from the token so it tracks the brand
+   in both light and dark; white text/icon is the intentional contrast literal. */
+.animated-nav-link--sonar {
+  background: var(--emerald) !important;
+  color: #ffffff !important;
+  border-radius: 9999px;
+  padding: 0.4rem 0.9rem;
+  font-weight: 600;
+}
+.animated-nav-link--sonar i,
+.animated-nav-link--sonar .bi {
+  color: #ffffff !important;
+}
+.animated-nav-link--sonar:hover,
+.animated-nav-link--sonar.hovered,
+.animated-nav-link--sonar.active {
+  background: var(--emerald-hover) !important;
+  color: #ffffff !important;
+}
+
 /* Mobile fallback purple */
 .nav-link.nav-link--purple {
   color: var(--org-ink, #818cf8) !important;

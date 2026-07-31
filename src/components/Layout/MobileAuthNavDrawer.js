@@ -18,6 +18,7 @@ import {
   BarChart3,
   Globe2,
   Radio,
+  Radar,
   CloudSun,
   Target,
   Calculator,
@@ -69,6 +70,7 @@ function buildNavGroups(isOrgUser) {
               description: 'Metrics & summary',
             },
           ]),
+      { label: 'Sonar', href: '/sonar', icon: Radar, description: 'Ping anything', accent: 'sonar' },
       { label: 'Watchlist', href: '/watchlist', icon: Bookmark, description: 'Symbols & alerts' },
     ],
   };
@@ -456,13 +458,19 @@ export function MobileAuthNavDrawer({
                           'flex items-center gap-3 border-l-2 px-4 py-3 text-sm font-medium transition-colors',
                           active
                             ? 'border-primary bg-primary/10 text-primary'
-                            : 'border-transparent text-foreground hover:bg-muted/80',
+                            : item.accent === 'sonar'
+                              ? 'border-emerald-500 text-emerald-600 hover:bg-emerald-500/10'
+                              : 'border-transparent text-foreground hover:bg-muted/80',
                         )}
                       >
                         <Icon
                           className={cn(
                             'h-4 w-4 shrink-0',
-                            active ? 'text-primary' : 'text-muted-foreground',
+                            active
+                              ? 'text-primary'
+                              : item.accent === 'sonar'
+                                ? 'text-emerald-600'
+                                : 'text-muted-foreground',
                           )}
                           aria-hidden
                         />

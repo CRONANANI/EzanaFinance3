@@ -26,7 +26,7 @@ export function AnimatedNav({
             >
               {item.dropdown ? (
                 <button
-                  className={`animated-nav-link ${item.isActive ? 'active' : ''} ${hovered === item.id ? 'hovered' : ''}${item.variant === 'purple' ? ' animated-nav-link--purple' : ''}`}
+                  className={`animated-nav-link ${item.isActive ? 'active' : ''} ${hovered === item.id ? 'hovered' : ''}${item.variant ? ` animated-nav-link--${item.variant}` : ''}`}
                   style={{ '--accent': accentColor }}
                 >
                   <i className={`bi ${item.icon}`} />
@@ -36,7 +36,7 @@ export function AnimatedNav({
               ) : (
                 <Link
                   href={item.url}
-                  className={`animated-nav-link ${item.isActive ? 'active' : ''} ${hovered === item.id ? 'hovered' : ''}${item.variant === 'purple' ? ' animated-nav-link--purple' : ''}`}
+                  className={`animated-nav-link ${item.isActive ? 'active' : ''} ${hovered === item.id ? 'hovered' : ''}${item.variant ? ` animated-nav-link--${item.variant}` : ''}`}
                   style={{ '--accent': accentColor }}
                 >
                   <i className={`bi ${item.icon}`} />
@@ -44,7 +44,8 @@ export function AnimatedNav({
                 </Link>
               )}
 
-              {hovered === item.id && !item.dropdown && (
+              {/* The sonar pill is self-contained (filled) — no hover underline. */}
+              {hovered === item.id && !item.dropdown && item.variant !== 'sonar' && (
                 <motion.div
                   layoutId="nav-cursor"
                   className="animated-nav-underline"
