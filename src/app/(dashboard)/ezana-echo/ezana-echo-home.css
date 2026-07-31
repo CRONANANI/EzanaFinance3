@@ -155,9 +155,6 @@
   .eth-wrap {
     padding: 0 24px;
   }
-  .eth-board {
-    padding: 0 24px; /* smaller edge gutter on tablet */
-  }
   .eth-news {
     flex-direction: column;
     align-items: flex-start;
@@ -170,9 +167,6 @@
 @media (max-width: 640px) {
   .eth-wrap {
     padding: 0 18px;
-  }
-  .eth-board {
-    padding: 0 16px; /* smaller edge gutter on mobile */
   }
 }
 
@@ -289,18 +283,20 @@
   position: relative;
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  /* Wall-to-wall: the board breaks out of the padded shell envelope to span the
-     full viewport width. Columns are separated by page-background whitespace
-     (column-gap) — no vertical divider lines. An inner gutter keeps the outer
-     columns' content off the viewport edge; border-box (set globally on .eth-page)
-     keeps the padding inside 100vw so there's no horizontal scrollbar. */
+  /* Fill the shell's content envelope (like the newsletter band) — NO 100vw
+     breakout. The old `margin-left: calc(50% - 50vw)` broke out of the padded,
+     max-width, centered dashboard shell, and an ancestor's overflow clipped that
+     overflow — shoving the outer columns off-screen (left worse than right). At
+     width:100% the board can't be mis-positioned or clipped and no horizontal
+     scrollbar can appear. Columns fill the full content width, separated by
+     page-background whitespace (column-gap). */
   column-gap: 20px;
   row-gap: 0;
-  width: 100vw;
-  max-width: 100vw;
-  margin-left: calc(50% - 50vw);
-  padding: 0 40px; /* gutter so the outer columns clear the viewport edge */
-  box-sizing: border-box; /* explicit — padding stays inside 100vw, no scrollbar */
+  width: 100%;
+  max-width: 100%;
+  margin-left: 0;
+  padding: 0;
+  box-sizing: border-box;
   margin-top: 12px;
 
   /* The shared geometry, in REM so the circle scales with the root font size the
@@ -318,7 +314,8 @@
   display: flex;
   flex-direction: column;
   gap: 0; /* stacked cards separated by their own thin bottom rule */
-  min-width: 0;
+  min-width: 0; /* keep for grid sizing… */
+  overflow: visible; /* …but never clip column content (titles) */
 }
 .eth-col > .echo-card:last-child {
   border-bottom: none;

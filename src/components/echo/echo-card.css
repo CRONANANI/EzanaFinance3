@@ -14,7 +14,9 @@
   border: none;
   border-bottom: 1px solid var(--border-primary);
   border-radius: 0;
-  overflow: hidden;
+  /* NOT hidden — the card's clip box was shaving serif/italic title first glyphs at
+     x=0. The image clips itself (.echo-card__img), so the card needn't. */
+  overflow: visible;
   background: transparent;
   /* Flat rendering — a 3D perspective context was sub-pixel-clipping title first
      characters at the card edge, so the hover is now a plain translateY lift. */
@@ -85,8 +87,12 @@
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
+  /* line-clamp requires overflow:hidden on the title itself; the 1px/2px inset
+     keeps its own clip box from shaving serif/italic first & last glyphs. */
   overflow: hidden;
-  overflow-wrap: anywhere; /* a long first word wraps instead of clipping */
+  overflow-wrap: anywhere;
+  padding-left: 1px;
+  padding-right: 2px;
   min-height: calc(1.3em * 3);
 }
 .echo-card:hover .echo-card__title {
