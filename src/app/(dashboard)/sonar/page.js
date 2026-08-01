@@ -99,6 +99,16 @@ export default function SonarPage() {
     }
   }, []);
 
+  // Fade the top nav into the radar rings only while the hero is showing. The class
+  // drives a scoped nav-background override in sonar.css; removed on results/unmount
+  // so the nav is normal everywhere else (and in Sonar's own results view).
+  useEffect(() => {
+    const cls = 'sonar-hero-active';
+    if (phase === 'idle') document.body.classList.add(cls);
+    else document.body.classList.remove(cls);
+    return () => document.body.classList.remove(cls);
+  }, [phase]);
+
   function pushRecent(query, classification) {
     const bt = badgeType(classification);
     setRecent((prev) => {

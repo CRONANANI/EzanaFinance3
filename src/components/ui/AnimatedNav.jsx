@@ -39,7 +39,17 @@ export function AnimatedNav({
                   className={`animated-nav-link ${item.isActive ? 'active' : ''} ${hovered === item.id ? 'hovered' : ''}${item.variant ? ` animated-nav-link--${item.variant}` : ''}`}
                   style={{ '--accent': accentColor }}
                 >
-                  <i className={`bi ${item.icon}`} />
+                  {/* Sonar's icon is wrapped so its ::before/::after can emit the
+                      radar pulse (the glyph itself lives on the inner <i>'s ::before).
+                      The pulse CSS activates only when this link is .active (= on
+                      /sonar), so it never animates elsewhere. */}
+                  {item.variant === 'sonar' ? (
+                    <span className="nav-sonar-icon">
+                      <i className={`bi ${item.icon}`} />
+                    </span>
+                  ) : (
+                    <i className={`bi ${item.icon}`} />
+                  )}
                   <span>{item.title}</span>
                 </Link>
               )}

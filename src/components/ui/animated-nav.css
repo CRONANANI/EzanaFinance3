@@ -288,6 +288,68 @@ body.light-mode .partner-nav .animated-nav-dropdown-item > i {
   color: #ffffff !important;
 }
 
+/* ── Coordinated radar pulse on the Sonar nav icon (only when on /sonar) ──────────
+   Shared cadence with the page's radar rings via --sonar-pulse-dur, so the nav icon
+   "breathes" in sync with .sonar-rings on the page. The pulse only runs when the
+   Sonar link is .active (= pathname includes /sonar); everywhere else it's the
+   static green pill. */
+:root {
+  --sonar-pulse-dur: 1.8s;
+}
+.nav-sonar-icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+/* Expanding white ring (mirrors the page's sonarPing) */
+.animated-nav-link--sonar.active .nav-sonar-icon::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 50%;
+  border: 1.5px solid #ffffff;
+  animation: navSonarPing var(--sonar-pulse-dur) ease-out infinite;
+  pointer-events: none;
+}
+/* Soft halo behind the icon (mirrors the orbital map's dsx-hub-pulse) */
+.animated-nav-link--sonar.active .nav-sonar-icon::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+  animation: navSonarHalo var(--sonar-pulse-dur) ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes navSonarPing {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+@keyframes navSonarHalo {
+  0%,
+  100% {
+    opacity: 0.18;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.42;
+    transform: scale(1.12);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .animated-nav-link--sonar.active .nav-sonar-icon::after,
+  .animated-nav-link--sonar.active .nav-sonar-icon::before {
+    animation: none;
+  }
+}
+
 /* Mobile fallback purple */
 .nav-link.nav-link--purple {
   color: var(--org-ink, #818cf8) !important;

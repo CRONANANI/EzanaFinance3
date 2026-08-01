@@ -25,6 +25,10 @@
   z-index: 0;
   pointer-events: none;
   opacity: 0.9;
+  /* Gentle breathe on the SAME cadence as the nav icon pulse (--sonar-pulse-dur, in
+     animated-nav.css) so the page rings and the nav icon feel coordinated. Subtle —
+     never a flash. */
+  animation: sonarRingsBreathe var(--sonar-pulse-dur, 1.8s) ease-in-out infinite;
   background:
     repeating-radial-gradient(
       circle at 50% 38%,
@@ -905,15 +909,45 @@ a.sonar-mod-rowtitle:hover {
     transform: translateY(0);
   }
 }
+@keyframes sonarRingsBreathe {
+  0%,
+  100% {
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 0.78;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .sonar-ping-dot::after,
   .sonar-caret {
     animation: none;
   }
   .sonar-surface,
-  .sonar-module {
+  .sonar-module,
+  .sonar-rings {
     animation: none;
   }
+}
+
+/* ── Nav fades into the green rings (hero state only) ─────────────────────────────
+   On the Sonar hero, the top nav dissolves into the radar rings instead of sitting
+   as a hard bar: its background becomes a top-solid → transparent gradient and the
+   divider is dropped, so the rings read through its lower edge. Scoped to
+   body.sonar-hero-active (set by the page only while the hero is showing) so every
+   other route — and Sonar's own results view — keeps the normal solid nav. The
+   `html body.sonar-hero-active` specificity + !important beats layout.css's global
+   nav-background !important rule. */
+html body.sonar-hero-active .main-nav:not(.partner-nav) {
+  background: linear-gradient(
+    to bottom,
+    var(--app-bg) 0%,
+    color-mix(in srgb, var(--app-bg) 55%, transparent) 62%,
+    transparent 100%
+  ) !important;
+  border-bottom: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 /* ── Responsive ─────────────────────────────────────────────────────────────── */
