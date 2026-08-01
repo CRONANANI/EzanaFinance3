@@ -184,6 +184,13 @@ export default function EzanaEchoPage() {
     return () => document.removeEventListener('mousedown', onDown);
   }, [openFilter]);
 
+  // Mark the route so the (grey) dashboard shell background can be overridden to the
+  // page's white --bg-primary — see ezana-echo-home.css. Scoped to Echo only.
+  useEffect(() => {
+    document.body.classList.add('echo-route');
+    return () => document.body.classList.remove('echo-route');
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
     (async () => {

@@ -14,6 +14,20 @@
      sits a little closer to the nav; the wordmark keeps its own headroom. */
   margin-top: -0.95rem;
 }
+
+/* Fix 1 — uniform background on the Echo route. The page content is --bg-primary
+   (white in light) but the dashboard shell paints --app-bg (grey) around/behind it,
+   so grey shows at the edges. Force the shell — and body/html for any peek-through —
+   to --bg-primary too, scoped to body.echo-route so every OTHER dashboard page keeps
+   its normal grey shell. In dark mode --bg-primary is the dark base, so the page stays
+   uniformly dark. `html body.echo-route …` + !important beats layout.css's shell rule. */
+html body.echo-route .dashboard-main.dashboard-main-content {
+  background-color: var(--bg-primary) !important;
+}
+body.echo-route,
+html:has(body.echo-route) {
+  background-color: var(--bg-primary) !important;
+}
 .eth-page *,
 .eth-page *::before,
 .eth-page *::after {
@@ -197,8 +211,11 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 20px 0 16px;
-  min-height: 64px;
+  /* Fix 2 — match the landing-page nav's vertical rhythm: a --navbar-height (64px)
+     bar with items vertically centered (symmetric padding), so the brand + auth sit
+     at the same Y as the landing nav's items instead of a taller asymmetric header. */
+  padding: 8px 0;
+  min-height: var(--navbar-height, 64px);
 }
 .eth-masthead-brand {
   display: inline-flex;
@@ -220,7 +237,11 @@
 }
 .eth-masthead-auth {
   display: inline-flex;
-  align-items: center;
+  /* Fix 3 — bottom-align the row so single-line Login sits level with the partner
+     BUTTON (at the bottom of its 2-row stack), not the whole stack's center (which
+     the "Publish to the Echo →" note above the button pushes up, making login float
+     too high). A small margin-bottom then lifts login to the button's vertical center. */
+  align-items: flex-end;
   gap: 20px;
 }
 .eth-login {
@@ -231,6 +252,8 @@
   text-decoration: none;
   white-space: nowrap;
   transition: color 0.14s ease;
+  /* Raise login from the button's bottom edge to its vertical center. */
+  margin-bottom: 7px;
 }
 .eth-login:hover {
   color: var(--emerald);
