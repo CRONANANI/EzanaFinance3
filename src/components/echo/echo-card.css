@@ -76,10 +76,11 @@
 /* Uniform card height: every title reserves the SAME 3-line block (clamped, with a
    min-height) so a 1-line and a 3-line title produce the same card height — rows
    align across columns and tall titles can't push a neighbor into overlap. */
-/* FIXED 2-line title block at 14px — every title is exactly two lines tall (clamped,
-   ellipsis on overflow) whether it's 1 or 2+ lines, so titles and everything below
-   them align across a row and all non-cluster cards share one height. Matches the
-   cluster cards' 2-line treatment. */
+/* FIXED 3-line title block at 14px — every title reserves exactly three lines
+   (clamped, ellipsis on overflow) whether it's 1 or 3+ lines, so full titles fit far
+   more often while titles and everything below them still align across a row and all
+   non-cluster cards share one height. The carved cluster cards keep their own tighter
+   2-line override (ezana-echo-home.css). */
 .echo-card__title {
   margin: 0;
   font-family: var(--font-serif);
@@ -88,15 +89,16 @@
   font-weight: 700;
   color: var(--text-primary);
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
-  /* line-clamp requires overflow:hidden on the title itself; the 1px/2px inset
-     keeps its own clip box from shaving serif/italic first & last glyphs. */
+  /* line-clamp requires overflow:hidden on the title itself; that clip box was
+     shaving the LEFT-SIDE BEARING of serif-bold first glyphs (A, P, T, $ …) with only
+     1px of inset — the "curved cutoff" on the left. 4px clears the serif overhang. */
   overflow: hidden;
   overflow-wrap: anywhere;
-  padding-left: 1px;
-  padding-right: 2px;
-  height: calc(1.3em * 2);
+  padding-left: 4px;
+  padding-right: 4px;
+  height: calc(1.3em * 3);
   min-height: 0;
 }
 .echo-card:hover .echo-card__title {

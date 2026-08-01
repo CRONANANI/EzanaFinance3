@@ -489,6 +489,24 @@
   gap: 0;
   min-width: 0;
 }
+/* Thin page-background hairline at the top-row/bottom-row seam — a distinct
+   separation between the top-two and bottom-two carved cards WITHOUT adding row-gap
+   (which the carve geometry forbids). z-index 2 sits above the card images but below
+   the circle (z 3, which paints over the center) and below the titles (z 4), so the
+   line reads only on the left/right portions between the cards and never crosses the
+   circle or a title. */
+.eth-cluster-feature::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  transform: translateY(-50%);
+  background: var(--bg-primary);
+  z-index: 2;
+  pointer-events: none;
+}
 /* Equal-height top cards so the 2x2 row seam sits exactly at 50% (the circle's
    vertical center) regardless of how long each title runs. The cluster uses a
    FIXED 2-line title (overriding the board's 3-line reserve) so the four cards
@@ -549,6 +567,10 @@
   }
   .eth-cluster-feature {
     gap: 20px; /* restore normal spacing once the circle is no longer overlaid */
+  }
+  /* No 2x2 carve below desktop → the row seam line would be a stray rule. */
+  .eth-cluster-feature::after {
+    display: none;
   }
   .eth-cluster-feature .echo-card__title {
     height: auto;
