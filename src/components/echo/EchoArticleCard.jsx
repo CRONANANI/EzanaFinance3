@@ -7,15 +7,11 @@ import './echo-card.css';
 /**
  * Reusable Echo article card — hero image on top, serif title + mono meta below.
  * Semantic <article> wrapping a Link so the whole card is one keyboard-focusable
- * target. `carve` ('br' | 'tr' | 'bl' | 'tl') masks the IMAGE ONLY so the card's
- * image curves away from the featured circle (the title/meta are never masked).
- * Admins get an inline archive control.
+ * target. Admins get an inline archive control.
  */
-export function EchoArticleCard({ article, carve = null, isAdmin = false, onArchive, archivingId }) {
-  const carveClass = carve ? ` echo-card--carve-${carve}` : '';
-
+export function EchoArticleCard({ article, isAdmin = false, onArchive, archivingId }) {
   return (
-    <article className={`echo-card${carveClass}`}>
+    <article className="echo-card">
       {isAdmin && (
         <button
           type="button"

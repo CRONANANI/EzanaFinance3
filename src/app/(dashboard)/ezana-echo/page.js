@@ -6,7 +6,6 @@ import { useAuth } from '@/components/AuthProvider';
 import { isAdminUserClient } from '@/lib/admin-helpers-client';
 import { EzanaNavLogo } from '@/components/brand/EzanaNavLogo';
 import { EchoArticleCard } from '@/components/echo/EchoArticleCard';
-import { EchoFeatureCircle } from '@/components/echo/EchoFeatureCircle';
 
 import './ezana-echo.css';
 import './ezana-echo-home.css';
@@ -272,11 +271,22 @@ export default function EzanaEchoPage() {
 
   // Article of the Month = the flagged article (the `articleOfMonth` flag first,
   // then the DB-backed `featured` flag, then most-recent) — never a hardcoded id.
-  // It becomes the circular centerpiece and is excluded from the columns.
+  // It becomes the full-width banner and is excluded from the columns.
   const articleOfMonth = useMemo(
     () => allArticles.find((a) => a.articleOfMonth) || featured || feedSource[0] || null,
     [allArticles, featured, feedSource],
   );
+
+  // Banner opening text: the excerpt, or the first paragraph content block if present.
+  const aotmText = useMemo(() => {
+    if (!articleOfMonth) return '';
+    if (articleOfMonth.excerpt) return articleOfMonth.excerpt;
+    const blocks = articleOfMonth.contentBlocks;
+    const para = Array.isArray(blocks)
+      ? blocks.find((b) => (b?.type === 'paragraph' || b?.type === 'text') && b?.text)
+      : null;
+    return para?.text || '';
+  }, [articleOfMonth]);
 
   // Six category columns, each = that category's articles (minus the centerpiece)
   // sorted newest-first. Empty categories (Crypto) render an honest empty state.
@@ -311,17 +321,8 @@ export default function EzanaEchoPage() {
     [columns, activeSubs, timeWindow],
   );
 
-  // The two middle categories form the center cluster. The featured circle is
-  // grid-centered on ROWS 2–3 of those columns (positional, not article-bound), so
-  // row 1 sits above it normally. Needs ≥3 cards in each middle column (rows 2–3
-  // plus row 1) and a featured article; otherwise fall back to plain columns + an
-  // in-flow circle.
   const admin = { isAdmin, onArchive: handleArchive, archivingId };
   const filter = { activeSubs, openFilter, onOpenFilter: setOpenFilter, onToggleSub: toggleSub };
-  const midL = displayColumns[2];
-  const midR = displayColumns[3];
-  const canCluster =
-    Boolean(articleOfMonth) && midL.items.length >= 3 && midR.items.length >= 3;
 
   return (
     <div className="eth-page">
@@ -376,66 +377,37 @@ export default function EzanaEchoPage() {
           </div>
         </div>
 
-        {/* Category board. The two middle categories render as a center cluster:
-            row 1 sits normally above the circle, then ROWS 2–3 form a 2x2 that
-            sculpts around the featured circle — the circle is grid-centered on the
-            2x2's shared inner corner and each of the four cards carves the corner
-            facing that same point, so the circle and all four carves share ONE
-            center by construction (no pixel guess, no white corners). The other
-            four categories are plain columns. Each header carries a subcategory
-            filter; card bodies sit above the circle, so titles are never clipped. */}
+        {/* Article of the Month — a full-width horizontal banner above the category
+            headers: hero image on the left (same 16:9 size as a normal card), then
+            the eyebrow, title, and as much opening text as fits. It's excluded from
+            the columns below so it never appears twice. */}
+        {articleOfMonth && (
+          <Link href={`/ezana-echo/${articleOfMonth.id}`} className="eth-aotm">
+            <div className="eth-aotm-img">
+              {articleOfMonth.heroImage?.src ? (
+                <img
+                  src={articleOfMonth.heroImage.src}
+                  alt={articleOfMonth.heroImage.alt || articleOfMonth.title}
+                  loading="lazy"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+              ) : null}
+            </div>
+            <div className="eth-aotm-body">
+              <span className="eth-aotm-eyebrow">Article of the Month</span>
+              <h2 className="eth-aotm-title">{articleOfMonth.title}</h2>
+              {aotmText && <p className="eth-aotm-text">{aotmText}</p>}
+            </div>
+          </Link>
+        )}
+
+        {/* Category board — six plain newest-first columns. */}
         <div className="eth-board">
-          {canCluster ? (
-            <>
-              <CategoryColumn col={displayColumns[0]} admin={admin} filter={filter} />
-              <CategoryColumn col={displayColumns[1]} admin={admin} filter={filter} />
-
-              <div className="eth-center-cluster">
-                <div className="eth-cluster-heads">
-                  <ColHead category={midL} filter={filter} />
-                  <ColHead category={midR} filter={filter} />
-                </div>
-                {/* Row 1: normal cards above the circle. */}
-                <div className="eth-cluster-top">
-                  <EchoArticleCard article={midL.items[0]} {...admin} />
-                  <EchoArticleCard article={midR.items[0]} {...admin} />
-                </div>
-                {/* Rows 2–3: the carved 2x2 [L1 | R1] / [L2 | R2]; each carves the
-                    corner facing the circle grid-centered on the shared point. */}
-                <div className="eth-cluster-feature">
-                  <EchoArticleCard article={midL.items[1]} carve="br" {...admin} />
-                  <EchoArticleCard article={midR.items[1]} carve="bl" {...admin} />
-                  <EchoArticleCard article={midL.items[2]} carve="tr" {...admin} />
-                  <EchoArticleCard article={midR.items[2]} carve="tl" {...admin} />
-                  <EchoFeatureCircle article={articleOfMonth} className="eth-cluster-circle" />
-                </div>
-                <div className="eth-cluster-rest">
-                  <div className="eth-col">
-                    {midL.items.slice(3).map((a) => (
-                      <EchoArticleCard key={a.id} article={a} {...admin} />
-                    ))}
-                  </div>
-                  <div className="eth-col">
-                    {midR.items.slice(3).map((a) => (
-                      <EchoArticleCard key={a.id} article={a} {...admin} />
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <CategoryColumn col={displayColumns[4]} admin={admin} filter={filter} />
-              <CategoryColumn col={displayColumns[5]} admin={admin} filter={filter} />
-            </>
-          ) : (
-            <>
-              {displayColumns.map((col) => (
-                <CategoryColumn key={col.id} col={col} admin={admin} filter={filter} />
-              ))}
-              {articleOfMonth && (
-                <EchoFeatureCircle article={articleOfMonth} className="eth-feature-standalone" />
-              )}
-            </>
-          )}
+          {displayColumns.map((col) => (
+            <CategoryColumn key={col.id} col={col} admin={admin} filter={filter} />
+          ))}
         </div>
 
         {/* Newsletter band (presentational — wire to real signup later) */}

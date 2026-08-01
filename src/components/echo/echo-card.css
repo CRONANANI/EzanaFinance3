@@ -1,9 +1,6 @@
 /* ══════════════════════════════════════════════════════════════
    EchoArticleCard — reusable hero-image card (image on top, text below).
-   ~12% shorter than the previous card (16:9 image, tighter body). Its IMAGE
-   can be sculpted to curve around the featured circle; TEXT is never masked.
-   The carve geometry (--echo-carve-r / --echo-cx / --echo-cy) cascades from the
-   board, so the card stays coherent with the circle without magic numbers.
+   16:9 image, tight body. Uniform stacked cards fill each category column.
    ══════════════════════════════════════════════════════════════ */
 .echo-card {
   position: relative;
@@ -28,9 +25,8 @@
 .echo-card:hover {
   background: color-mix(in srgb, var(--emerald) 5%, transparent);
 }
-/* Lift on hover — never the carved cluster cards (their mask is locked to the
-   circle; a transform would detach it). */
-.echo-card:not([class*='echo-card--carve']):hover {
+/* Lift on hover. */
+.echo-card:hover {
   transform: translateY(-2px);
 }
 @media (prefers-reduced-motion: reduce) {
@@ -148,55 +144,4 @@
 .echo-card__archive[disabled] {
   opacity: 0.6;
   cursor: default;
-}
-
-/* ── Sculpt: mask the IMAGE only. Now that the wall-to-wall board removed the card
-   box (no border/background/rounded corner), the old "white corner" chrome can't
-   show through the carve, so we carve just the image — which keeps the mask off
-   the title/meta entirely. In the cluster the four carved cards are laid out so
-   the circle's vertical span lands only on image (tall images; upper cards flip
-   image-to-bottom — see ezana-echo-home.css), so no text is ever under the circle.
-   The transparent radius (--echo-carve-r) exceeds the circle radius for a clean
-   page-space gap; the cut is anchored at the corner facing the circle. */
-.echo-card--carve-br .echo-card__img,
-.echo-card--carve-tr .echo-card__img,
-.echo-card--carve-bl .echo-card__img,
-.echo-card--carve-tl .echo-card__img {
-  -webkit-mask: radial-gradient(
-    circle var(--echo-carve-r) at var(--echo-cx) var(--echo-cy),
-    transparent 0 var(--echo-carve-r),
-    #000 calc(var(--echo-carve-r) + 1px)
-  );
-  mask: radial-gradient(
-    circle var(--echo-carve-r) at var(--echo-cx) var(--echo-cy),
-    transparent 0 var(--echo-carve-r),
-    #000 calc(var(--echo-carve-r) + 1px)
-  );
-}
-.echo-card--carve-br {
-  --echo-cx: 100%;
-  --echo-cy: 100%;
-}
-.echo-card--carve-tr {
-  --echo-cx: 100%;
-  --echo-cy: 0%;
-}
-.echo-card--carve-bl {
-  --echo-cx: 0%;
-  --echo-cy: 100%;
-}
-.echo-card--carve-tl {
-  --echo-cx: 0%;
-  --echo-cy: 0%;
-}
-
-/* Below desktop the circle drops into the flow — no card stays carved. */
-@media (max-width: 1100px) {
-  .echo-card--carve-br .echo-card__img,
-  .echo-card--carve-tr .echo-card__img,
-  .echo-card--carve-bl .echo-card__img,
-  .echo-card--carve-tl .echo-card__img {
-    -webkit-mask: none;
-    mask: none;
-  }
 }
