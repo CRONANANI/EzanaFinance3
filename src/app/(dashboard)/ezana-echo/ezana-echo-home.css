@@ -410,6 +410,82 @@ html:has(body.echo-route) {
   color: var(--text-faint);
 }
 
+/* ── Conveyor-belt columns (desktop only) ─────────────────────────────────────
+   Fixed viewport per column; the track (two identical segments) drifts DOWN one
+   full segment per cycle so cards exit the bottom and re-enter at the top.
+   --belt-seg / --belt-dur are measured per column in JS (constant 22px/s speed
+   for every column regardless of article count); --belt-phase is a per-column
+   negative delay so no two belts are ever vertically aligned. */
+.eth-belt {
+  position: relative;
+  height: clamp(560px, 74vh, 900px);
+  overflow: hidden;
+  /* Cards dissolve at the belt edges instead of hard-cutting mid-title. */
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 30px,
+    #000 calc(100% - 34px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 30px,
+    #000 calc(100% - 34px),
+    transparent 100%
+  );
+}
+/* Static stagger on top of the phase offsets: neighbouring belts start at
+   different heights (pattern avoids any two adjacent columns matching). */
+.eth-col:nth-child(3n + 2) .eth-belt {
+  margin-top: 22px;
+}
+.eth-col:nth-child(3n) .eth-belt {
+  margin-top: 44px;
+}
+.eth-belt-track {
+  display: flex;
+  flex-direction: column;
+  gap: 28px; /* seam gap — MUST match the card gap + BELT_GAP in page.js */
+  animation: eth-belt-down var(--belt-dur, 40s) linear infinite;
+  animation-delay: var(--belt-phase, 0s);
+  will-change: transform;
+}
+.eth-belt-seg {
+  display: flex;
+  flex-direction: column;
+  gap: 28px; /* identical rhythm inside each segment */
+}
+@keyframes eth-belt-down {
+  from {
+    transform: translateY(calc(-1 * var(--belt-seg, 100%)));
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+/* Readability + clickability: a hovered or keyboard-focused column stands still. */
+.eth-belt:hover .eth-belt-track,
+.eth-belt:focus-within .eth-belt-track {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .eth-belt {
+    height: auto;
+    overflow: visible;
+    -webkit-mask-image: none;
+    mask-image: none;
+    margin-top: 0 !important;
+  }
+  .eth-belt-track {
+    animation: none;
+  }
+  .eth-belt-seg[aria-hidden] {
+    display: none;
+  }
+}
+
 /* ── Toolbar: global time-window filter — centered between the Article of the
    Month banner and the category headers. */
 .eth-toolbar {
@@ -477,6 +553,7 @@ html:has(body.echo-route) {
   aspect-ratio: 16 / 9; /* same hero ratio + width as a normal card's image */
   object-fit: cover;
   display: block;
+  border-radius: var(--radius-lg, 12px); /* the banner hero is the ONE rounded image on the board */
 }
 /* Emerald-tinted placeholder if the image is missing/broken (matches echo-card):
    rendered as ::after only when the wrapper has no visible img. */
@@ -584,6 +661,20 @@ html:has(body.echo-route) {
   }
   .eth-aotm-img {
     padding: 24px 0;
+  }
+  /* Belts are desktop-only — tablet/mobile keep today's static stacks. */
+  .eth-belt {
+    height: auto;
+    overflow: visible;
+    -webkit-mask-image: none;
+    mask-image: none;
+    margin-top: 0 !important;
+  }
+  .eth-belt-track {
+    animation: none;
+  }
+  .eth-belt-seg[aria-hidden] {
+    display: none;
   }
 }
 @media (max-width: 640px) {

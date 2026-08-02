@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
 import { isAdminUserClient } from '@/lib/admin-helpers-client';
@@ -86,6 +86,12 @@ function withinWindow(publishedAt, windowId) {
   return Date.now() - then <= win.days * 86400000;
 }
 
+/* Conveyor-belt columns: constant speed in px/s (slow enough to read a title as
+   it passes — one card height ≈ 9s), and the seam gap, which MUST equal the
+   28px card gap so the loop's rhythm is invisible. */
+const BELT_SPEED = 22;
+const BELT_GAP = 28;
+
 /* Centered column header: emerald dot beside the label, full-width underline, and
    a two-line toggle that opens a checkbox popover to filter the column's
    subcategories (all on by default). */
@@ -128,22 +134,72 @@ function ColHead({ category, filter }) {
   );
 }
 
-/* A single category column: header + newest-first stack of cards (no carves —
-   carved cards live only inside the center cluster's 2x2). */
-function CategoryColumn({ col, admin, filter }) {
+/* A single category column: header + a downward conveyor-belt loop of cards.
+   The card list is duplicated into two identical segments; the track animates
+   one full segment per cycle, so items exit the bottom and re-enter at the top.
+   Duration is measured (segment height / BELT_SPEED) so every column moves at
+   the same px/s regardless of how many articles it holds. Belts loop only with
+   2+ articles and only on desktop (CSS disables them ≤1100px / reduced-motion). */
+function CategoryColumn({ col, colIndex, admin, filter }) {
+  const loop = col.items.length >= 2;
+  const beltRef = useRef(null);
+  const segRef = useRef(null);
+  const dupRef = useRef(null);
+
+  useEffect(() => {
+    if (!loop) return undefined;
+    const belt = beltRef.current;
+    const seg = segRef.current;
+    if (!belt || !seg) return undefined;
+    const apply = () => {
+      const cycle = seg.offsetHeight + BELT_GAP; // segment + seam gap
+      belt.style.setProperty('--belt-seg', `${cycle}px`);
+      belt.style.setProperty('--belt-dur', `${(cycle / BELT_SPEED).toFixed(2)}s`);
+    };
+    apply();
+    const ro = new ResizeObserver(apply);
+    ro.observe(seg);
+    return () => ro.disconnect();
+  }, [loop, col.items]);
+
+  // The duplicate segment is purely visual — remove it from AT and tab order.
+  useEffect(() => {
+    if (dupRef.current) dupRef.current.setAttribute('inert', '');
+  }, [loop, col.items]);
+
+  const renderCards = (keyPrefix) =>
+    col.items.map((a) => (
+      <EchoArticleCard
+        key={`${keyPrefix}${a.id}`}
+        article={a}
+        isAdmin={admin.isAdmin}
+        onArchive={admin.onArchive}
+        archivingId={admin.archivingId}
+      />
+    ));
+
   return (
     <div className="eth-col">
       <ColHead category={col} filter={filter} />
       {col.items.length ? (
-        col.items.map((a) => (
-          <EchoArticleCard
-            key={a.id}
-            article={a}
-            isAdmin={admin.isAdmin}
-            onArchive={admin.onArchive}
-            archivingId={admin.archivingId}
-          />
-        ))
+        loop ? (
+          <div
+            className="eth-belt"
+            ref={beltRef}
+            style={{ '--belt-phase': `${(-(colIndex * 4.7)).toFixed(1)}s` }}
+          >
+            <div className="eth-belt-track">
+              <div className="eth-belt-seg" ref={segRef}>
+                {renderCards('')}
+              </div>
+              <div className="eth-belt-seg" ref={dupRef} aria-hidden="true">
+                {renderCards('dup-')}
+              </div>
+            </div>
+          </div>
+        ) : (
+          renderCards('')
+        )
       ) : (
         <div className="eth-col-empty">No articles yet</div>
       )}
@@ -446,8 +502,8 @@ export default function EzanaEchoPage() {
 
         {/* Category board — six plain newest-first columns. */}
         <div className="eth-board">
-          {displayColumns.map((col) => (
-            <CategoryColumn key={col.id} col={col} admin={admin} filter={filter} />
+          {displayColumns.map((col, i) => (
+            <CategoryColumn key={col.id} col={col} colIndex={i} admin={admin} filter={filter} />
           ))}
         </div>
 
