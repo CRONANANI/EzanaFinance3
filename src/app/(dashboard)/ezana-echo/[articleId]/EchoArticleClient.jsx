@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect, useMemo, useRef } from 'react';
+import DottedMap from 'dotted-map';
 import {
   AreaChart,
   Area,
@@ -2145,6 +2146,35 @@ function FoundryMarketShareChart({ title, caption }) {
   );
 }
 
+/* Fiber map assets — built LAZILY on first render of the fiber article and
+   cached for the session. Never at module scope: this file bundles for every
+   article page, and DottedMap.getSVG() emits thousands of circles (a real
+   main-thread cost that only the fiber article should ever pay). Pins are
+   computed with the library's own getPin(), so company dots land on the dotted
+   continents accurately by construction — same technique as the landing hero
+   route endpoints. */
+const FIBER_MAP_W = 337;
+const FIBER_MAP_H = 170;
+let _fiberMapAssets = null;
+function getFiberMapAssets() {
+  if (_fiberMapAssets) return _fiberMapAssets;
+  const map = new DottedMap({ height: FIBER_MAP_H, grid: 'diagonal' });
+  const buildUrl = (color) =>
+    `data:image/svg+xml;utf8,${encodeURIComponent(
+      map.getSVG({ radius: 0.18, color, shape: 'circle', backgroundColor: 'transparent' }),
+    )}`;
+  const pins = FIBER_OPTIC_COMPANIES.map((c) => {
+    const pin = map.getPin({ lat: c.lat, lng: c.lng });
+    return { ...c, x: pin.x, y: pin.y };
+  });
+  _fiberMapAssets = {
+    baseLight: buildUrl('rgba(148, 163, 184, 0.55)'), // slate dots so industry colors pop
+    baseDark: buildUrl('rgba(148, 163, 184, 0.30)'),
+    pins,
+  };
+  return _fiberMapAssets;
+}
+
 function FiberOpticWorldMap({ title, caption }) {
   const [activeContinents, setActiveContinents] = useState(() => new Set(CONTINENTS));
   const [activeIndustries, setActiveIndustries] = useState(() => new Set(INDUSTRIES));
@@ -2162,15 +2192,6 @@ function FiberOpticWorldMap({ title, caption }) {
   const t = {
     /* SVG background */
     mapBg: isDark ? '#0a0e13' : '#f8fafc',
-    mapBorder: isDark ? 'rgba(99,102,241,0.12)' : 'rgba(99,102,241,0.2)',
-
-    /* Continent outlines */
-    continentStroke: isDark ? '#6366f1' : '#94a3b8',
-    continentFill: isDark ? 'none' : 'rgba(148,163,184,0.06)',
-    continentOpacity: isDark ? 0.15 : 0.5,
-
-    /* Continent label text */
-    continentLabelFill: isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.5)',
 
     /* Company dots */
     dotStroke: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)',
@@ -2209,15 +2230,14 @@ function FiberOpticWorldMap({ title, caption }) {
     });
   };
 
-  const visible = FIBER_OPTIC_COMPANIES.filter(
+  // Build the dotted-map base + library-accurate pins once (lazy, module-cached).
+  const assets = useMemo(() => getFiberMapAssets(), []);
+
+  // Visible pins: same continent/industry predicate, over the pin-augmented list
+  // (each pin carries the getPin() x/y in the 337×170 dot-grid space).
+  const visible = assets.pins.filter(
     (c) => activeContinents.has(c.continent) && activeIndustries.has(c.industry),
   );
-
-  const project = (lat, lng) => {
-    const x = ((lng + 180) / 360) * 700;
-    const y = ((90 - lat) / 180) * 400;
-    return { x, y };
-  };
 
   const industryColor = (ind) => INDUSTRY_COLORS[ind] || '#6366f1';
 
@@ -2279,174 +2299,81 @@ function FiberOpticWorldMap({ title, caption }) {
       </div>
 
       <svg
-        viewBox="0 0 700 400"
-        style={{
-          width: '100%',
-          height: 'auto',
-          maxHeight: 400,
-          background: t.mapBg,
-          borderRadius: 8,
-          border: `1px solid ${t.mapBorder}`,
-        }}
+        viewBox={`0 0 ${FIBER_MAP_W} ${FIBER_MAP_H}`}
+        className="echo-fiber-map-svg"
+        role="img"
+        aria-label="World map of major fiber optic cable manufacturers"
+        style={{ background: t.mapBg, borderRadius: 12 }}
       >
-        <g
-          opacity={t.continentOpacity}
-          fill={t.continentFill}
-          stroke={t.continentStroke}
-          strokeWidth={isDark ? 0.5 : 1}
-        >
-          <path d="M50,60 L160,40 L200,80 L190,130 L150,160 L120,200 L80,180 L60,120 Z" />
-          <path d="M140,210 L180,200 L200,250 L190,320 L160,360 L130,340 L120,280 Z" />
-          <path d="M310,50 L380,40 L390,80 L370,120 L340,110 L310,90 Z" />
-          <path d="M330,150 L380,140 L400,200 L390,280 L350,310 L320,260 L310,200 Z" />
-          <path d="M400,40 L560,30 L600,80 L580,150 L520,180 L450,160 L400,120 Z" />
-          <path d="M560,250 L640,240 L660,280 L630,310 L570,300 Z" />
-        </g>
-
-        {/* Continent labels */}
-        <g
-          fill={t.continentLabelFill}
-          fontSize="9"
-          fontFamily="sans-serif"
-          fontWeight="600"
-          letterSpacing="0.1em"
-        >
-          <text x="120" y="110">
-            N. AMERICA
-          </text>
-          <text x="150" y="290">
-            S. AMERICA
-          </text>
-          <text x="340" y="80">
-            EUROPE
-          </text>
-          <text x="345" y="220">
-            AFRICA
-          </text>
-          <text x="490" y="90">
-            ASIA
-          </text>
-          <text x="590" y="270">
-            OCEANIA
-          </text>
-        </g>
-
-        {visible.map((c) => {
-          const { x, y } = project(c.lat, c.lng);
-          const r = c.highlight ? 7 : 4.5;
-          const fill = industryColor(c.industry);
-          return (
-            <g
-              key={c.name}
+        {/* Dotted continents — same generator + config as the landing hero. */}
+        <image
+          href={isDark ? assets.baseDark : assets.baseLight}
+          x="0"
+          y="0"
+          width={FIBER_MAP_W}
+          height={FIBER_MAP_H}
+        />
+        {visible.map((c) => (
+          <g key={c.name}>
+            {c.highlight && (
+              <circle
+                cx={c.x}
+                cy={c.y}
+                r="3.2"
+                fill="none"
+                stroke={t.highlightPulseStroke}
+                strokeWidth="0.5"
+                className="echo-fiber-pulse"
+              />
+            )}
+            <circle
+              cx={c.x}
+              cy={c.y}
+              r={c.highlight ? 2.2 : 1.7}
+              fill={industryColor(c.industry)}
+              stroke={c.highlight ? t.highlightStroke : t.dotStroke}
+              strokeWidth={c.highlight ? 0.6 : 0.4}
+              style={{ cursor: 'pointer' }}
               onMouseEnter={() => setHovered(c)}
               onMouseLeave={() => setHovered(null)}
               onClick={() => handleDotClick(c)}
-              style={{ cursor: 'pointer' }}
-            >
-              {c.highlight && (
-                <circle
-                  cx={x}
-                  cy={y}
-                  r={14}
-                  fill="none"
-                  stroke={t.highlightPulseStroke}
-                  strokeWidth={1}
-                  opacity={0.25}
-                >
-                  <animate
-                    attributeName="r"
-                    values="10;18;10"
-                    dur="2.5s"
-                    repeatCount="indefinite"
-                  />
-                  <animate
-                    attributeName="opacity"
-                    values="0.45;0.1;0.45"
-                    dur="2.5s"
-                    repeatCount="indefinite"
-                  />
-                </circle>
-              )}
-              <circle
-                cx={x}
-                cy={y}
-                r={selectedCompany?.name === c.name ? r + 2 : r}
-                fill={fill}
-                stroke={
-                  selectedCompany?.name === c.name
-                    ? isDark
-                      ? '#f0f6fc'
-                      : '#1e293b'
-                    : c.highlight
-                      ? t.highlightStroke
-                      : t.dotStroke
-                }
-                strokeWidth={selectedCompany?.name === c.name ? 2.5 : c.highlight ? 2 : 0.5}
-                opacity={0.9}
-                style={{ cursor: 'pointer' }}
-              />
-            </g>
-          );
-        })}
-
-        {hovered &&
-          (() => {
-            const { x, y } = project(hovered.lat, hovered.lng);
-            const tipX = x > 500 ? x - 160 : x + 12;
-            const tipY = y > 300 ? y - 60 : y + 8;
-            const hc = industryColor(hovered.industry);
-            return (
-              <g>
-                <rect
-                  x={tipX}
-                  y={tipY}
-                  width={155}
-                  height={52}
-                  rx={6}
-                  fill={t.tooltipBg}
-                  stroke={t.tooltipBorder}
-                  strokeWidth={1}
-                />
-                <text
-                  x={tipX + 8}
-                  y={tipY + 16}
-                  fill={t.tooltipNameFill}
-                  fontSize="9"
-                  fontWeight="700"
-                  fontFamily="sans-serif"
-                >
-                  {hovered.name}
-                </text>
-                <text
-                  x={tipX + 8}
-                  y={tipY + 28}
-                  fill={t.tooltipMetaFill}
-                  fontSize="7.5"
-                  fontFamily="sans-serif"
-                >
-                  {hovered.hq} · {hovered.industry}
-                </text>
-                <text
-                  x={tipX + 8}
-                  y={tipY + 40}
-                  fill={hc}
-                  fontSize="7.5"
-                  fontWeight="600"
-                  fontFamily="sans-serif"
-                >
-                  {hovered.ticker ? `${hovered.ticker}` : 'Private'}
-                </text>
-              </g>
-            );
-          })()}
-
+            />
+          </g>
+        ))}
+        {/* Hover tooltip — same content as before, sized for the 337×170 space
+            (vector text scales crisply with the card width). */}
+        {hovered && (
+          <g
+            transform={`translate(${Math.min(hovered.x, FIBER_MAP_W - 78)}, ${Math.max(
+              hovered.y - 16,
+              4,
+            )})`}
+            pointerEvents="none"
+          >
+            <rect
+              width="76"
+              height="14"
+              rx="3"
+              fill={t.tooltipBg}
+              stroke={t.tooltipBorder}
+              strokeWidth="0.4"
+            />
+            <text x="4" y="6" fontSize="4.6" fontWeight="700" fill={t.tooltipNameFill}>
+              {hovered.name}
+              {hovered.ticker ? ` · ${hovered.ticker}` : ''}
+            </text>
+            <text x="4" y="11.2" fontSize="3.6" fill={t.tooltipMetaFill}>
+              {hovered.hq} · {hovered.industry}
+            </text>
+          </g>
+        )}
+        {/* Counter — bottom-right. */}
         <text
-          x={685}
-          y={390}
+          x={FIBER_MAP_W - 4}
+          y={FIBER_MAP_H - 4}
           textAnchor="end"
+          fontSize="3.8"
           fill={t.counterFill}
-          fontSize="8"
-          fontFamily="sans-serif"
         >
           {visible.length} companies shown
         </text>
