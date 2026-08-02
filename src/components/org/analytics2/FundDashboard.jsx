@@ -17,6 +17,7 @@ import { CoverageGaps } from './CoverageGaps';
 import { CashTile } from './CashTile';
 import { AttributionByPitch } from './AttributionByPitch';
 import { AnalystScorecard } from './AnalystScorecard';
+import { AttentionMap } from './AttentionMap';
 import './analytics.css';
 
 function Skeleton() {
@@ -168,6 +169,9 @@ export function FundDashboard({ initialData = null }) {
           <CashTile cash={data.cash} />
         </div>
       </div>
+
+      {/* Team attention map — managers only, self-gates & renders null otherwise */}
+      <AttentionMap />
 
       {/* Detail — pitch outcomes, now with real names / Unassigned */}
       <div className="fa-card fa-card-pad" style={{ marginTop: '1rem' }}>

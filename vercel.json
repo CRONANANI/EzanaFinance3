@@ -74,6 +74,10 @@
       "schedule": "0 5 * * *"
     },
     {
+      "path": "/api/cron/org-interest-aggregates",
+      "schedule": "30 5 * * *"
+    },
+    {
       "path": "/api/cron/prune-breadcrumbs",
       "schedule": "0 3 1 * *"
     },
