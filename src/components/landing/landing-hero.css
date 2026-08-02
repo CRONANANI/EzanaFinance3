@@ -261,14 +261,16 @@
   right: 8px;
   transform: translateY(-50%);
   width: 354px;
-  /* Translucent WHITE card: the dotted map shows through subtly while blur keeps
-     the content legible. The hero is brand-locked dark, so the card scopes a set
-     of light-theme token overrides below (mirroring theme-variables.css light
-     mode) — this flips all child text/surfaces to dark-on-white without editing
-     every child rule. Emerald accent border retained. */
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  /* Translucent WHITE card: the dotted map + signal routes show through while blur
+     keeps the content legible. The alpha and blur were lowered (0.72 → 0.58,
+     12px → 8px) so the new China/Australia arcs running under the card stay visible
+     through the glass. The hero is brand-locked dark, so the card scopes a set of
+     light-theme token overrides below (mirroring theme-variables.css light mode) —
+     this flips all child text/surfaces to dark-on-white without editing every child
+     rule. Emerald accent border retained. */
+  background: rgba(255, 255, 255, 0.58);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(16, 185, 129, 0.25);
   --text-primary: #0f172a;
   --text-secondary: #1e293b;

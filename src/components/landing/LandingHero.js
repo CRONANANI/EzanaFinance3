@@ -113,7 +113,11 @@ const SIGNALS = [
    byte-identical to the design source; all colors resolve from theme tokens
    via CSS classes. The dotted continents themselves are now the
    market-analysis <WorldMap> (real continent shapes), rendered below this
-   overlay — see the .lp-map block in LandingHero(). */
+   overlay — see the .lp-map block in LandingHero().
+
+   Dot-grid → overlay transform (dotted-map viewBox 0 0 337 170, contain in
+   1840×820): x = 107.24 + u·4.82353, y = v·4.82353. City endpoints were computed
+   with dotted-map's getPin() at the production config — compute, don't eyeball. */
 const ROUTES_HTML = `
   <svg class="lp-routes" viewBox="0 0 1840 820" preserveAspectRatio="none">
     <defs>
@@ -144,17 +148,39 @@ const ROUTES_HTML = `
       <path d="M 682 624 Q 730 430 542 237" fill="none" stroke="url(#lpRouteGrad)" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 9" />
       <path d="M 964 180 Q 718 116 472 230" fill="none" stroke="url(#lpRouteGrad)" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 9" />
       <path d="M 1203 330 Q 840 168 472 230" fill="none" stroke="url(#lpRouteGrad)" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 9" />
-      <path d="M 1063 640 Q 660 560 294 254" fill="none" stroke="url(#lpRouteGrad)" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 9" />
+      <path d="M 1058 622 Q 660 540 324 221" fill="none" stroke="url(#lpRouteGrad)" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 9" />
       <circle r="3.8" class="lp-comet"><animateMotion dur="4.6s" begin="0.4s" repeatCount="indefinite" path="M 682 624 Q 730 430 542 237" /></circle>
       <circle r="3.8" class="lp-comet"><animateMotion dur="5.2s" begin="1.2s" repeatCount="indefinite" path="M 964 180 Q 718 116 472 230" /></circle>
       <circle r="3.8" class="lp-comet"><animateMotion dur="6s" begin="0.8s" repeatCount="indefinite" path="M 1203 330 Q 840 168 472 230" /></circle>
-      <circle r="3.8" class="lp-comet"><animateMotion dur="5.6s" begin="2s" repeatCount="indefinite" path="M 1063 640 Q 660 560 294 254" /></circle>
+      <circle r="3.8" class="lp-comet"><animateMotion dur="5.6s" begin="2s" repeatCount="indefinite" path="M 1058 622 Q 660 540 324 221" /></circle>
       <g class="lp-node"><circle cx="682" cy="624" r="3.5" class="lp-node-dot" /><circle cx="682" cy="624" r="3.5" stroke-width="1.5" class="lp-ping" style="animation-delay:.3s" /></g>
       <g class="lp-node"><circle cx="964" cy="180" r="3.5" class="lp-node-dot" /><circle cx="964" cy="180" r="3.5" stroke-width="1.5" class="lp-ping" style="animation-delay:1.4s" /></g>
       <g class="lp-node"><circle cx="1203" cy="330" r="3.5" class="lp-node-dot" /><circle cx="1203" cy="330" r="3.5" stroke-width="1.5" class="lp-ping" style="animation-delay:.9s" /></g>
-      <g class="lp-node"><circle cx="1063" cy="640" r="3.5" class="lp-node-dot" /><circle cx="1063" cy="640" r="3.5" stroke-width="1.5" class="lp-ping" style="animation-delay:1.8s" /></g>
+      <g class="lp-node"><circle cx="1058" cy="622" r="3.5" class="lp-node-dot" /><circle cx="1058" cy="622" r="3.5" stroke-width="1.5" class="lp-ping" style="animation-delay:1.8s" /></g>
       <g class="lp-node"><circle cx="472" cy="230" r="4" class="lp-node-dot" /><circle cx="472" cy="230" r="4" stroke-width="1.5" class="lp-ping" style="animation-delay:1.1s" /></g>
-      <g class="lp-node"><circle cx="294" cy="254" r="4" class="lp-node-dot" /><circle cx="294" cy="254" r="4" stroke-width="1.5" class="lp-ping" style="animation-delay:2.3s" /></g>
+      <g class="lp-node"><circle cx="324" cy="221" r="4" class="lp-node-dot" /><circle cx="324" cy="221" r="4" stroke-width="1.5" class="lp-ping" style="animation-delay:2.3s" /></g>
+      <!-- China → Australia -->
+      <path d="M 1509 334 Q 1680 500 1622 689" fill="none" stroke="url(#lpRouteGrad)" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 9" />
+      <path d="M 1484 284 Q 1560 470 1482 656" fill="none" stroke="url(#lpRouteGrad)" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 9" />
+      <!-- China → West Africa -->
+      <path d="M 1472 380 Q 1200 300 937 464" fill="none" stroke="url(#lpRouteGrad)" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 9" />
+      <!-- Sweden → Ukraine -->
+      <path d="M 1009 138 Q 1050 160 1067 213" fill="none" stroke="url(#lpRouteGrad)" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 9" />
+      <!-- Norway → Tanzania -->
+      <path d="M 971 130 Q 1120 320 1108 526" fill="none" stroke="url(#lpRouteGrad)" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 9" />
+      <circle r="3.8" class="lp-comet"><animateMotion dur="5.4s" begin="0.6s" repeatCount="indefinite" path="M 1509 334 Q 1680 500 1622 689" /></circle>
+      <circle r="3.8" class="lp-comet"><animateMotion dur="6.2s" begin="1.6s" repeatCount="indefinite" path="M 1472 380 Q 1200 300 937 464" /></circle>
+      <circle r="3.8" class="lp-comet"><animateMotion dur="6.8s" begin="2.4s" repeatCount="indefinite" path="M 971 130 Q 1120 320 1108 526" /></circle>
+      <g class="lp-node"><circle cx="1509" cy="334" r="3.5" class="lp-node-dot" /><circle cx="1509" cy="334" r="3.5" stroke-width="1.5" class="lp-ping" style="animation-delay:.5s" /></g>
+      <g class="lp-node"><circle cx="1622" cy="689" r="3.5" class="lp-node-dot" /><circle cx="1622" cy="689" r="3.5" stroke-width="1.5" class="lp-ping" style="animation-delay:1.6s" /></g>
+      <g class="lp-node"><circle cx="1484" cy="284" r="3.5" class="lp-node-dot" /><circle cx="1484" cy="284" r="3.5" stroke-width="1.5" class="lp-ping" style="animation-delay:2.1s" /></g>
+      <g class="lp-node"><circle cx="1482" cy="656" r="3.5" class="lp-node-dot" /><circle cx="1482" cy="656" r="3.5" stroke-width="1.5" class="lp-ping" style="animation-delay:.8s" /></g>
+      <g class="lp-node"><circle cx="1472" cy="380" r="3.5" class="lp-node-dot" /><circle cx="1472" cy="380" r="3.5" stroke-width="1.5" class="lp-ping" style="animation-delay:2.6s" /></g>
+      <g class="lp-node"><circle cx="937" cy="464" r="3.5" class="lp-node-dot" /><circle cx="937" cy="464" r="3.5" stroke-width="1.5" class="lp-ping" style="animation-delay:1.2s" /></g>
+      <g class="lp-node"><circle cx="1009" cy="138" r="3.5" class="lp-node-dot" /><circle cx="1009" cy="138" r="3.5" stroke-width="1.5" class="lp-ping" style="animation-delay:.2s" /></g>
+      <g class="lp-node"><circle cx="1067" cy="213" r="3.5" class="lp-node-dot" /><circle cx="1067" cy="213" r="3.5" stroke-width="1.5" class="lp-ping" style="animation-delay:1.9s" /></g>
+      <g class="lp-node"><circle cx="971" cy="130" r="3.5" class="lp-node-dot" /><circle cx="971" cy="130" r="3.5" stroke-width="1.5" class="lp-ping" style="animation-delay:2.9s" /></g>
+      <g class="lp-node"><circle cx="1108" cy="526" r="3.5" class="lp-node-dot" /><circle cx="1108" cy="526" r="3.5" stroke-width="1.5" class="lp-ping" style="animation-delay:.9s" /></g>
     </g>
   </svg>
   <div class="lp-map-fade"></div>
