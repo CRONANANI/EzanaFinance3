@@ -155,7 +155,12 @@ export const semiconductorArticle = {
     "Taiwan's semiconductor dominance is a geopolitical weapon, a $5 trillion investment thesis, and the most consequential chokepoint in the global economy.",
   excerpt:
     'One company — TSMC — produces over 90% of the world\'s most advanced semiconductor chips. These chips power AI training, military systems, smartphones, and the entire digital economy. Taiwan transformed this manufacturing supremacy into what analysts call a "silicon shield" — the theory that no rational actor would invade the island and risk disrupting the global chip supply. Here\'s the full picture for investors.',
-  heroImage: null,
+  heroImage: {
+    src: '/echo/tmsc-manufacturing.png',
+    alt: 'Inside a TSMC advanced semiconductor fabrication plant',
+    caption:
+      "TSMC's advanced fabs produce over 90% of the world's most advanced chips — the manufacturing supremacy behind Taiwan's “silicon shield.”",
+  },
   contentBlocks: [
     { type: 'heading', text: 'The Most Important Factory In The World', level: 2 },
     {
