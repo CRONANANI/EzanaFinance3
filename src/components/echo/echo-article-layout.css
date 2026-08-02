@@ -274,15 +274,19 @@
    below (the card's own sticky is neutralized inside the stack — two competing
    sticky elements in one column would overlap). Reuse the metadata card's
    existing sticky top offset for the stack. */
+/* One sticky stack: Contents on top, metadata card below. NO max-height and NO
+   internal overflow — an invisible inner scroll area was hijacking wheel input
+   over the rail (scrolling the sidebar instead of the page), which presented
+   as "the legend doesn't follow the page." If the stack is taller than the
+   viewport, the excess extends below the fold; the Contents list at the top of
+   the stack stays pinned and fully visible while reading. */
 .echo-side-col {
   position: sticky;
-  top: var(--echo-sticky-top, 90px); /* match .emeta-card's current top value — read it and reuse */
+  top: var(--echo-sticky-top, 1.5rem);
+  align-self: start; /* explicit — a stretched grid item has no room to slide */
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
-  max-height: calc(100vh - var(--echo-sticky-top, 90px) - 16px);
-  overflow-y: auto;
-  scrollbar-width: none;
 }
 .echo-side-col .emeta-card {
   position: static;
@@ -324,7 +328,7 @@
   color: var(--text-primary);
 }
 .echo-contents a.is-active {
-  color: var(--text-primary);
+  color: var(--emerald); /* the current section's text is green until the next section takes over */
   border-left-color: var(--emerald);
   font-weight: 600;
 }
@@ -344,8 +348,6 @@
   }
   .echo-side-col {
     position: static;
-    max-height: none;
-    overflow: visible;
   }
   .echo-contents {
     display: none; /* single-column mobile reading — no room for a persistent rail */

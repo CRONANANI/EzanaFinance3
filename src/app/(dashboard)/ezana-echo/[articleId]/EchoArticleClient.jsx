@@ -2630,9 +2630,9 @@ function SectorDominanceChart({ title, caption, yLabel }) {
 
 /* Sticky CONTENTS rail — derives its sections from the article's own level-2
    heading blocks (zero per-article configuration; every existing and future
-   article gets it automatically). Scroll-spy mirrors the ezana-api legend:
-   IntersectionObserver with a mid-viewport band. Renders nothing for legacy
-   paragraph-only articles or single-section pieces. */
+   article gets it automatically). Scroll-spy is a deterministic scroll-position
+   tracker (see below). Renders nothing for legacy paragraph-only articles or
+   single-section pieces. */
 function EchoContentsRail({ blocks }) {
   const sections = useMemo(
     () =>
@@ -2643,22 +2643,40 @@ function EchoContentsRail({ blocks }) {
   );
   const [active, setActive] = useState(sections[0]?.id || null);
 
+  // Deterministic scroll-spy: the active section is the LAST heading whose top
+  // sits above the 40%-viewport line. Unlike an IntersectionObserver band (which
+  // only fires when a heading element crosses it), this is correct on initial
+  // load, after hash deep-links, during fast/smooth scrolls, and at the very
+  // bottom of the page. rAF-throttled; passive listeners.
   useEffect(() => {
-    if (typeof window === 'undefined' || !('IntersectionObserver' in window)) return undefined;
-    if (sections.length < 2) return undefined;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) setActive(entry.target.id);
-        });
-      },
-      { rootMargin: '-45% 0px -50% 0px', threshold: 0 },
-    );
-    sections.forEach((s) => {
-      const el = document.getElementById(s.id);
-      if (el) observer.observe(el);
-    });
-    return () => observer.disconnect();
+    if (typeof window === 'undefined' || sections.length < 2) return undefined;
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const line = window.innerHeight * 0.4;
+      let current = sections[0].id;
+      for (const s of sections) {
+        const el = document.getElementById(s.id);
+        if (el && el.getBoundingClientRect().top <= line) current = s.id;
+        else if (el) break; // headings are in document order — first one below the line ends the scan
+      }
+      // Pin the last section once the page is scrolled to (or past) the bottom.
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) {
+        current = sections[sections.length - 1].id;
+      }
+      setActive((prev) => (prev === current ? prev : current));
+    };
+    const onScroll = () => {
+      if (!raf) raf = window.requestAnimationFrame(update);
+    };
+    update(); // correct highlight immediately on mount / hash navigation
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+      if (raf) window.cancelAnimationFrame(raf);
+    };
   }, [sections]);
 
   if (sections.length < 2) return null;
