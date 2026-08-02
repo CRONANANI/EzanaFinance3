@@ -107,7 +107,7 @@ export async function buildUserProfile(userId) {
       fetchQuestionnaireProfile(userId),
       admin
         .from('user_interest_profiles')
-        .select('notification_prefs')
+        .select('notification_prefs, personalization_enabled')
         .eq('user_id', userId)
         .maybeSingle(),
     ],
@@ -259,12 +259,95 @@ export async function buildUserProfile(userId) {
     tickerScores[k] = Math.min(100, Math.max(0, tickerScores[k]));
   }
 
+  // ── Structured taxonomy interest maps (Phase 2) ──
+  // Article opens/reads carry only tags; the structured taxonomy lives on the
+  // article row (echo_articles.article_meta, Phase 1). Join by slug to credit
+  // dimensions the user actually consumed, plus explicit article_meta_click.
+  const industryScores = {};
+  const entityScores = {};
+  const geoScores = {};
+  const themeScores = {};
+  const assetClassScores = {};
+  const metaSectorScores = {};
+
+  const bumpMap = (map, key, pts) => {
+    if (!key || pts <= 0) return;
+    map[key] = Math.min(100, (map[key] || 0) + pts);
+  };
+  const creditArticleMeta = (meta, pts) => {
+    if (!meta || typeof meta !== 'object') return;
+    for (const s of meta.sectors || []) bumpMap(metaSectorScores, s, Math.round(pts * 0.6));
+    for (const s of meta.industries || []) bumpMap(industryScores, s, pts);
+    for (const s of meta.investors || []) bumpMap(entityScores, s, pts);
+    for (const s of meta.institutions || []) bumpMap(entityScores, s, pts);
+    for (const s of meta.government || []) bumpMap(entityScores, s, pts);
+    for (const s of meta.geos || []) bumpMap(geoScores, s, pts);
+    for (const s of meta.themes || []) bumpMap(themeScores, s, pts);
+    for (const s of meta.assetClasses || []) bumpMap(assetClassScores, s, pts);
+  };
+  const creditMetaClick = (dimension, value, pts) => {
+    if (!value) return;
+    switch (dimension) {
+      case 'sectors':
+        return bumpMap(metaSectorScores, value, pts);
+      case 'industries':
+        return bumpMap(industryScores, value, pts);
+      case 'investors':
+      case 'institutions':
+      case 'government':
+        return bumpMap(entityScores, value, pts);
+      case 'geos':
+        return bumpMap(geoScores, value, pts);
+      case 'themes':
+        return bumpMap(themeScores, value, pts);
+      case 'assetClasses':
+        return bumpMap(assetClassScores, value, pts);
+      default:
+        return undefined; // markets / datasets are editorial, not interest signals
+    }
+  };
+
+  const metaSlugs = new Set();
+  for (const b of breadcrumbs) {
+    if (
+      b.event_type === 'article_open' ||
+      b.event_type === 'article_read' ||
+      b.event_type === 'article_meta_click'
+    ) {
+      const slug = b.event_data?.article_id;
+      if (slug) metaSlugs.add(slug);
+    }
+  }
+
+  let metaBySlug = {};
+  if (metaSlugs.size) {
+    const { data: metaRows } = await admin
+      .from('echo_articles')
+      .select('article_slug, article_meta')
+      .in('article_slug', [...metaSlugs]);
+    for (const r of metaRows || []) metaBySlug[r.article_slug] = r.article_meta || {};
+  }
+
+  for (const b of breadcrumbs) {
+    if (b.event_type === 'article_open') {
+      creditArticleMeta(metaBySlug[b.event_data?.article_id], 1);
+    } else if (b.event_type === 'article_read') {
+      creditArticleMeta(metaBySlug[b.event_data?.article_id], 4);
+    } else if (b.event_type === 'article_meta_click') {
+      creditMetaClick(b.event_data?.dimension, b.event_data?.value, 8);
+    }
+  }
+
   const sectorScores = {};
   for (const [ticker, score] of Object.entries(tickerScores)) {
     const sector = SECTOR_MAP[ticker];
     if (sector) {
       sectorScores[sector] = Math.min(100, (sectorScores[sector] || 0) + Math.round(score * 0.3));
     }
+  }
+  // Merge GICS-vocab sectors from article meta into the same map.
+  for (const [sector, sc] of Object.entries(metaSectorScores)) {
+    sectorScores[sector] = Math.min(100, (sectorScores[sector] || 0) + sc);
   }
 
   const { riskScore, riskCategory } = normalizeRiskFromProfile(questionnaire);
@@ -282,19 +365,38 @@ export async function buildUserProfile(userId) {
       user_id: userId,
       ticker_scores: tickerScores,
       sector_scores: sectorScores,
+      industry_scores: industryScores,
+      entity_scores: entityScores,
+      geo_scores: geoScores,
+      theme_scores: themeScores,
+      asset_class_scores: assetClassScores,
       feature_scores: featureScores,
       topic_scores: topicScores,
       tag_engagement: tagEngagement,
       risk_score: riskScore,
       risk_category: riskCategory,
       notification_prefs: mergedPrefs,
+      // Preserve the user's kill-switch choice; default on for new profiles.
+      personalization_enabled: existingProfile?.personalization_enabled ?? true,
       last_computed_at: new Date().toISOString(),
       total_breadcrumbs: breadcrumbs.length,
     },
     { onConflict: 'user_id' },
   );
 
-  return { tickerScores, sectorScores, featureScores, topicScores, riskScore, riskCategory };
+  return {
+    tickerScores,
+    sectorScores,
+    industryScores,
+    entityScores,
+    geoScores,
+    themeScores,
+    assetClassScores,
+    featureScores,
+    topicScores,
+    riskScore,
+    riskCategory,
+  };
 }
 
 async function fetchWatchlistTickers(userId) {

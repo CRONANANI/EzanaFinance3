@@ -10,6 +10,7 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { useAuth } from '@/components/AuthProvider';
 import { DateSelector } from '@/components/ui/DateSelector';
 import { NotificationPreferences } from './NotificationPreferences';
+import { PersonalizationPanel } from './PersonalizationPanel';
 import { useBeginnerLevelContext } from '@/contexts/BeginnerLevelContext';
 import { MfaSetupPanel } from './MfaSetupPanel';
 
@@ -1382,6 +1383,8 @@ export function NotificationsPanel({ onSave, settings, updateSetting }) {
         </div>
 
         <NotificationPreferences />
+
+        <PersonalizationPanel />
 
         <div className="settings-btn-row">
           <button type="button" className="settings-btn-primary" onClick={onSave}>

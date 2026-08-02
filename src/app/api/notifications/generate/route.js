@@ -68,7 +68,7 @@ export async function GET(request) {
     let { data: profiles } = await admin
       .from('user_interest_profiles')
       .select(
-        'user_id, ticker_scores, sector_scores, feature_scores, topic_scores, risk_score, risk_category, notification_prefs',
+        'user_id, ticker_scores, sector_scores, industry_scores, entity_scores, geo_scores, theme_scores, asset_class_scores, feature_scores, topic_scores, risk_score, risk_category, notification_prefs, personalization_enabled',
       )
       .limit(500);
 
@@ -84,7 +84,7 @@ export async function GET(request) {
       const again = await admin
         .from('user_interest_profiles')
         .select(
-          'user_id, ticker_scores, sector_scores, feature_scores, topic_scores, risk_score, risk_category, notification_prefs',
+          'user_id, ticker_scores, sector_scores, industry_scores, entity_scores, geo_scores, theme_scores, asset_class_scores, feature_scores, topic_scores, risk_score, risk_category, notification_prefs, personalization_enabled',
         )
         .limit(500);
       profiles = again.data;
