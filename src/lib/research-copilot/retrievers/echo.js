@@ -1,5 +1,6 @@
 import { getAdminClient } from '@/lib/supabase';
 import { embedViaSupabase, supaEmbedConfigured } from '@/lib/embeddings-gte';
+import { expandLexicalQuery } from '@/lib/rag/aliases';
 import { snippet, mergeBranches } from './shared';
 
 /**
@@ -204,9 +205,20 @@ export async function retrieve(query, ctx = {}, opts = {}) {
     // Naive baseline (eval harness): vector pass only, no lexical merge.
     return (await semanticPass(admin, query, ctx, limit, threshold)).slice(0, limit * 2);
   }
-  const [semantic, lexical] = await Promise.all([
+  // Lexical alias expansion (RAG_SYSTEM.md §3 P4): when a ticker/agency alias fires
+  // (e.g. LMT ↔ "Lockheed Martin"), run ONE extra OR-combined lexical branch so a
+  // ticker query matches name-only rows and vice-versa. Semantic branch untouched.
+  const expanded = expandLexicalQuery(query);
+  const orQuery = expanded.length > 1 ? expanded.join(' OR ') : null;
+  const [semantic, lexical, lexicalAlias] = await Promise.all([
     semanticPass(admin, query, ctx, limit, threshold),
     lexicalPass(admin, query, limit),
+    orQuery ? lexicalPass(admin, orQuery, limit) : Promise.resolve([]),
   ]);
-  return mergeBranches(semantic, lexical).slice(0, limit * 2);
+  let mergedLexical = lexical;
+  if (lexicalAlias.length) {
+    const seen = new Set(mergedLexical.map((r) => String(r.id)));
+    mergedLexical = [...mergedLexical, ...lexicalAlias.filter((r) => !seen.has(String(r.id)))];
+  }
+  return mergeBranches(semantic, mergedLexical).slice(0, limit * 2);
 }

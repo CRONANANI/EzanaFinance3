@@ -4,6 +4,7 @@ import { RETRIEVERS } from './retrievers';
 import { extractEntities } from './entities';
 import { recencyScore } from './retrievers/shared';
 import { rerank, rerankEnabled } from '@/lib/rag/rerank';
+import { rewriteQuery, rewriteEnabled } from '@/lib/rag/query-rewrite';
 
 /**
  * Cross-corpus retrieval orchestrator.
@@ -57,12 +58,37 @@ export async function orchestrate(query, options = {}) {
 
   const q = String(query || '').trim();
   if (!q)
-    return { items: [], corporaSearched: [], corporaUsed: [], entities: null, rerankUsed: false };
+    return {
+      items: [],
+      corporaSearched: [],
+      corporaUsed: [],
+      entities: null,
+      rerankUsed: false,
+      rewriteUsed: false,
+    };
+
+  // Optional flag-gated query rewrite (RAG_SYSTEM.md §3 P4): normalize an ambiguous
+  // query BEFORE retrieval; embed + extract entities from the rewritten form. Its
+  // corpusHints are a SOFT ranking signal only (applied as a small score bonus
+  // below) — they never widen allowCorpora, so Sonar's entitlement gate stays
+  // authoritative. Any failure returns the original query (rewriteUsed:false).
+  let effectiveQuery = q;
+  let rewriteUsed = false;
+  let corpusHints = [];
+  if (rewriteEnabled()) {
+    const rw = await rewriteQuery(q);
+    if (rw.used) {
+      effectiveQuery = rw.rewritten || q;
+      corpusHints = rw.corpusHints || [];
+      rewriteUsed = true;
+    }
+  }
+  const hintSet = new Set(corpusHints);
 
   // Build the shared context ONCE: embed the query (semantic corpora reuse it)
   // and extract entities (structured corpora use them).
-  const queryEmbedding = supaEmbedConfigured() ? await embedViaSupabase(q) : null;
-  const entities = extractEntities(q);
+  const queryEmbedding = supaEmbedConfigured() ? await embedViaSupabase(effectiveQuery) : null;
+  const entities = extractEntities(effectiveQuery);
   const ctx = { admin, supabaseUser, member, entities, queryEmbedding };
 
   // Only run org-scoped retrievers when we have an org member; and, when an
@@ -77,7 +103,7 @@ export async function orchestrate(query, options = {}) {
   const settled = await Promise.all(
     allowed.map(async (r) => {
       try {
-        const rows = await r.retrieve(q, ctx, { limit: perRetriever, semanticOnly });
+        const rows = await r.retrieve(effectiveQuery, ctx, { limit: perRetriever, semanticOnly });
         return Array.isArray(rows) ? rows : [];
       } catch {
         return [];
@@ -91,7 +117,10 @@ export async function orchestrate(query, options = {}) {
     for (const item of rows) {
       if (!item || !item.corpus || item.id == null) continue;
       const key = `${item.corpus}:${item.id}`;
-      const scored = { ...item, score: scoreOf(item) };
+      // Soft corpus-hint bonus: gently prefer hinted corpora WITHIN the already-
+      // allowed set — never widens scope (allowCorpora is unchanged above).
+      const hintBonus = hintSet.has(item.corpus) ? 0.03 : 0;
+      const scored = { ...item, score: Math.min(1, scoreOf(item) + hintBonus) };
       const prev = byKey.get(key);
       if (!prev || scored.score > prev.score) byKey.set(key, scored);
     }
@@ -106,7 +135,7 @@ export async function orchestrate(query, options = {}) {
   let pool = ranked;
   let rerankUsed = false;
   if (rerankEnabled()) {
-    const { items: rr, reranked } = await rerank(q, ranked.slice(0, 20), { keep: topK });
+    const { items: rr, reranked } = await rerank(effectiveQuery, ranked.slice(0, 20), { keep: topK });
     if (reranked) {
       pool = rr;
       rerankUsed = true;
@@ -135,5 +164,5 @@ export async function orchestrate(query, options = {}) {
   }
 
   const corporaUsed = [...new Set(budgeted.map((i) => i.corpus))];
-  return { items: budgeted, corporaSearched, corporaUsed, entities, rerankUsed };
+  return { items: budgeted, corporaSearched, corporaUsed, entities, rerankUsed, rewriteUsed };
 }
