@@ -50,6 +50,10 @@
       "schedule": "0 23 * * *"
     },
     {
+      "path": "/api/cron/index-help-center",
+      "schedule": "0 5 * * *"
+    },
+    {
       "path": "/api/notifications/generate",
       "schedule": "0 */2 * * *"
     },

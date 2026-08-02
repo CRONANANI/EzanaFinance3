@@ -13,6 +13,7 @@ import {
   CORPUS_TO_DATASET,
 } from '@/lib/sonar/retrieval';
 import { synthesizeWithFallback } from '@/lib/sonar/llm-providers';
+import { logZeroResult } from '@/lib/rag/zero-results';
 
 /**
  * POST /api/sonar/query — Ezana Sonar's cross-dataset intelligence surface.
@@ -161,6 +162,9 @@ export const POST = withApiGuard(
     });
 
     const marked = items.map((it, i) => ({ ...it, marker: `S${i + 1}` }));
+
+    // Zero-result telemetry: an empty retrieval is a content gap (fire-and-forget).
+    if (!marked.length) logZeroResult(admin, 'sonar', query);
 
     // The "what Sonar searched" manifest — entitled + wired datasets, flagged for
     // whether each actually returned anything.

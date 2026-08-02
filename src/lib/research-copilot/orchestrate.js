@@ -1,5 +1,6 @@
 import { getAdminClient } from '@/lib/supabase';
-import { embedViaSupabase, supaEmbedConfigured } from '@/lib/embeddings-gte';
+import { supaEmbedConfigured } from '@/lib/embeddings-gte';
+import { embedViaSupabaseCached } from '@/lib/rag/embed-cached';
 import { RETRIEVERS } from './retrievers';
 import { extractEntities } from './entities';
 import { recencyScore } from './retrievers/shared';
@@ -87,7 +88,7 @@ export async function orchestrate(query, options = {}) {
 
   // Build the shared context ONCE: embed the query (semantic corpora reuse it)
   // and extract entities (structured corpora use them).
-  const queryEmbedding = supaEmbedConfigured() ? await embedViaSupabase(effectiveQuery) : null;
+  const queryEmbedding = supaEmbedConfigured() ? await embedViaSupabaseCached(effectiveQuery) : null;
   const entities = extractEntities(effectiveQuery);
   const ctx = { admin, supabaseUser, member, entities, queryEmbedding };
 

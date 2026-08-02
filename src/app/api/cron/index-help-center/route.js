@@ -137,11 +137,24 @@ export async function GET(request) {
     else upserted += chunk.length;
   }
 
+  // Bound the query-embedding cache while we're the daily low-load indexer:
+  // keep the 5,000 most-hit/most-recent rows, evict the rest. Best-effort.
+  let cacheEvicted = null;
+  try {
+    const { data: evicted } = await getAdminClient().rpc('evict_query_embedding_cache', {
+      keep: 5000,
+    });
+    cacheEvicted = typeof evicted === 'number' ? evicted : null;
+  } catch {
+    /* eviction is best-effort — never fail the indexer on it */
+  }
+
   return NextResponse.json({
     ok: errors.length === 0,
     articles: items.length,
     embedded,
     upserted,
+    cacheEvicted,
     errors: errors.slice(0, 10),
   });
 }

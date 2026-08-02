@@ -5,6 +5,7 @@ import { getAdminClient } from '@/lib/supabase';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 import { orchestrate } from '@/lib/research-copilot/orchestrate';
 import { CORPUS_LABELS } from '@/lib/research-copilot/retrievers';
+import { logZeroResult } from '@/lib/rag/zero-results';
 
 /**
  * POST /api/research/copilot — cross-corpus research copilot (auth required).
@@ -114,7 +115,9 @@ export async function POST(request) {
   });
 
   // Honest empty-state — never fabricate an answer with no retrieved sources.
+  // Log the query as a content gap (fire-and-forget; never blocks).
   if (!items.length) {
+    logZeroResult(getAdminClient(), 'copilot', query);
     return NextResponse.json({
       answer: null,
       empty: true,

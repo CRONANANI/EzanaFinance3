@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { getAdminClient } from '@/lib/supabase';
-import { embedViaSupabase, supaEmbedConfigured } from '@/lib/embeddings-gte';
+import { supaEmbedConfigured } from '@/lib/embeddings-gte';
+import { embedViaSupabaseCached } from '@/lib/rag/embed-cached';
+import { logZeroResult } from '@/lib/rag/zero-results';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 
 /**
@@ -147,7 +149,7 @@ export const POST = withApiGuard(
     // 1) Semantic retrieval (best-effort — degrades to keyword if embed is off).
     let semantic = [];
     if (supaEmbedConfigured()) {
-      const queryEmbedding = await embedViaSupabase(query);
+      const queryEmbedding = await embedViaSupabaseCached(query);
       if (queryEmbedding) {
         const { data } = await admin.rpc('match_help_articles', {
           query_embedding: queryEmbedding,
@@ -164,8 +166,10 @@ export const POST = withApiGuard(
 
     const sources = mergeSources(semantic, keyword);
 
-    // 3) Honest empty-state — no fabricated answer when nothing matches.
+    // 3) Honest empty-state — no fabricated answer when nothing matches. Log the
+    //    query as a content gap (fire-and-forget; never blocks the response).
     if (!sources.length) {
+      logZeroResult(admin, 'help-center', query);
       return NextResponse.json({
         answer: null,
         sources: [],
