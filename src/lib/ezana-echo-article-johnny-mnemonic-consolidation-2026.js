@@ -16,7 +16,7 @@ export const johnnyMnemonicConsolidation2026 = {
   excerpt:
     'Global M&A hit a record $2.8 trillion in the first half of 2026 and technology led every sector at $649 billion. A 1981 William Gibson short story about a courier with corporate data locked in his skull mapped the endgame: the cargo is proprietary data, and the market consolidates around whoever controls it.',
   heroImage: {
-    src: '/echo/johnny-mnemonic-dolphin.jpg',
+    src: '/echo/dolphin-in-johnny-mnemonic.jpg',
     alt: 'Jones, the cybernetically enhanced dolphin from the 1995 film Johnny Mnemonic, observed through aquarium glass',
     caption:
       'Jones, the ex-military decryption dolphin of Johnny Mnemonic — a purpose-built point solution decommissioned when its platform moved on. The 1995 film adapted William Gibson’s 1981 short story. (Still: TriStar Pictures.)',
