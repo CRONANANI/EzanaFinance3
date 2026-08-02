@@ -36,8 +36,10 @@ import { ballroomDonorsContracts2026 } from './ezana-echo-article-ballroom-donor
 import { fdaPeptidesBpc157Article2026 } from './ezana-echo-article-fda-peptides-bpc157-2026.js';
 import { africaRefiningArticle2026 } from './ezana-echo-article-africa-refining-2026.js';
 import { dataConsolidationArticle2026 } from './ezana-echo-article-data-consolidation-2026.js';
+import { johnnyMnemonicConsolidation2026 } from './ezana-echo-article-johnny-mnemonic-consolidation-2026.js';
 
 const ARTICLES = [
+  johnnyMnemonicConsolidation2026,
   dataConsolidationArticle2026,
   africaRefiningArticle2026,
   fdaPeptidesBpc157Article2026,
@@ -55,8 +57,22 @@ const ARTICLES = [
   privateCreditMaturityWallArticle2026,
 ];
 
+/** Article-of-the-Month history — index 0 is the CURRENT month. The Echo home
+ *  banner renders index 0 by default and offers previous months in a dropdown.
+ *  When a new AOTM is crowned: prepend it here AND move the `articleOfMonth`
+ *  flag to its article file (flag = fallback if this list ever fails to resolve). */
+export const AOTM_HISTORY = [
+  { month: 'August 2026', articleId: 'johnny-mnemonic-tech-consolidation-2026' },
+  { month: 'July 2026', articleId: 'ballroom-donors-federal-contracts-2026' },
+];
+
 export const ECHO_TRENDING = {
   mostRead: [
+    {
+      title: 'What Johnny Mnemonic Saw Coming: Tech’s $649B Consolidation Wave',
+      reads: 6100,
+      id: 'johnny-mnemonic-tech-consolidation-2026',
+    },
     {
       title: 'Who Controls the World’s Critical Minerals',
       reads: 7300,
@@ -100,6 +116,11 @@ export const ECHO_TRENDING = {
   ],
   mostDiscussed: [
     {
+      title: 'What Johnny Mnemonic Saw Coming: Tech’s $649B Consolidation Wave',
+      comments: 37,
+      id: 'johnny-mnemonic-tech-consolidation-2026',
+    },
+    {
       title: 'Fiber Optic Cable: Alotta Money In This Stuff',
       comments: 64,
       id: 'fiber-optic-cable-ai-boom-benny-fazio',
@@ -128,6 +149,29 @@ export const ECHO_TRENDING = {
 
 /** @type {Record<string, { id: string; author: { name: string; initials: string; id?: string }; content: string; createdAt: string }[]>} */
 export const ECHO_MOCK_COMMENTS_BY_ARTICLE = {
+  'johnny-mnemonic-tech-consolidation-2026': [
+    {
+      id: 'c-jm-1',
+      author: { name: 'Priya Raghunathan', initials: 'PR' },
+      content:
+        'The four-phase framing is the useful part — everyone knows consolidation happens, but "which categories are entering the consolidation phase now" is the actual tradable question. Security is clearly mid-phase; the data layer (IBM–Confluent) looks earlier.',
+      createdAt: '2026-08-02T14:20:00Z',
+    },
+    {
+      id: 'c-jm-2',
+      author: { name: 'Marcus Feld', initials: 'MF' },
+      content:
+        'Reading Jones the dolphin as the fate of the point solution is genuinely good. Best-in-class at one task, funded by a platform, decommissioned the moment that platform consolidates its stack. That is the entire CrowdStrike-vs-platform debate in one image.',
+      createdAt: '2026-08-02T16:05:00Z',
+    },
+    {
+      id: 'c-jm-3',
+      author: { name: 'Dana Osei', initials: 'DO' },
+      content:
+        'Appreciate that the Nvidia–Groq line is described as an asset/licensing deal and not an acquisition — most write-ups collapse that distinction and then get the antitrust angle wrong. The "consolidation finds a structure" point is the one to remember.',
+      createdAt: '2026-08-03T09:40:00Z',
+    },
+  ],
   // No seeded comments — the "No one's written in yet" empty state handles this.
   'acquirers-buy-the-pipeline-not-the-model-2026': [],
   'africa-refining-capacity-dangote-inflection-2026': [],

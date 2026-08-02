@@ -23,8 +23,10 @@ import { ballroomDonorsContracts2026 } from '@/lib/ezana-echo-article-ballroom-d
 import { fdaPeptidesBpc157Article2026 } from '@/lib/ezana-echo-article-fda-peptides-bpc157-2026.js';
 import { africaRefiningArticle2026 } from '@/lib/ezana-echo-article-africa-refining-2026.js';
 import { dataConsolidationArticle2026 } from '@/lib/ezana-echo-article-data-consolidation-2026.js';
+import { johnnyMnemonicConsolidation2026 } from '@/lib/ezana-echo-article-johnny-mnemonic-consolidation-2026.js';
 
 const SOURCE = [
+  johnnyMnemonicConsolidation2026,
   dataConsolidationArticle2026,
   africaRefiningArticle2026,
   fdaPeptidesBpc157Article2026,

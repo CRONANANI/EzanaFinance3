@@ -528,6 +528,49 @@ html:has(body.echo-route) {
   overflow: hidden;
 }
 
+/* ── AOTM month selector — floats in the banner's top-right (the banner content
+   is vertically centered, so the corner is empty). Lives OUTSIDE the banner
+   Link so selecting a month can never navigate. */
+.eth-aotm-wrap {
+  position: relative;
+}
+.eth-aotm-months {
+  position: absolute;
+  top: 10px;
+  right: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.eth-aotm-months-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.eth-aotm-months select {
+  appearance: none;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-primary);
+  background: transparent;
+  border: 1px solid var(--border-primary);
+  border-radius: 999px;
+  padding: 4px 26px 4px 12px;
+  cursor: pointer;
+  background-image: linear-gradient(45deg, transparent 50%, var(--text-muted) 50%),
+    linear-gradient(135deg, var(--text-muted) 50%, transparent 50%);
+  background-position:
+    calc(100% - 15px) 55%,
+    calc(100% - 11px) 55%;
+  background-size: 4px 4px;
+  background-repeat: no-repeat;
+}
+.eth-aotm-months select:hover {
+  border-color: var(--emerald);
+}
+
 /* ── Responsive ──────────────────────────────────────────────────────────────
    Desktop (>1100px): 6-col board. Tablet (≤1100px): 2-col. Mobile (≤640px):
    single column; the banner stacks (image on top, text below). */
@@ -561,6 +604,12 @@ html:has(body.echo-route) {
   }
   .eth-aotm-body {
     padding: 14px 16px 18px;
+  }
+  /* Stacked banner: keep the selector clear of the full-width hero image. */
+  .eth-aotm-months {
+    position: static;
+    justify-content: flex-end;
+    margin: 8px 0 4px;
   }
 }
 

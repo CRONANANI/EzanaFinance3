@@ -2799,6 +2799,24 @@ export const KEYWORDS = {
     },
   },
 
+  platformization: {
+    id: 'platformization',
+    term: 'Platformization',
+    definition:
+      'The strategy of collapsing separate point-solution categories — firewall, EDR, SIEM, identity, and the rest — into a single integrated vendor platform, so a customer buys one console instead of dozens. It is the M&A engine of the consolidation phase: the platform acquires the categories it lacks and integrates away the redundancy.',
+    template: 'comparison',
+    templateData: {
+      title: 'Point solutions vs a consolidated platform',
+      headers: ['Model', 'What the buyer manages', 'Vendor outcome'],
+      rows: [
+        { label: 'Point solutions', cells: ['~45 tools, many consoles', 'Many independents'] },
+        { label: 'Platform', cells: ['One integrated stack', 'A few consolidators'] },
+      ],
+      footnote:
+        '~75% of organizations pursued security vendor consolidation in 2026 (up from <33% in 2020, Gartner); Wiz ($32B), CyberArk ($25B), and Splunk ($28B) are the deals that express it.',
+    },
+  },
+
   'data-moat': {
     id: 'data-moat',
     term: 'Data Moat',

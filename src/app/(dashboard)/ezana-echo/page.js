@@ -6,6 +6,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { isAdminUserClient } from '@/lib/admin-helpers-client';
 import { EzanaNavLogo } from '@/components/brand/EzanaNavLogo';
 import { EchoArticleCard } from '@/components/echo/EchoArticleCard';
+import { AOTM_HISTORY } from '@/lib/ezana-echo-mock';
 
 import './ezana-echo.css';
 import './ezana-echo-home.css';
@@ -64,6 +65,7 @@ const ARTICLE_SUBCATEGORY = {
   'best-performing-commodities-iran-war-2026': 'Oil & Gas',
   'africa-refining-capacity-dangote-inflection-2026': 'Oil & Gas',
   'africa-billion-dollar-companies-2026': 'Africa',
+  'johnny-mnemonic-tech-consolidation-2026': 'AI',
 };
 
 /* Global time-window filter options (applies to all 6 columns). Default 'all'. */
@@ -269,13 +271,25 @@ export default function EzanaEchoPage() {
     [allArticles, featured],
   );
 
-  // Article of the Month = the flagged article (the `articleOfMonth` flag first,
-  // then the DB-backed `featured` flag, then most-recent) — never a hardcoded id.
-  // It becomes the full-width banner and is excluded from the columns.
-  const articleOfMonth = useMemo(
-    () => allArticles.find((a) => a.articleOfMonth) || featured || feedSource[0] || null,
-    [allArticles, featured, feedSource],
+  // Article of the Month: AOTM_HISTORY[0] is the current month; older entries are
+  // browsable via the banner's month dropdown. Fallback chain (flag → featured →
+  // newest) covers a misconfigured history list.
+  const aotmHistory = useMemo(
+    () =>
+      AOTM_HISTORY.map((h) => ({
+        ...h,
+        article: allArticles.find((a) => a.id === h.articleId),
+      })).filter((h) => h.article),
+    [allArticles],
   );
+  const [aotmIdx, setAotmIdx] = useState(0);
+  const currentAotm =
+    aotmHistory[0]?.article ||
+    allArticles.find((a) => a.articleOfMonth) ||
+    featured ||
+    feedSource[0] ||
+    null;
+  const articleOfMonth = aotmHistory[aotmIdx]?.article || currentAotm;
 
   // Banner opening text: the excerpt, or the first paragraph content block if present.
   const aotmText = useMemo(() => {
@@ -291,7 +305,9 @@ export default function EzanaEchoPage() {
   // Six category columns, each = that category's articles (minus the centerpiece)
   // sorted newest-first. Empty categories (Crypto) render an honest empty state.
   const columns = useMemo(() => {
-    const pool = allArticles.filter((a) => a.id !== articleOfMonth?.id);
+    // Exclude only the CURRENT month's AOTM — browsing an older month via the
+    // dropdown must not reshuffle the columns.
+    const pool = allArticles.filter((a) => a.id !== currentAotm?.id);
     return CATEGORIES.map((c) => ({
       id: c.id,
       label: c.label,
@@ -303,7 +319,7 @@ export default function EzanaEchoPage() {
         // authoritative map) so the subcategory filter has something to match.
         .map((a) => ({ ...a, subcategory: a.subcategory || ARTICLE_SUBCATEGORY[a.id] || null })),
     }));
-  }, [allArticles, articleOfMonth]);
+  }, [allArticles, currentAotm]);
 
   // Apply both filters together: the global time window AND the per-column
   // subcategory picker. An article shows only if it falls in the window and its
@@ -362,30 +378,53 @@ export default function EzanaEchoPage() {
       <div className="eth-wrap">
         {/* Article of the Month — a full-width horizontal banner above the category
             headers: hero image on the left (same 16:9 size as a normal card), then
-            the eyebrow, title, and as much opening text as fits. It's excluded from
-            the columns below so it never appears twice. */}
-        {articleOfMonth && (
-          <Link href={`/ezana-echo/${articleOfMonth.id}`} className="eth-aotm">
-            <div className="eth-aotm-img">
-              {articleOfMonth.heroImage?.src ? (
-                <img
-                  src={articleOfMonth.heroImage.src}
-                  alt={articleOfMonth.heroImage.alt || articleOfMonth.title}
-                  loading="lazy"
-                  onError={(e) => {
-                    // remove (not display:none) so the :not(:has(img)) placeholder shows
-                    e.currentTarget.remove();
-                  }}
-                />
-              ) : null}
-            </div>
-            <div className="eth-aotm-body">
-              <span className="eth-aotm-eyebrow">Article of the Month</span>
-              <h2 className="eth-aotm-title">{articleOfMonth.title}</h2>
-              {aotmText && <p className="eth-aotm-text">{aotmText}</p>}
-            </div>
-          </Link>
-        )}
+            the eyebrow, title, and as much opening text as fits. The current month's
+            AOTM is excluded from the columns below so it never appears twice; older
+            months are browsable via the dropdown (which lives OUTSIDE the Link so it
+            can never trigger navigation). */}
+        <div className="eth-aotm-wrap">
+          {articleOfMonth && (
+            <Link href={`/ezana-echo/${articleOfMonth.id}`} className="eth-aotm">
+              <div className="eth-aotm-img">
+                {articleOfMonth.heroImage?.src ? (
+                  <img
+                    src={articleOfMonth.heroImage.src}
+                    alt={articleOfMonth.heroImage.alt || articleOfMonth.title}
+                    loading="lazy"
+                    onError={(e) => {
+                      // remove (not display:none) so the :not(:has(img)) placeholder shows
+                      e.currentTarget.remove();
+                    }}
+                  />
+                ) : null}
+              </div>
+              <div className="eth-aotm-body">
+                <span className="eth-aotm-eyebrow">
+                  Article of the Month
+                  {aotmIdx > 0 && aotmHistory[aotmIdx] ? ` — ${aotmHistory[aotmIdx].month}` : ''}
+                </span>
+                <h2 className="eth-aotm-title">{articleOfMonth.title}</h2>
+                {aotmText && <p className="eth-aotm-text">{aotmText}</p>}
+              </div>
+            </Link>
+          )}
+          {aotmHistory.length > 1 && (
+            <label className="eth-aotm-months">
+              <span className="eth-aotm-months-label">Month</span>
+              <select
+                value={aotmIdx}
+                onChange={(e) => setAotmIdx(Number(e.target.value))}
+                aria-label="View previous Articles of the Month"
+              >
+                {aotmHistory.map((h, i) => (
+                  <option key={h.month} value={i}>
+                    {h.month}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+        </div>
 
         {/* Global time-window filter — centered between the Article of the Month and
             the category headers; applies to all 6 columns, combines with the

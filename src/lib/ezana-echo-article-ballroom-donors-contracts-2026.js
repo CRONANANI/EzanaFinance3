@@ -161,10 +161,10 @@ export const ballroomDonorsContracts2026 = {
   },
   readTime: 9,
   publishedAt: '2026-07-23',
-  // Featured hero relinquished to the newer FDA-peptides story (only one
-  // home-page featured hero at a time).
-  featured: true,
-  articleOfMonth: true,
+  // Featured hero + Article of the Month relinquished to the Johnny Mnemonic
+  // consolidation story (only one home-page featured hero at a time); Ballroom
+  // remains in its column and in AOTM_HISTORY (July 2026).
+  featured: false,
   likes: 0,
   comments: 0,
   reads: 0,
