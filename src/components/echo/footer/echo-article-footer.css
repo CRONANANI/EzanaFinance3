@@ -559,7 +559,6 @@ body.light-mode .echo-slider-cast-btn:hover {
 .echo-footer-more-from {
   margin-top: 28px;
   background: var(--bg-secondary, var(--bg-primary));
-  border: 1px solid var(--border-primary);
   border-radius: 12px;
   padding: 20px;
   display: flex;
@@ -624,7 +623,6 @@ body.light-mode .echo-footer-more-from {
   padding: 7px 10px; /* was 11px 14px */
   border-radius: 7px; /* was 10px */
   background: var(--bg-tertiary, var(--bg-secondary));
-  border: 1px solid var(--border-primary);
   font-family: inherit;
   font-size: 11px; /* was 14px */
   color: var(--text-primary);
@@ -687,7 +685,6 @@ body.light-mode .echo-footer-more-from {
 
 .echo-comments-composer {
   background: var(--bg-secondary, var(--bg-primary));
-  border: 1px solid var(--border-primary);
   border-radius: 10px; /* was 16px */
   padding: 14px; /* was 24px */
   box-shadow:

@@ -79,8 +79,11 @@ html:has(body.echo-route) {
 /* ── Newsletter band ────────────────────────────────────────────── */
 .eth-news {
   margin-top: 56px;
-  border: 1px solid var(--emerald-border);
-  border-radius: var(--radius-xl);
+  /* Single green rule above the band (between it and the article columns) —
+     replaces the full surrounding outline. */
+  border: none;
+  border-top: 2px solid var(--emerald);
+  border-radius: 0;
   background: var(--bg-primary);
   padding: 40px 44px;
   display: flex;

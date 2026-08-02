@@ -1485,7 +1485,6 @@ body.light-mode .echo-article-page .echo-article-related-link {
   color: inherit;
   border-radius: 12px;
   background: var(--surface-card);
-  border: 1px solid rgba(255, 255, 255, 0.06);
   transition: all 200ms ease;
 }
 
@@ -1498,8 +1497,6 @@ body.light-mode .echo-article-page .echo-article-related-link {
 
 body.light-mode .echo-article-page .echo-related-card {
   background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.08);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 body.light-mode .echo-article-page .echo-related-card:hover {
