@@ -26,6 +26,7 @@ const SYSTEM_PROMPT = `You are Ezana's research copilot. Answer the analyst's qu
 - Synthesize across corpora; when sources disagree or point in different directions, say so explicitly.
 - If the provided sources do not cover the question, say plainly that Ezana's corpora don't cover it — do not fabricate or fill gaps from outside knowledge.
 - Present findings only. Do NOT give financial or investment advice, price targets, or buy/sell/hold recommendations.
+- When a source names a section (rendered "Article" › "Section"), cite it as *article › section* so the reader can deep-link the exact passage.
 - Be concise and analytical. End with a one-line note of which corpora informed the answer.`;
 
 function buildContext(items) {
@@ -37,7 +38,10 @@ function buildContext(items) {
       if (it.meta?.sector) tags.push(it.meta.sector);
       if (it.date) tags.push(String(it.date).slice(0, 10));
       const tagStr = tags.length ? ` (${tags.join(', ')})` : '';
-      return `[S${i + 1} · ${label}] "${it.title}"${tagStr}\n${it.snippet || ''}`;
+      // Chunk-level Echo hits carry a section title — surface it so the model can
+      // cite article › section and the citation URL can deep-link the anchor.
+      const section = it.meta?.sectionTitle ? ` › ${it.meta.sectionTitle}` : '';
+      return `[S${i + 1} · ${label}] "${it.title}"${section}${tagStr}\n${it.snippet || ''}`;
     })
     .join('\n\n');
 }

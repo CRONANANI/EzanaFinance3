@@ -1,13 +1,20 @@
 import { NextResponse } from 'next/server';
 import { getAdminClient } from '@/lib/supabase';
 import { embedViaSupabase, supaEmbedConfigured } from '@/lib/embeddings-gte';
+import { chunkDocument } from '@/lib/rag/chunker';
 
 /**
  * Populate echo_articles.embedding for the research copilot's Echo retriever.
  * Pulls PUBLISHED Echo articles, embeds title + excerpt + body via the Supabase
  * gte-small edge function (384-dim), and writes the vector back on id.
+ *
+ * Also maintains the chunk-level index (echo_article_chunks, RAG_SYSTEM.md §3 P1):
+ * each article body is chunked heading-aware (~500-token chunks), every chunk is
+ * embedded, and the article's chunk rows are replaced (delete-then-insert so a
+ * re-chunk after an edit never leaves stale trailing chunks). The article-level
+ * pass is the fallback; the chunk pass is additive.
  * CRON_SECRET bearer (or ?key= fallback). Re-run after publishing new articles.
- *   GET /api/cron/index-echo-articles?limit=500
+ *   GET /api/cron/index-echo-articles?limit=500[&force=1]
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -61,9 +68,11 @@ export async function GET(request) {
   const limit = Math.min(Math.max(Number(searchParams.get('limit')) || DEFAULT_LIMIT, 1), 2000);
   const admin = getAdminClient();
 
+  const force = searchParams.get('force') === '1';
+
   const { data, error } = await admin
     .from('echo_articles')
-    .select('id, article_title, article_excerpt, article_body')
+    .select('id, article_title, article_excerpt, article_body, updated_at, embedded_at')
     .eq('article_status', 'published')
     .limit(limit);
   if (error) {
@@ -93,11 +102,67 @@ export async function GET(request) {
     else updated += 1;
   }
 
+  // ── Chunk pass (additive) — chunk each article body, embed each chunk, and
+  // replace the article's chunk rows. Skips articles whose embedding is fresh
+  // (embedded_at >= updated_at) AND that already have chunks, unless ?force=1.
+  let chunked = 0;
+  let chunksWritten = 0;
+  for (const a of articles) {
+    if (!force) {
+      const fresh =
+        a.embedded_at && a.updated_at && new Date(a.embedded_at) >= new Date(a.updated_at);
+      if (fresh) {
+        // eslint-disable-next-line no-await-in-loop
+        const { count } = await admin
+          .from('echo_article_chunks')
+          .select('id', { count: 'exact', head: true })
+          .eq('article_id', a.id);
+        if ((count ?? 0) > 0) continue;
+      }
+    }
+
+    const chunks = chunkDocument(a.article_body || '');
+    if (!chunks.length) continue;
+
+    const chunkItems = chunks.map((c) => ({ ...c, text: c.content }));
+    // eslint-disable-next-line no-await-in-loop
+    await embedAll(chunkItems);
+
+    const rows = chunkItems
+      .filter((c) => Array.isArray(c.embedding) && c.embedding.length === 384)
+      .map((c) => ({
+        article_id: a.id,
+        chunk_index: c.chunkIndex,
+        section_anchor: c.sectionAnchor,
+        section_title: c.sectionTitle,
+        content: c.content,
+        token_estimate: c.tokenEstimate,
+        embedding: JSON.stringify(c.embedding),
+      }));
+
+    // Only replace when we have fresh vectors — never wipe chunks if the edge
+    // function is down and every chunk embed came back null.
+    if (!rows.length) continue;
+
+    // eslint-disable-next-line no-await-in-loop
+    await admin.from('echo_article_chunks').delete().eq('article_id', a.id);
+    // eslint-disable-next-line no-await-in-loop
+    const { error: cErr } = await admin.from('echo_article_chunks').insert(rows);
+    if (cErr) {
+      errors.push(`chunks ${a.id}: ${cErr.message}`);
+    } else {
+      chunked += 1;
+      chunksWritten += rows.length;
+    }
+  }
+
   return NextResponse.json({
     ok: errors.length === 0,
     published: articles.length,
     embedded,
     updated,
+    chunked,
+    chunksWritten,
     errors: errors.slice(0, 10),
   });
 }
