@@ -24,14 +24,28 @@
 .feature-viz {
   margin-top: auto;
   width: 100%;
-  /* Enlarged uniformly (~76px → 88px) now that the card outline is gone so the
-     visuals read a touch bigger. Every card shares this one frame, so all six
-     scale by exactly the same amount — uniformity is preserved. */
-  height: 88px;
+  /* Enlarged uniformly (→ 96px) and the viewBox tightened to 224×64 (captions
+     moved to real HTML below), so the artwork renders ~1.5× instead of ~1.2×:
+     bigger, sharper, and at a cleaner scale. Every card shares this one frame, so
+     all six scale by exactly the same amount — uniformity is preserved. */
+  height: 96px;
   padding-top: 16px;
   display: flex;
   align-items: flex-end;
   justify-content: center;
+}
+/* HTML caption — native-pixel JetBrains Mono under every visual. Replaces the
+   old 6.5px in-SVG captions (which rendered ~8 blurry device px at fractional
+   scale). Identical on all six cards; token-driven so it adapts to light/dark. */
+.feature-viz-caption {
+  font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 8px;
 }
 .feature-viz-svg {
   width: 100%;
@@ -45,8 +59,19 @@
   font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.01em;
+  text-rendering: geometricPrecision;
+}
+/* In-chart text colors come from theme tokens (never per-element hex), so
+   annotations hold contrast on BOTH the light and dark landing. */
+.feature-viz .fv-cap {
+  fill: var(--text-muted);
 }
 .feature-viz .fv-num {
+  fill: var(--text-secondary);
+  font-weight: 600;
+}
+.feature-viz .fv-em {
+  fill: var(--emerald);
   font-weight: 600;
 }
 

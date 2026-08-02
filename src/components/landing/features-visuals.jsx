@@ -21,7 +21,7 @@
  */
 
 export const VIZ_W = 224;
-export const VIZ_H = 72;
+export const VIZ_H = 64;
 
 // Handoff palette (viz linework only).
 const EM = '#10b981';
@@ -31,9 +31,8 @@ const EM4 = '#a7f3d0';
 const EMD = '#059669';
 const BLUE = '#3b82f6';
 const RED = '#ef4444';
-const MUTE = '#94a3b8';
-const HAIR = 'rgba(148,163,184,0.18)';
-const HAIR2 = 'rgba(148,163,184,0.30)';
+const HAIR = 'rgba(148,163,184,0.28)';
+const HAIR2 = 'rgba(148,163,184,0.45)';
 
 /** deterministic pseudo-random in [0,1) from an integer seed (no Math.random). */
 function seeded(n) {
@@ -76,28 +75,25 @@ function CongressViz({ tick }) {
         const y = top + slot * rowH;
         return (
           <g key={m.id} className="fv-t" style={{ transform: `translateY(${y}px)` }}>
-            <text x="6" y="9" className="fv-num" fill={MUTE} fontSize="8">
+            <text x="6" y="9" className="fv-num" fontSize="8">
               {slot + 1}
             </text>
             <circle cx="24" cy="6" r="4.5" fill={m.party} opacity="0.9" />
-            <rect x={barX - 6} y="4.5" width={barMax + 6} height="3" rx="1.5" fill={HAIR} />
+            <rect x={barX - 6} y="4" width={barMax + 6} height="4" rx="2" fill={HAIR} />
             <rect
               key={`bar-${m.id}`}
               className={`fv-t fv-bar${slot === 0 ? ' fv-pulse' : ''}`}
               x={barX}
-              y="4.5"
+              y="4"
               width={barMax}
-              height="3"
-              rx="1.5"
+              height="4"
+              rx="2"
               fill={slot === 0 ? EM : EM3}
               style={{ transform: `scaleX(${m.v.toFixed(3)})` }}
             />
           </g>
         );
       })}
-      <text x="6" y="70" className="fv-cap" fill={MUTE} fontSize="6.5">
-        TOP TRADERS · 90D
-      </text>
     </Frame>
   );
 }
@@ -105,7 +101,7 @@ function CongressViz({ tick }) {
 /* 2 ── Portfolio Analytics: concentric allocation dial (centered) ────────── */
 function PortfolioViz({ tick }) {
   const cx = 112;
-  const cy = 34;
+  const cy = 32;
   const rOuter = 22;
   const rInner = 14;
   const circO = 2 * Math.PI * rOuter;
@@ -166,11 +162,8 @@ function PortfolioViz({ tick }) {
         style={{ strokeDasharray: `${(circI * innerSeg).toFixed(1)} ${circI}` }}
         transform={`rotate(-90 ${cx} ${cy})`}
       />
-      <text x={cx} y={cy + 2.5} textAnchor="middle" className="fv-num" fill={EM3} fontSize="8">
+      <text x={cx} y={cy + 2.5} textAnchor="middle" className="fv-num fv-em" fontSize="9">
         {Math.round(outerSeg * 100)}%
-      </text>
-      <text x={cx} y="70" textAnchor="middle" className="fv-cap" fill={MUTE} fontSize="6.5">
-        ALLOCATION · SECTOR
       </text>
     </Frame>
   );
@@ -214,16 +207,12 @@ function IntelligenceViz({ tick }) {
               y={y0 + r * (ch + gap)}
               width={cw}
               height={ch}
-              rx="2.5"
+              rx="3"
               fill={fill}
-              opacity={0.5 + mag * 0.5}
             />
           );
         }),
       )}
-      <text x={x0} y="70" className="fv-cap" fill={MUTE} fontSize="6.5">
-        MARKET HEAT · LIVE
-      </text>
     </Frame>
   );
 }
@@ -257,7 +246,7 @@ function AlertsViz({ tick }) {
         strokeDasharray="4 3"
         opacity="0.7"
       />
-      <text x="8" y={thY - 4} className="fv-cap" fill={EM3} fontSize="6.5">
+      <text x="8" y={thY - 4} className="fv-cap fv-em" fontSize="7.5">
         ALERT THRESHOLD
       </text>
       {/* price line */}
@@ -266,7 +255,7 @@ function AlertsViz({ tick }) {
         d={d}
         fill="none"
         stroke={EM2}
-        strokeWidth="1.6"
+        strokeWidth="2"
         strokeLinecap="round"
       />
       {/* continuous pulse burst at the crossing */}
@@ -280,9 +269,6 @@ function AlertsViz({ tick }) {
           !
         </text>
       </g>
-      <text x="8" y="70" className="fv-cap" fill={MUTE} fontSize="6.5">
-        THRESHOLD · TRIGGERED
-      </text>
     </Frame>
   );
 }
@@ -302,12 +288,7 @@ function CommunityViz({ tick }) {
           <g key={i} transform={`translate(${startX + i * step} 6)`} opacity={isActive ? 1 : 0.55}>
             {/* head + shoulders glyph */}
             <circle cx="10" cy="9" r="5.5" fill={isActive ? EM : HAIR2} />
-            <path
-              d="M1 26 a9 9 0 0 1 18 0 z"
-              fill={isActive ? EM2 : HAIR}
-              stroke="#0a0e13"
-              strokeWidth="1"
-            />
+            <path d="M1 26 a9 9 0 0 1 18 0 z" fill={isActive ? EM2 : HAIR} />
           </g>
         );
       })}
@@ -315,11 +296,8 @@ function CommunityViz({ tick }) {
       <g className="fv-t" style={{ transform: `translateX(${startX + active * step}px)` }}>
         <circle cx="10" cy="15" r="15" fill="none" stroke={EM3} strokeWidth="1" opacity="0.5" />
       </g>
-      <text x={VIZ_W / 2} y="52" textAnchor="middle" className="fv-num" fill={EM3} fontSize="8.5">
+      <text x={VIZ_W / 2} y="56" textAnchor="middle" className="fv-num fv-em" fontSize="9.5">
         {pct}% of your circle acted on this
-      </text>
-      <text x={VIZ_W / 2} y="66" textAnchor="middle" className="fv-cap" fill={MUTE} fontSize="6.5">
-        CONSENSUS SIGNAL
       </text>
     </Frame>
   );
@@ -365,23 +343,20 @@ function AltViz({ tick }) {
             <circle
               cx={px}
               cy={py}
-              r={hot ? 3.4 : 2.4}
+              r={hot ? 3.8 : 2.8}
               fill={hot ? EM : EM3}
               opacity={hot ? 1 : 0.85}
             />
             {hot && (
-              <text x={px + 5} y={py + 3} className="fv-cap" fill={EM3} fontSize="6.5">
+              <text x={px + 5} y={py + 3} className="fv-cap fv-em" fontSize="7.5">
                 {p.t}
               </text>
             )}
           </g>
         );
       })}
-      <text x={ax + plotW} y="12" textAnchor="end" className="fv-num" fill={MUTE} fontSize="7">
+      <text x={ax + plotW} y="12" textAnchor="end" className="fv-num" fontSize="8">
         r = {r}
-      </text>
-      <text x={ax} y="70" className="fv-cap" fill={MUTE} fontSize="6.5">
-        ALT-SIGNAL × PRICE
       </text>
     </Frame>
   );

@@ -10,31 +10,37 @@ const FEATURE_CARDS = [
     key: 'congress',
     title: 'Congressional Trading',
     desc: 'Real-time trades from all 535 members of Congress — with filing dates, disclosure lag, and politician-level history.',
+    caption: 'Top traders · 90d',
   },
   {
     key: 'portfolio',
     title: 'Portfolio Analytics',
     desc: 'Institutional-grade performance, risk scoring, and allocation analysis across every account you connect.',
+    caption: 'Allocation · Sector',
   },
   {
     key: 'intelligence',
     title: 'Market Intelligence',
     desc: 'Geopolitical analysis, sector rotation, and market-moving signals — surfaced before they reach the mainstream.',
+    caption: 'Market heat · Live',
   },
   {
     key: 'alerts',
     title: 'Real-time Alerts',
     desc: 'Instant notifications the moment a trade, filing, or event touches a position you hold.',
+    caption: 'Threshold · Triggered',
   },
   {
     key: 'community',
     title: 'Community Insights',
     desc: 'High-conviction research from a ranked community of serious investors — signal, not noise.',
+    caption: 'Consensus signal',
   },
   {
     key: 'alt',
     title: 'Alternative Analytics',
     desc: 'Alternative-data signals — satellite, app, and card-spend trends — mapped to the tickers they move.',
+    caption: 'Alt-signal × Price',
   },
 ];
 
@@ -74,6 +80,9 @@ export function FeaturesSection() {
               <p className="feature-card-description">{card.desc}</p>
               <div className="feature-viz" aria-hidden>
                 <FeatureVisual cardKey={card.key} tick={tick} />
+              </div>
+              <div className="feature-viz-caption lf-mono" aria-hidden>
+                {card.caption}
               </div>
             </div>
           ))}
