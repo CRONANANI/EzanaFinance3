@@ -19,11 +19,7 @@
   transform-style: flat;
   transition:
     transform 0.15s ease,
-    background 0.15s ease,
     border-color 0.15s ease;
-}
-.echo-card:hover {
-  background: color-mix(in srgb, var(--emerald) 5%, transparent);
 }
 /* Lift on hover. */
 .echo-card:hover {
