@@ -195,6 +195,15 @@ export const iranWarCommoditiesArticle2026 = {
   category: 'commodities-energy',
   subcategory: 'Oil & Gas',
   tags: ['markets', 'policy', 'geopolitics', 'commodities', 'energy', 'macro'],
+  meta: {
+    sectors: ['Energy', 'Materials'],
+    industries: ['Oil & Gas', 'Fertilizers & Agricultural Chemicals'],
+    geos: ['Iran', 'Middle East', 'United States'],
+    assetClasses: ['Commodities', 'Equities'],
+    themes: ['Geopolitical Risk', 'Energy Prices'],
+    datasets: [],
+    markets: [],
+  },
   tickers: ['USO', 'XLE', 'XOM', 'CVX', 'EOG', 'AA', 'CF', 'NTR', 'GLD'],
   entities: {
     people: [],

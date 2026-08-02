@@ -627,6 +627,16 @@ export const fiberOpticArticle = {
   category: 'tech-founders',
   subcategory: 'Infrastructure',
   tags: ['markets', 'technology', 'ai', 'infrastructure', 'semiconductors'],
+  meta: {
+    sectors: ['Information Technology'],
+    industries: ['Communications Equipment', 'Semiconductors'],
+    institutions: ['Corning', 'CommScope', 'Coherent', 'Nvidia'],
+    geos: ['United States', 'China'],
+    assetClasses: ['Equities'],
+    themes: ['AI Infrastructure', 'Datacenter Buildout'],
+    datasets: [],
+    markets: [],
+  },
   tickers: ['GLW', 'COMM', 'COHR', 'META', 'NVDA', 'AVGO', 'MSFT', 'AMZN'],
   entities: {
     people: [

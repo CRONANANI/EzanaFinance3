@@ -13,6 +13,7 @@ const ALLOWED_EVENT_TYPES = new Set([
   'article_save',
   'article_share',
   'keyword_click',
+  'article_meta_click',
   'watchlist_add',
   'watchlist_remove',
   'trade_executed',

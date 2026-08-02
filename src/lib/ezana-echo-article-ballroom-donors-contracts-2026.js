@@ -154,6 +154,17 @@ export const ballroomDonorsContracts2026 = {
   category: 'politics-policy',
   subcategory: 'Congress',
   tags: ['policy', 'regulation', 'markets', 'companies', 'macro'],
+  meta: {
+    sectors: ['Industrials'],
+    industries: ['Aerospace & Defense'],
+    institutions: ['Lockheed Martin'],
+    government: ['White House', 'GSA'],
+    geos: ['United States'],
+    assetClasses: ['Equities'],
+    themes: ['Political Money', 'Government Contracting'],
+    datasets: ['USAspending', 'Campaign finance'],
+    markets: [],
+  },
   tickers: ['LMT', 'BAH', 'PLTR', 'MSFT', 'AMZN', 'HPQ', 'CAT', 'GOOGL', 'CMCSA'],
   entities: {
     people: [],

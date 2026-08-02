@@ -121,6 +121,14 @@ export function createArticleTracker({
     });
   }
 
+  function recordMetaClick(dimension, value) {
+    postEvent('article_meta_click', {
+      article_id: articleId,
+      dimension,
+      value,
+    });
+  }
+
   function recordSave() {
     postEvent('article_save', {
       article_id: articleId,
@@ -147,6 +155,7 @@ export function createArticleTracker({
   return {
     attach,
     recordKeywordClick,
+    recordMetaClick,
     recordSave,
     recordShare,
     getKeywordClickCount,

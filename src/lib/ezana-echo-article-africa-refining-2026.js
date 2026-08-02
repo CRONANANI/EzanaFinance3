@@ -162,6 +162,17 @@ export const africaRefiningArticle2026 = {
   category: 'commodities-energy',
   subcategory: 'Oil & Gas',
   tags: ['markets', 'commodities', 'energy', 'macro', 'geopolitics'],
+  meta: {
+    sectors: ['Energy'],
+    industries: ['Oil & Gas Refining & Marketing'],
+    investors: ['Aliko Dangote'],
+    institutions: ['Dangote Group'],
+    geos: ['Africa', 'Nigeria'],
+    assetClasses: ['Equities', 'Commodities'],
+    themes: ['Energy Independence', 'Refining Capacity'],
+    datasets: [],
+    markets: [],
+  },
   tickers: ['XOM', 'CVX', 'SHEL', 'TTE', 'BP', 'SU', 'VLO', 'OXY'],
   entities: {
     people: [{ id: 'aliko-dangote', label: 'Aliko Dangote', role: 'Founder, Dangote Industries' }],

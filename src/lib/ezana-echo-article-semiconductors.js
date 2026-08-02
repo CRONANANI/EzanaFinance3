@@ -117,6 +117,18 @@ export const FOUNDRY_MARKET_SHARE = [
 /* ── Article export ────────────────────────────────────────── */
 export const semiconductorArticle = {
   id: 'silicon-shield-taiwan-semiconductor-dominance',
+  meta: {
+    sectors: ['Information Technology'],
+    industries: ['Semiconductors', 'Semiconductor Materials & Equipment'],
+    investors: ['Elon Musk'],
+    institutions: ['TSMC', 'Nvidia', 'ASML'],
+    government: ['CHIPS Act', 'U.S. Government'],
+    geos: ['Taiwan', 'China', 'United States'],
+    assetClasses: ['Equities'],
+    themes: ['Geopolitics', 'Chokepoint', 'Silicon Shield'],
+    datasets: [],
+    markets: [],
+  },
   entities: {
     people: [
       {

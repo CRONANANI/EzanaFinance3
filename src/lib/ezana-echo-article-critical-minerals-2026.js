@@ -188,6 +188,17 @@ export const criticalMineralsArticle2026 = {
   category: 'commodities-energy',
   subcategory: 'Critical Minerals',
   tags: ['commodities', 'critical-minerals', 'geopolitics', 'energy-transition', 'analysis'],
+  meta: {
+    sectors: ['Materials'],
+    industries: ['Metals & Mining', 'Diversified Metals & Mining'],
+    institutions: ['MP Materials', 'Albemarle', 'Freeport-McMoRan'],
+    government: ['USGS'],
+    geos: ['China', 'United States', 'Democratic Republic of Congo', 'Chile', 'Indonesia'],
+    assetClasses: ['Equities', 'Commodities'],
+    themes: ['Supply Chain', 'Resource Concentration', 'Critical Minerals'],
+    datasets: [],
+    markets: [],
+  },
   tickers: ['MP', 'ALB', 'SQM', 'FCX', 'VALE', 'BHP', 'RIO', 'CCJ', 'REMX', 'LIT'],
   entities: {
     people: [],

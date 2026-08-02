@@ -12,7 +12,7 @@ import { ensureCuratedSeeded } from '@/lib/echo/curated-seed';
 const admin = getAdminClient();
 
 const CARD_COLS =
-  'id, author_id, author_name, author_avatar, article_title, article_slug, article_excerpt, article_category, cover_image_url, hero_image, tags, is_featured, read_time_minutes, view_count, like_count, published_at';
+  'id, author_id, author_name, author_avatar, article_title, article_slug, article_excerpt, article_category, cover_image_url, hero_image, tags, article_meta, is_featured, read_time_minutes, view_count, like_count, published_at';
 
 function mapCard(row) {
   return {
@@ -29,6 +29,7 @@ function mapCard(row) {
     heroImage: row.hero_image || null,
     coverImage: row.cover_image_url || null,
     tags: row.tags || [],
+    meta: row.article_meta || {},
     readTime: row.read_time_minutes || 1,
     views: row.view_count || 0,
     likes: row.like_count || 0,

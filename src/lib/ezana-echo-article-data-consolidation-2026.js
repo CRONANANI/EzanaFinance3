@@ -154,6 +154,17 @@ export const dataConsolidationArticle2026 = {
   category: 'tech-founders',
   subcategory: 'AI',
   tags: ['markets', 'technology', 'deals-dealmakers', 'macro', 'analysis'],
+  meta: {
+    sectors: ['Information Technology'],
+    industries: ['Software', 'Application Software', 'Data Infrastructure'],
+    institutions: ['Salesforce', 'Snowflake', 'Datadog', 'Microsoft', 'Palantir'],
+    government: ['FTC'],
+    geos: ['United States'],
+    assetClasses: ['Equities'],
+    themes: ['Consolidation', 'Reverse Acquihire', 'Infrastructure Lock-In'],
+    datasets: ['SEC filings'],
+    markets: [],
+  },
   tickers: ['CRM', 'SNOW', 'DDOG', 'MSFT', 'GOOGL', 'META', 'ORCL', 'PLTR'],
   entities: {
     people: [],

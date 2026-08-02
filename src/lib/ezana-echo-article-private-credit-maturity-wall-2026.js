@@ -303,6 +303,16 @@ export const privateCreditMaturityWallArticle2026 = {
   category: 'markets-companies',
   subcategory: 'Credit',
   tags: ['markets', 'private-credit', 'fixed-income', 'analysis', 'macro'],
+  meta: {
+    sectors: ['Financials'],
+    industries: ['Capital Markets', 'Asset Management & Custody Banks'],
+    institutions: ['Ares Capital', 'Blackstone'],
+    geos: ['United States'],
+    assetClasses: ['Credit', 'Bonds', 'Equities'],
+    themes: ['Private Credit', 'Maturity Wall', 'Credit Cycle'],
+    datasets: [],
+    markets: [],
+  },
   tickers: ['ARCC', 'BXSL', 'OBDC', 'FSK', 'BBDC', 'GBDC', 'HTGC', 'BIZD'],
   entities: {
     people: [],

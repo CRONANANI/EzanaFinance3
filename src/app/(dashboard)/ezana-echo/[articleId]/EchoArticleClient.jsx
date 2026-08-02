@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import DottedMap from 'dotted-map';
 import {
   AreaChart,
@@ -32,7 +32,7 @@ import { EchoKeywordPopup } from '@/components/echo/EchoKeywordPopup';
 import { parseKeywords } from '@/components/echo/parseKeywords';
 import { formatPublishedDate } from '@/lib/echo-format';
 import { createArticleTracker } from '@/lib/echo-article-tracker';
-import { useAnonymousEchoTracker } from '@/hooks/useAnonymousEchoTracker';
+import { useAnonymousEchoTracker, trackAnonMetaClick } from '@/hooks/useAnonymousEchoTracker';
 import { getTag } from '@/lib/echo-tag-taxonomy';
 import { getKeywordById } from '@/lib/echo-keywords';
 import { SECTOR_DOMINANCE_DATA, SECTOR_ERAS } from '@/lib/ezana-echo-article-sector-dominance';
@@ -2684,6 +2684,19 @@ export default function EchoArticleClient({
     articleBodyRef,
   });
 
+  // Metadata-chip click → article_meta_click, routed to the same pathway keyword
+  // clicks use: logged-in → /api/notifications/track, logged-out → anon-track.
+  const handleMetaClick = useCallback(
+    (dimension, value) => {
+      if (user?.id && articleTracker) {
+        articleTracker.recordMetaClick(dimension, value);
+      } else if (!isAuthenticated) {
+        trackAnonMetaClick({ articleId: article?.id, dimension, value });
+      }
+    },
+    [user?.id, isAuthenticated, articleTracker, article?.id],
+  );
+
   async function handleArchive() {
     if (!confirm('Archive this article? It will be hidden from non-admin users.')) return;
     setBusy(true);
@@ -2817,6 +2830,8 @@ export default function EchoArticleClient({
                 tickers={tickers}
                 people={article.entities?.people ?? []}
                 terms={article.entities?.terms ?? []}
+                meta={article.meta ?? {}}
+                onMetaClick={handleMetaClick}
               />
             </aside>
           </div>

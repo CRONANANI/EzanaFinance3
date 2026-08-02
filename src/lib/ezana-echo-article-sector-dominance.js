@@ -259,6 +259,15 @@ export const sectorDominanceArticle = {
   category: 'markets-companies',
   subcategory: 'Equities',
   tags: ['markets', 'history', 'sector-rotation', 'technology', 'energy', 'macro'],
+  meta: {
+    sectors: ['Information Technology', 'Financials', 'Energy'],
+    industries: [],
+    geos: ['United States'],
+    assetClasses: ['Equities'],
+    themes: ['Market History', 'Sector Rotation'],
+    datasets: [],
+    markets: [],
+  },
   tickers: ['SPY', 'XLK', 'XLE', 'XLF', 'XLI'],
   entities: {
     people: [

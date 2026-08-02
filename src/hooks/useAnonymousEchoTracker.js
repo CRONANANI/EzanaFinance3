@@ -25,6 +25,17 @@ function postAnonEvent(anonId, eventType, eventData) {
   }).catch(() => {});
 }
 
+/* Logged-out metadata-chip click — same anon-track pathway keyword clicks use.
+   The header chips live outside the article body, so they can't ride the body
+   click-delegation above; the article page calls this directly for anon users. */
+export function trackAnonMetaClick({ articleId, dimension, value }) {
+  postAnonEvent(getAnonId(), 'article_meta_click', {
+    article_id: articleId,
+    dimension,
+    value,
+  });
+}
+
 function attachAnonymousTracker(articleEl, { anonId, articleId, articleTitle, tags, category }) {
   let scrollDepth = 0;
   let lastVisibleMs = Date.now();

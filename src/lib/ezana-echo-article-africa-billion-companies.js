@@ -167,6 +167,16 @@ export const africaBillionCompaniesArticle = {
   category: 'global-emerging',
   subcategory: 'Africa',
   tags: ['markets', 'emerging-markets', 'africa', 'companies'],
+  meta: {
+    sectors: ['Financials', 'Materials', 'Communication Services'],
+    industries: ['Diversified Banks', 'Metals & Mining', 'Wireless Telecommunication Services'],
+    institutions: ['MTN Group', 'Sasol', 'Gold Fields', 'Prosus'],
+    geos: ['Africa', 'Nigeria', 'South Africa'],
+    assetClasses: ['Equities'],
+    themes: ['Emerging Markets', 'Corporate Scale'],
+    datasets: [],
+    markets: [],
+  },
   tickers: ['EZA', 'AFK', 'FM', 'PROSY', 'MTNOY', 'SSL', 'GFI', 'HMY', 'BTI'],
   entities: {
     people: [

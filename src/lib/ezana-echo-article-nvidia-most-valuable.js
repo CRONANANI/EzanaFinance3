@@ -178,6 +178,16 @@ export const nvidiaSecondMostValuableArticle = {
   category: 'markets-companies',
   subcategory: 'Equities',
   tags: ['companies', 'technology', 'ai', 'semiconductors', 'markets'],
+  meta: {
+    sectors: ['Information Technology'],
+    industries: ['Semiconductors'],
+    institutions: ['Nvidia', 'Apple', 'Microsoft', 'TSMC'],
+    geos: ['United States', 'Taiwan'],
+    assetClasses: ['Equities'],
+    themes: ['AI Boom', 'Market Concentration'],
+    datasets: [],
+    markets: [],
+  },
   tickers: ['NVDA', 'GOOG', 'AAPL', 'MSFT', 'AMZN', 'TSM', 'AVGO', 'GLD', 'SMH', 'SOXX'],
   entities: {
     people: [{ id: 'jensen-huang', label: 'Jensen Huang', role: 'Co-founder and CEO of Nvidia' }],

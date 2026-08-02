@@ -170,6 +170,17 @@ export const fdaPeptidesBpc157Article2026 = {
   category: 'markets-companies',
   subcategory: 'Equities',
   tags: ['markets', 'regulation', 'companies', 'science-health', 'policy'],
+  meta: {
+    sectors: ['Health Care'],
+    industries: ['Pharmaceuticals', 'Health Care Services'],
+    institutions: ['Hims & Hers', 'Eli Lilly', 'Novo Nordisk'],
+    government: ['FDA'],
+    geos: ['United States'],
+    assetClasses: ['Equities'],
+    themes: ['Regulation', 'Compounding Pharmacy'],
+    datasets: [],
+    markets: [],
+  },
   tickers: ['HIMS', 'LLY', 'NVO', 'WBA', 'CVS', 'AMZN', 'TDOC', 'OSCR'],
   entities: {
     people: [],

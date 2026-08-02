@@ -91,6 +91,16 @@ export const HANTAVIRUS_STATE_DATA = [
 /* ── Article export ────────────────────────────────────────── */
 export const hantavirusArticle = {
   id: 'hantavirus-from-four-corners-to-open-sea',
+  meta: {
+    sectors: ['Health Care'],
+    industries: ['Biotechnology', 'Pharmaceuticals'],
+    government: ['CDC'],
+    geos: ['United States'],
+    assetClasses: ['Equities'],
+    themes: ['Public Health', 'Zoonotic Disease'],
+    datasets: [],
+    markets: [],
+  },
   entities: {
     people: [],
     terms: [

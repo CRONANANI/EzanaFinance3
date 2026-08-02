@@ -77,12 +77,50 @@ function Group({ title, children }) {
   );
 }
 
-export default function EchoMetadataSidebar({ tickers = [], people = [], terms = [] }) {
+/* Taxonomy dimensions rendered as chip groups after Tickers, in this order.
+   `dimension` is the value sent with the article_meta_click breadcrumb. */
+const META_GROUPS = [
+  { dimension: 'sectors', title: 'Sectors' },
+  { dimension: 'industries', title: 'Industries' },
+  { dimension: 'investors', title: 'Investors' },
+  { dimension: 'institutions', title: 'Institutions' },
+  { dimension: 'government', title: 'Government' },
+  { dimension: 'geos', title: 'Geographies' },
+  { dimension: 'assetClasses', title: 'Asset Classes' },
+  { dimension: 'themes', title: 'Themes' },
+];
+
+export default function EchoMetadataSidebar({
+  tickers = [],
+  people = [],
+  terms = [],
+  meta = {},
+  onMetaClick,
+}) {
   const onTicker = useCallback((t) => scrollToAnchor(`echo-anchor-ticker-${t}`), []);
   const onPerson = useCallback((id) => scrollToAnchor(`echo-anchor-person-${id}`), []);
   const onTerm = useCallback((id) => scrollToAnchor(`echo-anchor-term-${id}`), []);
+  const fireMeta = useCallback(
+    (dimension, value) => {
+      if (typeof onMetaClick === 'function') onMetaClick(dimension, value);
+    },
+    [onMetaClick],
+  );
 
-  const hasAny = tickers.length || people.length || terms.length;
+  const m = meta || {};
+  const markets = Array.isArray(m.markets) ? m.markets : [];
+  const datasets = Array.isArray(m.datasets) ? m.datasets : [];
+  const metaGroupCount = META_GROUPS.reduce(
+    (n, g) => n + (Array.isArray(m[g.dimension]) ? m[g.dimension].length : 0),
+    0,
+  );
+  const hasAny =
+    tickers.length ||
+    people.length ||
+    terms.length ||
+    metaGroupCount ||
+    markets.length ||
+    datasets.length;
 
   return (
     <aside className="ezana-card emeta-card" aria-label="Article metadata">
@@ -106,6 +144,26 @@ export default function EchoMetadataSidebar({ tickers = [], people = [], terms =
           ))}
         </Group>
       )}
+
+      {META_GROUPS.map((g) => {
+        const values = Array.isArray(m[g.dimension]) ? m[g.dimension] : [];
+        if (values.length === 0) return null;
+        return (
+          <Group key={g.dimension} title={g.title}>
+            {values.map((value) => (
+              <button
+                key={value}
+                type="button"
+                className="emeta-chip emeta-chip--meta"
+                onClick={() => fireMeta(g.dimension, value)}
+                title={`${g.title}: ${value}`}
+              >
+                {value}
+              </button>
+            ))}
+          </Group>
+        );
+      })}
 
       {people.length > 0 && (
         <Group title="People">
@@ -134,6 +192,39 @@ export default function EchoMetadataSidebar({ tickers = [], people = [], terms =
               title={`Jump to "${t.label}" in the article`}
             >
               {t.label}
+            </button>
+          ))}
+        </Group>
+      )}
+
+      {markets.length > 0 && (
+        <Group title="Related Markets">
+          {markets.map((mk) => (
+            <button
+              key={mk.label}
+              type="button"
+              className="emeta-chip emeta-chip--market"
+              onClick={() => fireMeta('markets', mk.label)}
+              title={mk.source ? `${mk.label} — ${mk.source}` : mk.label}
+            >
+              {mk.label}
+              {mk.source && <span className="emeta-chip-source">{mk.source}</span>}
+            </button>
+          ))}
+        </Group>
+      )}
+
+      {datasets.length > 0 && (
+        <Group title="Built with">
+          {datasets.map((ds) => (
+            <button
+              key={ds}
+              type="button"
+              className="emeta-chip emeta-chip--dataset"
+              onClick={() => fireMeta('datasets', ds)}
+              title={`Draws on Ezana ${ds}`}
+            >
+              {ds}
             </button>
           ))}
         </Group>

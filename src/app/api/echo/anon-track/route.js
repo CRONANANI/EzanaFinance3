@@ -4,7 +4,12 @@ import { getAdminClient, getCurrentUser } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
-const ALLOWED_EVENTS = new Set(['article_open', 'article_read', 'keyword_click']);
+const ALLOWED_EVENTS = new Set([
+  'article_open',
+  'article_read',
+  'keyword_click',
+  'article_meta_click',
+]);
 
 export const POST = withApiGuard(
   async (request, user) => {

@@ -34,6 +34,17 @@ export const peterThiel2026 = {
   category: 'tech-founders',
   subcategory: 'Founders',
   author: 'Ezana Finance Editorial',
+  meta: {
+    sectors: ['Information Technology'],
+    industries: ['Software', 'Application Software'],
+    investors: ['Peter Thiel'],
+    institutions: ['Palantir', 'Founders Fund', 'Meta Platforms'],
+    geos: ['United States'],
+    assetClasses: ['Equities'],
+    themes: ['Founders', 'Surveillance', 'Techno-Libertarianism'],
+    datasets: [],
+    markets: [],
+  },
   tickers: ['PLTR', 'META', 'TSLA', 'NVDA', 'MSFT', 'ORCL', 'PYPL', 'AMD'],
   entities: {
     people: [

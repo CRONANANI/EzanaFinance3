@@ -22,6 +22,18 @@ export const trumpPortfolio2026 = {
   category: 'politics-policy',
   subcategory: 'Congress',
   author: 'Ezana Finance Editorial',
+  meta: {
+    sectors: ['Information Technology', 'Industrials'],
+    industries: ['Semiconductors', 'Aerospace & Defense'],
+    investors: ['Donald Trump'],
+    institutions: ['Nvidia', 'Boeing'],
+    government: ['White House'],
+    geos: ['United States'],
+    assetClasses: ['Equities'],
+    themes: ['Political Money', 'Congressional Trading'],
+    datasets: ['Congressional trading', 'SEC filings'],
+    markets: [],
+  },
   tickers: ['NVDA', 'AMD', 'INTC', 'AVGO', 'DELL', 'ORCL', 'PLTR', 'BA', 'MSFT', 'AMZN'],
   entities: {
     people: [
