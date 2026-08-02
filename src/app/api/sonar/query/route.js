@@ -150,7 +150,7 @@ export const POST = withApiGuard(
     const allowCorpora = corporaForDatasets(entitlements.datasets);
     const budget = depthBudget(entitlements.depth);
 
-    const { items, corporaSearched, corporaUsed } = await orchestrate(query, {
+    const { items, corporaSearched, corporaUsed, rerankUsed } = await orchestrate(query, {
       admin,
       supabaseUser: userClient,
       member,
@@ -262,6 +262,7 @@ export const POST = withApiGuard(
       briefing: answer,
       grounded,
       synthProvider: synthProvider || undefined,
+      rerankUsed: Boolean(rerankUsed),
       empty: marked.length === 0,
       advice_flagged: answer ? looksLikeAdvice(answer) : false,
       degraded: degraded || undefined,

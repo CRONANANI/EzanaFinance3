@@ -3,6 +3,7 @@ import { embedViaSupabase, supaEmbedConfigured } from '@/lib/embeddings-gte';
 import { RETRIEVERS } from './retrievers';
 import { extractEntities } from './entities';
 import { recencyScore } from './retrievers/shared';
+import { rerank, rerankEnabled } from '@/lib/rag/rerank';
 
 /**
  * Cross-corpus retrieval orchestrator.
@@ -55,7 +56,8 @@ export async function orchestrate(query, options = {}) {
   } = options;
 
   const q = String(query || '').trim();
-  if (!q) return { items: [], corporaSearched: [], corporaUsed: [], entities: null };
+  if (!q)
+    return { items: [], corporaSearched: [], corporaUsed: [], entities: null, rerankUsed: false };
 
   // Build the shared context ONCE: embed the query (semantic corpora reuse it)
   // and extract entities (structured corpora use them).
@@ -95,11 +97,26 @@ export async function orchestrate(query, options = {}) {
     }
   }
 
-  // Rank by score, then select with a per-corpus cap (visible mix).
+  // Rank by score. When reranking is enabled, retrieve wide (top-20 by score),
+  // reorder with one batched Haiku cross-encoder call, and feed the reranked
+  // top-K into the per-corpus cap below — the corpus-mix guarantee stays intact
+  // because the cap runs AFTER. Rerank is an optimizer: on any failure it returns
+  // the input order (reranked:false) and the flow is bit-for-bit the unranked path.
   const ranked = [...byKey.values()].sort((a, b) => b.score - a.score);
+  let pool = ranked;
+  let rerankUsed = false;
+  if (rerankEnabled()) {
+    const { items: rr, reranked } = await rerank(q, ranked.slice(0, 20), { keep: topK });
+    if (reranked) {
+      pool = rr;
+      rerankUsed = true;
+    }
+  }
+
+  // Select with a per-corpus cap (visible mix).
   const perCorpus = new Map();
   const selected = [];
-  for (const item of ranked) {
+  for (const item of pool) {
     if (selected.length >= topK) break;
     const used = perCorpus.get(item.corpus) || 0;
     if (used >= perCorpusCap) continue;
@@ -118,5 +135,5 @@ export async function orchestrate(query, options = {}) {
   }
 
   const corporaUsed = [...new Set(budgeted.map((i) => i.corpus))];
-  return { items: budgeted, corporaSearched, corporaUsed, entities };
+  return { items: budgeted, corporaSearched, corporaUsed, entities, rerankUsed };
 }

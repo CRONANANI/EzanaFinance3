@@ -107,7 +107,7 @@ export async function POST(request) {
   const query = String(body?.query || '').trim().slice(0, 800);
   if (!query) return NextResponse.json({ error: 'A question is required.' }, { status: 400 });
 
-  const { items, corporaSearched, corporaUsed } = await orchestrate(query, {
+  const { items, corporaSearched, corporaUsed, rerankUsed } = await orchestrate(query, {
     admin: getAdminClient(),
     supabaseUser: supabase,
     member,
@@ -134,6 +134,7 @@ export async function POST(request) {
     degraded: degraded || undefined,
     corpora_searched: corporaSearched,
     corpora_used: corporaUsed,
+    rerank_used: Boolean(rerankUsed),
     sources: items.map((it, i) => ({
       marker: `S${i + 1}`,
       corpus: it.corpus,
