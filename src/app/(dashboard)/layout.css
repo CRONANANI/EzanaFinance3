@@ -158,3 +158,26 @@ body.light-mode .dashboard-main > .dashboard-container,
 body.light-mode .dashboard-container > .dashboard-page-inset {
   background-color: transparent;
 }
+
+/* ════════════════════════════════════════════════════════════
+   ECHO ARTICLE ROUTE — force a uniform WHITE shell on any theme.
+   The article content column is white; without this the dashboard
+   shell's --app-bg (dark under the default theme) shows as grey
+   side gutters around the centered column. Mirrors the market-
+   analysis force-dark mechanism, inverted to white, so every
+   article page (present and future) is edge-to-edge white
+   regardless of the user's light/dark toggle.
+   ════════════════════════════════════════════════════════════ */
+body.route-echo-article .dashboard-main,
+body.route-echo-article .dashboard-main-content {
+  background-color: #ffffff;
+}
+body.route-echo-article:has(.dashboard-main),
+html:has(body.route-echo-article) {
+  background-color: #ffffff;
+}
+/* Nav matches the white page (no dark seam above a white article on the
+   default theme). */
+body.route-echo-article .main-nav:not(.partner-nav) {
+  background: #ffffff !important;
+}

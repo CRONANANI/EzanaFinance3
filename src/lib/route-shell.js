@@ -44,6 +44,18 @@ export function isMarketAnalysisRoute(pathname) {
   return pathname === MARKET_ANALYSIS_PATH;
 }
 
+/* Individual Echo article pages (a slug after /ezana-echo/), excluding the
+   archived list and author pages — these get a force-white shell. Kept in sync
+   with the client predicate in the dashboard layout. */
+export function isEchoArticleRoute(pathname) {
+  return (
+    !!pathname &&
+    pathname.startsWith('/ezana-echo/') &&
+    pathname !== '/ezana-echo/archived' &&
+    !pathname.startsWith('/ezana-echo/author/')
+  );
+}
+
 /**
  * Given a request pathname, return the list of body classes that the
  * dashboard layout would normally add via useEffect. Used server-side to
@@ -70,6 +82,9 @@ export function resolveRouteShellClasses(pathname) {
   }
   if (isMarketAnalysisRoute(pathname)) {
     classes.push('route-market-analysis');
+  }
+  if (isEchoArticleRoute(pathname)) {
+    classes.push('route-echo-article');
   }
   return classes;
 }

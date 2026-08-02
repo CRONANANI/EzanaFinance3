@@ -1067,6 +1067,12 @@
   --echo-chart-grid: rgba(120, 120, 120, 0.15);
   --echo-chart-annotation: rgba(120, 120, 120, 0.4);
 }
+/* On article routes the whole shell is forced white (see layout.css); pin the
+   article root to match so no grey --app-bg peeks under the default theme. The
+   base rule above stays as a sane fallback for any standalone use. */
+body.route-echo-article .echo-article-page {
+  background: #ffffff;
+}
 
 /* Outer page padding â€” generous gutter on desktop, tighter on mobile */
 .echo-article-page .echo-article-page-inset {

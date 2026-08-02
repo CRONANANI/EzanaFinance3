@@ -45,6 +45,11 @@ export default function DashboardLayout({ children }) {
   useWatchlistPriceAlerts();
 
   const isMarketAnalysisFullscreen = pathname === '/market-analysis';
+  const isEchoArticle =
+    !!pathname &&
+    pathname.startsWith('/ezana-echo/') &&
+    pathname !== '/ezana-echo/archived' &&
+    !pathname.startsWith('/ezana-echo/author/');
   const isPartnerRoute = pathname?.startsWith('/partner-');
   const isSharedPartner =
     !isLoading && isPartner && matchesPartnerRouteList(pathname ?? '', PARTNER_SHARED_APP_ROUTES);
@@ -85,11 +90,18 @@ export default function DashboardLayout({ children }) {
       body.classList.remove('route-market-analysis');
     }
 
+    if (isEchoArticle) {
+      body.classList.add('route-echo-article');
+    } else {
+      body.classList.remove('route-echo-article');
+    }
+
     return () => {
       body.classList.remove('route-regular-dashboard');
       body.classList.remove('route-market-analysis');
+      body.classList.remove('route-echo-article');
     };
-  }, [isPartnerExperience, isMarketAnalysisFullscreen]);
+  }, [isPartnerExperience, isMarketAnalysisFullscreen, isEchoArticle]);
 
   return (
     <ErrorBoundary>
