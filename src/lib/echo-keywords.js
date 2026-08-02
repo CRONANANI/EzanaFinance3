@@ -3012,6 +3012,26 @@ export const KEYWORDS = {
         '~$16T of illiquid assets sits outside the borrowing system today (BCG-derived); the Paraná cow pilot puts sensor-verified livestock collateral on B3 and deposit-and-borrow flows run against tokenized buildings on lending protocols.',
     },
   },
+
+  'msme-finance-gap': {
+    id: 'msme-finance-gap',
+    term: 'MSME finance gap',
+    definition:
+      'The difference between what micro, small, and medium enterprises need to borrow and the formal credit actually available to them — the demand-side case for collateral tokenization in emerging markets.',
+    template: 'comparison',
+    templateData: {
+      title: 'Sizing the gap',
+      headers: ['Measure', 'Figure', 'Source'],
+      rows: [
+        { label: 'Formal MSME finance gap', cells: ['~$5.7T', 'IFC / SME Finance Forum'] },
+        { label: 'Including informal enterprises', cells: ['~$8T', 'Aggregate estimate'] },
+        { label: 'Sub-Saharan Africa share', cells: ['~$331B', 'Regional estimate'] },
+        { label: 'African smallholders with credit', cells: ['6%', 'African Development Bank'] },
+      ],
+      footnote:
+        'Much of the "missing" collateral is not missing — farmers own livestock they cannot borrow against for lack of a lender-ready registry and insurance.',
+    },
+  },
 };
 
 export function getKeywordById(id) {
