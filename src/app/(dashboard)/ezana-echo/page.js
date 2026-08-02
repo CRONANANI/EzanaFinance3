@@ -360,24 +360,6 @@ export default function EzanaEchoPage() {
       </header>
 
       <div className="eth-wrap">
-        {/* Global time-window filter — applies to all 6 columns, combines with the
-            per-column subcategory filters. */}
-        <div className="eth-toolbar">
-          <span className="eth-toolbar-label">Window</span>
-          <div className="eth-timefilter" role="group" aria-label="Time window">
-            {TIME_WINDOWS.map((w) => (
-              <button
-                key={w.id}
-                type="button"
-                aria-pressed={timeWindow === w.id}
-                onClick={() => setTimeWindow(w.id)}
-              >
-                {w.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
         {/* Article of the Month — a full-width horizontal banner above the category
             headers: hero image on the left (same 16:9 size as a normal card), then
             the eyebrow, title, and as much opening text as fits. It's excluded from
@@ -404,6 +386,24 @@ export default function EzanaEchoPage() {
             </div>
           </Link>
         )}
+
+        {/* Global time-window filter — centered between the Article of the Month and
+            the category headers; applies to all 6 columns, combines with the
+            per-column subcategory filters. Accessible name comes from aria-label. */}
+        <div className="eth-toolbar">
+          <div className="eth-timefilter" role="group" aria-label="Time window">
+            {TIME_WINDOWS.map((w) => (
+              <button
+                key={w.id}
+                type="button"
+                aria-pressed={timeWindow === w.id}
+                onClick={() => setTimeWindow(w.id)}
+              >
+                {w.label}
+              </button>
+            ))}
+          </div>
+        </div>
 
         {/* Category board — six plain newest-first columns. */}
         <div className="eth-board">

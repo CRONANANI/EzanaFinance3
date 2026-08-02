@@ -410,20 +410,13 @@ html:has(body.echo-route) {
   color: var(--text-faint);
 }
 
-/* ── Toolbar: global time-window filter (applies to all 6 columns) ──────────── */
+/* ── Toolbar: global time-window filter — centered between the Article of the
+   Month banner and the category headers. */
 .eth-toolbar {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 24px; /* clears the partner note hanging below the masthead */
-}
-.eth-toolbar-label {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-muted);
+  justify-content: center;
+  margin: 0 0 8px; /* board adds its own 12px above the headers */
 }
 .eth-timefilter {
   display: inline-flex;
@@ -454,7 +447,8 @@ html:has(body.echo-route) {
   color: #fff;
 }
 
-/* ── Article of the Month — full-width banner above the category headers ──────
+/* ── Article of the Month — borderless full-width banner above the category headers
+   (the hover affordance is the title's emerald color). ────────────────────────
    Hero image on the LEFT at EXACTLY one board-column's hero size:
    image column width = (100% − 5 gaps × 20px) / 6 columns, aspect 16:9 — so it
    matches the other cards' hero images at any viewport width. The 20px grid gap
@@ -470,16 +464,9 @@ html:has(body.echo-route) {
   gap: 20px;
   align-items: stretch;
   width: 100%;
-  margin: 0 0 24px;
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg, 12px);
-  overflow: hidden;
+  margin: 24px 0 28px; /* top clears the "Publish to the Echo →" note hanging below the masthead */
   background: transparent;
   text-decoration: none;
-  transition: border-color 0.15s ease;
-}
-.eth-aotm:hover {
-  border-color: var(--emerald);
 }
 .eth-aotm-img {
   padding: 50px 0 51px; /* = standard card body height (~101px) → banner height = imgH + 101px */
@@ -525,7 +512,6 @@ html:has(body.echo-route) {
   font-weight: 700;
   color: var(--text-primary);
   overflow-wrap: anywhere;
-  padding-left: 4px; /* serif left-side-bearing guard, per the card title fix */
 }
 .eth-aotm:hover .eth-aotm-title {
   color: var(--emerald);

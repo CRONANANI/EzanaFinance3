@@ -60,14 +60,15 @@
 .echo-card__body {
   position: relative;
   z-index: 4;
-  /* Wall-to-wall: images run edge-to-edge; text gets a small inner inset so it
-     never touches the viewport edge. Flex column so meta can pin to the bottom. */
+  /* Wall-to-wall: images run edge-to-edge; title + meta left-align flush with
+     the image's left edge (padding-left 0 — the 640px .eth-wrap side padding
+     keeps text off the viewport edge on mobile). Right inset stays so text
+     never crowds the next column. Flex column so meta can pin to the bottom. */
   display: flex;
   flex-direction: column;
   gap: 8px;
   flex: 1;
-  /* Extra left/right inset so the title never sits at the card's clip boundary. */
-  padding: 12px 18px 14px;
+  padding: 12px 18px 14px 0;
 }
 /* Uniform card height: every title reserves the SAME 3-line block (clamped, with a
    min-height) so a 1-line and a 3-line title produce the same card height — rows
@@ -92,7 +93,8 @@
      1px of inset — the "curved cutoff" on the left. 4px clears the serif overhang. */
   overflow: hidden;
   overflow-wrap: anywhere;
-  padding-left: 4px;
+  padding-left: 4px; /* clip-box inset so line-clamp's overflow:hidden never shaves serif left bearings */
+  margin-left: -4px; /* …while the negative margin cancels the visual indent: first glyph lands at x=0, flush with the image edge */
   padding-right: 4px;
   height: calc(1.3em * 3);
   min-height: 0;
