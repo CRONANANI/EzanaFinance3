@@ -2972,6 +2972,46 @@ export const KEYWORDS = {
       footnote: 'Is pipeline-consolidation a leading warning, or decoupled from the cycle? Present-day evidence is benign.',
     },
   },
+
+  /* ════════════════════════════════════════════════════════════════════════
+     Tokenization-as-collateral article keywords
+     ════════════════════════════════════════════════════════════════════════ */
+
+  'real-world-assets': {
+    id: 'real-world-assets',
+    term: 'Real-world assets (RWA)',
+    definition:
+      'Tokenized claims on off-chain assets — treasuries, private credit, real estate, commodities, and even livestock — recorded on open blockchain rails so they can be transferred, traded, and borrowed against like any other digital token.',
+    template: 'timeline',
+    templateData: {
+      title: 'From $1B to a projected $16T',
+      events: [
+        { year: 'Mar 2024', label: 'Tokenized US Treasuries cross $1B', detail: 'First time on record' },
+        { year: 'Mid-2026', label: 'Total tokenized RWAs pass $30B', detail: '~30x since 2024, ex-stablecoins' },
+        { year: '2030', label: 'McKinsey conservative case', detail: '~$2T' },
+        { year: '2030', label: 'BCG high case', detail: '~$16T' },
+        { year: '2034', label: 'Standard Chartered projection', detail: '~$30T' },
+      ],
+    },
+  },
+
+  'collateral-utility': {
+    id: 'collateral-utility',
+    term: 'Collateral utility',
+    definition:
+      'The value unlocked when an illiquid asset becomes verifiable, transferable collateral that can be borrowed against instantly on open rails — the first thing an asset does once tokenized is get pledged for a loan.',
+    template: 'comparison',
+    templateData: {
+      title: 'Illiquid asset vs tokenized collateral',
+      headers: ['Stage', 'What a lender must do', 'Speed to a loan'],
+      rows: [
+        { label: 'Illiquid (today)', cells: ['Inspect, appraise, chase paperwork', 'Weeks — if at all'] },
+        { label: 'Tokenized collateral', cells: ['Read the on-chain record + sensor feed', 'Minutes'] },
+      ],
+      footnote:
+        '~$16T of illiquid assets sits outside the borrowing system today (BCG-derived); the Paraná cow pilot puts sensor-verified livestock collateral on B3 and deposit-and-borrow flows run against tokenized buildings on lending protocols.',
+    },
+  },
 };
 
 export function getKeywordById(id) {

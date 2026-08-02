@@ -37,9 +37,11 @@ import { fdaPeptidesBpc157Article2026 } from './ezana-echo-article-fda-peptides-
 import { africaRefiningArticle2026 } from './ezana-echo-article-africa-refining-2026.js';
 import { dataConsolidationArticle2026 } from './ezana-echo-article-data-consolidation-2026.js';
 import { johnnyMnemonicConsolidation2026 } from './ezana-echo-article-johnny-mnemonic-consolidation-2026.js';
+import { tokenizationCollateral2026 } from './ezana-echo-article-tokenization-collateral-2026.js';
 
 const ARTICLES = [
   johnnyMnemonicConsolidation2026,
+  tokenizationCollateral2026,
   dataConsolidationArticle2026,
   africaRefiningArticle2026,
   fdaPeptidesBpc157Article2026,
@@ -72,6 +74,11 @@ export const ECHO_TRENDING = {
       title: 'What Johnny Mnemonic Saw Coming: Tech’s $649B Consolidation Wave',
       reads: 6100,
       id: 'johnny-mnemonic-tech-consolidation-2026',
+    },
+    {
+      title: 'The Cow Is the Collateral: The $16 Trillion Tokenization Trade',
+      reads: 4700,
+      id: 'tokenization-collateral-2026',
     },
     {
       title: 'Who Controls the World’s Critical Minerals',
@@ -121,6 +128,11 @@ export const ECHO_TRENDING = {
       id: 'johnny-mnemonic-tech-consolidation-2026',
     },
     {
+      title: 'The Cow Is the Collateral: The $16 Trillion Tokenization Trade',
+      comments: 29,
+      id: 'tokenization-collateral-2026',
+    },
+    {
       title: 'Fiber Optic Cable: Alotta Money In This Stuff',
       comments: 64,
       id: 'fiber-optic-cable-ai-boom-benny-fazio',
@@ -149,6 +161,29 @@ export const ECHO_TRENDING = {
 
 /** @type {Record<string, { id: string; author: { name: string; initials: string; id?: string }; content: string; createdAt: string }[]>} */
 export const ECHO_MOCK_COMMENTS_BY_ARTICLE = {
+  'tokenization-collateral-2026': [
+    {
+      id: 'c-tok-1',
+      author: { name: 'Lucas Ferreira', initials: 'LF' },
+      content:
+        'The enforceability point is the one everyone waves away. A token is a clean record of a lien; it is not a court order. The Paraná deal only works because the sensor feed plus B3 registration make the cow seizable in practice — most "tokenize the building" pitches have no equivalent, and that gap is exactly where the first collateral blow-up will come from.',
+      createdAt: '2026-08-02T15:10:00Z',
+    },
+    {
+      id: 'c-tok-2',
+      author: { name: 'Hana Kim', initials: 'HK' },
+      content:
+        'Inverting the RWA pitch to "watch the venue, not the asset" is the correct read. The tokenized treasuries were never the trade — the fee-earning issuers and the lending/trading venues charging basis points are. Toll booth, not treasure hunt, and the scarce thing is the license stack.',
+      createdAt: '2026-08-02T18:45:00Z',
+    },
+    {
+      id: 'c-tok-3',
+      author: { name: 'Sofia Alvarez', initials: 'SA' },
+      content:
+        'Glad the $33T raw vs $28T bot-adjusted caveat is stated outright instead of quietly using the bigger number. Either way it clears Visa+Mastercard combined, but keeping both figures is what separates this from the usual on-chain-volume hype.',
+      createdAt: '2026-08-03T10:20:00Z',
+    },
+  ],
   'johnny-mnemonic-tech-consolidation-2026': [
     {
       id: 'c-jm-1',

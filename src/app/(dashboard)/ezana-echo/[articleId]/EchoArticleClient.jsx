@@ -320,6 +320,15 @@ function AfricaInteractiveMap({ title, subtitle }) {
   );
 }
 
+/* Stable anchor ids for headings — feeds the Contents rail and deep links. */
+const slugifyHeading = (text) =>
+  String(text)
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .slice(0, 80);
+
 function ArticleBlock({ block }) {
   switch (block.type) {
     case 'paragraph':
@@ -327,9 +336,13 @@ function ArticleBlock({ block }) {
 
     case 'heading':
       return block.level === 3 ? (
-        <h3 className="echo-article-h3">{block.text}</h3>
+        <h3 id={slugifyHeading(block.text)} className="echo-article-h3">
+          {block.text}
+        </h3>
       ) : (
-        <h2 className="echo-article-h2">{block.text}</h2>
+        <h2 id={slugifyHeading(block.text)} className="echo-article-h2">
+          {block.text}
+        </h2>
       );
 
     case 'callout':
@@ -2615,6 +2628,69 @@ function SectorDominanceChart({ title, caption, yLabel }) {
   );
 }
 
+/* Sticky CONTENTS rail — derives its sections from the article's own level-2
+   heading blocks (zero per-article configuration; every existing and future
+   article gets it automatically). Scroll-spy mirrors the ezana-api legend:
+   IntersectionObserver with a mid-viewport band. Renders nothing for legacy
+   paragraph-only articles or single-section pieces. */
+function EchoContentsRail({ blocks }) {
+  const sections = useMemo(
+    () =>
+      (Array.isArray(blocks) ? blocks : [])
+        .filter((b) => b.type === 'heading' && b.level !== 3)
+        .map((b) => ({ id: slugifyHeading(b.text), label: b.text })),
+    [blocks],
+  );
+  const [active, setActive] = useState(sections[0]?.id || null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('IntersectionObserver' in window)) return undefined;
+    if (sections.length < 2) return undefined;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) setActive(entry.target.id);
+        });
+      },
+      { rootMargin: '-45% 0px -50% 0px', threshold: 0 },
+    );
+    sections.forEach((s) => {
+      const el = document.getElementById(s.id);
+      if (el) observer.observe(el);
+    });
+    return () => observer.disconnect();
+  }, [sections]);
+
+  if (sections.length < 2) return null;
+
+  const scrollTo = (e, id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    e.preventDefault();
+    setActive(id);
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  return (
+    <nav className="echo-contents" aria-label="Article contents">
+      <p className="echo-contents-head">Contents</p>
+      <ul>
+        {sections.map((s) => (
+          <li key={s.id}>
+            <a
+              href={`#${s.id}`}
+              className={active === s.id ? 'is-active' : ''}
+              onClick={(e) => scrollTo(e, s.id)}
+            >
+              {s.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
+
 export default function EchoArticleClient({
   article,
   relatedArticles = [],
@@ -2807,11 +2883,14 @@ export default function EchoArticleClient({
 
         {/* Zones B + C — metadata sidebar | article body */}
         <div className="echo-article-grid">
-          <EchoMetadataSidebar
-            tickers={tickers}
-            people={article.entities?.people ?? []}
-            terms={article.entities?.terms ?? []}
-          />
+          <div className="echo-side-col">
+            <EchoContentsRail blocks={blocks} />
+            <EchoMetadataSidebar
+              tickers={tickers}
+              people={article.entities?.people ?? []}
+              terms={article.entities?.terms ?? []}
+            />
+          </div>
 
           <div className="echo-body-col">
             {/* Invisible ticker scroll-targets (fallback: top of the body). */}

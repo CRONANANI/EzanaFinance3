@@ -66,6 +66,7 @@ const ARTICLE_SUBCATEGORY = {
   'africa-refining-capacity-dangote-inflection-2026': 'Oil & Gas',
   'africa-billion-dollar-companies-2026': 'Africa',
   'johnny-mnemonic-tech-consolidation-2026': 'AI',
+  'tokenization-collateral-2026': 'DeFi',
 };
 
 /* Global time-window filter options (applies to all 6 columns). Default 'all'. */
