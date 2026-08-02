@@ -1,0 +1,21 @@
+#!/usr/bin/env sh
+# Guard: production deploys from CRONANANI/EzanaFinance3. Every push must
+# target it. Blocks the old repo name (cronanani) so the "code on main
+# but not on the site" failure mode is structurally impossible.
+# Override for an intentional non-canonical push: ALLOW_MIRROR_PUSH=1 git push …
+remote_url="$2"
+
+case "$remote_url" in
+  *EzanaFinance3*)
+    ;;
+  *)
+    if [ "$ALLOW_MIRROR_PUSH" = "1" ]; then
+      echo "[pre-push] WARNING: pushing to non-canonical remote ($remote_url) with ALLOW_MIRROR_PUSH=1"
+    else
+      echo "[pre-push] BLOCKED: push target is '$remote_url'."
+      echo "[pre-push] Canonical repo is https://github.com/CRONANANI/EzanaFinance3.git (Vercel deploys from it)."
+      echo "[pre-push] Fix with: git remote set-url origin https://github.com/CRONANANI/EzanaFinance3.git"
+      exit 1
+    fi
+    ;;
+esac

@@ -32,3 +32,10 @@
   a new article is featured, flip the previously-featured article's flag to false
   in the same write, and set `featured: false` on that article's source file too.
 - Supabase project id: `jhdzpadfzrhiekcfgtai`.
+
+## Git remotes — canonical repo (non-negotiable)
+
+- The ONLY push target is `https://github.com/CRONANANI/EzanaFinance3.git` (`origin`). Vercel production deploys from it.
+- `CRONANANI/cronanani` is this repo's **former name** — GitHub redirects it to `EzanaFinance3` (it is the same repo, not a separate mirror). Always use the canonical `EzanaFinance3` URL; never rely on the old name, and never treat anything else as source of truth.
+- A husky `pre-push` hook (`.husky/pre-push`) enforces this: pushes to any remote whose URL is not `EzanaFinance3` are blocked. If a push is blocked, the fix is `git remote set-url origin https://github.com/CRONANANI/EzanaFinance3.git` — not bypassing the hook. `ALLOW_MIRROR_PUSH=1` remains as an explicit escape hatch.
+- After every push, sanity check: the commit SHA at the top of `git log origin/main` should appear in the next Vercel deployment's "Cloning …" log line.
