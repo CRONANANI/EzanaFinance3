@@ -11,7 +11,7 @@ export const tokenizationCollateral2026 = {
   excerpt:
     'Farmers in Brazil just borrowed nearly $20,000 against ten tokenized dairy cows wearing AI collars, registered on the B3 exchange. Everyone watches the assets — the treasuries, the real estate, the gold. The trade is in the marketplace: what illiquid things can DO once they become collateral on open rails.',
   heroImage: {
-    src: '/echo/tokenization-cows-hero.jpg',
+    src: '/echo/tokenizedcows.jpg',
     alt: 'Dairy cows in a pasture — the first livestock tokenized as loan collateral on a national exchange',
     caption:
       'In Paraná, Brazil, ten dairy cows became the first livestock tokenized and registered on the B3 exchange as loan collateral, each wearing an AI-powered collar that streams its health and location to the lender.',
