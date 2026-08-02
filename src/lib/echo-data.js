@@ -179,15 +179,73 @@ export async function bumpArticleView(slug) {
   }
 }
 
-/** Related (same category) + more (other) published cards, excluding a slug. */
-export async function getRelatedAndMore(category, excludeSlug, relatedLimit = 3, moreLimit = 4) {
+/** PERSONALIZATION_V2 is the master switch for all vector-ranked Echo surfaces. */
+function personalizationV2Enabled() {
+  return process.env.PERSONALIZATION_V2 === '1';
+}
+
+/**
+ * Vector-ranked published cards for a user, via match_echo_articles_for_user.
+ * Returns [] (never throws) when the flag is off, the user has no interest
+ * vector, or no article embeddings exist yet — every caller falls back to the
+ * recency ordering, so the feature is inert until fully provisioned.
+ */
+export async function getPersonalizedArticles(userId, { excludeSlugs = [], limit = 8 } = {}) {
+  if (!personalizationV2Enabled() || !userId) return [];
+  const { data, error } = await admin.rpc('match_echo_articles_for_user', {
+    p_user_id: userId,
+    match_threshold: 0.0,
+    match_count: limit,
+    exclude_slugs: excludeSlugs,
+  });
+  if (error || !data?.length) {
+    if (error) console.error('[echo] match_echo_articles_for_user:', error.message);
+    return [];
+  }
+  // The RPC returns a thin projection; hydrate full cards and preserve its order.
+  const orderedSlugs = data.map((r) => r.article_slug);
+  const { data: cards } = await admin
+    .from('echo_articles')
+    .select(CARD_COLS)
+    .in('article_slug', orderedSlugs);
+  const bySlug = {};
+  for (const row of cards || []) bySlug[row.article_slug] = mapCard(row);
+  return orderedSlugs.map((s) => bySlug[s]).filter(Boolean);
+}
+
+/**
+ * Related (same category) + more (other) published cards, excluding a slug.
+ * When a userId is supplied and PERSONALIZATION_V2 is on, the "more" list is
+ * reordered by interest-vector similarity (with a recency backfill so it always
+ * returns moreLimit items).
+ */
+export async function getRelatedAndMore(
+  category,
+  excludeSlug,
+  relatedLimit = 3,
+  moreLimit = 4,
+  userId = null,
+) {
   const all = await getPublishedArticles();
   const related = all
     .filter((a) => a.category === category && a.slug !== excludeSlug)
     .slice(0, relatedLimit);
   const relatedSlugs = new Set(related.map((a) => a.slug));
-  const more = all
-    .filter((a) => a.slug !== excludeSlug && !relatedSlugs.has(a.slug))
-    .slice(0, moreLimit);
+
+  const recencyMore = all.filter((a) => a.slug !== excludeSlug && !relatedSlugs.has(a.slug));
+
+  let more = recencyMore.slice(0, moreLimit);
+  if (userId && personalizationV2Enabled()) {
+    const personalized = await getPersonalizedArticles(userId, {
+      excludeSlugs: [excludeSlug, ...relatedSlugs],
+      limit: moreLimit,
+    });
+    if (personalized.length) {
+      const seen = new Set(personalized.map((a) => a.slug));
+      // Personalized first, then recency backfill up to moreLimit.
+      more = [...personalized, ...recencyMore.filter((a) => !seen.has(a.slug))].slice(0, moreLimit);
+    }
+  }
+
   return { related, more };
 }

@@ -70,6 +70,10 @@
       "schedule": "0 4 * * *"
     },
     {
+      "path": "/api/cron/compute-interest-vectors",
+      "schedule": "0 5 * * *"
+    },
+    {
       "path": "/api/cron/prune-breadcrumbs",
       "schedule": "0 3 1 * *"
     },

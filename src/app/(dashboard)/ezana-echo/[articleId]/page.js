@@ -54,22 +54,29 @@ export default async function EzanaEchoArticlePage({ params }) {
   const article = await getArticleBySlug(params.articleId);
   if (!article) notFound();
 
+  // Resolve the viewer once — used for the archived-article gate and for
+  // personalized "more" ranking (PERSONALIZATION_V2).
+  const supabase = createServerSupabase();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   const archived = await isArticleArchived(params.articleId);
-  if (archived) {
-    const supabase = createServerSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user || !isAdminUser(user)) {
-      notFound();
-    }
+  if (archived && (!user || !isAdminUser(user))) {
+    notFound();
   }
 
   if (!archived && article.status === 'published') {
     bumpArticleView(article.slug);
   }
 
-  const { related, more } = await getRelatedAndMore(article.category, article.slug, 3, 4);
+  const { related, more } = await getRelatedAndMore(
+    article.category,
+    article.slug,
+    3,
+    4,
+    user?.id || null,
+  );
 
   const canonical = `${SITE_URL}/ezana-echo/${article.slug}`;
   const jsonLd = {
