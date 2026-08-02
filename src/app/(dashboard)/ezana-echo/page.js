@@ -326,10 +326,11 @@ export default function EzanaEchoPage() {
 
   return (
     <div className="eth-page">
-      {/* Header (marketing nav is suppressed on Echo). Logo + brand on the left,
-          aligned to the card column's left edge; Login / Become a Partner on the
-          right with centers aligned to the brand. The "Publish to the Echo →"
-          note sits ABOVE the partner button. */}
+      {/* Header (marketing nav is suppressed on Echo, so this masthead IS the top
+          bar — a 64px bar matching the landing nav's vertical rhythm). Logo + brand
+          on the left; Login / Become a Partner on the right, vertically centered
+          with the brand. The "Publish to the Echo →" note hangs BELOW the partner
+          button. */}
       <header className="eth-masthead">
         <Link href="/" className="eth-masthead-brand" aria-label="Ezana Echo home">
           <EzanaNavLogo width={44} height={37} priority />
@@ -348,11 +349,11 @@ export default function EzanaEchoPage() {
             Login
           </a>
           <div className="eth-partner-stack">
-            <a href="/auth/partner/apply" className="eth-partner-note">
-              Publish to the Echo →
-            </a>
             <a href="/auth/partner/apply" className="eth-partner-btn">
               Become a Partner
+            </a>
+            <a href="/auth/partner/apply" className="eth-partner-note">
+              Publish to the Echo →
             </a>
           </div>
         </div>
@@ -390,7 +391,8 @@ export default function EzanaEchoPage() {
                   alt={articleOfMonth.heroImage.alt || articleOfMonth.title}
                   loading="lazy"
                   onError={(e) => {
-                    e.currentTarget.style.display = 'none';
+                    // remove (not display:none) so the :not(:has(img)) placeholder shows
+                    e.currentTarget.remove();
                   }}
                 />
               ) : null}

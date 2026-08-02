@@ -10,9 +10,7 @@
   color: var(--text-secondary);
   font-family: var(--font-sans);
   padding-bottom: 8px;
-  /* Trim the shell's top padding (padding-top: navbar + 1.5rem) so the masthead
-     sits a little closer to the nav; the wordmark keeps its own headroom. */
-  margin-top: -0.95rem;
+  margin-top: 0;
 }
 
 /* Fix 1 — uniform background on the Echo route. The page content is --bg-primary
@@ -23,6 +21,10 @@
    uniformly dark. `html body.echo-route …` + !important beats layout.css's shell rule. */
 html body.echo-route .dashboard-main.dashboard-main-content {
   background-color: var(--bg-primary) !important;
+  /* The echo masthead IS the top bar on this route (global navbar suppressed in
+     ConditionalNavbar), so the shell must not reserve navbar clearance — that
+     clearance is what pushed the brand/auth ~73px down vs the landing nav. */
+  padding-top: 0 !important;
 }
 body.echo-route,
 html:has(body.echo-route) {
@@ -184,14 +186,9 @@ html:has(body.echo-route) {
   }
 }
 
-/* On mobile the dashboard shell drops its top padding to `navbar + 1rem`
-   (see (dashboard)/layout.css), so the full desktop pull would tuck the title
-   under the fixed navbar. Trim it modestly here (a smaller cut than desktop) —
-   the hero sits a little closer to the nav while the title stays clearly below
-   the bar (still ~0.6rem clear of the 1rem pad). */
 @media (max-width: 768px) {
   .eth-page {
-    margin-top: -0.4rem;
+    margin-top: 0;
   }
 }
 
@@ -202,20 +199,17 @@ html:has(body.echo-route) {
    the featured hero + Top Stories, one horizontal row per non-empty category.
    Theme tokens only — no hardcoded hex.
    ════════════════════════════════════════════════════════════════════════════ */
-/* Header — logo + brand on the LEFT (aligned to the card column's left edge, via
-   the shared shell envelope), Login / Become a Partner on the RIGHT with their
-   centers aligned to the brand. The "Publish to the Echo →" note stacks ABOVE the
-   partner button. Generous line-height so the serif wordmark never clips. */
+/* Masthead = this route's top bar. Same height and vertical centering as the
+   landing nav (.navbar, --navbar-height 64px, items centered), so the brand and
+   Login / Become a Partner sit at the same Y as the landing page's nav items. The
+   "Publish to the Echo →" note hangs BELOW the partner button (out of flow). */
 .eth-masthead {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  /* Fix 2 — match the landing-page nav's vertical rhythm: a --navbar-height (64px)
-     bar with items vertically centered (symmetric padding), so the brand + auth sit
-     at the same Y as the landing nav's items instead of a taller asymmetric header. */
-  padding: 8px 0;
-  min-height: var(--navbar-height, 64px);
+  height: var(--navbar-height, 64px);
+  padding: 0;
 }
 .eth-masthead-brand {
   display: inline-flex;
@@ -237,11 +231,7 @@ html:has(body.echo-route) {
 }
 .eth-masthead-auth {
   display: inline-flex;
-  /* Fix 3 — bottom-align the row so single-line Login sits level with the partner
-     BUTTON (at the bottom of its 2-row stack), not the whole stack's center (which
-     the "Publish to the Echo →" note above the button pushes up, making login float
-     too high). A small margin-bottom then lifts login to the button's vertical center. */
-  align-items: flex-end;
+  align-items: center; /* Login centers on the partner BUTTON — no flex-end hacks */
   gap: 20px;
 }
 .eth-login {
@@ -252,20 +242,22 @@ html:has(body.echo-route) {
   text-decoration: none;
   white-space: nowrap;
   transition: color 0.14s ease;
-  /* Raise login from the button's bottom edge to its vertical center. */
-  margin-bottom: 7px;
 }
 .eth-login:hover {
   color: var(--emerald);
 }
+/* The button is the flow item (perfectly centered in the 64px bar); the
+   "Publish to the Echo →" note hangs just BELOW it, out of flow, so it can
+   never push the button off-center or clip against the top of the page. */
 .eth-partner-stack {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
+  position: relative;
+  display: inline-flex;
 }
 .eth-partner-note {
-  display: block;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 5px;
   font-size: 11px;
   line-height: 1.2;
   text-align: right;
@@ -424,7 +416,7 @@ html:has(body.echo-route) {
   align-items: center;
   justify-content: flex-end;
   gap: 10px;
-  margin-top: 10px;
+  margin-top: 24px; /* clears the partner note hanging below the masthead */
 }
 .eth-toolbar-label {
   font-family: var(--font-mono);
@@ -462,20 +454,25 @@ html:has(body.echo-route) {
   color: #fff;
 }
 
-/* ── Article of the Month — full-width horizontal banner ───────────────────────
-   Replaces the old circular/cluster/carve centerpiece with one wide card above the
-   category headers: hero image on the LEFT (same 16:9 ratio as a normal card), then
-   the eyebrow + title + as much opening text as fits, all at ~one card's height.
-   No geometry, no carve — just a card that's wide instead of tall. */
+/* ── Article of the Month — full-width banner above the category headers ──────
+   Hero image on the LEFT at EXACTLY one board-column's hero size:
+   image column width = (100% − 5 gaps × 20px) / 6 columns, aspect 16:9 — so it
+   matches the other cards' hero images at any viewport width. The 20px grid gap
+   equals the board's column-gap, so the text column starts where board column 2
+   starts. Banner height = one standard card's height, derived structurally:
+   card body ≈ 12px pad + 3-line title (1.3em × 3 @ 14px = 54.6px) + 8px gap +
+   ~12.5px meta + 14px pad ≈ 101px → the image wrapper's 50px/51px vertical
+   padding makes the banner's intrinsic height imageH + 101px with the image
+   vertically centered. No JS, no viewport math, no undefined variables. */
 .eth-aotm {
   display: grid;
-  grid-template-columns: auto 1fr; /* image (aspect-driven width at card height) + text fills the rest */
+  grid-template-columns: calc((100% - 100px) / 6) 1fr;
   gap: 20px;
+  align-items: stretch;
   width: 100%;
-  height: var(--eth-card-h, 260px); /* same height as one standard news card */
   margin: 0 0 24px;
   border: 1px solid var(--border-primary);
-  border-radius: 12px;
+  border-radius: var(--radius-lg, 12px);
   overflow: hidden;
   background: transparent;
   text-decoration: none;
@@ -485,28 +482,31 @@ html:has(body.echo-route) {
   border-color: var(--emerald);
 }
 .eth-aotm-img {
-  height: 100%;
-  aspect-ratio: 16 / 9; /* same hero ratio as normal cards */
-  /* emerald-tinted placeholder if the image is missing/broken (matches echo-card) */
+  padding: 50px 0 51px; /* = standard card body height (~101px) → banner height = imgH + 101px */
+}
+.eth-aotm-img img,
+.eth-aotm-img::after {
+  width: 100%;
+  aspect-ratio: 16 / 9; /* same hero ratio + width as a normal card's image */
+  object-fit: cover;
+  display: block;
+}
+/* Emerald-tinted placeholder if the image is missing/broken (matches echo-card):
+   rendered as ::after only when the wrapper has no visible img. */
+.eth-aotm-img:not(:has(img))::after {
+  content: '';
   background: linear-gradient(
     135deg,
     color-mix(in srgb, var(--emerald) 55%, black 8%),
     color-mix(in srgb, var(--emerald) 22%, transparent)
   );
-  flex-shrink: 0;
-}
-.eth-aotm-img img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
 }
 .eth-aotm-body {
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 10px;
-  padding: 18px 24px 18px 4px;
+  padding: 16px 24px 16px 0;
   min-width: 0;
 }
 .eth-aotm-eyebrow {
@@ -536,9 +536,8 @@ html:has(body.echo-route) {
   font-size: 14px;
   line-height: 1.55;
   color: var(--text-secondary);
-  /* fill remaining vertical space; clamp to what fits in the banner height */
   display: -webkit-box;
-  -webkit-line-clamp: 4;
+  -webkit-line-clamp: 5; /* what fits in the derived banner height, even with a 3-line title */
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -550,6 +549,13 @@ html:has(body.echo-route) {
   .eth-board {
     grid-template-columns: repeat(2, 1fr);
   }
+  /* Board is 2-col here — a 1/6 image column would be tiny. Fixed sensible width. */
+  .eth-aotm {
+    grid-template-columns: 280px 1fr;
+  }
+  .eth-aotm-img {
+    padding: 24px 0;
+  }
 }
 @media (max-width: 640px) {
   .eth-board {
@@ -559,14 +565,13 @@ html:has(body.echo-route) {
   .eth-board > * + * {
     border-left: none;
   }
-  /* Banner stacks: hero image on top (16:9), text below — still full-width. */
+  /* Banner stacks: hero image on top (16:9, full width), text below. */
   .eth-aotm {
     grid-template-columns: 1fr;
-    height: auto;
+    gap: 0;
   }
   .eth-aotm-img {
-    width: 100%;
-    height: auto;
+    padding: 0;
   }
   .eth-aotm-body {
     padding: 14px 16px 18px;
@@ -575,7 +580,7 @@ html:has(body.echo-route) {
 
 @media (max-width: 720px) {
   .eth-masthead {
-    padding: 14px 0 12px;
+    padding: 0;
   }
   .eth-masthead-name {
     font-size: 22px;
