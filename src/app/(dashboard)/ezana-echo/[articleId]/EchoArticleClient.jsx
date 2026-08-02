@@ -2781,31 +2781,44 @@ export default function EchoArticleClient({
 
         {/* Zone A — title band, tight measure, directly under the nav */}
         <header className="echo-title-band">
-          <h1 className="echo-title">{article.title}</h1>
-          {article.excerpt && <p className="echo-subheading">{article.excerpt}</p>}
-          <div className="echo-byline">
-            By <strong>{article.author}</strong>
-            {article.coAuthors?.length > 0 && (
-              <>
-                {' & '}
-                {article.coAuthors.map((c, i) => (
-                  <span key={c.id}>
-                    {i > 0 && ', '}
-                    {c.username ? (
-                      <Link href={`/profile/${c.username}`}>
-                        <strong>{c.name}</strong>
-                      </Link>
-                    ) : (
-                      <strong>{c.name}</strong>
-                    )}
-                  </span>
-                ))}
-              </>
-            )}
-            {' · '}
-            {article.listMeta || formatPublishedDate(article.publishedAt)}
-            {' · '}
-            <span className="echo-readtime">{article.readTime} min read</span>
+          {/* Header grid: title/subheading/byline left, metadata card top-right
+              (directly under the nav's auth buttons). */}
+          <div className="echo-article-head-grid">
+            <div className="echo-article-head-main">
+              <h1 className="echo-title">{article.title}</h1>
+              {article.excerpt && <p className="echo-subheading">{article.excerpt}</p>}
+              <div className="echo-byline">
+                By <strong>{article.author}</strong>
+                {article.coAuthors?.length > 0 && (
+                  <>
+                    {' & '}
+                    {article.coAuthors.map((c, i) => (
+                      <span key={c.id}>
+                        {i > 0 && ', '}
+                        {c.username ? (
+                          <Link href={`/profile/${c.username}`}>
+                            <strong>{c.name}</strong>
+                          </Link>
+                        ) : (
+                          <strong>{c.name}</strong>
+                        )}
+                      </span>
+                    ))}
+                  </>
+                )}
+                {' · '}
+                {article.listMeta || formatPublishedDate(article.publishedAt)}
+                {' · '}
+                <span className="echo-readtime">{article.readTime} min read</span>
+              </div>
+            </div>
+            <aside className="echo-article-head-meta">
+              <EchoMetadataSidebar
+                tickers={tickers}
+                people={article.entities?.people ?? []}
+                terms={article.entities?.terms ?? []}
+              />
+            </aside>
           </div>
           {/* Bottom of the title band, directly above the divider: back link
               far-left, save button far-right (space-between). */}
@@ -2830,11 +2843,6 @@ export default function EchoArticleClient({
         <div className="echo-article-grid">
           <div className="echo-side-col">
             <EchoContentsRail blocks={blocks} />
-            <EchoMetadataSidebar
-              tickers={tickers}
-              people={article.entities?.people ?? []}
-              terms={article.entities?.terms ?? []}
-            />
           </div>
 
           <div className="echo-body-col">

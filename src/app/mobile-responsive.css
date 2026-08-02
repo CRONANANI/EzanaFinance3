@@ -1095,6 +1095,12 @@ body.light-mode .mobile-auth-drawer .mobile-drawer-logout:hover {
 
 /* ============================================
    PREVENT HORIZONTAL OVERFLOW
+   `clip`, NOT `hidden`: per this file's own header note, `overflow-x: hidden`
+   forces computed overflow-y to `auto`, silently turning these wrappers into
+   scroll containers — which broke position:sticky for ALL descendants (the
+   Echo article contents rail bound itself to a non-scrolling .dashboard-main
+   and never stuck). `clip` prevents horizontal scroll without creating a
+   scroll container, so sticky binds to the document again.
    ============================================ */
 .page-content,
 .dashboard-container,
@@ -1104,7 +1110,7 @@ body.light-mode .mobile-auth-drawer .mobile-drawer-logout:hover {
 .ezana-echo-page,
 .ezana-echo-container {
   max-width: 100vw;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 @media (max-width: 768px) {

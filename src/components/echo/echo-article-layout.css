@@ -83,6 +83,44 @@
   background: var(--border-secondary);
 }
 
+/* ── Article header grid: title block left, metadata card top-right ─────────
+   The metadata card lives beside the title/subheading, top-aligned so it sits
+   directly under the nav's auth buttons; the left rail below is contents-only.
+   Outer width reuses the grid/topbar measure so the card's right edge aligns
+   with the content column's right edge below it. */
+.echo-article-head-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 2.5rem;
+  align-items: start;
+  max-width: calc(var(--echo-sidebar-w) + var(--echo-gutter) + var(--echo-body-max));
+  margin: 0 auto;
+}
+/* Title/subheading/byline read left-aligned beside the card (the band itself is
+   centered for the divider/actions row). */
+.echo-article-head-main {
+  text-align: left;
+}
+.echo-article-head-main .echo-title,
+.echo-article-head-main .echo-subheading,
+.echo-article-head-main .echo-byline {
+  text-align: left;
+  margin-left: 0;
+  margin-right: 0;
+  max-width: none;
+}
+.echo-article-head-meta .emeta-card {
+  position: static; /* the card is header furniture now — never sticky */
+}
+@media (max-width: 1024px) {
+  .echo-article-head-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+  /* Mobile order: title block first, metadata directly below it, then content —
+     same reading order the old static-top mobile card provided. */
+}
+
 /* ===== Three-zone grid: sidebar | body ===== */
 .echo-article-grid {
   display: grid;
@@ -268,18 +306,13 @@
   }
 }
 
-/* ===== Responsive: collapse sidebar to a top strip ===== */
-/* ===== Contents rail + sidebar stack =====
-   The side column becomes one sticky stack: Contents on top, metadata card
-   below (the card's own sticky is neutralized inside the stack — two competing
-   sticky elements in one column would overlap). Reuse the metadata card's
-   existing sticky top offset for the stack. */
-/* One sticky stack: Contents on top, metadata card below. NO max-height and NO
-   internal overflow — an invisible inner scroll area was hijacking wheel input
-   over the rail (scrolling the sidebar instead of the page), which presented
-   as "the legend doesn't follow the page." If the stack is taller than the
-   viewport, the excess extends below the fold; the Contents list at the top of
-   the stack stays pinned and fully visible while reading. */
+/* ===== Contents rail (left column) =====
+   The side column is now contents-only (the metadata card moved to the header
+   grid). Sticky with NO max-height/overflow — an inner scroll area would hijack
+   wheel input and, more importantly, position:sticky binds to the document only
+   because the structural wrappers use overflow-x:clip (see mobile-responsive.css)
+   rather than hidden. If the list is taller than the viewport, the excess simply
+   extends below the fold. */
 .echo-side-col {
   position: sticky;
   top: var(--echo-sticky-top, 1.5rem);
@@ -287,9 +320,6 @@
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
-}
-.echo-side-col .emeta-card {
-  position: static;
 }
 .echo-contents {
   padding: 0 4px;
