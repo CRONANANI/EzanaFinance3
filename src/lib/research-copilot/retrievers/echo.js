@@ -198,8 +198,12 @@ async function lexicalPass(admin, query, limit) {
 }
 
 export async function retrieve(query, ctx = {}, opts = {}) {
-  const { limit = 6, threshold = 0.3 } = opts;
+  const { limit = 6, threshold = 0.3, semanticOnly = false } = opts;
   const admin = ctx.admin || getAdminClient();
+  if (semanticOnly) {
+    // Naive baseline (eval harness): vector pass only, no lexical merge.
+    return (await semanticPass(admin, query, ctx, limit, threshold)).slice(0, limit * 2);
+  }
   const [semantic, lexical] = await Promise.all([
     semanticPass(admin, query, ctx, limit, threshold),
     lexicalPass(admin, query, limit),

@@ -67,8 +67,11 @@ async function lexicalPass(admin, query, limit) {
 }
 
 export async function retrieve(query, ctx = {}, opts = {}) {
-  const { limit = 6, threshold = LOOSE_THRESHOLD } = opts;
+  const { limit = 6, threshold = LOOSE_THRESHOLD, semanticOnly = false } = opts;
   const admin = ctx.admin || getAdminClient();
+  if (semanticOnly) {
+    return (await semanticPass(admin, query, ctx, limit, threshold)).slice(0, limit * 2);
+  }
   const [semantic, lexical] = await Promise.all([
     semanticPass(admin, query, ctx, limit, threshold),
     lexicalPass(admin, query, limit),

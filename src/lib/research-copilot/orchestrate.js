@@ -48,6 +48,10 @@ export async function orchestrate(query, options = {}) {
     // run (still subject to the org-member gate below). Omit for all corpora —
     // so existing callers (the research copilot) are unchanged.
     allowCorpora = null,
+    // Eval baseline: semantic-only (skip the lexical merge in hybrid retrievers).
+    // Default false — existing callers unchanged. Used by the RAG eval harness's
+    // naive mode (RAG_SYSTEM.md §3 Phase 2).
+    semanticOnly = false,
   } = options;
 
   const q = String(query || '').trim();
@@ -71,7 +75,7 @@ export async function orchestrate(query, options = {}) {
   const settled = await Promise.all(
     allowed.map(async (r) => {
       try {
-        const rows = await r.retrieve(q, ctx, { limit: perRetriever });
+        const rows = await r.retrieve(q, ctx, { limit: perRetriever, semanticOnly });
         return Array.isArray(rows) ? rows : [];
       } catch {
         return [];

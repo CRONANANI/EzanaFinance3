@@ -1,0 +1,52 @@
+{"id":"echo-exact-01","query":"Ballroom Billions federal contracts white house donors","corpusScope":["echo"],"expectedIds":["ballroom-donors-federal-contracts-2026"],"category":"exact"}
+{"id":"echo-exact-02","query":"Silicon Shield Taiwan controls the world's chips","corpusScope":["echo"],"expectedIds":["silicon-shield-taiwan-semiconductor-dominance"],"category":"exact"}
+{"id":"echo-exact-03","query":"Hantavirus from the Four Corners to the open sea","corpusScope":["echo"],"expectedIds":["hantavirus-from-four-corners-to-open-sea"],"category":"exact"}
+{"id":"echo-exact-04","query":"private credit maturity wall $84 billion","corpusScope":["echo"],"expectedIds":["private-credit-maturity-wall-2026"],"category":"exact"}
+{"id":"echo-exact-05","query":"fiber optic cable alotta money in this stuff","corpusScope":["echo"],"expectedIds":["fiber-optic-cable-ai-boom-benny-fazio"],"category":"exact"}
+{"id":"echo-exact-06","query":"Nvidia is the world's second most valuable asset","corpusScope":["echo"],"expectedIds":["nvidia-worlds-second-most-valuable-asset-2026"],"category":"exact"}
+{"id":"echo-exact-07","query":"Johnny Mnemonic tech consolidation four-phase cycle","corpusScope":["echo"],"expectedIds":["johnny-mnemonic-tech-consolidation-2026"],"category":"exact"}
+{"id":"echo-exact-08","query":"who controls the world's critical minerals reserve chokepoints","corpusScope":["echo"],"expectedIds":["critical-minerals-reserve-concentration-2026"],"category":"exact"}
+{"id":"echo-exact-09","query":"Peter Thiel worldview decoded the essay and the network","corpusScope":["echo"],"expectedIds":["peter-thiel-worldview-2026"],"category":"exact"}
+{"id":"echo-exact-10","query":"Trump Q1 2026 trading blitz 3642 transactions","corpusScope":["echo"],"expectedIds":["trump-portfolio-q1-2026"],"category":"exact"}
+{"id":"echo-exact-11","query":"Africa stops exporting its crude raw refining capacity","corpusScope":["echo"],"expectedIds":["africa-refining-capacity-dangote-inflection-2026"],"category":"exact"}
+{"id":"echo-para-01","query":"which countries dominate rare earth lithium and cobalt supply","corpusScope":["echo"],"expectedIds":["critical-minerals-reserve-concentration-2026"],"category":"paraphrase"}
+{"id":"echo-para-02","query":"why are big tech firms acquiring startups for their data pipelines instead of their models","corpusScope":["echo"],"expectedIds":["acquirers-buy-the-pipeline-not-the-model-2026","johnny-mnemonic-tech-consolidation-2026"],"category":"paraphrase"}
+{"id":"echo-para-03","query":"how much did companies that donated to the white house win in government deals","corpusScope":["echo"],"expectedIds":["ballroom-donors-federal-contracts-2026"],"category":"paraphrase"}
+{"id":"echo-para-04","query":"the wave of cybersecurity mergers and platform roll-ups in 2026","corpusScope":["echo"],"expectedIds":["johnny-mnemonic-tech-consolidation-2026"],"category":"paraphrase"}
+{"id":"echo-para-05","query":"when does the private lending refinancing crunch peak","corpusScope":["echo"],"expectedIds":["private-credit-maturity-wall-2026"],"category":"paraphrase"}
+{"id":"echo-para-06","query":"the island that manufactures most of the world's advanced chips","corpusScope":["echo"],"expectedIds":["silicon-shield-taiwan-semiconductor-dominance"],"category":"paraphrase"}
+{"id":"echo-para-07","query":"African nations building their own oil refineries instead of shipping crude abroad","corpusScope":["echo"],"expectedIds":["africa-refining-capacity-dangote-inflection-2026"],"category":"paraphrase"}
+{"id":"echo-para-08","query":"a deadly rodent-borne virus outbreak spreading to new regions","corpusScope":["echo"],"expectedIds":["hantavirus-from-four-corners-to-open-sea"],"category":"paraphrase"}
+{"id":"echo-para-09","query":"which commodities rose the most after the middle east conflict","corpusScope":["echo"],"expectedIds":["best-performing-commodities-iran-war-2026"],"category":"paraphrase"}
+{"id":"echo-para-10","query":"the largest corporations in Africa ranked by annual revenue","corpusScope":["echo"],"expectedIds":["africa-billion-dollar-companies-2026"],"category":"paraphrase"}
+{"id":"echo-para-11","query":"which sector has led the US stock market across history","corpusScope":["echo"],"expectedIds":["dominating-us-stock-market-sectors-through-the-times"],"category":"paraphrase"}
+{"id":"echo-entity-01","query":"LMT Lockheed Martin","corpusScope":["echo"],"expectedIds":["ballroom-donors-federal-contracts-2026"],"category":"entity"}
+{"id":"echo-entity-02","query":"PLTR Palantir surveillance and defense","corpusScope":["echo"],"expectedIds":["peter-thiel-worldview-2026","ballroom-donors-federal-contracts-2026"],"category":"entity"}
+{"id":"echo-entity-03","query":"NVDA Nvidia market capitalization","corpusScope":["echo"],"expectedIds":["nvidia-worlds-second-most-valuable-asset-2026"],"category":"entity"}
+{"id":"echo-entity-04","query":"ARCC BXSL OBDC business development companies","corpusScope":["echo"],"expectedIds":["private-credit-maturity-wall-2026"],"category":"entity"}
+{"id":"echo-entity-05","query":"GLW Corning fiber optics","corpusScope":["echo"],"expectedIds":["fiber-optic-cable-ai-boom-benny-fazio"],"category":"entity"}
+{"id":"echo-entity-06","query":"MP Materials and REMX rare earth ETF","corpusScope":["echo"],"expectedIds":["critical-minerals-reserve-concentration-2026"],"category":"entity"}
+{"id":"echo-entity-07","query":"HIMS LLY NVO peptide compounding","corpusScope":["echo"],"expectedIds":["fda-peptides-bpc157-compounding-vote-2026"],"category":"entity"}
+{"id":"echo-entity-08","query":"Dangote refinery Nigeria","corpusScope":["echo"],"expectedIds":["africa-refining-capacity-dangote-inflection-2026"],"category":"entity"}
+{"id":"echo-entity-09","query":"tungsten oil aluminum since the Iran war","corpusScope":["echo"],"expectedIds":["best-performing-commodities-iran-war-2026"],"category":"entity"}
+{"id":"echo-entity-10","query":"IBM Confluent and Nvidia Groq deals","corpusScope":["echo"],"expectedIds":["johnny-mnemonic-tech-consolidation-2026"],"category":"entity"}
+{"id":"echo-cross-01","query":"Lockheed Martin government contracts and congressional trading around defense","corpusScope":["echo","contracts","congress"],"expectedIds":["ballroom-donors-federal-contracts-2026"],"category":"cross-corpus"}
+{"id":"echo-cross-02","query":"Palantir defense contracts and its founder's political network","corpusScope":["echo","contracts","congress"],"expectedIds":["peter-thiel-worldview-2026","ballroom-donors-federal-contracts-2026"],"category":"cross-corpus"}
+{"id":"echo-cross-03","query":"Nvidia AI chip demand and its market value","corpusScope":["echo","markets","congress"],"expectedIds":["nvidia-worlds-second-most-valuable-asset-2026"],"category":"cross-corpus"}
+{"id":"echo-cross-04","query":"critical minerals policy exposure and mining stocks","corpusScope":["echo","markets","contracts"],"expectedIds":["critical-minerals-reserve-concentration-2026"],"category":"cross-corpus"}
+{"id":"echo-cross-05","query":"Trump administration trading activity and defense spending","corpusScope":["echo","congress","contracts"],"expectedIds":["trump-portfolio-q1-2026"],"category":"cross-corpus"}
+{"id":"echo-cross-06","query":"tech M&A antitrust scrutiny and regulatory review","corpusScope":["echo","congress"],"expectedIds":["johnny-mnemonic-tech-consolidation-2026","acquirers-buy-the-pipeline-not-the-model-2026"],"category":"cross-corpus"}
+{"id":"echo-cross-07","query":"semiconductor supply chain concentration and Taiwan risk","corpusScope":["echo","markets"],"expectedIds":["silicon-shield-taiwan-semiconductor-dominance"],"category":"cross-corpus"}
+{"id":"echo-cross-08","query":"energy commodities performance after a geopolitical conflict","corpusScope":["echo","markets"],"expectedIds":["best-performing-commodities-iran-war-2026"],"category":"cross-corpus"}
+{"id":"adv-01","query":"best sourdough starter hydration ratio for beginners","corpusScope":["echo","markets","congress","contracts"],"expectedIds":[],"category":"adversarial"}
+{"id":"adv-02","query":"how to fix a leaking kitchen faucet cartridge","corpusScope":["echo","markets","congress","contracts"],"expectedIds":[],"category":"adversarial"}
+{"id":"adv-03","query":"16 week beginner marathon training plan","corpusScope":["echo","markets","congress","contracts"],"expectedIds":[],"category":"adversarial"}
+{"id":"adv-04","query":"authentic Neapolitan pizza dough recipe","corpusScope":["echo","markets","congress","contracts"],"expectedIds":[],"category":"adversarial"}
+{"id":"adv-05","query":"how to repot a monstera deliciosa houseplant","corpusScope":["echo","markets","congress","contracts"],"expectedIds":[],"category":"adversarial"}
+{"id":"adv-06","query":"cricket lbw dismissal rules explained","corpusScope":["echo","markets","congress","contracts"],"expectedIds":[],"category":"adversarial"}
+{"id":"adv-07","query":"best day hikes in Patagonia Torres del Paine","corpusScope":["echo","markets","congress","contracts"],"expectedIds":[],"category":"adversarial"}
+{"id":"adv-08","query":"how to tune a classical guitar by ear","corpusScope":["echo","markets","congress","contracts"],"expectedIds":[],"category":"adversarial"}
+{"id":"adv-09","query":"common symptoms of vitamin D deficiency","corpusScope":["echo","markets","congress","contracts"],"expectedIds":[],"category":"adversarial"}
+{"id":"adv-10","query":"how to knit a simple beginner scarf","corpusScope":["echo","markets","congress","contracts"],"expectedIds":[],"category":"adversarial"}
+{"id":"adv-11","query":"history of Ottoman Empire mosque architecture","corpusScope":["echo","markets","congress","contracts"],"expectedIds":[],"category":"adversarial"}
+{"id":"adv-12","query":"how do ocean tides work with the moon's gravity","corpusScope":["echo","markets","congress","contracts"],"expectedIds":[],"category":"adversarial"}
