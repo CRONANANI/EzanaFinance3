@@ -92,6 +92,12 @@ function withinWindow(publishedAt, windowId) {
 const BELT_SPEED = 22;
 const BELT_GAP = 28;
 
+/* Per-column phase, as a FRACTION of that column's own loop cycle. Irregular
+   on purpose (no arithmetic progression) so no two columns — adjacent or not —
+   ever sit near the same point in their cycle. Fixed-seconds delays were too
+   timid: against 40–80s cycles they left neighbours nearly in step. */
+const BELT_PHASE_FRACTIONS = [0, 0.43, 0.17, 0.71, 0.29, 0.87];
+
 /* Centered column header: emerald dot beside the label, full-width underline, and
    a two-line toggle that opens a checkbox popover to filter the column's
    subcategories (all on by default). */
@@ -153,14 +159,19 @@ function CategoryColumn({ col, colIndex, admin, filter }) {
     if (!belt || !seg) return undefined;
     const apply = () => {
       const cycle = seg.offsetHeight + BELT_GAP; // segment + seam gap
+      const dur = cycle / BELT_SPEED;
+      const frac = BELT_PHASE_FRACTIONS[colIndex % BELT_PHASE_FRACTIONS.length];
       belt.style.setProperty('--belt-seg', `${cycle}px`);
-      belt.style.setProperty('--belt-dur', `${(cycle / BELT_SPEED).toFixed(2)}s`);
+      belt.style.setProperty('--belt-dur', `${dur.toFixed(2)}s`);
+      /* Negative delay = start mid-cycle: column i begins `frac` of a full
+         loop out of phase, proportional to its own content height. */
+      belt.style.setProperty('--belt-phase', `${(-(dur * frac)).toFixed(2)}s`);
     };
     apply();
     const ro = new ResizeObserver(apply);
     ro.observe(seg);
     return () => ro.disconnect();
-  }, [loop, col.items]);
+  }, [loop, col.items, colIndex]);
 
   // The duplicate segment is purely visual — remove it from AT and tab order.
   useEffect(() => {
@@ -183,11 +194,7 @@ function CategoryColumn({ col, colIndex, admin, filter }) {
       <ColHead category={col} filter={filter} />
       {col.items.length ? (
         loop ? (
-          <div
-            className="eth-belt"
-            ref={beltRef}
-            style={{ '--belt-phase': `${(-(colIndex * 4.7)).toFixed(1)}s` }}
-          >
+          <div className="eth-belt" ref={beltRef}>
             <div className="eth-belt-track">
               <div className="eth-belt-seg" ref={segRef}>
                 {renderCards('')}

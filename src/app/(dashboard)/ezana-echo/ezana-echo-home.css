@@ -436,13 +436,27 @@ html:has(body.echo-route) {
     transparent 100%
   );
 }
-/* Static stagger on top of the phase offsets: neighbouring belts start at
-   different heights (pattern avoids any two adjacent columns matching). */
-.eth-col:nth-child(3n + 2) .eth-belt {
-  margin-top: 22px;
+/* Static stagger, amplified: large, NON-monotonic offsets spread across most of
+   a card pitch (~230px), so adjacent columns are never within ~30px of each
+   other and both the top and bottom belt edges read ragged. Works with the
+   proportional phase offsets (set in JS) — two independent mismatch mechanisms. */
+.eth-col:nth-child(1) .eth-belt {
+  margin-top: 0;
 }
-.eth-col:nth-child(3n) .eth-belt {
-  margin-top: 44px;
+.eth-col:nth-child(2) .eth-belt {
+  margin-top: 96px;
+}
+.eth-col:nth-child(3) .eth-belt {
+  margin-top: 38px;
+}
+.eth-col:nth-child(4) .eth-belt {
+  margin-top: 148px;
+}
+.eth-col:nth-child(5) .eth-belt {
+  margin-top: 66px;
+}
+.eth-col:nth-child(6) .eth-belt {
+  margin-top: 118px;
 }
 .eth-belt-track {
   display: flex;
