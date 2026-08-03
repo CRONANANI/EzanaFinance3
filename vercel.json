@@ -78,6 +78,10 @@
       "schedule": "30 5 * * *"
     },
     {
+      "path": "/api/cron/org-fund-snapshot",
+      "schedule": "15 21 * * 1-5"
+    },
+    {
       "path": "/api/cron/prune-breadcrumbs",
       "schedule": "0 3 1 * *"
     },

@@ -26,7 +26,7 @@ export async function getOrgPositionBook(supabase, orgId) {
   const { data, error } = await supabase
     .from('org_positions')
     .select(
-      'id, org_id, team_id, ticker, name, shares, avg_cost, current_price, sector, source, created_at',
+      'id, org_id, team_id, ticker, name, shares, avg_cost, current_price, sector, source, created_at, last_priced_at',
     )
     .eq('org_id', orgId)
     .eq('is_active', true);
@@ -57,6 +57,7 @@ export async function getOrgPositionBook(supabase, orgId) {
       pl: value - cost,
       current_value: value, // compat alias for former org_team_portfolios readers
       added_at: p.created_at, // compat alias
+      last_priced_at: p.last_priced_at ?? null,
     };
   });
 }
