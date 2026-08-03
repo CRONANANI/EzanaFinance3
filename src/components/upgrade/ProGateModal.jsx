@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { posthog } from '@/components/PostHogInit';
 
 export function ProGateModal({ isOpen, onClose }) {
   const router = useRouter();
@@ -136,6 +137,7 @@ export function ProGateModal({ isOpen, onClose }) {
           <button
             type="button"
             onClick={() => {
+              posthog.capture('upgrade_plan_selected', { source: 'pro_gate' });
               onClose();
               router.push('/pricing');
             }}

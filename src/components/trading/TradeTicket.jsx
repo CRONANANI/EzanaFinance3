@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useToast } from '@/contexts/ToastContext';
 import { getMarketStatus } from '@/utils/marketHours';
 import { Confetti } from '@/components/ui/Confetti';
+import { posthog } from '@/components/PostHogInit';
 
 export function TradeTicket({ getToken, onOrderPlaced }) {
   const { toast } = useToast();
@@ -95,6 +96,13 @@ export function TradeTicket({ getToken, onOrderPlaced }) {
         }),
       }).catch(() => {});
 
+      posthog.capture('trade_order_submitted', {
+        asset_symbol: selectedAsset.symbol,
+        side,
+        order_type: orderType,
+        amount_type: amountType,
+        time_in_force: payload.timeInForce,
+      });
       toast.success(
         `${side === 'buy' ? 'Buy' : 'Sell'} order for ${selectedAsset.symbol} submitted`,
       );
