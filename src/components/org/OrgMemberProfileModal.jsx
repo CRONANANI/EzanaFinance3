@@ -3,15 +3,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useToast } from '@/contexts/ToastContext';
 import { useTheme } from '@/components/ThemeProvider';
+import { useOrg } from '@/contexts/OrgContext';
 import { AnalystScorecard } from '@/components/org/analytics2/AnalystScorecard';
 import { CompetitionTrophies } from '@/components/org/competitions/CompetitionTrophies';
-import {
-  MOCK_TEAMS,
-  getOrgMemberReportsTo,
-  getOrgMemberDirectReports,
-  getOrgMemberTopInteractions,
-  getMockMemberActivitySummary,
-} from '@/lib/orgMockData';
+
+const UUID_RE = /^[0-9a-f-]{36}$/i;
 
 function roleColor(role) {
   if (role === 'executive') return '#f59e0b';
@@ -68,10 +64,32 @@ function SectionTitle({ children, isDark }) {
 export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId, onSendToTeam }) {
   const { toast } = useToast();
   const { theme } = useTheme();
+  const { orgData } = useOrg();
   const isDark = theme === 'dark';
   const [messageBody, setMessageBody] = useState('');
   const [sending, setSending] = useState(false);
   const [showScorecard, setShowScorecard] = useState(false);
+  const [chart, setChart] = useState(null);
+
+  // Real reporting lines + coverage come from the org chart (org_members
+  // reports_to / org_sector_coverage) — never mock helpers keyed by mock ids.
+  const memberIsUuid = UUID_RE.test(member?.id || '');
+  useEffect(() => {
+    if (!isOpen || !memberIsUuid) {
+      setChart(null);
+      return undefined;
+    }
+    let alive = true;
+    fetch('/api/org/chart')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (alive) setChart(d);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [isOpen, memberIsUuid, member?.id]);
 
   const handleClose = useCallback(() => {
     setMessageBody('');
@@ -94,11 +112,15 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId,
 
   if (!isOpen || !member) return null;
 
-  const team = MOCK_TEAMS.find((t) => t.id === member.team_id);
-  const reportsTo = getOrgMemberReportsTo(member);
-  const directReports = getOrgMemberDirectReports(member);
-  const topInteractions = getOrgMemberTopInteractions(member.id);
-  const activity = getMockMemberActivitySummary(member.id);
+  // Real relationships from the chart payload (falls back to empty until loaded).
+  const chartMembers = chart?.members || [];
+  const chartSelf = chartMembers.find((m) => m.id === member.id) || null;
+  const reportsToId = chartSelf?.reports_to ?? member.reports_to ?? null;
+  const reportsTo = reportsToId ? chartMembers.find((m) => m.id === reportsToId) : null;
+  const directReports = chartMembers.filter((m) => m.reports_to === member.id);
+  const coverageSectors = (chartSelf?.sectors || []).map((s) => s.sector);
+  const team = (orgData?.teams || []).find((t) => t.id === member.team_id) || null;
+  const memberName = (m) => m?.display_name || m?.name || 'Member';
   const isSelf = viewerMemberId && member.id === viewerMemberId;
 
   const cardBg = isDark ? '#0d1117' : '#ffffff';
@@ -107,6 +129,8 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId,
   const body = isDark ? '#d1d5db' : '#374151';
   const bodySecondary = isDark ? '#cbd5e1' : '#4b5563';
   const muted = isDark ? '#8b949e' : '#6b7280';
+  const meta = muted;
+  const closeBtnBg = 'transparent';
   const closeBtnBorder = isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid #e5e7eb';
   const textareaBg = isDark ? 'rgba(0,0,0,0.25)' : '#f9fafb';
   const textareaColor = isDark ? '#f0f6fc' : '#111827';
@@ -260,22 +284,36 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId,
             {member.email || '—'}
           </p>
 
-          <SectionTitle isDark={isDark}>Platform activity (demo)</SectionTitle>
-          <ul style={{ color: bodySecondary, fontSize: '0.78rem', margin: '0 0 1rem', paddingLeft: '1.1rem', lineHeight: 1.6 }}>
-            <li>Last active: {activity.lastActive}</li>
-            <li>Active tasks: {activity.activeTasks} · Completed: {activity.completedTasks}</li>
-            {member.role !== 'analyst' && <li>Tasks delegated to others: {activity.tasksDelegated}</li>}
-            <li>Team discussion posts: {activity.teamPosts}</li>
-            <li>Learning sessions (30d): {activity.learningSessions}</li>
-          </ul>
+          {coverageSectors.length > 0 && (
+            <>
+              <SectionTitle isDark={isDark}>Sector coverage</SectionTitle>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', margin: '0 0 1rem' }}>
+                {coverageSectors.map((s) => (
+                  <span
+                    key={s}
+                    style={{
+                      fontSize: '0.6875rem',
+                      padding: '2px 8px',
+                      borderRadius: '999px',
+                      background: 'var(--info-bg, rgba(99,102,241,0.1))',
+                      color: 'var(--info)',
+                      fontWeight: 600,
+                    }}
+                  >
+                    {s}
+                  </span>
+                ))}
+              </div>
+            </>
+          )}
 
           <SectionTitle isDark={isDark}>Reports to</SectionTitle>
           {reportsTo ? (
             <p style={{ color: isDark ? '#e5e7eb' : '#374151', fontSize: '0.8125rem', margin: '0 0 1rem' }}>
-              {reportsTo.name}
+              {memberName(reportsTo)}
               <span style={{ color: meta, fontSize: '0.7rem' }}>
                 {' '}
-                ({reportsTo.sub_role || reportsTo.role.replace('_', ' ')})
+                ({reportsTo.sub_role || (reportsTo.role || '').replace('_', ' ')})
               </span>
             </p>
           ) : (
@@ -289,35 +327,12 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId,
               <SectionTitle isDark={isDark}>{member.role === 'executive' ? 'Direct oversight' : 'Analysts on team'}</SectionTitle>
               <ul style={{ color: bodySecondary, fontSize: '0.78rem', margin: '0 0 1rem', paddingLeft: '1.1rem' }}>
                 {directReports.slice(0, 8).map((m) => (
-                  <li key={m.id}>{m.name}</li>
+                  <li key={m.id}>{memberName(m)}</li>
                 ))}
                 {directReports.length > 8 && <li style={{ color: meta }}>+{directReports.length - 8} more</li>}
               </ul>
             </>
           )}
-
-          <SectionTitle isDark={isDark}>Interacts with most (demo)</SectionTitle>
-          <div style={{ marginBottom: '1rem' }}>
-            {topInteractions.length === 0 ? (
-              <p style={{ color: meta, fontSize: '0.8125rem', margin: 0 }}>No interaction data yet.</p>
-            ) : (
-              topInteractions.map((m, i) => (
-                <div
-                  key={m.id}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '0.35rem 0',
-                    borderBottom: isDark ? '1px solid rgba(99,102,241,0.06)' : '1px solid #f3f4f6',
-                  }}
-                >
-                  <span style={{ color: isDark ? '#e5e7eb' : '#374151', fontSize: '0.8125rem' }}>{m.name}</span>
-                  <span style={{ color: '#6366f1', fontSize: '0.65rem', fontWeight: 700 }}>#{i + 1}</span>
-                </div>
-              ))
-            )}
-          </div>
 
           <SectionTitle isDark={isDark}>Send message</SectionTitle>
           {isSelf ? (

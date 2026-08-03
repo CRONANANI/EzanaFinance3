@@ -1,4 +1,4 @@
-import { PERMISSION_TIERS, getMemberPermissions } from '@/lib/orgMockData';
+import { PERMISSION_TIERS, getMemberPermissions } from '@/lib/org-permissions-config';
 
 /* Permissions that may be toggled per-member as an override. Tier-default
    permissions are shown but a member's OWN role defaults aren't revocable here

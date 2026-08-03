@@ -1,4 +1,4 @@
-import { getMemberPermissions } from '@/lib/orgMockData';
+import { getMemberPermissions } from '@/lib/org-permissions-config';
 
 /**
  * Effective permissions = UNION of:

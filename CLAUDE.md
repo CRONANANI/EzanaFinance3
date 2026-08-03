@@ -33,6 +33,18 @@
   in the same write, and set `featured: false` on that article's source file too.
 - Supabase project id: `jhdzpadfzrhiekcfgtai`.
 
+## Org (university) surface
+
+- `src/lib/orgMockData.js` is dead demo data with no importers as of Phase D2
+  (its only remaining consumer is `getFundCalendar` in the Team Hub home page).
+  Real permission config lives in `src/lib/org-permissions-config.js`
+  (`PERMISSION_TIERS`, `getMemberPermissions`, `canFlagPositions`,
+  `getManageableOrgPeers`). Do not import from `orgMockData.js`; delete it once
+  the demo seed migration is no longer needed for pitches.
+- All org fund surfaces read one source of truth — `org_positions` via
+  `getOrgPositionBook` (`src/lib/org-position-book.js`). Flag routing resolves
+  from the real org chart (`resolveFlagRoutingDb` in `org-trading-server.js`).
+
 ## Git remotes — canonical repo (non-negotiable)
 
 - The ONLY push target is `https://github.com/CRONANANI/EzanaFinance3.git` (`origin`). Vercel production deploys from it.

@@ -1,9 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { ORG_SHORT } from '@/lib/orgMockData';
+import { useOrg } from '@/contexts/OrgContext';
 
 export function LcOrgAssigned() {
+  const { orgData } = useOrg();
+  const assignedLabel = orgData?.org?.name
+    ? `${orgData.org.name} Learning Assignments`
+    : 'Assigned Learning';
   return (
     <div
       className="lc-card"
@@ -37,7 +41,7 @@ export function LcOrgAssigned() {
               color: 'var(--lc-ink)',
             }}
           >
-            {ORG_SHORT} Learning Assignments
+            {assignedLabel}
           </div>
           <p style={{ fontSize: '0.8rem', margin: '0.35rem 0 0', color: 'var(--lc-ink-2)' }}>
             Track what your council expects you to complete this week.

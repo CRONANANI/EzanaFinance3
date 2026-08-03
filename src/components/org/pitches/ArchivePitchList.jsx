@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { MOCK_TEAMS } from '@/lib/orgMockData';
+import { useOrg } from '@/contexts/OrgContext';
 
 function hindsightLine(pitch) {
   const h = pitch.hindsight;
@@ -34,6 +34,8 @@ function hindsightLine(pitch) {
 }
 
 export function ArchivePitchList() {
+  const { orgData } = useOrg();
+  const orgTeams = orgData?.teams || [];
   const [pitches, setPitches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -88,7 +90,7 @@ export function ArchivePitchList() {
         </select>
         <select value={teamId} onChange={(e) => setTeamId(e.target.value)} aria-label="Team filter">
           <option value="">All teams</option>
-          {MOCK_TEAMS.map((t) => (
+          {orgTeams.map((t) => (
             <option key={t.id} value={t.id}>
               {t.name}
             </option>

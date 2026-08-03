@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useOrg } from '@/contexts/OrgContext';
-import { PERMISSION_TIERS, getMemberPermissions } from '@/lib/orgMockData';
+import { PERMISSION_TIERS, getMemberPermissions } from '@/lib/org-permissions-config';
 
 const ROLE_LABEL = {
   executive: 'Executive',

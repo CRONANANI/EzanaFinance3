@@ -10,7 +10,7 @@ import {
   useRef,
 } from 'react';
 import { useAuth } from '@/components/AuthProvider';
-import { getMemberPermissions } from '@/lib/orgMockData';
+import { getMemberPermissions } from '@/lib/org-permissions-config';
 import { getExtendedPermissions } from '@/lib/orgPermissionsExtended';
 
 const OrgContext = createContext(null);

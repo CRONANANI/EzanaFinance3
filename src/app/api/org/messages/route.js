@@ -5,7 +5,7 @@ import {
   createServerSupabaseClient,
   isServerSupabaseConfigured,
 } from '@/lib/supabase-service-role';
-import { getMemberPermissions } from '@/lib/orgMockData';
+import { getMemberPermissions } from '@/lib/org-permissions-config';
 
 export const dynamic = 'force-dynamic';
 

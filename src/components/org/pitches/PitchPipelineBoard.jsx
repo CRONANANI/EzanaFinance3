@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { MOCK_TEAMS } from '@/lib/orgMockData';
+import { useOrg } from '@/contexts/OrgContext';
 
 function cardSubtitle(pitch) {
   if (pitch.stage === 'research_in_progress' || pitch.stage === 'research_approved') {
@@ -32,6 +32,8 @@ function cardSubtitle(pitch) {
 
 export function PitchPipelineBoard({ teamFilter = '' }) {
   const router = useRouter();
+  const { orgData } = useOrg();
+  const orgTeams = orgData?.teams || [];
   const [board, setBoard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [teamId, setTeamId] = useState(teamFilter);
@@ -71,7 +73,7 @@ export function PitchPipelineBoard({ teamFilter = '' }) {
           aria-label="Filter by team"
         >
           <option value="">All teams</option>
-          {MOCK_TEAMS.map((t) => (
+          {orgTeams.map((t) => (
             <option key={t.id} value={t.id}>
               {t.name}
             </option>

@@ -1,10 +1,10 @@
 // src/lib/orgPermissionsExtended.js
 //
-// Layers a single new permission — `manage_positions` — on top of the existing
-// PERMISSION_TIERS in orgMockData WITHOUT mutating that source file. Adding a
-// position to a team's portfolio (manual entry, CSV upload, or brokerage sync)
-// is gated behind this permission.
-import { getMemberPermissions } from './orgMockData';
+// Layers a single new permission — `manage_positions` — on top of the base
+// PERMISSION_TIERS (src/lib/org-permissions-config.js) WITHOUT mutating that
+// source. Adding a position to a team's portfolio (manual entry, CSV upload, or
+// brokerage sync) is gated behind this permission.
+import { getMemberPermissions } from './org-permissions-config';
 
 /**
  * manage_positions: allowed by default for executives and portfolio managers.

@@ -4,7 +4,6 @@ import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
 import { useOrg } from '@/contexts/OrgContext';
-import { ORG_SHORT } from '@/lib/orgMockData';
 import { TRACKS, getLevelLabel } from '@/lib/learning-curriculum';
 import {
   buildProgressMap,
@@ -92,6 +91,10 @@ function ErrorState({ error }) {
 }
 
 function OrgAssignedCard() {
+  const { orgData } = useOrg();
+  const assignedLabel = orgData?.org?.name
+    ? `${orgData.org.name} Learning Assignments`
+    : 'Assigned Learning';
   return (
     <LearningCard
       as="div"
@@ -123,7 +126,7 @@ function OrgAssignedCard() {
             as="div"
             style={{ fontSize: '0.95rem', fontWeight: 700, marginTop: '0.35rem' }}
           >
-            {ORG_SHORT} Learning Assignments
+            {assignedLabel}
           </CardPrimary>
           <CardSecondary as="p" style={{ fontSize: '0.8rem', margin: '0.35rem 0 0' }}>
             Track what your council expects you to complete this week.
