@@ -27,6 +27,7 @@ const STANDALONE_ROUTES = new Set([
   '/datasets/whale-moves',
   '/datasets/alternative',
   '/datasets/global',
+  '/datasets/oecd-macro',
   '/datasets/markets',
   '/datasets/prediction-markets',
 ]);

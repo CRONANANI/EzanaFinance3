@@ -317,11 +317,20 @@ export const DATASET_TAXONOMY = [
       'Macro and geopolitical context — global indicators and wealth today, with risk indices, sanctions, and GDELT events ahead.',
     items: [
       {
+        label: 'OECD Macro Data',
+        description:
+          'OECD member-country macro indicators — composite leading indicators, GDP growth, CPI, unemployment, and policy rates',
+        href: '/datasets/oecd-macro',
+        live: true,
+        source: 'OECD SDMX API (CC BY 4.0)',
+        sourceType: 'gov',
+      },
+      {
         label: 'Global & Macro', // folded in from the old "Markets" bucket
         description: 'Macro indicators, global markets, and billionaire / wealth tracking',
         href: '/datasets/global',
         live: false,
-        source: 'FRED · World Bank',
+        source: 'FRED · World Bank · OECD',
         sourceType: 'gov',
       },
       {
