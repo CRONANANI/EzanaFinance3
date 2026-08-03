@@ -26,7 +26,7 @@ SELECT
     tp.added_by,
     (SELECT om.user_id FROM public.org_members om
      WHERE om.org_id = t.org_id AND om.role = 'executive' AND om.is_active = true
-     ORDER BY om.created_at LIMIT 1)
+     ORDER BY om.joined_at LIMIT 1)
   ),
   'Backfilled from org_team_portfolios (Phase A unification)',
   true,
@@ -47,7 +47,7 @@ WHERE tp.shares > 0
     tp.added_by,
     (SELECT om.user_id FROM public.org_members om
      WHERE om.org_id = t.org_id AND om.role = 'executive' AND om.is_active = true
-     ORDER BY om.created_at LIMIT 1)
+     ORDER BY om.joined_at LIMIT 1)
   ) IS NOT NULL;
 
 COMMENT ON TABLE public.org_team_portfolios IS
