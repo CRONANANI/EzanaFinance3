@@ -22,10 +22,12 @@
 
 /* ===== Zone A — Title band, directly under top nav ===== */
 .echo-title-band {
-  max-width: var(--echo-title-max);
+  /* Align the header block with the body grid (contents rail + body) below, so
+     the full-width title and metadata band share the divider's left/right edges. */
+  max-width: calc(var(--echo-sidebar-w) + var(--echo-gutter) + var(--echo-body-max));
   margin: 0 auto;
-  padding: 0.25rem 1rem 0; /* sits high, tight to the nav */
-  text-align: center;
+  padding: 2.5rem 1rem 0; /* sits high, tight to the nav */
+  text-align: left;
 }
 
 .echo-title {
@@ -80,48 +82,53 @@
 }
 
 .echo-title-divider {
-  max-width: var(--echo-title-max);
+  max-width: calc(var(--echo-sidebar-w) + var(--echo-gutter) + var(--echo-body-max));
   margin: 1.5rem auto 0;
   height: 1px;
   background: var(--border-secondary);
 }
 
-/* ── Article header grid: title block left, metadata card top-right ─────────
-   The metadata card lives beside the title/subheading, top-aligned so it sits
-   directly under the nav's auth buttons; the left rail below is contents-only.
-   Outer width reuses the grid/topbar measure so the card's right edge aligns
-   with the content column's right edge below it. */
-.echo-article-head-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
-  gap: 2.5rem;
-  align-items: start;
-  max-width: calc(var(--echo-sidebar-w) + var(--echo-gutter) + var(--echo-body-max));
-  margin: 0 auto;
-}
-/* Title/subheading/byline read left-aligned beside the card (the band itself is
-   centered for the divider/actions row). */
+/* ── Article header: full-width title block, then a full-width metadata band,
+   then (below) the back/save row + divider + body grid. Title spans the canvas;
+   the metadata card sits between the title and the divider, its groups flowing
+   in responsive columns across the band instead of stacking in a column. */
 .echo-article-head-main {
   text-align: left;
 }
-.echo-article-head-main .echo-title,
+.echo-article-head-main .echo-title {
+  text-align: left;
+  margin-left: 0;
+  margin-right: 0;
+  max-width: none; /* title spans the full canvas width */
+}
 .echo-article-head-main .echo-subheading,
 .echo-article-head-main .echo-byline {
   text-align: left;
   margin-left: 0;
   margin-right: 0;
+  max-width: 70ch; /* readable measure for the subheading, still left-aligned */
+}
+.echo-article-head-meta--band {
+  margin-top: 1.75rem;
+}
+/* The sidebar has no inner body wrapper — make the card itself the grid so its
+   header spans the band and each disclosure group becomes a column cell. */
+.echo-article-head-meta--band .emeta-card {
+  position: static;
+  width: 100%;
   max-width: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 4px 20px;
+  align-items: start;
 }
-.echo-article-head-meta .emeta-card {
-  position: static; /* the card is header furniture now — never sticky */
+.echo-article-head-meta--band .emeta-card-header {
+  grid-column: 1 / -1;
 }
-@media (max-width: 1024px) {
-  .echo-article-head-grid {
-    grid-template-columns: 1fr;
-    gap: 1.25rem;
+@media (max-width: 768px) {
+  .echo-article-head-meta--band .emeta-card {
+    grid-template-columns: 1fr; /* single column of disclosures on mobile */
   }
-  /* Mobile order: title block first, metadata directly below it, then content —
-     same reading order the old static-top mobile card provided. */
 }
 
 /* ===== Three-zone grid: sidebar | body ===== */

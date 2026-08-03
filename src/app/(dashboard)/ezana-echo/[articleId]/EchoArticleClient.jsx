@@ -2792,48 +2792,45 @@ export default function EchoArticleClient({
           </div>
         )}
 
-        {/* Zone A — title band, tight measure, directly under the nav */}
+        {/* Zone A — title band, tight measure, directly under the nav.
+            Full-width title block, then a full-width metadata band below it. */}
         <header className="echo-title-band">
-          {/* Header grid: title/subheading/byline left, metadata card top-right
-              (directly under the nav's auth buttons). */}
-          <div className="echo-article-head-grid">
-            <div className="echo-article-head-main">
-              <h1 className="echo-title">{article.title}</h1>
-              {article.excerpt && <p className="echo-subheading">{article.excerpt}</p>}
-              <div className="echo-byline">
-                By <strong>{article.author}</strong>
-                {article.coAuthors?.length > 0 && (
-                  <>
-                    {' & '}
-                    {article.coAuthors.map((c, i) => (
-                      <span key={c.id}>
-                        {i > 0 && ', '}
-                        {c.username ? (
-                          <Link href={`/profile/${c.username}`}>
-                            <strong>{c.name}</strong>
-                          </Link>
-                        ) : (
+          <div className="echo-article-head-main">
+            <h1 className="echo-title">{article.title}</h1>
+            {article.excerpt && <p className="echo-subheading">{article.excerpt}</p>}
+            <div className="echo-byline">
+              By <strong>{article.author}</strong>
+              {article.coAuthors?.length > 0 && (
+                <>
+                  {' & '}
+                  {article.coAuthors.map((c, i) => (
+                    <span key={c.id}>
+                      {i > 0 && ', '}
+                      {c.username ? (
+                        <Link href={`/profile/${c.username}`}>
                           <strong>{c.name}</strong>
-                        )}
-                      </span>
-                    ))}
-                  </>
-                )}
-                {' · '}
-                {article.listMeta || formatPublishedDate(article.publishedAt)}
-                {' · '}
-                <span className="echo-readtime">{article.readTime} min read</span>
-              </div>
+                        </Link>
+                      ) : (
+                        <strong>{c.name}</strong>
+                      )}
+                    </span>
+                  ))}
+                </>
+              )}
+              {' · '}
+              {article.listMeta || formatPublishedDate(article.publishedAt)}
+              {' · '}
+              <span className="echo-readtime">{article.readTime} min read</span>
             </div>
-            <aside className="echo-article-head-meta">
-              <EchoMetadataSidebar
-                tickers={tickers}
-                people={article.entities?.people ?? []}
-                terms={article.entities?.terms ?? []}
-                meta={article.meta ?? {}}
-                onMetaClick={handleMetaClick}
-              />
-            </aside>
+          </div>
+          <div className="echo-article-head-meta echo-article-head-meta--band">
+            <EchoMetadataSidebar
+              tickers={tickers}
+              people={article.entities?.people ?? []}
+              terms={article.entities?.terms ?? []}
+              meta={article.meta ?? {}}
+              onMetaClick={handleMetaClick}
+            />
           </div>
           {/* Bottom of the title band, directly above the divider: back link
               far-left, save button far-right (space-between). */}

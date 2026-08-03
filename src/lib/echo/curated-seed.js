@@ -146,6 +146,11 @@ function toContentRow(a) {
   };
 }
 
+// Bump when a metadata (or other content) change must force a re-sync even on
+// warm infra — the value is logged after each reconcile so the fired pass is
+// visible in Vercel logs post-deploy.
+const SEED_VERSION = '2026-08-meta-v2';
+
 let seedPromise = null;
 
 /**
@@ -171,15 +176,21 @@ export function ensureCuratedSeeded(admin) {
       }
 
       // Phase 2 — reconcile editorial content for already-seeded rows so copy
-      // edits (e.g. new inline keywords) reach the reader. Metric-safe: this
-      // payload omits view_count/like_count and article_status, so a partial
-      // upsert leaves engagement counts and admin archive state untouched.
+      // edits (e.g. new inline keywords) AND metadata backfills (article_meta)
+      // reach the reader. This reconcile is THE meta-refresh mechanism: it runs
+      // on every cold process (the missing-rows check above only guards the
+      // expensive Phase-1 full seed), re-writing article_meta from the JS
+      // modules. Metric-safe: this payload omits view_count/like_count and
+      // article_status, so a partial upsert leaves engagement counts and admin
+      // archive state untouched.
       const contentRows = SOURCE.map(toContentRow);
       const { error: reconcileError } = await admin
         .from('echo_articles')
         .upsert(contentRows, { onConflict: 'article_slug' });
       if (reconcileError) {
         console.error('[echo] curated content reconcile failed:', reconcileError.message);
+      } else {
+        console.log('[echo] curated seed reconcile', SEED_VERSION, contentRows.length);
       }
     } catch (e) {
       console.error('[echo] curated seed error:', e?.message || e);

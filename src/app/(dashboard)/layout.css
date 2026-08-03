@@ -168,13 +168,17 @@ body.light-mode .dashboard-container > .dashboard-page-inset {
    article page (present and future) is edge-to-edge white
    regardless of the user's light/dark toggle.
    ════════════════════════════════════════════════════════════ */
+/* Paint the ENTIRE shell white — the body itself, the main envelope, the
+   pass-through container, and the html root — so no --app-bg (grey/dark) shows
+   at the far outer margins beyond .dashboard-main. `!important` beats the base
+   `body .dashboard-main { background: var(--app-bg) }` shell rules above. */
+body.route-echo-article,
 body.route-echo-article .dashboard-main,
-body.route-echo-article .dashboard-main-content {
-  background-color: #ffffff;
-}
+body.route-echo-article .dashboard-main-content,
+body.route-echo-article .dashboard-container,
 body.route-echo-article:has(.dashboard-main),
 html:has(body.route-echo-article) {
-  background-color: #ffffff;
+  background-color: #ffffff !important;
 }
 /* Nav matches the white page (no dark seam above a white article on the
    default theme). */
