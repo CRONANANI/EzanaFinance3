@@ -90,9 +90,14 @@ export function FundConfig() {
                 <input
                   className="settings-input"
                   value={cfg.benchmark_symbol}
-                  placeholder="SPY"
+                  placeholder="SPY · XIU.TO · VFV.TO"
                   onChange={(e) => set('benchmark_symbol', e.target.value.toUpperCase())}
                 />
+                <span className="settings-field-hint">
+                  Fund performance and alpha are measured against this symbol, and it&apos;s the
+                  label shown on the Team Hub and Fund Analytics. Use any symbol Ezana can price
+                  (e.g. SPY, XIU.TO, VFV.TO).
+                </span>
               </div>
             </div>
           </div>

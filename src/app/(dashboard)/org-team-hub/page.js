@@ -26,6 +26,8 @@ import {
 } from 'lucide-react';
 import { useOrg } from '@/contexts/OrgContext';
 import { getFundCalendar } from '@/lib/orgMockData';
+import { FundDataHealthCard } from '@/components/org/FundDataHealthCard';
+import { OrgSetupChecklist } from '@/components/org/OrgSetupChecklist';
 import './team-hub-wire.css';
 
 /* ── Team Hub destinations (the 14 sidebar shortcuts) ──────────────
@@ -114,6 +116,13 @@ function initials(name) {
     .join('')
     .slice(0, 2)
     .toUpperCase();
+}
+// Honest benchmark label — real symbol for an index return, an explicit
+// "(est.)" for the pitch-hindsight proxy, never "S&P 500" over proxy data.
+function benchmarkLabel(source, symbol) {
+  if (source === 'index' && symbol) return symbol;
+  if (source === 'pitch_proxy') return 'Pitch benchmark (est.)';
+  return '—';
 }
 function monthLabel(dateStr, withDay = false) {
   const d = new Date(`${dateStr}T00:00:00Z`);
@@ -618,9 +627,19 @@ function CommandHero({ fund, snapshots, tasksData, loading, onOpenTrading }) {
             <span className={`thw-pill ${alphaPos ? 'pos' : 'neg'}`}>
               {fmtSignedPct(fund?.alpha_pct)} alpha
             </span>
-            <span className="thw-pill mut">
-              S&amp;P 500 {fmtSignedPct(fund?.benchmark_return_pct)}
-            </span>
+            {fund?.benchmark_return_pct != null && (
+              <span
+                className="thw-pill mut"
+                title={
+                  fund?.benchmark_source === 'pitch_proxy'
+                    ? 'Estimated from pitch hindsight (average recorded benchmark return), not live index prices.'
+                    : undefined
+                }
+              >
+                {benchmarkLabel(fund?.benchmark_source, fund?.benchmark_symbol)}{' '}
+                {fmtSignedPct(fund?.benchmark_return_pct)}
+              </span>
+            )}
           </span>
         </button>
         <FundChart snapshots={snapshots} loading={loading} showLabel={false} />
@@ -1039,11 +1058,17 @@ export default function OrgTeamHubPage() {
           onOpenTrading={() => router.push('/org-trading')}
         />
 
+        {/* Onboarding checklist — self-hides once the org is fully configured. */}
+        <OrgSetupChecklist />
+
         <SectorDesk
           sectors={summary?.sectors}
           loading={loading}
           onOpen={() => router.push('/org-team-hub/fund-analytics')}
         />
+
+        {/* Fund data health — exec only; the card self-hides (endpoint 403s) otherwise. */}
+        {orgRole === 'executive' && <FundDataHealthCard />}
 
         <div className="thw-bottom">
           <TaskManagement

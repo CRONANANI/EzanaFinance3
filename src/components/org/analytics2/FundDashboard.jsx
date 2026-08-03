@@ -151,7 +151,12 @@ export function FundDashboard({ initialData = null }) {
       <div className="fa-grid">
         {/* LEFT — focal */}
         <div className="fa-col">
-          <PerformanceCard latest={latest} series={data.series} />
+          <PerformanceCard
+            latest={latest}
+            series={data.series}
+            benchmarkSymbol={data.performance?.benchmark_symbol}
+            benchmarkSource={data.performance?.benchmark_source}
+          />
           <AnalystLeaderboard data={data.analystLeaderboard} onSelect={setScorecardFor} />
           <ContributorsDetractors data={data.contributors} />
         </div>

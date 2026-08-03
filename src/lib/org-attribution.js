@@ -6,6 +6,7 @@
  */
 
 import { getOrgPositionBook } from '@/lib/org-position-book';
+import { getBenchmarkSymbol, benchmarkReturnPct } from '@/lib/org-benchmark';
 
 const finite = (v) => (Number.isFinite(Number(v)) ? Number(v) : null);
 const avg = (arr) => (arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null);
@@ -75,13 +76,40 @@ export async function computeFundPerformance(supabase, orgId) {
   const returnPct =
     totalCost > 0 && pricedCount > 0 ? ((totalValue - totalCost) / totalCost) * 100 : null;
 
-  // Benchmark proxy: the average benchmark return recorded against the fund's
-  // pitches over the same period (avoids an external SPY round trip).
+  // Legacy proxy (fallback): the average benchmark return recorded against the
+  // fund's pitches over the same period.
   const { hByPitch } = await getPitchesWithHindsight(supabase, orgId);
-  const benchmarks = [...hByPitch.values()]
+  const proxyValues = [...hByPitch.values()]
     .map((h) => finite(h.benchmark_return_pct))
     .filter((n) => n != null);
-  const benchmarkPct = avg(benchmarks);
+  const proxyPct = avg(proxyValues);
+
+  // Preferred: the REAL price return of the org's configured benchmark symbol
+  // over the fund's window (earliest snapshot date, else earliest position, →
+  // today). Falls back to the pitch proxy, and carries `benchmark_source` so
+  // the UI can label the figure honestly (never "S&P 500" over proxy data).
+  const benchmarkSymbol = await getBenchmarkSymbol(supabase, orgId);
+  const { data: firstSnap } = await supabase
+    .from('org_fund_snapshots')
+    .select('snapshot_date')
+    .eq('org_id', orgId)
+    .order('snapshot_date', { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  const positionDates = positions.map((p) => p.added_at).filter(Boolean).sort();
+  const fromDate = firstSnap?.snapshot_date || (positionDates[0] || '').slice(0, 10) || null;
+  const toDate = new Date().toISOString().slice(0, 10);
+  const index = fromDate ? await benchmarkReturnPct(benchmarkSymbol, fromDate, toDate) : { pct: null, source: null };
+
+  let benchmarkPct = null;
+  let benchmarkSource = null;
+  if (index.pct != null) {
+    benchmarkPct = index.pct;
+    benchmarkSource = 'index';
+  } else if (proxyPct != null) {
+    benchmarkPct = proxyPct;
+    benchmarkSource = 'pitch_proxy';
+  }
   const alphaPct = returnPct != null && benchmarkPct != null ? returnPct - benchmarkPct : null;
 
   return {
@@ -89,6 +117,8 @@ export async function computeFundPerformance(supabase, orgId) {
     total_cost: totalCost,
     return_pct: returnPct,
     benchmark_return_pct: benchmarkPct,
+    benchmark_symbol: benchmarkSymbol,
+    benchmark_source: benchmarkSource,
     alpha_pct: alphaPct,
     positions: positions.length,
   };

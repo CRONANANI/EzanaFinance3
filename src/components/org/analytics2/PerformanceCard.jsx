@@ -1,10 +1,12 @@
 'use client';
 
 import { FundVsBenchmarkChart } from './FundVsBenchmarkChart';
-import { money, pct, signClass } from './format';
+import { money, pct, signClass, benchmarkLabel, BENCHMARK_PROXY_TITLE } from './format';
 
 /** 4 headline stats (from the latest snapshot) + the fund-vs-benchmark chart. */
-export function PerformanceCard({ latest, series }) {
+export function PerformanceCard({ latest, series, benchmarkSymbol, benchmarkSource }) {
+  const benchLabel = benchmarkLabel(benchmarkSource, benchmarkSymbol);
+  const isProxy = benchmarkSource === 'pitch_proxy';
   const stats = [
     { l: 'Fund value', v: money(latest?.total_value), cls: '' },
     { l: 'Return', v: pct(latest?.return_pct), cls: signClass(latest?.return_pct) },
@@ -22,13 +24,13 @@ export function PerformanceCard({ latest, series }) {
           </div>
         ))}
       </div>
-      <FundVsBenchmarkChart series={series} />
+      <FundVsBenchmarkChart series={series} benchmarkLabel={benchLabel} />
       <div className="fa-legend">
         <span>
           <i style={{ background: 'var(--emerald, #10b981)' }} /> Ezana fund
         </span>
-        <span>
-          <i style={{ background: 'var(--text-muted, #94a3b8)' }} /> S&amp;P 500
+        <span title={isProxy ? BENCHMARK_PROXY_TITLE : undefined}>
+          <i style={{ background: 'var(--text-muted, #94a3b8)' }} /> {benchLabel}
         </span>
       </div>
     </div>

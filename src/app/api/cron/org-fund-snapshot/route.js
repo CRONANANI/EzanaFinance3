@@ -74,6 +74,8 @@ export async function GET(request) {
             total_cost: performance.total_cost,
             return_pct: performance.return_pct,
             benchmark_return_pct: performance.benchmark_return_pct,
+            benchmark_symbol: performance.benchmark_symbol,
+            benchmark_source: performance.benchmark_source,
             alpha_pct: performance.alpha_pct,
             attribution: { by_analyst: byAnalyst, by_sector: bySector, by_pitch: byPitch },
           },

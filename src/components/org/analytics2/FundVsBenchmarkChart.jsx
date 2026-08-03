@@ -5,10 +5,11 @@ import { money, pct } from './format';
 
 /**
  * Lightweight inline-SVG line chart — fund (emerald solid, gradient fill) vs.
- * S&P 500 (grey dashed). No chart dependency. Empty state handled by the parent
- * (< 2 points). Hover readout tracks the nearest fund point.
+ * the org's benchmark (grey dashed; labelled via the benchmarkLabel prop). No
+ * chart dependency. Empty state handled by the parent (< 2 points). Hover
+ * readout tracks the nearest fund point.
  */
-export function FundVsBenchmarkChart({ series }) {
+export function FundVsBenchmarkChart({ series, benchmarkLabel = 'Benchmark' }) {
   const gid = useId().replace(/[:]/g, '');
   const [hover, setHover] = useState(null);
 
@@ -68,7 +69,7 @@ export function FundVsBenchmarkChart({ series }) {
         viewBox={`0 0 ${W} ${H}`}
         preserveAspectRatio="none"
         role="img"
-        aria-label="Fund value versus S&P 500 over the selected period"
+        aria-label={`Fund value versus ${benchmarkLabel} over the selected period`}
         onMouseMove={onMove}
         onMouseLeave={() => setHover(null)}
       >
@@ -143,7 +144,7 @@ export function FundVsBenchmarkChart({ series }) {
             {hp.fund_value != null ? ` · ${money(hp.fund_value)}` : ''}
           </div>
           <div>
-            Fund {pct(hp.fund_return_pct, 1)} · S&amp;P {pct(hp.benchmark_return_pct, 1)}
+            Fund {pct(hp.fund_return_pct, 1)} · {benchmarkLabel} {pct(hp.benchmark_return_pct, 1)}
           </div>
         </div>
       )}

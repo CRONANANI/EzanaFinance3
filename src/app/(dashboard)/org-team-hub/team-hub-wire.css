@@ -1134,3 +1134,125 @@ body.light-mode .thw-cal-card,
 html.light-mode .thw-cal-card {
   box-shadow: none;
 }
+
+/* ── Phase E: shared mono helper ── */
+.thw-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Phase E: Fund data health card ── */
+.thw-health-pill {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+.thw-health-pill--ok {
+  color: var(--emerald);
+  background: var(--emerald-bg);
+}
+.thw-health-pill--attention {
+  color: var(--warning);
+  background: var(--warning-bg);
+}
+.thw-health-pill--stale {
+  color: var(--negative);
+  background: var(--negative-bg);
+}
+.thw-health-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+.thw-health-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.thw-health-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+.thw-health-val {
+  font-size: 0.78rem;
+  color: var(--text-primary);
+  text-align: right;
+}
+.thw-health-sub {
+  color: var(--text-faint);
+  font-size: 0.68rem;
+}
+.thw-health-link {
+  color: var(--warning);
+  text-decoration: none;
+  font-weight: 700;
+}
+.thw-health-link:hover {
+  text-decoration: underline;
+}
+
+/* ── Phase E: Org setup checklist card ── */
+.thw-setup-progress {
+  font-size: 0.7rem;
+  color: var(--text-faint);
+}
+.thw-setup-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.thw-setup-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.thw-setup-icon {
+  font-size: 1rem;
+  color: var(--text-ghost);
+  flex-shrink: 0;
+}
+.thw-setup-item.is-done .thw-setup-icon {
+  color: var(--emerald);
+}
+.thw-setup-label {
+  font-size: 0.82rem;
+  color: var(--text-primary);
+}
+.thw-setup-item.is-done .thw-setup-label {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+.thw-setup-count {
+  font-size: 0.72rem;
+  color: var(--text-faint);
+  margin-left: auto;
+}
+.thw-setup-cta {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--emerald);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 3px 9px;
+  border: 1px solid var(--emerald-border);
+  border-radius: 7px;
+}
+.thw-setup-cta:hover {
+  background: var(--emerald-bg);
+}
+.thw-setup-status {
+  font-size: 0.7rem;
+  color: var(--text-faint);
+}
