@@ -68,12 +68,21 @@ function MetadataExplainer() {
   );
 }
 
-function Group({ title, children }) {
+/* Collapsed-by-default disclosure per metadata category: only the category
+   name shows until opened (keeps the header card compact — the expanded
+   taxonomy was inflating the header row and leaving a white gulf under the
+   subheading). Native details/summary: keyboard + screen-reader support for
+   free, no state. Chips inside are unchanged (tracking included). */
+function Group({ title, children, count }) {
   return (
-    <div className="emeta-group">
-      <div className="emeta-group-label">{title}</div>
+    <details className="emeta-group">
+      <summary className="emeta-group-summary">
+        <span className="emeta-group-label">{title}</span>
+        {typeof count === 'number' && <span className="emeta-group-count">{count}</span>}
+        <i className="bi bi-chevron-down emeta-group-chevron" aria-hidden="true" />
+      </summary>
       <div className="emeta-chiprow">{children}</div>
-    </div>
+    </details>
   );
 }
 
@@ -129,7 +138,7 @@ export default function EchoMetadataSidebar({
       </div>
 
       {tickers.length > 0 && (
-        <Group title="Tickers">
+        <Group title="Tickers" count={tickers.length}>
           {tickers.map((t) => (
             <button
               key={t}
@@ -149,7 +158,7 @@ export default function EchoMetadataSidebar({
         const values = Array.isArray(m[g.dimension]) ? m[g.dimension] : [];
         if (values.length === 0) return null;
         return (
-          <Group key={g.dimension} title={g.title}>
+          <Group key={g.dimension} title={g.title} count={values.length}>
             {values.map((value) => (
               <button
                 key={value}
@@ -166,7 +175,7 @@ export default function EchoMetadataSidebar({
       })}
 
       {people.length > 0 && (
-        <Group title="People">
+        <Group title="People" count={people.length}>
           {people.map((p) => (
             <button
               key={p.id}
@@ -182,7 +191,7 @@ export default function EchoMetadataSidebar({
       )}
 
       {terms.length > 0 && (
-        <Group title="Terms">
+        <Group title="Terms" count={terms.length}>
           {terms.map((t) => (
             <button
               key={t.id}
@@ -198,7 +207,7 @@ export default function EchoMetadataSidebar({
       )}
 
       {markets.length > 0 && (
-        <Group title="Related Markets">
+        <Group title="Related Markets" count={markets.length}>
           {markets.map((mk) => (
             <button
               key={mk.label}
@@ -215,7 +224,7 @@ export default function EchoMetadataSidebar({
       )}
 
       {datasets.length > 0 && (
-        <Group title="Built with">
+        <Group title="Built with" count={datasets.length}>
           {datasets.map((ds) => (
             <button
               key={ds}

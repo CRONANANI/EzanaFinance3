@@ -144,7 +144,7 @@
 .emeta-card {
   position: sticky;
   top: 1.5rem; /* aligns top edge just under the global nav / logo row */
-  padding: 1.25rem;
+  padding: 1rem; /* tightened from 1.25rem — collapsed groups already shrink the card */
   align-self: start;
 }
 
@@ -208,11 +208,28 @@
   margin: 0;
 }
 
+/* Collapsed disclosure per category — only the name/count/chevron show until
+   opened, keeping the sidebar card compact. */
 .emeta-group {
-  margin-bottom: 1rem;
+  border-top: 1px solid var(--border-primary);
+  padding: 0;
 }
-.emeta-group:last-child {
-  margin-bottom: 0;
+.emeta-group:first-of-type {
+  border-top: none;
+}
+.emeta-group-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 2px;
+  cursor: pointer;
+  list-style: none; /* hide the default marker … */
+}
+.emeta-group-summary::-webkit-details-marker {
+  display: none; /* … and WebKit's */
+}
+.emeta-group-summary:hover .emeta-group-label {
+  color: var(--text-primary);
 }
 
 .emeta-group-label {
@@ -222,13 +239,32 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text-muted);
-  margin-bottom: 0.5rem;
+}
+.emeta-group-count {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-faint);
+}
+.emeta-group-chevron {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--text-muted);
+  transition: transform 0.15s ease;
+}
+.emeta-group[open] .emeta-group-chevron {
+  transform: rotate(180deg);
+}
+.emeta-group[open] .emeta-group-summary .emeta-group-label {
+  color: var(--emerald);
 }
 
 .emeta-chiprow {
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
+}
+.emeta-group .emeta-chiprow {
+  padding: 2px 2px 12px;
 }
 
 .emeta-chip {
