@@ -3,11 +3,10 @@ import { withApiGuard } from '@/lib/api-guard';
 import { createServerSupabase } from '@/lib/supabase-server';
 import { getMemberPermissions } from '@/lib/orgMockData';
 import {
-  dbTeamIdFromMockTeamId,
   getCurrentOrgMember,
-  mockTeamIdFromDbTeams,
   normalizeTeamDbId,
-  resolveFlagRouting,
+  resolveFlagRoutingDb,
+  routeFallbackExecutive,
 } from '@/lib/org-trading-server';
 import {
   MIN_MESSAGE_CHARS,
@@ -105,7 +104,6 @@ export const POST = withApiGuard(
     const {
       ticker,
       team_id,
-      mock_team_id,
       flag_color,
       subject,
       body: messageBody,
@@ -156,36 +154,33 @@ export const POST = withApiGuard(
     }
 
     // ── Resolve team + org-chart routing (both recipients) ─────────
-    const { data: teams } = await supabase
-      .from('org_teams')
-      .select('id, slug')
-      .eq('org_id', member.org_id);
-    const orgTeams = teams || [];
+    const teamDbId = normalizeTeamDbId(team_id);
+    const flagSector = position_snapshot?.sector || null;
 
-    const teamDbId = normalizeTeamDbId(team_id) || dbTeamIdFromMockTeamId(orgTeams, mock_team_id);
-    const mockTeamKey =
-      mock_team_id || (teamDbId ? mockTeamIdFromDbTeams(orgTeams, teamDbId) : null) || null;
-
-    const { coveringAnalystOrgId, sectorHeadOrgId, coverage } = await resolveFlagRouting(
+    const { coveringAnalystOrgId, sectorHeadOrgId, coverage } = await resolveFlagRoutingDb(
       supabase,
       member.org_id,
-      ticker,
-      mockTeamKey,
+      { ticker, teamDbId, sector: flagSector },
     );
 
     // If the raiser IS the covering analyst, this is a Thesis Update — route the
     // primary seat to the sector head instead. Otherwise route to the analyst.
     const raiserIsCoveringAnalyst = coveringAnalystOrgId && coveringAnalystOrgId === member.id;
-    const primaryRecipientId = raiserIsCoveringAnalyst
+    let primaryRecipientId = raiserIsCoveringAnalyst
       ? sectorHeadOrgId
       : coveringAnalystOrgId || sectorHeadOrgId;
 
+    // Real orgs must never fail to route: fall back to an active executive
+    // (skipping the raiser flagging into their own inbox where possible).
+    if (!primaryRecipientId || primaryRecipientId === member.id) {
+      const exec = await routeFallbackExecutive(supabase, member.org_id);
+      if (exec && exec !== member.id) primaryRecipientId = exec;
+      else if (!primaryRecipientId) primaryRecipientId = exec; // sole-exec org flags itself
+    }
+
     if (!primaryRecipientId) {
       return NextResponse.json(
-        {
-          error:
-            'Could not determine flag recipient. Ensure roster names match the council demo data.',
-        },
+        { error: 'No active members are available to receive this flag. Add members to your organization first.' },
         { status: 400 },
       );
     }

@@ -2,13 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { AlertTriangle, Check, CheckCheck, ShieldAlert, X } from 'lucide-react';
-import { MOCK_MEMBERS } from '@/lib/orgMockData';
 import { actionLabel, reasonLabel } from '@/lib/org-flag-taxonomy';
 
-function nameFromMockOrRow(row, id) {
-  if (row?.display_name) return row.display_name;
-  const m = MOCK_MEMBERS.find((x) => x.id === id);
-  return m?.name || 'Member';
+function nameFromRow(row) {
+  return row?.display_name || 'Member';
 }
 
 function timeAgo(iso) {
@@ -50,7 +47,7 @@ export function FlagDetailPanel({ flagId, currentMemberId, onClose, onChange }) 
 
   if (!flag) return <div className="ot-flag-detail">Loading…</div>;
 
-  const raiserName = nameFromMockOrRow(flag.raiser, flag.raiser_member_id);
+  const raiserName = nameFromRow(flag.raiser);
   const isRoutedRecipient =
     flag.recipient_member_id === currentMemberId || flag.sector_head_member_id === currentMemberId;
   const isOpen = flag.status === 'open';
@@ -171,10 +168,8 @@ export function FlagDetailPanel({ flagId, currentMemberId, onClose, onChange }) 
 
       <div className="ot-flag-routeline">
         <span>
-          Routed to {nameFromMockOrRow(flag.recipient, flag.recipient_member_id)}
-          {flag.sector_head_member_id
-            ? ` + ${nameFromMockOrRow(flag.sector_head, flag.sector_head_member_id)}`
-            : ''}
+          Routed to {nameFromRow(flag.recipient)}
+          {flag.sector_head_member_id ? ` + ${nameFromRow(flag.sector_head)}` : ''}
         </span>
         {dueLabel && (
           <span className={`ot-due ${dueUrgent ? 'urgent' : ''}`}>Response due in {dueLabel}</span>
@@ -187,7 +182,7 @@ export function FlagDetailPanel({ flagId, currentMemberId, onClose, onChange }) 
           {flag.messages.map((m) => (
             <div key={m.id} className="ot-flag-message">
               <div className="ot-flag-message-author">
-                {m.author?.display_name || nameFromMockOrRow(null, m.author_member_id)} ·{' '}
+                {m.author?.display_name || 'Member'} ·{' '}
                 {new Date(m.created_at).toLocaleString()}
               </div>
               <p className="ot-flag-message-body">{m.body}</p>

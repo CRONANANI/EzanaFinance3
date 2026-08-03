@@ -1,12 +1,3 @@
-import {
-  MOCK_MEMBERS,
-  MOCK_TEAMS,
-  MOCK_TMT_RESEARCH_PIPELINE,
-  dbTeamIdFromMockTeamId,
-  getMemberByEmail,
-  mockTeamIdFromDbTeams,
-  resolveFlagRecipient,
-} from '@/lib/orgMockData';
 import { isValidUuid } from '@/lib/uuid';
 
 /**
@@ -57,87 +48,114 @@ export function assertOrgRole(member, allowedRoles) {
 }
 
 /**
- * Map mock council member id (e.g. m3) to real org_members.id in this org (display_name match).
+ * Resolve BOTH flag recipients from the REAL org chart — no mock data.
+ * The client never sets these; routing is decided server-side so a raiser
+ * cannot re-point a flag at a friendlier reviewer.
+ *
+ * Covering analyst, in priority order:
+ *   1. analyst_member_id on the most recent org_pitch for this ticker
+ *   2. org_sector_coverage primary (then any) active analyst for the sector
+ *   3. any active analyst on the position's team
+ * Sector head: the team's active portfolio_manager.
+ * Coverage thesis: thesis_short from that most recent pitch.
+ *
+ * Callers should fall back to an active executive when both seats resolve
+ * null (see routeFallbackExecutive) — a real org must never fail to route.
+ *
+ * @returns {Promise<{coveringAnalystOrgId: string|null, sectorHeadOrgId: string|null, coverage: {sector: string|null, thesis: string|null, pitch_id: string|null}|null}>}
  */
-export async function mockMemberIdToOrgMemberId(supabase, orgId, mockMemberId) {
-  const mock = MOCK_MEMBERS.find((m) => m.id === mockMemberId);
-  if (!mock) return null;
+export async function resolveFlagRoutingDb(supabase, orgId, { ticker, teamDbId, sector }) {
+  const sym = String(ticker || '').toUpperCase().trim();
+
+  // 1) Most recent pitch on the ticker → covering analyst + thesis.
+  const { data: pitch } = await supabase
+    .from('org_pitches')
+    .select('id, analyst_member_id, thesis_short, team_id')
+    .eq('org_id', orgId)
+    .eq('ticker', sym)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  let coveringAnalystOrgId = null;
+  if (pitch?.analyst_member_id) {
+    const { data: m } = await supabase
+      .from('org_members')
+      .select('id')
+      .eq('id', pitch.analyst_member_id)
+      .eq('org_id', orgId)
+      .eq('is_active', true)
+      .maybeSingle();
+    coveringAnalystOrgId = m?.id ?? null;
+  }
+
+  // 2) Sector coverage → active analyst covering this sector (primary first).
+  if (!coveringAnalystOrgId && sector) {
+    const { data: cov } = await supabase
+      .from('org_sector_coverage')
+      .select('is_primary, member:org_members(id, role, is_active)')
+      .eq('org_id', orgId)
+      .eq('sector', sector);
+    const analysts = (cov || []).filter((c) => c.member?.is_active && c.member.role === 'analyst');
+    const pick = analysts.find((c) => c.is_primary) || analysts[0];
+    coveringAnalystOrgId = pick?.member?.id ?? null;
+  }
+
+  // 3) Any active analyst on the team.
+  const effectiveTeamId = teamDbId || pitch?.team_id || null;
+  if (!coveringAnalystOrgId && effectiveTeamId) {
+    const { data: ta } = await supabase
+      .from('org_members')
+      .select('id')
+      .eq('org_id', orgId)
+      .eq('team_id', effectiveTeamId)
+      .eq('role', 'analyst')
+      .eq('is_active', true)
+      .order('created_at')
+      .limit(1)
+      .maybeSingle();
+    coveringAnalystOrgId = ta?.id ?? null;
+  }
+
+  // Sector head: the team's PM.
+  let sectorHeadOrgId = null;
+  if (effectiveTeamId) {
+    const { data: pm } = await supabase
+      .from('org_members')
+      .select('id')
+      .eq('org_id', orgId)
+      .eq('team_id', effectiveTeamId)
+      .eq('role', 'portfolio_manager')
+      .eq('is_active', true)
+      .order('created_at')
+      .limit(1)
+      .maybeSingle();
+    sectorHeadOrgId = pm?.id ?? null;
+  }
+
+  return {
+    coveringAnalystOrgId,
+    sectorHeadOrgId,
+    coverage: pitch
+      ? { sector: sector ?? null, thesis: pitch.thesis_short ?? null, pitch_id: pitch.id }
+      : sector
+        ? { sector, thesis: null, pitch_id: null }
+        : null,
+  };
+}
+
+/** Last-resort recipient: the org's first active executive. */
+export async function routeFallbackExecutive(supabase, orgId) {
   const { data } = await supabase
     .from('org_members')
     .select('id')
     .eq('org_id', orgId)
-    .eq('display_name', mock.name)
+    .eq('role', 'executive')
     .eq('is_active', true)
+    .order('created_at')
+    .limit(1)
     .maybeSingle();
   return data?.id ?? null;
-}
-
-/** Build PERMISSION_TIERS-shaped profile for routing (mock team id + role from DB). */
-export async function buildRoutingProfile(member, supabase) {
-  const mockSelf = getMemberByEmail(member.email);
-  let mockTeamId = mockSelf?.team_id ?? null;
-  if (!mockTeamId && member.team_id) {
-    const { data: tr } = await supabase
-      .from('org_teams')
-      .select('slug')
-      .eq('id', member.team_id)
-      .maybeSingle();
-    mockTeamId = MOCK_TEAMS.find((t) => t.slug === tr?.slug)?.id ?? null;
-  }
-  return {
-    role: member.role,
-    sub_role: member.sub_role,
-    team_id: mockTeamId,
-  };
-}
-
-export async function resolveRecipientOrgMemberId(
-  supabase,
-  orgId,
-  routingProfile,
-  ticker,
-  mockTeamId,
-) {
-  const recipientMockId = resolveFlagRecipient(routingProfile, ticker, mockTeamId);
-  if (!recipientMockId) return null;
-  return mockMemberIdToOrgMemberId(supabase, orgId, recipientMockId);
-}
-
-/** Coverage pipeline entry for a ticker (carries the covering analyst + thesis). */
-export function findFlagCoverage(ticker) {
-  return MOCK_TMT_RESEARCH_PIPELINE.find((r) => r.ticker === ticker) || null;
-}
-
-/**
- * Auto-derive BOTH flag recipients from the org chart — the covering analyst
- * (from the research coverage pipeline, falling back to any analyst on the
- * sector team) and the sector head (the team's portfolio manager). The client
- * never sets these; the routing is decided here so a raiser cannot re-point a
- * flag at a friendlier reviewer.
- *
- * @returns {Promise<{ coveringAnalystOrgId: string|null, sectorHeadOrgId: string|null, coverage: object|null }>}
- */
-export async function resolveFlagRouting(supabase, orgId, ticker, mockTeamId) {
-  const coverage = findFlagCoverage(ticker);
-
-  let coveringAnalystOrgId = null;
-  if (coverage?.analyst_id) {
-    coveringAnalystOrgId = await mockMemberIdToOrgMemberId(supabase, orgId, coverage.analyst_id);
-  }
-  if (!coveringAnalystOrgId && mockTeamId) {
-    const teamAnalyst = MOCK_MEMBERS.find((m) => m.role === 'analyst' && m.team_id === mockTeamId);
-    if (teamAnalyst) {
-      coveringAnalystOrgId = await mockMemberIdToOrgMemberId(supabase, orgId, teamAnalyst.id);
-    }
-  }
-
-  let sectorHeadOrgId = null;
-  if (mockTeamId) {
-    const pm = MOCK_MEMBERS.find((m) => m.role === 'portfolio_manager' && m.team_id === mockTeamId);
-    if (pm) sectorHeadOrgId = await mockMemberIdToOrgMemberId(supabase, orgId, pm.id);
-  }
-
-  return { coveringAnalystOrgId, sectorHeadOrgId, coverage };
 }
 
 /** Resolve request team id: prefer UUID; ignore mock keys. */
@@ -146,5 +164,3 @@ export function normalizeTeamDbId(teamId) {
   if (isValidUuid(teamId)) return teamId;
   return null;
 }
-
-export { dbTeamIdFromMockTeamId, mockTeamIdFromDbTeams } from '@/lib/orgMockData';

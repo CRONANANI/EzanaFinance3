@@ -11,12 +11,6 @@ import {
   X,
 } from 'lucide-react';
 import {
-  MOCK_MEMBERS,
-  MOCK_TEAMS,
-  MOCK_TMT_RESEARCH_PIPELINE,
-  getTotalPortfolioValue,
-} from '@/lib/orgMockData';
-import {
   CONVICTIONS,
   MIN_MESSAGE_CHARS,
   RESPONSE_WINDOWS,
@@ -123,7 +117,7 @@ function PositionSwitcher({ current, book, onSwitch }) {
     }
   };
 
-  const isCurrent = (p) => p.ticker === current.ticker && p.mockTeamId === current.mockTeamId;
+  const isCurrent = (p) => p.ticker === current.ticker && p.teamDbId === current.teamDbId;
 
   return (
     <div className="ot-switcher" ref={rootRef}>
@@ -166,7 +160,7 @@ function PositionSwitcher({ current, book, onSwitch }) {
               <li className="ot-switcher-empty">No positions match “{query}”.</li>
             )}
             {filtered.map((p, i) => (
-              <li key={`${p.ticker}_${p.mockTeamId}`}>
+              <li key={`${p.ticker}_${p.teamDbId || 'na'}`}>
                 <button
                   type="button"
                   role="option"
@@ -214,31 +208,7 @@ export function FlagComposerModal({
     teamDbId: initialTeamDbId,
     position: initialPosition,
   });
-  const { ticker, mockTeamId, teamDbId, position } = active;
-  // ── Derive the read-only dossier (all from the same mock wiring as the desk) ─
-  const team = MOCK_TEAMS.find((t) => t.id === mockTeamId) || null;
-  const sector = position?.sector || team?.sector || team?.name || null;
-  const benchmark = benchmarkForSector(sector);
-  const coverage = MOCK_TMT_RESEARCH_PIPELINE.find((r) => r.ticker === ticker) || null;
-  const analyst =
-    (coverage && MOCK_MEMBERS.find((m) => m.id === coverage.analyst_id)) ||
-    MOCK_MEMBERS.find((m) => m.role === 'analyst' && m.team_id === mockTeamId) ||
-    null;
-  const sectorHead =
-    MOCK_MEMBERS.find((m) => m.role === 'portfolio_manager' && m.team_id === mockTeamId) || null;
-  const thesis = coverage?.thesis || null;
-
-  // Flagger IS the covering analyst → this is a Thesis Update, not a challenge.
-  const isThesisUpdate =
-    !!currentMember?.display_name &&
-    !!analyst?.name &&
-    currentMember.display_name.trim().toLowerCase() === analyst.name.trim().toLowerCase();
-
-  const totalAum = getTotalPortfolioValue();
-  const pctAum = totalAum && position?.value ? (position.value / totalAum) * 100 : null;
-  const plPct = position?.plPct ?? null;
-  const plDollar = position?.pl ?? null;
-  const positive = (plPct ?? 0) >= 0;
+  const { ticker, teamDbId, position } = active;
 
   // ── Compose state ──────────────────────────────────────────────
   const [flagColor, setFlagColor] = useState('green');
@@ -259,18 +229,52 @@ export function FlagComposerModal({
 
   // Flaggable positions for the switcher — permission-filtered SERVER-SIDE.
   const [book, setBook] = useState([]);
+  const [bookTotal, setBookTotal] = useState(null);
   useEffect(() => {
     let cancelled = false;
     fetch('/api/org-trading/positions')
       .then((r) => (r.ok ? r.json() : { positions: [] }))
       .then((d) => {
-        if (!cancelled) setBook(Array.isArray(d.positions) ? d.positions : []);
+        if (cancelled) return;
+        const list = Array.isArray(d.positions) ? d.positions : [];
+        setBook(list);
+        setBookTotal(d.total_value ?? null);
+        // Mock-desk bridge (until Phase D): when the opener didn't supply a
+        // teamDbId but the active ticker is in the real book, adopt that row so
+        // the dossier + routing use real data. Mock-only tickers stay null.
+        if (!initialTeamDbId) {
+          const match = list.find((p) => p.ticker === initialTicker);
+          if (match) {
+            setActive((a) => ({ ...a, teamDbId: match.teamDbId ?? null, position: match.position }));
+          }
+        }
       })
       .catch(() => {});
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [initialTeamDbId, initialTicker]);
+
+  // ── Dossier — all server-resolved on the position row (real org chart) ─
+  const bookRow = book.find((p) => p.ticker === ticker && p.teamDbId === teamDbId) || null;
+  const sector = bookRow?.sector || position?.sector || null;
+  const benchmark = benchmarkForSector(sector);
+  const analystName = bookRow?.analyst ?? null;
+  const sectorHeadName = bookRow?.sector_head ?? null;
+  const thesis = bookRow?.thesis ?? null;
+
+  // Flagger IS the covering analyst → Thesis Update (id compare, not names).
+  const isThesisUpdate =
+    !!currentMember?.id &&
+    !!bookRow?.analyst_member_id &&
+    currentMember.id === bookRow.analyst_member_id;
+
+  // P/L + % of AUM: prefer the enriched book row, fall back to the raw position.
+  const plPct = bookRow?.plPct ?? position?.plPct ?? null;
+  const plDollar = position?.pl ?? bookRow?.position?.pl ?? null;
+  const positive = (plPct ?? 0) >= 0;
+  const pctAum =
+    bookRow?.pct_aum ?? (bookTotal && position?.value ? (position.value / bookTotal) * 100 : null);
 
   // A draft is "dirty" once the user has entered anything worth losing.
   const isDirty =
@@ -287,7 +291,7 @@ export function FlagComposerModal({
   // the whole composer. conflict_disclosed is ticker-specific, so it resets and
   // the conflict check re-runs against the new ticker.
   const switchTo = (item) => {
-    if (!item || (item.ticker === ticker && item.mockTeamId === mockTeamId)) return;
+    if (!item || (item.ticker === ticker && (item.teamDbId ?? null) === teamDbId)) return;
     if (
       isDirty &&
       typeof window !== 'undefined' &&
@@ -299,7 +303,6 @@ export function FlagComposerModal({
     }
     setActive({
       ticker: item.ticker,
-      mockTeamId: item.mockTeamId,
       teamDbId: item.teamDbId ?? null,
       position: item.position,
     });
@@ -367,7 +370,6 @@ export function FlagComposerModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ticker,
-          mock_team_id: mockTeamId,
           team_id: teamDbId || null,
           flag_color: flagColor,
           subject,
@@ -452,7 +454,7 @@ export function FlagComposerModal({
             <h2 className="ot-modal-title">{isThesisUpdate ? 'Thesis Update' : 'Flag Position'}</h2>
             {book.length > 1 ? (
               <PositionSwitcher
-                current={{ ticker, sector, analyst: analyst?.name, plPct, mockTeamId }}
+                current={{ ticker, teamDbId, sector, analyst: analystName, plPct }}
                 book={book}
                 onSwitch={switchTo}
               />
@@ -460,7 +462,7 @@ export function FlagComposerModal({
               <>
                 <span className="ot-ticker-chip ot-num">{ticker}</span>
                 <span className="ot-dossier-sub">
-                  {sector ? `· ${sector}` : ''} {analyst ? `· ${analyst.name}` : ''}
+                  {sector ? `· ${sector}` : ''} {analystName ? `· ${analystName}` : ''}
                 </span>
               </>
             )}
@@ -559,8 +561,12 @@ export function FlagComposerModal({
 
             <div className="ot-dossier-routes">
               <span className="ot-form-label">Routes to</span>
-              <RoutedTo name={analyst?.name} role={analyst?.sub_role || 'Covering analyst'} />
-              <RoutedTo name={sectorHead?.name} role={sectorHead?.sub_role || 'Sector head'} />
+              {analystName ? (
+                <RoutedTo name={analystName} role="Covering analyst" />
+              ) : (
+                <p className="ot-dossier-muted">No covering analyst — routes to the sector head.</p>
+              )}
+              <RoutedTo name={sectorHeadName} role="Sector head" />
             </div>
           </aside>
 

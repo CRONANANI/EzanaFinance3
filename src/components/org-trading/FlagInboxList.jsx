@@ -1,7 +1,5 @@
 'use client';
 
-import { MOCK_MEMBERS } from '@/lib/orgMockData';
-
 function timeAgo(iso) {
   if (!iso) return '';
   const ms = Date.now() - new Date(iso).getTime();
@@ -13,10 +11,8 @@ function timeAgo(iso) {
   return `${Math.floor(hr / 24)}d ago`;
 }
 
-function displayName(memberRow, mockId) {
-  if (memberRow?.display_name) return memberRow.display_name;
-  const m = MOCK_MEMBERS.find((x) => x.id === mockId);
-  return m?.name || 'Unknown';
+function displayName(memberRow) {
+  return memberRow?.display_name || 'Member';
 }
 
 export function FlagInboxList({ flags, selectedFlagId, onSelect, mode }) {
@@ -38,8 +34,8 @@ export function FlagInboxList({ flags, selectedFlagId, onSelect, mode }) {
   return (
     <div className="ot-inbox-list">
       {flags.map((f) => {
-        const raiserName = displayName(f.raiser, f.raiser_member_id);
-        const recipientName = displayName(f.recipient, f.recipient_member_id);
+        const raiserName = displayName(f.raiser);
+        const recipientName = displayName(f.recipient);
         return (
           <button
             type="button"
