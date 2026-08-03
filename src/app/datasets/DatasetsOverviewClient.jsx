@@ -62,7 +62,9 @@ const CAT_CARDS = DATASET_TAXONOMY.map((d) => ({
     .map((it) => it.label)
     .slice(0, 4)
     .join(' · '),
-  href: (d.items.find((it) => it.live) || d.items[0]).href,
+  // Fully-roadmap dimensions (no live item) link to the overview, never into a
+  // gated coming-soon route.
+  href: (d.items.find((it) => it.live) || { href: '/datasets' }).href,
   live: d.items.filter((it) => it.live).length,
   total: d.items.length,
 }));
@@ -144,20 +146,24 @@ const PER_SOURCE_CAP = 4;
    per-subcategory tag. ODDS items also carry the Polymarket slug so a click can
    open the detail popup. Every subcategory with a live route is sampled; those
    without one are omitted and reported (dynamically).
-   Wireable now: congress trades, lobbying, contracts, 13F, prices, prediction.
-   No live route (omitted): FEC fundraising, federal outlays, patents, insider
-   Form 4, ETF holdings, analyst ratings (auth-gated). */
+   Wireable now: congress trades, lobbying, contracts, prediction.
+   No live route / offline (omitted): FEC fundraising, federal outlays, patents,
+   insider Form 4, ETF holdings, analyst ratings (auth-gated), plus 13F holdings
+   and prices & fundamentals (Titans Shadow offline pending completion). */
 async function loadTickerItems() {
-  const [congress, lobbying, contracts, thirteenF, movers, markets] = await Promise.all([
+  const [congress, lobbying, contracts, markets] = await Promise.all([
     getJson('/api/fmp/congress-latest').catch(() => null),
     getJson('/api/quiver/lobbying').catch(() => null),
     getJson('/api/usaspending/contract-awards?limit=8').catch(() => null),
-    getJson('/api/quiver/sec13f').catch(() => null),
-    getJson('/api/fmp/movers?limit=8').catch(() => null),
     getJson('/api/polymarket/markets?limit=12&active=true').catch(() => null),
   ]);
 
   const omitted = [];
+  // 13F holdings and Prices & fundamentals belong to Titans Shadow, which is
+  // offline pending completion — deliberately kept out of the ticker so no
+  // gated-dimension data surfaces here, and recorded so the honest-reporting
+  // console.info still accounts for them.
+  omitted.push('13F holdings', 'Prices & fundamentals');
   // ordered so a round-robin rotates categories (no back-to-back same source)
   const buckets = [];
   const pushOrOmit = (rows, label) => {
@@ -191,20 +197,7 @@ async function loadTickerItems() {
     'Government contracts',
   );
 
-  // 3 · 13F holdings (sec)
-  const f13 = Array.isArray(thirteenF) ? thirteenF : parseMaybeJson(thirteenF?.data) || [];
-  pushOrOmit(
-    f13.map((r) => ({
-      cat: 'titans',
-      tag: '13F',
-      subject: `${r.Name || r.Fund || 'Institution'} · ${r.Ticker || r.ticker || '—'}`,
-      value: shortMoney(r.Value ?? r.value) || '—',
-      positive: false,
-    })),
-    '13F holdings',
-  );
-
-  // 4 · Prediction markets (markets) — clickable, carries slug
+  // Prediction markets (markets) — clickable, carries slug
   const mkts = Array.isArray(markets)
     ? markets
     : Array.isArray(markets?.markets)
@@ -227,7 +220,7 @@ async function loadTickerItems() {
   }
   pushOrOmit(oddsItems, 'Prediction markets');
 
-  // 5 · Lobbying activity (congress)
+  // Lobbying activity (congress)
   const lobRows = Array.isArray(lobbying) ? lobbying : parseMaybeJson(lobbying?.data) || [];
   pushOrOmit(
     lobRows
@@ -240,23 +233,6 @@ async function loadTickerItems() {
         positive: false,
       })),
     'Lobbying activity',
-  );
-
-  // 6 · Prices & fundamentals (markets)
-  const gainers = Array.isArray(movers?.gainers) ? movers.gainers : [];
-  const losers = Array.isArray(movers?.losers) ? movers.losers : [];
-  const moverRows = [...gainers.slice(0, 3), ...losers.slice(0, 1)];
-  pushOrOmit(
-    moverRows
-      .filter((r) => r.ticker)
-      .map((r) => ({
-        cat: 'titans',
-        tag: 'PRICES',
-        subject: `${r.ticker}${r.name ? ` · ${r.name}` : ''}`,
-        value: r.change || '—',
-        positive: !!r.positive,
-      })),
-    'Prices & fundamentals',
   );
 
   // round-robin interleave across subcategories so no source runs back-to-back

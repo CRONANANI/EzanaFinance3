@@ -42,7 +42,7 @@ export const DATASET_TAXONOMY = [
         label: 'US House Financial Disclosures',
         description: 'Official House member trades and holdings disclosed under the STOCK Act',
         href: '/datasets/house-disclosures',
-        live: true,
+        live: false,
         source: 'House Clerk disclosures (disclosures-clerk.house.gov)',
         sourceType: 'gov',
       },
@@ -96,14 +96,14 @@ export const DATASET_TAXONOMY = [
     corner: 'TITANS SHADOW',
     tagline: 'Keep up with the giants of finance',
     blurb:
-      'Institutional and corporate-insider filings — 13F/13D-13G positions, insider trades, executive pay, ETF flows, and market prices.',
+      'Institutional and corporate-insider filings — 13F/13D-13G positions, insider trades, executive pay, ETF flows, and market prices. Coming soon.',
     items: [
       // orbital sources
       {
         label: 'Institutional',
         description: 'SEC quarterly 13F institutional investor holdings and position changes',
         href: '/datasets/institutional',
-        live: true,
+        live: false,
         source: 'SEC EDGAR — 13F-HR',
         sourceType: 'gov',
       },
@@ -111,7 +111,7 @@ export const DATASET_TAXONOMY = [
         label: 'Activist',
         description: 'SEC 13D / 13G filings — significant investor stakes and activist positions',
         href: '/datasets/activist',
-        live: true,
+        live: false,
         source: 'SEC EDGAR — SC 13D/13G',
         sourceType: 'gov',
       },
@@ -136,7 +136,7 @@ export const DATASET_TAXONOMY = [
         label: 'Insider Trading', // was "SEC & Institutional"
         description: 'Corporate officer and director Form 4 transactions',
         href: '/datasets/sec-filings',
-        live: true,
+        live: false,
         source: 'SEC EDGAR — Form 4',
         sourceType: 'gov',
       },
@@ -153,7 +153,7 @@ export const DATASET_TAXONOMY = [
         description:
           "Institutional and activist bets ranked by conviction — position as a share of the filer's own book, newness, and concentration — not raw size",
         href: '/datasets/whale-moves',
-        live: true,
+        live: false,
         source: 'SEC EDGAR — 13F / 13D/13G (Ezana composite score)',
         sourceType: 'gov',
       },
