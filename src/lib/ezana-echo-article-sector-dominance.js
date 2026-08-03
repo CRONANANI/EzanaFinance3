@@ -261,7 +261,10 @@ export const sectorDominanceArticle = {
   tags: ['markets', 'history', 'sector-rotation', 'technology', 'energy', 'macro'],
   meta: {
     sectors: ['Information Technology', 'Financials', 'Energy'],
-    industries: [],
+    // Sub-industries that led each dominance era discussed in the piece.
+    industries: ['Banks', 'Automobile Manufacturers', 'Steel', 'Semiconductors'],
+    // Named corporates-as-actors across the eras in the text.
+    institutions: ['Bank of New York', 'Standard Oil', 'General Motors', 'DuPont', 'Nvidia'],
     geos: ['United States'],
     assetClasses: ['Equities'],
     themes: ['Market History', 'Sector Rotation'],

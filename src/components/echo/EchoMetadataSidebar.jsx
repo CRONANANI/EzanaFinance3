@@ -72,19 +72,39 @@ function MetadataExplainer() {
    name shows until opened (keeps the header card compact — the expanded
    taxonomy was inflating the header row and leaving a white gulf under the
    subheading). Native details/summary: keyboard + screen-reader support for
-   free, no state. Chips inside are unchanged (tracking included). */
+   free, no state. Chips inside are unchanged (tracking included).
+
+   An empty core group renders an honest em-dash instead of chips (and no count
+   badge) — the seven core categories always show, so gaps are visible rather
+   than silently hidden. */
 function Group({ title, children, count }) {
+  const empty = count === 0;
   return (
     <details className="emeta-group">
       <summary className="emeta-group-summary">
         <span className="emeta-group-label">{title}</span>
-        {typeof count === 'number' && <span className="emeta-group-count">{count}</span>}
+        {!empty && typeof count === 'number' && (
+          <span className="emeta-group-count">{count}</span>
+        )}
         <i className="bi bi-chevron-down emeta-group-chevron" aria-hidden="true" />
       </summary>
-      <div className="emeta-chiprow">{children}</div>
+      {empty ? <span className="emeta-empty">—</span> : <div className="emeta-chiprow">{children}</div>}
     </details>
   );
 }
+
+/* The seven CORE categories render on EVERY article — a uniform scaffold, so
+   readers learn one card layout. Empty core dimensions show a muted em-dash
+   (honest, and it makes taxonomy gaps visible instead of silently hiding the
+   category). Optional groups below remain conditional. */
+const CORE_META_DIMS = new Set([
+  'sectors',
+  'industries',
+  'institutions',
+  'geos',
+  'assetClasses',
+  'themes',
+]);
 
 /* Taxonomy dimensions rendered as chip groups after Tickers, in this order.
    `dimension` is the value sent with the article_meta_click breadcrumb. */
@@ -119,44 +139,36 @@ export default function EchoMetadataSidebar({
   const m = meta || {};
   const markets = Array.isArray(m.markets) ? m.markets : [];
   const datasets = Array.isArray(m.datasets) ? m.datasets : [];
-  const metaGroupCount = META_GROUPS.reduce(
-    (n, g) => n + (Array.isArray(m[g.dimension]) ? m[g.dimension].length : 0),
-    0,
-  );
-  const hasAny =
-    tickers.length ||
-    people.length ||
-    terms.length ||
-    metaGroupCount ||
-    markets.length ||
-    datasets.length;
 
+  // Metadata is universal now, so the card renders whenever the article exists.
   return (
     <aside className="ezana-card emeta-card" aria-label="Article metadata">
       <div className="emeta-card-header">
         <MetadataExplainer />
       </div>
 
-      {tickers.length > 0 && (
-        <Group title="Tickers" count={tickers.length}>
-          {tickers.map((t) => (
-            <button
-              key={t}
-              type="button"
-              className="emeta-chip emeta-chip--ticker"
-              onClick={() => onTicker(t)}
-              title={`Jump to ${t} in the article`}
-            >
-              <i className="bi bi-graph-up emeta-chip-icon" aria-hidden="true" />
-              {t}
-            </button>
-          ))}
-        </Group>
-      )}
+      {/* Tickers — a core category, always shown (empty → em-dash via Group). */}
+      <Group title="Tickers" count={tickers.length}>
+        {tickers.map((t) => (
+          <button
+            key={t}
+            type="button"
+            className="emeta-chip emeta-chip--ticker"
+            onClick={() => onTicker(t)}
+            title={`Jump to ${t} in the article`}
+          >
+            <i className="bi bi-graph-up emeta-chip-icon" aria-hidden="true" />
+            {t}
+          </button>
+        ))}
+      </Group>
 
       {META_GROUPS.map((g) => {
         const values = Array.isArray(m[g.dimension]) ? m[g.dimension] : [];
-        if (values.length === 0) return null;
+        const isCore = CORE_META_DIMS.has(g.dimension);
+        // Optional dimensions (Investors, Government) stay conditional; core
+        // dimensions always render, showing an em-dash when empty.
+        if (!isCore && values.length === 0) return null;
         return (
           <Group key={g.dimension} title={g.title} count={values.length}>
             {values.map((value) => (
@@ -239,7 +251,6 @@ export default function EchoMetadataSidebar({
         </Group>
       )}
 
-      {!hasAny && <p className="emeta-empty">No metadata for this article.</p>}
     </aside>
   );
 }

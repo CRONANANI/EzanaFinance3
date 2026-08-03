@@ -81,7 +81,21 @@ function plainBody(a) {
 
 export const CURATED_SLUGS = SOURCE.map((a) => a.id);
 
+// Non-fatal completeness check — surfaces taxonomy gaps in Vercel logs on every
+// seed pass without ever blocking readers. The seven core dimensions must be
+// non-empty on every article; an empty one is a publishing defect to fix in the
+// article module (see docs/ECHO_ARTICLE_AUTHORING.md), not here.
+const CORE_META_DIMS = ['sectors', 'industries', 'institutions', 'geos', 'assetClasses', 'themes'];
+function warnIfIncompleteMeta(a) {
+  const missing = CORE_META_DIMS.filter((d) => !a.meta?.[d]?.length);
+  if (!a.tickers?.length) missing.unshift('tickers');
+  if (missing.length) {
+    console.warn(`[echo] curated seed: "${a.id}" has empty core metadata dims: ${missing.join(', ')}`);
+  }
+}
+
 function toRow(a) {
+  warnIfIncompleteMeta(a);
   return {
     article_slug: a.id,
     article_title: a.title,

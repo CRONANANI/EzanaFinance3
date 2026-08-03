@@ -198,6 +198,8 @@ export const iranWarCommoditiesArticle2026 = {
   meta: {
     sectors: ['Energy', 'Materials'],
     industries: ['Oil & Gas', 'Fertilizers & Agricultural Chemicals'],
+    // Named data/ratings institutions cited in the text.
+    institutions: ['S&P Global', 'Fitch Ratings'],
     geos: ['Iran', 'Middle East', 'United States'],
     assetClasses: ['Commodities', 'Equities'],
     themes: ['Geopolitical Risk', 'Energy Prices'],

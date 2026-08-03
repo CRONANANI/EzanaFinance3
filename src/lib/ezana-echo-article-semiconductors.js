@@ -129,6 +129,9 @@ export const semiconductorArticle = {
     datasets: [],
     markets: [],
   },
+  // Market symbols of the chip companies discussed in the piece (US-listed /
+  // ADRs). Foreign-only listings (Samsung, SK Hynix) are intentionally omitted.
+  tickers: ['NVDA', 'TSM', 'INTC', 'AMD', 'ASML', 'AVGO', 'QCOM', 'MU', 'AMAT', 'LRCX', 'GFS'],
   entities: {
     people: [
       {

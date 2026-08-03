@@ -32,6 +32,11 @@
   a new article is featured, flip the previously-featured article's flag to false
   in the same write, and set `featured: false` on that article's source file too.
 - Supabase project id: `jhdzpadfzrhiekcfgtai`.
+- **New Echo articles MUST satisfy `docs/ECHO_ARTICLE_AUTHORING.md`** — in
+  particular the seven core metadata dimensions (`tickers`, `sectors`,
+  `industries`, `institutions`, `geos`, `assetClasses`, `themes`), each value
+  justified by the article's own text. The curated-seed warning in Vercel logs
+  is the enforcement backstop.
 
 ## Org (university) surface
 

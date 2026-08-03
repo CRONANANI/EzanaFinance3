@@ -94,6 +94,14 @@ export const hantavirusArticle = {
   meta: {
     sectors: ['Health Care'],
     industries: ['Biotechnology', 'Pharmaceuticals'],
+    // Named non-government actors in the text (CDC/NIH/WHO live in `government`).
+    institutions: [
+      'Emergent BioSolutions',
+      'SIGA Technologies',
+      'Vir Biotechnology',
+      'Hologic',
+      'BioMérieux',
+    ],
     government: ['CDC'],
     geos: ['United States'],
     assetClasses: ['Equities'],
@@ -101,6 +109,9 @@ export const hantavirusArticle = {
     datasets: [],
     markets: [],
   },
+  // Tickers written into the text: biodefense (EBS/SIGA/VIR), cruise lines
+  // (RCL/CCL/NCLH), and diagnostics (DHR/HOLX).
+  tickers: ['EBS', 'SIGA', 'VIR', 'RCL', 'CCL', 'NCLH', 'DHR', 'HOLX'],
   entities: {
     people: [],
     terms: [

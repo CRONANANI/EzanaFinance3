@@ -329,9 +329,11 @@
 }
 
 .emeta-empty {
-  font-family: var(--font-sans);
-  font-size: 0.78rem;
-  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-faint);
+  padding: 2px 2px 12px;
+  display: block;
 }
 
 /* ===== Zone C — inline entity spans in the body ===== */
