@@ -14,7 +14,11 @@ export function PositionRow({
   const { canFlagPositions } = useOrg();
   const finalCanFlag = canFlag !== undefined ? canFlag : canFlagPositions;
 
-  const value = position.shares * position.current_price;
+  // Real book rows can be unpriced (current_price null) — carry at cost so P/L
+  // reads 0 rather than NaN, and the price cell renders an em-dash.
+  const priced = position.current_price != null;
+  const price = priced ? position.current_price : position.avg_cost;
+  const value = position.shares * price;
   const cost = position.shares * position.avg_cost;
   const pl = value - cost;
   const plPct = cost > 0 ? (pl / cost) * 100 : 0;
@@ -30,10 +34,12 @@ export function PositionRow({
           </span>
         )}
       </td>
-      {showSector && <td style={{ fontSize: '0.7rem', color: '#8b949e' }}>{position.sector}</td>}
+      {showSector && (
+        <td style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>{position.sector}</td>
+      )}
       <td>{position.shares}</td>
-      <td>${position.avg_cost.toFixed(2)}</td>
-      <td>${position.current_price.toFixed(2)}</td>
+      <td>{position.avg_cost != null ? `$${position.avg_cost.toFixed(2)}` : '—'}</td>
+      <td>{priced ? `$${position.current_price.toFixed(2)}` : '—'}</td>
       <td style={{ color: pl >= 0 ? '#10b981' : '#ef4444', fontWeight: 600 }}>
         {pl >= 0 ? '+' : ''}
         {plPct.toFixed(1)}%

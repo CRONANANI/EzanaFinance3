@@ -546,7 +546,7 @@
 }
 
 /* Add Position CTA — gated on canManagePositions, mounted in the team header
-   (TeamPortfolioView) and above the council grid (CouncilOverview). */
+   (TeamPortfolioView) and on the executive desk (CouncilTradingDesk). */
 .ot-add-position-btn {
   display: inline-flex;
   align-items: center;

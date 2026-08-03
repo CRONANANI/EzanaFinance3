@@ -13,53 +13,49 @@ const FlagComposerModal = dynamic(
   () => import('./FlagComposerModal').then((m) => ({ default: m.FlagComposerModal })),
   { loading: () => null },
 );
-import {
-  MOCK_TEAM_PERFORMANCE,
-  buildOrgPositionBook,
-  dbTeamIdFromMockTeamId,
-  mockTeamIdFromDbTeams,
-} from '@/lib/orgMockData';
 
 /**
  * Council Trading — executive desk (redesign "1b").
  *
  * A single focal-hero card (sector-allocation donut + today/unrealized + sector
  * ROI ranking + KPI chips), sector filter chips, and one unified positions
- * table. Presentation only — all figures derive from the SAME mock wiring the
- * old CouncilOverview used (MOCK_TEAM_PERFORMANCE / MOCK_TMT_HOLDINGS, book
- * value = Σ team values). P/L is computed (price − cost) / cost, never
- * hardcoded. The flag flow (FlagComposerModal + /api/org-trading/flags) and the
+ * table. All figures derive from REAL data: the canonical org position book
+ * (/api/org/positions) and the Team Hub summary loader (/api/org/team-hub/summary)
+ * — so the desk's book value, sector ROI, and today's change match the Team Hub
+ * and Fund Analytics row-for-row by construction. P/L is computed (price − cost)
+ * / cost. The flag flow (FlagComposerModal + /api/org-trading/flags) and the
  * Add-position modal are the existing ones, unchanged.
  */
 
-/* Sector short labels for chips, dots, and the donut. Keyed by MOCK_TEAMS id. */
-const SECTOR_SHORT = {
-  t1: 'Healthcare',
-  t2: 'Consumer',
-  t3: 'Energy',
-  t4: 'Financials',
-  t5: 'Industrials',
-  t6: 'Metals',
-  t7: 'TMT',
-};
+/* Positional accent palette — one theme token per slot, assigned to sectors in
+   descending-value order (same slot pattern as the gov-contracts page). These
+   are the exact scoped vars resolved in org-trading.css; no raw hex in JSX. */
+const SECTOR_PALETTE = [
+  'var(--ctd-sec-t1)',
+  'var(--ctd-sec-t2)',
+  'var(--ctd-sec-t3)',
+  'var(--ctd-sec-t4)',
+  'var(--ctd-sec-t5)',
+  'var(--ctd-sec-t6)',
+  'var(--ctd-sec-t7)',
+];
+const UNASSIGNED_COLOR = 'var(--text-muted)';
 
-/* Sector accent → theme token (resolved in org-trading.css as scoped vars, so
-   no raw hex lives in JSX). One CSS variable per sector team id. */
-const SECTOR_VAR = {
-  t1: 'var(--ctd-sec-t1)',
-  t2: 'var(--ctd-sec-t2)',
-  t3: 'var(--ctd-sec-t3)',
-  t4: 'var(--ctd-sec-t4)',
-  t5: 'var(--ctd-sec-t5)',
-  t6: 'var(--ctd-sec-t6)',
-  t7: 'var(--ctd-sec-t7)',
-};
+const shortLabel = (name) =>
+  ({
+    'Technology, Media & Telecom': 'TMT',
+    'Consumer Goods & Services': 'Consumer',
+    'Energy & Utilities': 'Energy',
+    'Financial Institutions': 'Financials',
+    'Metals & Mining': 'Metals',
+  }[name] ||
+    (name || '').split(/[,&]/)[0].trim() ||
+    '—');
 
-function flagsToTickerMap(flags, orgTeams) {
+function flagsToTickerMap(flags) {
   const map = {};
   for (const f of flags || []) {
-    const mockTeamId = mockTeamIdFromDbTeams(orgTeams, f.team_id);
-    const k = `${f.ticker}_${mockTeamId || f.team_id || 'na'}`;
+    const k = `${f.ticker}_${f.team_id || 'na'}`;
     if (!map[k]) map[k] = { color: f.flag_color, count: 0 };
     map[k].count += 1;
   }
@@ -99,7 +95,7 @@ function AllocationDonut({ slices, total }) {
               r={R}
               fill="none"
               strokeWidth="16"
-              stroke={SECTOR_VAR[s.id]}
+              stroke={s.color}
               strokeDasharray={`${seg} ${C - seg}`}
               strokeDashoffset={-acc}
               transform="rotate(-90 70 70)"
@@ -120,8 +116,7 @@ function AllocationDonut({ slices, total }) {
 }
 
 export function CouncilTradingDesk() {
-  const { orgData, orgRole, canFlagPositions, canManagePositions } = useOrg();
-  const orgTeams = orgData?.teams || [];
+  const { orgData, canFlagPositions, canManagePositions } = useOrg();
   const orgName = orgData?.org?.name || 'Investment Council';
 
   const [chip, setChip] = useState('all');
@@ -129,82 +124,125 @@ export function CouncilTradingDesk() {
   const [flagsByTicker, setFlagsByTicker] = useState({});
   const [showAddPosition, setShowAddPosition] = useState(false);
 
+  const [positions, setPositions] = useState(null); // null = loading
+  const [summary, setSummary] = useState(null);
+
   const refreshFlags = useCallback(() => {
     fetch('/api/org-trading/flags?asRaiser=true&asRecipient=true&status=open')
       .then((r) => (r.ok ? r.json() : { flags: [] }))
-      .then((d) => setFlagsByTicker(flagsToTickerMap(d.flags, orgTeams)))
+      .then((d) => setFlagsByTicker(flagsToTickerMap(d.flags)))
       .catch(() => {});
-  }, [orgTeams]);
+  }, []);
+
+  const refreshData = useCallback(() => {
+    Promise.all([
+      fetch('/api/org/positions')
+        .then((r) => (r.ok ? r.json() : { positions: [] }))
+        .catch(() => ({ positions: [] })),
+      fetch('/api/org/team-hub/summary')
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null),
+    ]).then(([pos, sum]) => {
+      setPositions(Array.isArray(pos?.positions) ? pos.positions : []);
+      setSummary(sum);
+    });
+  }, []);
 
   useEffect(() => {
     refreshFlags();
-  }, [refreshFlags]);
+    refreshData();
+  }, [refreshFlags, refreshData]);
 
-  /* Flatten every sleeve into one position book (shared builder — the flag
-     switcher's endpoint returns this same book). Tagged with its sector team so
-     the chips can filter and the flag flow can route. */
-  const positions = useMemo(() => buildOrgPositionBook(), []);
+  const loading = positions === null;
+  const posList = useMemo(() => positions || [], [positions]);
 
-  /* Book value = Σ team sleeve values (≈ $846.5K); donut slices by sleeve. */
-  const bookValue = useMemo(() => MOCK_TEAM_PERFORMANCE.reduce((s, t) => s + t.value, 0), []);
-  const donutSlices = useMemo(
-    () =>
-      MOCK_TEAM_PERFORMANCE.map((t) => ({
-        id: t.team_id,
-        name: SECTOR_SHORT[t.team_id],
-        value: t.value,
-      })).sort((a, b) => b.value - a.value),
-    [],
-  );
+  /* Sector metadata keyed by real teamDbId, in descending-value order for a
+     stable positional palette. Sourced from the SAME summary loader the Team
+     Hub sector desk uses, so ROI and value match across pages by construction. */
+  const sectorMeta = useMemo(() => {
+    const rows = (summary?.sectors || []).filter((s) => s.value > 0);
+    const m = new Map();
+    rows.forEach((s, i) =>
+      m.set(s.teamId, {
+        teamId: s.teamId,
+        name: s.name,
+        short: shortLabel(s.name),
+        color: SECTOR_PALETTE[i % SECTOR_PALETTE.length],
+        value: s.value,
+        roiPct: s.roiPct,
+      }),
+    );
+    return m;
+  }, [summary]);
 
-  const todayDollar = useMemo(
-    () => MOCK_TEAM_PERFORMANCE.reduce((s, t) => s + t.change_dollar, 0),
-    [],
-  );
-  const todayPct = useMemo(
-    () => (bookValue - todayDollar > 0 ? (todayDollar / (bookValue - todayDollar)) * 100 : 0),
-    [bookValue, todayDollar],
-  );
-  const unrealized = useMemo(() => positions.reduce((s, p) => s + p.pl, 0), [positions]);
+  const bookValue = useMemo(() => posList.reduce((s, p) => s + p.value, 0), [posList]);
+  const unrealized = useMemo(() => posList.reduce((s, p) => s + p.pl, 0), [posList]);
 
-  /* Per-sector return, ranked. Sourced from the SAME shared field every other
-     org page uses (MOCK_TEAM_PERFORMANCE.ytd_return) so a sector's headline
-     return is identical across the whole org app (Command Center, Fund
-     Analytics, here). The desk previously recomputed an unrealized ROI from
-     positions, which diverged from the YTD figure shown elsewhere. */
+  const donutSlices = useMemo(() => {
+    const slices = [...sectorMeta.values()]
+      .map((m) => ({ id: m.teamId, name: m.short, value: m.value, color: m.color }))
+      .sort((a, b) => b.value - a.value);
+    const unassigned = posList
+      .filter((p) => !sectorMeta.has(p.team_id))
+      .reduce((s, p) => s + p.value, 0);
+    if (unassigned > 0) {
+      slices.push({ id: 'unassigned', name: 'Unassigned', value: unassigned, color: UNASSIGNED_COLOR });
+    }
+    return slices;
+  }, [sectorMeta, posList]);
+
+  // Today's change from the last two fund snapshots; honest "—" with < 2 points.
+  const snaps = summary?.snapshots || [];
+  const prevVal = snaps.length >= 2 ? snaps[snaps.length - 2].value : null;
+  const todayDollar = snaps.length >= 2 ? snaps[snaps.length - 1].value - prevVal : null;
+  const todayPct = todayDollar != null && prevVal ? (todayDollar / prevVal) * 100 : null;
+
+  // Per-sector ROI, ranked — identical to the Team Hub sector desk (same loader).
   const sectorRoi = useMemo(
     () =>
-      MOCK_TEAM_PERFORMANCE.map((t) => ({
-        id: t.team_id,
-        name: SECTOR_SHORT[t.team_id],
-        roi: t.ytd_return,
-      })).sort((a, b) => b.roi - a.roi),
-    [],
+      [...sectorMeta.values()]
+        .map((m) => ({ id: m.teamId, name: m.short, color: m.color, roi: m.roiPct }))
+        .sort((a, b) => (b.roi ?? -Infinity) - (a.roi ?? -Infinity)),
+    [sectorMeta],
   );
-  const roiMax = useMemo(() => Math.max(1, ...sectorRoi.map((s) => Math.abs(s.roi))), [sectorRoi]);
+  const roiMax = useMemo(
+    () => Math.max(1, ...sectorRoi.filter((s) => s.roi != null).map((s) => Math.abs(s.roi))),
+    [sectorRoi],
+  );
 
   const flaggedCount = useMemo(
     () => Object.values(flagsByTicker).reduce((s, f) => s + (f.count || 0), 0),
     [flagsByTicker],
   );
-  const topBook = donutSlices[0];
+  const topBook = useMemo(() => {
+    const sectors = [...sectorMeta.values()].sort((a, b) => b.value - a.value);
+    return sectors[0] || null;
+  }, [sectorMeta]);
 
-  const visiblePositions = useMemo(
-    () => (chip === 'all' ? positions : positions.filter((p) => p.sectorId === chip)),
-    [positions, chip],
+  const hasUnassigned = useMemo(
+    () => posList.some((p) => !sectorMeta.has(p.team_id)),
+    [posList, sectorMeta],
   );
 
+  const visiblePositions = useMemo(() => {
+    if (chip === 'all') return posList;
+    if (chip === 'unassigned') return posList.filter((p) => !sectorMeta.has(p.team_id));
+    return posList.filter((p) => p.team_id === chip);
+  }, [posList, chip, sectorMeta]);
+
   const kpis = [
-    { key: 'positions', label: 'Positions', value: String(positions.length) },
-    { key: 'sectors', label: 'Sectors', value: String(MOCK_TEAM_PERFORMANCE.length) },
+    { key: 'positions', label: 'Positions', value: String(posList.length) },
+    { key: 'sectors', label: 'Sectors', value: String(sectorMeta.size) },
+    { key: 'flagged', label: 'Flagged', value: String(flaggedCount), amber: flaggedCount > 0 },
     {
-      key: 'flagged',
-      label: 'Flagged',
-      value: String(flaggedCount),
-      amber: flaggedCount > 0,
+      key: 'top',
+      label: 'Top book',
+      value: topBook ? fmtK(topBook.value) : '—',
+      sub: topBook?.short,
     },
-    { key: 'top', label: 'Top book', value: fmtK(topBook.value), sub: topBook.name },
   ];
+
+  const isEmpty = !loading && posList.length === 0;
 
   return (
     <div className="ctd-root">
@@ -222,7 +260,7 @@ export function CouncilTradingDesk() {
             )}
           </h1>
           <p className="ctd-sub">
-            Unified book across all seven sector sleeves — allocation, unrealized performance, and
+            Unified book across every sector sleeve — allocation, unrealized performance, and
             positions in one desk.
           </p>
         </div>
@@ -245,171 +283,208 @@ export function CouncilTradingDesk() {
         </div>
       </header>
 
-      {/* ── Focal hero card ── */}
-      <section className="ctd-card ctd-hero">
-        <div className="ctd-hero-zone ctd-hero-alloc">
-          <span className="ctd-zone-label">Allocation</span>
-          <AllocationDonut slices={donutSlices} total={bookValue} />
-        </div>
-
-        <div className="ctd-hero-zone ctd-hero-perf">
-          <div className="ctd-perf-row">
-            <span className="ctd-zone-label">Today</span>
-            <span className={`ctd-delta ${todayDollar >= 0 ? 'pos' : 'neg'} ctd-num`}>
-              {todayDollar >= 0 ? '+' : ''}
-              {fmtUSD(todayDollar)} <b>{fmtPct(todayPct)}</b>
-            </span>
+      {isEmpty ? (
+        <section className="ctd-card ctd-hero">
+          <div className="ctd-hero-zone" style={{ gridColumn: '1 / -1', textAlign: 'center' }}>
+            <p className="ctd-sub" style={{ marginBottom: '1rem' }}>
+              No positions yet — add one or import your book.
+            </p>
+            {canManagePositions && (
+              <button
+                type="button"
+                className="ctd-btn ctd-btn-primary"
+                onClick={() => setShowAddPosition(true)}
+              >
+                <Plus size={16} aria-hidden />
+                <span>Add position</span>
+              </button>
+            )}
           </div>
-          <div className="ctd-perf-row">
-            <span className="ctd-zone-label">Unrealized</span>
-            <span className={`ctd-unreal ${unrealized >= 0 ? 'pos' : 'neg'} ctd-num`}>
-              {unrealized >= 0 ? '+' : ''}
-              {fmtUSD(unrealized)}
-            </span>
-          </div>
-        </div>
-
-        <div className="ctd-hero-zone ctd-hero-roi">
-          <span className="ctd-zone-label">Sector performance · YTD return</span>
-          <ul className="ctd-roi-list">
-            {sectorRoi.map((s) => (
-              <li key={s.id} className="ctd-roi-item">
-                <span className="ctd-roi-name">
-                  <i className="ctd-dot" style={{ background: SECTOR_VAR[s.id] }} aria-hidden />
-                  {s.name}
-                </span>
-                <span className="ctd-roi-bar-track">
-                  <i
-                    className="ctd-roi-bar"
-                    style={{
-                      width: `${(Math.abs(s.roi) / roiMax) * 100}%`,
-                      background: SECTOR_VAR[s.id],
-                    }}
-                  />
-                </span>
-                <span className={`ctd-roi-val ${s.roi >= 0 ? 'pos' : 'neg'} ctd-num`}>
-                  {fmtPct(s.roi)}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="ctd-hero-zone ctd-hero-kpis">
-          {kpis.map((k) => (
-            <div key={k.key} className={`ctd-kpi ${k.amber ? 'ctd-kpi-amber' : ''}`}>
-              <span className="ctd-kpi-value ctd-num">{k.value}</span>
-              {k.sub && <span className="ctd-kpi-sub">{k.sub}</span>}
-              <span className="ctd-kpi-label">{k.label}</span>
+        </section>
+      ) : (
+        <>
+          {/* ── Focal hero card ── */}
+          <section className="ctd-card ctd-hero">
+            <div className="ctd-hero-zone ctd-hero-alloc">
+              <span className="ctd-zone-label">Allocation</span>
+              <AllocationDonut slices={donutSlices} total={bookValue} />
             </div>
-          ))}
-        </div>
-      </section>
 
-      {/* ── Sector filter chips ── */}
-      <div className="ctd-chips" role="tablist" aria-label="Filter positions by sector">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={chip === 'all'}
-          className={`ctd-chip ${chip === 'all' ? 'is-active' : ''}`}
-          onClick={() => setChip('all')}
-        >
-          All sectors
-        </button>
-        {MOCK_TEAM_PERFORMANCE.map((t) => (
-          <button
-            key={t.team_id}
-            type="button"
-            role="tab"
-            aria-selected={chip === t.team_id}
-            className={`ctd-chip ${chip === t.team_id ? 'is-active' : ''}`}
-            onClick={() => setChip(t.team_id)}
-          >
-            <i className="ctd-dot" style={{ background: SECTOR_VAR[t.team_id] }} aria-hidden />
-            {SECTOR_SHORT[t.team_id]}
-          </button>
-        ))}
-      </div>
+            <div className="ctd-hero-zone ctd-hero-perf">
+              <div className="ctd-perf-row">
+                <span className="ctd-zone-label">Today</span>
+                {todayDollar == null ? (
+                  <span className="ctd-delta ctd-num">—</span>
+                ) : (
+                  <span className={`ctd-delta ${todayDollar >= 0 ? 'pos' : 'neg'} ctd-num`}>
+                    {todayDollar >= 0 ? '+' : ''}
+                    {fmtUSD(todayDollar)} <b>{todayPct == null ? '' : fmtPct(todayPct)}</b>
+                  </span>
+                )}
+              </div>
+              <div className="ctd-perf-row">
+                <span className="ctd-zone-label">Unrealized</span>
+                <span className={`ctd-unreal ${unrealized >= 0 ? 'pos' : 'neg'} ctd-num`}>
+                  {unrealized >= 0 ? '+' : ''}
+                  {fmtUSD(unrealized)}
+                </span>
+              </div>
+            </div>
 
-      {/* ── Positions table ── */}
-      <section className="ctd-card ctd-table-card">
-        <div className="ctd-table-scroll">
-          <table className="ctd-table">
-            <thead>
-              <tr>
-                <th>Ticker</th>
-                <th>Sector</th>
-                <th className="ctd-r">Shares</th>
-                <th className="ctd-r">Cost</th>
-                <th className="ctd-r">Price</th>
-                <th className="ctd-r">Mkt value</th>
-                <th className="ctd-r">P/L</th>
-                <th className="ctd-r">Review</th>
-              </tr>
-            </thead>
-            <tbody>
-              {visiblePositions.map((p) => {
-                const flagKey = `${p.ticker}_${p.sectorId}`;
-                const flagged = flagsByTicker[flagKey];
-                const teamDbId = dbTeamIdFromMockTeamId(orgTeams, p.sectorId);
-                return (
-                  <tr key={flagKey} className={flagged ? 'ctd-row-flagged' : ''}>
-                    <td className="ctd-ticker">{p.ticker}</td>
-                    <td>
-                      <span className="ctd-sector-cell">
-                        <i
-                          className="ctd-dot"
-                          style={{ background: SECTOR_VAR[p.sectorId] }}
-                          aria-hidden
-                        />
-                        {SECTOR_SHORT[p.sectorId]}
-                      </span>
-                    </td>
-                    <td className="ctd-r ctd-num">{p.shares.toLocaleString('en-US')}</td>
-                    <td className="ctd-r ctd-num">{fmtUSD2(p.avg_cost)}</td>
-                    <td className="ctd-r ctd-num">{fmtUSD2(p.current_price)}</td>
-                    <td className="ctd-r ctd-num">{fmtUSD(p.value)}</td>
-                    <td className={`ctd-r ctd-num ctd-pl ${p.pl >= 0 ? 'pos' : 'neg'}`}>
-                      {fmtPct(p.plPct)}
-                    </td>
-                    <td className="ctd-r">
-                      <button
-                        type="button"
-                        className={`ctd-flag-btn ${flagged ? 'is-flagged' : ''}`}
-                        disabled={!canFlagPositions}
-                        title={
-                          canFlagPositions
-                            ? 'Flag this position for review'
-                            : "You don't have flag permissions. Contact your PM or executive to enable."
-                        }
-                        onClick={() =>
-                          setOpenFlagModal({
-                            ticker: p.ticker,
-                            mockTeamId: p.sectorId,
-                            teamDbId,
-                            position: p,
-                          })
-                        }
-                      >
-                        <Flag size={13} aria-hidden />
-                        {flagged
-                          ? `Flagged${flagged.count > 1 ? ` ${flagged.count}` : ''}`
-                          : 'Flag'}
-                      </button>
-                    </td>
+            <div className="ctd-hero-zone ctd-hero-roi">
+              <span className="ctd-zone-label">Sector performance · ROI</span>
+              <ul className="ctd-roi-list">
+                {sectorRoi.map((s) => (
+                  <li key={s.id} className="ctd-roi-item">
+                    <span className="ctd-roi-name">
+                      <i className="ctd-dot" style={{ background: s.color }} aria-hidden />
+                      {s.name}
+                    </span>
+                    <span className="ctd-roi-bar-track">
+                      <i
+                        className="ctd-roi-bar"
+                        style={{
+                          width: `${s.roi == null ? 0 : (Math.abs(s.roi) / roiMax) * 100}%`,
+                          background: s.color,
+                        }}
+                      />
+                    </span>
+                    <span className={`ctd-roi-val ${(s.roi ?? 0) >= 0 ? 'pos' : 'neg'} ctd-num`}>
+                      {s.roi == null ? '—' : fmtPct(s.roi)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="ctd-hero-zone ctd-hero-kpis">
+              {kpis.map((k) => (
+                <div key={k.key} className={`ctd-kpi ${k.amber ? 'ctd-kpi-amber' : ''}`}>
+                  <span className="ctd-kpi-value ctd-num">{k.value}</span>
+                  {k.sub && <span className="ctd-kpi-sub">{k.sub}</span>}
+                  <span className="ctd-kpi-label">{k.label}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* ── Sector filter chips ── */}
+          <div className="ctd-chips" role="tablist" aria-label="Filter positions by sector">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={chip === 'all'}
+              className={`ctd-chip ${chip === 'all' ? 'is-active' : ''}`}
+              onClick={() => setChip('all')}
+            >
+              All sectors
+            </button>
+            {[...sectorMeta.values()].map((m) => (
+              <button
+                key={m.teamId}
+                type="button"
+                role="tab"
+                aria-selected={chip === m.teamId}
+                className={`ctd-chip ${chip === m.teamId ? 'is-active' : ''}`}
+                onClick={() => setChip(m.teamId)}
+              >
+                <i className="ctd-dot" style={{ background: m.color }} aria-hidden />
+                {m.short}
+              </button>
+            ))}
+            {hasUnassigned && (
+              <button
+                type="button"
+                role="tab"
+                aria-selected={chip === 'unassigned'}
+                className={`ctd-chip ${chip === 'unassigned' ? 'is-active' : ''}`}
+                onClick={() => setChip('unassigned')}
+              >
+                <i className="ctd-dot" style={{ background: UNASSIGNED_COLOR }} aria-hidden />
+                Unassigned
+              </button>
+            )}
+          </div>
+
+          {/* ── Positions table ── */}
+          <section className="ctd-card ctd-table-card">
+            <div className="ctd-table-scroll">
+              <table className="ctd-table">
+                <thead>
+                  <tr>
+                    <th>Ticker</th>
+                    <th>Sector</th>
+                    <th className="ctd-r">Shares</th>
+                    <th className="ctd-r">Cost</th>
+                    <th className="ctd-r">Price</th>
+                    <th className="ctd-r">Mkt value</th>
+                    <th className="ctd-r">P/L</th>
+                    <th className="ctd-r">Review</th>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </section>
+                </thead>
+                <tbody>
+                  {visiblePositions.map((p) => {
+                    const flagKey = `${p.ticker}_${p.team_id || 'na'}`;
+                    const flagged = flagsByTicker[flagKey];
+                    const meta = sectorMeta.get(p.team_id) || null;
+                    const label = meta?.short || p.sector || 'Unassigned';
+                    const color = meta?.color || UNASSIGNED_COLOR;
+                    const plPct = p.cost > 0 ? (p.pl / p.cost) * 100 : null;
+                    return (
+                      <tr key={flagKey} className={flagged ? 'ctd-row-flagged' : ''}>
+                        <td className="ctd-ticker">{p.ticker}</td>
+                        <td>
+                          <span className="ctd-sector-cell">
+                            <i className="ctd-dot" style={{ background: color }} aria-hidden />
+                            {label}
+                          </span>
+                        </td>
+                        <td className="ctd-r ctd-num">{p.shares.toLocaleString('en-US')}</td>
+                        <td className="ctd-r ctd-num">{fmtUSD2(p.avg_cost)}</td>
+                        <td className="ctd-r ctd-num">
+                          {p.current_price == null ? '—' : fmtUSD2(p.current_price)}
+                        </td>
+                        <td className="ctd-r ctd-num">{fmtUSD(p.value)}</td>
+                        <td className={`ctd-r ctd-num ctd-pl ${p.pl >= 0 ? 'pos' : 'neg'}`}>
+                          {plPct == null ? '—' : fmtPct(plPct)}
+                        </td>
+                        <td className="ctd-r">
+                          <button
+                            type="button"
+                            className={`ctd-flag-btn ${flagged ? 'is-flagged' : ''}`}
+                            disabled={!canFlagPositions}
+                            title={
+                              canFlagPositions
+                                ? 'Flag this position for review'
+                                : "You don't have flag permissions. Contact your PM or executive to enable."
+                            }
+                            onClick={() =>
+                              setOpenFlagModal({
+                                ticker: p.ticker,
+                                teamDbId: p.team_id,
+                                position: p,
+                              })
+                            }
+                          >
+                            <Flag size={13} aria-hidden />
+                            {flagged
+                              ? `Flagged${flagged.count > 1 ? ` ${flagged.count}` : ''}`
+                              : 'Flag'}
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </>
+      )}
 
       {openFlagModal && (
         <FlagComposerModal
           ticker={openFlagModal.ticker}
-          mockTeamId={openFlagModal.mockTeamId}
           teamDbId={openFlagModal.teamDbId}
           position={openFlagModal.position}
           currentMember={orgData?.member}
@@ -426,7 +501,8 @@ export function CouncilTradingDesk() {
         onClose={() => setShowAddPosition(false)}
         teamId={null}
         onAdded={() => {
-          /* Org-level position added; council holdings refetch lands with live wiring. */
+          setShowAddPosition(false);
+          refreshData();
         }}
       />
     </div>

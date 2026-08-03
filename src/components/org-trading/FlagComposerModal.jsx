@@ -193,7 +193,6 @@ function PositionSwitcher({ current, book, onSwitch }) {
 
 export function FlagComposerModal({
   ticker: initialTicker,
-  mockTeamId: initialMockTeamId,
   teamDbId: initialTeamDbId,
   position: initialPosition,
   currentMember,
@@ -204,7 +203,6 @@ export function FlagComposerModal({
   // below (rail, routing, thesis, benchmark) re-derives from these.
   const [active, setActive] = useState({
     ticker: initialTicker,
-    mockTeamId: initialMockTeamId,
     teamDbId: initialTeamDbId,
     position: initialPosition,
   });
@@ -239,21 +237,12 @@ export function FlagComposerModal({
         const list = Array.isArray(d.positions) ? d.positions : [];
         setBook(list);
         setBookTotal(d.total_value ?? null);
-        // Mock-desk bridge (until Phase D): when the opener didn't supply a
-        // teamDbId but the active ticker is in the real book, adopt that row so
-        // the dossier + routing use real data. Mock-only tickers stay null.
-        if (!initialTeamDbId) {
-          const match = list.find((p) => p.ticker === initialTicker);
-          if (match) {
-            setActive((a) => ({ ...a, teamDbId: match.teamDbId ?? null, position: match.position }));
-          }
-        }
       })
       .catch(() => {});
     return () => {
       cancelled = true;
     };
-  }, [initialTeamDbId, initialTicker]);
+  }, []);
 
   // ── Dossier — all server-resolved on the position row (real org chart) ─
   const bookRow = book.find((p) => p.ticker === ticker && p.teamDbId === teamDbId) || null;

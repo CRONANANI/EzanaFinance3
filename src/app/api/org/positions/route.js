@@ -9,6 +9,7 @@ import {
   canManagePositionsServer,
   resolveTeamForOrg,
 } from '@/lib/org-positions-access';
+import { getOrgPositionBook } from '@/lib/org-position-book';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -28,17 +29,23 @@ export const GET = withApiGuard(
     const { searchParams } = new URL(request.url);
     const teamId = searchParams.get('team_id');
 
-    let q = admin
-      .from('org_positions')
-      .select('*')
-      .eq('org_id', member.org_id)
-      .eq('is_active', true)
-      .order('created_at', { ascending: false });
-    if (teamId) q = q.eq('team_id', teamId);
+    // Canonical book — every member-readable consumer gets computed
+    // value/cost/pl/priced (and the compat aliases) for free.
+    let book = await getOrgPositionBook(admin, member.org_id);
+    if (teamId) book = book.filter((p) => p.team_id === teamId);
+    // newest first, matching the previous ordering contract
+    book.sort((a, b) => (a.added_at < b.added_at ? 1 : -1));
 
-    const { data, error } = await q;
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    return NextResponse.json({ positions: data || [] });
+    // Optional sector-coverage payload for the team view's "my coverage" split.
+    let coverage;
+    if (searchParams.get('include') === 'coverage') {
+      const { data: cov } = await admin
+        .from('org_sector_coverage')
+        .select('member_id, sector, is_primary')
+        .eq('org_id', member.org_id);
+      coverage = cov || [];
+    }
+    return NextResponse.json(coverage ? { positions: book, coverage } : { positions: book });
   },
   { requireAuth: true },
 );

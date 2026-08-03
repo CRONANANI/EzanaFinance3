@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useOrg } from '@/contexts/OrgContext';
 import { PositionRow } from './PositionRow';
@@ -13,111 +13,125 @@ const FlagComposerModal = dynamic(
   { loading: () => null },
 );
 import { PositionThread } from '@/components/org/social2/PositionThread';
-import {
-  MOCK_TEAM_PERFORMANCE,
-  MOCK_TMT_HOLDINGS,
-  MOCK_MEMBERS,
-  getMemberByEmail,
-  mockTeamIdFromDbTeams,
-} from '@/lib/orgMockData';
 
-function buildTeamHoldings(mockTeamKey) {
-  if (mockTeamKey === 't7') {
-    return MOCK_TMT_HOLDINGS.map((h) => ({
-      ticker: h.ticker,
-      shares: h.shares,
-      avg_cost: h.avg_cost,
-      current_price: h.current_price,
-      analyst_id: h.analyst,
-      coverage_status: h.coverage_status,
-      sector: h.sector,
-    }));
-  }
-  const team = MOCK_TEAM_PERFORMANCE.find((t) => t.team_id === mockTeamKey);
-  if (!team) return [];
-  return team.top_holdings.map((ticker, i) => {
-    const totalValue = team.value;
-    const avgPositionValue = totalValue / team.top_holdings.length;
-    const variance = 0.85 + i * 0.1;
-    const positionValue = avgPositionValue * variance;
-    const current_price = 50 + (ticker.charCodeAt(0) % 100) + i * 12;
-    const shares = Math.round(positionValue / current_price);
-    const avg_cost = current_price * (1 - team.ytd_return / 100);
-    return {
-      ticker,
-      shares,
-      avg_cost: Number(avg_cost.toFixed(2)),
-      current_price: Number(current_price.toFixed(2)),
-      analyst_id: null,
-      coverage_status: 'active',
-      sector: team.team_name,
-    };
-  });
-}
-
-function flagsToTickerMap(flags, orgTeams, mockTeamKey) {
+/* Flags for this team, keyed by real ticker + team id. */
+function flagsToTickerMap(flags, dbTeamId) {
   const map = {};
   for (const f of flags || []) {
-    const mockFromFlag = mockTeamIdFromDbTeams(orgTeams, f.team_id);
-    const k = `${f.ticker}_${mockFromFlag || f.team_id || 'na'}`;
+    if (dbTeamId && f.team_id !== dbTeamId) continue;
+    const k = `${f.ticker}_${f.team_id || 'na'}`;
     if (!map[k]) map[k] = { color: f.flag_color, count: 0 };
     map[k].count += 1;
-  }
-  if (mockTeamKey) {
-    const filtered = {};
-    for (const [key, v] of Object.entries(map)) {
-      if (key.endsWith(`_${mockTeamKey}`)) filtered[key] = v;
-    }
-    return filtered;
   }
   return map;
 }
 
-export function TeamPortfolioView({ teamId: dbTeamId, memberRole, memberEmail }) {
+export function TeamPortfolioView({ teamId: dbTeamId, memberRole }) {
   const { canFlagPositions, canManagePositions, orgData } = useOrg();
   const [openFlagModal, setOpenFlagModal] = useState(null);
   const [flagsByTicker, setFlagsByTicker] = useState({});
   const [discussTicker, setDiscussTicker] = useState(null);
   const [showAddPosition, setShowAddPosition] = useState(false);
 
-  const orgTeams = orgData?.teams || [];
-  const mockMember = getMemberByEmail(memberEmail);
-  const mockTeamKey = mockTeamIdFromDbTeams(orgTeams, dbTeamId);
+  const [book, setBook] = useState(null); // null = loading
+  const [coverage, setCoverage] = useState([]);
+  const [roster, setRoster] = useState([]);
 
-  const team = mockTeamKey ? MOCK_TEAM_PERFORMANCE.find((t) => t.team_id === mockTeamKey) : null;
-  const allHoldings = mockTeamKey ? buildTeamHoldings(mockTeamKey) : [];
-  const pm = mockTeamKey
-    ? MOCK_MEMBERS.find((m) => m.role === 'portfolio_manager' && m.team_id === mockTeamKey)
-    : null;
-  const teamAnalysts = mockTeamKey
-    ? MOCK_MEMBERS.filter((m) => m.role === 'analyst' && m.team_id === mockTeamKey)
-    : [];
+  const myMemberId = orgData?.member?.id ?? null;
+  const teamName = useMemo(
+    () => (orgData?.teams || []).find((t) => t.id === dbTeamId)?.name || 'Your team',
+    [orgData?.teams, dbTeamId],
+  );
 
-  const coverageMockId = mockMember?.id ?? null;
-  const myCoverage =
-    memberRole === 'analyst'
-      ? allHoldings.filter((h) => h.analyst_id === coverageMockId)
-      : allHoldings;
-  const otherHoldings =
-    memberRole === 'analyst' ? allHoldings.filter((h) => h.analyst_id !== coverageMockId) : [];
+  const refreshData = useCallback(() => {
+    if (!dbTeamId) {
+      setBook([]);
+      return;
+    }
+    Promise.all([
+      fetch(`/api/org/positions?team_id=${dbTeamId}&include=coverage`)
+        .then((r) => (r.ok ? r.json() : { positions: [], coverage: [] }))
+        .catch(() => ({ positions: [], coverage: [] })),
+      fetch('/api/org/members')
+        .then((r) => (r.ok ? r.json() : { members: [] }))
+        .catch(() => ({ members: [] })),
+    ]).then(([pos, mem]) => {
+      setBook(Array.isArray(pos?.positions) ? pos.positions : []);
+      setCoverage(Array.isArray(pos?.coverage) ? pos.coverage : []);
+      setRoster(Array.isArray(mem?.members) ? mem.members : []);
+    });
+  }, [dbTeamId]);
 
   const refreshFlags = useCallback(() => {
     fetch('/api/org-trading/flags?asRaiser=true&asRecipient=true&status=open')
       .then((r) => (r.ok ? r.json() : { flags: [] }))
-      .then((d) => setFlagsByTicker(flagsToTickerMap(d.flags, orgTeams, mockTeamKey)))
+      .then((d) => setFlagsByTicker(flagsToTickerMap(d.flags, dbTeamId)))
       .catch(() => {});
-  }, [orgTeams, mockTeamKey]);
+  }, [dbTeamId]);
 
   useEffect(() => {
+    refreshData();
     refreshFlags();
-  }, [refreshFlags]);
+  }, [refreshData, refreshFlags]);
 
-  if (!team || !mockTeamKey) {
+  const loading = book === null;
+  const holdings = useMemo(() => book || [], [book]);
+
+  // Roster: PM + analysts on this team (real org_members).
+  const pm = useMemo(
+    () =>
+      roster.find((m) => m.is_active && m.role === 'portfolio_manager' && m.team_id === dbTeamId) ||
+      null,
+    [roster, dbTeamId],
+  );
+  const teamAnalysts = useMemo(
+    () => roster.filter((m) => m.is_active && m.role === 'analyst' && m.team_id === dbTeamId),
+    [roster, dbTeamId],
+  );
+  const nameById = useMemo(() => new Map(roster.map((m) => [m.id, m.display_name])), [roster]);
+
+  // sector → covering analyst name (primary first) from real coverage rows.
+  const analystNameBySector = useMemo(() => {
+    const m = new Map();
+    for (const c of coverage) {
+      if (!c.sector) continue;
+      if (!m.has(c.sector) || c.is_primary) m.set(c.sector, nameById.get(c.member_id) || null);
+    }
+    return m;
+  }, [coverage, nameById]);
+
+  // "My coverage" split (analysts): my covered sectors from coverage rows.
+  const mySectors = useMemo(() => {
+    const s = new Set();
+    for (const c of coverage) if (c.member_id === myMemberId && c.sector) s.add(c.sector);
+    return s;
+  }, [coverage, myMemberId]);
+
+  const isAnalyst = memberRole === 'analyst';
+  const myCoverage = useMemo(
+    () => (isAnalyst ? holdings.filter((h) => h.sector && mySectors.has(h.sector)) : holdings),
+    [isAnalyst, holdings, mySectors],
+  );
+  const otherHoldings = useMemo(
+    () => (isAnalyst ? holdings.filter((h) => !(h.sector && mySectors.has(h.sector))) : []),
+    [isAnalyst, holdings, mySectors],
+  );
+
+  // Team headline — computed from the fetched book, never a separate figure.
+  const teamValue = useMemo(() => holdings.reduce((s, h) => s + h.value, 0), [holdings]);
+  const teamCost = useMemo(() => holdings.reduce((s, h) => s + h.cost, 0), [holdings]);
+  const teamPl = teamValue - teamCost;
+  const teamPlPct = teamCost > 0 ? (teamPl / teamCost) * 100 : null;
+
+  if (!dbTeamId) {
     return (
-      <div style={{ padding: '2rem', color: '#8b949e' }}>
+      <div style={{ padding: '2rem', color: 'var(--text-muted)' }}>
         No team assigned to your account. Contact your organization admin.
       </div>
     );
+  }
+  if (loading) {
+    return <div style={{ padding: '2rem', color: 'var(--text-muted)' }}>Loading team book…</div>;
   }
 
   return (
@@ -125,20 +139,23 @@ export function TeamPortfolioView({ teamId: dbTeamId, memberRole, memberEmail })
       <div className="ot-team-card" style={{ marginBottom: '1.5rem' }}>
         <div className="ot-team-card-header">
           <div>
-            <div className="ot-team-card-name">{team.team_name}</div>
-            <div style={{ fontSize: '0.7rem', color: '#8b949e', marginTop: '0.25rem' }}>
-              PM: {pm?.name || 'Unassigned'} · {teamAnalysts.length} analysts · YTD{' '}
-              {team.ytd_return >= 0 ? '+' : ''}
-              {team.ytd_return.toFixed(1)}%
+            <div className="ot-team-card-name">{teamName}</div>
+            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+              PM: {pm?.display_name || 'Unassigned'} · {teamAnalysts.length} analysts
+              {teamPlPct != null && (
+                <>
+                  {' · P/L '}
+                  {teamPlPct >= 0 ? '+' : ''}
+                  {teamPlPct.toFixed(1)}%
+                </>
+              )}
             </div>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <div className="ot-team-card-aum">${(team.value / 1000).toFixed(1)}K</div>
-            <div
-              className={`ot-team-card-change ${team.change_pct >= 0 ? 'positive' : 'negative'}`}
-            >
-              {team.change_pct >= 0 ? '+' : ''}
-              {team.change_pct.toFixed(1)}% today
+            <div className="ot-team-card-aum">${(teamValue / 1000).toFixed(1)}K</div>
+            <div className={`ot-team-card-change ${teamPl >= 0 ? 'positive' : 'negative'}`}>
+              {teamPl >= 0 ? '+' : ''}
+              {`$${Math.abs(Math.round(teamPl)).toLocaleString('en-US')}`} unrealized
             </div>
             {canManagePositions && (
               <button
@@ -161,10 +178,10 @@ export function TeamPortfolioView({ teamId: dbTeamId, memberRole, memberEmail })
             marginBottom: '0.75rem',
             fontSize: '0.875rem',
             fontWeight: 700,
-            color: '#f0f6fc',
+            color: 'var(--text-primary)',
           }}
         >
-          {memberRole === 'analyst' ? 'My Coverage' : 'Team Positions'}
+          {isAnalyst ? 'My Coverage' : 'Team Positions'}
         </div>
         <table className="ot-team-positions-table">
           <thead>
@@ -182,34 +199,35 @@ export function TeamPortfolioView({ teamId: dbTeamId, memberRole, memberEmail })
           <tbody>
             {myCoverage.length === 0 && (
               <tr>
-                <td colSpan={8} style={{ textAlign: 'center', padding: '2rem', color: '#8b949e' }}>
-                  {memberRole === 'analyst'
-                    ? 'No positions assigned to your coverage yet.'
+                <td
+                  colSpan={8}
+                  style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}
+                >
+                  {isAnalyst
+                    ? mySectors.size === 0
+                      ? 'No sector coverage assigned — ask your PM.'
+                      : 'No positions in your covered sectors yet.'
                     : 'This team has no active positions.'}
                 </td>
               </tr>
             )}
-            {myCoverage.map((h) => {
-              const analyst = teamAnalysts.find((a) => a.id === h.analyst_id);
-              return (
-                <PositionRow
-                  key={h.ticker}
-                  position={h}
-                  showSector
-                  analystName={analyst?.name}
-                  onFlag={() =>
-                    setOpenFlagModal({
-                      ticker: h.ticker,
-                      mockTeamId: mockTeamKey,
-                      teamDbId: dbTeamId,
-                      position: h,
-                    })
-                  }
-                  canFlag={canFlagPositions}
-                  existingFlag={flagsByTicker[`${h.ticker}_${mockTeamKey}`]}
-                />
-              );
-            })}
+            {myCoverage.map((h) => (
+              <PositionRow
+                key={`${h.ticker}_${h.team_id || 'na'}`}
+                position={h}
+                showSector
+                analystName={h.sector ? analystNameBySector.get(h.sector) : undefined}
+                onFlag={() =>
+                  setOpenFlagModal({
+                    ticker: h.ticker,
+                    teamDbId: h.team_id || dbTeamId,
+                    position: h,
+                  })
+                }
+                canFlag={canFlagPositions}
+                existingFlag={flagsByTicker[`${h.ticker}_${h.team_id || 'na'}`]}
+              />
+            ))}
           </tbody>
         </table>
       </div>
@@ -227,10 +245,10 @@ export function TeamPortfolioView({ teamId: dbTeamId, memberRole, memberEmail })
               marginBottom: '0.85rem',
             }}
           >
-            <div style={{ fontSize: '0.875rem', fontWeight: 700, color: '#f0f6fc' }}>
+            <div style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)' }}>
               <i
                 className="bi bi-chat-left-text"
-                style={{ marginRight: '0.5rem', color: '#10b981' }}
+                style={{ marginRight: '0.5rem', color: 'var(--emerald)' }}
               />
               Discussion
             </div>
@@ -252,21 +270,21 @@ export function TeamPortfolioView({ teamId: dbTeamId, memberRole, memberEmail })
           {discussTicker ? (
             <PositionThread ticker={discussTicker} />
           ) : (
-            <p style={{ color: '#8b949e', fontSize: '0.82rem', margin: 0 }}>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', margin: 0 }}>
               Select a holding above to view and join its discussion thread.
             </p>
           )}
         </div>
       )}
 
-      {memberRole === 'analyst' && otherHoldings.length > 0 && (
+      {isAnalyst && otherHoldings.length > 0 && (
         <div className="ot-team-card" style={{ marginTop: '1.5rem', opacity: 0.65 }}>
           <div
             style={{
               marginBottom: '0.75rem',
               fontSize: '0.875rem',
               fontWeight: 700,
-              color: '#8b949e',
+              color: 'var(--text-muted)',
             }}
           >
             Other Team Positions ({otherHoldings.length})
@@ -281,17 +299,14 @@ export function TeamPortfolioView({ teamId: dbTeamId, memberRole, memberEmail })
               </tr>
             </thead>
             <tbody>
-              {otherHoldings.map((h) => {
-                const analyst = teamAnalysts.find((a) => a.id === h.analyst_id);
-                return (
-                  <tr key={h.ticker}>
-                    <td>{h.ticker}</td>
-                    <td>{h.sector}</td>
-                    <td>{h.shares}</td>
-                    <td>{analyst?.name || 'Unassigned'}</td>
-                  </tr>
-                );
-              })}
+              {otherHoldings.map((h) => (
+                <tr key={`${h.ticker}_${h.team_id || 'na'}`}>
+                  <td>{h.ticker}</td>
+                  <td>{h.sector || '—'}</td>
+                  <td>{h.shares}</td>
+                  <td>{(h.sector && analystNameBySector.get(h.sector)) || 'Unassigned'}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
@@ -300,9 +315,9 @@ export function TeamPortfolioView({ teamId: dbTeamId, memberRole, memberEmail })
       {openFlagModal && (
         <FlagComposerModal
           ticker={openFlagModal.ticker}
-          mockTeamId={openFlagModal.mockTeamId}
           teamDbId={openFlagModal.teamDbId}
           position={openFlagModal.position}
+          currentMember={orgData?.member}
           onClose={() => setOpenFlagModal(null)}
           onSuccess={() => {
             setOpenFlagModal(null);
@@ -316,7 +331,8 @@ export function TeamPortfolioView({ teamId: dbTeamId, memberRole, memberEmail })
         onClose={() => setShowAddPosition(false)}
         teamId={dbTeamId}
         onAdded={() => {
-          /* Holdings are mock-backed today; refetch hook lands when wired to org_positions. */
+          setShowAddPosition(false);
+          refreshData();
         }}
       />
     </>

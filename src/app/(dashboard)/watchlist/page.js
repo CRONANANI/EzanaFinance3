@@ -9,7 +9,6 @@ import { useChecklist } from '@/hooks/useChecklist';
 import { EducationTip } from '@/components/beginner/EducationTip';
 import { getCoursesForWatchlistPreview } from '@/lib/learning-curriculum';
 import { useOrg } from '@/contexts/OrgContext';
-import { MOCK_TEAM_PERFORMANCE } from '@/lib/orgMockData';
 import { useWatchlists } from '@/hooks/useWatchlists';
 import { getTickerMeta } from '@/lib/tickerSearchData';
 import { WatchlistSearch } from '@/components/watchlist/WatchlistSearch';
@@ -725,19 +724,42 @@ export default function WatchlistPage() {
   const [sendWatchlistTicker, setSendWatchlistTicker] = useState(null);
 
   const orgTeamId = useMemo(() => {
-    if (!isOrgUser) return null;
-    if (orgRole === 'executive') return null;
-    return orgData?.team?.id || 't7';
-  }, [isOrgUser, orgRole, orgData?.team?.id]);
+    if (!isOrgUser || orgRole === 'executive') return null;
+    return orgData?.member?.team_id || null;
+  }, [isOrgUser, orgRole, orgData?.member?.team_id]);
 
-  const orgTeamPerf = useMemo(() => {
-    if (!isOrgUser) return null;
-    if (orgRole === 'executive') return null;
-    return (
-      MOCK_TEAM_PERFORMANCE.find((t) => t.team_id === (orgTeamId || 't7')) ||
-      MOCK_TEAM_PERFORMANCE[6]
-    );
-  }, [isOrgUser, orgRole, orgTeamId]);
+  const orgTeamName = useMemo(
+    () => (orgData?.teams || []).find((t) => t.id === orgTeamId)?.name || null,
+    [orgData?.teams, orgTeamId],
+  );
+
+  // Real team sleeve suggestions come from the Team Hub summary (same loader as
+  // the org fund surfaces). Fetched only for non-exec org members; a suggestion
+  // strip, so a missing/empty row falls back to the generic default list.
+  const [orgSummary, setOrgSummary] = useState(null);
+  useEffect(() => {
+    if (!isOrgUser || orgRole === 'executive') {
+      setOrgSummary(null);
+      return undefined;
+    }
+    let alive = true;
+    fetch('/api/org/team-hub/summary', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (alive) setOrgSummary(d);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [isOrgUser, orgRole]);
+
+  const orgSleeveTickers = useMemo(() => {
+    if (!isOrgUser || orgRole === 'executive') return null;
+    const row = (orgSummary?.sectors || []).find((s) => s.teamId === orgTeamId);
+    const tickers = row?.tickers || [];
+    return tickers.length ? tickers : null;
+  }, [isOrgUser, orgRole, orgSummary, orgTeamId]);
 
   const activeClassItems = useMemo(() => {
     const cls = ASSET_CLASSES.find((c) => c.id === assetClass);
@@ -763,12 +785,10 @@ export default function WatchlistPage() {
   }, [assetClassMenuOpen]);
 
   const stripItems = useMemo(() => {
-    if (isOrgUser && assetClass === 'Stocks') {
-      const tickers =
-        orgRole === 'executive'
-          ? [...new Set(MOCK_TEAM_PERFORMANCE.flatMap((t) => t.top_holdings))].slice(0, 12)
-          : orgTeamPerf?.top_holdings || ['NVDA', 'AAPL', 'MSFT', 'META'];
-
+    // Non-exec org members get a "your team" suggestion sleeve of real tickers;
+    // execs and non-org users get the standard asset-class strip.
+    if (isOrgUser && orgRole !== 'executive' && assetClass === 'Stocks') {
+      const tickers = orgSleeveTickers || ['NVDA', 'AAPL', 'MSFT', 'META'];
       return tickers.map((tk) => ({
         id: `org-${tk}`,
         type: 'stock',
@@ -780,7 +800,7 @@ export default function WatchlistPage() {
     }
 
     return activeClassItems;
-  }, [isOrgUser, orgRole, orgTeamPerf, activeClassItems, assetClass]);
+  }, [isOrgUser, orgRole, orgSleeveTickers, activeClassItems, assetClass]);
 
   const ALL_SELECTABLE = useMemo(() => ASSET_CLASSES.flatMap((c) => c.data), []);
 
@@ -1259,7 +1279,7 @@ export default function WatchlistPage() {
                   {isOrgUser
                     ? orgRole === 'executive'
                       ? 'Council Watchlist'
-                      : `${orgTeamPerf?.team_name || 'Team'} Watchlist`
+                      : `${orgTeamName || 'Team'} Watchlist`
                     : 'My Watchlist'}
                 </h3>
                 {!isOrgUser && (
