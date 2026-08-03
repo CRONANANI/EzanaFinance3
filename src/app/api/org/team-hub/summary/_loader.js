@@ -6,6 +6,7 @@
  * (e.g. the Org Chart page) that seed this payload for first paint.
  */
 import { computeFundPerformance } from '@/lib/org-attribution';
+import { getOrgPositionBook } from '@/lib/org-position-book';
 
 const ROLE_TITLES = {
   executive: 'Executive',
@@ -27,7 +28,7 @@ export async function loadTeamHubSummary(supabase, member) {
     { data: org },
     { data: members },
     { data: teams },
-    { data: positions },
+    positions,
     { data: cohorts },
     { data: myAssignments },
     { data: violations },
@@ -42,9 +43,7 @@ export async function loadTeamHubSummary(supabase, member) {
       .eq('org_id', orgId)
       .eq('is_active', true),
     supabase.from('org_teams').select('id, name').eq('org_id', orgId).order('name'),
-    supabase
-      .from('org_team_portfolios')
-      .select('team_id, ticker_symbol, shares, avg_cost, current_value'),
+    getOrgPositionBook(supabase, orgId),
     supabase
       .from('org_cohorts')
       .select('name, is_current')

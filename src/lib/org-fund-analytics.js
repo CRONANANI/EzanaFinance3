@@ -7,13 +7,14 @@
  * underlying data does not exist. No mock rows, no placeholder figures — a
  * brand-new fund renders empty states, not fabricated numbers.
  *
- * Positions come from `org_team_portfolios` (the same source as
- * `computeFundPerformance`) so weights and contributions reconcile with the
+ * Positions come from `org_positions` via `getOrgPositionBook` (the same source
+ * as `computeFundPerformance`) so weights and contributions reconcile with the
  * headline fund value. Analyst ↔ position linkage does not exist in the schema,
  * so it is derived through `org_pitches.ticker → analyst_member_id`.
  */
 
 import { assertOrgRole } from '@/lib/org-trading-server';
+import { getOrgPositionBook } from '@/lib/org-position-book';
 import {
   computeFundPerformance,
   attributionByAnalyst,
@@ -48,8 +49,8 @@ async function getTeams(supabase, orgId) {
 
 /**
  * Derive each team's sector from its portfolio holdings — the dominant sector by
- * value. org_teams carries no sector column; org_team_portfolios does, so the
- * sleeve label / PM-by-sector mapping are reconstructed from the book itself.
+ * value. org_teams carries no sector column; org_positions does, so the sleeve
+ * label / PM-by-sector mapping are reconstructed from the book itself.
  * @param {Array<{team_id?: string, sector?: string, value?: number}>} positions
  * @returns {Map<string, string>} team_id → sector
  */
@@ -79,18 +80,8 @@ async function getMembers(supabase, orgId) {
 }
 
 async function getPortfolio(supabase, orgId) {
-  const { data: teams } = await supabase.from('org_teams').select('id').eq('org_id', orgId);
-  const teamIds = (teams || []).map((t) => t.id);
-  if (teamIds.length === 0) return [];
-  const { data } = await supabase
-    .from('org_team_portfolios')
-    .select('team_id, ticker_symbol, shares, avg_cost, current_value, sector')
-    .in('team_id', teamIds);
-  return (data || []).map((p) => {
-    const value = finite(p.current_value) ?? 0;
-    const cost = (finite(p.shares) ?? 0) * (finite(p.avg_cost) ?? 0);
-    return { ...p, ticker: p.ticker_symbol, value, cost, pl: value - cost };
-  });
+  // Canonical book. Rows already carry ticker/ticker_symbol, value, cost, pl.
+  return getOrgPositionBook(supabase, orgId);
 }
 
 async function getPitches(supabase, orgId) {

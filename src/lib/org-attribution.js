@@ -5,7 +5,8 @@
  * divide-by-zero — missing outcomes are simply excluded from averages).
  */
 
-const num = (v) => (v == null ? null : Number(v));
+import { getOrgPositionBook } from '@/lib/org-position-book';
+
 const finite = (v) => (Number.isFinite(Number(v)) ? Number(v) : null);
 const avg = (arr) => (arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null);
 
@@ -26,19 +27,10 @@ function memberName(member) {
   return 'Unassigned';
 }
 
-async function getTeamIds(supabase, orgId) {
-  const { data: teams } = await supabase.from('org_teams').select('id').eq('org_id', orgId);
-  return (teams || []).map((t) => t.id);
-}
-
 async function getPortfolio(supabase, orgId) {
-  const teamIds = await getTeamIds(supabase, orgId);
-  if (teamIds.length === 0) return [];
-  const { data } = await supabase
-    .from('org_team_portfolios')
-    .select('ticker_symbol, shares, avg_cost, current_value, sector')
-    .in('team_id', teamIds);
-  return data || [];
+  // Canonical book — org_positions, explicitly org-scoped. Rows carry the
+  // legacy `current_value`/`ticker_symbol` aliases so the math below is unchanged.
+  return getOrgPositionBook(supabase, orgId);
 }
 
 /** Org pitches joined with hindsight, keyed for reuse across helpers. */
@@ -79,7 +71,9 @@ export async function computeFundPerformance(supabase, orgId) {
     totalValue += val;
     totalCost += cost;
   }
-  const returnPct = totalCost > 0 ? ((totalValue - totalCost) / totalCost) * 100 : null;
+  const pricedCount = positions.filter((p) => p.priced).length;
+  const returnPct =
+    totalCost > 0 && pricedCount > 0 ? ((totalValue - totalCost) / totalCost) * 100 : null;
 
   // Benchmark proxy: the average benchmark return recorded against the fund's
   // pitches over the same period (avoids an external SPY round trip).

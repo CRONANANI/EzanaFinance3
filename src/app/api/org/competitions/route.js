@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { createServerSupabase } from '@/lib/supabase-server';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
+import { getOrgPositionBook, bookTotals } from '@/lib/org-position-book';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -71,17 +72,9 @@ export const POST = withApiGuard(
       return NextResponse.json({ error: 'Not an inter-university competition' }, { status: 404 });
     }
 
-    // Seed the entry's current value from the org's team portfolio total.
-    const { data: teams } = await supabase.from('org_teams').select('id').eq('org_id', member.org_id);
-    const teamIds = (teams || []).map((t) => t.id);
-    let totalValue = 0;
-    if (teamIds.length > 0) {
-      const { data: pf } = await supabase
-        .from('org_team_portfolios')
-        .select('current_value')
-        .in('team_id', teamIds);
-      totalValue = (pf || []).reduce((s, p) => s + (Number(p.current_value) || 0), 0);
-    }
+    // Seed the entry's current value from the org's canonical position book.
+    const book = await getOrgPositionBook(supabase, member.org_id);
+    const totalValue = bookTotals(book).value;
 
     const { data, error } = await supabase
       .from('competition_org_entries')

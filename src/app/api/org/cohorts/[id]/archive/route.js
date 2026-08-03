@@ -6,6 +6,7 @@ import {
   isServerSupabaseConfigured,
 } from '@/lib/supabase-service-role';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
+import { getOrgPositionBook } from '@/lib/org-position-book';
 import { logOrgAction } from '@/lib/org-audit';
 
 export const dynamic = 'force-dynamic';
@@ -131,18 +132,10 @@ export const POST = withApiGuard(
       }
     }
 
-    // ── Build the fund snapshot (unchanged) ──────────────────────────────────
-    const { data: teams } = await supabase.from('org_teams').select('id, name').eq('org_id', orgId);
-    const teamIds = (teams || []).map((t) => t.id);
-
-    let portfolios = [];
-    if (teamIds.length > 0) {
-      const { data: pf } = await supabase
-        .from('org_team_portfolios')
-        .select('team_id, ticker_symbol, shares, avg_cost, current_value, sector')
-        .in('team_id', teamIds);
-      portfolios = pf || [];
-    }
+    // ── Build the fund snapshot ──────────────────────────────────────────────
+    // Canonical org position book; rows carry the legacy team_id/ticker_symbol/
+    // current_value aliases the snapshot shape below already expects.
+    const portfolios = await getOrgPositionBook(supabase, orgId);
 
     const { data: pitches } = await supabase
       .from('org_pitches')

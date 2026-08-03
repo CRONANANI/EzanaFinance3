@@ -217,7 +217,7 @@ export function FlagComposerModal({
   const { ticker, mockTeamId, teamDbId, position } = active;
   // ── Derive the read-only dossier (all from the same mock wiring as the desk) ─
   const team = MOCK_TEAMS.find((t) => t.id === mockTeamId) || null;
-  const sector = team?.sector || team?.name || position?.sector || null;
+  const sector = position?.sector || team?.sector || team?.name || null;
   const benchmark = benchmarkForSector(sector);
   const coverage = MOCK_TMT_RESEARCH_PIPELINE.find((r) => r.ticker === ticker) || null;
   const analyst =

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { createServerSupabase } from '@/lib/supabase-server';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
+import { getOrgPositionBook } from '@/lib/org-position-book';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -48,20 +49,19 @@ export const GET = withApiGuard(
       }));
     }
 
-    // Positions opened this week (team portfolios → org via teams).
-    const { data: teams } = await supabase.from('org_teams').select('id').eq('org_id', orgId);
-    const teamIds = (teams || []).map((t) => t.id);
-    let positions = [];
-    if (teamIds.length > 0) {
-      const { data: posRows } = await supabase
-        .from('org_team_portfolios')
-        .select('id, ticker_symbol, sector, shares, added_at')
-        .in('team_id', teamIds)
-        .gte('added_at', since)
-        .order('added_at', { ascending: false })
-        .limit(20);
-      positions = posRows || [];
-    }
+    // Positions opened this week — from the canonical org position book.
+    const book = await getOrgPositionBook(supabase, orgId);
+    const positions = book
+      .filter((p) => p.added_at && p.added_at >= since)
+      .sort((a, b) => (a.added_at < b.added_at ? 1 : -1))
+      .slice(0, 20)
+      .map((p) => ({
+        id: p.id,
+        ticker_symbol: p.ticker_symbol,
+        sector: p.sector,
+        shares: p.shares,
+        added_at: p.added_at,
+      }));
 
     // New research notes (org-visible).
     const { data: noteRows } = await supabase

@@ -25,13 +25,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { useOrg } from '@/contexts/OrgContext';
-import {
-  MOCK_TEAM_PERFORMANCE,
-  MOCK_FUND_PERFORMANCE,
-  MOCK_FUND_SNAPSHOTS,
-  MOCK_TASKS,
-  getFundCalendar,
-} from '@/lib/orgMockData';
+import { getFundCalendar } from '@/lib/orgMockData';
 import './team-hub-wire.css';
 
 /* ── Team Hub destinations (the 14 sidebar shortcuts) ──────────────
@@ -593,9 +587,7 @@ function CommandHero({ fund, snapshots, tasksData, loading, onOpenTrading }) {
   const liveAssign = (tasksData?.tasks || []).filter(
     (t) => t.mine && t.status !== 'completed' && t.due_date,
   );
-  const assignSrc = liveAssign.length
-    ? liveAssign
-    : MOCK_TASKS.filter((t) => t.status !== 'completed' && t.due_date);
+  const assignSrc = liveAssign; // live only — empty renders "Nothing due"
   const assignments = assignSrc.slice(0, 5).map((t) => ({
     id: t.id,
     title: t.title,
@@ -668,22 +660,7 @@ function CommandHero({ fund, snapshots, tasksData, loading, onOpenTrading }) {
 
 /* ── Sector Desk — ROI leaderboard ────────────────────────────── */
 function SectorDesk({ sectors, loading, onOpen }) {
-  const fallback = useMemo(
-    () =>
-      [...MOCK_TEAM_PERFORMANCE]
-        .sort((a, b) => b.ytd_return - a.ytd_return)
-        .map((t) => ({
-          teamId: t.team_id,
-          name: t.team_name,
-          roiPct: t.ytd_return,
-          value: t.value,
-          tickers: t.top_holdings.slice(0, 3),
-        })),
-    [],
-  );
-
-  const live = Array.isArray(sectors) && sectors.some((s) => s.value > 0) ? sectors : null;
-  const rows = live || (loading ? [] : fallback);
+  const rows = Array.isArray(sectors) ? sectors.filter((s) => s.value > 0) : [];
   const topRoi = Math.max(0.0001, ...rows.map((r) => Math.abs(r.roiPct ?? 0)));
 
   return (
@@ -695,7 +672,7 @@ function SectorDesk({ sectors, loading, onOpen }) {
         <span className="thw-section-meta">RANKED BY ROI</span>
       </div>
       <div className="thw-sector-rows">
-        {loading && !live
+        {loading
           ? Array.from({ length: 7 }).map((_, i) => (
               <div key={i} className="thw-sector-row" aria-hidden="true">
                 <Skel w={20} h={12} />
@@ -736,6 +713,11 @@ function SectorDesk({ sectors, loading, onOpen }) {
                 </button>
               );
             })}
+        {!loading && rows.length === 0 && (
+          <span className="thw-empty">
+            No sector sleeves yet — import positions from the Trading Desk.
+          </span>
+        )}
       </div>
     </section>
   );
@@ -1016,11 +998,8 @@ export default function OrgTeamHubPage() {
 
   // Fund numbers + chart series + calendar: live summary when present, else the
   // mock Ezana Test University Fund so the demo is always populated.
-  const fund = perf && perf.total_value ? perf : MOCK_FUND_PERFORMANCE;
-  const fundSnapshots =
-    Array.isArray(summary?.snapshots) && summary.snapshots.length >= 3
-      ? summary.snapshots
-      : MOCK_FUND_SNAPSHOTS;
+  const fund = perf || null; // honest-empty: fmtMoney/fmtSignedPct render "—" on null
+  const fundSnapshots = Array.isArray(summary?.snapshots) ? summary.snapshots : [];
   const calendarItems = getFundCalendar();
 
   return (

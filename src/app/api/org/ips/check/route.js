@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { createServerSupabase } from '@/lib/supabase-server';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
+import { getOrgPositionBook } from '@/lib/org-position-book';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -37,17 +38,9 @@ export const POST = withApiGuard(
       .eq('org_id', member.org_id)
       .eq('is_active', true);
 
-    // Current portfolio (org's teams).
-    const { data: teams } = await supabase.from('org_teams').select('id').eq('org_id', member.org_id);
-    const teamIds = (teams || []).map((t) => t.id);
-    let positions = [];
-    if (teamIds.length > 0) {
-      const { data: pf } = await supabase
-        .from('org_team_portfolios')
-        .select('ticker_symbol, current_value, sector')
-        .in('team_id', teamIds);
-      positions = pf || [];
-    }
+    // Current portfolio — canonical org-scoped book (current_value/ticker_symbol
+    // aliases keep the rule math below unchanged).
+    const positions = await getOrgPositionBook(supabase, member.org_id);
 
     const totalValue = positions.reduce((s, p) => s + (Number(p.current_value) || 0), 0);
     const sectorValue = {};
