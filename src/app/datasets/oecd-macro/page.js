@@ -1,12 +1,13 @@
 import { getOecdLatest } from '@/lib/oecd-store';
-import OecdMacroClient from './OecdMacroClient';
+import OecdExplorerClient from './OecdExplorerClient';
 
 /**
  * OECD Macro dataset page — Global Empire Lighthouse. Server component fetches
- * the small curated latest-values rollup (Supabase, synced from BigQuery by
- * /api/cron/sync-oecd-rollups) and hands rows to the client. Falls back to the
- * co-located static sample when rollups are empty. Rollups change only when the
- * sync runs — revalidate instead of rebuilding per request.
+ * the curated latest-values rollup (Supabase, synced from BigQuery by
+ * /api/cron/sync-oecd-rollups) and hands rows to the interactive explorer
+ * (wireframe 3a). When the rollup is empty the explorer falls back to the
+ * co-located static sample (via OecdMacroClient) — the honest empty state.
+ * Rollups change only when the sync runs — revalidate instead of rebuilding.
  */
 export const revalidate = 600;
 
@@ -23,5 +24,5 @@ export default async function OecdMacroDatasetPage() {
   } catch {
     latest = null;
   }
-  return <OecdMacroClient latest={latest} />;
+  return <OecdExplorerClient latest={latest} />;
 }
