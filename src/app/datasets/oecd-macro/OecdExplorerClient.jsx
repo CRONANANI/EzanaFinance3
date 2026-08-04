@@ -75,6 +75,7 @@ function ExplorerInner({ latest }) {
     return WINDOWS.includes(v) ? v : DEFAULTS.win;
   });
   const [showAll, setShowAll] = useState(() => searchParams.get('showAll') === '1');
+  const [q, setQ] = useState(''); // matrix country filter (not URL-synced — ephemeral)
 
   // Clamp A/B to countries that actually exist in the payload (defaults CHN/USA
   // may be absent from a given EO vintage). Runs once the model is known.
@@ -136,14 +137,25 @@ function ExplorerInner({ latest }) {
       <CategoryBar active="lighthouse" activeItem="OECD Macro Data" />
 
       <header className="oecd-header">
-        <div className="oecd-header-main">
-          <p className="oecd-eyebrow">DATASETS · OECD ECONOMIC OUTLOOK</p>
-          <h1 className="oecd-title">OECD economic outlook</h1>
-          <p className="oecd-lead">
-            Harmonised OECD Economic Outlook indicators on one comparable basis — select a lens, an
-            indicator and two economies to read any market against the conditions in another.
-            Actuals through 2023; 2024–25 are OECD projections.
-          </p>
+        <div className="oecd-header-strip">
+          <h1 className="oecd-title">OECD Economic Outlook</h1>
+          <span className="oecd-header-stats oecd-num">
+            {model.countries.length} COUNTRIES · {OECD_CURATED_SLUGS.length} INDICATORS · 1961–2025
+          </span>
+          <label className="oecd-search">
+            <svg viewBox="0 0 16 16" className="oecd-search-icon" aria-hidden="true">
+              <circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" strokeWidth="1.5" />
+              <line x1="11" y1="11" x2="14" y2="14" stroke="currentColor" strokeWidth="1.5" />
+            </svg>
+            <input
+              type="search"
+              className="oecd-search-input"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Filter countries…"
+              aria-label="Filter matrix countries"
+            />
+          </label>
         </div>
         <OecdAggregates model={model} slug={ind} />
       </header>
@@ -170,6 +182,7 @@ function ExplorerInner({ latest }) {
         lens={lens}
         ind={ind}
         selectedA={a}
+        query={q}
         onPickIndicator={setInd}
         onPickCountry={setA}
       />
@@ -185,7 +198,16 @@ function ExplorerInner({ latest }) {
       />
 
       <section className="oecd-duo">
-        <OecdRadar model={model} lens={lens} a={a} b={b} onChangeA={setA} onChangeB={setB} />
+        <OecdRadar
+          model={model}
+          lens={lens}
+          a={a}
+          b={b}
+          ind={ind}
+          onChangeA={setA}
+          onChangeB={setB}
+          onPickIndicator={setInd}
+        />
         <OecdProfile model={model} a={a} ind={ind} onPickIndicator={setInd} />
       </section>
 

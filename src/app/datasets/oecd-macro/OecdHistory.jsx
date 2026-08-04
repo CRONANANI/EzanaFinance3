@@ -10,13 +10,18 @@
  * Lines: A and B always, plus up to 4 pinned (6 max). Each line splits at 2023 —
  * solid for actuals (≤2023), dashed for projections (2024–25), sharing the 2023
  * point so there is no gap. Missing years break the line rather than interpolate.
- * All line colours are CSS custom properties (--oecd-line-1…8) so both themes
- * stay legible.
+ *
+ * Interaction (mirrors the empire-ranking hoveredIso grammar): hovering a line OR
+ * its legend row raises that line and dims all others to 0.15; a mousemove
+ * crosshair snaps to the nearest year and reads every visible country's value
+ * (or just the hovered one). All line colours are CSS custom properties
+ * (--oecd-line-1…8) so both themes stay legible.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { PROJECTION_FROM_YEAR } from '@/lib/oecd-curated';
-import { formatValue, toNum } from '@/lib/oecd-scales';
+import { formatValue, isProjected, toNum } from '@/lib/oecd-scales';
 import OecdProjBadge from './OecdProjBadge';
+import OecdTip, { tipAt } from './OecdTip';
 
 const W = 760;
 const H = 300;
@@ -25,6 +30,7 @@ const PLOT_W = W - PAD.left - PAD.right;
 const PLOT_H = H - PAD.top - PAD.bottom;
 const SPLIT_YEAR = PROJECTION_FROM_YEAR - 1; // 2023 — last actual
 const MAX_YEAR = 2025;
+const PROV = 'Actuals through 2023; 2024–25 are OECD Economic Outlook projections.';
 
 const WINDOWS = [
   { win: 1961, label: '1961–2025' },
@@ -44,8 +50,12 @@ export default function OecdHistory({
   onTogglePin,
 }) {
   const cacheRef = useRef(new Map()); // slug -> rows
+  const cardRef = useRef(null);
+  const svgRef = useRef(null);
   const [rows, setRows] = useState(() => cacheRef.current.get(slug) || null);
   const [loading, setLoading] = useState(!cacheRef.current.has(slug));
+  const [hoveredCc, setHoveredCc] = useState(null); // iso or null
+  const [cross, setCross] = useState(null); // { year, tip }
 
   useEffect(() => {
     const cached = cacheRef.current.get(slug);
@@ -79,7 +89,6 @@ export default function OecdHistory({
     };
   }, [slug]);
 
-  // Group rows by area → sorted [{year, value}] with values coerced to numbers.
   const byArea = useMemo(() => {
     const m = new Map();
     for (const r of rows || []) {
@@ -92,8 +101,9 @@ export default function OecdHistory({
     return m;
   }, [rows]);
 
-  // Shown lines: A, B, then pins (dedup, cap 6). Colour by position.
-  const shown = useMemo(() => {
+  // Shown lines: A, B, then pins (dedup, cap 6). Colour by position. Precompute
+  // path segments and a year→value map for the crosshair.
+  const lines = useMemo(() => {
     const order = [];
     const seen = new Set();
     for (const iso of [a, b, ...pins]) {
@@ -102,20 +112,27 @@ export default function OecdHistory({
       order.push(iso);
       if (order.length >= 6) break;
     }
-    return order.map((iso, i) => ({
-      iso,
-      name:
-        model.bySlug[slug]?.[iso]?.name || model.countries.find((c) => c.iso === iso)?.name || iso,
-      color: `var(--oecd-line-${i + 1})`,
-      points: (byArea.get(iso) || []).filter((p) => p.year >= win && p.year <= MAX_YEAR),
-    }));
+    return order.map((iso, i) => {
+      const pts = (byArea.get(iso) || []).filter((p) => p.year >= win && p.year <= MAX_YEAR);
+      const ptMap = new Map(pts.map((p) => [p.year, p.value]));
+      return {
+        iso,
+        name:
+          model.bySlug[slug]?.[iso]?.name ||
+          model.countries.find((c) => c.iso === iso)?.name ||
+          iso,
+        color: `var(--oecd-line-${i + 1})`,
+        points: pts,
+        ptMap,
+        segs: buildSegments(pts),
+      };
+    });
   }, [a, b, pins, byArea, win, model, slug]);
 
-  // Y domain across all shown points (+8% padding).
   const domain = useMemo(() => {
     let min = Infinity;
     let max = -Infinity;
-    for (const s of shown) {
+    for (const s of lines) {
       for (const p of s.points) {
         if (p.value < min) min = p.value;
         if (p.value > max) max = p.value;
@@ -128,22 +145,59 @@ export default function OecdHistory({
     }
     const pad = (max - min) * 0.08;
     return { min: min - pad, max: max + pad };
-  }, [shown]);
+  }, [lines]);
 
   const xOf = (year) => PAD.left + ((year - win) / (MAX_YEAR - win || 1)) * PLOT_W;
   const yOf = (value) =>
     PAD.top + (1 - (value - domain.min) / (domain.max - domain.min || 1)) * PLOT_H;
-
   const crossesZero = domain.min < 0 && domain.max > 0;
 
+  // Map a pointer event to the nearest year and build the crosshair tooltip.
+  const onMove = (e) => {
+    const svg = svgRef.current;
+    const card = cardRef.current;
+    if (!svg || !card) return;
+    const sr = svg.getBoundingClientRect();
+    const vbX = ((e.clientX - sr.left) / sr.width) * W;
+    const raw = win + ((vbX - PAD.left) / PLOT_W) * (MAX_YEAR - win);
+    const year = Math.max(win, Math.min(MAX_YEAR, Math.round(raw)));
+
+    const proj = isProjected(year);
+    const src = hoveredCc ? lines.filter((l) => l.iso === hoveredCc) : lines;
+    const readouts = src
+      .map((l) => ({ name: l.name, v: l.ptMap.get(year) }))
+      .filter((r) => r.v != null)
+      .sort((x, y) => y.v - x.v);
+
+    const cr = card.getBoundingClientRect();
+    const localX = e.clientX - cr.left;
+    const localY = e.clientY - cr.top;
+    setCross({
+      year,
+      tip: tipAt(localX, localY, card, {
+        title: `${year}${proj ? ' · PROJ' : ''}`,
+        lines: readouts.length
+          ? readouts.map((r) => ({
+              label: r.name,
+              value: formatValue(r.v, series),
+              tone: r.v >= 0 ? 'pos' : 'neg',
+            }))
+          : [{ label: 'No data', value: '—' }],
+      }),
+    });
+  };
+  const clearCross = () => setCross(null);
+
   return (
-    <section className="oecd-card oecd-history-card">
+    <section className="oecd-card oecd-history-card" ref={cardRef}>
       <div className="oecd-section-head">
         <div className="oecd-section-head-l">
           <span className="oecd-section-tag">HISTORY</span>
           <h2 className="oecd-section-title">{series?.label}</h2>
           <span className="oecd-section-unit">{series?.unitLabel}</span>
-          <OecdProjBadge label="2024–25 PROJ" />
+          <span title={PROV}>
+            <OecdProjBadge label="2024–25 PROJ" />
+          </span>
         </div>
         <div className="oecd-seg" role="group" aria-label="Time window">
           {WINDOWS.map((w) => (
@@ -166,11 +220,15 @@ export default function OecdHistory({
             <div className="oecd-history-skeleton" aria-busy="true" aria-label="Loading history…" />
           ) : (
             <svg
+              ref={svgRef}
               className="oecd-history-svg"
               viewBox={`0 0 ${W} ${H}`}
               role="img"
               aria-label={`${series?.label} history, ${win}–${MAX_YEAR}`}
+              onMouseMove={onMove}
+              onMouseLeave={clearCross}
             >
+              <title>{PROV}</title>
               {/* projection band + boundary */}
               <rect
                 className="oecd-history-projband"
@@ -194,6 +252,16 @@ export default function OecdHistory({
                   y1={yOf(0)}
                   x2={W - PAD.right}
                   y2={yOf(0)}
+                />
+              ) : null}
+              {/* crosshair guide */}
+              {cross ? (
+                <line
+                  className="oecd-history-crosshair"
+                  x1={xOf(cross.year)}
+                  y1={PAD.top}
+                  x2={xOf(cross.year)}
+                  y2={PAD.top + PLOT_H}
                 />
               ) : null}
               {/* axis frame */}
@@ -246,44 +314,77 @@ export default function OecdHistory({
                 {MAX_YEAR}
               </text>
 
-              {/* lines */}
-              {shown.map((s) => {
-                const segs = buildSegments(s.points);
+              {/* lines — visible paths, then wide invisible hover targets */}
+              {lines.map((s) => {
+                const dim = hoveredCc && hoveredCc !== s.iso;
+                const strong = hoveredCc === s.iso;
+                const style = {
+                  stroke: s.color,
+                  opacity: dim ? 0.15 : 1,
+                  strokeWidth: strong ? 2.5 : 1.6,
+                };
                 return (
                   <g key={s.iso}>
-                    {segs.solid.map((seg, i) => (
+                    {s.segs.solid.map((seg, i) => (
                       <polyline
                         key={`s${i}`}
                         className="oecd-history-line"
                         points={seg
                           .map((p) => `${xOf(p.year).toFixed(1)},${yOf(p.value).toFixed(1)}`)
                           .join(' ')}
-                        style={{ stroke: s.color }}
+                        style={style}
                       />
                     ))}
-                    {segs.dashed.map((seg, i) => (
+                    {s.segs.dashed.map((seg, i) => (
                       <polyline
                         key={`d${i}`}
                         className="oecd-history-line oecd-history-line--proj"
                         points={seg
                           .map((p) => `${xOf(p.year).toFixed(1)},${yOf(p.value).toFixed(1)}`)
                           .join(' ')}
-                        style={{ stroke: s.color }}
+                        style={style}
                       />
                     ))}
+                    {cross && s.ptMap.get(cross.year) != null && !dim ? (
+                      <circle
+                        className="oecd-history-dot"
+                        cx={xOf(cross.year)}
+                        cy={yOf(s.ptMap.get(cross.year))}
+                        r={strong ? 3.5 : 2.5}
+                        style={{ fill: s.color }}
+                      />
+                    ) : null}
                   </g>
                 );
               })}
+              {/* wide invisible hover targets so thin lines are grabbable */}
+              {lines.map((s) => (
+                <g
+                  key={`hit-${s.iso}`}
+                  onMouseEnter={() => setHoveredCc(s.iso)}
+                  onMouseLeave={() => setHoveredCc(null)}
+                >
+                  {[...s.segs.solid, ...s.segs.dashed].map((seg, i) => (
+                    <polyline
+                      key={i}
+                      className="oecd-history-hit"
+                      points={seg
+                        .map((p) => `${xOf(p.year).toFixed(1)},${yOf(p.value).toFixed(1)}`)
+                        .join(' ')}
+                    />
+                  ))}
+                </g>
+              ))}
             </svg>
           )}
         </div>
 
-        {/* right-rail legend / pin controls */}
+        {/* right-rail legend / pin controls — hover syncs with the chart */}
         <div className="oecd-history-rail">
           <div className="oecd-history-rail-head">Countries</div>
           <div className="oecd-history-rail-list">
             {model.countries.map((c) => {
-              const idx = shown.findIndex((s) => s.iso === c.iso);
+              const idx = lines.findIndex((s) => s.iso === c.iso);
               const isShown = idx >= 0;
               const role = c.iso === a ? 'A' : c.iso === b ? 'B' : pins.includes(c.iso) ? '⌖' : '+';
               const locked = c.iso === a || c.iso === b;
@@ -291,15 +392,19 @@ export default function OecdHistory({
                 <button
                   type="button"
                   key={c.iso}
-                  className={`oecd-history-railrow ${isShown ? 'is-shown' : ''} ${locked ? 'is-locked' : ''}`}
+                  className={`oecd-history-railrow ${isShown ? 'is-shown' : ''} ${
+                    locked ? 'is-locked' : ''
+                  } ${hoveredCc === c.iso ? 'is-hover' : ''}`}
                   onClick={() => !locked && onTogglePin(c.iso)}
+                  onMouseEnter={() => isShown && setHoveredCc(c.iso)}
+                  onMouseLeave={() => setHoveredCc(null)}
                   disabled={locked}
                   aria-pressed={isShown}
                   title={locked ? `${c.name} (fixed as ${role})` : `Toggle ${c.name}`}
                 >
                   <span
                     className="oecd-history-chip"
-                    style={{ background: isShown ? shown[idx].color : 'transparent' }}
+                    style={{ background: isShown ? lines[idx].color : 'transparent' }}
                     aria-hidden="true"
                   />
                   <span className="oecd-history-railname">{c.name}</span>
@@ -311,6 +416,7 @@ export default function OecdHistory({
           <p className="oecd-history-rail-note">A and B are fixed. Pin up to 4 more.</p>
         </div>
       </div>
+      <OecdTip tip={cross?.tip} />
     </section>
   );
 }
