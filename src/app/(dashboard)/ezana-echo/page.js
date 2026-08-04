@@ -96,7 +96,15 @@ const BELT_GAP = 28;
 /* Per-column phase, as a FRACTION of that column's own loop cycle. Irregular
    on purpose (no arithmetic progression) so no two columns — adjacent or not —
    ever sit near the same point in their cycle. Fixed-seconds delays were too
-   timid: against 40–80s cycles they left neighbours nearly in step. */
+   timid: against 40–80s cycles they left neighbours nearly in step.
+
+   This is now the SOLE stagger mechanism. It offsets card positions WITHIN each
+   belt (via a negative animation-delay) without moving the belt itself, so every
+   column still top-aligns under its rule. The old per-column margin-top offsets
+   in ezana-echo-home.css were removed — they displaced the belt viewport and its
+   top fade mask below the rule, leaving dead gaps at the top of cols 2–6. And
+   because each column's cycle duration is measured from its own content height,
+   columns also drift relative to one another over time. */
 const BELT_PHASE_FRACTIONS = [0, 0.43, 0.17, 0.71, 0.29, 0.87];
 
 /* Centered column header: emerald dot beside the label, full-width underline, and

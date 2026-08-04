@@ -439,28 +439,12 @@ html:has(body.echo-route) {
     transparent 100%
   );
 }
-/* Static stagger, amplified: large, NON-monotonic offsets spread across most of
-   a card pitch (~230px), so adjacent columns are never within ~30px of each
-   other and both the top and bottom belt edges read ragged. Works with the
-   proportional phase offsets (set in JS) — two independent mismatch mechanisms. */
-.eth-col:nth-child(1) .eth-belt {
-  margin-top: 0;
-}
-.eth-col:nth-child(2) .eth-belt {
-  margin-top: 96px;
-}
-.eth-col:nth-child(3) .eth-belt {
-  margin-top: 38px;
-}
-.eth-col:nth-child(4) .eth-belt {
-  margin-top: 148px;
-}
-.eth-col:nth-child(5) .eth-belt {
-  margin-top: 66px;
-}
-.eth-col:nth-child(6) .eth-belt {
-  margin-top: 118px;
-}
+/* All belts top-align directly under their column rule: cards fade in through
+   the 30px top mask at the same y in every column. Stagger comes ONLY from the
+   per-column negative animation-delay phases (BELT_PHASE_FRACTIONS in page.js),
+   which offset card positions inside each belt. Never re-add per-column
+   margin-top here — it moves the belt viewport (and its fade mask) below the
+   rule and creates dead gaps at the top of the column. */
 .eth-belt-track {
   display: flex;
   flex-direction: column;
@@ -653,7 +637,8 @@ html:has(body.echo-route) {
   border-radius: 999px;
   padding: 4px 26px 4px 12px;
   cursor: pointer;
-  background-image: linear-gradient(45deg, transparent 50%, var(--text-muted) 50%),
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--text-muted) 50%),
     linear-gradient(135deg, var(--text-muted) 50%, transparent 50%);
   background-position:
     calc(100% - 15px) 55%,
