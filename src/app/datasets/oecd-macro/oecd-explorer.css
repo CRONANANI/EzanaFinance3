@@ -29,6 +29,10 @@
   --oecd-line-6: var(--cyan);
   --oecd-line-7: var(--danger);
   --oecd-line-8: var(--text-muted);
+
+  /* Empire-mode gold (polygon A) derived from the theme gold — tokens only. */
+  --oecd-gold-stroke: var(--gold);
+  --oecd-gold-fill: color-mix(in srgb, var(--gold) 18%, transparent);
 }
 
 .oecd-suspense {
@@ -994,6 +998,205 @@
 }
 .oecd-tip-v.is-neg {
   color: var(--negative);
+}
+
+/* ═══ Phase 4 — Empire dimensions mode ═══════════════════════════════════════ */
+
+/* Mode toggle (OECD indicators / Empire dimensions) — sits in the head-to-head
+   card header. Styled like the segmented controls, 11px mono-ish. */
+.oecd-modeseg {
+  display: inline-flex;
+  border: 1px solid var(--border-primary);
+  border-radius: 999px;
+  overflow: hidden;
+  flex: 0 0 auto;
+}
+.oecd-modeseg button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 4px 11px;
+  cursor: pointer;
+  transition:
+    background 160ms ease-out,
+    color 160ms ease-out;
+}
+.oecd-modeseg button:hover {
+  color: var(--text-secondary);
+}
+.oecd-modeseg button.is-active {
+  background: color-mix(in srgb, var(--emerald) 14%, transparent);
+  color: var(--emerald-text);
+}
+
+/* Focus chips (dimension groups) */
+.oecd-focus-chips {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.oecd-focus-chip {
+  appearance: none;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border-primary);
+  background: var(--surface-card);
+  color: var(--text-muted);
+  font-size: 10.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    border-color 160ms ease-out,
+    color 160ms ease-out,
+    background 160ms ease-out;
+}
+.oecd-focus-chip:hover {
+  border-color: var(--border-hover);
+  color: var(--text-secondary);
+}
+.oecd-focus-chip.is-active {
+  border-color: var(--gold-border);
+  background: color-mix(in srgb, var(--gold) 14%, transparent);
+  color: var(--gold-text);
+}
+.oecd-radar-ab {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.oecd-radar-selects {
+  flex-wrap: wrap;
+}
+
+/* Coverage badge — neutral tone (NOT amber), same size family as proj badge. */
+.oecd-cov-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--border-primary);
+  background: var(--surface-card);
+  color: var(--text-muted);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Pending-dimensions disclosure + empire radar footer */
+.oecd-radar-disclosure {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.oecd-pending {
+  margin: 0;
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--text-faint);
+}
+.oecd-pending-names {
+  color: var(--text-muted);
+}
+
+/* Empire polygon / chip / vertex colours — A = gold, B = emerald */
+.oecd-radar-poly--empire-a {
+  stroke: var(--oecd-gold-stroke);
+  fill: var(--oecd-gold-fill);
+}
+.oecd-radar-poly--empire-b {
+  stroke: var(--emerald);
+  fill: color-mix(in srgb, var(--emerald) 12%, transparent);
+}
+.oecd-radar-chip--empire-a {
+  background: var(--gold);
+}
+.oecd-radar-chip--empire-b {
+  background: var(--emerald);
+}
+.oecd-radar-vertex--empire-a {
+  fill: var(--gold);
+}
+.oecd-radar-vertex--empire-b {
+  fill: var(--emerald);
+}
+.oecd-radar-axis-label.is-static {
+  cursor: default;
+}
+.oecd-radar-axis-label.is-static:hover {
+  fill: var(--text-secondary);
+}
+
+/* Empire <3-dimension bar list (radar is meaningless below 3 axes) */
+.oecd-dimbars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 0;
+}
+.oecd-dimbar {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  align-items: center;
+  gap: 10px;
+}
+.oecd-dimbar-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.oecd-dimbar-track {
+  position: relative;
+  height: 10px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--text-faint) 10%, transparent);
+}
+.oecd-dimbar-fill {
+  position: absolute;
+  top: 1px;
+  bottom: 1px;
+  left: 0;
+  border-radius: 2px;
+}
+.oecd-dimbar-fill.is-a {
+  background: color-mix(in srgb, var(--gold) 70%, transparent);
+}
+.oecd-dimbar-mark {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 2px;
+  background: var(--emerald);
+  transform: translateX(-1px);
+}
+
+/* Composite ranking bar accent (gold) */
+.oecd-rank-bar.is-empire {
+  background: color-mix(in srgb, var(--gold) 70%, transparent);
+}
+
+/* Empire empty / unavailable states */
+.oecd-empire-empty {
+  margin: 4px 0 0;
+  padding: 14px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  border: 1px dashed var(--border-primary);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+}
+.oecd-empire-unavailable {
+  min-height: 90px;
 }
 
 /* ── Focus visibility (public page, keyboard-first) ────────────────────────── */

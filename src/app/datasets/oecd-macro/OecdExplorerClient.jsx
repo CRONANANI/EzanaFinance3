@@ -26,6 +26,9 @@ import OecdRadar from './OecdRadar';
 import OecdProfile from './OecdProfile';
 import OecdHistory from './OecdHistory';
 import OecdEras from './OecdEras';
+import OecdModeToggle from './OecdModeToggle';
+import OecdEmpireRanking from './OecdEmpireRanking';
+import { buildEmpireModel } from './oecd-empire-model';
 import './oecd-explorer.css';
 
 const DEFAULTS = {
@@ -36,7 +39,12 @@ const DEFAULTS = {
   pins: [],
   win: 1961,
   showAll: false,
+  mode: 'oecd',
+  focus: 'all',
 };
+
+const MODES = ['oecd', 'empire'];
+const FOCI = ['all', 'economic', 'military', 'social'];
 
 const WINDOWS = [1961, 1990, 2005];
 
@@ -51,12 +59,21 @@ function parsePins(raw) {
     .slice(0, 4);
 }
 
-function ExplorerInner({ latest }) {
+function ExplorerInner({ latest, empire }) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const model = useMemo(() => buildModel(latest), [latest]);
   const countryIsos = useMemo(() => new Set(model.countries.map((c) => c.iso)), [model]);
+
+  // Empire backbone (live-only; null when unsynced/unavailable). Country options
+  // in empire mode = the intersection with the OECD payload, so both modes always
+  // have both selected countries.
+  const empireModel = useMemo(() => buildEmpireModel(empire), [empire]);
+  const empireCountries = useMemo(() => {
+    if (!empireModel) return [];
+    return empireModel.countries.filter((c) => countryIsos.has(c.iso));
+  }, [empireModel, countryIsos]);
 
   // ── State, hydrated from the URL on first render ──────────────────────────
   const [lens, setLens] = useState(() => {
@@ -76,6 +93,14 @@ function ExplorerInner({ latest }) {
   });
   const [showAll, setShowAll] = useState(() => searchParams.get('showAll') === '1');
   const [q, setQ] = useState(''); // matrix country filter (not URL-synced — ephemeral)
+  const [mode, setMode] = useState(() => {
+    const v = searchParams.get('mode');
+    return MODES.includes(v) ? v : DEFAULTS.mode;
+  });
+  const [focus, setFocus] = useState(() => {
+    const v = searchParams.get('focus');
+    return FOCI.includes(v) ? v : DEFAULTS.focus;
+  });
 
   // Clamp A/B to countries that actually exist in the payload (defaults CHN/USA
   // may be absent from a given EO vintage). Runs once the model is known.
@@ -96,9 +121,29 @@ function ExplorerInner({ latest }) {
     if (pins.length) p.set('pins', pins.join(','));
     if (win !== DEFAULTS.win) p.set('win', String(win));
     if (showAll) p.set('showAll', '1');
+    if (mode !== DEFAULTS.mode) p.set('mode', mode);
+    if (focus !== DEFAULTS.focus) p.set('focus', focus);
     const qs = p.toString();
     router.replace(qs ? `?${qs}` : '?', { scroll: false });
-  }, [lens, ind, a, b, pins, win, showAll, router]);
+  }, [lens, ind, a, b, pins, win, showAll, mode, focus, router]);
+
+  // ── Mode switch: entering empire mode clamps A/B into the intersection so both
+  // selected countries carry empire scores. ────────────────────────────────────
+  const onMode = useCallback(
+    (next) => {
+      setMode(next);
+      if (next === 'empire' && empireCountries.length) {
+        const isos = new Set(empireCountries.map((c) => c.iso));
+        const pick = (want, idx) =>
+          empireCountries.find((c) => c.iso === want)?.iso ||
+          empireCountries[idx]?.iso ||
+          empireCountries[0].iso;
+        setA((cur) => (isos.has(cur) ? cur : pick('USA', 0)));
+        setB((cur) => (isos.has(cur) ? cur : pick('CHN', 1)));
+      }
+    },
+    [empireCountries],
+  );
 
   // ── Lens switching: reset indicator when it leaves the lens ───────────────
   const onLens = useCallback((nextLens) => {
@@ -187,29 +232,71 @@ function ExplorerInner({ latest }) {
         onPickCountry={setA}
       />
 
-      <OecdRanking
-        model={model}
-        slug={ind}
-        series={series}
-        selectedA={a}
-        showAll={showAll}
-        onToggleShowAll={() => setShowAll((v) => !v)}
-        onPickCountry={setA}
-      />
+      {mode === 'empire' && !empireModel ? (
+        // Honesty rule 5 — live-only surface, no mock fallback. The toggle stays
+        // reachable so the user can return to OECD mode.
+        <section className="oecd-card oecd-empire-unavailable">
+          <div className="oecd-section-head">
+            <div className="oecd-section-head-l">
+              <span className="oecd-section-tag">EMPIRE DIMENSIONS</span>
+              <h2 className="oecd-section-title">Head-to-head</h2>
+            </div>
+            <OecdModeToggle mode={mode} onMode={onMode} />
+          </div>
+          <p className="oecd-empire-empty">
+            Empire dimension scores are temporarily unavailable. The OECD indicators above remain
+            fully available.
+          </p>
+        </section>
+      ) : (
+        <>
+          {mode === 'oecd' ? (
+            <OecdRanking
+              model={model}
+              slug={ind}
+              series={series}
+              selectedA={a}
+              showAll={showAll}
+              onToggleShowAll={() => setShowAll((v) => !v)}
+              onPickCountry={setA}
+            />
+          ) : (
+            <OecdEmpireRanking
+              model={empireModel}
+              focus={focus}
+              selectedA={a}
+              onPickCountry={setA}
+            />
+          )}
 
-      <section className="oecd-duo">
-        <OecdRadar
-          model={model}
-          lens={lens}
-          a={a}
-          b={b}
-          ind={ind}
-          onChangeA={setA}
-          onChangeB={setB}
-          onPickIndicator={setInd}
-        />
-        <OecdProfile model={model} a={a} ind={ind} onPickIndicator={setInd} />
-      </section>
+          <section className="oecd-duo">
+            <OecdRadar
+              model={model}
+              lens={lens}
+              a={a}
+              b={b}
+              ind={ind}
+              onChangeA={setA}
+              onChangeB={setB}
+              onPickIndicator={setInd}
+              mode={mode}
+              onMode={onMode}
+              focus={focus}
+              onFocus={setFocus}
+              empireModel={empireModel}
+              empireCountries={empireCountries}
+            />
+            <OecdProfile
+              model={model}
+              a={a}
+              ind={ind}
+              onPickIndicator={setInd}
+              mode={mode}
+              empireModel={empireModel}
+            />
+          </section>
+        </>
+      )}
 
       <OecdHistory
         model={model}
@@ -228,10 +315,10 @@ function ExplorerInner({ latest }) {
   );
 }
 
-export default function OecdExplorerClient({ latest }) {
+export default function OecdExplorerClient({ latest, empire = null }) {
   return (
     <Suspense fallback={<div className="oecd-page oecd-suspense" aria-busy="true" />}>
-      <ExplorerInner latest={latest} />
+      <ExplorerInner latest={latest} empire={empire} />
     </Suspense>
   );
 }

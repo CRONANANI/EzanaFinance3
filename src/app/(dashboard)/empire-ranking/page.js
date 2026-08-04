@@ -16,6 +16,7 @@ import {
 import { useCardConfig } from '@/hooks/useCardConfig';
 import { useEmpireScores } from '@/hooks/useEmpireScores';
 import { auditContrast } from '@/lib/a11y/audit-contrast';
+import { DIMENSION_GROUPS } from '@/lib/empire-dimension-groups';
 import { fetchEmpireRankings } from '@/lib/empire-db';
 import { colorFor, ANCHOR_ISO3S } from '@/lib/empire/country-colors';
 import {
@@ -70,35 +71,9 @@ function applyScope(rows, scope) {
   return rows.filter((r) => filter.has(r.code));
 }
 
-/* Dimension subsets for the radar — 18 dims is too noisy to scan when the
- * user only cares about (say) economic factors, so we let them focus. */
-const DIMENSION_GROUPS = {
-  all: null,
-  economic: new Set([
-    'Debt Burden',
-    'Expected Growth',
-    'Economic Output',
-    'Markets & Financial Center',
-    'Reserve Currency Status',
-    'Trade',
-    'Cost Competitiveness',
-  ]),
-  military: new Set([
-    'Military Strength',
-    'Geology',
-    'Resource Efficiency',
-    'Internal Conflict',
-    'Infrastructure',
-  ]),
-  social: new Set([
-    'Education',
-    'Innovation & Technology',
-    'Character & Civility',
-    'Rule of Law',
-    'Wealth Gaps',
-    'Acts of Nature',
-  ]),
-};
+/* Dimension subsets for the radar (DIMENSION_GROUPS) are the shared taxonomy —
+ * imported from '@/lib/empire-dimension-groups' so the public OECD explorer's
+ * empire-dimensions mode reuses the exact same grouping. */
 
 const DIMENSION_OPTIONS = [
   { value: 'all', label: 'All 18' },
@@ -536,7 +511,7 @@ function synthesizeBigCycleShape(code, economicRank) {
   const h = hashString(code);
   const peakVal = Math.max(25, 90 - (rank - 1) * 1.2); // rank 1 → 90, rank 60 → 19
   const nowVal = Math.max(8, peakVal * (0.35 + ((h >> 3) % 40) / 100)); // 35-75% of peak
-  const rise = 1600 + ((h >> 7) % 350);                  // 1600–1950
+  const rise = 1600 + ((h >> 7) % 350); // 1600–1950
   const peak = Math.min(2020, rise + 80 + ((h >> 11) % 140)); // rise + 80–220y
   return { rise, peak, current: 2025, peakVal, nowVal };
 }
@@ -653,9 +628,16 @@ function PowerRankingsCard({ empireData }) {
       {data.length === 0 ? (
         <div className="er-empty">No countries in the selected scope.</div>
       ) : (
-        <div className="w-full min-w-0 overflow-x-auto" style={{ height: Math.max(220, data.length * 34 + 40) }}>
+        <div
+          className="w-full min-w-0 overflow-x-auto"
+          style={{ height: Math.max(220, data.length * 34 + 40) }}
+        >
           <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-            <BarChart data={data} layout="vertical" margin={{ top: 8, right: 24, left: 8, bottom: 8 }}>
+            <BarChart
+              data={data}
+              layout="vertical"
+              margin={{ top: 8, right: 24, left: 8, bottom: 8 }}
+            >
               <CartesianGrid strokeDasharray="3 3" stroke={tokens.grid} horizontal={false} />
               <XAxis
                 type="number"
@@ -724,16 +706,14 @@ function PowerDimensionRadar({ empireData }) {
         const mockA = empireData.find((e) => e.code === cfg.countryA)?.scores[dim] ?? 0;
         const mockB = empireData.find((e) => e.code === cfg.countryB)?.scores[dim] ?? 0;
 
-        const liveA = live.hasData && dimId
-          ? normalizedToMockScale(
-              live.scoresByCountryByDimension.get(cfg.countryA)?.get(dimId),
-            )
-          : null;
-        const liveB = live.hasData && dimId
-          ? normalizedToMockScale(
-              live.scoresByCountryByDimension.get(cfg.countryB)?.get(dimId),
-            )
-          : null;
+        const liveA =
+          live.hasData && dimId
+            ? normalizedToMockScale(live.scoresByCountryByDimension.get(cfg.countryA)?.get(dimId))
+            : null;
+        const liveB =
+          live.hasData && dimId
+            ? normalizedToMockScale(live.scoresByCountryByDimension.get(cfg.countryB)?.get(dimId))
+            : null;
 
         const a = liveA ?? mockA;
         const b = liveB ?? mockB;
@@ -918,7 +898,7 @@ function pivotBigCycleWide(seriesByCode, yearStart) {
 
 function BigCycleCard({ empireData }) {
   const [cfg, setCfg] = useCardConfig('big-cycle', {
-    country: 'USA',                   // can also be the sentinel 'all'
+    country: 'USA', // can also be the sentinel 'all'
     window: 250,
     regions: ['Americas', 'Europe', 'Asia-Pacific', 'MENA', 'Africa'],
     topN: 20,
@@ -983,8 +963,7 @@ function BigCycleCard({ empireData }) {
   const current = !isAllMode ? empireData.find((e) => e.code === cfg.country) : null;
   const traj = current ? trajectoryIcon(current.trajectory) : null;
 
-  const windowLabel =
-    BIG_CYCLE_TIMEFRAMES.find((t) => t.value === cfg.window)?.label ?? 'All';
+  const windowLabel = BIG_CYCLE_TIMEFRAMES.find((t) => t.value === cfg.window)?.label ?? 'All';
 
   // ─── All-mode hover / pin state ──────────────────────────────────────────
   const [hoveredIso, setHoveredIso] = useState(null);
@@ -1043,11 +1022,7 @@ function BigCycleCard({ empireData }) {
                 onChange={(v) => setCfg({ topN: v })}
               />
               {hasCustomPins && (
-                <button
-                  type="button"
-                  className="er-big-cycle-reset"
-                  onClick={resetPins}
-                >
+                <button type="button" className="er-big-cycle-reset" onClick={resetPins}>
                   Reset pins
                 </button>
               )}
@@ -1059,7 +1034,10 @@ function BigCycleCard({ empireData }) {
     >
       {isAllMode ? (
         <div className="er-big-cycle-all">
-          <div className="er-big-cycle-all__chart w-full min-w-0 overflow-hidden" style={{ height: 360 }}>
+          <div
+            className="er-big-cycle-all__chart w-full min-w-0 overflow-hidden"
+            style={{ height: 360 }}
+          >
             <ResponsiveContainer width="100%" height="100%" minWidth={0}>
               <LineChart data={allModeData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke={tokens.grid} />
@@ -1134,9 +1112,7 @@ function BigCycleCard({ empireData }) {
           </div>
 
           <aside className="er-big-cycle-legend" aria-label="Countries">
-            <div className="er-big-cycle-legend__header">
-              Countries ({visibleCountries.length})
-            </div>
+            <div className="er-big-cycle-legend__header">Countries ({visibleCountries.length})</div>
             <ul className="er-big-cycle-legend__list">
               {visibleCountries.map((c) => {
                 const pinned = pinnedIsos.has(c.code);
@@ -1166,10 +1142,7 @@ function BigCycleCard({ empireData }) {
                         #{c.economicRank >= 500 ? '—' : c.economicRank}
                       </span>
                       {pinned && (
-                        <i
-                          className="bi bi-pin-angle-fill er-big-cycle-legend__pin"
-                          aria-hidden
-                        />
+                        <i className="bi bi-pin-angle-fill er-big-cycle-legend__pin" aria-hidden />
                       )}
                     </button>
                   </li>
@@ -1329,7 +1302,12 @@ function DebtCycleCard() {
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke={tokens.grid} />
-              <XAxis dataKey="year" tick={{ fill: tokens.axisTick, fontSize: 10 }} axisLine={false} tickLine={false} />
+              <XAxis
+                dataKey="year"
+                tick={{ fill: tokens.axisTick, fontSize: 10 }}
+                axisLine={false}
+                tickLine={false}
+              />
               <YAxis
                 tick={{ fill: tokens.axisTick, fontSize: 10 }}
                 axisLine={false}
@@ -1337,7 +1315,10 @@ function DebtCycleCard() {
                 tickFormatter={(v) => `${v}%`}
               />
               <Tooltip contentStyle={tokens.tooltipStyle} formatter={(v) => `${v.toFixed(0)}%`} />
-              <Legend wrapperStyle={{ fontSize: '0.65rem', color: tokens.legend }} iconType="plainline" />
+              <Legend
+                wrapperStyle={{ fontSize: '0.65rem', color: tokens.legend }}
+                iconType="plainline"
+              />
               {activeCountries.map((c) => (
                 <Line
                   key={c.value}
@@ -1385,10 +1366,7 @@ function MilitaryCard() {
   const tokens = useEmpireChartTokens();
 
   const data = useMemo(
-    () =>
-      [...MILITARY_DATA]
-        .sort((a, b) => b[cfg.metric] - a[cfg.metric])
-        .slice(0, cfg.topN),
+    () => [...MILITARY_DATA].sort((a, b) => b[cfg.metric] - a[cfg.metric]).slice(0, cfg.topN),
     [cfg.metric, cfg.topN],
   );
 
@@ -1422,7 +1400,12 @@ function MilitaryCard() {
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke={tokens.grid} />
-            <XAxis dataKey="country" tick={{ fill: tokens.axisTickEmphasis, fontSize: 10 }} axisLine={false} tickLine={false} />
+            <XAxis
+              dataKey="country"
+              tick={{ fill: tokens.axisTickEmphasis, fontSize: 10 }}
+              axisLine={false}
+              tickLine={false}
+            />
             <YAxis
               tick={{ fill: tokens.axisTick, fontSize: 10 }}
               axisLine={false}
@@ -1509,7 +1492,12 @@ function ReserveCurrencyCard() {
             stackOffset={cfg.display === 'stacked' ? 'expand' : 'none'}
           >
             <CartesianGrid strokeDasharray="3 3" stroke={tokens.grid} />
-            <XAxis dataKey="year" tick={{ fill: tokens.axisTick, fontSize: 10 }} axisLine={false} tickLine={false} />
+            <XAxis
+              dataKey="year"
+              tick={{ fill: tokens.axisTick, fontSize: 10 }}
+              axisLine={false}
+              tickLine={false}
+            />
             <YAxis
               tick={{ fill: tokens.axisTick, fontSize: 10 }}
               axisLine={false}
@@ -1633,7 +1621,10 @@ function ScorecardGrid({ empireData }) {
                 </div>
                 <div className="er-scorecard-score-row">
                   <div className="er-scorecard-score">{c.score.toFixed(2)}</div>
-                  <i className={`bi ${traj.icon} er-scorecard-trajectory`} style={{ color: traj.color }} />
+                  <i
+                    className={`bi ${traj.icon} er-scorecard-trajectory`}
+                    style={{ color: traj.color }}
+                  />
                 </div>
                 <div className="er-scorecard-bar-track">
                   <div className="er-scorecard-bar-fill" style={{ width: `${c.score * 100}%` }} />
@@ -1651,8 +1642,14 @@ function EmpireRankingPageContent() {
   const searchParams = useSearchParams();
   const layersParam = searchParams.get('layers');
   const activeLayers = useMemo(
-    () => (layersParam ? layersParam.split(',').map((s) => s.trim()).filter(Boolean) : []),
-    [layersParam]
+    () =>
+      layersParam
+        ? layersParam
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [],
+    [layersParam],
   );
   const hasIncoming = activeLayers.length > 0;
   const [bannerDismissed, setBannerDismissed] = useState(false);
@@ -1663,7 +1660,10 @@ function EmpireRankingPageContent() {
 
   useEffect(() => {
     if (!layersParam) return;
-    const layers = layersParam.split(',').map((s) => s.trim()).filter(Boolean);
+    const layers = layersParam
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
     if (layers.length === 0) return;
     const t = setTimeout(() => {
       const sectionId = LAYER_SECTION_MAP[layers[0]];
@@ -1752,8 +1752,9 @@ function EmpireRankingPageContent() {
             <div>
               <h1>Data &amp; Charts For Empire Rankings</h1>
               <p className="er-hero-sub">
-                Quantitative empire scoring inspired by Ray Dalio&apos;s <em>Changing World Order</em> framework. Power
-                measured across 18 dimensions for the world&apos;s top 11 nations.
+                Quantitative empire scoring inspired by Ray Dalio&apos;s{' '}
+                <em>Changing World Order</em> framework. Power measured across 18 dimensions for the
+                world&apos;s top 11 nations.
               </p>
             </div>
           </div>
@@ -1764,7 +1765,9 @@ function EmpireRankingPageContent() {
       {hasIncoming && !bannerDismissed && (
         <div className="er-layers-from-map-banner" role="status">
           <div>
-            <p className="er-layers-from-map-title">Showing data for your selected Global Power Map layers</p>
+            <p className="er-layers-from-map-title">
+              Showing data for your selected Global Power Map layers
+            </p>
             <div className="er-layers-from-map-tags">
               {activeLayers.map((layer) => (
                 <span key={layer} className="er-layers-from-map-tag">

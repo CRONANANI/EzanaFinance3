@@ -1,4 +1,5 @@
 import { getOecdLatest } from '@/lib/oecd-store';
+import { getEmpireScoresForExplorer } from '@/lib/empire-public-store';
 import OecdExplorerClient from './OecdExplorerClient';
 
 /**
@@ -18,11 +19,16 @@ export const metadata = {
 };
 
 export default async function OecdMacroDatasetPage() {
-  let latest = null;
-  try {
-    latest = await getOecdLatest();
-  } catch {
-    latest = null;
-  }
-  return <OecdExplorerClient latest={latest} />;
+  // Both sources resolve to null on failure (never throw), so a settled pair is
+  // enough — no source can take down the page. Empire scores are live-only; when
+  // the backbone is unsynced this is null and empire mode shows its unavailable
+  // state (OECD mode is unaffected).
+  const [latestRes, empireRes] = await Promise.allSettled([
+    getOecdLatest(),
+    getEmpireScoresForExplorer(),
+  ]);
+  const latest = latestRes.status === 'fulfilled' ? latestRes.value : null;
+  const empire = empireRes.status === 'fulfilled' ? empireRes.value : null;
+
+  return <OecdExplorerClient latest={latest} empire={empire} />;
 }
