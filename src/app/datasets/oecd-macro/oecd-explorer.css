@@ -33,6 +33,12 @@
   /* Empire-mode gold (polygon A) derived from the theme gold — tokens only. */
   --oecd-gold-stroke: var(--gold);
   --oecd-gold-fill: color-mix(in srgb, var(--gold) 18%, transparent);
+
+  /* Empire dimension category dots (economic / power / social / other). */
+  --oecd-dim-cat-economic: var(--emerald);
+  --oecd-dim-cat-power: var(--gold);
+  --oecd-dim-cat-social: var(--info);
+  --oecd-dim-cat-other: var(--text-faint);
 }
 
 .oecd-suspense {
@@ -1248,6 +1254,131 @@
 }
 .oecd-empire-unavailable {
   min-height: 90px;
+}
+
+/* ═══ Phase 5 — Empire-dimension matrix ══════════════════════════════════════ */
+
+/* Page pill row of 18 dimensions (+ All), wrapping to two rows. */
+.oecd-dimpills {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+.oecd-dimpill {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border-primary);
+  background: var(--surface-card);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.02em;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    border-color 160ms ease-out,
+    background 160ms ease-out,
+    color 160ms ease-out;
+}
+.oecd-dimpill:hover:not(:disabled) {
+  border-color: var(--border-hover);
+  color: var(--text-secondary);
+}
+.oecd-dimpill.is-active {
+  border-color: var(--emerald-border);
+  background: color-mix(in srgb, var(--emerald) 12%, transparent);
+  color: var(--emerald-text);
+}
+.oecd-dimpill.is-pending {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.oecd-dimpill-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+/* Compact lens chips relocated into the radar card. */
+.oecd-lenses--compact {
+  margin-bottom: 8px;
+  gap: 5px;
+}
+.oecd-lenses--compact .oecd-lens-pill {
+  padding: 2px 9px;
+  font-size: 10.5px;
+}
+
+/* World Bank score-vintage badge (neutral, same family as the coverage badge). */
+.oecd-wb-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--border-primary);
+  background: var(--surface-card);
+  color: var(--text-muted);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Static (non-button) column headers in the empire matrix. */
+.oecd-matrix-colh.is-static {
+  padding: 3px 6px;
+  cursor: default;
+}
+.oecd-colh-static {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.oecd-matrix-colh.is-score-col .oecd-colh-static {
+  color: var(--emerald-text);
+}
+
+/* SCORE column emphasis (leading normalized-score column). */
+.oecd-matrix-cell.is-score-col,
+.oecd-matrix-colh.is-score-col {
+  border-left: 2px solid var(--emerald-border);
+}
+
+/* Muted raw-metric suffix + stale-observation muting. */
+.oecd-cell-unit {
+  color: var(--text-faint);
+  font-size: 9px;
+}
+.oecd-cell-btn.is-stale {
+  color: var(--text-faint);
+}
+
+/* Matrix attribution footer + fallback notice. */
+.oecd-matrix-attr {
+  margin: 10px 0 0;
+  font-size: 9.5px;
+  color: var(--text-faint);
+}
+.oecd-matrix-notice {
+  margin: 0 0 8px;
+  font-size: 10.5px;
+  color: var(--text-muted);
+  padding: 6px 10px;
+  border: 1px dashed var(--border-primary);
+  border-radius: var(--radius-sm);
+  background: var(--surface-card);
 }
 
 /* ── Focus visibility (public page, keyboard-first) ────────────────────────── */

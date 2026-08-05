@@ -24,6 +24,7 @@ import { allSlugsForLens, columnValues, lensLabel, rankWithin } from './oecd-exp
 import { empireAxesForFocus, normScore } from './oecd-empire-model';
 import OecdProjBadge from './OecdProjBadge';
 import OecdModeToggle from './OecdModeToggle';
+import OecdLensPills from './OecdLensPills';
 import OecdTip, { tipFromEvent, tipFromElement } from './OecdTip';
 
 const SIZE = 420;
@@ -58,6 +59,10 @@ export default function OecdRadar({
   onFocus,
   empireModel = null,
   empireCountries = null,
+  // phase 5: when the page pills became empire dimensions, the OECD lens control
+  // relocates here (OECD mode only) so radar-axis filtering + `ind` reset survive.
+  onLens,
+  showLensChips = false,
 }) {
   const cardRef = useRef(null);
   const [tip, setTip] = useState(null);
@@ -205,6 +210,12 @@ export default function OecdRadar({
     </div>
   );
 
+  // OECD lens chips relocated into this card (phase 5), OECD mode only.
+  const lensChips =
+    showLensChips && !isEmpire && onLens ? (
+      <OecdLensPills lens={lens} onLens={onLens} showCaption={false} compact />
+    ) : null;
+
   const selects = (
     <div className="oecd-radar-selects">
       {isEmpire ? (
@@ -285,6 +296,7 @@ export default function OecdRadar({
     return (
       <section className="oecd-card oecd-radar-card" ref={cardRef}>
         {header}
+        {lensChips}
         {selects}
         <div className="oecd-dimbars">
           {axes.map((ax) => (
@@ -322,6 +334,7 @@ export default function OecdRadar({
     return (
       <section className="oecd-card oecd-radar-card" ref={cardRef}>
         {header}
+        {lensChips}
         {selects}
         <p className="oecd-empire-empty">
           No live-scored dimensions in this focus group yet — every dimension here is awaiting data
@@ -335,6 +348,7 @@ export default function OecdRadar({
   return (
     <section className="oecd-card oecd-radar-card" ref={cardRef}>
       {header}
+      {lensChips}
       {selects}
       <div className="oecd-radar-plot">
         <svg

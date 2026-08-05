@@ -30,6 +30,7 @@ import {
 } from '@/lib/oecd-scales';
 import { columnValues, rankWithin } from './oecd-explorer-model';
 import OecdProjBadge from './OecdProjBadge';
+import OecdEmpireMatrix from './OecdEmpireMatrix';
 import OecdTip, { tipFromEvent, tipFromElement } from './OecdTip';
 
 const SORT_NOTE =
@@ -44,6 +45,50 @@ export default function OecdMatrix({
   query,
   onPickIndicator,
   onPickCountry,
+  // phase 5 — empire-dimension matrix (null → OECD-lens fallback below)
+  empireMatrix = null,
+  dim = 'all',
+  empireUnavailable = false,
+}) {
+  // Empire-dimension view when the live backbone payload is present. The OECD
+  // path below is retained as the null-payload fallback.
+  if (empireMatrix) {
+    return (
+      <OecdEmpireMatrix
+        model={empireMatrix}
+        dim={dim}
+        selectedA={selectedA}
+        query={query}
+        onPickCountry={onPickCountry}
+      />
+    );
+  }
+
+  return (
+    <OecdLensMatrix
+      model={model}
+      slugs={slugs}
+      lens={lens}
+      ind={ind}
+      selectedA={selectedA}
+      query={query}
+      onPickIndicator={onPickIndicator}
+      onPickCountry={onPickCountry}
+      empireUnavailable={empireUnavailable}
+    />
+  );
+}
+
+function OecdLensMatrix({
+  model,
+  slugs,
+  lens,
+  ind,
+  selectedA,
+  query,
+  onPickIndicator,
+  onPickCountry,
+  empireUnavailable,
 }) {
   const cardRef = useRef(null);
   const [tip, setTip] = useState(null);
@@ -216,6 +261,12 @@ export default function OecdMatrix({
           </span>
         ) : null}
       </div>
+
+      {empireUnavailable ? (
+        <p className="oecd-matrix-notice">
+          Empire-dimension scores are temporarily unavailable — showing the OECD indicator matrix.
+        </p>
+      ) : null}
 
       <div className="oecd-matrix-scroll">
         <table className="oecd-matrix" onMouseLeave={() => setHover(null)}>

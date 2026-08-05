@@ -16,9 +16,9 @@
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import CategoryBar from '@/components/datasets/CategoryBar';
-import { OECD_LENSES, OECD_SERIES_BY_SLUG, OECD_CURATED_SLUGS } from '@/lib/oecd-curated';
+import { OECD_SERIES_BY_SLUG, OECD_CURATED_SLUGS } from '@/lib/oecd-curated';
 import OecdMacroClient from './OecdMacroClient';
-import { buildModel, allSlugsForLens, slugsForLens, lensLabel } from './oecd-explorer-model';
+import { buildModel, allSlugsForLens, slugsForLens } from './oecd-explorer-model';
 import OecdAggregates from './OecdAggregates';
 import OecdMatrix from './OecdMatrix';
 import OecdRanking from './OecdRanking';
@@ -28,7 +28,10 @@ import OecdHistory from './OecdHistory';
 import OecdEras from './OecdEras';
 import OecdModeToggle from './OecdModeToggle';
 import OecdEmpireRanking from './OecdEmpireRanking';
+import OecdLensPills from './OecdLensPills';
+import OecdDimensionPills from './OecdDimensionPills';
 import { buildEmpireModel } from './oecd-empire-model';
+import { buildEmpireMatrixModel } from './oecd-empire-matrix-model';
 import './oecd-explorer.css';
 
 const DEFAULTS = {
@@ -45,10 +48,9 @@ const DEFAULTS = {
 
 const MODES = ['oecd', 'empire'];
 const FOCI = ['all', 'economic', 'military', 'social'];
+const DEFAULT_DIM = 'all';
 
 const WINDOWS = [1961, 1990, 2005];
-
-const LENS_PILLS = [{ id: 'all', label: 'All' }, ...OECD_LENSES];
 
 function parsePins(raw) {
   if (!raw) return [];
@@ -59,7 +61,7 @@ function parsePins(raw) {
     .slice(0, 4);
 }
 
-function ExplorerInner({ latest, empire }) {
+function ExplorerInner({ latest, empire, empireMatrix }) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -70,16 +72,23 @@ function ExplorerInner({ latest, empire }) {
   // in empire mode = the intersection with the OECD payload, so both modes always
   // have both selected countries.
   const empireModel = useMemo(() => buildEmpireModel(empire), [empire]);
+
+  // Empire-dimension MATRIX payload (phase 5). When present, the page pills become
+  // the 18 dimensions and the matrix shows scores/metrics; when null the matrix
+  // falls back to the OECD-lens form and the page pills stay the six lenses.
+  const empireMatrixModel = useMemo(() => buildEmpireMatrixModel(empireMatrix), [empireMatrix]);
+  const hasDimMatrix = !!empireMatrixModel;
   const empireCountries = useMemo(() => {
     if (!empireModel) return [];
     return empireModel.countries.filter((c) => countryIsos.has(c.iso));
   }, [empireModel, countryIsos]);
 
   // ── State, hydrated from the URL on first render ──────────────────────────
-  const [lens, setLens] = useState(() => {
-    const v = searchParams.get('lens');
-    return LENS_PILLS.some((l) => l.id === v) ? v : DEFAULTS.lens;
-  });
+  // `dim` (empire matrix) replaces `lens` in the URL. An incoming legacy `lens=`
+  // param is intentionally ignored (phase-5 migration) so old deep links don't
+  // crash — lens is now a local control inside the radar card.
+  const [dim, setDim] = useState(() => searchParams.get('dim') || DEFAULT_DIM);
+  const [lens, setLens] = useState(DEFAULTS.lens);
   const [ind, setInd] = useState(() => {
     const v = searchParams.get('ind');
     return OECD_CURATED_SLUGS.includes(v) ? v : DEFAULTS.ind;
@@ -114,7 +123,7 @@ function ExplorerInner({ latest, empire }) {
   // ── URL sync (shareable, scroll-preserving) ───────────────────────────────
   useEffect(() => {
     const p = new URLSearchParams();
-    if (lens !== DEFAULTS.lens) p.set('lens', lens);
+    if (dim !== DEFAULT_DIM) p.set('dim', dim);
     if (ind !== DEFAULTS.ind) p.set('ind', ind);
     if (a !== DEFAULTS.a) p.set('a', a);
     if (b !== DEFAULTS.b) p.set('b', b);
@@ -125,7 +134,7 @@ function ExplorerInner({ latest, empire }) {
     if (focus !== DEFAULTS.focus) p.set('focus', focus);
     const qs = p.toString();
     router.replace(qs ? `?${qs}` : '?', { scroll: false });
-  }, [lens, ind, a, b, pins, win, showAll, mode, focus, router]);
+  }, [dim, ind, a, b, pins, win, showAll, mode, focus, router]);
 
   // ── Mode switch: entering empire mode clamps A/B into the intersection so both
   // selected countries carry empire scores. ────────────────────────────────────
@@ -205,21 +214,13 @@ function ExplorerInner({ latest, empire }) {
         <OecdAggregates model={model} slug={ind} />
       </header>
 
-      {/* Lens pills */}
-      <nav className="oecd-lenses" aria-label="Indicator lens">
-        {LENS_PILLS.map((l) => (
-          <button
-            key={l.id}
-            type="button"
-            className={`oecd-lens-pill ${l.id === lens ? 'is-active' : ''}`}
-            aria-pressed={l.id === lens}
-            onClick={() => onLens(l.id)}
-          >
-            {l.label}
-          </button>
-        ))}
-        <span className="oecd-lens-caption">{lensLabel(lens)}</span>
-      </nav>
+      {/* Page pills: 18 empire dimensions when the live matrix payload exists,
+          otherwise the six OECD lenses (the fallback drives the OECD matrix). */}
+      {hasDimMatrix ? (
+        <OecdDimensionPills dimensions={empireMatrixModel.dimensions} dim={dim} onDim={setDim} />
+      ) : (
+        <OecdLensPills lens={lens} onLens={onLens} />
+      )}
 
       <OecdMatrix
         model={model}
@@ -230,6 +231,9 @@ function ExplorerInner({ latest, empire }) {
         query={q}
         onPickIndicator={setInd}
         onPickCountry={setA}
+        empireMatrix={empireMatrixModel}
+        dim={dim}
+        empireUnavailable={!hasDimMatrix}
       />
 
       {mode === 'empire' && !empireModel ? (
@@ -285,6 +289,8 @@ function ExplorerInner({ latest, empire }) {
               onFocus={setFocus}
               empireModel={empireModel}
               empireCountries={empireCountries}
+              onLens={onLens}
+              showLensChips={hasDimMatrix}
             />
             <OecdProfile
               model={model}
@@ -315,10 +321,10 @@ function ExplorerInner({ latest, empire }) {
   );
 }
 
-export default function OecdExplorerClient({ latest, empire = null }) {
+export default function OecdExplorerClient({ latest, empire = null, empireMatrix = null }) {
   return (
     <Suspense fallback={<div className="oecd-page oecd-suspense" aria-busy="true" />}>
-      <ExplorerInner latest={latest} empire={empire} />
+      <ExplorerInner latest={latest} empire={empire} empireMatrix={empireMatrix} />
     </Suspense>
   );
 }

@@ -1,5 +1,5 @@
 import { getOecdLatest } from '@/lib/oecd-store';
-import { getEmpireScoresForExplorer } from '@/lib/empire-public-store';
+import { getEmpireScoresForExplorer, getEmpireMatrixData } from '@/lib/empire-public-store';
 import OecdExplorerClient from './OecdExplorerClient';
 
 /**
@@ -23,12 +23,14 @@ export default async function OecdMacroDatasetPage() {
   // enough — no source can take down the page. Empire scores are live-only; when
   // the backbone is unsynced this is null and empire mode shows its unavailable
   // state (OECD mode is unaffected).
-  const [latestRes, empireRes] = await Promise.allSettled([
+  const [latestRes, empireRes, matrixRes] = await Promise.allSettled([
     getOecdLatest(),
     getEmpireScoresForExplorer(),
+    getEmpireMatrixData(),
   ]);
   const latest = latestRes.status === 'fulfilled' ? latestRes.value : null;
   const empire = empireRes.status === 'fulfilled' ? empireRes.value : null;
+  const empireMatrix = matrixRes.status === 'fulfilled' ? matrixRes.value : null;
 
-  return <OecdExplorerClient latest={latest} empire={empire} />;
+  return <OecdExplorerClient latest={latest} empire={empire} empireMatrix={empireMatrix} />;
 }
