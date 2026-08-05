@@ -6,19 +6,23 @@
  * come from `heatmapCellStyle` (diverging for signed indicators, quantile tint
  * otherwise), so no single outlier blows out a column's ramp.
  *
+ * Rows are ordered by COMPOSITE RANK across the visible columns — each indicator
+ * is rank-normalized (inv respected), a country's composite is the mean over the
+ * columns it has data for, and the table lists strongest first, re-ranking on
+ * every lens change. Countries with data for fewer than half the columns are
+ * pulled into a separate, disclosed "insufficient coverage" band rather than
+ * ranked on partial data.
+ *
  * Every navigable element is a real <button>: a column header sets the indicator,
  * a row's country name sets country A, a cell sets both. Hovering (or focusing) a
- * cell raises a tooltip (country · indicator · value · year/PROJ · rank) and
- * tints that cell's whole row and column — a terminal-style crosshair. The
- * crosshair is driven by a single hovered-cell id, not per-mousemove state.
- *
- * Normalization is memoized per column (keyed on the slug set + payload) so hover
- * never recomputes the scales.
+ * cell raises a tooltip and tints that cell's whole row and column — a terminal
+ * crosshair driven by a single hovered-cell id, not per-mousemove state.
  */
 import { useMemo, useRef, useState } from 'react';
 import { OECD_SERIES_BY_SLUG } from '@/lib/oecd-curated';
 import {
   columnQuantiles,
+  compositeRanks,
   heatmapCellStyle,
   formatValue,
   isProjected,
@@ -27,6 +31,9 @@ import {
 import { columnValues, rankWithin } from './oecd-explorer-model';
 import OecdProjBadge from './OecdProjBadge';
 import OecdTip, { tipFromEvent, tipFromElement } from './OecdTip';
+
+const SORT_NOTE =
+  'Countries are rank-normalized per indicator (inverted where lower is better) and ordered by the mean across the columns shown; countries with data for fewer than half the columns are listed separately.';
 
 export default function OecdMatrix({
   model,
@@ -51,15 +58,39 @@ export default function OecdMatrix({
     });
   }, [slugs, model]);
 
-  const rows = useMemo(() => {
-    const needle = (query || '').trim().toLowerCase();
-    if (!needle) return model.countries;
-    return model.countries.filter(
-      (c) => c.name.toLowerCase().includes(needle) || c.iso.toLowerCase().includes(needle),
-    );
-  }, [model.countries, query]);
+  // Composite rank across the visible columns — re-ranks whenever the lens (and
+  // thus `columns`) changes. Ordinal only: the raw composite is never displayed.
+  const { rankByIso, rankedIsos } = useMemo(() => {
+    const vbas = new Map();
+    for (const c of columns) vbas.set(c.slug, new Map(Object.entries(c.values)));
+    const { ranked } = compositeRanks(vbas, OECD_SERIES_BY_SLUG, { minCoverage: 0.5 });
+    return {
+      rankByIso: new Map(ranked.map((r) => [r.area, r.rank])),
+      rankedIsos: ranked.map((r) => r.area),
+    };
+  }, [columns]);
 
-  // Section-level projection badge only when EVERY column is one projected year.
+  const countryByIso = useMemo(
+    () => new Map(model.countries.map((c) => [c.iso, c])),
+    [model.countries],
+  );
+
+  // Display order: ranked (by rank) then the insufficient band (everything not
+  // ranked — <half coverage or no data in these columns — alphabetical by name,
+  // which model.countries already is). Query filters which rows are shown.
+  const { rankedRows, insufficientRows, insufficientTotal } = useMemo(() => {
+    const rankedList = rankedIsos.map((iso) => countryByIso.get(iso)).filter(Boolean);
+    const insufficientList = model.countries.filter((c) => !rankByIso.has(c.iso));
+    const needle = (query || '').trim().toLowerCase();
+    const match = (c) =>
+      !needle || c.name.toLowerCase().includes(needle) || c.iso.toLowerCase().includes(needle);
+    return {
+      rankedRows: rankedList.filter(match),
+      insufficientRows: insufficientList.filter(match),
+      insufficientTotal: insufficientList.length,
+    };
+  }, [rankedIsos, rankByIso, countryByIso, model.countries, query]);
+
   const sectionProjYear = useMemo(() => {
     const years = columns.map((c) => c.year).filter((y) => y != null);
     if (years.length === 0 || years.length !== columns.length) return null;
@@ -83,6 +114,66 @@ export default function OecdMatrix({
     };
   };
 
+  const colCount = columns.length + 2; // rank + country + indicators
+
+  const renderRow = (country, rankCell) => (
+    <tr
+      key={country.iso}
+      className={`${country.iso === selectedA ? 'is-selected' : ''} ${
+        hover?.iso === country.iso ? 'is-hover-row' : ''
+      }`}
+    >
+      <td className="oecd-matrix-rank oecd-num">{rankCell}</td>
+      <th scope="row" className="oecd-matrix-rowh">
+        <button
+          type="button"
+          className={`oecd-rowh-btn ${country.iso === selectedA ? 'is-active' : ''}`}
+          onClick={() => onPickCountry(country.iso)}
+          aria-pressed={country.iso === selectedA}
+        >
+          {country.name}
+        </button>
+      </th>
+      {columns.map((c) => {
+        const v = toNum(c.values[country.iso]);
+        const clampExceeded = c.series.clamp != null && v != null && Math.abs(v) > c.series.clamp;
+        const bg = heatmapCellStyle(v, c.q, { signed: c.series.signed });
+        const isCross = hover?.slug === c.slug;
+        return (
+          <td key={c.slug} className={`oecd-matrix-cell ${isCross ? 'is-hover-col' : ''}`}>
+            <button
+              type="button"
+              className={`oecd-cell-btn oecd-num ${clampExceeded ? 'is-offscale' : ''} ${
+                c.slug === ind && country.iso === selectedA ? 'is-focus' : ''
+              }`}
+              style={{ background: bg }}
+              onClick={() => {
+                onPickIndicator(c.slug);
+                onPickCountry(country.iso);
+              }}
+              onMouseEnter={(e) => {
+                setHover({ iso: country.iso, slug: c.slug });
+                setTip(tipFromEvent(e, cardRef.current, payloadFor(country, c)));
+              }}
+              onMouseMove={(e) => setTip(tipFromEvent(e, cardRef.current, payloadFor(country, c)))}
+              onMouseLeave={() => setTip(null)}
+              onFocus={(e) => {
+                setHover({ iso: country.iso, slug: c.slug });
+                setTip(tipFromElement(e.currentTarget, cardRef.current, payloadFor(country, c)));
+              }}
+              onBlur={() => setTip(null)}
+              aria-label={`${country.name}, ${c.series.label}: ${
+                v == null ? 'no data' : formatValue(v, c.series)
+              }`}
+            >
+              {v == null ? '—' : formatValue(v, c.series)}
+            </button>
+          </td>
+        );
+      })}
+    </tr>
+  );
+
   return (
     <section className="oecd-card oecd-matrix-card" ref={cardRef}>
       <div className="oecd-section-head">
@@ -91,6 +182,33 @@ export default function OecdMatrix({
           <h2 className="oecd-section-title">
             {lens === 'all' ? 'Headline indicators' : 'Lens indicators'} · by country
           </h2>
+          <span
+            className="oecd-sort-note"
+            tabIndex={0}
+            role="note"
+            onMouseEnter={(e) =>
+              setTip(
+                tipFromEvent(e, cardRef.current, { title: 'Composite ranking', note: SORT_NOTE }),
+              )
+            }
+            onMouseMove={(e) =>
+              setTip(
+                tipFromEvent(e, cardRef.current, { title: 'Composite ranking', note: SORT_NOTE }),
+              )
+            }
+            onMouseLeave={() => setTip(null)}
+            onFocus={(e) =>
+              setTip(
+                tipFromElement(e.currentTarget, cardRef.current, {
+                  title: 'Composite ranking',
+                  note: SORT_NOTE,
+                }),
+              )
+            }
+            onBlur={() => setTip(null)}
+          >
+            ranked by composite of visible indicators
+          </span>
         </div>
         {sectionProjYear ? (
           <span title="Actuals through 2023; 2024–25 are OECD Economic Outlook projections.">
@@ -102,6 +220,7 @@ export default function OecdMatrix({
       <div className="oecd-matrix-scroll">
         <table className="oecd-matrix" onMouseLeave={() => setHover(null)}>
           <colgroup>
+            <col className="oecd-matrix-col-rank" />
             <col className="oecd-matrix-col-country" />
             {columns.map((c) => (
               <col key={c.slug} />
@@ -109,7 +228,14 @@ export default function OecdMatrix({
           </colgroup>
           <thead>
             <tr>
-              <th scope="col" className="oecd-matrix-corner">
+              <th
+                scope="col"
+                className="oecd-matrix-corner oecd-matrix-corner--rank"
+                aria-label="Rank"
+              >
+                #
+              </th>
+              <th scope="col" className="oecd-matrix-corner oecd-matrix-corner--country">
                 Country
               </th>
               {columns.map((c) => (
@@ -132,77 +258,22 @@ export default function OecdMatrix({
             </tr>
           </thead>
           <tbody>
-            {rows.map((country) => (
-              <tr
-                key={country.iso}
-                className={`${country.iso === selectedA ? 'is-selected' : ''} ${
-                  hover?.iso === country.iso ? 'is-hover-row' : ''
-                }`}
-              >
-                <th scope="row" className="oecd-matrix-rowh">
-                  <button
-                    type="button"
-                    className={`oecd-rowh-btn ${country.iso === selectedA ? 'is-active' : ''}`}
-                    onClick={() => onPickCountry(country.iso)}
-                    aria-pressed={country.iso === selectedA}
-                  >
-                    {country.name}
-                  </button>
-                </th>
-                {columns.map((c) => {
-                  const v = toNum(c.values[country.iso]);
-                  const clampExceeded =
-                    c.series.clamp != null && v != null && Math.abs(v) > c.series.clamp;
-                  const bg = heatmapCellStyle(v, c.q, { signed: c.series.signed });
-                  const isCross = hover?.slug === c.slug;
-                  return (
-                    <td
-                      key={c.slug}
-                      className={`oecd-matrix-cell ${isCross ? 'is-hover-col' : ''}`}
-                    >
-                      <button
-                        type="button"
-                        className={`oecd-cell-btn oecd-num ${clampExceeded ? 'is-offscale' : ''} ${
-                          c.slug === ind && country.iso === selectedA ? 'is-focus' : ''
-                        }`}
-                        style={{ background: bg }}
-                        onClick={() => {
-                          onPickIndicator(c.slug);
-                          onPickCountry(country.iso);
-                        }}
-                        onMouseEnter={(e) => {
-                          setHover({ iso: country.iso, slug: c.slug });
-                          setTip(tipFromEvent(e, cardRef.current, payloadFor(country, c)));
-                        }}
-                        onMouseMove={(e) =>
-                          setTip(tipFromEvent(e, cardRef.current, payloadFor(country, c)))
-                        }
-                        onMouseLeave={() => setTip(null)}
-                        onFocus={(e) => {
-                          setHover({ iso: country.iso, slug: c.slug });
-                          setTip(
-                            tipFromElement(
-                              e.currentTarget,
-                              cardRef.current,
-                              payloadFor(country, c),
-                            ),
-                          );
-                        }}
-                        onBlur={() => setTip(null)}
-                        aria-label={`${country.name}, ${c.series.label}: ${
-                          v == null ? 'no data' : formatValue(v, c.series)
-                        }`}
-                      >
-                        {v == null ? '—' : formatValue(v, c.series)}
-                      </button>
-                    </td>
-                  );
-                })}
+            {rankedRows.map((country) => renderRow(country, rankByIso.get(country.iso)))}
+
+            {insufficientRows.length > 0 ? (
+              <tr className="oecd-matrix-divider">
+                <td colSpan={colCount}>
+                  INSUFFICIENT COVERAGE · {insufficientTotal}{' '}
+                  {insufficientTotal === 1 ? 'country' : 'countries'} with data for fewer than half
+                  of these indicators
+                </td>
               </tr>
-            ))}
+            ) : null}
+
+            {insufficientRows.map((country) => renderRow(country, '·'))}
           </tbody>
         </table>
-        {rows.length === 0 ? (
+        {rankedRows.length === 0 && insufficientRows.length === 0 ? (
           <p className="oecd-matrix-empty">No country matches “{query}”.</p>
         ) : null}
       </div>

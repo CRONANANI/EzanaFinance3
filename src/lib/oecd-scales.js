@@ -47,6 +47,79 @@ export function normalizeIndicator(valuesByArea, { inv = false } = {}) {
   return out;
 }
 
+/**
+ * Composite rank across several indicators. For each indicator, values are
+ * rank-normalized 0..1 via normalizeIndicator (inv respected there, so 1 is
+ * always "stronger"). A country's composite = mean of its normalized values
+ * across the indicators it has data for.
+ *
+ * Coverage rule: countries with values for fewer than `minCoverage` (fraction,
+ * default 0.5) of the indicators get NO composite — averaging 2 of 6 columns and
+ * ranking it against full coverage silently distorts the table.
+ *
+ * `valuesByAreaBySlug`: Map<slug, Map<area, value>> (aggregates excluded upstream;
+ * filtered defensively here too). `seriesBySlug`: Map/object slug → series (for
+ * `inv`). Reuses normalizeIndicator per slug — inversion is NOT reimplemented.
+ *
+ * Returns { ranked: [{ area, composite, rank, covered, total }],
+ *           insufficient: [{ area, covered, total }] }.
+ * `ranked` is sorted composite desc; ties share a rank (competition ranking:
+ * 1,2,2,4) and break alphabetically by area for display order only.
+ * `insufficient` is sorted alphabetically by area.
+ */
+export function compositeRanks(valuesByAreaBySlug, seriesBySlug, { minCoverage = 0.5 } = {}) {
+  const getSeries = (slug) =>
+    typeof seriesBySlug?.get === 'function' ? seriesBySlug.get(slug) : seriesBySlug?.[slug];
+
+  const slugs = [...valuesByAreaBySlug.keys()];
+  const total = slugs.length;
+
+  // Sum of normalized values + coverage count per area.
+  const acc = new Map(); // area -> { sum, covered }
+  for (const slug of slugs) {
+    const areaMap = valuesByAreaBySlug.get(slug) || new Map();
+    const inv = !!getSeries(slug)?.inv;
+    // normalizeIndicator wants a plain object; it already drops null/missing.
+    const obj = {};
+    for (const [area, v] of areaMap) obj[area] = v;
+    const norm = normalizeIndicator(obj, { inv });
+    for (const [area, n] of Object.entries(norm)) {
+      const cur = acc.get(area) || { sum: 0, covered: 0 };
+      cur.sum += n;
+      cur.covered += 1;
+      acc.set(area, cur);
+    }
+  }
+
+  const ranked = [];
+  const insufficient = [];
+  const need = total > 0 ? minCoverage * total : Infinity;
+  for (const [area, { sum, covered }] of acc) {
+    if (total === 0 || covered < need) {
+      insufficient.push({ area, covered, total });
+    } else {
+      ranked.push({ area, composite: sum / covered, covered, total });
+    }
+  }
+
+  // Sort composite desc, tie-break alphabetically by area (display order only).
+  ranked.sort(
+    (a, b) => b.composite - a.composite || (a.area < b.area ? -1 : a.area > b.area ? 1 : 0),
+  );
+  // Competition ranking: equal composites share a rank; the next rank skips.
+  for (let i = 0; i < ranked.length; i += 1) {
+    if (i > 0 && Math.abs(ranked[i].composite - ranked[i - 1].composite) < 1e-9) {
+      ranked[i].rank = ranked[i - 1].rank;
+    } else {
+      ranked[i].rank = i + 1;
+    }
+  }
+
+  insufficient.sort((a, b) => (a.area < b.area ? -1 : a.area > b.area ? 1 : 0));
+
+  return { ranked, insufficient };
+}
+
 /** Quantile helpers over a sorted numeric array. */
 function quantile(sorted, p) {
   if (sorted.length === 0) return null;

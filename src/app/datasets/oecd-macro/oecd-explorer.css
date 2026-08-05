@@ -311,6 +311,9 @@
   min-width: 520px;
   table-layout: fixed;
 }
+.oecd-matrix-col-rank {
+  width: 26px;
+}
 .oecd-matrix-col-country {
   width: 148px;
 }
@@ -327,6 +330,48 @@
   left: 0;
   background: var(--app-bg);
   z-index: 2;
+}
+.oecd-matrix-corner--rank {
+  left: 0;
+  text-align: right;
+  z-index: 3;
+}
+.oecd-matrix-corner--country {
+  left: 26px;
+}
+
+/* Leading composite-rank column (mono, muted). Sticky-left like the country
+   column so it stays put on horizontal scroll. Insufficient-band rows show '·'. */
+.oecd-matrix-rank {
+  position: sticky;
+  left: 0;
+  background: var(--app-bg);
+  z-index: 1;
+  text-align: right;
+  padding: 3px 6px;
+  font-size: 10px;
+  color: var(--text-faint);
+}
+
+/* Divider between the ranked list and the insufficient-coverage band. */
+.oecd-matrix-divider td {
+  padding: 8px 8px 4px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  border-top: 1px solid var(--border-secondary);
+}
+
+/* Sort note beside the section title. */
+.oecd-sort-note {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  color: var(--text-faint);
+  cursor: help;
+  border-bottom: 1px dotted color-mix(in srgb, var(--text-faint) 45%, transparent);
 }
 .oecd-matrix-colh {
   padding: 0;
@@ -365,7 +410,7 @@
 .oecd-matrix-rowh {
   padding: 0;
   position: sticky;
-  left: 0;
+  left: 26px;
   background: var(--app-bg);
   z-index: 1;
   transition: background 140ms ease-out;
@@ -974,6 +1019,12 @@
   color: var(--text-primary);
   margin-bottom: 3px;
   white-space: nowrap;
+}
+.oecd-tip-note {
+  white-space: normal;
+  line-height: 1.5;
+  color: var(--text-muted);
+  max-width: 220px;
 }
 .oecd-tip-row {
   display: flex;

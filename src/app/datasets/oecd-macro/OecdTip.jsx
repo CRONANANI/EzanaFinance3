@@ -10,7 +10,7 @@
  * `lines`: [{ label, value, tone? }] — tone 'pos' | 'neg' colours the value.
  */
 export default function OecdTip({ tip }) {
-  if (!tip || !tip.lines?.length) return null;
+  if (!tip || (!tip.lines?.length && !tip.note)) return null;
   return (
     <div
       className={`oecd-tip ${tip.flip ? 'is-flip' : ''}`}
@@ -18,7 +18,8 @@ export default function OecdTip({ tip }) {
       role="presentation"
     >
       {tip.title ? <div className="oecd-tip-title">{tip.title}</div> : null}
-      {tip.lines.map((ln, i) => (
+      {tip.note ? <div className="oecd-tip-note">{tip.note}</div> : null}
+      {(tip.lines || []).map((ln, i) => (
         <div className="oecd-tip-row" key={i}>
           {ln.label != null ? <span className="oecd-tip-k">{ln.label}</span> : null}
           {ln.value != null ? (
