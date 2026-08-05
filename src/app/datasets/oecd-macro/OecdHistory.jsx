@@ -21,6 +21,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { PROJECTION_FROM_YEAR } from '@/lib/oecd-curated';
 import { formatValue, isProjected, toNum } from '@/lib/oecd-scales';
 import OecdProjBadge from './OecdProjBadge';
+import OecdInfoButton from './OecdInfoButton';
+import { OECD_METHODOLOGY } from './oecd-methodology';
 import OecdTip, { tipAt } from './OecdTip';
 
 const W = 760;
@@ -190,6 +192,7 @@ export default function OecdHistory({
 
   return (
     <section className="oecd-card oecd-history-card" ref={cardRef}>
+      <OecdInfoButton entry={OECD_METHODOLOGY.history} />
       <div className="oecd-section-head">
         <div className="oecd-section-head-l">
           <span className="oecd-section-tag">HISTORY</span>

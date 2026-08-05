@@ -1,20 +1,17 @@
 'use client';
 
 /**
- * Head-to-head radar — two modes on one card (phase 4):
- *  - OECD: country A vs B on the active lens's indicator axes (all 20 when the
- *    lens is 'all'), rank-normalized across countries so outward = stronger
- *    (`inv` handled in normalizeIndicator). Clicking an axis sets the indicator.
- *  - EMPIRE: A vs B on the live Dalio power dimensions in the selected Focus
- *    group. LIVE-ONLY — dimensions without data never become axes; there is no
- *    mock fallback. Scores (0–100) normalize to radius, inverted for
- *    higher_is_better===false so outward = stronger. Axis click is a no-op.
- *    Below the chart: a pending-dimensions disclosure and the coverage badge.
- *    A Focus group with <3 live dimensions renders a compact bar list (a 2-axis
- *    radar is meaningless).
+ * Head-to-head card (phase 6) — compact, Power-Dimension-Comparison footprint:
+ * controls inline in the header, radar chart left (≤360px), compare table right.
+ * Up to 4 countries, one polygon each, sharing the history line palette
+ * (--oecd-line-1..4) so radar and table dots always agree; hovering a polygon or
+ * chip dims the others.
  *
- * One hand-rolled SVG, no chart dependency. Phase-3 interactions (axis/vertex
- * hover tooltip, polygon dim-the-other) apply in both modes.
+ * Two data modes (Phase 4): OECD indicators (rank-normalized across countries,
+ * inv → outward) or live empire dimensions (World Bank backbone; no mock, pending
+ * dimensions disclosed). A Focus group with <3 live empire dimensions renders a
+ * bar list instead of a radar. Axis click sets the indicator in OECD mode; empire
+ * axes are static.
  */
 import { useMemo, useRef, useState } from 'react';
 import { OECD_SERIES_BY_SLUG } from '@/lib/oecd-curated';
@@ -25,6 +22,9 @@ import { empireAxesForFocus, normScore } from './oecd-empire-model';
 import OecdProjBadge from './OecdProjBadge';
 import OecdModeToggle from './OecdModeToggle';
 import OecdLensPills from './OecdLensPills';
+import OecdInfoButton from './OecdInfoButton';
+import OecdCompare from './OecdCompare';
+import { OECD_METHODOLOGY } from './oecd-methodology';
 import OecdTip, { tipFromEvent, tipFromElement } from './OecdTip';
 
 const SIZE = 420;
@@ -42,60 +42,61 @@ const radiusFor = (n) => (n == null ? FLOOR * R : (FLOOR + (1 - FLOOR) * n) * R)
 function truncName(name) {
   return name.length > 16 ? `${name.slice(0, 14)}…` : name;
 }
+const lineColor = (i) => `var(--oecd-line-${i + 1})`;
 
 export default function OecdRadar({
   model,
   lens,
-  a,
-  b,
   ind,
-  onChangeA,
-  onChangeB,
   onPickIndicator,
-  // phase-4 additions
+  // multi-country selection (2–4)
+  selected,
+  onChangeCountry,
+  onAddCountry,
+  onRemoveCountry,
+  // mode / filters
   mode = 'oecd',
   onMode,
   focus = 'all',
   onFocus,
   empireModel = null,
   empireCountries = null,
-  // phase 5: when the page pills became empire dimensions, the OECD lens control
-  // relocates here (OECD mode only) so radar-axis filtering + `ind` reset survive.
+  empireMatrixModel = null,
   onLens,
   showLensChips = false,
 }) {
   const cardRef = useRef(null);
   const [tip, setTip] = useState(null);
-  const [hoverAxis, setHoverAxis] = useState(null); // axis key
-  const [hoverPoly, setHoverPoly] = useState(null); // 'a' | 'b'
+  const [hoverAxis, setHoverAxis] = useState(null);
+  const [hoverCc, setHoverCc] = useState(null); // iso being emphasized
 
-  const isEmpire = mode === 'empire';
+  const isEmpire = mode === 'empire' && empireModel;
 
-  // ── Unified view: axes + colours + selects, computed per mode ──────────────
+  const options = isEmpire ? empireCountries || [] : model.countries;
+  const nameOf = (iso) =>
+    (isEmpire
+      ? empireModel.nameByCode.get(iso)
+      : model.countries.find((c) => c.iso === iso)?.name) || iso;
+
+  // Unified axes with a per-country normalized radius map.
   const view = useMemo(() => {
-    if (isEmpire && empireModel) {
+    if (isEmpire) {
       const dims = empireAxesForFocus(empireModel, focus);
-      const scoreOf = (iso, dim) => empireModel.scoreMap.get(iso)?.get(dim.id);
       const axes = dims.map((dim, i) => {
-        const rawA = scoreOf(a, dim);
-        const rawB = scoreOf(b, dim);
+        const normByIso = {};
+        for (const iso of selected)
+          normByIso[iso] = normScore(dim, empireModel.scoreMap.get(iso)?.get(dim.id));
         return {
           key: dim.id,
           short: truncName(dim.name),
           angle: -90 + (360 * i) / dims.length,
-          rA: normScore(dim, rawA),
-          rB: normScore(dim, rawB),
+          normByIso,
           payload: {
             title: dim.name,
-            lines: [
-              { label: nameFor(empireModel, a), value: rawA == null ? '—' : rawA.toFixed(0) },
-              { label: nameFor(empireModel, b), value: rawB == null ? '—' : rawB.toFixed(0) },
-              { label: 'Category', value: dim.category || '—' },
-              {
-                label: 'Direction',
-                value: dim.higher_is_better === false ? 'lower = stronger' : 'higher = stronger',
-              },
-            ],
+            lines: selected.map((iso) => {
+              const raw = empireModel.scoreMap.get(iso)?.get(dim.id);
+              return { label: nameOf(iso), value: raw == null ? '—' : raw.toFixed(0) };
+            }),
           },
         };
       });
@@ -103,15 +104,6 @@ export default function OecdRadar({
         axes,
         clickable: false,
         title: 'Empire dimensions',
-        options: empireCountries || [],
-        nameA: nameFor(empireModel, a),
-        nameB: nameFor(empireModel, b),
-        polyA: 'oecd-radar-poly--empire-a',
-        polyB: 'oecd-radar-poly--empire-b',
-        chipA: 'oecd-radar-chip--empire-a',
-        chipB: 'oecd-radar-chip--empire-b',
-        vertexA: 'oecd-radar-vertex--empire-a',
-        vertexB: 'oecd-radar-vertex--empire-b',
         coverage: {
           covered: empireModel.liveDims.length,
           total: empireModel.totalDims,
@@ -122,35 +114,29 @@ export default function OecdRadar({
       };
     }
 
-    // OECD mode (phase-3 behaviour, unchanged)
     const slugs = allSlugsForLens(lens);
     const axes = slugs.map((slug, i) => {
       const series = OECD_SERIES_BY_SLUG[slug];
       const norm = normalizeIndicator(columnValues(model, slug), { inv: series.inv });
-      const rawA = toNum(model.bySlug[slug]?.[a]?.value);
-      const rawB = toNum(model.bySlug[slug]?.[b]?.value);
-      const rkA = rankWithin(model, slug, a, { inv: series.inv });
-      const rkB = rankWithin(model, slug, b, { inv: series.inv });
+      const normByIso = {};
+      for (const iso of selected) normByIso[iso] = norm[iso] ?? null;
       return {
         key: slug,
         short: series.short,
         angle: -90 + (360 * i) / slugs.length,
-        rA: norm[a] ?? null,
-        rB: norm[b] ?? null,
+        normByIso,
         year: model.latestYearBySlug[slug],
         onClick: () => onPickIndicator(slug),
         payload: {
           title: `${series.label} · ${series.unitLabel}`,
-          lines: [
-            {
-              label: nameForOecd(model, a),
-              value: `${formatValue(rawA, series)}${rkA ? ` · #${rkA.rank}/${rkA.n}` : ''}`,
-            },
-            {
-              label: nameForOecd(model, b),
-              value: `${formatValue(rawB, series)}${rkB ? ` · #${rkB.rank}/${rkB.n}` : ''}`,
-            },
-          ],
+          lines: selected.map((iso) => {
+            const raw = toNum(model.bySlug[slug]?.[iso]?.value);
+            const rk = rankWithin(model, slug, iso, { inv: series.inv });
+            return {
+              label: nameOf(iso),
+              value: `${formatValue(raw, series)}${rk ? ` · #${rk.rank}/${rk.n}` : ''}`,
+            };
+          }),
         },
       };
     });
@@ -159,20 +145,12 @@ export default function OecdRadar({
       axes,
       clickable: true,
       title: lensLabel(lens),
-      options: model.countries,
-      nameA: nameForOecd(model, a),
-      nameB: nameForOecd(model, b),
-      polyA: 'oecd-radar-poly--a',
-      polyB: 'oecd-radar-poly--b',
-      chipA: 'oecd-radar-chip--a',
-      chipB: 'oecd-radar-chip--b',
-      vertexA: 'oecd-radar-vertex--a',
-      vertexB: 'oecd-radar-vertex--b',
       coverage: null,
       pending: null,
       projYear: years.length ? Math.max(...years) : null,
     };
-  }, [isEmpire, empireModel, empireCountries, focus, lens, model, a, b, onPickIndicator]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEmpire, empireModel, focus, lens, model, selected, onPickIndicator]);
 
   const axes = view.axes;
 
@@ -188,297 +166,269 @@ export default function OecdRadar({
     setHoverAxis(null);
     setTip(null);
   };
-
-  const polygon = (which) =>
+  const polygon = (iso) =>
     axes
       .map((ax) =>
-        point(ax.angle, radiusFor(which === 'a' ? ax.rA : ax.rB))
+        point(ax.angle, radiusFor(ax.normByIso[iso]))
           .map((v) => v.toFixed(1))
           .join(','),
       )
       .join(' ');
 
   const header = (
-    <div className="oecd-section-head">
+    <div className="oecd-hth-head">
       <div className="oecd-section-head-l">
         <span className="oecd-section-tag">HEAD-TO-HEAD</span>
         <h2 className="oecd-section-title">{view.title}</h2>
         {view.projYear ? <OecdProjBadge year={view.projYear} /> : null}
-        {view.coverage ? <CoverageBadge coverage={view.coverage} /> : null}
+        {view.coverage ? (
+          <span className="oecd-cov-badge oecd-num" title="Live Empire-Rankings backbone data">
+            LIVE DATA · {view.coverage.covered}/{view.coverage.total} DIMENSIONS ·{' '}
+            {view.coverage.year}
+          </span>
+        ) : null}
       </div>
-      {onMode ? <OecdModeToggle mode={mode} onMode={onMode} /> : null}
-    </div>
-  );
-
-  // OECD lens chips relocated into this card (phase 5), OECD mode only.
-  const lensChips =
-    showLensChips && !isEmpire && onLens ? (
-      <OecdLensPills lens={lens} onLens={onLens} showCaption={false} compact />
-    ) : null;
-
-  const selects = (
-    <div className="oecd-radar-selects">
-      {isEmpire ? (
-        <div className="oecd-focus-chips" role="group" aria-label="Dimension focus">
-          {DIMENSION_OPTIONS.map((o) => (
-            <button
-              key={o.value}
-              type="button"
-              className={`oecd-focus-chip ${focus === o.value ? 'is-active' : ''}`}
-              aria-pressed={focus === o.value}
-              onClick={() => onFocus && onFocus(o.value)}
+      <div className="oecd-hth-controls">
+        <div className="oecd-hth-chips">
+          {selected.map((iso, i) => (
+            <span
+              key={iso}
+              className={`oecd-hth-chip ${hoverCc && hoverCc !== iso ? 'is-dim' : ''}`}
+              onMouseEnter={() => setHoverCc(iso)}
+              onMouseLeave={() => setHoverCc(null)}
             >
-              {o.label}
-            </button>
+              <span
+                className="oecd-hth-chip-dot"
+                style={{ background: lineColor(i) }}
+                aria-hidden="true"
+              />
+              <select
+                className="oecd-hth-chip-select oecd-num"
+                value={iso}
+                onChange={(e) => onChangeCountry(i, e.target.value)}
+                aria-label={`Country ${i + 1}`}
+              >
+                {options.map((c) => (
+                  <option key={c.iso} value={c.iso}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+              {i >= 2 ? (
+                <button
+                  type="button"
+                  className="oecd-hth-chip-x"
+                  onClick={() => onRemoveCountry(i)}
+                  aria-label={`Remove ${nameOf(iso)}`}
+                >
+                  ✕
+                </button>
+              ) : null}
+            </span>
           ))}
+          {selected.length < 4 ? (
+            <select
+              className="oecd-hth-add oecd-num"
+              value=""
+              onChange={(e) => e.target.value && onAddCountry(e.target.value)}
+              aria-label="Add a country to compare"
+            >
+              <option value="">+ Add</option>
+              {options
+                .filter((c) => !selected.includes(c.iso))
+                .map((c) => (
+                  <option key={c.iso} value={c.iso}>
+                    {c.name}
+                  </option>
+                ))}
+            </select>
+          ) : null}
         </div>
-      ) : null}
-      <div className="oecd-radar-ab">
-        <label className="oecd-select-wrap">
-          <span className={`oecd-radar-chip ${view.chipA}`} aria-hidden="true" />
-          <select
-            className="oecd-select oecd-num"
-            value={a}
-            onChange={(e) => onChangeA(e.target.value)}
-            aria-label="Country A"
-          >
-            {view.options.map((c) => (
-              <option key={c.iso} value={c.iso}>
-                {c.name}
-              </option>
+        {onMode ? <OecdModeToggle mode={mode} onMode={onMode} /> : null}
+        {isEmpire ? (
+          <div className="oecd-focus-chips" role="group" aria-label="Dimension focus">
+            {DIMENSION_OPTIONS.map((o) => (
+              <button
+                key={o.value}
+                type="button"
+                className={`oecd-focus-chip ${focus === o.value ? 'is-active' : ''}`}
+                aria-pressed={focus === o.value}
+                onClick={() => onFocus && onFocus(o.value)}
+              >
+                {o.label}
+              </button>
             ))}
-          </select>
-        </label>
-        <span className="oecd-radar-vs">vs</span>
-        <label className="oecd-select-wrap">
-          <span className={`oecd-radar-chip ${view.chipB}`} aria-hidden="true" />
-          <select
-            className="oecd-select oecd-num"
-            value={b}
-            onChange={(e) => onChangeB(e.target.value)}
-            aria-label="Country B"
-          >
-            {view.options.map((c) => (
-              <option key={c.iso} value={c.iso}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-        </label>
+          </div>
+        ) : showLensChips && onLens ? (
+          <OecdLensPills lens={lens} onLens={onLens} showCaption={false} compact />
+        ) : null}
       </div>
+      <OecdInfoButton entry={OECD_METHODOLOGY.headToHead} />
     </div>
   );
 
-  const disclosure = isEmpire ? (
-    <div className="oecd-radar-disclosure">
-      {view.pending && view.pending.length ? (
-        <p className="oecd-pending">
-          Pending data sources:{' '}
-          <span className="oecd-pending-names">{view.pending.join(' · ')}</span>
-        </p>
-      ) : null}
-      <span className="oecd-radar-legend-note">Outward = stronger · live scores only</span>
-    </div>
-  ) : (
-    <div className="oecd-radar-legend">
-      <span className="oecd-radar-legend-item">
-        <span className={`oecd-radar-chip ${view.chipA}`} aria-hidden="true" /> {view.nameA}
-      </span>
-      <span className="oecd-radar-legend-item">
-        <span className={`oecd-radar-chip ${view.chipB}`} aria-hidden="true" /> {view.nameB}
-      </span>
-      <span className="oecd-radar-legend-note">Outward = stronger · click an axis to focus it</span>
+  const legend = (
+    <div className="oecd-hth-legend">
+      {selected.map((iso, i) => (
+        <span
+          key={iso}
+          className={`oecd-radar-legend-item ${hoverCc && hoverCc !== iso ? 'is-dim' : ''}`}
+          onMouseEnter={() => setHoverCc(iso)}
+          onMouseLeave={() => setHoverCc(null)}
+        >
+          <span
+            className="oecd-radar-chip"
+            style={{ background: lineColor(i) }}
+            aria-hidden="true"
+          />{' '}
+          {nameOf(iso)}
+        </span>
+      ))}
+      {isEmpire && view.pending?.length ? (
+        <span className="oecd-pending">Pending: {view.pending.join(' · ')}</span>
+      ) : (
+        <span className="oecd-radar-legend-note">Outward = stronger</span>
+      )}
     </div>
   );
 
-  // Empire Focus group with <3 live axes → compact bar list, not a radar.
-  if (isEmpire && axes.length > 0 && axes.length < 3) {
-    return (
-      <section className="oecd-card oecd-radar-card" ref={cardRef}>
-        {header}
-        {lensChips}
-        {selects}
-        <div className="oecd-dimbars">
-          {axes.map((ax) => (
-            <div className="oecd-dimbar" key={ax.key}>
-              <span className="oecd-dimbar-label">{ax.short}</span>
-              <span className="oecd-dimbar-track">
-                <span
-                  className="oecd-dimbar-fill is-a"
-                  style={{ width: `${(ax.rA ?? 0) * 100}%` }}
-                />
-                <span
-                  className="oecd-dimbar-mark is-b"
-                  style={{ left: `${(ax.rB ?? 0) * 100}%` }}
-                />
-              </span>
-            </div>
-          ))}
-        </div>
-        <div className="oecd-radar-legend">
-          <span className="oecd-radar-legend-item">
-            <span className={`oecd-radar-chip ${view.chipA}`} aria-hidden="true" /> {view.nameA}
-          </span>
-          <span className="oecd-radar-legend-item">
-            <span className={`oecd-radar-chip ${view.chipB}`} aria-hidden="true" /> {view.nameB}
-          </span>
-        </div>
-        {disclosure}
-        <OecdTip tip={tip} />
-      </section>
-    );
-  }
+  const compare = (
+    <OecdCompare
+      mode={mode}
+      selected={selected}
+      colors={selected.map((_, i) => lineColor(i))}
+      names={selected.map((iso) => nameOf(iso))}
+      model={model}
+      empireMatrixModel={empireMatrixModel}
+      lens={lens}
+      ind={ind}
+      onPickIndicator={onPickIndicator}
+      focus={focus}
+    />
+  );
 
-  // Empire mode with zero live axes in this focus (all pending) — disclose it.
-  if (isEmpire && axes.length === 0) {
-    return (
-      <section className="oecd-card oecd-radar-card" ref={cardRef}>
-        {header}
-        {lensChips}
-        {selects}
-        <p className="oecd-empire-empty">
-          No live-scored dimensions in this focus group yet — every dimension here is awaiting data
-          sources.
-        </p>
-        {disclosure}
-      </section>
+  // Empire Focus group with <3 live axes → bar list (radar meaningless).
+  const plot =
+    isEmpire && axes.length > 0 && axes.length < 3 ? (
+      <div className="oecd-dimbars">
+        {axes.map((ax) => (
+          <div className="oecd-dimbar" key={ax.key}>
+            <span className="oecd-dimbar-label">{ax.short}</span>
+            <span className="oecd-dimbar-track">
+              {selected.map((iso, i) => (
+                <span
+                  key={iso}
+                  className="oecd-dimbar-fill"
+                  style={{
+                    width: `${(ax.normByIso[iso] ?? 0) * 100}%`,
+                    background: lineColor(i),
+                    opacity: 0.5,
+                  }}
+                />
+              ))}
+            </span>
+          </div>
+        ))}
+      </div>
+    ) : isEmpire && axes.length === 0 ? (
+      <p className="oecd-empire-empty">No live-scored dimensions in this focus group yet.</p>
+    ) : (
+      <svg
+        className="oecd-radar-svg"
+        viewBox={`${-MARGIN} ${-MARGIN} ${SIZE + MARGIN * 2} ${SIZE + MARGIN * 2}`}
+        role="img"
+        aria-label={`Radar comparing ${selected.map(nameOf).join(', ')} across ${axes.length} axes`}
+      >
+        {[1 / 3, 2 / 3, 1].map((f) => (
+          <polygon
+            key={f}
+            className="oecd-radar-ring"
+            points={axes
+              .map((ax) =>
+                point(ax.angle, R * f)
+                  .map((v) => v.toFixed(1))
+                  .join(','),
+              )
+              .join(' ')}
+          />
+        ))}
+        {axes.map((ax) => {
+          const [x2, y2] = point(ax.angle, R);
+          const [lx, ly] = point(ax.angle, R + 18);
+          const active = ax.key === hoverAxis || (!isEmpire && ax.key === ind);
+          return (
+            <g key={ax.key}>
+              <line
+                className={`oecd-radar-spoke ${active ? 'is-active' : ''}`}
+                x1={CX}
+                y1={CY}
+                x2={x2}
+                y2={y2}
+              />
+              <text
+                className={`oecd-radar-axis-label oecd-num ${active ? 'is-active' : ''} ${view.clickable ? '' : 'is-static'}`}
+                x={lx}
+                y={ly}
+                textAnchor={anchorFor(lx)}
+                dominantBaseline="middle"
+                role={view.clickable ? 'button' : undefined}
+                tabIndex={view.clickable ? 0 : undefined}
+                onClick={view.clickable ? ax.onClick : undefined}
+                onKeyDown={
+                  view.clickable
+                    ? (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          ax.onClick();
+                        }
+                      }
+                    : undefined
+                }
+                onMouseEnter={(e) => onAxisEnter(e, ax)}
+                onMouseMove={(e) => onAxisEnter(e, ax)}
+                onMouseLeave={clearAxis}
+                onFocus={view.clickable ? (e) => onAxisFocus(e, ax) : undefined}
+                onBlur={view.clickable ? clearAxis : undefined}
+              >
+                {ax.short}
+              </text>
+            </g>
+          );
+        })}
+        {selected.map((iso, i) => (
+          <polygon
+            key={iso}
+            className="oecd-radar-poly"
+            points={polygon(iso)}
+            style={{
+              stroke: lineColor(i),
+              fill: `color-mix(in srgb, ${lineColor(i)} 15%, transparent)`,
+              opacity: hoverCc && hoverCc !== iso ? 0.15 : 1,
+            }}
+            onMouseEnter={() => setHoverCc(iso)}
+            onMouseLeave={() => setHoverCc(null)}
+          />
+        ))}
+      </svg>
     );
-  }
 
   return (
-    <section className="oecd-card oecd-radar-card" ref={cardRef}>
+    <section className="oecd-card oecd-hth-card" ref={cardRef}>
       {header}
-      {lensChips}
-      {selects}
-      <div className="oecd-radar-plot">
-        <svg
-          className="oecd-radar-svg"
-          viewBox={`${-MARGIN} ${-MARGIN} ${SIZE + MARGIN * 2} ${SIZE + MARGIN * 2}`}
-          role="img"
-          aria-label={`Radar comparing ${view.nameA} and ${view.nameB} across ${axes.length} ${
-            isEmpire ? 'dimensions' : 'indicators'
-          }`}
-        >
-          {[1 / 3, 2 / 3, 1].map((f) => (
-            <polygon
-              key={f}
-              className="oecd-radar-ring"
-              points={axes
-                .map((ax) =>
-                  point(ax.angle, R * f)
-                    .map((v) => v.toFixed(1))
-                    .join(','),
-                )
-                .join(' ')}
-            />
-          ))}
-          {axes.map((ax) => {
-            const [x2, y2] = point(ax.angle, R);
-            const [lx, ly] = point(ax.angle, R + 18);
-            const active = ax.key === hoverAxis || (!isEmpire && ax.key === ind);
-            return (
-              <g key={ax.key}>
-                <line
-                  className={`oecd-radar-spoke ${active ? 'is-active' : ''}`}
-                  x1={CX}
-                  y1={CY}
-                  x2={x2}
-                  y2={y2}
-                />
-                <text
-                  className={`oecd-radar-axis-label oecd-num ${active ? 'is-active' : ''} ${
-                    view.clickable ? '' : 'is-static'
-                  }`}
-                  x={lx}
-                  y={ly}
-                  textAnchor={anchorFor(lx)}
-                  dominantBaseline="middle"
-                  role={view.clickable ? 'button' : undefined}
-                  tabIndex={view.clickable ? 0 : undefined}
-                  onClick={view.clickable ? ax.onClick : undefined}
-                  onKeyDown={
-                    view.clickable
-                      ? (e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            ax.onClick();
-                          }
-                        }
-                      : undefined
-                  }
-                  onMouseEnter={(e) => onAxisEnter(e, ax)}
-                  onMouseMove={(e) => onAxisEnter(e, ax)}
-                  onMouseLeave={clearAxis}
-                  onFocus={view.clickable ? (e) => onAxisFocus(e, ax) : undefined}
-                  onBlur={view.clickable ? clearAxis : undefined}
-                >
-                  {ax.short}
-                </text>
-              </g>
-            );
-          })}
-          <polygon
-            className={`oecd-radar-poly ${view.polyB} ${hoverPoly === 'a' ? 'is-dim' : ''}`}
-            points={polygon('b')}
-            onMouseEnter={() => setHoverPoly('b')}
-            onMouseLeave={() => setHoverPoly(null)}
-          />
-          <polygon
-            className={`oecd-radar-poly ${view.polyA} ${hoverPoly === 'b' ? 'is-dim' : ''}`}
-            points={polygon('a')}
-            onMouseEnter={() => setHoverPoly('a')}
-            onMouseLeave={() => setHoverPoly(null)}
-          />
-          {axes.map((ax) => {
-            const [ax_, ay_] = point(ax.angle, radiusFor(ax.rA));
-            const [bx_, by_] = point(ax.angle, radiusFor(ax.rB));
-            return (
-              <g key={`v-${ax.key}`}>
-                <circle
-                  className={`oecd-radar-vertex ${view.vertexB}`}
-                  cx={bx_}
-                  cy={by_}
-                  r={3}
-                  onMouseEnter={(e) => onAxisEnter(e, ax)}
-                  onMouseMove={(e) => onAxisEnter(e, ax)}
-                  onMouseLeave={clearAxis}
-                />
-                <circle
-                  className={`oecd-radar-vertex ${view.vertexA}`}
-                  cx={ax_}
-                  cy={ay_}
-                  r={3}
-                  onMouseEnter={(e) => onAxisEnter(e, ax)}
-                  onMouseMove={(e) => onAxisEnter(e, ax)}
-                  onMouseLeave={clearAxis}
-                />
-              </g>
-            );
-          })}
-        </svg>
+      <div className="oecd-hth-body">
+        <div className="oecd-hth-plot">
+          {plot}
+          {legend}
+        </div>
+        {compare}
       </div>
-      {disclosure}
       <OecdTip tip={tip} />
     </section>
   );
 }
 
-function nameForOecd(model, iso) {
-  return model.countries.find((c) => c.iso === iso)?.name || iso;
-}
-function nameFor(empireModel, iso) {
-  return empireModel.nameByCode.get(iso) || iso;
-}
 function anchorFor(x) {
   if (x < CX - 6) return 'end';
   if (x > CX + 6) return 'start';
   return 'middle';
-}
-
-function CoverageBadge({ coverage }) {
-  return (
-    <span className="oecd-cov-badge oecd-num" title="Live Empire-Rankings backbone data">
-      LIVE DATA · {coverage.covered}/{coverage.total} DIMENSIONS · {coverage.year}
-    </span>
-  );
 }

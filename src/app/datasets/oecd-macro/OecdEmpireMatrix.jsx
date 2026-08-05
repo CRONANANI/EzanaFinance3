@@ -20,6 +20,8 @@
 import { useMemo, useRef, useState } from 'react';
 import { columnQuantiles, compositeRanks, normalizeIndicator, toNum } from '@/lib/oecd-scales';
 import { empireScore, empireMetric } from './oecd-empire-matrix-model';
+import OecdInfoButton from './OecdInfoButton';
+import { OECD_METHODOLOGY } from './oecd-methodology';
 import OecdTip, { tipFromEvent, tipFromElement } from './OecdTip';
 
 const STALE_YEARS = 2;
@@ -245,6 +247,7 @@ export default function OecdEmpireMatrix({ model, dim, selectedA, query, onPickC
 
   return (
     <section className="oecd-card oecd-matrix-card" ref={cardRef}>
+      <OecdInfoButton entry={OECD_METHODOLOGY.matrix} />
       <div className="oecd-section-head">
         <div className="oecd-section-head-l">
           <span className="oecd-section-tag">MATRIX</span>

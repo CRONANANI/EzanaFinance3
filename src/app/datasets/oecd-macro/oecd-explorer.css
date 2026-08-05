@@ -1381,6 +1381,329 @@
   background: var(--surface-card);
 }
 
+/* ═══ Phase 6 — compact head-to-head + compare table + ⓘ methodology ═════════ */
+
+/* Reserve top-right room for the info button in every card header. */
+.oecd-section-head,
+.oecd-hth-head,
+.oecd-aggs {
+  padding-right: 22px;
+}
+
+.oecd-hth-card {
+  position: relative;
+}
+.oecd-hth-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.oecd-hth-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+}
+.oecd-hth-chips {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.oecd-hth-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  padding: 0 4px 0 7px;
+  border: 1px solid var(--border-input);
+  border-radius: 999px;
+  background: var(--surface-input);
+  transition: opacity 140ms ease-out;
+}
+.oecd-hth-chip.is-dim {
+  opacity: 0.4;
+}
+.oecd-hth-chip-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+.oecd-hth-chip-select {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 11px;
+  max-width: 96px;
+  cursor: pointer;
+}
+.oecd-hth-chip-x {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--text-faint);
+  font-size: 10px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 50%;
+}
+.oecd-hth-chip-x:hover {
+  color: var(--negative);
+}
+.oecd-hth-add {
+  appearance: none;
+  height: 24px;
+  border: 1px dashed var(--border-input);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 11px;
+  padding: 0 8px;
+  cursor: pointer;
+}
+
+.oecd-hth-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 12px;
+  align-items: stretch;
+}
+.oecd-hth-plot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+}
+.oecd-hth-plot .oecd-radar-svg {
+  width: 100%;
+  max-width: 360px;
+  max-height: 360px;
+  height: auto;
+}
+.oecd-hth-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+.oecd-radar-legend-item.is-dim {
+  opacity: 0.4;
+}
+.oecd-hth-plot .oecd-dimbars,
+.oecd-hth-plot .oecd-empire-empty {
+  width: 100%;
+}
+
+/* Compare table (right rail). */
+.oecd-compare {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.oecd-compare-back {
+  align-self: flex-start;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--emerald-text);
+  font-size: 10.5px;
+  cursor: pointer;
+  margin-bottom: 4px;
+  padding: 0;
+}
+.oecd-compare-scroll {
+  overflow-x: auto;
+  flex: 1;
+}
+.oecd-compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+.oecd-compare-ch {
+  text-align: right;
+  padding: 3px 6px;
+  font-size: 10px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border-secondary);
+}
+.oecd-compare-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 4px;
+}
+.oecd-compare-rowh-corner {
+  border-bottom: 1px solid var(--border-secondary);
+}
+.oecd-compare-rowh {
+  text-align: left;
+  font-weight: 500;
+  position: sticky;
+  left: 0;
+  background: var(--app-bg);
+  padding: 0;
+}
+.oecd-compare-rowh.is-score {
+  border-left: 2px solid var(--emerald-border);
+}
+.oecd-compare-rowbtn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 10.5px;
+  text-align: left;
+  padding: 3px 8px 3px 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
+  width: 100%;
+}
+.oecd-compare-rowbtn:hover {
+  color: var(--emerald-text);
+}
+.oecd-compare-rowlabel {
+  display: inline-block;
+  padding: 3px 8px 3px 6px;
+  font-size: 10.5px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
+}
+.oecd-compare-table tr.is-active .oecd-compare-rowbtn {
+  color: var(--emerald-text);
+  font-weight: 600;
+}
+.oecd-compare-group td {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  padding: 6px 6px 2px;
+}
+.oecd-compare-cell {
+  text-align: right;
+  padding: 3px 6px;
+  white-space: nowrap;
+  border-bottom: 1px solid color-mix(in srgb, var(--border-secondary) 60%, transparent);
+}
+.oecd-compare-val {
+  color: var(--text-primary);
+}
+.oecd-compare-rank {
+  display: block;
+  font-size: 8.5px;
+  color: var(--text-faint);
+}
+.oecd-compare-cell.is-best {
+  box-shadow: inset 0 0 0 1px var(--emerald-border);
+  border-radius: var(--radius-sm);
+}
+.oecd-compare-cell.is-stale .oecd-compare-val {
+  color: var(--text-faint);
+}
+.oecd-compare-delta.is-pos {
+  color: var(--emerald-text);
+}
+.oecd-compare-delta.is-neg {
+  color: var(--negative);
+}
+.oecd-compare-foot {
+  margin: 8px 0 0;
+  font-size: 9.5px;
+  line-height: 1.5;
+  color: var(--text-faint);
+}
+
+/* Era wrap gets the info button. */
+.oecd-eras-wrap {
+  position: relative;
+  padding-right: 22px;
+  margin-top: -2px;
+}
+
+/* ⓘ info button + methodology popover. */
+.oecd-info-wrap {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  z-index: 6;
+}
+.oecd-info-btn {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid var(--border-primary);
+  background: transparent;
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+  font-style: italic;
+  font-size: 10px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    color 140ms ease-out,
+    border-color 140ms ease-out;
+}
+.oecd-info-btn:hover,
+.oecd-info-btn:focus-visible {
+  color: var(--emerald-text);
+  border-color: var(--emerald-border);
+}
+.oecd-info-pop {
+  position: absolute;
+  top: 22px;
+  right: 0;
+  width: 300px;
+  max-width: 78vw;
+  padding: 10px 12px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  background: var(--bg-elev);
+  box-shadow: var(--shadow-lg);
+  outline: none;
+}
+.oecd-info-pop-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 5px;
+}
+.oecd-info-pop-body {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+@media (max-width: 900px) {
+  .oecd-hth-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 /* ── Focus visibility (public page, keyboard-first) ────────────────────────── */
 .oecd-page button:focus-visible,
 .oecd-page select:focus-visible,

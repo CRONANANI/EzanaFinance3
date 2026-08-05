@@ -22,6 +22,8 @@ import {
 } from '@/lib/oecd-scales';
 import { columnValues, aggregate } from './oecd-explorer-model';
 import OecdProjBadge from './OecdProjBadge';
+import OecdInfoButton from './OecdInfoButton';
+import { OECD_METHODOLOGY } from './oecd-methodology';
 import OecdTip, { tipFromEvent, tipFromElement } from './OecdTip';
 
 export default function OecdRanking({
@@ -76,6 +78,7 @@ export default function OecdRanking({
 
   return (
     <section className="oecd-card oecd-ranking-card" ref={cardRef}>
+      <OecdInfoButton entry={OECD_METHODOLOGY.ranking} />
       <div className="oecd-section-head">
         <div className="oecd-section-head-l">
           <span className="oecd-section-tag">RANKING</span>

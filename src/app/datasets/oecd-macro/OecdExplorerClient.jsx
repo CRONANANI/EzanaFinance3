@@ -23,7 +23,6 @@ import OecdAggregates from './OecdAggregates';
 import OecdMatrix from './OecdMatrix';
 import OecdRanking from './OecdRanking';
 import OecdRadar from './OecdRadar';
-import OecdProfile from './OecdProfile';
 import OecdHistory from './OecdHistory';
 import OecdEras from './OecdEras';
 import OecdModeToggle from './OecdModeToggle';
@@ -95,6 +94,10 @@ function ExplorerInner({ latest, empire, empireMatrix }) {
   });
   const [a, setA] = useState(() => searchParams.get('a') || DEFAULTS.a);
   const [b, setB] = useState(() => searchParams.get('b') || DEFAULTS.b);
+  // Optional 3rd/4th compare countries (head-to-head is 2–4). URL: c, d.
+  const [extras, setExtras] = useState(() =>
+    [searchParams.get('c'), searchParams.get('d')].filter(Boolean).map((s) => s.toUpperCase()),
+  );
   const [pins, setPins] = useState(() => parsePins(searchParams.get('pins')));
   const [win, setWin] = useState(() => {
     const v = Number(searchParams.get('win'));
@@ -127,6 +130,8 @@ function ExplorerInner({ latest, empire, empireMatrix }) {
     if (ind !== DEFAULTS.ind) p.set('ind', ind);
     if (a !== DEFAULTS.a) p.set('a', a);
     if (b !== DEFAULTS.b) p.set('b', b);
+    if (extras[0]) p.set('c', extras[0]);
+    if (extras[1]) p.set('d', extras[1]);
     if (pins.length) p.set('pins', pins.join(','));
     if (win !== DEFAULTS.win) p.set('win', String(win));
     if (showAll) p.set('showAll', '1');
@@ -134,7 +139,29 @@ function ExplorerInner({ latest, empire, empireMatrix }) {
     if (focus !== DEFAULTS.focus) p.set('focus', focus);
     const qs = p.toString();
     router.replace(qs ? `?${qs}` : '?', { scroll: false });
-  }, [dim, ind, a, b, pins, win, showAll, mode, focus, router]);
+  }, [dim, ind, a, b, extras, pins, win, showAll, mode, focus, router]);
+
+  // Selected comparison countries (2–4), de-duplicated. A/B always present.
+  const selected = useMemo(
+    () => [...new Set([a, b, ...extras].filter(Boolean))].slice(0, 4),
+    [a, b, extras],
+  );
+  const onChangeCountry = useCallback((i, iso) => {
+    if (i === 0) setA(iso);
+    else if (i === 1) setB(iso);
+    else setExtras((prev) => prev.map((v, idx) => (idx === i - 2 ? iso : v)));
+  }, []);
+  const onAddCountry = useCallback(
+    (iso) => {
+      setExtras((prev) =>
+        prev.length < 2 && iso !== a && iso !== b && !prev.includes(iso) ? [...prev, iso] : prev,
+      );
+    },
+    [a, b],
+  );
+  const onRemoveCountry = useCallback((i) => {
+    if (i >= 2) setExtras((prev) => prev.filter((_, idx) => idx !== i - 2));
+  }, []);
 
   // ── Mode switch: entering empire mode clamps A/B into the intersection so both
   // selected countries carry empire scores. ────────────────────────────────────
@@ -149,6 +176,7 @@ function ExplorerInner({ latest, empire, empireMatrix }) {
           empireCountries[0].iso;
         setA((cur) => (isos.has(cur) ? cur : pick('USA', 0)));
         setB((cur) => (isos.has(cur) ? cur : pick('CHN', 1)));
+        setExtras((prev) => prev.filter((iso) => isos.has(iso)));
       }
     },
     [empireCountries],
@@ -273,34 +301,25 @@ function ExplorerInner({ latest, empire, empireMatrix }) {
             />
           )}
 
-          <section className="oecd-duo">
-            <OecdRadar
-              model={model}
-              lens={lens}
-              a={a}
-              b={b}
-              ind={ind}
-              onChangeA={setA}
-              onChangeB={setB}
-              onPickIndicator={setInd}
-              mode={mode}
-              onMode={onMode}
-              focus={focus}
-              onFocus={setFocus}
-              empireModel={empireModel}
-              empireCountries={empireCountries}
-              onLens={onLens}
-              showLensChips={hasDimMatrix}
-            />
-            <OecdProfile
-              model={model}
-              a={a}
-              ind={ind}
-              onPickIndicator={setInd}
-              mode={mode}
-              empireModel={empireModel}
-            />
-          </section>
+          <OecdRadar
+            model={model}
+            lens={lens}
+            ind={ind}
+            onPickIndicator={setInd}
+            selected={selected}
+            onChangeCountry={onChangeCountry}
+            onAddCountry={onAddCountry}
+            onRemoveCountry={onRemoveCountry}
+            mode={mode}
+            onMode={onMode}
+            focus={focus}
+            onFocus={setFocus}
+            empireModel={empireModel}
+            empireCountries={empireCountries}
+            empireMatrixModel={empireMatrixModel}
+            onLens={onLens}
+            showLensChips={hasDimMatrix}
+          />
         </>
       )}
 

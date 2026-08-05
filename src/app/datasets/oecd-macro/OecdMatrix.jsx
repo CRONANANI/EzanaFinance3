@@ -31,6 +31,8 @@ import {
 import { columnValues, rankWithin } from './oecd-explorer-model';
 import OecdProjBadge from './OecdProjBadge';
 import OecdEmpireMatrix from './OecdEmpireMatrix';
+import OecdInfoButton from './OecdInfoButton';
+import { OECD_METHODOLOGY } from './oecd-methodology';
 import OecdTip, { tipFromEvent, tipFromElement } from './OecdTip';
 
 const SORT_NOTE =
@@ -221,6 +223,7 @@ function OecdLensMatrix({
 
   return (
     <section className="oecd-card oecd-matrix-card" ref={cardRef}>
+      <OecdInfoButton entry={OECD_METHODOLOGY.matrixOecdFallback} />
       <div className="oecd-section-head">
         <div className="oecd-section-head-l">
           <span className="oecd-section-tag">MATRIX</span>

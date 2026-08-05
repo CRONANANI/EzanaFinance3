@@ -13,6 +13,8 @@ import { OECD_AGGREGATE_STRIP, OECD_SERIES_BY_SLUG } from '@/lib/oecd-curated';
 import { formatValue, isProjected } from '@/lib/oecd-scales';
 import { aggregate } from './oecd-explorer-model';
 import OecdProjBadge from './OecdProjBadge';
+import OecdInfoButton from './OecdInfoButton';
+import { OECD_METHODOLOGY } from './oecd-methodology';
 import OecdTip, { tipFromEvent, tipFromElement } from './OecdTip';
 
 const LABELS = { OECD: 'OECD total', EA17: 'Euro area 17', W: 'World' };
@@ -66,6 +68,7 @@ export default function OecdAggregates({ model, slug }) {
         })}
       </div>
       {series?.unitLabel ? <span className="oecd-aggs-unit">{series.unitLabel}</span> : null}
+      <OecdInfoButton entry={OECD_METHODOLOGY.aggregates} />
       <OecdTip tip={tip} />
     </div>
   );
