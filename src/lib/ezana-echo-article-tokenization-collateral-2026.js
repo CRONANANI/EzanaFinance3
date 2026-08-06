@@ -24,11 +24,31 @@ export const tokenizationCollateral2026 = {
     {
       type: 'stat-grid',
       stats: [
-        { label: 'Cow-backed credit, Paraná pilot', value: '~$20K', change: '10 tokenized cows on B3 (CoinDesk)' },
-        { label: 'Global MSME finance gap', value: '$5.7T', change: '$8T incl. informal enterprises' },
-        { label: 'African smallholders with credit access', value: '6%', change: 'African Development Bank' },
-        { label: 'Stablecoin volume, 2025 (raw)', value: '$33T', change: 'vs $25.5T Visa+Mastercard combined' },
-        { label: 'Tokenized RWAs today (ex-stablecoins)', value: '$30B+', change: '~30x since March 2024' },
+        {
+          label: 'Cow-backed credit, Paraná pilot',
+          value: '~$20K',
+          change: '10 tokenized cows on B3 (CoinDesk)',
+        },
+        {
+          label: 'Global MSME finance gap',
+          value: '$5.7T',
+          change: '$8T incl. informal enterprises',
+        },
+        {
+          label: 'African smallholders with credit access',
+          value: '6%',
+          change: 'African Development Bank',
+        },
+        {
+          label: 'Stablecoin volume, 2025 (raw)',
+          value: '$33T',
+          change: 'vs $25.5T Visa+Mastercard combined',
+        },
+        {
+          label: 'Tokenized RWAs today (ex-stablecoins)',
+          value: '$30B+',
+          change: '~30x since March 2024',
+        },
       ],
     },
 
@@ -64,19 +84,178 @@ export const tokenizationCollateral2026 = {
       text: 'Kenya is the control case: its Movable Property Security Rights Registry runs around the clock, its agricultural data systems had registered over 7.2 million farmers by 2025, and lenders registered 34,638 livestock assets as collateral in the year to June 2023 — part of roughly KSh 5.1 trillion in credit supported by movable assets overall, with no blockchain required. Mongolia makes the same point harder: livestock made up about a quarter of the roughly 670,000 pledge notices in its web-based movable-property registry by mid-2023. Ordinary electronic registries already record collateral and set creditor priority. Which means tokenization does not get credit for existing — it has to beat ordinary underwriting on the terms that matter: a bigger loan, a lower rate, a faster approval, a cheaper insurance premium, or a better recovery when the borrower defaults. Pakistan shows what happens when the missing link is insurance: livestock is 14.6% of GDP and over 62% of agricultural value added, yet fewer than 200,000 of the country’s 3.2 million small enterprises have formal credit, and the World Bank found only 16% of farmers holding seven to fifty animals bankable — largely because livestock insurance barely exists, and disease, drought, or theft can erase the collateral and the borrower’s income in the same event.',
     },
     {
-      type: 'chart',
-      variant: 'bar',
-      title: 'Locked out: formal credit access where livestock wealth is highest',
-      caption:
+      type: 'dossier-table',
+      figureLabel: 'FIG. 1 · LOCKED OUT WHERE LIVESTOCK WEALTH IS HIGHEST',
+      kicker:
+        'FORMAL CREDIT ACCESS WHERE THE MISSING COLLATERAL IS LIVESTOCK · LOWEST ACCESS FIRST · CLICK A ROW TO EXPAND THE DOSSIER.',
+      hint: 'Four access figures — expand a row for the record.',
+      source:
         'Share with formal credit access. African smallholder farmers: African Development Bank. Pakistani SMEs: <200K of 3.2M enterprises. Sindh farmers: provincial data. Mid-herd farmers (7–50 animals) deemed bankable: World Bank. Via CryptoSlate reporting, July 2026.',
-      data: [
-        { x: 'African smallholder farmers', value: 6 },
-        { x: 'Pakistani SMEs (formal credit)', value: 6.3 },
-        { x: 'Sindh farmers (formal loans)', value: 10 },
-        { x: 'Mid-herd farmers deemed bankable', value: 16 },
+      headers: ['Who is locked out', 'What it is', 'Access figure', 'The missing link', ''],
+      rows: [
+        {
+          name: 'African smallholder farmers',
+          tag: 'LOWEST ACCESS',
+          role: 'The headline of the credit gap — wealth owned, but unbankable.',
+          anchor: '6% with credit access',
+          keyRisk:
+            'The missing collateral often is not missing: farmers own valuable livestock but cannot borrow against it without land titles.',
+          dossier: [
+            {
+              label: 'Source',
+              text: 'The African Development Bank puts credit access among African smallholder farmers at just 6%.',
+            },
+          ],
+        },
+        {
+          name: 'Pakistani SMEs',
+          tag: 'FORMAL CREDIT',
+          role: 'A country where livestock is 14.6% of GDP and over 62% of agricultural value added.',
+          anchor: '~6.3% (fewer than 200K of 3.2M)',
+          keyRisk:
+            'Fewer than 200,000 of Pakistan’s 3.2 million small enterprises have formal credit — largely because livestock insurance barely exists.',
+          dossier: [
+            {
+              label: 'Why so low',
+              text: 'Disease, drought, or theft can erase the collateral and the borrower’s income in the same event, and insurance to cover it barely exists.',
+            },
+          ],
+        },
+        {
+          name: 'Sindh farmers',
+          tag: 'FORMAL LOANS',
+          role: 'A provincial snapshot of the land-title barrier.',
+          anchor: '~10% with formal loans',
+          keyRisk:
+            'Roughly 80% of rural livestock holders in Sindh do not have the land titles banks require.',
+          dossier: [
+            {
+              label: 'The barrier',
+              text: 'Banks require land titles that roughly 80% of rural livestock holders in the province do not hold, so livestock wealth stays unbankable.',
+            },
+          ],
+        },
+        {
+          name: 'Mid-herd farmers deemed bankable',
+          tag: 'WORLD BANK',
+          role: 'The ceiling on who qualifies today — farmers holding seven to fifty animals.',
+          anchor: '16% deemed bankable',
+          keyRisk:
+            'Even among mid-herd farmers, only 16% are judged bankable — largely because livestock insurance to backstop the collateral barely exists.',
+          dossier: [
+            {
+              label: 'Source',
+              text: 'The World Bank found only 16% of farmers holding seven to fifty animals bankable.',
+            },
+          ],
+        },
       ],
-      series: [{ key: 'value', label: '% with access', color: 'var(--echo-chart-red)' }],
-      yLabel: '% with formal credit access',
+    },
+    {
+      type: 'adjudication-matrix',
+      figureLabel: 'FIG. 2 · FIVE COUNTRIES, FOUR MISSING LINKS',
+      kicker:
+        'LIVESTOCK-COLLATERAL COUNTRIES × THE FOUR LINKS A LOAN NEEDS · SAME = THE ARTICLE CREDITS THIS MARKET WITH THE LINK · PART = IN PROGRESS · — = NOT CREDITED / MISSING. CLICK A CELL FOR THE EVIDENCE.',
+      hint: 'Click a cell for the evidence.',
+      source: "this article's reporting · IFC · World Bank.",
+      cols: [
+        'Registry recognizes livestock',
+        'Digital ID / traceability',
+        'Insurance',
+        'Recovery / enforcement',
+      ],
+      rows: [
+        {
+          label: 'Ethiopia',
+          cells: [
+            {
+              value: 'same',
+              note: 'The central bank runs an electronic registry that names cattle, camels, sheep, goats, and poultry as eligible collateral.',
+            },
+            {
+              value: 'part',
+              note: 'A national livestock identification and traceability system is being built.',
+            },
+            {
+              value: 'none',
+              note: 'Lenders still lack insurance — one of the four links the 2025–2030 roadmap has not closed.',
+            },
+            {
+              value: 'none',
+              note: 'Lenders still lack a recovery path on default, alongside reliable valuation and health data.',
+            },
+          ],
+        },
+        {
+          label: 'Nigeria',
+          cells: [
+            {
+              value: 'same',
+              note: 'A central-bank registry can pledge livestock (including unborn offspring) and check double-pledging.',
+            },
+            {
+              value: 'same',
+              note: 'An ear-tag and digital-passport identification system is in place.',
+            },
+            {
+              value: 'none',
+              note: 'The IFC puts unmet small-business credit demand at about $32.2 billion; insurance is not among the working systems.',
+            },
+            {
+              value: 'part',
+              note: 'The registry can check double-pledging, but no single product connects the three working systems into one loan.',
+            },
+          ],
+        },
+        {
+          label: 'Kenya',
+          cells: [
+            {
+              value: 'same',
+              note: 'The Movable Property Security Rights Registry runs around the clock — the control case.',
+            },
+            {
+              value: 'part',
+              note: 'Agricultural data systems had registered over 7.2 million farmers by 2025.',
+            },
+            { value: 'none' },
+            {
+              value: 'same',
+              note: 'Lenders registered 34,638 livestock assets as collateral in the year to June 2023 — part of ~KSh 5.1 trillion in credit supported by movable assets.',
+            },
+          ],
+        },
+        {
+          label: 'Mongolia',
+          cells: [
+            {
+              value: 'same',
+              note: 'Livestock made up about a quarter of the ~670,000 pledge notices in its web-based movable-property registry by mid-2023.',
+            },
+            { value: 'none' },
+            { value: 'none' },
+            {
+              value: 'same',
+              note: 'Ordinary electronic registries already record collateral and set creditor priority — no blockchain required.',
+            },
+          ],
+        },
+        {
+          label: 'Pakistan',
+          cells: [
+            { value: 'none' },
+            { value: 'none' },
+            {
+              value: 'none',
+              note: 'Livestock insurance barely exists, so disease, drought, or theft can erase the collateral and the income at once.',
+            },
+            {
+              value: 'none',
+              note: 'With no insurance and no recovery path, a lender cannot repossess value a shock has already destroyed.',
+            },
+          ],
+        },
+      ],
     },
 
     { type: 'heading', text: 'The marketplace thesis: watch the venue, not the asset', level: 2 },
@@ -98,18 +277,113 @@ export const tokenizationCollateral2026 = {
       text: 'If the volume numbers were theoretical, the incumbents would not be paying real money to stand on the new rails. Stripe bought stablecoin-infrastructure firm Bridge for $1.1 billion and then backed its own blockchain, Tempo, which debuted in early 2026 — and Visa now operates an anchor validator on it. Mastercard signed a definitive agreement in March 2026 to acquire London stablecoin-infrastructure company BVNK for up to $1.8 billion — $1.5 billion fixed plus $300 million contingent, expected to close by year-end — the largest acquisition in stablecoin history. PayPal issues its own dollar token, PYUSD. Circle, the issuer of USDC, trades on the NYSE around a $30 billion valuation. Crypto M&A overall ran about $37 billion in 2025, up more than sevenfold in a year. The pattern rhymes with every plumbing rebuild in payments history: the companies that ended up sitting in the middle of electronic card payments — Visa and Mastercard themselves — were assembled quietly, in the layer almost nobody watched, and they are now the ones buying seats on the replacement.',
     },
     {
-      type: 'chart',
-      variant: 'bar',
-      title: 'Card-network scale, without the card networks',
-      caption:
-        'Annual settled/processed volume, 2025, $ trillions. Stablecoin figure is raw on-chain volume (Morph/Coinbase data); bot-adjusted estimate is ~$28T (Chainalysis). Visa and Mastercard are reported payment volumes.',
-      data: [
-        { x: 'Stablecoins (raw on-chain)', value: 33 },
-        { x: 'Visa', value: 16.7 },
-        { x: 'Mastercard', value: 10.6 },
+      type: 'wall-timeline',
+      figureLabel: 'FIG. 3 · THE RAILS, REBUILT IN PLAIN SIGHT',
+      kicker:
+        'TOKENIZATION & STABLECOIN PLUMBING, MARCH 2024 – JULY 2026 · YEAR MARKERS ARE APPROXIMATE WHERE INTRA-YEAR · CLICK ANY PLAQUE FOR THE RECORD.',
+      hint: 'Click a plaque for its record.',
+      source: "this article's reporting · CoinDesk · company statements.",
+      startYear: 2024,
+      endYear: 2026.65,
+      windows: [],
+      plaques: [
+        {
+          year: 2024.2,
+          lane: 0,
+          label: 'Mar 2024 · Treasuries cross $1B',
+          detail:
+            'Tokenized US Treasuries cross $1 billion on-chain for the first time — the milestone the industry keeps citing.',
+        },
+        {
+          year: 2025.5,
+          lane: 1,
+          label: '2025 · Crypto M&A ≈$37B',
+          detail:
+            'Crypto M&A runs about $37 billion for the year, up more than sevenfold from the prior year.',
+        },
+        {
+          year: 2026.05,
+          lane: 2,
+          label: 'Early 2026 · Stripe’s Tempo debuts',
+          detail:
+            'Stripe — which had bought stablecoin-infrastructure firm Bridge for $1.1 billion — debuts its own blockchain, Tempo; Visa now operates an anchor validator on it.',
+        },
+        {
+          year: 2026.2,
+          lane: 3,
+          label: 'Mar 2026 · Mastercard to buy BVNK',
+          detail:
+            'Mastercard signs a definitive agreement to acquire London stablecoin-infrastructure firm BVNK for up to $1.8 billion ($1.5B fixed plus $300M contingent) — the largest acquisition in stablecoin history.',
+        },
+        {
+          year: 2026.45,
+          lane: 4,
+          label: 'Jun 12 2026 · SpaceX’s record IPO',
+          detail:
+            'SpaceX runs the largest IPO in history — over 555 million shares at $135, a $75 billion raise — closing its first day around a $2.1 trillion valuation.',
+        },
+        {
+          year: 2026.55,
+          lane: 5,
+          label: 'Jul 2026 · Ten cows on B3',
+          detail:
+            'Farmers in Paraná tokenize ten dairy cows, register them on B3, and borrow nearly $20,000 against the herd — the mechanism the whole thesis rests on.',
+        },
       ],
-      series: [{ key: 'value', label: 'Volume ($T, 2025)', color: 'var(--echo-chart-green)' }],
-      yLabel: '$ trillions',
+    },
+    {
+      type: 'dossier-table',
+      figureLabel: 'FIG. 4 · CARD-NETWORK SCALE, WITHOUT THE CARD NETWORKS',
+      kicker:
+        'ANNUAL SETTLED / PROCESSED VOLUME, 2025 ($ TRILLIONS) · LARGEST FIRST · CLICK A ROW TO EXPAND THE DOSSIER.',
+      hint: 'Three volumes — expand a row for the record.',
+      source:
+        'Annual settled/processed volume, 2025, $ trillions. Stablecoin figure is raw on-chain volume (Morph/Coinbase data); bot-adjusted estimate is ~$28T (Chainalysis). Visa and Mastercard are reported payment volumes.',
+      headers: ['Rail', 'What it is', '2025 volume', 'The caveat', ''],
+      rows: [
+        {
+          name: 'Stablecoins',
+          tag: 'ON-CHAIN',
+          role: 'The new rail — raw on-chain settlement already above the card networks combined.',
+          anchor: '$33T raw ($28T bot-adjusted)',
+          keyRisk:
+            'Raw on-chain volume includes trading and bot churn; the bot-adjusted figure is the more defensible number.',
+          dossier: [
+            {
+              label: 'The number',
+              text: 'Raw on-chain stablecoin volume was $33 trillion in 2025 — above Visa and Mastercard’s combined $25.5 trillion. Chainalysis’s bot-adjusted 2025 figure is $28 trillion.',
+            },
+          ],
+        },
+        {
+          name: 'Visa',
+          tag: 'CARD NETWORK',
+          role: 'The larger incumbent card network by processed volume.',
+          anchor: '$16.7T processed',
+          keyRisk:
+            'Visa now operates an anchor validator on Stripe’s Tempo chain — the incumbent buying a seat on the replacement rail.',
+          dossier: [
+            {
+              label: 'Reported volume',
+              text: 'Visa processed $16.7 trillion in payments in 2025.',
+            },
+          ],
+        },
+        {
+          name: 'Mastercard',
+          tag: 'CARD NETWORK',
+          role: 'The second incumbent card network by processed volume.',
+          anchor: '$10.6T processed',
+          keyRisk:
+            'Mastercard is paying up to $1.8 billion for BVNK — the largest acquisition in stablecoin history.',
+          dossier: [
+            {
+              label: 'Reported volume',
+              text: 'Mastercard processed $10.6 trillion in payments in 2025; with Visa that is $25.5 trillion combined.',
+            },
+          ],
+        },
+      ],
     },
 
     { type: 'heading', text: 'The access problem, sized in one IPO', level: 2 },
@@ -129,18 +403,55 @@ export const tokenizationCollateral2026 = {
       text: 'The trajectory so far is steep but small: tokenized US Treasuries crossed $1 billion for the first time in March 2024; total tokenized assets reached about $25 billion by March 2026 and sit above $30 billion ex-stablecoins today. The 2030 projections from the banks span a telling range — McKinsey’s conservative case around $2 trillion, Citi’s June 2026 base case at $5.5 trillion, BCG’s estimate at $16 trillion, with Standard Chartered stretching to $30 trillion by 2034. Read the low end honestly: the most cautious projection from the most cautious bank still implies roughly 60x growth from today. And the demand side is not waiting for permission — BlackRock’s Larry Fink has publicly framed every stock, bond, and fund as tokenizable, exchanges have moved on tokenized-equity approvals, and the incumbent settlement plumbing is piloting its own tokenization services.',
     },
     {
-      type: 'chart',
-      variant: 'bar',
-      title: 'Where the banks say this goes by 2030',
-      caption:
+      type: 'revision-ledger',
+      figureLabel: 'FIG. 5 · WHERE THE BANKS SAY THIS GOES BY 2030',
+      kicker:
+        'TOKENIZED-ASSET TOTAL: ~$30B TODAY → 2030 BANK PROJECTIONS · √-SCALE · GROWTH IS FAVORABLE (GREEN). CLICK A ROW FOR THE RECORD.',
+      hint: 'Bar length on a √-scale; each row is today’s base vs. a 2030 projection.',
+      source:
         'Projected tokenized-asset totals by 2030, $ trillions. Sources: McKinsey (conservative case), Citi "Tokenization 2030" (June 2026), BCG. Standard Chartered projects $30T by 2034. Current base: ~$30B+ ex-stablecoins (mid-2026).',
-      data: [
-        { x: 'McKinsey (low case)', value: 2 },
-        { x: 'Citi (base case)', value: 5.5 },
-        { x: 'BCG (high case)', value: 16 },
+      scale: 'sqrt',
+      unit: '$T',
+      rows: [
+        {
+          label: 'McKinsey — conservative case',
+          before: 0.03,
+          after: 2,
+          beforeDisplay: '≈$30B',
+          afterDisplay: '$2.0T',
+          delta: 1.97,
+          deltaDisplay: '+$2.0T',
+          favorable: 'up',
+          record:
+            'The most cautious projection from the most cautious bank still implies roughly 60x growth from today’s ~$30B base.',
+        },
+        {
+          label: 'Citi — base case (June 2026)',
+          before: 0.03,
+          after: 5.5,
+          beforeDisplay: '≈$30B',
+          afterDisplay: '$5.5T',
+          delta: 5.47,
+          deltaDisplay: '+$5.5T',
+          favorable: 'up',
+          record:
+            'Citi’s June 2026 "Tokenization 2030" base case puts the total at $5.5 trillion by 2030.',
+        },
+        {
+          label: 'BCG — high case',
+          before: 0.03,
+          after: 16,
+          beforeDisplay: '≈$30B',
+          afterDisplay: '$16T',
+          delta: 15.97,
+          deltaDisplay: '+$16T',
+          favorable: 'up',
+          record:
+            'BCG’s estimate reaches $16 trillion by 2030 — in line with the ~$16 trillion of illiquid assets sitting outside the borrowing system today.',
+        },
       ],
-      series: [{ key: 'value', label: '2030 projection ($T)', color: 'var(--echo-chart-blue)' }],
-      yLabel: '$ trillions',
+      verdict:
+        'Even the low end implies ~60x growth from today; Standard Chartered stretches to $30 trillion by 2034.',
     },
 
     { type: 'heading', text: 'What can go wrong, and how to position', level: 2 },
@@ -151,6 +462,68 @@ export const tokenizationCollateral2026 = {
     {
       type: 'paragraph',
       text: 'The base case: issuance and lending infrastructure keep compounding, the bank projections’ low end proves conservative, and the venues charging basis points on tokenized collateral become the quiet giants of the cycle. The bear case: a regulatory stall or a high-profile collateral failure — a mispriced oracle, an unenforceable lien — resets the adoption clock by years. The development-finance version of the bear case is quieter and worse: the registries and identity systems never connect, farmers take on debt against uninsured animals a lender cannot repossess, and a drought erases the collateral and the income in the same season. Investors tracking who is actually positioned for either branch can watch it happen in the disclosures: Ezana’s SEC filings, lobbying, and congressional trading datasets show which incumbents are buying, lobbying, and personally trading around tokenization policy, and prediction markets are already pricing the regulatory timelines the whole trade depends on. Ten cows in Paraná will not move any of those numbers. The mechanism they proved will.',
+    },
+    {
+      type: 'scenario-chain',
+      figureLabel: 'FIG. 6 · HOW THE TRADE PLAYS OUT',
+      kicker: 'POSITIONING CASE · GATE × DRIVER → OUTCOME · THREE BRANCHES FROM THE ARTICLE.',
+      hint: "Scenarios drawn from the article's positioning section.",
+      source: "this article's reporting.",
+      scenarios: [
+        {
+          id: 'base',
+          label: 'BASE CASE',
+          tone: 'base',
+          range: 'Infrastructure compounds',
+          steps: [
+            { label: 'Regulation moves', sub: 'the trade is gated on regulation actually moving' },
+            {
+              label: 'Issuance + lending scale',
+              sub: 'the bank projections’ low end proves conservative',
+            },
+          ],
+          result: {
+            value: 'Venues become quiet giants',
+            sub: 'the venues charging basis points on tokenized collateral win the cycle',
+          },
+        },
+        {
+          id: 'alt',
+          label: 'REGULATORY / COLLATERAL STALL',
+          tone: 'alt',
+          range: 'The clock resets',
+          steps: [
+            { label: 'Regulatory stall', sub: 'being early looks identical to being wrong' },
+            { label: 'A collateral failure', sub: 'a mispriced oracle or an unenforceable lien' },
+          ],
+          result: {
+            value: 'Adoption resets by years',
+            sub: 'a high-profile failure pushes the timeline out',
+          },
+        },
+        {
+          id: 'bear',
+          label: 'DEVELOPMENT-FINANCE BEAR',
+          tone: 'bear',
+          range: 'The quiet, worse case',
+          steps: [
+            {
+              label: 'Registries never connect',
+              sub: 'identity and registry systems stay separate pieces',
+            },
+            {
+              label: 'Debt against uninsured animals',
+              sub: 'a lender cannot repossess what a shock destroys',
+            },
+          ],
+          result: {
+            value: 'Collateral and income erased',
+            sub: 'a drought wipes out both in the same season',
+          },
+        },
+      ],
+      killSwitch:
+        'If a digitally verified animal does not unlock a bigger loan, a lower rate, or a better recovery than the same animal gets today, tokenization stays a pilot with no measurable effect on who can borrow.',
     },
   ],
   author: 'Ezana Finance Editorial',

@@ -92,12 +92,150 @@ export const criticalMineralsArticle2026 = {
       text: 'The top of that list is dominated by single-country majorities. South Africa’s 83% of platinum-group-metal reserves is the most concentrated position of any major mineral on earth; combined with Russia, the two countries control the overwhelming share of the palladium and platinum that catalytic converters, hydrogen electrolyzers, and chip fabrication depend on. Morocco’s 69% of phosphate reserves gives one kingdom decisive influence over the mineral with no substitute in agriculture — every tonne of food ultimately traces back to phosphate. The DRC’s roughly 50% of cobalt and China’s ~48% of rare earths round out a top tier where a supply shock in one country would ripple through the entire downstream economy.',
     },
     {
-      type: 'chart',
-      variant: 'horizontal-bar',
-      title: 'Reserve concentration: the top holder’s share of world reserves, by mineral',
-      caption:
+      type: 'dossier-table',
+      figureLabel: 'FIG. 1 · THE RESERVE CHOKEPOINTS, RANKED',
+      kicker:
+        'TOP HOLDER’S SHARE OF WORLD RESERVES, BY MINERAL · MOST CONCENTRATED FIRST · CLICK A ROW TO EXPAND THE DOSSIER.',
+      hint: 'Eight chokepoints plus the ranked tail — expand a row for the record.',
+      source:
         'Largest single-country share of global reserves for 18 key minerals, ranked. South Africa’s 83% of platinum-group metals and Morocco’s 69% of phosphate are the most concentrated positions; even “diversified” minerals like copper (Chile, 21%) and silver (Peru, 18%) have a clear single leader. Source: USGS Mineral Commodity Summaries 2026; uranium share from the World Nuclear Association.',
-      data: MINERAL_CONCENTRATION_DATA,
+      headers: ['Mineral — top holder', 'What it feeds', 'Reserve share', 'Key risk', ''],
+      rows: [
+        {
+          name: 'PGMs — South Africa',
+          tag: 'MOST CONCENTRATED',
+          role: 'The most concentrated position of any major mineral on earth.',
+          anchor: '83%',
+          keyRisk:
+            'One supplier holds structural leverage over autocatalysts, hydrogen electrolyzers, and chip fabrication.',
+          dossier: [
+            {
+              label: 'Downstream',
+              text: 'Platinum-group metals go into catalytic converters, hydrogen electrolyzers, chip fabrication, and jet-engine coatings; combined with Russia, the two countries control the overwhelming share of palladium and platinum.',
+            },
+          ],
+        },
+        {
+          name: 'Phosphate — Morocco',
+          tag: 'FERTILIZER',
+          role: 'The single chokepoint on the mineral with no substitute in agriculture.',
+          anchor: '69%',
+          keyRisk:
+            'A disruption shows up as food-price inflation in every importing nation — a food-security question, not a commodity one.',
+          dossier: [
+            {
+              label: 'No substitute',
+              text: 'Every tonne of food ultimately traces back to phosphate; one kingdom holds decisive influence over supply.',
+            },
+          ],
+        },
+        {
+          name: 'Cobalt — DR Congo',
+          tag: 'BATTERY METAL',
+          role: 'Roughly half the world’s reserves — one of the four battery bottlenecks.',
+          anchor: '~50%',
+          keyRisk:
+            'Concentration meets fragility: the DRC has a long history of instability, so the supply risk is a standing feature of the market.',
+          dossier: [
+            {
+              label: 'Battery axis',
+              text: 'Cobalt is additive, not interchangeable — a battery cannot swap it out for extra lithium; the chemistry requires each metal in its place.',
+            },
+          ],
+        },
+        {
+          name: 'Rare earths — China',
+          tag: 'DEFENSE · MIDSTREAM',
+          role: 'The clearest case where reserve share understates real leverage.',
+          anchor: '~48% (44.0 Mt of 91.9 Mt)',
+          keyRisk:
+            'China’s dominance of rare-earth processing is far higher than its ~48% of reserves — the midstream step is where dependency concentrates.',
+          dossier: [
+            {
+              label: 'Reserve breakdown',
+              text: 'Of a 91.9-million-tonne world total, China holds 44.0 Mt (~48%), Brazil 21.0 Mt (~23%), the United States just 1.9 Mt (~2%), and the rest of the world the residual 25.0 Mt (~27%).',
+            },
+            {
+              label: 'Why it matters',
+              text: 'Rare-earth magnets are essential to guided munitions, radar, and electric drivetrains — a national-security concern, not just a commodity-market one.',
+            },
+          ],
+        },
+        {
+          name: 'Potash — Canada',
+          tag: 'FERTILIZER',
+          role: 'The second fertilizer mineral with no agricultural substitute.',
+          anchor: '~45%',
+          keyRisk:
+            'With Morocco’s phosphate, two countries anchor the two minerals with no substitute in modern agriculture.',
+          dossier: [
+            {
+              label: 'Food security',
+              text: 'A disruption in potash does not show up as a battery shortage; it shows up as food-price inflation.',
+            },
+          ],
+        },
+        {
+          name: 'Nickel — Indonesia',
+          tag: 'BATTERY METAL',
+          role: 'The battery-metal anchor — reserves plus processing capacity to match.',
+          anchor: '44%',
+          keyRisk:
+            'Indonesia has spent years building the processing capacity to match its reserve position, deepening the bottleneck.',
+          dossier: [
+            {
+              label: 'Battery axis',
+              text: 'One of the four single-country bottlenecks — cobalt (DRC), nickel (Indonesia), lithium (Chile), graphite (China) — the EV and grid-storage chain depends on all four at once.',
+            },
+          ],
+        },
+        {
+          name: 'Graphite — China',
+          tag: 'BATTERY METAL',
+          role: 'The fourth battery bottleneck, held by the same midstream leader.',
+          anchor: '32%',
+          keyRisk:
+            'Completes a battery supply chain exposed to the DRC, Indonesia, Chile, and China simultaneously.',
+          dossier: [
+            {
+              label: 'Battery axis',
+              text: 'The additive concentration of the battery chain is worse than any single number suggests — the metals cannot be substituted for one another.',
+            },
+          ],
+        },
+        {
+          name: 'Lithium — Chile',
+          tag: 'BATTERY METAL',
+          role: 'The purest expression of the transition’s demand curve.',
+          anchor: '25%',
+          keyRisk:
+            'With ~88% of end-use flowing into batteries, there is no large second market to cushion a shock.',
+          dossier: [
+            {
+              label: 'Demand scaling',
+              text: 'Global mine production jumped roughly 31% in 2025 to around 290,000 tonnes, and about 88% of all lithium end-use now goes into batteries.',
+            },
+          ],
+        },
+        {
+          name: 'The ranked tail',
+          tag: '18–44%',
+          role: 'Even “diversified” minerals have a decisive single leader.',
+          anchor: '18–44%',
+          keyRisk:
+            'A 25–50% reserve share in one jurisdiction is enough for one government’s export policy or one bout of instability to move a global price.',
+          dossier: [
+            {
+              label: 'The rest of the ranking',
+              text: 'Diamond — Russia 44%, Manganese — Australia 32%, Iron ore — Australia 31%, Uranium — Australia 28% (World Nuclear Association), Zinc — Australia 27%, Bauxite — Guinea 26%, Coal — United States 23%, Copper — Chile 21%, Gold — Australia 20%, Silver — Peru 18%.',
+            },
+            {
+              label: 'Australia’s luck',
+              text: 'Australia alone ranks first in world reserves of five major commodities — a concentration of geological luck that makes it one of the most strategically important suppliers in the system.',
+            },
+          ],
+        },
+      ],
     },
     {
       type: 'paragraph',
@@ -116,12 +254,101 @@ export const criticalMineralsArticle2026 = {
       text: 'Nowhere is concentration more consequential than in the four metals that make a battery. Chile holds about 25% of world lithium reserves, and lithium is the purest expression of the transition’s demand curve: global mine production jumped roughly 31% in 2025 to around 290,000 tonnes, and about 88% of all lithium end-use now goes into batteries. Indonesia sits on 44% of nickel reserves and has spent the past several years building the processing capacity to match. The DRC’s ~50% of cobalt and China’s ~32% of graphite complete the set. The electric-vehicle and grid-storage supply chain, in other words, runs through four separate single-country bottlenecks, any one of which can throttle the whole.',
     },
     {
-      type: 'chart',
-      variant: 'horizontal-bar',
-      title: 'The four battery-metal bottlenecks',
-      caption:
-        'Top-holder share of world reserves for the four metals at the heart of lithium-ion batteries. The EV and grid-storage supply chain depends on all four simultaneously — a diversification problem that cannot be solved by substituting one metal for another. Source: USGS Mineral Commodity Summaries 2026.',
-      data: BATTERY_METALS_DATA,
+      type: 'adjudication-matrix',
+      figureLabel: 'FIG. 2 · WHERE EACH CHOKEPOINT BITES',
+      kicker:
+        'KEY MINERALS × SUPPLY-CHAIN STAGE · SAME = THE ARTICLE ESTABLISHES A CHOKEPOINT HERE · PART = PARTIAL / EMERGING · — = NOT ESTABLISHED. CLICK A CELL FOR THE EVIDENCE.',
+      hint: 'Click a cell for the evidence.',
+      source: 'USGS Mineral Commodity Summaries 2026 · this article’s reporting.',
+      cols: ['Reserve chokepoint', 'Processing chokepoint', 'Demand / no substitute'],
+      rows: [
+        {
+          label: 'Rare earths — China',
+          cells: [
+            {
+              value: 'same',
+              note: 'China holds ~48% of reserves — 44.0 Mt of a 91.9-Mt world total.',
+            },
+            {
+              value: 'same',
+              note: 'China’s dominance of rare-earth processing is far higher than its ~48% of reserves — the midstream step where dependency concentrates.',
+            },
+            {
+              value: 'part',
+              note: 'Rare-earth magnets are essential to guided munitions, radar, and electric drivetrains.',
+            },
+          ],
+        },
+        {
+          label: 'Cobalt — DR Congo',
+          cells: [
+            { value: 'same', note: 'The DRC holds roughly 50% of cobalt reserves.' },
+            { value: 'none' },
+            {
+              value: 'part',
+              note: 'A battery cannot swap cobalt for extra lithium — the chemistry requires each metal in its place.',
+            },
+          ],
+        },
+        {
+          label: 'Lithium — Chile',
+          cells: [
+            { value: 'same', note: 'Chile holds about 25% of world lithium reserves.' },
+            { value: 'none' },
+            {
+              value: 'same',
+              note: 'About 88% of lithium end-use goes into batteries, so there is no large second market to cushion a shock.',
+            },
+          ],
+        },
+        {
+          label: 'Nickel — Indonesia',
+          cells: [
+            { value: 'same', note: 'Indonesia sits on 44% of nickel reserves.' },
+            {
+              value: 'same',
+              note: 'Indonesia has spent years building the processing capacity to match its reserve position.',
+            },
+            {
+              value: 'part',
+              note: 'One of four additive battery bottlenecks that cannot be substituted for one another.',
+            },
+          ],
+        },
+        {
+          label: 'Graphite — China',
+          cells: [
+            { value: 'same', note: 'China holds about 32% of graphite reserves.' },
+            { value: 'none' },
+            {
+              value: 'part',
+              note: 'The fourth battery bottleneck — non-substitutable in the lithium-ion chain.',
+            },
+          ],
+        },
+        {
+          label: 'PGMs — South Africa',
+          cells: [
+            {
+              value: 'same',
+              note: 'South Africa’s 83% is the most concentrated reserve position of any major mineral on earth.',
+            },
+            { value: 'none' },
+            { value: 'none' },
+          ],
+        },
+        {
+          label: 'Phosphate — Morocco',
+          cells: [
+            { value: 'same', note: 'Morocco holds 69% of global phosphate reserves.' },
+            { value: 'none' },
+            {
+              value: 'same',
+              note: 'Phosphate has no substitute in agriculture — every tonne of food ultimately traces back to it.',
+            },
+          ],
+        },
+      ],
     },
     {
       type: 'paragraph',
@@ -133,12 +360,60 @@ export const criticalMineralsArticle2026 = {
       text: 'Reserve share, for all its importance, still understates real leverage — and [[kw:rare-earth-elements]]rare-earth elements[[/kw]] are the clearest example. USGS 2026 puts China’s rare-earth reserves at 44.0 million tonnes of a 91.9-million-tonne world total, about 48%, with Brazil second at 21.0 million tonnes (roughly 23%) and the United States holding just 1.9 million tonnes, close to 2%. But the reserve figure is the smaller half of the story: China’s dominance of rare-earth processing — the midstream step that turns mined ore into usable oxides, metals, and magnets — is far higher than its ~48% of reserves. A country can hold a modest share of a mineral in the ground and still control the point in the chain where value and dependency actually concentrate.',
     },
     {
-      type: 'chart',
-      variant: 'horizontal-bar',
-      title: 'Rare-earth reserves: China leads, the U.S. holds about 2%',
-      caption:
-        'Share of the 91.9-million-tonne world rare-earth reserve base. China (44.0 Mt) and Brazil (21.0 Mt) dominate; the United States holds roughly 1.9 Mt, near 2%. Reserves understate China’s leverage, which rests more on its dominant share of rare-earth processing than on ore in the ground. “Rest of world” is the residual of the USGS total. Source: USGS Mineral Commodity Summaries 2026.',
-      data: RARE_EARTH_RESERVES_DATA,
+      type: 'wall-timeline',
+      figureLabel: 'FIG. 3 · GEOLOGY BECOMES STATECRAFT',
+      kicker:
+        'POLICY & SUPPLY MILESTONES, 2020–2026 · YEAR MARKERS APPROXIMATE WHERE INTRA-YEAR · CLICK ANY PLAQUE FOR THE RECORD.',
+      hint: 'Click a plaque for its record.',
+      source:
+        'USGS Mineral Commodity Summaries 2026 · World Nuclear Association · this article’s reporting.',
+      startYear: 2019,
+      endYear: 2026.6,
+      windows: [],
+      plaques: [
+        {
+          year: 2020,
+          lane: 0,
+          label: '2020 · Energy Act critical-minerals list',
+          detail:
+            'The Energy Act of 2020 tasks the USGS with maintaining the critical-minerals list — the map of where the structural edge is most concentrated, redrawn only once a year.',
+        },
+        {
+          year: 2024,
+          lane: 1,
+          label: '2024 · U.S. nonfuel output ≈$106B',
+          detail:
+            'The value of U.S. nonfuel mineral production is roughly $106 billion — the baseline before the 2025 rise.',
+        },
+        {
+          year: 2025,
+          lane: 2,
+          label: '2025 · U.S. nonfuel output ≈$112B',
+          detail:
+            'U.S. nonfuel mineral production reaches about $112 billion, up from ~$106 billion in 2024 — but production value is not the same as supply security.',
+        },
+        {
+          year: 2025,
+          lane: 3,
+          label: '2025 · Lithium output +31%',
+          detail:
+            'Global lithium mine production jumps roughly 31% to around 290,000 tonnes, with about 88% of end-use going into batteries.',
+        },
+        {
+          year: 2026.13,
+          lane: 4,
+          label: 'Feb 2026 · USGS MCS 2026',
+          detail:
+            'The USGS publishes Mineral Commodity Summaries 2026 — the authoritative free dataset behind every reserve-share figure here, covering 90+ nonfuel commodities.',
+        },
+        {
+          year: 2026.3,
+          lane: 5,
+          label: '2026 · “Project Vault” announced',
+          detail:
+            'The announced U.S. critical-minerals stockpile, “Project Vault,” targets rare earths, lithium, and nickel — precisely where import dependence meets strategic use.',
+        },
+      ],
     },
     {
       type: 'paragraph',
@@ -160,6 +435,111 @@ export const criticalMineralsArticle2026 = {
       type: 'paragraph',
       text: 'Fertilizer is the quieter but arguably larger exposure. Morocco’s 69% of phosphate reserves and Canada’s roughly 45% of potash mean that two countries anchor the two minerals with no substitute in modern agriculture. A disruption there does not show up as a battery shortage; it shows up as food-price inflation, which is why phosphate and potash concentration is a food-security question in every importing nation. The geopolitics sharpen where concentration meets fragility: Guinea holds about 26% of bauxite reserves — the feedstock for aluminum — and the DRC’s ~50% of cobalt sits in a country with a long history of instability. When a critical mineral is both concentrated and located in a fragile state, the supply risk is not hypothetical; it is a standing feature of the market.',
     },
+    {
+      type: 'clearing-sankey',
+      figureLabel: 'FIG. 4 · WHICH INDUSTRIES EACH CHOKEPOINT GATES',
+      kicker:
+        'EIGHT CONCENTRATED MINERALS → THE INDUSTRIES THEY FEED · RIBBON WIDTH = TOP-HOLDER RESERVE SHARE (CHOKEPOINT SEVERITY), NOT PHYSICAL VOLUME · CLICK A RIBBON FOR THE RECORD.',
+      hint: 'Click a ribbon for the record.',
+      source: 'USGS Mineral Commodity Summaries 2026 · downstream links per this article.',
+      sourceGroups: [
+        {
+          label: 'Defense & tech',
+          nodes: [
+            { id: 'pgm', name: 'PGMs', display: '83%' },
+            { id: 'ree', name: 'Rare earths', display: '48%' },
+          ],
+        },
+        {
+          label: 'Fertilizer',
+          nodes: [
+            { id: 'phos', name: 'Phosphate', display: '69%' },
+            { id: 'pot', name: 'Potash', display: '45%' },
+          ],
+        },
+        {
+          label: 'Battery metals',
+          nodes: [
+            { id: 'cob', name: 'Cobalt', display: '50%' },
+            { id: 'nik', name: 'Nickel', display: '44%' },
+            { id: 'gra', name: 'Graphite', display: '32%' },
+            { id: 'lit', name: 'Lithium', display: '25%' },
+          ],
+        },
+      ],
+      destinations: [
+        { id: 'defense', name: 'Defense hardware', sub: 'jet engines · munitions · radar' },
+        { id: 'food', name: 'Food & agriculture', sub: 'no substitute in farming' },
+        { id: 'batteries', name: 'Batteries & grid storage', sub: 'EVs · grid storage' },
+      ],
+      flows: [
+        {
+          from: 'pgm',
+          to: 'defense',
+          value: 83,
+          tone: 'primary',
+          label: '83% · S. Africa',
+          record:
+            'PGMs (South Africa, 83%) go into jet-engine coatings and sensors — the most concentrated mineral on earth, and a defense input as much as a green-tech one.',
+        },
+        {
+          from: 'ree',
+          to: 'defense',
+          value: 48,
+          tone: 'primary',
+          record:
+            'Rare-earth magnets (China ~48% of reserves, a far larger share of processing) are essential to guided munitions, radar, and electric drivetrains.',
+        },
+        {
+          from: 'phos',
+          to: 'food',
+          value: 69,
+          tone: 'primary',
+          label: '69% · Morocco',
+          record:
+            'Morocco’s 69% of phosphate anchors the mineral with no substitute in agriculture; a disruption shows up as food-price inflation.',
+        },
+        {
+          from: 'pot',
+          to: 'food',
+          value: 45,
+          tone: 'primary',
+          record:
+            'Canada’s ~45% of potash is the second fertilizer mineral with no agricultural substitute — a food-security question in every importing nation.',
+        },
+        {
+          from: 'cob',
+          to: 'batteries',
+          value: 50,
+          tone: 'neutral',
+          record:
+            'The DRC’s ~50% of cobalt feeds the battery chain — and sits in a country with a long history of instability.',
+        },
+        {
+          from: 'nik',
+          to: 'batteries',
+          value: 44,
+          tone: 'neutral',
+          record:
+            'Indonesia’s 44% of nickel, with processing capacity built to match, is the battery-metal anchor.',
+        },
+        {
+          from: 'gra',
+          to: 'batteries',
+          value: 32,
+          tone: 'neutral',
+          record: 'China’s ~32% of graphite completes the four-metal battery bottleneck.',
+        },
+        {
+          from: 'lit',
+          to: 'batteries',
+          value: 25,
+          tone: 'neutral',
+          record:
+            'Chile’s ~25% of lithium feeds a demand curve where ~88% of end-use goes into batteries.',
+        },
+      ],
+    },
     { type: 'heading', text: 'Market positioning', level: 2 },
     {
       type: 'paragraph',
@@ -177,6 +557,52 @@ export const criticalMineralsArticle2026 = {
     {
       type: 'paragraph',
       text: 'For investors using Ezana, the tools to track this are the commodities dataset, which follows prices and production across the metals named here, and the Global Empire Lighthouse dimension, which maps national resource leverage — exactly the kind of single-country dominance the USGS reserve data quantifies. The reserve map is one of the few macro variables that is both decisive and slow-moving, which makes it a rare thing in markets: a structural edge that is hiding in a free government dataset. The [[kw:critical-minerals-list]]critical-minerals list[[/kw]] the USGS maintains under the Energy Act of 2020 is the map of where that edge is most concentrated — and it is redrawn only once a year.',
+    },
+    {
+      type: 'scenario-chain',
+      figureLabel: 'FIG. 5 · HARDEN OR DILUTE',
+      kicker: 'THESIS CASE · DRIVER × GATE → OUTCOME · TWO BRANCHES FROM THE ARTICLE.',
+      hint: "Scenarios drawn from the article's base-case / bear-case section.",
+      source: "this article's reporting.",
+      scenarios: [
+        {
+          id: 'base',
+          label: 'CONCENTRATION HARDENS',
+          tone: 'base',
+          range: 'The map holds',
+          steps: [
+            { label: 'Reserves move on a decades timescale', sub: 'not quarters' },
+            {
+              label: 'Policy turns geology into statecraft',
+              sub: 'stockpiling (Project Vault), allied onshoring, export controls',
+            },
+          ],
+          result: {
+            value: 'Suppliers gain pricing power',
+            sub: 'import-dependent economies keep paying a security premium',
+          },
+        },
+        {
+          id: 'alt',
+          label: 'DILUTION',
+          tone: 'alt',
+          range: 'Grips loosen',
+          steps: [
+            {
+              label: 'New discoveries + faster permitting',
+              sub: 'outside the incumbent leaders',
+            },
+            {
+              label: 'Recycling scales',
+              sub: 'lithium, cobalt, rare earths recovered from end-of-life batteries and magnets',
+            },
+          ],
+          result: {
+            value: 'Single-country grips loosen',
+            sub: 'especially in the battery metals, where the recoverable base is growing fast',
+          },
+        },
+      ],
     },
     { type: 'heading', text: 'Sources', level: 2 },
     {
