@@ -58,6 +58,136 @@ export const empireRankings2026 = {
       ],
     },
 
+    {
+      type: 'scrolly-spotlight',
+      figureLabel: 'FIG. 1 · FIVE CENTURIES, SEVEN TURNS',
+      kicker:
+        'SHARE OF WORLD GDP, 1500–2026 · PINNED CHART, SCROLLING ERA CARDS · EACH CARD LIGHTS ITS ERA.',
+      hint: 'Scroll to walk the sequence.',
+      source:
+        'Maddison Project Database convention; 2026 figures blend IMF WEO shares on a PPP basis. Values are scholarly estimates, not measurements.',
+      yLabel: '% of world GDP',
+      yMax: 40,
+      series: [
+        {
+          key: 'chn',
+          label: 'China',
+          color: 'var(--echo-chart-red)',
+          fill: true,
+          data: [
+            { x: 1500, y: 25 },
+            { x: 1600, y: 29 },
+            { x: 1700, y: 22 },
+            { x: 1820, y: 33 },
+            { x: 1870, y: 17 },
+            { x: 1913, y: 9 },
+            { x: 1950, y: 4.5 },
+            { x: 1980, y: 5 },
+            { x: 2000, y: 11 },
+            { x: 2026, y: 19 },
+          ],
+        },
+        {
+          key: 'ind',
+          label: 'India',
+          color: 'var(--echo-chart-orange)',
+          data: [
+            { x: 1500, y: 24.5 },
+            { x: 1600, y: 22 },
+            { x: 1700, y: 24 },
+            { x: 1820, y: 16 },
+            { x: 1870, y: 12 },
+            { x: 1913, y: 7.5 },
+            { x: 1950, y: 4.2 },
+            { x: 1980, y: 3 },
+            { x: 2000, y: 5 },
+            { x: 2026, y: 8 },
+          ],
+        },
+        {
+          key: 'gbr',
+          label: 'UK',
+          color: 'var(--echo-chart-purple)',
+          data: [
+            { x: 1500, y: 1.1 },
+            { x: 1600, y: 1.8 },
+            { x: 1700, y: 2.9 },
+            { x: 1820, y: 5.2 },
+            { x: 1870, y: 9.1 },
+            { x: 1913, y: 8.2 },
+            { x: 1950, y: 6.5 },
+            { x: 1980, y: 3.6 },
+            { x: 2000, y: 3.2 },
+            { x: 2026, y: 2.2 },
+          ],
+        },
+        {
+          key: 'usa',
+          label: 'US',
+          color: 'var(--echo-chart-blue)',
+          fill: true,
+          data: [
+            { x: 1700, y: 0.1 },
+            { x: 1820, y: 1.8 },
+            { x: 1870, y: 8.9 },
+            { x: 1913, y: 18.9 },
+            { x: 1950, y: 27.3 },
+            { x: 1980, y: 21 },
+            { x: 2000, y: 21 },
+            { x: 2026, y: 15 },
+          ],
+        },
+      ],
+      annotations: [
+        { x: 1820, y: 33, label: '1820 · China peaks' },
+        { x: 1913, y: 18.9, label: '1913 · US passes all rivals' },
+        { x: 1950, y: 27.3, label: '1950 · American maximum' },
+      ],
+      steps: [
+        {
+          title: 'Five centuries in one line',
+          body: 'Share of world output, 1500 to 2026, on the Maddison convention. Every hegemonic transition in the modern era is visible on this single chart: long plateaus, short violent handovers, and one great pendulum swing away from Asia and partway back. Nothing here is smoothed away.',
+        },
+        {
+          title: '1500 — the Asian equilibrium',
+          emphasis: ['chn', 'ind'],
+          highlight: { from: 1500, to: 1600 },
+          body: 'Ming China near 25% of world output, the Indian subcontinent near 24.5% — together roughly half of world production, while all of Western Europe combined musters under 18%. The board opens with the top two positions settled for centuries.',
+        },
+        {
+          title: '1545–1700 — silver, then settlement',
+          highlight: { from: 1545, to: 1700 },
+          body: 'Potosí silver bankrolls the Iberian century; the Dutch answer with institutions — the VOC of 1602, the Bank of Amsterdam of 1609 — and capture the carrying trade. The first modern reserve asset, the guilder, is born in a country of two million people.',
+        },
+        {
+          title: '1700–1870 — the British ascent',
+          emphasis: ['gbr'],
+          highlight: { from: 1700, to: 1870 },
+          body: "The scientific and industrial revolutions triple Britain's share to roughly 9% by 1870 — and Waterloo in 1815 converts productivity into naval hegemony and sterling primacy. Small share, total system: the leverage of finance over output, demonstrated for the first time.",
+        },
+        {
+          title: '1820–1913 — the great divergence',
+          emphasis: ['chn', 'usa'],
+          highlight: { from: 1820, to: 1913 },
+          activeAnnotations: ['1820 · China peaks', '1913 · US passes all rivals'],
+          body: 'China peaks at ~33% in 1820 — the largest single-economy share on record — then loses it across the century of humiliation. Meanwhile the United States runs from about 2% of world output in 1820 to almost 19% by 1913, passing every rival before either world war.',
+        },
+        {
+          title: '1913–1991 — the American century',
+          emphasis: ['usa'],
+          highlight: { from: 1913, to: 1991 },
+          activeAnnotations: ['1950 · American maximum'],
+          body: 'Two world wars transfer financial primacy from London to New York; Bretton Woods in 1944 makes the dollar official — roughly half a century after the output overtake. The American maximum arrives in 1950 at ~27% of world output. The Soviet challenge ends in dissolution, not handover.',
+        },
+        {
+          title: '2001–2026 — the open contest',
+          emphasis: ['chn', 'usa'],
+          highlight: { from: 2001, to: 2026 },
+          body: "China's WTO accession opens the fastest output ascent since America's own — back toward a fifth of world output on a PPP basis. But the terminal dimension has not moved: the dollar still holds 58% of allocated reserves against the renminbi's ~2%. The sequence is unfinished, and that is the whole story of the current board.",
+        },
+      ],
+    },
+
     { type: 'heading', text: 'Five centuries on one line', level: 2 },
     {
       type: 'paragraph',
@@ -65,7 +195,7 @@ export const empireRankings2026 = {
     },
     {
       type: 'wall-timeline',
-      figureLabel: 'FIG. 1 · FIVE CENTURIES ON ONE LINE',
+      figureLabel: 'FIG. 2 · FIVE CENTURIES ON ONE LINE',
       kicker:
         '1500–2026 WALL CHART · SHADED HEGEMONIC WINDOWS · TWELVE EVENT PLAQUES — CLICK ANY PLAQUE FOR THE RECORD.',
       hint: 'Click a plaque for its record.',
@@ -204,7 +334,7 @@ export const empireRankings2026 = {
     },
     {
       type: 'lifelines',
-      figureLabel: 'FIG. 2 · TWELVE EMPIRES, ONE GRAMMAR',
+      figureLabel: 'FIG. 3 · TWELVE EMPIRES, ONE GRAMMAR',
       kicker:
         'IMPERIAL LIFELINES FROM FOUNDATION TO DISSOLUTION, TRANSFORMATION, HANDOVER, OR CONTINUATION · 1500–2026. CLICK ANY LIFELINE FOR THE RECORD.',
       hint: 'Click a lifeline for the record.',
@@ -328,96 +458,6 @@ export const empireRankings2026 = {
       type: 'paragraph',
       text: "The single most important line in the series is share of world output, and it describes a pendulum, not a staircase. Asia's two giants held roughly half of world production in 1500 and still held it in 1700 — Mughal India near 24% at Aurangzeb's accession, Qing China above 22%. Industrialization broke the pattern: Britain's share tripled to roughly 9% by 1870 while commanding a far larger imperial system, and the United States ran from about 2% of world output in 1820 to almost 19% by 1913 and ~27% by 1950. The last seventy-five years have partially unwound the anomaly. On the OECD-style nominal basis Ezana's macro explorer uses, the US still produces roughly a quarter of world output today; on the PPP basis that historical comparisons require, China regained the top output slot in the mid-2010s. The pendulum is the reason the current contest reads differently depending on which measurement basis you pick — a choice the next section formalizes.",
     },
-    {
-      type: 'trajectory',
-      figureLabel: 'FIG. 3 · THE OUTPUT PENDULUM',
-      kicker:
-        'SHARE OF WORLD GDP, 1500–2026 · MADDISON PROJECT CONVENTION (PPP BASIS) · KEY TRANSITIONS MARKED.',
-      hint: 'Diamond markers flag regime transitions.',
-      source:
-        'Maddison Project Database convention; 2026 figures blend IMF WEO shares on a PPP basis. Values are scholarly estimates, not measurements.',
-      yLabel: '% of world GDP',
-      yMax: 40,
-      series: [
-        {
-          key: 'chn',
-          label: 'China',
-          color: 'var(--echo-chart-red)',
-          data: [
-            { x: 1500, y: 25 },
-            { x: 1600, y: 29 },
-            { x: 1700, y: 22 },
-            { x: 1820, y: 33 },
-            { x: 1870, y: 17 },
-            { x: 1913, y: 9 },
-            { x: 1950, y: 4.5 },
-            { x: 1980, y: 5 },
-            { x: 2000, y: 11 },
-            { x: 2026, y: 19 },
-          ],
-        },
-        {
-          key: 'ind',
-          label: 'India',
-          color: 'var(--echo-chart-orange)',
-          data: [
-            { x: 1500, y: 24.5 },
-            { x: 1600, y: 22 },
-            { x: 1700, y: 24 },
-            { x: 1820, y: 16 },
-            { x: 1870, y: 12 },
-            { x: 1913, y: 7.5 },
-            { x: 1950, y: 4.2 },
-            { x: 1980, y: 3 },
-            { x: 2000, y: 5 },
-            { x: 2026, y: 8 },
-          ],
-        },
-        {
-          key: 'gbr',
-          label: 'UK',
-          color: 'var(--echo-chart-purple)',
-          data: [
-            { x: 1500, y: 1.1 },
-            { x: 1600, y: 1.8 },
-            { x: 1700, y: 2.9 },
-            { x: 1820, y: 5.2 },
-            { x: 1870, y: 9.1 },
-            { x: 1913, y: 8.2 },
-            { x: 1950, y: 6.5 },
-            { x: 1980, y: 3.6 },
-            { x: 2000, y: 3.2 },
-            { x: 2026, y: 2.2 },
-          ],
-        },
-        {
-          key: 'usa',
-          label: 'US',
-          color: 'var(--echo-chart-blue)',
-          data: [
-            { x: 1700, y: 0.1 },
-            { x: 1820, y: 1.8 },
-            { x: 1870, y: 8.9 },
-            { x: 1913, y: 18.9 },
-            { x: 1950, y: 27.3 },
-            { x: 1980, y: 21 },
-            { x: 2000, y: 21 },
-            { x: 2026, y: 15 },
-          ],
-        },
-      ],
-      annotations: [
-        { x: 1820, y: 33, label: '1820 · China peaks', sub: '~33% — record single-economy share' },
-        {
-          x: 1913,
-          y: 18.9,
-          label: '1913 · US passes all rivals',
-          sub: 'output lead precedes reserve status by 31 yrs',
-        },
-        { x: 1950, y: 27.3, label: '1950 · American maximum', sub: '~27% of world output' },
-      ],
-    },
-
     { type: 'heading', text: 'The sequence of power', level: 2 },
     {
       type: 'paragraph',
@@ -721,6 +761,124 @@ export const empireRankings2026 = {
       ctaAuthGate: true,
     },
 
+    {
+      type: 'stage-boards',
+      figureLabel: 'FIG. 6 · THREE POWERS, ONE CYCLE — CLICK ANY STAGE',
+      kicker:
+        'THE DALIO SEQUENCE AS A STAGE STRIP · CURRENT STAGE FILLED · ▼ MARKS WHERE EACH POWER SITS NOW · CLICK A STAGE FOR ITS RECORD.',
+      hint: 'Click any stage cell for the record.',
+      source:
+        "Ezana Empire Rankings backbone (World Bank sources, rank-normalized) · IMF COFER · this article's adjudication.",
+      boards: [
+        {
+          id: 'usa',
+          title: 'United States',
+          color: 'var(--echo-chart-blue)',
+          currentIndex: 3,
+          stages: [
+            {
+              label: 'Rise',
+              sub: 'c.1870–1890',
+              note: 'Mass education and industrial R&D leadership precede every other overtake — the education-and-innovation stage of the sequence.',
+            },
+            {
+              label: 'Overtake',
+              sub: '1890–1913',
+              note: 'Output passes Britain c.1890 and reaches ~19% of world output by 1913, before either world war.',
+            },
+            {
+              label: 'Full stack',
+              sub: '1918–1944',
+              note: 'New York displaces London across 1914–1918; Bretton Woods formalizes dollar primacy in 1944 — the canonical ~50-year reserve lag.',
+            },
+            {
+              label: 'Late cycle',
+              sub: 'From 2001',
+              note: 'The fullest dimension stack ever assembled, carrying the late-cycle fiscal signature: public debt above 100% of GDP with interest costs rivaling defense outlays.',
+            },
+          ],
+          stats: [
+            {
+              value: '58%',
+              label: 'USD share of allocated FX reserves',
+              source: 'IMF COFER 2025 · down from 71% in 1999',
+            },
+            { value: '~26%', label: 'of nominal world GDP', source: 'nominal basis' },
+          ],
+          summary:
+            'Every prior incumbent held reserve status decades past its other leads. The dimension to watch is not output — it is whether financial-center primacy stays uncontested.',
+        },
+        {
+          id: 'chn',
+          title: 'China',
+          color: 'var(--echo-chart-red)',
+          currentIndex: 2,
+          stages: [
+            {
+              label: 'Return begins',
+              sub: '1980–2001',
+              note: 'From under 5% of world output in 1950, reform-era growth reopens the ascent — a return, not an arrival: China held ~25–33% for most of recorded history.',
+            },
+            {
+              label: 'Output & trade',
+              sub: '2001–2015',
+              note: "WTO accession opens the fastest ascent since America's; China comes to lead output on a PPP basis and dominate manufacturing value-added and goods trade.",
+            },
+            {
+              label: 'Financial gate',
+              sub: 'Now',
+              note: 'The unfinished middle of the sequence: capital controls cap financial-center status, and no prior challenger completed the sequence without capital-account convertibility.',
+            },
+            {
+              label: 'Reserve status',
+              sub: 'Not begun',
+              note: 'RMB reserve share sits near 2% — the terminal dimension has not begun to move at transition speed.',
+            },
+          ],
+          stats: [
+            { value: '~19%', label: 'of world GDP, PPP basis', source: 'PPP convention' },
+            { value: '~2%', label: 'RMB share of allocated reserves', source: 'IMF COFER' },
+          ],
+          summary:
+            'The only power contesting multiple dimensions simultaneously — with the financial dimensions still gated by convertibility, the single event that historically separates a trade power from a hegemon.',
+        },
+        {
+          id: 'ind',
+          title: 'India',
+          color: 'var(--echo-chart-orange)',
+          currentIndex: 1,
+          stages: [
+            {
+              label: 'Scale',
+              sub: 'Held',
+              note: "The world's most populous country, with roughly 8% of world GDP on a PPP basis and rising — the demographic mirror image of every other major power.",
+            },
+            {
+              label: 'Education & innovation',
+              sub: 'Now',
+              note: 'The stage Britain occupied c.1750 and the US c.1870. The historical lag from this stage to financial primacy has never been shorter than two generations.',
+            },
+            {
+              label: 'Output & trade',
+              sub: 'Ahead',
+              note: 'The 1700 problem in reverse: converting demographic and output scale into per-capita productivity, infrastructure, and financial depth.',
+            },
+            {
+              label: 'Financial depth',
+              sub: 'Distant',
+              note: 'Markets and financial-center depth remain the weakest dimensions on the live scoreboard.',
+            },
+          ],
+          stats: [
+            { value: '#1', label: 'world population', source: 'most populous country' },
+            { value: '~8%', label: 'of world GDP, PPP, rising', source: 'PPP convention' },
+          ],
+          summary:
+            'The fastest-growing large economy on the board, sitting exactly where the last two hegemons sat two generations before their financial primacy.',
+        },
+      ],
+    },
+
     { type: 'heading', text: 'Three scenarios to 2050', level: 2 },
     {
       type: 'paragraph',
@@ -728,7 +886,7 @@ export const empireRankings2026 = {
     },
     {
       type: 'scenario-chain',
-      figureLabel: 'FIG. 6 · THE SCENARIO CHAIN · 2026 → 2050',
+      figureLabel: 'FIG. 7 · THE SCENARIO CHAIN · 2026 → 2050',
       kicker:
         'SCENARIO · SEQUENCE GATE × MEASURABLE DRIVER → REGIME OUTCOME · THREE SCENARIOS, ONE KILL SWITCH.',
       hint: 'The kill switch is a falsification threshold, not a prediction.',

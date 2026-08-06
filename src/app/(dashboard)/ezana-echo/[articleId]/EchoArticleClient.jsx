@@ -39,6 +39,8 @@ import { EchoScenarioChain } from '@/components/echo/figures/EchoScenarioChain';
 import { EchoMechanismWave } from '@/components/echo/figures/EchoMechanismWave';
 import { EchoClearingSankey } from '@/components/echo/figures/EchoClearingSankey';
 import { EchoRevisionLedger } from '@/components/echo/figures/EchoRevisionLedger';
+import { EchoScrollySpotlight } from '@/components/echo/figures/EchoScrollySpotlight';
+import { EchoStageBoards } from '@/components/echo/figures/EchoStageBoards';
 import { formatPublishedDate } from '@/lib/echo-format';
 import { createArticleTracker } from '@/lib/echo-article-tracker';
 import { useAnonymousEchoTracker, trackAnonMetaClick } from '@/hooks/useAnonymousEchoTracker';
@@ -431,6 +433,10 @@ function ArticleBlock({ block }) {
       return <EchoClearingSankey {...block} />;
     case 'revision-ledger':
       return <EchoRevisionLedger {...block} />;
+    case 'scrolly-spotlight':
+      return <EchoScrollySpotlight {...block} />;
+    case 'stage-boards':
+      return <EchoStageBoards {...block} />;
 
     default:
       return null;
