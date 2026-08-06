@@ -127,6 +127,133 @@ export const sectorDominanceArticle = {
       yLabel: 'Share of largest sector',
     },
 
+    {
+      type: 'wall-timeline',
+      figureLabel: 'FIG. 1 · 225 YEARS, FOUR REGIMES',
+      kicker:
+        '1800–2025 WALL CHART · SHADED SECTOR REGIMES · TWELVE DATED TRANSITIONS — CLICK ANY PLAQUE FOR THE RECORD.',
+      hint: 'Click a plaque for its record.',
+      source: 'Datastream, Goldman Sachs Research (October 2025); standard financial chronology.',
+      startYear: 1800,
+      endYear: 2025,
+      windows: [
+        {
+          id: 'fin',
+          label: 'Finance & Real Estate',
+          from: 1800,
+          to: 1850,
+          color: 'var(--echo-chart-green)',
+        },
+        {
+          id: 'trans',
+          label: 'Transport',
+          from: 1850,
+          to: 1910,
+          color: 'var(--echo-chart-orange)',
+        },
+        {
+          id: 'energy',
+          label: 'Energy & Materials',
+          from: 1910,
+          to: 1990,
+          color: 'var(--echo-chart-red)',
+        },
+        {
+          id: 'tech',
+          label: 'Information Technology',
+          from: 1990,
+          to: 2025,
+          color: 'var(--echo-chart-blue)',
+        },
+      ],
+      plaques: [
+        {
+          year: 1792,
+          lane: 0,
+          label: 'Buttonwood Agreement',
+          detail:
+            "The NYSE's predecessor begins trading a market dominated almost entirely by bank stocks.",
+        },
+        {
+          year: 1816,
+          lane: 1,
+          label: 'Second Bank of the US',
+          detail:
+            'The Second Bank takes the place of the First (whose charter expired in 1811); state-chartered banks proliferate around it.',
+        },
+        {
+          year: 1836,
+          lane: 2,
+          label: 'Jackson kills the Second Bank',
+          detail:
+            'Andrew Jackson destroys the Second Bank of the United States; the wildcat banking era and the Panic of 1837 follow.',
+        },
+        {
+          year: 1869,
+          lane: 3,
+          label: 'Promontory Summit',
+          detail:
+            'The Union Pacific and Central Pacific meet — the transcontinental line consumed more than $100 million in public and private capital.',
+        },
+        {
+          year: 1873,
+          lane: 0,
+          label: 'Panic of 1873',
+          detail:
+            'Begins with the failure of Jay Cooke and Company, overexposed to Northern Pacific Railroad bonds.',
+        },
+        {
+          year: 1893,
+          lane: 1,
+          label: 'Panic of 1893',
+          detail:
+            'Triggered by the bankruptcy of the Philadelphia and Reading Railroad, producing one of the deepest depressions in American history.',
+        },
+        {
+          year: 1901,
+          lane: 2,
+          label: 'US Steel formed',
+          detail:
+            'Formed as the largest corporation in American history at the time, anchoring an industrial complex of steel makers.',
+        },
+        {
+          year: 1911,
+          lane: 3,
+          label: 'Standard Oil broken up',
+          detail:
+            'The Supreme Court dissolves Standard Oil into 34 companies — Exxon, Chevron, Mobil, Amoco and others trace to this ruling.',
+        },
+        {
+          year: 1973,
+          lane: 4,
+          label: 'First oil shock',
+          detail:
+            'The 1973 oil shock inflates energy prices but exposes the vulnerability of energy-intensive industry; decline begins.',
+        },
+        {
+          year: 2000,
+          lane: 0,
+          label: 'Dot-com peak, then bust',
+          detail:
+            "Technology's share collapsed from over thirty percent back to the high teens in the 2000–2002 bust.",
+        },
+        {
+          year: 2007,
+          lane: 1,
+          label: 'iPhone launches',
+          detail:
+            'Mobile computing produces the largest companies in human history; Apple later passes $1T (2018), $2T (2020), $3T (2022).',
+        },
+        {
+          year: 2022,
+          lane: 2,
+          label: 'AI compute era',
+          detail:
+            'The public release of ChatGPT in late 2022 opens the AI phase; Nvidia becomes, by some measures, the most valuable company in the world.',
+        },
+      ],
+    },
+
     /* ─── ERA 1: FINANCE & REAL ESTATE (≈750 words) ─── */
     { type: 'heading', text: '1800–1850: Finance & Real Estate Era', level: 2 },
     {
@@ -208,6 +335,61 @@ export const sectorDominanceArticle = {
       text: "Decline began in the 1970s. The 1973 oil shock, while temporarily inflating energy share prices, also exposed the vulnerability of energy-intensive industries. Foreign competition — particularly Japanese steel and German chemicals — eroded American manufacturers' margins. Environmental regulation raised costs. The 1979 second oil shock and the Volcker recession of 1981-1982 hit the sector especially hard. By 1990, energy and materials had fallen to roughly fourteen percent of the market combined. A new sector was about to take the crown, and it would do so in a way that would have been incomprehensible to a 1960s portfolio manager.",
     },
 
+    {
+      type: 'lifelines',
+      figureLabel: 'FIG. 2 · THE HANDOVER CHAIN',
+      kicker:
+        'EACH SECTOR REGIME FROM RISE TO HANDOVER · 1800–2025 · PEAK SHARE IN THE RECORD. CLICK ANY LIFELINE FOR THE RECORD.',
+      hint: 'Click a lifeline for its record.',
+      source: 'Datastream, Goldman Sachs Research (October 2025).',
+      startYear: 1800,
+      endYear: 2025,
+      groups: [
+        {
+          label: 'Displaced · the handover chain',
+          rows: [
+            {
+              name: 'Finance & Real Estate',
+              from: 1800,
+              to: 1850,
+              outcome: { type: 'handover', label: 'handover · 1850' },
+              record:
+                'Peaked at roughly ninety percent of the market in the early 1800s — a concentration no single sector has approached since — then fell to about fifty percent by 1850 as canal corporations and Jackson-era upheaval eroded the banks.',
+            },
+            {
+              name: 'Transport',
+              from: 1850,
+              to: 1910,
+              outcome: { type: 'handover', label: 'handover · 1910' },
+              record:
+                'Railroads pushed transport past sixty percent of the market by 1880 — a peak of ~62% — before antitrust, the Hepburn Act, and the rise of the automobile cut the sector to about forty-two percent by 1910.',
+            },
+            {
+              name: 'Energy & Materials',
+              from: 1910,
+              to: 1990,
+              outcome: { type: 'handover', label: 'handover · 1990' },
+              record:
+                'Oil, steel, autos and chemicals peaked around 1940 at roughly thirty-eight percent and reigned nearly eighty years, before oil shocks, foreign competition and the Volcker recession cut the sector to about fourteen percent combined by 1990.',
+            },
+          ],
+        },
+        {
+          label: 'Incumbent',
+          rows: [
+            {
+              name: 'Information Technology',
+              from: 1990,
+              to: null,
+              outcome: { type: 'continuing', label: 'reigning · ~45%' },
+              record:
+                'The shortest regime — barely thirty-five years — now roughly forty-five percent of the market, yet still below the high-water marks of every previous era. Microsoft, Apple, Nvidia, Alphabet, Meta and Amazon account for more than a quarter of the S&P 500 by themselves.',
+            },
+          ],
+        },
+      ],
+    },
+
     /* ─── ERA 4: INFORMATION TECHNOLOGY & COMMUNICATIONS (≈750 words) ─── */
     {
       type: 'heading',
@@ -253,6 +435,163 @@ export const sectorDominanceArticle = {
     {
       type: 'paragraph',
       text: "Two hundred and twenty-five years of US equity history compressed into a single image makes one fact unmissable: [[kw:sector-rotation]]market leadership rotates[[/kw]]. Each era's dominant sector was, in its time, considered the unassailable bedrock of any serious portfolio. Banks in 1820. Railroads in 1870. Standard Oil and US Steel in 1920. The conglomerates of the Nifty Fifty in 1965. Each was eventually displaced — not because investors stopped believing in them, but because the underlying economy moved on to something else. The current technology regime will, in its turn, share that fate. The question for today's investor is not whether the rotation will happen, but what comes next — and what 2050's version of this chart will look like when it is finally drawn.",
+    },
+    {
+      type: 'adjudication-matrix',
+      figureLabel: 'FIG. 3 · THE FORCES THAT ENDED EACH REGIME',
+      kicker:
+        'FOUR REGIMES × THE RECURRING FORCES THE ARTICLE NAMES · SAME = THE FORCE WAS PRESENT · PART = PRESENT WITH AN ASTERISK · — = ABSENT (OR NOT YET). CLICK ANY CELL FOR THE RECORD.',
+      hint: 'Click any cell for the record.',
+      source: "this article's synthesis · Datastream, Goldman Sachs Research (October 2025).",
+      cols: [
+        'New enterprise form',
+        'Regulation / antitrust',
+        'Financial panic at the turn',
+        'Peak, then decline',
+      ],
+      rows: [
+        {
+          label: 'Finance & Real Estate',
+          cells: [
+            {
+              value: 'same',
+              note: 'Canal corporations — the first large non-bank public enterprises — introduced a rival to the banks in the 1820s and 1830s.',
+            },
+            {
+              value: 'same',
+              note: "Jackson's destruction of the Second Bank of the United States in 1836 reshaped the relationship between government and finance.",
+            },
+            { value: 'same', note: 'The Panic of 1837 followed the wildcat banking era.' },
+            {
+              value: 'same',
+              note: 'Finance fell from roughly ninety percent in 1800 to about fifty percent by 1850.',
+            },
+          ],
+        },
+        {
+          label: 'Transport',
+          cells: [
+            {
+              value: 'same',
+              note: 'Railroads brought unprecedented scale; the automobile after 1900 siphoned investment toward a new paradigm.',
+            },
+            {
+              value: 'same',
+              note: 'The Sherman Antitrust Act of 1890 and the Hepburn Act of 1906 broke up combinations and capped railroad profitability.',
+            },
+            {
+              value: 'same',
+              note: 'The Panics of 1873, 1893 and 1907 were each driven by overleveraged rail stocks.',
+            },
+            {
+              value: 'same',
+              note: 'Transport peaked above sixty percent (~62% in 1880) and fell to about forty-two percent by 1910.',
+            },
+          ],
+        },
+        {
+          label: 'Energy & Materials',
+          cells: [
+            {
+              value: 'same',
+              note: 'Integrated industrial corporations, automobiles, and the chemical industry created entirely new categories of demand.',
+            },
+            {
+              value: 'same',
+              note: 'The 1911 break-up of Standard Oil into thirty-four companies created an entire sector overnight.',
+            },
+            {
+              value: 'part',
+              note: 'Decline came through the 1973 and 1979 oil shocks and the 1981–1982 Volcker recession rather than a single classic market panic.',
+            },
+            {
+              value: 'same',
+              note: 'The sector peaked around thirty-eight percent in 1940 and fell to roughly fourteen percent combined by 1990.',
+            },
+          ],
+        },
+        {
+          label: 'Information Technology',
+          cells: [
+            {
+              value: 'same',
+              note: 'High-margin software and hardware forced the market to learn new valuation metrics — growth rates, recurring revenue, revenue multiples.',
+            },
+            {
+              value: 'none',
+              note: 'The article names no antitrust break-up of the technology megacaps — this force has not yet appeared.',
+            },
+            {
+              value: 'part',
+              note: "The 2000–2002 dot-com bust collapsed technology's share to the high teens, but the sector recovered rather than being displaced.",
+            },
+            {
+              value: 'none',
+              note: 'At roughly forty-five percent and still rising, the decline has not happened — only the next chart can answer it.',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      type: 'scenario-chain',
+      figureLabel: 'FIG. 4 · THE PATTERN, PROJECTED FORWARD',
+      kicker:
+        'THE ROTATION EXTENDED PAST 2025, PER THE ARTICLE’S OWN CLAIMS · DRIVER × DRIVER → OUTCOME · ONE KILL SWITCH.',
+      hint: 'Only the next chart can settle which path holds.',
+      source: "this article's closing framing · Datastream, Goldman Sachs Research (October 2025).",
+      scenarios: [
+        {
+          id: 'base',
+          label: 'ROTATION CONTINUES',
+          tone: 'base',
+          range: 'Tech is displaced',
+          steps: [
+            { label: 'The economy moves on', sub: 'as it did from banks, rails, and oil' },
+            { label: 'A new enterprise form rises', sub: "the next chart's leading sector" },
+          ],
+          result: {
+            value: 'A fifth regime takes the crown',
+            sub: 'the pendulum swings again by ~2050',
+          },
+        },
+        {
+          id: 'alt',
+          label: 'TECH RUNS FURTHER',
+          tone: 'alt',
+          range: 'Below prior peaks',
+          steps: [
+            { label: '45% is short of history', sub: 'finance hit 90%, transport 62%, energy 38%' },
+            {
+              label: 'AI compute concentrates further',
+              sub: 'the largest capital deployment in tech history',
+            },
+          ],
+          result: {
+            value: 'Tech pushes toward old high-water marks',
+            sub: 'the regime extends, not ends',
+          },
+        },
+        {
+          id: 'bear',
+          label: 'NO SECTOR DOMINATES',
+          tone: 'bear',
+          range: 'Structural cap',
+          steps: [
+            {
+              label: 'Market structure caps any one sector',
+              sub: 'no single slice towers as before',
+            },
+            { label: 'Leadership fragments', sub: 'the >50% regimes of history do not return' },
+          ],
+          result: {
+            value: 'The era of overwhelming regimes is over',
+            sub: 'the chart flattens permanently',
+          },
+        },
+      ],
+      killSwitch:
+        'ONLY THE NEXT CHART — DRAWN FIFTY OR ONE HUNDRED YEARS FROM NOW — CAN SETTLE WHETHER TECH HAD FURTHER TO RUN OR SIMPLY COULD NOT REACH THE OLD HEIGHTS.',
     },
   ],
   author: 'Ezana Finance Editorial',

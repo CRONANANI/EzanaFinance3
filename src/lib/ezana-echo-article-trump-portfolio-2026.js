@@ -84,6 +84,42 @@ export const trumpPortfolio2026 = {
       ],
     },
     {
+      type: 'revision-ledger',
+      figureLabel: 'FIG. 1 · FROM 191 TRADES TO 3,642',
+      kicker:
+        'PRIOR FILING → Q1 2026 · √-SCALE · GREEN MARKS AN INCREASE IN ACTIVITY, NOT A VALUE JUDGMENT. CLICK A ROW FOR THE RECORD.',
+      hint: 'Bar length on a √-scale; magnitude of activity, not portfolio value.',
+      source: 'OGE Form 278-T reports released May 14, 2026, as reported by CBS News and NBC News.',
+      scale: 'sqrt',
+      unit: '',
+      rows: [
+        {
+          label: 'Transactions in the filing',
+          sub: 'prior 2-month filing → Q1 2026',
+          before: 191,
+          after: 3642,
+          beforeDisplay: '191',
+          afterDisplay: '3,642',
+          delta: 3451,
+          deltaDisplay: '+3,451',
+          favorable: 'up',
+          record:
+            'The prior disclosure logged just 191 transactions over the final two months of 2025, dominated by municipal and corporate bonds; Q1 2026 logged 3,642 — a near-total reversal into high-frequency equity trading.',
+        },
+        {
+          label: 'Net buys over sells (Q1 2026)',
+          sub: 'delta-only · 2,346 buys vs 1,296 sells',
+          delta: 1050,
+          deltaDisplay: '+1,050',
+          favorable: 'up',
+          record:
+            '2,346 purchases outnumbered 1,296 sales by close to two to one — the tilt is toward accumulation, concentrated in AI infrastructure and policy-adjacent names.',
+        },
+      ],
+      verdict:
+        'The honest read of this filing is frequency and direction of trading — a surge from 191 to 3,642 transactions, buying nearly two-to-one — not portfolio weight.',
+    },
+    {
       type: 'heading',
       text: 'The disclosure data, and what it cannot tell you',
       level: 2,
@@ -100,6 +136,79 @@ export const trumpPortfolio2026 = {
         "Executive-branch disclosures report value brackets and dates, not share counts. Any allocation percentage attributed to Trump's portfolio is a reconstruction — treat clean round-number weights with skepticism.",
     },
     {
+      type: 'wall-timeline',
+      figureLabel: 'FIG. 2 · THE DISCLOSURE CLOCK',
+      kicker:
+        'Q1 2026 DISCLOSURE CHRONOLOGY · LATE 2025 – JUN 2026 · FRACTIONAL-YEAR MARKERS. CLICK ANY PLAQUE FOR THE RECORD.',
+      hint: 'Click a plaque for its record.',
+      source: 'OGE Form 278-T coverage: CBS News, NBC News, Benzinga (2026).',
+      startYear: 2025,
+      endYear: 2027,
+      windows: [
+        {
+          id: 'q1',
+          label: 'Q1 2026 disclosure window',
+          from: 2026.02,
+          to: 2026.24,
+          color: 'var(--echo-chart-blue)',
+        },
+      ],
+      plaques: [
+        {
+          year: 2025.9,
+          lane: 0,
+          label: 'Late 2025',
+          detail: 'The federal government moves to take a roughly 10% equity stake in Intel.',
+        },
+        {
+          year: 2026.02,
+          lane: 1,
+          label: 'Jan 6, 2026',
+          detail: 'The Q1 disclosure window opens; transactions run January 6 through March 30.',
+        },
+        {
+          year: 2026.11,
+          lane: 2,
+          label: 'Feb 10, 2026',
+          detail:
+            'A new Dell position is established — weeks before Trump publicly praises Dell hardware.',
+        },
+        {
+          year: 2026.18,
+          lane: 3,
+          label: 'Early Mar 2026',
+          detail: 'Intel purchases ramp, following the late-2025 federal stake in the chipmaker.',
+        },
+        {
+          year: 2026.24,
+          lane: 4,
+          label: 'Late Mar 2026',
+          detail:
+            'The S&P 500 bottoms after falling more than 8%, then rallies roughly 19%; more than half the quarter’s transactions land in March.',
+        },
+        {
+          year: 2026.34,
+          lane: 5,
+          label: 'Early May 2026',
+          detail: 'Trump praises Dell hardware at a White House event.',
+        },
+        {
+          year: 2026.37,
+          lane: 0,
+          label: 'May 14, 2026',
+          detail:
+            'The OGE releases the two Form 278-T reports: 3,642 transactions worth $220M–$750M across 1,026 firms.',
+        },
+        {
+          year: 2026.45,
+          lane: 1,
+          label: 'Mid-Jun 2026',
+          detail:
+            'Reconstructions show several disclosed names — AMD, Intel, Marvell, Seagate — up triple digits from the disclosed buy windows.',
+        },
+      ],
+    },
+    {
       type: 'heading',
       text: 'The AI-chip rotation',
       level: 2,
@@ -109,21 +218,109 @@ export const trumpPortfolio2026 = {
       text: "The clearest theme in the filing is a concentrated push into semiconductor and AI-infrastructure names. Among roughly three dozen transactions valued between $1 million and $5 million each, the accounts bought securities tied to Nvidia, Broadcom, Microsoft, Adobe, Oracle, ServiceNow, Texas Instruments, and Dell. Smaller buy orders in the $500,000-to-$1 million band captured AMD, Intel, Micron, Goldman Sachs, and Alphabet. By Benzinga's reconstruction, Nvidia-linked purchases alone sat in an estimated $1.8 million to $6.6 million range across 15 separate transactions, while Oracle accounted for an estimated $2.2 million to $10.6 million. The thread connecting these names is custodial: GPUs, accelerators, and networking silicon are the physical substrate of the [[kw:ai-capex-cycle]]AI capex cycle[[/kw]], and the buying clustered precisely when the market was discounting it.",
     },
     {
-      type: 'chart',
-      variant: 'horizontal-bar',
-      title: 'Most-traded names: share of disclosed transactions (Q1 2026)',
-      caption:
+      type: 'dossier-table',
+      figureLabel: 'FIG. 3 · THE SEVEN MOST-TRADED NAMES',
+      kicker:
+        'NAME · WHAT IT IS IN THE FILING · SHARE OF DISCLOSED TRANSACTIONS · KEY CAVEAT — CLICK A ROW FOR THE DOSSIER.',
+      hint: 'Shares of the shown set, not portfolio weights — expand a row for the record.',
+      source:
         "Each name's share of the disclosed transactions among the seven most-traded equities in the filing (Jan 6-Mar 30, 2026). Source: OGE Form 278-T as compiled by CBS News and Benzinga; combines buys and sells. Shares of the shown set, not portfolio weights.",
-      data: [
-        { label: 'Microsoft', value: 17.9 },
-        { label: 'Amazon', value: 17.1 },
-        { label: 'Meta', value: 16.3 },
-        { label: 'Netflix', value: 14.6 },
-        { label: 'Oracle', value: 13.8 },
-        { label: 'Nvidia', value: 12.2 },
-        { label: 'AMD', value: 8.1 },
+      headers: ['Name', 'What it is in the filing', 'Share of shown', 'Key caveat', ''],
+      rows: [
+        {
+          name: 'Microsoft',
+          tag: 'SOFTWARE & CLOUD',
+          role: 'Bought among roughly three dozen transactions valued between $1 million and $5 million each.',
+          anchor: '17.9% of the shown transactions.',
+          keyRisk:
+            'A share of the shown set, not a portfolio weight — the filing reports value bands, not holdings.',
+          dossier: [
+            {
+              label: 'Cluster',
+              text: 'Part of the enterprise-software and cloud group (ORCL, MSFT, ADBE) that the disclosed clusters map to.',
+            },
+          ],
+        },
+        {
+          name: 'Amazon',
+          tag: 'MEGA-CAP',
+          role: 'Among the seven most-traded equities in the disclosed set.',
+          anchor: '17.1% of the shown transactions.',
+          keyRisk: 'Combines buys and sells; a share of the shown set, not a portfolio weight.',
+          dossier: [
+            {
+              label: 'Read',
+              text: 'The honest read of the dataset is frequency and direction of trading, not portfolio weight.',
+            },
+          ],
+        },
+        {
+          name: 'Meta',
+          tag: 'MEGA-CAP',
+          role: 'Among the seven most-traded equities in the disclosed set.',
+          anchor: '16.3% of the shown transactions.',
+          keyRisk: 'Combines buys and sells; a share of the shown set, not a portfolio weight.',
+          dossier: [
+            {
+              label: 'Read',
+              text: 'Executive-branch disclosures report value brackets and dates, not share counts or exact weights.',
+            },
+          ],
+        },
+        {
+          name: 'Netflix',
+          tag: 'MEGA-CAP',
+          role: 'Among the seven most-traded equities in the disclosed set.',
+          anchor: '14.6% of the shown transactions.',
+          keyRisk: 'Combines buys and sells; a share of the shown set, not a portfolio weight.',
+          dossier: [
+            {
+              label: 'Read',
+              text: 'Any allocation percentage attributed to the portfolio is a reconstruction, not a figure pulled from the filing.',
+            },
+          ],
+        },
+        {
+          name: 'Oracle',
+          tag: 'SOFTWARE & CLOUD',
+          role: 'Bought in the $1M–$5M band; accumulation continued after the name sold off in February.',
+          anchor: '13.8% of the shown transactions.',
+          keyRisk:
+            'Estimated $2.2M–$10.6M across the quarter — a reconstructed range, not a disclosed figure.',
+          dossier: [
+            {
+              label: 'Timing',
+              text: "Analysts characterized the approach as textbook 'buying the dip,' with accumulation in Oracle, Workday, and ServiceNow after February selloffs.",
+            },
+          ],
+        },
+        {
+          name: 'Nvidia',
+          tag: 'AI CHIPS',
+          role: 'The clearest expression of the AI-chip rotation — GPUs and accelerators as the substrate of the AI capex cycle.',
+          anchor: '12.2% of the shown transactions.',
+          keyRisk: 'Estimated $1.8M–$6.6M across 15 separate transactions — a reconstructed range.',
+          dossier: [
+            {
+              label: 'Substrate',
+              text: 'The buying clustered precisely when the market was discounting the AI capex cycle.',
+            },
+          ],
+        },
+        {
+          name: 'AMD',
+          tag: 'AI CHIPS',
+          role: 'Captured in smaller buy orders in the $500,000-to-$1 million band.',
+          anchor: '8.1% of the shown transactions.',
+          keyRisk: 'By mid-June reconstructions, up triple digits from the disclosed buy windows.',
+          dossier: [
+            {
+              label: 'Cluster',
+              text: 'Part of the AI-chip infrastructure basket (NVDA, AMD, AVGO, INTC, MU, TXN) the article screens.',
+            },
+          ],
+        },
       ],
-      yLabel: 'Share of shown transactions',
     },
     {
       type: 'paragraph',
@@ -137,6 +334,85 @@ export const trumpPortfolio2026 = {
     {
       type: 'paragraph',
       text: "A second cluster is harder to separate from the office itself. The filing shows a new Dell position established on February 10 — weeks before Trump publicly praised Dell hardware at a White House event in early May. Intel purchases ramped from early March, following the federal government's late-2025 move to take a roughly 10% equity stake in the chipmaker. Boeing appeared across seven transactions, with timing that drew attention after the administration announced a Chinese order for 200 Boeing aircraft. Palantir, a direct beneficiary of federal defense and intelligence spending, also surfaced in the disclosures. None of this is illegal — sitting presidents are exempt from the [[kw:conflict-of-interest]]conflict-of-interest[[/kw]] statute that forces other federal officials to recuse — but ethics scholars and several members of Congress have argued the arrangement leaves the door open to the appearance, if not the substance, of self-dealing.",
+    },
+    {
+      type: 'adjudication-matrix',
+      figureLabel: 'FIG. 4 · THE APPEARANCE, GRADED',
+      kicker:
+        'FOUR POLICY-ADJACENT NAMES × THE ELEMENTS THAT CREATE THE APPEARANCE · SAME = ELEMENT PRESENT · PART = PRESENT WITH AN ASTERISK · — = ABSENT. NONE OF THIS IS ILLEGAL. CLICK ANY CELL FOR THE NOTE.',
+      hint: 'Click any cell for the note. Sitting presidents are exempt from the recusal statute.',
+      source: 'OGE Form 278-T coverage: CBS News, NBC News, Euronews (2026).',
+      cols: [
+        'Federal policy action nearby',
+        'Trade-timing overlap',
+        'Direct federal beneficiary',
+        'Public praise / announcement',
+      ],
+      rows: [
+        {
+          label: 'Dell',
+          cells: [
+            {
+              value: 'part',
+              note: 'A public endorsement rather than a formal policy action.',
+            },
+            {
+              value: 'same',
+              note: 'A new Dell position was established on February 10, weeks before the public praise.',
+            },
+            { value: 'none', note: 'No disclosed federal contract or stake tied to the position.' },
+            {
+              value: 'same',
+              note: 'Trump publicly praised Dell hardware at a White House event in early May.',
+            },
+          ],
+        },
+        {
+          label: 'Intel',
+          cells: [
+            {
+              value: 'same',
+              note: 'The federal government moved to take a roughly 10% equity stake in Intel in late 2025.',
+            },
+            {
+              value: 'same',
+              note: 'Intel purchases ramped from early March, following the federal stake.',
+            },
+            { value: 'same', note: 'The government itself became a roughly 10% shareholder.' },
+            { value: 'none', note: 'No public endorsement disclosed.' },
+          ],
+        },
+        {
+          label: 'Boeing',
+          cells: [
+            {
+              value: 'same',
+              note: 'The administration announced a Chinese order for 200 Boeing aircraft.',
+            },
+            {
+              value: 'same',
+              note: 'Boeing appeared across seven transactions with timing that drew attention after the announcement.',
+            },
+            { value: 'same', note: 'A 200-aircraft order directly benefits Boeing.' },
+            { value: 'none', note: 'No separate public endorsement disclosed.' },
+          ],
+        },
+        {
+          label: 'Palantir',
+          cells: [
+            {
+              value: 'part',
+              note: 'Ongoing federal defense and intelligence spending rather than a discrete action.',
+            },
+            { value: 'none', note: 'No specific transaction date highlighted in the coverage.' },
+            {
+              value: 'same',
+              note: 'A direct beneficiary of federal defense and intelligence spending.',
+            },
+            { value: 'none', note: 'No public endorsement disclosed.' },
+          ],
+        },
+      ],
     },
     {
       type: 'quote',
@@ -179,6 +455,77 @@ export const trumpPortfolio2026 = {
     {
       type: 'paragraph',
       text: "The base case is that political-disclosure data continues to grow as a retail research input, especially with bipartisan stock-trading-ban proposals like the Restore Trust in Congress Act and the ETHICS Act advancing through committee — legislation that, if passed, would reshape this entire dataset. The bear case for treating these filings as alpha is sobering: the lag, the coarse bands, and the survivorship bias of only seeing the trades after they worked all erode any naive copy strategy. The durable value is analytical, not imitative — and that is the lens Ezana's tooling is designed to enforce. Track the patterns on the platform's political-intelligence feed, stress-test them in the quant workbench, and let the data, rather than the name attached to it, drive the decision.",
+    },
+    {
+      type: 'scenario-chain',
+      figureLabel: 'FIG. 5 · HOW TO FRAME THE TRADE',
+      kicker: 'THREE WAYS TO USE THE FILING · DRIVER × DRIVER → OUTCOME · ONE KILL SWITCH.',
+      hint: 'The kill switch changes the dataset itself, not just the trade.',
+      source: "this article's base/bear framing · OGE Form 278-T coverage (2026).",
+      scenarios: [
+        {
+          id: 'base',
+          label: 'BASE CASE',
+          tone: 'base',
+          range: 'Disclosure data matures',
+          steps: [
+            {
+              label: 'Filings become a research input',
+              sub: 'aggregated across officials, tagged by sector',
+            },
+            {
+              label: 'Trading-ban bills advance',
+              sub: 'Restore Trust in Congress Act · ETHICS Act',
+            },
+          ],
+          result: {
+            value: 'Pattern recognition, not imitation',
+            sub: 'recurrence across filers as the durable signal',
+          },
+        },
+        {
+          id: 'alt',
+          label: 'THE THEME TRADE',
+          tone: 'alt',
+          range: 'Screen the baskets',
+          steps: [
+            {
+              label: 'Map clusters to baskets',
+              sub: 'AI chips · software & cloud · policy-linked hardware',
+            },
+            {
+              label: 'Backtest the entry window',
+              sub: 'net of transaction costs and the disclosure lag',
+            },
+          ],
+          result: {
+            value: 'A tested theme, not a chased headline',
+            sub: 'disclosure as one input in a multi-factor screen',
+          },
+        },
+        {
+          id: 'bear',
+          label: 'NAIVE COPY FAILS',
+          tone: 'bear',
+          range: 'The lag wins',
+          steps: [
+            {
+              label: '~5-day catalyst vs up-to-45-day lag',
+              sub: 'the move is priced before the filing is searchable',
+            },
+            {
+              label: 'Coarse bands + survivorship bias',
+              sub: 'only the winning trades are visible after the fact',
+            },
+          ],
+          result: {
+            value: 'Copied trades arrive post-rally',
+            sub: 'no edge in a six-week-old trade at current prices',
+          },
+        },
+      ],
+      killSwitch:
+        'IF A STOCK-TRADING BAN PASSES (RESTORE TRUST IN CONGRESS / ETHICS ACT), THE DATASET ITSELF CHANGES — RE-UNDERWRITE THE ENTIRE APPROACH.',
     },
   ],
 };
