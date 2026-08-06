@@ -1,19 +1,28 @@
 'use client';
 
 /**
- * Head-to-head card (phase 6) — compact, Power-Dimension-Comparison footprint:
- * controls inline in the header, radar chart left (≤360px), compare table right.
+ * Head-to-head card — radar left, compare table right.
+ *
  * Up to 4 countries, one polygon each, sharing the history line palette
  * (--oecd-line-1..4) so radar and table dots always agree; hovering a polygon or
  * chip dims the others.
  *
- * Two data modes (Phase 4): OECD indicators (rank-normalized across countries,
- * inv → outward) or live empire dimensions (World Bank backbone; no mock, pending
- * dimensions disclosed). A Focus group with <3 live empire dimensions renders a
- * bar list instead of a radar. Axis click sets the indicator in OECD mode; empire
- * axes are static.
+ * Two data modes: OECD indicators (min–max normalized across reporting
+ * countries, `inv` → outward) or live empire dimensions (World Bank backbone; no
+ * mock, pending dimensions disclosed). A Focus group with <3 live empire
+ * dimensions renders a bar list instead of a radar.
+ *
+ * GEOMETRY: the viewBox is deliberately wider than tall (560×480). Axis labels
+ * are horizontally anchored, so they need side room, not vertical room — a square
+ * viewBox wastes ~37% of the drawn area on empty top/bottom margin. R is sized so
+ * the plot fills its column instead of floating in it.
+ *
+ * INTERACTION: each axis carries a wide transparent hit line plus per-country
+ * vertices, so hovering anywhere along a spoke opens the value tooltip — not just
+ * the 9px label. Clicking an axis opens the persistent scoring explainer; in OECD
+ * mode it additionally sets the active indicator, as before.
  */
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { OECD_SERIES_BY_SLUG } from '@/lib/oecd-curated';
 import { normalizeIndicator, isProjected, formatValue, toNum } from '@/lib/oecd-scales';
 import { DIMENSION_OPTIONS } from '@/lib/empire-dimension-groups';
@@ -24,15 +33,26 @@ import OecdModeToggle from './OecdModeToggle';
 import OecdLensPills from './OecdLensPills';
 import OecdInfoButton from './OecdInfoButton';
 import OecdCompare from './OecdCompare';
+import OecdAxisExplainer from './OecdAxisExplainer';
 import { OECD_METHODOLOGY } from './oecd-methodology';
+import { empireDimensionExplainer, oecdIndicatorExplainer } from './oecd-dimension-methodology';
 import OecdTip, { tipFromEvent, tipFromElement } from './OecdTip';
 
-const SIZE = 420;
-const CX = SIZE / 2;
-const CY = SIZE / 2;
-const R = 150;
-const MARGIN = 30;
+/* ── Geometry ──────────────────────────────────────────────────────────────
+ * VB_W > VB_H on purpose: side-anchored labels need horizontal room.
+ * Side gutter  = CX - LABEL_R = 88px  (fits "Cur.acct" / "Markets & Fin" at 10.5px)
+ * Top gutter   = CY - LABEL_R = 44px
+ * Bottom gutter= VB_H - CY - LABEL_R = 52px
+ * Previously R/half-extent was 0.625; it is now 0.72 with the labels given real room. */
+const VB_W = 560;
+const VB_H = 480;
+const CX = VB_W / 2;
+const CY = 236;
+const R = 172;
+const LABEL_R = R + 20;
+const HIT_R = R + 14;
 const FLOOR = 0.08;
+const RINGS = [0.25, 0.5, 0.75, 1];
 
 function point(angleDeg, radius) {
   const a = (angleDeg * Math.PI) / 180;
@@ -40,7 +60,7 @@ function point(angleDeg, radius) {
 }
 const radiusFor = (n) => (n == null ? FLOOR * R : (FLOOR + (1 - FLOOR) * n) * R);
 function truncName(name) {
-  return name.length > 16 ? `${name.slice(0, 14)}…` : name;
+  return name.length > 14 ? `${name.slice(0, 13)}…` : name;
 }
 const lineColor = (i) => `var(--oecd-line-${i + 1})`;
 
@@ -49,12 +69,10 @@ export default function OecdRadar({
   lens,
   ind,
   onPickIndicator,
-  // multi-country selection (2–4)
   selected,
   onChangeCountry,
   onAddCountry,
   onRemoveCountry,
-  // mode / filters
   mode = 'oecd',
   onMode,
   focus = 'all',
@@ -68,7 +86,8 @@ export default function OecdRadar({
   const cardRef = useRef(null);
   const [tip, setTip] = useState(null);
   const [hoverAxis, setHoverAxis] = useState(null);
-  const [hoverCc, setHoverCc] = useState(null); // iso being emphasized
+  const [hoverCc, setHoverCc] = useState(null);
+  const [explain, setExplain] = useState(null);
 
   const isEmpire = mode === 'empire' && empireModel;
 
@@ -78,7 +97,6 @@ export default function OecdRadar({
       ? empireModel.nameByCode.get(iso)
       : model.countries.find((c) => c.iso === iso)?.name) || iso;
 
-  // Unified axes with a per-country normalized radius map.
   const view = useMemo(() => {
     if (isEmpire) {
       const dims = empireAxesForFocus(empireModel, focus);
@@ -86,13 +104,18 @@ export default function OecdRadar({
         const normByIso = {};
         for (const iso of selected)
           normByIso[iso] = normScore(dim, empireModel.scoreMap.get(iso)?.get(dim.id));
+        // Prefer the curated short label from the matrix payload; fall back to a
+        // truncation so a long dimension name can't overrun the side gutter.
+        const short = empireMatrixModel?.dimById?.get(dim.id)?.short || truncName(dim.name);
         return {
           key: dim.id,
-          short: truncName(dim.name),
+          short,
           angle: -90 + (360 * i) / dims.length,
           normByIso,
+          explainer: () => empireDimensionExplainer(dim, empireMatrixModel),
           payload: {
             title: dim.name,
+            note: 'Weighted blend of World Bank metrics · click for the formula',
             lines: selected.map((iso) => {
               const raw = empireModel.scoreMap.get(iso)?.get(dim.id);
               return { label: nameOf(iso), value: raw == null ? '—' : raw.toFixed(0) };
@@ -102,7 +125,7 @@ export default function OecdRadar({
       });
       return {
         axes,
-        clickable: false,
+        clickable: true,
         title: 'Empire dimensions',
         coverage: {
           covered: empireModel.liveDims.length,
@@ -117,18 +140,23 @@ export default function OecdRadar({
     const slugs = allSlugsForLens(lens);
     const axes = slugs.map((slug, i) => {
       const series = OECD_SERIES_BY_SLUG[slug];
-      const norm = normalizeIndicator(columnValues(model, slug), { inv: series.inv });
+      const col = columnValues(model, slug);
+      const reporting = Object.values(col).filter((v) => v != null).length;
+      const norm = normalizeIndicator(col, { inv: series.inv });
       const normByIso = {};
       for (const iso of selected) normByIso[iso] = norm[iso] ?? null;
+      const year = model.latestYearBySlug[slug];
       return {
         key: slug,
         short: series.short,
         angle: -90 + (360 * i) / slugs.length,
         normByIso,
-        year: model.latestYearBySlug[slug],
+        year,
         onClick: () => onPickIndicator(slug),
+        explainer: () => oecdIndicatorExplainer(series, year, reporting),
         payload: {
           title: `${series.label} · ${series.unitLabel}`,
+          note: 'Click for how this axis is normalized',
           lines: selected.map((iso) => {
             const raw = toNum(model.bySlug[slug]?.[iso]?.value);
             const rk = rankWithin(model, slug, iso, { inv: series.inv });
@@ -150,7 +178,7 @@ export default function OecdRadar({
       projYear: years.length ? Math.max(...years) : null,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isEmpire, empireModel, focus, lens, model, selected, onPickIndicator]);
+  }, [isEmpire, empireModel, empireMatrixModel, focus, lens, model, selected, onPickIndicator]);
 
   const axes = view.axes;
 
@@ -166,6 +194,16 @@ export default function OecdRadar({
     setHoverAxis(null);
     setTip(null);
   };
+
+  // Click = open the explainer. In OECD mode it ALSO drives the indicator
+  // selection (unchanged existing behaviour that the history chart depends on).
+  const onAxisActivate = useCallback((ax) => {
+    if (ax.onClick) ax.onClick();
+    setExplain({ key: ax.key, data: ax.explainer() });
+  }, []);
+
+  const closeExplain = useCallback(() => setExplain(null), []);
+
   const polygon = (iso) =>
     axes
       .map((ax) =>
@@ -289,6 +327,7 @@ export default function OecdRadar({
       ) : (
         <span className="oecd-radar-legend-note">Outward = stronger</span>
       )}
+      <span className="oecd-radar-legend-hint">Click an axis to see how it&apos;s scored</span>
     </div>
   );
 
@@ -307,13 +346,18 @@ export default function OecdRadar({
     />
   );
 
-  // Empire Focus group with <3 live axes → bar list (radar meaningless).
   const plot =
     isEmpire && axes.length > 0 && axes.length < 3 ? (
       <div className="oecd-dimbars">
         {axes.map((ax) => (
           <div className="oecd-dimbar" key={ax.key}>
-            <span className="oecd-dimbar-label">{ax.short}</span>
+            <button
+              type="button"
+              className="oecd-dimbar-label oecd-dimbar-btn"
+              onClick={() => onAxisActivate(ax)}
+            >
+              {ax.short}
+            </button>
             <span className="oecd-dimbar-track">
               {selected.map((iso, i) => (
                 <span
@@ -335,14 +379,15 @@ export default function OecdRadar({
     ) : (
       <svg
         className="oecd-radar-svg"
-        viewBox={`${-MARGIN} ${-MARGIN} ${SIZE + MARGIN * 2} ${SIZE + MARGIN * 2}`}
+        viewBox={`0 0 ${VB_W} ${VB_H}`}
+        preserveAspectRatio="xMidYMid meet"
         role="img"
         aria-label={`Radar comparing ${selected.map(nameOf).join(', ')} across ${axes.length} axes`}
       >
-        {[1 / 3, 2 / 3, 1].map((f) => (
+        {RINGS.map((f) => (
           <polygon
             key={f}
-            className="oecd-radar-ring"
+            className={`oecd-radar-ring ${f === 1 ? 'is-outer' : ''}`}
             points={axes
               .map((ax) =>
                 point(ax.angle, R * f)
@@ -352,12 +397,21 @@ export default function OecdRadar({
               .join(' ')}
           />
         ))}
+
         {axes.map((ax) => {
           const [x2, y2] = point(ax.angle, R);
-          const [lx, ly] = point(ax.angle, R + 18);
-          const active = ax.key === hoverAxis || (!isEmpire && ax.key === ind);
+          const [lx, ly] = point(ax.angle, LABEL_R);
+          const [hx, hy] = point(ax.angle, HIT_R);
+          const active =
+            ax.key === hoverAxis || ax.key === explain?.key || (!isEmpire && ax.key === ind);
           return (
-            <g key={ax.key}>
+            <g
+              key={ax.key}
+              className={`oecd-radar-axisg ${active ? 'is-active' : ''}`}
+              onMouseEnter={(e) => onAxisEnter(e, ax)}
+              onMouseMove={(e) => onAxisEnter(e, ax)}
+              onMouseLeave={clearAxis}
+            >
               <line
                 className={`oecd-radar-spoke ${active ? 'is-active' : ''}`}
                 x1={CX}
@@ -365,36 +419,40 @@ export default function OecdRadar({
                 x2={x2}
                 y2={y2}
               />
+              {/* Wide transparent hit line so the whole spoke is hoverable. */}
+              <line
+                className="oecd-radar-hit"
+                x1={CX}
+                y1={CY}
+                x2={hx}
+                y2={hy}
+                onClick={() => onAxisActivate(ax)}
+              />
               <text
-                className={`oecd-radar-axis-label oecd-num ${active ? 'is-active' : ''} ${view.clickable ? '' : 'is-static'}`}
+                className={`oecd-radar-axis-label oecd-num ${active ? 'is-active' : ''}`}
                 x={lx}
                 y={ly}
                 textAnchor={anchorFor(lx)}
                 dominantBaseline="middle"
-                role={view.clickable ? 'button' : undefined}
-                tabIndex={view.clickable ? 0 : undefined}
-                onClick={view.clickable ? ax.onClick : undefined}
-                onKeyDown={
-                  view.clickable
-                    ? (e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          ax.onClick();
-                        }
-                      }
-                    : undefined
-                }
-                onMouseEnter={(e) => onAxisEnter(e, ax)}
-                onMouseMove={(e) => onAxisEnter(e, ax)}
-                onMouseLeave={clearAxis}
-                onFocus={view.clickable ? (e) => onAxisFocus(e, ax) : undefined}
-                onBlur={view.clickable ? clearAxis : undefined}
+                role="button"
+                tabIndex={0}
+                aria-label={`${ax.payload.title} — open scoring explanation`}
+                onClick={() => onAxisActivate(ax)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onAxisActivate(ax);
+                  }
+                }}
+                onFocus={(e) => onAxisFocus(e, ax)}
+                onBlur={clearAxis}
               >
                 {ax.short}
               </text>
             </g>
           );
         })}
+
         {selected.map((iso, i) => (
           <polygon
             key={iso}
@@ -402,13 +460,33 @@ export default function OecdRadar({
             points={polygon(iso)}
             style={{
               stroke: lineColor(i),
-              fill: `color-mix(in srgb, ${lineColor(i)} 15%, transparent)`,
-              opacity: hoverCc && hoverCc !== iso ? 0.15 : 1,
+              fill: `color-mix(in srgb, ${lineColor(i)} 14%, transparent)`,
+              opacity: hoverCc && hoverCc !== iso ? 0.14 : 1,
             }}
             onMouseEnter={() => setHoverCc(iso)}
             onMouseLeave={() => setHoverCc(null)}
           />
         ))}
+
+        {/* Vertices last so they sit above every polygon fill. */}
+        {selected.map((iso, i) =>
+          axes.map((ax) => {
+            const [vx, vy] = point(ax.angle, radiusFor(ax.normByIso[iso]));
+            return (
+              <circle
+                key={`${iso}-${ax.key}`}
+                className="oecd-radar-vertex"
+                cx={vx}
+                cy={vy}
+                r={ax.key === hoverAxis ? 3.6 : 2.6}
+                style={{
+                  fill: lineColor(i),
+                  opacity: hoverCc && hoverCc !== iso ? 0.14 : 1,
+                }}
+              />
+            );
+          }),
+        )}
       </svg>
     );
 
@@ -419,6 +497,7 @@ export default function OecdRadar({
         <div className="oecd-hth-plot">
           {plot}
           {legend}
+          <OecdAxisExplainer data={explain?.data} onClose={closeExplain} />
         </div>
         {compare}
       </div>

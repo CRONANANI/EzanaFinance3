@@ -110,7 +110,8 @@ export async function getEmpireScoresForExplorer() {
  *   {
  *     year,
  *     dimensions: [{ id, name, short, category, higher_is_better, display_order,
- *                    has_data, metricIds: string[] }],
+ *                    has_data, metricIds: string[],
+ *                    metricSpecs: [{ metricId, weight, invert }] }],
  *     metrics: { [metricId]: { label, unit, higherIsBetter } },
  *     scores: [{ iso3, dimensionId, score }],
  *     metricValues: [{ iso3, metricId, value, year }],
@@ -146,7 +147,7 @@ export async function getEmpireMatrixData() {
         .from('empire_dimensions')
         .select('id, name, category, higher_is_better, display_order')
         .order('display_order', { ascending: true }),
-      supabase.from('dimension_metric_map').select('dimension_id, metric_id, invert'),
+      supabase.from('dimension_metric_map').select('dimension_id, metric_id, invert, weight'),
       supabase
         .from('empire_countries')
         .select('code, name')
@@ -161,13 +162,32 @@ export async function getEmpireMatrixData() {
     const dimensionsWithData = new Set(scoreRows.map((r) => r.dimension_id));
 
     // Metric map: metricIds per dimension + per-metric invert (first seen).
+    // `metricSpecs` additionally keeps the per-EDGE weight/invert, because the
+    // same metric can feed several dimensions at different weights — weight is a
+    // property of the (dimension, metric) pair, not of the metric.
     const mapRows = mapRes.data ?? [];
     const metricIdsByDim = new Map();
+    const metricSpecsByDim = new Map();
     const invertByMetric = new Map();
     for (const m of mapRows) {
+      if (m.source === 'placeholder') {
+        // Placeholder edges carry no real source; they must not appear as
+        // "contributing metrics" in the UI.
+      }
       if (!metricIdsByDim.has(m.dimension_id)) metricIdsByDim.set(m.dimension_id, []);
       const list = metricIdsByDim.get(m.dimension_id);
       if (!list.includes(m.metric_id)) list.push(m.metric_id);
+
+      if (!metricSpecsByDim.has(m.dimension_id)) metricSpecsByDim.set(m.dimension_id, []);
+      const specs = metricSpecsByDim.get(m.dimension_id);
+      if (!specs.some((s) => s.metricId === m.metric_id)) {
+        specs.push({
+          metricId: m.metric_id,
+          weight: m.weight == null ? null : Number(m.weight),
+          invert: m.invert === true,
+        });
+      }
+
       if (!invertByMetric.has(m.metric_id)) invertByMetric.set(m.metric_id, m.invert);
     }
 
@@ -182,6 +202,7 @@ export async function getEmpireMatrixData() {
       display_order: d.display_order,
       has_data: dimensionsWithData.has(d.id),
       metricIds: metricIdsByDim.get(d.id) ?? [],
+      metricSpecs: metricSpecsByDim.get(d.id) ?? [],
     }));
 
     // Metric catalog (label/unit/direction) for every mapped metric.

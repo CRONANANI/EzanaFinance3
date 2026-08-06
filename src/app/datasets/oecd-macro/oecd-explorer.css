@@ -1470,23 +1470,68 @@
 
 .oecd-hth-body {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 340px;
-  gap: 12px;
-  align-items: stretch;
+  /* The table needs a stable, readable rail; everything else goes to the plot.
+     Previously the plot column took 1fr but the SVG was capped at 360px, so the
+     extra width rendered as dead space. */
+  grid-template-columns: minmax(0, 1fr) clamp(300px, 30%, 372px);
+  gap: 18px;
+  align-items: start;
 }
 .oecd-hth-plot {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   min-width: 0;
   min-height: 0;
+  /* Keeps the radar in view while the 20-row compare table is scanned. */
+  position: sticky;
+  top: 12px;
 }
 .oecd-hth-plot .oecd-radar-svg {
   width: 100%;
-  max-width: 360px;
-  max-height: 360px;
+  max-width: 660px;
   height: auto;
+  max-height: none;
+  overflow: visible;
+}
+
+/* Wide invisible hit target along each spoke — the 9px label alone was an
+   unreasonably small hover surface for 18–20 axes. */
+.oecd-radar-hit {
+  stroke: transparent;
+  stroke-width: 26;
+  stroke-linecap: round;
+  pointer-events: stroke;
+  cursor: pointer;
+}
+.oecd-radar-axisg .oecd-radar-vertex {
+  transition:
+    r 120ms ease-out,
+    opacity 140ms ease-out;
+}
+.oecd-radar-ring.is-outer {
+  stroke: color-mix(in srgb, var(--text-faint) 34%, transparent);
+}
+.oecd-hth-plot .oecd-radar-axis-label {
+  font-size: 10.5px;
+}
+.oecd-radar-legend-hint {
+  font-size: 9.5px;
+  color: var(--text-ghost);
+}
+.oecd-dimbar-btn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  padding: 0;
+}
+.oecd-dimbar-btn:hover {
+  color: var(--emerald-text);
 }
 .oecd-hth-legend {
   display: flex;
@@ -1698,9 +1743,194 @@
   color: var(--text-muted);
 }
 
+/* ── Per-axis scoring explainer (docked under the radar) ───────────────────── */
+.oecd-axexp {
+  width: 100%;
+  margin-top: 12px;
+  padding: 11px 12px 12px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  animation: oecd-axexp-in 160ms ease-out;
+}
+@keyframes oecd-axexp-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.oecd-axexp-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 7px;
+}
+.oecd-axexp-head-l {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  min-width: 0;
+}
+.oecd-axexp-eyebrow {
+  width: 100%;
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-ghost);
+}
+.oecd-axexp-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+.oecd-axexp-scale {
+  font-size: 10px;
+  color: var(--text-faint);
+}
+.oecd-axexp-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  border: 1px solid var(--emerald-border);
+  background: var(--emerald-bg);
+  color: var(--emerald-text);
+}
+.oecd-axexp-status.is-pending {
+  border-color: var(--border-secondary);
+  background: transparent;
+  color: var(--text-faint);
+}
+.oecd-axexp-status.is-projected {
+  border-color: color-mix(in srgb, var(--amber) 30%, transparent);
+  background: color-mix(in srgb, var(--amber) 10%, transparent);
+  color: var(--amber);
+}
+.oecd-axexp-close {
+  appearance: none;
+  flex: 0 0 auto;
+  border: 0;
+  background: transparent;
+  color: var(--text-faint);
+  font-size: 11px;
+  line-height: 1;
+  padding: 3px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.oecd-axexp-close:hover {
+  color: var(--text-primary);
+}
+.oecd-axexp-what {
+  margin: 0 0 8px;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+.oecd-axexp-steps {
+  margin: 0 0 10px;
+  padding-left: 16px;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+.oecd-axexp-steps li {
+  margin-bottom: 2px;
+}
+.oecd-axexp-steps li::marker {
+  color: var(--emerald-text);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+.oecd-axexp-metrics {
+  border-top: 1px solid var(--border-secondary);
+  padding-top: 7px;
+  margin-bottom: 8px;
+}
+.oecd-axexp-metrics-head,
+.oecd-axexp-metric {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 46px 96px;
+  gap: 8px;
+  align-items: baseline;
+  padding: 3px 0;
+}
+.oecd-axexp-metrics-head {
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-ghost);
+}
+.oecd-axexp-mh-w,
+.oecd-axexp-m-w {
+  text-align: right;
+}
+.oecd-axexp-metric {
+  font-size: 10.5px;
+  color: var(--text-secondary);
+  border-top: 1px solid var(--border-secondary);
+}
+.oecd-axexp-m-label {
+  min-width: 0;
+}
+.oecd-axexp-m-unit,
+.oecd-axexp-m-n {
+  font-style: normal;
+  color: var(--text-faint);
+  font-size: 9.5px;
+}
+.oecd-axexp-m-w {
+  color: var(--text-primary);
+  font-size: 10.5px;
+}
+.oecd-axexp-m-d {
+  font-size: 9.5px;
+  color: var(--emerald-text);
+}
+.oecd-axexp-m-d.is-inv {
+  color: var(--amber);
+}
+.oecd-axexp-caveat {
+  margin: 0 0 6px;
+  font-size: 10.5px;
+  line-height: 1.55;
+  color: var(--text-muted);
+  padding-left: 8px;
+  border-left: 2px solid var(--border-secondary);
+}
+.oecd-axexp-foot {
+  margin: 0;
+  font-size: 9.5px;
+  line-height: 1.55;
+  color: var(--text-faint);
+}
+
 @media (max-width: 900px) {
   .oecd-hth-body {
     grid-template-columns: minmax(0, 1fr);
+  }
+  .oecd-hth-plot {
+    position: static;
+  }
+  .oecd-hth-plot .oecd-radar-svg {
+    max-width: 520px;
+  }
+  .oecd-axexp-metrics-head,
+  .oecd-axexp-metric {
+    grid-template-columns: minmax(0, 1fr) 42px 80px;
   }
 }
 

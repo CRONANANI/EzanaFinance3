@@ -33,6 +33,8 @@ export const METRIC_LABELS = {
   labor_force_participation: 'Labour participation',
   inflation_cpi: 'Inflation (CPI)',
   energy_use_per_gdp: 'Energy per GDP',
+  co2_emissions_per_gdp: 'CO₂ per GDP',
+  mobile_subscriptions_per_100: 'Mobile subscriptions',
 };
 
 /* metric_id → unit code (mirrors world-bank.js METRIC_REGISTRY units — not
@@ -60,6 +62,8 @@ const METRIC_UNITS = {
   labor_force_participation: 'percent',
   inflation_cpi: 'percent',
   energy_use_per_gdp: 'kg_oil_per_gdp',
+  co2_emissions_per_gdp: 'kg_per_gdp',
+  mobile_subscriptions_per_100: 'per_100',
 };
 
 /* Unit code → short display suffix. */
@@ -70,6 +74,8 @@ const UNIT_LABELS = {
   count: '',
   index: '',
   kg_oil_per_gdp: 'kg oil/GDP',
+  kg_per_gdp: 'kg/GDP',
+  per_100: '/100 people',
 };
 
 /**
