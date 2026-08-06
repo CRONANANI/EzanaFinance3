@@ -134,6 +134,131 @@ export const peterThiel2026 = {
       ],
     },
     {
+      type: 'wall-timeline',
+      figureLabel: 'FIG. 1 · THE THIEL CHRONOLOGY',
+      kicker:
+        'PETER THIEL, 1987–2026 · SHADED ERAS · TWELVE DATED EVENTS FROM THE ARTICLE — CLICK ANY PLAQUE FOR THE RECORD.',
+      hint: 'Click a plaque for its record.',
+      source: 'as dated in this article (public record; June 2026 Dialog leak verified by WIRED).',
+      startYear: 1985,
+      endYear: 2026,
+      windows: [
+        {
+          id: 'w1',
+          label: 'PayPal & the Mafia',
+          from: 1998,
+          to: 2002,
+          color: 'var(--echo-chart-blue)',
+        },
+        {
+          id: 'w2',
+          label: 'Palantir · Facebook · Founders Fund',
+          from: 2003,
+          to: 2006,
+          color: 'var(--echo-chart-green)',
+        },
+        {
+          id: 'w3',
+          label: 'Recruiting the politicians',
+          from: 2011,
+          to: 2022,
+          color: 'var(--echo-chart-orange)',
+        },
+        {
+          id: 'w4',
+          label: 'The transatlantic realignment',
+          from: 2023,
+          to: 2026,
+          color: 'var(--echo-chart-purple)',
+        },
+      ],
+      plaques: [
+        {
+          year: 1987,
+          lane: 0,
+          label: 'Late 1980s · The Stanford Review',
+          detail:
+            'Thiel founds a contrarian campus newspaper; the people he gathers around it become his first network.',
+        },
+        {
+          year: 1998,
+          lane: 1,
+          label: '1998 · Confinity founded',
+          detail: 'Thiel co-founds the payments startup Confinity with Max Levchin.',
+        },
+        {
+          year: 2000,
+          lane: 2,
+          label: '2000 · PayPal merger',
+          detail:
+            "Confinity merges with Elon Musk's competing venture X.com to form what becomes PayPal.",
+        },
+        {
+          year: 2002,
+          lane: 3,
+          label: '2002 · eBay buys PayPal',
+          detail:
+            'The roughly $1.5 billion sale mints the founders and seeds the so-called "PayPal Mafia."',
+        },
+        {
+          year: 2003,
+          lane: 4,
+          label: '2003 · Palantir co-founded',
+          detail:
+            'Data-analytics firm built to integrate and search vast datasets; Alex Karp installed as CEO.',
+        },
+        {
+          year: 2004,
+          lane: 5,
+          label: '2004 · First Facebook investor',
+          detail:
+            'Thiel becomes the first outside investor in Facebook — $500,000 for a stake returning hundreds of millions.',
+        },
+        {
+          year: 2006,
+          lane: 0,
+          label: '2006 · Dialog founded',
+          detail:
+            'Thiel co-founds Dialog, the invitation-only society that operates almost entirely out of public view for nearly two decades.',
+        },
+        {
+          year: 2009,
+          lane: 1,
+          label: '2009 · "The Education of a Libertarian"',
+          detail:
+            'The Cato essay: "I no longer believe that freedom and democracy are compatible."',
+        },
+        {
+          year: 2011,
+          lane: 2,
+          label: '2011 · Meets JD Vance at Yale',
+          detail:
+            "A Yale Law School talk begins the most important political relationship of Thiel's life.",
+        },
+        {
+          year: 2016,
+          lane: 3,
+          label: '2016 · The Trump turn',
+          detail:
+            'Thiel backs Trump at the Republican National Convention and, on December 14, brings Elon Musk and Alex Karp into the Trump Tower tech summit.',
+        },
+        {
+          year: 2022,
+          lane: 4,
+          label: '2022 · $15M+ for Vance',
+          detail:
+            "More than $15 million for Vance's Ohio Senate campaign — a record for a single race at the time; Vance reaches the 2024 ticket.",
+        },
+        {
+          year: 2026,
+          lane: 5,
+          label: 'June 2026 · Dialog leak',
+          detail:
+            'A leak verified by WIRED lists roughly 222 registrants for the August 2026 Dialog retreat, 87 of them first-time attendees.',
+        },
+      ],
+    },
+    {
       type: 'heading',
       text: 'Stanford and the first network',
       level: 2,
@@ -159,6 +284,90 @@ export const peterThiel2026 = {
     {
       type: 'paragraph',
       text: "With his PayPal windfall, Thiel made the two moves that define his footprint today. In 2003 he co-founded [[kw:palantir]]Palantir Technologies[[/kw]], the data-analytics firm built to integrate and search vast datasets, with early backing reported from the CIA's venture arm [[kw:in-q-tel]]In-Q-Tel[[/kw]]; he installed his Stanford-era associate [[person:alex-karp]]Alex Karp[[/person]] as CEO, a partnership that has lasted more than twenty years and remains the operational core of Thiel's power. In 2004 he became the first outside investor in Facebook, putting in $500,000 for a stake that would return hundreds of millions and bind him to [[person:mark-zuckerberg]]Mark Zuckerberg[[/person]], on whose board he sat for years as the company grew into Meta. In 2005 he launched Founders Fund. Within two years, Thiel had built the template he still runs: [[kw:surveillance-infrastructure]]surveillance-grade data infrastructure[[/kw]] sold to governments, a generational consumer-platform stake, and a venture vehicle to compound both. Karp, notably, has at times positioned himself as Thiel's political opposite while running the company that makes the thesis real.",
+    },
+    {
+      type: 'lifelines',
+      figureLabel: 'FIG. 2 · WHAT THIEL BUILT, AND WHAT BECAME OF IT',
+      kicker:
+        'FOUNDATION-TO-OUTCOME SPANS THE ARTICLE DATES · CONTINUING · TRANSFORMED — CLICK ANY LIFELINE FOR THE RECORD.',
+      hint: 'Click a lifeline for the record.',
+      source: 'as dated in this article (public record).',
+      startYear: 1985,
+      endYear: 2026,
+      groups: [
+        {
+          label: 'Companies and vehicles Thiel founded',
+          rows: [
+            {
+              name: 'The Stanford Review',
+              from: 1987,
+              to: null,
+              outcome: { type: 'continuing', label: 'first network' },
+              record:
+                "Founded in the late 1980s to challenge campus orthodoxy — the recurring pattern in which shared ideology precedes shared enterprise, and Thiel's first network.",
+            },
+            {
+              name: 'Confinity',
+              from: 1998,
+              to: 2000,
+              outcome: { type: 'transformed', label: 'merged → PayPal · 2000' },
+              record: 'Co-founded with Max Levchin in 1998; merged with X.com in 2000.',
+            },
+            {
+              name: 'PayPal',
+              from: 2000,
+              to: 2002,
+              outcome: { type: 'transformed', label: 'eBay · 2002' },
+              record:
+                'Formed in the 2000 merger; sold to eBay for roughly $1.5 billion in 2002, seeding the "PayPal Mafia."',
+            },
+            {
+              name: 'Palantir Technologies',
+              from: 2003,
+              to: null,
+              outcome: { type: 'continuing', label: 'operational core' },
+              record:
+                "Co-founded in 2003; Alex Karp was installed as CEO in a partnership that has lasted more than twenty years and remains the operational core of Thiel's power.",
+            },
+            {
+              name: 'Founders Fund',
+              from: 2005,
+              to: null,
+              outcome: { type: 'continuing', label: 'active' },
+              record: 'Thiel launched his venture vehicle in 2005.',
+            },
+            {
+              name: 'Dialog',
+              from: 2006,
+              to: null,
+              outcome: { type: 'continuing', label: 'active' },
+              record:
+                'Co-founded in 2006; operated almost entirely out of public view until the June 2026 leak, which listed roughly 222 registrants for the August 2026 retreat.',
+            },
+          ],
+        },
+        {
+          label: 'The Palantir-UK build',
+          rows: [
+            {
+              name: 'Louis Mosley at Palantir',
+              from: 2016,
+              to: null,
+              outcome: { type: 'continuing', label: 'leads UK & Europe' },
+              record:
+                'Joined Palantir in 2016; now leads UK and European operations across NHS data platforms, Ministry of Defence contracts, and policing systems.',
+            },
+            {
+              name: 'Global Counsel × Palantir',
+              from: 2018,
+              to: null,
+              outcome: { type: 'continuing', label: 'client relationship' },
+              record:
+                "Palantir hired Mandelson's Global Counsel in 2018 to position itself with the British government.",
+            },
+          ],
+        },
+      ],
     },
     {
       type: 'callout',
@@ -240,6 +449,140 @@ export const peterThiel2026 = {
       text: "Two more British figures complete the picture, both tied to the Brexit realignment that Thiel's circle admired. Dominic Cummings, the strategist who masterminded the 2016 Leave campaign and later ran Boris Johnson's Downing Street operation, shares the network's conviction that the existing civil-service state is broken and must be 'remodeled' — a technocratic-disruption instinct that echoes Thiel's own. Boris Johnson, the former prime minister who delivered Brexit, anchors the political establishment end of that project. Neither is a Thiel employee, and their inclusion in the network diagram reflects strategic and ideological association rather than direct business ties — a distinction worth preserving, since not every line in a network map is a contract. The pattern they complete is a transatlantic conservative realignment in which Thiel is less a member than a financier and intellectual sponsor.",
     },
     {
+      type: 'dossier-table',
+      figureLabel: 'FIG. 4 · THE NETWORK BY SPHERE',
+      kicker:
+        'A COMPANION TO THE PIE · WHO THEY ARE · TIE TO THIEL · NATURE OF THE TIE · CATEGORIZATION IS EDITORIAL; SEVERAL FIGURES SPAN MULTIPLE SPHERES. CLICK A ROW FOR THE RECORD.',
+      hint: 'Nine figures — expand a row for the record.',
+      source:
+        'as described in this article (public reporting; June 2026 Dialog leak verified by WIRED).',
+      headers: ['Figure', 'Who they are', 'Tie to Thiel', 'Nature of the tie', ''],
+      rows: [
+        {
+          name: 'Elon Musk',
+          tag: 'SILICON VALLEY',
+          role: 'Tesla and SpaceX CEO; X.com / PayPal co-founder.',
+          anchor: 'The oldest tie — the 2000 X.com / Confinity merger.',
+          keyRisk:
+            'Best read as a durable strategic alignment, not friendship; the companies and temperaments periodically collide.',
+          dossier: [
+            {
+              label: 'From the article',
+              text: 'Two decades later the pair sit on the same side of a political realignment.',
+            },
+          ],
+        },
+        {
+          name: 'Alex Karp',
+          tag: 'SILICON VALLEY',
+          role: 'Palantir Technologies CEO.',
+          anchor: 'Installed as Palantir CEO in 2003 — a 20-year partnership.',
+          keyRisk:
+            "Has at times positioned himself as Thiel's political opposite while running the company that makes the thesis real.",
+          dossier: [
+            {
+              label: 'From the article',
+              text: "The partnership remains the operational core of Thiel's power.",
+            },
+          ],
+        },
+        {
+          name: 'Mark Zuckerberg',
+          tag: 'SILICON VALLEY',
+          role: 'Meta (Facebook) founder and CEO.',
+          anchor: 'Thiel was the first outside Facebook investor, 2004 ($500k).',
+          keyRisk: 'Thiel sat on the board for years as the company grew into Meta.',
+          dossier: [
+            {
+              label: 'From the article',
+              text: 'The $500,000 stake returned hundreds of millions.',
+            },
+          ],
+        },
+        {
+          name: 'Sam Altman',
+          tag: 'SILICON VALLEY',
+          role: 'OpenAI co-founder and CEO.',
+          anchor: 'Thiel was an early OpenAI investor.',
+          keyRisk: 'The two later diverged on AI commercialization.',
+          dossier: [
+            {
+              label: 'From the article',
+              text: 'Co-invested in the nuclear startup Oklo — a shared "bring back nuclear" optimism that surfaced in the leaked Dialog agenda.',
+            },
+          ],
+        },
+        {
+          name: 'JD Vance',
+          tag: 'WASHINGTON',
+          role: 'US Vice President, former Thiel protege.',
+          anchor: 'More than $15 million to his 2022 Ohio Senate race.',
+          keyRisk:
+            "The clearest demonstration of Thiel's method: identify the person, back them early, and let proximity do the rest.",
+          dossier: [
+            {
+              label: 'From the article',
+              text: 'The arc runs from a 2011 Yale guest lecture to the vice presidency.',
+            },
+          ],
+        },
+        {
+          name: 'Donald Trump',
+          tag: 'WASHINGTON',
+          role: 'US President.',
+          anchor: "Thiel was Silicon Valley's most prominent 2016 backer.",
+          keyRisk: "Thiel served as the tech sector's liaison to the incoming administration.",
+          dossier: [
+            {
+              label: 'From the article',
+              text: 'On December 14, 2016, Thiel brought Musk and Karp into the Trump Tower summit.',
+            },
+          ],
+        },
+        {
+          name: 'James Orr',
+          tag: 'UNITED KINGDOM',
+          role: 'Cambridge philosophy-of-religion professor; Reform UK policy figure.',
+          anchor: 'Vance\'s "British sherpa"; hosted the "Antichrist" lecture series.',
+          keyRisk: 'Credited with recruiting elite Conservative defectors to Reform UK.',
+          dossier: [
+            {
+              label: 'From the article',
+              text: 'Helped transpose the Thiel-linked National Conservatism conference to the UK in 2023.',
+            },
+          ],
+        },
+        {
+          name: 'Louis Mosley',
+          tag: 'UNITED KINGDOM',
+          role: 'Head of Palantir UK and European operations.',
+          anchor: 'Joined Palantir in 2016; NHS, MoD, and policing contracts.',
+          keyRisk:
+            'Grandson of Oswald Mosley — noted as documented fact rather than evidence of his own views.',
+          dossier: [
+            {
+              label: 'From the article',
+              text: "Embedded Palantir in Britain's most sensitive institutions through procurement rather than election.",
+            },
+          ],
+        },
+        {
+          name: 'Peter Mandelson',
+          tag: 'UNITED KINGDOM',
+          role: 'Labour grandee; Global Counsel founder; former UK ambassador to Washington.',
+          anchor: 'Global Counsel took Palantir as a client in 2018.',
+          keyRisk:
+            'As ambassador, emailed Downing Street in July 2025 about a Starmer-Thiel meeting.',
+          dossier: [
+            {
+              label: 'From the article',
+              text: 'The Palantir-facilitation record stands on its own in the released documents.',
+            },
+          ],
+        },
+      ],
+    },
+    {
       type: 'heading',
       text: 'Citizenship, exit, and the hedge',
       level: 2,
@@ -267,6 +610,56 @@ export const peterThiel2026 = {
     {
       type: 'paragraph',
       text: "The base case is that networks like Dialog continue to shape policy and capital allocation regardless of public scrutiny, because the relationships they formalize — Stanford, PayPal, Palantir, Yale, Cambridge — predate and outlast any single leak. The more hopeful case, for those uneasy with the concentration, is that transparency is itself a check: a worldview that depends on operating 'off the record' is weakened when the record becomes public. The young generation Thiel writes about as a demographic to be managed is also the generation with the most years of exposure to the system he is building — and the most reason to understand it clearly, on the basis of his own words and the documented record rather than anyone else's characterization. Read the 2009 essay. Trace the network. Then decide for yourself whether the future he and his circle are engineering is one you would choose.",
+    },
+    {
+      type: 'scenario-chain',
+      figureLabel: 'FIG. 5 · TWO CASES FROM THE CLOSE',
+      kicker:
+        "THE ARTICLE'S OWN CLOSING CASES · GATE × DRIVER → OUTCOME · NEUTRAL-FACTUAL, NO VERDICT.",
+      hint: "The article's base and more hopeful cases.",
+      source: "this article's closing section.",
+      scenarios: [
+        {
+          id: 'base',
+          label: 'BASE CASE',
+          tone: 'base',
+          range: 'Networks persist',
+          steps: [
+            {
+              label: 'Relationships predate any leak',
+              sub: 'Stanford · PayPal · Palantir · Yale · Cambridge',
+            },
+            {
+              label: 'Networks formalize influence',
+              sub: 'policy and capital allocation, off the record',
+            },
+          ],
+          result: {
+            value: 'Dialog keeps shaping policy',
+            sub: 'regardless of public scrutiny',
+          },
+        },
+        {
+          id: 'alt',
+          label: 'MORE HOPEFUL CASE',
+          tone: 'alt',
+          range: 'Transparency as a check',
+          steps: [
+            {
+              label: 'The record becomes public',
+              sub: 'the June 2026 leak, verified by WIRED',
+            },
+            {
+              label: 'Off-the-record worldview weakened',
+              sub: 'a model that depends on operating unseen',
+            },
+          ],
+          result: {
+            value: 'Concentration made legible',
+            sub: 'the most-exposed generation can read it clearly',
+          },
+        },
+      ],
     },
   ],
 };

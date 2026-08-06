@@ -547,6 +547,106 @@ export const fiberOpticArticle = {
         'Major producers plotted by headquarters location. Toggle continents and industry filters. Source: Ezana Finance Research.',
       dataKey: 'fiberOpticCompanies',
     },
+    {
+      type: 'dossier-table',
+      figureLabel: 'FIG. 4 · WHO MAKES THE CABLE',
+      kicker:
+        'MAJOR FIBER-OPTIC CABLE PRODUCERS BY REGION · ANCHOR = TICKER · HEADQUARTERS · PRIMARY APPLICATION (FROM THE MAP) · CLICK A ROW FOR THE DOSSIER.',
+      hint: 'Six producers — expand a row for the dossier.',
+      source:
+        'Ezana Finance Research (manufacturer map); Corning figures from company reporting and its Q1 2026 earnings.',
+      headers: ['Producer', 'Role in the supply chain', 'Anchor', 'Key risk', ''],
+      rows: [
+        {
+          name: 'Corning Inc',
+          tag: 'US · GLW',
+          role: 'The 175-year-old glass maker now at the center of the AI data-center buildout; its Multicore Fiber packs four cores into a standard 125-micron strand.',
+          anchor: '+74% YTD · $6B Meta deal · Corning, NY',
+          keyRisk:
+            'Single-customer concentration — an entire new factory, broken ground March 2026, dedicated to one buyer.',
+          dossier: [
+            {
+              label: 'AI thesis',
+              text: 'MCF delivers four times the data density of single-core fiber while using 75% fewer cables; two more undisclosed hyperscale deals surfaced in Q1 2026.',
+            },
+            {
+              label: 'Relative performance',
+              text: 'Up 74% YTD in 2025, ahead of Nvidia (51%), Broadcom (42%), and AMD (14%).',
+            },
+          ],
+        },
+        {
+          name: 'CommScope',
+          tag: 'US · COMM',
+          role: 'One of the three US producers that anchor the North American supply chain.',
+          anchor: 'NASDAQ: COMM · Hickory, NC · Telecom',
+          keyRisk:
+            'The long 2004–2017 deflationary grind, driven by Chinese scale-up and the dot-com overbuild, can recur.',
+          dossier: [
+            {
+              label: 'Position',
+              text: 'Named alongside Corning and Belden as the US leg of a three-geography supply chain.',
+            },
+          ],
+        },
+        {
+          name: 'Prysmian',
+          tag: 'EU · PRY.MI',
+          role: 'European leader focused on power-utility and submarine cable.',
+          anchor: 'PRY.MI · Milan, Italy · Power Utilities',
+          keyRisk:
+            'Single-mode / submarine demand is lumpy — one large cable order every few years rather than recurring volume.',
+          dossier: [
+            {
+              label: 'Position',
+              text: 'Named with Nexans and Leoni as the European leg of the supply chain.',
+            },
+          ],
+        },
+        {
+          name: 'Yangtze Optical Fiber (YOFC)',
+          tag: 'CN · 601869.SS',
+          role: 'A Chinese telecom-fiber giant; Chinese manufacturing scale reshaped global fiber pricing.',
+          anchor: '601869.SS · Wuhan, China · Telecom',
+          keyRisk:
+            'Overcapacity from Chinese scale-up historically pressured prices across the industry.',
+          dossier: [
+            {
+              label: 'Position',
+              text: 'Named with Hengtong, ZTT, and FiberHome as the Chinese leg of the supply chain.',
+            },
+          ],
+        },
+        {
+          name: 'Hengtong Group',
+          tag: 'CN',
+          role: 'Chinese producer in the power-utilities segment.',
+          anchor: 'Suzhou, China · Power Utilities',
+          keyRisk:
+            'Exposed to the same domestic overcapacity dynamics that drove the deflationary era.',
+          dossier: [
+            {
+              label: 'Position',
+              text: 'One of the four Chinese majors that dominate the supply chain alongside YOFC.',
+            },
+          ],
+        },
+        {
+          name: 'Sumitomo Electric',
+          tag: 'JP · 5802.T',
+          role: 'Japanese producer; Japan and South Korea round out the top tier.',
+          anchor: '5802.T · Osaka, Japan · Automobile',
+          keyRisk:
+            'Automotive optical-network demand depends on the pace of autonomous-driving adoption.',
+          dossier: [
+            {
+              label: 'Position',
+              text: 'Represents the Japan / Korea tier that sits behind the US, Europe, and China.',
+            },
+          ],
+        },
+      ],
+    },
 
     {
       type: 'heading',
@@ -621,6 +721,79 @@ export const fiberOpticArticle = {
     {
       type: 'paragraph',
       text: 'Benny stole the cable. Corning manufactures it. The difference is a 175-year head start and a patent portfolio. But the thesis is the same one Vito articulated leaning against that van: there is a lot of money in this stuff. The AI boom has not changed that thesis. It has accelerated it. Every GPU rack needs fiber. Every data center needs fiber. Every submarine cable needs fiber. Every autonomous vehicle needs fiber. Every surgical robot needs fiber. The question is not whether fiber optic cable is a good business. The question is whether the supply chain can build it fast enough.',
+    },
+    {
+      type: 'scenario-chain',
+      figureLabel: 'FIG. 5 · THE MARKET OUTLOOK',
+      kicker:
+        'MARKET OUTLOOK TO 2034 · GATE × DRIVER → OUTCOME · THREE SCENARIOS FROM THE FORECAST AND PRICE-INDEX NUMBERS.',
+      hint: 'Scenarios drawn from the forecast and price-index sections.',
+      source:
+        'Industry research market forecast (2024–2034); FRED / Bureau of Labor Statistics Producer Price Index.',
+      scenarios: [
+        {
+          id: 'base',
+          label: 'BASE CASE',
+          tone: 'base',
+          range: 'Telecom-led growth',
+          steps: [
+            {
+              label: 'Telecom-led demand',
+              sub: '5G densification + fiber-to-the-home + AI data centers',
+            },
+            {
+              label: '~16% CAGR',
+              sub: "the forecast's own compound growth rate",
+            },
+          ],
+          result: {
+            value: '$6.7B → $30B+ by 2034',
+            sub: 'the market roughly quadruples over the decade',
+          },
+        },
+        {
+          id: 'alt',
+          label: 'BULL CASE',
+          tone: 'alt',
+          range: 'AI pull-through',
+          steps: [
+            {
+              label: 'AI buildout hits the PPI',
+              sub: 'Meta, Microsoft, Amazon pull cable at capex-implied volumes',
+            },
+            {
+              label: 'Fastest-growing segments',
+              sub: 'auto and industrial automation roughly triple; medical quadruples',
+            },
+          ],
+          result: {
+            value: 'Upside to the base',
+            sub: 'the AI-driven pull has not yet fully hit the index',
+          },
+        },
+        {
+          id: 'bear',
+          label: 'BEAR CASE',
+          tone: 'bear',
+          range: 'Re-deflation',
+          steps: [
+            {
+              label: 'Chinese scale-up returns',
+              sub: 'overcapacity plus the dot-com overbuild pattern',
+            },
+            {
+              label: 'Deflationary grind',
+              sub: 'the 2004–2017 slide from 100 to roughly 83',
+            },
+          ],
+          result: {
+            value: 'Prices re-deflate',
+            sub: 'pricing power erodes as capacity outruns demand',
+          },
+        },
+      ],
+      killSwitch:
+        'IF THE PPI BREAKS BELOW ITS ~83 2016 LOW, THE DEFLATIONARY REGIME HAS RETURNED — RE-UNDERWRITE THE PRICING-POWER THESIS.',
     },
   ],
   author: 'Ezana Finance Editorial',

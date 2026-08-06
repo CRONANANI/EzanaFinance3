@@ -33,7 +33,11 @@ export const ballroomDonorsContracts2026 = {
         { label: 'New contracts, 6 months', value: '$50B+', change: '14 of 27 donors' },
         { label: 'Lockheed Martin share', value: '$43.8B', change: '~87% of the 6-month total' },
         { label: 'All contracts, 5.5 years', value: '$338B', change: '19 of 27 donors' },
-        { label: 'Donors facing enforcement', value: '16 of 27', change: 'Actions active or suspended' },
+        {
+          label: 'Donors facing enforcement',
+          value: '16 of 27',
+          change: 'Actions active or suspended',
+        },
         { label: 'Ballroom project cost', value: '$400M', change: 'Privately funded' },
       ],
     },
@@ -67,30 +71,214 @@ export const ballroomDonorsContracts2026 = {
       text: 'Ranking the disclosed recipients makes the shape of the distribution clear. Lockheed Martin’s $43.8 billion is followed by Booz Allen Hamilton at roughly $4.2 billion and Palantir at just over $1 billion. Below that, the figures fall off a cliff: Microsoft at $318.7 million, Amazon at $255.7 million, HP at $197.3 million, Caterpillar at $142.6 million, Alphabet at $16.4 million, and Comcast at $13.4 million. Caterpillar’s total is approximately 0.3% of Lockheed’s. Treating these companies as a single bloc of comparable beneficiaries, as much of the social coverage has, obscures that this is one very large defense award and a long tail of ordinary federal IT and equipment business.',
     },
     {
-      type: 'chart',
-      variant: 'horizontal-bar',
-      title: 'New or expanded federal contracts by ballroom donor',
-      caption:
-        'Six-month window following the October 2025 East Wing demolition, in millions of USD. The spread is severe: Lockheed Martin is roughly 307x Caterpillar. Source: Public Citizen, "Ballroom Billions," June 4, 2026; per-company figures as reported by Fortune, June 9, 2026.',
-      data: [
-        { x: 'Lockheed Martin', value: 43800 },
-        { x: 'Booz Allen Hamilton', value: 4200 },
-        { x: 'Palantir', value: 1000 },
-        { x: 'Microsoft', value: 318.7 },
-        { x: 'Amazon', value: 255.7 },
-        { x: 'HP', value: 197.3 },
-        { x: 'Caterpillar', value: 142.6 },
-        { x: 'Alphabet', value: 16.4 },
-        { x: 'Comcast', value: 13.4 },
+      type: 'clearing-sankey',
+      figureLabel: 'FIG. 1 · NEW CONTRACTS BY BALLROOM DONOR',
+      kicker:
+        'NEW OR EXPANDED FEDERAL CONTRACTS TO NINE DISCLOSED-RECIPIENT DONORS · SIX-MONTH WINDOW AFTER THE OCTOBER 2025 EAST WING DEMOLITION · RIBBON WIDTH = CONTRACT VALUE ($M) · LOCKHEED IS ROUGHLY 307× CATERPILLAR. CLICK A RIBBON FOR THE RECORD.',
+      hint: 'Click a ribbon for its per-company figure.',
+      source:
+        'Public Citizen, "Ballroom Billions," June 4, 2026; per-company figures as reported by Fortune, June 9, 2026.',
+      sourceGroups: [
+        {
+          label: 'Top three recipients',
+          nodes: [
+            { id: 'lmt', name: 'Lockheed Martin', display: '$43.8B' },
+            { id: 'bah', name: 'Booz Allen Hamilton', display: '$4.2B' },
+            { id: 'pltr', name: 'Palantir', display: '$1.0B' },
+          ],
+        },
+        {
+          label: 'The long tail — below the cliff',
+          nodes: [
+            { id: 'msft', name: 'Microsoft', display: '$318.7M' },
+            { id: 'amzn', name: 'Amazon', display: '$255.7M' },
+            { id: 'hpq', name: 'HP', display: '$197.3M' },
+            { id: 'cat', name: 'Caterpillar', display: '$142.6M' },
+            { id: 'googl', name: 'Alphabet', display: '$16.4M' },
+            { id: 'cmcsa', name: 'Comcast', display: '$13.4M' },
+          ],
+        },
       ],
-      series: [
-        { key: 'value', label: 'New/expanded contracts ($M)', color: 'var(--echo-chart-blue, #3b82f6)' },
+      destinations: [
+        {
+          id: 'contracts',
+          name: 'New / expanded federal contracts',
+          sub: '$50B+ total · 14 of 27 donors · 6-mo window',
+        },
       ],
-      yLabel: 'USD, millions',
+      flows: [
+        {
+          from: 'lmt',
+          to: 'contracts',
+          value: 43800,
+          tone: 'primary',
+          label: '$43.8B',
+          record:
+            'Lockheed Martin accounted for roughly $43.8 billion — about 87% of the six-month total, and roughly 13% of the $338 billion five-and-a-half-year figure. A $43.8B obligation recorded in a six-month window does not mean $43.8B was spent in six months, nor that the award decision was made in that window.',
+        },
+        {
+          from: 'bah',
+          to: 'contracts',
+          value: 4200,
+          tone: 'primary',
+          label: '$4.2B',
+          record:
+            'Booz Allen Hamilton at roughly $4.2 billion — the second-largest disclosed recipient.',
+        },
+        {
+          from: 'pltr',
+          to: 'contracts',
+          value: 1000,
+          tone: 'neutral',
+          record: 'Palantir at just over $1 billion. Below this, the figures fall off a cliff.',
+        },
+        {
+          from: 'msft',
+          to: 'contracts',
+          value: 318.7,
+          tone: 'neutral',
+          record:
+            'Microsoft at $318.7 million — the top of the long tail of ordinary federal IT business.',
+        },
+        {
+          from: 'amzn',
+          to: 'contracts',
+          value: 255.7,
+          tone: 'neutral',
+          record: 'Amazon at $255.7 million.',
+        },
+        {
+          from: 'hpq',
+          to: 'contracts',
+          value: 197.3,
+          tone: 'neutral',
+          record: 'HP at $197.3 million.',
+        },
+        {
+          from: 'cat',
+          to: 'contracts',
+          value: 142.6,
+          tone: 'neutral',
+          record: 'Caterpillar at $142.6 million — approximately 0.3% of the Lockheed total.',
+        },
+        {
+          from: 'googl',
+          to: 'contracts',
+          value: 16.4,
+          tone: 'neutral',
+          record: 'Alphabet at $16.4 million.',
+        },
+        {
+          from: 'cmcsa',
+          to: 'contracts',
+          value: 13.4,
+          tone: 'neutral',
+          record: 'Comcast at $13.4 million.',
+        },
+      ],
     },
     {
       type: 'paragraph',
       text: 'The Lockheed figure also deserves scrutiny on its own terms. Large defense awards are typically indefinite-delivery vehicles with ceiling values spanning many years, and they move through multi-year source-selection processes that begin long before any given quarter. A $43.8 billion obligation recorded in a six-month window does not mean $43.8 billion was spent in six months, nor that the award decision was made in that window. Any serious reading of the number has to separate the obligation date from the procurement timeline that produced it.',
+    },
+    {
+      type: 'dossier-table',
+      figureLabel: 'FIG. 2 · THE DISCLOSED RECIPIENTS',
+      kicker:
+        'DONOR · WHAT THE REPORT SHOWS · CONTRACT ANCHOR (SIX-MONTH WINDOW) · READING CAVEAT · THE REPORT ESTABLISHES TIMING AND CORRELATION, NOT A PROVEN QUID PRO QUO. CLICK A ROW FOR THE RECORD.',
+      hint: 'Six disclosed recipients — expand a row for the record.',
+      source:
+        'Public Citizen, "Ballroom Billions," June 4, 2026; per-company figures as reported by Fortune, June 9, 2026.',
+      headers: ['Donor', 'What the report shows', 'Contract anchor', 'Reading caveat', ''],
+      rows: [
+        {
+          name: 'Lockheed Martin',
+          tag: 'DEFENSE',
+          role: 'The single very large defense award — roughly 87% of the six-month total.',
+          anchor: '$43.8B new / expanded',
+          keyRisk:
+            'Large defense awards are multi-year indefinite-delivery vehicles; the obligation date is not the award decision or the spend.',
+          dossier: [
+            {
+              label: 'Share of totals',
+              text: 'About 87% of the $50B six-month figure; roughly 13% of the $338B five-and-a-half-year figure.',
+            },
+            {
+              label: 'Enforcement finding',
+              text: 'The report cites a labor-rights case involving Lockheed Martin among the enforcement matters.',
+            },
+          ],
+        },
+        {
+          name: 'Booz Allen Hamilton',
+          tag: 'SECOND',
+          role: 'The second-largest disclosed recipient, one order of magnitude below Lockheed.',
+          anchor: '$4.2B new / expanded',
+          keyRisk:
+            'Award timelines run on multi-year cycles that begin long before any donation window.',
+          dossier: [
+            {
+              label: 'Position',
+              text: 'Second on the disclosed list, at roughly a tenth of the Lockheed figure.',
+            },
+          ],
+        },
+        {
+          name: 'Palantir',
+          tag: 'THIRD',
+          role: 'Just over $1 billion — the last recipient before the figures fall off a cliff.',
+          anchor: '$1.0B new / expanded',
+          keyRisk:
+            'Below this point the list becomes a long tail of ordinary federal IT and equipment business.',
+          dossier: [
+            {
+              label: 'Position',
+              text: 'Marks the edge of the cliff in the distribution of contract values.',
+            },
+          ],
+        },
+        {
+          name: 'Microsoft',
+          tag: 'LONG TAIL',
+          role: 'Top of the long tail of ordinary federal IT business.',
+          anchor: '$318.7M new / expanded',
+          keyRisk:
+            'With no contribution amounts, award probability cannot be distinguished from that of non-donors.',
+          dossier: [
+            {
+              label: 'Context',
+              text: 'Part of the long tail of ordinary federal IT and equipment awards below the top three.',
+            },
+          ],
+        },
+        {
+          name: 'Amazon',
+          tag: 'LONG TAIL',
+          role: 'Long-tail federal IT recipient also named in the enforcement finding.',
+          anchor: '$255.7M new / expanded',
+          keyRisk:
+            'The report cites an antitrust matter involving Amazon where actions have been dropped or narrowed.',
+          dossier: [
+            {
+              label: 'Enforcement finding',
+              text: 'Named among antitrust matters alongside Apple, Meta, and Nvidia.',
+            },
+          ],
+        },
+        {
+          name: 'Alphabet',
+          tag: 'LONG TAIL',
+          role: 'Near the bottom of the disclosed list, and named in the enforcement finding.',
+          anchor: '$16.4M new / expanded',
+          keyRisk: 'The report cites a labor-rights case involving Alphabet.',
+          dossier: [
+            {
+              label: 'Enforcement finding',
+              text: 'Named among labor-rights cases alongside Lockheed Martin and Meta.',
+            },
+          ],
+        },
+      ],
     },
     {
       type: 'heading',
@@ -104,6 +292,49 @@ export const ballroomDonorsContracts2026 = {
     {
       type: 'paragraph',
       text: 'This finding builds on Public Citizen’s November 2025 report, Banquet of Greed, which documented $279 billion in federal contracts held by known donors at that time. The June 2026 update raises the five-and-a-half-year cumulative figure to $338 billion. The trajectory between the two reports is itself a data point: the donor group’s aggregate federal business has grown across both the contract and enforcement dimensions over the intervening seven months.',
+    },
+    {
+      type: 'wall-timeline',
+      figureLabel: 'FIG. 3 · THE REPORTING CHRONOLOGY',
+      kicker:
+        '2025.75–2026.42 (OCT 2025 – JUN 2026) · TWO PUBLIC CITIZEN REPORTS BOOKEND THE SIX-MONTH CONTRACT WINDOW — CLICK ANY PLAQUE FOR THE RECORD.',
+      hint: 'Click a plaque for its record.',
+      source:
+        'Public Citizen, "Banquet of Greed" (November 2025) and "Ballroom Billions" (June 4, 2026).',
+      startYear: 2025,
+      endYear: 2026,
+      windows: [
+        {
+          id: 'w1',
+          label: 'Six-month contract window',
+          from: 2025.75,
+          to: 2026.29,
+          color: 'var(--echo-chart-blue)',
+        },
+      ],
+      plaques: [
+        {
+          year: 2025.75,
+          lane: 0,
+          label: 'Oct 2025 · East Wing demolition',
+          detail:
+            'The six-month contract window opens with the demolition of the East Wing for the $400 million privately funded ballroom project.',
+        },
+        {
+          year: 2025.87,
+          lane: 1,
+          label: 'Nov 2025 · "Banquet of Greed"',
+          detail:
+            'Public Citizen documents $279 billion in federal contracts held by known ballroom donors at that time.',
+        },
+        {
+          year: 2026.42,
+          lane: 2,
+          label: 'Jun 4, 2026 · "Ballroom Billions"',
+          detail:
+            'The update finds 14 of 27 donors won more than $50 billion in new or expanded contracts over six months, raises the five-and-a-half-year cumulative figure to $338 billion, and reports that 16 of 27 donors face active or suspended federal enforcement.',
+        },
+      ],
     },
     {
       type: 'heading',
@@ -148,6 +379,58 @@ export const ballroomDonorsContracts2026 = {
     {
       type: 'paragraph',
       text: 'The base case is that most of the $50 billion resolves into ordinary procurement on examination, with the Lockheed award tracing to a program of record with a multi-year selection history. The bear case for the companies involved is not contract clawback but regulatory whiplash: sixteen of the 27 have active or suspended enforcement matters, and suspended matters can resume. That is a real risk to model for the named tickers, and it is independent of whether any donation influenced any award. Ezana’s government contracts dataset and Inside the Capitol coverage track both sides — award flows and the disclosure record — so the correlation can be checked against the underlying obligations rather than taken from a summary.',
+    },
+    {
+      type: 'scenario-chain',
+      figureLabel: 'FIG. 4 · HOW TO READ THE FLOWS',
+      kicker:
+        'POSITIONING CASE · GATE × DRIVER → OUTCOME · TWO SCENARIOS FROM THE ARTICLE · THE REPORT DOCUMENTS TIMING AND CORRELATION, NOT A PROVEN QUID PRO QUO.',
+      hint: "Scenarios drawn from the article's closing section.",
+      source: 'this article\'s reporting; Public Citizen, "Ballroom Billions," June 4, 2026.',
+      scenarios: [
+        {
+          id: 'base',
+          label: 'BASE CASE',
+          tone: 'base',
+          range: 'Ordinary procurement',
+          steps: [
+            {
+              label: 'Examine the obligations',
+              sub: 'award-level USAspending data, FY2008–2026',
+            },
+            {
+              label: 'Lockheed = program of record',
+              sub: 'multi-year source-selection history predating the window',
+            },
+          ],
+          result: {
+            value: 'Most of the $50B resolves',
+            sub: 'into ordinary procurement on examination',
+          },
+        },
+        {
+          id: 'bear',
+          label: 'BEAR CASE',
+          tone: 'bear',
+          range: 'Regulatory whiplash',
+          steps: [
+            {
+              label: '16 of 27 donors',
+              sub: 'active or suspended federal enforcement matters',
+            },
+            {
+              label: 'Suspended matters resume',
+              sub: 'antitrust, labor, and securities cases reopen',
+            },
+          ],
+          result: {
+            value: 'Regulatory re-rating',
+            sub: 'a real risk to the named tickers, independent of any donation',
+          },
+        },
+      ],
+      killSwitch:
+        'IF DONATION AMOUNTS ARE DISCLOSED, THE PAY-TO-PLAY QUESTION BECOMES TESTABLE — UNTIL THEN, 0 OF 27 CONTRIBUTIONS ARE PUBLIC AND THE DONOR LIST IS NOT A TRADEABLE SIGNAL.',
     },
   ],
   author: 'Ezana Finance Editorial',
