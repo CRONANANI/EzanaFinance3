@@ -53,7 +53,7 @@ export function EchoMechanismWave({
             y={24}
             textAnchor="middle"
             className="echo-fig-mono"
-            fontSize="10"
+            fontSize="16"
             letterSpacing="1"
             fill="var(--text-faint)"
           >
@@ -77,7 +77,7 @@ export function EchoMechanismWave({
             y={MID - amp(peak) - 20}
             textAnchor="middle"
             className="echo-fig-mono"
-            fontSize="9.5"
+            fontSize="15"
             fill="var(--text-muted)"
           >
             {envelopeLabel}
@@ -106,7 +106,7 @@ export function EchoMechanismWave({
 
         {/* extremum markers + phase labels + connectors */}
         {phases.map((p, i) => {
-          const labelY = 296 + i * 20;
+          const labelY = 300 + i * 24;
           return (
             <g key={`p-${p.n}`}>
               <circle
@@ -130,7 +130,7 @@ export function EchoMechanismWave({
                 y={labelY}
                 textAnchor="middle"
                 className="echo-fig-mono"
-                fontSize="10"
+                fontSize="16"
                 letterSpacing="0.5"
                 fill="var(--text-muted)"
               >

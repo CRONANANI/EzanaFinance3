@@ -5,7 +5,7 @@ import { EchoFigureShell } from './EchoFigureShell';
 
 const W = 1120;
 const H = 480;
-const PAD = { l: 64, r: 40, t: 90, b: 44 };
+const PAD = { l: 76, r: 40, t: 108, b: 44 };
 
 export function EchoTrajectory({
   figureLabel,
@@ -52,7 +52,7 @@ export function EchoTrajectory({
               y={sy(v) + 4}
               textAnchor="end"
               className="echo-fig-mono"
-              fontSize="10"
+              fontSize="16"
               fill="var(--text-muted)"
             >
               {v}
@@ -64,7 +64,7 @@ export function EchoTrajectory({
             x={PAD.l - 44}
             y={PAD.t - 14}
             className="echo-fig-mono"
-            fontSize="10"
+            fontSize="16"
             fill="var(--text-muted)"
           >
             {yLabel}
@@ -77,7 +77,7 @@ export function EchoTrajectory({
             y={H - PAD.b + 22}
             textAnchor="middle"
             className="echo-fig-mono"
-            fontSize="10"
+            fontSize="16"
             fill="var(--text-muted)"
           >
             {v}
@@ -100,7 +100,7 @@ export function EchoTrajectory({
                   key={p.x}
                   cx={sx(p.x)}
                   cy={sy(p.y)}
-                  r="3"
+                  r="4"
                   fill="var(--bg-primary)"
                   stroke={s.color}
                   strokeWidth="1.6"
@@ -110,7 +110,7 @@ export function EchoTrajectory({
                 x={sx(s.data.at(-1).x) + 8}
                 y={sy(s.data.at(-1).y) + 4}
                 className="echo-fig-mono"
-                fontSize="10"
+                fontSize="16"
                 fontWeight="700"
                 fill={s.color}
               >
@@ -123,7 +123,7 @@ export function EchoTrajectory({
         {annotations.map((a, i) => {
           const ax = sx(a.x);
           const ay = sy(a.y);
-          const ly = PAD.t - 50 + (i % 3) * 26;
+          const ly = PAD.t - 50 + (i % 3) * 32;
           return (
             <g key={a.label}>
               <line
@@ -142,17 +142,17 @@ export function EchoTrajectory({
                 textAnchor="middle"
                 className="echo-fig-mono"
                 fontWeight="700"
-                fontSize="10"
+                fontSize="16"
                 fill="var(--text-primary)"
               >
                 {a.label}
               </text>
               <text
                 x={ax}
-                y={ly + 12}
+                y={ly + 17}
                 textAnchor="middle"
                 className="echo-fig-mono"
-                fontSize="9"
+                fontSize="15"
                 fill="var(--text-muted)"
               >
                 {a.sub}

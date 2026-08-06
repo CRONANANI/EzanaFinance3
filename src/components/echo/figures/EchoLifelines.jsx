@@ -4,9 +4,9 @@ import { useMemo, useState } from 'react';
 import { EchoFigureShell } from './EchoFigureShell';
 
 const W = 1120;
-const ROW_H = 26;
-const GROUP_GAP = 34;
-const PAD = { l: 190, r: 200, t: 34, b: 40 };
+const ROW_H = 34;
+const GROUP_GAP = 42;
+const PAD = { l: 220, r: 230, t: 34, b: 40 };
 
 const OUTCOME_COLOR = {
   continuing: 'var(--emerald)', // emerald = alive/continuing, per branding guide
@@ -73,7 +73,7 @@ export function EchoLifelines({
               y={H - PAD.b + 18}
               textAnchor="middle"
               className="echo-fig-mono"
-              fontSize="10"
+              fontSize="16"
               fill="var(--text-muted)"
             >
               {yr}
@@ -86,7 +86,7 @@ export function EchoLifelines({
               x={16}
               y={g.y + 12}
               className="echo-fig-mono"
-              fontSize="10"
+              fontSize="16"
               letterSpacing="1.5"
               fill="var(--text-muted)"
             >
@@ -107,22 +107,22 @@ export function EchoLifelines({
                     y={r.y + 4}
                     textAnchor="end"
                     className="echo-fig-mono"
-                    fontSize="10.5"
+                    fontSize="16.5"
                     fill={active ? 'var(--emerald)' : 'var(--text-primary)'}
                   >
                     {r.name}
                   </text>
                   <rect
-                    x={x(r.from) - 4}
-                    y={r.y - 4}
-                    width="8"
-                    height="8"
+                    x={x(r.from) - 5}
+                    y={r.y - 5}
+                    width="10"
+                    height="10"
                     fill="none"
                     stroke={color}
                     strokeWidth="1.4"
                   />
                   <line
-                    x1={x(r.from) + 4}
+                    x1={x(r.from) + 5}
                     y1={r.y}
                     x2={xEnd}
                     y2={r.y}
@@ -143,7 +143,7 @@ export function EchoLifelines({
                     <circle
                       cx={xEnd}
                       cy={r.y}
-                      r="3.4"
+                      r="4.5"
                       fill="none"
                       stroke={color}
                       strokeWidth="1.6"
@@ -154,7 +154,7 @@ export function EchoLifelines({
                       x={xEnd + 14}
                       y={r.y + 4}
                       className="echo-fig-mono"
-                      fontSize="9.5"
+                      fontSize="15"
                       fill="var(--text-muted)"
                     >
                       → {r.outcome.label}

@@ -7,7 +7,12 @@
    · labels/axes  → --text-muted · hints/legends/sources → --text-faint
    · nested fills → --bg-tertiary
    · selected/hover + continuing → --emerald · kill switch → --danger
-   No hardcoded colors; no --border-color / --text-tertiary (they don't exist). */
+   No hardcoded colors; no --border-color / --text-tertiary (they don't exist).
+
+   Phase 0 legibility pass: HTML reading text raised to ~0.78–0.8rem floors,
+   labels ~0.66–0.72rem; SVG type scale lives in the components. Mobile: dense
+   SVGs scroll inside .echo-fig-scroll (min-width 760px keeps effective SVG text
+   ≥ ~10px) with a swipe hint shown only ≤720px. */
 
 .echo-fig {
   margin: 40px 0;
@@ -26,7 +31,7 @@
 
 .echo-fig-kicker {
   font-family: var(--font-mono);
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-muted);
@@ -36,7 +41,7 @@
 
 .echo-fig-hint {
   font-family: var(--font-mono);
-  font-size: 0.62rem;
+  font-size: 0.68rem;
   letter-spacing: 0.08em;
   color: var(--text-faint);
   margin: 0 0 12px;
@@ -44,7 +49,7 @@
 
 .echo-fig-source {
   font-family: var(--font-mono);
-  font-size: 0.66rem;
+  font-size: 0.68rem;
   letter-spacing: 0.06em;
   color: var(--text-faint);
   border-top: 1px solid var(--border-secondary);
@@ -56,6 +61,20 @@
   width: 100%;
   height: auto;
   display: block;
+}
+
+/* Mobile: dense SVGs scroll horizontally instead of shrinking to illegibility. */
+.echo-fig-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.echo-fig-swipe {
+  display: none;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-top: 6px;
 }
 
 .echo-fig-mono {
@@ -71,8 +90,8 @@
   border-left: 3px solid var(--emerald);
   border-radius: var(--radius-sm);
   font-family: var(--font-mono);
-  font-size: 0.72rem;
-  line-height: 1.6;
+  font-size: 0.8rem;
+  line-height: 1.65;
   color: var(--text-primary);
 }
 .echo-fig-detail strong {
@@ -89,7 +108,7 @@
   border: 1px solid var(--border-secondary);
   padding: 10px 8px;
   font-family: var(--font-mono);
-  font-size: 0.66rem;
+  font-size: 0.72rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   text-align: center;
@@ -102,6 +121,7 @@
 .echo-fig-matrix td.echo-fig-matrix-rowhead {
   text-align: left;
   color: var(--text-primary);
+  font-size: 0.74rem;
   min-width: 160px;
 }
 .echo-fig-cell {
@@ -135,7 +155,7 @@
   gap: 18px;
   margin-top: 10px;
   font-family: var(--font-mono);
-  font-size: 0.62rem;
+  font-size: 0.68rem;
   letter-spacing: 0.08em;
   color: var(--text-faint);
   align-items: center;
@@ -164,7 +184,7 @@
 }
 .echo-fig-dossier-head {
   font-family: var(--font-mono);
-  font-size: 0.62rem;
+  font-size: 0.66rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-muted);
@@ -177,21 +197,22 @@
 }
 .echo-fig-dossier-ticker {
   font-family: var(--font-mono);
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   color: var(--emerald);
   display: block;
   margin-top: 2px;
 }
 .echo-fig-dossier-cell {
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   line-height: 1.65;
   color: var(--text-primary);
 }
 .echo-fig-dossier-btn {
   font-family: var(--font-mono);
-  font-size: 0.62rem;
+  font-size: 0.68rem;
   letter-spacing: 0.08em;
+  min-height: 32px;
   padding: 6px 10px;
   cursor: pointer;
   background: transparent;
@@ -216,7 +237,7 @@
 }
 .echo-fig-dossier-panel dt {
   font-family: var(--font-mono);
-  font-size: 0.6rem;
+  font-size: 0.66rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-muted);
@@ -225,7 +246,7 @@
 .echo-fig-dossier-panel dd {
   margin: 0;
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: 0.78rem;
   line-height: 1.6;
   color: var(--text-primary);
 }
@@ -244,7 +265,7 @@
 }
 .echo-fig-scenario-label {
   font-family: var(--font-mono);
-  font-size: 0.66rem;
+  font-size: 0.72rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -267,7 +288,7 @@
   padding: 8px 10px;
   min-width: 120px;
   font-family: var(--font-mono);
-  font-size: 0.62rem;
+  font-size: 0.7rem;
   line-height: 1.5;
   color: var(--text-secondary);
   background: var(--bg-primary);
@@ -275,7 +296,7 @@
 .echo-fig-step strong {
   display: block;
   color: var(--text-primary);
-  font-size: 0.72rem;
+  font-size: 0.78rem;
 }
 .echo-fig-step-op {
   font-family: var(--font-mono);
@@ -294,7 +315,7 @@
   display: block;
 }
 .echo-fig-result span {
-  font-size: 0.62rem;
+  font-size: 0.7rem;
   color: var(--text-muted);
 }
 .echo-fig-tone-base .echo-fig-result {
@@ -315,13 +336,22 @@
   border-radius: var(--radius-sm);
   padding: 8px 12px;
   font-family: var(--font-mono);
-  font-size: 0.64rem;
+  font-size: 0.7rem;
   letter-spacing: 0.08em;
   color: var(--danger);
   width: fit-content;
 }
 
 @media (max-width: 720px) {
+  .echo-fig-scroll > .echo-fig-svg {
+    min-width: 760px;
+  }
+  .echo-fig-swipe {
+    display: block;
+  }
+  .echo-fig-matrix {
+    min-width: 640px;
+  }
   .echo-fig-dossier-row {
     grid-template-columns: 1fr;
     gap: 8px;
@@ -364,7 +394,7 @@
 }
 .echo-fig-ledger-sub {
   font-family: var(--font-mono);
-  font-size: 0.62rem;
+  font-size: 0.68rem;
   letter-spacing: 0.04em;
   color: var(--text-faint);
 }
@@ -410,7 +440,7 @@
 }
 .echo-fig-ledger-after {
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   color: var(--text-primary);
 }
 .echo-fig-ledger-delta {
@@ -424,7 +454,7 @@
 }
 .echo-fig-ledger-verdict {
   font-family: var(--font-mono);
-  font-size: 0.66rem;
+  font-size: 0.68rem;
   letter-spacing: 0.04em;
   color: var(--text-muted);
   text-align: right;

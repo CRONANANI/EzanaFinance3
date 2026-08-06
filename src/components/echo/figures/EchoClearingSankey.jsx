@@ -15,8 +15,8 @@ const W = 1120;
 const SRC_X = 180;
 const DST_X = 940;
 const BAR_W = 4;
-const ROW = 30;
-const GROUP_GAP = 26;
+const ROW = 38;
+const GROUP_GAP = 30;
 const GROUP_HEAD = 20;
 const PAD_T = 20;
 const MAX_RIBBON = 30;
@@ -110,7 +110,7 @@ export function EchoClearingSankey({
                     y={(sy + dy) / 2 - 5}
                     textAnchor="middle"
                     className="echo-fig-mono"
-                    fontSize="9.5"
+                    fontSize="15"
                     fontWeight="700"
                     fill="var(--text-muted)"
                   >
@@ -129,7 +129,7 @@ export function EchoClearingSankey({
                 y={g._y}
                 textAnchor="end"
                 className="echo-fig-mono"
-                fontSize="9.5"
+                fontSize="15"
                 letterSpacing="0.8"
                 fill="var(--text-faint)"
               >
@@ -149,7 +149,7 @@ export function EchoClearingSankey({
                     y={srcPos[n.id] - 1}
                     textAnchor="end"
                     className="echo-fig-mono"
-                    fontSize="10.5"
+                    fontSize="16.5"
                     fill="var(--text-primary)"
                   >
                     {n.name}
@@ -160,7 +160,7 @@ export function EchoClearingSankey({
                       y={srcPos[n.id] + 11}
                       textAnchor="end"
                       className="echo-fig-mono"
-                      fontSize="9"
+                      fontSize="15"
                       fill="var(--text-muted)"
                     >
                       {n.display}
@@ -185,7 +185,7 @@ export function EchoClearingSankey({
                 x={DST_X + 10}
                 y={dstPos[d.id] - 1}
                 className="echo-fig-mono"
-                fontSize="10.5"
+                fontSize="16.5"
                 fontWeight="700"
                 fill="var(--text-primary)"
               >
@@ -196,7 +196,7 @@ export function EchoClearingSankey({
                   x={DST_X + 10}
                   y={dstPos[d.id] + 11}
                   className="echo-fig-mono"
-                  fontSize="9"
+                  fontSize="15"
                   fill="var(--text-muted)"
                 >
                   {d.sub}

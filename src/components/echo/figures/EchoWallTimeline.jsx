@@ -4,9 +4,9 @@ import { useMemo, useState } from 'react';
 import { EchoFigureShell } from './EchoFigureShell';
 
 const W = 1120;
-const H = 560;
-const PAD = { l: 24, r: 24, t: 96, b: 40 };
-const LANE_H = 54;
+const H = 620;
+const PAD = { l: 24, r: 24, t: 112, b: 40 };
+const LANE_H = 66;
 
 export function EchoWallTimeline({
   figureLabel,
@@ -49,7 +49,7 @@ export function EchoWallTimeline({
               x={x(w.from) + 6}
               y={PAD.t - 34 - (i % 3) * 16}
               className="echo-fig-mono"
-              fontSize="10"
+              fontSize="16"
               letterSpacing="1.5"
               fill="var(--text-muted)"
             >
@@ -88,7 +88,7 @@ export function EchoWallTimeline({
               y={H - PAD.b + 20}
               textAnchor="middle"
               className="echo-fig-mono"
-              fontSize="10"
+              fontSize="16"
               fill="var(--text-muted)"
             >
               {yr}
@@ -100,7 +100,7 @@ export function EchoWallTimeline({
         {plaques.map((p, i) => {
           const px = x(p.year);
           const py = PAD.t + (p.lane ?? i % 6) * LANE_H;
-          const wdt = Math.min(230, 20 + p.label.length * 6.4);
+          const wdt = Math.min(300, 24 + p.label.length * 9.6);
           const flip = px + wdt > W - PAD.r;
           const bx = flip ? px - wdt : px;
           const active = selected === i;
@@ -112,7 +112,7 @@ export function EchoWallTimeline({
             >
               <line
                 x1={px}
-                y1={py + 34}
+                y1={py + 44}
                 x2={px}
                 y2={H - PAD.b}
                 stroke="var(--echo-chart-annotation)"
@@ -122,27 +122,27 @@ export function EchoWallTimeline({
                 x={bx}
                 y={py}
                 width={wdt}
-                height={34}
+                height={44}
                 fill="var(--bg-primary)"
                 stroke={active ? 'var(--emerald)' : 'var(--border-primary)'}
                 strokeWidth={active ? 1.5 : 1}
               />
-              <rect x={bx} y={py} width={3} height={34} fill="var(--echo-chart-blue)" />
+              <rect x={bx} y={py} width={3} height={44} fill="var(--echo-chart-blue)" />
               <text
                 x={bx + 10}
-                y={py + 14}
+                y={py + 18}
                 className="echo-fig-mono"
                 fontWeight="700"
-                fontSize="10.5"
+                fontSize="16.5"
                 fill="var(--text-primary)"
               >
                 {p.year}
               </text>
               <text
                 x={bx + 10}
-                y={py + 27}
+                y={py + 35}
                 className="echo-fig-mono"
-                fontSize="9.5"
+                fontSize="15"
                 fill="var(--text-muted)"
               >
                 {p.label}
