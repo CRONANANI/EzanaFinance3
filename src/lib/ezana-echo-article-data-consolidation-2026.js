@@ -45,25 +45,155 @@ export const dataConsolidationArticle2026 = {
       text: "The economics behind that choice are stark. The cost of a given level of model capability has been falling at a pace that would embarrass Moore's Law — inference prices for frontier-class output dropped by more than an order of magnitude across 2024 and 2025, and open-weight releases now land within months of the closed frontier at a fraction of the cost. When the raw capability you could have bought last year is nearly free this year, paying a premium for a model is paying for a depreciating asset. Paying for the exclusive data that model needs, and the workflow it plugs into, buys something that appreciates as it accumulates. That asymmetry — commodity intelligence, scarce data — is the single force bending the entire acquisition map into the same shape.",
     },
     {
-      type: 'chart',
-      variant: 'horizontal-bar',
-      title: "2026's most acquisitive, by target count",
-      caption:
-        'Number of acquisition targets per acquirer on the 2026 tech-M&A map. Rendered from the underlying deal counts; source: industry M&A tracking (2026).',
-      data: [
-        { x: 'Salesforce', deals: 12 },
-        { x: 'Databricks', deals: 6 },
-        { x: 'OpenAI', deals: 6 },
-        { x: 'Anthropic', deals: 5 },
-        { x: 'Accenture', deals: 5 },
-        { x: 'Apple', deals: 5 },
-        { x: 'Snowflake', deals: 5 },
-        { x: 'Cloudflare', deals: 4 },
-        { x: 'CrowdStrike', deals: 4 },
-        { x: 'Nvidia', deals: 4 },
+      type: 'mechanism-wave',
+      figureLabel: 'FIG. 1 · MODELS COMMODITIZE, PIPELINES COMPOUND',
+      kicker:
+        'THE ACQUISITION LOGIC AS A CYCLE · COMMODITY INTELLIGENCE → PROPRIETARY DATA → WORKFLOW SEAT → COMPOUNDING MOAT · THE LOOP RESTARTS EACH DEAL.',
+      hint: 'Schematic — the shape of the thesis, not a data series.',
+      source: 'this article’s framework.',
+      loopCaption:
+        'MODELS COMMODITIZE → BUY THE PROPRIETARY DATA → OWN THE WORKFLOW SEAT → THE MOAT COMPOUNDS',
+      envelopeLabel: 'defensibility →',
+      phases: [
+        { n: 1, label: 'Commodity intelligence', color: 'var(--echo-chart-blue)' },
+        { n: 2, label: 'Proprietary data', color: 'var(--echo-chart-green)' },
+        { n: 3, label: 'Workflow position', color: 'var(--echo-chart-orange)' },
+        { n: 4, label: 'Compounding moat', color: 'var(--echo-chart-red)' },
       ],
-      series: [{ key: 'deals', label: 'Targets', color: 'var(--echo-chart-blue, #3b82f6)' }],
-      yLabel: 'Targets acquired',
+    },
+    {
+      type: 'dossier-table',
+      figureLabel: 'FIG. 2 · 2026’S MOST ACQUISITIVE, BY TARGET COUNT',
+      kicker:
+        'TEN ACQUIRERS ON THE 2026 TECH-M&A MAP · TARGETS ACQUIRED · CLICK A ROW TO EXPAND THE DOSSIER.',
+      hint: 'Ten acquirers — expand a row for the record.',
+      source:
+        'Number of acquisition targets per acquirer on the 2026 tech-M&A map. Rendered from the underlying deal counts; source: industry M&A tracking (2026).',
+      headers: ['Acquirer', 'What it is buying on the map', 'Targets', 'Thesis link', ''],
+      rows: [
+        {
+          name: 'Salesforce',
+          tag: 'MOST ACQUISITIVE',
+          role: 'A dozen targets embedded in how sales, service and marketing teams work — each carrying proprietary interaction data and a seat in the daily workflow.',
+          anchor: '12 targets',
+          keyRisk: 'Workflow lock-in — the moat is the position and its switching costs.',
+          dossier: [
+            {
+              label: 'Why the seat is the asset',
+              text: 'A frontier model on a blank page is a demo; the same model wired into the system of record, trained on that customer’s history, is a product competitors cannot cheaply replicate.',
+            },
+          ],
+        },
+        {
+          name: 'Databricks',
+          role: 'Buying deeper into where enterprise data is stored, governed and moved.',
+          anchor: '6 targets',
+          keyRisk: 'Owns the substrate every model that runs on top of it depends on.',
+          dossier: [
+            {
+              label: 'Data-layer thesis',
+              text: 'Whoever owns the substrate owns the leverage over every model that runs on top of it.',
+            },
+          ],
+        },
+        {
+          name: 'OpenAI',
+          role: 'Absorbing data-labeling and evaluation teams like the analytics firm Statsig.',
+          anchor: '6 targets',
+          keyRisk: 'Human expertise that turns raw data into training-grade fuel.',
+          dossier: [
+            {
+              label: 'What it is really buying',
+              text: 'Not a model purchase — a bid for data-labeling capacity, evaluation infrastructure and training-grade data.',
+            },
+          ],
+        },
+        {
+          name: 'Anthropic',
+          role: 'A frontier lab on the 2026 acquisition map.',
+          anchor: '5 targets',
+          keyRisk:
+            'Consideration flows toward defensibility — proprietary data plus workflow position.',
+          dossier: [
+            {
+              label: 'On the map',
+              text: 'One of 2026’s most acquisitive by target count, against five targets.',
+            },
+          ],
+        },
+        {
+          name: 'Accenture',
+          role: 'Among 2026’s most acquisitive.',
+          anchor: '5 targets',
+          keyRisk: '',
+          dossier: [
+            {
+              label: 'On the map',
+              text: 'One of 2026’s most acquisitive by target count, against five targets.',
+            },
+          ],
+        },
+        {
+          name: 'Apple',
+          role: 'Among 2026’s most acquisitive.',
+          anchor: '5 targets',
+          keyRisk: '',
+          dossier: [
+            {
+              label: 'On the map',
+              text: 'One of 2026’s most acquisitive by target count, against five targets.',
+            },
+          ],
+        },
+        {
+          name: 'Snowflake',
+          role: 'Data-layer acquirer buying deeper into the enterprise data substrate.',
+          anchor: '5 targets',
+          keyRisk: 'Whoever owns the substrate owns the leverage over every model on top.',
+          dossier: [
+            {
+              label: 'Data-layer thesis',
+              text: 'Buying its way deeper into where enterprise data is stored, governed and moved.',
+            },
+          ],
+        },
+        {
+          name: 'Cloudflare',
+          role: 'On the 2026 acquisition map.',
+          anchor: '4 targets',
+          keyRisk: '',
+          dossier: [
+            {
+              label: 'On the map',
+              text: 'One of 2026’s most acquisitive by target count, against four targets.',
+            },
+          ],
+        },
+        {
+          name: 'CrowdStrike',
+          role: 'On the 2026 acquisition map.',
+          anchor: '4 targets',
+          keyRisk: '',
+          dossier: [
+            {
+              label: 'On the map',
+              text: 'One of 2026’s most acquisitive by target count, against four targets.',
+            },
+          ],
+        },
+        {
+          name: 'Nvidia',
+          role: 'On the 2026 acquisition map.',
+          anchor: '4 targets',
+          keyRisk: '',
+          dossier: [
+            {
+              label: 'On the map',
+              text: 'One of 2026’s most acquisitive by target count, against four targets.',
+            },
+          ],
+        },
+      ],
     },
 
     { type: 'heading', text: 'The reverse-acquihire tell', level: 2 },
@@ -73,7 +203,7 @@ export const dataConsolidationArticle2026 = {
     },
     {
       type: 'paragraph',
-      text: "That distinction is why it draws antitrust attention. A conventional [[kw:acquihire]]acquihire[[/kw]] — buying a small company mostly for its team — is old news; the reverse structure is newer and pointedly avoids the deal that regulators would review. FTC leadership under Chairman Andrew Ferguson has flagged the pattern, with officials describing some arrangements as a way to acquire and neutralize competitors and their talent outside normal merger channels. Senators Warren, Wyden and Blumenthal pressed the point in a joint letter demanding scrutiny of whether these deals are engineered to sidestep oversight.",
+      text: 'That distinction is why it draws antitrust attention. A conventional [[kw:acquihire]]acquihire[[/kw]] — buying a small company mostly for its team — is old news; the reverse structure is newer and pointedly avoids the deal that regulators would review. FTC leadership under Chairman Andrew Ferguson has flagged the pattern, with officials describing some arrangements as a way to acquire and neutralize competitors and their talent outside normal merger channels. Senators Warren, Wyden and Blumenthal pressed the point in a joint letter demanding scrutiny of whether these deals are engineered to sidestep oversight.',
     },
     {
       type: 'callout',
@@ -84,17 +214,56 @@ export const dataConsolidationArticle2026 = {
     },
     {
       type: 'paragraph',
-      text: "The mechanism keys off a specific number. U.S. merger review under [[kw:hart-scott-rodino]]Hart-Scott-Rodino[[/kw]] is triggered by a size-of-transaction threshold — $133.9 million as adjusted for 2026 — above which deals must be reported and can be held for review. A licensing-and-hiring arrangement can move the data and the talent an acquirer actually wants while structuring around that reportable-acquisition trigger. When the prize is the pipeline rather than the entity, the reverse-acquihire is not a loophole to the strategy; it is the strategy made legible.",
+      text: 'The mechanism keys off a specific number. U.S. merger review under [[kw:hart-scott-rodino]]Hart-Scott-Rodino[[/kw]] is triggered by a size-of-transaction threshold — $133.9 million as adjusted for 2026 — above which deals must be reported and can be held for review. A licensing-and-hiring arrangement can move the data and the talent an acquirer actually wants while structuring around that reportable-acquisition trigger. When the prize is the pipeline rather than the entity, the reverse-acquihire is not a loophole to the strategy; it is the strategy made legible.',
+    },
+    {
+      type: 'clearing-sankey',
+      figureLabel: 'FIG. 3 · BUY THE PIPELINE, NOT THE COMPANY',
+      kicker:
+        'NAMED REVERSE-ACQUIHIRE MOVES IN THIS ARTICLE · RIBBON WIDTH = DISCLOSED VALUE · UNDISCLOSED = MIN WIDTH. CLICK A RIBBON FOR THE RECORD.',
+      hint: 'Click a ribbon for the deal record.',
+      source: 'public reporting, 2024–2026.',
+      sourceGroups: [
+        {
+          label: 'Data-labeling / eval',
+          nodes: [
+            { id: 'scale', name: 'Scale AI', display: '$14.8B · 49%' },
+            { id: 'statsig', name: 'Statsig' },
+          ],
+        },
+      ],
+      destinations: [
+        { id: 'meta', name: 'Meta', sub: 'data-labeling capacity' },
+        { id: 'openai', name: 'OpenAI', sub: 'analytics / eval infra' },
+      ],
+      flows: [
+        {
+          from: 'scale',
+          to: 'meta',
+          value: 14.8,
+          tone: 'primary',
+          label: '$14.8B · 49%',
+          record:
+            'Meta’s roughly $14.8 billion move for a 49% stake in Scale AI — a bid for data-labeling capacity, evaluation infrastructure and the human expertise that turns raw data into training-grade fuel.',
+        },
+        {
+          from: 'statsig',
+          to: 'openai',
+          tone: 'neutral',
+          record:
+            'OpenAI’s absorption of teams like the analytics firm Statsig — an undisclosed reverse-acquihire structure that moves the data and the people without buying the corporate entity.',
+        },
+      ],
     },
 
     { type: 'heading', text: 'The same pattern across every data-rich industry', level: 2 },
     {
       type: 'paragraph',
-      text: "This is not only an AI-SaaS phenomenon. In any data-rich sector, the durable advantage is accruing to whoever owns the proprietary dataset and the governance layer around it — the [[kw:data-moat]]data moat[[/kw]] — rather than to whoever has the cleverest algorithm. In healthcare, the contested asset is FDA-cleared clinical and outcomes data that a model cannot legally or practically reproduce. In defense, it is dual-use sensor and logistics data under tight control. In finance, it is the same insight this publication is built on: no single model beats a defensible cross-dataset position, because the edge is the join, not the math.",
+      text: 'This is not only an AI-SaaS phenomenon. In any data-rich sector, the durable advantage is accruing to whoever owns the proprietary dataset and the governance layer around it — the [[kw:data-moat]]data moat[[/kw]] — rather than to whoever has the cleverest algorithm. In healthcare, the contested asset is FDA-cleared clinical and outcomes data that a model cannot legally or practically reproduce. In defense, it is dual-use sensor and logistics data under tight control. In finance, it is the same insight this publication is built on: no single model beats a defensible cross-dataset position, because the edge is the join, not the math.',
     },
     {
       type: 'paragraph',
-      text: "That is the Ezana worldview stated plainly. For the investor Bloomberg does not serve, the moat was never a proprietary equation — it is the ability to connect congressional trading disclosures to government contracts to commodity flows to prediction-market odds in one place, and to reason across them. The 2026 acquisition map is that thesis playing out at corporate scale: firms paying tens of billions not for intelligence, which is increasingly cheap, but for the exclusive, governed, hard-to-replicate data that intelligence has to run on to be worth anything.",
+      text: 'That is the Ezana worldview stated plainly. For the investor Bloomberg does not serve, the moat was never a proprietary equation — it is the ability to connect congressional trading disclosures to government contracts to commodity flows to prediction-market odds in one place, and to reason across them. The 2026 acquisition map is that thesis playing out at corporate scale: firms paying tens of billions not for intelligence, which is increasingly cheap, but for the exclusive, governed, hard-to-replicate data that intelligence has to run on to be worth anything.',
     },
     {
       type: 'paragraph',
@@ -115,23 +284,128 @@ export const dataConsolidationArticle2026 = {
       text: "The historical case for concern is a pattern-match, not a data point. Defensive consolidation clustered before the 2001 dot-com unwind and again into 2008, when incumbents bought scale and shed exposure ahead of the break. But pattern-matching cuts both ways: the mid-2010s also saw heavy tech M&A that preceded years of expansion, not contraction. A sample of a handful of cycles cannot distinguish 'consolidation causes downturns' from 'consolidation happens to precede some of them,' and with recession odds sitting between roughly 12% and 25% across every serious model, the base rate simply does not support treating the current wave as a confirmed warning. It is a hypothesis with real historical priors and benign present-day evidence — which is exactly why it stays a question.",
     },
     {
-      type: 'chart',
-      variant: 'bar',
-      title: 'Recession-probability readings vs an elevated zone',
-      caption:
-        "Current 12-month U.S. recession estimates (mid-2026), all well below the ~50% level that would read as elevated. The Sahm Rule separately sits at 0.10 vs its 0.50 trigger. Sources: NY Fed, U.S. Bank, prediction markets (2026).",
-      data: [
-        { x: 'Prediction markets', pct: 12 },
-        { x: 'NY Fed model', pct: 15 },
-        { x: 'U.S. Bank', pct: 25 },
-        { x: 'Elevated zone', pct: 50 },
+      type: 'revision-ledger',
+      figureLabel: 'FIG. 4 · RECESSION READINGS VS THE ELEVATED ZONE',
+      kicker:
+        'EACH 12-MONTH U.S. RECESSION ESTIMATE (MID-2026) PLOTTED AGAINST THE ~50% ELEVATED ZONE (HOLLOW MARKER) · √-SCALE · BELOW-ZONE READS AS BENIGN (GREEN). CLICK A ROW FOR CONTEXT.',
+      hint: 'Hollow marker = the ~50% elevated zone; filled marker = the actual reading.',
+      source:
+        'Current 12-month U.S. recession estimates (mid-2026), all well below the ~50% level that would read as elevated. The Sahm Rule separately sits at 0.10 vs its 0.50 trigger. Sources: NY Fed, U.S. Bank, prediction markets (2026).',
+      scale: 'sqrt',
+      unit: '%',
+      rows: [
+        {
+          label: 'Prediction markets',
+          sub: '2026 U.S. recession',
+          before: 50,
+          beforeDisplay: '~50% · elevated',
+          after: 12,
+          afterDisplay: '12%',
+          favorable: 'down',
+          record:
+            'Prediction markets price a 2026 U.S. recession at roughly 12% — the lowest reading on the dashboard.',
+        },
+        {
+          label: 'NY Fed model',
+          sub: '12-month probability',
+          before: 50,
+          beforeDisplay: '~50% · elevated',
+          after: 15,
+          afterDisplay: '15%',
+          favorable: 'down',
+          record:
+            'The New York Fed’s model puts 12-month recession probability near 15%; the yield-curve inversion underlying it is not currently signaling alarm.',
+        },
+        {
+          label: 'U.S. Bank',
+          sub: 'own estimate, trimmed',
+          before: 50,
+          beforeDisplay: '~50% · elevated',
+          after: 25,
+          afterDisplay: '25%',
+          favorable: 'down',
+          record:
+            'U.S. Bank trimmed its own estimate to about 25% — the high end of the serious models.',
+        },
       ],
-      series: [{ key: 'pct', label: 'Recession probability (%)', color: 'var(--echo-chart-orange, #f59e0b)' }],
-      yLabel: 'Percent',
+      verdict:
+        'Every 12-month reading sits well below the ~50% level that would read as elevated; the Sahm Rule separately sits at 0.10 against its 0.50 trigger.',
     },
     {
       type: 'paragraph',
-      text: "So the divergence is the story, not a verdict. This is a live case of [[kw:leading-vs-lagging-indicators]]leading versus lagging indicators[[/kw]]: is aggressive pipeline-consolidation a forward signal that the slower, backward-looking macro series have not yet registered — or is it a structural land-grab decoupled from the business cycle entirely, the new default shape of tech competition regardless of where the economy sits? Both readings are defensible on the current evidence. What is not defensible is asserting a recession is coming; the indicators say otherwise today, and the honest position is to hold the question open.",
+      text: 'So the divergence is the story, not a verdict. This is a live case of [[kw:leading-vs-lagging-indicators]]leading versus lagging indicators[[/kw]]: is aggressive pipeline-consolidation a forward signal that the slower, backward-looking macro series have not yet registered — or is it a structural land-grab decoupled from the business cycle entirely, the new default shape of tech competition regardless of where the economy sits? Both readings are defensible on the current evidence. What is not defensible is asserting a recession is coming; the indicators say otherwise today, and the honest position is to hold the question open.',
+    },
+    {
+      type: 'scenario-chain',
+      figureLabel: 'FIG. 5 · THE RECESSION QUESTION, HELD OPEN',
+      kicker:
+        'READING × GATE → OUTCOME · TWO DEFENSIBLE READINGS OF THE CONSOLIDATION WAVE, PLUS THE HISTORICAL PATTERN-MATCH · ONE KILL SWITCH.',
+      hint: 'Both base and alt are defensible on current evidence; the bear is the historical prior.',
+      source: 'this article’s reporting · NY Fed, U.S. Bank, prediction markets, Sahm Rule.',
+      scenarios: [
+        {
+          id: 'base',
+          label: 'STRUCTURAL LAND-GRAB',
+          tone: 'base',
+          range: 'Decoupled from the cycle',
+          steps: [
+            {
+              label: 'Commodity intelligence',
+              sub: 'inference prices fell more than an order of magnitude across 2024–2025; data is the scarce asset',
+            },
+            {
+              label: 'Benign macro',
+              sub: 'recession odds ~12–25%; Sahm at 0.10 vs 0.50; GDP ~2.2%',
+            },
+          ],
+          result: {
+            value: 'The new default',
+            sub: 'pipeline consolidation as the shape of tech competition, not a cycle signal',
+          },
+        },
+        {
+          id: 'alt',
+          label: 'LEADING SIGNAL',
+          tone: 'alt',
+          range: 'Macro hasn’t caught it',
+          steps: [
+            {
+              label: 'Defensive “buying survival”',
+              sub: 'some consolidation described as buying survival rather than growth',
+            },
+            {
+              label: 'Leading vs lagging',
+              sub: 'the backward-looking macro series have not yet registered it',
+            },
+          ],
+          result: {
+            value: 'A forward warning',
+            sub: 'a signal the slower indicators price in later',
+          },
+        },
+        {
+          id: 'bear',
+          label: 'LATE-CYCLE TELL',
+          tone: 'bear',
+          range: 'The 2001 / 2008 match',
+          steps: [
+            {
+              label: 'Historical prior',
+              sub: 'defensive consolidation clustered before the 2001 and 2008 unwinds',
+            },
+            {
+              label: 'The indicators turn',
+              sub: 'Sahm or the yield curve cross into warning',
+            },
+          ],
+          result: {
+            value: 'Downturn confirmed',
+            sub: 'the pattern-match becomes a data point',
+          },
+        },
+      ],
+      killSwitch:
+        'THE SAHM RULE CROSSES ITS 0.50 TRIGGER (FROM 0.10 TODAY) — THE LEADING-SIGNAL READING IS CONFIRMED; RE-UNDERWRITE THE CYCLE.',
     },
 
     { type: 'heading', text: 'Johnny Mnemonic: the data-pipeline future', level: 2 },
@@ -143,7 +417,57 @@ export const dataConsolidationArticle2026 = {
     { type: 'heading', text: 'What it means for investors', level: 2 },
     {
       type: 'paragraph',
-      text: "The honest catch is that most of the targets are private, so there is no clean way to buy the acquisitions themselves. The tradeable read is on the acquirers and the data-infrastructure layer they are fighting over. The public data-layer owners — Snowflake (SNOW), Datadog (DDOG) and Palantir (PLTR) — are direct proxies for the [[kw:infrastructure-lock-in]]infrastructure lock-in[[/kw]] thesis: their value rests on being the substrate other software depends on. Workflow incumbents defending their position, Salesforce (CRM) and Oracle (ORCL), are the other side of the same trade. And the mega-cap acquirers — Microsoft (MSFT), Alphabet (GOOGL) and Meta (META) — increasingly compete on data governance and pipeline control rather than model supremacy. None of this is investment advice; it is a map of where the defensibility is migrating.",
+      text: 'The honest catch is that most of the targets are private, so there is no clean way to buy the acquisitions themselves. The tradeable read is on the acquirers and the data-infrastructure layer they are fighting over. The public data-layer owners — Snowflake (SNOW), Datadog (DDOG) and Palantir (PLTR) — are direct proxies for the [[kw:infrastructure-lock-in]]infrastructure lock-in[[/kw]] thesis: their value rests on being the substrate other software depends on. Workflow incumbents defending their position, Salesforce (CRM) and Oracle (ORCL), are the other side of the same trade. And the mega-cap acquirers — Microsoft (MSFT), Alphabet (GOOGL) and Meta (META) — increasingly compete on data governance and pipeline control rather than model supremacy. None of this is investment advice; it is a map of where the defensibility is migrating.',
+    },
+    {
+      type: 'dossier-table',
+      figureLabel: 'FIG. 6 · THE TRADEABLE READ',
+      kicker:
+        'MOST TARGETS ARE PRIVATE · THREE PUBLIC TIERS PROXY THE THESIS · CLICK A ROW TO EXPAND THE DOSSIER.',
+      hint: 'Three tiers — expand a row for the record.',
+      source: 'this article’s reporting.',
+      headers: ['Tradeable tier', 'Why it is a proxy', 'Tickers', 'Nature of the exposure', ''],
+      rows: [
+        {
+          name: 'Data-layer owners',
+          tag: 'SNOW · DDOG · PLTR',
+          role: 'Direct proxies for the infrastructure-lock-in thesis — the substrate other software depends on.',
+          anchor: 'SNOW · DDOG · PLTR',
+          keyRisk: 'Value rests on remaining the layer every model runs on.',
+          dossier: [
+            {
+              label: 'Thesis link',
+              text: 'The public data-layer owners are direct proxies for the infrastructure-lock-in thesis; their value rests on being the substrate other software depends on.',
+            },
+          ],
+        },
+        {
+          name: 'Workflow incumbents',
+          tag: 'CRM · ORCL',
+          role: 'Defending the workflow seat competitors cannot cheaply replicate.',
+          anchor: 'CRM · ORCL',
+          keyRisk: 'The other side of the same trade — position, not intelligence.',
+          dossier: [
+            {
+              label: 'Thesis link',
+              text: 'Workflow incumbents defending their position are the other side of the same trade; the moat is the seat inside the customer’s workflow.',
+            },
+          ],
+        },
+        {
+          name: 'Mega-cap acquirers',
+          tag: 'MSFT · GOOGL · META',
+          role: 'Compete on data governance and pipeline control rather than model supremacy.',
+          anchor: 'MSFT · GOOGL · META',
+          keyRisk: 'Most targets are private; the acquirers are the accessible read.',
+          dossier: [
+            {
+              label: 'Thesis link',
+              text: 'The mega-cap acquirers increasingly compete on data governance and pipeline control rather than model supremacy; with most targets private, they are the tradeable read.',
+            },
+          ],
+        },
+      ],
     },
     {
       type: 'paragraph',

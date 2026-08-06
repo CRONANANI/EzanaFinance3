@@ -190,6 +190,46 @@ export const hantavirusArticle = {
       type: 'paragraph',
       text: 'The WHO assessed global risk as low but initiated [[kw:maritime-epidemiological-investigation]]contact tracing[[/kw]] for passengers who had disembarked at various ports and for fellow travelers on the medical evacuation flight to Johannesburg. PCR testing confirmed hantavirus in two patients; serology and full genome sequencing are ongoing.',
     },
+    {
+      type: 'wall-timeline',
+      figureLabel: 'FIG. 3 · THE MV HONDIUS OUTBREAK',
+      kicker:
+        'MV HONDIUS CLUSTER · APRIL 1 – MAY 4, 2026 · FRACTIONAL-YEAR AXIS, INTRA-YEAR SPACING. CLICK ANY PLAQUE FOR THE RECORD.',
+      hint: 'Click a plaque for its record.',
+      source: 'WHO notification and public reporting, April–May 2026.',
+      startYear: 2026.2,
+      endYear: 2026.4,
+      windows: [],
+      plaques: [
+        {
+          year: 2026.25,
+          lane: 0,
+          label: 'Apr 1 · Departs Ushuaia (147 aboard)',
+          detail:
+            'The MV Hondius, a Dutch-flagged Oceanwide Expeditions expedition ship, departs Ushuaia, Argentina — deep in Andes-virus territory — carrying 147 passengers and crew from 23 countries.',
+        },
+        {
+          year: 2026.28,
+          lane: 1,
+          label: 'Apr 11 · First passenger dies',
+          detail: 'Ten days out, a passenger is dead — the first fatality of the cluster.',
+        },
+        {
+          year: 2026.32,
+          lane: 2,
+          label: 'Apr 26 · Spouse dies in Johannesburg',
+          detail:
+            'His spouse dies in a Johannesburg emergency room after being evacuated from Saint Helena.',
+        },
+        {
+          year: 2026.34,
+          lane: 3,
+          label: 'May 4 · WHO confirms 7 cases, 3 deaths',
+          detail:
+            'The WHO confirms a cluster of seven cases including three deaths, aboard a ship now anchored off Cabo Verde with no country willing to let it dock.',
+        },
+      ],
+    },
 
     { type: 'heading', text: 'No Vaccine. No Treatment. A Market Gap.', level: 2 },
     {
@@ -203,6 +243,58 @@ export const hantavirusArticle = {
     {
       type: 'paragraph',
       text: 'The biodefense sector — companies like Emergent BioSolutions (EBS), SIGA Technologies (SIGA), and Vir Biotechnology (VIR) — has historically traded on government contract announcements and outbreak news cycles. The question for this outbreak is whether it generates enough sustained attention to drive funding into hantavirus-specific R&D, or whether it fades like previous clusters.',
+    },
+    {
+      type: 'dossier-table',
+      figureLabel: 'FIG. 4 · THE MARKET GAP, BY TIER',
+      kicker:
+        'NO FDA-APPROVED VACCINE OR ANTIVIRAL · THREE INVESTABLE TIERS AROUND A 38% CASE-FATALITY PATHOGEN. CLICK A ROW TO EXPAND THE DOSSIER.',
+      hint: 'Three tiers — expand a row for the record.',
+      source: 'article reporting · CDC case-fatality figure.',
+      headers: ['Tier', 'Why the outbreak touches it', 'Anchor', 'Key risk', ''],
+      rows: [
+        {
+          name: 'Biodefense',
+          tag: 'EBS · SIGA · VIR',
+          role: 'The pharmaceutical void: no approved vaccine and no antiviral for any hantavirus disease — treatment is entirely supportive, up to ECMO.',
+          anchor: 'Trade on government contracts and outbreak news cycles',
+          keyRisk:
+            'May fade like previous clusters unless the outbreak drives sustained hantavirus-specific R&D funding.',
+          dossier: [
+            {
+              label: 'Countermeasure pipeline',
+              text: 'The NIH funds the Provident consortium through its ReVAMPP program to develop countermeasures for hantaviruses; in February 2026 University of Texas at Austin researchers published the first high-resolution structural blueprint of hantavirus surface proteins.',
+            },
+          ],
+        },
+        {
+          name: 'Cruise lines',
+          tag: 'RCL · CCL · NCLH',
+          role: 'The most immediate reputational risk in travel and hospitality — the MV Hondius is a ship stranded at sea with no port willing to accept it.',
+          anchor: 'Historically dip 2–5% on infectious-disease news cycles',
+          keyRisk:
+            'The stranded-ship narrative is the exact story that erodes consumer confidence in cruise bookings.',
+          dossier: [
+            {
+              label: 'Sensitivity',
+              text: 'Cruise stocks have historically dipped 2–5% on infectious-disease news cycles even when the underlying operational risk is minimal.',
+            },
+          ],
+        },
+        {
+          name: 'Diagnostics (PCR)',
+          tag: 'DHR · HOLX · BioMérieux',
+          role: 'If the Andes strain can spread person-to-person in enclosed environments, rapid point-of-care testing becomes critical for early intervention.',
+          anchor: 'Could see incremental demand',
+          keyRisk: 'Demand is incremental and contingent on confirmed human-to-human transmission.',
+          dossier: [
+            {
+              label: 'Platforms',
+              text: 'PCR platforms capable of testing for hantavirus include Cepheid (part of Danaher, DHR), BioMérieux and Hologic (HOLX); serology and full genome sequencing on the MV Hondius cluster are ongoing.',
+            },
+          ],
+        },
+      ],
     },
 
     { type: 'heading', text: 'The FIFA World Cup Problem', level: 2 },
@@ -223,6 +315,78 @@ export const hantavirusArticle = {
     {
       type: 'paragraph',
       text: 'Three things will determine whether this outbreak remains a contained incident or becomes a structural catalyst. First, the genome sequencing results: if the Andes strain shows new mutations that enhance transmissibility, the risk assessment changes entirely. Second, NIH and BARDA funding announcements: any acceleration of the ReVAMPP program or emergency countermeasure contracts would directly benefit biodefense names. Third, the World Cup: 11 cities, millions of international visitors, and a country operating outside the WHO information network — the epidemiological monitoring gap is real, and the market will price it if hantavirus cases surface domestically during the tournament.',
+    },
+    {
+      type: 'scenario-chain',
+      figureLabel: 'FIG. 5 · THREE WAYS THE OUTBREAK RESOLVES',
+      kicker:
+        'DRIVER × GATE → OUTCOME · THREE PATHS FROM THE “WHAT TO WATCH” SIGNALS · ONE KILL SWITCH.',
+      hint: "Scenarios drawn from the article's three determinants.",
+      source: "this article's reporting.",
+      scenarios: [
+        {
+          id: 'base',
+          label: 'CONTAINED INCIDENT',
+          tone: 'base',
+          range: 'Fades like prior clusters',
+          steps: [
+            {
+              label: 'No enhanced transmissibility',
+              sub: 'genome sequencing shows no mutations that raise human-to-human spread',
+            },
+            {
+              label: 'No domestic cases',
+              sub: 'no hantavirus surfaces in the 11 World Cup host cities',
+            },
+          ],
+          result: {
+            value: 'News-cycle blip',
+            sub: 'attention fades; biodefense names unmoved',
+          },
+        },
+        {
+          id: 'alt',
+          label: 'STRUCTURAL CATALYST',
+          tone: 'alt',
+          range: 'Funding accelerates',
+          steps: [
+            {
+              label: 'Person-to-person confirmed',
+              sub: 'sequencing and serology confirm Andes-strain human transmission',
+            },
+            {
+              label: 'NIH / BARDA move',
+              sub: 'ReVAMPP acceleration or emergency countermeasure contracts',
+            },
+          ],
+          result: {
+            value: 'Biodefense re-rates',
+            sub: 'EBS · SIGA · VIR benefit; incremental PCR-diagnostics demand',
+          },
+        },
+        {
+          id: 'bear',
+          label: 'THE WORLD CUP GAP',
+          tone: 'bear',
+          range: 'Monitoring gap materializes',
+          steps: [
+            {
+              label: 'Cases surface domestically',
+              sub: 'during the tournament, with the US outside the WHO/IHR network',
+            },
+            {
+              label: 'Travel confidence breaks',
+              sub: 'cruise and hospitality repriced on the stranded-ship narrative',
+            },
+          ],
+          result: {
+            value: 'Risk repriced',
+            sub: 'travel hit, diagnostics demand spikes, pathogen class re-underwritten',
+          },
+        },
+      ],
+      killSwitch:
+        'GENOME SEQUENCING CONFIRMS ANDES-STRAIN MUTATIONS THAT ENHANCE HUMAN-TO-HUMAN TRANSMISSIBILITY — THE RISK ASSESSMENT CHANGES ENTIRELY.',
     },
   ],
   author: 'Ezana Finance Editorial',

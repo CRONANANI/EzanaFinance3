@@ -32,7 +32,11 @@ export const fdaPeptidesBpc157Article2026 = {
       type: 'stat-grid',
       stats: [
         { label: 'Committee vote', value: '8–6', change: 'One abstention · advisory only' },
-        { label: 'Humans tested (BPC-157)', value: '~30', change: 'vs. 100,000s for approved GLP-1s' },
+        {
+          label: 'Humans tested (BPC-157)',
+          value: '~30',
+          change: 'vs. 100,000s for approved GLP-1s',
+        },
         { label: 'HIMS intraday move', value: '+13%', change: 'Closed up ~10%' },
         { label: 'Estimated market', value: '$2.2–3.3B', change: 'Leerink / Needham' },
       ],
@@ -55,18 +59,73 @@ export const fdaPeptidesBpc157Article2026 = {
       text: 'And the panel is exactly that — a panel. Its recommendation is advisory. The FDA convenes an [[kw:advisory-committee]]advisory committee[[/kw]] to hear outside expertise, but it is not bound by the result, and here the agency’s own staff had already recommended against every substance on the docket. For the recommendation to change anything, the FDA would have to accept it and then move it through a formal, months-to-years rulemaking process. On July 23 none of that had begun. The committee also recommended KPV (8–6) and TB-500 (8–6), and MOTS-c passed 7–5 with two abstentions; Friday’s votes on emideltide, epitalon and semax were still pending when trading closed.',
     },
     {
-      type: 'chart',
-      variant: 'horizontal-bar',
-      title: 'How narrowly each peptide cleared the panel',
-      caption:
+      type: 'dossier-table',
+      figureLabel: 'FIG. 1 · HOW NARROWLY EACH PEPTIDE CLEARED',
+      kicker:
+        'FOUR PEPTIDES RECOMMENDED JULY 23 · YES VOTES AS A SHARE OF VOTES CAST, ABSTENTIONS EXCLUDED · CLICK A ROW FOR THE RECORD.',
+      hint: 'Four peptides — expand a row for the record.',
+      source:
         'Yes votes as a share of votes cast (abstentions excluded), by peptide. Raw tallies: BPC-157, KPV and TB-500 each passed 8–6 with one abstention; MOTS-c passed 7–5 with two abstentions. Friday’s votes on emideltide, epitalon and semax were still pending at publication. Every one cleared by a thin margin. Source: FDA Pharmacy Compounding Advisory Committee meeting, July 23, 2026.',
-      data: [
-        { label: 'BPC-157', value: 57.1 },
-        { label: 'KPV', value: 57.1 },
-        { label: 'TB-500', value: 57.1 },
-        { label: 'MOTS-c', value: 58.3 },
+      headers: ['Peptide', 'What the panel did', 'Clearance margin', 'Key objection', ''],
+      rows: [
+        {
+          name: 'BPC-157',
+          tag: 'UC INDICATION',
+          role: 'Recommended for the 503A Bulks List specifically for ulcerative colitis, over the explicit objection of the FDA’s own scientists.',
+          anchor: '57.1% of votes cast · 8–6, one abstention',
+          keyRisk:
+            '“Not well-characterized” — multiple molecules are marketed under the same name; tested in roughly 30 humans.',
+          dossier: [
+            {
+              label: 'Evidentiary base',
+              text: 'The only ulcerative-colitis trial FDA reviewers could locate was a conference abstract describing 46 people — dosed by enema, not the injection under which BPC-157 is sold.',
+            },
+            {
+              label: 'Safety signal',
+              text: 'The agency noted three adverse-event reports following BPC-157 injection; adverse events for compounded and consumer-sold products are heavily under-reported.',
+            },
+          ],
+        },
+        {
+          name: 'KPV',
+          tag: 'RECOMMENDED',
+          role: 'Recommended to the 503A Bulks List on the same day, by the same thin margin.',
+          anchor: '57.1% of votes cast · 8–6, one abstention',
+          keyRisk: 'FDA staff recommended against all seven peptides on the docket.',
+          dossier: [
+            {
+              label: 'Margin',
+              text: 'Passed 8–6 with one abstention — 57.1% of votes cast in favor.',
+            },
+          ],
+        },
+        {
+          name: 'TB-500',
+          tag: 'RECOMMENDED',
+          role: 'Recommended alongside BPC-157 and KPV, on the identical 8–6 count.',
+          anchor: '57.1% of votes cast · 8–6, one abstention',
+          keyRisk: 'FDA staff recommended against all seven peptides on the docket.',
+          dossier: [
+            {
+              label: 'Margin',
+              text: 'Passed 8–6 with one abstention — 57.1% of votes cast in favor.',
+            },
+          ],
+        },
+        {
+          name: 'MOTS-c',
+          tag: 'NARROWEST BASE',
+          role: 'Recommended on the fewest votes cast of the four, with two members abstaining.',
+          anchor: '58.3% of votes cast · 7–5, two abstentions',
+          keyRisk: 'FDA staff recommended against all seven peptides on the docket.',
+          dossier: [
+            {
+              label: 'Margin',
+              text: 'Passed 7–5 with two abstentions — 58.3% of votes cast in favor, the highest share but the smallest vote base.',
+            },
+          ],
+        },
       ],
-      yLabel: '% of votes cast in favor',
     },
     {
       type: 'heading',
@@ -88,6 +147,55 @@ export const fdaPeptidesBpc157Article2026 = {
     {
       type: 'paragraph',
       text: 'The committee’s composition drew its own scrutiny. The FDA seated eight temporary voting members for the session, and of the fourteen voting members, seven operate or work for clinics or businesses that sell peptide treatments. That does not by itself invalidate anyone’s judgment, but it is the kind of arrangement that makes a narrow 8–6 result harder to read as a disinterested scientific consensus. The vote arrived amid intense popular demand — more than 50 million “BPC-157” video views on each of YouTube and TikTok, and peptide subreddits with over 100,000 members — and was widely framed as a political win for Health and Human Services Secretary Robert F. Kennedy Jr.',
+    },
+    {
+      type: 'wall-timeline',
+      figureLabel: 'FIG. 2 · THE PROCESS, IN DATES',
+      kicker:
+        'FDA PCAC PEPTIDE REVIEW · 2025 – JULY 2026 · SAME-DAY JULY 23 VOTES SEPARATED BY LANE, FRACTIONAL-YEAR AXIS. CLICK ANY PLAQUE FOR THE RECORD.',
+      hint: 'Click a plaque for its record.',
+      source:
+        'FDA Pharmacy Compounding Advisory Committee meeting, July 23, 2026; company statements.',
+      startYear: 2025,
+      endYear: 2027,
+      windows: [],
+      plaques: [
+        {
+          year: 2025,
+          lane: 0,
+          label: 'Hims acquires a CA peptide plant',
+          detail:
+            'Hims & Hers acquires a California peptide manufacturing facility, adding compounding capacity to an existing prescriber network.',
+        },
+        {
+          year: 2026.56,
+          lane: 1,
+          label: 'Jul 23 · FDA staff recommend against all seven',
+          detail:
+            'Agency scientists recommend against every peptide on the docket, citing weak characterization and thin human data.',
+        },
+        {
+          year: 2026.56,
+          lane: 2,
+          label: 'Jul 23 · BPC-157, KPV, TB-500 each 8–6',
+          detail:
+            'The panel recommends three peptides for the 503A Bulks List, each 8–6 with one abstention, over staff objection.',
+        },
+        {
+          year: 2026.56,
+          lane: 3,
+          label: 'Jul 23 · MOTS-c 7–5',
+          detail:
+            'MOTS-c passes 7–5 with two abstentions — the narrowest vote base of the four recommended.',
+        },
+        {
+          year: 2026.562,
+          lane: 4,
+          label: 'Jul 24 · emideltide, epitalon, semax pending',
+          detail:
+            'Friday’s votes on emideltide, epitalon and semax were still pending when trading closed.',
+        },
+      ],
     },
     {
       type: 'quote',
@@ -127,6 +235,69 @@ export const fdaPeptidesBpc157Article2026 = {
       text: 'The disconfirming case has to be held alongside all of it. The rulemaking may never complete. The FDA can decline the recommendation outright. A genuine characterization standard could exclude most of what is currently sold as BPC-157, shrinking the addressable product rather than enabling it. And an adverse-event cluster in a compounded peptide would move the politics fast and in the opposite direction. A reader should be able to argue this section from either side; anyone who can only argue one is not yet done reading it.',
     },
     {
+      type: 'adjudication-matrix',
+      figureLabel: 'FIG. 3 · WHO BENEFITS × WHETHER THE VOTE IS A CLEAN TRADE',
+      kicker:
+        'FOUR EXPOSURE TIERS · BLUE SAME = DIRECT / CLEAN · HATCHED PART = DILUTED · GREY — = NONE. CLICK ANY CELL FOR THE ARGUMENT AGAINST.',
+      hint: 'Click any cell for the argument against.',
+      source: 'this article’s reporting.',
+      cols: ['Direct exposure to the vote', 'A clean way to play it'],
+      rows: [
+        {
+          label: 'Telehealth (Hims & Hers)',
+          cells: [
+            {
+              value: 'same',
+              note: 'The clearest case: a California peptide manufacturing facility acquired in 2025, an existing prescriber network, a subscriber base conditioned to subscription peptides, and a CMO who testified in support — the highest torque to the outcome.',
+            },
+            {
+              value: 'part',
+              note: 'Also the most concentrated regulatory risk: already down ~44% over the year, its compounded-GLP-1 business was previously curtailed by the same agency through the same mechanism now being widened. The bull and bear case run through the identical door.',
+            },
+          ],
+        },
+        {
+          label: '503A / 503B compounders',
+          cells: [
+            {
+              value: 'part',
+              note: 'Behind the platforms sits the infrastructure tier — sterile-injectable capacity, peptide API synthesis and cold-chain fill-finish that an at-scale compounded-peptide market would require.',
+            },
+            {
+              value: 'none',
+              note: 'Less a growth story than a bottleneck: the same missing characterization and quality standards that troubled the FDA are what a scaled market would have to build first.',
+            },
+          ],
+        },
+        {
+          label: 'Retail pharmacy / PBM (WBA, CVS)',
+          cells: [
+            {
+              value: 'none',
+              note: 'A further tier out and genuinely diluted — compounded peptides are largely cash-pay, sitting outside the insurance and rebate rails these businesses monetize.',
+            },
+            {
+              value: 'none',
+              note: 'Treating a WBA or CVS as a clean way to play this vote confuses proximity with participation.',
+            },
+          ],
+        },
+        {
+          label: 'Incumbents (Eli Lilly, Novo Nordisk)',
+          cells: [
+            {
+              value: 'none',
+              note: 'Pressured rather than helped — but they sell approved, characterized, trial-backed drugs into insured channels a compounded substitute does not directly threaten; a margin-and-channel question, not an existential one.',
+            },
+            {
+              value: 'none',
+              note: 'Not even cleanly adversarial: Hims already has a Novo Nordisk partnership, making “disruptor versus incumbent” too simple a frame.',
+            },
+          ],
+        },
+      ],
+    },
+    {
       type: 'heading',
       text: 'What the market is actually pricing',
       level: 2,
@@ -140,17 +311,41 @@ export const fdaPeptidesBpc157Article2026 = {
       text: 'Against that, the price action is best understood as a [[kw:regulatory-catalyst]]regulatory catalyst[[/kw]] being repriced. HIMS rose as much as 13% intraday and closed up around 10%, yet it remains down roughly 44% over the past year, with a market capitalization near $8.1 billion. A non-binding recommendation on the first step of a multi-stage process moved the stock more than a tenth in a session. What the move actually buys is an option on a rulemaking that has not started — and options on procedural events tend to be mispriced precisely because the headline (“FDA panel backs peptide”) compresses a long, uncertain, reversible process into a single bullish word.',
     },
     {
-      type: 'chart',
-      variant: 'bar',
-      title: 'Hims & Hers: one session vs one year',
-      caption:
+      type: 'revision-ledger',
+      figureLabel: 'FIG. 4 · HIMS & HERS: ONE SESSION VS ONE YEAR',
+      kicker:
+        'HIMS % CHANGE · TRAILING TWELVE MONTHS (HOLLOW MARKER) → JULY 23 SESSION (FILLED) · √-SCALE. CLICK A ROW FOR CONTEXT.',
+      hint: 'Hollow marker = trailing-year level; filled marker = the session move.',
+      source:
         'The gap the vote produced: HIMS rose as much as 13% intraday on July 23 and closed up roughly 10%, against a decline of about 44% over the prior twelve months. A one-day reaction to a non-binding recommendation, set against the trailing-year trend. Source: intraday and trailing-year price moves as reported July 23, 2026.',
-      data: [
-        { label: 'Jul 23 intraday', value: 13 },
-        { label: 'Jul 23 close', value: 10 },
-        { label: 'Past 12 months', value: -44 },
+      scale: 'sqrt',
+      unit: '%',
+      rows: [
+        {
+          label: 'Intraday high, Jul 23',
+          sub: 'vote-day pop vs prior 12 months',
+          before: -44,
+          beforeDisplay: '−44% / 12 mo',
+          after: 13,
+          afterDisplay: '+13%',
+          favorable: 'up',
+          record:
+            'HIMS rose as much as 13% intraday on July 23 on a non-binding recommendation, against a decline of about 44% over the prior twelve months.',
+        },
+        {
+          label: 'Close, Jul 23',
+          sub: 'vote-day close vs prior 12 months',
+          before: -44,
+          beforeDisplay: '−44% / 12 mo',
+          after: 10,
+          afterDisplay: '+10%',
+          favorable: 'up',
+          record:
+            'The stock closed up roughly 10% — a one-day reaction to the first step of a multi-stage, reversible process.',
+        },
       ],
-      yLabel: '% change',
+      verdict:
+        'A one-day reaction to a non-binding recommendation, set against a trailing-year decline of about 44%.',
     },
     {
       type: 'heading',
@@ -164,6 +359,78 @@ export const fdaPeptidesBpc157Article2026 = {
     {
       type: 'paragraph',
       text: 'The honest reading is that a barely-studied, poorly-defined substance received a thin, non-binding recommendation from a committee the agency’s own scientists argued against, and a stock moved 13% on it. Both halves of that sentence are true, and the gap between them is where the risk lives — in either direction. This article is for information only and is not investment advice; it does not recommend buying, selling, or holding any security. It describes a contested procedural event and the questions a careful reader should keep asking as it unfolds.',
+    },
+    {
+      type: 'scenario-chain',
+      figureLabel: 'FIG. 5 · WHAT TO WATCH FROM HERE',
+      kicker:
+        'DRIVER × GATE → OUTCOME · THREE PATHS FROM A NON-BINDING RECOMMENDATION · ONE KILL SWITCH.',
+      hint: 'Scenarios drawn from the article’s own “what to watch” and disconfirming cases.',
+      source: 'this article’s reporting.',
+      scenarios: [
+        {
+          id: 'base',
+          label: 'RULEMAKING PROCEEDS',
+          tone: 'base',
+          range: 'Slow, multi-stage, reversible',
+          steps: [
+            {
+              label: 'FDA accepts',
+              sub: 'the agency is under no obligation to, and its staff argued against every substance',
+            },
+            {
+              label: 'Notice-and-comment',
+              sub: 'a formal rulemaking that typically runs many months to years',
+            },
+          ],
+          result: {
+            value: 'Legally compoundable',
+            sub: 'a category widened — but only after a process the vote has not begun',
+          },
+        },
+        {
+          id: 'alt',
+          label: 'THE STANDARD SHRINKS IT',
+          tone: 'alt',
+          range: 'Characterization bites',
+          steps: [
+            {
+              label: 'Formal characterization',
+              sub: 'a standard defining what can legally be sold under each name',
+            },
+            {
+              label: 'Most of the market excluded',
+              sub: 'a real standard could exclude most of what is sold today as BPC-157',
+            },
+          ],
+          result: {
+            value: 'Addressable product shrinks',
+            sub: 'the standard shrinks the category rather than enabling it',
+          },
+        },
+        {
+          id: 'bear',
+          label: 'IT ENDS IN NOTHING',
+          tone: 'bear',
+          range: 'The recommendation reverses',
+          steps: [
+            {
+              label: 'FDA declines',
+              sub: 'the agency can decline the recommendation outright; the rulemaking may never complete',
+            },
+            {
+              label: 'Politics turn',
+              sub: 'an adverse-event cluster in a compounded peptide would move the politics fast, the other way',
+            },
+          ],
+          result: {
+            value: 'No new access',
+            sub: 'the process can end in nothing',
+          },
+        },
+      ],
+      killSwitch:
+        'AN ADVERSE-EVENT CLUSTER IN A COMPOUNDED PEPTIDE — THE POLITICS TURN, AND THE WIDENING REVERSES.',
     },
   ],
   author: 'Ezana Finance Editorial',
