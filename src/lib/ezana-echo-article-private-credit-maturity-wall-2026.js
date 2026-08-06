@@ -157,18 +157,34 @@ export const privateCreditMaturityWallArticle2026 = {
       text: 'The headline number that matters is the shape of the curve, not its height. The Reuters review of 74 BDCs found roughly $15 billion of about $84 billion in assets maturing in 2026, with the concentration building toward 2028 and 2029. For an asset class that grew up almost entirely during a decade of cheap money, a near-term maturity load under 20% is benign — borrowers are not being forced to refinance into today’s higher base rates en masse. The risk is that the relief is borrowed: the same maturities did not disappear, they were rescheduled into a two-year window that now carries a disproportionate share of the lowest-rated credits.',
     },
     {
-      type: 'chart',
-      variant: 'bar',
-      title: 'BDC asset maturities cluster in 2028-2029, not this year',
-      caption:
-        'Illustrative distribution of business development company asset maturities by year, based on a Reuters analysis of SEC filings from 74 BDCs (May 2026). Near-term 2026 maturities of roughly $15 billion represent under 20% of the ~$84 billion total; the wall is concentrated in 2028-2029. Year buckets are approximated to the published total and peak-year shape.',
-      data: [
-        { label: '2026', value: 15 },
-        { label: '2027', value: 14 },
-        { label: '2028', value: 21 },
-        { label: '2029', value: 20 },
-        { label: '2030', value: 9 },
-        { label: '2031+', value: 5 },
+      type: 'trajectory',
+      figureLabel: 'FIG. 1',
+      kicker: 'BDC ASSET MATURITIES BY YEAR · USD BN · 2026→2031+ (FINAL POINT IS 2031+)',
+      hint: 'Near-term load is light; the wall builds toward the 2028–29 cluster.',
+      source:
+        'Reuters analysis of SEC filings from 74 BDCs (May 2026). Year buckets approximated to the published total and peak-year shape.',
+      yLabel: 'USD Bn',
+      yMax: 24,
+      xMin: 2026,
+      xMax: 2031,
+      series: [
+        {
+          key: 'maturities',
+          label: 'BDC asset maturities',
+          color: 'var(--echo-chart-blue)',
+          data: [
+            { x: 2026, y: 15 },
+            { x: 2027, y: 14 },
+            { x: 2028, y: 21 },
+            { x: 2029, y: 20 },
+            { x: 2030, y: 9 },
+            { x: 2031, y: 5 },
+          ],
+        },
+      ],
+      annotations: [
+        { x: 2026, y: 15, label: '~$15B', sub: 'under 20% of the ~$84B total' },
+        { x: 2028, y: 21, label: 'The wall', sub: '2028–29 peak' },
       ],
     },
     {
@@ -183,6 +199,70 @@ export const privateCreditMaturityWallArticle2026 = {
     {
       type: 'paragraph',
       text: 'Amend-and-extend is a legitimate liability-management tool, but it is also a way to defer recognition of a problem. Each extension assumes the borrower will be healthier, or rates lower, when the new maturity arrives. For strong credits that holds; for marginal ones, repeated extensions quietly convert a refinancing question into a solvency question. The private credit market’s comfort with the 2028-2029 wall rests on an implicit bet that base rates will be materially lower and earnings materially higher by then — a bet that looks reasonable today and would look reckless if either leg fails.',
+    },
+    {
+      type: 'wall-timeline',
+      figureLabel: 'FIG. 2',
+      kicker: 'THE EXTENSION GAME · 2024–2029 (2026 EVENTS SHOWN BY MONTH)',
+      hint: 'How amend-and-extend relocated the maturities forward into the 2028–29 window.',
+      source: "Reuters, S&P Global, Fitch, Moody's, Ocorian (2024–2026).",
+      startYear: 2024,
+      endYear: 2029,
+      windows: [
+        {
+          id: 'ae',
+          label: 'Amend-and-extend era',
+          from: 2024,
+          to: 2026,
+          color: 'var(--echo-chart-orange)',
+        },
+        {
+          id: 'wall',
+          label: 'The maturity wall',
+          from: 2028,
+          to: 2029,
+          color: 'var(--echo-chart-red)',
+        },
+      ],
+      plaques: [
+        {
+          year: 2024.6,
+          lane: 0,
+          label: 'Aug 2024 · S&P flags extensions',
+          detail: 'S&P notes BDCs extending private credit maturities as financing eases.',
+        },
+        {
+          year: 2025,
+          lane: 2,
+          label: '2024–25 · Repricing wave',
+          detail:
+            'Repricings and refinancings make up 75–85% of leveraged-loan issuance, thinning the near-term schedule.',
+        },
+        {
+          year: 2026.04,
+          lane: 1,
+          label: 'Jan 2026 · Fitch review',
+          detail: '‘B-’ or below is ~68% of 2028 US leveraged-loan maturities and ~60% of 2029.',
+        },
+        {
+          year: 2026.12,
+          lane: 3,
+          label: 'Feb 2026 · S&P dollar figure',
+          detail: '‘B-’ and lower maturities peak near $215B in 2028, up from ~$57B in 2026.',
+        },
+        {
+          year: 2026.29,
+          lane: 4,
+          label: 'Apr 2026 · Moody’s warning',
+          detail: 'Moody’s cuts its outlook on the ~$400B BDC sector and flags the 2028 wall.',
+        },
+        {
+          year: 2026.37,
+          lane: 5,
+          label: 'May 2026 · Reuters analysis',
+          detail: 'Only ~$15B of ~$84B across 74 BDCs matures in 2026; the peak sits in 2028–29.',
+        },
+      ],
     },
     {
       type: 'callout',
@@ -282,8 +362,133 @@ export const privateCreditMaturityWallArticle2026 = {
       text: 'For investors who want exposure to private credit through liquid, listed vehicles, the BDC complex is the cleanest route. The largest and most diversified names — Ares Capital (ARCC), Blackstone Secured Lending (BXSL), and Blue Owl Capital (OBDC) — carry scale, granular portfolios, and conservative leverage that should weather a 2028 wall better than smaller peers. FS KKR Capital (FSK) and Barings BDC (BBDC) trade at wider discounts to NAV that compensate for higher portfolio risk, while Golub Capital BDC (GBDC) and Hercules Capital (HTGC) offer more specialized books — Golub in sponsor middle-market loans, Hercules in venture lending. For one-ticket exposure, the VanEck BDC Income ETF (BIZD) holds the basket. The screen that matters across all of them is the same: PIK as a share of income, non-accruals trending, and exposure to the 2028-2029 software cohort.',
     },
     {
+      type: 'dossier-table',
+      figureLabel: 'FIG. 4',
+      kicker: 'THE LISTED-BDC LANDSCAPE · TAP A ROW',
+      hint: 'The liquid ways to own the wall — and where each one carries its risk.',
+      source: 'Ezana Finance Editorial.',
+      headers: ['BDC', 'Book / role', 'Ticker', 'Key risk', 'Dossier'],
+      rows: [
+        {
+          name: 'Ares Capital',
+          tag: 'Scale',
+          role: 'Large, diversified, conservative leverage',
+          anchor: 'ARCC',
+          keyRisk: 'Cycle-wide credit deterioration',
+          dossier: [
+            {
+              label: 'Profile',
+              text: 'Scale, granular portfolio and conservative leverage should weather a 2028 wall better than smaller peers.',
+            },
+          ],
+        },
+        {
+          name: 'Blackstone Secured Lending',
+          tag: 'Scale',
+          role: 'Large diversified senior-secured book',
+          anchor: 'BXSL',
+          keyRisk: 'Cycle-wide credit deterioration',
+        },
+        {
+          name: 'Blue Owl Capital',
+          tag: 'Scale',
+          role: 'Large diversified direct-lending book',
+          anchor: 'OBDC',
+          keyRisk: 'Cycle-wide credit deterioration',
+        },
+        {
+          name: 'FS KKR Capital',
+          tag: 'Higher risk',
+          role: 'Trades at a wider discount to NAV',
+          anchor: 'FSK',
+          keyRisk: 'Higher portfolio risk priced into the discount',
+        },
+        {
+          name: 'Barings BDC',
+          tag: 'Higher risk',
+          role: 'Trades at a wider discount to NAV',
+          anchor: 'BBDC',
+          keyRisk: 'Higher portfolio risk priced into the discount',
+        },
+        {
+          name: 'Golub Capital BDC',
+          tag: 'Specialist',
+          role: 'Sponsor middle-market loans',
+          anchor: 'GBDC',
+          keyRisk: 'Middle-market concentration',
+        },
+        {
+          name: 'Hercules Capital',
+          tag: 'Specialist',
+          role: 'Venture lending',
+          anchor: 'HTGC',
+          keyRisk: 'Venture-borrower fragility',
+        },
+        {
+          name: 'VanEck BDC Income ETF',
+          tag: 'Basket',
+          role: 'One-ticket exposure to the BDC complex',
+          anchor: 'BIZD',
+          keyRisk: 'Sector-wide, undiversifiable',
+        },
+      ],
+    },
+    {
       type: 'paragraph',
       text: 'The base case for the next two years is orderly: amend-and-extend keeps working, base rates drift lower, the $500 billion-plus of [[kw:dry-powder]]dry powder[[/kw]] refinances the strongest borrowers, and the 2028-2029 wall is chipped down well before it arrives. The bear case is a sequence — rates stay higher for longer, PIK keeps climbing past 10% of income, software credits deteriorate as AI reshapes their end-markets, and redemptions force selling into the wall rather than ahead of it. The difference between the two scenarios is not the size of the wall, which is fixed, but whether the market reaches it with momentum or with its back already against it.',
+    },
+    {
+      type: 'scenario-chain',
+      figureLabel: 'FIG. 5',
+      kicker: 'THE SOFTWARE COHORT · ORDERLY VS DISORDERLY',
+      hint: 'The 2028–29 wall’s heaviest, thinnest-rated collateral — three ways it resolves.',
+      source: 'Morningstar/PitchBook; Morgan Stanley; Reuters; analyst estimates (2026).',
+      scenarios: [
+        {
+          id: 'orderly',
+          label: 'Orderly',
+          tone: 'base',
+          range: '2026–28',
+          steps: [
+            { label: 'Amend-and-extend holds', sub: '75–85% of issuance was repricing' },
+            { label: 'Rates drift lower', sub: 'debt-service burden eases' },
+            {
+              label: '$500B+ dry powder refinances best credits',
+              sub: 'strongest borrowers cleared early',
+            },
+          ],
+          result: { value: '<2%', sub: 'reported non-accruals hold' },
+        },
+        {
+          id: 'software',
+          label: 'Software-led strain',
+          tone: 'alt',
+          range: 'Through 2028',
+          steps: [
+            { label: '>$330B software/tech debt matures', sub: '~58% rated B- or below' },
+            {
+              label: 'AI reorders end-markets',
+              sub: '~$235B AI-disruption slice (Morgan Stanley)',
+            },
+            { label: '21% of software loans mature 2028', sub: 'vs 14% for the index' },
+          ],
+          result: { value: '$330B+', sub: 'software/tech wall through 2028' },
+        },
+        {
+          id: 'disorderly',
+          label: 'Disorderly',
+          tone: 'bear',
+          range: '2028–29',
+          steps: [
+            { label: 'Higher-for-longer rates', sub: 'refinancing windows tighten' },
+            { label: 'PIK climbs past 10% of income', sub: '96% expect PIK to rise' },
+            { label: 'Redemptions force selling into the wall', sub: 'first-ever net BDC outflow' },
+          ],
+          result: { value: '~5%', sub: 'true stress rate surfaces' },
+        },
+      ],
+      killSwitch:
+        "PIK crossing 10% of a BDC's interest income — the flashing indicator that extend-and-pretend is slipping toward the hard resolution.",
     },
     {
       type: 'paragraph',

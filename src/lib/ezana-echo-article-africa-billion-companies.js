@@ -45,22 +45,118 @@ export const africaBillionCompaniesArticle = {
       text: "Beyond South Africa, the Southern African region includes Botswana (1), Zambia (2), Zimbabwe (1), Angola (9), and the DRC (4). Angola's count is almost entirely petroleum-driven — Sonangol and associated joint ventures account for the bulk of its $1B+ revenue companies. The DRC's four are dominated by mining — copper and cobalt extraction that feeds directly into the global EV battery supply chain. Zambia's two are similarly mining-dependent. The concentration in [[kw:extractive-industries]]extractives[[/kw]] across the region outside South Africa highlights both the opportunity (resource demand is structurally growing) and the risk (revenue diversity is thin).",
     },
     {
-      type: 'chart',
-      variant: 'horizontal-bar',
-      title: 'Number of $1B+ revenue companies by country (top 10)',
-      caption:
-        'Distribution of billion-dollar companies across Africa. South Africa dominates with 147, followed by Egypt (33) and Nigeria (23). Source: McKinsey Global Institute / African Development Bank estimates.',
-      data: [
-        { label: 'South Africa', value: 147 },
-        { label: 'Egypt', value: 33 },
-        { label: 'Nigeria', value: 23 },
-        { label: 'Morocco', value: 20 },
-        { label: 'Algeria', value: 12 },
-        { label: 'Angola', value: 9 },
-        { label: 'Kenya', value: 6 },
-        { label: 'Ethiopia', value: 4 },
-        { label: 'Tunisia', value: 4 },
-        { label: 'DRC', value: 4 },
+      type: 'dossier-table',
+      figureLabel: 'FIG. 2',
+      kicker: 'TOP-10 BY $1B+ COMPANY COUNT · TAP A ROW',
+      hint: 'The country dossiers behind the headline count — what drives each base, and the risk in it.',
+      source: 'McKinsey Global Institute / African Development Bank estimates.',
+      headers: ['Country', 'Corporate drivers', '$1B+ companies', 'Key risk', 'Dossier'],
+      rows: [
+        {
+          name: 'South Africa',
+          tag: 'Southern',
+          role: 'Mature JSE; mining, financial services, telecom',
+          anchor: '147',
+          keyRisk: 'Single-market concentration — 43% of the continent',
+          dossier: [
+            {
+              label: 'Depth',
+              text: '147 of the 345 companies; JSE infrastructure dating to 1887.',
+            },
+            {
+              label: 'Champions',
+              text: 'Naspers, Sasol, FirstRand, MTN Group — global operators.',
+            },
+          ],
+        },
+        {
+          name: 'Egypt',
+          tag: 'Northern',
+          role: 'Financial services, real estate, telecom, construction',
+          anchor: '33',
+          keyRisk: 'Currency float and reform-execution risk',
+          dossier: [
+            { label: 'Access', text: "EGX is among Africa's oldest and most liquid exchanges." },
+            { label: 'Reform', text: 'IMF-backed structural adjustments since 2016.' },
+          ],
+        },
+        {
+          name: 'Nigeria',
+          tag: 'Western',
+          role: 'Oil & gas, banking, telecom, cement',
+          anchor: '23',
+          keyRisk: 'Refined-fuel import dependence',
+          dossier: [
+            {
+              label: 'Anchor',
+              text: 'Dangote Refinery — largest single-train refinery, operational early 2025.',
+            },
+          ],
+        },
+        {
+          name: 'Morocco',
+          tag: 'Northern',
+          role: 'Manufacturing/logistics hub; OCP phosphate; automotive',
+          anchor: '20',
+          keyRisk: 'Phosphate and export concentration',
+          dossier: [
+            { label: 'Resource', text: "Controls roughly 70% of the world's phosphate reserves." },
+          ],
+        },
+        {
+          name: 'Algeria',
+          tag: 'Northern',
+          role: 'Hydrocarbons',
+          anchor: '12',
+          keyRisk: 'Extractive concentration',
+        },
+        {
+          name: 'Angola',
+          tag: 'Southern',
+          role: 'Petroleum (Sonangol and joint ventures)',
+          anchor: '9',
+          keyRisk: 'Thin revenue diversity',
+        },
+        {
+          name: 'Kenya',
+          tag: 'Eastern',
+          role: 'Financial hub; Safaricom/M-Pesa, Equity Group, EABL',
+          anchor: '6',
+          keyRisk: 'Frontier liquidity',
+          dossier: [
+            {
+              label: 'Fintech',
+              text: 'M-Pesa processes more transactions annually than PayPal does across sub-Saharan Africa.',
+            },
+          ],
+        },
+        {
+          name: 'Ethiopia',
+          tag: 'Eastern',
+          role: 'State-owned; Ethiopian Airlines',
+          anchor: '4',
+          keyRisk: 'FX constraints; Tigray conflict (2020–2022)',
+        },
+        {
+          name: 'Tunisia',
+          tag: 'Northern',
+          role: 'North African cohort',
+          anchor: '4',
+          keyRisk: 'Smaller cohort',
+        },
+        {
+          name: 'DRC',
+          tag: 'Southern',
+          role: 'Mining — copper & cobalt',
+          anchor: '4',
+          keyRisk: 'Extractive concentration',
+          dossier: [
+            {
+              label: 'Supply chain',
+              text: 'Feeds directly into the global EV battery supply chain.',
+            },
+          ],
+        },
       ],
     },
     { type: 'heading', text: 'Northern Africa: diversified and capital-markets ready', level: 2 },
@@ -82,18 +178,61 @@ export const africaBillionCompaniesArticle = {
       text: "The rest of Western Africa is thinly represented: Ghana (2), Côte d'Ivoire (2), Senegal (3), Cameroon (2), and Togo, Liberia, Gabon, and Burkina Faso with 1 each. Most of these are either extractive (gold, cocoa, oil) or telecom operators (Orange, MTN subsidiaries). The gap between Nigeria and the rest of the region highlights a structural challenge: outside of Nigeria and, to a lesser extent, Ghana, West African economies lack the depth of domestic markets and capital infrastructure to grow companies to billion-dollar scale organically. Many of the region's largest employers are subsidiaries of foreign multinationals — 54 of the continent's $1B+ revenue companies have no local headquarters.",
     },
     {
-      type: 'chart',
-      variant: 'bar',
-      title: '$1B+ companies by African region',
-      caption:
-        'Regional distribution of billion-dollar companies. Southern Africa (dominated by South Africa) accounts for 46% of the total. Central Africa has the fewest at just 7.',
-      data: [
-        { label: 'Southern', value: 160 },
-        { label: 'Northern', value: 73 },
-        { label: 'Western', value: 35 },
-        { label: 'Eastern', value: 16 },
-        { label: 'Central', value: 7 },
-        { label: 'Foreign HQ', value: 54 },
+      type: 'adjudication-matrix',
+      figureLabel: 'FIG. 3',
+      kicker: 'SAME = TRAIT STRONG · PART = PARTIAL · — = LARGELY ABSENT · TAP FOR COUNTS',
+      hint: 'Do the three markers of corporate maturity hold across each region? Counts sit in every cell.',
+      source: 'McKinsey Global Institute / African Development Bank estimates.',
+      cols: ['Corporate depth', 'Sector diversification', 'Capital-markets readiness'],
+      rows: [
+        {
+          label: 'Southern',
+          cells: [
+            { value: 'same', note: '160 companies; South Africa 147' },
+            { value: 'part', note: 'South Africa diversified; the rest extractive-heavy' },
+            { value: 'same', note: 'JSE infrastructure dates to 1887' },
+          ],
+        },
+        {
+          label: 'Northern',
+          cells: [
+            { value: 'part', note: '73; Egypt 33, Morocco 20' },
+            { value: 'same', note: 'Financial services, real estate, telecom, construction' },
+            { value: 'same', note: 'EGX among the oldest and most liquid exchanges' },
+          ],
+        },
+        {
+          label: 'Western',
+          cells: [
+            { value: 'part', note: '35; Nigeria 23' },
+            { value: 'part', note: 'Nigeria broad; the rest thinly represented' },
+            { value: 'part', note: 'Capital infrastructure lacking outside Nigeria and Ghana' },
+          ],
+        },
+        {
+          label: 'Eastern',
+          cells: [
+            { value: 'part', note: '16; Kenya 6, Ethiopia 4' },
+            { value: 'part', note: 'Kenya diversified; Ethiopia largely state-owned' },
+            { value: 'part', note: 'Nairobi exchange is the regional gateway' },
+          ],
+        },
+        {
+          label: 'Central',
+          cells: [
+            { value: 'none', note: '7 — the least penetrated region' },
+            { value: 'none', note: 'Extractive-dominated' },
+            { value: 'none', note: 'No developed capital markets' },
+          ],
+        },
+        {
+          label: 'Foreign-HQ (no domicile)',
+          cells: [
+            { value: 'same', note: '54 firms generating $1B+ from African operations' },
+            { value: 'none', note: 'Global operations, not African-domiciled' },
+            { value: 'none', note: 'Value booked in London, Paris, Zurich, The Hague' },
+          ],
+        },
       ],
     },
     { type: 'heading', text: 'Eastern Africa: the fastest-growing frontier', level: 2 },
@@ -127,21 +266,38 @@ export const africaBillionCompaniesArticle = {
       text: "The common assumption that Africa's billion-dollar companies are primarily extractive — oil, gas, mining — is only partially correct. While extractives dominate in Angola, the DRC, Algeria, and much of Central Africa, the largest economies (South Africa, Egypt, Nigeria, Morocco, Kenya) have diversified corporate sectors. Financial services is the single largest sector by company count across the continent. Telecommunications is second — driven by the mobile revolution that [[kw:leapfrog-development]]leapfrogged fixed-line infrastructure[[/kw]] entirely. Consumer goods, construction, and agriculture round out the top five.",
     },
     {
-      type: 'chart',
-      variant: 'bar',
-      title: "Estimated sector distribution of Africa's $1B+ companies",
-      caption:
-        'Sector breakdown of billion-dollar African companies. Financial services and telecom together account for more companies than extractives. Estimates based on JSE, EGX, and NSE listed company profiles.',
-      data: [
-        { label: 'Financial Services', value: 72 },
-        { label: 'Oil & Gas / Mining', value: 68 },
-        { label: 'Telecom', value: 45 },
-        { label: 'Consumer / Retail', value: 38 },
-        { label: 'Construction / RE', value: 32 },
-        { label: 'Agriculture / Food', value: 28 },
-        { label: 'Manufacturing', value: 22 },
-        { label: 'Transport / Logistics', value: 20 },
-        { label: 'Other', value: 20 },
+      type: 'clearing-sankey',
+      figureLabel: 'FIG. 4',
+      kicker: 'THE 345 SPLIT BY SECTOR · RIBBON WIDTH ∝ COMPANIES',
+      hint: 'Financial services and telecom together (117) outweigh extractives (68).',
+      source: 'Estimates based on JSE, EGX, and NSE listed company profiles.',
+      sourceGroups: [
+        {
+          label: 'Continental base',
+          nodes: [{ id: 'base', name: "Africa's 345 $1B+ companies", display: '345' }],
+        },
+      ],
+      destinations: [
+        { id: 'fin', name: 'Financial Services' },
+        { id: 'extr', name: 'Oil & Gas / Mining' },
+        { id: 'tel', name: 'Telecom' },
+        { id: 'con', name: 'Consumer / Retail' },
+        { id: 'cre', name: 'Construction / RE' },
+        { id: 'agr', name: 'Agriculture / Food' },
+        { id: 'man', name: 'Manufacturing' },
+        { id: 'trn', name: 'Transport / Logistics' },
+        { id: 'oth', name: 'Other' },
+      ],
+      flows: [
+        { from: 'base', to: 'fin', value: 72, tone: 'primary' },
+        { from: 'base', to: 'extr', value: 68, tone: 'primary' },
+        { from: 'base', to: 'tel', value: 45, tone: 'neutral' },
+        { from: 'base', to: 'con', value: 38, tone: 'neutral' },
+        { from: 'base', to: 'cre', value: 32, tone: 'neutral' },
+        { from: 'base', to: 'agr', value: 28, tone: 'neutral' },
+        { from: 'base', to: 'man', value: 22, tone: 'neutral' },
+        { from: 'base', to: 'trn', value: 20, tone: 'neutral' },
+        { from: 'base', to: 'oth', value: 20, tone: 'neutral' },
       ],
     },
     { type: 'heading', text: 'Investment implications: how to access the opportunity', level: 2 },
@@ -152,6 +308,39 @@ export const africaBillionCompaniesArticle = {
     {
       type: 'paragraph',
       text: 'The structural case for African corporate growth rests on three pillars: [[kw:demographic-dividend]]demographics (the youngest population of any continent, with 60% under age 25)[[/kw]], urbanization (the fastest rate globally, creating concentrated consumer markets), and digital infrastructure (mobile penetration and fintech adoption that are leapfrogging developed-market models). The risks are equally structural: political instability, currency volatility, [[kw:currency-controls]]capital controls[[/kw]], and governance gaps that make company-level due diligence essential. 345 billion-dollar companies is the starting point, not the ceiling — the question is how fast the next 345 emerge.',
+    },
+    {
+      type: 'scenario-chain',
+      figureLabel: 'FIG. 5',
+      kicker: '345 IS A FLOOR, NOT A CEILING · TWO PATHS',
+      hint: 'The closing thesis mapped — the structural pillars against the structural risks.',
+      source: 'McKinsey Global Institute, Lions on the Move III, 2025.',
+      scenarios: [
+        {
+          id: 'base',
+          label: 'Compounding',
+          tone: 'base',
+          range: '2026 →',
+          steps: [
+            { label: 'Demographics', sub: 'youngest continent; 60% under 25' },
+            { label: 'Urbanization', sub: 'fastest rate globally' },
+            { label: 'Digital leapfrog', sub: 'mobile & fintech adoption' },
+          ],
+          result: { value: '+345', sub: 'the next cohort emerges' },
+        },
+        {
+          id: 'bear',
+          label: 'Stalled',
+          tone: 'bear',
+          range: '2026 →',
+          steps: [
+            { label: 'Political instability', sub: 'country-level governance gaps' },
+            { label: 'Currency volatility', sub: 'and capital controls' },
+            { label: 'Governance gaps', sub: 'company-level diligence essential' },
+          ],
+          result: { value: '345', sub: 'the landscape stays put' },
+        },
+      ],
     },
     {
       type: 'quote',

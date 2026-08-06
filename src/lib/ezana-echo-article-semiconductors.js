@@ -206,6 +206,72 @@ export const semiconductorArticle = {
       type: 'paragraph',
       text: 'The model was brilliantly strategic: rather than designing and selling its own chips, TSMC would manufacture chips designed by other companies. This reassured American and European firms that TSMC would never become their competitor. Qualcomm, Nvidia, Apple, and AMD could outsource production to Taiwan without fear of intellectual property theft or strategic rivalry. By the early 1990s, Hsinchu Science Park hosted over 140 chip firms and 30,000 workers. Thousands of Taiwanese engineers returned from Silicon Valley, creating a talent density that no other country has replicated.',
     },
+    {
+      type: 'wall-timeline',
+      figureLabel: 'FIG. 2',
+      kicker: 'HOW TAIWAN BUILT A MONOPOLY ON PURPOSE · 1973–2025',
+      hint: 'A deliberate, decades-long climb from licensed process tech to the leading edge.',
+      source: 'TrendForce, Counterpoint Research estimates',
+      startYear: 1970,
+      endYear: 2026,
+      windows: [
+        {
+          id: 'foundation',
+          label: 'Foundation era',
+          from: 1973,
+          to: 1992,
+          color: 'var(--echo-chart-blue)',
+        },
+        {
+          id: 'shield',
+          label: 'Shield & reshoring era',
+          from: 2021,
+          to: 2025,
+          color: 'var(--echo-chart-orange)',
+        },
+      ],
+      plaques: [
+        {
+          year: 1973,
+          lane: 0,
+          label: '1973 · ITRI established',
+          detail:
+            'Acquired semiconductor process tech via licensing with RCA; trained a generation of engineers.',
+        },
+        {
+          year: 1987,
+          lane: 2,
+          label: '1987 · Morris Chang founds TSMC',
+          detail:
+            'Invented the pure-play foundry model — manufacturing others’ designs, never competing with customers.',
+        },
+        {
+          year: 1992,
+          lane: 4,
+          label: 'Early 1990s · Hsinchu scales',
+          detail:
+            'Hsinchu Science Park hosts 140+ chip firms and 30,000 workers as Silicon Valley engineers return.',
+        },
+        {
+          year: 2021,
+          lane: 1,
+          label: '2021 · "Silicon shield" named',
+          detail: 'President Tsai Ing-wen names the strategy in a Foreign Affairs article.',
+        },
+        {
+          year: 2022,
+          lane: 3,
+          label: '2022 · US CHIPS and Science Act',
+          detail: '$52 billion in incentives; TSMC later awarded up to $6.6B for its Arizona fab.',
+        },
+        {
+          year: 2025,
+          lane: 5,
+          label: 'Mar 2025 · TSMC boosts US investment',
+          detail: 'A further $100 billion committed on top of the existing $65B Arizona project.',
+        },
+      ],
+    },
 
     { type: 'heading', text: 'The Silicon Shield Thesis', level: 2 },
     {
@@ -229,6 +295,42 @@ export const semiconductorArticle = {
     {
       type: 'paragraph',
       text: 'The critical gap: TSMC now produces at [[kw:two-nanometer]]2-nanometer[[/kw]] process nodes, while Chinese self-sufficiency goals target "entirely domestically produced equipment" for the less sophisticated 7nm and 14nm generations. The difference is significant — 2nm chips deliver a 45% performance increase while consuming 75% less power than 7nm chips. For AI training workloads, this gap is the difference between competitive and obsolete.',
+    },
+    {
+      type: 'adjudication-matrix',
+      figureLabel: 'FIG. 3',
+      kicker: 'SAME = ON THE LEADING EDGE · PART = PARTIAL · — = BEHIND · TAP FOR DETAIL',
+      hint: 'Two reshoring programs, four dimensions — Washington and Beijing from opposite directions.',
+      source: 'CHIPS and Science Act (2022); Chinese chip self-sufficiency proposal (March 2026).',
+      cols: [
+        'Subsidy commitment',
+        'Process-node focus',
+        'Self-sufficiency target',
+        'Leading-edge parity',
+      ],
+      rows: [
+        {
+          label: 'US · CHIPS Act',
+          cells: [
+            { value: 'same', note: '$52B in incentives; TSMC up to $6.6B plus a $100B expansion' },
+            { value: 'same', note: 'TSMC Arizona targets the leading edge, incl. 2nm' },
+            { value: 'part', note: 'Reshoring underway; Arizona yield parity unproven' },
+            { value: 'same', note: '2nm production capability' },
+          ],
+        },
+        {
+          label: 'China · self-sufficiency 2030',
+          cells: [
+            {
+              value: 'part',
+              note: 'State-backed; doubled down after Made in China 2025 missed targets',
+            },
+            { value: 'part', note: 'Targets domestic equipment for 7nm and 14nm' },
+            { value: 'part', note: 'Aim 80% by 2030, up from 33% today' },
+            { value: 'none', note: 'SMIC/HiSilicon remain generations behind TSMC' },
+          ],
+        },
+      ],
     },
 
     { type: 'heading', text: 'The $5 Trillion Investment Landscape', level: 2 },
@@ -265,6 +367,53 @@ export const semiconductorArticle = {
     {
       type: 'paragraph',
       text: "Five catalysts will shape the semiconductor investment landscape over the next 12-18 months. First, the TSMC Arizona yield ramp — if yields approach Taiwan levels, it validates [[kw:yield-ramp-parity]]onshoring[[/kw]] as viable. Second, China's SMIC progress at 7nm and below — any breakthrough accelerates the timeline for Chinese chip independence. Third, Intel's foundry pivot — the IFS (Intel Foundry Services) order book will signal whether the IDM 2.0 thesis has legs. Fourth, AI capex cycles — Nvidia's revenue is a direct function of hyperscale data center spending by Meta, Microsoft, Amazon, and Google. Fifth, geopolitical escalation across the Taiwan Strait — any increase in military posturing reprices the entire sector's risk premium overnight.",
+    },
+    {
+      type: 'scenario-chain',
+      figureLabel: 'FIG. 5',
+      kicker: 'THE SILICON-SHIELD THESIS · THREE OUTCOMES',
+      hint: 'Does the chokepoint deter, diffuse, or detonate over the next cycle?',
+      source: 'McKinsey; Foreign Affairs (2021); company filings (2026).',
+      scenarios: [
+        {
+          id: 'holds',
+          label: 'Shield holds',
+          tone: 'base',
+          range: 'Base case',
+          steps: [
+            { label: 'TSMC keeps 90%+ edge', sub: 'advanced-node dominance intact' },
+            { label: 'Invasion deterred', sub: '$600B–$1T of GDP at risk' },
+            { label: 'Reshoring runs in parallel', sub: 'but slowly' },
+          ],
+          result: { value: '90%+', sub: 'chokepoint remains' },
+        },
+        {
+          id: 'diffuses',
+          label: 'Shield erodes',
+          tone: 'alt',
+          range: 'Reshoring works',
+          steps: [
+            { label: 'Arizona yields hit parity', sub: 'onshoring validated' },
+            { label: 'Terafab & IDM 2.0 scale', sub: '$25B Texas venture' },
+            { label: 'Supply diversifies', sub: 'concentration falls' },
+          ],
+          result: { value: '2nm', sub: 'onshore leading edge' },
+        },
+        {
+          id: 'breaks',
+          label: 'Shield breaks',
+          tone: 'bear',
+          range: 'Strait escalation',
+          steps: [
+            { label: 'Taiwan Strait escalation', sub: 'risk premium reprices' },
+            { label: 'TSMC output disrupted', sub: '90% of advanced chips at stake' },
+            { label: 'Global chip supply shock', sub: 'AI, defense, mobile hit' },
+          ],
+          result: { value: '$600B–$1T', sub: 'first-year global GDP loss' },
+        },
+      ],
+      killSwitch:
+        'TSMC Arizona yields reaching Taiwan-level parity — the signal that onshoring is viable and the shield is eroding.',
     },
   ],
   author: 'Ezana Finance Editorial',
