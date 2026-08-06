@@ -1,0 +1,335 @@
+/* Ezana Echo — Research Dossier signature figures. Scoped: .echo-fig- only.
+   Tokens verified against theme-variables.css + ezana-echo.css and applied per
+   the handoff's Branding Compliance Patch:
+   · fonts        → --font-serif (labels) / --font-mono (everything else)
+   · frames/axes  → --border-secondary · card boxes → --border-primary
+   · gridlines    → --echo-chart-grid · leader lines → --echo-chart-annotation
+   · labels/axes  → --text-muted · hints/legends/sources → --text-faint
+   · nested fills → --bg-tertiary
+   · selected/hover + continuing → --emerald · kill switch → --danger
+   No hardcoded colors; no --border-color / --text-tertiary (they don't exist). */
+
+.echo-fig {
+  margin: 40px 0;
+  border-top: 1px solid var(--border-secondary);
+  padding-top: 20px;
+}
+
+.echo-fig-label {
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+  margin: 0 0 6px;
+}
+
+.echo-fig-kicker {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0 0 18px;
+  line-height: 1.7;
+}
+
+.echo-fig-hint {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+  margin: 0 0 12px;
+}
+
+.echo-fig-source {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  color: var(--text-faint);
+  border-top: 1px solid var(--border-secondary);
+  margin-top: 16px;
+  padding-top: 10px;
+}
+
+.echo-fig-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.echo-fig-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Detail bar shown when a plaque / lifeline / cell is selected (interactive) */
+.echo-fig-detail {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: var(--bg-tertiary);
+  border-left: 3px solid var(--emerald);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+.echo-fig-detail strong {
+  color: var(--emerald);
+}
+
+/* Adjudication matrix */
+.echo-fig-matrix {
+  width: 100%;
+  border-collapse: collapse;
+}
+.echo-fig-matrix th,
+.echo-fig-matrix td {
+  border: 1px solid var(--border-secondary);
+  padding: 10px 8px;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+}
+.echo-fig-matrix th {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+.echo-fig-matrix th.echo-fig-matrix-rowhead,
+.echo-fig-matrix td.echo-fig-matrix-rowhead {
+  text-align: left;
+  color: var(--text-primary);
+  min-width: 160px;
+}
+.echo-fig-cell {
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+.echo-fig-cell:hover {
+  filter: brightness(1.08);
+}
+.echo-fig-cell-same {
+  background: var(--echo-chart-blue);
+  color: var(--bg-primary);
+  font-weight: 700;
+}
+.echo-fig-cell-part {
+  color: var(--echo-chart-blue);
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 4px,
+    color-mix(in srgb, var(--echo-chart-blue) 18%, transparent) 4px,
+    color-mix(in srgb, var(--echo-chart-blue) 18%, transparent) 6px
+  );
+}
+.echo-fig-cell-none {
+  background: var(--bg-tertiary);
+  color: var(--text-faint);
+}
+.echo-fig-matrix-legend {
+  display: flex;
+  gap: 18px;
+  margin-top: 10px;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+  align-items: center;
+  flex-wrap: wrap;
+}
+.echo-fig-legend-swatch {
+  display: inline-block;
+  width: 14px;
+  height: 10px;
+  margin-right: 6px;
+  vertical-align: middle;
+  border: 1px solid var(--border-secondary);
+}
+
+/* Dossier table */
+.echo-fig-dossier {
+  width: 100%;
+}
+.echo-fig-dossier-row {
+  display: grid;
+  grid-template-columns: 110px 1.4fr 0.9fr 1.2fr 92px;
+  gap: 14px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border-secondary);
+  align-items: start;
+}
+.echo-fig-dossier-head {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 8px 0;
+}
+.echo-fig-dossier-name {
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+}
+.echo-fig-dossier-ticker {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--emerald);
+  display: block;
+  margin-top: 2px;
+}
+.echo-fig-dossier-cell {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  line-height: 1.65;
+  color: var(--text-primary);
+}
+.echo-fig-dossier-btn {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  padding: 6px 10px;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  transition: all 0.15s ease;
+}
+.echo-fig-dossier-btn:hover,
+.echo-fig-dossier-btn[aria-expanded='true'] {
+  border-color: var(--emerald);
+  color: var(--emerald);
+}
+.echo-fig-dossier-panel {
+  grid-column: 1 / -1;
+  background: var(--bg-tertiary);
+  box-shadow: var(--shadow-sm);
+  padding: 14px 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+.echo-fig-dossier-panel dt {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.echo-fig-dossier-panel dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+
+/* Scenario chain */
+.echo-fig-scenarios {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.echo-fig-scenario {
+  display: grid;
+  grid-template-columns: 130px 1fr 170px;
+  gap: 14px;
+  align-items: center;
+}
+.echo-fig-scenario-label {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.echo-fig-scenario-label strong {
+  display: block;
+  font-size: 0.95rem;
+  letter-spacing: 0;
+  text-transform: none;
+  margin-top: 2px;
+}
+.echo-fig-steps {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.echo-fig-step {
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  min-width: 120px;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  background: var(--bg-primary);
+}
+.echo-fig-step strong {
+  display: block;
+  color: var(--text-primary);
+  font-size: 0.72rem;
+}
+.echo-fig-step-op {
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+.echo-fig-result {
+  border: 1.5px solid;
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font-family: var(--font-mono);
+  text-align: left;
+}
+.echo-fig-result strong {
+  font-size: 1.05rem;
+  display: block;
+}
+.echo-fig-result span {
+  font-size: 0.62rem;
+  color: var(--text-muted);
+}
+.echo-fig-tone-base .echo-fig-result {
+  border-color: var(--echo-chart-blue);
+  color: var(--echo-chart-blue);
+}
+.echo-fig-tone-alt .echo-fig-result {
+  border-color: var(--text-muted);
+  color: var(--text-primary);
+}
+.echo-fig-tone-bear .echo-fig-result {
+  border-color: var(--echo-chart-red);
+  color: var(--echo-chart-red);
+}
+.echo-fig-killswitch {
+  margin-top: 4px;
+  border: 1.5px dashed var(--danger);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  color: var(--danger);
+  width: fit-content;
+}
+
+@media (max-width: 720px) {
+  .echo-fig-dossier-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .echo-fig-dossier-head {
+    display: none;
+  }
+  .echo-fig-scenario {
+    grid-template-columns: 1fr;
+  }
+}

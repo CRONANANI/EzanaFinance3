@@ -30,6 +30,12 @@ import EchoMetadataSidebar from '@/components/echo/EchoMetadataSidebar';
 import { EchoKeywordProvider, useKeywordPopup } from '@/components/echo/EchoKeywordContext';
 import { EchoKeywordPopup } from '@/components/echo/EchoKeywordPopup';
 import { parseKeywords } from '@/components/echo/parseKeywords';
+import { EchoWallTimeline } from '@/components/echo/figures/EchoWallTimeline';
+import { EchoLifelines } from '@/components/echo/figures/EchoLifelines';
+import { EchoTrajectory } from '@/components/echo/figures/EchoTrajectory';
+import { EchoAdjudicationMatrix } from '@/components/echo/figures/EchoAdjudicationMatrix';
+import { EchoDossierTable } from '@/components/echo/figures/EchoDossierTable';
+import { EchoScenarioChain } from '@/components/echo/figures/EchoScenarioChain';
 import { formatPublishedDate } from '@/lib/echo-format';
 import { createArticleTracker } from '@/lib/echo-article-tracker';
 import { useAnonymousEchoTracker, trackAnonMetaClick } from '@/hooks/useAnonymousEchoTracker';
@@ -63,6 +69,7 @@ import '../../../../../app-legacy/assets/css/light-mode-fixes.css';
 import '../../../../../app-legacy/pages/home-dashboard.css';
 import '../ezana-echo.css';
 import '@/components/echo/echo-article-layout.css';
+import '@/components/echo/figures/echo-figures.css';
 
 function getEraForYear(year) {
   return (
@@ -402,6 +409,19 @@ function ArticleBlock({ block }) {
 
     case 'network-pie':
       return <ThielNetworkPie title={block.title} caption={block.caption} />;
+
+    case 'wall-timeline':
+      return <EchoWallTimeline {...block} />;
+    case 'lifelines':
+      return <EchoLifelines {...block} />;
+    case 'trajectory':
+      return <EchoTrajectory {...block} />;
+    case 'adjudication-matrix':
+      return <EchoAdjudicationMatrix {...block} />;
+    case 'dossier-table':
+      return <EchoDossierTable {...block} />;
+    case 'scenario-chain':
+      return <EchoScenarioChain {...block} />;
 
     default:
       return null;

@@ -25,10 +25,12 @@ import { africaRefiningArticle2026 } from '@/lib/ezana-echo-article-africa-refin
 import { dataConsolidationArticle2026 } from '@/lib/ezana-echo-article-data-consolidation-2026.js';
 import { johnnyMnemonicConsolidation2026 } from '@/lib/ezana-echo-article-johnny-mnemonic-consolidation-2026.js';
 import { tokenizationCollateral2026 } from '@/lib/ezana-echo-article-tokenization-collateral-2026.js';
+import { empireRankings2026 } from '@/lib/ezana-echo-article-empire-rankings-2026.js';
 
 const SOURCE = [
   johnnyMnemonicConsolidation2026,
   tokenizationCollateral2026,
+  empireRankings2026,
   dataConsolidationArticle2026,
   africaRefiningArticle2026,
   fdaPeptidesBpc157Article2026,
@@ -90,7 +92,9 @@ function warnIfIncompleteMeta(a) {
   const missing = CORE_META_DIMS.filter((d) => !a.meta?.[d]?.length);
   if (!a.tickers?.length) missing.unshift('tickers');
   if (missing.length) {
-    console.warn(`[echo] curated seed: "${a.id}" has empty core metadata dims: ${missing.join(', ')}`);
+    console.warn(
+      `[echo] curated seed: "${a.id}" has empty core metadata dims: ${missing.join(', ')}`,
+    );
   }
 }
 

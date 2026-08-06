@@ -2399,9 +2399,17 @@ export const KEYWORDS = {
       title: 'The path from a vote to the 503A list',
       events: [
         { year: 'Step 1', label: 'Advisory committee votes', detail: 'A recommendation only' },
-        { year: 'Step 2', label: 'FDA decides', detail: 'May accept or decline the recommendation' },
+        {
+          year: 'Step 2',
+          label: 'FDA decides',
+          detail: 'May accept or decline the recommendation',
+        },
         { year: 'Step 3', label: 'Proposed rule', detail: 'Notice-and-comment rulemaking opens' },
-        { year: 'Step 4', label: 'Public comment', detail: 'Often months; can change or halt the rule' },
+        {
+          year: 'Step 4',
+          label: 'Public comment',
+          detail: 'Often months; can change or halt the rule',
+        },
         { year: 'Step 5', label: 'Final rule', detail: 'Only now is the substance actually added' },
       ],
     },
@@ -2421,7 +2429,10 @@ export const KEYWORDS = {
       title: '503A vs 503B compounding',
       headers: ['', '503A pharmacy', '503B outsourcing facility'],
       rows: [
-        { label: 'Scale', cells: ['Patient-specific prescriptions', 'Larger batches, can be office stock'] },
+        {
+          label: 'Scale',
+          cells: ['Patient-specific prescriptions', 'Larger batches, can be office stock'],
+        },
         { label: 'FDA oversight', cells: ['State-board led; lighter', 'Registers with FDA; cGMP'] },
         { label: 'Reviewed for efficacy?', cells: ['No', 'No'] },
       ],
@@ -2466,11 +2477,23 @@ export const KEYWORDS = {
     templateData: {
       title: 'The BPC-157 evidence base, as the FDA described it',
       events: [
-        { year: 'Indication', label: 'Reviewed for ulcerative colitis', detail: 'Not general "healing"' },
+        {
+          year: 'Indication',
+          label: 'Reviewed for ulcerative colitis',
+          detail: 'Not general "healing"',
+        },
         { year: 'Trial', label: '46-person meeting abstract', detail: 'Administered as an enema' },
         { year: 'Form sold', label: 'Injection', detail: 'Not the route the abstract studied' },
-        { year: 'Humans tested', label: '~30 total', detail: 'vs hundreds of thousands for GLP-1s' },
-        { year: 'Safety', label: '3 adverse-event reports', detail: 'Following injection; under-reported' },
+        {
+          year: 'Humans tested',
+          label: '~30 total',
+          detail: 'vs hundreds of thousands for GLP-1s',
+        },
+        {
+          year: 'Safety',
+          label: '3 adverse-event reports',
+          detail: 'Following injection; under-reported',
+        },
       ],
     },
     realWorld:
@@ -2488,10 +2511,22 @@ export const KEYWORDS = {
     templateData: {
       title: 'How a federal rule is actually made',
       events: [
-        { year: 'NPRM', label: 'Proposed rule published', detail: 'Agency states the intended change' },
-        { year: 'Comment', label: 'Public comment period', detail: 'Often 30–60+ days, frequently extended' },
+        {
+          year: 'NPRM',
+          label: 'Proposed rule published',
+          detail: 'Agency states the intended change',
+        },
+        {
+          year: 'Comment',
+          label: 'Public comment period',
+          detail: 'Often 30–60+ days, frequently extended',
+        },
         { year: 'Review', label: 'Agency responds', detail: 'Must address substantive comments' },
-        { year: 'Final', label: 'Final rule issued', detail: 'Or withdrawn — completion is not guaranteed' },
+        {
+          year: 'Final',
+          label: 'Final rule issued',
+          detail: 'Or withdrawn — completion is not guaranteed',
+        },
       ],
     },
     realWorld:
@@ -2514,8 +2549,7 @@ export const KEYWORDS = {
         { label: 'Grows via', cells: ['Demand + price', 'Formulary access + coverage'] },
         { label: 'PBM exposure', cells: ['Largely outside it', 'Central to it'] },
       ],
-      footnote:
-        'This is why WBA/CVS exposure to a compounded-peptide market is real but diluted.',
+      footnote: 'This is why WBA/CVS exposure to a compounded-peptide market is real but diluted.',
     },
     realWorld:
       'A cash-pay boom can lift telehealth platforms while barely touching the pharmacy-benefit businesses next to them.',
@@ -2537,8 +2571,7 @@ export const KEYWORDS = {
         { label: 'Reversible?', cells: ['Yes', 'Rarely'] },
         { label: 'Typical price reaction', cells: ['Often outsized', 'Priced more fully'] },
       ],
-      footnote:
-        'HIMS moved ~13% on a recommendation that binds no one and starts no rule.',
+      footnote: 'HIMS moved ~13% on a recommendation that binds no one and starts no rule.',
     },
     realWorld:
       'The move bought an option on a rulemaking that had not begun — the classic shape of a mispriced procedural catalyst.',
@@ -2605,13 +2638,25 @@ export const KEYWORDS = {
     templateData: {
       title: 'The three stages of the oil value chain',
       nodes: [
-        { label: 'Upstream', sectors: ['Exploration', 'Drilling', 'Crude extraction'], color: '#f59e0b' },
-        { label: 'Midstream', sectors: ['Pipelines', 'Storage', 'Tanker transport'], color: '#3b82f6' },
-        { label: 'Downstream', sectors: ['Refining', 'Fuel distribution', 'Petrochemicals'], color: '#10b981' },
+        {
+          label: 'Upstream',
+          sectors: ['Exploration', 'Drilling', 'Crude extraction'],
+          color: '#f59e0b',
+        },
+        {
+          label: 'Midstream',
+          sectors: ['Pipelines', 'Storage', 'Tanker transport'],
+          color: '#3b82f6',
+        },
+        {
+          label: 'Downstream',
+          sectors: ['Refining', 'Fuel distribution', 'Petrochemicals'],
+          color: '#10b981',
+        },
       ],
     },
     realWorld:
-      "Africa long exported upstream (raw crude) and imported downstream (finished fuel). Building refineries captures the downstream value — and margin — at home.",
+      'Africa long exported upstream (raw crude) and imported downstream (finished fuel). Building refineries captures the downstream value — and margin — at home.',
   },
 
   'single-train-refinery': {
@@ -2624,8 +2669,14 @@ export const KEYWORDS = {
       title: 'Single-train vs multi-train refining',
       headers: ['Design', 'Cost per barrel', 'Outage risk'],
       rows: [
-        { label: 'Single-train', cells: ['Lower (shared utilities)', 'High — one fault idles all'] },
-        { label: 'Multi-train', cells: ['Higher (duplicated units)', 'Lower — units fail independently'] },
+        {
+          label: 'Single-train',
+          cells: ['Lower (shared utilities)', 'High — one fault idles all'],
+        },
+        {
+          label: 'Multi-train',
+          cells: ['Higher (duplicated units)', 'Lower — units fail independently'],
+        },
       ],
       footnote:
         'Dangote is the first single-train refinery to run at 650,000 bpd — a scale no other single line had reached.',
@@ -2646,7 +2697,7 @@ export const KEYWORDS = {
         { label: 'Dangote (Nigeria)', cells: ['650k → 1.4M planned', 'Would take the record'] },
       ],
       footnote:
-        "At its planned 1.4M bpd, Dangote would surpass Jamnagar as the largest refining capacity at one site.",
+        'At its planned 1.4M bpd, Dangote would surpass Jamnagar as the largest refining capacity at one site.',
     },
   },
 
@@ -2660,8 +2711,14 @@ export const KEYWORDS = {
       title: 'How domestic refining eases FX pressure',
       headers: ['Fuel sourcing', 'Dollar demand', 'Effect on local currency'],
       rows: [
-        { label: 'Import refined fuel', cells: ['Recurring — every cargo', 'Persistent downward pressure'] },
-        { label: 'Refine at home', cells: ['Reduced / can earn dollars', 'Relieves pressure on the naira'] },
+        {
+          label: 'Import refined fuel',
+          cells: ['Recurring — every cargo', 'Persistent downward pressure'],
+        },
+        {
+          label: 'Refine at home',
+          cells: ['Reduced / can earn dollars', 'Relieves pressure on the naira'],
+        },
       ],
       footnote:
         'Analysts estimate domestic refining could save Nigeria up to $10 billion a year in FX.',
@@ -2672,7 +2729,7 @@ export const KEYWORDS = {
     id: 'crude-oil-benchmark',
     term: 'Crude-Oil Benchmark',
     definition:
-      'A reference crude grade whose price sets the basis for pricing other barrels. Brent and WTI are the global benchmarks; regional grades like Nigeria\'s Bonny Light trade at a differential to them based on quality and location.',
+      "A reference crude grade whose price sets the basis for pricing other barrels. Brent and WTI are the global benchmarks; regional grades like Nigeria's Bonny Light trade at a differential to them based on quality and location.",
     template: 'comparison',
     templateData: {
       title: 'Major crude benchmarks',
@@ -2751,8 +2808,14 @@ export const KEYWORDS = {
       title: 'Importing vs substituting fuel supply',
       headers: ['Approach', 'Supply chain', 'Economic effect'],
       rows: [
-        { label: 'Import fuel', cells: ['Long — overseas refiners', 'Spending and margin leave the country'] },
-        { label: 'Substitute (refine locally)', cells: ['Short — regional', 'Spending and jobs stay home'] },
+        {
+          label: 'Import fuel',
+          cells: ['Long — overseas refiners', 'Spending and margin leave the country'],
+        },
+        {
+          label: 'Substitute (refine locally)',
+          cells: ['Short — regional', 'Spending and jobs stay home'],
+        },
       ],
       footnote:
         'South Africa, Ghana, and Kenya sourcing Dangote product is import substitution at a regional scale.',
@@ -2769,7 +2832,8 @@ export const KEYWORDS = {
       formula: 'Crack Spread = Value of Refined Products − Cost of Crude',
       example: {
         title: 'Simplified 3-2-1 crack',
-        substitution: '3 barrels crude in → 2 barrels gasoline + 1 barrel distillate out; the margin is the spread.',
+        substitution:
+          '3 barrels crude in → 2 barrels gasoline + 1 barrel distillate out; the margin is the spread.',
       },
     },
     realWorld:
@@ -2784,7 +2848,7 @@ export const KEYWORDS = {
     id: 'reverse-acquihire',
     term: 'Reverse-Acquihire',
     definition:
-      'A deal in which an acquirer hires a startup\'s founders and key team and licenses its data or IP, without buying the company itself. It captures the talent and the data pipeline while leaving the corporate shell — and the merger-review trigger — behind.',
+      "A deal in which an acquirer hires a startup's founders and key team and licenses its data or IP, without buying the company itself. It captures the talent and the data pipeline while leaving the corporate shell — and the merger-review trigger — behind.",
     template: 'comparison',
     templateData: {
       title: 'Three ways to absorb a startup',
@@ -2792,7 +2856,10 @@ export const KEYWORDS = {
       rows: [
         { label: 'Full acquisition', cells: ['The whole company', 'Yes, if over the threshold'] },
         { label: 'Acquihire', cells: ['The company, mainly for its team', 'Often, if reportable'] },
-        { label: 'Reverse-acquihire', cells: ['Team hired + data/IP licensed', 'Structured to avoid it'] },
+        {
+          label: 'Reverse-acquihire',
+          cells: ['Team hired + data/IP licensed', 'Structured to avoid it'],
+        },
       ],
       footnote:
         'Over $40B flowed through reverse-acquihires (Mar 2024–mid 2026), drawing FTC and Senate scrutiny.',
@@ -2828,7 +2895,10 @@ export const KEYWORDS = {
       headers: ['Asset', 'Defensibility', 'Trend'],
       rows: [
         { label: 'The model', cells: ['Low — open weights close the gap', 'Commoditizing'] },
-        { label: 'Proprietary data', cells: ['High — cannot be scraped or reproduced', 'Appreciating'] },
+        {
+          label: 'Proprietary data',
+          cells: ['High — cannot be scraped or reproduced', 'Appreciating'],
+        },
       ],
       footnote: 'Acquirers pay for governed data because the right to use it is itself scarce.',
     },
@@ -2880,7 +2950,8 @@ export const KEYWORDS = {
       formula: 'Deal value > HSR threshold → reportable + waiting period',
       example: {
         title: '2026 threshold',
-        substitution: 'Size-of-transaction test ≈ $133.9M (adjusted). Below it, many deals avoid mandatory review.',
+        substitution:
+          'Size-of-transaction test ≈ $133.9M (adjusted). Below it, many deals avoid mandatory review.',
       },
     },
     realWorld:
@@ -2921,7 +2992,7 @@ export const KEYWORDS = {
     },
   },
 
-  'acquihire': {
+  acquihire: {
     id: 'acquihire',
     term: 'Acquihire',
     definition:
@@ -2969,7 +3040,8 @@ export const KEYWORDS = {
         { label: 'Leading', cells: ['Moves first', 'Yield curve, orders, M&A behavior'] },
         { label: 'Lagging', cells: ['Confirms later', 'Unemployment, GDP'] },
       ],
-      footnote: 'Is pipeline-consolidation a leading warning, or decoupled from the cycle? Present-day evidence is benign.',
+      footnote:
+        'Is pipeline-consolidation a leading warning, or decoupled from the cycle? Present-day evidence is benign.',
     },
   },
 
@@ -2986,8 +3058,16 @@ export const KEYWORDS = {
     templateData: {
       title: 'From $1B to a projected $16T',
       events: [
-        { year: 'Mar 2024', label: 'Tokenized US Treasuries cross $1B', detail: 'First time on record' },
-        { year: 'Mid-2026', label: 'Total tokenized RWAs pass $30B', detail: '~30x since 2024, ex-stablecoins' },
+        {
+          year: 'Mar 2024',
+          label: 'Tokenized US Treasuries cross $1B',
+          detail: 'First time on record',
+        },
+        {
+          year: 'Mid-2026',
+          label: 'Total tokenized RWAs pass $30B',
+          detail: '~30x since 2024, ex-stablecoins',
+        },
         { year: '2030', label: 'McKinsey conservative case', detail: '~$2T' },
         { year: '2030', label: 'BCG high case', detail: '~$16T' },
         { year: '2034', label: 'Standard Chartered projection', detail: '~$30T' },
@@ -3005,8 +3085,14 @@ export const KEYWORDS = {
       title: 'Illiquid asset vs tokenized collateral',
       headers: ['Stage', 'What a lender must do', 'Speed to a loan'],
       rows: [
-        { label: 'Illiquid (today)', cells: ['Inspect, appraise, chase paperwork', 'Weeks — if at all'] },
-        { label: 'Tokenized collateral', cells: ['Read the on-chain record + sensor feed', 'Minutes'] },
+        {
+          label: 'Illiquid (today)',
+          cells: ['Inspect, appraise, chase paperwork', 'Weeks — if at all'],
+        },
+        {
+          label: 'Tokenized collateral',
+          cells: ['Read the on-chain record + sensor feed', 'Minutes'],
+        },
       ],
       footnote:
         '~$16T of illiquid assets sits outside the borrowing system today (BCG-derived); the Paraná cow pilot puts sensor-verified livestock collateral on B3 and deposit-and-borrow flows run against tokenized buildings on lending protocols.',
@@ -3031,6 +3117,63 @@ export const KEYWORDS = {
       footnote:
         'Much of the "missing" collateral is not missing — farmers own livestock they cannot borrow against for lack of a lender-ready registry and insurance.',
     },
+  },
+
+  /* ════════════════════════════════════════════════════════════════════════
+     Empire Rankings (1500–2026) article keywords
+     ════════════════════════════════════════════════════════════════════════ */
+
+  'reserve-currency-status': {
+    id: 'reserve-currency-status',
+    term: 'Reserve Currency Status',
+    definition:
+      "The share of global central-bank foreign-exchange reserves held in a given currency, as reported by the IMF's COFER survey. In the sequence of national power, reserve-currency status is the last dimension to arrive during a hegemonic ascent — and the last to decay during a decline, persisting decades after the underlying output, trade, and financial-center leads have eroded.",
+    template: 'comparison',
+    templateData: {
+      title: 'Allocated FX reserves by currency (IMF COFER, 2025)',
+      headers: ['Currency', 'Reserve share', 'Trend vs 1999'],
+      rows: [
+        { label: 'US dollar', cells: ['~58%', 'Down from ~71%'] },
+        { label: 'Euro', cells: ['~20%', 'Broadly stable'] },
+        { label: 'Japanese yen', cells: ['~5–6%', 'Broadly stable'] },
+        { label: 'Chinese renminbi', cells: ['~2%', 'Up from ~0%'] },
+      ],
+      footnote:
+        'One of the 18 power dimensions in Ezana\'s Empire Rankings. A COFER dollar share below 45% is this report\'s explicit "kill switch" for the incumbent-holds base case.',
+    },
+    realWorld:
+      'When the article notes the dollar at 58% of reserves against a US output share between 15% (PPP) and 26% (nominal), that gap is the "overhang" — reserve status outlasting the leads that built it, exactly as sterling did into the 1950s.',
+    courseId: 'stocks-advanced-7',
+    courseTitle: 'Macroeconomics for Traders',
+  },
+
+  'maddison-project': {
+    id: 'maddison-project',
+    term: 'Maddison Project',
+    definition:
+      'The academic convention (maintained at the University of Groningen, extending Angus Maddison\'s work) for long-run historical GDP estimates, expressing output on a purchasing-power-parity basis back over centuries. It is the standard basis for statements like "China and India produced roughly half of world output in 1500."',
+    template: 'timeline',
+    templateData: {
+      title: "China's share of world output, Maddison convention",
+      events: [
+        {
+          year: '1500',
+          label: 'China ~25%, India ~24.5%',
+          detail: "Asia's two giants ≈ half of world output",
+        },
+        { year: '1820', label: 'China ~33%', detail: 'Largest single-economy share on record' },
+        { year: '1950', label: 'China <5%', detail: 'Trough after the century of humiliation' },
+        {
+          year: '2026',
+          label: 'China ~19% (PPP)',
+          detail: 'A return toward the historical baseline',
+        },
+      ],
+    },
+    realWorld:
+      "Every long-run output figure in this article — the 1500 half-of-the-world share, China's 1820 peak, the 1950 American maximum — follows the Maddison convention. The values are scholarly estimates revised across editions, not measurements, which is why the piece rounds them.",
+    courseId: 'stocks-advanced-7',
+    courseTitle: 'Macroeconomics for Traders',
   },
 };
 

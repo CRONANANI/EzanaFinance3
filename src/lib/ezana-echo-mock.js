@@ -38,10 +38,12 @@ import { africaRefiningArticle2026 } from './ezana-echo-article-africa-refining-
 import { dataConsolidationArticle2026 } from './ezana-echo-article-data-consolidation-2026.js';
 import { johnnyMnemonicConsolidation2026 } from './ezana-echo-article-johnny-mnemonic-consolidation-2026.js';
 import { tokenizationCollateral2026 } from './ezana-echo-article-tokenization-collateral-2026.js';
+import { empireRankings2026 } from './ezana-echo-article-empire-rankings-2026.js';
 
 const ARTICLES = [
   johnnyMnemonicConsolidation2026,
   tokenizationCollateral2026,
+  empireRankings2026,
   dataConsolidationArticle2026,
   africaRefiningArticle2026,
   fdaPeptidesBpc157Article2026,
@@ -74,6 +76,11 @@ export const ECHO_TRENDING = {
       title: 'What Johnny Mnemonic Saw Coming: Tech’s $649B Consolidation Wave',
       reads: 6100,
       id: 'johnny-mnemonic-tech-consolidation-2026',
+    },
+    {
+      title: 'Five Centuries of Empire Rankings: Who Ran the World From 1500 to 2026',
+      reads: 3900,
+      id: 'empire-rankings-1500-2026',
     },
     {
       title: 'The Cow Is the Collateral: The $16 Trillion Tokenization Trade',
@@ -161,6 +168,29 @@ export const ECHO_TRENDING = {
 
 /** @type {Record<string, { id: string; author: { name: string; initials: string; id?: string }; content: string; createdAt: string }[]>} */
 export const ECHO_MOCK_COMMENTS_BY_ARTICLE = {
+  'empire-rankings-1500-2026': [
+    {
+      id: 'c-empire-1',
+      author: { name: 'Alexei Novak', initials: 'AN' },
+      content:
+        'The sequence framing is what makes this more than a history lesson. "Reserve status arrives last and decays last" reframes the whole dollar debate — the 58% share isn\'t strength, it\'s the last overhang to erode, exactly like sterling into the 1950s. The kill switch at 45% COFER is the right number to actually watch.',
+      createdAt: '2026-08-05T14:05:00Z',
+    },
+    {
+      id: 'c-empire-2',
+      author: { name: 'Priya Raghunathan', initials: 'PR' },
+      content:
+        'Appreciate that the PPP-vs-nominal ambiguity is stated outright instead of quietly picking whichever number flatters the argument. China at ~19% (PPP) vs the US at ~26% (nominal) is the entire "who\'s ahead" debate, and the piece lets the basis choice decide the cell rather than pretending there\'s one answer.',
+      createdAt: '2026-08-05T16:40:00Z',
+    },
+    {
+      id: 'c-empire-3',
+      author: { name: 'Tomás Herrera', initials: 'TH' },
+      content:
+        "The Soviet row is the most useful part for me — output alone never converted because the middle steps (convertible currency, open capital market, financial center) were simply missing. That's the real question hanging over China, and the article is honest that no prior challenger cleared it without capital-account convertibility.",
+      createdAt: '2026-08-06T09:15:00Z',
+    },
+  ],
   'tokenization-collateral-2026': [
     {
       id: 'c-tok-1',
