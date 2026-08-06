@@ -31,6 +31,13 @@ const ResourcesSection = dynamic(
     })),
   { loading: sectionFallback('600px') },
 );
+const DimensionScrollSection = dynamic(
+  () =>
+    import('@/components/landing/DimensionScrollSection').then((m) => ({
+      default: m.DimensionScrollSection,
+    })),
+  { loading: sectionFallback('900px') },
+);
 const Faq1 = dynamic(() => import('@/components/ui/faq1').then((m) => ({ default: m.Faq1 })), {
   loading: sectionFallback('400px'),
 });
@@ -67,6 +74,12 @@ export default function HomePage() {
         <div id="features-section-container">
           <FeaturesSection />
         </div>
+      </LandingErrorBoundary>
+
+      {/* NEW — pinned seven-dimensions walkthrough, between the Getting-started
+          block (tail of FeaturesSection) and the Data & Resources radar. */}
+      <LandingErrorBoundary name="DimensionScrollSection">
+        <DimensionScrollSection />
       </LandingErrorBoundary>
 
       <LandingErrorBoundary name="ResourcesSection">

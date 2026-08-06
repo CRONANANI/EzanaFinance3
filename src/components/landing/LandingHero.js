@@ -1,7 +1,7 @@
 'use client';
 
-import { Fragment, useEffect, useRef, useState } from 'react';
-import { ArrowRight, BarChart3, CheckCircle2 } from 'lucide-react';
+import { Fragment, useEffect, useState } from 'react';
+import { ArrowRight } from 'lucide-react';
 import { HeroDottedMap } from './HeroDottedMap';
 import './landing-hero.css';
 
@@ -16,10 +16,9 @@ import './landing-hero.css';
  * Landing hero — "Global Signal" (Column × Ezana hybrid).
  *
  * A full-bleed band: a dotted world map with animated emerald signal routes
- * behind a left copy column (headline → lead → sub → CTAs → fine print) and a
- * floating portfolio-intelligence card. The card content is illustrative
- * marketing data, not a live fetch. The global navbar lives in the layout and
- * is untouched.
+ * behind a left copy column (headline → lead → sub → CTAs → fine print). The
+ * former floating portfolio-intelligence card now lives in DimensionScrollSection
+ * as PortfolioSignalCard. The global navbar lives in the layout and is untouched.
  */
 
 /* Hero headline, split into balanced .lp-line rows (each stays on one line on
@@ -30,82 +29,6 @@ const HEADLINE = [
   { words: ['the', 'informed,', 'where'] },
   { words: ['knowledge', 'compounds'], mark: true },
   { words: ['into opportunity'], mark: true },
-];
-
-const TARGET = 124873.4;
-const fmtUSD = (n) =>
-  '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-/* JSON snippet builders — `j` is a syntax-highlighted span, `t` is raw text.
-   Every space/newline is explicit so the rendered <pre> matches exactly. */
-const j = (c, t) => ({ c, t });
-const t = (text) => ({ t: text });
-
-const SIGNALS = [
-  {
-    name: 'Consumer Whispers',
-    json: [
-      j('p', '{'),
-      t(' '),
-      j('k', '"signal"'),
-      t(': '),
-      j('s', '"consumer_spending"'),
-      t(',\n  '),
-      j('k', '"sector"'),
-      t(': '),
-      j('s', '"discretionary"'),
-      t(', '),
-      j('k', '"Δ30d"'),
-      t(': '),
-      j('n', '+6.2%'),
-      t(' '),
-      j('p', '}'),
-    ],
-  },
-  {
-    name: 'Capitol Watch',
-    json: [
-      j('p', '{'),
-      t(' '),
-      j('k', '"signal"'),
-      t(': '),
-      j('s', '"government_contracts"'),
-      t(',\n  '),
-      j('k', '"funding_agency"'),
-      t(': '),
-      j('s', '"Department of Agriculture"'),
-      t(',\n  '),
-      j('k', '"ticker"'),
-      t(': '),
-      j('s', '"PLTR"'),
-      t(', '),
-      j('k', '"value"'),
-      t(': '),
-      j('s', '"$27M"'),
-      t(' '),
-      j('p', '}'),
-    ],
-  },
-  {
-    name: 'Titans Shadow',
-    json: [
-      j('p', '{'),
-      t(' '),
-      j('k', '"signal"'),
-      t(': '),
-      j('s', '"institutional_sell"'),
-      t(',\n  '),
-      j('k', '"filing"'),
-      t(': '),
-      j('s', '"13F"'),
-      t(', '),
-      j('k', '"Δposition"'),
-      t(': '),
-      j('neg', '-1.2M'),
-      t(' '),
-      j('p', '}'),
-    ],
-  },
 ];
 
 /* Decorative signal routes overlaid on the dotted world map. Rendered as raw
@@ -197,8 +120,6 @@ export function LandingHero() {
     if (typeof window === 'undefined' || !window.matchMedia) return false;
     return window.matchMedia('(max-width: 480px)').matches;
   });
-  const valueRef = useRef(null);
-
   useEffect(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return undefined;
     const mq = window.matchMedia('(max-width: 480px)');
@@ -209,38 +130,8 @@ export function LandingHero() {
   }, []);
 
   useEffect(() => {
-    const reduce =
-      typeof window !== 'undefined' &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
     const raf = requestAnimationFrame(() => setGo(true));
-
-    // Portfolio value count-up (86% → 100% of target). The DOM already ships
-    // the final value as text, so no-JS / reduced-motion users see it correct.
-    let frame;
-    let timer;
-    const el = valueRef.current;
-    if (el && !reduce) {
-      const dur = 1400;
-      const begin = TARGET * 0.86;
-      const run = (start) => {
-        const tick = (now) => {
-          const p = Math.min(1, (now - start) / dur);
-          const e = 1 - Math.pow(1 - p, 3);
-          el.textContent = fmtUSD(begin + (TARGET - begin) * e);
-          if (p < 1) frame = requestAnimationFrame(tick);
-          else el.textContent = fmtUSD(TARGET);
-        };
-        frame = requestAnimationFrame(tick);
-      };
-      timer = setTimeout(() => run(performance.now()), 350);
-    }
-
-    return () => {
-      cancelAnimationFrame(raf);
-      if (frame) cancelAnimationFrame(frame);
-      if (timer) clearTimeout(timer);
-    };
+    return () => cancelAnimationFrame(raf);
   }, []);
 
   return (
@@ -309,79 +200,6 @@ export function LandingHero() {
           </div>
 
           <p className="lp-note">Free to start · No brokerage required · Real-time disclosures</p>
-        </div>
-
-        {/* Floating intelligence card (illustrative marketing data) */}
-        <div className="lp-card" role="group" aria-label="Portfolio signal preview">
-          <div className="lp-card-head">
-            <div className="lp-card-id">
-              <span className="lp-flag">
-                <BarChart3 size={16} aria-hidden />
-              </span>
-              <div>
-                <div className="lp-card-name">Your portfolio</div>
-              </div>
-            </div>
-            <div className="lp-card-tag">
-              <CheckCircle2 size={12} aria-hidden /> Synced
-            </div>
-          </div>
-
-          <div className="lp-card-value">
-            <div className="lp-bigval" ref={valueRef}>
-              {fmtUSD(TARGET)}
-            </div>
-            <div className="lp-delta">
-              +$2,418.09 <span>(+1.97%)</span>
-            </div>
-          </div>
-
-          <div className="lp-sentiment">
-            <div className="lp-sent-top">
-              <span className="lp-sent-label">Portfolio sentiment rating</span>
-              <span className="lp-sent-rating">
-                Bullish <b>78</b>
-                <span className="lp-sent-max">/100</span>
-              </span>
-            </div>
-            <div className="lp-sent-bar">
-              <i style={{ width: '78%' }} />
-            </div>
-          </div>
-
-          <div className="lp-why">
-            <span className="lp-why-windfall">Windfalls</span> and{' '}
-            <span className="lp-why-headwind">headwinds</span> to watch out for:
-          </div>
-
-          <div className="lp-signals">
-            {SIGNALS.map((s) => (
-              <div className="lp-signal" key={s.name}>
-                <div className="lp-sig-head">
-                  <span className="lp-sig-name">{s.name}</span>
-                  <span className="lp-sig-analyze">Analyze</span>
-                </div>
-                <pre className="lp-sig-json">
-                  {s.json.map((seg, i) =>
-                    seg.c ? (
-                      <span key={i} className={seg.c}>
-                        {seg.t}
-                      </span>
-                    ) : (
-                      seg.t
-                    ),
-                  )}
-                </pre>
-              </div>
-            ))}
-          </div>
-
-          <div className="lp-card-foot">
-            Ezana sources data across&nbsp;
-            <a className="lp-foot-link" href="#resources">
-              7 dimensions
-            </a>
-          </div>
         </div>
       </div>
     </div>

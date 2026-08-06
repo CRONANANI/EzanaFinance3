@@ -1,0 +1,223 @@
+/* "Your portfolio" signal card — token-driven so it reads correctly on the
+   landing dark-lock background AND under body.light-mode. Page-scoped `psc-`
+   prefix; no global selectors. Companion to PortfolioSignalCard.jsx. */
+
+.psc-card {
+  width: 100%;
+  max-width: 380px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 1.25rem 1.25rem 1rem;
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+}
+
+.psc-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.875rem;
+}
+.psc-id {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.psc-flag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-md);
+  background: var(--emerald-bg);
+  border: 1px solid var(--emerald-border);
+  color: var(--emerald);
+  font-size: 0.875rem;
+}
+.psc-name {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+.psc-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  background: var(--emerald-bg);
+  border: 1px solid var(--emerald-border);
+  color: var(--emerald);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.psc-value {
+  display: flex;
+  align-items: baseline;
+  gap: 0.625rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.875rem;
+}
+.psc-bigval {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+.psc-delta {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--positive);
+}
+.psc-delta span {
+  color: var(--positive);
+  opacity: 0.75;
+}
+
+.psc-sentiment {
+  margin-bottom: 0.875rem;
+}
+.psc-sent-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.375rem;
+}
+.psc-sent-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+.psc-sent-rating {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.75rem;
+  color: var(--emerald);
+}
+.psc-sent-rating b {
+  font-weight: 700;
+}
+.psc-sent-max {
+  color: var(--text-faint);
+}
+.psc-sent-bar {
+  height: 5px;
+  border-radius: 999px;
+  background: var(--bg-tertiary);
+  overflow: hidden;
+}
+.psc-sent-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--emerald-dark), var(--emerald));
+}
+
+.psc-why {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+.psc-why-windfall {
+  color: var(--positive);
+  font-weight: 600;
+}
+.psc-why-headwind {
+  color: var(--negative);
+  font-weight: 600;
+}
+
+.psc-signals {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.psc-signal {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-md);
+  padding: 0.5rem 0.625rem;
+}
+.psc-sig-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+.psc-sig-name {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.psc-sig-analyze {
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--emerald);
+}
+.psc-sig-json {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.5625rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--text-faint);
+}
+.psc-sig-json .k {
+  color: var(--blue);
+}
+.psc-sig-json .s {
+  color: var(--text-secondary);
+}
+.psc-sig-json .n {
+  color: var(--positive);
+}
+.psc-sig-json .neg {
+  color: var(--negative);
+}
+
+.psc-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.875rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.psc-foot-label {
+  color: var(--text-faint);
+}
+.psc-foot-dim {
+  color: var(--psc-accent, var(--emerald));
+  font-weight: 600;
+  text-align: right;
+  transition: color 0.35s ease;
+}
+
+@media (max-width: 1023px) {
+  .psc-card {
+    max-width: 100%;
+  }
+}

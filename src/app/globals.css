@@ -2361,6 +2361,10 @@ html:has(.landing-page) .navbar .logo,
   background: #0a0e13 !important;
 }
 
+.landing-page .dimension-scroll-section {
+  background: #0a0e13 !important;
+}
+
 .landing-page .landing-faq-section {
   background: #0a0e13 !important;
 }
@@ -2451,6 +2455,7 @@ body:has(.landing-page) {
 .landing-page .hero-cybercore-root,
 .landing-page #features-section-container,
 .landing-page .features-section,
+.landing-page .dimension-scroll-section,
 .landing-page .resources-section,
 .landing-page .landing-faq-section,
 .landing-page .faq-section-wrapper,
