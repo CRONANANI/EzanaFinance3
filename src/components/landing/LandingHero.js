@@ -3,6 +3,7 @@
 import { Fragment, useEffect, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { HeroDottedMap } from './HeroDottedMap';
+import { HeroDeviceShowcase } from './HeroDeviceShowcase';
 import './landing-hero.css';
 
 // The dotted continents render as a static, SSR'd layer (HeroDottedMap) so they
@@ -16,9 +17,11 @@ import './landing-hero.css';
  * Landing hero — "Global Signal" (Column × Ezana hybrid).
  *
  * A full-bleed band: a dotted world map with animated emerald signal routes
- * behind a left copy column (headline → lead → sub → CTAs → fine print). The
- * former floating portfolio-intelligence card now lives in DimensionScrollSection
- * as PortfolioSignalCard. The global navbar lives in the layout and is untouched.
+ * behind a left copy column (headline → lead → sub → CTAs → fine print) and a
+ * right-side social copy-trading device showcase (HeroDeviceShowcase — a tilted
+ * MacBook, a foreground phone, and glass satellite cards). The old floating
+ * portfolio-intelligence card now lives in DimensionScrollSection as
+ * PortfolioSignalCard. The global navbar lives in the layout and is untouched.
  */
 
 /* Hero headline, split into balanced .lp-line rows (each stays on one line on
@@ -201,6 +204,10 @@ export function LandingHero() {
 
           <p className="lp-note">Free to start · No brokerage required · Real-time disclosures</p>
         </div>
+
+        {/* Social copy-trading device showcase (decorative marketing UI —
+            fictional people/funds, pointer-events: none, hidden <1181px). */}
+        <HeroDeviceShowcase />
       </div>
     </div>
   );

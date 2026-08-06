@@ -23,7 +23,7 @@
 .lp-map {
   position: absolute;
   top: 18px;
-  right: -60px;
+  right: -150px;
   width: 1480px;
   max-width: none;
   pointer-events: none;
@@ -143,7 +143,7 @@
   align-items: center;
 }
 .lp-copy {
-  max-width: 700px;
+  max-width: 620px;
   padding: 56px 0;
 }
 
@@ -341,13 +341,5 @@
   .lp-ping,
   .lp-comet {
     animation: none !important;
-  }
-}
-
-/* The card used to occupy the right third of the band; with it gone the copy
-   column can breathe wider before the headline needs to wrap. */
-@media (min-width: 1181px) {
-  .lp-title {
-    font-size: clamp(2.125rem, 3.9vw, 3.25rem);
   }
 }
