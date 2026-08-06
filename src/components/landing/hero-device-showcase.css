@@ -1,12 +1,13 @@
 /* ══════════════════════════════════════════════════════════════════════
-   Hero device showcase — social copy-trading composition on the right side
-   of the landing hero, over the dotted map. Companion to
-   HeroDeviceShowcase.jsx. Page-scoped `lpd-` prefix only.
+   Hero device showcase v2. Companion to HeroDeviceShowcase.jsx.
+   Page-scoped `lpd-` prefix only; theme tokens only (the glass satellites
+   re-scope light tokens exactly like the retired .lp-card did).
 
-   The hero is brand-locked dark; the glass satellites re-scope light tokens
-   (same technique the old .lp-card used) so dark-on-light text stays
-   readable over the map. Devices themselves render dark UI (product truth:
-   the app is dark-first).
+   Layout map (620×720 canvas, anchored right of .lp-band, v-centred):
+
+        [Auto-copy sat]  ← above the phone, clips only its top-right corner
+     [MacBook, lower-left]      [iPhone, centre-right]
+     [New follower sat]              [Rebalance sat]
    ══════════════════════════════════════════════════════════════════════ */
 
 .lpd-stack {
@@ -16,19 +17,19 @@
   right: -8px;
   transform: translateY(-50%);
   width: 620px;
-  height: 640px;
+  height: 720px;
   pointer-events: none;
   user-select: none;
 }
 
-/* ── Float loops: three depths of parallax, staggered phases ── */
+/* ── Float loops (three parallax depths, staggered phases) ── */
 @keyframes lpd-float {
   0%,
   100% {
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-14px);
+    transform: translateY(-12px);
   }
 }
 .lpd-float {
@@ -54,17 +55,14 @@
   animation-delay: -3s;
 }
 
-/* Shared frame-to-frame transition */
 .lpd-t {
   transition:
     transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94),
     opacity 0.4s ease,
     background 0.35s ease,
     color 0.35s ease,
-    border-color 0.35s ease,
-    points 0.5s ease;
+    border-color 0.35s ease;
 }
-
 .lpd-mono {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
@@ -72,49 +70,99 @@
 .lpd-dim {
   color: var(--text-faint);
 }
-.lpd-pos {
-  color: var(--positive);
+
+/* ══ Fixed-size Follow/Following button — BOTH states share one box so the
+   toggle can never reflow neighbours or spill outside the phone. The two
+   labels are stacked; opacity swaps them. ══ */
+.lpd-btn {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  border: 1px solid var(--emerald-border);
+  color: var(--emerald);
+  background: transparent;
+  overflow: hidden;
+  flex: none;
 }
-.lpd-neg {
-  color: var(--negative);
+.lpd-btn .lpd-btn-off,
+.lpd-btn .lpd-btn-on {
+  grid-area: 1 / 1;
+  transition: opacity 0.3s ease;
+  white-space: nowrap;
+}
+.lpd-btn .lpd-btn-on {
+  opacity: 0;
+}
+.lpd-btn.is-on {
+  background: var(--emerald);
+  border-color: var(--emerald);
+  color: var(--bg-primary);
+}
+.lpd-btn.is-on .lpd-btn-off {
+  opacity: 0;
+}
+.lpd-btn.is-on .lpd-btn-on {
+  opacity: 1;
+}
+.lpd-btn--mini {
+  width: 64px;
+  height: 20px;
+  font-size: 8.5px;
+  font-weight: 600;
+}
+.lpd-btn--tiny {
+  width: 100%;
+  max-width: 56px;
+  height: 17px;
+  font-size: 7.5px;
+  font-weight: 600;
 }
 
-/* ══════════════ MacBook (behind-left, tilted) ══════════════ */
+/* ══════════════ MacBook ══════════════ */
 .lpd-mac {
   position: absolute;
-  top: 96px;
-  left: 0;
-  width: 420px;
-  transform: rotate(-4deg);
+  top: 168px;
+  left: -6px;
+  width: 400px;
+  transform: rotate(-3deg);
   transform-origin: 50% 100%;
-  opacity: 0.94;
 }
-.lpd-mac .lpd-mac-screen {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: 14px 14px 0 0;
-  box-shadow: var(--shadow-lg);
-  overflow: hidden;
-}
-.lpd-mac-base {
-  height: 12px;
-  margin: 0 -18px;
+.lpd-mac-lid {
+  position: relative;
   background: var(--bg-tertiary);
   border: 1px solid var(--border-primary);
-  border-top: none;
-  border-radius: 0 0 14px 14px;
+  border-radius: 14px 14px 0 0;
+  padding: 12px 10px 8px; /* visible bezel */
+  box-shadow: var(--shadow-lg);
+}
+.lpd-mac-cam {
+  position: absolute;
+  top: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--text-ghost);
+}
+.lpd-mac-screen {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-secondary);
+  border-radius: 6px;
+  overflow: hidden;
 }
 .lpd-mac-chrome {
   display: flex;
   align-items: center;
   gap: 5px;
-  padding: 8px 12px;
+  padding: 7px 11px;
   border-bottom: 1px solid var(--border-secondary);
   background: var(--bg-tertiary);
 }
 .lpd-dot {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: var(--text-ghost);
   opacity: 0.6;
@@ -122,25 +170,25 @@
 .lpd-mac-url {
   margin-left: 8px;
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 8.5px;
   letter-spacing: 0.03em;
   color: var(--text-faint);
 }
 .lpd-mac-body {
-  padding: 12px 14px 14px;
+  padding: 10px 12px 12px;
 }
 .lpd-mac-title {
   font-size: 12px;
   font-weight: 600;
   letter-spacing: -0.01em;
   color: var(--text-primary);
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 .lpd-fund {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 7px 10px;
+  gap: 9px;
+  padding: 5px 9px;
   border-radius: var(--radius-md);
   border: 1px solid transparent;
 }
@@ -151,87 +199,133 @@
 .lpd-fund-rank {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 9px;
+  font-size: 8.5px;
   color: var(--text-faint);
 }
 .lpd-fund-name {
   flex: 1;
+  min-width: 0;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .lpd-spark {
-  width: 64px;
-  height: 20px;
+  width: 56px;
+  height: 18px;
+  flex: none;
 }
-.lpd-spark polyline {
+.lpd-spark-line {
   fill: none;
-  stroke-width: 1.5;
+  stroke: var(--emerald);
+  stroke-width: 1.4;
   stroke-linecap: round;
   stroke-linejoin: round;
+  opacity: 0.8;
 }
-.lpd-spark-up {
-  stroke: var(--positive);
-}
-.lpd-spark-down {
-  stroke: var(--negative);
-}
-.lpd-fund-delta {
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  font-size: 10px;
-  font-weight: 600;
-  min-width: 42px;
-  text-align: right;
-}
-.lpd-follow-mini {
+.lpd-fund-followers {
   font-size: 9px;
   font-weight: 600;
-  padding: 3px 9px;
-  border-radius: 999px;
-  border: 1px solid var(--emerald-border);
-  color: var(--emerald);
-  background: transparent;
+  color: var(--text-muted);
+  min-width: 34px;
+  text-align: right;
+  flex: none;
 }
-.lpd-follow-mini.is-on {
-  background: var(--emerald);
-  color: var(--bg-primary);
-  border-color: var(--emerald);
+.lpd-mac-foot {
+  margin-top: 8px;
+  font-size: 7.5px;
+  letter-spacing: 0.08em;
+  color: var(--text-ghost);
+  text-transform: uppercase;
 }
 
-/* ══════════════ Phone (foreground) ══════════════ */
+/* Hinge + keyboard deck = the part that makes it read as a laptop. */
+.lpd-mac-hinge {
+  height: 5px;
+  margin: 0 6px;
+  background: var(--border-primary);
+  border-radius: 0 0 3px 3px;
+}
+.lpd-mac-deck {
+  height: 44px;
+  margin: 0 -22px;
+  padding: 6px 34px 0;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  border-top: none;
+  border-radius: 4px 4px 16px 16px;
+  box-shadow: var(--shadow-md);
+}
+.lpd-mac-keys {
+  display: grid;
+  grid-template-columns: repeat(14, 1fr);
+  gap: 2px;
+  margin-bottom: 4px;
+}
+.lpd-mac-keys i {
+  height: 4px;
+  border-radius: 1px;
+  background: var(--border-primary);
+}
+.lpd-mac-trackpad {
+  width: 84px;
+  height: 10px;
+  margin: 0 auto;
+  border-radius: 3px;
+  border: 1px solid var(--border-primary);
+}
+
+/* ══════════════ iPhone ══════════════ */
 .lpd-phone {
   position: absolute;
-  top: 22px;
-  right: 96px;
+  top: 56px;
+  right: 92px;
   width: 252px;
   background: var(--bg-primary);
   border: 6px solid var(--bg-tertiary);
   outline: 1px solid var(--border-primary);
-  border-radius: 34px;
+  border-radius: 38px;
   box-shadow: var(--shadow-xl), var(--shadow-glow);
   z-index: 2;
 }
-.lpd-phone-notch {
+/* Dynamic Island — small dark pill INSIDE the top of the screen. */
+.lpd-phone-island {
   position: absolute;
-  top: 8px;
+  top: 9px;
   left: 50%;
   transform: translateX(-50%);
-  width: 76px;
-  height: 16px;
+  width: 62px;
+  height: 14px;
   border-radius: 999px;
   background: var(--bg-tertiary);
+  outline: 1px solid var(--border-secondary);
+}
+/* Home indicator — the grey bar, now at the BOTTOM (iPhone-accurate). */
+.lpd-phone-homebar {
+  position: absolute;
+  bottom: 7px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 92px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--text-ghost);
+  opacity: 0.7;
 }
 .lpd-phone-screen {
-  padding: 34px 14px 16px;
+  padding: 32px 14px 22px; /* bottom clears the home bar */
+  overflow: hidden; /* nothing inside may escape the phone */
+  border-radius: 32px;
 }
 .lpd-phone-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
+  margin-bottom: 9px;
 }
 .lpd-phone-hi {
   font-size: 14px;
@@ -250,12 +344,15 @@
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--text-faint);
-  margin: 10px 0 6px;
+  margin: 11px 0 6px;
 }
 
 .lpd-people {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(
+    4,
+    minmax(0, 1fr)
+  ); /* minmax(0,…) = no cell can grow past its track */
   gap: 6px;
 }
 .lpd-person {
@@ -267,6 +364,8 @@
   border-radius: var(--radius-md);
   background: var(--surface-card);
   border: 1px solid var(--border-secondary);
+  min-width: 0;
+  overflow: hidden; /* belt & braces: clip anything that tries to spill */
 }
 .lpd-avatar {
   display: inline-flex;
@@ -278,6 +377,7 @@
   font-size: 11px;
   font-weight: 700;
   color: var(--bg-primary);
+  flex: none;
 }
 .lpd-avatar--sm {
   width: 20px;
@@ -303,54 +403,43 @@
   font-size: 8.5px;
   font-weight: 600;
   color: var(--text-secondary);
+  max-width: 100%;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .lpd-person-meta {
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
   font-size: 7px;
   color: var(--text-faint);
   white-space: nowrap;
 }
-.lpd-follow {
-  font-size: 8px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 999px;
-  border: 1px solid var(--emerald-border);
-  color: var(--emerald);
-}
-.lpd-follow.is-on {
-  background: var(--emerald);
-  border-color: var(--emerald);
-  color: var(--bg-primary);
-}
 
+/* Capitol Watch disclosure — single-line, ~30% thinner than v1. */
 .lpd-disclosure {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
+  gap: 7px;
+  padding: 5px 9px;
   border-radius: var(--radius-md);
   background: var(--surface-card);
   border: 1px solid var(--border-secondary);
   border-left: 2px solid var(--blue);
-}
-.lpd-disc-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
   min-width: 0;
 }
 .lpd-disc-name {
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 600;
   color: var(--text-primary);
+  white-space: nowrap;
 }
 .lpd-disc-line {
+  flex: 1;
+  min-width: 0;
   font-size: 9px;
   color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .lpd-disc-line b {
   font-weight: 700;
@@ -359,19 +448,21 @@
 .lpd-disc-when {
   font-size: 7.5px;
   color: var(--text-faint);
+  flex: none;
 }
 .lpd-copybtn {
   font-size: 9px;
   font-weight: 700;
-  padding: 4px 11px;
+  padding: 3px 10px;
   border-radius: 999px;
   background: var(--emerald);
   color: var(--bg-primary);
+  flex: none;
 }
 
 .lpd-feed {
   position: relative;
-  height: 92px;
+  height: 96px;
   overflow: hidden;
 }
 .lpd-feedrow {
@@ -394,6 +485,7 @@
 }
 .lpd-feed-what {
   flex: 1;
+  min-width: 0;
   font-size: 9px;
   color: var(--text-faint);
   white-space: nowrap;
@@ -405,20 +497,18 @@
   color: var(--text-ghost);
 }
 
-/* ══════════════ Glass satellites (light-scoped over the map) ══════════════ */
+/* ══════════════ Glass satellites ══════════════ */
 .lpd-sat {
   position: absolute;
-  width: 226px;
+  width: 224px;
   padding: 12px 14px;
   border-radius: var(--radius-lg);
-  background: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.62);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(16, 185, 129, 0.25);
   box-shadow: var(--shadow-lg);
-  /* Re-scope to light tokens: dark text on the translucent white glass,
-     exactly the technique the old .lp-card used. Values mirror
-     theme-variables.css light mode — tokens, not new colors. */
+  /* light-token re-scope over the map (technique inherited from .lp-card) */
   --text-primary: #0f172a;
   --text-secondary: #1e293b;
   --text-muted: #64748b;
@@ -428,19 +518,21 @@
   --surface-card: rgba(255, 255, 255, 0.55);
   color: var(--text-secondary);
 }
+/* Auto-copy: ABOVE the phone. Its bottom edge overlaps only ~18px of the
+   phone's top-right corner — never the phone's header text. */
 .lpd-sat--sync {
-  top: 40px;
-  right: -4px;
+  top: -14px;
+  right: 0;
   z-index: 3;
 }
 .lpd-sat--follower {
-  bottom: 44px;
-  left: 26px;
+  bottom: 30px;
+  left: 10px;
   z-index: 3;
 }
 .lpd-sat--rebalance {
-  bottom: -8px;
-  right: 30px;
+  bottom: -16px;
+  right: 12px;
   z-index: 1;
   width: 238px;
 }
@@ -492,6 +584,7 @@
   border-radius: 50%;
   background: var(--emerald);
   position: relative;
+  flex: none;
 }
 .lpd-ping::after {
   content: '';
@@ -511,7 +604,6 @@
     transform: scale(3);
   }
 }
-
 .lpd-sync-chart {
   width: 100%;
   height: 34px;
@@ -528,7 +620,6 @@
 .lpd-sync-b {
   stroke: var(--emerald);
 }
-
 .lpd-pills {
   display: flex;
   flex-wrap: wrap;
@@ -575,13 +666,13 @@
 @media (max-width: 1380px) {
   .lpd-stack {
     width: 560px;
-    transform: translateY(-50%) scale(0.92);
+    transform: translateY(-50%) scale(0.9);
     transform-origin: right center;
   }
 }
 @media (max-width: 1180px) {
   .lpd-stack {
-    display: none; /* same breakpoint the old .lp-card hid at */
+    display: none;
   }
 }
 @media (prefers-reduced-motion: reduce) {
