@@ -33,7 +33,11 @@ export const johnnyMnemonicConsolidation2026 = {
         { label: 'Tech deal value, H1 2026', value: '$649B', change: 'Led all sectors' },
         { label: 'Deals above $10B closed, H1', value: '47', change: '$1.3T+ combined' },
         { label: 'Tech deals with an AI component', value: '~50%', change: 'Up from ~25% in 2024' },
-        { label: 'Orgs consolidating security vendors', value: '~75%', change: 'Up from <33% in 2020 (Gartner)' },
+        {
+          label: 'Orgs consolidating security vendors',
+          value: '~75%',
+          change: 'Up from <33% in 2020 (Gartner)',
+        },
       ],
     },
 
@@ -43,23 +47,91 @@ export const johnnyMnemonicConsolidation2026 = {
       text: 'Every technology market that reaches maturity moves through the same four phases. In the opening phase, pioneers multiply — barriers are low, categories are new, and being first matters more than being big. In the scaling phase, capital decides: the companies that raise, partner, and win share pull away from the ones that merely invented something. In the consolidation phase, large companies buy medium ones, and every founder faces the same binary — survive independently or sell. In the final phase, a few names dominate, and the rest either disappear or persist at the margins. The framing circulates widely among security operators, and analyst Ross Haleliuk’s research on two decades of cybersecurity consolidation documents the same arc empirically: point-solution booms followed by platform absorption, category after category.',
     },
     {
+      type: 'mechanism-wave',
+      figureLabel: 'FIG. 1 · THE FOUR-PHASE CYCLE',
+      kicker:
+        'OPEN → SCALE → CONSOLIDATE → DOMINATE · AMPLITUDE GROWS INTO THE CONSOLIDATION PHASE AND DAMPS AS A FEW NAMES TAKE THE BOARD · THE LOOP RESTARTS EACH NEW CATEGORY.',
+      hint: 'Schematic — the shape of the cycle, not a data series.',
+      source: "this article's framework.",
+      loopCaption:
+        'PIONEERS PROLIFERATE → COMPETITORS SCALE → PLATFORMS ABSORB → A FEW OWN THE BOARD',
+      envelopeLabel: 'amplification →',
+      phases: [
+        { n: 1, label: 'Open', color: 'var(--echo-chart-blue)' },
+        { n: 2, label: 'Scale', color: 'var(--echo-chart-green)' },
+        { n: 3, label: 'Consolidate', color: 'var(--echo-chart-orange)' },
+        { n: 4, label: 'Dominate', color: 'var(--echo-chart-red)' },
+      ],
+    },
+    {
       type: 'paragraph',
       text: 'Cloud infrastructure shows what the final phase looks like. Roughly a decade and a half after the opening phase, Amazon Web Services holds about 30% of global cloud infrastructure spend, Microsoft Azure about 23%, and Google Cloud about 13% — two thirds of a market measured in hundreds of billions of dollars, held by three companies, per Synergy Research Group estimates. Nobody meaningfully enters that market anymore; the phase transition is complete. The question that matters for investors is not whether consolidation happens — it is which markets are entering the consolidation phase now, because that is where acquisition premiums get paid and where independent mid-size vendors quietly lose relevance.',
     },
     {
-      type: 'chart',
-      variant: 'bar',
-      title: 'The end state: global cloud infrastructure market share, 2026',
-      caption:
-        'Approximate share of global cloud infrastructure services spend. Source: Synergy Research Group estimates, 2026.',
-      data: [
-        { x: 'AWS', share: 30 },
-        { x: 'Microsoft Azure', share: 23 },
-        { x: 'Google Cloud', share: 13 },
-        { x: 'All others', share: 34 },
+      type: 'dossier-table',
+      figureLabel: 'FIG. 2 · THE END STATE — GLOBAL CLOUD, 2026',
+      kicker:
+        'GLOBAL CLOUD INFRASTRUCTURE SPEND SHARE, 2026 · TWO-THIRDS HELD BY THREE FIRMS · CLICK A ROW TO EXPAND THE DOSSIER.',
+      hint: 'Four shares — expand a row for the record.',
+      source: 'Synergy Research Group estimates, 2026 · article positioning.',
+      headers: ['Platform', 'What it is on the board', 'Share of spend', 'Key risk', ''],
+      rows: [
+        {
+          name: 'AWS',
+          tag: 'CLOUD #1',
+          role: "The clearest picture of the cycle's final “dominate” phase — the largest single cloud platform.",
+          anchor: '~30% of global cloud spend',
+          keyRisk:
+            'Market entry has effectively stopped; growth now comes from absorbing adjacent categories, not new customers.',
+          dossier: [
+            {
+              label: 'Position on the cycle',
+              text: 'Final “dominate” phase — two-thirds of the market is held by three companies and nobody meaningfully enters anymore.',
+            },
+          ],
+        },
+        {
+          name: 'Microsoft Azure',
+          tag: 'CONSOLIDATOR',
+          role: 'A proven consolidator (MSFT) whose platform compounds with every absorbed category.',
+          anchor: '~23% of global cloud spend',
+          keyRisk:
+            'The conglomerate discount — integration complexity destroying the synergies an acquirer paid for.',
+          dossier: [
+            {
+              label: 'Why it is a consolidator',
+              text: 'Named among the proven consolidators whose scale funds the next deal.',
+            },
+          ],
+        },
+        {
+          name: 'Google Cloud',
+          tag: 'CONSOLIDATOR',
+          role: 'Alphabet (GOOGL) — closed the largest pure-cybersecurity deal ever, bolting Wiz onto cloud security.',
+          anchor: '~13% of global cloud spend',
+          keyRisk: 'Antitrust scrutiny of large platform acquisitions (FTC / DOJ).',
+          dossier: [
+            {
+              label: 'Latest absorption',
+              text: "Google's $32B Wiz acquisition closed March 11, 2026 — Alphabet's largest ever.",
+            },
+          ],
+        },
+        {
+          name: 'All others',
+          tag: 'THE LONG TAIL',
+          role: 'The fragmented remainder outside the top three.',
+          anchor: '~34% of global cloud spend',
+          keyRisk:
+            'The losing middle — sub-scale vendors with neither platform gravity nor acquisition scarcity.',
+          dossier: [
+            {
+              label: 'Where value leaks',
+              text: 'Independent mid-size vendors quietly lose relevance as the market concentrates.',
+            },
+          ],
+        },
       ],
-      series: [{ key: 'share', label: 'Market share (%)', color: 'var(--echo-chart-blue)' }],
-      yLabel: '% of global spend',
     },
 
     { type: 'heading', text: 'A 1981 short story called the endgame', level: 2 },
@@ -79,7 +151,11 @@ export const johnnyMnemonicConsolidation2026 = {
         'Share of organizations actively pursuing security vendor consolidation in 2026, up from under a third in 2020 — the fastest phase transition in enterprise software. Source: Gartner.',
     },
 
-    { type: 'heading', text: 'Security is the template: from 45 tools to three platforms', level: 2 },
+    {
+      type: 'heading',
+      text: 'Security is the template: from 45 tools to three platforms',
+      level: 2,
+    },
     {
       type: 'paragraph',
       text: 'No sector demonstrates the cycle more completely than cybersecurity. Every new threat class of the 2010s spawned a product category — firewalls, EDR, SIEM, CASB, DLP — and every category spawned dozens of vendors. A Gartner survey of 162 large enterprises found an average of roughly 45 security tools per organization, with practitioner estimates running to 76 or more at large enterprises, and 52% of executives cite complexity — not budget — as the biggest barrier to effective security operations. Customers stopped wanting more consoles, and the platforms responded the way consolidators always do: by acquiring the categories they lacked, integrating what used to be separate products, and stripping the redundancy out.',
@@ -89,20 +165,135 @@ export const johnnyMnemonicConsolidation2026 = {
       text: 'The receipts are on the tape. Google closed its $32 billion acquisition of Wiz on March 11, 2026 — the largest pure-cybersecurity deal ever and Alphabet’s largest acquisition, after Wiz rejected a $23 billion offer in 2024. Palo Alto Networks closed its $25 billion purchase of identity leader CyberArk on February 11, 2026, bolting privileged access onto a platform that already spanned network and cloud security. Cisco’s $28 billion Splunk deal (2024) folded the SIEM category into a networking incumbent. Four of the twenty largest tech acquisitions of the past decade are now cybersecurity deals, and [[kw:platformization]]platformization[[/kw]] — the strategy of collapsing point categories into one integrated platform — has become the sector’s organizing logic. For the mid-size vendor, the four-phase cycle has reached its binary: survive or sell.',
     },
     {
-      type: 'chart',
-      variant: 'horizontal-bar',
-      title: 'The platform land-grab: security and data-infrastructure deals, 2024–2026',
-      caption:
-        'Announced or completed deal values. Nvidia–Groq is a $20B asset-and-licensing transaction, not a full acquisition. Sources: company statements, SEC filings, public reporting, 2024–2026.',
-      data: [
-        { x: 'Google → Wiz (2026)', value: 32 },
-        { x: 'Cisco → Splunk (2024)', value: 28 },
-        { x: 'Palo Alto → CyberArk (2026)', value: 25 },
-        { x: 'Nvidia → Groq assets (2025)', value: 20 },
-        { x: 'IBM → Confluent (2026)', value: 11 },
+      type: 'wall-timeline',
+      figureLabel: 'FIG. 3 · THE CONSOLIDATION CHRONOLOGY',
+      kicker:
+        'SECURITY & DATA-INFRASTRUCTURE DEALS, 2024–2026 · ONE PLAQUE PER DATED DEAL — CLICK ANY PLAQUE FOR THE RECORD.',
+      hint: 'Click a plaque for its record.',
+      source: 'company statements, SEC filings, public reporting, 2024–2026.',
+      startYear: 2024,
+      endYear: 2026,
+      windows: [],
+      plaques: [
+        {
+          year: 2024,
+          lane: 0,
+          label: 'Cisco → Splunk · $28B',
+          detail: "Cisco's $28B Splunk deal folds the SIEM category into a networking incumbent.",
+        },
+        {
+          year: 2024,
+          lane: 1,
+          label: 'Wiz rejects $23B',
+          detail:
+            "Wiz rejects Google's $23B offer — a year before accepting $32B, a 39% premium for waiting.",
+        },
+        {
+          year: 2025,
+          lane: 2,
+          label: 'Nvidia → Groq assets · $20B',
+          detail:
+            "Nvidia pays a reported $20B for a license to Groq's inference technology and assets while hiring away its leadership — a disguised-merger structure.",
+        },
+        {
+          year: 2026,
+          lane: 3,
+          label: 'Palo Alto → CyberArk · $25B',
+          detail:
+            'Palo Alto Networks closes its $25B purchase of CyberArk on Feb 11, bolting privileged access onto the platform.',
+        },
+        {
+          year: 2026,
+          lane: 4,
+          label: 'Google → Wiz · $32B',
+          detail:
+            'Google closes its $32B Wiz acquisition on Mar 11 — the largest pure-cybersecurity deal ever and Alphabet’s largest.',
+        },
+        {
+          year: 2026,
+          lane: 5,
+          label: 'IBM → Confluent · $11B',
+          detail:
+            'IBM completes its $11B all-cash Confluent acquisition on Mar 17 — real-time data movement for enterprise AI.',
+        },
       ],
-      series: [{ key: 'value', label: 'Deal value ($B)', color: 'var(--echo-chart-green)' }],
-      yLabel: '$ billions',
+    },
+    {
+      type: 'clearing-sankey',
+      figureLabel: 'FIG. 4 · WHO BOUGHT WHOM',
+      kicker:
+        'FIVE PLATFORM DEALS, 2024–2026 · RIBBON WIDTH = DISCLOSED DEAL VALUE · CLICK A RIBBON FOR THE RECORD.',
+      hint: 'Click a ribbon for the deal record.',
+      source: 'company statements, SEC filings, public reporting, 2024–2026.',
+      sourceGroups: [
+        {
+          label: 'Security',
+          nodes: [
+            { id: 'wiz', name: 'Wiz', display: '$32B' },
+            { id: 'cyberark', name: 'CyberArk', display: '$25B' },
+            { id: 'splunk', name: 'Splunk', display: '$28B' },
+          ],
+        },
+        {
+          label: 'Data infrastructure',
+          nodes: [{ id: 'confluent', name: 'Confluent', display: '$11B' }],
+        },
+        {
+          label: 'AI compute',
+          nodes: [{ id: 'groq', name: 'Groq', display: '≈$20B' }],
+        },
+      ],
+      destinations: [
+        { id: 'google', name: 'Google', sub: 'cloud security platform' },
+        { id: 'palo-alto', name: 'Palo Alto Networks', sub: 'network · cloud · identity' },
+        { id: 'cisco', name: 'Cisco', sub: 'networking + SIEM' },
+        { id: 'ibm', name: 'IBM', sub: 'enterprise AI data' },
+        { id: 'nvidia', name: 'Nvidia', sub: 'AI factory / inference' },
+      ],
+      flows: [
+        {
+          from: 'wiz',
+          to: 'google',
+          value: 32,
+          tone: 'primary',
+          label: '$32B · 2026',
+          record:
+            'Google closed its $32B acquisition of Wiz on March 11, 2026 — the largest pure-cybersecurity deal ever, after Wiz rejected a $23B offer in 2024.',
+        },
+        {
+          from: 'splunk',
+          to: 'cisco',
+          value: 28,
+          tone: 'primary',
+          label: '$28B · 2024',
+          record:
+            "Cisco's $28B Splunk deal (2024) folded the SIEM category into a networking incumbent.",
+        },
+        {
+          from: 'cyberark',
+          to: 'palo-alto',
+          value: 25,
+          tone: 'primary',
+          record:
+            'Palo Alto Networks closed its $25B purchase of identity leader CyberArk on February 11, 2026, bolting privileged access onto its platform.',
+        },
+        {
+          from: 'confluent',
+          to: 'ibm',
+          value: 11,
+          tone: 'primary',
+          record:
+            'IBM completed its $11B all-cash acquisition of Confluent on March 17, 2026 — $31 per share for the Kafka-based data-streaming platform, used by 6,500+ enterprises including 40% of the Fortune 500.',
+        },
+        {
+          from: 'groq',
+          to: 'nvidia',
+          value: 20,
+          tone: 'neutral',
+          record:
+            "Nvidia paid a reported $20B in December 2025 for a license to Groq's inference technology and assets while hiring away leadership — a structure senators flagged as a potential reverse acquihire.",
+        },
+      ],
     },
 
     { type: 'heading', text: 'Buying the pipeline: data is the cargo', level: 2 },
@@ -113,6 +304,56 @@ export const johnnyMnemonicConsolidation2026 = {
     {
       type: 'paragraph',
       text: 'AI is the accelerant. Nearly half of 2025’s technology deals carried an explicit AI component, roughly double the 2024 share, and 2025 tech M&A jumped 77% year over year to approximately $1.08 trillion. Forty-seven transactions above $10 billion closed in the first half of 2026 alone, totaling more than $1.3 trillion — nearly half of all global deal value concentrated in mega-deals. Boards are not buying experiments; they are buying the infrastructure positions the AI era makes scarce, at exactly the moment an easier US regulatory posture makes long-deferred deals executable.',
+    },
+    {
+      type: 'adjudication-matrix',
+      figureLabel: 'FIG. 5 · WHICH PHASE IS EACH SECTOR IN?',
+      kicker:
+        'CONSOLIDATION SECTOR × FOUR-PHASE CYCLE · SAME = IN THIS PHASE NOW · PART = TRANSITIONING · — = PAST OR NOT YET. CLICK A CELL FOR THE EVIDENCE.',
+      hint: 'Click a cell for the supporting evidence.',
+      source: "this article's framework and reporting.",
+      cols: ['Open', 'Scale', 'Consolidate', 'Dominate'],
+      rows: [
+        {
+          label: 'Cloud infrastructure',
+          cells: [
+            { value: 'none' },
+            { value: 'none' },
+            { value: 'none' },
+            {
+              value: 'same',
+              note: '“Cloud infrastructure shows what the final phase looks like” — two-thirds of the market held by three firms; the phase transition is complete.',
+            },
+          ],
+        },
+        {
+          label: 'Cybersecurity',
+          cells: [
+            { value: 'none' },
+            { value: 'none' },
+            {
+              value: 'same',
+              note: '~75% of organizations are actively consolidating security vendors — “the fastest phase transition in enterprise software.” The survive-or-sell binary has been reached.',
+            },
+            {
+              value: 'part',
+              note: '“From 45 tools to three platforms” — the dominate phase is emerging as platformization collapses point categories into integrated platforms.',
+            },
+          ],
+        },
+        {
+          label: 'Data infrastructure',
+          cells: [
+            { value: 'none' },
+            { value: 'none' },
+            {
+              value: 'same',
+              note: '“The same logic is consolidating the data layer itself” — IBM’s $11B Confluent acquisition for real-time data movement.',
+            },
+            { value: 'none' },
+          ],
+        },
+      ],
     },
 
     { type: 'heading', text: 'Mergers in disguise: consolidation without acquisition', level: 2 },
@@ -134,6 +375,67 @@ export const johnnyMnemonicConsolidation2026 = {
     {
       type: 'paragraph',
       text: 'The base case is that the wave runs through 2027: Bain projects full-year 2026 global M&A above $5.3 trillion, just shy of the all-time record, and the strategic pressure driving it — AI capability gaps that cannot be built organically fast enough — is intensifying, not fading. The bear case has two triggers: an enforcement reversal that reaches disguised-merger structures, and the conglomerate discount — acquirers whose integration complexity destroys the synergies they paid for. Gibson’s closing image is the tiebreaker worth remembering. After every courier run, what endured was the accumulated data. Investors can track the acquirers’ accumulation in the open: Ezana’s government-contracts, congressional-trading, and 13F datasets show who is buying, who is lobbying, and who is positioning around every deal on this page — the cross-dataset joins are where the next consolidation target shows up first.',
+    },
+    {
+      type: 'scenario-chain',
+      figureLabel: 'FIG. 6 · THREE WAYS THE WAVE PLAYS OUT',
+      kicker:
+        "POSITIONING CASE · DRIVER × GATE → OUTCOME · THREE SCENARIOS FROM THE ARTICLE'S OWN GUIDANCE.",
+      hint: "Scenarios drawn from the article's positioning section.",
+      source: "this article's reporting · Bain and LSEG as cited.",
+      scenarios: [
+        {
+          id: 'base',
+          label: 'BASE CASE',
+          tone: 'base',
+          range: 'Wave runs through 2027',
+          steps: [
+            {
+              label: 'Unbuildable AI gaps',
+              sub: "capability gaps that can't be built organically fast enough",
+            },
+            {
+              label: 'Easier US posture',
+              sub: 'a lighter regulatory stance makes deferred deals executable',
+            },
+          ],
+          result: {
+            value: '>$5.3T in 2026',
+            sub: 'Bain projects full-year global M&A just shy of the all-time record',
+          },
+        },
+        {
+          id: 'alt',
+          label: 'TARGET-PREMIUM CASE',
+          tone: 'alt',
+          range: 'Independents re-rate',
+          steps: [
+            {
+              label: 'Standalone leader',
+              sub: 'a remaining independent in a consolidating category (e.g. CRWD)',
+            },
+            { label: 'Acquisition scarcity', sub: 'few clean targets left to buy' },
+          ],
+          result: {
+            value: '+39% for waiting',
+            sub: 'the Wiz precedent: $23B rejected, $32B accepted a year later',
+          },
+        },
+        {
+          id: 'bear',
+          label: 'BEAR CASE',
+          tone: 'bear',
+          range: 'The wave stalls',
+          steps: [
+            { label: 'Enforcement reversal', sub: 'regulators reach disguised-merger structures' },
+            {
+              label: 'Conglomerate discount',
+              sub: 'integration complexity destroys the synergies acquirers paid for',
+            },
+          ],
+          result: { value: 'Deals break', sub: 'the two triggers that end the cycle' },
+        },
+      ],
     },
   ],
   author: 'Ezana Finance Editorial',

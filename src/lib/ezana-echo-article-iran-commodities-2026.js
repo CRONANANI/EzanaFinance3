@@ -33,32 +33,123 @@ export const iranWarCommoditiesArticle2026 = {
       text: 'Oil markets reacted first and hardest. The Strait of Hormuz carries roughly 10 million barrels per day of crude exports — most of it from Saudi Arabia, the UAE, Iraq, Kuwait, and Iran itself. Following the joint strikes, the strait closed to commercial transit. Brent crude rallied from roughly $70 per barrel in early February to above $115 at the peak of the supply scare in late March. As of mid-April, Brent has settled around $96.36, with WTI tracking close behind at $92.52. Drawdowns from [[kw:strategic-reserves]]strategic reserves[[/kw]] were too small to fully offset the shock.',
     },
     {
-      type: 'chart',
-      variant: 'line',
-      title: 'Oil prices surge ~50% after joint strikes',
-      caption:
-        'Brent crude and WTI prices, January through April 2026. Joint strikes by the US and Israel on February 28 triggered a sharp repricing as Strait of Hormuz transit was disrupted.',
-      data: [
-        { x: 'Jan 1', brent: 60, wti: 57 },
-        { x: 'Jan 15', brent: 62, wti: 59 },
-        { x: 'Feb 1', brent: 65, wti: 63 },
-        { x: 'Feb 15', brent: 68, wti: 66 },
-        { x: 'Feb 28', brent: 71, wti: 69 },
-        { x: 'Mar 7', brent: 91, wti: 88 },
-        { x: 'Mar 14', brent: 99, wti: 96 },
-        { x: 'Mar 21', brent: 108, wti: 104 },
-        { x: 'Mar 28', brent: 115, wti: 110 },
-        { x: 'Apr 4', brent: 105, wti: 100 },
-        { x: 'Apr 11', brent: 102, wti: 97 },
-        { x: 'Apr 18', brent: 99, wti: 94 },
-        { x: 'Apr 26', brent: 96.36, wti: 92.52 },
+      type: 'wall-timeline',
+      figureLabel: 'FIG. 1 · THE SHOCK CHRONOLOGY',
+      kicker:
+        'THE HORMUZ SHOCK, EARLY FEB – APR 2026 · SHADED WINDOW = FROM THE STRIKES TO THE LATEST SETTLE · CLICK ANY PLAQUE FOR THE RECORD.',
+      hint: 'Click a plaque for its record.',
+      source: "this article's reporting · Global Petrol Prices · S&P Global.",
+      startYear: 2026.05,
+      endYear: 2026.35,
+      windows: [
+        {
+          id: 'shock',
+          label: 'The shock window',
+          from: 2026.16,
+          to: 2026.32,
+          color: 'var(--echo-chart-red)',
+        },
       ],
-      series: [
-        { key: 'brent', label: 'Brent', color: 'var(--echo-chart-red, #e85d4f)' },
-        { key: 'wti', label: 'WTI', color: 'var(--echo-chart-orange, #f59e0b)' },
+      plaques: [
+        {
+          year: 2026.09,
+          lane: 0,
+          label: 'Early Feb · Brent ~$70',
+          detail:
+            'Brent trades near $70 per barrel — the pre-shock baseline before the joint strikes.',
+        },
+        {
+          year: 2026.16,
+          lane: 1,
+          label: 'Feb 28 · US & Israel strike Iran',
+          detail:
+            'Joint US–Israel strikes on Iran; the Strait of Hormuz — roughly one-fifth of global oil and LNG trade — closes to commercial transit.',
+        },
+        {
+          year: 2026.18,
+          lane: 2,
+          label: 'Early Mar · pump prices jump',
+          detail:
+            'At least 85 countries report petrol price increases since Feb 28, per Global Petrol Prices — the biggest in Southeast Asia and Africa.',
+        },
+        {
+          year: 2026.22,
+          lane: 3,
+          label: 'Mar 20 · S&P Global warning',
+          detail:
+            'S&P Global warns a two- to three-month Hormuz blockage would likely become a severe supply shock as freight and insurance stay elevated.',
+        },
+        {
+          year: 2026.24,
+          lane: 4,
+          label: 'Late Mar · Brent peaks >$115',
+          detail: 'Brent crude peaks above $115 at the height of the supply scare.',
+        },
+        {
+          year: 2026.32,
+          lane: 5,
+          label: 'Apr 26 · Brent settles $96.36',
+          detail: 'Brent settles around $96.36, with WTI tracking close behind at $92.52.',
+        },
       ],
-      annotations: [{ x: 'Feb 28', label: 'US and Israel attack Iran' }],
+    },
+    {
+      type: 'trajectory',
+      figureLabel: 'FIG. 2 · OIL REPRICES ~50% AFTER THE STRIKES',
+      kicker:
+        'BRENT & WTI CRUDE, JANUARY–APRIL 2026 (USD/BBL) · X-AXIS IN CALENDAR MONTHS · DIAMONDS MARK THE STRIKE AND THE PEAK.',
+      hint: 'Diamond markers flag the strike date and the price peak.',
+      source: 'Brent and WTI spot prices, January–April 2026.',
       yLabel: 'USD per barrel',
+      yMax: 120,
+      xMin: 1,
+      xMax: 4.9,
+      series: [
+        {
+          key: 'brent',
+          label: 'Brent',
+          color: 'var(--echo-chart-red)',
+          data: [
+            { x: 1.0, y: 60 },
+            { x: 1.5, y: 62 },
+            { x: 2.0, y: 65 },
+            { x: 2.5, y: 68 },
+            { x: 2.93, y: 71 },
+            { x: 3.23, y: 91 },
+            { x: 3.45, y: 99 },
+            { x: 3.68, y: 108 },
+            { x: 3.9, y: 115 },
+            { x: 4.13, y: 105 },
+            { x: 4.35, y: 102 },
+            { x: 4.58, y: 99 },
+            { x: 4.84, y: 96.36 },
+          ],
+        },
+        {
+          key: 'wti',
+          label: 'WTI',
+          color: 'var(--echo-chart-orange)',
+          data: [
+            { x: 1.0, y: 57 },
+            { x: 1.5, y: 59 },
+            { x: 2.0, y: 63 },
+            { x: 2.5, y: 66 },
+            { x: 2.93, y: 69 },
+            { x: 3.23, y: 88 },
+            { x: 3.45, y: 96 },
+            { x: 3.68, y: 104 },
+            { x: 3.9, y: 110 },
+            { x: 4.13, y: 100 },
+            { x: 4.35, y: 97 },
+            { x: 4.58, y: 94 },
+            { x: 4.84, y: 92.52 },
+          ],
+        },
+      ],
+      annotations: [
+        { x: 2.93, y: 71, label: 'Feb 28 · strike', sub: 'US & Israel attack Iran' },
+        { x: 3.9, y: 115, label: 'Late Mar · peak', sub: 'Brent above $115' },
+      ],
     },
     {
       type: 'paragraph',
@@ -121,29 +212,156 @@ export const iranWarCommoditiesArticle2026 = {
       type: 'paragraph',
       text: 'Gold has been a more nuanced story. As a traditional safe haven it has been supported, but the response has not been linear. Liquidity pressures during the initial shock pushed investors to sell gold to raise cash, which suppressed early gains. Sustained upside has tended to materialize when geopolitical stress combines with looser monetary policy and falling real yields. Recent gold movement reflects this interaction — the metal is supported by expectations of Fed easing, but volatile as those expectations shift week to week. Over the medium term, central bank buying and reserve diversification provide structural support, but the path will not be smooth.',
     },
+    {
+      type: 'dossier-table',
+      figureLabel: 'FIG. 3 · THE COMMODITY COMPLEX, COMPARED',
+      kicker:
+        'FIVE COMMODITY GROUPS SINCE FEB 28 · MOVE · KEY RISK — CLICK A ROW TO EXPAND THE DOSSIER.',
+      hint: 'Five commodity dossiers — expand a row for the record.',
+      source: "this article's reporting.",
+      headers: ['Commodity', 'What it is on the board', 'Move since Feb 28', 'Key risk', ''],
+      rows: [
+        {
+          name: 'Tungsten',
+          tag: 'THE STANDOUT',
+          role: 'The best performer — AI-chip demand stacking on top of accelerated military procurement.',
+          anchor: '+557% YoY',
+          keyRisk:
+            '80% of global supply is controlled by China; ramping domestic output would take years.',
+          dossier: [
+            {
+              label: 'Why it moved',
+              text: 'Highest melting point of any element; critical to AI chips (heat management) and to missiles, ammunition, and aircraft.',
+            },
+            {
+              label: 'Supply',
+              text: 'China ~80% of supply; ~27% of US imports came directly from China in 2024. Listed exposure is thin (Almonty on the TSX; REMX as a basket).',
+            },
+          ],
+        },
+        {
+          name: 'Oil (Brent)',
+          tag: 'ENERGY',
+          role: 'Reacted first and hardest — Hormuz closure removed roughly 10M bbl/day of crude exports.',
+          anchor: '+~50% (Brent ~$96.36)',
+          keyRisk:
+            'A normalization of Hormuz traffic could drift Brent back toward $80 by year-end.',
+          dossier: [
+            {
+              label: 'Supply exposure',
+              text: 'The strait carries ~10M bbl/day of crude, mostly from Saudi Arabia, the UAE, Iraq, Kuwait, and Iran.',
+            },
+            {
+              label: 'The path',
+              text: 'Brent rallied from ~$70 in early February to above $115 in late March before settling near $96.36.',
+            },
+          ],
+        },
+        {
+          name: 'Industrial metals',
+          tag: 'DIVERGENCE',
+          role: 'Not one trade — aluminum up on disruption-plus-cost; copper weaker on a stronger dollar.',
+          anchor: 'Aluminum +12% (~$3,450/t)',
+          keyRisk:
+            'Aluminum upside capped by demand destruction near $3,500/t; copper pressured through the dollar channel.',
+          dossier: [
+            {
+              label: 'Aluminum',
+              text: 'A meaningful share of supply is Gulf-based and production is energy-intensive, so the oil/gas spike lifts costs globally.',
+            },
+            {
+              label: 'Copper',
+              text: 'Weakened on tightening financial conditions, a stronger US dollar, and rising inventories.',
+            },
+          ],
+        },
+        {
+          name: 'Fertilizers',
+          tag: 'THE LONG TAIL',
+          role: 'The longest fuse — roughly one-third of global fertilizer production passes through Hormuz.',
+          anchor: 'Urea +~75% YoY',
+          keyRisk:
+            'Lands in Northern Hemisphere planting season; global food prices forecast ~+6% in 2026, extending into 2027.',
+          dossier: [
+            {
+              label: 'Feedstock',
+              text: 'Natural gas — a critical feedstock for nitrogen fertilizers like urea — spiked harder than oil in regional terms.',
+            },
+            {
+              label: 'Broader move',
+              text: 'Fertilizer prices are forecast 20% higher in Q2 2026 than the prior year.',
+            },
+          ],
+        },
+        {
+          name: 'Gold',
+          tag: 'SAFE HAVEN',
+          role: 'A nuanced safe haven — supported, but the response has not been linear.',
+          anchor: 'Qualitative — supported, non-linear',
+          keyRisk:
+            'Liquidity pressures during the initial shock pushed investors to sell gold to raise cash.',
+          dossier: [
+            {
+              label: 'Behavior',
+              text: 'Sustained upside has tended to need geopolitical stress combined with looser policy and falling real yields.',
+            },
+            {
+              label: 'Structural support',
+              text: 'Central-bank buying and reserve diversification provide medium-term support, but the path is volatile.',
+            },
+          ],
+        },
+      ],
+    },
     { type: 'heading', text: 'Downstream: pump prices and government response', level: 2 },
     {
       type: 'paragraph',
       text: 'The downstream effects of these commodity moves are now visible in retail energy prices. According to data from Global Petrol Prices analyzed in early March, at least 85 countries have reported petrol price increases since February 28. The biggest increases are in Southeast Asia and Africa, where currency depreciation compounds the underlying commodity move.',
     },
     {
-      type: 'chart',
-      variant: 'horizontal-bar',
-      title: 'Largest petrol price increases since February 28',
-      caption:
-        'Percentage change in retail petrol prices (95 octane) by country, February 23 to March 11, 2026. Source: Global Petrol Prices.',
-      data: [
-        { label: 'Cambodia', value: 67.81 },
-        { label: 'Vietnam', value: 49.73 },
-        { label: 'Nigeria', value: 35.02 },
-        { label: 'Laos', value: 32.94 },
-        { label: 'Canada', value: 28.36 },
-        { label: 'Pakistan', value: 24.49 },
-        { label: 'Maldives', value: 18.54 },
-        { label: 'Australia', value: 18.23 },
-        { label: 'United States', value: 16.55 },
-        { label: 'Singapore', value: 15.69 },
+      type: 'revision-ledger',
+      figureLabel: 'FIG. 4 · PUMP-PRICE SHOCK BY COUNTRY',
+      kicker:
+        'RETAIL PETROL (95 OCTANE), FEB 23 – MAR 11, 2026 · √-SCALE · EVERY INCREASE IS ADVERSE (RED). CLICK A ROW FOR CONTEXT.',
+      hint: 'Bar length on a √-scale; every increase is adverse.',
+      source: 'Global Petrol Prices.',
+      scale: 'sqrt',
+      unit: '%',
+      rows: [
+        {
+          label: 'Cambodia',
+          delta: 67.81,
+          deltaDisplay: '+67.81%',
+          favorable: 'down',
+          record:
+            'The largest increase in the set — a Southeast Asian importer where currency depreciation compounds the underlying commodity move.',
+        },
+        {
+          label: 'Vietnam',
+          delta: 49.73,
+          deltaDisplay: '+49.73%',
+          favorable: 'down',
+          record:
+            'Southeast Asia and Africa saw the biggest increases, where currency depreciation compounds the pump-price shock.',
+        },
+        {
+          label: 'Nigeria',
+          delta: 35.02,
+          deltaDisplay: '+35.02%',
+          favorable: 'down',
+          record:
+            'An African importer where a weaker currency amplifies the commodity move into retail prices.',
+        },
+        { label: 'Laos', delta: 32.94, deltaDisplay: '+32.94%', favorable: 'down' },
+        { label: 'Canada', delta: 28.36, deltaDisplay: '+28.36%', favorable: 'down' },
+        { label: 'Pakistan', delta: 24.49, deltaDisplay: '+24.49%', favorable: 'down' },
+        { label: 'Maldives', delta: 18.54, deltaDisplay: '+18.54%', favorable: 'down' },
+        { label: 'Australia', delta: 18.23, deltaDisplay: '+18.23%', favorable: 'down' },
+        { label: 'United States', delta: 16.55, deltaDisplay: '+16.55%', favorable: 'down' },
+        { label: 'Singapore', delta: 15.69, deltaDisplay: '+15.69%', favorable: 'down' },
       ],
+      verdict:
+        'At least 85 countries have reported petrol price increases since February 28 — the biggest in Southeast Asia and Africa, where currency depreciation compounds the move.',
     },
     {
       type: 'paragraph',
@@ -155,23 +373,47 @@ export const iranWarCommoditiesArticle2026 = {
       text: "Global equities are down roughly 5.5% since the war began, but the distribution of pain is uneven. Japan's Nikkei 225 has fallen 11%, India's Nifty 50 is off 7%, and Saudi Arabia's Tadawul is down 9.6%. Western markets have held up relatively better — the FTSE 100 is off 5.3%, the STOXX 600 is down 6%, and the NYSE Composite is down 6%. The Nasdaq has been remarkably resilient at -2.4%, a function of large-cap tech being viewed as defensive in the current macro setup.",
     },
     {
-      type: 'chart',
-      variant: 'bar',
-      title: 'Major stock indices since February 28, 2026',
-      caption:
-        'Percent change in major global equity indices since the start of the conflict. Asian markets have absorbed the largest losses; tech-heavy Nasdaq has held up best.',
-      data: [
-        { label: 'Nikkei', value: -11.0 },
-        { label: 'Tadawul', value: -9.6 },
-        { label: 'Nifty 50', value: -7.0 },
-        { label: 'ASX', value: -6.0 },
-        { label: 'NYSE', value: -6.0 },
-        { label: 'STOXX 600', value: -6.0 },
-        { label: 'FTSE 100', value: -5.3 },
-        { label: 'Hang Seng', value: -4.0 },
-        { label: 'Nasdaq', value: -2.4 },
-        { label: 'Shanghai', value: -1.86 },
+      type: 'revision-ledger',
+      figureLabel: 'FIG. 5 · EQUITY INDICES SINCE FEB 28',
+      kicker:
+        'MAJOR INDICES, % CHANGE SINCE FEB 28, 2026 · √-SCALE · DECLINES ARE ADVERSE (RED). CLICK A ROW FOR CONTEXT.',
+      hint: 'Every index fell; bar length on a √-scale.',
+      source: 'percent change since the start of the conflict.',
+      scale: 'sqrt',
+      unit: '%',
+      rows: [
+        {
+          label: 'Nikkei',
+          delta: -11.0,
+          deltaDisplay: '−11.0%',
+          favorable: 'up',
+          record: "Japan's Nikkei 225 absorbed the largest loss in the set.",
+        },
+        {
+          label: 'Tadawul',
+          delta: -9.6,
+          deltaDisplay: '−9.6%',
+          favorable: 'up',
+          record: "Saudi Arabia's Tadawul fell 9.6% as the shock hit Gulf markets.",
+        },
+        { label: 'Nifty 50', delta: -7.0, deltaDisplay: '−7.0%', favorable: 'up' },
+        { label: 'ASX', delta: -6.0, deltaDisplay: '−6.0%', favorable: 'up' },
+        { label: 'NYSE', delta: -6.0, deltaDisplay: '−6.0%', favorable: 'up' },
+        { label: 'STOXX 600', delta: -6.0, deltaDisplay: '−6.0%', favorable: 'up' },
+        { label: 'FTSE 100', delta: -5.3, deltaDisplay: '−5.3%', favorable: 'up' },
+        { label: 'Hang Seng', delta: -4.0, deltaDisplay: '−4.0%', favorable: 'up' },
+        {
+          label: 'Nasdaq',
+          delta: -2.4,
+          deltaDisplay: '−2.4%',
+          favorable: 'up',
+          record:
+            'Remarkably resilient at −2.4% — large-cap tech is viewed as defensive in the current macro setup.',
+        },
+        { label: 'Shanghai', delta: -1.86, deltaDisplay: '−1.86%', favorable: 'up' },
       ],
+      verdict:
+        'Global equities are down roughly 5.5% since the war began, but the pain is uneven — Asian markets absorbed the largest losses; tech-heavy Nasdaq held up best.',
     },
     { type: 'heading', text: 'How to position around the move', level: 2 },
     {
@@ -185,6 +427,54 @@ export const iranWarCommoditiesArticle2026 = {
     {
       type: 'paragraph',
       text: 'The base case for the rest of 2026 assumes a gradual normalization of Hormuz traffic, which would let oil drift back toward $80 per barrel by year-end and aluminum ease from current highs. The bear case is a sustained closure or escalation that locks in current price levels and pushes them higher. Either way, the geopolitical risk premium that has been embedded into commodity prices since February 28 is unlikely to fully dissipate even if the conflict ends quickly. Markets do not forget supply shocks; they reprice the probability of the next one.',
+    },
+    {
+      type: 'scenario-chain',
+      figureLabel: 'FIG. 6 · HOW THE MOVE PLAYS OUT',
+      kicker: 'POSITIONING CASE · GATE × DRIVER → OUTCOME · THREE SCENARIOS FROM THE ARTICLE.',
+      hint: "Scenarios drawn from the article's positioning section.",
+      source: "this article's reporting.",
+      scenarios: [
+        {
+          id: 'base',
+          label: 'BASE CASE',
+          tone: 'base',
+          range: 'Gradual normalization',
+          steps: [
+            { label: 'Hormuz reopens', sub: 'traffic gradually normalizes through year-end' },
+            { label: 'No further escalation', sub: 'the supply scare fades' },
+          ],
+          result: {
+            value: 'Oil → ~$80',
+            sub: 'Brent drifts back toward $80/bbl by year-end; aluminum eases from current highs',
+          },
+        },
+        {
+          id: 'alt',
+          label: 'PREMIUM PERSISTS',
+          tone: 'alt',
+          range: 'Conflict ends, risk stays',
+          steps: [
+            { label: 'Quick de-escalation', sub: 'the conflict ends relatively quickly' },
+            { label: 'Risk repriced', sub: 'markets reprice the probability of the next shock' },
+          ],
+          result: {
+            value: 'Premium sticks',
+            sub: 'the embedded geopolitical risk premium does not fully dissipate',
+          },
+        },
+        {
+          id: 'bear',
+          label: 'BEAR CASE',
+          tone: 'bear',
+          range: 'Sustained closure',
+          steps: [
+            { label: 'Hormuz stays shut', sub: 'a sustained closure or escalation' },
+            { label: 'Costs cascade', sub: 'energy costs flow into metals and agriculture' },
+          ],
+          result: { value: 'Prices ratchet higher', sub: 'current levels lock in and push higher' },
+        },
+      ],
     },
     {
       type: 'paragraph',

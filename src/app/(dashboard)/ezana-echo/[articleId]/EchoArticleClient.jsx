@@ -36,6 +36,9 @@ import { EchoTrajectory } from '@/components/echo/figures/EchoTrajectory';
 import { EchoAdjudicationMatrix } from '@/components/echo/figures/EchoAdjudicationMatrix';
 import { EchoDossierTable } from '@/components/echo/figures/EchoDossierTable';
 import { EchoScenarioChain } from '@/components/echo/figures/EchoScenarioChain';
+import { EchoMechanismWave } from '@/components/echo/figures/EchoMechanismWave';
+import { EchoClearingSankey } from '@/components/echo/figures/EchoClearingSankey';
+import { EchoRevisionLedger } from '@/components/echo/figures/EchoRevisionLedger';
 import { formatPublishedDate } from '@/lib/echo-format';
 import { createArticleTracker } from '@/lib/echo-article-tracker';
 import { useAnonymousEchoTracker, trackAnonMetaClick } from '@/hooks/useAnonymousEchoTracker';
@@ -422,6 +425,12 @@ function ArticleBlock({ block }) {
       return <EchoDossierTable {...block} />;
     case 'scenario-chain':
       return <EchoScenarioChain {...block} />;
+    case 'mechanism-wave':
+      return <EchoMechanismWave {...block} />;
+    case 'clearing-sankey':
+      return <EchoClearingSankey {...block} />;
+    case 'revision-ledger':
+      return <EchoRevisionLedger {...block} />;
 
     default:
       return null;

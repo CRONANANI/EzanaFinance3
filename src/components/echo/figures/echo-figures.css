@@ -333,3 +333,119 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   Batch 1: F2 mechanism-wave, F4 clearing-sankey, F22 revision-ledger
+   (mechanism-wave and clearing-sankey are pure SVG and carry their tokens
+   inline; only the HTML revision-ledger needs scoped styles here.)
+   ══════════════════════════════════════════════════════════════════════ */
+
+.echo-fig-ledger {
+  width: 100%;
+}
+.echo-fig-ledger-row {
+  display: grid;
+  grid-template-columns: 210px 1fr 150px;
+  gap: 16px;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border-secondary);
+}
+.echo-fig-ledger-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.echo-fig-ledger-label {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.echo-fig-ledger-sub {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+  color: var(--text-faint);
+}
+.echo-fig-ledger-track {
+  position: relative;
+  height: 22px;
+}
+.echo-fig-ledger-baseline {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  top: 50%;
+  height: 1px;
+  background: var(--echo-chart-grid);
+}
+.echo-fig-ledger-bar {
+  position: absolute;
+  top: 50%;
+  height: 3px;
+  transform: translateY(-50%);
+  border-radius: var(--radius-sm);
+  opacity: 0.55;
+}
+.echo-fig-ledger-dot {
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1.6px solid var(--text-muted);
+  transform: translate(-50%, -50%);
+}
+.echo-fig-ledger-dot-hollow {
+  background: var(--bg-primary);
+  border-color: var(--text-muted);
+}
+.echo-fig-ledger-val {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  text-align: right;
+}
+.echo-fig-ledger-after {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-primary);
+}
+.echo-fig-ledger-delta {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.echo-fig-ledger-record {
+  grid-column: 1 / -1;
+}
+.echo-fig-ledger-verdict {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  text-align: right;
+  margin: 12px 0 0;
+}
+
+@media (max-width: 720px) {
+  .echo-fig-ledger-row {
+    grid-template-columns: 1fr 92px;
+    grid-template-areas:
+      'head val'
+      'track track';
+    gap: 8px 12px;
+  }
+  .echo-fig-ledger-head {
+    grid-area: head;
+  }
+  .echo-fig-ledger-val {
+    grid-area: val;
+  }
+  .echo-fig-ledger-track {
+    grid-area: track;
+  }
+}
