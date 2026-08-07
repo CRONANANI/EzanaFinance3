@@ -1,12 +1,14 @@
 /* ══════════════════════════════════════════════════════════════════════
-   Hero device showcase v2. Companion to HeroDeviceShowcase.jsx.
-   Page-scoped `lpd-` prefix only; theme tokens only (the glass satellites
-   re-scope light tokens exactly like the retired .lp-card did).
+   Hero device showcase v3. Companion to HeroDeviceShowcase.jsx.
+   Page-scoped `lpd-` prefix only. Theme tokens for all on-screen UI;
+   device-hardware chrome (aluminum, bezel glass) uses component-scoped
+   custom props on .lpd-mac — same precedent as the .lpd-sat light-token
+   re-scope. Never reuse those chrome values outside the device frames.
 
    Layout map (620×720 canvas, anchored right of .lp-band, v-centred):
 
-        [Auto-copy sat]  ← above the phone, clips only its top-right corner
-     [MacBook, lower-left]      [iPhone, centre-right]
+                          [Auto-copy sat] ← clips ONLY the phone's
+     [MacBook, lower-left]   [iPhone, centre-right]   top-right corner
      [New follower sat]              [Rebalance sat]
    ══════════════════════════════════════════════════════════════════════ */
 
@@ -72,8 +74,7 @@
 }
 
 /* ══ Fixed-size Follow/Following button — BOTH states share one box so the
-   toggle can never reflow neighbours or spill outside the phone. The two
-   labels are stacked; opacity swaps them. ══ */
+   toggle can never reflow neighbours or spill outside the phone. ══ */
 .lpd-btn {
   position: relative;
   display: inline-grid;
@@ -113,44 +114,82 @@
 }
 .lpd-btn--tiny {
   width: 100%;
-  max-width: 56px;
-  height: 17px;
-  font-size: 7.5px;
+  max-width: 44px;
+  height: 15px;
+  font-size: 6.5px;
   font-weight: 600;
 }
 
-/* ══════════════ MacBook ══════════════ */
+/* ══════════════ MacBook (v3 — realistic hardware) ══════════════ */
 .lpd-mac {
   position: absolute;
-  top: 168px;
+  top: 170px;
   left: -6px;
   width: 400px;
   transform: rotate(-3deg);
   transform-origin: 50% 100%;
+  /* Device-hardware chrome palette — scoped exception to the no-hex rule
+     (these are aluminum/glass hardware colors, not theme colors). */
+  --lpd-alu-hi: #f6f7f9;
+  --lpd-alu: #dfe3e8;
+  --lpd-alu-mid: #c4cad2;
+  --lpd-alu-lo: #9aa1ab;
+  --lpd-bezel: #0d1013;
+  --lpd-bezel-edge: #2a2f36;
 }
+/* Soft grounding shadow so the machine sits ON the map, not floating flat. */
+.lpd-mac::after {
+  content: '';
+  position: absolute;
+  left: 5%;
+  right: 5%;
+  bottom: -16px;
+  height: 28px;
+  background: radial-gradient(50% 60% at 50% 40%, rgba(15, 23, 42, 0.26), rgba(15, 23, 42, 0) 70%);
+  filter: blur(4px);
+  z-index: -1;
+}
+/* Lid: dark glass front with machined edge highlight. */
 .lpd-mac-lid {
   position: relative;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-primary);
-  border-radius: 14px 14px 0 0;
-  padding: 12px 10px 8px; /* visible bezel */
-  box-shadow: var(--shadow-lg);
+  background: linear-gradient(180deg, var(--lpd-bezel-edge), var(--lpd-bezel) 14%);
+  border-radius: 16px 16px 0 0;
+  padding: 11px 10px 12px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 12px 32px rgba(15, 23, 42, 0.2);
 }
 .lpd-mac-cam {
   position: absolute;
-  top: 5px;
+  top: 4px;
   left: 50%;
   transform: translateX(-50%);
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: var(--text-ghost);
+  background: #23282f;
+  box-shadow: inset 0 0 1px rgba(120, 160, 255, 0.6);
 }
 .lpd-mac-screen {
+  position: relative;
   background: var(--bg-secondary);
-  border: 1px solid var(--border-secondary);
-  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
   overflow: hidden;
+}
+/* Diagonal glass glare across the panel. */
+.lpd-mac-screen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    115deg,
+    rgba(255, 255, 255, 0.13) 0%,
+    rgba(255, 255, 255, 0.05) 24%,
+    rgba(255, 255, 255, 0) 42%
+  );
 }
 .lpd-mac-chrome {
   display: flex;
@@ -243,146 +282,188 @@
   text-transform: uppercase;
 }
 
-/* Hinge + keyboard deck = the part that makes it read as a laptop. */
+/* Hinge: metallic barrel with a specular band. */
 .lpd-mac-hinge {
-  height: 5px;
-  margin: 0 6px;
-  background: var(--border-primary);
-  border-radius: 0 0 3px 3px;
+  height: 7px;
+  margin: 0 14px;
+  background: linear-gradient(180deg, #5a616b 0%, #2c3138 55%, #5a616b 100%);
+  border-radius: 0 0 4px 4px;
+  box-shadow: inset 0 -1px 1px rgba(0, 0, 0, 0.45);
 }
+/* Deck: aluminum slab, wider than the lid, with slight trapezoid
+   perspective so it reads as receding toward the viewer. */
 .lpd-mac-deck {
-  height: 44px;
-  margin: 0 -22px;
-  padding: 6px 34px 0;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-primary);
-  border-top: none;
-  border-radius: 4px 4px 16px 16px;
-  box-shadow: var(--shadow-md);
+  position: relative;
+  height: 40px;
+  margin: 0 -26px;
+  background: linear-gradient(
+    180deg,
+    var(--lpd-alu-hi) 0%,
+    var(--lpd-alu) 45%,
+    var(--lpd-alu-mid) 100%
+  );
+  clip-path: polygon(2.5% 0, 97.5% 0, 100% 100%, 0 100%);
+  border-radius: 0 0 6px 6px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
 }
+/* Front lip edge. */
+.lpd-mac-deck::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 6px;
+  background: linear-gradient(180deg, var(--lpd-alu-mid), var(--lpd-alu-lo));
+  border-radius: 0 0 8px 8px;
+}
+/* Thumb scoop centered on the front lip. */
+.lpd-mac-deck::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 0;
+  width: 72px;
+  height: 6px;
+  border-radius: 0 0 999px 999px;
+  background: linear-gradient(180deg, var(--lpd-alu-lo), var(--lpd-alu-mid));
+  z-index: 1;
+}
+/* Recessed keyboard well with dark keycaps. */
 .lpd-mac-keys {
+  position: absolute;
+  top: 5px;
+  left: 15%;
+  right: 15%;
   display: grid;
   grid-template-columns: repeat(14, 1fr);
   gap: 2px;
-  margin-bottom: 4px;
+  padding: 3px;
+  margin: 0;
+  background: linear-gradient(180deg, var(--lpd-alu-mid), var(--lpd-alu));
+  border-radius: 3px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.18);
 }
 .lpd-mac-keys i {
-  height: 4px;
-  border-radius: 1px;
-  background: var(--border-primary);
+  height: 5px;
+  border-radius: 1.5px;
+  background: #3a4048;
+  box-shadow: 0 0.5px 0 rgba(255, 255, 255, 0.28);
 }
 .lpd-mac-trackpad {
-  width: 84px;
-  height: 10px;
-  margin: 0 auto;
-  border-radius: 3px;
-  border: 1px solid var(--border-primary);
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 27px;
+  width: 92px;
+  height: 9px;
+  margin: 0;
+  border: none;
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--lpd-alu), var(--lpd-alu-hi));
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
 }
 
-/* ══════════════ iPhone ══════════════ */
+/* ══════════════ iPhone (v3 — 25% narrower: 252 → 190px) ══════════════ */
 .lpd-phone {
   position: absolute;
   top: 56px;
-  right: 92px;
-  width: 252px;
+  right: 116px;
+  width: 190px;
   background: var(--bg-primary);
-  border: 6px solid var(--bg-tertiary);
+  border: 5px solid var(--bg-tertiary);
   outline: 1px solid var(--border-primary);
-  border-radius: 38px;
+  border-radius: 32px;
   box-shadow: var(--shadow-xl), var(--shadow-glow);
   z-index: 2;
 }
-/* Dynamic Island — small dark pill INSIDE the top of the screen. */
 .lpd-phone-island {
   position: absolute;
-  top: 9px;
+  top: 8px;
   left: 50%;
   transform: translateX(-50%);
-  width: 62px;
-  height: 14px;
+  width: 52px;
+  height: 12px;
   border-radius: 999px;
   background: var(--bg-tertiary);
   outline: 1px solid var(--border-secondary);
 }
-/* Home indicator — the grey bar, now at the BOTTOM (iPhone-accurate). */
 .lpd-phone-homebar {
   position: absolute;
-  bottom: 7px;
+  bottom: 6px;
   left: 50%;
   transform: translateX(-50%);
-  width: 92px;
+  width: 72px;
   height: 4px;
   border-radius: 999px;
   background: var(--text-ghost);
   opacity: 0.7;
 }
 .lpd-phone-screen {
-  padding: 32px 14px 22px; /* bottom clears the home bar */
+  padding: 28px 10px 20px; /* bottom clears the home bar */
   overflow: hidden; /* nothing inside may escape the phone */
-  border-radius: 32px;
+  border-radius: 27px;
 }
 .lpd-phone-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 9px;
+  margin-bottom: 8px;
 }
 .lpd-phone-hi {
-  font-size: 14px;
+  font-size: 12.5px;
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--emerald);
 }
 .lpd-bell {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-muted);
 }
 .lpd-label {
   font-family: var(--font-mono);
-  font-size: 8px;
+  font-size: 7.5px;
   font-weight: 600;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-faint);
-  margin: 11px 0 6px;
+  margin: 10px 0 5px;
 }
 
 .lpd-people {
   display: grid;
-  grid-template-columns: repeat(
-    4,
-    minmax(0, 1fr)
-  ); /* minmax(0,…) = no cell can grow past its track */
-  gap: 6px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 5px;
 }
 .lpd-person {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 3px;
-  padding: 7px 3px 6px;
+  padding: 6px 2px 5px;
   border-radius: var(--radius-md);
   background: var(--surface-card);
   border: 1px solid var(--border-secondary);
   min-width: 0;
-  overflow: hidden; /* belt & braces: clip anything that tries to spill */
+  overflow: hidden;
 }
 .lpd-avatar {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   color: var(--bg-primary);
   flex: none;
 }
 .lpd-avatar--sm {
-  width: 20px;
-  height: 20px;
-  font-size: 9px;
+  width: 18px;
+  height: 18px;
+  font-size: 8.5px;
 }
 .lpd-avatar--a {
   background: var(--emerald);
@@ -400,7 +481,7 @@
   background: var(--blue);
 }
 .lpd-person-name {
-  font-size: 8.5px;
+  font-size: 7.5px;
   font-weight: 600;
   color: var(--text-secondary);
   max-width: 100%;
@@ -409,17 +490,17 @@
   text-overflow: ellipsis;
 }
 .lpd-person-meta {
-  font-size: 7px;
+  font-size: 6.5px;
   color: var(--text-faint);
   white-space: nowrap;
 }
 
-/* Capitol Watch disclosure — single-line, ~30% thinner than v1. */
+/* Capitol Watch disclosure — single-line. */
 .lpd-disclosure {
   display: flex;
   align-items: center;
-  gap: 7px;
-  padding: 5px 9px;
+  gap: 6px;
+  padding: 5px 7px;
   border-radius: var(--radius-md);
   background: var(--surface-card);
   border: 1px solid var(--border-secondary);
@@ -427,33 +508,37 @@
   min-width: 0;
 }
 .lpd-disc-name {
-  font-size: 9.5px;
+  font-size: 8.5px;
   font-weight: 600;
   color: var(--text-primary);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex: 1;
 }
 .lpd-disc-line {
-  flex: 1;
   min-width: 0;
-  font-size: 9px;
+  font-size: 8px;
   color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  flex: none;
 }
 .lpd-disc-line b {
   font-weight: 700;
   color: var(--text-secondary);
 }
 .lpd-disc-when {
-  font-size: 7.5px;
+  font-size: 7px;
   color: var(--text-faint);
   flex: none;
 }
 .lpd-copybtn {
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 700;
-  padding: 3px 10px;
+  padding: 3px 8px;
   border-radius: 999px;
   background: var(--emerald);
   color: var(--bg-primary);
@@ -462,7 +547,7 @@
 
 .lpd-feed {
   position: relative;
-  height: 96px;
+  height: 90px;
   overflow: hidden;
 }
 .lpd-feedrow {
@@ -470,15 +555,15 @@
   inset: 0 0 auto 0;
   display: flex;
   align-items: baseline;
-  gap: 5px;
-  padding: 6px 8px;
+  gap: 4px;
+  padding: 5px 7px;
   border-radius: var(--radius-sm);
   background: var(--surface-card);
   border: 1px solid var(--border-secondary);
   will-change: transform, opacity;
 }
 .lpd-feed-who {
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 600;
   color: var(--text-secondary);
   white-space: nowrap;
@@ -486,14 +571,14 @@
 .lpd-feed-what {
   flex: 1;
   min-width: 0;
-  font-size: 9px;
+  font-size: 8px;
   color: var(--text-faint);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .lpd-feed-when {
-  font-size: 8px;
+  font-size: 7.5px;
   color: var(--text-ghost);
 }
 
@@ -518,11 +603,14 @@
   --surface-card: rgba(255, 255, 255, 0.55);
   color: var(--text-secondary);
 }
-/* Auto-copy: ABOVE the phone. Its bottom edge overlaps only ~18px of the
-   phone's top-right corner — never the phone's header text. */
+/* Auto-copy: sits ABOVE and slightly RIGHT of the phone. Its bottom-left
+   corner may clip ~24px of the phone's top-right FRAME only — never the
+   "Welcome" header text and never the Dynamic Island. If a visual pass
+   shows it touching the island, nudge `top` up in 4px steps. */
 .lpd-sat--sync {
-  top: -14px;
-  right: 0;
+  top: -36px;
+  right: -12px;
+  width: 210px;
   z-index: 3;
 }
 .lpd-sat--follower {

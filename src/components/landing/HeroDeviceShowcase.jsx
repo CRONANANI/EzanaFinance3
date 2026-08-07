@@ -7,19 +7,18 @@ import './hero-device-showcase.css';
  * Hero device showcase v2 — social copy-trading composition on the hero's
  * right side.
  *
- * v2 changes (screenshot review):
- *  · MacBook now has real laptop anatomy: bezel + camera, hinge, keyboard
- *    deck with key-grid and trackpad.
- *  · iPhone framing: Dynamic-Island bar at top, grey home-indicator pill at
- *    the BOTTOM; body is taller.
- *  · Capitol Watch disclosure row ~30% thinner (single-line).
- *  · Follow buttons are fixed-size in both states so toggling to "Following"
- *    can never reflow or overflow the phone.
- *  · Satellites repositioned so no card covers another card's content.
- *  · Laptop lists REAL 13F filers (BlackRock, Bridgewater, Citadel,
- *    Renaissance Tech, Vanguard). The metric shown is Ezana follower count —
- *    a platform metric — NEVER an invented performance % attributed to a
- *    real firm. Keep it that way.
+ * v3 changes (screenshot review):
+ *  · MacBook restyled for realism: dark glass bezel + glare, metallic hinge,
+ *    aluminum deck with perspective clip-path, recessed key well, thumb
+ *    scoop, grounding shadow. Hardware chrome colors are component-scoped
+ *    custom props on .lpd-mac (satellite re-scope precedent) — everything
+ *    on-screen still uses theme tokens.
+ *  · iPhone 25% narrower (252 → 190px); internal type/spacing retuned so
+ *    nothing overflows.
+ *  · Auto-copy satellite repositioned: clips only the phone's top-right
+ *    frame corner — never the header or Dynamic Island.
+ *  · Laptop lists REAL 13F filers; metric shown is Ezana follower count —
+ *    NEVER an invented performance % attributed to a real firm.
  *
  * One 2s tick drives all frames deterministically (seeded sin, no
  * Math.random) so SSR and first client render match. Decorative only:
