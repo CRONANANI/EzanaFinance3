@@ -41,9 +41,12 @@ const nextConfig = {
       '@radix-ui/react-tooltip',
       'date-fns',
     ],
-  },
-  outputFileTracingIncludes: {
-    '/privacy-policy': ['./src/app/privacy-policy/privacy-policy-source.html'],
+    // Next 14: file-tracing includes live under experimental (top-level is
+    // Next 15 syntax and is silently ignored). Ensures the privacy-policy
+    // source HTML ships in the serverless bundle.
+    outputFileTracingIncludes: {
+      '/privacy-policy': ['./src/app/privacy-policy/privacy-policy-source.html'],
+    },
   },
   async redirects() {
     return [
