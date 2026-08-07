@@ -594,6 +594,54 @@ export const sectorDominanceArticle = {
         'ONLY THE NEXT CHART — DRAWN FIFTY OR ONE HUNDRED YEARS FROM NOW — CAN SETTLE WHETHER TECH HAD FURTHER TO RUN OR SIMPLY COULD NOT REACH THE OLD HEIGHTS.',
     },
   ],
+  globeRail: {
+    metric: {
+      title: 'PEAK SHARE OF THE DOMINANT SECTOR (%)',
+      data: [
+        { x: 1800, y: 90 },
+        { x: 1880, y: 62 },
+        { x: 1940, y: 38 },
+        { x: 2025, y: 45 },
+      ],
+      startLabel: 'Finance 1800 · ~90%',
+      endLabel: 'Tech 2025 · ~45%',
+      note: 'Finance peaked near 90% in 1800, transport at ~62% in 1880, energy and materials at ~38% in 1940. Technology’s ~45% today is real but below the high-water mark of every previous era.',
+    },
+    cities: [
+      {
+        name: 'New York',
+        country: 'US',
+        lat: 40.71,
+        lng: -74.01,
+        impact:
+          'The finance era: the New York Stock Exchange’s Buttonwood predecessor traded a market dominated almost entirely by banks — Bank of New York, the First and Second Bank of the United States — roughly 90% finance in 1800.',
+      },
+      {
+        name: 'Pittsburgh',
+        country: 'US',
+        lat: 40.44,
+        lng: -79.99,
+        impact:
+          'The energy and materials era: US Steel, formed in 1901 as the largest corporation in American history at the time, anchored an industrial complex of steel makers that helped the sector peak near 38% around 1940.',
+      },
+      {
+        name: 'San Francisco',
+        country: 'US',
+        lat: 37.77,
+        lng: -122.42,
+        impact:
+          'The technology era: Microsoft, Apple, Nvidia, Alphabet, Meta and Amazon now account for more than a quarter of the S&P 500 by themselves, driving tech to roughly 45% of the market.',
+      },
+      {
+        name: 'Washington',
+        country: 'US',
+        lat: 38.9,
+        lng: -77.04,
+        impact:
+          'Regulation and antitrust recur as regime-enders: Jackson’s destruction of the Second Bank, the Sherman Antitrust Act of 1890, the Hepburn Act of 1906, and the Supreme Court’s 1911 dissolution of Standard Oil into 34 companies.',
+      },
+    ],
+  },
   author: 'Ezana Finance Editorial',
   category: 'markets-companies',
   subcategory: 'Equities',

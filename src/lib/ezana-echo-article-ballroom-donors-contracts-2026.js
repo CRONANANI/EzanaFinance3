@@ -433,6 +433,59 @@ export const ballroomDonorsContracts2026 = {
         'IF DONATION AMOUNTS ARE DISCLOSED, THE PAY-TO-PLAY QUESTION BECOMES TESTABLE — UNTIL THEN, 0 OF 27 CONTRIBUTIONS ARE PUBLIC AND THE DONOR LIST IS NOT A TRADEABLE SIGNAL.',
     },
   ],
+  globeRail: {
+    metric: {
+      title: 'NEW / EXPANDED FEDERAL CONTRACTS ($M, 6-MO WINDOW)',
+      data: [
+        { x: 1, y: 43800 },
+        { x: 2, y: 4200 },
+        { x: 3, y: 1000 },
+        { x: 4, y: 318.7 },
+        { x: 5, y: 255.7 },
+        { x: 6, y: 197.3 },
+        { x: 7, y: 142.6 },
+        { x: 8, y: 16.4 },
+        { x: 9, y: 13.4 },
+      ],
+      startLabel: 'Lockheed · $43.8B',
+      endLabel: 'Comcast · $13.4M',
+      note: 'Lockheed Martin’s ~$43.8B is about 87% of the six-month total; below Palantir the figures fall off a cliff to a long tail of ordinary federal IT and equipment awards. The report documents timing and correlation, not a proven quid pro quo.',
+    },
+    cities: [
+      {
+        name: 'Washington',
+        country: 'US',
+        lat: 38.9,
+        lng: -77.04,
+        impact:
+          'Fourteen of 27 known corporate donors to the $400M White House ballroom won more than $50 billion in new or expanded federal contracts in the six months after the October 2025 East Wing demolition. No donation amounts are public, so the report can measure contracts received but not compute a return — it establishes timing and correlation, not a proven quid pro quo.',
+      },
+      {
+        name: 'Bethesda',
+        country: 'US',
+        lat: 39.0,
+        lng: -77.1,
+        impact:
+          'Lockheed Martin accounted for roughly $43.8 billion, about 87% of the six-month total — a single very large defense award. Large defense awards are multi-year indefinite-delivery vehicles, so the obligation date is not the award decision or the spend.',
+      },
+      {
+        name: 'Seattle',
+        country: 'US',
+        lat: 47.61,
+        lng: -122.33,
+        impact:
+          'Microsoft ($318.7M) and Amazon ($255.7M) top the long tail of ordinary federal IT business; Amazon is also named among antitrust matters where actions have been dropped or narrowed.',
+      },
+      {
+        name: 'Denver',
+        country: 'US',
+        lat: 39.74,
+        lng: -104.99,
+        impact:
+          'Palantir, at just over $1 billion, is the last recipient before the figures fall off a cliff — the edge between the top three and the long tail.',
+      },
+    ],
+  },
   author: 'Ezana Finance Editorial',
   category: 'politics-policy',
   subcategory: 'Congress',

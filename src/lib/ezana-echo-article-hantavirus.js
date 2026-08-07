@@ -389,6 +389,62 @@ export const hantavirusArticle = {
         'GENOME SEQUENCING CONFIRMS ANDES-STRAIN MUTATIONS THAT ENHANCE HUMAN-TO-HUMAN TRANSMISSIBILITY — THE RISK ASSESSMENT CHANGES ENTIRELY.',
     },
   ],
+  globeRail: {
+    metric: {
+      title: 'U.S. HANTAVIRUS CASES BY YEAR',
+      data: [
+        { x: 1993, y: 48 },
+        { x: 2000, y: 47 },
+        { x: 2011, y: 21 },
+        { x: 2023, y: 27 },
+      ],
+      startLabel: '1993 · 48 cases',
+      endLabel: '2023 · 27 cases',
+      note: '864 confirmed U.S. cases 1993–2023, roughly a third fatal; the yearly count tracks rodent population dynamics, spiking in 1993 then settling to 12–27 a year after 2017.',
+    },
+    cities: [
+      {
+        name: 'Albuquerque',
+        country: 'US',
+        lat: 35.08,
+        lng: -106.65,
+        impact:
+          'New Mexico leads cumulative U.S. cases at 129 — the heart of the Four Corners region where the "Four Corners disease" was first identified in 1993 and where deer mice thrive near human structures.',
+      },
+      {
+        name: 'Atlanta',
+        country: 'US',
+        lat: 33.75,
+        lng: -84.39,
+        impact:
+          'The CDC has tracked hantavirus through the NNDSS since 1993; its surveillance data is the 30-year record behind the yearly and by-state case charts.',
+      },
+      {
+        name: 'Ushuaia',
+        country: 'AR',
+        lat: -54.8,
+        lng: -68.3,
+        impact:
+          'The MV Hondius departed here on April 1, 2026 with 147 passengers and crew — deep in Andes-virus territory, the only hantavirus documented to spread between humans.',
+      },
+      {
+        name: 'Johannesburg',
+        country: 'ZA',
+        lat: -26.2,
+        lng: 28.05,
+        impact:
+          'A passenger’s spouse died in a Johannesburg emergency room on April 26 after being evacuated from Saint Helena; the WHO began contact tracing for the medical-evacuation flight here.',
+      },
+      {
+        name: 'Praia',
+        country: 'CV',
+        lat: 14.93,
+        lng: -23.51,
+        impact:
+          'By May 4 the ship was anchored off Cabo Verde with no country willing to let it dock, as the WHO confirmed a cluster of seven cases including three deaths.',
+      },
+    ],
+  },
   author: 'Ezana Finance Editorial',
   category: 'markets-companies',
   subcategory: 'Equities',

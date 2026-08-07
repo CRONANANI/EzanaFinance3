@@ -433,6 +433,54 @@ export const fdaPeptidesBpc157Article2026 = {
         'AN ADVERSE-EVENT CLUSTER IN A COMPOUNDED PEPTIDE — THE POLITICS TURN, AND THE WIDENING REVERSES.',
     },
   ],
+  globeRail: {
+    metric: {
+      title: 'PEPTIDE CLEARANCE MARGIN (% OF VOTES CAST)',
+      data: [
+        { x: 1, y: 57.1 },
+        { x: 2, y: 57.1 },
+        { x: 3, y: 57.1 },
+        { x: 4, y: 58.3 },
+      ],
+      startLabel: 'BPC-157 · 57.1%',
+      endLabel: 'MOTS-c · 58.3%',
+      note: 'BPC-157, KPV and TB-500 each cleared 8–6 with one abstention (57.1% of votes cast); MOTS-c cleared 7–5 with two abstentions (58.3%). Every one passed by a thin margin, over the objection of the FDA’s own scientists, who recommended against all seven.',
+    },
+    cities: [
+      {
+        name: 'Washington',
+        country: 'US',
+        lat: 38.9,
+        lng: -77.04,
+        impact:
+          'The FDA advisory committee voted 8–6 to recommend BPC-157 for the 503A Bulks List, over the agency’s own scientists — who asked "What is BPC-157?", called it "not well-characterized," and recommended against every peptide on the docket. The vote is non-binding.',
+      },
+      {
+        name: 'San Francisco',
+        country: 'US',
+        lat: 37.77,
+        lng: -122.42,
+        impact:
+          'Hims & Hers, which acquired a California peptide manufacturing facility in 2025 and whose CMO testified in support, rose as much as 13% intraday and closed up roughly 10% — against a decline of about 44% over the prior year.',
+      },
+      {
+        name: 'Indianapolis',
+        country: 'US',
+        lat: 39.77,
+        lng: -86.16,
+        impact:
+          'Eli Lilly is pressured rather than helped: it sells approved, characterized, trial-backed drugs into insured channels that a compounded substitute does not directly threaten — a margin-and-channel question, not an existential one.',
+      },
+      {
+        name: 'Copenhagen',
+        country: 'DK',
+        lat: 55.68,
+        lng: 12.57,
+        impact:
+          'Novo Nordisk sits in the same incumbent tier, but the relationship is not cleanly adversarial — Hims already has a Novo Nordisk partnership, making "disruptor versus incumbent" too simple a frame.',
+      },
+    ],
+  },
   author: 'Ezana Finance Editorial',
   category: 'markets-companies',
   subcategory: 'Equities',

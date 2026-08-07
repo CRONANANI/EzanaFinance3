@@ -21,6 +21,36 @@ export const trumpPortfolio2026 = {
   },
   category: 'politics-policy',
   subcategory: 'Congress',
+  globeRail: {
+    metric: {
+      title: 'DISCLOSED TRANSACTIONS PER FILING',
+      data: [
+        { x: 0, y: 191 },
+        { x: 1, y: 3642 },
+      ],
+      startLabel: 'Prior filing · 191',
+      endLabel: 'Q1 2026 · 3,642',
+      note: 'The prior two-month filing logged just 191 transactions, dominated by bonds; Q1 2026 logged 3,642 across 1,026 firms — roughly 58 trades per market day, with 2,346 purchases outnumbering 1,296 sales close to two to one.',
+    },
+    cities: [
+      {
+        name: 'Washington',
+        country: 'US',
+        lat: 38.9,
+        lng: -77.04,
+        impact:
+          'Trump’s Q1 2026 OGE Form 278-T filings, released May 14, disclosed 3,642 transactions worth $220M–$750M. A second cluster is harder to separate from the office: a new Dell position weeks before public praise, Intel buying after the government’s ~10% stake, Boeing across seven transactions near a 200-aircraft order. Sitting presidents are exempt from the recusal statute, and no evidence establishes self-dealing.',
+      },
+      {
+        name: 'New York',
+        country: 'US',
+        lat: 40.71,
+        lng: -74.01,
+        impact:
+          'The heaviest buying coincided with the March market drawdown — the S&P 500 fell more than 8% into a late-March bottom before rallying roughly 19% — with more than half the quarter’s transactions landing in March, in a textbook "buying the dip" concentrated in AI-chip and enterprise-software names.',
+      },
+    ],
+  },
   author: 'Ezana Finance Editorial',
   meta: {
     sectors: ['Information Technology', 'Industrials'],

@@ -474,6 +474,53 @@ export const dataConsolidationArticle2026 = {
       text: "The durable point is the one the map keeps making. Models commoditize; pipelines compound. Whoever owns the proprietary data, the workflow seat and the governance layer owns the optionality — the ability to deploy whatever the best model happens to be that quarter, on data no competitor can touch. For the retail investor, the accessible version of that same edge is not a secret algorithm either; it is a cross-dataset vantage — the kind Ezana's tools are built to provide — where the advantage comes from the connections between datasets, not from any one number. In 2026, the market spent over $100 billion agreeing with that idea.",
     },
   ],
+  globeRail: {
+    metric: {
+      title: 'U.S. RECESSION ODDS, 12-MONTH (MID-2026)',
+      data: [
+        { x: 1, y: 12 },
+        { x: 2, y: 15 },
+        { x: 3, y: 25 },
+      ],
+      startLabel: 'Prediction markets · 12%',
+      endLabel: 'U.S. Bank · 25%',
+      note: 'Prediction markets price a 2026 U.S. recession at ~12%, the NY Fed model at ~15%, and U.S. Bank at ~25% — every reading well below the ~50% level that would read as elevated, with the Sahm Rule separately at 0.10 against its 0.50 trigger.',
+    },
+    cities: [
+      {
+        name: 'San Francisco',
+        country: 'US',
+        lat: 37.77,
+        lng: -122.42,
+        impact:
+          'The most acquisitive names cluster here — Salesforce against a dozen targets, Databricks and OpenAI against six apiece, Anthropic against five — buying proprietary data and workflow position, not models, as inference prices fell more than an order of magnitude across 2024–2025.',
+      },
+      {
+        name: 'Seattle',
+        country: 'US',
+        lat: 47.61,
+        lng: -122.33,
+        impact:
+          'Microsoft is among the mega-cap acquirers that increasingly compete on data governance and pipeline control rather than model supremacy — the tradeable read when most targets are private.',
+      },
+      {
+        name: 'New York',
+        country: 'US',
+        lat: 40.71,
+        lng: -74.01,
+        impact:
+          'Datadog is one of the public data-layer owners, a direct proxy for the infrastructure-lock-in thesis: their value rests on being the substrate other software depends on.',
+      },
+      {
+        name: 'Washington',
+        country: 'US',
+        lat: 38.9,
+        lng: -77.04,
+        impact:
+          'The FTC under Chairman Andrew Ferguson has flagged the reverse-acquihire pattern — more than $40 billion of it since March 2024 — and Senators Warren, Wyden and Blumenthal pressed for scrutiny of deals engineered to sidestep merger review.',
+      },
+    ],
+  },
   author: 'Ezana Finance Editorial',
   category: 'tech-founders',
   subcategory: 'AI',

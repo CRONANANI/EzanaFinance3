@@ -33,6 +33,68 @@ export const peterThiel2026 = {
   },
   category: 'tech-founders',
   subcategory: 'Founders',
+  globeRail: {
+    metric: {
+      title: 'DIALOG AUG 2026 RETREAT',
+      data: [
+        { x: 0, y: 222 },
+        { x: 1, y: 87 },
+      ],
+      startLabel: 'Registrants · ~222',
+      endLabel: 'First-time · 87',
+      note: 'Dialog, the invitation-only society Thiel co-founded in 2006, operated almost entirely out of public view for nearly two decades. A June 2026 leak verified by WIRED listed roughly 222 registrants for its August 2026 retreat, 87 of them first-time attendees.',
+    },
+    cities: [
+      {
+        name: 'Stanford',
+        country: 'US',
+        lat: 37.42,
+        lng: -122.17,
+        impact:
+          'Thiel’s method appeared before his fortune: as a Stanford undergraduate in the late 1980s he founded The Stanford Review, and the people he gathered became his first network. His mentor, René Girard, shaped the "mimetic desire" framework he would later apply to markets and politics.',
+      },
+      {
+        name: 'San Francisco',
+        country: 'US',
+        lat: 37.77,
+        lng: -122.42,
+        impact:
+          'Silicon Valley is the operational core — Confinity and PayPal (1998–2002), Palantir (2003), the first Facebook investment (2004), and Founders Fund (2005) — plus a lattice of ties to Musk, Karp, Zuckerberg, Altman and Ellison.',
+      },
+      {
+        name: 'Washington',
+        country: 'US',
+        lat: 38.9,
+        lng: -77.04,
+        impact:
+          'Where the network converted into power: Thiel backed Trump at the 2016 convention and brought Musk and Karp into the December 14 Trump Tower summit, then funded JD Vance’s arc from a 2011 Yale lecture to the vice presidency with more than $15 million in 2022.',
+      },
+      {
+        name: 'Cambridge',
+        country: 'GB',
+        lat: 52.2,
+        lng: 0.12,
+        impact:
+          'The UK realignment’s intellectual hub: James Orr, Vance’s "British sherpa," hosted Thiel’s "Antichrist" lecture series, helped transpose the National Conservatism conference to the UK in 2023, and became a senior policy figure for Reform UK.',
+      },
+      {
+        name: 'London',
+        country: 'GB',
+        lat: 51.51,
+        lng: -0.13,
+        impact:
+          'The transatlantic bridge runs through Westminster: Louis Mosley embedded Palantir in NHS data platforms, Ministry of Defence contracts, and policing systems, while Mandelson’s Global Counsel — a Palantir client from 2018 — facilitated access up to Downing Street.',
+      },
+      {
+        name: 'Dublin',
+        country: 'IE',
+        lat: 53.35,
+        lng: -6.26,
+        impact:
+          'Dialog’s August 2026 retreat — the ~222 registrants revealed in the leak, with off-the-record sessions titled "Navigating WWIII," "Bring Back Nuclear," and "Battlefield Technologies" — is set near Dublin.',
+      },
+    ],
+  },
   author: 'Ezana Finance Editorial',
   meta: {
     sectors: ['Information Technology'],

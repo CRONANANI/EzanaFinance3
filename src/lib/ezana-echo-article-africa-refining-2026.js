@@ -507,6 +507,63 @@ export const africaRefiningArticle2026 = {
         'THE MARQUEE ASSET IS PRIVATE — THERE IS NO PURE-PLAY TICKER; THE ONLY NUMBER THAT SETTLES THE THESIS IS THROUGHPUT, NOT NAMEPLATE.',
     },
   ],
+  globeRail: {
+    metric: {
+      title: 'AFRICA TOP REFINERIES · NAMEPLATE (000 BPD)',
+      data: [
+        { x: 1, y: 650 },
+        { x: 2, y: 350 },
+        { x: 3, y: 300 },
+        { x: 4, y: 220 },
+        { x: 5, y: 210 },
+      ],
+      startLabel: 'Dangote · 650k bpd',
+      endLabel: 'Port Harcourt · 210k bpd',
+      note: 'Africa’s top 20 refineries now clear more than 3.5 million bpd combined; Dangote’s single-train 650,000 bpd (pushed to ~700,000 in testing) reset the map, with an announced 1.4M bpd expansion that would pass India’s Jamnagar as the world’s largest single site.',
+    },
+    cities: [
+      {
+        name: 'Lagos',
+        country: 'NG',
+        lat: 6.45,
+        lng: 3.4,
+        impact:
+          'The Dangote refinery in the Lekki Free Zone reached its full 650,000 bpd nameplate on Feb 11, 2026 — the first single-train refinery anywhere to run at that scale — cutting an estimated $10 billion a year from Nigeria’s fuel-import bill.',
+      },
+      {
+        name: 'Port Harcourt',
+        country: 'NG',
+        lat: 4.82,
+        lng: 7.03,
+        impact:
+          'The state-owned 210,000 bpd plant has for years run far below nameplate — and often not at all — the nameplate-versus-output gap that is precisely why Nigeria kept importing more than 80% of its fuel.',
+      },
+      {
+        name: 'Cairo',
+        country: 'EG',
+        lat: 30.04,
+        lng: 31.24,
+        impact:
+          'Egypt’s cluster of mid-sized plants — Mostorod (161k, recently a $4.3B upgrade), MIDOR (160k) and El Nasr (131k) — makes it the continent’s most refinery-dense country, the opposite model to Dangote’s single-mega-plant bet.',
+      },
+      {
+        name: 'Skikda',
+        country: 'DZ',
+        lat: 36.88,
+        lng: 6.91,
+        impact:
+          'Algeria’s Sonatrach-operated Skikda is the continent’s number two at roughly 350,000 bpd, built to feed export markets across the Mediterranean — oriented Europe-ward, not toward West Africa’s new domestic pivot.',
+      },
+      {
+        name: 'Cape Town',
+        country: 'ZA',
+        lat: -33.92,
+        lng: 18.42,
+        impact:
+          'Astron Energy’s Cape Town refinery sits inside Africa’s top 20; South Africa has sought a 12-month supply contract for Dangote product, an early sign of the surplus reshaping intra-Africa trade.',
+      },
+    ],
+  },
   author: 'Ezana Finance Editorial',
   category: 'commodities-energy',
   subcategory: 'Oil & Gas',
