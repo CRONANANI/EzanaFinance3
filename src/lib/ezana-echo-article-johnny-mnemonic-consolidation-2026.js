@@ -438,6 +438,52 @@ export const johnnyMnemonicConsolidation2026 = {
       ],
     },
   ],
+  globeRail: {
+    metric: {
+      title: 'ORGS CONSOLIDATING SECURITY VENDORS',
+      data: [
+        { x: 2020, y: 33 },
+        { x: 2026, y: 75 },
+      ],
+      startLabel: '2020 · <33%',
+      endLabel: '2026 · ~75%',
+      note: 'Gartner · the fastest phase transition in enterprise software',
+    },
+    cities: [
+      {
+        name: 'San Francisco',
+        country: 'US',
+        lat: 37.77,
+        lng: -122.42,
+        impact:
+          'The Bay Area platform consolidators drive the wave — Google closing its $32B Wiz deal, Nvidia paying a reported $20B for Groq’s inference assets, Palo Alto Networks buying CyberArk for $25B. These are the proven consolidators whose scale funds the next deal.',
+      },
+      {
+        name: 'Seattle',
+        country: 'US',
+        lat: 47.61,
+        lng: -122.33,
+        impact:
+          'The cloud endgame is anchored here: Amazon Web Services (~30% of global cloud spend) and Microsoft Azure (~23%) hold two-thirds of the market with Google — the clearest picture of what the cycle’s final "dominate" phase looks like.',
+      },
+      {
+        name: 'New York',
+        country: 'US',
+        lat: 40.71,
+        lng: -74.0,
+        impact:
+          'IBM’s $11B all-cash Confluent acquisition — $31 per share for the Kafka-based platform used by 6,500+ enterprises — extends the same logic to the data layer: the value is in controlling how proprietary data moves.',
+      },
+      {
+        name: 'Tel Aviv',
+        country: 'Israel',
+        lat: 32.08,
+        lng: 34.78,
+        impact:
+          'Home to the cycle’s two largest cybersecurity targets — Wiz, bought by Google for $32B (the largest pure-cyber deal ever), and CyberArk, taken by Palo Alto for $25B — the sharp end of security’s "from 45 tools to three platforms" consolidation.',
+      },
+    ],
+  },
   author: 'Ezana Finance Editorial',
   category: 'tech-founders',
   subcategory: 'AI',

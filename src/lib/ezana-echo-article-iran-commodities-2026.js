@@ -481,6 +481,61 @@ export const iranWarCommoditiesArticle2026 = {
       text: "For investors using Ezana, the relevant tools to track this are the Global Market Analysis chain view (which surfaces ISR-flagged events in the Middle East with attached prediction-market odds), Inside the Capitol (where energy committee members' disclosed trades have shifted toward energy producers since February), and the Empire Rankings dimensions covering geology, resource efficiency, and economic output — all of which have reweighted in response to the conflict. The commodity rally is not a trade in isolation; it is a leading indicator of where the rest of the macro setup is heading.",
     },
   ],
+  globeRail: {
+    metric: {
+      title: 'BRENT CRUDE · USD/BBL',
+      data: [
+        { x: 2026.1, y: 70 },
+        { x: 2026.24, y: 115 },
+        { x: 2026.32, y: 96.36 },
+      ],
+      startLabel: 'Early Feb · ~$70',
+      endLabel: 'Apr 26 · $96.36',
+      note: 'Brent spot · +~50% since the Feb 28 strikes',
+    },
+    cities: [
+      {
+        name: 'Tehran',
+        country: 'Iran',
+        lat: 35.7,
+        lng: 51.42,
+        impact:
+          'The origin of the shock: the Feb 28 joint US–Israel strikes closed the Strait of Hormuz — which carries roughly one-fifth of global oil and LNG trade — to commercial transit, triggering one of the most aggressive commodity repricings in years.',
+      },
+      {
+        name: 'Riyadh',
+        country: 'Saudi Arabia',
+        lat: 24.71,
+        lng: 46.68,
+        impact:
+          'The Strait carries ~10M bbl/day of crude, most of it from Saudi Arabia, the UAE, Iraq, Kuwait, and Iran — and the Gulf’s energy-intensive aluminum supply feeds a +12% move. The Tadawul absorbed one of the largest equity losses, down 9.6%.',
+      },
+      {
+        name: 'Beijing',
+        country: 'China',
+        lat: 39.9,
+        lng: 116.4,
+        impact:
+          'China produces roughly 80% of the world’s tungsten — the standout performer, up +557% on AI-plus-military demand — and about 35% of global sulfuric acid, putting it at the center of the metals and AI-supply-chain legs of the move.',
+      },
+      {
+        name: 'London',
+        country: 'UK',
+        lat: 51.5,
+        lng: -0.13,
+        impact:
+          'Brent, the London benchmark, rallied from ~$70 in early February to above $115 in late March before settling near $96.36; the FTSE 100 held up better than Asia at −5.3%, and S&P Global warned a two- to three-month blockage would be a severe supply shock.',
+      },
+      {
+        name: 'Houston',
+        country: 'US',
+        lat: 29.76,
+        lng: -95.37,
+        impact:
+          'The US energy complex — WTI tracking Brent at $92.52, and the XLE / XOM / CVX / EOG names offering leveraged crude exposure — sits on the better-insulated side of the shock, with US petrol up a comparatively modest +16.55%.',
+      },
+    ],
+  },
   author: 'Ezana Finance Editorial',
   category: 'commodities-energy',
   subcategory: 'Oil & Gas',

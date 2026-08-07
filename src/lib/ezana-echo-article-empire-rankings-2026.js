@@ -983,6 +983,68 @@ export const empireRankings2026 = {
       ctaAuthGate: false,
     },
   ],
+  globeRail: {
+    metric: {
+      title: 'USD SHARE OF ALLOCATED RESERVES',
+      data: [
+        { x: 1999, y: 71 },
+        { x: 2025, y: 58 },
+      ],
+      startLabel: '1999 · 71%',
+      endLabel: '2025 · 58%',
+      note: 'IMF COFER · the last power dimension to move',
+    },
+    cities: [
+      {
+        name: 'Washington',
+        country: 'US',
+        lat: 38.9,
+        lng: -77.04,
+        impact:
+          'The incumbent, holding the fullest dimension stack ever assembled — the dollar at 58% of allocated reserves and ~26% of nominal world GDP — while carrying the late-cycle fiscal signature: public debt above 100% of GDP with interest costs rivaling defense outlays.',
+      },
+      {
+        name: 'Beijing',
+        country: 'China',
+        lat: 39.9,
+        lng: 116.4,
+        impact:
+          'The challenger, back toward ~19% of world output on a PPP basis and dominating manufacturing and goods trade — but stalled at the financial gate: capital controls cap financial-center status and the renminbi holds ~2% of reserves.',
+      },
+      {
+        name: 'New Delhi',
+        country: 'India',
+        lat: 28.6,
+        lng: 77.2,
+        impact:
+          'The ascendant power at the education-and-innovation stage of the sequence — the stage Britain occupied c.1750 and the US c.1870 — with ~8% of world GDP (PPP) and rising, and the demographic tailwind every other major power lacks.',
+      },
+      {
+        name: 'London',
+        country: 'UK',
+        lat: 51.5,
+        lng: -0.13,
+        impact:
+          'The template transition: ~9% of world output at its 1870 peak leveraged into ~23% of world population governed by 1913, then a managed handover as financial primacy crossed to New York — down to ~2.2% of world output today.',
+      },
+      {
+        name: 'Tokyo',
+        country: 'Japan',
+        lat: 35.68,
+        lng: 139.69,
+        impact:
+          'The cautionary dossier: the 1980s challenger that captured innovation, output-per-capita, and trade leads but never converted them into financial or reserve primacy — the yen at ~5–6% of reserves against public debt above 200% of GDP.',
+      },
+      {
+        name: 'Moscow',
+        country: 'Russia',
+        lat: 55.75,
+        lng: 37.62,
+        impact:
+          'The resource power running the sequence backwards — military reach and top-three production across oil, gas, wheat, and enriched uranium substituting for a shrinking ~2% of nominal world GDP. The 1991 dissolution is the reminder of where that ordering leads.',
+      },
+    ],
+  },
   author: 'Ezana Finance Editorial',
   category: 'macro',
   // Seven core metadata dimensions (docs/ECHO_ARTICLE_AUTHORING.md) — every value
