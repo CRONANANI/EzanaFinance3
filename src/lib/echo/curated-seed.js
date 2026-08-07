@@ -221,3 +221,13 @@ export function ensureCuratedSeeded(admin) {
   })();
   return seedPromise;
 }
+
+/**
+ * Force a fresh reconcile on the NEXT ensureCuratedSeeded call by clearing the
+ * per-process cache. Admin-triggered (see /api/echo/admin/reseed) to push
+ * content/metadata/globe_rail backfills to the DB without waiting for a cold
+ * serverless boot. Returns nothing; callers await ensureCuratedSeeded after.
+ */
+export function resetCuratedSeedCache() {
+  seedPromise = null;
+}
