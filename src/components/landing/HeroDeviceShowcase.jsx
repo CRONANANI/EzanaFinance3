@@ -6,22 +6,17 @@ import { DimensionVisual } from './dimension-visuals';
 import './hero-device-showcase.css';
 
 /**
- * Hero device showcase v5.
+ * Hero device showcase v6.
  *
- * v5 changes:
- *  · iMac screen no longer shows code parsing. It cross-fades through the
- *    SEVEN Portfolio-Intelligence dimension visuals (DimensionVisual +
- *    DATASET_TAXONOMY — the same components as the pinned section; imported,
- *    never duplicated). One visual live at a time; inactive get tick=0.
- *  · Code appears ONLY above the desktop: falling JSON-schema fragments in
- *    the "Your portfolio" signal-card shape, dropping into the screen.
- *  · The feed zone above the iMac is shaded (translucent blurred wash) so
- *    the dotted world-map arcs behind it are muted.
- *  · iMac enlarged to 440px — clearly dominant over the 190px iPhone.
- *  · Pulsating green dots REMOVED from the iMac chrome and the Auto-copy
- *    satellite (kept only where a ping still exists: nowhere).
- *  · New-follower and Rebalance satellites raised and tucked closer to the
- *    iMac / iPhone respectively.
+ * v6 changes:
+ *  · Device geometry fixed by the numbers: iMac left:-26 (spans −26→414),
+ *    phone right:32 (spans 398→588) → only ~16px of corner layering.
+ *  · Feed-zone shade is now a radial wash that dissolves to transparent at
+ *    every edge (blur masked to match) — no visible panel boundary.
+ *  · iMac chrome URL swaps with the active dimension
+ *    (ezana.world/intelligence/<taxonomy id>); "· 7 dimensions" removed.
+ *  · Auto-copy satellite moved beside the iPhone (same vertical band),
+ *    hovering over the China region of the map.
  *
  * One 2s tick drives discrete frames deterministically (seeded sin, no
  * Math.random); continuous motion (falling JSON) is pure CSS. Decorative
@@ -162,7 +157,9 @@ export function HeroDeviceShowcase() {
               <i className="lpd-dot" />
               <i className="lpd-dot" />
               <i className="lpd-dot" />
-              <span className="lpd-imac-url">ezana.world/intelligence · 7 dimensions</span>
+              <span key={activeDim} className="lpd-imac-url lpd-url-swap">
+                ezana.world/intelligence/{DATASET_TAXONOMY[activeDim]?.id}
+              </span>
             </div>
             <div className="lpd-dims">
               {DATASET_TAXONOMY.map((d, i) => (

@@ -128,14 +128,19 @@
 .lpd-codefall-shade {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.55) 22%,
-    rgba(255, 255, 255, 0.72) 100%
+  /* Peak wash at center → fully transparent at edges. To invert (thinnest
+     at center), swap the 0.7 and 0 alpha stops. */
+  background: radial-gradient(
+    62% 58% at 50% 52%,
+    rgba(255, 255, 255, 0.7) 0%,
+    rgba(255, 255, 255, 0.45) 55%,
+    rgba(255, 255, 255, 0) 100%
   );
   backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);
+  /* Fade the blur with the wash so the panel has no detectable boundary. */
+  mask-image: radial-gradient(62% 58% at 50% 52%, #000 40%, transparent 100%);
+  -webkit-mask-image: radial-gradient(62% 58% at 50% 52%, #000 40%, transparent 100%);
 }
 @keyframes lpd-fall {
   0% {
@@ -168,7 +173,7 @@
 .lpd-imac {
   position: absolute;
   top: 172px;
-  left: -18px;
+  left: -26px;
   width: 440px;
   z-index: 1;
 }
@@ -220,6 +225,19 @@
   letter-spacing: 0.03em;
   color: var(--text-faint);
 }
+@keyframes lpd-url-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.lpd-url-swap {
+  animation: lpd-url-in 0.45s ease both;
+}
 
 /* ── Seven-Dimensions cross-fade stage ── */
 .lpd-dims {
@@ -265,7 +283,7 @@
 .lpd-phone {
   position: absolute;
   top: 56px;
-  right: 96px;
+  right: 32px;
   width: 190px;
   background: var(--bg-primary);
   border: 5px solid var(--bg-tertiary);
@@ -497,10 +515,13 @@
   --surface-card: rgba(255, 255, 255, 0.55);
   color: var(--text-secondary);
 }
-/* Auto-copy: corner-clip only — never the phone header or Dynamic Island. */
+/* Auto-copy: sits in the phone's vertical band, pushed right of it so it
+   hovers over the China region of the dotted map. May layer over ~25px of
+   the phone's right FRAME edge only — never its content. If the viewport
+   clips it at 1440px, pull `right` toward 0 in 20px steps. */
 .lpd-sat--sync {
-  top: -36px;
-  right: -12px;
+  top: 118px;
+  right: -150px;
   width: 210px;
   z-index: 3;
 }
@@ -513,7 +534,7 @@
 /* Raised + tucked under the iPhone's lower-left edge. */
 .lpd-sat--rebalance {
   bottom: 96px;
-  right: 36px;
+  right: 20px;
   z-index: 3;
   width: 238px;
 }
@@ -633,7 +654,8 @@
 @media (prefers-reduced-motion: reduce) {
   .lpd-stack,
   .lpd-float,
-  .lpd-fall {
+  .lpd-fall,
+  .lpd-url-swap {
     animation: none !important;
   }
   .lpd-fall {
