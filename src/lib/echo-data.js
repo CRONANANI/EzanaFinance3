@@ -7,7 +7,7 @@
  * Server-only: depends on the service-role admin client.
  */
 import { getAdminClient } from '@/lib/supabase';
-import { ensureCuratedSeeded } from '@/lib/echo/curated-seed';
+import { ensureCuratedSeeded, CURATED_GLOBE_RAILS } from '@/lib/echo/curated-seed';
 
 const admin = getAdminClient();
 
@@ -43,7 +43,7 @@ function mapFull(row) {
     body: row.article_body || '',
     contentBlocks: row.content_blocks || undefined,
     contentParagraphs: row.content_paragraphs || undefined,
-    globeRail: row.globe_rail || null,
+    globeRail: row.globe_rail || CURATED_GLOBE_RAILS[row.article_slug] || null,
     tickers: row.tickers || [],
     status: row.article_status,
   };

@@ -48,6 +48,17 @@ const SOURCE = [
   privateCreditMaturityWallArticle2026,
 ];
 
+/**
+ * Slug → globeRail for the curated catalog. Server-only fallback used by the
+ * reader when the DB row's globe_rail is null (e.g. migration not yet applied
+ * or reconcile not yet fired on this deploy). Curated rails therefore render
+ * deterministically regardless of DB state; DB-authored articles are
+ * unaffected and read globe_rail from their row as usual.
+ */
+export const CURATED_GLOBE_RAILS = Object.fromEntries(
+  SOURCE.filter((a) => a.globeRail).map((a) => [a.id, a.globeRail]),
+);
+
 // Seeded read counts for the curated set (so the trending widget has signal).
 const SEED_READS = {
   'peter-thiel-worldview-2026': 11200,
@@ -155,7 +166,7 @@ function toContentRow(a) {
 // Bump when a metadata (or other content) change must force a re-sync even on
 // warm infra — the value is logged after each reconcile so the fired pass is
 // visible in Vercel logs post-deploy.
-const SEED_VERSION = '2026-08-globe-rail-v1';
+const SEED_VERSION = '2026-08-globe-rail-v2';
 
 let seedPromise = null;
 
@@ -194,7 +205,11 @@ export function ensureCuratedSeeded(admin) {
         .from('echo_articles')
         .upsert(contentRows, { onConflict: 'article_slug' });
       if (reconcileError) {
-        console.error('[echo] curated content reconcile failed:', reconcileError.message);
+        console.error(
+          '[echo] curated content reconcile failed:',
+          reconcileError.message,
+          '— if this mentions "globe_rail", apply supabase/migrations/20260807_echo_globe_rail.sql in the SQL Editor',
+        );
       } else {
         console.log('[echo] curated seed reconcile', SEED_VERSION, contentRows.length);
       }
