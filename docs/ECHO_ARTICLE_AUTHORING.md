@@ -18,15 +18,15 @@ the sidebar still shows the category as an em-dash, which is the honest outcome.
 Each of these must be present and non-empty (or carry an explicit justifying
 comment if honestly empty):
 
-| Dimension      | Location        | What it holds                                        |
-| -------------- | --------------- | ---------------------------------------------------- |
-| `tickers`      | top-level key   | Market symbols of companies discussed (US-listed/ADR) |
-| `sectors`      | `meta.sectors`  | GICS sectors the piece is about                      |
-| `industries`   | `meta.industries` | GICS sub-industries named/implied by the text      |
-| `institutions` | `meta.institutions` | Named non-government orgs/companies/labs/exchanges |
-| `geos`         | `meta.geos`     | Countries/regions in the text                        |
-| `assetClasses` | `meta.assetClasses` | Equities / Commodities / Fixed Income / …        |
-| `themes`       | `meta.themes`   | Cross-cutting narratives (e.g. Geopolitics)          |
+| Dimension      | Location            | What it holds                                         |
+| -------------- | ------------------- | ----------------------------------------------------- |
+| `tickers`      | top-level key       | Market symbols of companies discussed (US-listed/ADR) |
+| `sectors`      | `meta.sectors`      | GICS sectors the piece is about                       |
+| `industries`   | `meta.industries`   | GICS sub-industries named/implied by the text         |
+| `institutions` | `meta.institutions` | Named non-government orgs/companies/labs/exchanges    |
+| `geos`         | `meta.geos`         | Countries/regions in the text                         |
+| `assetClasses` | `meta.assetClasses` | Equities / Commodities / Fixed Income / …             |
+| `themes`       | `meta.themes`       | Cross-cutting narratives (e.g. Geopolitics)           |
 
 Government bodies (CDC, OPEC, a central bank) belong in `meta.government`, **not**
 `institutions`. An article that names only government actors may honestly leave
