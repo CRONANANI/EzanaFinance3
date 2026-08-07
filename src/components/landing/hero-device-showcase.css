@@ -1,14 +1,15 @@
 /* ══════════════════════════════════════════════════════════════════════
-   Hero device showcase v3. Companion to HeroDeviceShowcase.jsx.
+   Hero device showcase v4. Companion to HeroDeviceShowcase.jsx.
    Page-scoped `lpd-` prefix only. Theme tokens for all on-screen UI;
-   device-hardware chrome (aluminum, bezel glass) uses component-scoped
-   custom props on .lpd-mac — same precedent as the .lpd-sat light-token
-   re-scope. Never reuse those chrome values outside the device frames.
+   device-hardware chrome (the iMac SVG's aluminum/bezel hex + the dark
+   screen surface) is the established scoped exception, mirroring the
+   .lpd-sat light-token re-scope.
 
    Layout map (620×720 canvas, anchored right of .lp-band, v-centred):
 
-                          [Auto-copy sat] ← clips ONLY the phone's
-     [MacBook, lower-left]   [iPhone, centre-right]   top-right corner
+        · falling code ·          [Auto-copy sat] ← corner-clip only
+              ↓
+     [iMac, lower-left]        [iPhone, right]  ← ~12px corner layering max
      [New follower sat]              [Rebalance sat]
    ══════════════════════════════════════════════════════════════════════ */
 
@@ -24,7 +25,7 @@
   user-select: none;
 }
 
-/* ── Float loops (three parallax depths, staggered phases) ── */
+/* ── Float loops ── */
 @keyframes lpd-float {
   0%,
   100% {
@@ -63,7 +64,8 @@
     opacity 0.4s ease,
     background 0.35s ease,
     color 0.35s ease,
-    border-color 0.35s ease;
+    border-color 0.35s ease,
+    height 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 .lpd-mono {
   font-family: var(--font-mono);
@@ -73,8 +75,7 @@
   color: var(--text-faint);
 }
 
-/* ══ Fixed-size Follow/Following button — BOTH states share one box so the
-   toggle can never reflow neighbours or spill outside the phone. ══ */
+/* ══ Fixed-size Follow/Following button ══ */
 .lpd-btn {
   position: relative;
   display: inline-grid;
@@ -106,12 +107,6 @@
 .lpd-btn.is-on .lpd-btn-on {
   opacity: 1;
 }
-.lpd-btn--mini {
-  width: 64px;
-  height: 20px;
-  font-size: 8.5px;
-  font-weight: 600;
-}
 .lpd-btn--tiny {
   width: 100%;
   max-width: 44px;
@@ -120,256 +115,235 @@
   font-weight: 600;
 }
 
-/* ══════════════ MacBook (v3 — realistic hardware) ══════════════ */
-.lpd-mac {
+/* ══════════════ Falling code feed ══════════════ */
+.lpd-codefall {
   position: absolute;
-  top: 170px;
-  left: -6px;
-  width: 400px;
-  transform: rotate(-3deg);
-  transform-origin: 50% 100%;
-  /* Device-hardware chrome palette — scoped exception to the no-hex rule
-     (these are aluminum/glass hardware colors, not theme colors). */
-  --lpd-alu-hi: #f6f7f9;
-  --lpd-alu: #dfe3e8;
-  --lpd-alu-mid: #c4cad2;
-  --lpd-alu-lo: #9aa1ab;
-  --lpd-bezel: #0d1013;
-  --lpd-bezel-edge: #2a2f36;
-}
-/* Soft grounding shadow so the machine sits ON the map, not floating flat. */
-.lpd-mac::after {
-  content: '';
-  position: absolute;
-  left: 5%;
-  right: 5%;
-  bottom: -16px;
-  height: 28px;
-  background: radial-gradient(50% 60% at 50% 40%, rgba(15, 23, 42, 0.26), rgba(15, 23, 42, 0) 70%);
-  filter: blur(4px);
-  z-index: -1;
-}
-/* Lid: dark glass front with machined edge highlight. */
-.lpd-mac-lid {
-  position: relative;
-  background: linear-gradient(180deg, var(--lpd-bezel-edge), var(--lpd-bezel) 14%);
-  border-radius: 16px 16px 0 0;
-  padding: 11px 10px 12px;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
-    0 12px 32px rgba(15, 23, 42, 0.2);
-}
-.lpd-mac-cam {
-  position: absolute;
-  top: 4px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: #23282f;
-  box-shadow: inset 0 0 1px rgba(120, 160, 255, 0.6);
-}
-.lpd-mac-screen {
-  position: relative;
-  background: var(--bg-secondary);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 8px;
+  top: 66px;
+  left: 44px;
+  width: 220px;
+  height: 150px;
   overflow: hidden;
+  z-index: 0; /* behind the iMac so lines vanish "into" it */
 }
-/* Diagonal glass glare across the panel. */
-.lpd-mac-screen::after {
-  content: '';
+@keyframes lpd-fall {
+  0% {
+    transform: translateY(-14px);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.85;
+  }
+  80% {
+    opacity: 0.55;
+  }
+  100% {
+    transform: translateY(158px);
+    opacity: 0;
+  }
+}
+.lpd-fall {
   position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(
-    115deg,
-    rgba(255, 255, 255, 0.13) 0%,
-    rgba(255, 255, 255, 0.05) 24%,
-    rgba(255, 255, 255, 0) 42%
-  );
+  top: 0;
+  font-size: 8px;
+  letter-spacing: 0.02em;
+  color: var(--emerald);
+  opacity: 0;
+  white-space: nowrap;
+  animation: lpd-fall 6.5s linear infinite;
 }
-.lpd-mac-chrome {
+
+/* ══════════════ iMac (21st.dev SVG frame + live HTML screen) ══════════════ */
+.lpd-imac {
+  position: absolute;
+  top: 208px;
+  left: -14px;
+  width: 360px;
+  z-index: 1;
+}
+.lpd-imac-frame {
+  position: relative;
+  width: 100%;
+}
+.lpd-imac-frame > svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 16px 28px rgba(15, 23, 42, 0.22));
+}
+/* Overlay matches the SVG screen rect (x29.12 y25.02 w541.76 h305.06 in a
+   600×500 viewBox) → left 4.85%, top 5%, width 90.3%, height 61.01%. */
+.lpd-imac-screen {
+  position: absolute;
+  left: 4.85%;
+  top: 5%;
+  width: 90.3%;
+  height: 61.01%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--bg-secondary);
+}
+.lpd-imac-chrome {
   display: flex;
   align-items: center;
   gap: 5px;
-  padding: 7px 11px;
+  padding: 5px 10px;
   border-bottom: 1px solid var(--border-secondary);
   background: var(--bg-tertiary);
+  flex: none;
 }
 .lpd-dot {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background: var(--text-ghost);
   opacity: 0.6;
 }
-.lpd-mac-url {
-  margin-left: 8px;
+.lpd-imac-url {
+  flex: 1;
+  margin-left: 7px;
   font-family: var(--font-mono);
-  font-size: 8.5px;
+  font-size: 8px;
   letter-spacing: 0.03em;
   color: var(--text-faint);
 }
-.lpd-mac-body {
-  padding: 10px 12px 12px;
-}
-.lpd-mac-title {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: var(--text-primary);
-  margin-bottom: 8px;
-}
-.lpd-fund {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 5px 9px;
-  border-radius: var(--radius-md);
-  border: 1px solid transparent;
-}
-.lpd-fund.is-active {
-  background: var(--emerald-bg-subtle);
-  border-color: var(--emerald-border);
-}
-.lpd-fund-rank {
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  font-size: 8.5px;
-  color: var(--text-faint);
-}
-.lpd-fund-name {
+.lpd-imac-grid {
   flex: 1;
-  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 42% 1fr;
+  gap: 8px;
+  padding: 8px 10px 10px;
+}
+.lpd-panel-label {
   font-family: var(--font-mono);
-  font-size: 9.5px;
+  font-size: 6.5px;
   font-weight: 600;
-  letter-spacing: 0.05em;
-  color: var(--text-secondary);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 4px;
+}
+
+/* Ingest: seamless scrolling parse log (list duplicated in JSX; loop
+   translates -50%). */
+.lpd-ingest {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.lpd-ingest-viewport {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: var(--surface-card);
+  border: 1px solid var(--border-secondary);
+  padding: 4px 6px;
+}
+@keyframes lpd-scroll {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-50%);
+  }
+}
+.lpd-ingest-scroll {
+  animation: lpd-scroll 14s linear infinite;
+}
+.lpd-code-line {
+  font-size: 7px;
+  line-height: 1.9;
+  color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.lpd-spark {
-  width: 56px;
-  height: 18px;
-  flex: none;
-}
-.lpd-spark-line {
-  fill: none;
-  stroke: var(--emerald);
-  stroke-width: 1.4;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  opacity: 0.8;
-}
-.lpd-fund-followers {
-  font-size: 9px;
-  font-weight: 600;
-  color: var(--text-muted);
-  min-width: 34px;
-  text-align: right;
-  flex: none;
-}
-.lpd-mac-foot {
-  margin-top: 8px;
-  font-size: 7.5px;
-  letter-spacing: 0.08em;
+.lpd-code-ln {
+  display: inline-block;
+  width: 14px;
   color: var(--text-ghost);
-  text-transform: uppercase;
 }
 
-/* Hinge: metallic barrel with a specular band. */
-.lpd-mac-hinge {
-  height: 7px;
-  margin: 0 14px;
-  background: linear-gradient(180deg, #5a616b 0%, #2c3138 55%, #5a616b 100%);
-  border-radius: 0 0 4px 4px;
-  box-shadow: inset 0 -1px 1px rgba(0, 0, 0, 0.45);
+/* Signals: tick-driven bars + cycling alerts. */
+.lpd-signals {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
-/* Deck: aluminum slab, wider than the lid, with slight trapezoid
-   perspective so it reads as receding toward the viewer. */
-.lpd-mac-deck {
-  position: relative;
-  height: 40px;
-  margin: 0 -26px;
-  background: linear-gradient(
-    180deg,
-    var(--lpd-alu-hi) 0%,
-    var(--lpd-alu) 45%,
-    var(--lpd-alu-mid) 100%
-  );
-  clip-path: polygon(2.5% 0, 97.5% 0, 100% 100%, 0 100%);
-  border-radius: 0 0 6px 6px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+.lpd-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 34px;
+  padding: 0 2px 3px;
+  border-bottom: 1px solid var(--border-secondary);
+  margin-bottom: 6px;
+  flex: none;
 }
-/* Front lip edge. */
-.lpd-mac-deck::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 6px;
-  background: linear-gradient(180deg, var(--lpd-alu-mid), var(--lpd-alu-lo));
-  border-radius: 0 0 8px 8px;
+.lpd-bars i {
+  flex: 1;
+  min-height: 4px;
+  border-radius: 1.5px 1.5px 0 0;
+  background: var(--emerald);
+  opacity: 0.75;
 }
-/* Thumb scoop centered on the front lip. */
-.lpd-mac-deck::before {
-  content: '';
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: 0;
-  width: 72px;
-  height: 6px;
-  border-radius: 0 0 999px 999px;
-  background: linear-gradient(180deg, var(--lpd-alu-lo), var(--lpd-alu-mid));
-  z-index: 1;
+.lpd-bars i:nth-child(3n) {
+  opacity: 0.45;
 }
-/* Recessed keyboard well with dark keycaps. */
-.lpd-mac-keys {
-  position: absolute;
-  top: 5px;
-  left: 15%;
-  right: 15%;
-  display: grid;
-  grid-template-columns: repeat(14, 1fr);
-  gap: 2px;
-  padding: 3px;
-  margin: 0;
-  background: linear-gradient(180deg, var(--lpd-alu-mid), var(--lpd-alu));
-  border-radius: 3px;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.18);
+.lpd-alerts {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 0;
 }
-.lpd-mac-keys i {
-  height: 5px;
-  border-radius: 1.5px;
-  background: #3a4048;
-  box-shadow: 0 0.5px 0 rgba(255, 255, 255, 0.28);
+.lpd-alert {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 7px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-card);
+  border: 1px solid var(--border-secondary);
+  min-width: 0;
 }
-.lpd-mac-trackpad {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  top: 27px;
-  width: 92px;
-  height: 9px;
-  margin: 0;
-  border: none;
-  border-radius: 2px;
-  background: linear-gradient(180deg, var(--lpd-alu), var(--lpd-alu-hi));
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+.lpd-alert.is-live {
+  background: var(--emerald-bg-subtle);
+  border-color: var(--emerald-border);
+}
+.lpd-alert-icon {
+  font-size: 8px;
+  color: var(--text-muted);
+  flex: none;
+}
+.lpd-alert.is-live .lpd-alert-icon {
+  color: var(--emerald);
+}
+.lpd-alert-title {
+  font-size: 7.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  flex: none;
+}
+.lpd-alert-meta {
+  flex: 1;
+  min-width: 0;
+  font-size: 6.5px;
+  color: var(--text-faint);
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* ══════════════ iPhone (v3 — 25% narrower: 252 → 190px) ══════════════ */
+/* ══════════════ iPhone (v3, moved right) ══════════════ */
 .lpd-phone {
   position: absolute;
   top: 56px;
-  right: 116px;
+  right: 96px;
   width: 190px;
   background: var(--bg-primary);
   border: 5px solid var(--bg-tertiary);
@@ -401,8 +375,8 @@
   opacity: 0.7;
 }
 .lpd-phone-screen {
-  padding: 28px 10px 20px; /* bottom clears the home bar */
-  overflow: hidden; /* nothing inside may escape the phone */
+  padding: 28px 10px 20px;
+  overflow: hidden;
   border-radius: 27px;
 }
 .lpd-phone-head {
@@ -495,7 +469,6 @@
   white-space: nowrap;
 }
 
-/* Capitol Watch disclosure — single-line. */
 .lpd-disclosure {
   display: flex;
   align-items: center;
@@ -593,7 +566,6 @@
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(16, 185, 129, 0.25);
   box-shadow: var(--shadow-lg);
-  /* light-token re-scope over the map (technique inherited from .lp-card) */
   --text-primary: #0f172a;
   --text-secondary: #1e293b;
   --text-muted: #64748b;
@@ -603,10 +575,7 @@
   --surface-card: rgba(255, 255, 255, 0.55);
   color: var(--text-secondary);
 }
-/* Auto-copy: sits ABOVE and slightly RIGHT of the phone. Its bottom-left
-   corner may clip ~24px of the phone's top-right FRAME only — never the
-   "Welcome" header text and never the Dynamic Island. If a visual pass
-   shows it touching the island, nudge `top` up in 4px steps. */
+/* Auto-copy: corner-clip only — never the phone header or Dynamic Island. */
 .lpd-sat--sync {
   top: -36px;
   right: -12px;
@@ -614,8 +583,8 @@
   z-index: 3;
 }
 .lpd-sat--follower {
-  bottom: 30px;
-  left: 10px;
+  bottom: 18px;
+  left: 6px;
   z-index: 3;
 }
 .lpd-sat--rebalance {
@@ -766,8 +735,13 @@
 @media (prefers-reduced-motion: reduce) {
   .lpd-stack,
   .lpd-float,
-  .lpd-ping::after {
+  .lpd-ping::after,
+  .lpd-fall,
+  .lpd-ingest-scroll {
     animation: none !important;
+  }
+  .lpd-fall {
+    opacity: 0.6;
   }
   .lpd-t {
     transition: none !important;
