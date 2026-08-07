@@ -352,6 +352,63 @@ export const africaBillionCompaniesArticle = {
       text: "For investors using Ezana, the Empire Rankings geopolitics layer surfaces country-level governance, resource, and economic metrics that contextualize these corporate numbers. The Global Market Analysis chain view tracks ISR-flagged events across African markets. And the community feed increasingly features African-market-focused contributors whose coverage of JSE, EGX, and NSE moves complements the platform's US-centric data infrastructure. The 345 is not a static number — it is a snapshot of a corporate landscape that is scaling faster than most global portfolios reflect.",
     },
   ],
+  globeRail: {
+    metric: {
+      title: '$1B+ COMPANIES BY COUNTRY',
+      data: [
+        { x: 1, y: 147 },
+        { x: 2, y: 33 },
+        { x: 3, y: 23 },
+        { x: 4, y: 20 },
+        { x: 5, y: 6 },
+      ],
+      startLabel: 'South Africa · 147',
+      endLabel: 'Kenya · 6',
+      note: 'Companies with $1B+ revenue by HQ country (McKinsey Global Institute / African Development Bank).',
+    },
+    cities: [
+      {
+        name: 'Johannesburg',
+        country: 'South Africa',
+        lat: -26.2,
+        lng: 28.05,
+        impact:
+          'South Africa alone accounts for 147 of the continent’s 345 billion-dollar companies — 43% of the total — on the back of JSE infrastructure dating to 1887 and global operators like Naspers, Sasol, FirstRand, and MTN Group.',
+      },
+      {
+        name: 'Cairo',
+        country: 'Egypt',
+        lat: 30.04,
+        lng: 31.24,
+        impact:
+          'Egypt’s 33 billion-dollar companies span financial services, real estate, telecom, and construction. The EGX is among Africa’s oldest and most liquid exchanges, and IMF-backed reforms since 2016 have improved the operating environment for large corporates.',
+      },
+      {
+        name: 'Lagos',
+        country: 'Nigeria',
+        lat: 6.52,
+        lng: 3.38,
+        impact:
+          'Nigeria’s 23 billion-dollar companies concentrate in oil and gas, banking, telecom, and cement. Aliko Dangote’s conglomerate is West Africa’s most important corporate entity — the Dangote Refinery, operational early 2025, is the world’s largest single-train refinery.',
+      },
+      {
+        name: 'Nairobi',
+        country: 'Kenya',
+        lat: -1.29,
+        lng: 36.82,
+        impact:
+          'Kenya is East Africa’s corporate and financial hub, home to Safaricom’s M-Pesa — which processes more transactions annually than PayPal does across sub-Saharan Africa — plus Equity Group and East African Breweries. Nairobi’s exchange is the regional gateway.',
+      },
+      {
+        name: 'Casablanca',
+        country: 'Morocco',
+        lat: 33.57,
+        lng: -7.59,
+        impact:
+          'Morocco’s 20 billion-dollar companies reflect a manufacturing-and-logistics-hub model serving Europe and sub-Saharan Africa. OCP Group anchors it — Morocco controls roughly 70% of the world’s phosphate reserves — alongside a rapidly scaled automotive export sector.',
+      },
+    ],
+  },
   author: 'Ezana Finance Editorial',
   category: 'global-emerging',
   subcategory: 'Africa',

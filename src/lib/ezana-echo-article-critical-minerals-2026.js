@@ -610,6 +610,71 @@ export const criticalMineralsArticle2026 = {
       text: '1. U.S. Geological Survey, Mineral Commodity Summaries 2026 (published February 2026; world reserves by commodity; machine-readable release on data.gov) — the source for every reserve-share figure above except uranium. 2. World Nuclear Association — uranium reserve share (Australia ~28%). 3. USGS on the value of U.S. nonfuel mineral production ($112 billion in 2025 vs. $106 billion in 2024) and on lithium production growth (~31% in 2025 to ~290,000 tonnes; ~88% of lithium end-use in batteries). Where a widely-circulated infographic diverged from USGS — notably a 52% rare-earth figure — the current USGS value (~48%) is used.',
     },
   ],
+  globeRail: {
+    metric: {
+      title: 'TOP-HOLDER RESERVE SHARE (%)',
+      data: [
+        { x: 1, y: 83 },
+        { x: 2, y: 69 },
+        { x: 3, y: 50 },
+        { x: 4, y: 48 },
+        { x: 5, y: 25 },
+      ],
+      startLabel: 'PGMs · 83%',
+      endLabel: 'Lithium · 25%',
+      note: 'Top single-country share of world reserves (USGS MCS 2026).',
+    },
+    cities: [
+      {
+        name: 'Johannesburg',
+        country: 'South Africa',
+        lat: -26.2,
+        lng: 28.05,
+        impact:
+          'South Africa’s 83% of platinum-group-metal reserves is the most concentrated position of any major mineral on earth — structural leverage over autocatalysts, hydrogen electrolyzers, chip fabrication, and jet-engine coatings.',
+      },
+      {
+        name: 'Beijing',
+        country: 'China',
+        lat: 39.9,
+        lng: 116.41,
+        impact:
+          'China holds about 48% of rare-earth reserves — 44.0 Mt of a 91.9-Mt world total — and roughly 32% of graphite, but its dominance of rare-earth processing is far higher still. That midstream lever over magnets essential to guided munitions, radar, and electric drivetrains makes it a national-security concern, not just a commodity one.',
+      },
+      {
+        name: 'Kinshasa',
+        country: 'DR Congo',
+        lat: -4.32,
+        lng: 15.31,
+        impact:
+          'The Democratic Republic of the Congo holds roughly 50% of world cobalt reserves — one of four battery-metal bottlenecks. Concentration meets fragility: the DRC’s long history of instability makes the supply risk a standing feature of the market.',
+      },
+      {
+        name: 'Santiago',
+        country: 'Chile',
+        lat: -33.45,
+        lng: -70.67,
+        impact:
+          'Chile controls about 25% of world lithium reserves and 21% of copper. Lithium is the purest expression of the transition’s demand curve — production jumped ~31% in 2025, and ~88% of end-use now goes into batteries, leaving no second market to cushion a shock.',
+      },
+      {
+        name: 'Perth',
+        country: 'Australia',
+        lat: -31.95,
+        lng: 115.86,
+        impact:
+          'Australia ranks first in world reserves of five major commodities — about 31% of iron ore, 32% of manganese, 28% of uranium, 27% of zinc, and 20% of gold — a concentration of geological luck that quietly makes it one of the system’s most strategically important suppliers.',
+      },
+      {
+        name: 'Washington',
+        country: 'US',
+        lat: 38.9,
+        lng: -77.04,
+        impact:
+          'The United States holds just ~2% of rare-earth reserves (1.9 Mt) and a still-smaller processing share. Its response is inventory: “Project Vault,” the announced critical-minerals stockpile, targets rare earths, lithium, and nickel — precisely where import dependence meets strategic use.',
+      },
+    ],
+  },
   author: 'Ezana Finance Editorial',
   category: 'commodities-energy',
   subcategory: 'Critical Minerals',

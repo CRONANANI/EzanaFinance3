@@ -502,6 +502,55 @@ export const nvidiaSecondMostValuableArticle = {
         'If data-center GPU revenue growth slips below the sustained 30%+ the $5.34T price implies, the 40x+ multiple reprices aggressively.',
     },
   ],
+  globeRail: {
+    metric: {
+      title: 'NVDA MARKET CAP ($T)',
+      data: [
+        { x: 2023.0, y: 0.36 },
+        { x: 2023.42, y: 1.0 },
+        { x: 2024.17, y: 2.0 },
+        { x: 2026.17, y: 5.0 },
+        { x: 2026.375, y: 5.34 },
+      ],
+      startLabel: 'Jan 2023 · $0.36T',
+      endLabel: 'May 2026 · $5.34T',
+      note: 'Nvidia market cap, Jan 2023 – May 2026 (market data).',
+    },
+    cities: [
+      {
+        name: 'Santa Clara',
+        country: 'US',
+        lat: 37.35,
+        lng: -121.97,
+        impact:
+          'Nvidia, headquartered here, is now the world’s second most valuable asset at $5.34 trillion — up roughly 5x from under $1 trillion in May 2023, having overtaken Apple and silver and trailing only gold’s $31.19 trillion. Its CUDA ecosystem and Hopper → Blackwell → Rubin cadence give it an estimated 80–90% of the data-center AI accelerator market.',
+      },
+      {
+        name: 'Hsinchu',
+        country: 'Taiwan',
+        lat: 24.81,
+        lng: 120.97,
+        impact:
+          'TSMC ($2.04T) fabricates the physical chips Nvidia designs — every H100, B100, and GB200 runs on its 4nm and 3nm nodes. With Nvidia and Broadcom it forms the semiconductor supply chain’s critical path, together worth over $9 trillion.',
+      },
+      {
+        name: 'Dhahran',
+        country: 'Saudi Arabia',
+        lat: 26.29,
+        lng: 50.11,
+        impact:
+          'Saudi Aramco ($1.80T) is the lone hydrocarbon name in the top 10. Its slide from the world’s most valuable company in 2020 to #10 in five years is the clearest single summary of capital’s shift from energy dominance to AI infrastructure.',
+      },
+      {
+        name: 'New York',
+        country: 'US',
+        lat: 40.71,
+        lng: -74.01,
+        impact:
+          'The global asset leaderboard is priced in the markets here: gold’s $31.19 trillion still sits 5.8x above Nvidia, and the article’s clean hedge — long NVDA paired with long GLD — expresses confidence in AI infrastructure against the traditional store of value.',
+      },
+    ],
+  },
   author: 'Ezana Finance Editorial',
   category: 'markets-companies',
   subcategory: 'Equities',

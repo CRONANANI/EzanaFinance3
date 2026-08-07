@@ -416,6 +416,63 @@ export const semiconductorArticle = {
         'TSMC Arizona yields reaching Taiwan-level parity — the signal that onshoring is viable and the shield is eroding.',
     },
   ],
+  globeRail: {
+    metric: {
+      title: 'FOUNDRY MARKET SHARE (%)',
+      data: [
+        { x: 1, y: 62 },
+        { x: 2, y: 13 },
+        { x: 3, y: 6 },
+        { x: 4, y: 6 },
+        { x: 5, y: 5 },
+      ],
+      startLabel: 'TSMC · 62%',
+      endLabel: 'UMC · 5%',
+      note: 'Global foundry market share (TrendForce, Counterpoint Research estimates).',
+    },
+    cities: [
+      {
+        name: 'Hsinchu',
+        country: 'Taiwan',
+        lat: 24.81,
+        lng: 120.97,
+        impact:
+          'TSMC’s fabs in Hsinchu Science Park produce over 90% of the world’s most advanced chips at the 2-nanometer scale and hold ~62% of the global foundry market. This concentration — 100 miles from a hostile superpower — is the “silicon shield”: McKinsey estimates a prolonged disruption could cut global GDP by $600B–$1T in the first year.',
+      },
+      {
+        name: 'Seoul',
+        country: 'South Korea',
+        lat: 37.57,
+        lng: 126.98,
+        impact:
+          'Samsung holds about 13% of the global foundry market, the second-largest share behind TSMC’s 62% — but still behind Taiwan’s leading edge.',
+      },
+      {
+        name: 'Shanghai',
+        country: 'China',
+        lat: 31.23,
+        lng: 121.47,
+        impact:
+          'SMIC anchors China’s ~6% foundry share and its push to raise chip self-sufficiency to 80% by 2030, up from 33% today. It targets domestically produced equipment for the 7nm and 14nm generations, remaining generations behind TSMC’s 2nm.',
+      },
+      {
+        name: 'Phoenix',
+        country: 'US',
+        lat: 33.45,
+        lng: -112.07,
+        impact:
+          'TSMC’s Arizona fab received up to $6.6 billion under the CHIPS Act and drew a further $100 billion commitment in March 2025. Whether its yields reach Taiwan-level parity is the signal that onshoring is viable — and that the shield is eroding.',
+      },
+      {
+        name: 'Washington',
+        country: 'US',
+        lat: 38.9,
+        lng: -77.04,
+        impact:
+          'The 2022 CHIPS and Science Act put $52 billion of incentives behind domestic manufacturing to reduce dependence on Taiwanese chips. Reshoring runs in parallel with the silicon shield — but slowly.',
+      },
+    ],
+  },
   author: 'Ezana Finance Editorial',
   category: 'tech-founders',
   subcategory: 'Semiconductors',

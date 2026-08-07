@@ -796,6 +796,69 @@ export const fiberOpticArticle = {
         'IF THE PPI BREAKS BELOW ITS ~83 2016 LOW, THE DEFLATIONARY REGIME HAS RETURNED — RE-UNDERWRITE THE PRICING-POWER THESIS.',
     },
   ],
+  globeRail: {
+    metric: {
+      title: 'FIBER MARKET ($B)',
+      data: [
+        { x: 2024, y: 6.7 },
+        { x: 2029, y: 15 },
+        { x: 2034, y: 30.6 },
+      ],
+      startLabel: '2024 · $6.7B',
+      endLabel: '2034 · $30B+',
+      note: 'Global fiber-optic cable market by application (industry research estimates).',
+    },
+    cities: [
+      {
+        name: 'Corning',
+        country: 'US',
+        lat: 42.14,
+        lng: -77.05,
+        impact:
+          'Corning (GLW), the 175-year-old glass maker, sits at the center of the AI data-center buildout. Its Multicore Fiber packs four cores into a standard strand — 4x the data density with 75% fewer cables. A $6 billion Meta deal justified a dedicated new factory (ground broken March 2026), and the stock is up 74% YTD, ahead of Nvidia (51%), Broadcom (42%), and AMD (14%).',
+      },
+      {
+        name: 'Milan',
+        country: 'Italy',
+        lat: 45.46,
+        lng: 9.19,
+        impact:
+          'Prysmian is the European leader, focused on power-utility and submarine cable — the lumpy end of the market, where one large order can arrive every few years rather than as recurring volume.',
+      },
+      {
+        name: 'Wuhan',
+        country: 'China',
+        lat: 30.59,
+        lng: 114.3,
+        impact:
+          'Yangtze Optical Fiber (YOFC) is a Chinese telecom-fiber giant. Chinese manufacturing scale reshaped global fiber pricing — the overcapacity behind the long 2004–2017 deflationary grind in the price index.',
+      },
+      {
+        name: 'Suzhou',
+        country: 'China',
+        lat: 31.1,
+        lng: 120.63,
+        impact:
+          'Hengtong Group is a Chinese producer in the power-utilities segment, exposed to the same domestic overcapacity dynamics that drove the industry’s deflationary era.',
+      },
+      {
+        name: 'Osaka',
+        country: 'Japan',
+        lat: 34.69,
+        lng: 135.5,
+        impact:
+          'Sumitomo Electric represents the Japan / Korea tier behind the US, Europe, and China. Its automotive optical-network demand depends on the pace of autonomous-driving adoption.',
+      },
+      {
+        name: 'Hickory',
+        country: 'US',
+        lat: 35.64,
+        lng: -80.47,
+        impact:
+          'CommScope is one of three US producers anchoring the North American supply chain, named alongside Corning and Belden — exposed to the deflationary grind that Chinese scale-up and the dot-com overbuild can bring back.',
+      },
+    ],
+  },
   author: 'Ezana Finance Editorial',
   category: 'tech-founders',
   subcategory: 'Infrastructure',

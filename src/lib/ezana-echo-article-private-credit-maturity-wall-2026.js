@@ -504,6 +504,48 @@ export const privateCreditMaturityWallArticle2026 = {
       text: '4. Moody’s Ratings via Bloomberg, "Private Credit BDCs’ 2028 Maturity Wall Poses Risk, Moody’s Says," April 22, 2026; and Alternative Credit Investor on the ~$400bn BDC sector outlook cut, April 2026. 5. Fitch Ratings, "Global Leveraged Finance Maturity Profile Supports Refinancing Flexibility," January 2026. 6. Morningstar/PitchBook, "Software loses its throne in the leveraged loan market," February 2026 (>$330B software/tech debt through 2028). 7. Vanguard and Preqin on $500B+ private credit dry powder (mid-2025). 8. Ocorian, survey on rising payment-in-kind conversions, May 2026. 9. Mortgage Bankers Association commercial/multifamily maturity volumes; Newmark, "State of the U.S. Capital Markets"; AllianceBernstein, "Projected Debt Maturities by Lender Type."',
     },
   ],
+  globeRail: {
+    metric: {
+      title: 'BDC MATURITIES ($B)',
+      data: [
+        { x: 2026, y: 15 },
+        { x: 2027, y: 14 },
+        { x: 2028, y: 21 },
+        { x: 2029, y: 20 },
+        { x: 2030, y: 9 },
+        { x: 2031, y: 5 },
+      ],
+      startLabel: '2026 · ~$15B',
+      endLabel: '2028–29 · the wall',
+      note: 'BDC asset maturities by year — Reuters analysis of SEC filings from 74 BDCs.',
+    },
+    cities: [
+      {
+        name: 'New York',
+        country: 'US',
+        lat: 40.71,
+        lng: -74.01,
+        impact:
+          'The listed-BDC complex that anchors private credit is run from here — Ares Capital, Blackstone Secured Lending, and Blue Owl among the largest. A Reuters analysis of 74 BDCs found only ~$15B of ~$84B maturing in 2026, with the refinancing wall clustered in 2028–2029, where the weakest-rated credits concentrate.',
+      },
+      {
+        name: 'Chicago',
+        country: 'US',
+        lat: 41.88,
+        lng: -87.63,
+        impact:
+          'Morningstar’s data frames the cohort that worries analysts most: more than $330 billion of software and tech debt maturing through 2028, roughly 58% of it rated ‘B-’ or below, arriving just as AI reorders those business models.',
+      },
+      {
+        name: 'London',
+        country: 'UK',
+        lat: 51.51,
+        lng: -0.13,
+        impact:
+          'The City is a hub of the roughly $1.7 trillion private credit market that ballooned through the low-rate era. Comfort with the 2028–29 wall rests on an implicit bet that base rates will be lower and earnings higher by then — reasonable today, reckless if either leg fails.',
+      },
+    ],
+  },
   author: 'Ezana Finance Editorial',
   category: 'markets-companies',
   subcategory: 'Credit',

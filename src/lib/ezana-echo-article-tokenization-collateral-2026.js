@@ -526,6 +526,69 @@ export const tokenizationCollateral2026 = {
         'If a digitally verified animal does not unlock a bigger loan, a lower rate, or a better recovery than the same animal gets today, tokenization stays a pilot with no measurable effect on who can borrow.',
     },
   ],
+  globeRail: {
+    metric: {
+      title: 'TOKENIZED RWAs ($B)',
+      data: [
+        { x: 2024.2, y: 1 },
+        { x: 2026.2, y: 25 },
+        { x: 2026.5, y: 30 },
+      ],
+      startLabel: 'Mar 2024 · $1B',
+      endLabel: 'mid-2026 · $30B+',
+      note: 'Tokenized RWAs ex-stablecoins — ~30x since March 2024 (this article’s reporting).',
+    },
+    cities: [
+      {
+        name: 'São Paulo',
+        country: 'Brazil',
+        lat: -23.55,
+        lng: -46.63,
+        impact:
+          'In a Paraná pilot, farmers tokenized ten dairy cows, registered them on Brazil’s B3 exchange, and borrowed nearly $20,000 against the herd. Cowmed — which already tracks ~100,000 dairy cows across 1,000+ farms — expects up to 20% of that network to adopt tokenized financing, an estimated $77.6 million in fresh agricultural credit.',
+      },
+      {
+        name: 'Addis Ababa',
+        country: 'Ethiopia',
+        lat: 9.03,
+        lng: 38.74,
+        impact:
+          'Ethiopia holds Africa’s largest livestock population, and its central bank runs an electronic registry naming cattle, camels, sheep, goats, and poultry as eligible collateral. Its 2025–2030 roadmap puts livestock-financing demand near ETB 911 billion, yet lenders still lack reliable valuation, insurance, health data, and a recovery path on default.',
+      },
+      {
+        name: 'Lagos',
+        country: 'Nigeria',
+        lat: 6.52,
+        lng: 3.38,
+        impact:
+          'Nigeria carries the group’s biggest near-term gap — about $32.2 billion of unmet small-business credit demand (IFC). It already runs a central-bank registry that can pledge livestock and check double-pledging, an ear-tag and digital-passport system, and a $500 million livestock program, but no single product connects them into one loan.',
+      },
+      {
+        name: 'Nairobi',
+        country: 'Kenya',
+        lat: -1.29,
+        lng: 36.82,
+        impact:
+          'Kenya is the article’s control case: its Movable Property Security Rights Registry runs around the clock, and lenders registered 34,638 livestock assets as collateral in the year to June 2023 — part of roughly KSh 5.1 trillion in credit supported by movable assets, with no blockchain required.',
+      },
+      {
+        name: 'Ulaanbaatar',
+        country: 'Mongolia',
+        lat: 47.89,
+        lng: 106.91,
+        impact:
+          'In Mongolia, livestock made up about a quarter of the roughly 670,000 pledge notices in the web-based movable-property registry by mid-2023 — evidence that an ordinary electronic registry can already record collateral and set creditor priority.',
+      },
+      {
+        name: 'Karachi',
+        country: 'Pakistan',
+        lat: 24.86,
+        lng: 67.0,
+        impact:
+          'In Pakistan, livestock is 14.6% of GDP and over 62% of agricultural value added, yet fewer than 200,000 of 3.2 million small enterprises have formal credit. In Sindh, roughly 80% of rural livestock holders lack the land titles banks require, and livestock insurance barely exists.',
+      },
+    ],
+  },
   author: 'Ezana Finance Editorial',
   category: 'crypto',
   subcategory: 'DeFi',
