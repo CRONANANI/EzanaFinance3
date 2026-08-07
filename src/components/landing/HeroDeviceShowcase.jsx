@@ -1,36 +1,32 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { DATASET_TAXONOMY } from '@/lib/datasets/taxonomy';
+import { DimensionVisual } from './dimension-visuals';
 import './hero-device-showcase.css';
 
 /**
- * Hero device showcase v4 — social copy-trading composition on the hero's
- * right side.
+ * Hero device showcase v5.
  *
- * v4 changes:
- *  · MacBook replaced with an iMac SVG frame (adapted from a 21st.dev
- *    component: converted TSX→JSX, shadcn/Tailwind stripped, `src` image
- *    slot replaced with a live HTML screen overlay). SVG hardware hex is
- *    the established device-chrome scoped exception.
- *  · iMac screen shows "Ezana Sonar · live parse": a continuously
- *    scrolling parse log (left) + tick-driven bar chart and cycling alert
- *    cards (right).
- *  · A falling stream of code fragments feeds into the iMac from above.
- *  · iPhone (unchanged from v3, 190px) moved right so the two device
- *    frames overlap by only ~12px of corner layering.
- *  · Alerts reference real filing EVENTS only (13F updates, congressional
- *    disclosures) — NEVER invented performance figures for a real firm.
+ * v5 changes:
+ *  · iMac screen no longer shows code parsing. It cross-fades through the
+ *    SEVEN Portfolio-Intelligence dimension visuals (DimensionVisual +
+ *    DATASET_TAXONOMY — the same components as the pinned section; imported,
+ *    never duplicated). One visual live at a time; inactive get tick=0.
+ *  · Code appears ONLY above the desktop: falling JSON-schema fragments in
+ *    the "Your portfolio" signal-card shape, dropping into the screen.
+ *  · The feed zone above the iMac is shaded (translucent blurred wash) so
+ *    the dotted world-map arcs behind it are muted.
+ *  · iMac enlarged to 440px — clearly dominant over the 190px iPhone.
+ *  · Pulsating green dots REMOVED from the iMac chrome and the Auto-copy
+ *    satellite (kept only where a ping still exists: nowhere).
+ *  · New-follower and Rebalance satellites raised and tucked closer to the
+ *    iMac / iPhone respectively.
  *
- * One 2s tick drives all discrete frames deterministically (seeded sin, no
- * Math.random) so SSR and first client render match; continuous motion
- * (scroll loop, falling code) is pure CSS keyframes. Decorative only:
- * aria-hidden + pointer-events: none.
+ * One 2s tick drives discrete frames deterministically (seeded sin, no
+ * Math.random); continuous motion (falling JSON) is pure CSS. Decorative
+ * only: aria-hidden + pointer-events: none.
  */
-
-function seeded(n) {
-  const x = Math.sin(n * 12.9898 + 4.1) * 43758.5453;
-  return x - Math.floor(x);
-}
 
 const PEOPLE = [
   { id: 'p1', name: 'Taylor J.', cap: '$1.2M', copiers: '1.5K', hue: 'a' },
@@ -47,93 +43,18 @@ const FEED = [
   { id: 'f5', who: 'Joy Chen', what: 'started copying you', when: '1h' },
 ];
 
-/* Parse log shown scrolling on the iMac. Duplicated in render for a
-   seamless -50% translateY loop. */
-const CODE_LINES = [
-  'ingest("sec/edgar/13f-hr")',
-  'chunk = tokenize(doc, 512)',
-  'vec = embed(chunk)  // gte-small',
-  'match_score: 0.91',
-  'diff(holdings, prev_quarter)',
-  'route → sonar.alerts',
-  'parse(house_disclosure.pdf)',
-  'rerank(top_k = 8)',
-];
-
-/* Code fragments falling from above into the iMac. `x` = px offset inside
-   .lpd-codefall; `d` = negative animation-delay so the stream is already
-   mid-flow on load. */
+/* Falling JSON fragments — same schema shape as PortfolioSignalCard's
+   SIGNALS (key: value pairs, signal/ticker/delta style). `x` px offset in
+   .lpd-codefall; `d` = negative delay so the stream is mid-flow on load;
+   `s` = fall duration for varied speeds. */
 const FALLING = [
-  { id: 'c1', text: 'parse(13f_hr.xml)', x: 6, d: 0 },
-  { id: 'c2', text: 'embed(chunk_042)', x: 118, d: 1.3 },
-  { id: 'c3', text: 'score → 0.91', x: 52, d: 2.6 },
-  { id: 'c4', text: 'alerts.push("AVGO")', x: 138, d: 3.8 },
-  { id: 'c5', text: 'diff(q1, q2)', x: 84, d: 5.0 },
+  { id: 'c1', text: '"signal": "consumer_spending"', x: 4, d: 0, s: 7 },
+  { id: 'c2', text: '"ticker": "PLTR", "value": "$27M"', x: 120, d: 1.2, s: 7.8 },
+  { id: 'c3', text: '"Δ30d": +6.2%', x: 66, d: 2.4, s: 6.6 },
+  { id: 'c4', text: '"signal": "government_contracts"', x: 150, d: 3.5, s: 7.4 },
+  { id: 'c5', text: '"sector": "discretionary"', x: 28, d: 4.6, s: 7 },
+  { id: 'c6', text: '"filer": "13F-HR", "positions": 214', x: 96, d: 5.8, s: 7.6 },
 ];
-
-/* Filing/flow EVENTS only — no performance claims about real firms. */
-const ALERTS = [
-  { id: 'a1', icon: 'bi-broadcast', title: 'Unusual options flow', meta: 'AVGO · vol 4.2×' },
-  { id: 'a2', icon: 'bi-bank', title: '13F update parsed', meta: 'Bridgewater · 214 positions' },
-  { id: 'a3', icon: 'bi-building', title: 'Congressional filing', meta: 'Rep. Whitfield · NVDA' },
-];
-
-/* ── iMac frame (adapted from 21st.dev "Mac" SVG). The screen rect in the
-   600×500 viewBox is x=29.12 y=25.02 w=541.76 h=305.06; the HTML overlay
-   (.lpd-imac-screen) is positioned over it with matching percentages. ── */
-function ImacFrame({ children }) {
-  return (
-    <div className="lpd-imac-frame">
-      <svg viewBox="0 0 600 500" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-        {/* stand column */}
-        <rect fill="url(#lpdImacStand)" x="232.4" y="401.32" width="135.19" height="83.37" />
-        {/* foot pads */}
-        <rect fill="#dedfe2" x="234.32" y="489.39" width="17.21" height="1.9" rx=".15" ry=".15" />
-        <rect fill="#dedfe2" x="348.45" y="489.39" width="17.21" height="1.9" rx=".15" ry=".15" />
-        {/* foot */}
-        <rect fill="#dedfe1" x="232.4" y="484.69" width="135.19" height="5.61" />
-        {/* display body */}
-        <path
-          fill="#eeeeef"
-          d="M23.83,10.99h552.03c4.92,0,8.91,3.99,8.91,8.91v324.18H14.92V19.9c0-4.92,3.99-8.91,8.91-8.91Z"
-        />
-        {/* chin */}
-        <path
-          fill="#d9d9db"
-          d="M23.83,343.94h552.03c4.92,0,8.91,3.99,8.91,8.91v48.47H14.92v-48.47c0-4.92,3.99-8.91,8.91-8.91Z"
-          transform="translate(599.69 745.26) rotate(180)"
-        />
-        {/* bezel line */}
-        <path
-          fill="#231f20"
-          d="M570.43,330.43H29.57c-.44,0-.79-.36-.79-.79V25.47c0-.44.36-.79.79-.79h540.87c.44,0,.79.36.79.79v304.17c0,.44-.36.79-.79.79ZM29.57,25.37c-.05,0-.1.04-.1.09v304.17c0,.05.04.1.1.1h540.87c.05,0,.09-.04.09-.1V25.47c0-.05-.04-.09-.09-.09H29.57Z"
-        />
-        {/* screen panel (dark, sits under the HTML overlay) */}
-        <rect fill="#0d1013" x="29.12" y="25.02" width="541.76" height="305.06" rx=".44" ry=".44" />
-        {/* camera */}
-        <circle fill="#414042" cx="300" cy="17.7" r="2.11" />
-        <circle fill="#262262" cx="300" cy="17.7" r=".85" />
-        <defs>
-          <linearGradient
-            id="lpdImacStand"
-            x1="300"
-            y1="484.69"
-            x2="300"
-            y2="401.32"
-            gradientUnits="userSpaceOnUse"
-          >
-            <stop offset="0" stopColor="#a7a9ac" />
-            <stop offset=".1" stopColor="#d1d3d4" />
-            <stop offset=".41" stopColor="#e6e7e8" />
-            <stop offset=".73" stopColor="#e6e7e8" />
-            <stop offset="1" stopColor="#d1d3d4" />
-          </linearGradient>
-        </defs>
-      </svg>
-      <div className="lpd-imac-screen">{children}</div>
-    </div>
-  );
-}
 
 export function HeroDeviceShowcase() {
   const [tick, setTick] = useState(0);
@@ -146,19 +67,25 @@ export function HeroDeviceShowcase() {
   }, []);
 
   const followed = tick % (PEOPLE.length + 1);
-  const activeAlert = tick % ALERTS.length;
   const likes = 12 + (tick % 6);
   const filedMin = 2 + (tick % 4);
+  /* Each dimension holds for 3 ticks (6s), then cross-fades to the next. */
+  const activeDim = Math.floor(tick / 3) % DATASET_TAXONOMY.length;
 
   return (
     <div className="lpd-stack" aria-hidden="true">
-      {/* ── Falling code, feeding into the iMac from above ── */}
+      {/* ── Shaded feed zone + falling JSON, above the desktop only ── */}
       <div className="lpd-codefall">
+        <div className="lpd-codefall-shade" />
         {FALLING.map((c) => (
           <span
             key={c.id}
             className="lpd-fall lpd-mono"
-            style={{ left: `${c.x}px`, animationDelay: `-${c.d}s` }}
+            style={{
+              left: `${c.x}px`,
+              animationDelay: `-${c.d}s`,
+              animationDuration: `${c.s}s`,
+            }}
           >
             {c.text}
           </span>
@@ -167,56 +94,95 @@ export function HeroDeviceShowcase() {
 
       {/* ── Layer 1: iMac ── */}
       <div className="lpd-imac lpd-float lpd-float--slow">
-        <ImacFrame>
-          <div className="lpd-imac-chrome">
-            <i className="lpd-dot" />
-            <i className="lpd-dot" />
-            <i className="lpd-dot" />
-            <span className="lpd-imac-url">ezana.world/sonar · live parse</span>
-            <span className="lpd-ping" />
-          </div>
-          <div className="lpd-imac-grid">
-            <div className="lpd-ingest">
-              <div className="lpd-panel-label">Ingest</div>
-              <div className="lpd-ingest-viewport">
-                <div className="lpd-ingest-scroll">
-                  {[...CODE_LINES, ...CODE_LINES].map((line, i) => (
-                    <div key={i} className="lpd-code-line lpd-mono">
-                      <span className="lpd-code-ln">
-                        {String((i % CODE_LINES.length) + 1).padStart(2, '0')}
-                      </span>
-                      {line}
-                    </div>
-                  ))}
+        <div className="lpd-imac-frame">
+          <svg viewBox="0 0 600 500" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+            <rect fill="url(#lpdImacStand)" x="232.4" y="401.32" width="135.19" height="83.37" />
+            <rect
+              fill="#dedfe2"
+              x="234.32"
+              y="489.39"
+              width="17.21"
+              height="1.9"
+              rx=".15"
+              ry=".15"
+            />
+            <rect
+              fill="#dedfe2"
+              x="348.45"
+              y="489.39"
+              width="17.21"
+              height="1.9"
+              rx=".15"
+              ry=".15"
+            />
+            <rect fill="#dedfe1" x="232.4" y="484.69" width="135.19" height="5.61" />
+            <path
+              fill="#eeeeef"
+              d="M23.83,10.99h552.03c4.92,0,8.91,3.99,8.91,8.91v324.18H14.92V19.9c0-4.92,3.99-8.91,8.91-8.91Z"
+            />
+            <path
+              fill="#d9d9db"
+              d="M23.83,343.94h552.03c4.92,0,8.91,3.99,8.91,8.91v48.47H14.92v-48.47c0-4.92,3.99-8.91,8.91-8.91Z"
+              transform="translate(599.69 745.26) rotate(180)"
+            />
+            <path
+              fill="#231f20"
+              d="M570.43,330.43H29.57c-.44,0-.79-.36-.79-.79V25.47c0-.44.36-.79.79-.79h540.87c.44,0,.79.36.79.79v304.17c0,.44-.36.79-.79.79ZM29.57,25.37c-.05,0-.1.04-.1.09v304.17c0,.05.04.1.1.1h540.87c.05,0,.09-.04.09-.1V25.47c0-.05-.04-.09-.09-.09H29.57Z"
+            />
+            <rect
+              fill="#0d1013"
+              x="29.12"
+              y="25.02"
+              width="541.76"
+              height="305.06"
+              rx=".44"
+              ry=".44"
+            />
+            <circle fill="#414042" cx="300" cy="17.7" r="2.11" />
+            <circle fill="#262262" cx="300" cy="17.7" r=".85" />
+            <defs>
+              <linearGradient
+                id="lpdImacStand"
+                x1="300"
+                y1="484.69"
+                x2="300"
+                y2="401.32"
+                gradientUnits="userSpaceOnUse"
+              >
+                <stop offset="0" stopColor="#a7a9ac" />
+                <stop offset=".1" stopColor="#d1d3d4" />
+                <stop offset=".41" stopColor="#e6e7e8" />
+                <stop offset=".73" stopColor="#e6e7e8" />
+                <stop offset="1" stopColor="#d1d3d4" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <div className="lpd-imac-screen">
+            <div className="lpd-imac-chrome">
+              <i className="lpd-dot" />
+              <i className="lpd-dot" />
+              <i className="lpd-dot" />
+              <span className="lpd-imac-url">ezana.world/intelligence · 7 dimensions</span>
+            </div>
+            <div className="lpd-dims">
+              {DATASET_TAXONOMY.map((d, i) => (
+                <div
+                  key={d.id}
+                  className={`lpd-dim${i === activeDim ? ' is-active' : ''}`}
+                  style={{ '--dv-accent': d.color }}
+                >
+                  <DimensionVisual dimensionId={d.id} tick={i === activeDim ? tick : 0} />
                 </div>
-              </div>
-            </div>
-            <div className="lpd-signals">
-              <div className="lpd-panel-label">Signals</div>
-              <div className="lpd-bars">
-                {Array.from({ length: 12 }, (_, i) => {
-                  const h = 8 + Math.round(seeded(tick * 3 + i * 7) * 22);
-                  return <i key={i} className="lpd-t" style={{ height: `${h}px` }} />;
-                })}
-              </div>
-              <div className="lpd-alerts">
-                {ALERTS.map((a, i) => (
-                  <div
-                    key={a.id}
-                    className={`lpd-t lpd-alert${i === activeAlert ? ' is-live' : ''}`}
-                  >
-                    <i className={`bi ${a.icon} lpd-alert-icon`} />
-                    <span className="lpd-alert-title">{a.title}</span>
-                    <span className="lpd-alert-meta lpd-mono">{a.meta}</span>
-                  </div>
-                ))}
+              ))}
+              <div className="lpd-dim-name lpd-mono">
+                {DATASET_TAXONOMY[activeDim]?.label || ''}
               </div>
             </div>
           </div>
-        </ImacFrame>
+        </div>
       </div>
 
-      {/* ── Layer 2: iPhone (unchanged from v3) ── */}
+      {/* ── Layer 2: iPhone (unchanged) ── */}
       <div className="lpd-phone lpd-float lpd-float--mid">
         <div className="lpd-phone-island" />
         <div className="lpd-phone-screen">
@@ -232,7 +198,7 @@ export function HeroDeviceShowcase() {
                 <span className={`lpd-avatar lpd-avatar--${p.hue}`}>{p.name.slice(0, 1)}</span>
                 <span className="lpd-person-name">{p.name}</span>
                 <span className="lpd-person-meta lpd-mono">{p.cap}</span>
-                <span className="lpd-person-meta lpd-mono lpd-dim">{p.copiers} copiers</span>
+                <span className="lpd-person-meta lpd-mono lpd-dim-text">{p.copiers} copiers</span>
                 <span className={`lpd-t lpd-btn lpd-btn--tiny${i < followed ? ' is-on' : ''}`}>
                   <span className="lpd-btn-off">Follow</span>
                   <span className="lpd-btn-on">Following</span>
@@ -283,7 +249,6 @@ export function HeroDeviceShowcase() {
             <i className="bi bi-check-lg" />
           </span>
           <span className="lpd-sat-title">Auto-copy synced</span>
-          <span className="lpd-ping" />
         </div>
         <p className="lpd-sat-body">
           Your account rebalanced automatically to match Rep. Whitfield&apos;s filing.
@@ -310,7 +275,7 @@ export function HeroDeviceShowcase() {
         <div className="lpd-sat-foot">
           <i className="bi bi-heart-fill lpd-heart" aria-hidden />{' '}
           <span className="lpd-t lpd-mono">{likes}</span>
-          <span className="lpd-mono lpd-dim"> · Katherine C. started copying you</span>
+          <span className="lpd-mono lpd-dim-text"> · Katherine C. started copying you</span>
         </div>
       </div>
 
