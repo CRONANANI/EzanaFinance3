@@ -9,7 +9,13 @@ import './echo-card.css';
  * Semantic <article> wrapping a Link so the whole card is one keyboard-focusable
  * target. Admins get an inline archive control.
  */
-export function EchoArticleCard({ article, isAdmin = false, onArchive, archivingId }) {
+export function EchoArticleCard({
+  article,
+  isAdmin = false,
+  onArchive,
+  archivingId,
+  focusable = true,
+}) {
   return (
     <article className="echo-card">
       {isAdmin && (
@@ -18,13 +24,18 @@ export function EchoArticleCard({ article, isAdmin = false, onArchive, archiving
           className="echo-card__archive"
           onClick={(e) => onArchive?.(article.id, e)}
           disabled={archivingId === article.id}
+          tabIndex={focusable ? undefined : -1}
           title="Archive this article"
         >
           <Archive size={13} aria-hidden />
           {archivingId === article.id ? '…' : 'Archive'}
         </button>
       )}
-      <Link href={`/ezana-echo/${article.id}`} className="echo-card__link">
+      <Link
+        href={`/ezana-echo/${article.id}`}
+        className="echo-card__link"
+        tabIndex={focusable ? undefined : -1}
+      >
         <div className="echo-card__img">
           {article.heroImage?.src ? (
             <img

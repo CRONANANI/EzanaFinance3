@@ -108,6 +108,7 @@ function toRow(a) {
     article_category: a.category || 'markets',
     content_blocks: a.contentBlocks || null,
     content_paragraphs: a.contentParagraphs || null,
+    globe_rail: a.globeRail || null,
     hero_image: a.heroImage || null,
     tags: a.tags || null,
     tickers: a.tickers || null,
@@ -139,6 +140,7 @@ function toContentRow(a) {
     article_category: a.category || 'markets',
     content_blocks: a.contentBlocks || null,
     content_paragraphs: a.contentParagraphs || null,
+    globe_rail: a.globeRail || null,
     hero_image: a.heroImage || null,
     tags: a.tags || null,
     tickers: a.tickers || null,
@@ -153,7 +155,7 @@ function toContentRow(a) {
 // Bump when a metadata (or other content) change must force a re-sync even on
 // warm infra — the value is logged after each reconcile so the fired pass is
 // visible in Vercel logs post-deploy.
-const SEED_VERSION = '2026-08-meta-v2';
+const SEED_VERSION = '2026-08-globe-rail-v1';
 
 let seedPromise = null;
 

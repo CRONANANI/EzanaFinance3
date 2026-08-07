@@ -43,6 +43,7 @@ function mapFull(row) {
     body: row.article_body || '',
     contentBlocks: row.content_blocks || undefined,
     contentParagraphs: row.content_paragraphs || undefined,
+    globeRail: row.globe_rail || null,
     tickers: row.tickers || [],
     status: row.article_status,
   };

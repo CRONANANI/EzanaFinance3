@@ -159,7 +159,7 @@ function CategoryColumn({ col, colIndex, admin, filter }) {
   const loop = col.items.length >= 2;
   const beltRef = useRef(null);
   const segRef = useRef(null);
-  const dupRef = useRef(null);
+  // dupRef removed — duplicate segment no longer needs imperative access
 
   useEffect(() => {
     if (!loop) return undefined;
@@ -182,12 +182,7 @@ function CategoryColumn({ col, colIndex, admin, filter }) {
     return () => ro.disconnect();
   }, [loop, col.items, colIndex]);
 
-  // The duplicate segment is purely visual — remove it from AT and tab order.
-  useEffect(() => {
-    if (dupRef.current) dupRef.current.setAttribute('inert', '');
-  }, [loop, col.items]);
-
-  const renderCards = (keyPrefix) =>
+  const renderCards = (keyPrefix, { focusable = true } = {}) =>
     col.items.map((a) => (
       <EchoArticleCard
         key={`${keyPrefix}${a.id}`}
@@ -195,6 +190,7 @@ function CategoryColumn({ col, colIndex, admin, filter }) {
         isAdmin={admin.isAdmin}
         onArchive={admin.onArchive}
         archivingId={admin.archivingId}
+        focusable={focusable}
       />
     ));
 
@@ -208,8 +204,8 @@ function CategoryColumn({ col, colIndex, admin, filter }) {
               <div className="eth-belt-seg" ref={segRef}>
                 {renderCards('')}
               </div>
-              <div className="eth-belt-seg" ref={dupRef} aria-hidden="true">
-                {renderCards('dup-')}
+              <div className="eth-belt-seg" aria-hidden="true">
+                {renderCards('dup-', { focusable: false })}
               </div>
             </div>
           </div>
