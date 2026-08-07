@@ -6,6 +6,7 @@
   --echo-body-max: 720px;
   --echo-title-max: calc(var(--echo-body-max) * 1.5);
   --echo-sidebar-w: 260px;
+  --echo-grail-w: 340px;
   --echo-gutter: 2.5rem;
   /* Clear the fixed 64px navbar + breathing room, so the sticky rail (and any
      other side-col stack) pins BELOW the nav instead of under it (the first
@@ -139,6 +140,18 @@
   justify-content: center;
   align-items: start;
   padding: 2rem 1rem 4rem;
+}
+
+/* ≥1280px: articles carrying a globe rail get a third sticky column. The body
+   stays minmax(0, …) so it absorbs the rail's width without overflowing; below
+   1280px the rail renders inline in the body flow instead (see EchoGlobeRail). */
+@media (min-width: 1280px) {
+  .echo-article-grid.echo-has-grail {
+    grid-template-columns: var(--echo-sidebar-w) minmax(0, var(--echo-body-max)) var(
+        --echo-grail-w,
+        340px
+      );
+  }
 }
 
 /* Invisible ticker scroll-targets parked at the top of the body. */

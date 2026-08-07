@@ -1694,6 +1694,12 @@ export function InteractiveGlobe({
   autoRotateSpeed = 0.5,
   showConnections = true,
   showMarkers = true,
+  /** Optional: replaces the built-in marker set with caller cities. [{ name, lat, lng }] */
+  markers,
+  /** Optional: marker dot/ring/label color (rgba/hex string). Defaults to emerald. */
+  markerColor,
+  /** Optional: pause auto-rotation from outside (e.g. offscreen). Drag still works. */
+  paused = false,
   /** Fires once after the first frame is drawn (land data loaded). */
   onReady,
 }) {
@@ -1715,6 +1721,26 @@ export function InteractiveGlobe({
   const readyFiredRef = useRef(false);
   const onReadyRef = useRef(onReady);
   onReadyRef.current = onReady;
+
+  // Live refs so the memoized draw()/loop see current values without re-creating.
+  const markersRef = useRef(markers);
+  markersRef.current = markers;
+  const markerColorRef = useRef(markerColor);
+  markerColorRef.current = markerColor;
+  const reducedRef = useRef(false);
+  const pausedRef = useRef(false);
+  pausedRef.current = paused || reducedRef.current;
+  const pulseRef = useRef(0);
+  const drewOnceRef = useRef(false);
+
+  // prefers-reduced-motion → freeze after the first frame (single static frame).
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      reducedRef.current = true;
+      pausedRef.current = true;
+    }
+  }, []);
 
   // Fetch GeoJSON land data and generate continent dots
   useEffect(() => {
@@ -1770,8 +1796,8 @@ export function InteractiveGlobe({
     const radius = Math.min(w, h) * 0.38;
     const fov = 600;
 
-    // Auto-rotate: increment longitude in degrees each frame
-    if (autoRotateRef.current && !dragRef.current.active) {
+    // Auto-rotate: increment longitude in degrees each frame (skip while paused).
+    if (autoRotateRef.current && !dragRef.current.active && !pausedRef.current) {
       rotationRef.current[0] += autoRotateSpeed;
     }
 
@@ -1847,6 +1873,62 @@ export function InteractiveGlobe({
       ctx.restore();
     }
 
+    // Optional caller-supplied city markers — same projection/occlusion as the
+    // continent dots (back hemisphere hidden). Larger dot + pulse ring on the
+    // front hemisphere; a mono label only when the marker faces the viewer.
+    const markerList = markersRef.current;
+    if (markerList && markerList.length) {
+      pulseRef.current = (pulseRef.current + 1) % 90;
+      const pulse = pulseRef.current / 90; // 0..1 ring expansion phase
+      const mColor = markerColorRef.current || 'rgba(52, 211, 153, 1)';
+      for (let i = 0; i < markerList.length; i++) {
+        const m = markerList[i];
+        if (m == null || m.lat == null || m.lng == null) continue;
+        const latRad = (m.lat * Math.PI) / 180;
+        const lngRad = (m.lng * Math.PI) / 180;
+        let mx = -Math.cos(latRad) * Math.sin(lngRad) * radius;
+        let my = Math.sin(latRad) * radius;
+        let mz = Math.cos(latRad) * Math.cos(lngRad) * radius;
+        [mx, my, mz] = rotateX(mx, my, mz, rx);
+        [mx, my, mz] = rotateY(mx, my, mz, ry);
+        if (mz > 0) continue; // back hemisphere → hidden, exactly like the dots
+        const mcos = -mz / radius;
+        if (mcos <= 0.05) continue;
+        const [mpx, mpy] = project(mx, my, mz, cx, cy, fov);
+
+        // Pulse ring (fades as it expands).
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, (1 - pulse) * 0.55 * mcos);
+        ctx.strokeStyle = mColor;
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.arc(mpx, mpy, 4 + pulse * 7, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+
+        // Solid marker dot.
+        ctx.save();
+        ctx.globalAlpha = Math.min(1, 0.55 + mcos * 0.45);
+        ctx.fillStyle = mColor;
+        ctx.beginPath();
+        ctx.arc(mpx, mpy, 2.6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        // Label only when in the front third of z-depth (avoids clutter).
+        if (mcos > 0.66 && m.name) {
+          ctx.save();
+          ctx.globalAlpha = Math.min(1, (mcos - 0.66) / 0.34);
+          ctx.fillStyle = mColor;
+          ctx.font = '600 9px ui-monospace, "JetBrains Mono", monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(String(m.name).toUpperCase(), mpx, mpy - 8);
+          ctx.restore();
+        }
+      }
+    }
+
+    drewOnceRef.current = true;
     // Frame scheduling moved to the throttled useEffect loop below
   }, [dotColor, oceanFill, autoRotateSpeed, loaded]);
 
@@ -1865,6 +1947,9 @@ export function InteractiveGlobe({
     const loop = (now) => {
       animRef.current = requestAnimationFrame(loop);
       if (!visible) return;
+      // Paused (offscreen / reduced-motion) → keep the last frame; no draw work,
+      // unless the user is actively dragging (drag stays responsive).
+      if (pausedRef.current && !dragRef.current.active && drewOnceRef.current) return;
       const dt = now - lastTime;
       if (dt < TARGET_MS) return;
       lastTime = now - (dt % TARGET_MS);

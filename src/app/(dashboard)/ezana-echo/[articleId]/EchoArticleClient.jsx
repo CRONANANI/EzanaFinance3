@@ -27,6 +27,7 @@ import { EchoCtaCallout } from '@/components/echo/EchoCtaCallout';
 import { InteractiveChartCTAOverlay } from '@/components/echo/InteractiveChartCTAOverlay';
 import ThielNetworkPie from '@/components/echo/ThielNetworkPie';
 import EchoMetadataSidebar from '@/components/echo/EchoMetadataSidebar';
+import { EchoGlobeRail } from '@/components/echo/EchoGlobeRail';
 import { EchoKeywordProvider, useKeywordPopup } from '@/components/echo/EchoKeywordContext';
 import { EchoKeywordPopup } from '@/components/echo/EchoKeywordPopup';
 import { parseKeywords } from '@/components/echo/parseKeywords';
@@ -2684,6 +2685,19 @@ export default function EchoArticleClient({
   const articleBodyRef = useRef(null);
   const [articleTracker, setArticleTracker] = useState(null);
 
+  // Globe rail placement: 3rd sticky column ≥1280px, inline in the body below.
+  // Default true so SSR + first client render agree (desktop-first), then correct.
+  const [grailWide, setGrailWide] = useState(true);
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return undefined;
+    const mq = window.matchMedia('(min-width: 1280px)');
+    const sync = () => setGrailWide(mq.matches);
+    sync();
+    mq.addEventListener('change', sync);
+    return () => mq.removeEventListener('change', sync);
+  }, []);
+  const hasGrail = Boolean(article.globeRail);
+
   const articleTags = useMemo(
     () => (article.tags?.length ? article.tags : [article.category || 'markets']),
     [article.tags, article.category],
@@ -2887,12 +2901,17 @@ export default function EchoArticleClient({
         <div className="echo-title-divider" />
 
         {/* Zones B + C — metadata sidebar | article body */}
-        <div className="echo-article-grid">
+        <div className={`echo-article-grid${hasGrail && grailWide ? ' echo-has-grail' : ''}`}>
           <div className="echo-side-col">
             <EchoContentsRail blocks={blocks} />
           </div>
 
           <div className="echo-body-col">
+            {/* Globe rail: inline (top of the body, after the hero) below 1280px;
+                as the sticky third column ≥1280px (rendered after this body col).
+                Rendered in exactly one place at a time. */}
+            {hasGrail && !grailWide && <EchoGlobeRail rail={article.globeRail} />}
+
             {/* Invisible ticker scroll-targets (fallback: top of the body). */}
             {tickers.length > 0 && (
               <div className="echo-ticker-anchors" aria-hidden>
@@ -3018,6 +3037,10 @@ export default function EchoArticleClient({
               </div>
             </section>
           </div>
+
+          {/* Sticky third column ≥1280px (single instance — inline copy above is
+              suppressed when grailWide is true). */}
+          {hasGrail && grailWide && <EchoGlobeRail rail={article.globeRail} />}
         </div>
       </div>
       <EchoKeywordPopup />
