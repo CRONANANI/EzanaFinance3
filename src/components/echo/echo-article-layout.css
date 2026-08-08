@@ -23,9 +23,11 @@
 
 /* ===== Zone A — Title band, directly under top nav ===== */
 .echo-title-band {
-  /* Align the header block with the body grid (contents rail + body) below, so
-     the full-width title and metadata band share the divider's left/right edges. */
-  max-width: calc(var(--echo-sidebar-w) + var(--echo-gutter) + var(--echo-body-max));
+  /* The band carries 1rem side padding, so its max-width includes 2rem on top
+     of the grid's column span — that makes the band's CONTENT box exactly the
+     grid's centered column area. Every child (metadata card, back link,
+     indented title) then lands flush with the contents rail / body columns. */
+  max-width: calc(var(--echo-sidebar-w) + var(--echo-gutter) + var(--echo-body-max) + 2rem);
   margin: 0 auto;
   padding: 2.5rem 1rem 0; /* sits high, tight to the nav */
   text-align: left;
@@ -46,7 +48,7 @@
   font-size: clamp(0.95rem, 1.4vw, 1.15rem);
   line-height: 1.55;
   color: var(--text-muted);
-  margin: 0 0 1.25rem;
+  margin: 0 0 0.9rem; /* byline hugs the subheading — one cohesive header unit */
 }
 
 .echo-byline {
@@ -71,7 +73,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-top: 1.25rem;
+  margin-top: 1rem;
   text-align: left;
 }
 
@@ -84,17 +86,24 @@
 
 .echo-title-divider {
   max-width: calc(var(--echo-sidebar-w) + var(--echo-gutter) + var(--echo-body-max));
-  margin: 1.5rem auto 0;
+  margin: 1rem auto 0;
   height: 1px;
   background: var(--border-secondary);
 }
 
 /* Grail articles ≥1280px carry a third sticky column, so the header band and
    its divider stretch to match the grid's full width — the title, subheading,
-   byline, and metadata band all end at the globe rail's right edge. Below
-   1280px the rail renders inline and the base widths apply. */
+   byline, and metadata band all end at the globe rail's right edge. The band
+   adds 2rem for its own side padding (content box = grid columns); the
+   divider has no side padding, so it uses the raw column span. Below 1280px
+   the rail renders inline and the base widths apply. */
 @media (min-width: 1280px) {
-  .echo-title-band--grail,
+  .echo-title-band--grail {
+    max-width: calc(
+      var(--echo-sidebar-w) + var(--echo-gutter) + var(--echo-body-max) + var(--echo-gutter) +
+        var(--echo-grail-w, 340px) + 2rem
+    );
+  }
   .echo-title-divider--grail {
     max-width: calc(
       var(--echo-sidebar-w) + var(--echo-gutter) + var(--echo-body-max) + var(--echo-gutter) +
@@ -193,6 +202,19 @@
 .echo-head-meta-col .emeta-group:first-of-type {
   border-top: 1px solid var(--border-primary);
 }
+/* Compact rows in the narrow rail card: labels never wrap (the two-line
+   ASSET CLASSES row made the 2×5 grid ragged), slightly smaller label type,
+   and tighter row padding so the card's height stays close to the
+   subheading + byline block beside it. */
+.echo-head-meta-col .emeta-group-summary {
+  padding: 7px 2px;
+  white-space: nowrap;
+}
+.echo-head-meta-col .emeta-group-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.04em;
+}
+
 /* The explainer popover is wider than the rail cell — cap it to the viewport
    and let it overhang rather than clip. */
 .echo-head-meta-col .emeta-popover {
@@ -211,7 +233,7 @@
   gap: var(--echo-gutter);
   justify-content: center;
   align-items: start;
-  padding: 2rem 1rem 4rem;
+  padding: 1.5rem 1rem 4rem;
 }
 
 /* ≥1280px: articles carrying a globe rail get a third sticky column. The body

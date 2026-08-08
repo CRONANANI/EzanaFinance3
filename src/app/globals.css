@@ -692,10 +692,52 @@ body.light-mode {
 }
 
 /* ── Echo article minimal nav: logo left, auth actions right, no menu ── */
+.navbar--echo-article {
+  position: relative; /* anchors the centered wordmark + bottom progress bar */
+}
 .navbar--echo-article .nav-container--echo-article {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+/* Centered Echo wordmark — Newsreader serif, absolutely centered so it stays
+   dead-center regardless of the logo/auth widths on either side. */
+.nav-echo-wordmark {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--text-primary);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.nav-echo-wordmark span {
+  color: var(--emerald);
+}
+.nav-echo-wordmark:hover span {
+  color: var(--emerald-hover);
+}
+/* Reading progress: 2px emerald fill along the navbar's bottom edge. Width
+   is scroll-driven from JS — no transition, so it simply tracks position. */
+.nav-echo-progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+}
+.nav-echo-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--emerald);
+}
+@media (max-width: 640px) {
+  .nav-echo-wordmark {
+    display: none; /* avoids colliding with logo/auth on narrow screens */
+  }
 }
 .nav-sign-in-wrap--echo-article {
   display: flex;

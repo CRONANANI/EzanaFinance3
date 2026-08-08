@@ -58,6 +58,9 @@ export function Navbar() {
   const [datasetsOpen, setDatasetsOpen] = useState(false);
   const landingNavRef = useRef(null);
   const datasetsRef = useRef(null);
+  // Fill element of the Echo-article reading-progress bar. Width is written
+  // directly to the DOM node (no re-render per scroll frame).
+  const echoProgressRef = useRef(null);
   const isSettings = pathname?.startsWith('/settings');
   const isLanding = pathname === '/';
   const isPricing = pathname === '/pricing';
@@ -362,6 +365,35 @@ export function Navbar() {
     return () => window.removeEventListener('ezana:open-datasets-menu', openDatasets);
   }, []);
 
+  // Echo-article reading progress: rAF-throttled scroll listener writes the
+  // fill width straight to the node. Deterministic (no Math.random), no CSS
+  // transition on the fill — scroll-driven position only, so it needs no
+  // prefers-reduced-motion special casing. Mounted only on article pages.
+  useEffect(() => {
+    if (!isEchoArticlePage || typeof window === 'undefined') return undefined;
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const el = echoProgressRef.current;
+      if (!el) return;
+      const doc = document.documentElement;
+      const max = doc.scrollHeight - window.innerHeight;
+      const pct = max > 0 ? Math.min(100, Math.max(0, (window.scrollY / max) * 100)) : 0;
+      el.style.width = `${pct}%`;
+    };
+    const onScroll = () => {
+      if (!raf) raf = window.requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    return () => {
+      if (raf) window.cancelAnimationFrame(raf);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, [isEchoArticlePage]);
+
   if (isAuthPage || isSettings || isMarketingShell) return null;
 
   // Individual Echo article pages get minimal reading chrome: logo top-left
@@ -375,6 +407,9 @@ export function Navbar() {
           <Link href="/" className="logo nav-brand nav-home-btn" title="Ezana Finance">
             <EzanaNavLogo />
           </Link>
+          <Link href="/ezana-echo" className="nav-echo-wordmark" title="Ezana Echo">
+            Ezana <span>Echo</span>
+          </Link>
           <div className="nav-sign-in-wrap nav-sign-in-wrap--echo-article">
             <a href="/auth/login" className="nav-link nav-link-text">
               Login
@@ -383,6 +418,9 @@ export function Navbar() {
               Become a Partner
             </a>
           </div>
+        </div>
+        <div className="nav-echo-progress" aria-hidden="true">
+          <div ref={echoProgressRef} className="nav-echo-progress-fill" />
         </div>
       </nav>
     );
