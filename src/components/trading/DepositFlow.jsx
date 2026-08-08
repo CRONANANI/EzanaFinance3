@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { posthog } from '@/components/PostHogInit';
 
 export function DepositFlow({ getToken }) {
   const [activeTab, setActiveTab] = useState('deposit');
@@ -50,6 +51,9 @@ export function DepositFlow({ getToken }) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.details || data.error);
+      posthog.capture('funds_transfer_initiated', {
+        direction: activeTab === 'deposit' ? 'incoming' : 'outgoing',
+      });
       setSuccess(`${activeTab === 'deposit' ? 'Deposit' : 'Withdrawal'} of $${parseFloat(amount).toLocaleString()} initiated successfully`);
       setAmount('');
       fetchFundingData();

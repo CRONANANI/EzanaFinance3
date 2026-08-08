@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { DateSelector } from '@/components/ui/DateSelector';
+import { posthog } from '@/components/PostHogInit';
 
 const STEPS = [
   'Personal',
@@ -165,6 +166,13 @@ export function OpenBrokerageWizard() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Account creation failed');
 
+      posthog.capture('brokerage_application_submitted', {
+        funding_source: form.funding_source,
+        investment_experience: form.investment_experience,
+        risk_tolerance: form.risk_tolerance,
+        investment_objective: form.investment_objective,
+        investment_time_horizon: form.investment_time_horizon,
+      });
       router.push('/trading');
       router.refresh();
     } catch (e) {
