@@ -693,19 +693,46 @@ body.light-mode {
 
 /* ── Echo article minimal nav: logo left, auth actions right, no menu ── */
 .navbar--echo-article {
-  position: relative; /* anchors the centered wordmark + bottom progress bar */
+  position: relative;
+  padding-top: 3px; /* the logo/auth row clears the fixed-height progress bar */
 }
 .navbar--echo-article .nav-container--echo-article {
+  position: relative; /* anchors the absolutely-centered wordmark/title */
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
-/* Centered Echo wordmark — Newsreader serif, absolutely centered so it stays
-   dead-center regardless of the logo/auth widths on either side. */
-.nav-echo-wordmark {
+
+/* Reading progress at the very top edge of the page: 3px emerald fill on a
+   subtle emerald track (the track keeps the bar legible at 0%). Width is
+   scroll-driven from JS — no transition, it simply tracks position. */
+.nav-echo-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--emerald-bg-subtle);
+}
+.nav-echo-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--emerald);
+}
+
+/* Center element — absolutely centered so it stays dead-center regardless of
+   the logo/auth widths, capped so it never collides with either side. */
+.nav-echo-center {
   position: absolute;
   left: 50%;
-  transform: translateX(-50%);
+  top: 50%;
+  transform: translate(-50%, -50%);
+  max-width: min(44vw, 560px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.nav-echo-wordmark {
   font-family: var(--font-serif);
   font-size: 1.05rem;
   font-weight: 600;
@@ -713,6 +740,7 @@ body.light-mode {
   color: var(--text-primary);
   text-decoration: none;
   white-space: nowrap;
+  transition: opacity 0.18s ease;
 }
 .nav-echo-wordmark span {
   color: var(--emerald);
@@ -720,22 +748,34 @@ body.light-mode {
 .nav-echo-wordmark:hover span {
   color: var(--emerald-hover);
 }
-/* Reading progress: 2px emerald fill along the navbar's bottom edge. Width
-   is scroll-driven from JS — no transition, so it simply tracks position. */
-.nav-echo-progress {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 2px;
+.nav-echo-swap-out {
+  opacity: 0;
+  pointer-events: none;
 }
-.nav-echo-progress-fill {
-  height: 100%;
-  width: 0%;
-  background: var(--emerald);
+.nav-echo-title {
+  position: absolute;
+  max-width: 100%;
+  opacity: 0;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: opacity 0.18s ease;
+}
+.nav-echo-swap-in {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-echo-wordmark,
+  .nav-echo-title {
+    transition: none; /* swap is instant for reduced-motion readers */
+  }
 }
 @media (max-width: 640px) {
-  .nav-echo-wordmark {
+  .nav-echo-center {
     display: none; /* avoids colliding with logo/auth on narrow screens */
   }
 }

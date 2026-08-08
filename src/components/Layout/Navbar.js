@@ -58,9 +58,11 @@ export function Navbar() {
   const [datasetsOpen, setDatasetsOpen] = useState(false);
   const landingNavRef = useRef(null);
   const datasetsRef = useRef(null);
-  // Fill element of the Echo-article reading-progress bar. Width is written
-  // directly to the DOM node (no re-render per scroll frame).
+  // Echo-article nav: reading-progress fill node (width written straight to
+  // the DOM — no re-render per scroll frame), plus the headline swap state.
   const echoProgressRef = useRef(null);
+  const [echoNavTitle, setEchoNavTitle] = useState('');
+  const [echoTitleInNav, setEchoTitleInNav] = useState(false);
   const isSettings = pathname?.startsWith('/settings');
   const isLanding = pathname === '/';
   const isPricing = pathname === '/pricing';
@@ -366,9 +368,10 @@ export function Navbar() {
   }, []);
 
   // Echo-article reading progress: rAF-throttled scroll listener writes the
-  // fill width straight to the node. Deterministic (no Math.random), no CSS
-  // transition on the fill — scroll-driven position only, so it needs no
-  // prefers-reduced-motion special casing. Mounted only on article pages.
+  // fill width straight to the node. Deterministic (no Math.random); the fill
+  // has no CSS transition — it simply tracks scroll position. Mounted only on
+  // article pages. NOTE: this and the effect below must stay ABOVE the early
+  // returns so React's hook order is stable on every render.
   useEffect(() => {
     if (!isEchoArticlePage || typeof window === 'undefined') return undefined;
     let raf = 0;
@@ -392,7 +395,39 @@ export function Navbar() {
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onScroll);
     };
-  }, [isEchoArticlePage]);
+  }, [isEchoArticlePage, pathname]);
+
+  // Nav center swap: read the article headline from the on-page <h1> and show
+  // it in the nav center once the reader scrolls past the headline. The h1
+  // may mount after the navbar hydrates, so poll briefly via rAF until it
+  // exists, then observe it. Resets on route change.
+  useEffect(() => {
+    if (!isEchoArticlePage || typeof window === 'undefined') return undefined;
+    setEchoNavTitle('');
+    setEchoTitleInNav(false);
+    let raf = 0;
+    let tries = 0;
+    let observer = null;
+    const attach = () => {
+      const h1 = document.querySelector('.echo-title');
+      if (!h1) {
+        tries += 1;
+        if (tries < 120) raf = window.requestAnimationFrame(attach);
+        return;
+      }
+      setEchoNavTitle(h1.textContent || '');
+      observer = new IntersectionObserver(
+        ([entry]) => setEchoTitleInNav(!entry.isIntersecting && entry.boundingClientRect.top < 0),
+        { rootMargin: '-64px 0px 0px 0px' },
+      );
+      observer.observe(h1);
+    };
+    raf = window.requestAnimationFrame(attach);
+    return () => {
+      if (raf) window.cancelAnimationFrame(raf);
+      if (observer) observer.disconnect();
+    };
+  }, [isEchoArticlePage, pathname]);
 
   if (isAuthPage || isSettings || isMarketingShell) return null;
 
@@ -401,15 +436,36 @@ export function Navbar() {
   // hamburger. Public and session-independent for the same reasons as the
   // Echo landing-nav rule above.
   if (isEchoArticlePage) {
+    const showNavTitle = echoTitleInNav && Boolean(echoNavTitle);
     return (
       <nav className="navbar navbar-sticky navbar--echo-article">
+        {/* Reading progress — the very first element, pinned to the top edge
+            of the page; the logo/auth row sits below it. */}
+        <div className="nav-echo-progress" aria-hidden="true">
+          <div ref={echoProgressRef} className="nav-echo-progress-fill" />
+        </div>
         <div className="nav-container nav-container-centered nav-container-echo nav-container--echo-article">
           <Link href="/" className="logo nav-brand nav-home-btn" title="Ezana Finance">
             <EzanaNavLogo />
           </Link>
-          <Link href="/ezana-echo" className="nav-echo-wordmark" title="Ezana Echo">
-            Ezana <span>Echo</span>
-          </Link>
+          {/* Center element: Echo wordmark at the top of the page, crossfading
+              to the article headline once the reader scrolls past the <h1>. */}
+          <div className="nav-echo-center">
+            <Link
+              href="/ezana-echo"
+              className={`nav-echo-wordmark${showNavTitle ? ' nav-echo-swap-out' : ''}`}
+              title="Ezana Echo"
+              tabIndex={showNavTitle ? -1 : 0}
+            >
+              Ezana <span>Echo</span>
+            </Link>
+            <span
+              className={`nav-echo-title${showNavTitle ? ' nav-echo-swap-in' : ''}`}
+              aria-hidden={!showNavTitle}
+            >
+              {echoNavTitle}
+            </span>
+          </div>
           <div className="nav-sign-in-wrap nav-sign-in-wrap--echo-article">
             <a href="/auth/login" className="nav-link nav-link-text">
               Login
@@ -418,9 +474,6 @@ export function Navbar() {
               Become a Partner
             </a>
           </div>
-        </div>
-        <div className="nav-echo-progress" aria-hidden="true">
-          <div ref={echoProgressRef} className="nav-echo-progress-fill" />
         </div>
       </nav>
     );
