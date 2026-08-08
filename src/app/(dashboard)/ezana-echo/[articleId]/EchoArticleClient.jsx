@@ -2842,48 +2842,38 @@ export default function EchoArticleClient({
         )}
 
         {/* Zone A — title band, tight measure, directly under the nav.
-            Title across the top, then a two-column row: metadata card in a
-            contents-rail-width left cell, subheading + byline on the right.
-            align-items:start pins the card's top to the subheading's first
-            line regardless of how many lines the title wraps to. */}
+            Title, subheading, and byline stack full-width from the band's
+            left content edge (same x as the contents rail below), running to
+            the band's right edge — the globe rail's right edge on grail
+            articles. The metadata card lives in the body grid's left column
+            (above the contents rail), not in the header. */}
         <header className={`echo-title-band${hasGrail ? ' echo-title-band--grail' : ''}`}>
           <div className="echo-article-head-main">
             <h1 className="echo-title">{article.title}</h1>
-            <div className="echo-head-row">
-              <aside className="echo-head-meta-col" aria-label="Article metadata card">
-                <EchoMetadataSidebar
-                  tickers={tickers}
-                  meta={article.meta ?? {}}
-                  onMetaClick={handleMetaClick}
-                />
-              </aside>
-              <div className="echo-head-text-col">
-                {article.excerpt && <p className="echo-subheading">{article.excerpt}</p>}
-                <div className="echo-byline">
-                  By <strong>{article.author}</strong>
-                  {article.coAuthors?.length > 0 && (
-                    <>
-                      {' & '}
-                      {article.coAuthors.map((c, i) => (
-                        <span key={c.id}>
-                          {i > 0 && ', '}
-                          {c.username ? (
-                            <Link href={`/profile/${c.username}`}>
-                              <strong>{c.name}</strong>
-                            </Link>
-                          ) : (
-                            <strong>{c.name}</strong>
-                          )}
-                        </span>
-                      ))}
-                    </>
-                  )}
-                  {' · '}
-                  {article.listMeta || formatPublishedDate(article.publishedAt)}
-                  {' · '}
-                  <span className="echo-readtime">{article.readTime} min read</span>
-                </div>
-              </div>
+            {article.excerpt && <p className="echo-subheading">{article.excerpt}</p>}
+            <div className="echo-byline">
+              By <strong>{article.author}</strong>
+              {article.coAuthors?.length > 0 && (
+                <>
+                  {' & '}
+                  {article.coAuthors.map((c, i) => (
+                    <span key={c.id}>
+                      {i > 0 && ', '}
+                      {c.username ? (
+                        <Link href={`/profile/${c.username}`}>
+                          <strong>{c.name}</strong>
+                        </Link>
+                      ) : (
+                        <strong>{c.name}</strong>
+                      )}
+                    </span>
+                  ))}
+                </>
+              )}
+              {' · '}
+              {article.listMeta || formatPublishedDate(article.publishedAt)}
+              {' · '}
+              <span className="echo-readtime">{article.readTime} min read</span>
             </div>
           </div>
           {/* Bottom of the title band, directly above the divider: back link
@@ -2907,8 +2897,21 @@ export default function EchoArticleClient({
 
         {/* Zones B + C — metadata sidebar | article body */}
         <div className={`echo-article-grid${hasGrail && grailWide ? ' echo-has-grail' : ''}`}>
-          <div className="echo-side-col">
-            <EchoContentsRail blocks={blocks} />
+          {/* Left column: non-sticky metadata card on top, then the sticky
+              contents rail beneath it. The stack stretches to the row height
+              so the rail can still slide; align-items:start on the grid keeps
+              the card's top on the same line as the body's first line. */}
+          <div className="echo-side-stack">
+            <aside className="echo-rail-meta" aria-label="Article metadata card">
+              <EchoMetadataSidebar
+                tickers={tickers}
+                meta={article.meta ?? {}}
+                onMetaClick={handleMetaClick}
+              />
+            </aside>
+            <div className="echo-side-col">
+              <EchoContentsRail blocks={blocks} />
+            </div>
           </div>
 
           <div className="echo-body-col">

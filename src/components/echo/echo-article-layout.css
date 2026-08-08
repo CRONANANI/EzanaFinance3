@@ -112,54 +112,12 @@
   }
 }
 
-/* ── Article header: title across the top (indented to the body column's left
-   edge), then a two-column row — metadata card in a contents-rail-width left
-   cell, subheading + byline on the right, both top-aligned. Back/save row,
-   divider, and body grid follow below. */
+/* ── Article header: title, subheading, and byline stack full-width from the
+   band's left content edge — the same x as the contents rail / metadata card
+   in the grid below — running to the band's right edge (globe-rail right
+   edge on grail articles). Back/save row, divider, and body grid follow. */
 .echo-article-head-main {
   text-align: left;
-}
-/* ≥1025px (the widths where the contents rail renders): indent the TITLE by
-   the rail width + gutter so it left-aligns with the body column. The row
-   below supplies the same offset structurally — its first grid column is the
-   rail width — so the subheading + byline land on the body's left edge while
-   the metadata card fills the rail-width cell. */
-@media (min-width: 1025px) {
-  .echo-article-head-main .echo-title {
-    padding-left: calc(var(--echo-sidebar-w) + var(--echo-gutter));
-  }
-}
-
-/* Header row under the title. Mobile-first: single column, text before the
-   card (reading order). ≥1025px: grid [rail | text]; align-items:start pins
-   the card's top edge to the subheading's first line for any title length. */
-.echo-head-row {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-.echo-head-text-col {
-  order: 1;
-  min-width: 0;
-}
-.echo-head-meta-col {
-  order: 2;
-}
-@media (min-width: 1025px) {
-  .echo-head-row {
-    display: grid;
-    grid-template-columns: var(--echo-sidebar-w) minmax(0, 1fr);
-    gap: var(--echo-gutter);
-    align-items: start;
-  }
-  .echo-head-meta-col {
-    order: initial;
-    grid-column: 1;
-  }
-  .echo-head-text-col {
-    order: initial;
-    grid-column: 2;
-  }
 }
 .echo-article-head-main .echo-title {
   text-align: left;
@@ -180,7 +138,7 @@
    form a 2-across grid — the uniform 10 groups render 2×5. An open
    disclosure spans both columns so its chips have room in the narrow card.
    Non-sticky by design; keeps its ezana-card chrome. */
-.echo-head-meta-col .emeta-card {
+.echo-rail-meta .emeta-card {
   position: static;
   width: 100%;
   max-width: none;
@@ -190,38 +148,38 @@
   align-items: start;
   overflow: visible; /* the explainer popover may overhang the card edge */
 }
-.echo-head-meta-col .emeta-card-header {
+.echo-rail-meta .emeta-card-header {
   grid-column: 1 / -1;
 }
-.echo-head-meta-col .emeta-group[open] {
+.echo-rail-meta .emeta-group[open] {
   grid-column: 1 / -1;
 }
 /* Uniform hairline above every group so the two columns' rows stay even
    (the base rule strips the first group's border, which would leave the
    top row lopsided in a 2-across grid). */
-.echo-head-meta-col .emeta-group:first-of-type {
+.echo-rail-meta .emeta-group:first-of-type {
   border-top: 1px solid var(--border-primary);
 }
 /* Compact rows in the narrow rail card: labels never wrap (the two-line
    ASSET CLASSES row made the 2×5 grid ragged), slightly smaller label type,
    and tighter row padding so the card's height stays close to the
    subheading + byline block beside it. */
-.echo-head-meta-col .emeta-group-summary {
+.echo-rail-meta .emeta-group-summary {
   padding: 7px 2px;
   white-space: nowrap;
 }
-.echo-head-meta-col .emeta-group-label {
+.echo-rail-meta .emeta-group-label {
   font-size: 0.6rem;
   letter-spacing: 0.04em;
 }
 
 /* The explainer popover is wider than the rail cell — cap it to the viewport
    and let it overhang rather than clip. */
-.echo-head-meta-col .emeta-popover {
+.echo-rail-meta .emeta-popover {
   width: min(280px, 86vw);
 }
 @media (max-width: 480px) {
-  .echo-head-meta-col .emeta-card {
+  .echo-rail-meta .emeta-card {
     grid-template-columns: 1fr; /* single column of disclosures on phones */
   }
 }
@@ -490,6 +448,21 @@
    because the structural wrappers use overflow-x:clip (see mobile-responsive.css)
    rather than hidden. If the list is taller than the viewport, the excess simply
    extends below the fold. */
+/* Left column of the body grid: metadata card (non-sticky) stacked above the
+   sticky contents rail. The stack stretches to the full row height so the
+   sticky rail inside it still has room to slide; the card sits at the top of
+   the row — i.e., on the same line as the body's first line. */
+.echo-side-stack {
+  align-self: stretch;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.echo-rail-meta {
+  flex: none;
+}
+
 .echo-side-col {
   position: sticky;
   top: var(--echo-sticky-top, 1.5rem);
