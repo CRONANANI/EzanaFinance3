@@ -103,20 +103,53 @@
   }
 }
 
-/* ── Article header: full-width title block, then a full-width metadata band,
-   then (below) the back/save row + divider + body grid. Title spans the canvas;
-   the metadata card sits between the title and the divider, its groups flowing
-   in responsive columns across the band instead of stacking in a column. */
+/* ── Article header: title across the top (indented to the body column's left
+   edge), then a two-column row — metadata card in a contents-rail-width left
+   cell, subheading + byline on the right, both top-aligned. Back/save row,
+   divider, and body grid follow below. */
 .echo-article-head-main {
   text-align: left;
 }
-/* ≥1025px (the widths where the contents rail renders): indent the title,
-   subheading, and byline by the rail width + gutter so their left edge sits
-   exactly on the body column's left edge, not the rail's. Below 1025px the
-   grid collapses to a single body column, so no indent is needed. */
+/* ≥1025px (the widths where the contents rail renders): indent the TITLE by
+   the rail width + gutter so it left-aligns with the body column. The row
+   below supplies the same offset structurally — its first grid column is the
+   rail width — so the subheading + byline land on the body's left edge while
+   the metadata card fills the rail-width cell. */
 @media (min-width: 1025px) {
-  .echo-article-head-main {
+  .echo-article-head-main .echo-title {
     padding-left: calc(var(--echo-sidebar-w) + var(--echo-gutter));
+  }
+}
+
+/* Header row under the title. Mobile-first: single column, text before the
+   card (reading order). ≥1025px: grid [rail | text]; align-items:start pins
+   the card's top edge to the subheading's first line for any title length. */
+.echo-head-row {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.echo-head-text-col {
+  order: 1;
+  min-width: 0;
+}
+.echo-head-meta-col {
+  order: 2;
+}
+@media (min-width: 1025px) {
+  .echo-head-row {
+    display: grid;
+    grid-template-columns: var(--echo-sidebar-w) minmax(0, 1fr);
+    gap: var(--echo-gutter);
+    align-items: start;
+  }
+  .echo-head-meta-col {
+    order: initial;
+    grid-column: 1;
+  }
+  .echo-head-text-col {
+    order: initial;
+    grid-column: 2;
   }
 }
 .echo-article-head-main .echo-title {
@@ -133,26 +166,41 @@
   max-width: none; /* header lines may run to the band's right edge (globe-rail
                       right edge on grail articles at desktop) */
 }
-.echo-article-head-meta--band {
-  margin-top: 1.75rem;
-}
-/* The sidebar has no inner body wrapper — make the card itself the grid so its
-   header spans the band and each disclosure group becomes a column cell. */
-.echo-article-head-meta--band .emeta-card {
+/* Metadata card in the left header cell: fills the contents-rail width
+   (260px at desktop; full body width when the row stacks on mobile). Groups
+   form a 2-across grid — the uniform 10 groups render 2×5. An open
+   disclosure spans both columns so its chips have room in the narrow card.
+   Non-sticky by design; keeps its ezana-card chrome. */
+.echo-head-meta-col .emeta-card {
   position: static;
   width: 100%;
   max-width: none;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 4px 20px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 14px;
   align-items: start;
+  overflow: visible; /* the explainer popover may overhang the card edge */
 }
-.echo-article-head-meta--band .emeta-card-header {
+.echo-head-meta-col .emeta-card-header {
   grid-column: 1 / -1;
 }
-@media (max-width: 768px) {
-  .echo-article-head-meta--band .emeta-card {
-    grid-template-columns: 1fr; /* single column of disclosures on mobile */
+.echo-head-meta-col .emeta-group[open] {
+  grid-column: 1 / -1;
+}
+/* Uniform hairline above every group so the two columns' rows stay even
+   (the base rule strips the first group's border, which would leave the
+   top row lopsided in a 2-across grid). */
+.echo-head-meta-col .emeta-group:first-of-type {
+  border-top: 1px solid var(--border-primary);
+}
+/* The explainer popover is wider than the rail cell — cap it to the viewport
+   and let it overhang rather than clip. */
+.echo-head-meta-col .emeta-popover {
+  width: min(280px, 86vw);
+}
+@media (max-width: 480px) {
+  .echo-head-meta-col .emeta-card {
+    grid-template-columns: 1fr; /* single column of disclosures on phones */
   }
 }
 

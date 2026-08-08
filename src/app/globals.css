@@ -676,6 +676,12 @@ body.light-mode {
   .navbar .nav-container-centered .nav-sign-in-wrap {
     display: none;
   }
+
+  /* The minimal Echo article nav has no hamburger, so its actions must stay
+     visible at every width. */
+  .navbar--echo-article .nav-sign-in-wrap--echo-article {
+    display: flex;
+  }
 }
 
 /* ── Nav auth buttons: gap between Login and Become a Partner ── */
@@ -683,6 +689,33 @@ body.light-mode {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+}
+
+/* ── Echo article minimal nav: logo left, auth actions right, no menu ── */
+.navbar--echo-article .nav-container--echo-article {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.nav-sign-in-wrap--echo-article {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.navbar--echo-article .nav-partner-pill {
+  border: 1px solid var(--emerald);
+  color: var(--emerald);
+  border-radius: 999px;
+  padding: 0.4rem 1.1rem;
+  transition: background 0.15s ease;
+}
+.navbar--echo-article .nav-partner-pill:hover {
+  background: var(--emerald-bg);
+}
+@media (max-width: 480px) {
+  .navbar--echo-article .nav-partner-pill {
+    padding: 0.3rem 0.8rem;
+  }
 }
 
 /* Nav logo — transparent bg; dark mode: show natural colors; light mode: blend */
@@ -1871,6 +1904,12 @@ body.light-mode select option {
 
   .navbar .nav-container-centered .nav-sign-in-wrap {
     display: none;
+  }
+
+  /* The minimal Echo article nav has no hamburger, so its actions must stay
+     visible at every width. */
+  .navbar--echo-article .nav-sign-in-wrap--echo-article {
+    display: flex;
   }
 }
 

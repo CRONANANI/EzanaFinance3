@@ -67,6 +67,14 @@ export function Navbar() {
   const isTermsOfService = pathname === '/terms-of-service';
   const isAccessibility = pathname === '/accessibility';
   const isEzanaEcho = pathname?.startsWith('/ezana-echo');
+  // Individual article pages only — the Echo index, archived, and author
+  // pages keep the full landing nav. Mirrors isEchoArticle in
+  // src/app/(dashboard)/layout.js.
+  const isEchoArticlePage =
+    !!pathname &&
+    pathname.startsWith('/ezana-echo/') &&
+    pathname !== '/ezana-echo/archived' &&
+    !pathname.startsWith('/ezana-echo/author/');
   // /ezana-api is a public docs page reached from the landing Datasets menu —
   // like /datasets and /pricing it must ALWAYS render the marketing navbar, so a
   // stale client session can never leak the authed app chrome (bell/checklist/
@@ -355,6 +363,30 @@ export function Navbar() {
   }, []);
 
   if (isAuthPage || isSettings || isMarketingShell) return null;
+
+  // Individual Echo article pages get minimal reading chrome: logo top-left
+  // (links home), Login + Become a Partner top-right — no marketing menu, no
+  // hamburger. Public and session-independent for the same reasons as the
+  // Echo landing-nav rule above.
+  if (isEchoArticlePage) {
+    return (
+      <nav className="navbar navbar-sticky navbar--echo-article">
+        <div className="nav-container nav-container-centered nav-container-echo nav-container--echo-article">
+          <Link href="/" className="logo nav-brand nav-home-btn" title="Ezana Finance">
+            <EzanaNavLogo />
+          </Link>
+          <div className="nav-sign-in-wrap nav-sign-in-wrap--echo-article">
+            <a href="/auth/login" className="nav-link nav-link-text">
+              Login
+            </a>
+            <a href="/auth/partner/apply" className="nav-link nav-link-text nav-partner-pill">
+              Become a Partner
+            </a>
+          </div>
+        </div>
+      </nav>
+    );
+  }
 
   if (showLandingNav) {
     return (

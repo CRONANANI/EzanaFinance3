@@ -2842,44 +2842,49 @@ export default function EchoArticleClient({
         )}
 
         {/* Zone A — title band, tight measure, directly under the nav.
-            Full-width title block, then a full-width metadata band below it. */}
+            Title across the top, then a two-column row: metadata card in a
+            contents-rail-width left cell, subheading + byline on the right.
+            align-items:start pins the card's top to the subheading's first
+            line regardless of how many lines the title wraps to. */}
         <header className={`echo-title-band${hasGrail ? ' echo-title-band--grail' : ''}`}>
           <div className="echo-article-head-main">
             <h1 className="echo-title">{article.title}</h1>
-            {article.excerpt && <p className="echo-subheading">{article.excerpt}</p>}
-            <div className="echo-byline">
-              By <strong>{article.author}</strong>
-              {article.coAuthors?.length > 0 && (
-                <>
-                  {' & '}
-                  {article.coAuthors.map((c, i) => (
-                    <span key={c.id}>
-                      {i > 0 && ', '}
-                      {c.username ? (
-                        <Link href={`/profile/${c.username}`}>
-                          <strong>{c.name}</strong>
-                        </Link>
-                      ) : (
-                        <strong>{c.name}</strong>
-                      )}
-                    </span>
-                  ))}
-                </>
-              )}
-              {' · '}
-              {article.listMeta || formatPublishedDate(article.publishedAt)}
-              {' · '}
-              <span className="echo-readtime">{article.readTime} min read</span>
+            <div className="echo-head-row">
+              <aside className="echo-head-meta-col" aria-label="Article metadata card">
+                <EchoMetadataSidebar
+                  tickers={tickers}
+                  meta={article.meta ?? {}}
+                  onMetaClick={handleMetaClick}
+                />
+              </aside>
+              <div className="echo-head-text-col">
+                {article.excerpt && <p className="echo-subheading">{article.excerpt}</p>}
+                <div className="echo-byline">
+                  By <strong>{article.author}</strong>
+                  {article.coAuthors?.length > 0 && (
+                    <>
+                      {' & '}
+                      {article.coAuthors.map((c, i) => (
+                        <span key={c.id}>
+                          {i > 0 && ', '}
+                          {c.username ? (
+                            <Link href={`/profile/${c.username}`}>
+                              <strong>{c.name}</strong>
+                            </Link>
+                          ) : (
+                            <strong>{c.name}</strong>
+                          )}
+                        </span>
+                      ))}
+                    </>
+                  )}
+                  {' · '}
+                  {article.listMeta || formatPublishedDate(article.publishedAt)}
+                  {' · '}
+                  <span className="echo-readtime">{article.readTime} min read</span>
+                </div>
+              </div>
             </div>
-          </div>
-          <div className="echo-article-head-meta echo-article-head-meta--band">
-            <EchoMetadataSidebar
-              tickers={tickers}
-              people={article.entities?.people ?? []}
-              terms={article.entities?.terms ?? []}
-              meta={article.meta ?? {}}
-              onMetaClick={handleMetaClick}
-            />
           </div>
           {/* Bottom of the title band, directly above the divider: back link
               far-left, save button far-right (space-between). */}

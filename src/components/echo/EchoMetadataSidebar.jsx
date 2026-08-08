@@ -83,28 +83,23 @@ function Group({ title, children, count }) {
     <details className="emeta-group">
       <summary className="emeta-group-summary">
         <span className="emeta-group-label">{title}</span>
-        {!empty && typeof count === 'number' && (
-          <span className="emeta-group-count">{count}</span>
-        )}
+        {!empty && typeof count === 'number' && <span className="emeta-group-count">{count}</span>}
         <i className="bi bi-chevron-down emeta-group-chevron" aria-hidden="true" />
       </summary>
-      {empty ? <span className="emeta-empty">—</span> : <div className="emeta-chiprow">{children}</div>}
+      {empty ? (
+        <span className="emeta-empty">—</span>
+      ) : (
+        <div className="emeta-chiprow">{children}</div>
+      )}
     </details>
   );
 }
 
-/* The seven CORE categories render on EVERY article — a uniform scaffold, so
-   readers learn one card layout. Empty core dimensions show a muted em-dash
-   (honest, and it makes taxonomy gaps visible instead of silently hiding the
-   category). Optional groups below remain conditional. */
-const CORE_META_DIMS = new Set([
-  'sectors',
-  'industries',
-  'institutions',
-  'geos',
-  'assetClasses',
-  'themes',
-]);
+/* Every article renders the SAME 10 groups — Tickers, the eight taxonomy
+   dimensions below, and Built with — a uniform scaffold so readers learn one
+   card layout (and the 2×5 grid holds on every article). Empty dimensions
+   show a muted em-dash: honest, and it makes taxonomy gaps visible instead
+   of silently hiding the category. */
 
 /* Taxonomy dimensions rendered as chip groups after Tickers, in this order.
    `dimension` is the value sent with the article_meta_click breadcrumb. */
@@ -119,16 +114,8 @@ const META_GROUPS = [
   { dimension: 'themes', title: 'Themes' },
 ];
 
-export default function EchoMetadataSidebar({
-  tickers = [],
-  people = [],
-  terms = [],
-  meta = {},
-  onMetaClick,
-}) {
+export default function EchoMetadataSidebar({ tickers = [], meta = {}, onMetaClick }) {
   const onTicker = useCallback((t) => scrollToAnchor(`echo-anchor-ticker-${t}`), []);
-  const onPerson = useCallback((id) => scrollToAnchor(`echo-anchor-person-${id}`), []);
-  const onTerm = useCallback((id) => scrollToAnchor(`echo-anchor-term-${id}`), []);
   const fireMeta = useCallback(
     (dimension, value) => {
       if (typeof onMetaClick === 'function') onMetaClick(dimension, value);
@@ -137,7 +124,6 @@ export default function EchoMetadataSidebar({
   );
 
   const m = meta || {};
-  const markets = Array.isArray(m.markets) ? m.markets : [];
   const datasets = Array.isArray(m.datasets) ? m.datasets : [];
 
   // Metadata is universal now, so the card renders whenever the article exists.
@@ -165,10 +151,8 @@ export default function EchoMetadataSidebar({
 
       {META_GROUPS.map((g) => {
         const values = Array.isArray(m[g.dimension]) ? m[g.dimension] : [];
-        const isCore = CORE_META_DIMS.has(g.dimension);
-        // Optional dimensions (Investors, Government) stay conditional; core
-        // dimensions always render, showing an em-dash when empty.
-        if (!isCore && values.length === 0) return null;
+        // All taxonomy dimensions render on every article (em-dash when
+        // empty) — the card's group set is identical everywhere.
         return (
           <Group key={g.dimension} title={g.title} count={values.length}>
             {values.map((value) => (
@@ -186,71 +170,21 @@ export default function EchoMetadataSidebar({
         );
       })}
 
-      {people.length > 0 && (
-        <Group title="People" count={people.length}>
-          {people.map((p) => (
-            <button
-              key={p.id}
-              type="button"
-              className="emeta-chip emeta-chip--person"
-              onClick={() => onPerson(p.id)}
-              title={p.role ? `${p.label} — ${p.role}` : `Jump to ${p.label}`}
-            >
-              {p.label}
-            </button>
-          ))}
-        </Group>
-      )}
-
-      {terms.length > 0 && (
-        <Group title="Terms" count={terms.length}>
-          {terms.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              className="emeta-chip emeta-chip--term"
-              onClick={() => onTerm(t.id)}
-              title={`Jump to "${t.label}" in the article`}
-            >
-              {t.label}
-            </button>
-          ))}
-        </Group>
-      )}
-
-      {markets.length > 0 && (
-        <Group title="Related Markets" count={markets.length}>
-          {markets.map((mk) => (
-            <button
-              key={mk.label}
-              type="button"
-              className="emeta-chip emeta-chip--market"
-              onClick={() => fireMeta('markets', mk.label)}
-              title={mk.source ? `${mk.label} — ${mk.source}` : mk.label}
-            >
-              {mk.label}
-              {mk.source && <span className="emeta-chip-source">{mk.source}</span>}
-            </button>
-          ))}
-        </Group>
-      )}
-
-      {datasets.length > 0 && (
-        <Group title="Built with" count={datasets.length}>
-          {datasets.map((ds) => (
-            <button
-              key={ds}
-              type="button"
-              className="emeta-chip emeta-chip--dataset"
-              onClick={() => fireMeta('datasets', ds)}
-              title={`Draws on Ezana ${ds}`}
-            >
-              {ds}
-            </button>
-          ))}
-        </Group>
-      )}
-
+      {/* Built with — always shown (em-dash when the article lists no
+          datasets) so the card's 10-group set is identical on every article. */}
+      <Group title="Built with" count={datasets.length}>
+        {datasets.map((ds) => (
+          <button
+            key={ds}
+            type="button"
+            className="emeta-chip emeta-chip--dataset"
+            onClick={() => fireMeta('datasets', ds)}
+            title={`Draws on Ezana ${ds}`}
+          >
+            {ds}
+          </button>
+        ))}
+      </Group>
     </aside>
   );
 }
