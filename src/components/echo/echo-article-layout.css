@@ -89,12 +89,35 @@
   background: var(--border-secondary);
 }
 
+/* Grail articles ≥1280px carry a third sticky column, so the header band and
+   its divider stretch to match the grid's full width — the title, subheading,
+   byline, and metadata band all end at the globe rail's right edge. Below
+   1280px the rail renders inline and the base widths apply. */
+@media (min-width: 1280px) {
+  .echo-title-band--grail,
+  .echo-title-divider--grail {
+    max-width: calc(
+      var(--echo-sidebar-w) + var(--echo-gutter) + var(--echo-body-max) + var(--echo-gutter) +
+        var(--echo-grail-w, 340px)
+    );
+  }
+}
+
 /* ── Article header: full-width title block, then a full-width metadata band,
    then (below) the back/save row + divider + body grid. Title spans the canvas;
    the metadata card sits between the title and the divider, its groups flowing
    in responsive columns across the band instead of stacking in a column. */
 .echo-article-head-main {
   text-align: left;
+}
+/* ≥1025px (the widths where the contents rail renders): indent the title,
+   subheading, and byline by the rail width + gutter so their left edge sits
+   exactly on the body column's left edge, not the rail's. Below 1025px the
+   grid collapses to a single body column, so no indent is needed. */
+@media (min-width: 1025px) {
+  .echo-article-head-main {
+    padding-left: calc(var(--echo-sidebar-w) + var(--echo-gutter));
+  }
 }
 .echo-article-head-main .echo-title {
   text-align: left;
@@ -107,7 +130,8 @@
   text-align: left;
   margin-left: 0;
   margin-right: 0;
-  max-width: 70ch; /* readable measure for the subheading, still left-aligned */
+  max-width: none; /* header lines may run to the band's right edge (globe-rail
+                      right edge on grail articles at desktop) */
 }
 .echo-article-head-meta--band {
   margin-top: 1.75rem;
@@ -162,8 +186,9 @@
 
 /* ===== Zone B — Metadata sidebar (sticky, aligned under logo) ===== */
 .emeta-card {
-  position: sticky;
-  top: 1.5rem; /* aligns top edge just under the global nav / logo row */
+  /* Non-sticky by design: the card lives in the full-width header band above
+     the content rails and simply scrolls away with the header. */
+  position: static;
   padding: 1rem; /* tightened from 1.25rem — collapsed groups already shrink the card */
   align-self: start;
 }

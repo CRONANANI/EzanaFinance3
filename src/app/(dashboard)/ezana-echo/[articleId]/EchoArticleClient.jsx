@@ -2843,7 +2843,7 @@ export default function EchoArticleClient({
 
         {/* Zone A — title band, tight measure, directly under the nav.
             Full-width title block, then a full-width metadata band below it. */}
-        <header className="echo-title-band">
+        <header className={`echo-title-band${hasGrail ? ' echo-title-band--grail' : ''}`}>
           <div className="echo-article-head-main">
             <h1 className="echo-title">{article.title}</h1>
             {article.excerpt && <p className="echo-subheading">{article.excerpt}</p>}
@@ -2898,7 +2898,7 @@ export default function EchoArticleClient({
           </div>
         </header>
 
-        <div className="echo-title-divider" />
+        <div className={`echo-title-divider${hasGrail ? ' echo-title-divider--grail' : ''}`} />
 
         {/* Zones B + C — metadata sidebar | article body */}
         <div className={`echo-article-grid${hasGrail && grailWide ? ' echo-has-grail' : ''}`}>
