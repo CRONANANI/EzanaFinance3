@@ -704,3 +704,27 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Scroll reveal: figures rise and fade in the first time they enter the
+   viewport (the shared shell adds `is-revealed` via IntersectionObserver).
+   Chart internals may add their own staged draw-in keyed off the same class.
+   Scoped to the real shell root class `.echo-fig`. Fully disabled under
+   prefers-reduced-motion. */
+.echo-fig {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 0.55s ease,
+    transform 0.55s ease;
+}
+.echo-fig.is-revealed {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .echo-fig {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
