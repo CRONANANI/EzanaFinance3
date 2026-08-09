@@ -74,3 +74,20 @@ Beyond the original figure types, six branded chart types are available —
 `market-treemap` — with schemas and examples in `docs/ECHO_FIGURES_V2.md`. Every
 figure's data must be justified by the article's own text (the honesty rule
 above); never invent values to fill a chart type.
+
+## 6. Partner byline (optional)
+
+Paid content partners declare a top-level `partner` field on the article
+module:
+
+| Field     | Type               | Description                                              |
+| --------- | ------------------ | -------------------------------------------------------- |
+| `partner` | `{ name, handle }` | Content-partner byline; omit entirely for staff articles |
+
+- `name` is the partner's full name (also used for the article's `author`
+  string); `handle` (e.g. `'@stephthefounder'`) is preferred for display.
+- The curated seed folds `partner` into the existing `article_meta` JSONB — no
+  schema change, no dedicated column. The metadata card ignores it; the hub
+  feed card renders a "PARTNER · @handle" chip on the hero image.
+- Disclosure is deliberate: the chip always says "Partner" explicitly. See the
+  "Partner Bylines" section in `Ezana_Echo_Skills.md` for the full standard.

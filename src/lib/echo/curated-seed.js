@@ -123,7 +123,10 @@ function toRow(a) {
     hero_image: a.heroImage || null,
     tags: a.tags || null,
     tickers: a.tickers || null,
-    article_meta: a.meta || {},
+    // Partner byline (optional): rides inside article_meta so no schema
+    // change is needed. The metadata card reads only its fixed dimension
+    // keys, so this is inert there; the hub card mapper surfaces it.
+    article_meta: a.partner ? { ...(a.meta || {}), partner: a.partner } : a.meta || {},
     author_name: a.author || 'Ezana Finance Editorial',
     author_id: null,
     is_featured: !!a.featured,
@@ -155,7 +158,10 @@ function toContentRow(a) {
     hero_image: a.heroImage || null,
     tags: a.tags || null,
     tickers: a.tickers || null,
-    article_meta: a.meta || {},
+    // Partner byline (optional): rides inside article_meta so no schema
+    // change is needed. The metadata card reads only its fixed dimension
+    // keys, so this is inert there; the hub card mapper surfaces it.
+    article_meta: a.partner ? { ...(a.meta || {}), partner: a.partner } : a.meta || {},
     author_name: a.author || 'Ezana Finance Editorial',
     is_featured: !!a.featured,
     read_time_minutes: Number.isFinite(a.readTime) ? a.readTime : 1,

@@ -26,6 +26,31 @@ Every article is a JavaScript module exporting a single object with these requir
 | `comments`      | `number`                                | Initial comments count (0)                                                                                 |
 | `reads`         | `number`                                | Initial reads count (0)                                                                                    |
 | `listMeta`      | `string`                                | Date string for list display (e.g., `'26 Apr 2026'`)                                                       |
+| `partner`       | `{ name, handle }` _(optional)_         | Content-partner byline. Present only on partner-authored articles (see "Partner Bylines" below)            |
+
+---
+
+## Partner Bylines (content partners)
+
+Ezana Echo publishes paid content partners (per-article fee + revenue share).
+Partner articles are transparent, first-class feed citizens:
+
+- **Schema**: a partner article's module declares a top-level
+  `partner: { name: 'Full Name', handle: '@handle' }` field. `handle` is
+  preferred for display; `name` is the fallback. No other structural
+  difference from staff articles.
+- **Feed treatment**: the hub feed card renders a "PARTNER · @handle" chip
+  pinned to the TOP-LEFT of the hero image. Partner articles otherwise flow
+  in the regular feed with identical card treatment — never sectioned into a
+  separate partner-only rail while the partner roster is small.
+- **Labeling policy**: the chip always says "Partner" explicitly. Paid
+  partnerships are disclosed, never implied.
+- **Data path**: `partner` rides inside the `article_meta` JSONB (folded in
+  by the curated seed); no dedicated DB column. The metadata card ignores it.
+- **Author string**: the article's `author` field carries the partner's full
+  name (e.g. `author: 'Steph Mui'`), not the handle.
+- All other article standards (exactly 3 figures, metadata dims, globe rail,
+  tokens/typography) apply to partner articles unchanged.
 
 ---
 

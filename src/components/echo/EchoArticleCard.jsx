@@ -37,6 +37,14 @@ export function EchoArticleCard({
         tabIndex={focusable ? undefined : -1}
       >
         <div className="echo-card__img">
+          {article.partner && (
+            <span className="echo-card__partner-chip">
+              <span className="echo-card__partner-label">Partner</span>
+              <span className="echo-card__partner-handle">
+                {article.partner.handle || article.partner.name}
+              </span>
+            </span>
+          )}
           {article.heroImage?.src ? (
             <img
               src={article.heroImage.src}

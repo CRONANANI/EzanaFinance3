@@ -27,6 +27,8 @@ function mapCard(row) {
     authorAvatar: row.author_avatar || null,
     featured: !!row.is_featured,
     heroImage: row.hero_image || null,
+    // Partner byline chip data ({ name, handle }) — null for staff articles.
+    partner: row.article_meta?.partner || null,
     coverImage: row.cover_image_url || null,
     tags: row.tags || [],
     meta: row.article_meta || {},

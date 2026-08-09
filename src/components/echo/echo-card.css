@@ -37,6 +37,7 @@
   text-decoration: none;
 }
 .echo-card__img {
+  position: relative; /* anchor for the partner byline chip */
   width: 100%;
   aspect-ratio: 16 / 9;
   overflow: hidden;
@@ -54,6 +55,52 @@
   object-fit: cover;
   display: block;
   border-radius: 0; /* belt-and-braces against any inherited rounding */
+}
+
+/* Partner byline chip — top-left of the hero image on partner-authored
+   articles. Transparent paid-partnership labeling by design. Sits opposite the
+   admin archive control (top-right), so the two never collide. */
+.echo-card__partner-chip {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--bg-primary);
+  border: 1px solid var(--emerald-border);
+  pointer-events: none; /* the whole card is one link target — chip is label only */
+}
+.echo-card__partner-label {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--emerald);
+}
+.echo-card__partner-handle {
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 480px) {
+  .echo-card__partner-chip {
+    top: 8px;
+    left: 8px;
+    padding: 3px 8px;
+  }
+  .echo-card__partner-handle {
+    max-width: 110px;
+  }
 }
 .echo-card__body {
   position: relative;
