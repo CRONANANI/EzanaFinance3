@@ -728,3 +728,274 @@
     transition: none;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   Echo Figure System v2 — six new branded chart types. Each block below
+   is scoped to its own .efig-<name>- prefix; reveal animations key off
+   the shared shell's .echo-fig / .echo-fig.is-revealed classes and are
+   fully disabled under prefers-reduced-motion.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── radial-stack — inverted polar stacked bars (EchoRadialStack) --- */
+.echo-radial-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.echo-fig .efig-radial-arc {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 0.9s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.echo-fig.is-revealed .efig-radial-arc {
+  stroke-dashoffset: 0;
+}
+.efig-radial-catlabel {
+  letter-spacing: 0.02em;
+}
+.efig-radial-value {
+  letter-spacing: 0.04em;
+}
+.efig-radial-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin-top: 14px;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+}
+.efig-radial-legend-item {
+  display: inline-flex;
+  align-items: center;
+}
+.efig-radial-legend-swatch {
+  display: inline-block;
+  width: 14px;
+  height: 10px;
+  margin-right: 6px;
+  border: 1px solid var(--border-secondary);
+  vertical-align: middle;
+}
+@media (prefers-reduced-motion: reduce) {
+  .echo-fig .efig-radial-arc,
+  .echo-fig.is-revealed .efig-radial-arc {
+    stroke-dashoffset: 0;
+    transition: none;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   Variable-radius donut (block type: variable-pie) — EchoVariablePie.jsx */
+.echo-vpie-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.echo-fig .efig-vpie-slice {
+  opacity: 0;
+  transform: scale(0.72);
+  transform-box: fill-box;
+  transform-origin: 300px 232px;
+  transition:
+    opacity 0.5s ease,
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.echo-fig.is-revealed .efig-vpie-slice {
+  opacity: 1;
+  transform: scale(1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .echo-fig .efig-vpie-slice {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ── bubble-field (EchoBubbleField) ───────────────────────────── */
+.echo-bubble-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.echo-fig .efig-bubble-dot {
+  opacity: 0;
+  transform: scale(0);
+  transform-box: fill-box;
+  transform-origin: center;
+  transition:
+    opacity 0.45s ease,
+    transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.echo-fig.is-revealed .efig-bubble-dot {
+  opacity: 0.5;
+  transform: scale(1);
+}
+.echo-fig .efig-bubble-label {
+  opacity: 0;
+  transition: opacity 0.45s ease;
+}
+.echo-fig.is-revealed .efig-bubble-label {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .echo-fig .efig-bubble-dot,
+  .echo-fig.is-revealed .efig-bubble-dot {
+    opacity: 0.5;
+    transform: none;
+    transition: none;
+  }
+  .echo-fig .efig-bubble-label,
+  .echo-fig.is-revealed .efig-bubble-label {
+    opacity: 1;
+    transition: none;
+  }
+}
+
+/* EchoMultiAxis (block type `multi-axis`) ------------------------------- */
+.echo-multiaxis-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.echo-fig .efig-maxis-bar {
+  transform: scaleY(0);
+  transform-box: fill-box;
+  transform-origin: bottom;
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.echo-fig.is-revealed .efig-maxis-bar {
+  transform: scaleY(1);
+}
+.echo-fig .efig-maxis-line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 1s ease 0.15s;
+}
+.echo-fig.is-revealed .efig-maxis-line {
+  stroke-dashoffset: 0;
+}
+.echo-fig .efig-maxis-dot {
+  opacity: 0;
+  transition: opacity 0.4s ease 0.7s;
+}
+.echo-fig.is-revealed .efig-maxis-dot {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .echo-fig .efig-maxis-bar {
+    transform: scaleY(1);
+    transition: none;
+  }
+  .echo-fig .efig-maxis-line {
+    stroke-dashoffset: 0;
+    transition: none;
+  }
+  .echo-fig .efig-maxis-dot {
+    opacity: 1;
+    transition: none;
+  }
+}
+@media (max-width: 640px) {
+  .efig-maxis-axis3 {
+    display: none;
+  }
+}
+
+/* --- EchoTileGrid (block type `tile-grid`) --- */
+.echo-tilegrid-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.efig-tile-code {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  pointer-events: none;
+}
+.echo-fig .efig-tile {
+  opacity: 0;
+  transform: scale(0.6);
+  transform-box: fill-box;
+  transform-origin: center;
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.echo-fig.is-revealed .efig-tile {
+  opacity: 1;
+  transform: scale(1);
+}
+.efig-tile-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+}
+.efig-tile-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-serif);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.efig-tile-swatch {
+  width: 13px;
+  height: 13px;
+  border-radius: 3px;
+  border: 1px solid var(--border-secondary);
+  flex: 0 0 auto;
+}
+.efig-tile-legend-count {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-faint);
+}
+@media (prefers-reduced-motion: reduce) {
+  .echo-fig .efig-tile,
+  .echo-fig.is-revealed .efig-tile {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ── Market treemap (block type `market-treemap`) — EchoMarketTreemap.jsx --- */
+.echo-treemap-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.echo-fig .efig-tm-leaf {
+  opacity: 0;
+  transform: scale(0.94);
+  transform-origin: center;
+  transform-box: fill-box;
+  transition:
+    opacity 0.45s ease,
+    transform 0.45s ease;
+}
+.echo-fig.is-revealed .efig-tm-leaf {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .echo-fig .efig-tm-leaf,
+  .echo-fig.is-revealed .efig-tm-leaf {
+    opacity: 1;
+    transform: none;
+    transition: none;
+    transition-delay: 0s !important;
+  }
+}
+@media (max-width: 720px) {
+  .echo-fig-scroll > .echo-treemap-svg {
+    min-width: 760px;
+  }
+}

@@ -42,6 +42,12 @@ import { EchoClearingSankey } from '@/components/echo/figures/EchoClearingSankey
 import { EchoRevisionLedger } from '@/components/echo/figures/EchoRevisionLedger';
 import { EchoScrollySpotlight } from '@/components/echo/figures/EchoScrollySpotlight';
 import { EchoStageBoards } from '@/components/echo/figures/EchoStageBoards';
+import { EchoRadialStack } from '@/components/echo/figures/EchoRadialStack';
+import { EchoVariablePie } from '@/components/echo/figures/EchoVariablePie';
+import { EchoBubbleField } from '@/components/echo/figures/EchoBubbleField';
+import { EchoMultiAxis } from '@/components/echo/figures/EchoMultiAxis';
+import { EchoTileGrid } from '@/components/echo/figures/EchoTileGrid';
+import { EchoMarketTreemap } from '@/components/echo/figures/EchoMarketTreemap';
 import { formatPublishedDate } from '@/lib/echo-format';
 import { createArticleTracker } from '@/lib/echo-article-tracker';
 import { useAnonymousEchoTracker, trackAnonMetaClick } from '@/hooks/useAnonymousEchoTracker';
@@ -438,6 +444,18 @@ function ArticleBlock({ block }) {
       return <EchoScrollySpotlight {...block} />;
     case 'stage-boards':
       return <EchoStageBoards {...block} />;
+    case 'radial-stack':
+      return <EchoRadialStack {...block} />;
+    case 'variable-pie':
+      return <EchoVariablePie {...block} />;
+    case 'bubble-field':
+      return <EchoBubbleField {...block} />;
+    case 'multi-axis':
+      return <EchoMultiAxis {...block} />;
+    case 'tile-grid':
+      return <EchoTileGrid {...block} />;
+    case 'market-treemap':
+      return <EchoMarketTreemap {...block} />;
 
     default:
       return null;
