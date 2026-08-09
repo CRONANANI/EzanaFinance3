@@ -96,46 +96,6 @@ export const africaRefiningArticle2026 = {
       ],
     },
     {
-      type: 'revision-ledger',
-      figureLabel: "FIG. 2 · DANGOTE'S CAPACITY, MILESTONE BY MILESTONE",
-      kicker:
-        'ACHIEVED RATE THEN PLANNED EXPANSION, THOUSAND BPD · √-SCALE · MORE CAPACITY IS FAVORABLE (GREEN). CLICK A ROW FOR THE RECORD.',
-      hint: 'Bar length on a √-scale; each step adds capacity.',
-      source: 'Sources: Nairametrics, Energy News Africa, company statements (2025–2026).',
-      scale: 'sqrt',
-      unit: '',
-      rows: [
-        {
-          label: 'Nameplate → performance-tested rate',
-          sub: 'Feb → Jun 2026',
-          before: 650,
-          after: 700,
-          beforeDisplay: '650k bpd',
-          afterDisplay: '700k bpd',
-          delta: 50,
-          deltaDisplay: '+50k',
-          favorable: 'up',
-          record:
-            'The single-train line hit its full 650,000 bpd nameplate on Feb 11, 2026, then ran at roughly 700,000 bpd in June performance testing — about 8% beyond design.',
-        },
-        {
-          label: 'Current rate → planned expansion',
-          sub: 'announced Oct 2025',
-          before: 700,
-          after: 1400,
-          beforeDisplay: '700k bpd',
-          afterDisplay: '1.40M bpd',
-          delta: 700,
-          deltaDisplay: '+700k',
-          favorable: 'up',
-          record:
-            'The October 2025 plan targets 1.4 million bpd — which would make the Lekki plant the largest single-site refining capacity in the world.',
-        },
-      ],
-      verdict:
-        "At 1.4 million bpd, Dangote would pass India's Jamnagar complex (~1,360k bpd), today's single-site world record — moving the title from Gujarat to Lagos.",
-    },
-    {
       type: 'paragraph',
       text: "The macro prize is bigger than fuel logistics. Nigeria historically imported more than 80% of its refined products despite being one of the world's larger crude producers, spending scarce hard currency on gasoline and diesel it could have made at home. Analysts estimate that domestic refining could save Nigeria up to $10 billion a year in [[kw:foreign-exchange-reserves]]foreign-exchange reserves[[/kw]], easing chronic pressure on the naira and narrowing a trade balance long distorted by fuel imports. Replacing imported product with domestic output is a structural change to the country's external accounts, not a one-off saving.",
     },
@@ -157,135 +117,29 @@ export const africaRefiningArticle2026 = {
       text: "Dangote dominates, but it does not stand alone. Algeria's Sonatrach-operated Skikda refinery is the continent's number two at roughly 350,000 bpd, and Libya's Ras Lanuf ranks third at around 220,000 bpd. North Africa's plants were built to feed export markets across the Mediterranean, so their output moves largely Europe-ward — a different orientation from West Africa's new domestic pivot. Their crude slates are priced off global [[kw:crude-oil-benchmark]]crude-oil benchmarks[[/kw]] like Brent and Nigeria's own Bonny Light, which set the reference for African barrels sold into world markets.",
     },
     {
-      type: 'dossier-table',
-      figureLabel: "FIG. 3 · AFRICA'S LARGEST REFINERIES",
+      type: 'tile-grid',
+      figureLabel: "FIG. 2 · AFRICA'S LARGEST REFINERIES",
       kicker:
-        'REFINERY · ROLE ON THE CONTINENTAL MAP · NAMEPLATE CAPACITY · KEY RISK — CLICK A ROW FOR THE FULL DOSSIER.',
-      hint: 'Nine live dossiers — expand a row for the record.',
+        'NAMEPLATE REFINING CAPACITY, 000 BPD · ONE TILE PER FACILITY, PLACED ROUGHLY BY REGION · SHADED BY CAPACITY CLASS.',
+      hint: 'Each tile is a refinery; colour is its capacity band, placement is geographic.',
       source:
         'Nameplate refining capacity for leading African facilities. South Africa shown as combined Sasol/Secunda output. Sources: Energy News Africa, Nairametrics, Africap Research (2026); nameplate figures, not achieved output.',
-      headers: ['Refinery', 'Role on the continental map', 'Nameplate', 'Key risk', ''],
-      rows: [
-        {
-          name: 'Dangote (Nigeria)',
-          tag: 'INFLECTION',
-          role: 'The facility that reset the map — the first single-train refinery anywhere to run at 650,000 bpd.',
-          anchor: '650,000 bpd nameplate.',
-          keyRisk:
-            'Single-train fragility — an unplanned outage takes the entire plant offline rather than a fraction of it.',
-          dossier: [
-            {
-              label: 'Design',
-              text: 'One continuous, integrated processing line — cheaper per barrel but harder to engineer, which is why nothing else on the planet had reached 650,000 bpd on a single line.',
-            },
-          ],
-        },
-        {
-          name: 'Skikda (Algeria)',
-          tag: 'NORTH AFRICA',
-          role: "The continent's number two, operated by Sonatrach and built to feed export markets across the Mediterranean.",
-          anchor: '~350,000 bpd.',
-          keyRisk: "Output oriented Europe-ward, not toward West Africa's new domestic pivot.",
-          dossier: [
-            {
-              label: 'Orientation',
-              text: "North Africa's plants move their product largely Europe-ward — a different orientation from West Africa's domestic pivot.",
-            },
-          ],
-        },
-        {
-          name: 'Sasol/Secunda (S. Africa)',
-          tag: 'COAL-TO-LIQUIDS',
-          role: "The world's largest commercial coal-to-liquids operation, synthesizing fuel from coal rather than crude.",
-          anchor: '~300,000 bpd (combined).',
-          keyRisk: 'An unusual, carbon-heavy fuel mix found almost nowhere else at scale.',
-          dossier: [
-            {
-              label: 'Legacy',
-              text: 'A legacy of the apartheid-era sanctions that forced domestic fuel production.',
-            },
-          ],
-        },
-        {
-          name: 'Ras Lanuf (Libya)',
-          tag: 'NORTH AFRICA',
-          role: 'Ranks third on the continent; built, like Skikda, to feed export markets.',
-          anchor: '~220,000 bpd.',
-          keyRisk: 'Export-oriented output priced off global crude benchmarks.',
-          dossier: [
-            {
-              label: 'Pricing',
-              text: "Crude slates priced off benchmarks like Brent and Nigeria's own Bonny Light.",
-            },
-          ],
-        },
-        {
-          name: 'Port Harcourt (Nigeria)',
-          tag: 'STATE-OWNED',
-          role: 'A state-owned Nigerian plant that has for years run far below nameplate — and often not at all.',
-          anchor: '210,000 bpd nameplate.',
-          keyRisk:
-            'The nameplate-versus-output gap: aging infrastructure, deferred maintenance, and slipping turnarounds.',
-          dossier: [
-            {
-              label: 'Reality',
-              text: 'For much of the past decade the state plants contributed a small fraction of their capacity in real barrels — precisely why Nigeria kept importing more than 80% of its fuel.',
-            },
-          ],
-        },
-        {
-          name: 'Mostorod (Egypt)',
-          tag: 'EGYPT',
-          role: "Part of Egypt's dense cluster of mid-sized plants; recently the target of a $4.3 billion upgrade.",
-          anchor: '161,000 bpd.',
-          keyRisk: "Spread-out capacity — the opposite model to Dangote's single-mega-plant bet.",
-          dossier: [
-            {
-              label: 'Hub role',
-              text: "Egypt is the continent's most refinery-dense country by facility count, a processing hub for domestic demand and regional exports.",
-            },
-          ],
-        },
-        {
-          name: 'MIDOR (Egypt)',
-          tag: 'EGYPT',
-          role: 'One of the mid-sized Egyptian plants that together make the country a regional processing hub.',
-          anchor: '160,000 bpd.',
-          keyRisk: 'Serves both domestic demand and regional refined-product exports.',
-          dossier: [
-            {
-              label: 'Cluster',
-              text: "Part of Egypt's multi-site refining model, the opposite of a single mega-plant.",
-            },
-          ],
-        },
-        {
-          name: 'El Nasr (Egypt)',
-          tag: 'EGYPT',
-          role: "The third of Egypt's clustered mid-sized refineries.",
-          anchor: '131,000 bpd.',
-          keyRisk: 'Small individual scale; the strength is in the cluster, not the single site.',
-          dossier: [
-            {
-              label: 'Cluster',
-              text: 'Together the Egyptian plants make the country the most refinery-dense on the continent by facility count.',
-            },
-          ],
-        },
-        {
-          name: 'Kaduna (Nigeria)',
-          tag: 'STATE-OWNED',
-          role: 'A state-owned Nigerian refinery long run well below its nameplate rate.',
-          anchor: '110,000 bpd nameplate.',
-          keyRisk:
-            'Rehabilitation-dependent — designed capacity waiting on turnarounds that may take years.',
-          dossier: [
-            {
-              label: 'Context',
-              text: 'Nigeria shows roughly 1.1 million bpd of capacity across its four refineries, much of it aspirational until the state plants are rehabilitated.',
-            },
-          ],
-        },
+      classes: [
+        { upTo: 150, label: '≤ 150k bpd' },
+        { upTo: 250, label: '151–250k bpd' },
+        { upTo: 400, label: '251–400k bpd' },
+        { upTo: 700, label: '400k+ bpd' },
+      ],
+      tiles: [
+        { code: 'DZ', label: 'Skikda (Algeria)', x: 1, y: 0, value: 350 },
+        { code: 'LY', label: 'Ras Lanuf (Libya)', x: 2, y: 0, value: 220 },
+        { code: 'EG1', label: 'Mostorod (Egypt)', x: 4, y: 0, value: 161 },
+        { code: 'EG2', label: 'MIDOR (Egypt)', x: 5, y: 0, value: 160 },
+        { code: 'EG3', label: 'El Nasr (Egypt)', x: 5, y: 1, value: 131 },
+        { code: 'NG3', label: 'Kaduna (Nigeria)', x: 1, y: 2, value: 110 },
+        { code: 'NG1', label: 'Dangote (Nigeria)', x: 1, y: 3, value: 650 },
+        { code: 'NG2', label: 'Port Harcourt (Nigeria)', x: 2, y: 3, value: 210 },
+        { code: 'ZA', label: 'Sasol/Secunda (S. Africa)', x: 2, y: 5, value: 300 },
       ],
     },
     {
@@ -323,7 +177,7 @@ export const africaRefiningArticle2026 = {
     },
     {
       type: 'adjudication-matrix',
-      figureLabel: 'FIG. 4 · WHO THE SURPLUS PULLS',
+      figureLabel: 'FIG. 3 · WHO THE SURPLUS PULLS',
       kicker:
         'EACH REGION × DANGOTE DOWNSTREAM EFFECT · SAME = ALREADY MATERIALIZING · PART = EMERGING OR PROPOSED · — = NOT IN PLAY. CLICK ANY CELL FOR THE NOTE.',
       hint: 'Click any cell for the note.',
@@ -442,69 +296,6 @@ export const africaRefiningArticle2026 = {
     {
       type: 'paragraph',
       text: "The base case is that Dangote reaches its 1.4 million bpd expansion, anchors a genuine African refining corridor, and Nigeria's fuel-import bill keeps falling toward that $10-billion-a-year saving. The bear case is that aging state plants stay offline, policy and pricing misalignments cap utilization, and the continental total settles well below the 3.5-million-barrel headline as paper capacity fails to convert to throughput. Either way, tracking it is a cross-dataset problem — crude flows, FX, and frontier-market equity exposure moving together — the kind of story Ezana's commodity and global datasets are built to follow as it develops.",
-    },
-    {
-      type: 'scenario-chain',
-      figureLabel: 'FIG. 5 · HOW TO TRADE AN UNTRADEABLE STORY',
-      kicker:
-        'THREE PATHS FOR THE BUILDOUT · DRIVER × DRIVER → OUTCOME · ONE KILL SWITCH. THE MARQUEE ASSET IS PRIVATE.',
-      hint: 'The kill switch is what settles the thesis, not a prediction.',
-      source: "this article's base/bear framing · Energy News Africa, S&P Global (2026).",
-      scenarios: [
-        {
-          id: 'base',
-          label: 'BASE CASE',
-          tone: 'base',
-          range: 'Expansion delivers',
-          steps: [
-            { label: 'Expansion to 1.4M bpd', sub: 'the October 2025 target is reached' },
-            { label: 'FX bill keeps falling', sub: 'toward the ~$10B/yr saving' },
-          ],
-          result: {
-            value: 'African refining corridor anchored',
-            sub: "Nigeria's fuel-import bill structurally lower",
-          },
-        },
-        {
-          id: 'alt',
-          label: 'REGIONAL PULL',
-          tone: 'alt',
-          range: 'Corridor widens',
-          steps: [
-            {
-              label: 'Supply contracts land',
-              sub: "South Africa's 12-month deal; Ghana and Kenya buy in",
-            },
-            {
-              label: 'Second refinery for East Africa',
-              sub: 'a proposed second 650,000 bpd plant',
-            },
-          ],
-          result: {
-            value: 'Intra-Africa product trade replaces imports',
-            sub: 'crude flows redirect away from Rotterdam and Jamnagar',
-          },
-        },
-        {
-          id: 'bear',
-          label: 'PAPER CAPACITY',
-          tone: 'bear',
-          range: 'Throughput disappoints',
-          steps: [
-            { label: 'State plants stay offline', sub: 'Port Harcourt and Kaduna unrehabilitated' },
-            {
-              label: 'Policy and pricing cap utilization',
-              sub: 'crude-supply pricing, FX access, naira terms unresolved',
-            },
-          ],
-          result: {
-            value: 'Continental total below 3.5M bpd',
-            sub: 'nameplate fails to convert to barrels',
-          },
-        },
-      ],
-      killSwitch:
-        'THE MARQUEE ASSET IS PRIVATE — THERE IS NO PURE-PLAY TICKER; THE ONLY NUMBER THAT SETTLES THE THESIS IS THROUGHPUT, NOT NAMEPLATE.',
     },
   ],
   globeRail: {
