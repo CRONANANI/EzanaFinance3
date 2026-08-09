@@ -1074,6 +1074,15 @@ body.route-echo-article .echo-article-page {
   background: #ffffff;
 }
 
+/* The dashboard shell pads <main> by navbar-height + 1.5rem to clear an
+   overlaying navbar — but the Echo article navbar is position:sticky (in
+   flow, occupies its own height), so on article pages that offset is pure
+   dead space stacked below the nav. Route-scoped override: 2rem here plus
+   the band's 1.25rem top padding ≈ half the previous nav-to-title gap. */
+body.route-echo-article .dashboard-main.dashboard-main-content {
+  padding-top: 2rem;
+}
+
 /* Outer page padding â€” generous gutter on desktop, tighter on mobile */
 .echo-article-page .echo-article-page-inset {
   max-width: 960px;
