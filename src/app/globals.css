@@ -727,6 +727,11 @@ body.light-mode {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
+  /* Fixed width, not just max-width: the swapped-in title is absolutely
+     positioned inside this box and contributes no width of its own, so
+     without this the box shrinks to the wordmark's ~90px and the headline
+     ellipsizes down to a single word. */
+  width: min(44vw, 560px);
   max-width: min(44vw, 560px);
   display: flex;
   align-items: center;

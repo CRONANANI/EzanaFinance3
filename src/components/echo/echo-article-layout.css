@@ -29,7 +29,7 @@
      indented title) then lands flush with the contents rail / body columns. */
   max-width: calc(var(--echo-sidebar-w) + var(--echo-gutter) + var(--echo-body-max) + 2rem);
   margin: 0 auto;
-  padding: 2.5rem 1rem 0; /* sits high, tight to the nav */
+  padding: 1.25rem 1rem 0; /* hugs the nav — title sits right beneath it */
   text-align: left;
 }
 
@@ -47,7 +47,9 @@
   font-family: var(--font-sans);
   font-size: clamp(0.95rem, 1.4vw, 1.15rem);
   line-height: 1.55;
-  color: var(--text-muted);
+  /* Ezana green — owner-approved editorial exception to the
+     interaction-states-only emerald rule. */
+  color: var(--emerald);
   margin: 0 0 0.9rem; /* byline hugs the subheading — one cohesive header unit */
 }
 
@@ -119,19 +121,21 @@
 .echo-article-head-main {
   text-align: left;
 }
+/* Centered editorial header: title, subheading, and byline center as one
+   unit across the full band width (to the globe rail's right edge on grail
+   articles at desktop). */
 .echo-article-head-main .echo-title {
-  text-align: left;
+  text-align: center;
   margin-left: 0;
   margin-right: 0;
   max-width: none; /* title spans the full canvas width */
 }
 .echo-article-head-main .echo-subheading,
 .echo-article-head-main .echo-byline {
-  text-align: left;
+  text-align: center;
   margin-left: 0;
   margin-right: 0;
-  max-width: none; /* header lines may run to the band's right edge (globe-rail
-                      right edge on grail articles at desktop) */
+  max-width: none;
 }
 /* Metadata card in the left header cell: fills the contents-rail width
    (260px at desktop; full body width when the row stacks on mobile). Groups

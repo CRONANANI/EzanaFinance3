@@ -415,7 +415,16 @@ export function Navbar() {
         if (tries < 120) raf = window.requestAnimationFrame(attach);
         return;
       }
-      setEchoNavTitle(h1.textContent || '');
+      const raw = (h1.textContent || '').trim();
+      // Shortened nav headline: Echo titles are usually "Kicker: elaboration",
+      // so prefer the pre-colon kicker when it's substantial; otherwise trim
+      // to ~52 chars at a word boundary with an ellipsis.
+      const kicker = raw.split(':')[0].trim();
+      let short = kicker.length >= 12 ? kicker : raw;
+      if (short.length > 52) {
+        short = `${short.slice(0, 52).replace(/\s+\S*$/, '')}…`;
+      }
+      setEchoNavTitle(short);
       observer = new IntersectionObserver(
         ([entry]) => setEchoTitleInNav(!entry.isIntersecting && entry.boundingClientRect.top < 0),
         { rootMargin: '-64px 0px 0px 0px' },
