@@ -208,7 +208,7 @@ export const semiconductorArticle = {
     },
     {
       type: 'wall-timeline',
-      figureLabel: 'FIG. 2',
+      figureLabel: 'FIG. 1',
       kicker: 'HOW TAIWAN BUILT A MONOPOLY ON PURPOSE · 1973–2025',
       hint: 'A deliberate, decades-long climb from licensed process tech to the leading edge.',
       source: 'TrendForce, Counterpoint Research estimates',
@@ -298,7 +298,7 @@ export const semiconductorArticle = {
     },
     {
       type: 'adjudication-matrix',
-      figureLabel: 'FIG. 3',
+      figureLabel: 'FIG. 2',
       kicker: 'SAME = ON THE LEADING EDGE · PART = PARTIAL · — = BEHIND · TAP FOR DETAIL',
       hint: 'Two reshoring programs, four dimensions — Washington and Beijing from opposite directions.',
       source: 'CHIPS and Science Act (2022); Chinese chip self-sufficiency proposal (March 2026).',
@@ -370,7 +370,7 @@ export const semiconductorArticle = {
     },
     {
       type: 'scenario-chain',
-      figureLabel: 'FIG. 5',
+      figureLabel: 'FIG. 3',
       kicker: 'THE SILICON-SHIELD THESIS · THREE OUTCOMES',
       hint: 'Does the chokepoint deter, diffuse, or detonate over the next cycle?',
       source: 'McKinsey; Foreign Affairs (2021); company filings (2026).',

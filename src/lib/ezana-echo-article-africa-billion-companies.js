@@ -46,7 +46,7 @@ export const africaBillionCompaniesArticle = {
     },
     {
       type: 'dossier-table',
-      figureLabel: 'FIG. 2',
+      figureLabel: 'FIG. 1',
       kicker: 'TOP-10 BY $1B+ COMPANY COUNT · TAP A ROW',
       hint: 'The country dossiers behind the headline count — what drives each base, and the risk in it.',
       source: 'McKinsey Global Institute / African Development Bank estimates.',
@@ -177,64 +177,6 @@ export const africaBillionCompaniesArticle = {
       type: 'paragraph',
       text: "The rest of Western Africa is thinly represented: Ghana (2), Côte d'Ivoire (2), Senegal (3), Cameroon (2), and Togo, Liberia, Gabon, and Burkina Faso with 1 each. Most of these are either extractive (gold, cocoa, oil) or telecom operators (Orange, MTN subsidiaries). The gap between Nigeria and the rest of the region highlights a structural challenge: outside of Nigeria and, to a lesser extent, Ghana, West African economies lack the depth of domestic markets and capital infrastructure to grow companies to billion-dollar scale organically. Many of the region's largest employers are subsidiaries of foreign multinationals — 54 of the continent's $1B+ revenue companies have no local headquarters.",
     },
-    {
-      type: 'adjudication-matrix',
-      figureLabel: 'FIG. 3',
-      kicker: 'SAME = TRAIT STRONG · PART = PARTIAL · — = LARGELY ABSENT · TAP FOR COUNTS',
-      hint: 'Do the three markers of corporate maturity hold across each region? Counts sit in every cell.',
-      source: 'McKinsey Global Institute / African Development Bank estimates.',
-      cols: ['Corporate depth', 'Sector diversification', 'Capital-markets readiness'],
-      rows: [
-        {
-          label: 'Southern',
-          cells: [
-            { value: 'same', note: '160 companies; South Africa 147' },
-            { value: 'part', note: 'South Africa diversified; the rest extractive-heavy' },
-            { value: 'same', note: 'JSE infrastructure dates to 1887' },
-          ],
-        },
-        {
-          label: 'Northern',
-          cells: [
-            { value: 'part', note: '73; Egypt 33, Morocco 20' },
-            { value: 'same', note: 'Financial services, real estate, telecom, construction' },
-            { value: 'same', note: 'EGX among the oldest and most liquid exchanges' },
-          ],
-        },
-        {
-          label: 'Western',
-          cells: [
-            { value: 'part', note: '35; Nigeria 23' },
-            { value: 'part', note: 'Nigeria broad; the rest thinly represented' },
-            { value: 'part', note: 'Capital infrastructure lacking outside Nigeria and Ghana' },
-          ],
-        },
-        {
-          label: 'Eastern',
-          cells: [
-            { value: 'part', note: '16; Kenya 6, Ethiopia 4' },
-            { value: 'part', note: 'Kenya diversified; Ethiopia largely state-owned' },
-            { value: 'part', note: 'Nairobi exchange is the regional gateway' },
-          ],
-        },
-        {
-          label: 'Central',
-          cells: [
-            { value: 'none', note: '7 — the least penetrated region' },
-            { value: 'none', note: 'Extractive-dominated' },
-            { value: 'none', note: 'No developed capital markets' },
-          ],
-        },
-        {
-          label: 'Foreign-HQ (no domicile)',
-          cells: [
-            { value: 'same', note: '54 firms generating $1B+ from African operations' },
-            { value: 'none', note: 'Global operations, not African-domiciled' },
-            { value: 'none', note: 'Value booked in London, Paris, Zurich, The Hague' },
-          ],
-        },
-      ],
-    },
     { type: 'heading', text: 'Eastern Africa: the fastest-growing frontier', level: 2 },
     {
       type: 'paragraph',
@@ -267,7 +209,7 @@ export const africaBillionCompaniesArticle = {
     },
     {
       type: 'clearing-sankey',
-      figureLabel: 'FIG. 4',
+      figureLabel: 'FIG. 2',
       kicker: 'THE 345 SPLIT BY SECTOR · RIBBON WIDTH ∝ COMPANIES',
       hint: 'Financial services and telecom together (117) outweigh extractives (68).',
       source: 'Estimates based on JSE, EGX, and NSE listed company profiles.',
@@ -311,7 +253,7 @@ export const africaBillionCompaniesArticle = {
     },
     {
       type: 'scenario-chain',
-      figureLabel: 'FIG. 5',
+      figureLabel: 'FIG. 3',
       kicker: '345 IS A FLOOR, NOT A CEILING · TWO PATHS',
       hint: 'The closing thesis mapped — the structural pillars against the structural risks.',
       source: 'McKinsey Global Institute, Lions on the Move III, 2025.',
