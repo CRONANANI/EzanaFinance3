@@ -201,70 +201,6 @@ export const privateCreditMaturityWallArticle2026 = {
       text: 'Amend-and-extend is a legitimate liability-management tool, but it is also a way to defer recognition of a problem. Each extension assumes the borrower will be healthier, or rates lower, when the new maturity arrives. For strong credits that holds; for marginal ones, repeated extensions quietly convert a refinancing question into a solvency question. The private credit market’s comfort with the 2028-2029 wall rests on an implicit bet that base rates will be materially lower and earnings materially higher by then — a bet that looks reasonable today and would look reckless if either leg fails.',
     },
     {
-      type: 'wall-timeline',
-      figureLabel: 'FIG. 2',
-      kicker: 'THE EXTENSION GAME · 2024–2029 (2026 EVENTS SHOWN BY MONTH)',
-      hint: 'How amend-and-extend relocated the maturities forward into the 2028–29 window.',
-      source: "Reuters, S&P Global, Fitch, Moody's, Ocorian (2024–2026).",
-      startYear: 2024,
-      endYear: 2029,
-      windows: [
-        {
-          id: 'ae',
-          label: 'Amend-and-extend era',
-          from: 2024,
-          to: 2026,
-          color: 'var(--echo-chart-orange)',
-        },
-        {
-          id: 'wall',
-          label: 'The maturity wall',
-          from: 2028,
-          to: 2029,
-          color: 'var(--echo-chart-red)',
-        },
-      ],
-      plaques: [
-        {
-          year: 2024.6,
-          lane: 0,
-          label: 'Aug 2024 · S&P flags extensions',
-          detail: 'S&P notes BDCs extending private credit maturities as financing eases.',
-        },
-        {
-          year: 2025,
-          lane: 2,
-          label: '2024–25 · Repricing wave',
-          detail:
-            'Repricings and refinancings make up 75–85% of leveraged-loan issuance, thinning the near-term schedule.',
-        },
-        {
-          year: 2026.04,
-          lane: 1,
-          label: 'Jan 2026 · Fitch review',
-          detail: '‘B-’ or below is ~68% of 2028 US leveraged-loan maturities and ~60% of 2029.',
-        },
-        {
-          year: 2026.12,
-          lane: 3,
-          label: 'Feb 2026 · S&P dollar figure',
-          detail: '‘B-’ and lower maturities peak near $215B in 2028, up from ~$57B in 2026.',
-        },
-        {
-          year: 2026.29,
-          lane: 4,
-          label: 'Apr 2026 · Moody’s warning',
-          detail: 'Moody’s cuts its outlook on the ~$400B BDC sector and flags the 2028 wall.',
-        },
-        {
-          year: 2026.37,
-          lane: 5,
-          label: 'May 2026 · Reuters analysis',
-          detail: 'Only ~$15B of ~$84B across 74 BDCs matures in 2026; the peak sits in 2028–29.',
-        },
-      ],
-    },
-    {
       type: 'callout',
       label: 'Private credit dry powder',
       value: '$500B+',
@@ -363,7 +299,7 @@ export const privateCreditMaturityWallArticle2026 = {
     },
     {
       type: 'dossier-table',
-      figureLabel: 'FIG. 4',
+      figureLabel: 'FIG. 2',
       kicker: 'THE LISTED-BDC LANDSCAPE · TAP A ROW',
       hint: 'The liquid ways to own the wall — and where each one carries its risk.',
       source: 'Ezana Finance Editorial.',
@@ -439,7 +375,7 @@ export const privateCreditMaturityWallArticle2026 = {
     },
     {
       type: 'scenario-chain',
-      figureLabel: 'FIG. 5',
+      figureLabel: 'FIG. 3',
       kicker: 'THE SOFTWARE COHORT · ORDERLY VS DISORDERLY',
       hint: 'The 2028–29 wall’s heaviest, thinnest-rated collateral — three ways it resolves.',
       source: 'Morningstar/PitchBook; Morgan Stanley; Reuters; analyst estimates (2026).',

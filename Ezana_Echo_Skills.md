@@ -79,8 +79,8 @@ Articles use `contentBlocks` — an array of typed blocks that the `EchoArticleC
 }
 ```
 
-- **Frequency**: 2–4 charts per article. Charts are the primary visual element.
-- **Variants**: `line` for time series, `bar` for comparison, `horizontal-bar` for ranked lists.
+- **Frequency**: exactly 3 figures per article — keeps chart variety novel across the catalog. (Peter Thiel's article is the one exception and keeps its 4 figures.)
+- **Variants**: `line` for time series, `bar` for comparison, `horizontal-bar` for ranked lists. Six additional branded figure types are available — `radial-stack`, `variable-pie`, `bubble-field`, `multi-axis`, `tile-grid`, `market-treemap` — documented with schemas in `docs/ECHO_FIGURES_V2.md`.
 - **Colors**: Use CSS variables: `var(--echo-chart-red)`, `var(--echo-chart-orange)`, `var(--echo-chart-green)`, `var(--echo-chart-blue)`, `var(--echo-chart-purple)`. Fallback hex values in the variable definition.
 - **Captions**: Always include source attribution and date range.
 
@@ -143,7 +143,7 @@ Articles use `contentBlocks` — an array of typed blocks that the `EchoArticleC
 ## 4. VISUAL REQUIREMENTS
 
 - **Hero image**: Every article must have a hero image with `src`, `alt`, and `caption`.
-- **Charts**: Minimum 2 charts per article. At least one should be a time-series line chart showing the data narrative visually.
+- **Charts**: Exactly 3 figures per article. At least one (usually FIG. 1) should be a time-series showing the data narrative visually.
 - **Stat grid**: Exactly one, placed after the opening paragraph.
 - **Callouts**: 1–2 for standout metrics that deserve visual emphasis.
 - **No external embeds**: All visuals are rendered inline by the Echo renderer using SVG/Recharts. No iframes, no external images in the body.
@@ -274,7 +274,7 @@ Before publishing an article, verify:
 - [ ] Hero image has alt text and caption
 - [ ] Stat grid has 3–5 metrics with context
 - [ ] 5–8 sections with h2 headings
-- [ ] 2–4 charts with titles, captions, and source attribution
+- [ ] Exactly 3 figures with titles, captions, and source attribution
 - [ ] Every paragraph has at least one data point
 - [ ] Tickers array has 5–10 relevant symbols
 - [ ] Read time is calculated (words ÷ 230)

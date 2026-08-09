@@ -166,79 +166,6 @@ export const trumpPortfolio2026 = {
         "Executive-branch disclosures report value brackets and dates, not share counts. Any allocation percentage attributed to Trump's portfolio is a reconstruction — treat clean round-number weights with skepticism.",
     },
     {
-      type: 'wall-timeline',
-      figureLabel: 'FIG. 2 · THE DISCLOSURE CLOCK',
-      kicker:
-        'Q1 2026 DISCLOSURE CHRONOLOGY · LATE 2025 – JUN 2026 · FRACTIONAL-YEAR MARKERS. CLICK ANY PLAQUE FOR THE RECORD.',
-      hint: 'Click a plaque for its record.',
-      source: 'OGE Form 278-T coverage: CBS News, NBC News, Benzinga (2026).',
-      startYear: 2025,
-      endYear: 2027,
-      windows: [
-        {
-          id: 'q1',
-          label: 'Q1 2026 disclosure window',
-          from: 2026.02,
-          to: 2026.24,
-          color: 'var(--echo-chart-blue)',
-        },
-      ],
-      plaques: [
-        {
-          year: 2025.9,
-          lane: 0,
-          label: 'Late 2025',
-          detail: 'The federal government moves to take a roughly 10% equity stake in Intel.',
-        },
-        {
-          year: 2026.02,
-          lane: 1,
-          label: 'Jan 6, 2026',
-          detail: 'The Q1 disclosure window opens; transactions run January 6 through March 30.',
-        },
-        {
-          year: 2026.11,
-          lane: 2,
-          label: 'Feb 10, 2026',
-          detail:
-            'A new Dell position is established — weeks before Trump publicly praises Dell hardware.',
-        },
-        {
-          year: 2026.18,
-          lane: 3,
-          label: 'Early Mar 2026',
-          detail: 'Intel purchases ramp, following the late-2025 federal stake in the chipmaker.',
-        },
-        {
-          year: 2026.24,
-          lane: 4,
-          label: 'Late Mar 2026',
-          detail:
-            'The S&P 500 bottoms after falling more than 8%, then rallies roughly 19%; more than half the quarter’s transactions land in March.',
-        },
-        {
-          year: 2026.34,
-          lane: 5,
-          label: 'Early May 2026',
-          detail: 'Trump praises Dell hardware at a White House event.',
-        },
-        {
-          year: 2026.37,
-          lane: 0,
-          label: 'May 14, 2026',
-          detail:
-            'The OGE releases the two Form 278-T reports: 3,642 transactions worth $220M–$750M across 1,026 firms.',
-        },
-        {
-          year: 2026.45,
-          lane: 1,
-          label: 'Mid-Jun 2026',
-          detail:
-            'Reconstructions show several disclosed names — AMD, Intel, Marvell, Seagate — up triple digits from the disclosed buy windows.',
-        },
-      ],
-    },
-    {
       type: 'heading',
       text: 'The AI-chip rotation',
       level: 2,
@@ -249,7 +176,7 @@ export const trumpPortfolio2026 = {
     },
     {
       type: 'dossier-table',
-      figureLabel: 'FIG. 3 · THE SEVEN MOST-TRADED NAMES',
+      figureLabel: 'FIG. 2 · THE SEVEN MOST-TRADED NAMES',
       kicker:
         'NAME · WHAT IT IS IN THE FILING · SHARE OF DISCLOSED TRANSACTIONS · KEY CAVEAT — CLICK A ROW FOR THE DOSSIER.',
       hint: 'Shares of the shown set, not portfolio weights — expand a row for the record.',
@@ -367,7 +294,7 @@ export const trumpPortfolio2026 = {
     },
     {
       type: 'adjudication-matrix',
-      figureLabel: 'FIG. 4 · THE APPEARANCE, GRADED',
+      figureLabel: 'FIG. 3 · THE APPEARANCE, GRADED',
       kicker:
         'FOUR POLICY-ADJACENT NAMES × THE ELEMENTS THAT CREATE THE APPEARANCE · SAME = ELEMENT PRESENT · PART = PRESENT WITH AN ASTERISK · — = ABSENT. NONE OF THIS IS ILLEGAL. CLICK ANY CELL FOR THE NOTE.',
       hint: 'Click any cell for the note. Sitting presidents are exempt from the recusal statute.',
@@ -485,77 +412,6 @@ export const trumpPortfolio2026 = {
     {
       type: 'paragraph',
       text: "The base case is that political-disclosure data continues to grow as a retail research input, especially with bipartisan stock-trading-ban proposals like the Restore Trust in Congress Act and the ETHICS Act advancing through committee — legislation that, if passed, would reshape this entire dataset. The bear case for treating these filings as alpha is sobering: the lag, the coarse bands, and the survivorship bias of only seeing the trades after they worked all erode any naive copy strategy. The durable value is analytical, not imitative — and that is the lens Ezana's tooling is designed to enforce. Track the patterns on the platform's political-intelligence feed, stress-test them in the quant workbench, and let the data, rather than the name attached to it, drive the decision.",
-    },
-    {
-      type: 'scenario-chain',
-      figureLabel: 'FIG. 5 · HOW TO FRAME THE TRADE',
-      kicker: 'THREE WAYS TO USE THE FILING · DRIVER × DRIVER → OUTCOME · ONE KILL SWITCH.',
-      hint: 'The kill switch changes the dataset itself, not just the trade.',
-      source: "this article's base/bear framing · OGE Form 278-T coverage (2026).",
-      scenarios: [
-        {
-          id: 'base',
-          label: 'BASE CASE',
-          tone: 'base',
-          range: 'Disclosure data matures',
-          steps: [
-            {
-              label: 'Filings become a research input',
-              sub: 'aggregated across officials, tagged by sector',
-            },
-            {
-              label: 'Trading-ban bills advance',
-              sub: 'Restore Trust in Congress Act · ETHICS Act',
-            },
-          ],
-          result: {
-            value: 'Pattern recognition, not imitation',
-            sub: 'recurrence across filers as the durable signal',
-          },
-        },
-        {
-          id: 'alt',
-          label: 'THE THEME TRADE',
-          tone: 'alt',
-          range: 'Screen the baskets',
-          steps: [
-            {
-              label: 'Map clusters to baskets',
-              sub: 'AI chips · software & cloud · policy-linked hardware',
-            },
-            {
-              label: 'Backtest the entry window',
-              sub: 'net of transaction costs and the disclosure lag',
-            },
-          ],
-          result: {
-            value: 'A tested theme, not a chased headline',
-            sub: 'disclosure as one input in a multi-factor screen',
-          },
-        },
-        {
-          id: 'bear',
-          label: 'NAIVE COPY FAILS',
-          tone: 'bear',
-          range: 'The lag wins',
-          steps: [
-            {
-              label: '~5-day catalyst vs up-to-45-day lag',
-              sub: 'the move is priced before the filing is searchable',
-            },
-            {
-              label: 'Coarse bands + survivorship bias',
-              sub: 'only the winning trades are visible after the fact',
-            },
-          ],
-          result: {
-            value: 'Copied trades arrive post-rally',
-            sub: 'no edge in a six-week-old trade at current prices',
-          },
-        },
-      ],
-      killSwitch:
-        'IF A STOCK-TRADING BAN PASSES (RESTORE TRUST IN CONGRESS / ETHICS ACT), THE DATASET ITSELF CHANGES — RE-UNDERWRITE THE ENTIRE APPROACH.',
     },
   ],
 };

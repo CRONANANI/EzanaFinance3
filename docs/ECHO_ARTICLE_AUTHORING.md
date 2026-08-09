@@ -60,3 +60,17 @@ dimension:
 This appears in Vercel logs on every seed pass. A warning for a NEW article is a
 defect — fix the article module (add the text-justified value, or a justifying
 comment for a defensible empty).
+
+## 5. Figure standard — exactly 3 figures
+
+Every Echo article carries **exactly 3 figures** (blocks with `figureLabel`,
+numbered `FIG. 1`, `FIG. 2`, `FIG. 3`). Three keeps chart variety novel across
+the catalog. FIG. 1 is normally the primary story figure (usually a
+time-series). The one exception is `ezana-echo-article-peter-thiel-2026.js`, a
+frozen SEO-canonical page that keeps its 4 figures — do not trim it.
+
+Beyond the original figure types, six branded chart types are available —
+`radial-stack`, `variable-pie`, `bubble-field`, `multi-axis`, `tile-grid`,
+`market-treemap` — with schemas and examples in `docs/ECHO_FIGURES_V2.md`. Every
+figure's data must be justified by the article's own text (the honesty rule
+above); never invent values to fill a chart type.

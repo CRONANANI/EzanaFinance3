@@ -533,66 +533,6 @@ export const sectorDominanceArticle = {
         },
       ],
     },
-    {
-      type: 'scenario-chain',
-      figureLabel: 'FIG. 4 · THE PATTERN, PROJECTED FORWARD',
-      kicker:
-        'THE ROTATION EXTENDED PAST 2025, PER THE ARTICLE’S OWN CLAIMS · DRIVER × DRIVER → OUTCOME · ONE KILL SWITCH.',
-      hint: 'Only the next chart can settle which path holds.',
-      source: "this article's closing framing · Datastream, Goldman Sachs Research (October 2025).",
-      scenarios: [
-        {
-          id: 'base',
-          label: 'ROTATION CONTINUES',
-          tone: 'base',
-          range: 'Tech is displaced',
-          steps: [
-            { label: 'The economy moves on', sub: 'as it did from banks, rails, and oil' },
-            { label: 'A new enterprise form rises', sub: "the next chart's leading sector" },
-          ],
-          result: {
-            value: 'A fifth regime takes the crown',
-            sub: 'the pendulum swings again by ~2050',
-          },
-        },
-        {
-          id: 'alt',
-          label: 'TECH RUNS FURTHER',
-          tone: 'alt',
-          range: 'Below prior peaks',
-          steps: [
-            { label: '45% is short of history', sub: 'finance hit 90%, transport 62%, energy 38%' },
-            {
-              label: 'AI compute concentrates further',
-              sub: 'the largest capital deployment in tech history',
-            },
-          ],
-          result: {
-            value: 'Tech pushes toward old high-water marks',
-            sub: 'the regime extends, not ends',
-          },
-        },
-        {
-          id: 'bear',
-          label: 'NO SECTOR DOMINATES',
-          tone: 'bear',
-          range: 'Structural cap',
-          steps: [
-            {
-              label: 'Market structure caps any one sector',
-              sub: 'no single slice towers as before',
-            },
-            { label: 'Leadership fragments', sub: 'the >50% regimes of history do not return' },
-          ],
-          result: {
-            value: 'The era of overwhelming regimes is over',
-            sub: 'the chart flattens permanently',
-          },
-        },
-      ],
-      killSwitch:
-        'ONLY THE NEXT CHART — DRAWN FIFTY OR ONE HUNDRED YEARS FROM NOW — CAN SETTLE WHETHER TECH HAD FURTHER TO RUN OR SIMPLY COULD NOT REACH THE OLD HEIGHTS.',
-    },
   ],
   globeRail: {
     metric: {

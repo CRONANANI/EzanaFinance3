@@ -380,58 +380,6 @@ export const ballroomDonorsContracts2026 = {
       type: 'paragraph',
       text: 'The base case is that most of the $50 billion resolves into ordinary procurement on examination, with the Lockheed award tracing to a program of record with a multi-year selection history. The bear case for the companies involved is not contract clawback but regulatory whiplash: sixteen of the 27 have active or suspended enforcement matters, and suspended matters can resume. That is a real risk to model for the named tickers, and it is independent of whether any donation influenced any award. Ezana’s government contracts dataset and Inside the Capitol coverage track both sides — award flows and the disclosure record — so the correlation can be checked against the underlying obligations rather than taken from a summary.',
     },
-    {
-      type: 'scenario-chain',
-      figureLabel: 'FIG. 4 · HOW TO READ THE FLOWS',
-      kicker:
-        'POSITIONING CASE · GATE × DRIVER → OUTCOME · TWO SCENARIOS FROM THE ARTICLE · THE REPORT DOCUMENTS TIMING AND CORRELATION, NOT A PROVEN QUID PRO QUO.',
-      hint: "Scenarios drawn from the article's closing section.",
-      source: 'this article\'s reporting; Public Citizen, "Ballroom Billions," June 4, 2026.',
-      scenarios: [
-        {
-          id: 'base',
-          label: 'BASE CASE',
-          tone: 'base',
-          range: 'Ordinary procurement',
-          steps: [
-            {
-              label: 'Examine the obligations',
-              sub: 'award-level USAspending data, FY2008–2026',
-            },
-            {
-              label: 'Lockheed = program of record',
-              sub: 'multi-year source-selection history predating the window',
-            },
-          ],
-          result: {
-            value: 'Most of the $50B resolves',
-            sub: 'into ordinary procurement on examination',
-          },
-        },
-        {
-          id: 'bear',
-          label: 'BEAR CASE',
-          tone: 'bear',
-          range: 'Regulatory whiplash',
-          steps: [
-            {
-              label: '16 of 27 donors',
-              sub: 'active or suspended federal enforcement matters',
-            },
-            {
-              label: 'Suspended matters resume',
-              sub: 'antitrust, labor, and securities cases reopen',
-            },
-          ],
-          result: {
-            value: 'Regulatory re-rating',
-            sub: 'a real risk to the named tickers, independent of any donation',
-          },
-        },
-      ],
-      killSwitch:
-        'IF DONATION AMOUNTS ARE DISCLOSED, THE PAY-TO-PLAY QUESTION BECOMES TESTABLE — UNTIL THEN, 0 OF 27 CONTRIBUTIONS ARE PUBLIC AND THE DONOR LIST IS NOT A TRADEABLE SIGNAL.',
-    },
   ],
   globeRail: {
     metric: {

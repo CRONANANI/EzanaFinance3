@@ -276,116 +276,6 @@ export const tokenizationCollateral2026 = {
       type: 'paragraph',
       text: 'If the volume numbers were theoretical, the incumbents would not be paying real money to stand on the new rails. Stripe bought stablecoin-infrastructure firm Bridge for $1.1 billion and then backed its own blockchain, Tempo, which debuted in early 2026 — and Visa now operates an anchor validator on it. Mastercard signed a definitive agreement in March 2026 to acquire London stablecoin-infrastructure company BVNK for up to $1.8 billion — $1.5 billion fixed plus $300 million contingent, expected to close by year-end — the largest acquisition in stablecoin history. PayPal issues its own dollar token, PYUSD. Circle, the issuer of USDC, trades on the NYSE around a $30 billion valuation. Crypto M&A overall ran about $37 billion in 2025, up more than sevenfold in a year. The pattern rhymes with every plumbing rebuild in payments history: the companies that ended up sitting in the middle of electronic card payments — Visa and Mastercard themselves — were assembled quietly, in the layer almost nobody watched, and they are now the ones buying seats on the replacement.',
     },
-    {
-      type: 'wall-timeline',
-      figureLabel: 'FIG. 3 · THE RAILS, REBUILT IN PLAIN SIGHT',
-      kicker:
-        'TOKENIZATION & STABLECOIN PLUMBING, MARCH 2024 – JULY 2026 · YEAR MARKERS ARE APPROXIMATE WHERE INTRA-YEAR · CLICK ANY PLAQUE FOR THE RECORD.',
-      hint: 'Click a plaque for its record.',
-      source: "this article's reporting · CoinDesk · company statements.",
-      startYear: 2024,
-      endYear: 2026.65,
-      windows: [],
-      plaques: [
-        {
-          year: 2024.2,
-          lane: 0,
-          label: 'Mar 2024 · Treasuries cross $1B',
-          detail:
-            'Tokenized US Treasuries cross $1 billion on-chain for the first time — the milestone the industry keeps citing.',
-        },
-        {
-          year: 2025.5,
-          lane: 1,
-          label: '2025 · Crypto M&A ≈$37B',
-          detail:
-            'Crypto M&A runs about $37 billion for the year, up more than sevenfold from the prior year.',
-        },
-        {
-          year: 2026.05,
-          lane: 2,
-          label: 'Early 2026 · Stripe’s Tempo debuts',
-          detail:
-            'Stripe — which had bought stablecoin-infrastructure firm Bridge for $1.1 billion — debuts its own blockchain, Tempo; Visa now operates an anchor validator on it.',
-        },
-        {
-          year: 2026.2,
-          lane: 3,
-          label: 'Mar 2026 · Mastercard to buy BVNK',
-          detail:
-            'Mastercard signs a definitive agreement to acquire London stablecoin-infrastructure firm BVNK for up to $1.8 billion ($1.5B fixed plus $300M contingent) — the largest acquisition in stablecoin history.',
-        },
-        {
-          year: 2026.45,
-          lane: 4,
-          label: 'Jun 12 2026 · SpaceX’s record IPO',
-          detail:
-            'SpaceX runs the largest IPO in history — over 555 million shares at $135, a $75 billion raise — closing its first day around a $2.1 trillion valuation.',
-        },
-        {
-          year: 2026.55,
-          lane: 5,
-          label: 'Jul 2026 · Ten cows on B3',
-          detail:
-            'Farmers in Paraná tokenize ten dairy cows, register them on B3, and borrow nearly $20,000 against the herd — the mechanism the whole thesis rests on.',
-        },
-      ],
-    },
-    {
-      type: 'dossier-table',
-      figureLabel: 'FIG. 4 · CARD-NETWORK SCALE, WITHOUT THE CARD NETWORKS',
-      kicker:
-        'ANNUAL SETTLED / PROCESSED VOLUME, 2025 ($ TRILLIONS) · LARGEST FIRST · CLICK A ROW TO EXPAND THE DOSSIER.',
-      hint: 'Three volumes — expand a row for the record.',
-      source:
-        'Annual settled/processed volume, 2025, $ trillions. Stablecoin figure is raw on-chain volume (Morph/Coinbase data); bot-adjusted estimate is ~$28T (Chainalysis). Visa and Mastercard are reported payment volumes.',
-      headers: ['Rail', 'What it is', '2025 volume', 'The caveat', ''],
-      rows: [
-        {
-          name: 'Stablecoins',
-          tag: 'ON-CHAIN',
-          role: 'The new rail — raw on-chain settlement already above the card networks combined.',
-          anchor: '$33T raw ($28T bot-adjusted)',
-          keyRisk:
-            'Raw on-chain volume includes trading and bot churn; the bot-adjusted figure is the more defensible number.',
-          dossier: [
-            {
-              label: 'The number',
-              text: 'Raw on-chain stablecoin volume was $33 trillion in 2025 — above Visa and Mastercard’s combined $25.5 trillion. Chainalysis’s bot-adjusted 2025 figure is $28 trillion.',
-            },
-          ],
-        },
-        {
-          name: 'Visa',
-          tag: 'CARD NETWORK',
-          role: 'The larger incumbent card network by processed volume.',
-          anchor: '$16.7T processed',
-          keyRisk:
-            'Visa now operates an anchor validator on Stripe’s Tempo chain — the incumbent buying a seat on the replacement rail.',
-          dossier: [
-            {
-              label: 'Reported volume',
-              text: 'Visa processed $16.7 trillion in payments in 2025.',
-            },
-          ],
-        },
-        {
-          name: 'Mastercard',
-          tag: 'CARD NETWORK',
-          role: 'The second incumbent card network by processed volume.',
-          anchor: '$10.6T processed',
-          keyRisk:
-            'Mastercard is paying up to $1.8 billion for BVNK — the largest acquisition in stablecoin history.',
-          dossier: [
-            {
-              label: 'Reported volume',
-              text: 'Mastercard processed $10.6 trillion in payments in 2025; with Visa that is $25.5 trillion combined.',
-            },
-          ],
-        },
-      ],
-    },
-
     { type: 'heading', text: 'The access problem, sized in one IPO', level: 2 },
     {
       type: 'paragraph',
@@ -404,7 +294,7 @@ export const tokenizationCollateral2026 = {
     },
     {
       type: 'revision-ledger',
-      figureLabel: 'FIG. 5 · WHERE THE BANKS SAY THIS GOES BY 2030',
+      figureLabel: 'FIG. 3 · WHERE THE BANKS SAY THIS GOES BY 2030',
       kicker:
         'TOKENIZED-ASSET TOTAL: ~$30B TODAY → 2030 BANK PROJECTIONS · √-SCALE · GROWTH IS FAVORABLE (GREEN). CLICK A ROW FOR THE RECORD.',
       hint: 'Bar length on a √-scale; each row is today’s base vs. a 2030 projection.',
@@ -462,68 +352,6 @@ export const tokenizationCollateral2026 = {
     {
       type: 'paragraph',
       text: 'The base case: issuance and lending infrastructure keep compounding, the bank projections’ low end proves conservative, and the venues charging basis points on tokenized collateral become the quiet giants of the cycle. The bear case: a regulatory stall or a high-profile collateral failure — a mispriced oracle, an unenforceable lien — resets the adoption clock by years. The development-finance version of the bear case is quieter and worse: the registries and identity systems never connect, farmers take on debt against uninsured animals a lender cannot repossess, and a drought erases the collateral and the income in the same season. Investors tracking who is actually positioned for either branch can watch it happen in the disclosures: Ezana’s SEC filings, lobbying, and congressional trading datasets show which incumbents are buying, lobbying, and personally trading around tokenization policy, and prediction markets are already pricing the regulatory timelines the whole trade depends on. Ten cows in Paraná will not move any of those numbers. The mechanism they proved will.',
-    },
-    {
-      type: 'scenario-chain',
-      figureLabel: 'FIG. 6 · HOW THE TRADE PLAYS OUT',
-      kicker: 'POSITIONING CASE · GATE × DRIVER → OUTCOME · THREE BRANCHES FROM THE ARTICLE.',
-      hint: "Scenarios drawn from the article's positioning section.",
-      source: "this article's reporting.",
-      scenarios: [
-        {
-          id: 'base',
-          label: 'BASE CASE',
-          tone: 'base',
-          range: 'Infrastructure compounds',
-          steps: [
-            { label: 'Regulation moves', sub: 'the trade is gated on regulation actually moving' },
-            {
-              label: 'Issuance + lending scale',
-              sub: 'the bank projections’ low end proves conservative',
-            },
-          ],
-          result: {
-            value: 'Venues become quiet giants',
-            sub: 'the venues charging basis points on tokenized collateral win the cycle',
-          },
-        },
-        {
-          id: 'alt',
-          label: 'REGULATORY / COLLATERAL STALL',
-          tone: 'alt',
-          range: 'The clock resets',
-          steps: [
-            { label: 'Regulatory stall', sub: 'being early looks identical to being wrong' },
-            { label: 'A collateral failure', sub: 'a mispriced oracle or an unenforceable lien' },
-          ],
-          result: {
-            value: 'Adoption resets by years',
-            sub: 'a high-profile failure pushes the timeline out',
-          },
-        },
-        {
-          id: 'bear',
-          label: 'DEVELOPMENT-FINANCE BEAR',
-          tone: 'bear',
-          range: 'The quiet, worse case',
-          steps: [
-            {
-              label: 'Registries never connect',
-              sub: 'identity and registry systems stay separate pieces',
-            },
-            {
-              label: 'Debt against uninsured animals',
-              sub: 'a lender cannot repossess what a shock destroys',
-            },
-          ],
-          result: {
-            value: 'Collateral and income erased',
-            sub: 'a drought wipes out both in the same season',
-          },
-        },
-      ],
-      killSwitch:
-        'If a digitally verified animal does not unlock a bigger loan, a lower rate, or a better recovery than the same animal gets today, tokenization stays a pilot with no measurable effect on who can borrow.',
     },
   ],
   globeRail: {

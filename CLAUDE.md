@@ -37,6 +37,11 @@
   `industries`, `institutions`, `geos`, `assetClasses`, `themes`), each value
   justified by the article's own text. The curated-seed warning in Vercel logs
   is the enforcement backstop.
+- **Figure standard: every Echo article carries EXACTLY 3 figures** (blocks with
+  `figureLabel`, numbered `FIG. 1/2/3`). The one exception is
+  `ezana-echo-article-peter-thiel-2026.js` (frozen SEO-canonical page — keeps its
+  4 figures, do not trim). Six branded figure types beyond the originals are
+  documented in `docs/ECHO_FIGURES_V2.md`.
 
 ## Org (university) surface
 

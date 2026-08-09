@@ -149,55 +149,6 @@ export const fdaPeptidesBpc157Article2026 = {
       text: 'The committee’s composition drew its own scrutiny. The FDA seated eight temporary voting members for the session, and of the fourteen voting members, seven operate or work for clinics or businesses that sell peptide treatments. That does not by itself invalidate anyone’s judgment, but it is the kind of arrangement that makes a narrow 8–6 result harder to read as a disinterested scientific consensus. The vote arrived amid intense popular demand — more than 50 million “BPC-157” video views on each of YouTube and TikTok, and peptide subreddits with over 100,000 members — and was widely framed as a political win for Health and Human Services Secretary Robert F. Kennedy Jr.',
     },
     {
-      type: 'wall-timeline',
-      figureLabel: 'FIG. 2 · THE PROCESS, IN DATES',
-      kicker:
-        'FDA PCAC PEPTIDE REVIEW · 2025 – JULY 2026 · SAME-DAY JULY 23 VOTES SEPARATED BY LANE, FRACTIONAL-YEAR AXIS. CLICK ANY PLAQUE FOR THE RECORD.',
-      hint: 'Click a plaque for its record.',
-      source:
-        'FDA Pharmacy Compounding Advisory Committee meeting, July 23, 2026; company statements.',
-      startYear: 2025,
-      endYear: 2027,
-      windows: [],
-      plaques: [
-        {
-          year: 2025,
-          lane: 0,
-          label: 'Hims acquires a CA peptide plant',
-          detail:
-            'Hims & Hers acquires a California peptide manufacturing facility, adding compounding capacity to an existing prescriber network.',
-        },
-        {
-          year: 2026.56,
-          lane: 1,
-          label: 'Jul 23 · FDA staff recommend against all seven',
-          detail:
-            'Agency scientists recommend against every peptide on the docket, citing weak characterization and thin human data.',
-        },
-        {
-          year: 2026.56,
-          lane: 2,
-          label: 'Jul 23 · BPC-157, KPV, TB-500 each 8–6',
-          detail:
-            'The panel recommends three peptides for the 503A Bulks List, each 8–6 with one abstention, over staff objection.',
-        },
-        {
-          year: 2026.56,
-          lane: 3,
-          label: 'Jul 23 · MOTS-c 7–5',
-          detail:
-            'MOTS-c passes 7–5 with two abstentions — the narrowest vote base of the four recommended.',
-        },
-        {
-          year: 2026.562,
-          lane: 4,
-          label: 'Jul 24 · emideltide, epitalon, semax pending',
-          detail:
-            'Friday’s votes on emideltide, epitalon and semax were still pending when trading closed.',
-        },
-      ],
-    },
-    {
       type: 'quote',
       text: 'I’m concerned that we’re responding to a market-induced demand rather than a decision based in solid science.',
       source: 'Dr. Elizabeth Rebello, PCAC meeting, July 23, 2026',
@@ -236,7 +187,7 @@ export const fdaPeptidesBpc157Article2026 = {
     },
     {
       type: 'adjudication-matrix',
-      figureLabel: 'FIG. 3 · WHO BENEFITS × WHETHER THE VOTE IS A CLEAN TRADE',
+      figureLabel: 'FIG. 2 · WHO BENEFITS × WHETHER THE VOTE IS A CLEAN TRADE',
       kicker:
         'FOUR EXPOSURE TIERS · BLUE SAME = DIRECT / CLEAN · HATCHED PART = DILUTED · GREY — = NONE. CLICK ANY CELL FOR THE ARGUMENT AGAINST.',
       hint: 'Click any cell for the argument against.',
@@ -311,43 +262,6 @@ export const fdaPeptidesBpc157Article2026 = {
       text: 'Against that, the price action is best understood as a [[kw:regulatory-catalyst]]regulatory catalyst[[/kw]] being repriced. HIMS rose as much as 13% intraday and closed up around 10%, yet it remains down roughly 44% over the past year, with a market capitalization near $8.1 billion. A non-binding recommendation on the first step of a multi-stage process moved the stock more than a tenth in a session. What the move actually buys is an option on a rulemaking that has not started — and options on procedural events tend to be mispriced precisely because the headline (“FDA panel backs peptide”) compresses a long, uncertain, reversible process into a single bullish word.',
     },
     {
-      type: 'revision-ledger',
-      figureLabel: 'FIG. 4 · HIMS & HERS: ONE SESSION VS ONE YEAR',
-      kicker:
-        'HIMS % CHANGE · TRAILING TWELVE MONTHS (HOLLOW MARKER) → JULY 23 SESSION (FILLED) · √-SCALE. CLICK A ROW FOR CONTEXT.',
-      hint: 'Hollow marker = trailing-year level; filled marker = the session move.',
-      source:
-        'The gap the vote produced: HIMS rose as much as 13% intraday on July 23 and closed up roughly 10%, against a decline of about 44% over the prior twelve months. A one-day reaction to a non-binding recommendation, set against the trailing-year trend. Source: intraday and trailing-year price moves as reported July 23, 2026.',
-      scale: 'sqrt',
-      unit: '%',
-      rows: [
-        {
-          label: 'Intraday high, Jul 23',
-          sub: 'vote-day pop vs prior 12 months',
-          before: -44,
-          beforeDisplay: '−44% / 12 mo',
-          after: 13,
-          afterDisplay: '+13%',
-          favorable: 'up',
-          record:
-            'HIMS rose as much as 13% intraday on July 23 on a non-binding recommendation, against a decline of about 44% over the prior twelve months.',
-        },
-        {
-          label: 'Close, Jul 23',
-          sub: 'vote-day close vs prior 12 months',
-          before: -44,
-          beforeDisplay: '−44% / 12 mo',
-          after: 10,
-          afterDisplay: '+10%',
-          favorable: 'up',
-          record:
-            'The stock closed up roughly 10% — a one-day reaction to the first step of a multi-stage, reversible process.',
-        },
-      ],
-      verdict:
-        'A one-day reaction to a non-binding recommendation, set against a trailing-year decline of about 44%.',
-    },
-    {
       type: 'heading',
       text: 'What to watch from here',
       level: 2,
@@ -362,7 +276,7 @@ export const fdaPeptidesBpc157Article2026 = {
     },
     {
       type: 'scenario-chain',
-      figureLabel: 'FIG. 5 · WHAT TO WATCH FROM HERE',
+      figureLabel: 'FIG. 3 · WHAT TO WATCH FROM HERE',
       kicker:
         'DRIVER × GATE → OUTCOME · THREE PATHS FROM A NON-BINDING RECOMMENDATION · ONE KILL SWITCH.',
       hint: 'Scenarios drawn from the article’s own “what to watch” and disconfirming cases.',
