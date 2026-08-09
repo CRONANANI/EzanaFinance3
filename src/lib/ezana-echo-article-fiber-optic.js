@@ -534,6 +534,31 @@ export const fiberOpticArticle = {
       text: 'The chart tells a compound story. Telecom is the blue base — large and growing steadily. But watch the green (Industrial Automation) and orange (Automobile) segments: they roughly triple over the decade. The medical equipment slice — small today — is projected to quadruple as surgical robotics, in-vivo imaging, and remote diagnostics all shift from copper to optical interconnects. Aerospace and defense, while smaller in absolute dollars, commands the highest per-meter prices because military-grade cable requires radiation hardening, extreme temperature tolerance, and redundant core geometry.',
     },
 
+    {
+      type: 'multi-axis',
+      figureLabel: 'FIG. 1 · PRICE INDEX VS. TELECOM MARKET SIZE',
+      kicker:
+        'FIBER PPI (INDEX, DEC 2003 = 100) VS. TELECOM MARKET SIZE ($B) · SHARED YEARS 2024–2025 · BOTH SERIES ARE REAL VALUES FROM THE PRICE-INDEX AND FORECAST DATA.',
+      hint: 'Bar = telecom market size ($B, left axis); line = fiber PPI (index, right axis).',
+      source:
+        'FRED / Bureau of Labor Statistics Producer Price Index (June readings); industry research market forecast (2024–2034).',
+      categories: ['2024', '2025'],
+      series: [
+        {
+          label: 'Telecom market size',
+          kind: 'bar',
+          unit: '$B',
+          values: [3.2, 3.8],
+        },
+        {
+          label: 'Fiber PPI',
+          kind: 'line',
+          unit: 'Index',
+          values: [86.2, 87.0],
+        },
+      ],
+    },
+
     { type: 'heading', text: 'Who Makes The Cable: A Global Map', level: 2 },
     {
       type: 'paragraph',
@@ -549,7 +574,7 @@ export const fiberOpticArticle = {
     },
     {
       type: 'dossier-table',
-      figureLabel: 'FIG. 4 · WHO MAKES THE CABLE',
+      figureLabel: 'FIG. 2 · WHO MAKES THE CABLE',
       kicker:
         'MAJOR FIBER-OPTIC CABLE PRODUCERS BY REGION · ANCHOR = TICKER · HEADQUARTERS · PRIMARY APPLICATION (FROM THE MAP) · CLICK A ROW FOR THE DOSSIER.',
       hint: 'Six producers — expand a row for the dossier.',
@@ -724,7 +749,7 @@ export const fiberOpticArticle = {
     },
     {
       type: 'scenario-chain',
-      figureLabel: 'FIG. 5 · THE MARKET OUTLOOK',
+      figureLabel: 'FIG. 3 · THE MARKET OUTLOOK',
       kicker:
         'MARKET OUTLOOK TO 2034 · GATE × DRIVER → OUTCOME · THREE SCENARIOS FROM THE FORECAST AND PRICE-INDEX NUMBERS.',
       hint: 'Scenarios drawn from the forecast and price-index sections.',
