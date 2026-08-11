@@ -195,7 +195,7 @@ function CategoryColumn({ col, colIndex, admin, filter }) {
     ));
 
   return (
-    <div className="eth-col">
+    <div className="eth-col" style={{ '--col-i': colIndex }}>
       <ColHead category={col} filter={filter} />
       {col.items.length ? (
         loop ? (
@@ -427,6 +427,33 @@ export default function EzanaEchoPage() {
     [allArticles],
   );
 
+  // Scroll reveal, adapted to the belt board: per-card observers would misfire
+  // inside the continuously-animating duplicated belt segments, so the reveal
+  // runs at the column level. The board gains is-revealed the first time it
+  // enters the viewport; columns stagger by index (CSS). SSR/no-IO safe:
+  // reveals immediately when IntersectionObserver is unavailable.
+  const boardRef = useRef(null);
+  const [boardRevealed, setBoardRevealed] = useState(false);
+  useEffect(() => {
+    if (boardRevealed) return undefined;
+    const el = boardRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') {
+      setBoardRevealed(true);
+      return undefined;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setBoardRevealed(true);
+          io.disconnect();
+        }
+      },
+      { threshold: 0.15 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [boardRevealed]);
+
   const admin = { isAdmin, onArchive: handleArchive, archivingId };
   const filter = { activeSubs, openFilter, onOpenFilter: setOpenFilter, onToggleSub: toggleSub };
 
@@ -567,7 +594,7 @@ export default function EzanaEchoPage() {
         </div>
 
         {/* Category board — six plain newest-first columns. */}
-        <div className="eth-board">
+        <div className={`eth-board${boardRevealed ? ' is-revealed' : ''}`} ref={boardRef}>
           {displayColumns.map((col, i) => (
             <CategoryColumn key={col.id} col={col} colIndex={i} admin={admin} filter={filter} />
           ))}

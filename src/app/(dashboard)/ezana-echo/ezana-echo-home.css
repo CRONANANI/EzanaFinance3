@@ -864,3 +864,29 @@ html:has(body.echo-route) {
     gap: 12px;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Scroll reveal (column level): the board's six columns rise in,
+   staggered 60ms by column index, the first time the board enters
+   the viewport. Deterministic (index only), IO-triggered, and fully
+   disabled under reduced motion (columns land in final state).
+   ══════════════════════════════════════════════════════════════ */
+.eth-board .eth-col {
+  opacity: 0;
+  transform: translateY(12px);
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s ease;
+  transition-delay: calc(var(--col-i, 0) * 60ms);
+}
+.eth-board.is-revealed .eth-col {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .eth-board .eth-col {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
