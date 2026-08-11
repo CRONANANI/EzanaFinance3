@@ -477,7 +477,9 @@ export const empireRankings2026 = {
     ],
   },
   author: 'Ezana Finance Editorial',
-  category: 'macro',
+  // 'macro' matched none of the six homepage CATEGORIES ids, so the piece was
+  // orphaned from every column; it belongs on the Global & Emerging board.
+  category: 'global-emerging',
   // Seven core metadata dimensions (docs/ECHO_ARTICLE_AUTHORING.md) — every value
   // justified by the article's own text. Government/intergovernmental bodies
   // (IMF, World Bank, WTO, OECD) live in `government`, not `institutions`.

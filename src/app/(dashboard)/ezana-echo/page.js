@@ -69,6 +69,9 @@ const ARTICLE_SUBCATEGORY = {
   'africa-billion-dollar-companies-2026': 'Africa',
   'johnny-mnemonic-tech-consolidation-2026': 'AI',
   'tokenization-collateral-2026': 'DeFi',
+  // empire-rankings-1500-2026 is deliberately absent: none of the Global &
+  // Emerging subs fits a country-power framework piece, and articles without a
+  // subcategory always show (see the filter logic below).
 };
 
 /* Global time-window filter options (applies to all 6 columns). Default 'all'. */
