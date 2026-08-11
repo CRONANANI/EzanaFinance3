@@ -415,6 +415,18 @@ export default function EzanaEchoPage() {
     [columns, activeSubs, timeWindow],
   );
 
+  // MOST READ: top 5 by all-time view_count from the current hub payload.
+  // Honest label (no "this week"): view_count is cumulative. Zero-view articles
+  // never rank; with no nonzero counts the band renders nothing.
+  const mostRead = useMemo(
+    () =>
+      [...allArticles]
+        .filter((a) => (a.views || 0) > 0)
+        .sort((x, y) => (y.views || 0) - (x.views || 0))
+        .slice(0, 5),
+    [allArticles],
+  );
+
   const admin = { isAdmin, onArchive: handleArchive, archivingId };
   const filter = { activeSubs, openFilter, onOpenFilter: setOpenFilter, onToggleSub: toggleSub };
 
@@ -516,6 +528,25 @@ export default function EzanaEchoPage() {
             </label>
           )}
         </div>
+
+        {/* MOST READ — top 5 by real all-time view counts; renders nothing when no
+            article has a nonzero count. Rank numerals mono/emerald; honest label. */}
+        {mostRead.length > 0 && (
+          <div className="eth-mostread" aria-label="Most read articles">
+            <span className="eth-mostread-label">Most Read</span>
+            <ol className="eth-mostread-list">
+              {mostRead.map((a, i) => (
+                <li key={a.id} className="eth-mostread-item">
+                  <Link href={`/ezana-echo/${a.id}`} className="eth-mostread-link">
+                    <span className="eth-mostread-rank">{String(i + 1).padStart(2, '0')}</span>
+                    <span className="eth-mostread-title">{a.title}</span>
+                    <span className="eth-mostread-views">{(a.views || 0).toLocaleString()}</span>
+                  </Link>
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
 
         {/* Global time-window filter — centered between the Article of the Month and
             the category headers; applies to all 6 columns, combines with the
