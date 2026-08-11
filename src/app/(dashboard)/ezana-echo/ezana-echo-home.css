@@ -717,3 +717,57 @@ html:has(body.echo-route) {
     gap: 12px;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Newspaper masthead (eth-paper): serif wordmark, mono dateline,
+   hairline rule above and the classic double rule below. Static.
+   ══════════════════════════════════════════════════════════════ */
+.eth-paper {
+  padding: 18px 0 0;
+  margin-bottom: 22px;
+  text-align: center;
+}
+.eth-paper-rule-top {
+  height: 1px;
+  background: var(--border-primary);
+  margin-bottom: 16px;
+}
+.eth-paper-wordmark {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: clamp(2.2rem, 5vw, 3.4rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: 0.01em;
+  color: var(--text-primary);
+}
+.eth-paper-dateline {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 12px 0 10px;
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.eth-paper-date {
+  color: var(--text-primary);
+}
+/* The classic front-page double rule: thin line over a heavy line. */
+.eth-paper-rule-double {
+  height: 0;
+  border-top: 1px solid var(--border-primary);
+  border-bottom: 3px solid var(--text-primary);
+  padding-top: 2px;
+}
+@media (max-width: 640px) {
+  .eth-paper-dateline {
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+  }
+}

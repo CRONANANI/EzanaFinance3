@@ -219,8 +219,18 @@ function CategoryColumn({ col, colIndex, admin, filter }) {
   );
 }
 
+/* Masthead dateline, computed once per mount on the client (page is fully
+   client-rendered, so there is no SSR text to mismatch). Format:
+   "SATURDAY · AUG 9 2026" (uppercasing via CSS text-transform). */
+function formatMastheadDate(d) {
+  const weekday = d.toLocaleDateString('en-US', { weekday: 'long' });
+  const month = d.toLocaleDateString('en-US', { month: 'short' });
+  return `${weekday} · ${month} ${d.getDate()} ${d.getFullYear()}`;
+}
+
 export default function EzanaEchoPage() {
   const { user } = useAuth();
+  const [mastheadDate] = useState(() => formatMastheadDate(new Date()));
   const isAdmin = isAdminUserClient(user);
   const [archivedSet, setArchivedSet] = useState(new Set());
   const [archivedCount, setArchivedCount] = useState(0);
@@ -444,6 +454,19 @@ export default function EzanaEchoPage() {
       </header>
 
       <div className="eth-wrap">
+        {/* Newspaper masthead: serif wordmark between a hairline rule above and the
+            classic double rule below, with a mono dateline row. Fully static. */}
+        <div className="eth-paper">
+          <div className="eth-paper-rule-top" aria-hidden />
+          <h1 className="eth-paper-wordmark">Ezana Echo</h1>
+          <div className="eth-paper-dateline">
+            <span>Ezana Finance Editorial</span>
+            <span className="eth-paper-date">{mastheadDate}</span>
+            <span>Est. 2026</span>
+          </div>
+          <div className="eth-paper-rule-double" aria-hidden />
+        </div>
+
         {/* Article of the Month — a full-width horizontal banner above the category
             headers: hero image on the left (same 16:9 size as a normal card), then
             the eyebrow, title, and as much opening text as fits. The current month's
