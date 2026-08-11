@@ -222,17 +222,22 @@ export function ensureCuratedSeeded(admin) {
   if (seedPromise) return seedPromise;
   seedPromise = (async () => {
     try {
-      const { count } = await admin
+      const { data: existingRows } = await admin
         .from('echo_articles')
-        .select('id', { count: 'exact', head: true })
+        .select('article_slug')
         .in('article_slug', CURATED_SLUGS);
+      const existing = new Set((existingRows || []).map((r) => r.article_slug));
 
-      // Phase 1 — seed any missing curated articles in full (with seeded reads).
-      if ((count ?? 0) < CURATED_SLUGS.length) {
-        const rows = SOURCE.map(toRow);
+      // Phase 1 — seed ONLY the missing curated articles in full (with seeded
+      // reads). Seeding just the missing rows means adding a new module can
+      // never reset accumulated view/like counts or admin archive state on
+      // rows that already exist (the old count-based check bulk-upserted the
+      // whole catalog whenever any single row was missing).
+      const missing = SOURCE.filter((a) => !existing.has(a.id));
+      if (missing.length) {
         const { error } = await admin
           .from('echo_articles')
-          .upsert(rows, { onConflict: 'article_slug' });
+          .upsert(missing.map(toRow), { onConflict: 'article_slug' });
         if (error) console.error('[echo] curated seed upsert failed:', error.message);
       }
 
