@@ -94,9 +94,9 @@ function withinWindow(publishedAt, windowId) {
 
 /* Conveyor-belt columns: constant speed in px/s (slow enough to read a title as
    it passes — one card height ≈ 9s), and the seam gap, which MUST equal the
-   28px card gap so the loop's rhythm is invisible. */
+   6px tile gap so the loop's rhythm is invisible. */
 const BELT_SPEED = 22;
-const BELT_GAP = 28;
+const BELT_GAP = 6;
 
 /* Per-column phase, as a FRACTION of that column's own loop cycle. Irregular
    on purpose (no arithmetic progression) so no two columns — adjacent or not —
@@ -470,7 +470,12 @@ export default function EzanaEchoPage() {
         .sort((x, y) => String(y.publishedAt).localeCompare(String(x.publishedAt)))
         // Ensure every article carries a subcategory (from its own field or the
         // authoritative map) so the subcategory filter has something to match.
-        .map((a) => ({ ...a, subcategory: a.subcategory || ARTICLE_SUBCATEGORY[a.id] || null })),
+        // categoryLabel feeds the tile tag row when no subcategory exists.
+        .map((a) => ({
+          ...a,
+          subcategory: a.subcategory || ARTICLE_SUBCATEGORY[a.id] || null,
+          categoryLabel: c.label,
+        })),
     }));
   }, [allArticles, currentAotm]);
 

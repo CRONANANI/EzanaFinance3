@@ -85,10 +85,18 @@ export function EchoArticleCard({
           )}
         </div>
         <div className="echo-card__body">
-          <h3 className="echo-card__title">{article.title}</h3>
-          <p className="echo-card__meta">
-            {formatPublishedShort(article.publishedAt)} · {article.readTime} MIN
+          {/* Tile Modules: mono tag row (subcategory or column label + read
+              time), then the headline, then a two-line excerpt. */}
+          <p className="echo-card__tags">
+            {(article.subcategory || article.categoryLabel) && (
+              <span className="echo-card__tag">{article.subcategory || article.categoryLabel}</span>
+            )}
+            <span className="echo-card__tag-time">
+              {formatPublishedShort(article.publishedAt)} · {article.readTime} MIN
+            </span>
           </p>
+          <h3 className="echo-card__title">{article.title}</h3>
+          {article.excerpt && <p className="echo-card__excerpt">{article.excerpt}</p>}
         </div>
       </Link>
     </article>

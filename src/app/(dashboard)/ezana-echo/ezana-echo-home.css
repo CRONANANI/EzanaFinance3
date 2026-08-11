@@ -316,7 +316,7 @@ html:has(body.echo-route) {
 .eth-col {
   display: flex;
   flex-direction: column;
-  gap: 28px; /* uniform vertical spacing between ALL stacked cards, page-wide */
+  gap: 6px; /* tile rhythm: uniform vertical spacing between ALL stacked tiles */
   min-width: 0; /* keep for grid sizing… */
   overflow: visible; /* …but never clip column content (titles) */
 }
@@ -456,7 +456,7 @@ html:has(body.echo-route) {
 .eth-belt-seg {
   display: flex;
   flex-direction: column;
-  gap: 28px; /* identical rhythm inside each segment */
+  gap: 6px; /* identical rhythm inside each segment */
 }
 @keyframes eth-belt-down {
   from {
@@ -971,5 +971,47 @@ html:has(body.echo-route) {
   .eth-geo {
     width: 100%;
     max-width: 300px;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Tile Modules (option B): hard-edged tiles on the conveyor board.
+   Scoped to .eth-board so any other EchoArticleCard usage keeps the
+   wall-to-wall treatment. Belt mechanics untouched; the seam gap in
+   page.js (BELT_GAP) must equal the 6px tile gap above.
+   ══════════════════════════════════════════════════════════════ */
+.eth-board .echo-card {
+  border: 1px solid var(--border-primary);
+  border-radius: 6px;
+  background: var(--bg-primary);
+  box-shadow: none;
+}
+/* Compact hero: full-bleed to the tile's inner edge, top corners following
+   the tile radius (6px outer minus the 1px border). Partner chip and the
+   metadata peek ride inside the img wrapper and are unaffected. */
+.eth-board .echo-card__img {
+  aspect-ratio: 16 / 7;
+  border-radius: 5px 5px 0 0;
+}
+.eth-board .echo-card__body {
+  padding: 10px 12px 12px;
+}
+/* No motion-on-motion: the belt is already moving, so hover marks the tile
+   with an emerald border + 1px outer ring instead of a translate lift. */
+.eth-board .echo-card:hover {
+  transform: none;
+  border-color: var(--emerald);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--emerald) 70%, transparent);
+}
+.eth-board .echo-card {
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    opacity 0.25s ease,
+    filter 0.25s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .eth-board .echo-card {
+    transition: none;
   }
 }
