@@ -26,6 +26,18 @@ import { dataConsolidationArticle2026 } from '@/lib/ezana-echo-article-data-cons
 import { johnnyMnemonicConsolidation2026 } from '@/lib/ezana-echo-article-johnny-mnemonic-consolidation-2026.js';
 import { tokenizationCollateral2026 } from '@/lib/ezana-echo-article-tokenization-collateral-2026.js';
 import { empireRankings2026 } from '@/lib/ezana-echo-article-empire-rankings-2026.js';
+// Draft catalog (status: 'draft'): seeded invisibly, published by flipping the
+// module status and reseeding once the FACT CHECK MANIFEST is cleared.
+import { bitcoinInstitutionalHolders2026 } from '@/lib/ezana-echo-article-bitcoin-institutional-holders-13f-2026.js';
+import { stablecoinSettlementLayer2026 } from '@/lib/ezana-echo-article-stablecoin-settlement-layer-2026.js';
+import { cryptoLegislationPredictionMarkets2026 } from '@/lib/ezana-echo-article-crypto-legislation-prediction-markets-2026.js';
+import { gulfSovereignFundsUsEquities2026 } from '@/lib/ezana-echo-article-gulf-sovereign-funds-us-equities-2026.js';
+import { yenCarryTradeUnwind2026 } from '@/lib/ezana-echo-article-yen-carry-trade-unwind-2026.js';
+import { latamCapitalMarketsAfterTheCows2026 } from '@/lib/ezana-echo-article-latam-capital-markets-after-the-cows-2026.js';
+import { midtermTrade2026 } from '@/lib/ezana-echo-article-midterm-trade-2026.js';
+import { tariffWinnersContractLosers2026 } from '@/lib/ezana-echo-article-tariff-winners-contract-losers-2026.js';
+import { centralBankGoldCycle2026 } from '@/lib/ezana-echo-article-central-bank-gold-cycle-2026.js';
+import { datacenterPowerCrunch2026 } from '@/lib/ezana-echo-article-datacenter-power-crunch-2026.js';
 
 const SOURCE = [
   johnnyMnemonicConsolidation2026,
@@ -46,6 +58,17 @@ const SOURCE = [
   hantavirusArticle,
   semiconductorArticle,
   privateCreditMaturityWallArticle2026,
+  // Drafts (invisible until status flips to published + reseed):
+  bitcoinInstitutionalHolders2026,
+  stablecoinSettlementLayer2026,
+  cryptoLegislationPredictionMarkets2026,
+  gulfSovereignFundsUsEquities2026,
+  yenCarryTradeUnwind2026,
+  latamCapitalMarketsAfterTheCows2026,
+  midtermTrade2026,
+  tariffWinnersContractLosers2026,
+  centralBankGoldCycle2026,
+  datacenterPowerCrunch2026,
 ];
 
 /**

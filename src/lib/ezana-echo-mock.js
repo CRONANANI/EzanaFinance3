@@ -39,6 +39,18 @@ import { dataConsolidationArticle2026 } from './ezana-echo-article-data-consolid
 import { johnnyMnemonicConsolidation2026 } from './ezana-echo-article-johnny-mnemonic-consolidation-2026.js';
 import { tokenizationCollateral2026 } from './ezana-echo-article-tokenization-collateral-2026.js';
 import { empireRankings2026 } from './ezana-echo-article-empire-rankings-2026.js';
+// Draft catalog (status: 'draft'): registered for parity with curated-seed;
+// nothing reads ARTICLES for public rendering.
+import { bitcoinInstitutionalHolders2026 } from './ezana-echo-article-bitcoin-institutional-holders-13f-2026.js';
+import { stablecoinSettlementLayer2026 } from './ezana-echo-article-stablecoin-settlement-layer-2026.js';
+import { cryptoLegislationPredictionMarkets2026 } from './ezana-echo-article-crypto-legislation-prediction-markets-2026.js';
+import { gulfSovereignFundsUsEquities2026 } from './ezana-echo-article-gulf-sovereign-funds-us-equities-2026.js';
+import { yenCarryTradeUnwind2026 } from './ezana-echo-article-yen-carry-trade-unwind-2026.js';
+import { latamCapitalMarketsAfterTheCows2026 } from './ezana-echo-article-latam-capital-markets-after-the-cows-2026.js';
+import { midtermTrade2026 } from './ezana-echo-article-midterm-trade-2026.js';
+import { tariffWinnersContractLosers2026 } from './ezana-echo-article-tariff-winners-contract-losers-2026.js';
+import { centralBankGoldCycle2026 } from './ezana-echo-article-central-bank-gold-cycle-2026.js';
+import { datacenterPowerCrunch2026 } from './ezana-echo-article-datacenter-power-crunch-2026.js';
 
 const ARTICLES = [
   johnnyMnemonicConsolidation2026,
@@ -59,6 +71,17 @@ const ARTICLES = [
   hantavirusArticle,
   semiconductorArticle,
   privateCreditMaturityWallArticle2026,
+  // Drafts (invisible until status flips to published):
+  bitcoinInstitutionalHolders2026,
+  stablecoinSettlementLayer2026,
+  cryptoLegislationPredictionMarkets2026,
+  gulfSovereignFundsUsEquities2026,
+  yenCarryTradeUnwind2026,
+  latamCapitalMarketsAfterTheCows2026,
+  midtermTrade2026,
+  tariffWinnersContractLosers2026,
+  centralBankGoldCycle2026,
+  datacenterPowerCrunch2026,
 ];
 
 /** Article-of-the-Month history — index 0 is the CURRENT month. The Echo home

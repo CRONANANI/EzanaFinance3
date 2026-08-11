@@ -72,6 +72,18 @@ const ARTICLE_SUBCATEGORY = {
   // empire-rankings-1500-2026 is deliberately absent: none of the Global &
   // Emerging subs fits a country-power framework piece, and articles without a
   // subcategory always show (see the filter logic below).
+  // Draft catalog (invisible until published; tagged now so they land in the
+  // right column the moment they flip live):
+  'bitcoin-institutional-holders-13f-2026': 'Bitcoin',
+  'stablecoin-settlement-layer-2026': 'Stablecoins',
+  'crypto-legislation-prediction-markets-2026': 'Regulation',
+  'gulf-sovereign-funds-us-equities-2026': 'Sovereign Funds',
+  'yen-carry-trade-unwind-2026': 'Asia',
+  'latam-capital-markets-after-the-cows-2026': 'LatAm',
+  'midterm-trade-2026': 'Elections',
+  'tariff-winners-contract-losers-2026': 'Trade Policy',
+  'central-bank-gold-cycle-2026': 'Metals',
+  'datacenter-power-crunch-2026': 'Renewables',
 };
 
 /* Global time-window filter options (applies to all 6 columns). Default 'all'. */
