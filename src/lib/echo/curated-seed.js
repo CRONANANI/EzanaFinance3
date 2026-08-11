@@ -94,6 +94,11 @@ function plainBody(a) {
 
 export const CURATED_SLUGS = SOURCE.map((a) => a.id);
 
+// Published-only registry for surfaces that must never leak drafts when the
+// DB is unavailable (the sitemap's build-time fallback). CURATED_SLUGS stays
+// complete because the seeder's row-count check needs every module counted.
+export const PUBLISHED_CURATED_SLUGS = SOURCE.filter((a) => a.status !== 'draft').map((a) => a.id);
+
 // Non-fatal completeness check — surfaces taxonomy gaps in Vercel logs on every
 // seed pass without ever blocking readers. The seven core dimensions must be
 // non-empty on every article; an empty one is a publishing defect to fix in the
@@ -130,7 +135,10 @@ function toRow(a) {
     author_name: a.author || 'Ezana Finance Editorial',
     author_id: null,
     is_featured: !!a.featured,
-    article_status: 'published',
+    // Draft lifecycle: a module may declare status: 'draft' to seed invisibly
+    // (every public surface filters to 'published'). Flipping the module to
+    // 'published' plus a reseed takes it live.
+    article_status: a.status === 'draft' ? 'draft' : 'published',
     read_time_minutes: Number.isFinite(a.readTime) ? a.readTime : 1,
     view_count: SEED_READS[a.id] || 0,
     like_count: 0,
@@ -146,7 +154,7 @@ function toRow(a) {
  * archive state (article_status) are preserved.
  */
 function toContentRow(a) {
-  return {
+  const row = {
     article_slug: a.id,
     article_title: a.title,
     article_excerpt: a.excerpt,
@@ -167,6 +175,13 @@ function toContentRow(a) {
     read_time_minutes: Number.isFinite(a.readTime) ? a.readTime : 1,
     published_at: a.publishedAt || new Date().toISOString(),
   };
+  // Draft lifecycle rides the content reconcile ONLY for modules that declare
+  // an explicit status, so flipping draft -> published in the module (plus a
+  // reseed) publishes it. Modules without a status omit the column entirely,
+  // preserving admin archive state on their rows (the reason article_status
+  // is normally absent from this partial upsert).
+  if (a.status) row.article_status = a.status === 'draft' ? 'draft' : 'published';
+  return row;
 }
 
 // Bump when a metadata (or other content) change must force a re-sync even on
@@ -206,10 +221,20 @@ export function ensureCuratedSeeded(admin) {
       // modules. Metric-safe: this payload omits view_count/like_count and
       // article_status, so a partial upsert leaves engagement counts and admin
       // archive state untouched.
+      // Bulk upserts need uniform columns, so rows that carry an explicit
+      // article_status (draft-lifecycle modules) reconcile separately from
+      // rows that omit it (whose admin archive state must stay untouched).
       const contentRows = SOURCE.map(toContentRow);
-      const { error: reconcileError } = await admin
-        .from('echo_articles')
-        .upsert(contentRows, { onConflict: 'article_slug' });
+      const statusRows = contentRows.filter((r) => 'article_status' in r);
+      const plainRows = contentRows.filter((r) => !('article_status' in r));
+      let reconcileError = null;
+      for (const batch of [plainRows, statusRows]) {
+        if (!batch.length) continue;
+        const { error } = await admin
+          .from('echo_articles')
+          .upsert(batch, { onConflict: 'article_slug' });
+        if (error) reconcileError = error;
+      }
       if (reconcileError) {
         console.error(
           '[echo] curated content reconcile failed:',

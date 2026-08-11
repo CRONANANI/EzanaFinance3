@@ -62,7 +62,10 @@ export default async function EzanaEchoArticlePage({ params }) {
   } = await supabase.auth.getUser();
 
   const archived = await isArticleArchived(params.articleId);
-  if (archived && (!user || !isAdminUser(user))) {
+  // Drafts gate exactly like archived pieces: invisible to everyone except
+  // admins (who need to preview them) until article_status is 'published'.
+  const unpublished = article.status && article.status !== 'published';
+  if ((archived || unpublished) && (!user || !isAdminUser(user))) {
     notFound();
   }
 

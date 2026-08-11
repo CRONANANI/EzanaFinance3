@@ -1,6 +1,6 @@
 import { getPublishedArticles } from '@/lib/echo-data';
 import { getArchivedArticleIds } from '@/lib/echo-article-status';
-import { CURATED_SLUGS } from '@/lib/echo/curated-seed';
+import { PUBLISHED_CURATED_SLUGS } from '@/lib/echo/curated-seed';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://ezana.world';
 
@@ -46,10 +46,12 @@ export default async function sitemap() {
     articleEntries = [];
   }
 
-  // Build-time / DB-unavailable fallback: the curated module registry, which
-  // includes every curated article id.
+  // Build-time / DB-unavailable fallback: the curated module registry,
+  // filtered to published modules so drafts never leak into the sitemap.
   if (articleEntries.length === 0) {
-    articleEntries = CURATED_SLUGS.map((slug) => entry(`${SITE_URL}/ezana-echo/${slug}`, now, 0.8));
+    articleEntries = PUBLISHED_CURATED_SLUGS.map((slug) =>
+      entry(`${SITE_URL}/ezana-echo/${slug}`, now, 0.8),
+    );
   }
 
   return [...core, ...articleEntries];
