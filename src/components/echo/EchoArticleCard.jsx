@@ -29,10 +29,13 @@ export function EchoArticleCard({
   onArchive,
   archivingId,
   focusable = true,
+  // Geo-filter muting (homepage continent hover): dims the card in place
+  // without unmounting, reordering, or resizing it. Additive; default off.
+  muted = false,
 }) {
   const peek = peekDims(article);
   return (
-    <article className="echo-card">
+    <article className={muted ? 'echo-card is-geo-muted' : 'echo-card'}>
       {isAdmin && (
         <button
           type="button"
@@ -49,7 +52,8 @@ export function EchoArticleCard({
       <Link
         href={`/ezana-echo/${article.id}`}
         className="echo-card__link"
-        tabIndex={focusable ? undefined : -1}
+        tabIndex={focusable && !muted ? undefined : -1}
+        aria-disabled={muted || undefined}
       >
         <div className="echo-card__img">
           {article.partner && (

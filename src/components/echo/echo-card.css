@@ -237,3 +237,27 @@
     transition: none;
   }
 }
+
+/* Geo-filter muting (homepage continent hover): the card stays mounted at its
+   exact size and position; it only dims and drops out of the tab/click order.
+   Ongoing animations (belts, reveals) continue underneath unchanged. */
+.echo-card.is-geo-muted {
+  opacity: 0.3;
+  filter: grayscale(1);
+  pointer-events: none;
+  transition:
+    opacity 0.25s ease,
+    filter 0.25s ease;
+}
+.echo-card {
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease,
+    opacity 0.25s ease,
+    filter 0.25s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .echo-card.is-geo-muted {
+    transition: none;
+  }
+}

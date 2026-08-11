@@ -890,3 +890,86 @@ html:has(body.echo-route) {
     transition: none;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   GEOGRAPHY OF THE NEWS: the article-rail globe beside the time
+   filter, with continent chips beneath. Hovering land or a chip
+   mutes non-matching board cards in place; chips are the
+   accessible/touch path (click pins, click again or tap-away clears).
+   ══════════════════════════════════════════════════════════════ */
+.eth-geo-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 8px;
+}
+.eth-geo-row .eth-toolbar {
+  flex: 1;
+  margin: 0;
+  align-self: center;
+}
+.eth-geo {
+  flex: 0 0 auto;
+  width: 260px;
+  text-align: center;
+}
+.eth-geo-head {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.68rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+.eth-geo-globe {
+  display: flex;
+  justify-content: center;
+}
+.eth-geo-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 10px;
+}
+.eth-geo-chip {
+  font-family: var(--font-mono, monospace);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-secondary);
+  border-radius: 999px;
+  padding: 3px 9px;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+.eth-geo-chip:hover,
+.eth-geo-chip:focus-visible {
+  color: var(--emerald);
+  border-color: var(--emerald);
+}
+.eth-geo-chip.is-active {
+  color: var(--emerald);
+  border-color: var(--emerald);
+  background: var(--emerald-bg-subtle, var(--bg-tertiary));
+}
+@media (prefers-reduced-motion: reduce) {
+  .eth-geo-chip {
+    transition: none;
+  }
+}
+@media (max-width: 900px) {
+  .eth-geo-row {
+    flex-direction: column;
+    align-items: center;
+  }
+  .eth-geo {
+    width: 100%;
+    max-width: 300px;
+  }
+}

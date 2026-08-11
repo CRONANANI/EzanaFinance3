@@ -6,6 +6,8 @@ import { useAuth } from '@/components/AuthProvider';
 import { isAdminUserClient } from '@/lib/admin-helpers-client';
 import { EzanaNavLogo } from '@/components/brand/EzanaNavLogo';
 import { EchoArticleCard } from '@/components/echo/EchoArticleCard';
+import { InteractiveGlobe } from '@/components/ui/interactive-globe';
+import { CONTINENTS, continentsForGeos } from '@/lib/echo/geo-continents';
 import { AOTM_HISTORY } from '@/lib/ezana-echo-mock';
 
 import './ezana-echo.css';
@@ -155,7 +157,7 @@ function ColHead({ category, filter }) {
    Duration is measured (segment height / BELT_SPEED) so every column moves at
    the same px/s regardless of how many articles it holds. Belts loop only with
    2+ articles and only on desktop (CSS disables them ≤1100px / reduced-motion). */
-function CategoryColumn({ col, colIndex, admin, filter }) {
+function CategoryColumn({ col, colIndex, admin, filter, geoActive }) {
   const loop = col.items.length >= 2;
   const beltRef = useRef(null);
   const segRef = useRef(null);
@@ -191,6 +193,10 @@ function CategoryColumn({ col, colIndex, admin, filter }) {
         onArchive={admin.onArchive}
         archivingId={admin.archivingId}
         focusable={focusable}
+        // Continent filter: cards whose geos do not reach the hovered continent
+        // mute in place. Empty geos = no geographic metadata = muted on any
+        // hover, the honest default.
+        muted={!!geoActive && !continentsForGeos(a.geos).has(geoActive)}
       />
     ));
 
@@ -216,6 +222,72 @@ function CategoryColumn({ col, colIndex, admin, filter }) {
         <div className="eth-col-empty">No articles yet</div>
       )}
     </div>
+  );
+}
+
+/* GEOGRAPHY OF THE NEWS: the article-rail globe on the homepage, extended
+   with continent hover. Hovering land (or a chip below) filters the board;
+   chips are the accessible/touch path (click pins, click again or tap
+   elsewhere clears). Pauses offscreen via the same IO pattern as the rail. */
+function GeoNewsPanel({ active, onHoverChange, onPinToggle }) {
+  const hostRef = useRef(null);
+  const [visible, setVisible] = useState(true);
+  // Same read-once ocean token resolution as EchoGlobeRail, so the globe
+  // does not render as a dark disc in light mode.
+  const [oceanFill, setOceanFill] = useState(null);
+
+  useEffect(() => {
+    const el = hostRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return undefined;
+    const io = new IntersectionObserver(([e]) => setVisible(e.isIntersecting), {
+      threshold: 0.05,
+    });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const cs = getComputedStyle(document.documentElement);
+    const token =
+      cs.getPropertyValue('--echo-globe-ocean').trim() ||
+      cs.getPropertyValue('--bg-primary').trim();
+    if (token) setOceanFill(token);
+  }, []);
+
+  return (
+    <aside ref={hostRef} className="eth-geo" aria-label="Filter articles by continent">
+      <div className="eth-geo-head">Geography of the News</div>
+      <div className="eth-geo-globe">
+        <InteractiveGlobe
+          size={220}
+          autoRotateSpeed={0.35}
+          paused={!visible}
+          continentHover
+          onContinentHover={onHoverChange}
+          highlightContinent={active}
+          showConnections={false}
+          {...(oceanFill ? { oceanFill } : {})}
+        />
+      </div>
+      <div className="eth-geo-chips" role="group" aria-label="Continents">
+        {CONTINENTS.map((c) => (
+          <button
+            key={c}
+            type="button"
+            className={active === c ? 'eth-geo-chip is-active' : 'eth-geo-chip'}
+            aria-pressed={active === c}
+            onMouseEnter={() => onHoverChange(c)}
+            onMouseLeave={() => onHoverChange(null)}
+            onFocus={() => onHoverChange(c)}
+            onBlur={() => onHoverChange(null)}
+            onClick={() => onPinToggle(c)}
+          >
+            {c}
+          </button>
+        ))}
+      </div>
+    </aside>
   );
 }
 
@@ -454,6 +526,22 @@ export default function EzanaEchoPage() {
     return () => io.disconnect();
   }, [boardRevealed]);
 
+  // Continent filter (globe panel + chips). Hover is transient; a chip click
+  // (the touch path) pins until re-click or a tap outside the panel. Only
+  // board cards mute; the AotM banner and MOST READ band are exempt.
+  const [geoHover, setGeoHover] = useState(null);
+  const [geoPinned, setGeoPinned] = useState(null);
+  const activeContinent = geoPinned || geoHover;
+  const toggleGeoPin = (c) => setGeoPinned((p) => (p === c ? null : c));
+  useEffect(() => {
+    if (!geoPinned) return undefined;
+    const onDown = (e) => {
+      if (!e.target.closest('.eth-geo')) setGeoPinned(null);
+    };
+    document.addEventListener('pointerdown', onDown);
+    return () => document.removeEventListener('pointerdown', onDown);
+  }, [geoPinned]);
+
   const admin = { isAdmin, onArchive: handleArchive, archivingId };
   const filter = { activeSubs, openFilter, onOpenFilter: setOpenFilter, onToggleSub: toggleSub };
 
@@ -575,28 +663,43 @@ export default function EzanaEchoPage() {
           </div>
         )}
 
-        {/* Global time-window filter — centered between the Article of the Month and
-            the category headers; applies to all 6 columns, combines with the
-            per-column subcategory filters. Accessible name comes from aria-label. */}
-        <div className="eth-toolbar">
-          <div className="eth-timefilter" role="group" aria-label="Time window">
-            {TIME_WINDOWS.map((w) => (
-              <button
-                key={w.id}
-                type="button"
-                aria-pressed={timeWindow === w.id}
-                onClick={() => setTimeWindow(w.id)}
-              >
-                {w.label}
-              </button>
-            ))}
+        {/* Toolbar row: the global time-window filter (unchanged capability)
+            with the GEOGRAPHY OF THE NEWS globe panel right-aligned beside it.
+            Hover a continent on the globe or the chips to mute non-matching
+            board cards in place; the AotM and MOST READ above are exempt. */}
+        <div className="eth-geo-row">
+          <div className="eth-toolbar">
+            <div className="eth-timefilter" role="group" aria-label="Time window">
+              {TIME_WINDOWS.map((w) => (
+                <button
+                  key={w.id}
+                  type="button"
+                  aria-pressed={timeWindow === w.id}
+                  onClick={() => setTimeWindow(w.id)}
+                >
+                  {w.label}
+                </button>
+              ))}
+            </div>
           </div>
+          <GeoNewsPanel
+            active={activeContinent}
+            onHoverChange={setGeoHover}
+            onPinToggle={toggleGeoPin}
+          />
         </div>
 
         {/* Category board — six plain newest-first columns. */}
         <div className={`eth-board${boardRevealed ? ' is-revealed' : ''}`} ref={boardRef}>
           {displayColumns.map((col, i) => (
-            <CategoryColumn key={col.id} col={col} colIndex={i} admin={admin} filter={filter} />
+            <CategoryColumn
+              key={col.id}
+              col={col}
+              colIndex={i}
+              admin={admin}
+              filter={filter}
+              geoActive={activeContinent}
+            />
           ))}
         </div>
 
