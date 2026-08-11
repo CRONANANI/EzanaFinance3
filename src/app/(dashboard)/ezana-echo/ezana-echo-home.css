@@ -207,6 +207,7 @@ html:has(body.echo-route) {
    Login / Become a Partner sit at the same Y as the landing page's nav items. The
    "Publish to the Echo →" note hangs BELOW the partner button (out of flow). */
 .eth-masthead {
+  position: relative; /* anchors the absolutely-centered wordmark */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -214,23 +215,24 @@ html:has(body.echo-route) {
   height: var(--navbar-height, 64px);
   padding: 0;
 }
+/* Centered hub wordmark: typography comes from .nav-echo-wordmark
+   (globals.css, shared with the article nav); this class only centers it.
+   Hidden at small widths where it would collide with the logo/auth cluster. */
+.eth-nav-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+@media (max-width: 640px) {
+  .eth-nav-center {
+    display: none;
+  }
+}
 .eth-masthead-brand {
   display: inline-flex;
   align-items: center;
   gap: 10px;
   text-decoration: none;
-}
-.eth-masthead-name {
-  font-family: var(--font-serif);
-  font-size: 26px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  line-height: 1.4;
-  color: var(--text-primary);
-  white-space: nowrap;
-}
-.eth-masthead-name span {
-  color: var(--emerald);
 }
 .eth-masthead-auth {
   display: inline-flex;
@@ -710,65 +712,8 @@ html:has(body.echo-route) {
   .eth-masthead {
     padding: 0;
   }
-  .eth-masthead-name {
-    font-size: 22px;
-  }
   .eth-masthead-auth {
     gap: 12px;
-  }
-}
-
-/* ══════════════════════════════════════════════════════════════
-   Newspaper masthead (eth-paper): serif wordmark, mono dateline,
-   hairline rule above and the classic double rule below. Static.
-   ══════════════════════════════════════════════════════════════ */
-.eth-paper {
-  padding: 18px 0 0;
-  margin-bottom: 22px;
-  text-align: center;
-}
-.eth-paper-rule-top {
-  height: 1px;
-  background: var(--border-primary);
-  margin-bottom: 16px;
-}
-.eth-paper-wordmark {
-  margin: 0;
-  font-family: var(--font-serif);
-  font-size: clamp(2.2rem, 5vw, 3.4rem);
-  font-weight: 700;
-  line-height: 1.05;
-  letter-spacing: 0.01em;
-  color: var(--text-primary);
-}
-.eth-paper-dateline {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  margin: 12px 0 10px;
-  font-family: var(--font-mono, monospace);
-  font-size: 10px;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-.eth-paper-date {
-  color: var(--text-primary);
-}
-/* The classic front-page double rule: thin line over a heavy line. */
-.eth-paper-rule-double {
-  height: 0;
-  border-top: 1px solid var(--border-primary);
-  border-bottom: 3px solid var(--text-primary);
-  padding-top: 2px;
-}
-@media (max-width: 640px) {
-  .eth-paper-dateline {
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
   }
 }
 
@@ -892,26 +837,13 @@ html:has(body.echo-route) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   GEOGRAPHY OF THE NEWS: the article-rail globe beside the time
-   filter, with continent chips beneath. Hovering land or a chip
-   mutes non-matching board cards in place; chips are the
-   accessible/touch path (click pins, click again or tap-away clears).
+   GEOGRAPHY OF THE NEWS: centered full-width section directly under
+   the nav, above the Article of the Month. Hovering land or a chip
+   mutes non-matching board cards below; chips are the accessible and
+   touch path (click pins, click again or tap-away clears).
    ══════════════════════════════════════════════════════════════ */
-.eth-geo-row {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 24px;
-  margin-bottom: 8px;
-}
-.eth-geo-row .eth-toolbar {
-  flex: 1;
-  margin: 0;
-  align-self: center;
-}
 .eth-geo {
-  flex: 0 0 auto;
-  width: 260px;
+  padding: 24px 0 20px;
   text-align: center;
 }
 .eth-geo-head {
@@ -961,16 +893,6 @@ html:has(body.echo-route) {
 @media (prefers-reduced-motion: reduce) {
   .eth-geo-chip {
     transition: none;
-  }
-}
-@media (max-width: 900px) {
-  .eth-geo-row {
-    flex-direction: column;
-    align-items: center;
-  }
-  .eth-geo {
-    width: 100%;
-    max-width: 300px;
   }
 }
 

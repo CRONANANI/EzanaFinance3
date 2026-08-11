@@ -275,7 +275,7 @@ function GeoNewsPanel({ active, onHoverChange, onPinToggle }) {
       <div className="eth-geo-head">Geography of the News</div>
       <div className="eth-geo-globe">
         <InteractiveGlobe
-          size={220}
+          size={260}
           autoRotateSpeed={0.35}
           paused={!visible}
           continentHover
@@ -306,18 +306,8 @@ function GeoNewsPanel({ active, onHoverChange, onPinToggle }) {
   );
 }
 
-/* Masthead dateline, computed once per mount on the client (page is fully
-   client-rendered, so there is no SSR text to mismatch). Format:
-   "SATURDAY · AUG 9 2026" (uppercasing via CSS text-transform). */
-function formatMastheadDate(d) {
-  const weekday = d.toLocaleDateString('en-US', { weekday: 'long' });
-  const month = d.toLocaleDateString('en-US', { month: 'short' });
-  return `${weekday} · ${month} ${d.getDate()} ${d.getFullYear()}`;
-}
-
 export default function EzanaEchoPage() {
   const { user } = useAuth();
-  const [mastheadDate] = useState(() => formatMastheadDate(new Date()));
   const isAdmin = isAdminUserClient(user);
   const [archivedSet, setArchivedSet] = useState(new Set());
   const [archivedCount, setArchivedCount] = useState(0);
@@ -573,11 +563,15 @@ export default function EzanaEchoPage() {
           with the brand. The "Publish to the Echo →" note hangs BELOW the partner
           button. */}
       <header className="eth-masthead">
-        <Link href="/" className="eth-masthead-brand" aria-label="Ezana Echo home">
+        <Link href="/" className="eth-masthead-brand" aria-label="Ezana home">
           <EzanaNavLogo width={44} height={37} priority />
-          <span className="eth-masthead-name">
-            Ezana <span>Echo</span>
-          </span>
+        </Link>
+        {/* Centered wordmark: same serif treatment as the article nav
+            (.nav-echo-wordmark supplies the typography; .eth-nav-center only
+            positions it). Links to the hub; hidden at 640px and below where it
+            would collide with the logo and auth cluster. */}
+        <Link href="/ezana-echo" className="nav-echo-wordmark eth-nav-center">
+          Ezana <span>Echo</span>
         </Link>
         <div className="eth-masthead-auth">
           {isAdmin && (
@@ -601,18 +595,14 @@ export default function EzanaEchoPage() {
       </header>
 
       <div className="eth-wrap">
-        {/* Newspaper masthead: serif wordmark between a hairline rule above and the
-            classic double rule below, with a mono dateline row. Fully static. */}
-        <div className="eth-paper">
-          <div className="eth-paper-rule-top" aria-hidden />
-          <h1 className="eth-paper-wordmark">Ezana Echo</h1>
-          <div className="eth-paper-dateline">
-            <span>Ezana Finance Editorial</span>
-            <span className="eth-paper-date">{mastheadDate}</span>
-            <span>Est. 2026</span>
-          </div>
-          <div className="eth-paper-rule-double" aria-hidden />
-        </div>
+        {/* GEOGRAPHY OF THE NEWS: first block of the body, centered above the
+            Article of the Month. Hover a continent (or the chips) to mute
+            non-matching board cards below; state lives at page level. */}
+        <GeoNewsPanel
+          active={activeContinent}
+          onHoverChange={setGeoHover}
+          onPinToggle={toggleGeoPin}
+        />
 
         {/* Article of the Month — a full-width horizontal banner above the category
             headers: hero image on the left (same 16:9 size as a normal card), then
@@ -683,30 +673,22 @@ export default function EzanaEchoPage() {
           </div>
         )}
 
-        {/* Toolbar row: the global time-window filter (unchanged capability)
-            with the GEOGRAPHY OF THE NEWS globe panel right-aligned beside it.
-            Hover a continent on the globe or the chips to mute non-matching
-            board cards in place; the AotM and MOST READ above are exempt. */}
-        <div className="eth-geo-row">
-          <div className="eth-toolbar">
-            <div className="eth-timefilter" role="group" aria-label="Time window">
-              {TIME_WINDOWS.map((w) => (
-                <button
-                  key={w.id}
-                  type="button"
-                  aria-pressed={timeWindow === w.id}
-                  onClick={() => setTimeWindow(w.id)}
-                >
-                  {w.label}
-                </button>
-              ))}
-            </div>
+        {/* Global time-window filter: a compact centered toolbar row between
+            MOST READ and the category headers; applies to all 6 columns and
+            combines with the per-column subcategory filters. */}
+        <div className="eth-toolbar">
+          <div className="eth-timefilter" role="group" aria-label="Time window">
+            {TIME_WINDOWS.map((w) => (
+              <button
+                key={w.id}
+                type="button"
+                aria-pressed={timeWindow === w.id}
+                onClick={() => setTimeWindow(w.id)}
+              >
+                {w.label}
+              </button>
+            ))}
           </div>
-          <GeoNewsPanel
-            active={activeContinent}
-            onHoverChange={setGeoHover}
-            onPinToggle={toggleGeoPin}
-          />
         </div>
 
         {/* Category board — six plain newest-first columns. */}
