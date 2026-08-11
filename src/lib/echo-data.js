@@ -32,6 +32,8 @@ function mapCard(row) {
     coverImage: row.cover_image_url || null,
     tags: row.tags || [],
     meta: row.article_meta || {},
+    // Geo taxonomy dims for the homepage globe continent filter.
+    geos: Array.isArray(row.article_meta?.geos) ? row.article_meta.geos : [],
     readTime: row.read_time_minutes || 1,
     views: row.view_count || 0,
     likes: row.like_count || 0,
