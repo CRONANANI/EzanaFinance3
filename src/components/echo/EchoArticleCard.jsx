@@ -9,6 +9,20 @@ import './echo-card.css';
  * Semantic <article> wrapping a Link so the whole card is one keyboard-focusable
  * target. Admins get an inline archive control.
  */
+/* Metadata peek: dimension chips shown on hover/focus over the hero's bottom
+   edge. Counts come only from real card data; dims with zero count are
+   omitted, and with no nonzero dims the strip is not rendered at all. */
+function peekDims(article) {
+  return [
+    ['Tickers', article.tickers?.length || 0],
+    ['Sectors', article.meta?.sectors?.length || 0],
+    ['Themes', article.meta?.themes?.length || 0],
+    ['Geos', (article.geos?.length ?? article.meta?.geos?.length) || 0],
+  ]
+    .filter(([, n]) => n > 0)
+    .slice(0, 4);
+}
+
 export function EchoArticleCard({
   article,
   isAdmin = false,
@@ -16,6 +30,7 @@ export function EchoArticleCard({
   archivingId,
   focusable = true,
 }) {
+  const peek = peekDims(article);
   return (
     <article className="echo-card">
       {isAdmin && (
@@ -55,6 +70,15 @@ export function EchoArticleCard({
               }}
             />
           ) : null}
+          {peek.length > 0 && (
+            <span className="echo-card__peek" aria-hidden="true">
+              {peek.map(([label, n]) => (
+                <span key={label} className="echo-card__peek-chip">
+                  {label} {n}
+                </span>
+              ))}
+            </span>
+          )}
         </div>
         <div className="echo-card__body">
           <h3 className="echo-card__title">{article.title}</h3>

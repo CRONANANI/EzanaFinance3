@@ -12,7 +12,7 @@ import { ensureCuratedSeeded, CURATED_GLOBE_RAILS } from '@/lib/echo/curated-see
 const admin = getAdminClient();
 
 const CARD_COLS =
-  'id, author_id, author_name, author_avatar, article_title, article_slug, article_excerpt, article_category, cover_image_url, hero_image, tags, article_meta, is_featured, read_time_minutes, view_count, like_count, published_at';
+  'id, author_id, author_name, author_avatar, article_title, article_slug, article_excerpt, article_category, cover_image_url, hero_image, tags, tickers, article_meta, is_featured, read_time_minutes, view_count, like_count, published_at';
 
 function mapCard(row) {
   return {
@@ -31,6 +31,7 @@ function mapCard(row) {
     partner: row.article_meta?.partner || null,
     coverImage: row.cover_image_url || null,
     tags: row.tags || [],
+    tickers: row.tickers || [],
     meta: row.article_meta || {},
     // Geo taxonomy dims for the homepage globe continent filter.
     geos: Array.isArray(row.article_meta?.geos) ? row.article_meta.geos : [],

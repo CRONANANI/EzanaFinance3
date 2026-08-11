@@ -188,3 +188,52 @@
   opacity: 0.6;
   cursor: default;
 }
+
+/* Metadata peek: a thin strip that slides up over the hero's bottom edge on
+   hover (pointer devices) or keyboard focus. Hover-only enhancement: the same
+   dims render on the article page's metadata card, so nothing is exclusive to
+   it (hence aria-hidden and no touch affordance). Sits at the bottom so it can
+   never collide with the partner chip (top-left) or archive control (top-right). */
+.echo-card__peek {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px 8px;
+  background: color-mix(in srgb, var(--bg-primary) 84%, transparent);
+  backdrop-filter: blur(3px);
+  transform: translateY(102%);
+  transition: transform 0.22s ease;
+  pointer-events: none; /* label only; the card stays one link target */
+}
+.echo-card__peek-chip {
+  font-family: var(--font-mono, monospace);
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--border-secondary);
+  background: var(--bg-primary);
+}
+/* Keyboard path: focus anywhere within the card reveals the strip. */
+.echo-card:focus-within .echo-card__peek {
+  transform: translateY(0);
+}
+/* Pointer path gated to true hover devices; touch never sees the strip. */
+@media (hover: hover) {
+  .echo-card:hover .echo-card__peek {
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .echo-card__peek {
+    transition: none;
+  }
+}
