@@ -1662,6 +1662,58 @@ function generateLandDots(landGeoJSON, stepDeg = 1.8) {
   return dots;
 }
 
+// ── Continent tagging (additive; only used by continentHover / highlightContinent) ──
+
+// External (canonical) continent names use 'Oceania'; the globe's internal
+// landmasses include 'Australia' and 'Greenland', which fold into these.
+const CONTINENT_ALIASES = { Australia: 'Oceania', Greenland: 'North America' };
+
+/**
+ * Coarse deterministic lat/lng → canonical continent classifier. Returns one of
+ * 'North America' | 'South America' | 'Europe' | 'Africa' | 'Asia' | 'Oceania'
+ * or null (Antarctica / unclassified). Greenland reports as 'North America',
+ * the Australian landmass as 'Oceania', matching the app's continent list.
+ */
+function continentForLatLng(lat, lng) {
+  if (lat < -60) return null; // Antarctica — not a reported continent
+  if (lng < -30) {
+    // Americas (Greenland's main body sits west of -30 → North America)
+    if (lat < 7.5 && lng > -82) return 'South America';
+    if (lat < 12.5 && lng >= -77) return 'South America';
+    return 'North America';
+  }
+  if (lat >= 67 && lng < -10) return 'North America'; // northeast Greenland
+  if (lat <= -10 && lng >= 110) return 'Oceania'; // Australia, New Zealand
+  if (lat <= 0 && lng >= 129) return 'Oceania'; // New Guinea
+  if (lat <= 35.5 && lng >= -20 && lng <= 52) {
+    if (lat >= 28 && lng >= 34.7) return 'Asia'; // Levant, north of Sinai
+    if (lat >= 12.5 && lng >= 44 - 0.28 * lat) return 'Asia'; // east of the Red Sea axis
+    return 'Africa';
+  }
+  if (lng <= 62 && lat >= 35.5) {
+    if (lat < 42 && lng >= 26) return 'Asia'; // Anatolia / Iranian plateau
+    return 'Europe';
+  }
+  return 'Asia';
+}
+
+/**
+ * Tag each unit-sphere dot with its canonical continent by inverting the exact
+ * lat/lng → xyz mapping used at generation time (x = -cos·sin, y = sin,
+ * z = cos·cos ⇒ lat = asin(y), lng = atan2(-x, z)). Works for both the fetched
+ * GeoJSON dots and FALLBACK_LAND_DOTS. Runs once per dot set, lazily.
+ */
+function tagDotContinents(dots) {
+  const tags = new Array(dots.length);
+  for (let i = 0; i < dots.length; i++) {
+    const [x, y, z] = dots[i];
+    const lat = (Math.asin(Math.max(-1, Math.min(1, y))) * 180) / Math.PI;
+    const lng = (Math.atan2(-x, z) * 180) / Math.PI;
+    tags[i] = continentForLatLng(lat, lng);
+  }
+  return tags;
+}
+
 // ── Globe rendering (unchanged visual style) ──
 
 function rotateY(x, y, z, angle) {
@@ -1702,6 +1754,12 @@ export function InteractiveGlobe({
   paused = false,
   /** Fires once after the first frame is drawn (land data loaded). */
   onReady,
+  /** Optional: hit-test pointermoves against visible land dots to detect the hovered continent. Off by default (zero overhead). */
+  continentHover = false,
+  /** Optional: called with the canonical continent name ('Oceania' etc.) when the hovered continent changes, null when none. */
+  onContinentHover,
+  /** Optional: canonical continent name whose dots render in the `--emerald` accent while all others dim. Null = colors exactly as today. */
+  highlightContinent = null,
 }) {
   const canvasRef = useRef(null);
   // Rotation stored in degrees [longitude, latitude] — matches reference component
@@ -1727,6 +1785,18 @@ export function InteractiveGlobe({
   markersRef.current = markers;
   const markerColorRef = useRef(markerColor);
   markerColorRef.current = markerColor;
+  // Continent hover/highlight (additive; all of this stays inert unless the props are set).
+  const continentHoverRef = useRef(continentHover);
+  continentHoverRef.current = continentHover;
+  const onContinentHoverRef = useRef(onContinentHover);
+  onContinentHoverRef.current = onContinentHover;
+  const highlightRef = useRef(null);
+  highlightRef.current =
+    highlightContinent == null ? null : CONTINENT_ALIASES[highlightContinent] || highlightContinent;
+  const pointerRef = useRef(null); // [x, y] canvas-space; only tracked when continentHover
+  const lastHoverRef = useRef(null); // last continent emitted via onContinentHover
+  const dotTagsRef = useRef(null); // lazy memo: { dots, tags }
+  const highlightColorRef = useRef(null); // resolved --emerald token (read once, on demand)
   const reducedRef = useRef(false);
   const pausedRef = useRef(false);
   pausedRef.current = paused || reducedRef.current;
@@ -1741,6 +1811,25 @@ export function InteractiveGlobe({
       pausedRef.current = true;
     }
   }, []);
+
+  // Resolve the theme's --emerald token from the canvas' computed style the
+  // first time a highlight is requested (same read-once pattern the rail uses
+  // for --echo-globe-ocean). Falls back to the existing emerald marker default.
+  useEffect(() => {
+    if (highlightContinent == null || highlightColorRef.current) return;
+    const canvas = canvasRef.current;
+    if (!canvas || typeof window === 'undefined') return;
+    const token = getComputedStyle(canvas).getPropertyValue('--emerald').trim();
+    if (token) highlightColorRef.current = token;
+  }, [highlightContinent]);
+
+  // If continent hover is switched off while a continent was reported, emit null.
+  useEffect(() => {
+    if (!continentHover && lastHoverRef.current !== null) {
+      lastHoverRef.current = null;
+      onContinentHoverRef.current?.(null);
+    }
+  }, [continentHover]);
 
   // Fetch GeoJSON land data and generate continent dots
   useEffect(() => {
@@ -1841,6 +1930,24 @@ export function InteractiveGlobe({
       });
     }
 
+    // Continent hover/highlight — both default-off. Tags are computed lazily,
+    // once per dot set; hit-testing shares this loop's projection (no second
+    // pass) and is naturally throttled to the frame rate.
+    const highlight = highlightRef.current;
+    const pointer =
+      continentHoverRef.current && !dragRef.current.active ? pointerRef.current : null;
+    let tags = null;
+    if (highlight !== null || pointer !== null) {
+      if (!dotTagsRef.current || dotTagsRef.current.dots !== dots) {
+        dotTagsRef.current = { dots, tags: tagDotContinents(dots) };
+      }
+      tags = dotTagsRef.current.tags;
+    }
+    // Hit radius ≈ 14px at the default 600px size, scaled down for small globes.
+    const hitRadius = Math.max(8, Math.min(16, radius * 0.06));
+    let bestD2 = hitRadius * hitRadius;
+    let hoverHit = null;
+
     for (let i = 0; i < dots.length; i++) {
       let [x, y, z] = dots[i];
       x *= radius;
@@ -1858,6 +1965,18 @@ export function InteractiveGlobe({
       if (cos <= 0.05) continue;
 
       const [sx, sy] = project(x, y, z, cx, cy, fov);
+
+      // Hover hit-test — reuses this dot's just-computed screen position.
+      if (pointer !== null) {
+        const hdx = sx - pointer[0];
+        const hdy = sy - pointer[1];
+        const d2 = hdx * hdx + hdy * hdy;
+        if (d2 < bestD2) {
+          bestD2 = d2;
+          hoverHit = tags[i];
+        }
+      }
+
       // Imprinted look: circular dots (no foreshortening), tight alpha range,
       // smaller radius so they read as surface texture not floating particles
       const rawAlpha = 0.4 + cos * 0.6;
@@ -1868,9 +1987,22 @@ export function InteractiveGlobe({
       ctx.translate(sx, sy);
       ctx.beginPath();
       ctx.arc(0, 0, dotR, 0, Math.PI * 2);
-      ctx.fillStyle = dotColor.replace('ALPHA', depthAlpha.toFixed(2));
+      if (highlight === null) {
+        ctx.fillStyle = dotColor.replace('ALPHA', depthAlpha.toFixed(2));
+      } else if (tags[i] === highlight) {
+        ctx.globalAlpha = depthAlpha;
+        ctx.fillStyle = highlightColorRef.current || 'rgba(52, 211, 153, 1)';
+      } else {
+        ctx.fillStyle = dotColor.replace('ALPHA', (depthAlpha * 0.25).toFixed(2));
+      }
       ctx.fill();
       ctx.restore();
+    }
+
+    // Report the hovered continent only when it changes (never spam duplicates).
+    if (pointer !== null && hoverHit !== lastHoverRef.current) {
+      lastHoverRef.current = hoverHit;
+      onContinentHoverRef.current?.(hoverHit);
     }
 
     // Optional caller-supplied city markers — same projection/occlusion as the
@@ -1983,6 +2115,12 @@ export function InteractiveGlobe({
   }, []);
 
   const onPointerMove = useCallback((e) => {
+    // Continent hover: record the pointer in canvas space; the draw loop does
+    // the actual hit-test against the frame's projected dots. Off by default.
+    if (continentHoverRef.current) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      pointerRef.current = [e.clientX - rect.left, e.clientY - rect.top];
+    }
     if (!dragRef.current.active) return;
     const sensitivity = 0.5;
     const dx = e.clientX - dragRef.current.startX;
@@ -2027,6 +2165,13 @@ export function InteractiveGlobe({
       onPointerCancel={onPointerUp}
       onPointerLeave={(e) => {
         if (dragRef.current.active) onPointerUp(e);
+        if (continentHoverRef.current) {
+          pointerRef.current = null;
+          if (lastHoverRef.current !== null) {
+            lastHoverRef.current = null;
+            onContinentHoverRef.current?.(null);
+          }
+        }
       }}
     />
   );
