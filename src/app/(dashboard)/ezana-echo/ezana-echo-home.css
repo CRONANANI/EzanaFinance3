@@ -560,11 +560,12 @@ html:has(body.echo-route) {
     inset: 0;
     overflow: hidden;
   }
-  /* Compaction: cap the hero to a proportion of the now-shorter card so the
-     kicker, headline, excerpt, and pinned footer all fit beneath it. */
+  /* Hero owns 70% of the height-locked card; kicker + 2-line headline fit
+     in the remaining 30%. Aspect ratio released so the basis wins. */
   .eth-aotm-card-img {
-    flex: 0 0 auto;
-    max-height: 42%;
+    flex: 0 0 70%;
+    aspect-ratio: auto;
+    max-height: none;
   }
 }
 
@@ -572,19 +573,13 @@ html:has(body.echo-route) {
    3-line headline, excerpt filling the middle, meta + month dropdown pinned
    to the base. Tile chrome matches the belt cards. */
 .eth-aotm-card {
+  position: relative; /* anchor for the month-dropdown overlay pill */
   display: flex;
   flex-direction: column;
   width: 100%;
-  border: 1px solid var(--border-primary);
-  border-radius: 6px;
+  /* Borderless: the page background flows through; the hero image is the
+     visual object and the headline's emerald hover is the link affordance. */
   background: var(--bg-primary);
-  transition:
-    border-color 0.15s ease,
-    box-shadow 0.15s ease;
-}
-.eth-aotm-card:hover {
-  border-color: var(--emerald);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--emerald) 70%, transparent);
 }
 .eth-aotm-card-link {
   display: flex;
@@ -600,7 +595,10 @@ html:has(body.echo-route) {
   width: 100%;
   aspect-ratio: 16 / 9;
   overflow: hidden;
-  border-radius: 6px 6px 0 0; /* top corners follow the card radius; bottom square */
+  /* Fully rounded: with the card border gone the image IS the object, and a
+     flush square bottom against nothing reads unfinished. (The flush-bottom
+     rule stays on the bordered belt tiles; one-line revert here if wanted.) */
+  border-radius: 6px;
   background: linear-gradient(
     135deg,
     color-mix(in srgb, var(--emerald) 55%, black 8%),
@@ -614,7 +612,7 @@ html:has(body.echo-route) {
   display: block;
 }
 .eth-aotm-card .eth-aotm-eyebrow {
-  padding: 4px 14px 0;
+  padding: 6px 0 0; /* flush left: the card edge IS the logo-aligned edge */
 }
 .eth-aotm-eyebrow {
   font-family: var(--font-mono);
@@ -626,7 +624,7 @@ html:has(body.echo-route) {
 }
 .eth-aotm-card-title {
   margin: 0;
-  padding: 0 14px;
+  padding: 0;
   font-family: var(--font-serif);
   font-size: 19px;
   line-height: 1.25;
@@ -641,43 +639,19 @@ html:has(body.echo-route) {
 .eth-aotm-card:hover .eth-aotm-card-title {
   color: var(--emerald);
 }
-.eth-aotm-card-text {
-  margin: 0;
-  padding: 0 14px;
-  font-family: var(--font-sans);
-  font-size: 13px;
-  line-height: 1.55;
-  color: var(--text-secondary);
-  /* Fills the flexible middle of the height-locked card; the clamp is the
-     ceiling and the flex overflow trims the rest. */
-  flex: 1 1 auto;
-  min-height: 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.eth-aotm-card-foot {
-  margin-top: auto; /* pin to the card base regardless of excerpt length */
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 10px 14px 12px;
-}
-.eth-aotm-card-meta {
-  font-family: var(--font-mono, monospace);
-  font-size: 10px;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
 .eth-aotm-months {
+  position: absolute; /* over the hero's top-right; sibling of the card link */
+  top: 10px;
+  right: 10px;
+  z-index: 3;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  padding: 3px 4px 3px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
+  backdrop-filter: blur(3px);
+  border: 1px solid var(--border-primary);
 }
 .eth-aotm-months-label {
   font-family: var(--font-mono);
@@ -692,9 +666,9 @@ html:has(body.echo-route) {
   font-size: 11px;
   color: var(--text-primary);
   background: transparent;
-  border: 1px solid var(--border-primary);
+  border: none; /* the overlay pill supplies the single hairline */
   border-radius: 999px;
-  padding: 4px 26px 4px 12px;
+  padding: 4px 24px 4px 8px;
   cursor: pointer;
   background-image:
     linear-gradient(45deg, transparent 50%, var(--text-muted) 50%),
@@ -725,9 +699,6 @@ html:has(body.echo-route) {
   }
   .eth-hero-row .eth-geo {
     order: -1;
-  }
-  .eth-aotm-card-text {
-    -webkit-line-clamp: 4; /* natural height: no globe column to fill against */
   }
   /* Belts are desktop-only — tablet/mobile keep today's static stacks. */
   .eth-belt {
@@ -772,10 +743,11 @@ html:has(body.echo-route) {
   display: flex;
   flex-direction: column;
   width: 100%;
-  border: 1px solid var(--border-primary);
-  border-radius: 6px;
+  /* Borderless open composition: only the internal hairlines and the header
+     rule remain. Zero horizontal padding keeps content on the
+     partner-button-aligned right edge. */
   background: var(--bg-primary);
-  padding: 12px 14px;
+  padding: 4px 0 0;
 }
 .eth-mostread-label {
   font-family: var(--font-mono, monospace);

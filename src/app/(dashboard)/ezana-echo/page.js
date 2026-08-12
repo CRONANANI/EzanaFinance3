@@ -7,7 +7,6 @@ import { isAdminUserClient } from '@/lib/admin-helpers-client';
 import { EzanaNavLogo } from '@/components/brand/EzanaNavLogo';
 import { EchoArticleCard } from '@/components/echo/EchoArticleCard';
 import { InteractiveGlobe } from '@/components/ui/interactive-globe';
-import { formatPublishedShort } from '@/lib/echo-format';
 import { CONTINENTS, continentsForGeos } from '@/lib/echo/geo-continents';
 import { AOTM_HISTORY } from '@/lib/ezana-echo-mock';
 
@@ -447,17 +446,6 @@ export default function EzanaEchoPage() {
     null;
   const articleOfMonth = aotmHistory[aotmIdx]?.article || currentAotm;
 
-  // Banner opening text: the excerpt, or the first paragraph content block if present.
-  const aotmText = useMemo(() => {
-    if (!articleOfMonth) return '';
-    if (articleOfMonth.excerpt) return articleOfMonth.excerpt;
-    const blocks = articleOfMonth.contentBlocks;
-    const para = Array.isArray(blocks)
-      ? blocks.find((b) => (b?.type === 'paragraph' || b?.type === 'text') && b?.text)
-      : null;
-    return para?.text || '';
-  }, [articleOfMonth]);
-
   // Six category columns, each = that category's articles (minus the centerpiece)
   // sorted newest-first. Empty categories (Crypto) render an honest empty state.
   const columns = useMemo(() => {
@@ -626,33 +614,26 @@ export default function EzanaEchoPage() {
                     {aotmIdx > 0 && aotmHistory[aotmIdx] ? ` (${aotmHistory[aotmIdx].month})` : ''}
                   </span>
                   <h2 className="eth-aotm-card-title">{articleOfMonth.title}</h2>
-                  {aotmText && <p className="eth-aotm-card-text">{aotmText}</p>}
                 </Link>
-                {/* Bottom row pinned to the card base: mono date/read time plus
-                    the month history dropdown (it belongs to AotM, and sitting
-                    outside the Link it can never trigger navigation). */}
-                <div className="eth-aotm-card-foot">
-                  <span className="eth-aotm-card-meta">
-                    {formatPublishedShort(articleOfMonth.publishedAt)} · {articleOfMonth.readTime}{' '}
-                    MIN
-                  </span>
-                  {aotmHistory.length > 1 && (
-                    <label className="eth-aotm-months">
-                      <span className="eth-aotm-months-label">Month</span>
-                      <select
-                        value={aotmIdx}
-                        onChange={(e) => setAotmIdx(Number(e.target.value))}
-                        aria-label="View previous Articles of the Month"
-                      >
-                        {aotmHistory.map((h, i) => (
-                          <option key={h.month} value={i}>
-                            {h.month}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                  )}
-                </div>
+                {/* Month history dropdown: overlay pill on the hero's top-right.
+                    A sibling of the Link (absolutely positioned over it), so
+                    selecting a month can never trigger navigation. */}
+                {aotmHistory.length > 1 && (
+                  <label className="eth-aotm-months">
+                    <span className="eth-aotm-months-label">Month</span>
+                    <select
+                      value={aotmIdx}
+                      onChange={(e) => setAotmIdx(Number(e.target.value))}
+                      aria-label="View previous Articles of the Month"
+                    >
+                      {aotmHistory.map((h, i) => (
+                        <option key={h.month} value={i}>
+                          {h.month}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
               </article>
             )}
           </div>
