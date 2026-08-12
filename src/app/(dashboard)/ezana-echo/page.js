@@ -7,6 +7,7 @@ import { isAdminUserClient } from '@/lib/admin-helpers-client';
 import { EzanaNavLogo } from '@/components/brand/EzanaNavLogo';
 import { EchoArticleCard } from '@/components/echo/EchoArticleCard';
 import { InteractiveGlobe } from '@/components/ui/interactive-globe';
+import { formatPublishedShort } from '@/lib/echo-format';
 import { CONTINENTS, continentsForGeos } from '@/lib/echo/geo-continents';
 import { AOTM_HISTORY } from '@/lib/ezana-echo-mock';
 
@@ -595,83 +596,98 @@ export default function EzanaEchoPage() {
       </header>
 
       <div className="eth-wrap">
-        {/* GEOGRAPHY OF THE NEWS: first block of the body, centered above the
-            Article of the Month. Hover a continent (or the chips) to mute
-            non-matching board cards below; state lives at page level. */}
-        <GeoNewsPanel
-          active={activeContinent}
-          onHoverChange={setGeoHover}
-          onPinToggle={toggleGeoPin}
-        />
-
-        {/* Article of the Month — a full-width horizontal banner above the category
-            headers: hero image on the left (same 16:9 size as a normal card), then
-            the eyebrow, title, and as much opening text as fits. The current month's
-            AOTM is excluded from the columns below so it never appears twice; older
-            months are browsable via the dropdown (which lives OUTSIDE the Link so it
-            can never trigger navigation). */}
-        <div className="eth-aotm-wrap">
-          {articleOfMonth && (
-            <Link href={`/ezana-echo/${articleOfMonth.id}`} className="eth-aotm">
-              <div className="eth-aotm-img">
-                {articleOfMonth.heroImage?.src ? (
-                  <img
-                    src={articleOfMonth.heroImage.src}
-                    alt={articleOfMonth.heroImage.alt || articleOfMonth.title}
-                    loading="lazy"
-                    onError={(e) => {
-                      // remove (not display:none) so the :not(:has(img)) placeholder shows
-                      e.currentTarget.remove();
-                    }}
-                  />
-                ) : null}
-              </div>
-              <div className="eth-aotm-body">
-                <span className="eth-aotm-eyebrow">
-                  Article of the Month
-                  {aotmIdx > 0 && aotmHistory[aotmIdx] ? ` — ${aotmHistory[aotmIdx].month}` : ''}
-                </span>
-                <h2 className="eth-aotm-title">{articleOfMonth.title}</h2>
-                {aotmText && <p className="eth-aotm-text">{aotmText}</p>}
-              </div>
-            </Link>
-          )}
-          {aotmHistory.length > 1 && (
-            <label className="eth-aotm-months">
-              <span className="eth-aotm-months-label">Month</span>
-              <select
-                value={aotmIdx}
-                onChange={(e) => setAotmIdx(Number(e.target.value))}
-                aria-label="View previous Articles of the Month"
-              >
-                {aotmHistory.map((h, i) => (
-                  <option key={h.month} value={i}>
-                    {h.month}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
-        </div>
-
-        {/* MOST READ — top 5 by real all-time view counts; renders nothing when no
-            article has a nonzero count. Rank numerals mono/emerald; honest label. */}
-        {mostRead.length > 0 && (
-          <div className="eth-mostread" aria-label="Most read articles">
-            <span className="eth-mostread-label">Most Read</span>
-            <ol className="eth-mostread-list">
-              {mostRead.map((a, i) => (
-                <li key={a.id} className="eth-mostread-item">
-                  <Link href={`/ezana-echo/${a.id}`} className="eth-mostread-link">
-                    <span className="eth-mostread-rank">{String(i + 1).padStart(2, '0')}</span>
-                    <span className="eth-mostread-title">{a.title}</span>
-                    <span className="eth-mostread-views">{(a.views || 0).toLocaleString()}</span>
-                  </Link>
-                </li>
-              ))}
-            </ol>
+        {/* Hero row: AotM portrait card (left) | GEOGRAPHY OF THE NEWS (center)
+            | Most Read ranked card (right). The globe column drives the row
+            height; the side cards stretch to match it. The row inherits the
+            dashboard shell's content envelope, so the AotM left edge and the
+            Most Read right edge align with the nav logo and partner button
+            without any hardcoded insets. Continent filter state stays at page
+            level, so hover/chips still mute the board cards below. */}
+        <div className="eth-hero-row">
+          <div className="eth-hero-side">
+            {articleOfMonth && (
+              <article className="eth-aotm-card">
+                <Link href={`/ezana-echo/${articleOfMonth.id}`} className="eth-aotm-card-link">
+                  <div className="eth-aotm-card-img">
+                    {articleOfMonth.heroImage?.src ? (
+                      <img
+                        src={articleOfMonth.heroImage.src}
+                        alt={articleOfMonth.heroImage.alt || articleOfMonth.title}
+                        loading="lazy"
+                        onError={(e) => {
+                          // remove (not display:none) so the :not(:has(img)) placeholder shows
+                          e.currentTarget.remove();
+                        }}
+                      />
+                    ) : null}
+                  </div>
+                  <span className="eth-aotm-eyebrow">
+                    Article of the Month
+                    {aotmIdx > 0 && aotmHistory[aotmIdx] ? ` (${aotmHistory[aotmIdx].month})` : ''}
+                  </span>
+                  <h2 className="eth-aotm-card-title">{articleOfMonth.title}</h2>
+                  {aotmText && <p className="eth-aotm-card-text">{aotmText}</p>}
+                </Link>
+                {/* Bottom row pinned to the card base: mono date/read time plus
+                    the month history dropdown (it belongs to AotM, and sitting
+                    outside the Link it can never trigger navigation). */}
+                <div className="eth-aotm-card-foot">
+                  <span className="eth-aotm-card-meta">
+                    {formatPublishedShort(articleOfMonth.publishedAt)} · {articleOfMonth.readTime}{' '}
+                    MIN
+                  </span>
+                  {aotmHistory.length > 1 && (
+                    <label className="eth-aotm-months">
+                      <span className="eth-aotm-months-label">Month</span>
+                      <select
+                        value={aotmIdx}
+                        onChange={(e) => setAotmIdx(Number(e.target.value))}
+                        aria-label="View previous Articles of the Month"
+                      >
+                        {aotmHistory.map((h, i) => (
+                          <option key={h.month} value={i}>
+                            {h.month}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  )}
+                </div>
+              </article>
+            )}
           </div>
-        )}
+
+          <GeoNewsPanel
+            active={activeContinent}
+            onHoverChange={setGeoHover}
+            onPinToggle={toggleGeoPin}
+          />
+
+          {/* Most Read: vertical ranked card. With zero nonzero view counts the
+              card hides but the grid column remains, keeping the globe centered. */}
+          <div className="eth-hero-side">
+            {mostRead.length > 0 && (
+              <div className="eth-mostread-card" aria-label="Most read articles">
+                <span className="eth-mostread-label">Most Read</span>
+                <ol className="eth-mostread-list">
+                  {mostRead.map((a, i) => (
+                    <li key={a.id} className="eth-mostread-item">
+                      <Link href={`/ezana-echo/${a.id}`} className="eth-mostread-link">
+                        <span className="eth-mostread-rank">{String(i + 1).padStart(2, '0')}</span>
+                        <span className="eth-mostread-main">
+                          <span className="eth-mostread-title">{a.title}</span>
+                          <span className="eth-mostread-views">
+                            {(a.views || 0).toLocaleString()}
+                          </span>
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* Global time-window filter: a compact centered toolbar row between
             MOST READ and the category headers; applies to all 6 columns and

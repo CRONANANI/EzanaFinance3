@@ -9,9 +9,9 @@ import './echo-card.css';
  * Semantic <article> wrapping a Link so the whole card is one keyboard-focusable
  * target. Admins get an inline archive control.
  */
-/* Metadata peek: dimension chips shown on hover/focus over the hero's bottom
-   edge. Counts come only from real card data; dims with zero count are
-   omitted, and with no nonzero dims the strip is not rendered at all. */
+/* Hover tag marquee: the card's real metadata dims as one mono line along the
+   hero's bottom edge. Counts come only from real card data; dims with zero
+   count are omitted, and with no nonzero dims the strip is not rendered. */
 function peekDims(article) {
   return [
     ['Tickers', article.tickers?.length || 0],
@@ -34,6 +34,9 @@ export function EchoArticleCard({
   muted = false,
 }) {
   const peek = peekDims(article);
+  const tagLine = peek.map(([label, n]) => `${label.toUpperCase()} ${n}`).join(' · ');
+  // Loop duration scales with content length (deterministic, ~8s to 12s).
+  const marqueeDur = `${Math.min(12, Math.max(8, 6 + peek.length * 1.5))}s`;
   return (
     <article className={muted ? 'echo-card is-geo-muted' : 'echo-card'}>
       {isAdmin && (
@@ -75,12 +78,16 @@ export function EchoArticleCard({
             />
           ) : null}
           {peek.length > 0 && (
-            <span className="echo-card__peek" aria-hidden="true">
-              {peek.map(([label, n]) => (
-                <span key={label} className="echo-card__peek-chip">
-                  {label} {n}
-                </span>
-              ))}
+            <span
+              className="echo-card__marquee"
+              aria-hidden="true"
+              style={{ '--marquee-dur': marqueeDur }}
+            >
+              {/* Duplicated sequence = seamless conveyor loop at translateX(-50%). */}
+              <span className="echo-card__marquee-track">
+                <span className="echo-card__marquee-seq">{tagLine} · </span>
+                <span className="echo-card__marquee-seq">{tagLine} · </span>
+              </span>
             </span>
           )}
         </div>

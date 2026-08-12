@@ -213,52 +213,72 @@
   cursor: default;
 }
 
-/* Metadata peek: a thin strip that slides up over the hero's bottom edge on
-   hover (pointer devices) or keyboard focus. Hover-only enhancement: the same
-   dims render on the article page's metadata card, so nothing is exclusive to
-   it (hence aria-hidden and no touch affordance). Sits at the bottom so it can
-   never collide with the partner chip (top-left) or archive control (top-right). */
-.echo-card__peek {
+/* Hover tag marquee: a single mono line of the card's real metadata dims
+   pinned along the hero's bottom edge. Hidden by default; on hover (true
+   hover devices) or keyboard focus it appears and loops as a conveyor
+   (duplicated sequence, translateX to -50%). Touch never sees it, and no
+   information is exclusive to it (the article page shows the same dims).
+   Bottom edge = never collides with the partner chip or archive control. */
+.echo-card__marquee {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
   z-index: 2;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 6px 8px;
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 5px 0;
   background: color-mix(in srgb, var(--bg-primary) 84%, transparent);
   backdrop-filter: blur(3px);
-  transform: translateY(102%);
-  transition: transform 0.22s ease;
-  pointer-events: none; /* label only; the card stays one link target */
-}
-.echo-card__peek-chip {
   font-family: var(--font-mono, monospace);
-  font-size: 9px;
+  font-size: 9.5px;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--text-primary);
-  padding: 2px 7px;
-  border-radius: 999px;
-  border: 1px solid var(--border-secondary);
-  background: var(--bg-primary);
+  color: var(--text-faint);
+  opacity: 0;
+  transition: opacity 0.18s ease;
+  pointer-events: none; /* label only; the card stays one link target */
 }
-/* Keyboard path: focus anywhere within the card reveals the strip. */
-.echo-card:focus-within .echo-card__peek {
-  transform: translateY(0);
+.echo-card__marquee-track {
+  display: inline-flex;
+  animation: echo-tag-marquee var(--marquee-dur, 10s) linear infinite;
+  animation-play-state: paused;
+}
+.echo-card__marquee-seq {
+  display: inline-block;
+  padding-left: 8px;
+}
+@keyframes echo-tag-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%); /* one full duplicated sequence = seamless loop */
+  }
+}
+/* Keyboard path: focus anywhere within the card reveals and runs the strip. */
+.echo-card:focus-within .echo-card__marquee {
+  opacity: 1;
+}
+.echo-card:focus-within .echo-card__marquee-track {
+  animation-play-state: running;
 }
 /* Pointer path gated to true hover devices; touch never sees the strip. */
 @media (hover: hover) {
-  .echo-card:hover .echo-card__peek {
-    transform: translateY(0);
+  .echo-card:hover .echo-card__marquee {
+    opacity: 1;
+  }
+  .echo-card:hover .echo-card__marquee-track {
+    animation-play-state: running;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .echo-card__peek {
+  .echo-card__marquee {
     transition: none;
+  }
+  .echo-card__marquee-track {
+    animation: none; /* static row; overflow simply clips */
   }
 }
 
