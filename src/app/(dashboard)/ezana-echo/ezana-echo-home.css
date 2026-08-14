@@ -222,6 +222,9 @@ html:has(body.echo-route) {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
+  /* Page-scoped size bump: the shared .nav-echo-wordmark stays 1.05rem for
+     the article nav crossfade; the Echo hub masthead alone runs 50% larger. */
+  font-size: 1.6rem;
 }
 @media (max-width: 640px) {
   .eth-nav-center {
@@ -526,17 +529,18 @@ html:has(body.echo-route) {
   color: #fff;
 }
 
-/* ── Hero band 1: globe panel (left, auto width) | Most Read (fills the rest).
-   The globe column defines the band height from the GEOGRAPHY OF THE NEWS
-   header top to the chips bottom; the Most Read card stretches to match. The
-   band lives inside the shell's shared content envelope, so its outer edges
-   align with the nav logo and partner button automatically. */
+/* ── Hero band 2: globe panel (left, --eth-lead-col wide) | Most Read
+   (fills the rest). The lead column width and 20px gap are SHARED with the
+   AotM banner above via --eth-lead-col, so the Most Read left edge lands
+   exactly on the AotM title text left edge at every viewport width. The
+   globe column defines the band height; Most Read stretches to match. */
 .eth-hero-top {
+  --eth-lead-col: min(42%, 560px);
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  column-gap: 28px;
+  grid-template-columns: var(--eth-lead-col) minmax(0, 1fr);
+  column-gap: 20px;
   align-items: stretch;
-  margin: 20px 0 18px; /* top clears the "Publish to the Echo" note under the masthead */
+  margin: 0 0 18px;
 }
 .eth-hero-side {
   position: relative; /* anchor for the absolute-fill card (desktop) */
@@ -545,6 +549,10 @@ html:has(body.echo-route) {
 }
 .eth-hero-top .eth-geo {
   padding: 0; /* the band supplies the vertical rhythm; globe span drives height */
+  /* The geo panel fills its fixed lead column so the globe centers within the
+     same width the AotM image occupies above. */
+  width: 100%;
+  justify-self: stretch;
 }
 /* Height lock (desktop two-column band only): grid sizes a row to its TALLEST
    column, and align-self: stretch only grows shorter items. Taking Most Read
@@ -559,11 +567,13 @@ html:has(body.echo-route) {
   }
 }
 
-/* ── Hero band 2: Article of the Month, full width. Horizontal banner: hero
-   image on the left at a fixed basis, kicker and headline filling the right.
-   Sits below the globe band, spans margin to margin. */
+/* ── Hero band 1: Article of the Month, full width, at the top. Horizontal
+   banner: hero image on the left at the shared lead-column width, kicker and
+   headline filling the right. Top margin clears the "Publish to the Echo"
+   note under the masthead (moved here from the old band 1). */
 .eth-aotm-card--wide {
-  margin: 0 0 18px;
+  --eth-lead-col: min(42%, 560px);
+  margin: 20px 0 18px;
 }
 .eth-aotm-card--wide .eth-aotm-card-link {
   flex-direction: row;
@@ -571,8 +581,8 @@ html:has(body.echo-route) {
   gap: 20px;
 }
 .eth-aotm-card--wide .eth-aotm-card-img {
-  flex: 0 0 42%;
-  max-width: 560px;
+  flex: 0 0 var(--eth-lead-col);
+  max-width: none; /* the min() inside --eth-lead-col already caps at 560px */
   aspect-ratio: 16 / 9;
 }
 .eth-aotm-card--wide .eth-aotm-card-text {

@@ -553,7 +553,7 @@ export default function EzanaEchoPage() {
           button. */}
       <header className="eth-masthead">
         <Link href="/" className="eth-masthead-brand" aria-label="Ezana home">
-          <EzanaNavLogo width={44} height={37} priority />
+          <EzanaNavLogo width={64} height={54} priority />
         </Link>
         {/* Centered wordmark: same serif treatment as the article nav
             (.nav-echo-wordmark supplies the typography; .eth-nav-center only
@@ -584,52 +584,19 @@ export default function EzanaEchoPage() {
       </header>
 
       <div className="eth-wrap">
-        {/* Hero, two stacked bands. Top band: GEOGRAPHY OF THE NEWS (left, auto
-            width) with the Most Read ranked card filling all remaining width to
-            the right margin. Bottom band: Article of the Month as a full-width
-            horizontal banner (image left, headline right). The bands inherit the
-            dashboard shell's content envelope, so outer edges still align with
-            the nav logo and partner button without hardcoded insets. Continent
-            filter state stays at page level, so hover/chips still mute the
-            board cards below. */}
-        <div className="eth-hero-top">
-          <GeoNewsPanel
-            active={activeContinent}
-            onHoverChange={setGeoHover}
-            onPinToggle={toggleGeoPin}
-          />
-
-          {/* Most Read: ranked card spanning the remaining width. With zero
-              nonzero view counts the card hides but the column remains, keeping
-              the band height driven by the globe. */}
-          <div className="eth-hero-side">
-            {mostRead.length > 0 && (
-              <div className="eth-mostread-card" aria-label="Most read articles">
-                <span className="eth-mostread-label">Most Read</span>
-                <ol className="eth-mostread-list">
-                  {mostRead.map((a, i) => (
-                    <li key={a.id} className="eth-mostread-item">
-                      <Link href={`/ezana-echo/${a.id}`} className="eth-mostread-link">
-                        <span className="eth-mostread-rank">{String(i + 1).padStart(2, '0')}</span>
-                        <span className="eth-mostread-main">
-                          <span className="eth-mostread-title">{a.title}</span>
-                          <span className="eth-mostread-views">
-                            {(a.views || 0).toLocaleString()}
-                          </span>
-                        </span>
-                      </Link>
-                    </li>
-                  ))}
-                </ol>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Article of the Month: full-width horizontal banner below the top
-            band. Image left, kicker and headline right. The month dropdown pill
-            remains an absolutely positioned sibling of the Link over the image,
-            so selecting a month can never trigger navigation. */}
+        {/* Hero, two stacked bands. Band 1: Article of the Month as a
+            full-width horizontal banner (image left, headline right). Band 2:
+            GEOGRAPHY OF THE NEWS (left) with the Most Read ranked card filling
+            the remaining width. Both bands share --eth-lead-col so the Most
+            Read left edge aligns exactly with the AotM title text left edge.
+            The bands inherit the dashboard shell's content envelope, so outer
+            edges align with the nav logo and partner button without hardcoded
+            insets. Continent filter state stays at page level, so hover/chips
+            still mute the board cards below. */}
+        {/* Article of the Month: full-width horizontal banner at the top of
+            the hero. Image left, kicker and headline right. The month dropdown
+            pill remains an absolutely positioned sibling of the Link over the
+            image, so selecting a month can never trigger navigation. */}
         {articleOfMonth && (
           <article className="eth-aotm-card eth-aotm-card--wide">
             <Link href={`/ezana-echo/${articleOfMonth.id}`} className="eth-aotm-card-link">
@@ -672,6 +639,43 @@ export default function EzanaEchoPage() {
             )}
           </article>
         )}
+
+        {/* Band 2: globe panel (left, --eth-lead-col wide) | Most Read
+            (fills the rest). The globe column defines the band height; Most
+            Read stretches to match via the desktop height lock. */}
+        <div className="eth-hero-top">
+          <GeoNewsPanel
+            active={activeContinent}
+            onHoverChange={setGeoHover}
+            onPinToggle={toggleGeoPin}
+          />
+
+          {/* Most Read: ranked card spanning the remaining width. With zero
+              nonzero view counts the card hides but the column remains, keeping
+              the band height driven by the globe. */}
+          <div className="eth-hero-side">
+            {mostRead.length > 0 && (
+              <div className="eth-mostread-card" aria-label="Most read articles">
+                <span className="eth-mostread-label">Most Read</span>
+                <ol className="eth-mostread-list">
+                  {mostRead.map((a, i) => (
+                    <li key={a.id} className="eth-mostread-item">
+                      <Link href={`/ezana-echo/${a.id}`} className="eth-mostread-link">
+                        <span className="eth-mostread-rank">{String(i + 1).padStart(2, '0')}</span>
+                        <span className="eth-mostread-main">
+                          <span className="eth-mostread-title">{a.title}</span>
+                          <span className="eth-mostread-views">
+                            {(a.views || 0).toLocaleString()}
+                          </span>
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* Global time-window filter: a compact centered toolbar row between
             MOST READ and the category headers; applies to all 6 columns and
