@@ -584,68 +584,24 @@ export default function EzanaEchoPage() {
       </header>
 
       <div className="eth-wrap">
-        {/* Hero row: AotM portrait card (left) | GEOGRAPHY OF THE NEWS (center)
-            | Most Read ranked card (right). The globe column drives the row
-            height; the side cards stretch to match it. The row inherits the
-            dashboard shell's content envelope, so the AotM left edge and the
-            Most Read right edge align with the nav logo and partner button
-            without any hardcoded insets. Continent filter state stays at page
-            level, so hover/chips still mute the board cards below. */}
-        <div className="eth-hero-row">
-          <div className="eth-hero-side">
-            {articleOfMonth && (
-              <article className="eth-aotm-card">
-                <Link href={`/ezana-echo/${articleOfMonth.id}`} className="eth-aotm-card-link">
-                  <div className="eth-aotm-card-img">
-                    {articleOfMonth.heroImage?.src ? (
-                      <img
-                        src={articleOfMonth.heroImage.src}
-                        alt={articleOfMonth.heroImage.alt || articleOfMonth.title}
-                        loading="lazy"
-                        onError={(e) => {
-                          // remove (not display:none) so the :not(:has(img)) placeholder shows
-                          e.currentTarget.remove();
-                        }}
-                      />
-                    ) : null}
-                  </div>
-                  <span className="eth-aotm-eyebrow">
-                    Article of the Month
-                    {aotmIdx > 0 && aotmHistory[aotmIdx] ? ` (${aotmHistory[aotmIdx].month})` : ''}
-                  </span>
-                  <h2 className="eth-aotm-card-title">{articleOfMonth.title}</h2>
-                </Link>
-                {/* Month history dropdown: overlay pill on the hero's top-right.
-                    A sibling of the Link (absolutely positioned over it), so
-                    selecting a month can never trigger navigation. */}
-                {aotmHistory.length > 1 && (
-                  <label className="eth-aotm-months">
-                    <span className="eth-aotm-months-label">Month</span>
-                    <select
-                      value={aotmIdx}
-                      onChange={(e) => setAotmIdx(Number(e.target.value))}
-                      aria-label="View previous Articles of the Month"
-                    >
-                      {aotmHistory.map((h, i) => (
-                        <option key={h.month} value={i}>
-                          {h.month}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                )}
-              </article>
-            )}
-          </div>
-
+        {/* Hero, two stacked bands. Top band: GEOGRAPHY OF THE NEWS (left, auto
+            width) with the Most Read ranked card filling all remaining width to
+            the right margin. Bottom band: Article of the Month as a full-width
+            horizontal banner (image left, headline right). The bands inherit the
+            dashboard shell's content envelope, so outer edges still align with
+            the nav logo and partner button without hardcoded insets. Continent
+            filter state stays at page level, so hover/chips still mute the
+            board cards below. */}
+        <div className="eth-hero-top">
           <GeoNewsPanel
             active={activeContinent}
             onHoverChange={setGeoHover}
             onPinToggle={toggleGeoPin}
           />
 
-          {/* Most Read: vertical ranked card. With zero nonzero view counts the
-              card hides but the grid column remains, keeping the globe centered. */}
+          {/* Most Read: ranked card spanning the remaining width. With zero
+              nonzero view counts the card hides but the column remains, keeping
+              the band height driven by the globe. */}
           <div className="eth-hero-side">
             {mostRead.length > 0 && (
               <div className="eth-mostread-card" aria-label="Most read articles">
@@ -669,6 +625,53 @@ export default function EzanaEchoPage() {
             )}
           </div>
         </div>
+
+        {/* Article of the Month: full-width horizontal banner below the top
+            band. Image left, kicker and headline right. The month dropdown pill
+            remains an absolutely positioned sibling of the Link over the image,
+            so selecting a month can never trigger navigation. */}
+        {articleOfMonth && (
+          <article className="eth-aotm-card eth-aotm-card--wide">
+            <Link href={`/ezana-echo/${articleOfMonth.id}`} className="eth-aotm-card-link">
+              <div className="eth-aotm-card-img">
+                {articleOfMonth.heroImage?.src ? (
+                  <img
+                    src={articleOfMonth.heroImage.src}
+                    alt={articleOfMonth.heroImage.alt || articleOfMonth.title}
+                    loading="lazy"
+                    onError={(e) => {
+                      // remove (not display:none) so the :not(:has(img)) placeholder shows
+                      e.currentTarget.remove();
+                    }}
+                  />
+                ) : null}
+              </div>
+              <div className="eth-aotm-card-text">
+                <span className="eth-aotm-eyebrow">
+                  Article of the Month
+                  {aotmIdx > 0 && aotmHistory[aotmIdx] ? ` (${aotmHistory[aotmIdx].month})` : ''}
+                </span>
+                <h2 className="eth-aotm-card-title">{articleOfMonth.title}</h2>
+              </div>
+            </Link>
+            {aotmHistory.length > 1 && (
+              <label className="eth-aotm-months">
+                <span className="eth-aotm-months-label">Month</span>
+                <select
+                  value={aotmIdx}
+                  onChange={(e) => setAotmIdx(Number(e.target.value))}
+                  aria-label="View previous Articles of the Month"
+                >
+                  {aotmHistory.map((h, i) => (
+                    <option key={h.month} value={i}>
+                      {h.month}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+          </article>
+        )}
 
         {/* Global time-window filter: a compact centered toolbar row between
             MOST READ and the category headers; applies to all 6 columns and

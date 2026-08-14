@@ -526,14 +526,14 @@ html:has(body.echo-route) {
   color: #fff;
 }
 
-/* ── Hero row: AotM portrait card | globe panel | Most Read ranked card.
-   The center (globe) column is auto-width and defines the row height from the
-   GEOGRAPHY OF THE NEWS header top to the chips bottom; side cards stretch to
-   match. The row lives inside the shell's shared content envelope, so its
-   outer edges align with the nav logo and partner button automatically. */
-.eth-hero-row {
+/* ── Hero band 1: globe panel (left, auto width) | Most Read (fills the rest).
+   The globe column defines the band height from the GEOGRAPHY OF THE NEWS
+   header top to the chips bottom; the Most Read card stretches to match. The
+   band lives inside the shell's shared content envelope, so its outer edges
+   align with the nav logo and partner button automatically. */
+.eth-hero-top {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr);
   column-gap: 28px;
   align-items: stretch;
   margin: 20px 0 18px; /* top clears the "Publish to the Echo" note under the masthead */
@@ -543,30 +543,48 @@ html:has(body.echo-route) {
   display: flex;
   min-width: 0;
 }
-.eth-hero-row .eth-geo {
-  padding: 0; /* the row supplies the vertical rhythm; globe span drives height */
+.eth-hero-top .eth-geo {
+  padding: 0; /* the band supplies the vertical rhythm; globe span drives height */
 }
-/* Height lock (desktop three-column row only): grid sizes a row to its
-   TALLEST column, and align-self: stretch only grows shorter items. Taking
-   the side cards out of the height calculation via absolute fill collapses
-   the row to the one remaining height contributor, the globe column, so the
-   card bottoms sit exactly on the continent chips row bottom at any width.
-   Pure CSS, SSR-safe, resize-proof. The 1100px stacked layout never sees
-   these rules and keeps natural card heights. */
+/* Height lock (desktop two-column band only): grid sizes a row to its TALLEST
+   column, and align-self: stretch only grows shorter items. Taking Most Read
+   out of the height calculation via absolute fill collapses the band to the
+   one remaining height contributor, the globe column. Pure CSS, SSR-safe,
+   resize-proof. The 1100px stacked layout never sees this rule. */
 @media (min-width: 1101px) {
-  .eth-hero-side > .eth-aotm-card,
   .eth-hero-side > .eth-mostread-card {
     position: absolute;
     inset: 0;
     overflow: hidden;
   }
-  /* Hero owns 70% of the height-locked card; kicker + 2-line headline fit
-     in the remaining 30%. Aspect ratio released so the basis wins. */
-  .eth-aotm-card-img {
-    flex: 0 0 70%;
-    aspect-ratio: auto;
-    max-height: none;
-  }
+}
+
+/* ── Hero band 2: Article of the Month, full width. Horizontal banner: hero
+   image on the left at a fixed basis, kicker and headline filling the right.
+   Sits below the globe band, spans margin to margin. */
+.eth-aotm-card--wide {
+  margin: 0 0 18px;
+}
+.eth-aotm-card--wide .eth-aotm-card-link {
+  flex-direction: row;
+  align-items: stretch;
+  gap: 20px;
+}
+.eth-aotm-card--wide .eth-aotm-card-img {
+  flex: 0 0 42%;
+  max-width: 560px;
+  aspect-ratio: 16 / 9;
+}
+.eth-aotm-card--wide .eth-aotm-card-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+}
+.eth-aotm-card--wide .eth-aotm-card-title {
+  font-size: clamp(22px, 2.4vw, 32px);
+  -webkit-line-clamp: 3;
 }
 
 /* AotM portrait card: hero on top (flush, square bottom corners), kicker,
@@ -690,15 +708,22 @@ html:has(body.echo-route) {
   .eth-board {
     grid-template-columns: repeat(2, 1fr);
   }
-  /* Hero row stacks: globe first, then AotM, then Most Read, full width. */
-  .eth-hero-row {
+  /* Top band stacks: globe first, then Most Read, full width. */
+  .eth-hero-top {
     display: flex;
     flex-direction: column;
     gap: 20px;
     align-items: stretch;
   }
-  .eth-hero-row .eth-geo {
-    order: -1;
+  /* Wide AotM banner collapses back to the stacked portrait layout. */
+  .eth-aotm-card--wide .eth-aotm-card-link {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .eth-aotm-card--wide .eth-aotm-card-img {
+    flex: none;
+    max-width: none;
+    width: 100%;
   }
   /* Belts are desktop-only — tablet/mobile keep today's static stacks. */
   .eth-belt {
@@ -915,9 +940,11 @@ html:has(body.echo-route) {
    page.js (BELT_GAP) must equal the 6px tile gap above.
    ══════════════════════════════════════════════════════════════ */
 .eth-board .echo-card {
-  border: 1px solid var(--border-primary);
+  /* Borderless tiles: the page background flows through; the hero image is
+     the visual object. The emerald ring below remains the hover affordance. */
+  border: none;
   border-radius: 6px;
-  background: var(--bg-primary);
+  background: transparent;
   box-shadow: none;
 }
 /* Compact hero: full-bleed to the tile's inner edge, top corners following
@@ -936,7 +963,6 @@ html:has(body.echo-route) {
    with an emerald border + 1px outer ring instead of a translate lift. */
 .eth-board .echo-card:hover {
   transform: none;
-  border-color: var(--emerald);
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--emerald) 70%, transparent);
 }
 .eth-board .echo-card {
