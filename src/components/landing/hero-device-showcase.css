@@ -15,11 +15,13 @@
 .lpd-stack {
   position: absolute;
   z-index: 4;
-  top: 50%;
+  /* +72px: the raised phone (top -104px) extends above the canvas; this keeps
+     its island and greeting below the page top instead of clipped by it. */
+  top: calc(50% + 72px);
   right: -8px;
   transform: translateY(-50%);
   width: 620px;
-  height: 760px;
+  height: 860px;
   pointer-events: none;
   user-select: none;
 }
@@ -282,8 +284,12 @@
 /* ══════════════ iPhone (unchanged from v4) ══════════════ */
 .lpd-phone {
   position: absolute;
-  top: 56px;
-  right: 32px;
+  /* Raised above the iMac so only its bottom-left corner grazes the iMac's
+     top-right bezel (8px sliver; screen content is never covered). -56px is
+     the highest the phone can sit with the +72px stack shift before the
+     landing nav covers its greeting. */
+  top: -56px;
+  right: 24px;
   width: 190px;
   background: var(--bg-primary);
   border: 5px solid var(--bg-tertiary);
@@ -326,7 +332,7 @@
   margin-bottom: 8px;
 }
 .lpd-phone-hi {
-  font-size: 12.5px;
+  font-size: 13.5px;
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--emerald);
@@ -335,9 +341,28 @@
   font-size: 11px;
   color: var(--text-muted);
 }
-.lpd-label {
+.lpd-socialbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin: 2px 0 4px;
+}
+.lpd-socialstat {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-family: var(--font-mono);
   font-size: 7.5px;
+  letter-spacing: 0.04em;
+  color: var(--emerald);
+}
+.lpd-socialstat .bi {
+  font-size: 8.5px;
+}
+.lpd-label {
+  font-family: var(--font-mono);
+  font-size: 8px;
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -347,8 +372,8 @@
 
 .lpd-people {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 5px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
 }
 .lpd-person {
   display: flex;
@@ -366,10 +391,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--bg-primary);
   flex: none;
@@ -395,7 +420,7 @@
   background: var(--blue);
 }
 .lpd-person-name {
-  font-size: 7.5px;
+  font-size: 9px;
   font-weight: 600;
   color: var(--text-secondary);
   max-width: 100%;
@@ -404,7 +429,7 @@
   text-overflow: ellipsis;
 }
 .lpd-person-meta {
-  font-size: 6.5px;
+  font-size: 7.5px;
   color: var(--text-faint);
   white-space: nowrap;
 }
@@ -515,13 +540,15 @@
   --surface-card: rgba(255, 255, 255, 0.55);
   color: var(--text-secondary);
 }
-/* Auto-copy: sits in the phone's vertical band, pushed right of it so it
-   hovers over the China region of the dotted map. May layer over ~25px of
-   the phone's right FRAME edge only — never its content. If the viewport
-   clips it at 1440px, pull `right` toward 0 in 20px steps. */
+/* Auto-copy: rides beside the raised iPhone, fully clear of its content.
+   May layer over at most 10px of the phone's left FRAME edge. Sits on the
+   phone's LEFT because the stack's right edge is nearly flush with the
+   viewport at 1440px and below, so any right-side placement clips
+   off-screen. Right-anchored like the phone (right 24 + width 190 - 4px
+   frame graze = 210), so the 4px overlap holds at every stack width. */
 .lpd-sat--sync {
-  top: 118px;
-  right: -150px;
+  top: -60px;
+  right: 210px;
   width: 210px;
   z-index: 3;
 }

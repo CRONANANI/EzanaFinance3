@@ -1,0 +1,130 @@
+/* Hero iMac dimension visuals (hdv- prefix). Accent inherits --dv-accent
+   from the parent .lpd-dim card. All colors via tokens; no hardcoded hex. */
+.hdv-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.hdv-t {
+  transition:
+    transform 0.6s ease,
+    opacity 0.6s ease,
+    width 0.6s ease,
+    r 0.6s ease;
+}
+.hdv-mono {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  fill: var(--text-muted);
+}
+.hdv-small {
+  font-size: 8px;
+}
+.hdv-kicker {
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  fill: var(--text-faint);
+}
+.hdv-foot {
+  font-size: 7.5px;
+  letter-spacing: 0.12em;
+  fill: var(--dv-accent);
+}
+.hdv-strong {
+  fill: var(--text-primary);
+  font-weight: 700;
+}
+.hdv-dim {
+  fill: var(--text-faint);
+}
+.hdv-rowbg,
+.hdv-lane {
+  fill: var(--surface-card);
+  stroke: var(--border-secondary);
+}
+.hdv-bar {
+  fill: var(--dv-accent);
+  opacity: 0.85;
+}
+.hdv-block {
+  fill: var(--surface-card);
+  stroke: var(--border-secondary);
+}
+.hdv-block.is-hot {
+  stroke: var(--dv-accent);
+  stroke-width: 1.6;
+  fill: color-mix(in srgb, var(--dv-accent) 10%, transparent);
+}
+.hdv-cell {
+  fill: var(--bg-tertiary);
+  opacity: 0.55;
+}
+.hdv-cell.is-on {
+  fill: var(--dv-accent);
+  opacity: 0.9;
+}
+.hdv-line {
+  fill: none;
+  stroke: var(--dv-accent);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.hdv-chip {
+  fill: var(--surface-card);
+  stroke: var(--border-secondary);
+}
+.hdv-edge {
+  stroke: var(--border-primary);
+  stroke-width: 1.2;
+}
+.hdv-edge.is-hot {
+  stroke: var(--dv-accent);
+  stroke-width: 1.8;
+}
+.hdv-node {
+  fill: var(--bg-tertiary);
+  stroke: var(--border-primary);
+}
+.hdv-node.is-hot {
+  fill: color-mix(in srgb, var(--dv-accent) 24%, var(--bg-primary));
+  stroke: var(--dv-accent);
+}
+.hdv-node-you {
+  fill: var(--dv-accent);
+}
+.hdv-you {
+  font-size: 8px;
+  font-weight: 700;
+  fill: var(--bg-primary);
+}
+.hdv-baseline {
+  stroke: var(--border-secondary);
+}
+.hdv-arc {
+  fill: none;
+  stroke: var(--dv-accent);
+  stroke-width: 1.6;
+  stroke-dasharray: 6 8;
+  animation: hdv-arc-flow 3.2s linear infinite;
+}
+.hdv-port {
+  fill: var(--dv-accent);
+}
+.hdv-cardlet {
+  fill: var(--bg-primary);
+  stroke: var(--border-primary);
+}
+@keyframes hdv-arc-flow {
+  to {
+    stroke-dashoffset: -28;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hdv-t {
+    transition: none;
+  }
+  .hdv-arc {
+    animation: none;
+  }
+}

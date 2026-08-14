@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { DATASET_TAXONOMY } from '@/lib/datasets/taxonomy';
-import { DimensionVisual } from './dimension-visuals';
+import { HeroDimensionVisual } from './hero-dimension-visuals';
 import './hero-device-showcase.css';
 
 /**
@@ -27,7 +27,6 @@ const PEOPLE = [
   { id: 'p1', name: 'Taylor J.', cap: '$1.2M', copiers: '1.5K', hue: 'a' },
   { id: 'p2', name: 'Beth C.', cap: '$13.4K', copiers: '24K', hue: 'b' },
   { id: 'p3', name: 'Tarcis M.', cap: '$85.1K', copiers: '9.2K', hue: 'c' },
-  { id: 'p4', name: 'Joy Chen', cap: '$2.4K', copiers: '895', hue: 'd' },
 ];
 
 const FEED = [
@@ -35,7 +34,7 @@ const FEED = [
   { id: 'f2', who: 'Rep. Whitfield', what: 'filed a disclosure', when: '12m' },
   { id: 'f3', who: 'BlackRock', what: 'updated 13F', when: '31m' },
   { id: 'f4', who: 'Taylor J.', what: 'opened NVDA', when: '48m' },
-  { id: 'f5', who: 'Joy Chen', what: 'started copying you', when: '1h' },
+  { id: 'f5', who: 'Katherine C.', what: 'started copying you', when: '1h' },
 ];
 
 /* Falling JSON fragments — same schema shape as PortfolioSignalCard's
@@ -168,7 +167,7 @@ export function HeroDeviceShowcase() {
                   className={`lpd-dim${i === activeDim ? ' is-active' : ''}`}
                   style={{ '--dv-accent': d.color }}
                 >
-                  <DimensionVisual dimensionId={d.id} tick={i === activeDim ? tick : 0} />
+                  <HeroDimensionVisual dimensionId={d.id} tick={i === activeDim ? tick : 0} />
                 </div>
               ))}
               <div className="lpd-dim-name lpd-mono">
@@ -186,6 +185,15 @@ export function HeroDeviceShowcase() {
           <div className="lpd-phone-head">
             <span className="lpd-phone-hi">Welcome, Investor.</span>
             <i className="bi bi-bell lpd-bell" />
+          </div>
+
+          <div className="lpd-socialbar">
+            <span className="lpd-socialstat">
+              <i className="bi bi-people-fill" /> 12.4K community
+            </span>
+            <span className="lpd-socialstat">
+              <i className="bi bi-arrow-repeat" /> copy trading live
+            </span>
           </div>
 
           <div className="lpd-label">Who you&apos;re copying…</div>
