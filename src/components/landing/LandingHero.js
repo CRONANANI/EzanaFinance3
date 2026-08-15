@@ -206,7 +206,8 @@ export function LandingHero() {
         </div>
 
         {/* Social copy-trading device showcase (decorative marketing UI —
-            fictional people/funds, pointer-events: none, hidden <1181px). */}
+            fictional people/funds, pointer-events: none; scales with the
+            viewport and drops below the copy column under 1080px). */}
         <HeroDeviceShowcase />
       </div>
     </div>
