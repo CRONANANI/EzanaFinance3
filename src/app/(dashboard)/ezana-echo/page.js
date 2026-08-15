@@ -520,12 +520,11 @@ export default function EzanaEchoPage() {
       </header>
 
       <div className="eth-wrap">
-        {/* ── 2a hero. Ink rule under the untouched masthead, then a centered
-            text-only Article of the Month, a 5-column Most Read ledger, and a
-            floating command bar (continent chips + time segments) straddling
-            the ledger's bottom hairline. The board below is untouched. */}
-        <div className="eth-ink-rule" aria-hidden="true" />
-
+        {/* ── 2a hero. Centered text-only Article of the Month directly under
+            the untouched masthead (no separating rules), a compact 5-column
+            Most Read ledger, and a floating command bar (continent chips +
+            time segments) straddling the ledger's bottom hairline. The board
+            below is untouched. */}
         {/* Article of the Month: text-forward, no image. The whole headline
             links to the article; the month pill is a real <select> styled as
             a pill, outside the link so changing months never navigates. */}
