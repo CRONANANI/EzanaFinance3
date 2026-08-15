@@ -6,7 +6,6 @@ import { useAuth } from '@/components/AuthProvider';
 import { isAdminUserClient } from '@/lib/admin-helpers-client';
 import { EzanaNavLogo } from '@/components/brand/EzanaNavLogo';
 import { EchoArticleCard } from '@/components/echo/EchoArticleCard';
-import { InteractiveGlobe } from '@/components/ui/interactive-globe';
 import { CONTINENTS, continentsForGeos } from '@/lib/echo/geo-continents';
 import { AOTM_HISTORY } from '@/lib/ezana-echo-mock';
 
@@ -103,6 +102,17 @@ function withinWindow(publishedAt, windowId) {
   if (Number.isNaN(then)) return true;
   return Date.now() - then <= win.days * 86400000;
 }
+
+/* Command-bar chip labels: abbreviated display only. Canonical continent
+   values (keys) stay untouched; filtering still matches CONTINENTS. */
+const CONTINENT_SHORT = {
+  'North America': 'N. America',
+  'South America': 'S. America',
+  Europe: 'Europe',
+  Africa: 'Africa',
+  Asia: 'Asia',
+  Oceania: 'Oceania',
+};
 
 /* Conveyor-belt columns: constant speed in px/s (slow enough to read a title as
    it passes — one card height ≈ 9s), and the seam gap, which MUST equal the
@@ -237,72 +247,6 @@ function CategoryColumn({ col, colIndex, admin, filter, geoActive }) {
         <div className="eth-col-empty">No articles yet</div>
       )}
     </div>
-  );
-}
-
-/* GEOGRAPHY OF THE NEWS: the article-rail globe on the homepage, extended
-   with continent hover. Hovering land (or a chip below) filters the board;
-   chips are the accessible/touch path (click pins, click again or tap
-   elsewhere clears). Pauses offscreen via the same IO pattern as the rail. */
-function GeoNewsPanel({ active, onHoverChange, onPinToggle }) {
-  const hostRef = useRef(null);
-  const [visible, setVisible] = useState(true);
-  // Same read-once ocean token resolution as EchoGlobeRail, so the globe
-  // does not render as a dark disc in light mode.
-  const [oceanFill, setOceanFill] = useState(null);
-
-  useEffect(() => {
-    const el = hostRef.current;
-    if (!el || typeof IntersectionObserver === 'undefined') return undefined;
-    const io = new IntersectionObserver(([e]) => setVisible(e.isIntersecting), {
-      threshold: 0.05,
-    });
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const cs = getComputedStyle(document.documentElement);
-    const token =
-      cs.getPropertyValue('--echo-globe-ocean').trim() ||
-      cs.getPropertyValue('--bg-primary').trim();
-    if (token) setOceanFill(token);
-  }, []);
-
-  return (
-    <aside ref={hostRef} className="eth-geo" aria-label="Filter articles by continent">
-      <div className="eth-geo-head">Geography of the News</div>
-      <div className="eth-geo-globe">
-        <InteractiveGlobe
-          size={260}
-          autoRotateSpeed={0.35}
-          paused={!visible}
-          continentHover
-          onContinentHover={onHoverChange}
-          highlightContinent={active}
-          showConnections={false}
-          {...(oceanFill ? { oceanFill } : {})}
-        />
-      </div>
-      <div className="eth-geo-chips" role="group" aria-label="Continents">
-        {CONTINENTS.map((c) => (
-          <button
-            key={c}
-            type="button"
-            className={active === c ? 'eth-geo-chip is-active' : 'eth-geo-chip'}
-            aria-pressed={active === c}
-            onMouseEnter={() => onHoverChange(c)}
-            onMouseLeave={() => onHoverChange(null)}
-            onFocus={() => onHoverChange(c)}
-            onBlur={() => onHoverChange(null)}
-            onClick={() => onPinToggle(c)}
-          >
-            {c}
-          </button>
-        ))}
-      </div>
-    </aside>
   );
 }
 
@@ -525,21 +469,13 @@ export default function EzanaEchoPage() {
     return () => io.disconnect();
   }, [boardRevealed]);
 
-  // Continent filter (globe panel + chips). Hover is transient; a chip click
-  // (the touch path) pins until re-click or a tap outside the panel. Only
-  // board cards mute; the AotM banner and MOST READ band are exempt.
-  const [geoHover, setGeoHover] = useState(null);
-  const [geoPinned, setGeoPinned] = useState(null);
-  const activeContinent = geoPinned || geoHover;
-  const toggleGeoPin = (c) => setGeoPinned((p) => (p === c ? null : c));
-  useEffect(() => {
-    if (!geoPinned) return undefined;
-    const onDown = (e) => {
-      if (!e.target.closest('.eth-geo')) setGeoPinned(null);
-    };
-    document.addEventListener('pointerdown', onDown);
-    return () => document.removeEventListener('pointerdown', onDown);
-  }, [geoPinned]);
+  // Continent filter, command-bar edition: a single persistent selection.
+  // Click selects, clicking the active chip clears (no hover filtering, no
+  // outside-click dismissal; the selection is deliberate UI state). null =
+  // no region filter. Board cards outside the selection mute exactly as
+  // before via the same geoActive wiring.
+  const [selectedContinent, setSelectedContinent] = useState(null);
+  const toggleContinent = (c) => setSelectedContinent((p) => (p === c ? null : c));
 
   const admin = { isAdmin, onArchive: handleArchive, archivingId };
   const filter = { activeSubs, openFilter, onOpenFilter: setOpenFilter, onToggleSub: toggleSub };
@@ -584,114 +520,108 @@ export default function EzanaEchoPage() {
       </header>
 
       <div className="eth-wrap">
-        {/* Hero, two stacked bands. Band 1: Article of the Month as a
-            full-width horizontal banner (image left, headline right). Band 2:
-            GEOGRAPHY OF THE NEWS (left) with the Most Read ranked card filling
-            the remaining width. Both bands share --eth-lead-col so the Most
-            Read left edge aligns exactly with the AotM title text left edge.
-            The bands inherit the dashboard shell's content envelope, so outer
-            edges align with the nav logo and partner button without hardcoded
-            insets. Continent filter state stays at page level, so hover/chips
-            still mute the board cards below. */}
-        {/* Article of the Month: full-width horizontal banner at the top of
-            the hero. Image left, kicker and headline right. The month dropdown
-            pill remains an absolutely positioned sibling of the Link over the
-            image, so selecting a month can never trigger navigation. */}
+        {/* ── 2a hero. Ink rule under the untouched masthead, then a centered
+            text-only Article of the Month, a 5-column Most Read ledger, and a
+            floating command bar (continent chips + time segments) straddling
+            the ledger's bottom hairline. The board below is untouched. */}
+        <div className="eth-ink-rule" aria-hidden="true" />
+
+        {/* Article of the Month: text-forward, no image. The whole headline
+            links to the article; the month pill is a real <select> styled as
+            a pill, outside the link so changing months never navigates. */}
         {articleOfMonth && (
-          <article className="eth-aotm-card eth-aotm-card--wide">
-            <Link href={`/ezana-echo/${articleOfMonth.id}`} className="eth-aotm-card-link">
-              <div className="eth-aotm-card-img">
-                {articleOfMonth.heroImage?.src ? (
-                  <img
-                    src={articleOfMonth.heroImage.src}
-                    alt={articleOfMonth.heroImage.alt || articleOfMonth.title}
-                    loading="lazy"
-                    onError={(e) => {
-                      // remove (not display:none) so the :not(:has(img)) placeholder shows
-                      e.currentTarget.remove();
-                    }}
-                  />
-                ) : null}
-              </div>
-              <div className="eth-aotm-card-text">
-                <span className="eth-aotm-eyebrow">
-                  Article of the Month
-                  {aotmIdx > 0 && aotmHistory[aotmIdx] ? ` (${aotmHistory[aotmIdx].month})` : ''}
-                </span>
-                <h2 className="eth-aotm-card-title">{articleOfMonth.title}</h2>
-              </div>
+          <section className="eth-aotm2" aria-label="Article of the month">
+            <div className="eth-aotm2-eyebrow">
+              Article of the Month
+              {aotmHistory[aotmIdx]?.month ? ` · ${aotmHistory[aotmIdx].month}` : ''}
+            </div>
+            <Link href={`/ezana-echo/${articleOfMonth.id}`} className="eth-aotm2-title">
+              {articleOfMonth.title}
             </Link>
-            {aotmHistory.length > 1 && (
-              <label className="eth-aotm-months">
-                <span className="eth-aotm-months-label">Month</span>
-                <select
-                  value={aotmIdx}
-                  onChange={(e) => setAotmIdx(Number(e.target.value))}
-                  aria-label="View previous Articles of the Month"
-                >
-                  {aotmHistory.map((h, i) => (
-                    <option key={h.month} value={i}>
-                      {h.month}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            )}
-          </article>
+            <div className="eth-aotm2-meta">
+              {articleOfMonth.readTime ? (
+                <>
+                  <span className="eth-aotm2-read">{articleOfMonth.readTime} min read</span>
+                  <i className="eth-aotm2-dot" aria-hidden="true" />
+                </>
+              ) : null}
+              {aotmHistory.length > 1 && (
+                <label className="eth-month-pill">
+                  <span>Month ·</span>
+                  <select
+                    value={aotmIdx}
+                    onChange={(e) => setAotmIdx(Number(e.target.value))}
+                    aria-label="View previous Articles of the Month"
+                  >
+                    {aotmHistory.map((h, i) => (
+                      <option key={h.month} value={i}>
+                        {h.month}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+            </div>
+          </section>
         )}
 
-        {/* Band 2: globe panel (left, --eth-lead-col wide) | Most Read
-            (fills the rest). The globe column defines the band height; Most
-            Read stretches to match via the desktop height lock. */}
-        <div className="eth-hero-top">
-          <GeoNewsPanel
-            active={activeContinent}
-            onHoverChange={setGeoHover}
-            onPinToggle={toggleGeoPin}
-          />
+        {/* Most Read: 5-column ledger. Rank numerals in italic serif, whole
+            cell links. Cumulative view counts (honest label: READS, not
+            "this week"). With no nonzero counts the band renders nothing and
+            the command bar straddles the AotM hairline instead. */}
+        {mostRead.length > 0 && (
+          <section className="eth-ledger" aria-label="Most read articles">
+            <div className="eth-ledger-label">Most Read</div>
+            <ol className="eth-ledger-grid">
+              {mostRead.map((a, i) => (
+                <li key={a.id} className="eth-ledger-cell">
+                  <Link href={`/ezana-echo/${a.id}`} className="eth-ledger-link">
+                    <span className="eth-ledger-rank">{String(i + 1).padStart(2, '0')}</span>
+                    <span className="eth-ledger-title">{a.title}</span>
+                    <span className="eth-ledger-reads">
+                      {(a.views || 0).toLocaleString()} reads
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ol>
+          </section>
+        )}
 
-          {/* Most Read: ranked card spanning the remaining width. With zero
-              nonzero view counts the card hides but the column remains, keeping
-              the band height driven by the globe. */}
-          <div className="eth-hero-side">
-            {mostRead.length > 0 && (
-              <div className="eth-mostread-card" aria-label="Most read articles">
-                <span className="eth-mostread-label">Most Read</span>
-                <ol className="eth-mostread-list">
-                  {mostRead.map((a, i) => (
-                    <li key={a.id} className="eth-mostread-item">
-                      <Link href={`/ezana-echo/${a.id}`} className="eth-mostread-link">
-                        <span className="eth-mostread-rank">{String(i + 1).padStart(2, '0')}</span>
-                        <span className="eth-mostread-main">
-                          <span className="eth-mostread-title">{a.title}</span>
-                          <span className="eth-mostread-views">
-                            {(a.views || 0).toLocaleString()}
-                          </span>
-                        </span>
-                      </Link>
-                    </li>
-                  ))}
-                </ol>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Global time-window filter: a compact centered toolbar row between
-            MOST READ and the category headers; applies to all 6 columns and
-            combines with the per-column subcategory filters. */}
-        <div className="eth-toolbar">
-          <div className="eth-timefilter" role="group" aria-label="Time window">
-            {TIME_WINDOWS.map((w) => (
-              <button
-                key={w.id}
-                type="button"
-                aria-pressed={timeWindow === w.id}
-                onClick={() => setTimeWindow(w.id)}
-              >
-                {w.label}
-              </button>
-            ))}
+        {/* Command bar: one floating pill straddling the hairline above.
+            Left: continent chips (single-select, re-click clears). Right:
+            time-window segments (existing timeWindow state). Both filter the
+            board below; continent mutes non-matching cards, time window
+            hides out-of-window articles, exactly as before. */}
+        <div className="eth-cmdbar-row">
+          <div className="eth-cmdbar" role="toolbar" aria-label="Filter articles">
+            <div className="eth-cmdbar-chips" role="group" aria-label="Continents">
+              {CONTINENTS.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  className={`eth-chip${selectedContinent === c ? ' is-active' : ''}`}
+                  aria-pressed={selectedContinent === c}
+                  onClick={() => toggleContinent(c)}
+                >
+                  {CONTINENT_SHORT[c] || c}
+                </button>
+              ))}
+            </div>
+            <i className="eth-cmdbar-divider" aria-hidden="true" />
+            <div className="eth-cmdbar-segs" role="group" aria-label="Time window">
+              {TIME_WINDOWS.map((w) => (
+                <button
+                  key={w.id}
+                  type="button"
+                  className={`eth-seg${timeWindow === w.id ? ' is-active' : ''}`}
+                  aria-pressed={timeWindow === w.id}
+                  onClick={() => setTimeWindow(w.id)}
+                >
+                  {w.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -704,7 +634,7 @@ export default function EzanaEchoPage() {
               colIndex={i}
               admin={admin}
               filter={filter}
-              geoActive={activeContinent}
+              geoActive={selectedContinent}
             />
           ))}
         </div>

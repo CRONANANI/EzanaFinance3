@@ -1,6 +1,7 @@
 /* ══════════════════════════════════════════════════════════════
-   EZANA ECHO — homepage: a full-width "Article of the Month" banner
-   above a 6-column category board of hero-image cards.
+   EZANA ECHO homepage: a text-forward "Article of the Month", a
+   5-column Most Read ledger, and a floating filter command bar above
+   a 6-column category board of hero-image cards.
    Hybrid editorial: serif headlines, sans body, mono metadata. All
    colors/type from the production theme tokens.
    ══════════════════════════════════════════════════════════════ */
@@ -294,9 +295,9 @@ html:has(body.echo-route) {
 }
 
 /* ── 6-column category board (plain columns) ──────────────────────────────────
-   Six equal columns of newest-first cards. The Article of the Month is a full-width
-   banner above this board (.eth-aotm), not a centerpiece inside it — so there is no
-   cluster, circle, or carve geometry anymore. Card styling lives in echo-card.css;
+   Six equal columns of newest-first cards. The Article of the Month is a centered
+   text block above this board (.eth-aotm2), not a centerpiece inside it, so there is
+   no cluster, circle, or carve geometry anymore. Card styling lives in echo-card.css;
    this section owns the board grid and the column headers. */
 .eth-board {
   position: relative;
@@ -492,223 +493,288 @@ html:has(body.echo-route) {
   }
 }
 
-/* ── Toolbar: global time-window filter — centered between the Article of the
-   Month banner and the category headers. */
-.eth-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 0 8px; /* board adds its own 12px above the headers */
+/* ── 2a hero ─────────────────────────────────────────────────────────── */
+/* Ink rule: the strong editorial line under the untouched masthead. */
+.eth-ink-rule {
+  height: 1px;
+  background: var(--text-primary);
+  margin-top: 18px;
 }
-.eth-timefilter {
-  display: inline-flex;
-  border: 1px solid var(--border-primary);
-  border-radius: 999px;
-  overflow: hidden;
+
+/* Article of the Month: centered, text-forward, no image. */
+.eth-aotm2 {
+  text-align: center;
+  padding: 52px 0 44px;
+  border-bottom: 1px solid var(--border-primary);
 }
-.eth-timefilter button {
-  padding: 5px 12px;
-  border: none;
-  background: transparent;
-  color: var(--text-muted);
+.eth-aotm2-eyebrow {
   font-family: var(--font-mono);
   font-size: 11px;
-  cursor: pointer;
-  transition:
-    background 0.14s ease,
-    color 0.14s ease;
-}
-.eth-timefilter button + button {
-  border-left: 1px solid var(--border-primary);
-}
-.eth-timefilter button:hover {
-  color: var(--text-primary);
-}
-.eth-timefilter button[aria-pressed='true'] {
-  background: var(--emerald);
-  color: #fff;
-}
-
-/* ── Hero band 2: globe panel (left, --eth-lead-col wide) | Most Read
-   (fills the rest). The lead column width and 20px gap are SHARED with the
-   AotM banner above via --eth-lead-col, so the Most Read left edge lands
-   exactly on the AotM title text left edge at every viewport width. The
-   globe column defines the band height; Most Read stretches to match. */
-.eth-hero-top {
-  --eth-lead-col: min(42%, 560px);
-  display: grid;
-  grid-template-columns: var(--eth-lead-col) minmax(0, 1fr);
-  column-gap: 20px;
-  align-items: stretch;
-  margin: 0 0 18px;
-}
-.eth-hero-side {
-  position: relative; /* anchor for the absolute-fill card (desktop) */
-  display: flex;
-  min-width: 0;
-}
-.eth-hero-top .eth-geo {
-  padding: 0; /* the band supplies the vertical rhythm; globe span drives height */
-  /* The geo panel fills its fixed lead column so the globe centers within the
-     same width the AotM image occupies above. */
-  width: 100%;
-  justify-self: stretch;
-}
-/* Height lock (desktop two-column band only): grid sizes a row to its TALLEST
-   column, and align-self: stretch only grows shorter items. Taking Most Read
-   out of the height calculation via absolute fill collapses the band to the
-   one remaining height contributor, the globe column. Pure CSS, SSR-safe,
-   resize-proof. The 1100px stacked layout never sees this rule. */
-@media (min-width: 1101px) {
-  .eth-hero-side > .eth-mostread-card {
-    position: absolute;
-    inset: 0;
-    overflow: hidden;
-  }
-}
-
-/* ── Hero band 1: Article of the Month, full width, at the top. Horizontal
-   banner: hero image on the left at the shared lead-column width, kicker and
-   headline filling the right. Top margin clears the "Publish to the Echo"
-   note under the masthead (moved here from the old band 1). */
-.eth-aotm-card--wide {
-  --eth-lead-col: min(42%, 560px);
-  margin: 20px 0 18px;
-}
-.eth-aotm-card--wide .eth-aotm-card-link {
-  flex-direction: row;
-  align-items: stretch;
-  gap: 20px;
-}
-.eth-aotm-card--wide .eth-aotm-card-img {
-  flex: 0 0 var(--eth-lead-col);
-  max-width: none; /* the min() inside --eth-lead-col already caps at 560px */
-  aspect-ratio: 16 / 9;
-}
-.eth-aotm-card--wide .eth-aotm-card-text {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 8px;
-  min-width: 0;
-}
-.eth-aotm-card--wide .eth-aotm-card-title {
-  font-size: clamp(22px, 2.4vw, 32px);
-  -webkit-line-clamp: 3;
-}
-
-/* AotM portrait card: hero on top (flush, square bottom corners), kicker,
-   3-line headline, excerpt filling the middle, meta + month dropdown pinned
-   to the base. Tile chrome matches the belt cards. */
-.eth-aotm-card {
-  position: relative; /* anchor for the month-dropdown overlay pill */
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  /* Borderless: the page background flows through; the hero image is the
-     visual object and the headline's emerald hover is the link affordance. */
-  background: var(--bg-primary);
-}
-.eth-aotm-card-link {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  flex: 1;
-  min-height: 0;
-  text-decoration: none;
-  overflow: hidden;
-}
-.eth-aotm-card-img {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  overflow: hidden;
-  /* Fully rounded: with the card border gone the image IS the object, and a
-     flush square bottom against nothing reads unfinished. (The flush-bottom
-     rule stays on the bordered belt tiles; one-line revert here if wanted.) */
-  border-radius: 6px;
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--emerald) 55%, black 8%),
-    color-mix(in srgb, var(--emerald) 22%, transparent)
-  );
-}
-.eth-aotm-card-img img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-.eth-aotm-card .eth-aotm-eyebrow {
-  padding: 6px 0 0; /* flush left: the card edge IS the logo-aligned edge */
-}
-.eth-aotm-eyebrow {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--emerald);
+  margin-bottom: 20px;
 }
-.eth-aotm-card-title {
-  margin: 0;
-  padding: 0;
+.eth-aotm2-title {
+  display: block;
   font-family: var(--font-serif);
-  font-size: 19px;
-  line-height: 1.25;
-  font-weight: 700;
+  font-size: clamp(32px, 3.6vw, 52px);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.14;
   color: var(--text-primary);
-  overflow-wrap: anywhere;
-  display: -webkit-box;
-  -webkit-line-clamp: 2; /* largest clamp that fits the height-locked card with the 42% hero cap */
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  max-width: 1040px;
+  margin: 0 auto;
+  text-wrap: pretty;
+  text-decoration: none;
+  transition: color 0.16s ease;
 }
-.eth-aotm-card:hover .eth-aotm-card-title {
-  color: var(--emerald);
+.eth-aotm2-title:hover {
+  color: var(--emerald-hover);
 }
-.eth-aotm-months {
-  position: absolute; /* over the hero's top-right; sibling of the card link */
-  top: 10px;
-  right: 10px;
-  z-index: 3;
+.eth-aotm2-meta {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 26px;
+}
+.eth-aotm2-read {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.eth-aotm2-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--text-ghost);
+}
+/* Month pill: a real <select> wearing the pill. The label text and the
+   select sit inline; the select is chromeless so the pill reads as one
+   control. */
+.eth-month-pill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 3px 4px 3px 10px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
-  backdrop-filter: blur(3px);
-  border: 1px solid var(--border-primary);
-}
-.eth-aotm-months-label {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-.eth-aotm-months select {
-  appearance: none;
   font-family: var(--font-mono);
   font-size: 11px;
-  color: var(--text-primary);
-  background: transparent;
-  border: none; /* the overlay pill supplies the single hairline */
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border: 1px solid var(--border-primary);
   border-radius: 999px;
-  padding: 4px 24px 4px 8px;
+  padding: 6px 14px;
   cursor: pointer;
-  background-image:
-    linear-gradient(45deg, transparent 50%, var(--text-muted) 50%),
-    linear-gradient(135deg, var(--text-muted) 50%, transparent 50%);
-  background-position:
-    calc(100% - 15px) 55%,
-    calc(100% - 11px) 55%;
-  background-size: 4px 4px;
-  background-repeat: no-repeat;
+  transition:
+    border-color 0.16s ease,
+    color 0.16s ease;
 }
-.eth-aotm-months select:hover {
-  border-color: var(--emerald);
+.eth-month-pill:hover {
+  border-color: color-mix(in srgb, var(--emerald) 40%, transparent);
+  color: var(--text-primary);
+}
+.eth-month-pill select {
+  font: inherit;
+  color: inherit;
+  text-transform: inherit;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  outline: none;
+}
+
+/* Most Read ledger: 5 equal columns, hairline left borders, italic serif
+   rank numerals. */
+.eth-ledger {
+  padding: 30px 0 40px;
+  border-bottom: 1px solid var(--border-primary);
+}
+.eth-ledger-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  margin-bottom: 20px;
+}
+.eth-ledger-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.eth-ledger-link {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-left: 1px solid var(--border-primary);
+  padding: 0 22px 26px;
+  text-decoration: none;
+  transition: background 0.16s ease;
+}
+.eth-ledger-link:hover {
+  background: color-mix(in srgb, var(--emerald) 4%, transparent);
+}
+.eth-ledger-rank {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 34px;
+  line-height: 1;
+  color: var(--emerald);
+}
+.eth-ledger-title {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+  color: var(--text-primary);
+  margin-top: 14px;
+}
+.eth-ledger-reads {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-top: 10px;
+}
+
+/* Command bar: floating pill straddling the hairline above (negative top
+   margin), centered. Chips left, divider, time segments right. */
+.eth-cmdbar-row {
+  display: flex;
+  justify-content: center;
+  margin-top: -22px;
+  position: relative;
+  z-index: 2;
+  margin-bottom: 36px;
+}
+.eth-cmdbar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 999px;
+  padding: 8px 12px;
+  box-shadow: 0 12px 32px rgba(10, 14, 19, 0.14);
+}
+.eth-cmdbar-chips,
+.eth-cmdbar-segs {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.eth-cmdbar-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--border-primary);
+  margin: 0 8px;
+}
+.eth-chip {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition:
+    background 0.16s ease,
+    color 0.16s ease,
+    border-color 0.16s ease;
+}
+.eth-chip:hover {
+  color: var(--text-primary);
+}
+.eth-chip.is-active {
+  background: color-mix(in srgb, var(--emerald) 12%, transparent);
+  color: var(--emerald-hover);
+  border-color: color-mix(in srgb, var(--emerald) 45%, transparent);
+}
+.eth-seg {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  padding: 8px 13px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition:
+    background 0.16s ease,
+    color 0.16s ease;
+}
+.eth-seg:hover {
+  color: var(--text-primary);
+}
+.eth-seg.is-active {
+  background: var(--text-primary);
+  color: var(--bg-primary);
+}
+
+/* Responsive: ledger 5 → 2 columns, then a stacked list with the rank
+   inline-left; command bar wraps to two rows but stays one floating card. */
+@media (max-width: 1100px) {
+  .eth-ledger-grid {
+    grid-template-columns: repeat(2, 1fr);
+    row-gap: 22px;
+  }
+  .eth-cmdbar {
+    flex-wrap: wrap;
+    justify-content: center;
+    border-radius: 24px;
+    max-width: 92%;
+  }
+  .eth-cmdbar-divider {
+    display: none;
+  }
+}
+@media (max-width: 640px) {
+  .eth-aotm2 {
+    padding: 36px 0 30px;
+  }
+  .eth-ledger-grid {
+    grid-template-columns: 1fr;
+    row-gap: 0;
+  }
+  .eth-ledger-link {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    column-gap: 12px;
+    align-items: start;
+    border-left: none;
+    border-top: 1px solid var(--border-primary);
+    padding: 14px 0;
+  }
+  .eth-ledger-rank {
+    grid-row: 1 / 3;
+    font-size: 26px;
+  }
+  .eth-ledger-title {
+    margin-top: 0;
+  }
+  .eth-cmdbar-row {
+    margin-top: 12px; /* no straddle at mobile; the bar sits below the band */
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .eth-aotm2-title,
+  .eth-month-pill,
+  .eth-ledger-link,
+  .eth-chip,
+  .eth-seg {
+    transition: none;
+  }
 }
 
 /* ── Responsive ──────────────────────────────────────────────────────────────
@@ -717,23 +783,6 @@ html:has(body.echo-route) {
 @media (max-width: 1100px) {
   .eth-board {
     grid-template-columns: repeat(2, 1fr);
-  }
-  /* Top band stacks: globe first, then Most Read, full width. */
-  .eth-hero-top {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    align-items: stretch;
-  }
-  /* Wide AotM banner collapses back to the stacked portrait layout. */
-  .eth-aotm-card--wide .eth-aotm-card-link {
-    flex-direction: column;
-    gap: 8px;
-  }
-  .eth-aotm-card--wide .eth-aotm-card-img {
-    flex: none;
-    max-width: none;
-    width: 100%;
   }
   /* Belts are desktop-only — tablet/mobile keep today's static stacks. */
   .eth-belt {
@@ -770,94 +819,6 @@ html:has(body.echo-route) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   MOST READ: vertical ranked card in the hero row's right column.
-   Top 5 by all-time view_count; entries distribute to fill the card
-   height so rank 05 lands near the base. Tile chrome.
-   ══════════════════════════════════════════════════════════════ */
-.eth-mostread-card {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  /* Borderless open composition: only the internal hairlines and the header
-     rule remain. Zero horizontal padding keeps content on the
-     partner-button-aligned right edge. */
-  background: var(--bg-primary);
-  padding: 4px 0 0;
-}
-.eth-mostread-label {
-  font-family: var(--font-mono, monospace);
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--text-primary);
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--border-primary);
-}
-.eth-mostread-list {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  flex: 1;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  min-width: 0;
-}
-.eth-mostread-item {
-  min-width: 0;
-}
-.eth-mostread-item + .eth-mostread-item {
-  border-top: 1px solid var(--border-secondary);
-}
-.eth-mostread-link {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  padding: 8px 0;
-  text-decoration: none;
-  min-width: 0;
-}
-.eth-mostread-rank {
-  flex: 0 0 auto;
-  font-family: var(--font-mono, monospace);
-  font-size: 20px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-  color: var(--emerald);
-}
-.eth-mostread-main {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-.eth-mostread-title {
-  font-family: var(--font-serif);
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1.25;
-  color: var(--text-primary);
-  /* One line with ellipsis: five 2-line entries plus counts overflow the
-     globe-locked height, and clipped mid-letter reads worse than ellipsis. */
-  display: block;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  min-width: 0;
-}
-.eth-mostread-link:hover .eth-mostread-title {
-  color: var(--emerald);
-}
-.eth-mostread-views {
-  font-family: var(--font-mono, monospace);
-  font-size: 10px;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.04em;
-  color: var(--text-muted);
-}
-
-/* ══════════════════════════════════════════════════════════════
    Scroll reveal (column level): the board's six columns rise in,
    staggered 60ms by column index, the first time the board enters
    the viewport. Deterministic (index only), IO-triggered, and fully
@@ -879,66 +840,6 @@ html:has(body.echo-route) {
   .eth-board .eth-col {
     opacity: 1;
     transform: none;
-    transition: none;
-  }
-}
-
-/* ══════════════════════════════════════════════════════════════
-   GEOGRAPHY OF THE NEWS: centered full-width section directly under
-   the nav, above the Article of the Month. Hovering land or a chip
-   mutes non-matching board cards below; chips are the accessible and
-   touch path (click pins, click again or tap-away clears).
-   ══════════════════════════════════════════════════════════════ */
-.eth-geo {
-  padding: 24px 0 20px;
-  text-align: center;
-}
-.eth-geo-head {
-  font-family: var(--font-mono, monospace);
-  font-size: 0.68rem;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  margin-bottom: 10px;
-}
-.eth-geo-globe {
-  display: flex;
-  justify-content: center;
-}
-.eth-geo-chips {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 6px;
-  margin-top: 10px;
-}
-.eth-geo-chip {
-  font-family: var(--font-mono, monospace);
-  font-size: 9px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  background: var(--bg-primary);
-  border: 1px solid var(--border-secondary);
-  border-radius: 999px;
-  padding: 3px 9px;
-  cursor: pointer;
-  transition:
-    color 0.15s ease,
-    border-color 0.15s ease;
-}
-.eth-geo-chip:hover,
-.eth-geo-chip:focus-visible {
-  color: var(--emerald);
-  border-color: var(--emerald);
-}
-.eth-geo-chip.is-active {
-  color: var(--emerald);
-  border-color: var(--emerald);
-  background: var(--emerald-bg-subtle, var(--bg-tertiary));
-}
-@media (prefers-reduced-motion: reduce) {
-  .eth-geo-chip {
     transition: none;
   }
 }
