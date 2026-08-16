@@ -13,6 +13,19 @@
   padding-bottom: 8px;
   margin-top: 0;
 }
+/* Full-bleed AOTM backdrop support. The global horizontal-overflow guards in
+   mobile-responsive.css put overflow-x: clip on .dashboard-main and
+   .dashboard-container; both are ancestors of the backdrop's containing
+   block, and a clip on any ancestor NARROWER than the viewport would cut the
+   100vw breakout to the content column with hard vertical image edges.
+   Release them on the Echo home only. html and body keep their own global
+   overflow-x: clip (mobile-responsive.css), which still catches the
+   scrollbar-width overshoot at the correct boundary, the viewport edge.
+   visible creates no scroll container, so sticky behavior is unaffected. */
+body.echo-route .dashboard-main.dashboard-main-content,
+body.echo-route .dashboard-container {
+  overflow-x: visible;
+}
 
 /* Fix 1 — uniform background on the Echo route. The page content is --bg-primary
    (white in light) but the dashboard shell paints --app-bg (grey) around/behind it,
@@ -494,12 +507,64 @@ html:has(body.echo-route) {
 }
 
 /* ── 2a hero ─────────────────────────────────────────────────────────── */
-/* Article of the Month: centered, text-forward, no image. No separating
-   rules above or below; whitespace alone does the sectioning. Top padding
-   also absorbs the space the old ink rule provided under the masthead. */
+/* Article of the Month: centered, text-forward, over a full-bleed backdrop
+   of the crowned article's hero image. No separating rules above or below;
+   whitespace and the backdrop's fades do the sectioning. Top padding also
+   absorbs the space the old ink rule provided under the masthead. */
 .eth-aotm2 {
+  position: relative; /* anchor + stacking root for the full-bleed backdrop */
   text-align: center;
   padding: 44px 0 34px;
+}
+/* Everything except the backdrop paints above it. */
+.eth-aotm2 > :not(.eth-aotm2-backdrop) {
+  position: relative;
+  z-index: 1;
+}
+/* Full-bleed backdrop: breaks out of the shell's content envelope to span
+   the viewport (100vw at the section's horizontal center). top/bottom of 0
+   pin it to the AOTM zone, so it starts directly under the masthead and the
+   bottom fade always completes before the Most Read ledger, at any zone
+   height (wrapped mobile headlines included). Decorative: aria-hidden in
+   the JSX, pointer-events none here. */
+.eth-aotm2-backdrop {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100vw;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+/* Seams: a short top fade so the image meets the masthead without a hard
+   edge, and a bottom fade into the page background finishing at the zone's
+   end. Tokens only, so dark mode dissolves into the dark base correctly. */
+.eth-aotm2-backdrop::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(to bottom, var(--bg-primary) 0%, transparent 8%),
+    linear-gradient(to bottom, transparent 60%, var(--bg-primary) 100%);
+}
+/* Text scrim: a soft page-background wash centered on the text block so the
+   serif headline passes contrast over any hero image in both themes. If a
+   vivid image still fights the headline, raise the center mix percentage
+   rather than boxing the text. */
+.eth-aotm2-backdrop::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: radial-gradient(
+    ellipse 72% 68% at 50% 46%,
+    color-mix(in srgb, var(--bg-primary) 78%, transparent) 0%,
+    color-mix(in srgb, var(--bg-primary) 46%, transparent) 55%,
+    transparent 80%
+  );
 }
 .eth-aotm2-eyebrow {
   font-family: var(--font-mono);

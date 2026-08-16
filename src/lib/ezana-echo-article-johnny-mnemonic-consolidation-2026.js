@@ -629,7 +629,6 @@ export const johnnyMnemonicConsolidation2026 = {
   readTime: 10,
   publishedAt: '2026-08-02',
   featured: true,
-  articleOfMonth: true,
   likes: 0,
   comments: 0,
   reads: 0,

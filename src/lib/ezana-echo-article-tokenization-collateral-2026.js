@@ -552,6 +552,8 @@ export const tokenizationCollateral2026 = {
   readTime: 10,
   publishedAt: '2026-08-02',
   featured: false,
+  // AOTM fallback flag (see AOTM_HISTORY convention in ezana-echo-mock.js).
+  articleOfMonth: true,
   likes: 0,
   comments: 0,
   reads: 0,

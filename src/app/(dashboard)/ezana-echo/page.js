@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuth } from '@/components/AuthProvider';
 import { isAdminUserClient } from '@/lib/admin-helpers-client';
 import { EzanaNavLogo } from '@/components/brand/EzanaNavLogo';
@@ -363,8 +364,10 @@ export default function EzanaEchoPage() {
     [featuredRaw, archivedSet],
   );
 
-  // Feed = everything except the featured story (so the Article of the Month
-  // isn't also listed in a column).
+  // Feed = everything except the featured story. Featured is the home-hero
+  // flag and, since the August 2026 re-crowning, is decoupled from the
+  // Article of the Month; the columns exclude the AOTM separately via
+  // currentAotm. feedSource's remaining job is the last-resort AOTM fallback.
   const feedSource = useMemo(
     () => allArticles.filter((a) => a.id !== featured?.id),
     [allArticles, featured],
@@ -525,11 +528,28 @@ export default function EzanaEchoPage() {
             Most Read ledger, and a floating command bar (continent chips +
             time segments) straddling the ledger's bottom hairline. The board
             below is untouched. */}
-        {/* Article of the Month: text-forward, no image. The whole headline
-            links to the article; the month pill is a real <select> styled as
-            a pill, outside the link so changing months never navigates. */}
+        {/* Article of the Month: text-forward over a full-bleed backdrop of
+            the crowned article's hero image. The backdrop resolves from the
+            displayed AOTM (AOTM_HISTORY[0] by default), so future crownings
+            and the month pill swap it automatically; never hardcode the path.
+            The whole headline links to the article; the month pill is a real
+            <select> styled as a pill, outside the link so changing months
+            never navigates. */}
         {articleOfMonth && (
           <section className="eth-aotm2" aria-label="Article of the month">
+            {articleOfMonth.heroImage?.src ? (
+              <div className="eth-aotm2-backdrop" aria-hidden="true">
+                <Image
+                  src={articleOfMonth.heroImage.src}
+                  alt=""
+                  fill
+                  priority
+                  quality={90}
+                  sizes="100vw"
+                  style={{ objectFit: 'cover', objectPosition: 'center 40%' }}
+                />
+              </div>
+            ) : null}
             <div className="eth-aotm2-eyebrow">
               Article of the Month
               {aotmHistory[aotmIdx]?.month ? ` · ${aotmHistory[aotmIdx].month}` : ''}

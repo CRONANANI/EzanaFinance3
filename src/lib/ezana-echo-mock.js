@@ -90,7 +90,8 @@ const ARTICLES = [
  *  When a new AOTM is crowned: prepend it here AND move the `articleOfMonth`
  *  flag to its article file (flag = fallback if this list ever fails to resolve). */
 export const AOTM_HISTORY = [
-  { month: 'August 2026', articleId: 'johnny-mnemonic-tech-consolidation-2026' },
+  // August 2026 re-crowned to the cow/tokenization article (was johnny-mnemonic).
+  { month: 'August 2026', articleId: 'tokenization-collateral-2026' },
   { month: 'July 2026', articleId: 'ballroom-donors-federal-contracts-2026' },
 ];
 
