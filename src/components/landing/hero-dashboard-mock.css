@@ -1,0 +1,236 @@
+/* Hero iMac dashboard mockup (hdm- prefix). Sits on the screen's white
+   surface in light theme and inherits the dark surface in dark theme.
+   Tokens only; echo-scoped chart tokens are unavailable on the landing
+   route, so gridlines use the hairline token and declines fall back from
+   the echo red to the platform negative token. The right padding on the
+   main column keeps content clear of the iPhone that overlaps the iMac's
+   top-right corner in the composition. */
+.hdm-root {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  font-family: var(--font-sans);
+  background: transparent;
+}
+.hdm-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.hdm-t {
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s ease;
+}
+
+/* Slim top app bar mirroring the real dashboard shell's top navbar. */
+.hdm-topbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  border-bottom: 1px solid var(--border-secondary);
+  flex: none;
+}
+.hdm-topbar-logo {
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+  background: var(--emerald);
+}
+.hdm-topbar-item {
+  height: 3.5px;
+  border-radius: 2px;
+  background: var(--text-ghost);
+}
+.hdm-topbar-avatar {
+  margin-left: auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-ghost);
+}
+
+.hdm-main {
+  flex: 1;
+  min-height: 0;
+  padding: 5px 22px 6px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.hdm-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 8px;
+  flex: none;
+}
+.hdm-greet {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.hdm-head-r {
+  text-align: right;
+}
+.hdm-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+}
+.hdm-day {
+  font-size: 8px;
+  color: var(--emerald);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+.hdm-live {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--emerald);
+  animation: hdm-pulse 2s ease-in-out infinite;
+}
+@keyframes hdm-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.hdm-chart-card,
+.hdm-table-card,
+.hdm-feed-card {
+  background: var(--bg-secondary);
+  border-radius: 6px;
+  padding: 4px 8px 5px;
+  min-height: 0;
+}
+.hdm-card-kicker {
+  font-size: 6.5px;
+  letter-spacing: 0.14em;
+  color: var(--text-faint);
+  margin-bottom: 3px;
+  white-space: nowrap;
+}
+.hdm-chart-card {
+  flex: none;
+}
+.hdm-spark {
+  display: block;
+  width: 100%;
+  height: 30px;
+}
+.hdm-grid {
+  stroke: var(--border-secondary);
+  stroke-width: 1;
+}
+.hdm-spark-line {
+  fill: none;
+  stroke: var(--emerald);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.hdm-spark-area {
+  fill: var(--emerald);
+  opacity: 0.08;
+}
+
+.hdm-cols {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  gap: 6px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.hdm-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 7px;
+  padding: 2.5px 0;
+  border-bottom: 1px solid var(--border-secondary);
+  font-size: 7.5px;
+}
+.hdm-row:last-child {
+  border-bottom: none;
+}
+.hdm-tk {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+.hdm-px {
+  color: var(--text-secondary);
+}
+.hdm-up {
+  color: var(--emerald);
+}
+.hdm-down {
+  color: var(--echo-chart-red, var(--negative));
+}
+
+.hdm-feed-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 2.5px 0;
+  border-bottom: 1px solid var(--border-secondary);
+  font-size: 7px;
+}
+.hdm-feed-row:last-child {
+  border-bottom: none;
+}
+.hdm-feed-row--new {
+  animation: hdm-slide-in 0.5s ease;
+}
+@keyframes hdm-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.hdm-feed-who {
+  color: var(--text-primary);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.hdm-feed-what {
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hdm-feed-tag {
+  margin-left: auto;
+  color: var(--emerald);
+  font-weight: 700;
+}
+
+/* Reduced motion: everything renders static and legible; the LIVE dot and
+   feed entrance freeze, tick-driven values simply stop changing. */
+@media (prefers-reduced-motion: reduce) {
+  .hdm-t {
+    transition: none;
+  }
+  .hdm-live {
+    animation: none;
+  }
+  .hdm-feed-row--new {
+    animation: none;
+  }
+}

@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { DATASET_TAXONOMY } from '@/lib/datasets/taxonomy';
-import { HeroDimensionVisual } from './hero-dimension-visuals';
+import { HeroDashboardMock } from './hero-dashboard-mock';
 import './hero-device-showcase.css';
 
 /**
@@ -13,8 +12,11 @@ import './hero-device-showcase.css';
  *    coordinates, scaled as a single unit via --lpd-scale (set from a JS
  *    resize listener, since CSS cannot derive a unitless viewport scale).
  *  · Real device overlap: the iPhone's bottom-left crosses the iMac's
- *    top-right by a ~34px strip. A reserved right inset on the dimension
- *    stage keeps chart data out of that strip for all 7 visuals.
+ *    top-right by a ~34px strip. The dashboard mock's right inset keeps
+ *    its content out of that strip.
+ *  · The iMac screen renders ONE persistent living mockup of the
+ *    authenticated dashboard home (HeroDashboardMock), replacing the old
+ *    seven-dimension chart cycle.
  *  · Notifications are opaque toasts that animate in ONCE (fade, rise,
  *    settle) and then hold still. The continuous float/bob loop is gone
  *    from the cards AND the devices.
@@ -104,8 +106,6 @@ export function HeroDeviceShowcase() {
   const followed = tick % (PEOPLE.length + 1);
   const likes = 12 + (tick % 6);
   const filedMin = 2 + (tick % 4);
-  /* Each dimension holds for 3 ticks (6s), then cross-fades to the next. */
-  const activeDim = Math.floor(tick / 3) % DATASET_TAXONOMY.length;
 
   return (
     <div className="lpd-stack" ref={stackRef} style={{ '--lpd-scale': scale }} aria-hidden="true">
@@ -198,24 +198,11 @@ export function HeroDeviceShowcase() {
                 <i className="lpd-dot" />
                 <i className="lpd-dot" />
                 <i className="lpd-dot" />
-                <span key={activeDim} className="lpd-imac-url lpd-url-swap">
-                  ezana.world/intelligence/{DATASET_TAXONOMY[activeDim]?.id}
-                </span>
+                <span className="lpd-imac-url">ezana.world/home</span>
               </div>
-              <div className="lpd-dims">
-                {DATASET_TAXONOMY.map((d, i) => (
-                  <div
-                    key={d.id}
-                    className={`lpd-dim${i === activeDim ? ' is-active' : ''}`}
-                    style={{ '--dv-accent': d.color }}
-                  >
-                    <HeroDimensionVisual dimensionId={d.id} tick={i === activeDim ? tick : 0} />
-                  </div>
-                ))}
-                <div className="lpd-dim-name lpd-mono">
-                  {DATASET_TAXONOMY[activeDim]?.label || ''}
-                </div>
-              </div>
+              {/* Single persistent screen content: a miniature living mockup of
+                  the authenticated dashboard home, driven by the shared tick. */}
+              <HeroDashboardMock tick={tick} />
             </div>
           </div>
         </div>
