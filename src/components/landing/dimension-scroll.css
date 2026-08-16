@@ -614,6 +614,25 @@
   }
 }
 
+@media (max-width: 1023px) {
+  /* Engine-proof stage sizing for the stacked layout: the stage wraps an SVG
+     whose height derives from an explicit aspect-ratio matching the 320x176
+     viewBox, in normal flow. A fixed-height stage with a 100%-height SVG can
+     resolve the SVG against the wrong box in Safari, spilling the in-chart
+     footer labels (AVG FILING LAG, SEC EDGAR, LOT OCCUPANCY, ...) over the
+     text that follows. With the aspect locked and the stage auto-height,
+     nothing can overlap at any width. */
+  .dscroll-card-viz {
+    height: auto;
+  }
+  .dscroll-card-viz .dv-svg {
+    width: min(100%, 420px);
+    height: auto;
+    aspect-ratio: 320 / 176;
+    margin: 0 auto;
+  }
+}
+
 @media (max-width: 768px) {
   /* Mobile type floor: body copy never below 14px rendered. */
   .dscroll-card-blurb {
@@ -627,9 +646,6 @@
   }
   .dscroll-card {
     padding: 1.125rem;
-  }
-  .dscroll-card-viz {
-    height: 150px;
   }
 }
 

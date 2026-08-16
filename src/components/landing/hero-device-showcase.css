@@ -179,7 +179,10 @@
   flex-direction: column;
   overflow: hidden;
   border-radius: 2px;
-  background: var(--bg-secondary);
+  /* White screen surface in light theme, matching the iPhone screen and the
+     notification cards (bg-primary is white in light, the dark base in dark;
+     never force white into dark mode). Was bg-secondary grey. */
+  background: var(--bg-primary);
 }
 .lpd-imac-chrome {
   display: flex;
@@ -550,10 +553,13 @@
   --surface-card: rgba(255, 255, 255, 0.55);
   color: var(--text-secondary);
 }
-/* Auto-copy: the bridge card. ABOVE the iMac (its bottom lands on the
-   iMac's chrome bar) and LEFT of the iPhone (18px clear of its frame). */
+/* Auto-copy: the bridge card. ABOVE the iMac entirely (measured: with the
+   card ~139px tall, top 64 puts its bottom at ~203, clear of the iMac frame
+   at y206 and the browser chrome at y225 in design space; satellites may
+   overlap the outer bezel or empty margin, never the chrome bar or the
+   screen's data area, at any scale) and LEFT of the iPhone (18px clear). */
 .lpd-sat--sync {
-  top: 96px;
+  top: 64px;
   right: 232px;
   width: 226px;
   z-index: 5;
@@ -686,12 +692,26 @@
        containing block for the absolutely positioned .lpd-canvas. Static
        would hand the canvas to .lp-band (position: relative), floating the
        cluster back over the copy column. top/right are reset so the
-       inherited overlay offsets contribute nothing here. */
+       inherited overlay offsets contribute nothing here. flex: none is
+       load-bearing: the band is a flex container, and without it the stack
+       shrank as a flex item (to ~148px at 390) while the scaled canvas
+       painted out of it past the right edge. The band stacks to a column at
+       this width (landing-hero.css), so the composition sits centered below
+       the copy. */
     position: relative;
     top: auto;
     right: auto;
     transform: none;
-    margin: 8px auto 48px;
+    flex: none;
+    align-self: center;
+    margin: 8px auto 40px;
+  }
+}
+/* Small phones: the third notification card drops rather than shipping
+   unreadable at ~0.55 scale; Auto-copy synced and New follower stay. */
+@media (max-width: 600px) {
+  .lpd-sat--rebalance {
+    display: none;
   }
 }
 @media (prefers-reduced-motion: reduce) {

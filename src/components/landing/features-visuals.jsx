@@ -250,14 +250,7 @@ function AlertsViz({ tick }) {
         ALERT THRESHOLD
       </text>
       {/* price line */}
-      <path
-        className="fv-t"
-        d={d}
-        fill="none"
-        stroke={EM2}
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
+      <path className="fv-t" d={d} fill="none" stroke={EM2} strokeWidth="2" strokeLinecap="round" />
       {/* continuous pulse burst at the crossing */}
       <circle className="fv-burst fv-burst-1" cx={crossX} cy="18" r="3" fill="none" stroke={EM} />
       <circle className="fv-burst fv-burst-2" cx={crossX} cy="18" r="3" fill="none" stroke={EM} />
@@ -273,29 +266,75 @@ function AlertsViz({ tick }) {
   );
 }
 
-/* 5 ── Community Insights: community consensus ───────────────────────────── */
+/* 5 ── Community Insights: radar scan of the user's friend network ────────── */
+/* The USER sits at the center; their network rides three concentric rings. A
+   sweep rotates once per RADAR_PERIOD; a node that ACTED on the news lights
+   emerald with a brief pulse and a connecting line as the sweep passes it
+   (delay = angle / 360 * period). Everything is a fixed constant, so which
+   nodes light is deterministic; the sweep is pure CSS; reduced motion freezes
+   the sweep with the acted nodes statically lit (features-visuals.css). */
+const RADAR_CX = 112;
+const RADAR_CY = 24;
+const RADAR_RINGS = [7, 13, 19];
+/* [ring radius, angle degrees clockwise from 12 o'clock, acted] */
+const RADAR_NODES = [
+  [13, 20, true],
+  [19, 70, false],
+  [7, 120, true],
+  [19, 160, false],
+  [13, 205, true],
+  [19, 245, false],
+  [7, 290, false],
+  [13, 330, true],
+];
+const RADAR_PERIOD = 6; // seconds per full sweep
+
 function CommunityViz({ tick }) {
-  const n = 5;
-  const step = 30;
-  const startX = (VIZ_W - (n - 1) * step) / 2 - 8;
-  const active = tick % n;
   const pct = 58 + Math.round(seeded(tick) * 34);
   return (
-    <Frame label="Community consensus signal">
-      {Array.from({ length: n }).map((_, i) => {
-        const isActive = i === active;
+    <Frame label="Radar scan of your network surfacing who acted on the news">
+      {RADAR_RINGS.map((r) => (
+        <circle key={r} cx={RADAR_CX} cy={RADAR_CY} r={r} className="fv-radar-ring" />
+      ))}
+      {/* rotating sweep sector */}
+      <g className="fv-radar-sweep" style={{ transformOrigin: `${RADAR_CX}px ${RADAR_CY}px` }}>
+        <path
+          d={`M ${RADAR_CX} ${RADAR_CY} L ${RADAR_CX} ${RADAR_CY - 21} A 21 21 0 0 1 ${(
+            RADAR_CX +
+            21 * Math.sin(Math.PI / 4)
+          ).toFixed(2)} ${(RADAR_CY - 21 * Math.cos(Math.PI / 4)).toFixed(2)} Z`}
+          className="fv-radar-wedge"
+        />
+      </g>
+      {RADAR_NODES.map(([r, deg, acted], i) => {
+        const a = (deg * Math.PI) / 180;
+        const x = (RADAR_CX + r * Math.sin(a)).toFixed(2);
+        const y = (RADAR_CY - r * Math.cos(a)).toFixed(2);
+        const delay = `${((deg / 360) * RADAR_PERIOD).toFixed(2)}s`;
         return (
-          <g key={i} transform={`translate(${startX + i * step} 6)`} opacity={isActive ? 1 : 0.55}>
-            {/* head + shoulders glyph */}
-            <circle cx="10" cy="9" r="5.5" fill={isActive ? EM : HAIR2} />
-            <path d="M1 26 a9 9 0 0 1 18 0 z" fill={isActive ? EM2 : HAIR} />
+          <g key={i}>
+            {acted && (
+              <line
+                x1={RADAR_CX}
+                y1={RADAR_CY}
+                x2={x}
+                y2={y}
+                className="fv-radar-link"
+                style={{ animationDelay: delay }}
+              />
+            )}
+            <circle
+              cx={x}
+              cy={y}
+              r={acted ? 2.6 : 2}
+              className={acted ? 'fv-radar-node fv-radar-node--acted' : 'fv-radar-node'}
+              style={acted ? { animationDelay: delay } : undefined}
+            />
           </g>
         );
       })}
-      {/* walker highlight ring glides across */}
-      <g className="fv-t" style={{ transform: `translateX(${startX + active * step}px)` }}>
-        <circle cx="10" cy="15" r="15" fill="none" stroke={EM3} strokeWidth="1" opacity="0.5" />
-      </g>
+      {/* the user, at the center of their network */}
+      <circle cx={RADAR_CX} cy={RADAR_CY} r="3.4" className="fv-radar-user" />
       <text x={VIZ_W / 2} y="56" textAnchor="middle" className="fv-num fv-em" fontSize="9.5">
         {pct}% of your circle acted on this
       </text>

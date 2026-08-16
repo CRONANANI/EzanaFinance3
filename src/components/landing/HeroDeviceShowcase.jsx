@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { DATASET_TAXONOMY } from '@/lib/datasets/taxonomy';
 import { HeroDimensionVisual } from './hero-dimension-visuals';
 import './hero-device-showcase.css';
@@ -57,19 +57,36 @@ const FALLING = [
 
 export function HeroDeviceShowcase() {
   const [tick, setTick] = useState(0);
+  const stackRef = useRef(null);
   /* Viewport-proportional scale for the 640x788 composition canvas.
      >=1080px: right-anchored beside the copy, scale eases 0.62 -> 1 as the
-     viewport grows. <1080px: the cluster drops below the copy (CSS) and
-     simply fits the viewport width. SSR renders scale 1; the first client
-     effect corrects it before the entrance animation finishes. */
+     viewport grows (formula unchanged). <1080px: the cluster flows below the
+     copy inside the hero band, so the scale must fit the band's CONTENT box,
+     not the raw viewport: the band carries 16-40px side padding that the old
+     (vw - 24) formula ignored, which pushed the canvas past the right edge on
+     phones. SSR renders scale 1; the first client effect corrects it before
+     the entrance animation finishes. */
   const [scale, setScale] = useState(1);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
     const apply = () => {
       const vw = window.innerWidth;
-      const s =
-        vw >= 1080 ? Math.min(1, Math.max(0.62, (vw - 620) / 700)) : Math.min(1, (vw - 24) / 640);
+      let s;
+      if (vw >= 1080) {
+        s = Math.min(1, Math.max(0.62, (vw - 620) / 700));
+      } else {
+        let avail = vw - 24;
+        const host = stackRef.current?.parentElement;
+        if (host) {
+          const cs = window.getComputedStyle(host);
+          avail =
+            host.clientWidth -
+            (parseFloat(cs.paddingLeft) || 0) -
+            (parseFloat(cs.paddingRight) || 0);
+        }
+        s = Math.min(1, avail / 640);
+      }
       setScale(Number(s.toFixed(3)));
     };
     apply();
@@ -91,7 +108,7 @@ export function HeroDeviceShowcase() {
   const activeDim = Math.floor(tick / 3) % DATASET_TAXONOMY.length;
 
   return (
-    <div className="lpd-stack" style={{ '--lpd-scale': scale }} aria-hidden="true">
+    <div className="lpd-stack" ref={stackRef} style={{ '--lpd-scale': scale }} aria-hidden="true">
       <div className="lpd-canvas">
         {/* ── Shaded feed zone + falling JSON, above the desktop only ── */}
         <div className="lpd-codefall">

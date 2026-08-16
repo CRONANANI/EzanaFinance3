@@ -135,7 +135,73 @@
   animation-delay: 1s;
 }
 
-/* Accessibility: no motion — resting frame, no transitions, no keyframes. */
+/* Community Insights radar: the user at the center, network nodes on rings,
+   a rotating sweep. Acted nodes pulse emerald with a connecting line as the
+   sweep passes (delays derive from each node's fixed angle: deterministic).
+   Rings use the hairline token; acted/live is emerald per brand rules. */
+.feature-viz .fv-radar-ring {
+  fill: none;
+  stroke: var(--border-secondary);
+  stroke-width: 1;
+}
+.feature-viz .fv-radar-wedge {
+  fill: var(--emerald);
+  opacity: 0.15;
+}
+@keyframes fv-radar-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.feature-viz .fv-radar-sweep {
+  animation: fv-radar-rotate 6s linear infinite;
+}
+.feature-viz .fv-radar-user {
+  fill: var(--emerald);
+}
+.feature-viz .fv-radar-node {
+  fill: var(--text-ghost);
+}
+@keyframes fv-radar-ping {
+  0%,
+  3% {
+    opacity: 0.45;
+  }
+  7%,
+  22% {
+    opacity: 1;
+  }
+  45%,
+  100% {
+    opacity: 0.45;
+  }
+}
+.feature-viz .fv-radar-node--acted {
+  fill: var(--emerald);
+  animation: fv-radar-ping 6s linear infinite;
+}
+@keyframes fv-radar-flash {
+  0%,
+  4% {
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.8;
+  }
+  30%,
+  100% {
+    opacity: 0;
+  }
+}
+.feature-viz .fv-radar-link {
+  stroke: var(--emerald);
+  stroke-width: 1;
+  opacity: 0;
+  animation: fv-radar-flash 6s linear infinite;
+}
+
+/* Accessibility: no motion. Resting frame, no transitions, no keyframes.
+   The radar freezes with the acted nodes statically lit. */
 @media (prefers-reduced-motion: reduce) {
   .feature-viz .fv-t {
     transition: none;
@@ -148,15 +214,37 @@
   .feature-viz .fv-burst {
     opacity: 0;
   }
+  .feature-viz .fv-radar-sweep,
+  .feature-viz .fv-radar-node--acted,
+  .feature-viz .fv-radar-link {
+    animation: none;
+  }
+  .feature-viz .fv-radar-node--acted {
+    opacity: 1;
+  }
+  .feature-viz .fv-radar-link {
+    opacity: 0.55;
+  }
 }
 
 @media (max-width: 768px) {
   /* Cards stack single-column on mobile, so `margin-top: auto` collapses and
      the visual crowds the description. Match the gap ABOVE the visual to the
      16px that already sits below it, so each visual is evenly framed. The base
-     `margin-top: auto` is preserved for the desktop shared-baseline alignment. */
+     `margin-top: auto` is preserved for the desktop shared-baseline alignment.
+     Engine-proof sizing: the SVG's height derives from an explicit
+     aspect-ratio matching the 224x64 viewBox, in normal flow, so a
+     100%-height SVG can never resolve against the wrong box (Safari) and
+     spill its in-chart labels over the card copy. */
   .feature-viz {
     margin-top: 16px;
     padding-top: 16px;
+    height: auto;
+  }
+  .feature-viz-svg {
+    width: min(100%, 280px);
+    height: auto;
+    aspect-ratio: 224 / 64;
+    margin: 0 auto;
   }
 }
