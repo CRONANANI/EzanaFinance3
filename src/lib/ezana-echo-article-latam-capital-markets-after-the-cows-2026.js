@@ -528,7 +528,7 @@ export const latamCapitalMarketsAfterTheCows2026 = {
   likes: 0,
   comments: 0,
   reads: 0,
-  status: 'draft',
+  status: 'published',
 };
 
 export default latamCapitalMarketsAfterTheCows2026;

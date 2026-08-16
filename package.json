@@ -11,6 +11,7 @@
     "lint:ds": "node scripts/check-ds-hex.mjs",
     "lint:a11y": "node scripts/check-a11y.mjs",
     "lint:css": "node scripts/check-var-fallbacks.mjs",
+    "check:echo-figures": "node scripts/check-echo-figure-count.mjs",
     "test:whale": "node scripts/check-whale-score.mjs",
     "test:house": "node scripts/check-house-disclosures.mjs",
     "test:competitions": "node scripts/check-competition-onboarding.mjs",

@@ -61,13 +61,36 @@ This appears in Vercel logs on every seed pass. A warning for a NEW article is a
 defect — fix the article module (add the text-justified value, or a justifying
 comment for a defensible empty).
 
-## 5. Figure standard — exactly 3 figures
+## 5. Figure standard: 6 to 10 figures, evenly distributed
 
-Every Echo article carries **exactly 3 figures** (blocks with `figureLabel`,
-numbered `FIG. 1`, `FIG. 2`, `FIG. 3`). Three keeps chart variety novel across
-the catalog. FIG. 1 is normally the primary story figure (usually a
-time-series). The one exception is `ezana-echo-article-peter-thiel-2026.js`, a
-frozen SEO-canonical page that keeps its 4 figures — do not trim it.
+Every published Echo article carries a **minimum of 6 and a maximum of 10
+figures** from the signature catalog. Legacy `chart` blocks count toward the
+total; `stat-grid`, `callout`, `quote`, and `image` blocks do not.
+
+Figures must be **evenly distributed** through the body:
+
+- The first figure appears in the **top third** of the article.
+- **No two figures are adjacent** (at least one prose block between figures).
+- **No run of more than 6 consecutive non-figure blocks** anywhere in the body.
+
+FIG. 1 is normally the primary story figure (usually a time-series).
+
+**Standing exception:** `ezana-echo-article-peter-thiel-2026.js` is frozen at
+its 4 figures (labelled through `FIG. 5`) as an SEO-canonical page. Do not
+trim it, do not extend it, and do not count it against this standard. The
+enforcement script hard-codes it as an exception.
+
+**Applies historically.** This standard governs new articles immediately, and
+all previously published articles are being retrofitted to it in batches on
+`feat/echo-figure-retrofit-*` branches. Until that retrofit finishes, most of
+the existing catalog fails the check, which is why the check runs manually and
+in retrofit QA rather than in the commit hook.
+
+Enforcement: `npm run check:echo-figures` (or
+`node scripts/check-echo-figure-count.mjs`). It exits 1 on any violation; pass
+`--report` for inventory mode, which lists violations and always exits 0. The
+script reads block `type:` values in source order, so it sees the real body
+sequence rather than a declared count.
 
 Beyond the original figure types, six branded chart types are available —
 `radial-stack`, `variable-pie`, `bubble-field`, `multi-axis`, `tile-grid`,

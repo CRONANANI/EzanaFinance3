@@ -178,7 +178,7 @@ export const bitcoinInstitutionalHolders2026 = {
   likes: 0,
   comments: 0,
   reads: 0,
-  status: 'draft',
+  status: 'published',
   contentBlocks: [
     {
       type: 'paragraph',

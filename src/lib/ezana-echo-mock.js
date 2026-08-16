@@ -39,8 +39,9 @@ import { dataConsolidationArticle2026 } from './ezana-echo-article-data-consolid
 import { johnnyMnemonicConsolidation2026 } from './ezana-echo-article-johnny-mnemonic-consolidation-2026.js';
 import { tokenizationCollateral2026 } from './ezana-echo-article-tokenization-collateral-2026.js';
 import { empireRankings2026 } from './ezana-echo-article-empire-rankings-2026.js';
-// Draft catalog (status: 'draft'): registered for parity with curated-seed;
-// nothing reads ARTICLES for public rendering.
+// August 2026 catalog (status: 'published' as of the publish batch):
+// registered for parity with curated-seed; nothing reads ARTICLES for
+// public rendering.
 import { bitcoinInstitutionalHolders2026 } from './ezana-echo-article-bitcoin-institutional-holders-13f-2026.js';
 import { stablecoinSettlementLayer2026 } from './ezana-echo-article-stablecoin-settlement-layer-2026.js';
 import { cryptoLegislationPredictionMarkets2026 } from './ezana-echo-article-crypto-legislation-prediction-markets-2026.js';
@@ -71,7 +72,7 @@ const ARTICLES = [
   hantavirusArticle,
   semiconductorArticle,
   privateCreditMaturityWallArticle2026,
-  // Drafts (invisible until status flips to published):
+  // Published in the August 2026 batch (previously drafts):
   bitcoinInstitutionalHolders2026,
   stablecoinSettlementLayer2026,
   cryptoLegislationPredictionMarkets2026,
