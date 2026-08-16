@@ -146,12 +146,25 @@ export function DimensionScrollSection() {
     return () => clearInterval(id);
   }, []);
 
-  /* ── Rail click → scroll to that step ── */
+  /* ── Rail click → scroll to that step ──
+     Pinned: map the step to its slice of the track runway. Stacked (mobile /
+     reduced motion): the rail is a strip of jump links, so reveal the target
+     card immediately and scroll it into view; smooth only when motion is on. */
   const goTo = useCallback(
     (i) => {
+      if (unpinned) {
+        const node = rootRef.current?.querySelector(`[data-dscroll-index="${i}"]`);
+        if (!node) return;
+        setSeen((prev) => (prev.has(i) ? prev : new Set([...prev, i])));
+        const reduce =
+          typeof window !== 'undefined' &&
+          window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+        node.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+        return;
+      }
       const track = trackRef.current;
       const stage = stageRef.current;
-      if (!track || !stage || unpinned) return;
+      if (!track || !stage) return;
       const runway = track.offsetHeight - stage.offsetHeight;
       const top = track.offsetTop + (runway * (i + 0.5)) / steps;
       window.scrollTo({ top, behavior: 'smooth' });

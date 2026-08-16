@@ -220,4 +220,9 @@
   .psc-card {
     max-width: 100%;
   }
+  /* Mobile mono floor: annotations never render below 10px. The Analyze
+     affordance is always visible (no hover gate), so touch users see it. */
+  .psc-sig-analyze {
+    font-size: 0.625rem;
+  }
 }
