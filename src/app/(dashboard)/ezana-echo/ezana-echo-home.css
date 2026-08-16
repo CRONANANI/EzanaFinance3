@@ -441,7 +441,15 @@ html:has(body.echo-route) {
 .eth-belt {
   position: relative;
   height: clamp(560px, 74vh, 900px);
-  overflow: hidden;
+  /* Clip the conveyor VERTICALLY only. The old two-axis overflow: hidden also
+     put a clip plane on the column's left/right edges, where the composited
+     belt track (will-change: transform) could shave the first pixel column of
+     card text at subpixel raster offsets mid-scroll, and always shaved the
+     hover ring's outer 1px on edge tiles. Cards never overflow horizontally
+     by design, so no horizontal clip is needed; visible + clip is a valid
+     non-coerced pair that creates no scroll container. */
+  overflow-x: visible;
+  overflow-y: clip;
   /* Cards dissolve at the belt edges instead of hard-cutting mid-title. */
   -webkit-mask-image: linear-gradient(
     to bottom,
@@ -912,9 +920,12 @@ html:has(body.echo-route) {
    ══════════════════════════════════════════════════════════════ */
 .eth-board .echo-card {
   /* Borderless tiles: the page background flows through; the hero image is
-     the visual object. The emerald ring below remains the hover affordance. */
+     the visual object. The emerald ring below remains the hover affordance.
+     Radius is TOP-ONLY to match the image treatment (rounded top, square
+     bottom): the hover ring's box-shadow traces this radius, and an all-corner
+     6px here was the one thing still rendering rounded bottom corners. */
   border: none;
-  border-radius: 6px;
+  border-radius: 6px 6px 0 0;
   background: transparent;
   box-shadow: none;
 }
@@ -923,8 +934,10 @@ html:has(body.echo-route) {
    metadata peek ride inside the img wrapper and are unaffected. */
 .eth-board .echo-card__img {
   aspect-ratio: 16 / 7;
-  /* Flush full-bleed hero: rounded top corners at the card radius, square
-     bottom corners; card padding applies to the text block only. */
+  /* Flush full-bleed hero: rounded top corners at the card radius, SQUARE
+     bottom corners (bottom radii 0), sitting flush against the text block.
+     This wrapper is the single radius carrier: it clips via overflow:hidden
+     and the img inside stays border-radius 0. */
   border-radius: 6px 6px 0 0;
 }
 .eth-board .echo-card__body {
