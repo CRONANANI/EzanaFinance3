@@ -1,13 +1,11 @@
-/* Hero iMac dashboard mockup (hdm- prefix). Sits on the screen's white
-   surface in light theme and inherits the dark surface in dark theme.
-   Tokens only; echo-scoped chart tokens are unavailable on the landing
-   route, so gridlines use the hairline token and declines fall back from
-   the echo red to the platform negative token. The right padding on the
-   main column keeps content clear of the iPhone that overlaps the iMac's
-   top-right corner in the composition. */
+/* Hero iMac dashboard mockup (hdm- prefix): a two-panel miniature of the
+   real dashboard home. Sits on the screen's white surface in light theme
+   and inherits the dark surface in dark theme. Tokens only; the echo-scoped
+   chart tokens are unavailable on the landing route, so each falls back to
+   the platform equivalent. The rail's right padding keeps content clear of
+   the iPhone that overlaps the iMac's top-right corner. */
 .hdm-root {
   display: flex;
-  flex-direction: column;
   width: 100%;
   height: 100%;
   min-height: 0;
@@ -21,80 +19,59 @@
 }
 .hdm-t {
   transition:
+    width 0.6s ease,
+    height 0.6s ease,
     opacity 0.5s ease,
     transform 0.5s ease;
 }
-
-/* Slim top app bar mirroring the real dashboard shell's top navbar. */
-.hdm-topbar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 10px;
-  border-bottom: 1px solid var(--border-secondary);
-  flex: none;
-}
-.hdm-topbar-logo {
-  width: 9px;
-  height: 9px;
-  border-radius: 3px;
-  background: var(--emerald);
-}
-.hdm-topbar-item {
-  height: 3.5px;
-  border-radius: 2px;
-  background: var(--text-ghost);
-}
-.hdm-topbar-avatar {
-  margin-left: auto;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--text-ghost);
-}
-
-.hdm-main {
-  flex: 1;
-  min-height: 0;
-  padding: 5px 22px 6px 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.hdm-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 8px;
-  flex: none;
-}
-.hdm-greet {
-  font-size: 9px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-.hdm-head-r {
+.hdm-r {
   text-align: right;
 }
-.hdm-value {
-  font-size: 13px;
+.hdm-up {
+  color: var(--emerald);
+}
+.hdm-down {
+  color: var(--echo-chart-red, var(--negative));
+}
+
+/* ── Left: Positions & progress board ── */
+.hdm-board {
+  flex: 0 0 68%;
+  min-width: 0;
+  padding: 4px 8px 5px 9px;
+  border-right: 1px solid var(--border-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.hdm-sec-head {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  flex: none;
+}
+.hdm-sec-num {
+  font-size: 7px;
+  font-weight: 700;
+  color: var(--emerald);
+}
+.hdm-sec-title {
+  font-size: 9px;
   font-weight: 700;
   color: var(--text-primary);
-  letter-spacing: 0.02em;
-  line-height: 1.1;
 }
-.hdm-day {
-  font-size: 8px;
-  color: var(--emerald);
-  display: flex;
+.hdm-sec-meta {
+  margin-left: auto;
+  display: inline-flex;
   align-items: center;
-  justify-content: flex-end;
   gap: 4px;
+  font-size: 5.5px;
+  letter-spacing: 0.1em;
+  color: var(--text-faint);
 }
 .hdm-live {
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
   background: var(--emerald);
   animation: hdm-pulse 2s ease-in-out infinite;
@@ -109,128 +86,352 @@
   }
 }
 
-.hdm-chart-card,
-.hdm-table-card,
-.hdm-feed-card {
-  background: var(--bg-secondary);
-  border-radius: 6px;
-  padding: 4px 8px 5px;
-  min-height: 0;
-}
-.hdm-card-kicker {
-  font-size: 6.5px;
-  letter-spacing: 0.14em;
-  color: var(--text-faint);
-  margin-bottom: 3px;
-  white-space: nowrap;
-}
-.hdm-chart-card {
+.hdm-table {
   flex: none;
 }
-.hdm-spark {
-  display: block;
-  width: 100%;
-  height: 30px;
-}
-.hdm-grid {
-  stroke: var(--border-secondary);
-  stroke-width: 1;
-}
-.hdm-spark-line {
-  fill: none;
-  stroke: var(--emerald);
-  stroke-width: 2;
-  stroke-linecap: round;
-}
-.hdm-spark-area {
-  fill: var(--emerald);
-  opacity: 0.08;
-}
-
-.hdm-cols {
+.hdm-hrow {
   display: grid;
-  grid-template-columns: 1fr 1.15fr;
-  gap: 6px;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
+  grid-template-columns: 30px 1fr 34px 44px 30px 42px;
+  gap: 5px;
+  align-items: center;
+  padding: 1.5px 0;
+  border-bottom: 1px dotted var(--border-secondary);
+  font-size: 6.5px;
 }
-.hdm-row {
-  display: grid;
-  grid-template-columns: 1fr auto auto;
-  gap: 7px;
-  padding: 2.5px 0;
-  border-bottom: 1px solid var(--border-secondary);
-  font-size: 7.5px;
-}
-.hdm-row:last-child {
+.hdm-hrow:last-of-type {
   border-bottom: none;
 }
-.hdm-tk {
-  color: var(--text-primary);
+.hdm-hrow--head {
+  font-size: 5.5px;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+  border-bottom: 1px solid var(--border-secondary);
+  padding-bottom: 2px;
+}
+.hdm-sym {
   font-weight: 700;
-}
-.hdm-px {
-  color: var(--text-secondary);
-}
-.hdm-up {
-  color: var(--emerald);
-}
-.hdm-down {
-  color: var(--echo-chart-red, var(--negative));
-}
-
-.hdm-feed-row {
-  display: flex;
-  align-items: baseline;
-  gap: 4px;
-  padding: 2.5px 0;
-  border-bottom: 1px solid var(--border-secondary);
-  font-size: 7px;
-}
-.hdm-feed-row:last-child {
-  border-bottom: none;
-}
-.hdm-feed-row--new {
-  animation: hdm-slide-in 0.5s ease;
-}
-@keyframes hdm-slide-in {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-.hdm-feed-who {
   color: var(--text-primary);
-  font-weight: 600;
-  white-space: nowrap;
 }
-.hdm-feed-what {
+.hdm-name {
   color: var(--text-muted);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.hdm-feed-tag {
-  margin-left: auto;
+.hdm-val {
+  color: var(--text-secondary);
+}
+.hdm-wt {
+  color: var(--text-muted);
+}
+.hdm-spark-cell {
+  width: 42px;
+  height: 11px;
+  display: block;
+}
+.hdm-sparkline {
+  fill: none;
+  stroke-width: 1.2;
+  stroke-linecap: round;
+}
+.hdm-sparkline--up {
+  stroke: var(--emerald);
+}
+.hdm-sparkline--down {
+  stroke: var(--echo-chart-red, var(--negative));
+}
+.hdm-sparkarea {
+  stroke: none;
+  opacity: 0.12;
+}
+.hdm-sparkarea.hdm-sparkline--up {
+  fill: var(--emerald);
+}
+.hdm-sparkarea.hdm-sparkline--down {
+  fill: var(--echo-chart-red, var(--negative));
+}
+.hdm-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 3px;
+  font-size: 5.5px;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+}
+.hdm-pager-btns {
+  display: inline-flex;
+  gap: 3px;
+}
+.hdm-pill {
+  width: 10px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-secondary);
+}
+
+.hdm-twoup {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  flex: none;
+}
+.hdm-block {
+  min-width: 0;
+}
+.hdm-block-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 5px;
+}
+.hdm-block-title {
+  font-size: 5.5px;
+  letter-spacing: 0.12em;
+  color: var(--text-faint);
+  margin-bottom: 2px;
+  white-space: nowrap;
+}
+.hdm-barrow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1.5px 0;
+  font-size: 6px;
+}
+.hdm-bardot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  flex: none;
+}
+.hdm-barlabel {
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 0 0 42px;
+}
+.hdm-bar-track {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--bg-tertiary);
+  overflow: hidden;
+  display: block;
+}
+.hdm-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  display: block;
+}
+.hdm-barval {
+  color: var(--text-secondary);
+  flex: none;
+}
+
+.hdm-pnl {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 24px;
+}
+.hdm-pnl-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+  height: 100%;
+}
+.hdm-pnl-bar-wrap {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+.hdm-pnl-bar {
+  width: 100%;
+  border-radius: 1.5px 1.5px 0 0;
+  display: block;
+}
+.hdm-pnl-bar--up {
+  background: var(--emerald);
+}
+.hdm-pnl-bar--down {
+  background: var(--echo-chart-red, var(--negative));
+}
+.hdm-pnl-val {
+  font-size: 4.8px;
+  white-space: nowrap;
+}
+
+.hdm-watch {
+  flex: none;
+}
+.hdm-wrow {
+  display: grid;
+  grid-template-columns: 30px 1fr 40px 34px;
+  gap: 5px;
+  align-items: center;
+  padding: 1.5px 0;
+  border-bottom: 1px dotted var(--border-secondary);
+  font-size: 6.5px;
+}
+.hdm-wrow:last-child {
+  border-bottom: none;
+}
+.hdm-catpill {
+  font-size: 5px;
+  letter-spacing: 0.08em;
+  padding: 1px 5px;
+  border-radius: 999px;
+  border: 1px solid var(--border-secondary);
+  color: var(--text-muted);
+}
+
+/* ── Right: ELO rating + Ways to improve rail ── */
+.hdm-rail {
+  flex: 1;
+  min-width: 0;
+  /* Right padding clears the overlapping iPhone corner. */
+  padding: 4px 20px 5px 7px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.hdm-card {
+  background: var(--bg-secondary);
+  border-radius: 5px;
+  padding: 4px 6px 5px;
+  min-width: 0;
+}
+.hdm-link {
+  font-size: 5.5px;
   color: var(--emerald);
+  white-space: nowrap;
+}
+.hdm-elo-row {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+}
+.hdm-elo-current {
+  font-size: 17px;
   font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.05;
+}
+.hdm-elo-suffix {
+  font-size: 6px;
+  color: var(--text-faint);
+}
+.hdm-elo-tier {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 1px 0 3px;
+  font-size: 6px;
+}
+.hdm-tierdot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--text-ghost);
+}
+.hdm-tierlabel {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+.hdm-elo-peak {
+  margin-left: auto;
+  font-size: 5.5px;
+  color: var(--text-faint);
+}
+.hdm-elo-ends {
+  display: flex;
+  justify-content: space-between;
+  gap: 5px;
+  margin-top: 2px;
+  font-size: 5px;
+  letter-spacing: 0.06em;
+  color: var(--text-faint);
+}
+.hdm-earned-title {
+  margin-top: 5px;
+}
+
+.hdm-improve {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.hdm-imp {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 2px 0;
+  border-bottom: 1px dotted var(--border-secondary);
+}
+.hdm-imp:last-child {
+  border-bottom: none;
+}
+.hdm-chip {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 5.5px;
+  font-weight: 700;
+  color: var(--emerald);
+  background: color-mix(in srgb, var(--emerald) 12%, transparent);
+}
+.hdm-imp-body {
+  min-width: 0;
+  flex: 1;
+  display: block;
+}
+.hdm-imp-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px;
+}
+.hdm-imp-title {
+  font-size: 6px;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hdm-imp-pts {
+  font-size: 5.5px;
+  color: var(--emerald);
+  white-space: nowrap;
+  flex: none;
+}
+.hdm-imp-desc {
+  display: block;
+  font-size: 5.5px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Reduced motion: everything renders static and legible; the LIVE dot and
-   feed entrance freeze, tick-driven values simply stop changing. */
+   the value transitions freeze, and the tick interval itself never starts. */
 @media (prefers-reduced-motion: reduce) {
   .hdm-t {
     transition: none;
   }
   .hdm-live {
-    animation: none;
-  }
-  .hdm-feed-row--new {
     animation: none;
   }
 }

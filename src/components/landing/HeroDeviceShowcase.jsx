@@ -30,18 +30,10 @@ import './hero-device-showcase.css';
  * only: aria-hidden + pointer-events: none.
  */
 
+/* Two copy-trader rows; the phone's remaining space carries the alert feed. */
 const PEOPLE = [
   { id: 'p1', name: 'Taylor J.', cap: '$1.2M', copiers: '1.5K', hue: 'a' },
   { id: 'p2', name: 'Beth C.', cap: '$13.4K', copiers: '24K', hue: 'b' },
-  { id: 'p3', name: 'Tarcis M.', cap: '$85.1K', copiers: '9.2K', hue: 'c' },
-];
-
-const FEED = [
-  { id: 'f1', who: 'Beth C.', what: 'rebalanced', when: '3m' },
-  { id: 'f2', who: 'Rep. Whitfield', what: 'filed a disclosure', when: '12m' },
-  { id: 'f3', who: 'BlackRock', what: 'updated 13F', when: '31m' },
-  { id: 'f4', who: 'Taylor J.', what: 'opened NVDA', when: '48m' },
-  { id: 'f5', who: 'Katherine C.', what: 'started copying you', when: '1h' },
 ];
 
 /* Falling JSON fragments — same schema shape as PortfolioSignalCard's
@@ -76,7 +68,7 @@ export function HeroDeviceShowcase() {
       const vw = window.innerWidth;
       let s;
       if (vw >= 1080) {
-        s = Math.min(1, Math.max(0.62, (vw - 620) / 700));
+        s = Math.min(1, Math.max(0.6, (vw - 640) / 750));
       } else {
         let avail = vw - 24;
         const host = stackRef.current?.parentElement;
@@ -87,7 +79,7 @@ export function HeroDeviceShowcase() {
             (parseFloat(cs.paddingLeft) || 0) -
             (parseFloat(cs.paddingRight) || 0);
         }
-        s = Math.min(1, avail / 640);
+        s = Math.min(1, avail / 690);
       }
       setScale(Number(s.toFixed(3)));
     };
@@ -106,6 +98,7 @@ export function HeroDeviceShowcase() {
   const followed = tick % (PEOPLE.length + 1);
   const likes = 12 + (tick % 6);
   const filedMin = 2 + (tick % 4);
+  const titansMin = 14 + (tick % 5);
 
   return (
     <div className="lpd-stack" ref={stackRef} style={{ '--lpd-scale': scale }} aria-hidden="true">
@@ -195,9 +188,9 @@ export function HeroDeviceShowcase() {
             </svg>
             <div className="lpd-imac-screen">
               <div className="lpd-imac-chrome">
-                <i className="lpd-dot" />
-                <i className="lpd-dot" />
-                <i className="lpd-dot" />
+                <i className="lpd-dot lpd-dot--close" />
+                <i className="lpd-dot lpd-dot--min" />
+                <i className="lpd-dot lpd-dot--zoom" />
                 <span className="lpd-imac-url">ezana.world/home</span>
               </div>
               {/* Single persistent screen content: a miniature living mockup of
@@ -241,40 +234,39 @@ export function HeroDeviceShowcase() {
               ))}
             </div>
 
-            <div className="lpd-label">Capitol Watch</div>
-            <div className="lpd-disclosure">
-              <div className="lpd-disc-row">
-                <span className="lpd-avatar lpd-avatar--gov lpd-avatar--sm">W</span>
-                <span className="lpd-disc-name">Rep. A. Whitfield</span>
-                <span className="lpd-t lpd-disc-when lpd-mono">{filedMin}m</span>
+            <div className="lpd-alerts-divider">
+              <span className="lpd-mono lpd-alerts-kicker">Alerts</span>
+            </div>
+
+            {/* Capitol Watch alert: fictional member, disclosure-filing event. */}
+            <div className="lpd-alert lpd-alert--capitol">
+              <div className="lpd-alert-head">
+                <i className="bi bi-bank lpd-alert-icon" />
+                <span className="lpd-mono lpd-alert-kicker">Capitol Watch</span>
+                <span className="lpd-t lpd-mono lpd-alert-when">{filedMin}m</span>
               </div>
-              <div className="lpd-disc-row lpd-disc-row--detail">
-                <span className="lpd-disc-line">
-                  Bought <b className="lpd-mono">NVDA</b> · disclosed today
-                </span>
-                <span className="lpd-copybtn">Copy</span>
+              <div className="lpd-alert-name">Rep. A. Whitfield</div>
+              <div className="lpd-alert-line">
+                disclosure filed
+                <span className="lpd-mono lpd-alert-chip">LMT</span>
+                <span className="lpd-mono lpd-alert-val">$100K-250K</span>
               </div>
             </div>
 
-            <div className="lpd-label">While you were gone…</div>
-            <div className="lpd-feed">
-              {FEED.map((f, i) => {
-                const slot = (((i - tick) % FEED.length) + FEED.length) % FEED.length;
-                return (
-                  <div
-                    key={f.id}
-                    className="lpd-t lpd-feedrow"
-                    style={{
-                      transform: `translateY(${slot * 31}px)`,
-                      opacity: slot < 3 ? 1 : 0,
-                    }}
-                  >
-                    <span className="lpd-feed-who">{f.who}</span>
-                    <span className="lpd-feed-what">{f.what}</span>
-                    <span className="lpd-feed-when lpd-mono">{f.when}</span>
-                  </div>
-                );
-              })}
+            {/* Titans Shadow alert: filing EVENT only for the named institution,
+                never a return, prediction, or strategy characterization. */}
+            <div className="lpd-alert lpd-alert--titans">
+              <div className="lpd-alert-head">
+                <i className="bi bi-buildings lpd-alert-icon" />
+                <span className="lpd-mono lpd-alert-kicker">Titans Shadow</span>
+                <span className="lpd-t lpd-mono lpd-alert-when">{titansMin}m</span>
+              </div>
+              <div className="lpd-alert-name">Goldman Sachs</div>
+              <div className="lpd-alert-line">
+                13F position disclosed
+                <span className="lpd-mono lpd-alert-chip">AVGO</span>
+                <span className="lpd-mono lpd-alert-val">+1.2M sh</span>
+              </div>
             </div>
           </div>
           <div className="lpd-phone-homebar" />
