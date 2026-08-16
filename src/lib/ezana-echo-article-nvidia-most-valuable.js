@@ -262,6 +262,34 @@ export const nvidiaSecondMostValuableArticle = {
       text: "The moat is deepening, not narrowing. Nvidia's $26 billion R&D spend in fiscal 2026 exceeds AMD's entire revenue. The [[kw:blackwell-architecture]]Blackwell architecture[[/kw]], which began shipping at scale in Q1 2026, delivers 4x the training throughput of Hopper at comparable power — a step-function improvement that is pulling hyperscaler capex forward. When [[person:jensen-huang]]Jensen Huang[[/person]] says \"the more you buy, the more you save,\" the math actually works: Blackwell's performance-per-dollar improvement is large enough that customers save on electricity and cooling even after paying the premium.",
     },
     {
+      type: 'trajectory',
+      figureLabel: 'FIG. 3 · THE THREE-YEAR CLIMB',
+      kicker:
+        'NVDA MARKET CAP, JANUARY 2023 TO MAY 2026 ($T) · FROM UNDER $1T TO $5.34T · THE FASTEST WEALTH CREATION FOR A SINGLE COMPANY IN MARKET HISTORY.',
+      hint: 'Dated readings of Nvidia’s market capitalization along the climb to #2.',
+      source: 'market data as of May 2026 · this article’s reporting.',
+      yLabel: 'Market cap, $T',
+      yMax: 6,
+      series: [
+        {
+          key: 'nvda',
+          label: 'Nvidia market cap',
+          color: 'var(--echo-chart-green)',
+          data: [
+            { x: 2023.0, y: 0.36 },
+            { x: 2023.42, y: 1.0 },
+            { x: 2024.17, y: 2.0 },
+            { x: 2026.17, y: 5.0 },
+            { x: 2026.375, y: 5.34 },
+          ],
+        },
+      ],
+      annotations: [
+        { x: 2023.42, y: 1.0, label: 'May 2023 · crosses $1T' },
+        { x: 2026.375, y: 5.34, label: 'May 2026 · $5.34T, #2 on Earth' },
+      ],
+    },
+    {
       type: 'callout',
       label: 'NVDA market cap growth since May 2023',
       value: '~5x',
@@ -284,7 +312,7 @@ export const nvidiaSecondMostValuableArticle = {
     },
     {
       type: 'adjudication-matrix',
-      figureLabel: 'FIG. 3 · WHAT EACH ASSET ACTUALLY IS',
+      figureLabel: 'FIG. 4 · WHAT EACH ASSET ACTUALLY IS',
       kicker:
         'TOP-10 ASSETS × THE RANKING’S THREE THESES · SAME = THE ASSET EMBODIES THIS THESIS · PART = PARTIALLY · — = NOT AT ALL. CLICK A CELL FOR THE EVIDENCE.',
       hint: 'Click a cell for the evidence.',
@@ -377,6 +405,34 @@ export const nvidiaSecondMostValuableArticle = {
       text: "Saudi Aramco at #10 ($1.80T) is the lone representative of the hydrocarbon economy on the list. In 2020, Aramco was the world's most valuable company. Its displacement by six tech firms in five years is the clearest single-chart summary of the structural shift from energy dominance to intelligence dominance in global capital markets. The world still runs on oil — but the world's capital increasingly flows toward the companies building the infrastructure for artificial intelligence.",
     },
     {
+      type: 'radial-stack',
+      figureLabel: 'FIG. 5 · THE WHOLE BOARD, TO SCALE',
+      kicker:
+        'THE TOP 10 ASSETS BY MARKET VALUE, MAY 2026 ($T) · ONE ARC PER ASSET · GOLD’S ARC DWARFS THE FIELD AT 5.8X NVIDIA.',
+      hint: 'Each arc scales to that asset’s total value; gold sets the full sweep.',
+      source: 'Global asset ranking by market capitalization / total market value, May 2026.',
+      maxAngle: 270,
+      segmentPalette: [
+        'var(--echo-chart-orange)',
+        'var(--echo-chart-green)',
+        'var(--echo-chart-blue)',
+        'var(--echo-chart-purple)',
+        'var(--echo-chart-red)',
+      ],
+      categories: [
+        { label: 'Gold', segments: [{ label: 'Gold', value: 31.19 }] },
+        { label: 'Nvidia', segments: [{ label: 'Nvidia', value: 5.34 }] },
+        { label: 'Alphabet', segments: [{ label: 'Alphabet', value: 4.66 }] },
+        { label: 'Apple', segments: [{ label: 'Apple', value: 4.39 }] },
+        { label: 'Silver', segments: [{ label: 'Silver', value: 4.16 }] },
+        { label: 'Microsoft', segments: [{ label: 'Microsoft', value: 3.1 }] },
+        { label: 'Amazon', segments: [{ label: 'Amazon', value: 2.79 }] },
+        { label: 'TSMC', segments: [{ label: 'TSMC', value: 2.04 }] },
+        { label: 'Broadcom', segments: [{ label: 'Broadcom', value: 1.95 }] },
+        { label: 'Saudi Aramco', segments: [{ label: 'Saudi Aramco', value: 1.8 }] },
+      ],
+    },
+    {
       type: 'quote',
       text: 'We are at the beginning of a new industrial revolution. Every data center in the world is being retrofitted. Every new one being built is an AI factory.',
       source: 'Jensen Huang, Nvidia GTC 2026 keynote, March 2026',
@@ -389,6 +445,51 @@ export const nvidiaSecondMostValuableArticle = {
     {
       type: 'paragraph',
       text: "The bear case is equally clear: Nvidia's revenue concentration in a handful of hyperscaler customers creates binary risk. If Google, Microsoft, or Amazon slow their [[kw:capex-cycle]]AI capex[[/kw]] — which could happen in a recession, a regulatory crackdown, or simply because model efficiency improves faster than expected — Nvidia's revenue could decelerate sharply. The stock's 40x+ multiple leaves no margin for error. At $5.34 trillion, the market is pricing in sustained 30%+ revenue growth for years. Any wobble in that trajectory would reprice the stock aggressively.",
+    },
+    {
+      type: 'scenario-chain',
+      figureLabel: 'FIG. 6 · THE BULL AND BEAR CHAINS AT $5.34T',
+      kicker:
+        'WHAT THE 40X MULTIPLE REQUIRES, AND WHAT BREAKS IT · EACH CHAIN MULTIPLIES ITS CONDITIONS INTO AN OUTCOME.',
+      hint: 'Read each chain left to right.',
+      source: 'this article’s reporting · market data as of May 2026.',
+      scenarios: [
+        {
+          id: 'bull',
+          label: 'BULL CASE · THE MULTIPLE IS EARNED',
+          tone: 'base',
+          range: '30%+ priced in',
+          steps: [
+            { label: 'Data center GPU revenue', sub: 'still growing at 50%+ year over year' },
+            { label: 'Blackwell product cycle', sub: 'pulling 2-3 years of demand forward' },
+            { label: 'TAM keeps expanding', sub: 'inference growing faster than training' },
+          ],
+          result: {
+            value: 'Sustained 30%+ revenue growth for years',
+            sub: 'what $5.34T is already pricing',
+          },
+        },
+        {
+          id: 'bear',
+          label: 'BEAR CASE · THE CAPEX WOBBLE',
+          tone: 'bear',
+          range: 'no margin for error',
+          steps: [
+            {
+              label: 'Hyperscaler concentration',
+              sub: 'a handful of customers set the revenue line',
+            },
+            { label: 'AI capex slows', sub: 'recession, regulation, or faster model efficiency' },
+            { label: '40x+ forward multiple', sub: 'leaves no room for the wobble' },
+          ],
+          result: {
+            value: 'The stock reprices aggressively',
+            sub: 'the leaderboard position can change rapidly; gold’s will not',
+          },
+        },
+      ],
+      killSwitch:
+        'A slowdown in AI capex among Microsoft, Google, or Amazon: their spend is Nvidia’s revenue.',
     },
     { type: 'heading', text: 'How to position around this ranking', level: 2 },
     {

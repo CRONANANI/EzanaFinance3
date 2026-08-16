@@ -58,6 +58,34 @@ export const tokenizationCollateral2026 = {
       text: 'The Brazilian pilot, built by agtech firm Cowmed, exists because banks tightened lending limits on small agricultural businesses. A cow is a real, income-producing asset; what it lacked was a form a lender could trust without driving to the farm. Tokenization supplied the form: a digital record registered with B3 as a movable asset, welded to a sensor feed that makes the collateral continuously observable. Cowmed already tracks roughly 100,000 dairy cows across more than 1,000 farms — a herd worth over $395 million — and expects up to 20% of that network to adopt tokenized financing, which would unlock an estimated $77.6 million in fresh agricultural credit. For scale: total tokenized assets worldwide stood near $25 billion as of March 2026, against McKinsey scenarios of roughly $2–4 trillion by 2030 and a Standard Chartered projection of $30 trillion by 2034. The cows are a rounding error on the market and a controlled experiment on the mechanism.',
     },
     {
+      type: 'trajectory',
+      figureLabel: 'FIG. 1 · A ROUNDING ERROR, COMPOUNDING',
+      kicker:
+        'TOKENIZED REAL-WORLD ASSETS EX-STABLECOINS, MARCH 2024 TO MID-2026 ($B) · ROUGHLY 30X IN TWO AND A HALF YEARS.',
+      hint: 'Three dated readings of the same total; the projections figure later in this article picks up where this line ends.',
+      source:
+        'Tokenized US Treasuries crossed $1B in March 2024; total tokenized assets reached ~$25B by March 2026 and sit above $30B ex-stablecoins today (this article’s reporting).',
+      yLabel: 'Tokenized RWAs, $B',
+      yMax: 36,
+      series: [
+        {
+          key: 'rwa',
+          label: 'Tokenized RWAs ex-stablecoins',
+          color: 'var(--echo-chart-blue)',
+          data: [
+            { x: 2024.2, y: 1 },
+            { x: 2026.2, y: 25 },
+            { x: 2026.5, y: 30 },
+          ],
+        },
+      ],
+      annotations: [
+        { x: 2024.2, y: 1, label: 'Mar 2024 · $1B in tokenized Treasuries' },
+        { x: 2026.2, y: 25, label: 'Mar 2026 · ~$25B total' },
+        { x: 2026.5, y: 30, label: 'mid-2026 · $30B+ ex-stablecoins' },
+      ],
+    },
+    {
       type: 'paragraph',
       text: 'The mechanism is [[kw:collateral-utility]]collateral utility[[/kw]]. Roughly $16 trillion of illiquid assets — commercial real estate, private equity stakes, art, farmland, and yes, livestock — sits outside the borrowing system today, per the BCG estimates the industry keeps citing, not because the assets lack value but because verifying, transferring, and seizing them is expensive. Put the same assets on open digital rails and the sequence becomes mechanical: tokenize the building, deposit it into a lending protocol, borrow liquid dollars against it in minutes. Every asset class that crosses that line brings demand to exactly two layers: the infrastructure that secures the record, and the applications that run the lending and trading against it.',
     },
@@ -68,24 +96,8 @@ export const tokenizationCollateral2026 = {
       text: 'The Paraná pilot reads like a novelty until it is placed against the problem it prototypes. The gap between what the world’s small businesses need to borrow and what they can access runs to [[kw:msme-finance-gap]]$5.7 trillion[[/kw]] — and climbs to roughly $8 trillion once informal enterprises are counted. Sub-Saharan Africa alone accounts for about $331 billion of it, and the African Development Bank puts credit access among African smallholder farmers at just 6%. The cruelty of that number is that the missing collateral often is not missing: farmers across these markets own valuable livestock and simply cannot borrow against it, because banks require the land titles that roughly 80% of rural livestock holders in a province like Pakistan’s Sindh do not have. Livestock is wealth these borrowers already hold. What Paraná demonstrated is the conversion layer — digital identity plus continuous verification plus registry recognition — that turns owned wealth into bankable collateral.',
     },
     {
-      type: 'callout',
-      label: 'Global small-business credit gap',
-      value: '$8T',
-      context:
-        '$5.7 trillion of unmet formal MSME borrowing demand worldwide, rising to ~$8 trillion including informal enterprises. Sub-Saharan Africa accounts for ~$331 billion; only 6% of African smallholder farmers have access to credit (African Development Bank).',
-    },
-    { type: 'heading', text: 'Five countries, four missing links', level: 2 },
-    {
-      type: 'paragraph',
-      text: 'The pieces already exist in the markets that need them most — as separate pieces. Ethiopia holds Africa’s largest livestock population, its central bank runs an electronic registry that names cattle, camels, sheep, goats, and poultry as eligible collateral, a national livestock identification and traceability system is being built, and the 2025–2030 agricultural-finance roadmap puts livestock financing demand near ETB 911 billion — yet lenders still lack reliable valuation, insurance, health data, and a recovery path on default. Nigeria carries the group’s biggest near-term gap, about $32.2 billion of unmet small-business credit demand per the IFC, alongside a central-bank registry that can pledge livestock (including unborn offspring) and check double-pledging, an ear-tag and digital-passport identification system, and a $500 million livestock program through 2028 with $70 million earmarked for access to finance — three working systems and no single product connecting them into one loan.',
-    },
-    {
-      type: 'paragraph',
-      text: 'Kenya is the control case: its Movable Property Security Rights Registry runs around the clock, its agricultural data systems had registered over 7.2 million farmers by 2025, and lenders registered 34,638 livestock assets as collateral in the year to June 2023 — part of roughly KSh 5.1 trillion in credit supported by movable assets overall, with no blockchain required. Mongolia makes the same point harder: livestock made up about a quarter of the roughly 670,000 pledge notices in its web-based movable-property registry by mid-2023. Ordinary electronic registries already record collateral and set creditor priority. Which means tokenization does not get credit for existing — it has to beat ordinary underwriting on the terms that matter: a bigger loan, a lower rate, a faster approval, a cheaper insurance premium, or a better recovery when the borrower defaults. Pakistan shows what happens when the missing link is insurance: livestock is 14.6% of GDP and over 62% of agricultural value added, yet fewer than 200,000 of the country’s 3.2 million small enterprises have formal credit, and the World Bank found only 16% of farmers holding seven to fifty animals bankable — largely because livestock insurance barely exists, and disease, drought, or theft can erase the collateral and the borrower’s income in the same event.',
-    },
-    {
       type: 'dossier-table',
-      figureLabel: 'FIG. 1 · LOCKED OUT WHERE LIVESTOCK WEALTH IS HIGHEST',
+      figureLabel: 'FIG. 2 · LOCKED OUT WHERE LIVESTOCK WEALTH IS HIGHEST',
       kicker:
         'FORMAL CREDIT ACCESS WHERE THE MISSING COLLATERAL IS LIVESTOCK · LOWEST ACCESS FIRST · CLICK A ROW TO EXPAND THE DOSSIER.',
       hint: 'Four access figures — expand a row for the record.',
@@ -152,8 +164,24 @@ export const tokenizationCollateral2026 = {
       ],
     },
     {
+      type: 'callout',
+      label: 'Global small-business credit gap',
+      value: '$8T',
+      context:
+        '$5.7 trillion of unmet formal MSME borrowing demand worldwide, rising to ~$8 trillion including informal enterprises. Sub-Saharan Africa accounts for ~$331 billion; only 6% of African smallholder farmers have access to credit (African Development Bank).',
+    },
+    { type: 'heading', text: 'Five countries, four missing links', level: 2 },
+    {
+      type: 'paragraph',
+      text: 'The pieces already exist in the markets that need them most — as separate pieces. Ethiopia holds Africa’s largest livestock population, its central bank runs an electronic registry that names cattle, camels, sheep, goats, and poultry as eligible collateral, a national livestock identification and traceability system is being built, and the 2025–2030 agricultural-finance roadmap puts livestock financing demand near ETB 911 billion — yet lenders still lack reliable valuation, insurance, health data, and a recovery path on default. Nigeria carries the group’s biggest near-term gap, about $32.2 billion of unmet small-business credit demand per the IFC, alongside a central-bank registry that can pledge livestock (including unborn offspring) and check double-pledging, an ear-tag and digital-passport identification system, and a $500 million livestock program through 2028 with $70 million earmarked for access to finance — three working systems and no single product connecting them into one loan.',
+    },
+    {
+      type: 'paragraph',
+      text: 'Kenya is the control case: its Movable Property Security Rights Registry runs around the clock, its agricultural data systems had registered over 7.2 million farmers by 2025, and lenders registered 34,638 livestock assets as collateral in the year to June 2023 — part of roughly KSh 5.1 trillion in credit supported by movable assets overall, with no blockchain required. Mongolia makes the same point harder: livestock made up about a quarter of the roughly 670,000 pledge notices in its web-based movable-property registry by mid-2023. Ordinary electronic registries already record collateral and set creditor priority. Which means tokenization does not get credit for existing — it has to beat ordinary underwriting on the terms that matter: a bigger loan, a lower rate, a faster approval, a cheaper insurance premium, or a better recovery when the borrower defaults. Pakistan shows what happens when the missing link is insurance: livestock is 14.6% of GDP and over 62% of agricultural value added, yet fewer than 200,000 of the country’s 3.2 million small enterprises have formal credit, and the World Bank found only 16% of farmers holding seven to fifty animals bankable — largely because livestock insurance barely exists, and disease, drought, or theft can erase the collateral and the borrower’s income in the same event.',
+    },
+    {
       type: 'adjudication-matrix',
-      figureLabel: 'FIG. 2 · FIVE COUNTRIES, FOUR MISSING LINKS',
+      figureLabel: 'FIG. 3 · FIVE COUNTRIES, FOUR MISSING LINKS',
       kicker:
         'LIVESTOCK-COLLATERAL COUNTRIES × THE FOUR LINKS A LOAN NEEDS · SAME = THE ARTICLE CREDITS THIS MARKET WITH THE LINK · PART = IN PROGRESS · — = NOT CREDITED / MISSING. CLICK A CELL FOR THE EVIDENCE.',
       hint: 'Click a cell for the evidence.',
@@ -276,6 +304,28 @@ export const tokenizationCollateral2026 = {
       type: 'paragraph',
       text: 'If the volume numbers were theoretical, the incumbents would not be paying real money to stand on the new rails. Stripe bought stablecoin-infrastructure firm Bridge for $1.1 billion and then backed its own blockchain, Tempo, which debuted in early 2026 — and Visa now operates an anchor validator on it. Mastercard signed a definitive agreement in March 2026 to acquire London stablecoin-infrastructure company BVNK for up to $1.8 billion — $1.5 billion fixed plus $300 million contingent, expected to close by year-end — the largest acquisition in stablecoin history. PayPal issues its own dollar token, PYUSD. Circle, the issuer of USDC, trades on the NYSE around a $30 billion valuation. Crypto M&A overall ran about $37 billion in 2025, up more than sevenfold in a year. The pattern rhymes with every plumbing rebuild in payments history: the companies that ended up sitting in the middle of electronic card payments — Visa and Mastercard themselves — were assembled quietly, in the layer almost nobody watched, and they are now the ones buying seats on the replacement.',
     },
+    {
+      type: 'multi-axis',
+      figureLabel: 'FIG. 4 · CARD-NETWORK SCALE, ALREADY',
+      kicker:
+        '2025 SETTLEMENT VOLUME, $T · STABLECOIN RAILS VS. THE INCUMBENT CARD NETWORKS · RAW AND BOT-ADJUSTED READINGS SHOWN SEPARATELY.',
+      hint: 'Hover a column for its reading; the bot-adjusted figure is the more defensible one.',
+      source:
+        'Raw on-chain stablecoin volume 2025 vs. Visa and Mastercard combined processed payments; Chainalysis bot-adjusted 2025 figure.',
+      categories: [
+        'Visa + Mastercard combined',
+        'Stablecoins, raw on-chain',
+        'Stablecoins, bot-adjusted',
+      ],
+      series: [
+        {
+          label: 'Settlement volume 2025',
+          kind: 'bar',
+          unit: '$T',
+          values: [25.5, 33, 28],
+        },
+      ],
+    },
     { type: 'heading', text: 'The access problem, sized in one IPO', level: 2 },
     {
       type: 'paragraph',
@@ -294,7 +344,7 @@ export const tokenizationCollateral2026 = {
     },
     {
       type: 'revision-ledger',
-      figureLabel: 'FIG. 3 · WHERE THE BANKS SAY THIS GOES BY 2030',
+      figureLabel: 'FIG. 5 · WHERE THE BANKS SAY THIS GOES BY 2030',
       kicker:
         'TOKENIZED-ASSET TOTAL: ~$30B TODAY → 2030 BANK PROJECTIONS · √-SCALE · GROWTH IS FAVORABLE (GREEN). CLICK A ROW FOR THE RECORD.',
       hint: 'Bar length on a √-scale; each row is today’s base vs. a 2030 projection.',
@@ -348,6 +398,72 @@ export const tokenizationCollateral2026 = {
     {
       type: 'paragraph',
       text: 'The risk is timing, not direction — and collateral itself. Nearly all of this is gated on regulation actually moving, and being early on the trade looks identical to being wrong for exactly as long as patience holds. Collateral utility adds its own failure modes the pitch decks skip: oracles can misprice, custody can fail, and the legal enforceability of an on-chain lien over a physical asset — a building, a painting, a cow — is only as strong as the local courts behind it. The Paraná pilot works because the sensor feed and B3 registration close that gap for livestock; most asset classes have not built their equivalent yet. The Mongolia and Kenya registries deserve the same discipline as a benchmark: a normal database can already record which animal secures which loan, so the burden of proof sits on borrowing terms — a digitally verified animal has to unlock a bigger loan, a lower rate, or a better recovery than the same animal gets today, or tokenization remains a pilot with no measurable effect on who can borrow. And the raw volume statistics get the same treatment: $33 trillion of on-chain movement includes an enormous amount of trading churn, which is why the bot-adjusted $28 trillion is the more defensible number.',
+    },
+    {
+      type: 'scenario-chain',
+      figureLabel: 'FIG. 6 · BASE, BEAR, AND THE QUIET BEAR',
+      kicker:
+        'THREE BRANCHES FOR THE COLLATERAL TRADE · EACH CHAIN MULTIPLIES ITS CONDITIONS INTO AN OUTCOME · THE RISK IS TIMING, NOT DIRECTION.',
+      hint: 'Read each chain left to right.',
+      source: 'this article’s reporting and framework.',
+      scenarios: [
+        {
+          id: 'base',
+          label: 'BASE CASE · THE LOW END PROVES CONSERVATIVE',
+          tone: 'base',
+          range: '~60x floor',
+          steps: [
+            {
+              label: 'Issuance keeps compounding',
+              sub: 'licensed issuers earn at issuance and on AUA',
+            },
+            {
+              label: 'Lending infrastructure builds',
+              sub: 'venues charge basis points on tokenized collateral',
+            },
+          ],
+          result: {
+            value: 'The venues become the quiet giants of the cycle',
+            sub: 'the toll structure, not the treasure hunt',
+          },
+        },
+        {
+          id: 'bear',
+          label: 'BEAR CASE · THE ADOPTION CLOCK RESETS',
+          tone: 'bear',
+          range: 'years lost',
+          steps: [
+            { label: 'Regulatory stall', sub: 'nearly all of this is gated on regulation moving' },
+            { label: 'A collateral failure', sub: 'a mispriced oracle, an unenforceable lien' },
+          ],
+          result: {
+            value: 'Being early looks identical to being wrong',
+            sub: 'for exactly as long as patience holds',
+          },
+        },
+        {
+          id: 'quiet-bear',
+          label: 'DEVELOPMENT-FINANCE BEAR · QUIETER AND WORSE',
+          tone: 'bear',
+          range: 'human cost',
+          steps: [
+            {
+              label: 'Registries never connect',
+              sub: 'identity, insurance, and recovery stay separate',
+            },
+            {
+              label: 'Debt against uninsured animals',
+              sub: 'a lender cannot repossess destroyed value',
+            },
+          ],
+          result: {
+            value: 'A drought erases collateral and income in the same season',
+            sub: 'the borrower keeps the debt',
+          },
+        },
+      ],
+      killSwitch:
+        'A high-profile collateral failure (a mispriced oracle, an unenforceable lien) resets the adoption clock by years.',
     },
     {
       type: 'paragraph',

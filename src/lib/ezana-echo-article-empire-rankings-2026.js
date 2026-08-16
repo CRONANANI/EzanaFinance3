@@ -193,10 +193,164 @@ export const empireRankings2026 = {
       type: 'paragraph',
       text: "Compress five hundred years into a single sweep and the structure jumps out: long plateaus punctuated by short, violent handovers. The Iberian century opens the series — Spain running the first globe-spanning empire on Potosí silver after 1545, Portugal stringing a trade network from Lisbon to Macau — and closes when Dutch fleets and the world's first joint-stock corporation, the VOC of 1602, capture the carrying trade. The Dutch interval is brief but foundational: the Bank of Amsterdam (1609) and the guilder give the world its first modern reserve asset. Britain takes the baton across the long eighteenth century, formalizes it at Waterloo in 1815, and holds it until the ledger of two world wars transfers financial primacy to New York. Bretton Woods in 1944 makes the transfer official. The Soviet challenge runs 1947–1991 and ends in dissolution rather than handover. The current window opens with China's WTO accession in 2001 — the fastest output ascent in the series since America's own.",
     },
+    {
+      type: 'wall-timeline',
+      figureLabel: 'FIG. 2 · THE HANDOVER CHRONOLOGY',
+      kicker:
+        'THE INSTITUTIONAL EVENTS THAT MOVED THE TOP OF THE TABLE, 1500–2026 · ONE PLAQUE PER DATED EVENT · CLICK ANY PLAQUE FOR THE RECORD.',
+      hint: 'Click a plaque for its record.',
+      source: 'as dated in this article (public record).',
+      startYear: 1500,
+      endYear: 2026,
+      windows: [],
+      plaques: [
+        {
+          year: 1545,
+          lane: 0,
+          label: '1545 · Potosí silver',
+          detail:
+            'Potosí silver bankrolls the Iberian century: Spain runs the first globe-spanning empire on it after 1545.',
+        },
+        {
+          year: 1602,
+          lane: 1,
+          label: '1602 · The VOC',
+          detail:
+            'The Dutch answer with institutions: the VOC of 1602, the world’s first joint-stock corporation, captures the carrying trade.',
+        },
+        {
+          year: 1609,
+          lane: 2,
+          label: '1609 · Bank of Amsterdam',
+          detail:
+            'The Bank of Amsterdam and the guilder give the world its first modern reserve asset, born in a country of two million people.',
+        },
+        {
+          year: 1815,
+          lane: 3,
+          label: '1815 · Waterloo',
+          detail:
+            'Waterloo converts British productivity into naval hegemony and sterling primacy: small share, total system.',
+        },
+        {
+          year: 1944,
+          lane: 4,
+          label: '1944 · Bretton Woods',
+          detail:
+            'Two world wars transfer financial primacy from London to New York; Bretton Woods makes the dollar official, roughly half a century after the output overtake.',
+        },
+        {
+          year: 2001,
+          lane: 5,
+          label: '2001 · China joins the WTO',
+          detail:
+            'China’s WTO accession opens the fastest output ascent since America’s own, and with it the current contest window.',
+        },
+      ],
+    },
     { type: 'heading', text: 'Twelve empires, one grammar of decline', level: 2 },
     {
       type: 'paragraph',
       text: "Read the graveyard before reading the ranking. Twelve imperial systems contested the top of the table across the window, and their terminal outcomes sort into a small grammar: dissolution (Ottoman 1922, Mughal 1857, Soviet 1991, Imperial Japan 1945), transformation into a successor state that stayed on the board (Qing into the Republic and then the PRC, Tsarist Russia into the USSR), and the long managed handover — Britain, France, Portugal and the Netherlands unwinding empire over decades and ending as prosperous middle powers, with Portugal's Macau handover in 1999 closing a 584-year run, the longest single imperial run in the series. No hegemon in the series was ever removed primarily by battlefield defeat at its peak; every one was first out-produced, then out-traded, then out-financed.",
+    },
+    {
+      type: 'adjudication-matrix',
+      figureLabel: 'FIG. 3 · THE GRAMMAR OF DECLINE',
+      kicker:
+        'EIGHT IMPERIAL SYSTEMS × THREE TERMINAL OUTCOMES · SAME = THE RECORD ASSIGNS THIS EXIT · CLICK A CELL FOR THE EVIDENCE.',
+      hint: 'Click a cell for the evidence.',
+      source: 'as dated in this article (public record).',
+      cols: ['Dissolution', 'Transformation', 'Managed handover'],
+      rows: [
+        {
+          label: 'Ottoman Empire',
+          cells: [
+            {
+              value: 'same',
+              note: 'Dissolved in 1922: the caliphate’s imperial system ends outright.',
+            },
+            { value: 'none' },
+            { value: 'none' },
+          ],
+        },
+        {
+          label: 'Mughal Empire',
+          cells: [
+            {
+              value: 'same',
+              note: 'Dissolved in 1857, after holding nearly a quarter of world output at Aurangzeb’s accession.',
+            },
+            { value: 'none' },
+            { value: 'none' },
+          ],
+        },
+        {
+          label: 'Soviet Union',
+          cells: [
+            {
+              value: 'same',
+              note: 'The Soviet challenge runs 1947–1991 and ends in dissolution rather than handover.',
+            },
+            { value: 'none' },
+            { value: 'none' },
+          ],
+        },
+        {
+          label: 'Imperial Japan',
+          cells: [
+            {
+              value: 'same',
+              note: 'Dissolved in 1945 with battlefield defeat, the exception that ends a challenger rather than a hegemon.',
+            },
+            { value: 'none' },
+            { value: 'none' },
+          ],
+        },
+        {
+          label: 'Qing China',
+          cells: [
+            { value: 'none' },
+            {
+              value: 'same',
+              note: 'Transformed into a successor state that stayed on the board: the Qing into the Republic and then the PRC.',
+            },
+            { value: 'none' },
+          ],
+        },
+        {
+          label: 'Tsarist Russia',
+          cells: [
+            { value: 'none' },
+            {
+              value: 'same',
+              note: 'Transformed rather than removed: Tsarist Russia into the USSR.',
+            },
+            { value: 'none' },
+          ],
+        },
+        {
+          label: 'Britain',
+          cells: [
+            { value: 'none' },
+            { value: 'none' },
+            {
+              value: 'same',
+              note: 'The long managed handover: unwinding empire over decades and ending as a prosperous middle power, with financial primacy crossing to New York.',
+            },
+          ],
+        },
+        {
+          label: 'Portugal',
+          cells: [
+            { value: 'none' },
+            { value: 'none' },
+            {
+              value: 'same',
+              note: 'The Macau handover in 1999 closes a 584-year run, the longest single imperial run in the series.',
+            },
+          ],
+        },
+      ],
     },
     { type: 'heading', text: 'The output pendulum', level: 2 },
     {
@@ -205,7 +359,7 @@ export const empireRankings2026 = {
     },
     {
       type: 'radial-stack',
-      figureLabel: 'FIG. 2 · THE 2026 OUTPUT BOARD',
+      figureLabel: 'FIG. 4 · THE 2026 OUTPUT BOARD',
       kicker:
         'SHARE OF WORLD GDP IN 2026, PER POWER · PPP BASIS · ONE ARC PER POWER, LONGEST ARC LEADS THE BOARD.',
       hint: 'Each arc scales to that power’s 2026 share of world output.',
@@ -230,6 +384,28 @@ export const empireRankings2026 = {
       type: 'paragraph',
       text: "Ray Dalio's Big Cycle research — the framework behind Ezana's 18 power dimensions — makes a specific, testable claim: national power is not one thing but a sequence, in which education and innovation lead, output and trade share follow, financial-center status follows that, and reserve-currency status arrives last and decays last. The historical record adjudicates the claim well. The Dutch built the world's best shipyards and the first modern financial institutions before the guilder became the settlement asset; Britain's scientific and industrial lead preceded sterling's primacy by two generations; American output passed Britain's around 1890, New York displaced London as the dominant financial center after 1918, and the dollar's formal anchoring waited until 1944. The one dimension that resists the pattern is the terminal one: reserve status persists decades after every other lead has eroded. Sterling remained a major reserve asset into the 1950s, thirty years after Britain lost the underlying leads. The dollar's 58% share today — against a US share of world output between 15% (PPP) and 26% (nominal) — is the same overhang, live.",
     },
+    {
+      type: 'radial-stack',
+      figureLabel: 'FIG. 5 · THE 2026 RESERVE BOARD',
+      kicker:
+        'SHARE OF ALLOCATED FX RESERVES, PER CURRENCY · ONE ARC PER CURRENCY · SET AGAINST FIG. 4, THE MISMATCH WITH OUTPUT IS THE WHOLE CONTEST.',
+      hint: 'Each arc scales to that currency’s share of allocated reserves; compare the arcs with FIG. 4.',
+      source:
+        'IMF COFER shares cited in this article: USD 58%, EUR ~20%, JPY ~5–6% (charted at the range midpoint), RMB ~2%.',
+      maxAngle: 270,
+      segmentPalette: [
+        'var(--echo-chart-blue)',
+        'var(--echo-chart-purple)',
+        'var(--echo-chart-orange)',
+        'var(--echo-chart-red)',
+      ],
+      categories: [
+        { label: 'US dollar', segments: [{ label: 'US dollar', value: 58 }] },
+        { label: 'Euro', segments: [{ label: 'Euro', value: 20 }] },
+        { label: 'Japanese yen', segments: [{ label: 'Japanese yen', value: 5.5 }] },
+        { label: 'Renminbi', segments: [{ label: 'Renminbi', value: 2 }] },
+      ],
+    },
     { type: 'heading', text: 'Six powers, one scoreboard', level: 2 },
     {
       type: 'paragraph',
@@ -237,7 +413,7 @@ export const empireRankings2026 = {
     },
     {
       type: 'dossier-table',
-      figureLabel: 'FIG. 3 · SIX POWERS, COMPARED',
+      figureLabel: 'FIG. 6 · SIX POWERS, COMPARED',
       kicker:
         'POWER · ROLE ON THE BOARD · ANCHOR METRIC · KEY RISK — CLICK A ROW TO EXPAND THE FULL DOSSIER.',
       hint: 'Six live dossiers — expand a row for the record.',
@@ -388,6 +564,74 @@ export const empireRankings2026 = {
     {
       type: 'paragraph',
       text: "Five hundred years of transitions permit exactly one honest forecast structure: scenarios gated by the sequence, not point predictions. The base case is continuation with erosion — the dollar's reserve share drifting from 58% toward the low-50s by 2035 on the same gradual diversification that took it from 71% since 1999, with no financial-center transition, because no convertible alternative exists at scale. The transition case requires what no challenger has yet attempted: Chinese capital-account convertibility deep enough to make Shanghai a genuine reserve-asset market — the single event that historically separates a trade power from a hegemon. The fragmentation case is the one with the least historical precedent since 1500: no succession at all, with reserve holdings splintering across dollar, euro, gold, and smaller currencies, which central banks' record gold accumulation since 2022 already gestures toward. The kill switch on the base case is explicit and measurable: the dollar's COFER reserve share.",
+    },
+    {
+      type: 'scenario-chain',
+      figureLabel: 'FIG. 7 · THREE SCENARIOS TO 2050',
+      kicker:
+        'CONTINUATION, TRANSITION, FRAGMENTATION · EACH CHAIN MULTIPLIES ITS GATES INTO AN END STATE · SCENARIOS ARE GATED BY THE SEQUENCE, NOT POINT PREDICTIONS.',
+      hint: 'Read each chain left to right.',
+      source: 'IMF COFER · central-bank gold accumulation since 2022 · this article’s framework.',
+      scenarios: [
+        {
+          id: 'continuation',
+          label: 'BASE CASE · CONTINUATION WITH EROSION',
+          tone: 'base',
+          range: 'low-50s by 2035',
+          steps: [
+            {
+              label: 'Gradual diversification',
+              sub: 'the same drift that took USD from 71% since 1999',
+            },
+            { label: 'No convertible alternative', sub: 'at scale, none exists' },
+          ],
+          result: {
+            value: 'USD reserve share drifts from 58% toward the low-50s',
+            sub: 'no financial-center transition',
+          },
+        },
+        {
+          id: 'transition',
+          label: 'TRANSITION CASE · A GENUINE HANDOVER',
+          tone: 'transition',
+          range: 'unprecedented',
+          steps: [
+            {
+              label: 'Chinese capital-account convertibility',
+              sub: 'what no challenger has yet attempted',
+            },
+            {
+              label: 'Shanghai becomes a reserve-asset market',
+              sub: 'deep enough to hold reserves',
+            },
+          ],
+          result: {
+            value: 'A trade power becomes a hegemon',
+            sub: 'the single event that historically separates the two',
+          },
+        },
+        {
+          id: 'fragmentation',
+          label: 'FRAGMENTATION CASE · NO SUCCESSION AT ALL',
+          tone: 'bear',
+          range: 'least precedent',
+          steps: [
+            {
+              label: 'Reserve holdings splinter',
+              sub: 'across dollar, euro, gold, and smaller currencies',
+            },
+            {
+              label: 'Record central-bank gold buying',
+              sub: 'the accumulation since 2022 already gestures toward it',
+            },
+          ],
+          result: {
+            value: 'The interwar non-system, replayed',
+            sub: 'the outcome with the least historical precedent since 1500',
+          },
+        },
+      ],
+      killSwitch: 'The dollar’s COFER reserve share: quarterly, public, and free.',
     },
     { type: 'heading', text: 'How to read the board from here', level: 2 },
     {

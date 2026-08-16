@@ -144,6 +144,64 @@ export const johnnyMnemonicConsolidation2026 = {
       text: 'The story’s power structure maps just as cleanly. Its dominant organization enforces a data monopoly with vertically integrated ruthlessness — the consolidated incumbent for whom any leaked dataset is an existential threat. Its most memorable character, Jones, is a cybernetically enhanced ex-Navy dolphin built for one job — cracking encrypted systems — then discarded when his platform moved on, kept compliant by an addiction his handlers engineered. Jones is the fate of the point solution: purpose-built, best-in-class at a single task, and decommissioned the moment the platform that funded him consolidated its stack. And the Lo Teks — the story’s off-grid resisters who opt out of the dominant infrastructure entirely — are the permanent minority who keep running fragmented stacks after the market has moved. Gibson’s ending is the sharpest signal of all: the courier’s durable business, once free, is built on the accumulated residue of every dataset he ever carried. The data exhaust outlives every deal.',
     },
     {
+      type: 'adjudication-matrix',
+      figureLabel: 'FIG. 3 · THE 1981 CAST, ADJUDICATED',
+      kicker:
+        'GIBSON’S CAST × THE THREE FATES OF A CONSOLIDATING MARKET · SAME = THE STORY ASSIGNS THIS FATE · PART = PARTIALLY · CLICK A CELL FOR THE EVIDENCE.',
+      hint: 'Click a cell for the evidence.',
+      source: 'William Gibson, "Johnny Mnemonic" (Omni, May 1981) · this article’s reading.',
+      cols: ['Consolidates the board', 'Absorbed by a platform', 'Persists at the margins'],
+      rows: [
+        {
+          label: 'The dominant organization',
+          cells: [
+            {
+              value: 'same',
+              note: 'Enforces a data monopoly with vertically integrated ruthlessness: the consolidated incumbent for whom any leaked dataset is an existential threat.',
+            },
+            { value: 'none' },
+            { value: 'none' },
+          ],
+        },
+        {
+          label: 'Jones, the dolphin',
+          cells: [
+            { value: 'none' },
+            {
+              value: 'same',
+              note: 'Purpose-built, best-in-class at a single task, and decommissioned the moment the platform that funded him consolidated its stack: the fate of the point solution.',
+            },
+            { value: 'none' },
+          ],
+        },
+        {
+          label: 'The Lo Teks',
+          cells: [
+            { value: 'none' },
+            { value: 'none' },
+            {
+              value: 'same',
+              note: 'The off-grid resisters who opt out of the dominant infrastructure entirely: the permanent minority who keep running fragmented stacks after the market has moved.',
+            },
+          ],
+        },
+        {
+          label: 'The courier',
+          cells: [
+            {
+              value: 'part',
+              note: 'His durable business, once free, is built on the accumulated residue of every dataset he ever carried: the data exhaust outlives every deal.',
+            },
+            { value: 'none' },
+            {
+              value: 'same',
+              note: 'Ends the story independent, monetizing accumulated data rather than being absorbed by the incumbent that hunts him.',
+            },
+          ],
+        },
+      ],
+    },
+    {
       type: 'callout',
       label: 'Security vendor consolidation',
       value: '~75%',
@@ -166,7 +224,7 @@ export const johnnyMnemonicConsolidation2026 = {
     },
     {
       type: 'wall-timeline',
-      figureLabel: 'FIG. 3 · THE CONSOLIDATION CHRONOLOGY',
+      figureLabel: 'FIG. 4 · THE CONSOLIDATION CHRONOLOGY',
       kicker:
         'SECURITY & DATA-INFRASTRUCTURE DEALS, 2024–2026 · ONE PLAQUE PER DATED DEAL — CLICK ANY PLAQUE FOR THE RECORD.',
       hint: 'Click a plaque for its record.',
@@ -224,6 +282,57 @@ export const johnnyMnemonicConsolidation2026 = {
       text: 'The same logic is consolidating the data layer itself. IBM completed its $11 billion all-cash acquisition of Confluent on March 17, 2026 — $31 per share for the data-streaming platform built on Apache Kafka, used by more than 6,500 enterprises including 40% of the Fortune 500. IBM’s stated rationale was not Confluent’s revenue; it was real-time data movement for enterprise AI — models and agents acting on live operational data rather than stale extracts. That is the Gibson thesis stated as a press release: the value is in controlling how proprietary data moves. On the demand side, enterprises are consolidating their own stacks in parallel — average SaaS portfolios have contracted from roughly 130 applications toward about 106, per SaaS-management vendor data, compressing hundreds of point vendors into a shrinking set of platform relationships.',
     },
     {
+      type: 'revision-ledger',
+      figureLabel: 'FIG. 5 · THE PHASE TRANSITION, MEASURED',
+      kicker:
+        'THREE CONSOLIDATION DIALS, EARLIER READING VS. LATEST · SHARED LINEAR SCALE · CLICK A ROW FOR THE RECORD.',
+      hint: 'Each row pairs the earlier reading with the 2025-26 reading.',
+      source:
+        'Gartner (security consolidation) · deal data cited in this article (AI share) · SaaS-management vendor data (portfolio size).',
+      scale: 'linear',
+      unit: '',
+      rows: [
+        {
+          label: 'Orgs consolidating security vendors',
+          before: 33,
+          after: 75,
+          beforeDisplay: '<33% (2020)',
+          afterDisplay: '~75% (2026)',
+          delta: 42,
+          deltaDisplay: '+42 pts',
+          favorable: 'up',
+          record:
+            'Roughly 75% of organizations are actively pursuing security vendor consolidation in 2026, up from under a third in 2020 (Gartner): the fastest phase transition in enterprise software.',
+        },
+        {
+          label: 'Tech deals with an AI component',
+          before: 25,
+          after: 50,
+          beforeDisplay: '~25% (2024)',
+          afterDisplay: '~50% (2025)',
+          delta: 25,
+          deltaDisplay: '+25 pts',
+          favorable: 'up',
+          record:
+            'Nearly half of 2025’s technology deals carried an explicit AI component, roughly double the 2024 share. AI is the accelerant of the consolidation phase.',
+        },
+        {
+          label: 'Average enterprise SaaS portfolio',
+          before: 130,
+          after: 106,
+          beforeDisplay: '~130 apps',
+          afterDisplay: '~106 apps',
+          delta: -24,
+          deltaDisplay: '-24 apps',
+          favorable: 'up',
+          record:
+            'Average SaaS portfolios have contracted from roughly 130 applications toward about 106, per SaaS-management vendor data: hundreds of point vendors compressing into a shrinking set of platform relationships.',
+        },
+      ],
+      verdict:
+        'Every dial points the same direction: the demand side and the deal tape are consolidating at once.',
+    },
+    {
       type: 'paragraph',
       text: 'AI is the accelerant. Nearly half of 2025’s technology deals carried an explicit AI component, roughly double the 2024 share, and 2025 tech M&A jumped 77% year over year to approximately $1.08 trillion. Forty-seven transactions above $10 billion closed in the first half of 2026 alone, totaling more than $1.3 trillion — nearly half of all global deal value concentrated in mega-deals. Boards are not buying experiments; they are buying the infrastructure positions the AI era makes scarce, at exactly the moment an easier US regulatory posture makes long-deferred deals executable.',
     },
@@ -231,6 +340,158 @@ export const johnnyMnemonicConsolidation2026 = {
     {
       type: 'paragraph',
       text: 'The cycle’s newest adaptation is consolidation structured to avoid the word "merger." In December 2025, Nvidia paid a reported $20 billion for a license to Groq’s inference technology and assets while hiring away senior leadership — Groq nominally remains independent and has since sought new funding, but the inference-chip challenger’s crown jewels now sit inside the incumbent. Senators Elizabeth Warren and Richard Blumenthal characterized the structure as a potential reverse acquihire warranting DOJ and FTC review, and the FTC said in January 2026 it would examine a wider pattern of such arrangements across the industry. Whatever regulators conclude, the market lesson stands: when a sector reaches its consolidation phase, the consolidation finds a structure — [[kw:reverse-acquihire]]reverse acquihires[[/kw]], asset licenses, take-privates — even where a conventional acquisition would be blocked.',
+    },
+    {
+      type: 'stage-boards',
+      figureLabel: 'FIG. 6 · FOUR MARKETS, ONE CYCLE',
+      kicker:
+        'WHERE EACH MARKET SITS ON THE FOUR-PHASE CYCLE · FILLED CELL = CURRENT PHASE · CLICK A STAGE FOR ITS RECORD.',
+      hint: 'Click a stage cell for its record.',
+      source:
+        'Synergy Research Group · Gartner · company statements and public reporting cited in this article.',
+      boards: [
+        {
+          id: 'cloud',
+          title: 'Cloud infrastructure',
+          color: 'var(--echo-chart-red)',
+          currentIndex: 3,
+          stages: [
+            {
+              label: 'Open',
+              sub: 'pioneers multiply',
+              note: 'Barriers are low, categories are new, and being first matters more than being big. Cloud passed through this phase more than a decade ago.',
+            },
+            {
+              label: 'Scale',
+              sub: 'capital decides',
+              note: 'The companies that raise, partner, and win share pull away from the ones that merely invented something.',
+            },
+            {
+              label: 'Consolidate',
+              sub: 'platforms absorb',
+              note: 'Large companies buy medium ones, and every founder faces the same binary: survive independently or sell.',
+            },
+            {
+              label: 'Dominate',
+              sub: 'a few own the board',
+              note: 'AWS ~30%, Azure ~23%, Google Cloud ~13%: two thirds of the market held by three companies, and nobody meaningfully enters anymore (Synergy Research Group).',
+            },
+          ],
+          stats: [
+            {
+              value: '~66%',
+              label: 'held by the top three platforms',
+              source: 'SYNERGY RESEARCH GROUP',
+            },
+          ],
+          summary:
+            'The phase transition is complete: growth now comes from absorbing adjacent categories, not new entrants.',
+        },
+        {
+          id: 'security',
+          title: 'Cybersecurity',
+          color: 'var(--echo-chart-orange)',
+          currentIndex: 2,
+          stages: [
+            {
+              label: 'Open',
+              sub: 'a category per threat',
+              note: 'Every new threat class of the 2010s spawned a product category: firewalls, EDR, SIEM, CASB, DLP.',
+            },
+            {
+              label: 'Scale',
+              sub: 'dozens of vendors',
+              note: 'Every category spawned dozens of vendors, stacking to an average of roughly 45 security tools per organization (Gartner).',
+            },
+            {
+              label: 'Consolidate',
+              sub: 'platformization',
+              note: 'Google closes Wiz at $32B, Palo Alto closes CyberArk at $25B, Cisco folds in Splunk at $28B: platformization is now the sector’s organizing logic.',
+            },
+            {
+              label: 'Dominate',
+              sub: 'not yet',
+              note: 'Not reached yet: four of the twenty largest tech acquisitions of the past decade are now cybersecurity deals, and the board is still consolidating.',
+            },
+          ],
+          stats: [{ value: '~75%', label: 'orgs consolidating vendors', source: 'GARTNER' }],
+          summary: 'For the mid-size vendor the cycle has reached its binary: survive or sell.',
+        },
+        {
+          id: 'data',
+          title: 'Data infrastructure',
+          color: 'var(--echo-chart-blue)',
+          currentIndex: 2,
+          stages: [
+            {
+              label: 'Open',
+              sub: 'point tools multiply',
+              note: 'The 2010s data stack multiplied point tools the same way security did, category by category.',
+            },
+            {
+              label: 'Scale',
+              sub: 'platforms emerge',
+              note: 'Confluent scaled Apache Kafka into a platform used by more than 6,500 enterprises, including 40% of the Fortune 500.',
+            },
+            {
+              label: 'Consolidate',
+              sub: 'incumbents buy in',
+              note: 'IBM completes its $11B all-cash Confluent acquisition on March 17, 2026: real-time data movement for enterprise AI.',
+            },
+            {
+              label: 'Dominate',
+              sub: 'not yet',
+              note: 'Not reached yet: enterprises are still compressing hundreds of point vendors into a shrinking set of platform relationships.',
+            },
+          ],
+          stats: [
+            {
+              value: '130 → 106',
+              label: 'avg SaaS apps per enterprise',
+              source: 'SAAS-MANAGEMENT VENDOR DATA',
+            },
+          ],
+          summary:
+            'The demand side is consolidating in parallel: average SaaS portfolios have contracted from roughly 130 applications toward about 106.',
+        },
+        {
+          id: 'inference',
+          title: 'AI inference chips',
+          color: 'var(--echo-chart-purple)',
+          currentIndex: 2,
+          stages: [
+            {
+              label: 'Open',
+              sub: 'challengers appear',
+              note: 'Challengers like Groq built purpose-built inference silicon against the incumbent GPU stack.',
+            },
+            {
+              label: 'Scale',
+              sub: 'AI funds the field',
+              note: 'The AI buildout funded the challengers: nearly half of 2025’s technology deals carried an explicit AI component.',
+            },
+            {
+              label: 'Consolidate',
+              sub: 'disguised structures',
+              note: 'Nvidia pays a reported $20B for a license to Groq’s inference technology and assets while hiring away senior leadership: consolidation structured to avoid the word merger.',
+            },
+            {
+              label: 'Dominate',
+              sub: 'contested',
+              note: 'Not reached yet, and contested: the FTC said in January 2026 it would examine the wider pattern of such arrangements across the industry.',
+            },
+          ],
+          stats: [
+            {
+              value: '$20B',
+              label: 'reported Groq license + assets',
+              source: 'PUBLIC REPORTING, DEC 2025',
+            },
+          ],
+          summary:
+            'When a sector reaches its consolidation phase, the consolidation finds a structure: reverse acquihires, asset licenses, take-privates.',
+        },
+      ],
     },
     {
       type: 'quote',
@@ -242,6 +503,61 @@ export const johnnyMnemonicConsolidation2026 = {
     {
       type: 'paragraph',
       text: 'The cycle implies a two-sided trade. On one side sit the proven consolidators — Microsoft (MSFT), Alphabet (GOOGL), Nvidia (NVDA), Palo Alto Networks (PANW), Cisco (CSCO), IBM (IBM), Broadcom (AVGO) — companies whose platforms compound with every absorbed category and whose scale funds the next deal. On the other side sit the remaining independent leaders in consolidating categories — names like CrowdStrike (CRWD) in endpoint — where the question is whether standalone execution or an acquisition premium delivers the return. The Wiz precedent is instructive: rejecting $23 billion and accepting $32 billion a year later was a 39% premium for waiting. The losing position is the middle: sub-scale vendors in consolidating categories with neither platform gravity nor acquisition scarcity.',
+    },
+    {
+      type: 'scenario-chain',
+      figureLabel: 'FIG. 7 · BASE CASE AND BEAR TRIGGERS',
+      kicker:
+        'ONE BASE CASE, TWO BEAR TRIGGERS · EACH CHAIN MULTIPLIES ITS CONDITIONS INTO AN OUTCOME.',
+      hint: 'Read each chain left to right.',
+      source: 'Bain full-year 2026 projection · FTC statements · this article’s reporting.',
+      scenarios: [
+        {
+          id: 'base',
+          label: 'BASE CASE · THE WAVE RUNS THROUGH 2027',
+          tone: 'base',
+          range: '>$5.3T',
+          steps: [
+            { label: 'AI capability gaps', sub: 'cannot be built organically fast enough' },
+            { label: 'Easier US regulatory posture', sub: 'long-deferred deals become executable' },
+            { label: 'Platforms keep absorbing', sub: 'each deal funds the next' },
+          ],
+          result: {
+            value: 'Full-year 2026 global M&A above $5.3 trillion',
+            sub: 'Bain projection, just shy of the all-time record',
+          },
+        },
+        {
+          id: 'bear-enforcement',
+          label: 'BEAR TRIGGER 1 · ENFORCEMENT REVERSAL',
+          tone: 'bear',
+          range: 'binary',
+          steps: [
+            { label: 'FTC pattern review', sub: 'announced January 2026' },
+            { label: 'Reaches disguised structures', sub: 'reverse acquihires, asset licenses' },
+          ],
+          result: {
+            value: 'The consolidation phase stalls',
+            sub: 'license-and-hire structures stop clearing',
+          },
+        },
+        {
+          id: 'bear-conglomerate',
+          label: 'BEAR TRIGGER 2 · THE CONGLOMERATE DISCOUNT',
+          tone: 'bear',
+          range: 'per-acquirer',
+          steps: [
+            { label: 'Integration complexity', sub: 'absorbed categories fail to mesh' },
+            { label: 'Synergies destroyed', sub: 'the acquirer paid for value it cannot realize' },
+          ],
+          result: {
+            value: 'Consolidators reprice',
+            sub: 'the two-sided trade loses its long side',
+          },
+        },
+      ],
+      killSwitch:
+        'An enforcement reversal that reaches disguised-merger structures: the FTC said in January 2026 it would examine the wider pattern.',
     },
     {
       type: 'paragraph',
