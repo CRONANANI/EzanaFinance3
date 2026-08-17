@@ -404,9 +404,11 @@
   margin: 14px 0 7px;
 }
 
+/* Two copy-trader rows share the full screen width (the grid still had a
+   third column after the row count dropped, which left a dead gap). */
 .lpd-people {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 7px;
 }
 .lpd-person {
@@ -600,14 +602,23 @@
   --surface-card: rgba(255, 255, 255, 0.55);
   color: var(--text-secondary);
 }
-/* Auto-copy: the bridge card. ABOVE the iMac entirely (measured: with the
-   card ~139px tall, top 64 puts its bottom at ~203, clear of the iMac frame
-   at y206 and the browser chrome at y225 in design space; satellites may
-   overlap the outer bezel or empty margin, never the chrome bar or the
-   screen's data area, at any scale) and LEFT of the iPhone (18px clear). */
+/* Auto-copy: the outcome card for the phone's Capitol Watch alert, so it sits
+   tight against the phone (6px gap at its right edge) and as low as the
+   clearance rules allow.
+
+   It cannot go to the RIGHT of the phone: the phone spans x476-682 in the
+   690px canvas, leaving 8px there, and the canvas right edge is already ~12px
+   from the viewport with .lp-hero clipping, so a 226px card would be almost
+   entirely cut. It also cannot drop to the alert's own vertical band (y248-297)
+   while staying left of the phone, because the iMac screen occupies that band
+   from y227 down and satellites may never cover the chrome bar or the screen's
+   data area. Top 76 puts the card's bottom at ~215: hard against the phone,
+   12px clear of the screen top, overlapping only the iMac's outer bezel, which
+   is permitted. Widening the canvas would allow the literal right-side
+   placement, but canvas geometry is settled. */
 .lpd-sat--sync {
-  top: 64px;
-  right: 232px;
+  top: 76px;
+  right: 220px;
   width: 226px;
   z-index: 5;
   animation-duration: 0.55s;

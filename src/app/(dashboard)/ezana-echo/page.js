@@ -546,7 +546,13 @@ export default function EzanaEchoPage() {
                   priority
                   quality={90}
                   sizes="100vw"
-                  style={{ objectFit: 'cover', objectPosition: 'center 40%' }}
+                  /* Mild lift so the hero photograph reads vivid rather than
+                     washed out; kept well under the saturate(1.35) ceiling. */
+                  style={{
+                    objectFit: 'cover',
+                    objectPosition: 'center 40%',
+                    filter: 'saturate(1.18) contrast(1.06)',
+                  }}
                 />
               </div>
             ) : null}

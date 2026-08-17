@@ -562,16 +562,20 @@ html:has(body.echo-route) {
    serif headline passes contrast over any hero image in both themes. If a
    vivid image still fights the headline, raise the center mix percentage
    rather than boxing the text. */
+/* Text scrim, tightened so the image reads vivid: the wash is now a
+   LOCALIZED ellipse behind the text block rather than a broad haze over the
+   whole photograph, so the headline and meta row keep their contrast in both
+   themes while the image's color survives outside that footprint. */
 .eth-aotm2-backdrop::after {
   content: '';
   position: absolute;
   inset: 0;
   z-index: 1;
   background: radial-gradient(
-    ellipse 72% 68% at 50% 46%,
-    color-mix(in srgb, var(--bg-primary) 78%, transparent) 0%,
-    color-mix(in srgb, var(--bg-primary) 46%, transparent) 55%,
-    transparent 80%
+    ellipse 54% 70% at 50% 48%,
+    color-mix(in srgb, var(--bg-primary) 88%, transparent) 0%,
+    color-mix(in srgb, var(--bg-primary) 66%, transparent) 58%,
+    transparent 94%
   );
 }
 .eth-aotm2-eyebrow {
@@ -606,12 +610,13 @@ html:has(body.echo-route) {
   gap: 16px;
   margin-top: 26px;
 }
+/* Read time in Echo green, the same token as the kicker above the headline. */
 .eth-aotm2-read {
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--text-faint);
+  color: var(--emerald);
 }
 .eth-aotm2-dot {
   width: 4px;
@@ -629,8 +634,10 @@ html:has(body.echo-route) {
   font-family: var(--font-mono);
   font-size: 11px;
   text-transform: uppercase;
-  color: var(--text-muted);
-  border: 1px solid var(--border-primary);
+  /* Green label, border, and chevron; background stays transparent so the
+     pill never reads as a solid green fill. */
+  color: var(--emerald);
+  border: 1px solid var(--emerald);
   border-radius: 999px;
   padding: 6px 14px;
   cursor: pointer;
@@ -639,8 +646,12 @@ html:has(body.echo-route) {
     color 0.16s ease;
 }
 .eth-month-pill:hover {
-  border-color: color-mix(in srgb, var(--emerald) 40%, transparent);
-  color: var(--text-primary);
+  border-color: var(--emerald-hover);
+  color: var(--emerald-hover);
+}
+.eth-month-pill:focus-within {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
 }
 .eth-month-pill select {
   font: inherit;

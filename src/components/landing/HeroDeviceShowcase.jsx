@@ -154,10 +154,9 @@ export function HeroDeviceShowcase() {
                 d="M23.83,343.94h552.03c4.92,0,8.91,3.99,8.91,8.91v48.47H14.92v-48.47c0-4.92,3.99-8.91,8.91-8.91Z"
                 transform="translate(599.69 745.26) rotate(180)"
               />
-              <path
-                fill="#231f20"
-                d="M570.43,330.43H29.57c-.44,0-.79-.36-.79-.79V25.47c0-.44.36-.79.79-.79h540.87c.44,0,.79.36.79.79v304.17c0,.44-.36.79-.79.79ZM29.57,25.37c-.05,0-.1.04-.1.09v304.17c0,.05.04.1.1.1h540.87c.05,0,.09-.04.09-.1V25.47c0-.05-.04-.09-.09-.09H29.57Z"
-              />
+              {/* The dark ring that used to bound the screen rect is removed:
+                  the white screen surface against the aluminum bezel is enough
+                  separation. The bezel/aluminum hardware paths below stay. */}
               <rect
                 fill="#0d1013"
                 x="29.12"
