@@ -88,9 +88,27 @@
 .lp-map-fade {
   position: absolute;
   inset: 0;
-  /* Fade the map from the page colour to transparent so the headline stays
-     legible. Token-based so it works in both light and dark themes. */
-  background: linear-gradient(90deg, var(--bg-primary) 8%, transparent 55%);
+  /* Two layers instead of one broad left-to-right wash. The old single ramp
+     ran opaque to 8% and only cleared at 55%, which is exactly the band the
+     Americas occupy, so North and South America read far fainter than
+     Australia and the Russia/China landmass on the unwashed right side.
+
+     Layer 1 shields the HEADLINE COLUMN specifically (a soft ellipse over
+     the copy block) rather than the whole western third, so text contrast is
+     preserved where it actually matters. Layer 2 is a short edge blend so the
+     map still dissolves at the page's left edge instead of showing a hard
+     rectangular cut. Everything outside those two footprints (most of North
+     America, all of South America) now reads at close to full strength, and
+     the residual wash keeps it a touch below the eastern landmasses rather
+     than above them. Token-based, so it works in both themes. */
+  background:
+    radial-gradient(
+      ellipse 24% 50% at 9% 64%,
+      var(--bg-primary) 0%,
+      var(--bg-primary) 38%,
+      transparent 100%
+    ),
+    linear-gradient(90deg, var(--bg-primary) 0%, transparent 12%);
 }
 
 /* route gradient + animated comets/nodes (token-driven) */
@@ -295,10 +313,13 @@
   .lp-line {
     white-space: normal;
   }
+  /* Stacked layout: the copy sits on top of the map rather than beside it, so
+     the vertical wash carries the legibility job and the horizontal one only
+     has to soften the left edge. Kept short for the same reason as above. */
   .lp-map-fade {
     background:
       linear-gradient(180deg, transparent, var(--bg-primary) 75%),
-      linear-gradient(90deg, var(--bg-primary) 20%, transparent 70%);
+      linear-gradient(90deg, var(--bg-primary) 0%, transparent 22%);
   }
 }
 

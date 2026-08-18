@@ -6,15 +6,17 @@ import './hero-dashboard-mock.css';
    (/home, the "broadsheet") for the hero iMac. Mirrors the real page's
    Band II "Positions & progress" board on the left (holdings table with
    the real SYMBOL / NAME / DAY / VALUE / WEIGHT / 7-DAY columns, the
-   pagination footer, the sector-breakdown and position-P&L blocks, and
-   the watchlist) and the ELO rating plus Ways to improve rail on the
-   right (tier pill, rating over 10,000, progress to the next tier, and
-   the real improvement paths from ProfileEloCard).
+   pagination footer, and the sector-breakdown band) and the ELO rating
+   rail on the right (rating over 10,000, tier badge, progress to the
+   next tier, and earned-by-category).
+
+   Deliberately sparse: at mockup scale only two blocks per panel stay
+   legible, so each one is given room rather than packing the screen.
 
    Deterministic: every frame-to-frame change derives from integer `tick`
    via seeded sin (no Math.random). Decorative: the parent composition is
-   aria-hidden with pointer-events none. Values, holdings, and watchlist
-   rows are illustrative, not attributed to any real account. */
+   aria-hidden with pointer-events none. Values and holdings rows are
+   illustrative, not attributed to any real account. */
 
 function seeded(n) {
   const x = Math.sin(n * 12.9898 + 4.1) * 43758.5453;
@@ -28,62 +30,18 @@ const HOLDINGS = [
   { sym: 'AVGO', name: 'Broadcom', base: 0.9, val: 14320, wt: 11.5 },
   { sym: 'XOM', name: 'Exxon Mobil', base: -0.5, val: 11870, wt: 9.5 },
   { sym: 'PLTR', name: 'Palantir', base: 2.1, val: 9240, wt: 7.4 },
+  { sym: 'JPM', name: 'JPMorgan', base: 0.4, val: 8460, wt: 6.8 },
+  { sym: 'LMT', name: 'Lockheed', base: -0.3, val: 6980, wt: 5.6 },
 ];
 
-/* Five rows, matching the real page's sectorRows.slice(0, 5). */
+/* Six rows: the real page's sectorRows plus the rolled-up remainder. */
 const SECTORS = [
   { label: 'Technology', pct: 46.6, color: 'var(--echo-chart-blue, var(--blue))' },
   { label: 'Energy', pct: 21.3, color: 'var(--echo-chart-purple, var(--purple))' },
   { label: 'Financials', pct: 14.8, color: 'var(--emerald)' },
-  { label: 'Industrials', pct: 9.7, color: 'var(--echo-chart-orange, var(--amber))' },
-  { label: 'Healthcare', pct: 7.6, color: 'var(--cyan)' },
-];
-
-/* Position P&L: base dollar gain per position (negative = loss). */
-const PNL = [1840, 1120, 760, -320, 540, 280];
-
-const WATCHLIST = [
-  { sym: 'AMD', name: 'Adv. Micro', px: 214.8, base: 1.1 },
-  { sym: 'TSM', name: 'Taiwan Semi', px: 268.4, base: 0.7 },
-  { sym: 'CF', name: 'CF Inds', px: 92.6, base: -0.4 },
-  { sym: 'GLD', name: 'Gold Trust', px: 341.2, base: 0.3 },
-];
-
-/* Recent activity: order and alert EVENTS only, no performance claims. */
-const ACTIVITY = [
-  { what: 'Order filled', tk: 'NVDA', at: '09:41', ok: true },
-  { what: 'Alert triggered', tk: 'XOM', at: '09:28', ok: false },
-  { what: 'Disclosure synced', tk: 'LMT', at: '09:12', ok: true },
-];
-
-/* The real improvement paths (ProfileEloCard IMPROVEMENT_PATHS), trimmed
-   to what fits the rail at mockup size. Point ranges use plain hyphens. */
-const IMPROVE = [
-  {
-    ch: 'L',
-    title: 'Complete a course module',
-    pts: '+5-15',
-    desc: 'Bronze courses give ELO each',
-  },
-  { ch: 'A', title: 'Maintain your day streak', pts: '+1-5', desc: 'Bonus +5 every 7 days' },
-  {
-    ch: 'P',
-    title: 'Beat the market this month',
-    pts: '+50-200',
-    desc: 'Outperforming SPY earns ELO',
-  },
-  {
-    ch: 'S',
-    title: 'Get a copy-trade approved',
-    pts: '+10-50',
-    desc: 'Each approved follower yields ELO',
-  },
-  {
-    ch: 'C',
-    title: 'Enter a competition',
-    pts: '+200-500',
-    desc: 'Top 1% earns 500, top 10% earns 200',
-  },
+  { label: 'Industrials', pct: 9.7, color: 'var(--echo-chart-blue, var(--blue))' },
+  { label: 'Healthcare', pct: 5.4, color: 'var(--echo-chart-purple, var(--purple))' },
+  { label: 'Other', pct: 2.2, color: 'var(--emerald)' },
 ];
 
 const EARNED = [
@@ -152,7 +110,7 @@ export function HeroDashboardMock({ tick = 0 }) {
             );
           })}
           <div className="hdm-pager hdm-mono">
-            <span>PAGE 1 OF 2 · 10 TOTAL</span>
+            <span>PAGE 1 OF 2 · 14 TOTAL</span>
             <span className="hdm-pager-btns">
               <i className="hdm-pill" />
               <i className="hdm-pill" />
@@ -160,101 +118,27 @@ export function HeroDashboardMock({ tick = 0 }) {
           </div>
         </div>
 
-        <div className="hdm-threeup">
-          <section className="hdm-block">
-            <div className="hdm-block-title hdm-mono">SECTOR BREAKDOWN</div>
-            {SECTORS.map((s) => (
-              <div key={s.label} className="hdm-barrow">
-                <span className="hdm-bardot" style={{ background: s.color }} />
-                <span className="hdm-barlabel">{s.label}</span>
-                <span className="hdm-bar-track">
-                  <span
-                    className="hdm-bar-fill hdm-t"
-                    style={{ width: `${s.pct}%`, background: s.color }}
-                  />
-                </span>
-                <span className="hdm-mono hdm-barval">{s.pct.toFixed(1)}%</span>
-              </div>
-            ))}
-          </section>
-
-          <section className="hdm-block">
-            <div className="hdm-block-title hdm-mono">POSITION P&amp;L</div>
-            <div className="hdm-pnl">
-              {PNL.map((base, i) => {
-                /* One bar extends slightly each tick. */
-                const grow = i === tick % PNL.length ? 1.14 : 1;
-                const v = Math.round(base * grow);
-                const up = v >= 0;
-                const h = Math.min(100, (Math.abs(v) / 2100) * 100);
-                return (
-                  <span key={i} className="hdm-pnl-col">
-                    <span
-                      className={`hdm-pnl-bar hdm-t ${up ? 'hdm-pnl-bar--up' : 'hdm-pnl-bar--down'}`}
-                      style={{ height: `${Math.max(8, h)}%` }}
-                    />
-                  </span>
-                );
-              })}
-            </div>
-            {/* One legible total instead of six per-bar labels: at this width
-                the individual values collided with the next column. */}
-            <div className="hdm-pnl-total hdm-mono">
-              <span className="hdm-up">
-                +$
-                {(
-                  PNL.reduce((a, b, i) => a + b * (i === tick % PNL.length ? 1.14 : 1), 0) / 1000
-                ).toFixed(1)}
-                K
-              </span>
-              <span className="hdm-pnl-total-label">OPEN P&amp;L</span>
-            </div>
-          </section>
-
-          <section className="hdm-block">
-            <div className="hdm-block-title hdm-mono">RECENT ACTIVITY</div>
-            {ACTIVITY.map((a, i) => (
-              <div key={a.what} className="hdm-actrow">
+        <section className="hdm-block hdm-sectors">
+          <div className="hdm-block-title hdm-mono">SECTOR BREAKDOWN</div>
+          {SECTORS.map((s) => (
+            <div key={s.label} className="hdm-barrow">
+              <span className="hdm-bardot" style={{ background: s.color }} />
+              <span className="hdm-barlabel">{s.label}</span>
+              <span className="hdm-bar-track">
                 <span
-                  className={`hdm-actdot${a.ok ? ' hdm-actdot--ok' : ''}`}
-                  /* The freshest row pulses; the rest hold. */
-                  style={i === tick % ACTIVITY.length ? undefined : { animation: 'none' }}
+                  className="hdm-bar-fill hdm-t"
+                  style={{ width: `${s.pct}%`, background: s.color }}
                 />
-                <span className="hdm-actwhat">{a.what}</span>
-                <span className="hdm-mono hdm-acttk">{a.tk}</span>
-                <span className="hdm-mono hdm-actat">{a.at}</span>
-              </div>
-            ))}
-          </section>
-        </div>
-
-        <section className="hdm-block hdm-watch">
-          <div className="hdm-block-head">
-            <span className="hdm-block-title hdm-mono">WATCHLIST</span>
-            <span className="hdm-catpill hdm-mono">Semis</span>
-          </div>
-          {WATCHLIST.map((w, i) => {
-            const d = w.base + (seeded(tick * 3 + i * 7) - 0.5) * 0.3;
-            const up = d >= 0;
-            const px = w.px + (seeded(tick + i * 5) - 0.5) * 1.4;
-            return (
-              <div key={w.sym} className="hdm-wrow">
-                <span className="hdm-mono hdm-sym">{w.sym}</span>
-                <span className="hdm-name">{w.name}</span>
-                <span className="hdm-mono hdm-r hdm-val hdm-t">{px.toFixed(2)}</span>
-                <span className={`hdm-mono hdm-r hdm-t ${up ? 'hdm-up' : 'hdm-down'}`}>
-                  {up ? '+' : ''}
-                  {d.toFixed(2)}%
-                </span>
-              </div>
-            );
-          })}
+              </span>
+              <span className="hdm-mono hdm-barval">{s.pct.toFixed(1)}%</span>
+            </div>
+          ))}
         </section>
       </div>
 
-      {/* ── RIGHT: ELO rating + Ways to improve rail ── */}
+      {/* ── RIGHT: ELO rating rail ── */}
       <div className="hdm-rail">
-        <section className="hdm-card">
+        <section className="hdm-card hdm-card--elo">
           <div className="hdm-block-head">
             <span className="hdm-block-title hdm-block-title--elo hdm-mono">ELO RATING</span>
             <span className="hdm-link hdm-mono">Leaderboard</span>
@@ -280,34 +164,29 @@ export function HeroDashboardMock({ tick = 0 }) {
             <span>0-999 BAND</span>
             <span>{1000 - elo} TO APPRENTICE</span>
           </div>
+        </section>
+
+        <section className="hdm-card hdm-card--earned">
           <div className="hdm-block-title hdm-mono hdm-earned-title">EARNED BY CATEGORY</div>
           {EARNED.map((e) => (
-            <div key={e.label} className="hdm-barrow">
+            <div key={e.label} className="hdm-barrow hdm-barrow--earned">
               <span className="hdm-barlabel">{e.label}</span>
-              <span className="hdm-bar-track">
+              <span className="hdm-bar-track hdm-bar-track--earned">
                 <span
                   className="hdm-bar-fill hdm-t"
                   style={{ width: `${e.pct * 100}%`, background: e.color }}
                 />
               </span>
+              <span className="hdm-mono hdm-barval">{Math.round(e.pct * 100)}%</span>
             </div>
           ))}
         </section>
 
-        <section className="hdm-card hdm-improve">
-          <div className="hdm-block-title hdm-mono">WAYS TO IMPROVE</div>
-          {IMPROVE.map((it) => (
-            <div key={it.ch} className="hdm-imp">
-              <span className="hdm-chip hdm-mono">{it.ch}</span>
-              <span className="hdm-imp-body">
-                <span className="hdm-imp-head">
-                  <span className="hdm-imp-title">{it.title}</span>
-                  <span className="hdm-mono hdm-imp-pts">{it.pts}</span>
-                </span>
-                <span className="hdm-imp-desc">{it.desc}</span>
-              </span>
-            </div>
-          ))}
+        {/* Single teaser row: fills the rail's remaining height without
+            reintroducing a dense block. */}
+        <section className="hdm-card hdm-lead">
+          <span className="hdm-block-title hdm-mono">LEADERBOARD</span>
+          <span className="hdm-mono hdm-lead-rank">#4,182 of 12.4K</span>
         </section>
       </div>
     </div>
