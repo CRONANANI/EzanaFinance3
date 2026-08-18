@@ -30,20 +30,30 @@ const HOLDINGS = [
   { sym: 'PLTR', name: 'Palantir', base: 2.1, val: 9240, wt: 7.4 },
 ];
 
+/* Five rows, matching the real page's sectorRows.slice(0, 5). */
 const SECTORS = [
   { label: 'Technology', pct: 46.6, color: 'var(--echo-chart-blue, var(--blue))' },
   { label: 'Energy', pct: 21.3, color: 'var(--echo-chart-purple, var(--purple))' },
   { label: 'Financials', pct: 14.8, color: 'var(--emerald)' },
+  { label: 'Industrials', pct: 9.7, color: 'var(--echo-chart-orange, var(--amber))' },
+  { label: 'Healthcare', pct: 7.6, color: 'var(--cyan)' },
 ];
 
 /* Position P&L: base dollar gain per position (negative = loss). */
 const PNL = [1840, 1120, 760, -320, 540, 280];
 
-/* Two rows: the screen's vertical budget at the smallest scale, where
-   fractional-scale line rounding costs ~15 design px, does not fit three. */
 const WATCHLIST = [
   { sym: 'AMD', name: 'Adv. Micro', px: 214.8, base: 1.1 },
   { sym: 'TSM', name: 'Taiwan Semi', px: 268.4, base: 0.7 },
+  { sym: 'CF', name: 'CF Inds', px: 92.6, base: -0.4 },
+  { sym: 'GLD', name: 'Gold Trust', px: 341.2, base: 0.3 },
+];
+
+/* Recent activity: order and alert EVENTS only, no performance claims. */
+const ACTIVITY = [
+  { what: 'Order filled', tk: 'NVDA', at: '09:41', ok: true },
+  { what: 'Alert triggered', tk: 'XOM', at: '09:28', ok: false },
+  { what: 'Disclosure synced', tk: 'LMT', at: '09:12', ok: true },
 ];
 
 /* The real improvement paths (ProfileEloCard IMPROVEMENT_PATHS), trimmed
@@ -61,6 +71,18 @@ const IMPROVE = [
     title: 'Beat the market this month',
     pts: '+50-200',
     desc: 'Outperforming SPY earns ELO',
+  },
+  {
+    ch: 'S',
+    title: 'Get a copy-trade approved',
+    pts: '+10-50',
+    desc: 'Each approved follower yields ELO',
+  },
+  {
+    ch: 'C',
+    title: 'Enter a competition',
+    pts: '+200-500',
+    desc: 'Top 1% earns 500, top 10% earns 200',
   },
 ];
 
@@ -138,7 +160,7 @@ export function HeroDashboardMock({ tick = 0 }) {
           </div>
         </div>
 
-        <div className="hdm-twoup">
+        <div className="hdm-threeup">
           <section className="hdm-block">
             <div className="hdm-block-title hdm-mono">SECTOR BREAKDOWN</div>
             {SECTORS.map((s) => (
@@ -167,20 +189,42 @@ export function HeroDashboardMock({ tick = 0 }) {
                 const h = Math.min(100, (Math.abs(v) / 2100) * 100);
                 return (
                   <span key={i} className="hdm-pnl-col">
-                    <span className="hdm-pnl-bar-wrap">
-                      <span
-                        className={`hdm-pnl-bar hdm-t ${up ? 'hdm-pnl-bar--up' : 'hdm-pnl-bar--down'}`}
-                        style={{ height: `${Math.max(8, h)}%` }}
-                      />
-                    </span>
-                    <span className={`hdm-mono hdm-pnl-val ${up ? 'hdm-up' : 'hdm-down'}`}>
-                      {up ? '+' : '-'}$
-                      {Math.abs(v) >= 1000 ? `${(Math.abs(v) / 1000).toFixed(1)}K` : Math.abs(v)}
-                    </span>
+                    <span
+                      className={`hdm-pnl-bar hdm-t ${up ? 'hdm-pnl-bar--up' : 'hdm-pnl-bar--down'}`}
+                      style={{ height: `${Math.max(8, h)}%` }}
+                    />
                   </span>
                 );
               })}
             </div>
+            {/* One legible total instead of six per-bar labels: at this width
+                the individual values collided with the next column. */}
+            <div className="hdm-pnl-total hdm-mono">
+              <span className="hdm-up">
+                +$
+                {(
+                  PNL.reduce((a, b, i) => a + b * (i === tick % PNL.length ? 1.14 : 1), 0) / 1000
+                ).toFixed(1)}
+                K
+              </span>
+              <span className="hdm-pnl-total-label">OPEN P&amp;L</span>
+            </div>
+          </section>
+
+          <section className="hdm-block">
+            <div className="hdm-block-title hdm-mono">RECENT ACTIVITY</div>
+            {ACTIVITY.map((a, i) => (
+              <div key={a.what} className="hdm-actrow">
+                <span
+                  className={`hdm-actdot${a.ok ? ' hdm-actdot--ok' : ''}`}
+                  /* The freshest row pulses; the rest hold. */
+                  style={i === tick % ACTIVITY.length ? undefined : { animation: 'none' }}
+                />
+                <span className="hdm-actwhat">{a.what}</span>
+                <span className="hdm-mono hdm-acttk">{a.tk}</span>
+                <span className="hdm-mono hdm-actat">{a.at}</span>
+              </div>
+            ))}
           </section>
         </div>
 
@@ -212,7 +256,7 @@ export function HeroDashboardMock({ tick = 0 }) {
       <div className="hdm-rail">
         <section className="hdm-card">
           <div className="hdm-block-head">
-            <span className="hdm-block-title hdm-mono">ELO RATING</span>
+            <span className="hdm-block-title hdm-block-title--elo hdm-mono">ELO RATING</span>
             <span className="hdm-link hdm-mono">Leaderboard</span>
           </div>
           <div className="hdm-elo-row">
@@ -220,11 +264,13 @@ export function HeroDashboardMock({ tick = 0 }) {
             <span className="hdm-mono hdm-elo-suffix">/ 10,000</span>
           </div>
           <div className="hdm-elo-tier">
-            <span className="hdm-tierdot" />
-            <span className="hdm-tierlabel">Novice</span>
+            <span className="hdm-tierlabel">
+              <span className="hdm-tierdot" />
+              Novice
+            </span>
             <span className="hdm-mono hdm-elo-peak">PEAK 240</span>
           </div>
-          <span className="hdm-bar-track">
+          <span className="hdm-bar-track hdm-bar-track--elo">
             <span
               className="hdm-bar-fill hdm-t"
               style={{ width: `${(pctToNext * 100).toFixed(1)}%`, background: 'var(--emerald)' }}

@@ -157,15 +157,11 @@ export function HeroDeviceShowcase() {
               {/* The dark ring that used to bound the screen rect is removed:
                   the white screen surface against the aluminum bezel is enough
                   separation. The bezel/aluminum hardware paths below stay. */}
-              <rect
-                fill="#0d1013"
-                x="29.12"
-                y="25.02"
-                width="541.76"
-                height="305.06"
-                rx=".44"
-                ry=".44"
-              />
+              {/* The black screen-backing rect is gone too. It sat a fraction
+                  of a percent outside the CSS screen overlay on every side, and
+                  that overhang antialiased into the 1px dark line that hugged
+                  the screen. The overlay is opaque, so nothing needs to back
+                  it; the white surface now meets the aluminum bezel directly. */}
               <circle fill="#414042" cx="300" cy="17.7" r="2.11" />
               <circle fill="#262262" cx="300" cy="17.7" r=".85" />
               <defs>
