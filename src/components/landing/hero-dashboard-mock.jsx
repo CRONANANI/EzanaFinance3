@@ -1,5 +1,7 @@
 'use client';
 
+import { tierForRating, TIER_LIST } from '@/lib/elo-tier-colors';
+
 import './hero-dashboard-mock.css';
 
 /* Miniature, living two-panel mockup of the authenticated dashboard home
@@ -8,7 +10,10 @@ import './hero-dashboard-mock.css';
    the real SYMBOL / NAME / DAY / VALUE / WEIGHT / 7-DAY columns, the
    pagination footer, and the sector-breakdown band) and the ELO rating
    rail on the right (rating over 10,000, tier badge, progress to the
-   next tier, and earned-by-category).
+   next tier, earned-by-category, and a rotating achievement strip). The
+   tier names and bands come from the platform's canonical ELO table
+   (@/lib/elo-tier-colors), so the badge and band copy stay coherent with
+   whatever value the mock is showing.
 
    Deliberately sparse: at mockup scale only two blocks per panel stay
    legible, so each one is given room rather than packing the screen.
@@ -50,6 +55,48 @@ const EARNED = [
   { label: 'Community', pct: 0.14, color: 'var(--emerald)' },
 ];
 
+/* The rating climbs from the floor to the peak over one cycle, then wraps and
+   climbs again. Precomputed at module scope as a fixed table of seeded steps,
+   normalised so the last entry lands exactly on the peak: the displayed value
+   is then a pure lookup on `tick`, which keeps SSR and the first client render
+   identical and keeps the walk free of Math.random. */
+const ELO_FLOOR = 2545;
+const ELO_PEAK = 4210;
+const ELO_DENOM = 10000;
+const ELO_STEPS = 24;
+const ELO_WALK = (() => {
+  const steps = Array.from({ length: ELO_STEPS }, (_, i) => 0.35 + seeded(i * 7.3));
+  const total = steps.reduce((a, b) => a + b, 0);
+  const out = [ELO_FLOOR];
+  let acc = 0;
+  for (const step of steps) {
+    acc += step;
+    out.push(Math.round(ELO_FLOOR + ((ELO_PEAK - ELO_FLOOR) * acc) / total));
+  }
+  return out;
+})();
+
+/* Illustrative platform events, not real entities or results. */
+const ACHIEVEMENTS = [
+  { chip: 'L', title: 'Completed: Options Fundamentals', pts: 150 },
+  { chip: 'C', title: 'Finished 6th \u00b7 Weekly Trading Competition', pts: 230 },
+  { chip: 'S', title: '7-day streak maintained', pts: 35 },
+  { chip: 'T', title: 'Copy-trade request approved', pts: 120 },
+];
+
+/* The top tier is open-ended in the canonical table (max 99999), which would
+   leave the progress bar crawling across a span the mock never covers. Close
+   it at the walk's own peak so the bar still reads as progress, and label the
+   band as open-ended rather than quoting a made-up ceiling. */
+function bandFor(tier) {
+  const open = tier.max > ELO_PEAK;
+  return { min: tier.min, max: open ? ELO_PEAK : tier.max, open };
+}
+function nextTierAfter(tier) {
+  const i = TIER_LIST.findIndex((t) => t.key === tier.key);
+  return i >= 0 && i < TIER_LIST.length - 1 ? TIER_LIST[i + 1] : null;
+}
+
 /* Tiny inline row sparkline: 7 deterministic points tinted by direction. */
 function RowSpark({ seed, up }) {
   const pts = Array.from({ length: 7 }, (_, i) => {
@@ -66,9 +113,14 @@ function RowSpark({ seed, up }) {
 }
 
 export function HeroDashboardMock({ tick = 0 }) {
-  /* ELO counts up in small deterministic steps and holds under the tier cap. */
-  const elo = 180 + (tick % 7) * 12;
-  const pctToNext = Math.min(1, elo / 1000);
+  /* ELO walks up through its cycle; the tier, band and caption all recompute
+     from the displayed value so the copy never contradicts the number. */
+  const elo = ELO_WALK[tick % ELO_WALK.length];
+  const tier = tierForRating(elo);
+  const band = bandFor(tier);
+  const next = nextTierAfter(tier);
+  const bandPct = Math.min(1, Math.max(0, (elo - band.min) / (band.max - band.min)));
+  const achievement = ACHIEVEMENTS[tick % ACHIEVEMENTS.length];
 
   return (
     <div className="hdm-root">
@@ -144,25 +196,33 @@ export function HeroDashboardMock({ tick = 0 }) {
             <span className="hdm-link hdm-mono">Leaderboard</span>
           </div>
           <div className="hdm-elo-row">
-            <span className="hdm-mono hdm-elo-current hdm-t">{elo}</span>
-            <span className="hdm-mono hdm-elo-suffix">/ 10,000</span>
+            <span className="hdm-mono hdm-elo-current hdm-t">{elo.toLocaleString('en-US')}</span>
+            <span className="hdm-mono hdm-elo-suffix">/ {ELO_DENOM.toLocaleString('en-US')}</span>
           </div>
           <div className="hdm-elo-tier">
             <span className="hdm-tierlabel">
               <span className="hdm-tierdot" />
-              Novice
+              {tier.label}
             </span>
-            <span className="hdm-mono hdm-elo-peak">PEAK 240</span>
+            <span className="hdm-mono hdm-elo-peak">PEAK {ELO_PEAK.toLocaleString('en-US')}</span>
           </div>
           <span className="hdm-bar-track hdm-bar-track--elo">
             <span
               className="hdm-bar-fill hdm-t"
-              style={{ width: `${(pctToNext * 100).toFixed(1)}%`, background: 'var(--emerald)' }}
+              style={{ width: `${(bandPct * 100).toFixed(1)}%`, background: 'var(--emerald)' }}
             />
           </span>
           <div className="hdm-elo-ends hdm-mono">
-            <span>0-999 BAND</span>
-            <span>{1000 - elo} TO APPRENTICE</span>
+            <span>
+              {band.open
+                ? `${band.min.toLocaleString('en-US')}+ BAND`
+                : `${band.min.toLocaleString('en-US')}-${band.max.toLocaleString('en-US')} BAND`}
+            </span>
+            <span>
+              {next
+                ? `${(next.min - elo).toLocaleString('en-US')} TO ${next.label.toUpperCase()}`
+                : 'TOP TIER REACHED'}
+            </span>
           </div>
         </section>
 
@@ -182,11 +242,17 @@ export function HeroDashboardMock({ tick = 0 }) {
           ))}
         </section>
 
-        {/* Single teaser row: fills the rail's remaining height without
-            reintroducing a dense block. */}
-        <section className="hdm-card hdm-lead">
-          <span className="hdm-block-title hdm-mono">LEADERBOARD</span>
-          <span className="hdm-mono hdm-lead-rank">#4,182 of 12.4K</span>
+        {/* Rotating achievements: one at a time, swapped by the tick. The key
+            is the entry itself, so React remounts the row and the slide-in
+            replays on every change. Under reduced motion the tick never
+            starts, so entry 0 renders statically and the slide is disabled. */}
+        <section className="hdm-card hdm-card--ach">
+          <div className="hdm-block-title hdm-mono">RECENT ACHIEVEMENTS</div>
+          <div key={achievement.title} className="hdm-ach">
+            <span className="hdm-ach-chip hdm-mono">{achievement.chip}</span>
+            <span className="hdm-ach-title">{achievement.title}</span>
+            <span className="hdm-mono hdm-ach-pts">+{achievement.pts} ELO</span>
+          </div>
         </section>
       </div>
     </div>

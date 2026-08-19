@@ -334,52 +334,94 @@
   font-size: 6px;
   color: var(--text-muted);
 }
+/* Both halves stay on one line: the rail is only ~119px wide at scale 1, and
+   a wrapped band label reads as a layout bug rather than a caption. */
 .hdm-elo-ends {
   display: flex;
   justify-content: space-between;
-  gap: 5px;
+  gap: 4px;
   margin-top: 6px;
-  font-size: 5.5px;
-  letter-spacing: 0.06em;
+  font-size: 5px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
   color: var(--text-faint);
 }
 
-/* Earned by category: taller tracks, larger labels, right-aligned values and
-   generous row spacing so the group balances the ELO block above it. */
+/* Earned by category, compact: back to a 4px track and a tight row pitch so
+   the group reads as a supporting detail under the ELO block rather than
+   competing with it, and so the achievements strip below has room. */
 .hdm-earned-title {
-  margin-bottom: 8px;
+  margin-bottom: 3px;
 }
 .hdm-barrow--earned {
-  height: 21px;
-  font-size: 7.5px;
+  height: 11px;
+  font-size: 6.5px;
 }
 .hdm-barrow--earned .hdm-barlabel {
-  flex: 0 0 44px;
+  flex: 0 0 40px;
   color: var(--text-secondary);
 }
 .hdm-bar-track--earned {
-  height: 6px;
-  border-radius: 3px;
+  height: 4px;
+  border-radius: 2px;
 }
 .hdm-bar-track--earned .hdm-bar-fill {
-  border-radius: 3px;
+  border-radius: 2px;
 }
 
-/* Single slim teaser row closing out the rail. */
-.hdm-lead {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 5px;
-  padding: 6px 6px 4px;
+/* Rotating achievement strip: one row visible, replaced on each tick.
+
+   The rail's 20px right padding exists to clear the iPhone that overlaps the
+   iMac's top-right corner, but the phone bottoms out well above this strip, so
+   the strip reclaims most of that width. Every pixel counts here: the title is
+   a single ellipsised line in a ~120px rail. */
+.hdm-card--ach {
+  margin-right: -13px;
   border-top: 1px solid var(--border-secondary);
   border-radius: 0;
+  padding: 5px 6px 4px;
 }
-.hdm-lead .hdm-block-title {
-  margin-bottom: 0;
+.hdm-ach {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 14px;
+  font-size: 6px;
+  animation: hdm-ach-in 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
 }
-.hdm-lead-rank {
-  font-size: 7px;
+@keyframes hdm-ach-in {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.hdm-ach-chip {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 5.5px;
+  font-weight: 700;
+  color: var(--emerald);
+  background: color-mix(in srgb, var(--emerald) 12%, transparent);
+}
+.hdm-ach-title {
+  min-width: 0;
+  flex: 1;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.hdm-ach-pts {
+  flex: none;
   font-weight: 600;
   color: var(--emerald);
   white-space: nowrap;
@@ -391,7 +433,8 @@
   .hdm-t {
     transition: none;
   }
-  .hdm-live {
+  .hdm-live,
+  .hdm-ach {
     animation: none;
   }
 }

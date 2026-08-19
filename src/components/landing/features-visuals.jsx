@@ -99,16 +99,24 @@ function CongressViz({ tick }) {
 }
 
 /* 2 ── Portfolio Analytics: concentric allocation dial (centered) ────────── */
+/* Three concentric rings, one per allocation lens, matching the multi-dimension
+   radial pattern used elsewhere in the product. Each ring shares the same
+   stroke weight and a uniform 6px radius step, and all three start at 12
+   o'clock (the -90deg rotation). The percentages are fixed so the single
+   center number stays stable; the motion in this visual is the rotating tick
+   dial, which is tick-driven and therefore frozen under reduced motion.
+   Chart tokens are echo-scoped and unavailable on the landing route, so each
+   falls back to the platform equivalent. */
+const DIAL_RINGS = [
+  { r: 22, seg: 0.65, stroke: 'var(--emerald)' },
+  { r: 16, seg: 0.42, stroke: 'var(--echo-chart-blue, var(--blue))' },
+  { r: 10, seg: 0.78, stroke: 'var(--echo-chart-purple, var(--purple))' },
+];
+const DIAL_PRIMARY = DIAL_RINGS[0].seg;
+
 function PortfolioViz({ tick }) {
   const cx = 112;
   const cy = 32;
-  const rOuter = 22;
-  const rInner = 14;
-  const circO = 2 * Math.PI * rOuter;
-  const circI = 2 * Math.PI * rInner;
-  const b = 0.5 + 0.5 * Math.sin(tick * 0.9); // breathe 0..1
-  const outerSeg = 0.62 + 0.16 * b;
-  const innerSeg = 0.4 + 0.18 * (1 - b);
   const ticks = Array.from({ length: 24 }, (_, i) => i);
   return (
     <Frame label="Concentric portfolio allocation dial">
@@ -134,36 +142,32 @@ function PortfolioViz({ tick }) {
           );
         })}
       </g>
-      {/* outer allocation ring */}
-      <circle cx={cx} cy={cy} r={rOuter} fill="none" stroke={HAIR} strokeWidth="4" />
-      <circle
-        className="fv-t fv-ring"
-        cx={cx}
-        cy={cy}
-        r={rOuter}
-        fill="none"
-        stroke={EM}
-        strokeWidth="4"
-        strokeLinecap="round"
-        style={{ strokeDasharray: `${(circO * outerSeg).toFixed(1)} ${circO}` }}
-        transform={`rotate(-90 ${cx} ${cy})`}
-      />
-      {/* inner sector ring */}
-      <circle cx={cx} cy={cy} r={rInner} fill="none" stroke={HAIR} strokeWidth="3.5" />
-      <circle
-        className="fv-t fv-ring"
-        cx={cx}
-        cy={cy}
-        r={rInner}
-        fill="none"
-        stroke={EM2}
-        strokeWidth="3.5"
-        strokeLinecap="round"
-        style={{ strokeDasharray: `${(circI * innerSeg).toFixed(1)} ${circI}` }}
-        transform={`rotate(-90 ${cx} ${cy})`}
-      />
-      <text x={cx} y={cy + 2.5} textAnchor="middle" className="fv-num fv-em" fontSize="9">
-        {Math.round(outerSeg * 100)}%
+      {DIAL_RINGS.map((ring) => {
+        const circ = 2 * Math.PI * ring.r;
+        return (
+          <g key={ring.r}>
+            <circle cx={cx} cy={cy} r={ring.r} fill="none" stroke={HAIR} strokeWidth="3.5" />
+            <circle
+              className="fv-t fv-ring"
+              cx={cx}
+              cy={cy}
+              r={ring.r}
+              fill="none"
+              strokeWidth="3.5"
+              strokeLinecap="round"
+              style={{
+                stroke: ring.stroke,
+                strokeDasharray: `${(circ * ring.seg).toFixed(1)} ${circ}`,
+              }}
+              transform={`rotate(-90 ${cx} ${cy})`}
+            />
+          </g>
+        );
+      })}
+      {/* One number only: three stacked percentages would clutter a 64px frame.
+          Sized to clear the innermost ring's bore. */}
+      <text x={cx} y={cy + 2.4} textAnchor="middle" className="fv-num fv-em" fontSize="8">
+        {Math.round(DIAL_PRIMARY * 100)}%
       </text>
     </Frame>
   );
@@ -246,9 +250,6 @@ function AlertsViz({ tick }) {
         strokeDasharray="4 3"
         opacity="0.7"
       />
-      <text x="8" y={thY - 4} className="fv-cap fv-em" fontSize="7.5">
-        ALERT THRESHOLD
-      </text>
       {/* price line */}
       <path className="fv-t" d={d} fill="none" stroke={EM2} strokeWidth="2" strokeLinecap="round" />
       {/* continuous pulse burst at the crossing */}
@@ -386,11 +387,6 @@ function AltViz({ tick }) {
               fill={hot ? EM : EM3}
               opacity={hot ? 1 : 0.85}
             />
-            {hot && (
-              <text x={px + 5} y={py + 3} className="fv-cap fv-em" fontSize="7.5">
-                {p.t}
-              </text>
-            )}
           </g>
         );
       })}

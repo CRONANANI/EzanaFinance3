@@ -53,37 +53,20 @@
   color: var(--text-faint);
 }
 
-/* ══ Fixed-size Follow/Following button ══ */
+/* ══ Fixed-size Follow button ══ */
+/* Static emerald pill. The Follow/Following cross-fade is gone, so there is no
+   state class, no second label, and no transition here. */
 .lpd-btn {
   position: relative;
   display: inline-grid;
   place-items: center;
   border-radius: 999px;
-  border: 1px solid var(--emerald-border);
-  color: var(--emerald);
-  background: transparent;
+  border: 1px solid var(--emerald);
+  background: var(--emerald);
+  color: var(--bg-primary);
+  white-space: nowrap;
   overflow: hidden;
   flex: none;
-}
-.lpd-btn .lpd-btn-off,
-.lpd-btn .lpd-btn-on {
-  grid-area: 1 / 1;
-  transition: opacity 0.3s ease;
-  white-space: nowrap;
-}
-.lpd-btn .lpd-btn-on {
-  opacity: 0;
-}
-.lpd-btn.is-on {
-  background: var(--emerald);
-  border-color: var(--emerald);
-  color: var(--bg-primary);
-}
-.lpd-btn.is-on .lpd-btn-off {
-  opacity: 0;
-}
-.lpd-btn.is-on .lpd-btn-on {
-  opacity: 1;
 }
 .lpd-btn--tiny {
   width: 100%;

@@ -95,7 +95,6 @@ export function HeroDeviceShowcase() {
     return () => clearInterval(id);
   }, []);
 
-  const followed = tick % (PEOPLE.length + 1);
   const likes = 12 + (tick % 6);
   const filedMin = 2 + (tick % 4);
   const titansMin = 14 + (tick % 5);
@@ -221,10 +220,9 @@ export function HeroDeviceShowcase() {
                   <span className="lpd-person-name">{p.name}</span>
                   <span className="lpd-person-meta lpd-mono">{p.cap}</span>
                   <span className="lpd-person-meta lpd-mono lpd-dim-text">{p.copiers} copiers</span>
-                  <span className={`lpd-t lpd-btn lpd-btn--tiny${i < followed ? ' is-on' : ''}`}>
-                    <span className="lpd-btn-off">Follow</span>
-                    <span className="lpd-btn-on">Following</span>
-                  </span>
+                  {/* Static: the button no longer cycles to a Following state,
+                      so there is one label and no transition to drive. */}
+                  <span className="lpd-btn lpd-btn--tiny">Follow</span>
                 </div>
               ))}
             </div>

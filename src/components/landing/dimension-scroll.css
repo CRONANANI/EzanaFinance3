@@ -151,12 +151,16 @@
   gap: 0.625rem;
   background: var(--surface-card);
   /* Borderless resting state (mirrors the Echo category-card rule): the only
-     resting outline is the per-dimension accent line across the top. The
-     subtle shadow keeps the card legible against the page in light mode. */
+     resting outline is the per-dimension accent line across the top.
+
+     No shadow either. --shadow-sm was the last thing drawing a perimeter: on
+     the white page the card surface is the same white, so the shadow's halo
+     was the visible edge on all four sides and read as a full outline. The
+     accent line plus the section's spacing carry the card on their own. */
   border: none;
   border-top: 2px solid var(--dv-accent, var(--emerald));
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-sm);
+  box-shadow: none;
   padding: 1.5rem;
   will-change: transform, opacity;
   transition:
