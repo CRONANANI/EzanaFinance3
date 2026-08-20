@@ -90,13 +90,15 @@
 .billing-btn {
   display: inline-flex;
   align-items: center;
+  min-height: 44px;
   gap: 0.5rem;
   padding: 0.45rem 1.1rem;
   border: none;
   border-radius: 9999px;
   background: transparent;
   color: var(--text-muted);
-  font-size: 0.8125rem;
+  /* S3: raised to the 14px body floor. */
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
   transition:
@@ -212,7 +214,7 @@
   border-radius: 9999px;
   background: var(--emerald-text, #059669);
   color: #ffffff;
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -230,7 +232,7 @@
   text-align: center;
 }
 .plan-tagline {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   line-height: 1.45;
   min-height: 2.5rem;
   margin: 0 0 1rem;
@@ -380,7 +382,7 @@
 .plan-finesub {
   margin: 0.55rem 0 0;
   text-align: center;
-  font-size: 0.6875rem;
+  font-size: 0.875rem;
   color: var(--text-faint);
 }
 
@@ -445,12 +447,35 @@
   color: var(--text-primary);
 }
 
+/* H6: the table has a 720px min-width, so on a phone it scrolls inside this
+   wrapper rather than pushing the page. The right-edge gradient is the scroll
+   affordance, and it fades out once the wrapper is scrolled to the end
+   (scroll-driven via the background-attachment: local layering below). */
 .comparison-table-wrap {
-  background: var(--surface-card);
+  position: relative;
+  background:
+    linear-gradient(
+        to right,
+        var(--surface-card) 30%,
+        color-mix(in srgb, var(--surface-card) 0%, transparent)
+      )
+      left center / 28px 100% no-repeat local,
+    linear-gradient(
+        to left,
+        var(--surface-card) 30%,
+        color-mix(in srgb, var(--surface-card) 0%, transparent)
+      )
+      right center / 28px 100% no-repeat local,
+    radial-gradient(farthest-side at 0 50%, rgba(10, 14, 19, 0.14), transparent) left center / 14px
+      100% no-repeat scroll,
+    radial-gradient(farthest-side at 100% 50%, rgba(10, 14, 19, 0.14), transparent) right center /
+      14px 100% no-repeat scroll,
+    var(--surface-card);
   border: 1px solid var(--border-primary);
   border-radius: 14px;
   box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.06));
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 .comparison-table {
   width: 100%;
@@ -776,7 +801,8 @@
   color: var(--text-primary);
 }
 .pricing-partner-tagline {
-  font-size: 0.85rem;
+  /* S3: raised to the 14px body floor. */
+  font-size: 0.875rem;
   line-height: 1.6;
   color: var(--text-muted);
   margin: 0 auto 0.6rem; /* was 0 auto 1rem (Fix 2) */
@@ -802,6 +828,7 @@
 .pricing-partner-cta {
   display: inline-flex;
   align-items: center;
+  min-height: 44px;
   gap: 0.4rem;
   padding: 0.6rem 1.1rem;
   border-radius: 10px;

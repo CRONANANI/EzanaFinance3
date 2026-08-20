@@ -248,3 +248,10 @@
     margin: 0 auto;
   }
 }
+
+/* S3 type floor: .how-step-desc had no rule of its own and inherited 13px from
+   the section. It is running body copy, so it sits at the 14px floor. */
+.how-step-desc {
+  font-size: 0.875rem;
+  line-height: 1.6;
+}

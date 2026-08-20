@@ -155,9 +155,13 @@ body:not(.light-mode) .cookie-banner-link {
   align-items: center;
 }
 .cookie-banner-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
   padding: 7px 16px;
   border-radius: 999px;
-  font-size: 12.5px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   border: 1px solid transparent;
@@ -273,7 +277,7 @@ body:not(.light-mode) .cookie-banner-cat-row strong {
     /* compact but ≥44px tap target */
     padding: 10px 14px;
     min-height: 44px;
-    font-size: 13px;
+    font-size: 14px;
   }
 }
 

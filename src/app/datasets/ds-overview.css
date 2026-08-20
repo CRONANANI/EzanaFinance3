@@ -109,7 +109,8 @@
   margin: 0 0 8px;
 }
 .dsx-sub {
-  font-size: 13.5px;
+  /* S3: body copy, raised to the 14px floor. */
+  font-size: 0.875rem;
   color: var(--text-muted);
   margin: 0 auto;
   max-width: 620px;
@@ -142,7 +143,8 @@
   font-weight: 600;
   color: var(--text-secondary);
   cursor: pointer;
-  min-height: 34px;
+  /* 44px touch minimum (was 34). */
+  min-height: 44px;
   transition:
     background 0.15s ease,
     border-color 0.15s ease;
@@ -357,7 +359,8 @@
   letter-spacing: -0.01em;
 }
 .dsx-panel-blurb {
-  font-size: 13px;
+  /* S3: body copy, raised to the 14px floor. */
+  font-size: 0.875rem;
   color: var(--text-muted);
   line-height: 1.55;
   margin: 0;
@@ -662,7 +665,8 @@
   color: var(--text-primary);
 }
 .dsx-catcard-scope {
-  font-size: 12.5px;
+  /* S3: body copy, raised to the 14px floor. */
+  font-size: 0.875rem;
   color: var(--text-muted);
   line-height: 1.5;
   margin: 0;

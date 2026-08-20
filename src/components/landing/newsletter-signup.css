@@ -25,14 +25,17 @@
   color: var(--text-muted);
   pointer-events: none;
 }
+/* 16px font and a 44px box: anything under 16px makes iOS Safari zoom the
+   page on focus and never zoom back out. */
 .nl-signup-input {
   width: 100%;
-  padding: 9px 12px 9px 30px;
+  min-height: 44px;
+  padding: 10px 12px 10px 30px;
   border-radius: 8px;
   border: 1px solid var(--border-input);
   background: var(--surface-input);
   color: var(--text-primary);
-  font-size: 13px;
+  font-size: 16px;
   font-family: var(--font-sans);
 }
 .nl-signup-input::placeholder {
@@ -47,13 +50,15 @@
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  min-height: 44px;
   gap: 6px;
   padding: 9px 16px;
   border-radius: 8px;
   border: 1px solid var(--emerald);
   background: var(--emerald);
   color: #ffffff;
-  font-size: 12.5px;
+  font-size: 14px;
   font-weight: 600;
   font-family: var(--font-sans);
   cursor: pointer;
@@ -83,22 +88,30 @@
   }
 }
 
+/* The whole consent row is the label, so the 44px target is the row, not the
+   13px box. The checkbox itself is scaled up to a 20px hit area on top of it. */
 .nl-signup-consent {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   align-items: flex-start;
-  font-size: 12px;
+  min-height: 44px;
+  padding: 6px 0;
+  font-size: 14px;
   line-height: 1.5;
   color: var(--text-muted);
   cursor: pointer;
 }
 .nl-signup-consent input[type='checkbox'] {
-  margin-top: 2px;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
   flex-shrink: 0;
   accent-color: var(--emerald);
   cursor: pointer;
 }
 .nl-signup-link {
+  display: inline-block;
+  padding: 4px 0;
   color: var(--emerald-text, var(--emerald));
   text-decoration: underline;
   text-underline-offset: 2px;

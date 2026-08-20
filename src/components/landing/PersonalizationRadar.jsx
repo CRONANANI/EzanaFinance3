@@ -73,7 +73,7 @@ function MobileRadarFlow({ dims, sourceDetails, accentColor }) {
                 onClick={() => setActiveSource((prev) => (prev === id ? null : id))}
                 aria-expanded={isActive}
                 className={cn(
-                  'flex min-h-10 w-full min-w-0 max-w-full items-center justify-center gap-1.5 rounded-full border px-2 py-2 text-center transition-all duration-200 sm:px-2.5 sm:py-2.5',
+                  'flex min-h-11 w-full min-w-0 max-w-full items-center justify-center gap-1.5 rounded-full border px-2 py-2 text-center transition-all duration-200 sm:px-2.5 sm:py-2.5',
                   isLastOdd && 'max-w-[calc(50%-0.375rem)]',
                   isActive
                     ? 'border-emerald-500 bg-emerald-700 text-white shadow-lg shadow-emerald-500/20'

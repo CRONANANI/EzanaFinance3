@@ -16,7 +16,7 @@ export default function LoginChoicePage() {
 
       <Link
         href="/"
-        className="relative z-10 mb-6 text-sm font-medium text-emerald-600 hover:text-emerald-700 hover:underline"
+        className="relative z-10 mb-6 inline-flex min-h-11 items-center text-sm font-medium text-emerald-600 hover:text-emerald-700 hover:underline"
       >
         ← Back to home
       </Link>

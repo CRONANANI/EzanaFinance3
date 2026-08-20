@@ -45,6 +45,7 @@
 .mkt-back {
   display: inline-flex;
   align-items: center;
+  min-height: 44px;
   gap: 0.35rem;
   font-size: 0.875rem;
   font-weight: 500;
@@ -60,6 +61,7 @@
 .mkt-cta-top {
   display: inline-flex;
   align-items: center;
+  min-height: 44px;
   padding: 0.5rem 1.125rem;
   border-radius: 8px;
   background: var(--emerald);
@@ -328,6 +330,9 @@ body.light-mode .mkt-card {
 }
 
 .mkt-datasets-subnav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   padding: 0.5rem 1rem;
   border-radius: 9999px;
   border: 1px solid var(--border-secondary);
@@ -413,7 +418,8 @@ body.light-mode .mkt-card {
 }
 .mkt-ds-search-label {
   font-family: var(--font-sans);
-  font-size: 0.8125rem;
+  /* S3: body copy, raised to the 14px floor. */
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--text-secondary);
 }
@@ -434,15 +440,18 @@ body.light-mode .mkt-card {
   border-color: var(--border-focus);
   box-shadow: 0 0 0 3px var(--emerald-bg);
 }
+/* 16px font: below that, iOS Safari zooms the page on focus and does not zoom
+   back out. 44px box so the field is a real touch target. */
 .mkt-ds-input {
   flex: 1;
   min-width: 0;
+  min-height: 44px;
   border: none;
   outline: none;
   background: transparent;
   padding: 0.625rem 0;
   font-family: var(--font-sans);
-  font-size: 0.875rem;
+  font-size: 1rem;
   color: var(--text-primary);
 }
 .mkt-ds-input::placeholder {

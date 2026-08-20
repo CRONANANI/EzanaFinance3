@@ -263,11 +263,13 @@ const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
                 <input
                   id="email"
                   type="email"
+                  inputMode="email"
+                  autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email address"
                   required
-                  className="h-11 w-full rounded-lg border border-slate-300 bg-white px-4 text-slate-900 placeholder-slate-400 transition-all focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  className="h-11 w-full rounded-lg border border-slate-300 bg-white px-4 text-base text-slate-900 placeholder-slate-400 transition-all focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                 />
               </div>
 
@@ -279,15 +281,17 @@ const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
                   <input
                     id="password"
                     type={isPasswordVisible ? 'text' : 'password'}
+                    autoComplete="current-password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
                     required
-                    className="h-11 w-full rounded-lg border border-slate-300 bg-white px-4 pr-12 text-slate-900 placeholder-slate-400 transition-all focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    className="h-11 w-full rounded-lg border border-slate-300 bg-white px-4 pr-12 text-base text-slate-900 placeholder-slate-400 transition-all focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                   />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-500 transition-colors hover:text-slate-200"
+                    aria-label={isPasswordVisible ? 'Hide password' : 'Show password'}
+                    className="absolute inset-y-0 right-0 flex min-h-11 min-w-11 items-center justify-center pr-4 text-slate-500 transition-colors hover:text-slate-200"
                     onClick={() => setIsPasswordVisible(!isPasswordVisible)}
                   >
                     {isPasswordVisible ? <EyeOff size={18} /> : <Eye size={18} />}

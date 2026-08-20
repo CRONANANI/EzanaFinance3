@@ -44,8 +44,12 @@
   }
 
   @keyframes mobileNavFadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
   }
 }
 
@@ -77,8 +81,12 @@
   }
 
   @keyframes mobileNavSlideIn {
-    from { transform: translateX(100%); }
-    to { transform: translateX(0); }
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(0);
+    }
   }
 }
 
@@ -199,13 +207,110 @@
   font-size: 0.75rem !important;
   color: #4b5563 !important;
   width: auto !important;
-  transition: transform 0.15s ease, color 0.15s ease !important;
+  transition:
+    transform 0.15s ease,
+    color 0.15s ease !important;
 }
 
 .mobile-nav-link:hover .mobile-nav-chevron,
 .mobile-nav-link:active .mobile-nav-chevron {
   color: #10b981 !important;
   transform: translateX(2px);
+}
+
+/* ── Datasets group inside the sheet ─────────────────────────────────────
+   The desktop mega-menu collapses to an expandable group so every dataset
+   stays reachable on a phone. Tokens only in this block (the older rules
+   above predate the token system). ── */
+.mobile-nav-group-trigger {
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+}
+.mobile-nav-group-trigger .mobile-nav-chevron {
+  transform: none;
+}
+.mobile-nav-group-trigger .mobile-nav-chevron.is-open {
+  transform: rotate(180deg);
+}
+.mobile-nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 2px 0 6px;
+  padding: 6px 0 6px 12px;
+  border-left: 1px solid var(--border-secondary);
+}
+.mobile-nav-group-col {
+  display: flex;
+  flex-direction: column;
+}
+.mobile-nav-group-head {
+  margin: 8px 0 2px;
+  padding: 0 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.mobile-nav-group-col:first-child .mobile-nav-group-head {
+  margin-top: 0;
+}
+/* 44px minimum on every row, including the disabled "Soon" ones so the list
+   never reads as a denser, harder-to-hit second tier. */
+.mobile-nav-sublink {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.35;
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+.mobile-nav-sublink:hover,
+.mobile-nav-sublink:active {
+  background: var(--emerald-bg-subtle);
+  color: var(--emerald);
+}
+.mobile-nav-sublink--soon {
+  color: var(--text-faint);
+}
+.mobile-nav-sublink--soon:hover,
+.mobile-nav-sublink--soon:active {
+  background: none;
+  color: var(--text-faint);
+}
+.mobile-nav-soon {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-style: normal;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-ghost);
+}
+.mobile-nav-sublink--all {
+  margin-top: 8px;
+  font-weight: 600;
+  color: var(--emerald);
+}
+.mobile-nav-sublink--all i {
+  margin-left: auto;
+  font-size: 12px;
+}
+
+/* Page behind the open sheet does not scroll. Applied only while the sheet is
+   open (see Navbar.js) and removed on close, so it never sits on an ancestor
+   of the sticky nav in the resting state. */
+body.nav-mobile-open {
+  overflow: hidden;
 }
 
 /* ── Footer branding ── */
@@ -235,6 +340,19 @@
   .navbar .mobile-hamburger {
     z-index: 10001;
     position: relative;
+  }
+}
+
+/* ── Reduced motion: the sheet appears without sliding or fading ── */
+@media (prefers-reduced-motion: reduce) {
+  .mobile-nav-overlay,
+  .mobile-nav-menu {
+    animation: none !important;
+  }
+  .mobile-nav-link,
+  .mobile-nav-chevron,
+  .mobile-nav-auth-btn {
+    transition: none !important;
   }
 }
 

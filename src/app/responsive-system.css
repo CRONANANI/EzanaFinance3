@@ -683,8 +683,9 @@
     padding: 0.85rem 2.75rem 0.85rem 0.75rem;
   }
 
+  /* 14px floor: this is body copy, not an annotation. */
   .landing-page .landing-faq-answer {
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
   }
 
   .landing-page footer .container {

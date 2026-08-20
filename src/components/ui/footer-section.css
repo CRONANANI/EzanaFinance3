@@ -36,6 +36,7 @@ body.light-mode .landing-footer {
   display: inline-flex;
   align-items: center;
   justify-content: flex-start;
+  min-height: 44px;
   gap: 0.75rem;
   margin-bottom: 1.25rem;
   text-decoration: none;
@@ -152,8 +153,14 @@ body.light-mode .landing-footer {
   gap: 0.625rem;
 }
 
+/* Column links are standalone navigation, not inline prose, so each row is a
+   44px touch target. The visual rhythm is unchanged: the box grows around the
+   same label. */
 .landing-footer-links a,
 .landing-footer-links button.landing-footer-link-btn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   font-size: 0.9375rem;
   color: var(--text-body);
   text-decoration: none;
@@ -208,7 +215,7 @@ body.light-mode .landing-footer {
 }
 
 .landing-footer-copy {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: var(--text-faint);
   margin: 0;
 }
@@ -219,9 +226,13 @@ body.light-mode .landing-footer {
   gap: 1.25rem;
 }
 
+/* H8: legal links are tappable rows, not inline prose. */
 .landing-footer-legal a,
 .landing-footer-legal button {
-  font-size: 0.8125rem;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 0.875rem;
   color: var(--text-muted);
   text-decoration: none;
   background: none;

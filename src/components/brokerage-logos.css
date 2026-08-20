@@ -105,7 +105,11 @@
 
 @media (prefers-reduced-motion: reduce) {
   .bl-carousel-track {
-    animation-play-state: paused;
+    /* Motion off, not merely paused. The transform holds the same resting
+       offset the 0% keyframe produces, so the strip looks identical minus
+       the movement. */
+    animation: none;
+    transform: translateX(-50%);
   }
 }
 
@@ -152,7 +156,7 @@
 
 .bl-logo-label {
   font-family: var(--font-sans);
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--text-body);
   white-space: nowrap;

@@ -95,7 +95,7 @@
 .lbx-ttag {
   font-family: var(--font-mono, monospace);
   font-weight: 700;
-  font-size: 0.62rem;
+  font-size: 0.625rem;
   letter-spacing: 0.06em;
   color: var(--emerald);
 }
@@ -247,7 +247,7 @@
 .lbx-pill-tag {
   margin-left: auto;
   font-family: var(--font-mono, monospace);
-  font-size: 0.56rem;
+  font-size: 0.625rem;
   font-weight: 700;
   text-transform: uppercase;
   color: var(--emerald);
@@ -262,6 +262,13 @@
 .lbx-slider {
   width: 100%;
   accent-color: var(--emerald);
+  /* Native range inputs render ~16px tall, well under the 44px touch
+     minimum. The box grows with transparent vertical padding so the visible
+     track keeps its original weight while the draggable area reaches 44px. */
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 14px 0;
+  background: transparent;
 }
 .lbx-slider-val {
   margin-top: 4px;

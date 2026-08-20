@@ -137,12 +137,20 @@ html:has(body.echo-route) {
   flex-direction: column;
   gap: 10px;
   width: 340px;
+  max-width: 100%;
   flex-shrink: 0;
   margin-bottom: 4px; /* nudge so the fine print lines up with the title's 2nd line */
 }
 .eth-news-row {
   display: flex;
   gap: 9px;
+}
+/* The input's automatic minimum (its placeholder's min-content) was wider than
+   the row at phone widths, which pushed the submit button past the right edge
+   of the page (the 48px of x-overflow at 360). min-width: 0 lets it shrink,
+   and below 480px the pair stacks instead. */
+.eth-news-input {
+  min-width: 0;
 }
 .eth-news-input {
   flex: 1;
@@ -152,7 +160,8 @@ html:has(body.echo-route) {
   border: 1px solid var(--border-input);
   background: var(--surface-input);
   color: var(--text-primary);
-  font-size: 14px;
+  /* 16px minimum, or iOS Safari zooms the page on focus. */
+  font-size: 16px;
 }
 .eth-news-input::placeholder {
   color: var(--text-ghost);
@@ -173,6 +182,23 @@ html:has(body.echo-route) {
 .eth-news-btn:hover {
   background: var(--emerald-hover);
 }
+
+/* Stacked at phone widths. This block sits AFTER the base rules on purpose:
+   a media query adds no specificity, so declared earlier it lost to
+   `.eth-news-input { flex: 1 }` and the field collapsed to 20px tall. */
+@media (max-width: 480px) {
+  .eth-news-row {
+    flex-direction: column;
+  }
+  .eth-news-input {
+    flex: none;
+    width: 100%;
+  }
+  .eth-news-btn {
+    width: 100%;
+  }
+}
+
 .eth-news-fine {
   font-family: var(--font-mono);
   font-size: 10.5px;
@@ -256,9 +282,17 @@ html:has(body.echo-route) {
   align-items: center; /* Login centers on the partner BUTTON — no flex-end hacks */
   gap: 20px;
 }
+/* 44px tall hit areas on the masthead links. The visual weight is unchanged;
+   only the box grows, and the flex centering keeps the labels on the bar's
+   optical center line. */
 .eth-login {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
   font-family: var(--font-sans);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-primary);
   text-decoration: none;
@@ -290,14 +324,25 @@ html:has(body.echo-route) {
 .eth-partner-note:hover {
   text-decoration: underline;
 }
+/* Out-of-flow, so a taller box cannot disturb the masthead: it gets the full
+   44px touch target unconditionally. */
+.eth-partner-note {
+  display: inline-flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  min-height: 44px;
+  padding-top: 6px;
+}
 .eth-partner-btn {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   padding: 7px 14px;
   border-radius: 999px;
   background: var(--emerald);
   color: var(--bg-primary);
   font-family: var(--font-sans);
-  font-size: 12.5px;
+  font-size: 14px;
   font-weight: 700;
   text-decoration: none;
   white-space: nowrap;
@@ -428,7 +473,8 @@ html:has(body.echo-route) {
   border: 1px dashed var(--border-primary);
   border-radius: 10px;
   text-align: center;
-  font-size: 12px;
+  /* S3: body copy, raised to the 14px floor. */
+  font-size: 14px;
   color: var(--text-faint);
 }
 
@@ -755,7 +801,12 @@ html:has(body.echo-route) {
   background: var(--border-primary);
   margin: 0 8px;
 }
+/* 44px minimum on the touch targets; the label keeps its 10px mono size (the
+   mono type floor) and the box grows around it. */
 .eth-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 0.06em;
@@ -780,6 +831,9 @@ html:has(body.echo-route) {
   border-color: color-mix(in srgb, var(--emerald) 45%, transparent);
 }
 .eth-seg {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   font-family: var(--font-mono);
   font-size: 11px;
   text-transform: uppercase;
@@ -816,6 +870,48 @@ html:has(body.echo-route) {
   }
   .eth-cmdbar-divider {
     display: none;
+  }
+}
+/* Below ~760px the seven continent chips cannot wrap into anything readable,
+   so each group becomes its own horizontal scroller instead. The chips keep
+   their full labels, the row never pushes the page wider than the viewport
+   (it was overflowing by 47px at 360), and the trailing padding leaves a
+   partial next chip visible as the scroll affordance. */
+@media (max-width: 760px) {
+  .eth-cmdbar {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    width: 100%;
+    max-width: 100%;
+    padding: 6px 0;
+    border-radius: 18px;
+  }
+  .eth-cmdbar-chips,
+  .eth-cmdbar-segs {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    min-width: 0;
+    max-width: 100%;
+    padding: 2px 14px;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .eth-cmdbar-chips::-webkit-scrollbar,
+  .eth-cmdbar-segs::-webkit-scrollbar {
+    display: none;
+  }
+  .eth-chip,
+  .eth-seg {
+    flex: none;
+    scroll-snap-align: start;
+  }
+  .eth-cmdbar-row {
+    padding: 0 16px;
   }
 }
 @media (max-width: 640px) {

@@ -96,14 +96,14 @@
   margin-bottom: 0.375rem;
 }
 .psc-sent-label {
-  font-size: 0.75rem;
+  font-size: 14px;
   font-weight: 500;
   color: var(--text-muted);
 }
 .psc-sent-rating {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   color: var(--emerald);
 }
 .psc-sent-rating b {
@@ -126,7 +126,7 @@
 }
 
 .psc-why {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-weight: 500;
   color: var(--text-muted);
   margin-bottom: 0.5rem;
@@ -165,7 +165,7 @@
 }
 .psc-sig-analyze {
   font-family: var(--font-mono);
-  font-size: 0.5625rem;
+  font-size: 12px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--emerald);
@@ -174,7 +174,8 @@
   margin: 0;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.5625rem;
+  /* 10px: the mono annotation floor. */
+  font-size: 0.625rem;
   line-height: 1.5;
   white-space: pre-wrap;
   word-break: break-word;

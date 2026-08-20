@@ -55,6 +55,7 @@ export function Navbar() {
   const { isOrgUser } = useOrg();
   useActivityTracker();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileDatasetsOpen, setMobileDatasetsOpen] = useState(false);
   const [datasetsOpen, setDatasetsOpen] = useState(false);
   const landingNavRef = useRef(null);
   const datasetsRef = useRef(null);
@@ -358,6 +359,25 @@ export function Navbar() {
       document.removeEventListener('mousedown', onPointerDown);
     };
   }, [datasetsOpen]);
+
+  // Mobile sheet: lock the page behind it so the background does not scroll
+  // under the overlay, and always restore on close/unmount. A class rather
+  // than an inline style so nothing else's overflow value gets clobbered.
+  // Scoped to the open window only, so it can never leave a lingering
+  // overflow on an ancestor of the sticky nav.
+  useEffect(() => {
+    if (!mobileMenuOpen || typeof document === 'undefined') return undefined;
+    document.body.classList.add('nav-mobile-open');
+    return () => document.body.classList.remove('nav-mobile-open');
+  }, [mobileMenuOpen]);
+
+  // Close the sheet (and its Datasets group) on any route change. The links
+  // themselves also close it, but in-page anchors and back/forward navigation
+  // do not go through those handlers.
+  useEffect(() => {
+    setMobileMenuOpen(false);
+    setMobileDatasetsOpen(false);
+  }, [pathname]);
 
   // Let other surfaces (e.g. the landing hero's "View datasets" button) open
   // the Datasets mega-menu instead of navigating away.
@@ -694,15 +714,61 @@ export function Navbar() {
                     <span>Pricing</span>
                     <i className="bi bi-chevron-right mobile-nav-chevron" />
                   </a>
-                  <a
-                    href="/datasets"
-                    className="mobile-nav-link"
-                    onClick={() => setMobileMenuOpen(false)}
+                  {/* Datasets is a dropdown on desktop, so it is an expandable
+                      group here rather than a single link: every dimension and
+                      every dataset inside it stays reachable on a phone. */}
+                  <button
+                    type="button"
+                    className="mobile-nav-link mobile-nav-group-trigger"
+                    aria-expanded={mobileDatasetsOpen}
+                    onClick={() => setMobileDatasetsOpen((open) => !open)}
                   >
                     <i className="bi bi-stack" />
                     <span>Datasets</span>
-                    <i className="bi bi-chevron-right mobile-nav-chevron" />
-                  </a>
+                    <i
+                      className={`bi bi-chevron-down mobile-nav-chevron${
+                        mobileDatasetsOpen ? ' is-open' : ''
+                      }`}
+                    />
+                  </button>
+                  {mobileDatasetsOpen && (
+                    <div className="mobile-nav-group">
+                      {DATASET_MENU.map((col) => (
+                        <div key={col.id} className="mobile-nav-group-col">
+                          <p className="mobile-nav-group-head">{col.heading}</p>
+                          {col.items.map((item) =>
+                            item.live ? (
+                              <a
+                                key={item.label}
+                                href={item.href}
+                                className="mobile-nav-sublink"
+                                onClick={() => setMobileMenuOpen(false)}
+                              >
+                                {item.label}
+                              </a>
+                            ) : (
+                              <span
+                                key={item.label}
+                                className="mobile-nav-sublink mobile-nav-sublink--soon"
+                                aria-disabled="true"
+                              >
+                                {item.label}
+                                <em className="mobile-nav-soon">Soon</em>
+                              </span>
+                            ),
+                          )}
+                        </div>
+                      ))}
+                      <a
+                        href="/datasets"
+                        className="mobile-nav-sublink mobile-nav-sublink--all"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        View all datasets
+                        <i className="bi bi-arrow-right" />
+                      </a>
+                    </div>
+                  )}
                   <a
                     href="/ezana-api"
                     className="mobile-nav-link"

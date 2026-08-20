@@ -773,7 +773,7 @@
 .ea-viz-cap {
   font-family: var(--font-mono, 'JetBrains Mono', monospace);
   font-variant-numeric: tabular-nums;
-  font-size: 0.6rem;
+  font-size: 0.625rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--ea-muted);
@@ -952,9 +952,20 @@
 
 /* ── Responsive: mobile sticky pill bar ───────────────────────────────── */
 @media (max-width: 900px) {
+  /* minmax(0, 1fr), not 1fr: a bare 1fr track takes its minimum from the
+     items' min-content, and the sidenav's automatic minimum (min-width: auto)
+     sized the single column to the full 14-chip legend. The track resolved to
+     ~1380px inside a 360px shell, so three quarters of every line on the page
+     sat outside the viewport, invisible because html/body use overflow-x:
+     clip. Both items also get an explicit min-width: 0 so neither can
+     reintroduce the same floor. */
   .ea-shell {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 1.25rem;
+  }
+  .ea-sidenav,
+  .ea-content {
+    min-width: 0;
   }
   .ea-section {
     scroll-margin-top: calc(var(--ea-nav) + 60px);
@@ -967,7 +978,8 @@
     overflow: visible;
     margin: 0 -2rem;
     padding: 0.5rem 2rem;
-    background: #ffffff;
+    /* Token, not #ffffff: the bar sat white over the dark theme. */
+    background: var(--bg-primary);
     border-bottom: 1px solid var(--ea-border);
     z-index: 20;
   }
@@ -990,14 +1002,14 @@
   .ea-legend li a {
     display: inline-flex;
     align-items: center;
-    min-height: 34px;
+    min-height: 44px;
+    font-size: 0.875rem;
     margin-left: 0;
     padding: 0.35rem 0.8rem;
     border: 1px solid var(--ea-border);
     border-left: 1px solid var(--ea-border);
     border-radius: 9999px;
     white-space: nowrap;
-    font-size: 0.8rem;
   }
   .ea-legend li a.is-active {
     color: var(--ea-emerald-text);
@@ -1264,4 +1276,15 @@
   .ea-modal {
     animation: none;
   }
+}
+
+/* ── S3 type floor ────────────────────────────────────────────────────────
+   The docs page set its running text at 0.8125-0.85rem (13-13.6px). Body
+   copy, list items and table cells now sit at the 14px floor on every width;
+   mono captions, tier details and other micro-labels keep their own sizes. */
+.ea-content p,
+.ea-content li,
+.ea-content td,
+.ea-ep-framing {
+  font-size: 0.875rem;
 }

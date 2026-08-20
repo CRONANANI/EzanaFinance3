@@ -89,8 +89,11 @@
 }
 
 /* ── Search input ──────────────────────────────────────────────────────── */
+/* 16px minimum, or iOS Safari zooms the page on focus. */
 .hc-input {
   width: 100%;
+  min-height: 44px;
+  font-size: 1rem;
   border-radius: 0.75rem;
   border: 1px solid var(--border-input);
   background: var(--surface-input);
@@ -329,7 +332,12 @@
   color: var(--emerald-hover);
 }
 
+/* Standalone back/breadcrumb links, not inline in prose: they get a real
+   44px touch box. */
 .hc-link-muted {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   color: var(--text-muted);
   transition: color 0.18s ease;
 }

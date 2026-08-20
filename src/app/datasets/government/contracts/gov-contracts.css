@@ -95,7 +95,7 @@
 .gcx-cat-item {
   display: block;
   padding: 8px 10px;
-  font-size: 12.5px;
+  font-size: 14px;
   color: var(--text-secondary);
   text-decoration: none;
   border-radius: var(--radius-md, 8px);
@@ -447,6 +447,13 @@
   width: 100%;
   accent-color: var(--emerald);
   cursor: pointer;
+  /* Native range inputs render ~16px tall, well under the 44px touch
+     minimum. The box grows with transparent vertical padding so the visible
+     track keeps its original weight while the draggable area reaches 44px. */
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 14px 0;
+  background: transparent;
 }
 .gcx-slider-ends {
   display: flex;
@@ -545,7 +552,7 @@
 }
 .gcx-metric-label {
   font-family: var(--font-mono, monospace);
-  font-size: 8.5px;
+  font-size: 10px;
   font-weight: 500;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -572,7 +579,7 @@
 }
 .gcx-metric-meta {
   font-family: var(--font-mono, monospace);
-  font-size: 9px;
+  font-size: 10px;
   color: var(--text-faint);
 }
 
@@ -751,7 +758,7 @@
   fill-opacity: 0.85;
 }
 .gcx-tl-tag {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   fill: var(--text-secondary);
   text-transform: uppercase;
@@ -768,7 +775,7 @@
   font-family: var(--font-mono, monospace);
 }
 .gcx-tl-sm {
-  font-size: 9px;
+  font-size: 10px;
   fill: var(--text-secondary);
 }
 
@@ -1097,7 +1104,7 @@
 }
 .gcx-ql-beta {
   font-family: var(--font-mono, monospace);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.1em;
   color: var(--emerald);
@@ -1149,7 +1156,7 @@
                      the placeholder kept running, reading as a hard cut */
   min-width: 0;
   max-width: 560px;
-  height: 34px; /* shared row height with the button */
+  min-height: 44px; /* shared row height with the button */
 }
 .gcx-ql-ai-input {
   flex: 1 1 auto;
@@ -1174,7 +1181,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 34px; /* matches .gcx-ql-ai-field so the underline sits on the
+  min-height: 44px; /* matches .gcx-ql-ai-field so the underline sits on the
                    row's baseline, not through the placeholder */
   white-space: nowrap;
   background: transparent;
@@ -1459,12 +1466,12 @@
 }
 .gcx-exp-select,
 .gcx-exp-search {
-  height: 38px;
+  min-height: 44px;
   border: 1px solid var(--border-input);
   background: var(--surface-input);
   border-radius: 10px;
   color: var(--text-primary);
-  font-size: 0.85rem;
+  font-size: 1rem;
 }
 .gcx-exp-select {
   padding: 0 12px;
@@ -1478,10 +1485,11 @@
 }
 .gcx-exp-input {
   flex: 1;
+  align-self: stretch;
   border: none;
   background: transparent;
   color: var(--text-primary);
-  font-size: 0.85rem;
+  font-size: 1rem;
   outline: none;
 }
 .gcx-exp-select:focus,
@@ -1602,7 +1610,7 @@
   display: flex;
   align-items: center;
   gap: 7px;
-  height: 34px;
+  min-height: 44px;
   padding: 0 10px;
   margin-bottom: 8px;
   border: 1px solid var(--border-input);
@@ -1615,11 +1623,12 @@
 }
 .gcx-agency-search-input {
   flex: 1;
+  align-self: stretch;
   min-width: 0;
   border: none;
   background: transparent;
   color: var(--text-primary);
-  font-size: 0.82rem;
+  font-size: 1rem;
   outline: none;
 }
 .gcx-agency-head {
