@@ -63,20 +63,50 @@ async function readBody(res) {
  * (fall through to the next provider). A plain 400 is a bad request — still falls
  * through, but the chain logs it loudly because it may be our own malformed request.
  */
+/** Best-effort parse of a provider error body ({"error":{"type","message"}}). */
+function parseErrorBody(detail) {
+  try {
+    const j = JSON.parse(detail);
+    return {
+      type: j?.error?.type || j?.type || null,
+      message: j?.error?.message || j?.message || null,
+    };
+  } catch {
+    return { type: null, message: null };
+  }
+}
+
 function classifyProviderError(id, status, detail) {
   const d = String(detail || '').toLowerCase();
+  const parsed = parseErrorBody(detail);
+  const label = parsed.type ? ` ${parsed.type}` : '';
   const unavailable =
     /credit balance|balance is too low|insufficient|out of quota|quota|billing|payment|expired|not enabled|suspend|deactiv/.test(
       d,
     );
-  if (status === 429) return new ProviderRateLimitError(`${id} 429: ${trimDetail(detail)}`);
-  if (status >= 500) return new ProviderUnavailableError(`${id} ${status}: ${trimDetail(detail)}`);
-  if (status === 401 || status === 403)
-    return new ProviderUnavailableError(`${id} ${status} (auth): ${trimDetail(detail)}`);
+  const attach = (err) => {
+    err.provider = id;
+    err.status = status;
+    err.errorType = parsed.type;
+    err.errorMessage = parsed.message ? String(parsed.message).slice(0, 200) : trimDetail(detail);
+    return err;
+  };
+  if (status === 429)
+    return attach(new ProviderRateLimitError(`${id} 429${label}: ${trimDetail(detail)}`));
+  if (status >= 500)
+    return attach(new ProviderUnavailableError(`${id} ${status}${label}: ${trimDetail(detail)}`));
+  // Billing/credit exhaustion is a GENUINE availability failure even though the
+  // API reports it as a 400: the fallback chain exists precisely for it.
   if (status === 400 && unavailable)
-    return new ProviderUnavailableError(`${id} 400 (credit/quota): ${trimDetail(detail)}`);
-  if (status === 400) return new ProviderBadRequestError(`${id} 400: ${trimDetail(detail)}`);
-  return new ProviderUnavailableError(`${id} ${status}: ${trimDetail(detail)}`);
+    return attach(
+      new ProviderUnavailableError(`${id} 400 (credit/quota)${label}: ${trimDetail(detail)}`),
+    );
+  // Everything else in the 4xx range is a CONFIG error on our side (malformed
+  // request, bad/revoked key, unknown model). These must halt the chain and
+  // surface as fix-me items, not be masked by failover.
+  if (status >= 400 && status < 500)
+    return attach(new ProviderBadRequestError(`${id} ${status}${label}: ${trimDetail(detail)}`));
+  return attach(new ProviderUnavailableError(`${id} ${status}${label}: ${trimDetail(detail)}`));
 }
 
 function callAnthropic(body, apiKey) {
@@ -271,8 +301,23 @@ const PROVIDERS = [
  * model and ignore the web tool.
  */
 export async function synthesizeWithFallback(args) {
+  // Diagnosis line, once per synthesis: whether the primary's key is even
+  // visible at runtime (a missing Vercel env var is the classic root cause of
+  // a silent slide into "all providers unavailable"). Boolean only; the key
+  // value is never logged.
+  console.log('[sonar] synthesis start', {
+    hasAnthropicKey: Boolean(process.env.ANTHROPIC_API_KEY),
+    fallbackKimi: process.env.SONAR_FALLBACK_KIMI === 'true',
+    fallbackDeepseek: process.env.SONAR_FALLBACK_DEEPSEEK === 'true',
+  });
   const active = PROVIDERS.filter((p) => p.enabled());
-  if (!active.length) return { answer: null, degraded: 'no LLM provider configured' };
+  const providerErrors = [];
+  if (!active.length) {
+    console.error(
+      '[sonar] no LLM provider configured (ANTHROPIC_API_KEY missing and no fallback enabled)',
+    );
+    return { answer: null, degraded: 'no LLM provider configured', providerErrors };
+  }
 
   let lastErr;
   for (const provider of active) {
@@ -287,24 +332,48 @@ export async function synthesizeWithFallback(args) {
         return { ...out, provider: provider.id };
       }
       lastErr = new Error(`${provider.id} returned empty`);
+      providerErrors.push({
+        provider: provider.id,
+        status: null,
+        type: 'empty',
+        message: 'empty reply',
+      });
+      console.warn('[sonar] provider returned empty, trying next', { provider: provider.id });
     } catch (err) {
       lastErr = err;
+      providerErrors.push({
+        provider: err?.provider || provider.id,
+        status: err?.status ?? null,
+        type: err?.errorType || err?.name || 'error',
+        message: err?.errorMessage || err?.message || String(err),
+      });
       if (err instanceof ProviderBadRequestError) {
-        // A bad request may be OUR bug, not the provider being down — log loudly so
-        // failover doesn't hide it, then still fall through to keep synthesis alive.
-        console.error('[sonar] provider bad request (check our request shape)', {
+        // A 4xx config error (malformed request, bad/revoked key, unknown model)
+        // is OUR bug or OUR deployment's bug. Failover cannot fix it and would
+        // only mask it, so the chain STOPS here and the log says exactly what to
+        // fix: provider, HTTP status, and the API's own error type/message.
+        console.error('[sonar] provider config error (FIX ME, chain halted)', {
           provider: provider.id,
-          error: err?.message,
+          status: err?.status ?? null,
+          errorType: err?.errorType || null,
+          errorMessage: err?.errorMessage || err?.message,
         });
-      } else {
-        console.warn('[sonar] provider failed, trying next', {
-          provider: provider.id,
-          error: err?.message,
-        });
+        break;
       }
+      // Genuine unavailability (network error, 5xx, 429, credit exhaustion):
+      // fall through to the next enabled provider.
+      console.warn('[sonar] provider unavailable, trying next', {
+        provider: provider.id,
+        status: err?.status ?? null,
+        errorType: err?.errorType || null,
+        errorMessage: err?.errorMessage || err?.message,
+      });
       continue;
     }
   }
-  console.error('[sonar] all LLM providers failed', { error: lastErr?.message });
-  return { answer: null, degraded: 'all providers unavailable' };
+  console.error('[sonar] synthesis failed', {
+    providers: providerErrors.map((e) => `${e.provider}:${e.status ?? 'net'}:${e.type}`).join(' '),
+    lastError: lastErr?.message,
+  });
+  return { answer: null, degraded: 'all providers unavailable', providerErrors };
 }

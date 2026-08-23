@@ -86,8 +86,9 @@ function buildContext(items) {
     .join('\n\n');
 }
 
-function buildUserPrompt(query, items) {
-  return `Ezana dataset sources:\n\n${buildContext(items)}\n\n---\nPing: ${query}\n\nWrite the Sonar briefing using the Ezana dataset sources above AND live web search where it adds current context. Weight them equally. Cite every claim — dataset claims with their [S#] marker and dataset name, web claims with their source. If coverage is thin, say so.`;
+function buildUserPrompt(query, items, context) {
+  const prior = context ? `Previous ping in this thread (for context only): ${context}\n\n` : '';
+  return `${prior}Ezana dataset sources:\n\n${buildContext(items)}\n\n---\nPing: ${query}\n\nWrite the Sonar briefing using the Ezana dataset sources above AND live web search where it adds current context. Weight them equally. Cite every claim: dataset claims with their [S#] marker and dataset name, web claims with their source. If coverage is thin, say so.`;
 }
 
 function looksLikeAdvice(text) {
@@ -113,6 +114,15 @@ export const POST = withApiGuard(
     if (query.length > 300) {
       return NextResponse.json({ error: 'Keep pings under 300 characters.' }, { status: 400 });
     }
+    // Follow-up context: at most ONE prior turn, same sanitation as the query.
+    // Used by the dossier's follow-up pill so "Compare to RTX" knows what "this"
+    // refers to. Anything longer or older is dropped, never accumulated.
+    const context = String(body?.context || '')
+      // eslint-disable-next-line no-control-regex
+      .replace(/[\u0000-\u001f\u007f]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 300);
 
     const admin = getAdminClient();
 
@@ -214,6 +224,7 @@ export const POST = withApiGuard(
     let answer = null;
     let grounded = false;
     let degraded;
+    let degradedDetail;
     let webUsed = false;
     let webSources = [];
     let synthProvider = null;
@@ -223,7 +234,7 @@ export const POST = withApiGuard(
       // fallback so the briefing still renders; only if ALL fail is it degraded.
       const out = await synthesizeWithFallback({
         system: SYSTEM_PROMPT,
-        user: buildUserPrompt(query, marked),
+        user: buildUserPrompt(query, marked, context),
         maxTokens: budget.maxTokens,
         model: modelForDepth(entitlements.depth),
         fallbackModel: HAIKU_MODEL,
@@ -231,6 +242,12 @@ export const POST = withApiGuard(
       });
       answer = out.answer;
       degraded = out.degraded;
+      // Dev ergonomics: the per-provider failure summary rides the JSON payload
+      // in development so the browser network tab shows the real failure;
+      // production keeps the generic user-facing state (logs carry the detail).
+      if (!answer && process.env.NODE_ENV !== 'production' && out.providerErrors?.length) {
+        degradedDetail = out.providerErrors;
+      }
       grounded = Boolean(answer);
       webUsed = Boolean(out.webUsed);
       webSources = out.webSources || [];
@@ -296,6 +313,7 @@ export const POST = withApiGuard(
       depth: entitlements.depth,
       exportsEnabled: entitlements.exportsEnabled,
       briefing: answer,
+      degradedDetail,
       grounded,
       synthProvider: synthProvider || undefined,
       rerankUsed: Boolean(rerankUsed),

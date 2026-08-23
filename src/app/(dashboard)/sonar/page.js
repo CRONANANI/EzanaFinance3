@@ -4,18 +4,17 @@ import { useEffect, useState } from 'react';
 import { SonarHero } from '@/components/sonar/SonarHero';
 import { SonarQueryBar } from '@/components/sonar/SonarQueryBar';
 import { SonarLiveAnswer } from '@/components/sonar/SonarLiveAnswer';
+import { EchoResults, PredictionMarkets } from '@/components/sonar/SonarSections';
+import { RelevantNews } from '@/components/sonar/SonarDataSections';
 import {
-  EchoResults,
-  GovernmentSignal,
-  PredictionMarkets,
-  KeyEntities,
-  PingNext,
-} from '@/components/sonar/SonarSections';
-import {
-  MarketsSnapshot,
-  RelevantNews,
-  UpcomingCatalysts,
-} from '@/components/sonar/SonarDataSections';
+  SnrKeyStats,
+  SnrPriceCatalysts,
+  SnrGovSignal,
+  SnrFollowUp,
+  useAwards,
+  useCongressTrades,
+  useLobbying,
+} from '@/components/sonar/SonarDossier';
 import { supabase } from '@/lib/supabase-browser';
 
 import './sonar.css';
@@ -125,7 +124,7 @@ export default function SonarPage() {
     });
   }
 
-  async function runQuery(raw) {
+  async function runQuery(raw, priorEntity) {
     const query = String(raw || '').trim();
     if (!query || phase === 'searching' || phase === 'streaming') return;
     setQueryText(query);
@@ -147,7 +146,7 @@ export default function SonarPage() {
           Authorization: `Bearer ${token}`,
         },
         credentials: 'include',
-        body: JSON.stringify({ query }),
+        body: JSON.stringify({ query, ...(priorEntity ? { context: priorEntity } : {}) }),
       });
       const data = await res.json().catch(() => null);
       setElapsedSec(((Date.now() - t0) / 1000).toFixed(1));
@@ -175,6 +174,10 @@ export default function SonarPage() {
 
   const loading = phase === 'searching' || phase === 'streaming';
   const quota = result?.quota || entitlements?.quota;
+  const dossierReady = Boolean(result && !result.quotaExceeded);
+  // Shared dossier sources: fetched ONCE here so Key Stats, the chart band and
+  // the Government Signal band read the same rows (and the same skeleton state).
+  const awards = useAwards(dossierReady ? result.query : null);
   const qt = result?.classification ? badgeType(result.classification) : null;
   const sourceCount = result?.sections
     ? result.sections.reduce((n, s) => n + s.items.length, 0)
@@ -192,6 +195,9 @@ export default function SonarPage() {
     }
     return out;
   })();
+  const primaryTicker = tickers[0] || null;
+  const trades = useCongressTrades(dossierReady ? primaryTicker : null);
+  const lobbying = useLobbying(dossierReady ? primaryTicker : null);
 
   return (
     <div className="sonar-root">
@@ -266,61 +272,101 @@ export default function SonarPage() {
 
               {result && !result.quotaExceeded && (
                 <>
-                  {result.briefing ? (
-                    <SonarLiveAnswer
-                      answer={result.briefing}
-                      sourceCount={sourceCount}
-                      elapsedSec={elapsedSec}
-                      searched={result.searched}
-                      webSources={result.webSources}
-                      onComplete={() => setPhase('complete')}
-                    />
-                  ) : (
-                    <div className="sonar-answer sonar-surface">
-                      <div className="sonar-answer-head">
-                        <span className="sonar-ping-dot sonar-ping-dot--frozen" aria-hidden />
-                        <span className="sonar-live-label">Live Briefing</span>
+                  {/* ── Dossier rows 1-4 (approved mockup layout) ── */}
+                  <div className="snr-row1">
+                    <div className="snr-brief">
+                      <div className="snr-entity">
+                        <span className="snr-entity-kicker sonar-num">LIVE BRIEFING</span>
+                        <span className="snr-entity-name">
+                          {result.query}
+                          {primaryTicker && (
+                            <span className="snr-entity-tkr sonar-num">${primaryTicker}</span>
+                          )}
+                        </span>
                       </div>
-                      <div className="sonar-note">
-                        {result.empty
-                          ? `Ezana has limited data on “${result.query}” across the datasets Sonar searched — nothing was fabricated.`
-                          : `Synthesis is unavailable${result.degraded ? ` (${result.degraded})` : ''}; the sourced matches are below.`}
-                      </div>
-                      {result.searched?.length > 0 && (
-                        <div className="sonar-manifest">
-                          <div className="sonar-manifest-title">Sonar searched</div>
-                          <div className="sonar-manifest-row">
-                            {result.searched.map((d) => (
-                              <span
-                                key={d.id}
-                                className={`sonar-src-chip${d.used ? ' sonar-src-chip--hit' : ''}`}
-                                title={d.source}
-                              >
-                                {d.label}
-                              </span>
-                            ))}
+                      {result.briefing ? (
+                        <SonarLiveAnswer
+                          answer={result.briefing}
+                          sourceCount={sourceCount}
+                          elapsedSec={elapsedSec}
+                          searched={result.searched}
+                          webSources={result.webSources}
+                          onComplete={() => setPhase('complete')}
+                        />
+                      ) : (
+                        <div className="sonar-answer sonar-surface">
+                          <div className="sonar-answer-head">
+                            <span className="sonar-ping-dot sonar-ping-dot--frozen" aria-hidden />
+                            <span className="sonar-live-label">Live Briefing</span>
                           </div>
+                          <div className="sonar-note">
+                            {result.empty
+                              ? `Ezana has limited data on “${result.query}” across the datasets Sonar searched. Nothing was fabricated.`
+                              : 'Synthesis is unavailable right now. The sourced matches are below.'}
+                          </div>
+                          {result.searched?.length > 0 && (
+                            <div className="sonar-manifest">
+                              <div className="sonar-manifest-title">Sonar searched</div>
+                              <div className="sonar-manifest-row">
+                                {result.searched.map((d) => (
+                                  <span
+                                    key={d.id}
+                                    className={`sonar-src-chip${d.used ? ' sonar-src-chip--hit' : ''}`}
+                                    title={d.source}
+                                  >
+                                    {d.label}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
-                  )}
-
-                  <div className="sonar-grid">
-                    <div className="sonar-col">
-                      <MarketsSnapshot tickers={tickers} />
+                    <SnrKeyStats
+                      entity={result.query}
+                      ticker={primaryTicker}
+                      sections={result.sections || []}
+                      awards={awards}
+                      trades={trades}
+                      lobbying={lobbying}
+                    />
+                    <div className="snr-newsrail">
                       <RelevantNews tickers={tickers} query={result.query} />
-                      <EchoResults sections={result.sections || []} />
-                      <PredictionMarkets sections={result.sections || []} locked={result.locked} />
-                    </div>
-                    <div className="sonar-col">
-                      <UpcomingCatalysts tickers={tickers} />
-                      <GovernmentSignal sections={result.sections || []} />
-                      <KeyEntities sections={result.sections || []} subject={result.query} />
-                      <PingNext sections={result.sections || []} onPick={runQuery} />
                     </div>
                   </div>
 
+                  <SnrPriceCatalysts
+                    ticker={primaryTicker}
+                    isProxy={result.classification !== 'ticker' && Boolean(primaryTicker)}
+                    awards={awards}
+                    trades={trades}
+                  />
+
+                  <SnrGovSignal
+                    entity={result.query}
+                    ticker={primaryTicker}
+                    awards={awards}
+                    trades={trades}
+                    lobbying={lobbying}
+                  />
+
+                  <div className="snr-row4">
+                    <EchoResults sections={result.sections || []} />
+                    <PredictionMarkets sections={result.sections || []} locked={result.locked} />
+                  </div>
+
                   {result.disclaimer && <div className="sonar-disclaimer">{result.disclaimer}</div>}
+
+                  {/* Sticky follow-up: hidden while the briefing is still streaming. */}
+                  {phase === 'complete' && (
+                    <SnrFollowUp
+                      entity={result.query}
+                      classification={result.classification}
+                      ticker={primaryTicker}
+                      onFollowUp={(q) => runQuery(q, result.query)}
+                    />
+                  )}
                 </>
               )}
             </div>
