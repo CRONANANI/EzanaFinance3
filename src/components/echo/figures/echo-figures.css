@@ -117,12 +117,32 @@
   color: var(--text-muted);
   font-weight: 500;
 }
+/* Wide-table scroller. Same contract as .echo-fig-scroll, plus an edge fade so
+   there is a visible cue that the table continues past the right edge. */
+.echo-fig-tablescroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  background:
+    linear-gradient(to right, var(--bg-primary) 30%, transparent) left center / 24px 100% no-repeat
+      local,
+    linear-gradient(to left, var(--bg-primary) 30%, transparent) right center / 24px 100% no-repeat
+      local,
+    radial-gradient(farthest-side at 0 50%, var(--border-primary), transparent) left center / 10px
+      100% no-repeat scroll,
+    radial-gradient(farthest-side at 100% 50%, var(--border-primary), transparent) right center /
+      10px 100% no-repeat scroll;
+}
 .echo-fig-matrix th.echo-fig-matrix-rowhead,
 .echo-fig-matrix td.echo-fig-matrix-rowhead {
   text-align: left;
   color: var(--text-primary);
   font-size: 0.74rem;
   min-width: 160px;
+  /* Pinned while the table scrolls sideways, so each row keeps its label. */
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--bg-primary);
 }
 .echo-fig-cell {
   cursor: pointer;

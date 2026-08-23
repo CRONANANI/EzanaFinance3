@@ -15,7 +15,10 @@ export function EchoAdjudicationMatrix({
 
   return (
     <EchoFigureShell figureLabel={figureLabel} kicker={kicker} hint={hint} source={source}>
-      <div style={{ overflowX: 'auto' }}>
+      {/* Contained scroll with the row-label column pinned: at 320px the matrix
+          is ~640px wide, and without the pin the reader loses which transition
+          a cell belongs to as soon as they swipe. */}
+      <div className="echo-fig-tablescroll">
         <table className="echo-fig-matrix">
           <thead>
             <tr>

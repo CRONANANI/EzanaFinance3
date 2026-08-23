@@ -1311,6 +1311,12 @@
   }
   .gcx-body {
     flex-direction: column;
+    /* align-items: flex-start is a ROW-axis alignment on the desktop layout;
+     once the shell turns into a column it becomes a CROSS-axis (width) rule,
+     so the main pane sized to its max-content instead of the page. That is
+     what pushed agency legends, notes and source lines hundreds of pixels
+     past the right edge, where .gcx-page clipped them away. */
+    align-items: stretch;
   }
   .gcx-rail {
     width: 100%;

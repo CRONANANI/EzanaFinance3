@@ -1,0 +1,111 @@
+/* Public mobile sign-up bar (pcta-). Phones only: above 767px the public
+   surface already carries Login and Get started in the nav, so the bar would
+   be a third copy of the same action. Tokens only. */
+
+.pcta-bar {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .pcta-bar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 900; /* under the nav sheet (10000) and the cookie banner */
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    /* Clears the iOS home indicator without adding dead space on devices
+       that have none. */
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    background: var(--bg-primary);
+    border-top: 1px solid var(--border-primary);
+    /* Upward cast; the shadow tokens all cast down. Same neutral-shadow rgba
+       precedent as .eth-cmdbar. */
+    box-shadow: 0 -6px 20px rgba(10, 14, 19, 0.1);
+    animation: pcta-rise 0.22s ease-out both;
+  }
+
+  .pcta-copy {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--text-primary);
+  }
+
+  .pcta-btn {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 18px;
+    border-radius: 999px;
+    background: var(--emerald);
+    color: var(--bg-primary);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .pcta-btn:hover,
+  .pcta-btn:active {
+    background: var(--emerald-hover);
+  }
+
+  .pcta-btn:focus-visible,
+  .pcta-close:focus-visible {
+    outline: 2px solid var(--border-focus);
+    outline-offset: 2px;
+  }
+
+  .pcta-close {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    margin-right: -8px;
+    border: none;
+    border-radius: 50%;
+    background: none;
+    color: var(--text-faint);
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  .pcta-close:hover,
+  .pcta-close:active {
+    color: var(--text-primary);
+  }
+
+  /* Reserve the bar's height so the last row of content and the footer stay
+     reachable above it. Set by PublicMobileCta.jsx while the bar is mounted. */
+  body.pcta-open {
+    padding-bottom: var(--pcta-height, 0px);
+  }
+}
+
+@keyframes pcta-rise {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pcta-bar {
+    animation: none;
+  }
+}

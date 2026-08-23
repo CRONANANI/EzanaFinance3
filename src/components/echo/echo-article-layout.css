@@ -270,7 +270,13 @@
   top: calc(100% + 0.5rem);
   left: 0;
   z-index: 40;
-  width: 280px;
+  /* 280px is wider than the content box on a 320px phone, and the popover is
+     left-anchored to a trigger that can sit anywhere in the metadata row, so
+     it clamps to the viewport rather than running off the right edge. */
+  width: min(280px, calc(100vw - 2rem));
+  max-height: 60vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-lg);

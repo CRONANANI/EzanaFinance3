@@ -17,6 +17,7 @@ import { SettingsProvider } from '@/contexts/SettingsContext';
 import { ActiveTaskProvider } from '@/contexts/ActiveTaskContext';
 import { BeginnerLevelProvider } from '@/contexts/BeginnerLevelContext';
 import { ConditionalNavbar } from '@/components/Layout/ConditionalNavbar';
+import { PublicMobileCta } from '@/components/public/PublicMobileCta';
 import { PartnerChromeEffects } from '@/components/partner/PartnerChromeEffects';
 import { getServerTheme } from '@/lib/user-preferences/server';
 import { resolveRouteShellClasses } from '@/lib/route-shell';
@@ -241,6 +242,9 @@ export default async function RootLayout({ children }) {
                               </Suspense>
                               <PartnerChromeEffects />
                               <OrgThemeProvider>{children}</OrgThemeProvider>
+                              {/* Public-only, phones only, self-gating: see
+                                  PublicMobileCta for the visibility rules. */}
+                              <PublicMobileCta />
                             </BeginnerLevelProvider>
                           </ToastProvider>
                         </PinnedCardsProvider>

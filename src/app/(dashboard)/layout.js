@@ -2,6 +2,7 @@
 
 import { useEffect, useLayoutEffect } from 'react';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/components/AuthProvider';
 import { usePartner } from '@/contexts/PartnerContext';
 import { matchesPartnerRouteList, PARTNER_SHARED_APP_ROUTES } from '@/lib/partner-chrome';
 import { MobileBottomNav } from '@/components/Layout/MobileBottomNav';
@@ -22,6 +23,7 @@ const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : us
 
 export default function DashboardLayout({ children }) {
   const pathname = usePathname();
+  const { isAuthenticated } = useAuth();
   const { isPartner, isLoading } = usePartner();
 
   // Track the previous route in sessionStorage so the Settings page's
@@ -118,7 +120,15 @@ export default function DashboardLayout({ children }) {
           </DashboardTrialShell>
         </div>
       </main>
-      <MobileBottomNav />
+      {/* The tab bar is authenticated navigation: every destination it offers
+          (Dashboard, Trade, Community, Profile) requires a session. Two routes
+          in this segment are public (the Echo hub and article pages), and the
+          bar was rendering there for signed-out visitors. Gated on auth rather
+          than on route so logged-in mobile keeps it everywhere, and gated in
+          the tree rather than in CSS so it is absent from the DOM, not merely
+          hidden. Signed-out visitors get PublicMobileCta from the root layout
+          instead. */}
+      {isAuthenticated ? <MobileBottomNav /> : null}
     </ErrorBoundary>
   );
 }
