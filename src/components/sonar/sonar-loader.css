@@ -1,0 +1,121 @@
+/* Sonar ping loader (snrl- prefix). Palette derived entirely from tokens
+   via component-scoped custom props; original 21st.dev blues remapped to
+   the Ezana emerald family. No hardcoded hex. The echo-chart-orange LED
+   token is echo-scoped, so it carries the platform --warning fallback on
+   this route (same pattern as the dossier chart markers). */
+.snrl-wrap {
+  --snrl-deep: color-mix(in srgb, var(--emerald) 55%, var(--bg-primary));
+  --snrl-mid: color-mix(in srgb, var(--emerald) 40%, var(--bg-primary));
+  --snrl-top: color-mix(in srgb, var(--emerald) 70%, var(--bg-primary));
+  --snrl-bright: var(--emerald);
+  --snrl-led: var(--echo-chart-orange, var(--warning));
+  --snrl-shadow: color-mix(in srgb, var(--text-primary) 18%, transparent);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 32px 0;
+}
+.snrl-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.snrl-mini {
+  animation: snrl-bounce 4s infinite ease-in-out;
+}
+.snrl-ghost {
+  transform: translate(0, -25px);
+  z-index: -1;
+  animation: snrl-breathe 4s infinite ease-in-out;
+}
+.snrl-caption {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+@keyframes snrl-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+@keyframes snrl-breathe {
+  0%,
+  100% {
+    opacity: 1;
+    scale: 1;
+  }
+  50% {
+    opacity: 0.5;
+    scale: 0.9;
+  }
+}
+@keyframes snrl-strobe {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+  51% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes snrl-strobe-fill-a {
+  0%,
+  50%,
+  100% {
+    fill: var(--echo-chart-orange, var(--warning));
+  }
+  25%,
+  75% {
+    fill: var(--snrl-deep);
+  }
+}
+@keyframes snrl-strobe-fill-b {
+  0%,
+  50%,
+  100% {
+    fill: var(--emerald);
+  }
+  25%,
+  75% {
+    fill: color-mix(in srgb, var(--emerald) 60%, transparent);
+  }
+}
+.snrl-strobe-led {
+  animation: snrl-strobe 0.5s infinite;
+}
+.snrl-strobe-a {
+  animation: snrl-strobe-fill-b 0.8s infinite;
+}
+.snrl-strobe-b {
+  animation: snrl-strobe-fill-b 0.8s infinite;
+  animation-delay: 0.4s;
+}
+.snrl-strobe-c {
+  animation: snrl-strobe-fill-a 0.8s infinite;
+  animation-delay: 3s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .snrl-mini,
+  .snrl-ghost,
+  .snrl-strobe-led,
+  .snrl-strobe-a,
+  .snrl-strobe-b,
+  .snrl-strobe-c {
+    animation: none;
+  }
+}

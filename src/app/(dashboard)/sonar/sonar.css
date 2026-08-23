@@ -1131,53 +1131,105 @@ html body.sonar-hero-active .main-nav:not(.partner-nav) {
   text-transform: none;
   letter-spacing: 0;
 }
+/* Ezana chart language: one consistent emerald brand line (a price series is
+   not a performance claim, so it does NOT flip red on a down period), a soft
+   area fill, horizontal grid on the echo-chart grid token, mono axis type,
+   and dashed date guides on the annotation token. The echo-chart tokens are
+   echo-scoped, so each carries a platform fallback for this route. */
 .snr-chartwrap {
   position: relative;
-  overflow: hidden;
+}
+/* The plot box: y labels hang in the left gutter; the box's own edges are the
+   axis hairlines. */
+.snr-plot {
+  position: relative;
+  height: 220px;
+  margin-left: 48px;
+  border-left: 1px solid var(--border-secondary);
+  border-bottom: 1px solid var(--border-secondary);
 }
 .snr-chart {
   display: block;
   width: 100%;
-  height: 220px;
+  height: 100%;
 }
 .snr-chart-line {
   fill: none;
+  stroke: var(--emerald);
   stroke-width: 2;
   stroke-linejoin: round;
+  stroke-linecap: round;
 }
-.snr-chart-line--up {
-  stroke: var(--emerald);
-}
-.snr-chart-line--flat {
-  stroke: var(--echo-chart-blue, var(--blue));
-}
-.snr-chart-area--up {
-  fill: color-mix(in srgb, var(--emerald) 10%, transparent);
+.snr-chart-area {
+  fill: color-mix(in srgb, var(--emerald) 8%, transparent);
   stroke: none;
 }
-.snr-chart-area--flat {
-  fill: color-mix(in srgb, var(--echo-chart-blue, var(--blue)) 10%, transparent);
-  stroke: none;
+.snr-gridline {
+  stroke: var(--echo-chart-grid, var(--border-secondary));
+  stroke-width: 1;
 }
-.snr-marker-stem {
-  stroke: var(--border-secondary);
+.snr-marker-guide {
+  stroke: var(--echo-chart-annotation, var(--text-ghost));
+  stroke-width: 1;
   stroke-dasharray: 2 3;
 }
+.snr-ylabel {
+  position: absolute;
+  right: calc(100% + 7px);
+  transform: translateY(-50%);
+  font-size: 10px;
+  line-height: 1;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.snr-xlabels {
+  position: relative;
+  height: 16px;
+  margin-left: 48px;
+}
+.snr-xlabels span {
+  position: absolute;
+  top: 5px;
+  transform: translateX(-50%);
+  font-size: 10px;
+  line-height: 1;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.snr-xlabels span:first-child {
+  transform: none;
+}
+.snr-xlabels span:last-child {
+  transform: translateX(-100%);
+}
+/* Event markers: real buttons layered over the plot so they stay perfectly
+   round (the SVG beneath is aspect-stretched) and keyboard-operable. */
 .snr-marker {
+  position: absolute;
+  width: 13px;
+  height: 13px;
+  padding: 0;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 2px solid var(--text-muted);
+  background: var(--bg-primary);
   cursor: pointer;
-  stroke-width: 2;
-  transition: r 0.15s ease;
+  transition: transform 0.15s ease;
 }
 .snr-marker--award {
-  fill: color-mix(in srgb, var(--echo-chart-purple, var(--purple)) 30%, var(--bg-primary));
-  stroke: var(--echo-chart-purple, var(--purple));
+  border-color: var(--echo-chart-purple, var(--purple));
+  background: color-mix(in srgb, var(--echo-chart-purple, var(--purple)) 30%, var(--bg-primary));
 }
 .snr-marker--trade {
-  fill: color-mix(in srgb, var(--echo-chart-orange, var(--warning)) 30%, var(--bg-primary));
-  stroke: var(--echo-chart-orange, var(--warning));
+  border-color: var(--echo-chart-orange, var(--warning));
+  background: color-mix(in srgb, var(--echo-chart-orange, var(--warning)) 30%, var(--bg-primary));
+}
+.snr-marker--earnings {
+  border-color: var(--echo-chart-blue, var(--blue));
+  background: color-mix(in srgb, var(--echo-chart-blue, var(--blue)) 30%, var(--bg-primary));
 }
 .snr-marker.is-on {
-  r: 9;
+  transform: translate(-50%, -50%) scale(1.3);
 }
 .snr-marker:focus-visible {
   outline: 2px solid var(--emerald);
@@ -1271,7 +1323,17 @@ html body.sonar-hero-active .main-nav:not(.partner-nav) {
 }
 .snr-dot--trade {
   background: var(--echo-chart-orange, var(--warning));
-  margin-left: 8px;
+}
+.snr-dot--earnings {
+  background: var(--echo-chart-blue, var(--blue));
+}
+.snr-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.snr-legend-item + .snr-legend-item {
+  margin-left: 10px;
 }
 
 /* ── Row 3: government signal ── */
@@ -1602,5 +1664,8 @@ html body.sonar-hero-active .main-nav:not(.partner-nav) {
   }
   .snr-marker {
     transition: none;
+  }
+  .snr-marker.is-on {
+    transform: translate(-50%, -50%);
   }
 }

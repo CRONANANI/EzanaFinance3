@@ -230,12 +230,29 @@ export function SnrPriceCatalysts({ ticker, isProxy, awards, trades }) {
 
   if (!ticker) return null;
   const closes = (candles || []).map((c) => c.close).filter((n) => Number.isFinite(n));
-  const up = closes.length > 1 && closes[closes.length - 1] >= closes[0];
   const W = 960;
   const H = 220;
   const PAD = 8;
+  const MONTHS = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+  const fmtPrice = (v) =>
+    v >= 1000 ? Math.round(v).toLocaleString('en-US') : v.toFixed(v < 100 ? 1 : 0);
   let path = '';
   let markers = [];
+  let grid = [];
+  let xTicks = [];
   if (closes.length > 1) {
     const min = Math.min(...closes);
     const max = Math.max(...closes);
@@ -243,14 +260,34 @@ export function SnrPriceCatalysts({ ticker, isProxy, awards, trades }) {
     const x = (i) => PAD + (i / (closes.length - 1)) * (W - PAD * 2);
     const y = (v) => H - 26 - ((v - min) / span) * (H - 48);
     path = closes.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join(' ');
+    // Horizontal gridlines on "nice" price steps (deterministic).
+    const rawStep = span / 4;
+    const mag = 10 ** Math.floor(Math.log10(rawStep));
+    const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((v) => v >= rawStep) || rawStep;
+    for (let v = Math.ceil(min / step) * step; v <= max && grid.length < 6; v += step) {
+      grid.push({ v, yPct: (y(v) / H) * 100, label: fmtPrice(v) });
+    }
+    // Four evenly spaced date ticks, labeled in UTC so SSR and client agree.
+    xTicks = [0, 1 / 3, 2 / 3, 1].map((f) => {
+      const i = Math.round(f * (closes.length - 1));
+      const d = new Date((candles[i]?.t || 0) * 1000);
+      return {
+        xPct: (x(i) / W) * 100,
+        label: candles[i]?.label || `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}`,
+      };
+    });
     const t0 = candles[0].t * 1000;
     const t1 = candles[candles.length - 1].t * 1000;
     markers = events.map((e, idx) => {
       const frac = (e.ms - t0) / (t1 - t0 || 1);
       const i = Math.round(frac * (closes.length - 1));
-      return { ...e, idx, cx: x(i), cy: y(closes[Math.max(0, Math.min(closes.length - 1, i))]) };
+      const cx = x(i);
+      const cy = y(closes[Math.max(0, Math.min(closes.length - 1, i))]);
+      return { ...e, idx, cx, cy, xPct: (cx / W) * 100, yPct: (cy / H) * 100 };
     });
   }
+  const kinds = [...new Set(markers.map((m) => m.kind))];
+  const KIND_LABEL = { award: 'awards', trade: 'trades', earnings: 'earnings' };
 
   return (
     <div className="sonar-module snr-card snr-chartcard">
@@ -266,55 +303,82 @@ export function SnrPriceCatalysts({ ticker, isProxy, awards, trades }) {
       ) : closes.length < 2 ? null : (
         <>
           <div className="snr-chartwrap">
-            <svg
-              className="snr-chart"
-              viewBox={`0 0 ${W} ${H}`}
-              preserveAspectRatio="none"
-              role="img"
-              aria-label={`${ticker} price with sourced event markers`}
-            >
-              <path
-                className={`snr-chart-line ${up ? 'snr-chart-line--up' : 'snr-chart-line--flat'}`}
-                d={path}
-              />
-              <path
-                className={`snr-chart-area ${up ? 'snr-chart-area--up' : 'snr-chart-area--flat'}`}
-                d={`${path} L${W - PAD} ${H - 8} L${PAD} ${H - 8} Z`}
-              />
-              {markers.map((m) => (
-                <g key={m.idx}>
-                  <line className="snr-marker-stem" x1={m.cx} y1={m.cy} x2={m.cx} y2={H - 10} />
-                  <circle
-                    className={`snr-marker snr-marker--${m.kind}${picked?.idx === m.idx ? ' is-on' : ''}`}
-                    cx={m.cx}
-                    cy={m.cy}
-                    r="7"
-                    tabIndex={0}
-                    role="button"
-                    aria-label={m.title}
-                    onClick={() => setPicked(picked?.idx === m.idx ? null : m)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        setPicked(picked?.idx === m.idx ? null : m);
-                      }
-                    }}
-                  />
-                </g>
-              ))}
-            </svg>
-            {picked && (
-              <div
-                className="snr-annot"
-                style={{ left: `${Math.min(82, Math.max(4, (picked.cx / W) * 100))}%` }}
+            {/* Stretched SVG carries only the geometry (line, fill, grid, dashed
+                date guides) with non-scaling strokes; type and the tappable
+                markers are HTML on top, so nothing distorts with the aspect
+                ratio and the markers stay real buttons. */}
+            <div className="snr-plot">
+              <svg
+                className="snr-chart"
+                viewBox={`0 0 ${W} ${H}`}
+                preserveAspectRatio="none"
+                role="img"
+                aria-label={`${ticker} price with sourced event markers`}
               >
-                <span className={`snr-annot-kind snr-annot-kind--${picked.kind}`}>
-                  {picked.kind === 'award' ? 'Contract award' : 'Congressional trade'}
+                {grid.map((g) => (
+                  <line
+                    key={g.v}
+                    className="snr-gridline"
+                    x1={PAD}
+                    x2={W - PAD}
+                    y1={(g.yPct / 100) * H}
+                    y2={(g.yPct / 100) * H}
+                    vectorEffect="non-scaling-stroke"
+                  />
+                ))}
+                <path
+                  className="snr-chart-area"
+                  d={`${path} L${W - PAD} ${H - 8} L${PAD} ${H - 8} Z`}
+                />
+                <path className="snr-chart-line" d={path} vectorEffect="non-scaling-stroke" />
+                {markers.map((m) => (
+                  <line
+                    key={m.idx}
+                    className="snr-marker-guide"
+                    x1={m.cx}
+                    y1={m.cy}
+                    x2={m.cx}
+                    y2={H - 1}
+                    vectorEffect="non-scaling-stroke"
+                  />
+                ))}
+              </svg>
+              {grid.map((g) => (
+                <span key={g.v} className="snr-ylabel sonar-num" style={{ top: `${g.yPct}%` }}>
+                  {g.label}
                 </span>
-                <span className="snr-annot-title">{picked.title}</span>
-                <span className="snr-annot-detail sonar-num">{picked.detail}</span>
-              </div>
-            )}
+              ))}
+              {markers.map((m) => (
+                <button
+                  key={m.idx}
+                  type="button"
+                  className={`snr-marker snr-marker--${m.kind}${picked?.idx === m.idx ? ' is-on' : ''}`}
+                  style={{ left: `${m.xPct}%`, top: `${m.yPct}%` }}
+                  aria-label={m.title}
+                  aria-expanded={picked?.idx === m.idx}
+                  onClick={() => setPicked(picked?.idx === m.idx ? null : m)}
+                />
+              ))}
+              {picked && (
+                <div
+                  className="snr-annot"
+                  style={{ left: `${Math.min(82, Math.max(4, picked.xPct))}%` }}
+                >
+                  <span className={`snr-annot-kind snr-annot-kind--${picked.kind}`}>
+                    {picked.kind === 'award' ? 'Contract award' : 'Congressional trade'}
+                  </span>
+                  <span className="snr-annot-title">{picked.title}</span>
+                  <span className="snr-annot-detail sonar-num">{picked.detail}</span>
+                </div>
+              )}
+            </div>
+            <div className="snr-xlabels">
+              {xTicks.map((t, i) => (
+                <span key={i} className="sonar-num" style={{ left: `${t.xPct}%` }}>
+                  {t.label}
+                </span>
+              ))}
+            </div>
           </div>
           <div className="snr-chart-foot">
             <div className="snr-ranges" role="group" aria-label="Time range">
@@ -329,10 +393,13 @@ export function SnrPriceCatalysts({ ticker, isProxy, awards, trades }) {
                 </button>
               ))}
             </div>
-            {events.length > 0 && (
+            {kinds.length > 0 && (
               <span className="snr-legend">
-                <i className="snr-dot snr-dot--award" /> awards
-                <i className="snr-dot snr-dot--trade" /> trades
+                {kinds.map((k) => (
+                  <span key={k} className="snr-legend-item">
+                    <i className={`snr-dot snr-dot--${k}`} /> {KIND_LABEL[k] || k}
+                  </span>
+                ))}
               </span>
             )}
           </div>

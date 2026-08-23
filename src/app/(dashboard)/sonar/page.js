@@ -5,6 +5,7 @@ import { SonarHero } from '@/components/sonar/SonarHero';
 import { SonarQueryBar } from '@/components/sonar/SonarQueryBar';
 import { SonarLiveAnswer } from '@/components/sonar/SonarLiveAnswer';
 import { EchoResults, PredictionMarkets } from '@/components/sonar/SonarSections';
+import { SonarLoader } from '@/components/sonar/SonarLoader';
 import { RelevantNews } from '@/components/sonar/SonarDataSections';
 import {
   SnrKeyStats,
@@ -242,19 +243,10 @@ export default function SonarPage() {
             <div className="sonar-body">
               {error && <div className="sonar-error">{error}</div>}
 
-              {phase === 'searching' && (
-                <div className="sonar-answer sonar-surface">
-                  <div className="sonar-answer-head">
-                    <span className="sonar-ping-dot" aria-hidden />
-                    <span className="sonar-live-label">Live Briefing</span>
-                    <span className="sonar-answer-meta">Sweeping the field...</span>
-                  </div>
-                  <div className="sonar-answer-body" style={{ opacity: 0.6 }}>
-                    Sonar is sweeping Ezana’s datasets
-                    <span className="sonar-caret" aria-hidden />
-                  </div>
-                </div>
-              )}
+              {/* In-flight: the stacked-platform loader with the existing
+                  caption. Unmounts the moment the response lands and the
+                  briefing starts rendering (phase leaves 'searching'). */}
+              {phase === 'searching' && <SonarLoader caption="Sweeping the field..." />}
 
               {result?.quotaExceeded && (
                 <div className="sonar-answer sonar-surface">
