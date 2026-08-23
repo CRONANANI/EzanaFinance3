@@ -177,6 +177,16 @@ async function anthropicSynthesize({ system, user, maxTokens, model, fallbackMod
   }
 
   const data = await res.json();
+  // Spend visibility: token usage per ping to the server console, so the
+  // credit burn is auditable from the deployment logs.
+  if (data?.usage) {
+    console.log('[sonar] anthropic usage', {
+      model: data?.model,
+      input_tokens: data.usage.input_tokens,
+      output_tokens: data.usage.output_tokens,
+      web_search_requests: data.usage.server_tool_use?.web_search_requests,
+    });
+  }
   const parsed = parseAnthropicContent(data?.content);
   if (!parsed.answer) throw new ProviderUnavailableError('anthropic: empty reply');
   return parsed;
@@ -239,8 +249,7 @@ const PROVIDERS = [
   },
   {
     id: 'deepseek',
-    enabled: () =>
-      process.env.SONAR_FALLBACK_DEEPSEEK === 'true' && !!process.env.DEEPSEEK_API_KEY,
+    enabled: () => process.env.SONAR_FALLBACK_DEEPSEEK === 'true' && !!process.env.DEEPSEEK_API_KEY,
     call: openaiCompatSynthesize({
       id: 'deepseek',
       baseURL: 'https://api.deepseek.com/v1',

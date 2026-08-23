@@ -120,7 +120,9 @@ export function Navbar() {
     pathname?.includes('/for-the-quants') ||
     pathname?.includes('/betting-markets') ||
     pathname?.includes('/ezana-echo') ||
-    pathname?.includes('/sonar') ||
+    // NOT /sonar: Sonar has its own nav pill, so the route must light that pill
+    // alone. It stays in the Research DROPDOWN as a link, but it does not make
+    // the Research trigger read active.
     pathname?.includes('/alternative-markets') ||
     pathname?.includes('/centaur-intelligence') ||
     pathname?.includes('/kairos-signal');

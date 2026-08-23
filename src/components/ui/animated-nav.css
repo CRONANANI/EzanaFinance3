@@ -282,17 +282,39 @@ body.light-mode .partner-nav .animated-nav-dropdown-item > i {
   color: #ffffff !important;
 }
 .animated-nav-link--sonar:hover,
-.animated-nav-link--sonar.hovered,
-.animated-nav-link--sonar.active {
+.animated-nav-link--sonar.hovered {
   background: var(--emerald-hover) !important;
   color: #ffffff !important;
 }
+/* On the Sonar page itself the pill goes quiet: transparent, no border, no
+   outline, and the icon + label take the emerald instead. The pulse rings pick
+   the color up through currentColor, so this one rule retints them too. */
+.animated-nav-link--sonar.active,
+.animated-nav-link--sonar.active:hover,
+.animated-nav-link--sonar.active.hovered {
+  background: transparent !important;
+  border: none;
+  outline: none;
+  color: var(--emerald) !important;
+}
+.animated-nav-link--sonar.active i,
+.animated-nav-link--sonar.active .bi {
+  color: var(--emerald) !important;
+}
+/* Keyboard access keeps a visible ring in BOTH variants (the transparent one
+   has no fill to signal focus). */
+.animated-nav-link--sonar:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+  border-radius: 9999px;
+}
 
-/* ── Coordinated radar pulse on the Sonar nav icon (only when on /sonar) ──────────
-   Shared cadence with the page's radar rings via --sonar-pulse-dur, so the nav icon
-   "breathes" in sync with .sonar-rings on the page. The pulse only runs when the
-   Sonar link is .active (= pathname includes /sonar); everywhere else it's the
-   static green pill. */
+/* ── Sonar icon: an active radar sweep, running in BOTH button states ─────────────
+   Two staggered expanding rings from the icon center (the second delayed half a
+   cycle) plus a slow opacity breath on the glyph itself. The rings borrow
+   currentColor, so they render white on the filled pill and emerald on the
+   transparent on-page variant with no extra rules. Cadence shared with the page
+   glow via --sonar-pulse-dur. Transform/opacity only. */
 :root {
   --sonar-pulse-dur: 1.8s;
 }
@@ -302,50 +324,56 @@ body.light-mode .partner-nav .animated-nav-dropdown-item > i {
   align-items: center;
   justify-content: center;
 }
-/* Expanding white ring (mirrors the page's sonarPing) */
-.animated-nav-link--sonar.active .nav-sonar-icon::after {
+.nav-sonar-icon::before,
+.nav-sonar-icon::after {
   content: '';
   position: absolute;
   inset: -1px;
   border-radius: 50%;
-  border: 1.5px solid #ffffff;
+  border: 1.5px solid currentColor;
+  opacity: 0;
   animation: navSonarPing var(--sonar-pulse-dur) ease-out infinite;
   pointer-events: none;
 }
-/* Soft halo behind the icon (mirrors the orbital map's dsx-hub-pulse) */
-.animated-nav-link--sonar.active .nav-sonar-icon::before {
-  content: '';
-  position: absolute;
-  inset: -3px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.35);
-  animation: navSonarHalo var(--sonar-pulse-dur) ease-in-out infinite;
-  pointer-events: none;
+.nav-sonar-icon::before {
+  animation-delay: calc(var(--sonar-pulse-dur) / 2);
+}
+/* Calibration: on the filled pill the rings sit on a saturated ground, so they
+   start fainter than on the quiet transparent variant to avoid strobing. */
+.animated-nav-link--sonar:not(.active) .nav-sonar-icon::before,
+.animated-nav-link--sonar:not(.active) .nav-sonar-icon::after {
+  --nav-sonar-ring-peak: 0.45;
+}
+.nav-sonar-icon i {
+  animation: navSonarBreath calc(var(--sonar-pulse-dur) * 2) ease-in-out infinite;
 }
 @keyframes navSonarPing {
   0% {
-    transform: scale(0.7);
-    opacity: 0.6;
+    transform: scale(0.55);
+    opacity: var(--nav-sonar-ring-peak, 0.7);
   }
+  70%,
   100% {
-    transform: scale(1.8);
+    transform: scale(1.9);
     opacity: 0;
   }
 }
-@keyframes navSonarHalo {
+@keyframes navSonarBreath {
   0%,
   100% {
-    opacity: 0.18;
-    transform: scale(1);
+    opacity: 1;
   }
   50% {
-    opacity: 0.42;
-    transform: scale(1.12);
+    opacity: 0.72;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .animated-nav-link--sonar.active .nav-sonar-icon::after,
-  .animated-nav-link--sonar.active .nav-sonar-icon::before {
+  .nav-sonar-icon::before,
+  .nav-sonar-icon::after {
+    animation: none;
+    opacity: 0;
+  }
+  .nav-sonar-icon i {
     animation: none;
   }
 }

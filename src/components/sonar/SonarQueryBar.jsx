@@ -14,6 +14,7 @@ export function SonarQueryBar({
   onChange,
   onSubmit,
   loading = false,
+  disabled = false,
   autoFocus = false,
   compact = false,
 }) {
@@ -22,7 +23,7 @@ export function SonarQueryBar({
       className="sonar-qbar"
       onSubmit={(e) => {
         e.preventDefault();
-        if (!loading && value.trim()) onSubmit(value);
+        if (!loading && !disabled && value.trim()) onSubmit(value);
       }}
     >
       <Search className="sonar-qbar-icon" size={18} aria-hidden />
@@ -32,19 +33,24 @@ export function SonarQueryBar({
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="Ping anything — a person, a bank, a policy, a ticker…"
+        placeholder="Try a person, a bank, a policy, a ticker..."
         aria-label="Sonar query"
-        maxLength={800}
+        maxLength={300}
         autoFocus={autoFocus}
+        disabled={disabled}
       />
       {!compact && (
         <span className="sonar-qbar-attach" aria-hidden>
           <Paperclip size={17} />
         </span>
       )}
-      <button className="sonar-ping-btn" type="submit" disabled={loading || !value.trim()}>
+      <button
+        className="sonar-ping-btn"
+        type="submit"
+        disabled={loading || disabled || !value.trim()}
+      >
         <Radar size={15} aria-hidden />
-        {loading ? 'Sweeping…' : 'Ping'}
+        {loading ? 'Sweeping...' : 'Ping'}
       </button>
     </form>
   );

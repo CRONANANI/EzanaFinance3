@@ -152,7 +152,7 @@ export default function SonarPage() {
       const data = await res.json().catch(() => null);
       setElapsedSec(((Date.now() - t0) / 1000).toFixed(1));
       if (res.status === 429) {
-        setError('Sonar is receiving a lot of pings right now. Try again in a moment.');
+        setError('That ping did not land. Try again in a moment.');
         setPhase('error');
         return;
       }
@@ -168,7 +168,7 @@ export default function SonarPage() {
       else if (data.briefing) setPhase('streaming');
       else setPhase('complete');
     } catch {
-      setError('Network error — Sonar could not reach the datasets.');
+      setError('That ping did not land. Try again in a moment.');
       setPhase('error');
     }
   }
@@ -195,11 +195,16 @@ export default function SonarPage() {
 
   return (
     <div className="sonar-root">
-      {/* Radar rings — inside the isolated .sonar-root so they paint ABOVE the
-          dashboard shell's opaque background (which previously hid them entirely at
-          z-index:-1) but stay BEHIND the sonar content. Shown only in the hero; the
-          results view is clean like the design. */}
-      {phase === 'idle' && <div className="sonar-rings" aria-hidden />}
+      {/* Light glow behind the pill: inside the isolated .sonar-root so it
+          paints ABOVE the dashboard shell's opaque background but BEHIND the
+          sonar content. Present in the hero and, slightly intensified, while a
+          ping is in flight; the results view is clean like the design. */}
+      {(phase === 'idle' || phase === 'searching') && (
+        <div
+          className={`sonar-glow${phase === 'searching' ? ' sonar-glow--active' : ''}`}
+          aria-hidden
+        />
+      )}
 
       <div className="sonar-page">
         {phase === 'idle' ? (
@@ -236,7 +241,7 @@ export default function SonarPage() {
                   <div className="sonar-answer-head">
                     <span className="sonar-ping-dot" aria-hidden />
                     <span className="sonar-live-label">Live Briefing</span>
-                    <span className="sonar-answer-meta">cross-referencing…</span>
+                    <span className="sonar-answer-meta">Sweeping the field...</span>
                   </div>
                   <div className="sonar-answer-body" style={{ opacity: 0.6 }}>
                     Sonar is sweeping Ezana’s datasets

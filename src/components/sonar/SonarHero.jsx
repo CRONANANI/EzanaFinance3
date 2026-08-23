@@ -22,6 +22,7 @@ export function SonarHero({
 }) {
   const [showAll, setShowAll] = useState(false);
   const visibleRecent = showAll ? recent : recent?.slice(0, 3);
+  const quotaReached = Boolean(quota && quota.remaining <= 0);
   return (
     <div className="sonar-hero">
       <div className="sonar-eyebrow">Ezana Sonar</div>
@@ -31,11 +32,18 @@ export function SonarHero({
         Get the whole field back.
       </h1>
       <p className="sonar-sub">
-        A name, a bank, a policy, a ticker, a bill — Sonar cross-references every dataset Ezana has
-        and returns a synthesized, cited briefing.
+        Type a name, a ticker, a policy, or a bill. Sonar sweeps every dataset we have, checks the
+        open web, and comes back with a cited briefing.
       </p>
 
-      <SonarQueryBar value={value} onChange={onChange} onSubmit={onSubmit} loading={loading} autoFocus />
+      <SonarQueryBar
+        value={value}
+        onChange={onChange}
+        onSubmit={onSubmit}
+        loading={loading}
+        disabled={quotaReached}
+        autoFocus
+      />
 
       {examples?.length > 0 && (
         <div className="sonar-examples">
@@ -76,12 +84,17 @@ export function SonarHero({
         </div>
       )}
 
-      {quota && (
-        <div className="sonar-quota">
-          {quota.remaining} of {quota.limit} pings left today
-          {version && version !== 'regular' ? ` · ${version} scope` : ''}
-        </div>
-      )}
+      {quota &&
+        (quotaReached ? (
+          <div className="sonar-quota sonar-quota--out">
+            You are out of pings for today. Resets at midnight ET.
+          </div>
+        ) : (
+          <div className="sonar-quota">
+            {quota.remaining} of {quota.limit} pings left today
+            {version && version !== 'regular' ? ` · ${version} scope` : ''}
+          </div>
+        ))}
     </div>
   );
 }

@@ -5,7 +5,11 @@ import { getCurrentOrgMember } from '@/lib/org-trading-server';
 import { isActivePartner } from '@/lib/partner-access';
 import { getActivePlan, getPlanTier } from '@/lib/subscription';
 import { orchestrate } from '@/lib/research-copilot/orchestrate';
-import { getSonarEntitlements, describeDatasetAccess, SONAR_DATASETS } from '@/lib/sonar/entitlements';
+import {
+  getSonarEntitlements,
+  describeDatasetAccess,
+  SONAR_DATASETS,
+} from '@/lib/sonar/entitlements';
 import {
   corporaForDatasets,
   depthBudget,
@@ -60,7 +64,8 @@ const SYSTEM_PROMPT = `You are Ezana Sonar, a research/intelligence surface. A u
 - If neither the datasets nor the web cover the subject, say so plainly — never fabricate, never fill gaps with ungrounded knowledge.
 - Present findings only. Do NOT give financial or investment advice, price targets, or buy/sell/hold calls.
 - Open with a one-sentence headline read, then the analysis. Be concise, analytical, terminal-adjacent.
-- Never describe yourself as "AGI" or a general intelligence; you are a research surface over specific datasets plus live web.`;
+- Never describe yourself as "AGI" or a general intelligence; you are a research surface over specific datasets plus live web.
+- Style: plain language, no hype, no em dashes. If the ping is not a finance-adjacent entity, answer briefly and suggest a better ping.`;
 
 function startOfUtcDayISO() {
   const d = new Date();
@@ -94,14 +99,38 @@ function looksLikeAdvice(text) {
 export const POST = withApiGuard(
   async (request, user) => {
     const body = await request.json().catch(() => ({}));
+    // Strict input contract (cost control): control chars stripped, 2-300 chars
+    // REJECTED rather than silently truncated, so an oversized paste never
+    // reaches retrieval or the model.
     const query = String(body?.query || '')
-      .trim()
-      .slice(0, 800);
-    if (!query) {
+      // eslint-disable-next-line no-control-regex
+      .replace(/[\u0000-\u001f\u007f]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (query.length < 2) {
       return NextResponse.json({ error: 'Type something to ping.' }, { status: 400 });
+    }
+    if (query.length > 300) {
+      return NextResponse.json({ error: 'Keep pings under 300 characters.' }, { status: 400 });
     }
 
     const admin = getAdminClient();
+
+    // Budget circuit-breaker: a GLOBAL daily cap across all users, checked
+    // before any retrieval or model spend. The per-user quota below protects
+    // fairness; this protects the credit balance.
+    const globalCap = Math.max(0, Number(process.env.SONAR_GLOBAL_DAILY_CAP) || 500);
+    const { count: globalToday } = await admin
+      .from('sonar_queries')
+      .select('id', { count: 'exact', head: true })
+      .gte('created_at', startOfUtcDayISO());
+    if ((globalToday || 0) >= globalCap) {
+      console.warn('[sonar] global daily cap reached', { globalCap });
+      return NextResponse.json(
+        { error: 'That ping did not land. Try again in a moment.' },
+        { status: 429 },
+      );
+    }
     const userClient = getUserClient();
 
     // 1. Resolve the user context: plan tier × version (regular/partner/org).
@@ -151,15 +180,18 @@ export const POST = withApiGuard(
     const allowCorpora = corporaForDatasets(entitlements.datasets);
     const budget = depthBudget(entitlements.depth);
 
-    const { items, corporaSearched, corporaUsed, rerankUsed, rewriteUsed } = await orchestrate(query, {
-      admin,
-      supabaseUser: userClient,
-      member,
-      allowCorpora,
-      topK: budget.topK,
-      perCorpusCap: budget.perCorpusCap,
-      charBudget: budget.charBudget,
-    });
+    const { items, corporaSearched, corporaUsed, rerankUsed, rewriteUsed } = await orchestrate(
+      query,
+      {
+        admin,
+        supabaseUser: userClient,
+        member,
+        allowCorpora,
+        topK: budget.topK,
+        perCorpusCap: budget.perCorpusCap,
+        charBudget: budget.charBudget,
+      },
+    );
 
     const marked = items.map((it, i) => ({ ...it, marker: `S${i + 1}` }));
 

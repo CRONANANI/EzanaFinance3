@@ -1,13 +1,13 @@
 /* ══════════════════════════════════════════════════════════════
    Ezana Sonar — redesigned intelligence surface (Claude Design handoff).
-   Two states: a rings-gradient hero (pre-search) and a results state with a
+   Two states: a glow-lit hero (pre-search) and a results state with a
    sticky query bar + a streaming, cited "Live Briefing". Plus Jakarta Sans UI,
    JetBrains Mono for all numerals/eyebrows, Newsreader serif for Echo headlines.
-   Theme tokens throughout; translucent panels so the rings read through. Reduced-
+   Theme tokens throughout; translucent panels so the glow reads through. Reduced-
    motion aware.
    ══════════════════════════════════════════════════════════════ */
 
-/* .sonar-root establishes an ISOLATED stacking context so the fixed rings paint
+/* .sonar-root establishes an ISOLATED stacking context so the fixed glow paints
    above the dashboard shell's opaque background (previously they were hidden at
    z-index:-1 behind the white main) while staying behind the sonar content. */
 .sonar-root {
@@ -16,51 +16,69 @@
   isolation: isolate;
 }
 
-/* Radar rings: concentric emerald bands radiating from the hero center — sharp,
-   thin ring lines (radar sweep) over transparent gaps so the shell background shows
-   through between them. Alpha decreases outward (0.42 → 0.12). No hardcoded hex. */
-.sonar-rings {
+/* Light glow: layered radial + linear gradients centered on the search pill:
+   a soft light emanating from the search pill: a tight bright core, a wide
+   falloff, and a faint vertical shaft rising toward the headline. Token-based
+   color-mix values only; no images, no hardcoded hex. */
+.sonar-glow {
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.9;
-  /* Gentle breathe on the SAME cadence as the nav icon pulse (--sonar-pulse-dur, in
-     animated-nav.css) so the page rings and the nav icon feel coordinated. Subtle —
-     never a flash. */
-  animation: sonarRingsBreathe var(--sonar-pulse-dur, 1.8s) ease-in-out infinite;
+  opacity: 0.85;
+  /* Slow breath, deliberately much slower than the icon pulse: the glow is
+     ambience, not a signal. */
+  animation: sonarGlowBreathe 7s ease-in-out infinite;
   background:
-    repeating-radial-gradient(
-      circle at 50% 38%,
-      transparent 0 46px,
-      color-mix(in srgb, var(--emerald) 16%, transparent) 46px 48px,
-      transparent 48px 92px
+    radial-gradient(
+      ellipse 34% 16% at 50% 38%,
+      color-mix(in srgb, var(--emerald) 20%, transparent) 0%,
+      color-mix(in srgb, var(--emerald) 9%, transparent) 45%,
+      transparent 100%
     ),
     radial-gradient(
-      circle at 50% 38%,
-      color-mix(in srgb, var(--emerald) 22%, transparent) 0%,
-      color-mix(in srgb, var(--emerald) 12%, transparent) 22%,
-      color-mix(in srgb, var(--emerald) 5%, transparent) 42%,
-      transparent 62%
+      ellipse 70% 44% at 50% 38%,
+      color-mix(in srgb, var(--emerald) 8%, transparent) 0%,
+      color-mix(in srgb, var(--emerald) 3%, transparent) 55%,
+      transparent 100%
+    ),
+    linear-gradient(
+      to top,
+      transparent 0%,
+      color-mix(in srgb, var(--emerald) 5%, transparent) 30%,
+      color-mix(in srgb, var(--emerald) 2%, transparent) 52%,
+      transparent 66%
     );
-  -webkit-mask-image: radial-gradient(circle at 50% 38%, #000 0 46%, transparent 74%);
-  mask-image: radial-gradient(circle at 50% 38%, #000 0 46%, transparent 74%);
+  -webkit-mask-image: radial-gradient(ellipse 60% 55% at 50% 34%, #000 0 55%, transparent 100%);
+  mask-image: radial-gradient(ellipse 60% 55% at 50% 34%, #000 0 55%, transparent 100%);
 }
-/* Dark mode: slightly stronger bands so the rings read on the dark shell. */
-.dark .sonar-rings {
+/* While a ping is in flight the light leans in a touch. */
+.sonar-glow--active {
+  opacity: 1;
+  animation-duration: 3.5s;
+}
+/* Dark mode: the same layers read as luminance on the dark shell, one step
+   stronger so the light still registers. */
+.dark .sonar-glow {
   background:
-    repeating-radial-gradient(
-      circle at 50% 38%,
-      transparent 0 46px,
-      color-mix(in srgb, var(--emerald) 22%, transparent) 46px 48px,
-      transparent 48px 92px
+    radial-gradient(
+      ellipse 34% 16% at 50% 38%,
+      color-mix(in srgb, var(--emerald) 26%, transparent) 0%,
+      color-mix(in srgb, var(--emerald) 12%, transparent) 45%,
+      transparent 100%
     ),
     radial-gradient(
-      circle at 50% 38%,
-      color-mix(in srgb, var(--emerald) 26%, transparent) 0%,
-      color-mix(in srgb, var(--emerald) 15%, transparent) 22%,
-      color-mix(in srgb, var(--emerald) 7%, transparent) 42%,
-      transparent 62%
+      ellipse 70% 44% at 50% 38%,
+      color-mix(in srgb, var(--emerald) 11%, transparent) 0%,
+      color-mix(in srgb, var(--emerald) 4%, transparent) 55%,
+      transparent 100%
+    ),
+    linear-gradient(
+      to top,
+      transparent 0%,
+      color-mix(in srgb, var(--emerald) 7%, transparent) 30%,
+      color-mix(in srgb, var(--emerald) 3%, transparent) 52%,
+      transparent 66%
     );
 }
 
@@ -216,7 +234,7 @@
   color: var(--text-primary);
 }
 
-/* Recent pings — translucent so the rings show through */
+/* Recent pings, translucent so the glow shows through */
 .sonar-recent {
   max-width: 560px;
   margin: 28px auto 0;
@@ -329,6 +347,11 @@
   letter-spacing: 0.03em;
   color: var(--text-muted);
   margin-top: 20px;
+}
+/* Out of pings: same slot, amber-free (tokens only), reads as a state not an error. */
+.sonar-quota--out {
+  color: var(--text-muted);
+  font-weight: 600;
 }
 
 /* ── State 02 — sticky query bar ────────────────────────────────────────────── */
@@ -909,13 +932,15 @@ a.sonar-mod-rowtitle:hover {
     transform: translateY(0);
   }
 }
-@keyframes sonarRingsBreathe {
+@keyframes sonarGlowBreathe {
   0%,
   100% {
-    opacity: 0.9;
+    opacity: 0.7;
+    transform: scale(1);
   }
   50% {
-    opacity: 0.78;
+    opacity: 1;
+    transform: scale(1.03);
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -924,14 +949,18 @@ a.sonar-mod-rowtitle:hover {
     animation: none;
   }
   .sonar-surface,
-  .sonar-module,
-  .sonar-rings {
+  .sonar-module {
     animation: none;
+  }
+  /* Frozen at the breath's mid-state, not its floor. */
+  .sonar-glow {
+    animation: none;
+    opacity: 0.85;
   }
 }
 
-/* ── Nav fades into the green rings (hero state only) ─────────────────────────────
-   On the Sonar hero, the top nav dissolves into the radar rings instead of sitting
+/* ── Nav fades into the glow (hero state only) ─────────────────────────────
+   On the Sonar hero, the top nav dissolves into the glow instead of sitting
    as a hard bar: its background becomes a top-solid → transparent gradient and the
    divider is dropped, so the rings read through its lower edge. Scoped to
    body.sonar-hero-active (set by the page only while the hero is showing) so every
