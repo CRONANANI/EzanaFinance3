@@ -73,15 +73,22 @@ export function ChecklistProgressIcon() {
 
   return (
     <div style={{ position: 'relative' }} data-tutorial="checklist-icon">
+      {/* Trigger: same family as the right-cluster icon buttons (44px tap
+          target wrapping a 36px circle), with the progress count moved into a
+          corner badge that mirrors the bell's badge geometry in the emerald
+          treatment (progress, not alerts). Click behavior unchanged. */}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         title={`${completedCount}/${totalTasks} tasks completed`}
+        aria-label={`Getting started checklist, ${completedCount} of ${totalTasks} tasks completed`}
         className="checklist-trigger-btn"
         aria-expanded={isOpen}
       >
-        <Check size={15} strokeWidth={2.4} style={{ color: 'var(--emerald)' }} aria-hidden />
-        <span className="cl2-mono">
+        <span className="checklist-trigger-inner" aria-hidden="true">
+          <i className="bi bi-check2-square" />
+        </span>
+        <span className="checklist-trigger-badge cl2-mono" aria-hidden="true">
           {completedCount}/{totalTasks}
         </span>
       </button>

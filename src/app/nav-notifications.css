@@ -38,12 +38,10 @@
   outline: none;
 }
 
-/* Desktop: nudge down to vertically center against the logo (layout box unchanged). */
-@media (min-width: 768px) {
-  .nn-bell-btn {
-    transform: translateY(4px);
-  }
-}
+/* The old desktop translateY(4px) nudge is gone: the left cluster is a flex
+   row with align-items: center, so the bell centers to the logo's optical
+   middle without a one-off offset (which read as misalignment next to the
+   redesigned checklist button). */
 
 /* Mobile: same 44px tap as hamburger; neutral foreground (not brand green) */
 @media (max-width: 767px) {

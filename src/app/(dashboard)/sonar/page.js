@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { SonarHero } from '@/components/sonar/SonarHero';
 import { SonarQueryBar } from '@/components/sonar/SonarQueryBar';
 import { SonarLiveAnswer } from '@/components/sonar/SonarLiveAnswer';
 import { EchoResults, PredictionMarkets } from '@/components/sonar/SonarSections';
-import { SonarLoader } from '@/components/sonar/SonarLoader';
+import { createPortal } from 'react-dom';
+import { SonarLoadingOverlay } from '@/components/sonar/SonarLoadingOverlay';
 import { RelevantNews } from '@/components/sonar/SonarDataSections';
 import {
   SnrKeyStats,
@@ -72,6 +73,7 @@ export default function SonarPage() {
   const [entitlements, setEntitlements] = useState(null);
   const [queryText, setQueryText] = useState('');
   const [phase, setPhase] = useState('idle'); // idle | searching | streaming | complete | error
+  const pingIdRef = useRef(0);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [elapsedSec, setElapsedSec] = useState(null);
@@ -133,9 +135,22 @@ export default function SonarPage() {
     setResult(null);
     setPhase('searching');
     const t0 = Date.now();
+    // Takeover safety valve: if nothing lands within 30s, drop to the normal
+    // error state so the user is never trapped on the loader. The id guard
+    // also discards a response that straggles in after the timeout fired.
+    const pingId = ++pingIdRef.current;
+    const timeout = setTimeout(() => {
+      if (pingIdRef.current !== pingId) return;
+      pingIdRef.current += 1; // invalidate the in-flight response
+      setError('The ping timed out. Try again.');
+      setPhase('error');
+    }, 30_000);
+    const stillCurrent = () => pingIdRef.current === pingId;
     try {
       const token = await getAccessToken();
+      if (!stillCurrent()) return;
       if (!token) {
+        clearTimeout(timeout);
         setError('Sign in to use Sonar.');
         setPhase('error');
         return;
@@ -150,6 +165,8 @@ export default function SonarPage() {
         body: JSON.stringify({ query, ...(priorEntity ? { context: priorEntity } : {}) }),
       });
       const data = await res.json().catch(() => null);
+      if (!stillCurrent()) return;
+      clearTimeout(timeout);
       setElapsedSec(((Date.now() - t0) / 1000).toFixed(1));
       if (res.status === 429) {
         setError('That ping did not land. Try again in a moment.');
@@ -168,6 +185,8 @@ export default function SonarPage() {
       else if (data.briefing) setPhase('streaming');
       else setPhase('complete');
     } catch {
+      if (!stillCurrent()) return;
+      clearTimeout(timeout);
       setError('That ping did not land. Try again in a moment.');
       setPhase('error');
     }
@@ -243,10 +262,14 @@ export default function SonarPage() {
             <div className="sonar-body">
               {error && <div className="sonar-error">{error}</div>}
 
-              {/* In-flight: the stacked-platform loader with the existing
-                  caption. Unmounts the moment the response lands and the
-                  briefing starts rendering (phase leaves 'searching'). */}
-              {phase === 'searching' && <SonarLoader caption="Sweeping the field..." />}
+              {/* In-flight: fullscreen takeover portaled to <body> so it
+                  paints above the app nav (the page root is an isolated
+                  stacking context at z-index 0, which would otherwise trap
+                  it beneath the nav). It unmounts, with a short fade, the
+                  moment the response lands and the phase leaves 'searching';
+                  error and quota states render in the normal page below. */}
+              {typeof document !== 'undefined' &&
+                createPortal(<SonarLoadingOverlay open={phase === 'searching'} />, document.body)}
 
               {result?.quotaExceeded && (
                 <div className="sonar-answer sonar-surface">

@@ -829,10 +829,10 @@ body.light-mode .nav-logo-img {
 .nav-left-zone {
   display: flex;
   align-items: center;
-  /* ONE gap, applied uniformly between logo · bell · checklist — they're now
-     direct siblings (the removed bell/checklist wrapper had added a smaller
-     second gap between the bell and the checklist). */
-  gap: 0.75rem;
+  /* ONE gap, applied uniformly between logo · bell · checklist, and the SAME
+     0.5rem the right cluster (.nav-actions) uses, so the two ends of the nav
+     read as one system. */
+  gap: 0.5rem;
   flex-shrink: 0;
   flex-grow: 0;
 }
@@ -848,19 +848,73 @@ body.light-mode .nav-logo-img {
   display: flex;
   align-items: center;
 }
+/* Checklist trigger: the right-cluster icon-button family (44px tap target,
+   36px visible circle, emerald glyph) with the progress count moved to a
+   corner badge that mirrors .nn-badge's geometry. Emerald, not red: this is
+   progress, not an alert. */
 .checklist-trigger-btn {
-  display: inline-flex;
+  position: relative;
+  display: flex;
   align-items: center;
-  gap: 0.18rem; /* was 0.25rem — tighter icon↔count */
-  line-height: 1;
-  padding: 0.25rem 0.28rem; /* was 0.25rem 0.4rem — ~30% narrower box */
-  background: transparent;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  margin: 0;
   border: none;
-  cursor: pointer;
-}
-.checklist-trigger-btn svg {
-  display: block;
+  background: transparent;
   flex-shrink: 0;
+  cursor: pointer;
+  border-radius: 8px;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.2s ease;
+  box-sizing: border-box;
+}
+.checklist-trigger-btn:hover,
+.checklist-trigger-btn:focus-visible {
+  background: rgba(16, 185, 129, 0.06);
+  outline: none;
+}
+body:not(.light-mode) .checklist-trigger-btn:hover,
+body:not(.light-mode) .checklist-trigger-btn:focus-visible {
+  background: rgba(16, 185, 129, 0.08);
+}
+.checklist-trigger-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--emerald);
+}
+.checklist-trigger-inner i {
+  display: block;
+  line-height: 1;
+}
+/* Same box as the bell's .nn-badge, in the emerald treatment. The numeral
+   follows the app's text-on-emerald convention (--bg-primary), which is white
+   in light mode. tabular-nums via the shared .cl2-mono class. */
+.checklist-trigger-badge {
+  position: absolute;
+  top: 2px;
+  right: -2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--emerald);
+  color: var(--bg-primary);
+  font-size: 0.5625rem;
+  font-weight: 800;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 /* Base theme defaults — light-mode class overrides surface color */

@@ -1,0 +1,69 @@
+/* Sonar ping takeover (snro- prefix). A fixed full-viewport layer above the
+   app nav (nav tops out at z-index 1001; app toasts live far above at 99999
+   and deliberately stay visible). Opaque --bg-primary base so the covered
+   page never ghosts through in either theme, with the search pill's emerald
+   glow treatment at reduced intensity behind the loader. */
+.snro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-primary);
+  outline: none;
+  animation: snro-in 0.15s ease-out both;
+}
+.snro-overlay--closing {
+  animation: snro-out 0.2s ease-in both;
+  pointer-events: none;
+}
+.snro-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      ellipse 36% 22% at 50% 46%,
+      color-mix(in srgb, var(--emerald) 12%, transparent) 0%,
+      color-mix(in srgb, var(--emerald) 5%, transparent) 50%,
+      transparent 100%
+    ),
+    radial-gradient(
+      ellipse 70% 50% at 50% 55%,
+      color-mix(in srgb, var(--emerald) 4%, transparent) 0%,
+      transparent 100%
+    );
+}
+.snro-overlay .snrl-wrap {
+  position: relative;
+}
+
+/* Page behind the takeover holds still. */
+body.snro-lock {
+  overflow: hidden;
+}
+
+@keyframes snro-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes snro-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .snro-overlay,
+  .snro-overlay--closing {
+    animation: none;
+  }
+}
