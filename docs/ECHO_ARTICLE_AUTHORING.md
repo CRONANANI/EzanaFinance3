@@ -114,3 +114,26 @@ module:
   feed card renders a "PARTNER · @handle" chip on the hero image.
 - Disclosure is deliberate: the chip always says "Partner" explicitly. See the
   "Partner Bylines" section in `Ezana_Echo_Skills.md` for the full standard.
+
+## 7. Globe rail scroll sync (optional `sectionAnchor`)
+
+Articles that carry a `globeRail` get scroll-synced city cards for free: the
+renderer maps each card to the FIRST h2/h3 section whose text mentions the
+card's `name` (word-boundary, case-insensitive), falling back to `region` then
+`country`. Cards that never match simply never activate; sections without a
+card of their own keep the previous card active (sticky relevance). No
+authoring work is required, and existing/frozen articles must NOT be edited
+for this.
+
+For a future article where auto-detection would pick the wrong section (e.g.
+the city is named in several sections but the card belongs with a later one),
+a card entry may declare an optional explicit anchor:
+
+| Field           | Type     | Description                                                                                 |
+| --------------- | -------- | ------------------------------------------------------------------------------------------- |
+| `sectionAnchor` | `string` | Optional. Slug of the h2/h3 heading this card belongs to; overrides first-mention detection |
+
+The slug is the heading text lowercased, punctuation stripped, spaces to
+hyphens (the same id the Contents rail links to; inspect the rendered
+heading's `id` attribute to copy it exactly). An anchor that matches no
+section falls back to auto-detection for that card.

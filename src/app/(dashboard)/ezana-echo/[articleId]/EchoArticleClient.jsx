@@ -2818,6 +2818,24 @@ export default function EchoArticleClient({
   const blocks = article.contentBlocks;
   const paragraphs = article.contentParagraphs ?? [];
 
+  // Scroll-sync sections for the globe rail: one entry per h2/h3 heading (the
+  // ids match the anchors ArticleBlock renders), carrying the JSON of every
+  // block in that section (heading included) so EchoGlobeRail can word-boundary
+  // match each city card's name against everything the section renders. Pure
+  // function of article content, so server and client build the identical map.
+  const grailSections = useMemo(() => {
+    if (!article.globeRail || !Array.isArray(blocks)) return [];
+    const out = [];
+    for (const block of blocks) {
+      if (block.type === 'heading') {
+        out.push({ id: slugifyHeading(block.text), text: JSON.stringify(block) });
+      } else if (out.length > 0) {
+        out[out.length - 1].text += ` ${JSON.stringify(block)}`;
+      }
+    }
+    return out;
+  }, [article.globeRail, blocks]);
+
   return (
     <EchoKeywordProvider articleTracker={articleTracker}>
       <div className="echo-article-page">
@@ -2936,7 +2954,9 @@ export default function EchoArticleClient({
             {/* Globe rail: inline (top of the body, after the hero) below 1280px;
                 as the sticky third column ≥1280px (rendered after this body col).
                 Rendered in exactly one place at a time. */}
-            {hasGrail && !grailWide && <EchoGlobeRail rail={article.globeRail} />}
+            {hasGrail && !grailWide && (
+              <EchoGlobeRail rail={article.globeRail} sections={grailSections} />
+            )}
 
             {/* Invisible ticker scroll-targets (fallback: top of the body). */}
             {tickers.length > 0 && (
@@ -3066,7 +3086,9 @@ export default function EchoArticleClient({
 
           {/* Sticky third column ≥1280px (single instance — inline copy above is
               suppressed when grailWide is true). */}
-          {hasGrail && grailWide && <EchoGlobeRail rail={article.globeRail} />}
+          {hasGrail && grailWide && (
+            <EchoGlobeRail rail={article.globeRail} sections={grailSections} />
+          )}
         </div>
       </div>
       <EchoKeywordPopup />

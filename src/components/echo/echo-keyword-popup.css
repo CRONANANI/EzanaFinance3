@@ -7,7 +7,7 @@
   top: 50%;
   right: 1.5rem;
   width: 360px;
-  max-height: 75vh;
+  max-height: 70vh; /* internal scroll takes over past 70vh */
   transform: translateY(-50%) translateX(20px);
   background: var(--bg-secondary);
   border: 1px solid rgba(16, 185, 129, 0.2);
@@ -29,6 +29,18 @@
   opacity: 1;
   pointer-events: auto;
   transform: translateY(-50%) translateX(0);
+}
+
+/* Rail-anchored variant: on grail articles at desktop the popup overlays the
+   "Geography of the Story" column (top/left/width set inline from the live
+   rail rect by EchoKeywordPopup; the rail beneath dims via body.ekp-rail-dim,
+   see echo-globe-rail.css). The centering transform must not apply: the
+   inline top is already the final position. */
+.ekp-popup--rail {
+  transform: translateY(8px);
+}
+.ekp-popup--rail.is-visible {
+  transform: translateY(0);
 }
 
 .ekp-close {
@@ -484,12 +496,15 @@ body.light-mode .ekp-timeline-label {
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
-   Mobile — popup becomes a bottom sheet
+   Below 1280px the rail column is stacked inline (or absent), so the popup
+   becomes a bottom sheet: fixed to the bottom edge, safe-area padded, same
+   dismiss rules. Inline rail-anchor styles never apply here (the JS only
+   measures the rail at >=1280px).
    ════════════════════════════════════════════════════════════════════════════ */
-@media (max-width: 1023px) {
+@media (max-width: 1279px) {
   .ekp-popup {
     top: auto;
-    bottom: 1rem;
+    bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
     right: 1rem;
     left: 1rem;
     width: auto;
@@ -499,5 +514,13 @@ body.light-mode .ekp-timeline-label {
 
   .ekp-popup.is-visible {
     transform: translateY(0);
+  }
+}
+
+/* Reduced motion: instant open/close, no slide. */
+@media (prefers-reduced-motion: reduce) {
+  .ekp-popup,
+  .ekp-popup--rail {
+    transition: none;
   }
 }

@@ -1760,6 +1760,10 @@ export function InteractiveGlobe({
   onContinentHover,
   /** Optional: canonical continent name whose dots render in the `--emerald` accent while all others dim. Null = colors exactly as today. */
   highlightContinent = null,
+  /** Optional: { lat, lng } to rotate toward and hold (Echo rail scroll sync).
+      While set, auto-rotation yields and the globe eases to center the target
+      (snaps under prefers-reduced-motion). Null = behavior exactly as today. */
+  focusTarget = null,
 }) {
   const canvasRef = useRef(null);
   // Rotation stored in degrees [longitude, latitude] — matches reference component
@@ -1783,6 +1787,15 @@ export function InteractiveGlobe({
   // Live refs so the memoized draw()/loop see current values without re-creating.
   const markersRef = useRef(markers);
   markersRef.current = markers;
+  const focusRef = useRef(focusTarget);
+  focusRef.current = focusTarget;
+  // Read once: focus easing snaps instead of tweening under reduced motion.
+  const reducedMotionRef = useRef(false);
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      reducedMotionRef.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }
+  }, []);
   const markerColorRef = useRef(markerColor);
   markerColorRef.current = markerColor;
   // Continent hover/highlight (additive; all of this stays inert unless the props are set).
@@ -1885,8 +1898,36 @@ export function InteractiveGlobe({
     const radius = Math.min(w, h) * 0.38;
     const fov = 600;
 
-    // Auto-rotate: increment longitude in degrees each frame (skip while paused).
-    if (autoRotateRef.current && !dragRef.current.active && !pausedRef.current) {
+    // Focus hold: while a focusTarget is set (Echo rail scroll sync), the
+    // globe eases toward the rotation that centers that lat/lng and the
+    // auto-rotate yields, so the focused region stays front and center.
+    // Closed form: with p = R(-cosφ·sinλ, sinφ, cosφ·cosλ) and the render
+    // order Ry(yaw)·Rx(pitch)·p, centering p at (0,0,-R) solves to
+    //   pitch = atan2(sinφ, cosφ·cosλ)
+    //   yaw   = atan2(-cosφ·sinλ, -(sinφ·sin(pitch) + cosφ·cosλ·cos(pitch)))
+    // Deterministic fixed-factor easing; a user drag always wins.
+    const focus = focusRef.current;
+    if (focus && focus.lat != null && focus.lng != null && !dragRef.current.active) {
+      const phi = (focus.lat * Math.PI) / 180;
+      const lam = (focus.lng * Math.PI) / 180;
+      const pitch = Math.atan2(Math.sin(phi), Math.cos(phi) * Math.cos(lam));
+      const yaw = Math.atan2(
+        -Math.cos(phi) * Math.sin(lam),
+        -(Math.sin(phi) * Math.sin(pitch) + Math.cos(phi) * Math.cos(lam) * Math.cos(pitch)),
+      );
+      const yawDeg = (yaw * 180) / Math.PI;
+      const pitchDeg = Math.max(-90, Math.min(90, (pitch * 180) / Math.PI));
+      const dYaw = ((yawDeg - rotationRef.current[0] + 540) % 360) - 180;
+      const dPitch = pitchDeg - rotationRef.current[1];
+      if (reducedMotionRef.current || (Math.abs(dYaw) < 0.15 && Math.abs(dPitch) < 0.15)) {
+        rotationRef.current[0] = yawDeg;
+        rotationRef.current[1] = pitchDeg;
+      } else {
+        rotationRef.current[0] += dYaw * 0.06;
+        rotationRef.current[1] += dPitch * 0.06;
+      }
+    } else if (autoRotateRef.current && !dragRef.current.active && !pausedRef.current) {
+      // Auto-rotate: increment longitude in degrees each frame (skip while paused).
       rotationRef.current[0] += autoRotateSpeed;
     }
 
