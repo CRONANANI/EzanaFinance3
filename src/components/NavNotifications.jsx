@@ -68,6 +68,16 @@ function severityMeta(priority) {
   return { key: 'fyi', label: 'FYI' };
 }
 
+/* Presentation only: stored titles carry 🔴/🟡-style emoji that encode the
+   priority (mapDbNotification still reads them, unchanged). The panel renders
+   the app's status-dot convention instead (.nnx-status-dot), so the emoji is
+   stripped from the DISPLAYED title only. */
+function displayTitle(title) {
+  return String(title || '')
+    .replace(/[\u{1F534}\u{1F7E1}\u{1F7E2}\u{1F7E0}\u{26AA}\u{26AB}]️?\s*/gu, '')
+    .trim();
+}
+
 function isToday(ts) {
   const d = new Date(ts);
   const now = new Date();
@@ -114,7 +124,12 @@ function NotifRowNew({ n, onOpen, onFriendRespond }) {
       </span>
       <span className="nnx-main">
         <span className="nnx-cat">{cat.label}</span>
-        <span className="nnx-title">{n.title}</span>
+        <span className="nnx-title">
+          {sev.key !== 'fyi' && (
+            <i className={`nnx-status-dot nnx-status-dot--${sev.key}`} aria-hidden />
+          )}
+          {displayTitle(n.title)}
+        </span>
         {n.content && <span className="nnx-desc">{n.content}</span>}
         {n.friendRequestId && onFriendRespond && (
           <span className="nnx-friend" onClick={(e) => e.stopPropagation()}>
@@ -134,10 +149,7 @@ function NotifRowNew({ n, onOpen, onFriendRespond }) {
             </button>
           </span>
         )}
-        <span className={`nnx-sev nnx-sev--${sev.key}`}>
-          <i className="nnx-sev-dot" />
-          {sev.label}
-        </span>
+        <span className={`nnx-sev nnx-sev--${sev.key}`}>{sev.label}</span>
       </span>
       <span className="nnx-right">
         <span className="nnx-time">{getTimeAgo(n.time)}</span>
