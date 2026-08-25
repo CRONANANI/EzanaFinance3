@@ -10,8 +10,8 @@
   align-items: center;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(99, 102, 241, 0.02));
-  border: 1px solid rgba(99, 102, 241, 0.15);
+  background: var(--surface-card);
+  border: 1px solid var(--border-primary);
   border-radius: 12px;
 }
 
@@ -25,11 +25,11 @@
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: rgba(99, 102, 241, 0.18);
+  background: var(--emerald-bg);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #6366f1;
+  color: var(--emerald);
   font-size: 1.4rem;
 }
 
@@ -49,9 +49,10 @@
   display: inline-block;
   margin-left: 0.5rem;
   padding: 1px 8px;
-  background: rgba(16, 185, 129, 0.15);
-  color: #10b981;
-  border-radius: 4px;
+  background: var(--emerald-bg);
+  color: var(--emerald);
+  border: 1px solid var(--emerald-border);
+  border-radius: 999px;
   font-size: 0.65rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -63,8 +64,8 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background: rgba(99, 102, 241, 0.12);
-  border: 1px solid rgba(99, 102, 241, 0.3);
+  background: var(--surface-card);
+  border: 1px solid var(--border-primary);
   border-radius: 8px;
   color: var(--text-secondary);
   font-size: 0.825rem;
@@ -74,7 +75,8 @@
 }
 
 .ot-inbox-link:hover {
-  background: rgba(99, 102, 241, 0.2);
+  background: var(--surface-card-hover);
+  border-color: var(--border-hover);
   color: var(--text-primary);
 }
 
@@ -87,7 +89,7 @@
 
 .ot-team-card {
   background: var(--surface-card);
-  border: 1px solid rgba(99, 102, 241, 0.15);
+  border: 1px solid var(--border-primary);
   border-radius: 12px;
   padding: 1rem;
   transition:
@@ -96,7 +98,7 @@
 }
 
 .ot-team-card:hover {
-  border-color: rgba(99, 102, 241, 0.35);
+  border-color: var(--border-hover);
   transform: translateY(-2px);
 }
 
@@ -114,20 +116,24 @@
 }
 
 .ot-team-card-aum {
+  font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+  font-variant-numeric: tabular-nums;
   font-size: 1.25rem;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--text-primary);
 }
 
 .ot-team-card-change {
+  font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
 }
 
 .ot-team-card-change.positive {
-  color: #10b981;
+  color: var(--positive, var(--emerald));
 }
 .ot-team-card-change.negative {
-  color: #ef4444;
+  color: var(--negative);
 }
 
 .ot-team-positions-table {
@@ -137,25 +143,52 @@
   font-size: 0.75rem;
 }
 
+/* Retail table contract: mono small-caps faint column headers, hairline
+   --border-secondary row dividers (the old indigo washes are off-palette for
+   org surfaces), row hover on the app's surface token. */
 .ot-team-positions-table th {
   text-align: left;
   color: var(--text-muted);
-  font-weight: 600;
+  font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+  font-weight: var(--type-kicker-weight, 700);
   text-transform: uppercase;
   font-size: 0.625rem;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
   padding: 0.4rem 0.5rem;
-  border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+  border-bottom: 1px solid var(--border-secondary);
 }
 
 .ot-team-positions-table td {
   padding: 0.5rem;
-  border-bottom: 1px solid rgba(99, 102, 241, 0.05);
+  border-bottom: 1px solid var(--border-secondary);
   color: var(--text-body);
 }
 
+.ot-team-positions-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
 .ot-team-positions-table tr:hover {
-  background: rgba(99, 102, 241, 0.04);
+  background: var(--surface-card-hover);
+}
+
+/* Row cell conventions (retail): bold symbol, muted meta, signed mono P&L in
+   the emerald/red data semantics. */
+.ot-position-ticker {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.ot-position-meta {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+.ot-position-pl.pos {
+  color: var(--positive, var(--emerald));
+  font-weight: 600;
+}
+.ot-position-pl.neg {
+  color: var(--negative);
+  font-weight: 600;
 }
 
 .ot-position-flag-btn {
@@ -163,9 +196,9 @@
   align-items: center;
   gap: 0.3rem;
   padding: 0.25rem 0.6rem;
-  background: rgba(99, 102, 241, 0.1);
-  border: 1px solid rgba(99, 102, 241, 0.25);
-  border-radius: 4px;
+  background: transparent;
+  border: 1px solid var(--border-secondary);
+  border-radius: 999px;
   color: var(--text-secondary);
   font-size: 0.65rem;
   font-weight: 600;
@@ -174,7 +207,8 @@
 }
 
 .ot-position-flag-btn:hover {
-  background: rgba(99, 102, 241, 0.2);
+  background: var(--surface-card-hover);
+  border-color: var(--border-hover);
   color: var(--text-primary);
 }
 
@@ -194,13 +228,13 @@
 }
 
 .ot-position-flag-existing.green {
-  background: rgba(16, 185, 129, 0.15);
-  color: #10b981;
+  background: var(--emerald-bg);
+  color: var(--emerald);
 }
 
 .ot-position-flag-existing.red {
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
+  background: var(--negative-bg, rgba(239, 68, 68, 0.15));
+  color: var(--negative);
 }
 
 .ot-modal-overlay {
@@ -275,15 +309,15 @@
 }
 
 .ot-flag-color-btn.is-selected.green {
-  border-color: #10b981;
-  background: rgba(16, 185, 129, 0.12);
-  color: #10b981;
+  border-color: var(--emerald);
+  background: var(--emerald-bg);
+  color: var(--emerald);
 }
 
 .ot-flag-color-btn.is-selected.red {
-  border-color: #ef4444;
-  background: rgba(239, 68, 68, 0.12);
-  color: #ef4444;
+  border-color: var(--negative);
+  background: var(--negative-bg, rgba(239, 68, 68, 0.12));
+  color: var(--negative);
 }
 
 .ot-form-group {
@@ -365,15 +399,15 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 0.75rem;
-  background: rgba(99, 102, 241, 0.06);
-  border: 1px solid rgba(99, 102, 241, 0.15);
+  background: var(--surface-card);
+  border: 1px solid var(--border-primary);
   border-radius: 6px;
   cursor: pointer;
 }
 
 .ot-attachment-item.is-selected {
-  background: rgba(99, 102, 241, 0.18);
-  border-color: rgba(99, 102, 241, 0.5);
+  background: var(--emerald-bg);
+  border-color: var(--emerald);
 }
 
 .ot-attachment-icon {
@@ -393,8 +427,9 @@
   letter-spacing: 0.05em;
   padding: 1px 6px;
   border-radius: 3px;
-  background: rgba(99, 102, 241, 0.1);
-  color: #6366f1;
+  background: transparent;
+  border: 1px solid var(--border-secondary);
+  color: var(--text-muted);
 }
 
 .ot-modal-footer {
@@ -442,17 +477,17 @@
   gap: 0.75rem;
   padding: 1rem;
   background: var(--surface-card);
-  border: 1px solid rgba(99, 102, 241, 0.12);
+  border: 1px solid var(--border-primary);
   border-radius: 8px;
   cursor: pointer;
   transition: border-color 0.15s;
 }
 
 .ot-inbox-item:hover {
-  border-color: rgba(99, 102, 241, 0.3);
+  border-color: var(--border-hover);
 }
 .ot-inbox-item.unread {
-  border-left: 3px solid var(--indigo);
+  border-left: 3px solid var(--emerald);
 }
 
 .ot-inbox-item-flag {
@@ -505,7 +540,7 @@
 
 .ot-flag-detail {
   background: var(--surface-card);
-  border: 1px solid rgba(99, 102, 241, 0.18);
+  border: 1px solid var(--border-primary);
   border-radius: 12px;
   padding: 1.5rem;
 }
@@ -527,8 +562,8 @@
 
 .ot-flag-message {
   padding: 0.75rem 1rem;
-  background: rgba(99, 102, 241, 0.05);
-  border-left: 2px solid rgba(99, 102, 241, 0.4);
+  background: var(--bg-tertiary);
+  border-left: 2px solid var(--border-hover);
   border-radius: 4px;
 }
 
@@ -1389,7 +1424,7 @@ html.light-mode .ctd-kpi {
   font-size: 0.62rem;
   font-weight: 700;
   color: #fff;
-  background: var(--indigo, #6366f1);
+  background: var(--org-primary, var(--emerald));
   flex-shrink: 0;
 }
 .ot-routed-name {
@@ -1433,8 +1468,8 @@ html.light-mode .ctd-kpi {
   cursor: pointer;
 }
 .ot-seg.is-selected {
-  border-color: var(--indigo, #6366f1);
-  background: rgba(99, 102, 241, 0.15);
+  border-color: var(--emerald);
+  background: var(--emerald-bg);
   color: var(--text-primary);
 }
 .ot-seg.high.is-selected {
@@ -1521,9 +1556,10 @@ html.light-mode .ctd-kpi {
   color: var(--negative, #ef4444);
   border-color: rgba(239, 68, 68, 0.4);
 }
+/* Escalated = caution semantics: the hairline amber chip treatment. */
 .ot-status-pill.status-escalated {
-  color: var(--indigo, #6366f1);
-  border-color: rgba(99, 102, 241, 0.4);
+  color: var(--warning);
+  border-color: color-mix(in srgb, var(--warning) 40%, transparent);
 }
 
 .ot-flag-reasonline {
@@ -1548,10 +1584,10 @@ html.light-mode .ctd-kpi {
 .ot-evidence-chip {
   font-size: 0.66rem;
   padding: 2px 8px;
-  border-radius: 4px;
-  background: rgba(99, 102, 241, 0.1);
-  color: var(--indigo, #818cf8);
-  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-secondary);
 }
 
 .ot-flag-routeline {
@@ -1606,8 +1642,8 @@ html.light-mode .ctd-kpi {
   color: var(--negative, #ef4444);
 }
 .ot-answer-btn.escalate {
-  border-color: rgba(99, 102, 241, 0.4);
-  color: var(--indigo, #818cf8);
+  border-color: color-mix(in srgb, var(--warning) 40%, transparent);
+  color: var(--warning);
 }
 .ot-answer-btn:disabled {
   opacity: 0.5;

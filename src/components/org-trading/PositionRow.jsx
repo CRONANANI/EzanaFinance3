@@ -25,10 +25,15 @@ export function PositionRow({
 
   return (
     <tr>
-      <td style={{ fontWeight: 700, color: '#f0f6fc' }}>
+      {/* Retail table contract: bold token-colored symbol, mono tabular
+          numerals, emerald/red data semantics (no hardcoded hex). */}
+      <td className="ot-position-ticker">
         {position.ticker}
         {existingFlag && (
-          <span className={`ot-position-flag-existing ${existingFlag.color}`} style={{ marginLeft: 6 }}>
+          <span
+            className={`ot-position-flag-existing ${existingFlag.color}`}
+            style={{ marginLeft: 6 }}
+          >
             <i className="bi bi-flag-fill" />
             {existingFlag.count}
           </span>
@@ -37,16 +42,16 @@ export function PositionRow({
       {showSector && (
         <td style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>{position.sector}</td>
       )}
-      <td>{position.shares}</td>
-      <td>{position.avg_cost != null ? `$${position.avg_cost.toFixed(2)}` : '—'}</td>
-      <td>{priced ? `$${position.current_price.toFixed(2)}` : '—'}</td>
-      <td style={{ color: pl >= 0 ? '#10b981' : '#ef4444', fontWeight: 600 }}>
+      <td className="ot-num">{position.shares}</td>
+      <td className="ot-num">
+        {position.avg_cost != null ? `$${position.avg_cost.toFixed(2)}` : '—'}
+      </td>
+      <td className="ot-num">{priced ? `$${position.current_price.toFixed(2)}` : '—'}</td>
+      <td className={`ot-num ot-position-pl ${pl >= 0 ? 'pos' : 'neg'}`}>
         {pl >= 0 ? '+' : ''}
         {plPct.toFixed(1)}%
       </td>
-      {analystName !== undefined && (
-        <td style={{ fontSize: '0.7rem', color: '#9ca3af' }}>{analystName || '—'}</td>
-      )}
+      {analystName !== undefined && <td className="ot-position-meta">{analystName || '—'}</td>}
       <td style={{ textAlign: 'right' }}>
         <button
           type="button"
