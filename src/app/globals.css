@@ -836,11 +836,9 @@ body.light-mode .nav-logo-img {
   flex-shrink: 0;
   flex-grow: 0;
 }
-@media (max-width: 768px) {
-  .nav-left-zone {
-    gap: 0.25rem;
-  }
-}
+/* Mobile keeps the SAME 0.5rem as the right cluster (mobile-responsive.css
+   gives .nav-actions 0.5rem too): no tighter left-only override, so both
+   ends of the bar stay one system at every width. */
 
 /* Notifications component's own centering wrapper (de-scoped from the removed
    bell/checklist wrapper so it stands alone). */
@@ -870,12 +868,19 @@ body.light-mode .nav-logo-img {
   transition: background 0.2s ease;
   box-sizing: border-box;
 }
-.checklist-trigger-btn:hover,
-.checklist-trigger-btn:focus-visible {
+.checklist-trigger-btn:hover {
   background: rgba(16, 185, 129, 0.06);
-  outline: none;
 }
-body:not(.light-mode) .checklist-trigger-btn:hover,
+body:not(.light-mode) .checklist-trigger-btn:hover {
+  background: rgba(16, 185, 129, 0.08);
+}
+/* Keyboard focus gets a REAL ring (ds.css convention), not just the hover
+   tint; the removed resting border was decoration, not the focus affordance. */
+.checklist-trigger-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--emerald-glow);
+  background: rgba(16, 185, 129, 0.06);
+}
 body:not(.light-mode) .checklist-trigger-btn:focus-visible {
   background: rgba(16, 185, 129, 0.08);
 }

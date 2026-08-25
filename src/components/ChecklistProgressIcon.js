@@ -213,24 +213,12 @@ export function ChecklistProgressIcon() {
         </>
       )}
 
+      {/* The trigger button itself is styled ONLY by the .checklist-trigger-btn
+          family in globals.css (borderless 44px icon button matching the bell).
+          A legacy outlined-pill rule used to live here and, injected after the
+          global sheet, won the cascade and re-drew the border. Do not re-add
+          trigger styles to this block. */}
       <style>{`
-        .checklist-trigger-btn {
-          background: none;
-          border: 1px solid rgba(107,114,128,0.3);
-          border-radius: 8px;
-          padding: 6px 10px;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          color: #111827;
-          font-size: 0.8rem;
-          font-weight: 600;
-        }
-        :is(.dark, body:not(.light-mode)) .checklist-trigger-btn {
-          color: #fff;
-          border-color: rgba(255,255,255,0.1);
-        }
         .cl2-mono {
           font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
           font-variant-numeric: tabular-nums;

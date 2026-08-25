@@ -24,9 +24,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  padding: 0; /* glyph sits dead-centre in the 40px box — no asymmetric inset */
+  /* 44px tap target (was 40): the extra 4px is invisible padding around the
+     unchanged glyph, matching the checklist trigger's 44px box beside it. */
+  width: 44px;
+  height: 44px;
+  padding: 0; /* glyph sits dead-centre in the box, no asymmetric inset */
   border-radius: 10px;
   background: transparent;
   border: 1px solid transparent;
@@ -36,6 +38,12 @@
   transition: all 0.2s ease;
   flex-shrink: 0;
   outline: none;
+}
+/* Keyboard focus ring (ds.css convention): hover styles alone are not a
+   focus affordance. */
+.nn-bell-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--emerald-glow);
 }
 
 /* The old desktop translateY(4px) nudge is gone: the left cluster is a flex
@@ -105,8 +113,10 @@
 /* Unread count badge */
 .nn-badge {
   position: absolute;
-  top: 2px;
-  right: 2px;
+  /* +2px vs the old 40px box: keeps the badge in the same spot relative to
+     the centred glyph now the button box is 44px. */
+  top: 4px;
+  right: 4px;
   min-width: 16px;
   height: 16px;
   padding: 0 4px;
