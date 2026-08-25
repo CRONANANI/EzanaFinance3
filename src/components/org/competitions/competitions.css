@@ -185,7 +185,9 @@
   border-radius: var(--radius-lg, 12px);
   background: var(--bg-secondary);
   text-decoration: none;
-  transition: border-color 0.15s, transform 0.15s;
+  transition:
+    border-color 0.15s,
+    transform 0.15s;
 }
 .pcx-card:hover {
   border-color: var(--org-primary, var(--emerald));
@@ -314,7 +316,11 @@
   border-radius: var(--radius-lg, 12px);
   background: var(--bg-secondary);
 }
+/* Retail stat-tile contract: mono tabular value over a mono small-caps
+   kicker label. */
 .pcx-stat-value {
+  font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+  font-variant-numeric: tabular-nums;
   font-size: 26px;
   font-weight: 700;
   color: var(--text-primary);
@@ -322,9 +328,11 @@
 }
 .pcx-stat-label {
   margin-top: 6px;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--text-primary);
+  font-size: var(--type-kicker-size, 9.5px);
+  font-weight: var(--type-kicker-weight, 700);
+  letter-spacing: var(--type-kicker-tracking, 0.16em);
+  text-transform: uppercase;
+  color: var(--text-muted);
 }
 .pcx-stat-sub {
   font-size: 12px;
@@ -439,6 +447,8 @@
   margin-top: 6px;
 }
 .pcx-input--num {
+  font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+  font-variant-numeric: tabular-nums;
   width: 74px;
 }
 .pcx-input--sub {
@@ -939,7 +949,9 @@
   background: color-mix(in srgb, var(--org-primary, var(--emerald)) 7%, transparent);
 }
 .pcx-standing-rank {
-  font-weight: 800;
+  font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
   font-size: 16px;
   color: var(--org-ink, var(--emerald));
   min-width: 22px;
@@ -950,6 +962,8 @@
   margin-right: auto;
 }
 .pcx-standing-total {
+  font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+  font-variant-numeric: tabular-nums;
   font-weight: 700;
   color: var(--text-primary);
 }
@@ -966,13 +980,17 @@
   gap: 10px;
 }
 .pcx-result-rank {
+  font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+  font-variant-numeric: tabular-nums;
   font-size: 22px;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--org-ink, var(--emerald));
 }
 .pcx-result-total {
+  font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+  font-variant-numeric: tabular-nums;
   font-size: 22px;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--text-primary);
 }
 .pcx-mini-title {
@@ -1014,6 +1032,8 @@
   background: var(--org-primary, var(--emerald));
 }
 .pcx-bd-val {
+  font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+  font-variant-numeric: tabular-nums;
   font-size: 12.5px;
   color: var(--text-secondary);
   text-align: right;
@@ -1064,8 +1084,10 @@
 .pcx-projector .pcx-live-team-name {
   font-size: 18px;
 }
+/* Live indicator rides the app's live semantics (emerald), not the danger
+   family. */
 .pcx-live-dot {
-  color: var(--danger, var(--warning));
+  color: var(--emerald);
 }
 .pcx-live-alert {
   margin-bottom: 16px;
