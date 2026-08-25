@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import { stripDemoLabel } from '@/lib/org-display';
 import { useRouter } from 'next/navigation';
 import {
   Users,
@@ -58,7 +59,12 @@ const ACTIONS = [
   { id: 'meetings', label: 'Meetings', Icon: Video, href: '/org-team-hub/meetings' },
   { id: 'recognition', label: 'Recognition', Icon: Award, href: '/org-team-hub/recognition' },
   { id: 'grades', label: 'Grades', Icon: Star, href: '/org-team-hub/grades' },
-  { id: 'competitions', label: 'Trading Competitions', Icon: Trophy, href: '/org-team-hub/competitions' },
+  {
+    id: 'competitions',
+    label: 'Trading Competitions',
+    Icon: Trophy,
+    href: '/org-team-hub/competitions',
+  },
   { id: 'cohorts', label: 'Cohorts', Icon: GraduationCap, href: '/org-team-hub/cohorts' },
   { id: 'compliance', label: 'Compliance', Icon: Shield, href: '/org-team-hub/compliance' },
   { id: 'reports', label: 'Reports', Icon: FileText, href: '/org-team-hub/reports' },
@@ -599,7 +605,7 @@ function CommandHero({ fund, snapshots, tasksData, loading, onOpenTrading }) {
   const assignSrc = liveAssign; // live only — empty renders "Nothing due"
   const assignments = assignSrc.slice(0, 5).map((t) => ({
     id: t.id,
-    title: t.title,
+    title: stripDemoLabel(t.title),
     due: dueLabel(t.due_date),
     urgent: t.priority === 'urgent',
   }));
@@ -712,7 +718,7 @@ function SectorDesk({ sectors, loading, onOpen }) {
                   onClick={onOpen}
                 >
                   <span className="thw-sector-rank">{i + 1}</span>
-                  <span className="thw-sector-name">{s.name}</span>
+                  <span className="thw-sector-name">{stripDemoLabel(s.name)}</span>
                   <span className="thw-sector-bar">
                     <span
                       className={`thw-sector-fill${neg ? ' neg' : ''}`}
@@ -833,7 +839,7 @@ function Deadlines({ tasksData, loading, onOpenBoard }) {
       .sort((a, b) => Date.parse(a.due_date) - Date.parse(b.due_date));
     return [...overdue, ...upcoming].slice(0, 4).map((t) => ({
       id: t.id,
-      title: t.title,
+      title: stripDemoLabel(t.title),
       meta: t.overdue
         ? `Overdue · ${t.description || t.priority}`
         : `Due ${dueLabel(t.due_date)} · ${t.description || t.priority}`,

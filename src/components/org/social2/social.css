@@ -47,12 +47,12 @@
 .sc2-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.45rem;
   font-family: inherit;
-  font-size: 0.78rem;
-  font-weight: 700;
+  font-size: 0.8rem;
+  font-weight: 600;
   padding: 0.5rem 0.9rem;
-  border-radius: 9px;
+  border-radius: 10px;
   border: 1px solid var(--border-primary);
   background: var(--surface-card, transparent);
   color: var(--text-primary);
@@ -70,7 +70,15 @@
 .sc2-btn--primary {
   background: var(--emerald, #10b981);
   border-color: var(--emerald, #10b981);
-  color: #04130d;
+  color: #fff;
+}
+.sc2-btn--primary:hover:not(:disabled) {
+  background: var(--emerald-hover, #059669);
+  border-color: var(--emerald-hover, #059669);
+}
+.sc2-btn:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
 }
 .sc2-btn--ghost {
   background: transparent;

@@ -73,14 +73,14 @@
 .pcx-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
+  gap: 0.45rem;
+  padding: 0.5rem 0.9rem;
   border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md, 8px);
+  border-radius: 10px;
   background: var(--bg-secondary);
   color: var(--text-primary);
   font: inherit;
-  font-size: 13px;
+  font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
 }

@@ -1,3 +1,4 @@
+import './org-design-system.css';
 import { redirect } from 'next/navigation';
 import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';

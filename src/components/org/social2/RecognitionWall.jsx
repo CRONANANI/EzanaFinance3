@@ -1,5 +1,6 @@
 'use client';
 
+import { stripDemoLabel } from '@/lib/org-display';
 import { useCallback, useEffect, useState } from 'react';
 import { Award, RefreshCw, Sliders, Sparkles } from 'lucide-react';
 import { AwardModal, badgeIcon } from './AwardModal';
@@ -174,7 +175,7 @@ export function RecognitionWall({ initialData = null }) {
                     <span className="rec2-recent-icon" aria-hidden>
                       {badgeIcon(r.badge_type)}
                     </span>
-                    <span className="rec2-recent-title">{r.title}</span>
+                    <span className="rec2-recent-title">{stripDemoLabel(r.title)}</span>
                     <span className="rec2-recent-name">{r.recipient_name}</span>
                   </button>
                 ))}

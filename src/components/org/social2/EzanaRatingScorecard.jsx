@@ -1,5 +1,6 @@
 'use client';
 
+import { stripDemoLabel } from '@/lib/org-display';
 import { useCallback, useEffect, useState } from 'react';
 import { Award, Sparkles, Target, TrendingUp, ClipboardList, Printer } from 'lucide-react';
 import { badgeIcon } from './AwardModal';
@@ -371,7 +372,7 @@ export function EzanaRatingScorecard({ memberId }) {
           <div className="rec2-chips">
             {(awards || []).map((a) => (
               <span key={a.id} className="rec2-chip rec2-chip--award" title={a.reason || ''}>
-                <span aria-hidden>{badgeIcon(a.badge_type)}</span> {a.title}
+                <span aria-hidden>{badgeIcon(a.badge_type)}</span> {stripDemoLabel(a.title)}
               </span>
             ))}
             {(badges || []).map((b) => (

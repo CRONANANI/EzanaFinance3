@@ -69,10 +69,10 @@
   align-items: center;
   gap: 0.4rem;
   font-family: inherit;
-  font-size: 0.78rem;
-  font-weight: 700;
-  padding: 0.5rem 0.85rem;
-  border-radius: 9px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.5rem 0.9rem;
+  border-radius: 10px;
   border: 1px solid var(--border-primary);
   background: var(--surface-card, transparent);
   color: var(--text-primary);
@@ -95,7 +95,7 @@
 .asg2-btn--primary {
   background: var(--emerald);
   border-color: var(--emerald);
-  color: var(--bg-primary);
+  color: #fff;
 }
 .asg2-btn--primary:hover {
   background: color-mix(in srgb, var(--emerald) 88%, #000);

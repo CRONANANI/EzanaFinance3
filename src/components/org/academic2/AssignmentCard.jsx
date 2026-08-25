@@ -1,5 +1,6 @@
 'use client';
 
+import { stripDemoLabel } from '@/lib/org-display';
 import {
   TrendingUp,
   FileSearch,
@@ -113,7 +114,7 @@ export function AssignmentCard({ a, viewer, variant = 'compact', onOpen, onVerb 
         </span>
       </div>
 
-      <div className="asg2-card-title">{a.title}</div>
+      <div className="asg2-card-title">{stripDemoLabel(a.title)}</div>
 
       <div className="asg2-card-meta">
         <AvatarStack assignees={a.assignees} />

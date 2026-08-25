@@ -1,5 +1,6 @@
 'use client';
 
+import { stripDemoLabel } from '@/lib/org-display';
 import { useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { typeMeta } from './AssignmentCard';
@@ -113,9 +114,9 @@ export function AssignmentCalendar({ assignments, onOpen }) {
                     className={`asg2-event${a.overdue ? ' is-overdue' : ''}`}
                     data-type={a.type || a.assignment_type}
                     onClick={() => onOpen?.(a)}
-                    title={`${label}: ${a.title}`}
+                    title={`${label}: ${stripDemoLabel(a.title)}`}
                   >
-                    {a.title}
+                    {stripDemoLabel(a.title)}
                   </button>
                 );
               })}

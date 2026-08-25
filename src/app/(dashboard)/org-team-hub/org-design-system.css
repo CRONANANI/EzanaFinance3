@@ -60,20 +60,36 @@
   border-top: 1px solid var(--border-secondary);
 }
 
-/* ── Buttons — ONE family, emerald primary. No indigo/purple, ever. ──────── */
+/* ── Buttons: THE app button standard, codified from the Council Trading
+      desk's two template buttons ("Add position" / "Flag inbox", .ctd-btn):
+        geometry  inline-flex · gap 0.45rem · padding 0.5rem 0.9rem ·
+                  radius 10px · font 0.8rem/600
+        primary   emerald fill + border, WHITE label, hover emerald-hover
+        secondary surface fill, hairline border, dark label, hover
+                  surface-card-hover
+        small     0.35rem 0.65rem · 0.72rem (sanctioned compact size for
+                  in-table actions like the positions "Flag" button)
+        danger    DESTRUCTIVE actions only: secondary geometry with --danger
+                  text/icon, never a filled red button (--danger is correct
+                  for actions; it is banned only in data displays)
+      Rule: at most ONE primary per view (the page's main action). Everything
+      else is secondary/ghost. No indigo/purple, ever. Every page-scoped
+      button family (an4/c2/asg2/rec2/mt2/ac3/ctd) carries these exact values;
+      new surfaces should use these classes directly. ──────────────────────── */
 .org-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  border-radius: 9px;
-  padding: 8px 14px;
+  gap: 0.45rem;
+  border-radius: 10px;
+  padding: 0.5rem 0.9rem;
   border: 1px solid transparent;
   font-family: var(--font-sans);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 600;
   line-height: 1.2;
   cursor: pointer;
+  text-decoration: none;
   transition:
     background 0.12s ease-out,
     border-color 0.12s ease-out,
@@ -88,13 +104,13 @@
   border-color: var(--emerald);
 }
 .org-btn--primary:hover:not(:disabled) {
-  background: var(--emerald-hover);
-  border-color: var(--emerald-hover);
+  background: var(--emerald-hover, color-mix(in srgb, var(--emerald) 85%, #000));
+  border-color: var(--emerald-hover, color-mix(in srgb, var(--emerald) 85%, #000));
 }
 .org-btn--secondary {
   background: var(--surface-card);
   color: var(--text-primary);
-  border-color: var(--border-primary);
+  border-color: var(--border-secondary);
 }
 .org-btn--secondary:hover:not(:disabled) {
   background: var(--surface-card-hover);
@@ -108,13 +124,18 @@
   background: var(--surface-card-hover);
   color: var(--text-primary);
 }
+/* Destructive: secondary geometry, danger text/icon. No filled red. */
 .org-btn--danger {
-  background: var(--danger);
-  color: #fff;
-  border-color: var(--danger);
+  background: var(--surface-card);
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 35%, transparent);
 }
 .org-btn--danger:hover:not(:disabled) {
-  opacity: 0.9;
+  background: var(--danger-bg, color-mix(in srgb, var(--danger) 10%, transparent));
+}
+.org-btn--sm {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.72rem;
 }
 .org-btn:disabled {
   opacity: 0.5;

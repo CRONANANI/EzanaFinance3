@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useOrg } from '@/contexts/OrgContext';
+import { stripDemoLabel } from '@/lib/org-display';
 import { PositionRow } from './PositionRow';
 import { AddPositionModal } from './add-position/AddPositionModal';
 
@@ -39,7 +40,8 @@ export function TeamPortfolioView({ teamId: dbTeamId, memberRole }) {
 
   const myMemberId = orgData?.member?.id ?? null;
   const teamName = useMemo(
-    () => (orgData?.teams || []).find((t) => t.id === dbTeamId)?.name || 'Your team',
+    () =>
+      stripDemoLabel((orgData?.teams || []).find((t) => t.id === dbTeamId)?.name) || 'Your team',
     [orgData?.teams, dbTeamId],
   );
 

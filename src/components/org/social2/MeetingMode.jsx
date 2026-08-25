@@ -1,5 +1,6 @@
 'use client';
 
+import { stripDemoLabel } from '@/lib/org-display';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Settings,
@@ -158,7 +159,7 @@ function MeetingStrip({ meetings, mode, catLabelText, selectedId, onSelect, hpag
                   {isPast(m) ? 'Completed' : 'Scheduled'}
                 </span>
               </div>
-              <div className="mt2-mcard__title">{m.title}</div>
+              <div className="mt2-mcard__title">{stripDemoLabel(m.title)}</div>
               <div className="mt2-mcard__meta mt2-num">
                 {fmtDateShort(m.scheduled_at || m.ended_at || m.created_at)}
                 {m.location ? ` · ${m.location}` : ''}
@@ -714,7 +715,7 @@ function MeetingDetail({ meetingId, onChanged }) {
               </span>
             )}
           </div>
-          <h2 className="mt2-detail-title">{m.title}</h2>
+          <h2 className="mt2-detail-title">{stripDemoLabel(m.title)}</h2>
           <div className="mt2-detail-meta mt2-num">
             <CalendarClock size={12} style={{ verticalAlign: '-2px' }} />{' '}
             {fmtDateTime(m.scheduled_at || m.ended_at)}

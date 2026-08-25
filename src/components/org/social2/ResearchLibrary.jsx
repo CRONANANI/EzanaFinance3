@@ -1,5 +1,6 @@
 'use client';
 
+import { stripDemoLabel } from '@/lib/org-display';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
@@ -173,7 +174,7 @@ function DocCard({ note, onOpen }) {
           />
         )}
       </div>
-      <h3 className="rl2-card-title">{note.title}</h3>
+      <h3 className="rl2-card-title">{stripDemoLabel(note.title)}</h3>
       {note.abstract && <p className="rl2-card-abstract">{note.abstract}</p>}
       <div className="rl2-card-tags">
         {note.ticker && <span className="rl2-pill rl2-pill--ticker">{note.ticker}</span>}
@@ -204,7 +205,7 @@ function docHtml(note) {
     String(s || '').replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
   // Standalone document — app theme tokens are unavailable in a blank window,
   // so the letterhead uses the Ezana brand emerald directly.
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(note.title)}</title>
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(stripDemoLabel(note.title))}</title>
 <style>
   body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:#1a1a1a;max-width:760px;margin:40px auto;padding:0 24px;line-height:1.6}
   .lh{border-bottom:3px solid #10b981;padding-bottom:12px;margin-bottom:20px}
@@ -217,7 +218,7 @@ function docHtml(note) {
   code,.mono{font-family:'JetBrains Mono',monospace}
 </style></head><body>
   <div class="lh"><div class="eyebrow">Ezana Finance · Research Library</div>
-  <h1>${esc(note.title)}</h1>
+  <h1>${esc(stripDemoLabel(note.title))}</h1>
   <div class="meta">${esc(note.doc_type)} · ${esc(note.ticker || '')} ${note.sector ? '· ' + esc(note.sector) : ''} · by ${esc(note.author_name || 'Member')} · ${esc(fmtDate(note.published_at || note.created_at))} · v${esc(note.version || 1)}</div></div>
   ${note.abstract ? `<div class="abstract"><strong>TL;DR.</strong> ${esc(note.abstract)}</div>` : ''}
   <div class="body">${esc(note.body)}</div>
@@ -539,7 +540,7 @@ function DetailDrawer({ noteId, viewer, knownTickers, onClose, onChanged, onEdit
                 )}
               </div>
             )}
-            <h2 className="rl2-drawer-title">{note ? note.title : 'Loading…'}</h2>
+            <h2 className="rl2-drawer-title">{note ? stripDemoLabel(note.title) : 'Loading…'}</h2>
           </div>
           <button type="button" className="rl2-close" onClick={onClose} aria-label="Close">
             <X size={16} />

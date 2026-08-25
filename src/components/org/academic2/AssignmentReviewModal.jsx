@@ -1,5 +1,6 @@
 'use client';
 
+import { stripDemoLabel } from '@/lib/org-display';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   X,
@@ -247,7 +248,7 @@ export function AssignmentReviewModal({ assignmentId, onClose, onChanged }) {
                 </span>
               </div>
             )}
-            <h2 className="asg2-modal-title">{a?.title || 'Assignment'}</h2>
+            <h2 className="asg2-modal-title">{stripDemoLabel(a?.title) || 'Assignment'}</h2>
             {a && (
               <div className="asg2-card-meta" style={{ marginTop: '0.4rem' }}>
                 <span className="asg2-num">{fmtDue(a.due_date, a.overdue)}</span>

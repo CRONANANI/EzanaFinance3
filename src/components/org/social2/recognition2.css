@@ -341,12 +341,12 @@
 .rec2-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.45rem;
   font-family: inherit;
-  font-size: 0.74rem;
-  font-weight: 700;
-  padding: 0.45rem 0.75rem;
-  border-radius: 9px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.5rem 0.9rem;
+  border-radius: 10px;
   border: 1px solid var(--border-primary);
   background: var(--surface-card, transparent);
   color: var(--text-primary);
@@ -365,7 +365,15 @@
 .rec2-btn--primary {
   background: var(--emerald);
   border-color: var(--emerald);
-  color: #04130d;
+  color: #fff;
+}
+.rec2-btn--primary:hover:not(:disabled) {
+  background: var(--emerald-hover, #059669);
+  border-color: var(--emerald-hover, #059669);
+}
+.rec2-btn:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
 }
 
 /* ── Category bars ──────────────────────────────────────────────────────── */

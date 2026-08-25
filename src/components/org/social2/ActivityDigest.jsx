@@ -1,5 +1,6 @@
 'use client';
 
+import { stripDemoLabel } from '@/lib/org-display';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import './social.css';
@@ -121,7 +122,7 @@ export function ActivityDigest() {
             style={{ textDecoration: 'none' }}
           >
             {n.ticker && <span className="sc2-tag sc2-tag--ticker">{n.ticker}</span>}
-            {n.title} <span className="sc2-comment-time">· {n.author_name}</span>
+            {stripDemoLabel(n.title)} <span className="sc2-comment-time">· {n.author_name}</span>
           </Link>
         ))}
       </Section>
@@ -138,7 +139,8 @@ export function ActivityDigest() {
             className="sc2-digest-row"
             style={{ textDecoration: 'none' }}
           >
-            🏅 {r.title} <span className="sc2-comment-time">· {r.recipient_name}</span>
+            🏅 {stripDemoLabel(r.title)}{' '}
+            <span className="sc2-comment-time">· {r.recipient_name}</span>
           </Link>
         ))}
       </Section>

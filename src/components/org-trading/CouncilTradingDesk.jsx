@@ -5,6 +5,7 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { Flag, Inbox, Plus } from 'lucide-react';
 import { useOrg } from '@/contexts/OrgContext';
+import { stripDemoLabel } from '@/lib/org-display';
 import { AddPositionModal } from './add-position/AddPositionModal';
 
 /* FlagComposerModal only mounts when a flag is being composed (openFlagModal
@@ -48,9 +49,9 @@ const shortLabel = (name) =>
     'Energy & Utilities': 'Energy',
     'Financial Institutions': 'Financials',
     'Metals & Mining': 'Metals',
-  }[name] ||
-    (name || '').split(/[,&]/)[0].trim() ||
-    '—');
+  })[name] ||
+  (name || '').split(/[,&]/)[0].trim() ||
+  '—';
 
 function flagsToTickerMap(flags) {
   const map = {};
@@ -165,8 +166,8 @@ export function CouncilTradingDesk() {
     rows.forEach((s, i) =>
       m.set(s.teamId, {
         teamId: s.teamId,
-        name: s.name,
-        short: shortLabel(s.name),
+        name: stripDemoLabel(s.name),
+        short: shortLabel(stripDemoLabel(s.name)),
         color: SECTOR_PALETTE[i % SECTOR_PALETTE.length],
         value: s.value,
         roiPct: s.roiPct,
@@ -186,7 +187,12 @@ export function CouncilTradingDesk() {
       .filter((p) => !sectorMeta.has(p.team_id))
       .reduce((s, p) => s + p.value, 0);
     if (unassigned > 0) {
-      slices.push({ id: 'unassigned', name: 'Unassigned', value: unassigned, color: UNASSIGNED_COLOR });
+      slices.push({
+        id: 'unassigned',
+        name: 'Unassigned',
+        value: unassigned,
+        color: UNASSIGNED_COLOR,
+      });
     }
     return slices;
   }, [sectorMeta, posList]);
