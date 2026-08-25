@@ -217,10 +217,20 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId,
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <AvatarCircle name={member.name} role={member.role} size={52} />
             <div>
-              <h2 id="org-member-profile-title" style={{ color: heading, fontSize: '1.1rem', fontWeight: 700, margin: 0 }}>
+              <h2
+                id="org-member-profile-title"
+                style={{ color: heading, fontSize: '1.1rem', fontWeight: 700, margin: 0 }}
+              >
                 {member.name}
               </h2>
-              <p style={{ color: '#818cf8', fontSize: '0.75rem', fontWeight: 600, margin: '4px 0 0' }}>
+              <p
+                style={{
+                  color: '#818cf8',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  margin: '4px 0 0',
+                }}
+              >
                 {member.sub_role || member.role.replace('_', ' ')}
                 {team ? ` · ${team.name}` : ''}
               </p>
@@ -287,7 +297,9 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId,
           {coverageSectors.length > 0 && (
             <>
               <SectionTitle isDark={isDark}>Sector coverage</SectionTitle>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', margin: '0 0 1rem' }}>
+              <div
+                style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', margin: '0 0 1rem' }}
+              >
                 {coverageSectors.map((s) => (
                   <span
                     key={s}
@@ -309,7 +321,13 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId,
 
           <SectionTitle isDark={isDark}>Reports to</SectionTitle>
           {reportsTo ? (
-            <p style={{ color: isDark ? '#e5e7eb' : '#374151', fontSize: '0.8125rem', margin: '0 0 1rem' }}>
+            <p
+              style={{
+                color: isDark ? '#e5e7eb' : '#374151',
+                fontSize: '0.8125rem',
+                margin: '0 0 1rem',
+              }}
+            >
               {memberName(reportsTo)}
               <span style={{ color: meta, fontSize: '0.7rem' }}>
                 {' '}
@@ -322,21 +340,35 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId,
             </p>
           )}
 
-          {(member.role === 'executive' || member.role === 'portfolio_manager') && directReports.length > 0 && (
-            <>
-              <SectionTitle isDark={isDark}>{member.role === 'executive' ? 'Direct oversight' : 'Analysts on team'}</SectionTitle>
-              <ul style={{ color: bodySecondary, fontSize: '0.78rem', margin: '0 0 1rem', paddingLeft: '1.1rem' }}>
-                {directReports.slice(0, 8).map((m) => (
-                  <li key={m.id}>{memberName(m)}</li>
-                ))}
-                {directReports.length > 8 && <li style={{ color: meta }}>+{directReports.length - 8} more</li>}
-              </ul>
-            </>
-          )}
+          {(member.role === 'executive' || member.role === 'portfolio_manager') &&
+            directReports.length > 0 && (
+              <>
+                <SectionTitle isDark={isDark}>
+                  {member.role === 'executive' ? 'Direct oversight' : 'Analysts on team'}
+                </SectionTitle>
+                <ul
+                  style={{
+                    color: bodySecondary,
+                    fontSize: '0.78rem',
+                    margin: '0 0 1rem',
+                    paddingLeft: '1.1rem',
+                  }}
+                >
+                  {directReports.slice(0, 8).map((m) => (
+                    <li key={m.id}>{memberName(m)}</li>
+                  ))}
+                  {directReports.length > 8 && (
+                    <li style={{ color: meta }}>+{directReports.length - 8} more</li>
+                  )}
+                </ul>
+              </>
+            )}
 
           <SectionTitle isDark={isDark}>Send message</SectionTitle>
           {isSelf ? (
-            <p style={{ color: meta, fontSize: '0.8125rem', margin: '0 0 0.5rem' }}>This is your profile.</p>
+            <p style={{ color: meta, fontSize: '0.8125rem', margin: '0 0 0.5rem' }}>
+              This is your profile.
+            </p>
           ) : (
             <>
               <textarea
@@ -367,7 +399,7 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId,
                   padding: '0.55rem',
                   borderRadius: '8px',
                   border: 'none',
-                  background: 'linear-gradient(135deg, #6366f1, #4f46e5)',
+                  background: 'var(--emerald)',
                   color: '#fff',
                   fontWeight: 600,
                   fontSize: '0.875rem',
@@ -392,10 +424,10 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId,
                     gap: '0.4rem',
                     padding: '0.5rem 0.85rem',
                     marginTop: '0.5rem',
-                    background: 'rgba(99, 102, 241, 0.08)',
-                    border: '1px solid rgba(99, 102, 241, 0.25)',
+                    background: 'var(--emerald-bg)',
+                    border: '1px solid var(--emerald-border)',
                     borderRadius: 6,
-                    color: '#818cf8',
+                    color: 'var(--emerald)',
                     fontSize: '0.7rem',
                     fontWeight: 600,
                     cursor: 'pointer',

@@ -121,7 +121,7 @@ export function OrgSendToTeamModal({ onClose, attachment, preSelectedRecipient }
       <div className="ot-modal" style={{ maxWidth: 560 }}>
         <div className="ot-modal-header">
           <h2 className="ot-modal-title">
-            <i className="bi bi-send" style={{ marginRight: '0.5rem', color: '#6366f1' }} />
+            <i className="bi bi-send" style={{ marginRight: '0.5rem', color: 'var(--emerald)' }} />
             Send to Team Member
           </h2>
           <button type="button" className="ot-modal-close" onClick={onClose} aria-label="Close">
@@ -130,7 +130,7 @@ export function OrgSendToTeamModal({ onClose, attachment, preSelectedRecipient }
         </div>
 
         {success ? (
-          <div style={{ padding: '2rem', textAlign: 'center', color: '#10b981' }}>
+          <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--emerald)' }}>
             <i className="bi bi-check-circle" style={{ fontSize: '2.5rem' }} />
             <p style={{ marginTop: '0.75rem', fontWeight: 600 }}>Sent!</p>
           </div>
@@ -143,15 +143,15 @@ export function OrgSendToTeamModal({ onClose, attachment, preSelectedRecipient }
                   alignItems: 'center',
                   gap: '0.6rem',
                   padding: '0.75rem 1rem',
-                  background: 'rgba(99, 102, 241, 0.06)',
-                  border: '1px solid rgba(99, 102, 241, 0.15)',
+                  background: 'var(--surface-card)',
+                  border: '1px solid var(--border-primary)',
                   borderRadius: 8,
                   marginBottom: '1rem',
                 }}
               >
                 <i
                   className={`bi ${ATTACHMENT_ICONS[attachment.kind] || 'bi-paperclip'}`}
-                  style={{ color: '#6366f1', fontSize: '1.1rem' }}
+                  style={{ color: 'var(--emerald)', fontSize: '1.1rem' }}
                 />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div
@@ -213,10 +213,10 @@ export function OrgSendToTeamModal({ onClose, attachment, preSelectedRecipient }
                         borderRadius: 6,
                         border:
                           recipientId === m.id
-                            ? '1px solid #6366f1'
-                            : '1px solid rgba(255,255,255,0.06)',
+                            ? '1px solid var(--emerald)'
+                            : '1px solid var(--border-secondary)',
                         background:
-                          recipientId === m.id ? 'rgba(99,102,241,0.12)' : 'rgba(255,255,255,0.02)',
+                          recipientId === m.id ? 'var(--emerald-bg)' : 'var(--surface-card)',
                         cursor: 'pointer',
                         textAlign: 'left',
                         width: '100%',
@@ -227,13 +227,13 @@ export function OrgSendToTeamModal({ onClose, attachment, preSelectedRecipient }
                           width: 28,
                           height: 28,
                           borderRadius: 8,
-                          background: 'rgba(99,102,241,0.2)',
+                          background: 'var(--emerald-bg)',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           fontSize: '0.65rem',
                           fontWeight: 800,
-                          color: '#6366f1',
+                          color: 'var(--emerald)',
                         }}
                       >
                         {label
@@ -243,15 +243,24 @@ export function OrgSendToTeamModal({ onClose, attachment, preSelectedRecipient }
                           .slice(0, 2)}
                       </div>
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#f0f6fc' }}>
+                        <div
+                          style={{
+                            fontSize: '0.8rem',
+                            fontWeight: 600,
+                            color: 'var(--text-primary)',
+                          }}
+                        >
                           {label}
                         </div>
-                        <div style={{ fontSize: '0.625rem', color: '#8b949e' }}>
+                        <div style={{ fontSize: '0.625rem', color: 'var(--text-muted)' }}>
                           {m.sub_role || m.role?.replace('_', ' ')}
                         </div>
                       </div>
                       {recipientId === m.id && (
-                        <i className="bi bi-check-circle-fill" style={{ color: '#6366f1' }} />
+                        <i
+                          className="bi bi-check-circle-fill"
+                          style={{ color: 'var(--emerald)' }}
+                        />
                       )}
                     </button>
                   );
@@ -274,8 +283,8 @@ export function OrgSendToTeamModal({ onClose, attachment, preSelectedRecipient }
               <div
                 style={{
                   padding: '0.5rem 0.75rem',
-                  background: 'rgba(239,68,68,0.1)',
-                  color: '#ef4444',
+                  background: 'var(--negative-bg, rgba(239,68,68,0.1))',
+                  color: 'var(--negative)',
                   borderRadius: 6,
                   fontSize: '0.75rem',
                   marginBottom: '0.5rem',

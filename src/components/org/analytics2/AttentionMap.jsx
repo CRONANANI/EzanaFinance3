@@ -27,7 +27,12 @@ function DimensionBlock({ label, rows }) {
             </span>
           </div>
           <div className="fa-track">
-            <i style={{ width: `${Math.max(4, (r.score / max) * 100)}%`, background: 'var(--accent, #6366f1)' }} />
+            <i
+              style={{
+                width: `${Math.max(4, (r.score / max) * 100)}%`,
+                background: 'var(--info, #3b82f6)',
+              }}
+            />
           </div>
           <div className="wt" title={`${r.memberCount} members`}>
             {r.memberCount}

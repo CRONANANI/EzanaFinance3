@@ -590,9 +590,9 @@
   border: 1px solid var(--border-secondary);
 }
 .sc2-status--closed {
-  background: rgba(99, 102, 241, 0.14);
-  color: #818cf8;
-  border: 1px solid rgba(99, 102, 241, 0.35);
+  background: transparent;
+  color: var(--info);
+  border: 1px solid color-mix(in srgb, var(--info) 35%, transparent);
 }
 .sc2-vote-row {
   display: flex;
