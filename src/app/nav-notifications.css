@@ -33,7 +33,10 @@
   background: transparent;
   border: 1px solid transparent;
   color: #8b949e;
-  font-size: 1.125rem;
+  /* 1.35rem = the old 1.125rem glyph +20%; the 44px box absorbs it. The logo
+     PNG's ink is exactly centered in its canvas (measured), so flex centering
+     alone puts this glyph's center on the logo's optical center line. */
+  font-size: 1.35rem;
   cursor: pointer;
   transition: all 0.2s ease;
   flex-shrink: 0;
@@ -58,7 +61,7 @@
     height: 44px;
     min-width: 44px;
     min-height: 44px;
-    font-size: 1.25rem;
+    font-size: 1.5rem;
     transform: none;
   }
   .main-nav .nn-bell-btn i {
@@ -113,10 +116,10 @@
 /* Unread count badge */
 .nn-badge {
   position: absolute;
-  /* +2px vs the old 40px box: keeps the badge in the same spot relative to
-     the centred glyph now the button box is 44px. */
-  top: 4px;
-  right: 4px;
+  /* Corner-anchored on the 44px box with 2px extra clearance so the enlarged
+     1.35rem glyph never collides with the badge. */
+  top: 2px;
+  right: 2px;
   min-width: 16px;
   height: 16px;
   padding: 0 4px;

@@ -6,12 +6,32 @@ import '../council-rankings.css';
 
 export const dynamic = 'force-dynamic';
 
-const TIER_LABEL = { emerging: 'Emerging', competitive: 'Competitive', established: 'Established', elite: 'Elite', dynasty: 'Dynasty' };
-const fmtRatio = (v, suffix = '') => (v == null ? '—' : `${Number(v).toFixed(suffix === '%' ? 1 : 2)}${suffix}`);
+const TIER_LABEL = {
+  emerging: 'Emerging',
+  competitive: 'Competitive',
+  established: 'Established',
+  elite: 'Elite',
+  dynasty: 'Dynasty',
+};
+const fmtRatio = (v, suffix = '') =>
+  v == null ? '—' : `${Number(v).toFixed(suffix === '%' ? 1 : 2)}${suffix}`;
 function fmtDate(iso) {
   const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso || ''));
   if (!m) return '';
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
   return `${months[Number(m[2]) - 1]} ${Number(m[3])}, ${m[1]}`;
 }
 
@@ -20,15 +40,28 @@ export default async function CouncilDetailPage({ params }) {
   const admin = getAdminClient();
   const { data: elo } = await admin
     .from('council_elo')
-    .select('org_id, current_rating, peak_rating, tier, competition_rating, fund_rating, updated_at')
+    .select(
+      'org_id, current_rating, peak_rating, tier, competition_rating, fund_rating, updated_at',
+    )
     .eq('org_id', orgId)
     .maybeSingle();
   if (!elo) notFound();
 
   const [{ data: org }, { data: metrics }, { data: txns }] = await Promise.all([
     admin.from('organizations').select('name, university_name').eq('id', orgId).maybeSingle(),
-    admin.from('council_fund_metrics').select('roi_pct, sharpe, max_drawdown_pct, volatility_pct, benchmark_alpha_pct, period_label, self_reported').eq('org_id', orgId).maybeSingle(),
-    admin.from('council_elo_transactions').select('delta, component, reason, rating_after, created_at').eq('org_id', orgId).order('created_at', { ascending: false }).limit(40),
+    admin
+      .from('council_fund_metrics')
+      .select(
+        'roi_pct, sharpe, max_drawdown_pct, volatility_pct, benchmark_alpha_pct, period_label, self_reported',
+      )
+      .eq('org_id', orgId)
+      .maybeSingle(),
+    admin
+      .from('council_elo_transactions')
+      .select('delta, component, reason, rating_after, created_at')
+      .eq('org_id', orgId)
+      .order('created_at', { ascending: false })
+      .limit(40),
   ]);
   const name = org?.university_name || org?.name || 'Council';
 
@@ -47,12 +80,16 @@ export default async function CouncilDetailPage({ params }) {
   return (
     <div className="crx-page">
       <div className="crx-container">
-        <Link href="/council-rankings" className="crx-back">← All councils</Link>
+        <Link href="/council-rankings" className="crx-back">
+          ← All councils
+        </Link>
         <header className="crx-hero crx-hero--detail">
           <div>
             <p className="crx-eyebrow">Ezana · Council Rankings</p>
             <h1 className="crx-title">{name}</h1>
-            <span className={`crx-tier crx-tier--${elo.tier}`}>{TIER_LABEL[elo.tier] || elo.tier}</span>
+            <span className={`crx-tier crx-tier--${elo.tier}`}>
+              {TIER_LABEL[elo.tier] || elo.tier}
+            </span>
           </div>
           <div className="crx-bigrating">
             <span className="crx-bigrating-num">{elo.current_rating}</span>
@@ -87,16 +124,16 @@ export default async function CouncilDetailPage({ params }) {
               <div className="crx-split-label">Competition · {compWeightPct}%</div>
               <div className="crx-split-val">{elo.competition_rating}</div>
               <div className="crx-split-note">
-                Pairwise ELO across every competition — judge-verified. Beating a strong field moves you
-                more.
+                Pairwise ELO across every competition — judge-verified. Beating a strong field moves
+                you more.
               </div>
             </div>
             <div className="crx-split-card">
               <div className="crx-split-label">Fund · {fundWeightPct}%</div>
               <div className="crx-split-val">{elo.fund_rating}</div>
               <div className="crx-split-note">
-                {metrics?.self_reported ? 'Self-reported ' : ''}risk-adjusted ratios, normalized across
-                councils. Sharpe weighted most.
+                {metrics?.self_reported ? 'Self-reported ' : ''}risk-adjusted ratios, normalized
+                across councils. Sharpe weighted most.
               </div>
             </div>
           </div>
@@ -114,7 +151,9 @@ export default async function CouncilDetailPage({ params }) {
             <ul className="crx-history">
               {compTxns.map((t, i) => (
                 <li key={i} className="crx-hrow">
-                  <span className={`crx-hdelta ${t.delta > 0 ? 'crx-up' : t.delta < 0 ? 'crx-down' : ''}`}>
+                  <span
+                    className={`crx-hdelta ${t.delta > 0 ? 'crx-up' : t.delta < 0 ? 'crx-down' : ''}`}
+                  >
                     {t.delta > 0 ? `+${t.delta}` : t.delta}
                   </span>
                   <span className="crx-hreason">{t.reason}</span>
@@ -145,15 +184,15 @@ export default async function CouncilDetailPage({ params }) {
                 <Ratio label="Volatility" v={fmtRatio(metrics.volatility_pct, '%')} />
               </div>
               <p className="crx-note">
-                Sharpe (risk-adjusted return) is weighted above raw ROI on purpose — the score rewards
-                good management, not the biggest swing. Ratios only; dollar amounts are never stored or
-                shown.
+                Sharpe (risk-adjusted return) is weighted above raw ROI on purpose — the score
+                rewards good management, not the biggest swing. Ratios only; dollar amounts are
+                never stored or shown.
               </p>
             </>
           ) : (
             <p className="crx-note">
-              No fund ratios reported yet — the fund rating sits at the {WEIGHTS.fund.ratingBase} baseline
-              until this council reports its ratios.
+              No fund ratios reported yet — the fund rating sits at the {WEIGHTS.fund.ratingBase}{' '}
+              baseline until this council reports its ratios.
             </p>
           )}
         </section>
@@ -167,7 +206,9 @@ export default async function CouncilDetailPage({ params }) {
             <ul className="crx-history">
               {allTxns.map((t, i) => (
                 <li key={i} className="crx-hrow">
-                  <span className={`crx-hdelta ${t.delta > 0 ? 'crx-up' : t.delta < 0 ? 'crx-down' : ''}`}>
+                  <span
+                    className={`crx-hdelta ${t.delta > 0 ? 'crx-up' : t.delta < 0 ? 'crx-down' : ''}`}
+                  >
                     {t.delta > 0 ? `+${t.delta}` : t.delta}
                   </span>
                   <span className={`crx-hcomp crx-hcomp--${t.component}`}>{t.component}</span>
@@ -180,8 +221,8 @@ export default async function CouncilDetailPage({ params }) {
         </section>
 
         <footer className="crx-footer">
-          Fund ratios are self-reported by councils and flagged as such. Competition results are verified
-          by competition judges. Powered by Ezana.
+          Fund ratios are self-reported by councils and flagged as such. Competition results are
+          verified by competition judges. Powered by Ezana.
         </footer>
       </div>
     </div>

@@ -892,15 +892,15 @@ body:not(.light-mode) .checklist-trigger-btn:focus-visible {
   height: 36px;
   border-radius: 50%;
   /* Glyph matches the bell's optical size at each breakpoint (the bell runs
-     1.125rem desktop / 1.25rem mobile); only the glyph scales, the 44px
+     1.35rem desktop / 1.5rem mobile); only the glyph scales, the 44px
      button box is the cluster standard. */
-  font-size: 1.125rem;
+  font-size: 1.35rem;
   line-height: 1;
   color: var(--emerald);
 }
 @media (max-width: 767px) {
   .checklist-trigger-inner {
-    font-size: 1.25rem;
+    font-size: 1.5rem;
   }
 }
 .checklist-trigger-inner i {
@@ -912,8 +912,9 @@ body:not(.light-mode) .checklist-trigger-btn:focus-visible {
    in light mode. tabular-nums via the shared .cl2-mono class. */
 .checklist-trigger-badge {
   position: absolute;
-  top: 2px;
-  right: -2px;
+  /* Nudged 2px up/out for clearance from the enlarged 1.35rem glyph. */
+  top: 0;
+  right: -4px;
   min-width: 16px;
   height: 16px;
   padding: 0 4px;

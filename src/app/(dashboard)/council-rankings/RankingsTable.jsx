@@ -118,9 +118,7 @@ export default function RankingsTable({ rows }) {
                   <td className="crx-num">{r.fund}</td>
                   <td className="crx-num">{fmtRatio(r.roi, '%')}</td>
                   <td className="crx-num">{fmtRatio(r.sharpe)}</td>
-                  <td
-                    className={`crx-num ${r.move > 0 ? 'crx-up' : r.move < 0 ? 'crx-down' : ''}`}
-                  >
+                  <td className={`crx-num ${r.move > 0 ? 'crx-up' : r.move < 0 ? 'crx-down' : ''}`}>
                     {r.move > 0 ? `+${r.move}` : r.move || '—'}
                   </td>
                 </tr>

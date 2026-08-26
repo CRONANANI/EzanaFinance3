@@ -17,9 +17,22 @@ export default async function CouncilRankingsPage() {
   const orgIds = rows.map((r) => r.org_id);
 
   const [{ data: orgs }, { data: metrics }, { data: txns }] = await Promise.all([
-    orgIds.length ? admin.from('organizations').select('id, name, university_name').in('id', orgIds) : Promise.resolve({ data: [] }),
-    orgIds.length ? admin.from('council_fund_metrics').select('org_id, roi_pct, sharpe, self_reported').in('org_id', orgIds) : Promise.resolve({ data: [] }),
-    orgIds.length ? admin.from('council_elo_transactions').select('org_id, delta, created_at').in('org_id', orgIds).order('created_at', { ascending: false }) : Promise.resolve({ data: [] }),
+    orgIds.length
+      ? admin.from('organizations').select('id, name, university_name').in('id', orgIds)
+      : Promise.resolve({ data: [] }),
+    orgIds.length
+      ? admin
+          .from('council_fund_metrics')
+          .select('org_id, roi_pct, sharpe, self_reported')
+          .in('org_id', orgIds)
+      : Promise.resolve({ data: [] }),
+    orgIds.length
+      ? admin
+          .from('council_elo_transactions')
+          .select('org_id, delta, created_at')
+          .in('org_id', orgIds)
+          .order('created_at', { ascending: false })
+      : Promise.resolve({ data: [] }),
   ]);
   const orgById = new Map((orgs || []).map((o) => [o.id, o]));
   const metricById = new Map((metrics || []).map((m) => [m.org_id, m]));
@@ -51,22 +64,24 @@ export default async function CouncilRankingsPage() {
           <p className="crx-eyebrow">Ezana</p>
           <h1 className="crx-title">University Council Rankings</h1>
           <p className="crx-sub">
-            Ranked by competition results (judged) and fund performance ratios. Competition is weighted{' '}
-            {Math.round(WEIGHTS.blend.competition * 100)}% and fund {Math.round(WEIGHTS.blend.fund * 100)}%,
-            because judged results are externally verified and fund ratios are self-reported. We show ROI
-            and Sharpe — never dollar amounts.
+            Ranked by competition results (judged) and fund performance ratios. Competition is
+            weighted {Math.round(WEIGHTS.blend.competition * 100)}% and fund{' '}
+            {Math.round(WEIGHTS.blend.fund * 100)}%, because judged results are externally verified
+            and fund ratios are self-reported. We show ROI and Sharpe — never dollar amounts.
           </p>
         </header>
 
         {tableRows.length === 0 ? (
-          <p className="crx-empty">Rankings will appear here once councils compete and report their ratios.</p>
+          <p className="crx-empty">
+            Rankings will appear here once councils compete and report their ratios.
+          </p>
         ) : (
           <RankingsTable rows={tableRows} />
         )}
 
         <footer className="crx-footer">
-          Fund ratios are self-reported by councils and flagged as such. Competition results are verified
-          by competition judges. Powered by Ezana.
+          Fund ratios are self-reported by councils and flagged as such. Competition results are
+          verified by competition judges. Powered by Ezana.
         </footer>
       </div>
     </div>

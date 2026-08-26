@@ -11,7 +11,9 @@
   margin: 0 auto;
 }
 .crx-hero {
-  text-align: center;
+  /* Left-aligned inside the org shell's content region, matching the Trading
+     Desk header convention (was centered when the page stood alone). */
+  text-align: left;
   margin-bottom: 26px;
 }
 .crx-hero--detail {
@@ -278,7 +280,10 @@
   font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
 }
 .crx-toggle:hover {
   color: var(--text-primary);
