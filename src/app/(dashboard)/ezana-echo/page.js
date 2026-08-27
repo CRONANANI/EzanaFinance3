@@ -2,7 +2,6 @@
 
 import { useMemo, useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useAuth } from '@/components/AuthProvider';
 import { isAdminUserClient } from '@/lib/admin-helpers-client';
 import { EzanaNavLogo } from '@/components/brand/EzanaNavLogo';
@@ -187,7 +186,12 @@ function CategoryColumn({ col, colIndex, admin, filter, geoActive }) {
   const loop = col.items.length >= 2;
   const beltRef = useRef(null);
   const segRef = useRef(null);
-  // dupRef removed — duplicate segment no longer needs imperative access
+  // Text-only cards are much shorter than the old image cards, so a sparse
+  // column's single duplicate segment could leave the track shorter than the
+  // belt viewport and expose a gap at the wrap point. The duplicate count is
+  // therefore measured, not fixed: enough copies that the track always covers
+  // the viewport plus one full cycle.
+  const [dupCount, setDupCount] = useState(1);
 
   useEffect(() => {
     if (!loop) return undefined;
@@ -196,6 +200,7 @@ function CategoryColumn({ col, colIndex, admin, filter, geoActive }) {
     if (!belt || !seg) return undefined;
     const apply = () => {
       const cycle = seg.offsetHeight + BELT_GAP; // segment + seam gap
+      if (cycle <= BELT_GAP) return; // not laid out yet
       const dur = cycle / BELT_SPEED;
       const frac = BELT_PHASE_FRACTIONS[colIndex % BELT_PHASE_FRACTIONS.length];
       belt.style.setProperty('--belt-seg', `${cycle}px`);
@@ -203,10 +208,14 @@ function CategoryColumn({ col, colIndex, admin, filter, geoActive }) {
       /* Negative delay = start mid-cycle: column i begins `frac` of a full
          loop out of phase, proportional to its own content height. */
       belt.style.setProperty('--belt-phase', `${(-(dur * frac)).toFixed(2)}s`);
+      /* Track = 1 real + N duplicate segments; seamlessness needs
+         (1 + N) * cycle >= viewport + cycle, i.e. N >= viewport / cycle. */
+      setDupCount(Math.max(1, Math.ceil(belt.clientHeight / cycle)));
     };
     apply();
     const ro = new ResizeObserver(apply);
     ro.observe(seg);
+    ro.observe(belt);
     return () => ro.disconnect();
   }, [loop, col.items, colIndex]);
 
@@ -236,9 +245,11 @@ function CategoryColumn({ col, colIndex, admin, filter, geoActive }) {
               <div className="eth-belt-seg" ref={segRef}>
                 {renderCards('')}
               </div>
-              <div className="eth-belt-seg" aria-hidden="true">
-                {renderCards('dup-', { focusable: false })}
-              </div>
+              {Array.from({ length: dupCount }, (_, d) => (
+                <div className="eth-belt-seg" aria-hidden="true" key={`dup-${d}`}>
+                  {renderCards(`dup-${d}-`, { focusable: false })}
+                </div>
+              ))}
             </div>
           </div>
         ) : (
@@ -523,39 +534,20 @@ export default function EzanaEchoPage() {
       </header>
 
       <div className="eth-wrap">
-        {/* ── 2a hero. Centered text-only Article of the Month directly under
-            the untouched masthead (no separating rules), a compact 5-column
-            Most Read ledger, and a floating command bar (continent chips +
-            time segments) straddling the ledger's bottom hairline. The board
-            below is untouched. */}
-        {/* Article of the Month: text-forward over a full-bleed backdrop of
-            the crowned article's hero image. The backdrop resolves from the
-            displayed AOTM (AOTM_HISTORY[0] by default), so future crownings
-            and the month pill swap it automatically; never hardcode the path.
-            The whole headline links to the article; the month pill is a real
-            <select> styled as a pill, outside the link so changing months
-            never navigates. */}
+        {/* ── 2a hero. Centered typographic Article of the Month directly
+            under the untouched masthead (double-rule masthead frame), a
+            compact 5-column Most Read ledger, and a floating command bar
+            (continent chips + time segments) straddling the ledger's bottom
+            hairline. The board below is untouched. */}
+        {/* Article of the Month: a purely typographic composition on the page
+            background (no imagery on the Echo home; article PAGES keep their
+            hero images). Editorial accent: a hairline double-rule masthead
+            frame above the kicker and below the meta row. The whole headline
+            links to the article; the month pill is a real <select> styled as
+            a pill, outside the link so changing months never navigates. */}
         {articleOfMonth && (
           <section className="eth-aotm2" aria-label="Article of the month">
-            {articleOfMonth.heroImage?.src ? (
-              <div className="eth-aotm2-backdrop" aria-hidden="true">
-                <Image
-                  src={articleOfMonth.heroImage.src}
-                  alt=""
-                  fill
-                  priority
-                  quality={90}
-                  sizes="100vw"
-                  /* Mild lift so the hero photograph reads vivid rather than
-                     washed out; kept well under the saturate(1.35) ceiling. */
-                  style={{
-                    objectFit: 'cover',
-                    objectPosition: 'center 40%',
-                    filter: 'saturate(1.18) contrast(1.06)',
-                  }}
-                />
-              </div>
-            ) : null}
+            <div className="eth-aotm2-rule" aria-hidden="true" />
             <div className="eth-aotm2-eyebrow">
               Article of the Month
               {aotmHistory[aotmIdx]?.month ? ` · ${aotmHistory[aotmIdx].month}` : ''}
@@ -587,6 +579,7 @@ export default function EzanaEchoPage() {
                 </label>
               )}
             </div>
+            <div className="eth-aotm2-rule" aria-hidden="true" />
           </section>
         )}
 

@@ -1,7 +1,8 @@
 /* ══════════════════════════════════════════════════════════════
-   EZANA ECHO homepage: a text-forward "Article of the Month", a
+   EZANA ECHO homepage: a typographic "Article of the Month", a
    5-column Most Read ledger, and a floating filter command bar above
-   a 6-column category board of hero-image cards.
+   a 6-column category board of text-only editorial cards. No imagery
+   on this page by design (article pages keep their hero images).
    Hybrid editorial: serif headlines, sans body, mono metadata. All
    colors/type from the production theme tokens.
    ══════════════════════════════════════════════════════════════ */
@@ -12,19 +13,6 @@
   font-family: var(--font-sans);
   padding-bottom: 8px;
   margin-top: 0;
-}
-/* Full-bleed AOTM backdrop support. The global horizontal-overflow guards in
-   mobile-responsive.css put overflow-x: clip on .dashboard-main and
-   .dashboard-container; both are ancestors of the backdrop's containing
-   block, and a clip on any ancestor NARROWER than the viewport would cut the
-   100vw breakout to the content column with hard vertical image edges.
-   Release them on the Echo home only. html and body keep their own global
-   overflow-x: clip (mobile-responsive.css), which still catches the
-   scrollbar-width overshoot at the correct boundary, the viewport edge.
-   visible creates no scroll container, so sticky behavior is unaffected. */
-body.echo-route .dashboard-main.dashboard-main-content,
-body.echo-route .dashboard-container {
-  overflow-x: visible;
 }
 
 /* Fix 1 — uniform background on the Echo route. The page content is --bg-primary
@@ -561,68 +549,31 @@ html:has(body.echo-route) {
 }
 
 /* ── 2a hero ─────────────────────────────────────────────────────────── */
-/* Article of the Month: centered, text-forward, over a full-bleed backdrop
-   of the crowned article's hero image. No separating rules above or below;
-   whitespace and the backdrop's fades do the sectioning. Top padding also
-   absorbs the space the old ink rule provided under the masthead. */
+/* Article of the Month: centered, purely typographic, on the page
+   background — no imagery. Editorial accent: a hairline double-rule
+   masthead frame (one rule pair above the kicker, one below the meta row),
+   the classic newspaper treatment, in the token hairline colors so it stays
+   restrained in both themes. Top padding absorbs the space under the
+   masthead; the bottom frame hands off to the Most Read ledger. */
 .eth-aotm2 {
-  position: relative; /* anchor + stacking root for the full-bleed backdrop */
   text-align: center;
-  padding: 44px 0 34px;
+  padding: 30px 0 0;
 }
-/* Everything except the backdrop paints above it. */
-.eth-aotm2 > :not(.eth-aotm2-backdrop) {
-  position: relative;
-  z-index: 1;
+/* Masthead double rule: two hairlines 4px apart, --border-primary over
+   --border-secondary so the pair reads as one drawn rule, not a box. */
+.eth-aotm2-rule {
+  height: 5px;
+  border-top: 1px solid var(--border-primary);
+  border-bottom: 1px solid var(--border-secondary);
 }
-/* Full-bleed backdrop: breaks out of the shell's content envelope to span
-   the viewport (100vw at the section's horizontal center). top/bottom of 0
-   pin it to the AOTM zone, so it starts directly under the masthead and the
-   bottom fade always completes before the Most Read ledger, at any zone
-   height (wrapped mobile headlines included). Decorative: aria-hidden in
-   the JSX, pointer-events none here. */
-.eth-aotm2-backdrop {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100vw;
-  z-index: 0;
-  overflow: hidden;
-  pointer-events: none;
+/* Deliberate rhythm around the frame: the zone shortened without the image,
+   so the gaps are set, not inherited — 30px masthead → top rule, 26px rule →
+   kicker, 30px meta row → bottom rule. */
+.eth-aotm2-rule:first-child {
+  margin-bottom: 26px;
 }
-/* Seams: a short top fade so the image meets the masthead without a hard
-   edge, and a bottom fade into the page background finishing at the zone's
-   end. Tokens only, so dark mode dissolves into the dark base correctly. */
-.eth-aotm2-backdrop::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background:
-    linear-gradient(to bottom, var(--bg-primary) 0%, transparent 8%),
-    linear-gradient(to bottom, transparent 60%, var(--bg-primary) 100%);
-}
-/* Text scrim: a soft page-background wash centered on the text block so the
-   serif headline passes contrast over any hero image in both themes. If a
-   vivid image still fights the headline, raise the center mix percentage
-   rather than boxing the text. */
-/* Text scrim, tightened so the image reads vivid: the wash is now a
-   LOCALIZED ellipse behind the text block rather than a broad haze over the
-   whole photograph, so the headline and meta row keep their contrast in both
-   themes while the image's color survives outside that footprint. */
-.eth-aotm2-backdrop::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background: radial-gradient(
-    ellipse 54% 70% at 50% 48%,
-    color-mix(in srgb, var(--bg-primary) 88%, transparent) 0%,
-    color-mix(in srgb, var(--bg-primary) 66%, transparent) 58%,
-    transparent 94%
-  );
+.eth-aotm2-rule:last-child {
+  margin-top: 30px;
 }
 .eth-aotm2-eyebrow {
   font-family: var(--font-mono);
@@ -635,7 +586,8 @@ html:has(body.echo-route) {
 .eth-aotm2-title {
   display: block;
   font-family: var(--font-serif);
-  font-size: clamp(32px, 3.6vw, 52px);
+  /* Stepped up one size: with no backdrop, the headline carries the hero. */
+  font-size: clamp(35px, 4vw, 58px);
   font-weight: 500;
   letter-spacing: -0.01em;
   line-height: 1.14;
@@ -916,7 +868,13 @@ html:has(body.echo-route) {
 }
 @media (max-width: 640px) {
   .eth-aotm2 {
-    padding: 36px 0 30px;
+    padding: 22px 0 0;
+  }
+  .eth-aotm2-rule:first-child {
+    margin-bottom: 20px;
+  }
+  .eth-aotm2-rule:last-child {
+    margin-top: 24px;
   }
   .eth-ledger-grid {
     grid-template-columns: 1fr;
@@ -1020,35 +978,28 @@ html:has(body.echo-route) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   Tile Modules (option B): hard-edged tiles on the conveyor board.
+   Tile Modules: text-only editorial tiles on the conveyor board.
    Scoped to .eth-board so any other EchoArticleCard usage keeps the
    wall-to-wall treatment. Belt mechanics untouched; the seam gap in
    page.js (BELT_GAP) must equal the 6px tile gap above.
    ══════════════════════════════════════════════════════════════ */
 .eth-board .echo-card {
-  /* Borderless tiles: the page background flows through; the hero image is
-     the visual object. The emerald ring below remains the hover affordance.
-     Radius is TOP-ONLY to match the image treatment (rounded top, square
-     bottom): the hover ring's box-shadow traces this radius, and an all-corner
-     6px here was the one thing still rendering rounded bottom corners. */
+  /* Borderless, sharp-cornered text tiles: the page background flows through
+     and the serif headline is the visual object. Hierarchy compensation for
+     the removed imagery: a thin emerald accent rule at the tile's top edge,
+     echoing the category header underline above the column, keeps each
+     column's color identity. The emerald ring below remains the hover
+     affordance. */
   border: none;
-  border-radius: 6px 6px 0 0;
+  border-top: 2px solid var(--emerald);
+  border-radius: 0;
   background: transparent;
   box-shadow: none;
 }
-/* Compact hero: full-bleed to the tile's inner edge, top corners following
-   the tile radius (6px outer minus the 1px border). Partner chip and the
-   metadata peek ride inside the img wrapper and are unaffected. */
-.eth-board .echo-card__img {
-  aspect-ratio: 16 / 7;
-  /* Flush full-bleed hero: rounded top corners at the card radius, SQUARE
-     bottom corners (bottom radii 0), sitting flush against the text block.
-     This wrapper is the single radius carrier: it clips via overflow:hidden
-     and the img inside stays border-radius 0. */
-  border-radius: 6px 6px 0 0;
-}
 .eth-board .echo-card__body {
-  padding: 10px 12px 12px;
+  /* Tightened: no image means the kicker sits just under the accent rule;
+     left stays 0 so text runs flush with the rule's start. */
+  padding: 9px 12px 12px 0;
 }
 /* No motion-on-motion: the belt is already moving, so hover marks the tile
    with an emerald border + 1px outer ring instead of a translate lift. */
