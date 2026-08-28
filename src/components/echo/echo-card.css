@@ -1,7 +1,6 @@
 /* ══════════════════════════════════════════════════════════════
-   EchoArticleCard — text-only editorial tile (kicker row, serif
-   headline, sans dek; no imagery). Uniform stacked cards fill each
-   category column; board-scoped accents live in ezana-echo-home.css.
+   EchoArticleCard — reusable hero-image card (image on top, text below).
+   16:9 image, tight body. Uniform stacked cards fill each category column.
    ══════════════════════════════════════════════════════════════ */
 .echo-card {
   position: relative;
@@ -12,7 +11,7 @@
   border: none;
   border-radius: 0;
   /* NOT hidden — the card's clip box was shaving serif/italic title first glyphs at
-     x=0. The clamped text blocks clip themselves, so the card needn't. */
+     x=0. The image clips itself (.echo-card__img), so the card needn't. */
   overflow: visible;
   background: transparent;
   /* Flat rendering — a 3D perspective context was sub-pixel-clipping title first
@@ -37,13 +36,35 @@
   flex-direction: column;
   text-decoration: none;
 }
+.echo-card__img {
+  position: relative; /* anchor for the partner byline chip */
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 0; /* sharp corners by design — the AOTM banner hero is the only rounded image */
+  /* emerald-tinted placeholder shows if the image is missing/broken */
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--emerald) 55%, black 8%),
+    color-mix(in srgb, var(--emerald) 22%, transparent)
+  );
+}
+.echo-card__img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 0; /* belt-and-braces against any inherited rounding */
+}
 
-/* Partner byline chip — transparent paid-partnership labeling by design. Now
-   an in-flow pill above the kicker row (it lived on the removed hero image);
-   the admin archive control stays absolute top-right, so the two never
-   collide. */
+/* Partner byline chip — top-left of the hero image on partner-authored
+   articles. Transparent paid-partnership labeling by design. Sits opposite the
+   admin archive control (top-right), so the two never collide. */
 .echo-card__partner-chip {
-  align-self: flex-start;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -73,6 +94,8 @@
 }
 @media (max-width: 480px) {
   .echo-card__partner-chip {
+    top: 8px;
+    left: 8px;
     padding: 3px 8px;
   }
   .echo-card__partner-handle {
@@ -82,10 +105,10 @@
 .echo-card__body {
   position: relative;
   z-index: 4;
-  /* Wall-to-wall: title + meta left-align flush with the column's left edge
-     (padding-left 0 — the 640px .eth-wrap side padding keeps text off the
-     viewport edge on mobile). Right inset stays so text never crowds the next
-     column. Flex column so meta can pin to the bottom. */
+  /* Wall-to-wall: images run edge-to-edge; title + meta left-align flush with
+     the image's left edge (padding-left 0 — the 640px .eth-wrap side padding
+     keeps text off the viewport edge on mobile). Right inset stays so text
+     never crowds the next column. Flex column so meta can pin to the bottom. */
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -100,9 +123,7 @@
 .echo-card__title {
   margin: 0;
   font-family: var(--font-serif);
-  /* Stepped up one size for the text-only tile: with no image, the serif
-     headline carries the eye. */
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1.3;
   font-weight: 700;
   color: var(--text-primary);
@@ -115,7 +136,7 @@
   overflow: hidden;
   overflow-wrap: anywhere;
   padding-left: 4px; /* clip-box inset so line-clamp's overflow:hidden never shaves serif left bearings */
-  margin-left: -4px; /* …while the negative margin cancels the visual indent: first glyph lands at x=0, flush with the column edge */
+  margin-left: -4px; /* …while the negative margin cancels the visual indent: first glyph lands at x=0, flush with the image edge */
   padding-right: 4px;
   max-height: calc(1.3em * 3);
 }
@@ -198,6 +219,75 @@
 .echo-card__archive[disabled] {
   opacity: 0.6;
   cursor: default;
+}
+
+/* Hover tag marquee: a single mono line of the card's real metadata dims
+   pinned along the hero's bottom edge. Hidden by default; on hover (true
+   hover devices) or keyboard focus it appears and loops as a conveyor
+   (duplicated sequence, translateX to -50%). Touch never sees it, and no
+   information is exclusive to it (the article page shows the same dims).
+   Bottom edge = never collides with the partner chip or archive control. */
+.echo-card__marquee {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 5px 0;
+  background: color-mix(in srgb, var(--bg-primary) 84%, transparent);
+  backdrop-filter: blur(3px);
+  font-family: var(--font-mono, monospace);
+  font-size: 9.5px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  opacity: 0;
+  transition: opacity 0.18s ease;
+  pointer-events: none; /* label only; the card stays one link target */
+}
+.echo-card__marquee-track {
+  display: inline-flex;
+  animation: echo-tag-marquee var(--marquee-dur, 10s) linear infinite;
+  animation-play-state: paused;
+}
+.echo-card__marquee-seq {
+  display: inline-block;
+  padding-left: 8px;
+}
+@keyframes echo-tag-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%); /* one full duplicated sequence = seamless loop */
+  }
+}
+/* Keyboard path: focus anywhere within the card reveals and runs the strip. */
+.echo-card:focus-within .echo-card__marquee {
+  opacity: 1;
+}
+.echo-card:focus-within .echo-card__marquee-track {
+  animation-play-state: running;
+}
+/* Pointer path gated to true hover devices; touch never sees the strip. */
+@media (hover: hover) {
+  .echo-card:hover .echo-card__marquee {
+    opacity: 1;
+  }
+  .echo-card:hover .echo-card__marquee-track {
+    animation-play-state: running;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .echo-card__marquee {
+    transition: none;
+  }
+  .echo-card__marquee-track {
+    animation: none; /* static row; overflow simply clips */
+  }
 }
 
 /* Geo-filter muting (homepage continent hover): the card stays mounted at its

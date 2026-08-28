@@ -540,11 +540,12 @@ export default function EzanaEchoPage() {
             (continent chips + time segments) straddling the ledger's bottom
             hairline. The board below is untouched. */}
         {/* Article of the Month: a purely typographic composition on the page
-            background (no imagery on the Echo home; article PAGES keep their
-            hero images). Editorial accent: a hairline double-rule masthead
-            frame above the kicker and below the meta row. The whole headline
-            links to the article; the month pill is a real <select> styled as
-            a pill, outside the link so changing months never navigates. */}
+            background — no backdrop image by design (the conveyor cards below
+            are the page's only imagery). Editorial accent: a hairline
+            double-rule masthead frame above the kicker and below the meta row.
+            The whole headline links to the article; the month pill is a real
+            <select> styled as a pill, outside the link so changing months
+            never navigates. */}
         {articleOfMonth && (
           <section className="eth-aotm2" aria-label="Article of the month">
             <div className="eth-aotm2-rule" aria-hidden="true" />

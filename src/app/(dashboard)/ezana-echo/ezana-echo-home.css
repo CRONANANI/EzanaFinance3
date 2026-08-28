@@ -1,10 +1,10 @@
 /* ══════════════════════════════════════════════════════════════
-   EZANA ECHO homepage: a typographic "Article of the Month", a
-   5-column Most Read ledger, and a floating filter command bar above
-   a 6-column category board of text-only editorial cards. No imagery
-   on this page by design (article pages keep their hero images).
-   Hybrid editorial: serif headlines, sans body, mono metadata. All
-   colors/type from the production theme tokens.
+   EZANA ECHO homepage: a typographic "Article of the Month" (no
+   backdrop image by design), a 5-column Most Read ledger, and a
+   floating filter command bar above a 6-column category board of
+   hero-image conveyor cards — the belts are the only imagery on
+   this page. Hybrid editorial: serif headlines, sans body, mono
+   metadata. All colors/type from the production theme tokens.
    ══════════════════════════════════════════════════════════════ */
 
 .eth-page {
@@ -978,28 +978,35 @@ html:has(body.echo-route) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   Tile Modules: text-only editorial tiles on the conveyor board.
+   Tile Modules (option B): hard-edged tiles on the conveyor board.
    Scoped to .eth-board so any other EchoArticleCard usage keeps the
    wall-to-wall treatment. Belt mechanics untouched; the seam gap in
    page.js (BELT_GAP) must equal the 6px tile gap above.
    ══════════════════════════════════════════════════════════════ */
 .eth-board .echo-card {
-  /* Borderless, sharp-cornered text tiles: the page background flows through
-     and the serif headline is the visual object. Hierarchy compensation for
-     the removed imagery: a thin emerald accent rule at the tile's top edge,
-     echoing the category header underline above the column, keeps each
-     column's color identity. The emerald ring below remains the hover
-     affordance. */
+  /* Borderless tiles: the page background flows through; the hero image is
+     the visual object. The emerald ring below remains the hover affordance.
+     Radius is TOP-ONLY to match the image treatment (rounded top, square
+     bottom): the hover ring's box-shadow traces this radius, and an all-corner
+     6px here was the one thing still rendering rounded bottom corners. */
   border: none;
-  border-top: 2px solid var(--emerald);
-  border-radius: 0;
+  border-radius: 6px 6px 0 0;
   background: transparent;
   box-shadow: none;
 }
+/* Compact hero: full-bleed to the tile's inner edge, top corners following
+   the tile radius (6px outer minus the 1px border). Partner chip and the
+   metadata peek ride inside the img wrapper and are unaffected. */
+.eth-board .echo-card__img {
+  aspect-ratio: 16 / 7;
+  /* Flush full-bleed hero: rounded top corners at the card radius, SQUARE
+     bottom corners (bottom radii 0), sitting flush against the text block.
+     This wrapper is the single radius carrier: it clips via overflow:hidden
+     and the img inside stays border-radius 0. */
+  border-radius: 6px 6px 0 0;
+}
 .eth-board .echo-card__body {
-  /* Tightened: no image means the kicker sits just under the accent rule;
-     left stays 0 so text runs flush with the rule's start. */
-  padding: 9px 12px 12px 0;
+  padding: 10px 12px 12px;
 }
 /* No motion-on-motion: the belt is already moving, so hover marks the tile
    with an emerald border + 1px outer ring instead of a translate lift. */
