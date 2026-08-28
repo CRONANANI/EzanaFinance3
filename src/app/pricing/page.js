@@ -28,6 +28,7 @@ import { Fragment, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Check, Minus, ArrowRight, Sparkles, ShieldCheck, Loader2 } from 'lucide-react';
 import { useTheme } from '@/components/ThemeProvider';
+import { posthog } from '@/components/PostHogInit';
 import './pricing-standalone.css';
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -435,6 +436,10 @@ export default function PricingPage() {
       });
 
       if (res.ok && data?.url) {
+        posthog.capture('pricing_checkout_started', {
+          plan_id: plan.id,
+          billing_period: billing,
+        });
         window.location.assign(data.url);
         return;
       }

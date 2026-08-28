@@ -21,6 +21,7 @@ import { PublicMobileCta } from '@/components/public/PublicMobileCta';
 import { PartnerChromeEffects } from '@/components/partner/PartnerChromeEffects';
 import { getServerTheme } from '@/lib/user-preferences/server';
 import { resolveRouteShellClasses } from '@/lib/route-shell';
+import { PostHogInit } from '@/components/PostHogInit';
 
 /* Force dynamic rendering on every route. The root layout reads `cookies()`
    (inside getServerTheme) and the forwarded `x-pathname` header, both of
@@ -221,6 +222,7 @@ export default async function RootLayout({ children }) {
         </noscript>
       </head>
       <body className={bodyClassName} suppressHydrationWarning>
+        <PostHogInit />
         <a href="#main-content" className="skip-to-content">
           Skip to content
         </a>

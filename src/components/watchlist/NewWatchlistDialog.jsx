@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { X, Plus, Sparkles, Search, Bell, Check, Building2, Users, Bitcoin, Droplet } from 'lucide-react';
 import { CompanySearch } from '@/components/research/CompanySearch';
 import { getThemeSuggestions } from '@/lib/watchlist-suggestions';
+import { posthog } from '@/components/PostHogInit';
 import './new-watchlist-dialog.css';
 
 const PRESET_COLORS = [
@@ -284,6 +285,11 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
         /* localStorage may be disabled — non-fatal */
       }
 
+      posthog.capture('watchlist_created', {
+        item_count: tickers.length,
+        alerts_enabled: alertsOn,
+        item_types: [...new Set(tickers.map((ticker) => ticker.kind || 'stock'))],
+      });
       onCreated?.(res.listId);
       onOpenChange(false);
     } catch (e) {

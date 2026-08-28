@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase-browser';
+import { posthog } from '@/components/PostHogInit';
 
 export function ManageBillingButton({ className, children, label = 'Manage Billing' }) {
   const [loading, setLoading] = useState(false);
@@ -24,6 +25,7 @@ export function ManageBillingButton({ className, children, label = 'Manage Billi
       const data = await response.json();
 
       if (data.url) {
+        posthog.capture('billing_portal_opened');
         window.location.href = data.url;
       } else {
         alert(data.error || 'Could not open billing portal.');
