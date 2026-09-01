@@ -1,7 +1,5 @@
 'use client';
 
-import { tierForRating, TIER_LIST } from '@/lib/elo-tier-colors';
-
 import './hero-dashboard-mock.css';
 
 /* Miniature, living two-panel mockup of the authenticated dashboard home
@@ -10,10 +8,19 @@ import './hero-dashboard-mock.css';
    the real SYMBOL / NAME / DAY / VALUE / WEIGHT / 7-DAY columns, the
    pagination footer, and the sector-breakdown band) and the ELO rating
    rail on the right (rating over 10,000, tier badge, progress to the
-   next tier, earned-by-category, and a rotating achievement strip). The
-   tier names and bands come from the platform's canonical ELO table
-   (@/lib/elo-tier-colors), so the badge and band copy stay coherent with
-   whatever value the mock is showing.
+   next tier, earned-by-category, and a rotating achievement strip).
+
+   Tier ladder: the platform's canonical table (@/lib/elo-tier-colors)
+   tops out at Grandmaster = 3,000+, so the marketing walk below (3,205
+   to 8,700 on the /10,000 scale) would never cross a tier on it. The
+   mock therefore defines its own ILLUSTRATIVE ladder, scaled to the
+   walk, so the hero shows tier promotions:
+     3,000-4,999  Expert       (chart blue)
+     5,000-6,999  Master       (chart purple)
+     7,000+       Grandmaster  (emerald, reserved for the apex tier)
+   Names reuse the product's Master/Grandmaster vocabulary; the pill,
+   bar fill, band caption, and promotion achievements all derive from
+   this ladder so the copy never contradicts the number.
 
    Deliberately sparse: at mockup scale only two blocks per panel stay
    legible, so each one is given room rather than packing the screen.
@@ -39,7 +46,8 @@ const HOLDINGS = [
   { sym: 'LMT', name: 'Lockheed', base: -0.3, val: 6980, wt: 5.6 },
 ];
 
-/* Six rows: the real page's sectorRows plus the rolled-up remainder. */
+/* Six rows: the real page's sectorRows plus the rolled-up remainder. The pcts
+   here are the BASE mix; per-tick drift is layered on in sectorRowsFor(). */
 const SECTORS = [
   { label: 'Technology', pct: 46.6, color: 'var(--echo-chart-blue, var(--blue))' },
   { label: 'Energy', pct: 21.3, color: 'var(--echo-chart-purple, var(--purple))' },
@@ -49,23 +57,32 @@ const SECTORS = [
   { label: 'Other', pct: 2.2, color: 'var(--emerald)' },
 ];
 
+/* Earned-by-category: `base` is the floor-of-cycle percentage and `span` how
+   far it trends up as the ELO climbs toward the peak, so the three bars rise
+   with the rating (category percentages, not shares of 100). */
 const EARNED = [
-  { label: 'Learning', pct: 0.42, color: 'var(--echo-chart-blue, var(--blue))' },
-  { label: 'Trading', pct: 0.26, color: 'var(--echo-chart-purple, var(--purple))' },
-  { label: 'Community', pct: 0.14, color: 'var(--emerald)' },
+  { label: 'Learning', base: 34, span: 14, color: 'var(--echo-chart-blue, var(--blue))' },
+  { label: 'Trading', base: 20, span: 11, color: 'var(--echo-chart-purple, var(--purple))' },
+  { label: 'Community', base: 10, span: 8, color: 'var(--emerald)' },
 ];
 
-/* The rating climbs from the floor to the peak over one cycle, then wraps and
-   climbs again. Precomputed at module scope as a fixed table of seeded steps,
-   normalised so the last entry lands exactly on the peak: the displayed value
-   is then a pure lookup on `tick`, which keeps SSR and the first client render
-   identical and keeps the walk free of Math.random. */
-const ELO_FLOOR = 2545;
-const ELO_PEAK = 4210;
+/* The rating climbs from the floor to the peak over one slow cycle (~35
+   ticks at the showcase's 2s cadence), then wraps INSTANTLY back to the
+   floor and climbs again: a decline is never animated, the reset reads as a
+   new cycle. Precomputed at module scope as a fixed table of seeded steps,
+   normalised so the last entry lands exactly on the peak: the displayed
+   value is then a pure lookup on `tick`, which keeps SSR and the first
+   client render identical and keeps the walk free of Math.random. Steps
+   land mostly in the +80 to +220 range with an occasional larger jump. */
+const ELO_FLOOR = 3205;
+const ELO_PEAK = 8700;
 const ELO_DENOM = 10000;
-const ELO_STEPS = 24;
+const ELO_STEPS = 34;
 const ELO_WALK = (() => {
-  const steps = Array.from({ length: ELO_STEPS }, (_, i) => 0.35 + seeded(i * 7.3));
+  const steps = Array.from(
+    { length: ELO_STEPS },
+    (_, i) => 0.55 + seeded(i * 7.3) + (i % 7 === 5 ? 1.6 : 0),
+  );
   const total = steps.reduce((a, b) => a + b, 0);
   const out = [ELO_FLOOR];
   let acc = 0;
@@ -76,6 +93,41 @@ const ELO_WALK = (() => {
   return out;
 })();
 
+/* Illustrative ladder for the walk above (see the header comment): pill tint,
+   bar fill, and band captions all read from the active tier. `next` is the
+   promotion threshold; the top tier is open-ended, its bar fills toward the
+   walk's own peak so the apex still reads as progress completed. */
+const MOCK_TIERS = [
+  { label: 'Expert', min: 3000, next: 5000, color: 'var(--echo-chart-blue, var(--blue))' },
+  { label: 'Master', min: 5000, next: 7000, color: 'var(--echo-chart-purple, var(--purple))' },
+  { label: 'Grandmaster', min: 7000, next: null, color: 'var(--emerald)' },
+];
+function mockTierFor(elo) {
+  for (let i = MOCK_TIERS.length - 1; i >= 0; i--) {
+    if (elo >= MOCK_TIERS[i].min) return MOCK_TIERS[i];
+  }
+  return MOCK_TIERS[0];
+}
+
+/* The walk is read starting mid-cycle: tick 0 lands on the entry nearest
+   5,850 (a MASTER value, never a promotion step). Under reduced motion the
+   showcase's tick interval never starts, so that mid-cycle frame IS the
+   permanent static render; animated visitors continue 5,850 -> 8,700, wrap,
+   then see the full 3,205 -> 8,700 climb every cycle. */
+const ELO_START = (() => {
+  let best = 0;
+  for (let i = 0; i < ELO_WALK.length; i++) {
+    if (Math.abs(ELO_WALK[i] - 5850) < Math.abs(ELO_WALK[best] - 5850)) best = i;
+  }
+  while (
+    best < ELO_WALK.length - 1 &&
+    (best === 0 || mockTierFor(ELO_WALK[best]) !== mockTierFor(ELO_WALK[best - 1]))
+  ) {
+    best++;
+  }
+  return best;
+})();
+
 /* Illustrative platform events, not real entities or results. */
 const ACHIEVEMENTS = [
   { chip: 'L', title: 'Completed: Options Fundamentals', pts: 150 },
@@ -84,17 +136,33 @@ const ACHIEVEMENTS = [
   { chip: 'T', title: 'Copy-trade request approved', pts: 120 },
 ];
 
-/* The top tier is open-ended in the canonical table (max 99999), which would
-   leave the progress bar crawling across a span the mock never covers. Close
-   it at the walk's own peak so the bar still reads as progress, and label the
-   band as open-ended rather than quoting a made-up ceiling. */
-function bandFor(tier) {
-  const open = tier.max > ELO_PEAK;
-  return { min: tier.min, max: open ? ELO_PEAK : tier.max, open };
+/* Sector drift: a zero-sum chain of slow bounded sin waves nudges the five
+   named sectors a fraction of a point per tick (rotation between sectors,
+   not growth), and Other absorbs the one-decimal rounding drift so the list
+   keeps summing to ~100. Ordering never changes. */
+function sectorRowsFor(tick) {
+  const d1 = Math.sin(tick * 0.75 + 1.7) * 0.75;
+  const d2 = Math.sin(tick * 0.9 + 4.2) * 0.65;
+  const d3 = Math.sin(tick * 1.05 + 2.6) * 0.55;
+  const offsets = [d1, d2 - d1, -d2, d3, -d3];
+  const named = SECTORS.slice(0, 5).map((s, i) => ({
+    ...s,
+    pct: Math.round((s.pct + offsets[i]) * 10) / 10,
+  }));
+  const other = {
+    ...SECTORS[5],
+    pct: Math.round((100 - named.reduce((a, s) => a + s.pct, 0)) * 10) / 10,
+  };
+  return [...named, other];
 }
-function nextTierAfter(tier) {
-  const i = TIER_LIST.findIndex((t) => t.key === tier.key);
-  return i >= 0 && i < TIER_LIST.length - 1 ? TIER_LIST[i + 1] : null;
+
+/* Earned-by-category: trends up with the ELO climb plus a small per-tick
+   seeded wobble, so every tick visibly moves all three bars. */
+function earnedRowsFor(tick, progress) {
+  return EARNED.map((e, i) => ({
+    ...e,
+    pct: Math.round(e.base + e.span * progress + (seeded(tick * 2.7 + i * 5.1) - 0.5) * 2.4),
+  }));
 }
 
 /* Tiny inline row sparkline: 7 deterministic points tinted by direction. */
@@ -113,14 +181,27 @@ function RowSpark({ seed, up }) {
 }
 
 export function HeroDashboardMock({ tick = 0 }) {
-  /* ELO walks up through its cycle; the tier, band and caption all recompute
-     from the displayed value so the copy never contradicts the number. */
-  const elo = ELO_WALK[tick % ELO_WALK.length];
-  const tier = tierForRating(elo);
-  const band = bandFor(tier);
-  const next = nextTierAfter(tier);
-  const bandPct = Math.min(1, Math.max(0, (elo - band.min) / (band.max - band.min)));
-  const achievement = ACHIEVEMENTS[tick % ACHIEVEMENTS.length];
+  /* ELO walks up through its cycle; the tier, band, caption, and the two
+     synced panels all recompute from the displayed value so the whole screen
+     reads as one living account and the copy never contradicts the number. */
+  const idx = (tick + ELO_START) % ELO_WALK.length;
+  const elo = ELO_WALK[idx];
+  const prevElo = idx > 0 ? ELO_WALK[idx - 1] : null; // idx 0 is the instant wrap, not a step
+  const tier = mockTierFor(elo);
+  const next = tier.next ? MOCK_TIERS[MOCK_TIERS.indexOf(tier) + 1] : null;
+  /* Fill = progress WITHIN the active band (near-0 right after a promotion,
+     filling toward the next threshold; the open top band fills to the peak). */
+  const bandCap = tier.next ?? ELO_PEAK;
+  const bandPct = Math.min(1, Math.max(0, (elo - tier.min) / (bandCap - tier.min)));
+  const progress = (elo - ELO_FLOOR) / (ELO_PEAK - ELO_FLOOR);
+  const sectors = sectorRowsFor(tick);
+  const earned = earnedRowsFor(tick, progress);
+  /* On a promotion tick the achievement strip shows the crossing itself,
+     then resumes its normal rotation on the next tick. */
+  const promoted = prevElo !== null && mockTierFor(prevElo) !== tier;
+  const achievement = promoted
+    ? { chip: tier.label[0], title: `Promoted to ${tier.label}`, pts: elo - prevElo }
+    : ACHIEVEMENTS[tick % ACHIEVEMENTS.length];
 
   return (
     <div className="hdm-root">
@@ -172,7 +253,7 @@ export function HeroDashboardMock({ tick = 0 }) {
 
         <section className="hdm-block hdm-sectors">
           <div className="hdm-block-title hdm-mono">SECTOR BREAKDOWN</div>
-          {SECTORS.map((s) => (
+          {sectors.map((s) => (
             <div key={s.label} className="hdm-barrow">
               <span className="hdm-bardot" style={{ background: s.color }} />
               <span className="hdm-barlabel">{s.label}</span>
@@ -200,8 +281,13 @@ export function HeroDashboardMock({ tick = 0 }) {
             <span className="hdm-mono hdm-elo-suffix">/ {ELO_DENOM.toLocaleString('en-US')}</span>
           </div>
           <div className="hdm-elo-tier">
-            <span className="hdm-tierlabel">
-              <span className="hdm-tierdot" />
+            {/* Pill and dot wear the ACTIVE tier's color (hairline border +
+                text, transparent fill); both cross-fade at each promotion. */}
+            <span
+              className="hdm-tierlabel hdm-t"
+              style={{ color: tier.color, borderColor: tier.color }}
+            >
+              <span className="hdm-tierdot hdm-t" style={{ background: tier.color }} />
               {tier.label}
             </span>
             <span className="hdm-mono hdm-elo-peak">PEAK {ELO_PEAK.toLocaleString('en-US')}</span>
@@ -209,14 +295,14 @@ export function HeroDashboardMock({ tick = 0 }) {
           <span className="hdm-bar-track hdm-bar-track--elo">
             <span
               className="hdm-bar-fill hdm-t"
-              style={{ width: `${(bandPct * 100).toFixed(1)}%`, background: 'var(--emerald)' }}
+              style={{ width: `${(bandPct * 100).toFixed(1)}%`, background: tier.color }}
             />
           </span>
           <div className="hdm-elo-ends hdm-mono">
             <span>
-              {band.open
-                ? `${band.min.toLocaleString('en-US')}+ BAND`
-                : `${band.min.toLocaleString('en-US')}-${band.max.toLocaleString('en-US')} BAND`}
+              {tier.next
+                ? `${tier.min.toLocaleString('en-US')}-${(tier.next - 1).toLocaleString('en-US')} BAND`
+                : `${tier.min.toLocaleString('en-US')}+ BAND`}
             </span>
             <span>
               {next
@@ -228,16 +314,16 @@ export function HeroDashboardMock({ tick = 0 }) {
 
         <section className="hdm-card hdm-card--earned">
           <div className="hdm-block-title hdm-mono hdm-earned-title">EARNED BY CATEGORY</div>
-          {EARNED.map((e) => (
+          {earned.map((e) => (
             <div key={e.label} className="hdm-barrow hdm-barrow--earned">
               <span className="hdm-barlabel">{e.label}</span>
               <span className="hdm-bar-track hdm-bar-track--earned">
                 <span
                   className="hdm-bar-fill hdm-t"
-                  style={{ width: `${e.pct * 100}%`, background: e.color }}
+                  style={{ width: `${e.pct}%`, background: e.color }}
                 />
               </span>
-              <span className="hdm-mono hdm-barval">{Math.round(e.pct * 100)}%</span>
+              <span className="hdm-mono hdm-barval">{e.pct}%</span>
             </div>
           ))}
         </section>

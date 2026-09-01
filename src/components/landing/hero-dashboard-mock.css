@@ -26,7 +26,10 @@
     width 0.6s ease,
     height 0.6s ease,
     opacity 0.5s ease,
-    transform 0.5s ease;
+    transform 0.5s ease,
+    background-color 0.5s ease,
+    border-color 0.5s ease,
+    color 0.5s ease;
 }
 .hdm-r {
   text-align: right;
@@ -311,7 +314,9 @@
   margin: 5px 0 7px;
   font-size: 6px;
 }
-/* Tier badge: emerald text on a hairline emerald border, transparent fill. */
+/* Tier badge: text on a hairline border, transparent fill. The color is the
+   ACTIVE tier's (inline, from the mock's ladder) and cross-fades on each
+   promotion via hdm-t; emerald here is only the pre-hydration fallback. */
 .hdm-tierdot {
   width: 4px;
   height: 4px;
