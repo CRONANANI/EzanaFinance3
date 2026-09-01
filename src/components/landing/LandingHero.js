@@ -114,23 +114,12 @@ const ROUTES_HTML = `
 
 export function LandingHero() {
   const [go, setGo] = useState(false);
-  // On phones the dotted continents read too faint, so darken/strengthen the dot
-  // colour at mobile widths only (desktop stays at the lighter tuned value).
-  // Initialize from the same media query the effect below watches, so the first
-  // paint already uses the correct variant on mobile — no post-mount src swap /
-  // repaint of the (now module-cached) map.
-  const [mapDense, setMapDense] = useState(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) return false;
-    return window.matchMedia('(max-width: 480px)').matches;
-  });
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) return undefined;
-    const mq = window.matchMedia('(max-width: 480px)');
-    const apply = () => setMapDense(mq.matches);
-    apply();
-    mq.addEventListener('change', apply);
-    return () => mq.removeEventListener('change', apply);
-  }, []);
+  // On phones the dotted continents read too faint, so a darker dense map
+  // variant serves at <=480px. That selection lives entirely inside
+  // HeroDottedMap as <picture> art direction now: the old matchMedia state
+  // here never survived hydration (the server-rendered sparse src was
+  // adopted and the same-value setState never re-rendered), so phones
+  // silently kept the sparse variant.
 
   useEffect(() => {
     const raf = requestAnimationFrame(() => setGo(true));
@@ -145,9 +134,7 @@ export function LandingHero() {
           (1840×820 aspect) so the hero layout doesn't shift. */}
       <div className="lp-map" aria-hidden="true">
         <div className="lp-map-worldmap">
-          <HeroDottedMap
-            dotColor={mapDense ? 'rgba(4, 120, 87, 0.92)' : 'rgba(5, 150, 105, 0.7)'}
-          />
+          <HeroDottedMap />
         </div>
         <div className="lp-map-layers" dangerouslySetInnerHTML={{ __html: ROUTES_HTML }} />
       </div>

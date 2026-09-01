@@ -1,5 +1,3 @@
-import Image from 'next/image';
-
 /**
  * Static dotted-continents layer for the landing hero.
  *
@@ -15,6 +13,20 @@ import Image from 'next/image';
  * Serving the same SVG as a cacheable file removes both costs and the
  * whole `dotted-map` dependency from the client bundle.
  *
+ * VARIANT SELECTION IS PURE CSS ART DIRECTION. Phones (<=480px) get the
+ * darker dense variant, everything wider the sparse one, via a <picture>
+ * <source media> query. The previous JS route (a `mapDense` matchMedia
+ * state in LandingHero driving a dotColor prop) never actually delivered
+ * dense on phones in production: the server rendered the sparse src, the
+ * client's FIRST render already computed mapDense=true, so hydration
+ * adopted the server attribute (React does not patch attribute mismatches
+ * in production) and the effect's setMapDense(true) was a same-value
+ * bailout - no render ever wrote the dense src. <picture> has none of
+ * those failure modes: identical markup on server and client (no state,
+ * no hydration risk), the browser picks the matching source BEFORE first
+ * paint (no src flash, no post-mount repaint), only the matching file is
+ * fetched, and a viewport resize across 480px switches automatically.
+ *
  * The assets are deterministic output of:
  *   new DottedMap({ height: 170, grid: 'diagonal' }).getSVG({
  *     radius: 0.18, color, shape: 'circle', backgroundColor: 'transparent' })
@@ -27,34 +39,38 @@ import Image from 'next/image';
 const MAP_WIDTH = 337;
 const MAP_HEIGHT = 170;
 
-const DOT_SPARSE = 'rgba(5, 150, 105, 0.7)';
-const DOT_DENSE = 'rgba(4, 120, 87, 0.92)';
+const MAP_SPARSE = '/images/landing/hero-dotted-map-sparse.svg';
+const MAP_DENSE = '/images/landing/hero-dotted-map-dense.svg';
 
-const MAP_SRC = {
-  [DOT_SPARSE]: '/images/landing/hero-dotted-map-sparse.svg',
-  [DOT_DENSE]: '/images/landing/hero-dotted-map-dense.svg',
-};
+/* Must stay in sync with the old mapDense matchMedia query in LandingHero
+   (phones read the lighter dots too faintly, so <=480px darkens them). */
+const DENSE_MEDIA = '(max-width: 480px)';
 
-export function HeroDottedMap({ dotColor = DOT_SPARSE }) {
-  // Unknown colors fall back to the sparse asset: the two call-site colors
-  // are the only variants that exist as files.
-  const src = MAP_SRC[dotColor] || MAP_SRC[DOT_SPARSE];
-
+export function HeroDottedMap() {
   return (
     <div className="world-map-container">
       <div className="world-map-inner">
-        <Image
-          className="world-map-image"
-          src={src}
-          alt=""
-          width={MAP_WIDTH}
-          height={MAP_HEIGHT}
-          draggable={false}
-          unoptimized
-          loading="eager"
-          priority
-          style={{ objectFit: 'contain' }}
-        />
+        {/* Plain <picture>, not next/image: the asset is an unoptimizable
+            local SVG, and only <source media> gives per-viewport variants
+            with a correct first paint and a single fetch. Sizing comes from
+            .world-map-image (width/height 100%, object-fit contain); the
+            width/height attributes only preserve the intrinsic ratio. It is
+            the page's LCP element, so it loads eager and high-priority. */}
+        <picture>
+          <source media={DENSE_MEDIA} srcSet={MAP_DENSE} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            className="world-map-image"
+            src={MAP_SPARSE}
+            alt=""
+            width={MAP_WIDTH}
+            height={MAP_HEIGHT}
+            draggable={false}
+            loading="eager"
+            fetchPriority="high"
+            decoding="async"
+          />
+        </picture>
       </div>
     </div>
   );
