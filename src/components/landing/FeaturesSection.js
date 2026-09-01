@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FeatureVisual } from './features-visuals';
 import { HOW_STEPS, METRICS_BAND } from './features-landing-data';
 import './features-visuals.css';
@@ -48,18 +48,36 @@ export function FeaturesSection() {
   // One timer drives all six visuals: a single `tick` incremented every 2000ms.
   // Each visual derives its frame from `tick`. Respect prefers-reduced-motion —
   // render the resting frame (tick stays 0) and never start the interval.
+  // The timer also runs only while the section is on screen (it sits below the
+  // fold): off-screen ticks re-rendered six visuals nobody could see.
   const [tick, setTick] = useState(0);
+  const sectionRef = useRef(null);
+  const [inView, setInView] = useState(false);
 
   useEffect(() => {
+    const el = sectionRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') {
+      setInView(true);
+      return undefined;
+    }
+    const io = new IntersectionObserver((es) => setInView(es.some((e) => e.isIntersecting)), {
+      rootMargin: '100px',
+    });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!inView) return undefined;
     if (typeof window === 'undefined' || !window.matchMedia) return undefined;
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
     if (mq.matches) return undefined;
     const id = setInterval(() => setTick((t) => t + 1), 2000);
     return () => clearInterval(id);
-  }, []);
+  }, [inView]);
 
   return (
-    <section className="features-section" id="features">
+    <section className="features-section" id="features" ref={sectionRef}>
       <div className="features-container">
         <div className="features-grid-header">
           <p className="eyebrow lf-mono">Why Ezana Finance</p>

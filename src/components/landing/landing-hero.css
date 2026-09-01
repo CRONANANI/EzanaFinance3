@@ -374,3 +374,19 @@
     animation: none !important;
   }
 }
+
+/* ── Below-the-fold render deferral ──────────────────────────────────────────
+   These sections sit well under the hero, so first paint should not pay
+   their layout/paint cost: content-visibility skips rendering until the
+   viewport approaches, and the intrinsic-size hint holds scrollbar geometry
+   stable (auto keeps the real size once rendered, preventing scroll-anchor
+   jumps). DimensionScrollSection is deliberately NOT deferred: its pinned
+   scroll choreography relies on sticky positioning that size containment
+   would interfere with. Rendered output is unchanged — only when work
+   happens moves. */
+.features-section,
+.resources-section,
+.faq-section-wrapper {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 900px;
+}

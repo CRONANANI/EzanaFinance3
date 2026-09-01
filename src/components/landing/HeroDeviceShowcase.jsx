@@ -88,12 +88,30 @@ export function HeroDeviceShowcase() {
     return () => window.removeEventListener('resize', apply);
   }, []);
 
+  /* Tick only while the composition is actually on screen: the hero scrolls
+     away quickly, and a timer driving unseen re-renders is pure waste. The
+     observed frames are identical — off-screen ticks were never visible. */
+  const [inView, setInView] = useState(false);
   useEffect(() => {
+    const el = stackRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') {
+      setInView(true);
+      return undefined;
+    }
+    const io = new IntersectionObserver((es) => setInView(es.some((e) => e.isIntersecting)), {
+      rootMargin: '100px',
+    });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!inView) return undefined;
     if (typeof window === 'undefined' || !window.matchMedia) return undefined;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
     const id = setInterval(() => setTick((t) => t + 1), 2000);
     return () => clearInterval(id);
-  }, []);
+  }, [inView]);
 
   const likes = 12 + (tick % 6);
   const filedMin = 2 + (tick % 4);

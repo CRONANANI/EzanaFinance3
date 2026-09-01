@@ -3,8 +3,6 @@
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { LandingHero } from '@/components/landing/LandingHero';
-import { CookieConsentBanner } from '@/components/landing/CookieConsentBanner';
-import { AnalyticsGate } from '@/components/landing/AnalyticsGate';
 import { LandingErrorBoundary } from '@/components/landing/LandingErrorBoundary';
 import { BrokerageLogos } from '@/components/BrokerageLogos';
 
@@ -53,6 +51,25 @@ const ContactSupportDialog = dynamic(
   () =>
     import('@/components/ui/contact-support-dialog').then((m) => ({
       default: m.ContactSupportDialog,
+    })),
+  { ssr: false, loading: () => null },
+);
+
+// Consent UI and the analytics gate render nothing until a client effect runs
+// (the banner shows only after reading stored consent, the gate is headless),
+// so neither contributes SSR markup: ssr:false just moves their JS out of the
+// first-load bundle into a post-hydration chunk. Behavior is unchanged.
+const CookieConsentBanner = dynamic(
+  () =>
+    import('@/components/landing/CookieConsentBanner').then((m) => ({
+      default: m.CookieConsentBanner,
+    })),
+  { ssr: false, loading: () => null },
+);
+const AnalyticsGate = dynamic(
+  () =>
+    import('@/components/landing/AnalyticsGate').then((m) => ({
+      default: m.AnalyticsGate,
     })),
   { ssr: false, loading: () => null },
 );
