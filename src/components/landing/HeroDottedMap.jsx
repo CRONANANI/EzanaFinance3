@@ -1,24 +1,28 @@
-'use client';
-
 import Image from 'next/image';
-import DottedMap from 'dotted-map';
 
 /**
  * Static dotted-continents layer for the landing hero.
  *
- * The DottedMap output is DETERMINISTIC: fixed height, fixed grid, two known
- * dot colors. So both variants are generated ONCE at module scope and cached,
- * rather than inside render.
+ * The two variants are PREGENERATED STATIC ASSETS in
+ * /public/images/landing/hero-dotted-map-{sparse,dense}.svg, not runtime
+ * output. They used to be built in the browser with the `dotted-map`
+ * package at module scope, which cost this page dearly twice over:
+ *   - the encoded data URL weighed 3.35MB and was inlined into the SSR
+ *     HTML TWICE (the <img src> plus the priority preload <link>),
+ *     ballooning the document to ~6.9MB, and
+ *   - getSVG() + encodeURIComponent() ran again on hydration, a
+ *     main-thread block measured in hundreds of ms.
+ * Serving the same SVG as a cacheable file removes both costs and the
+ * whole `dotted-map` dependency from the client bundle.
  *
- * This matters because getSVG() emits thousands of <circle> nodes and then
- * encodeURIComponent()s the result — a main-thread block measured in hundreds
- * of ms. Previously it ran on the server, again on hydration, and a THIRD time
- * when `mapDense` flipped after mount on mobile (the dotColor prop invalidated
- * the useMemo mid-paint). That third run was the visible jank.
- *
- * Module scope evaluates once per process on the server and once per page load
- * in the browser, and the `mapDense` flip is now a cache hit rather than a
- * regeneration.
+ * The assets are deterministic output of:
+ *   new DottedMap({ height: 170, grid: 'diagonal' }).getSVG({
+ *     radius: 0.18, color, shape: 'circle', backgroundColor: 'transparent' })
+ * with colors rgba(5, 150, 105, 0.7) (sparse) / rgba(4, 120, 87, 0.92)
+ * (dense), then losslessly compacted (the identical per-circle fill hoisted
+ * onto one parent <g>; coordinates and radius unchanged). To regenerate,
+ * run that snippet with the `dotted-map` package (still in package.json)
+ * and re-apply the compaction.
  */
 const MAP_WIDTH = 337;
 const MAP_HEIGHT = 170;
@@ -26,42 +30,22 @@ const MAP_HEIGHT = 170;
 const DOT_SPARSE = 'rgba(5, 150, 105, 0.7)';
 const DOT_DENSE = 'rgba(4, 120, 87, 0.92)';
 
-function buildDataUrl(color) {
-  const svg = new DottedMap({ height: 170, grid: 'diagonal' }).getSVG({
-    radius: 0.18,
-    color,
-    shape: 'circle',
-    backgroundColor: 'transparent',
-  });
-  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
-}
-
-// Generated once, at module evaluation — never during render.
-const CACHE = new Map([
-  [DOT_SPARSE, buildDataUrl(DOT_SPARSE)],
-  [DOT_DENSE, buildDataUrl(DOT_DENSE)],
-]);
-
-function getDataUrl(color) {
-  let url = CACHE.get(color);
-  if (!url) {
-    // Defensive: an unexpected color still works, and is cached after the first
-    // call rather than regenerating on every render.
-    url = buildDataUrl(color);
-    CACHE.set(color, url);
-  }
-  return url;
-}
+const MAP_SRC = {
+  [DOT_SPARSE]: '/images/landing/hero-dotted-map-sparse.svg',
+  [DOT_DENSE]: '/images/landing/hero-dotted-map-dense.svg',
+};
 
 export function HeroDottedMap({ dotColor = DOT_SPARSE }) {
-  const dataUrl = getDataUrl(dotColor);
+  // Unknown colors fall back to the sparse asset: the two call-site colors
+  // are the only variants that exist as files.
+  const src = MAP_SRC[dotColor] || MAP_SRC[DOT_SPARSE];
 
   return (
     <div className="world-map-container">
       <div className="world-map-inner">
         <Image
           className="world-map-image"
-          src={dataUrl}
+          src={src}
           alt=""
           width={MAP_WIDTH}
           height={MAP_HEIGHT}
