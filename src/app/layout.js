@@ -180,11 +180,15 @@ export default async function RootLayout({ children }) {
             the full italic + 200..800 weight axis, JetBrains Mono 400–700).
             next/font was swapping in a slightly different rendering because
             it only bundled a subset of weights; keeping the CDN <link>
-            preserves the original number / text rendering users expect. */}
+            preserves the original number / text rendering users expect.
+            Caveat was dropped from the request: no stylesheet or component
+            references it anywhere in src (it only ever appeared in copy
+            text), so removing it saves its font-css block and file fetch
+            with zero rendering change. */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Nunito:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap"
+          href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Nunito:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap"
           rel="stylesheet"
         />
         {/* Bootstrap Icons: preconnect so the jsdelivr CDN is warmed early,
