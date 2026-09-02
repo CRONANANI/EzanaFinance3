@@ -156,7 +156,11 @@
   width: 100%;
   max-width: var(--hero-max, 1400px);
   margin: 0 auto;
-  padding: 0 40px;
+  /* Canonical gutter (2rem, shared with the marketing nav and the sections
+     below), so the headline's left edge sits on the same line as the nav
+     logo and the features/resources content. Was 40px - 8px proud of that
+     line on both sides. Mobile overrides below keep their tuned values. */
+  padding: 0 var(--app-shell-pad, 2rem);
   display: flex;
   align-items: center;
 }

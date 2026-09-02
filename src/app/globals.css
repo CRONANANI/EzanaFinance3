@@ -1149,11 +1149,20 @@ html:has(.landing-page) body:not(.light-mode) {
   margin-left: -6px;
 }
 
-/* Logo stays on the left */
+/* Logo stays on the left.
+   left: 0 neutralizes a stale `left: 2rem` that leaks in from unified-nav.css's
+   old ABSOLUTE-positioning scheme (.logo-centered { position: absolute; left: 2rem })
+   - this flex layout superseded the absolute one, but the orphaned offset kept
+   applying to the now-relative element and pushed the logo 32px right of the
+   container's content edge, leaving the marketing nav asymmetric (the sign-in
+   cluster was flush right while the logo floated inboard). With it zeroed the
+   logo's left edge sits exactly on the canonical content line shared with the
+   sections below (mobile-responsive.css already zeroed it at phone widths). */
 .navbar .nav-container-centered .logo {
   flex-shrink: 0;
   margin-right: auto;
   position: relative;
+  left: 0;
   z-index: 2;
 }
 
