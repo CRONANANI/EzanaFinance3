@@ -113,11 +113,14 @@ body:not(.light-mode) .bs-shell {
 }
 
 .bs-page-inner {
-  padding: 22px 56px;
+  /* Horizontal gutters come from the dashboard shell (canonical --app-shell-pad,
+     shared with the nav) - no extra inset here, so every band and the ticker
+     belt share the same edges as the logo/logout lines. */
+  padding: 22px 0;
   max-width: 100%;
 }
 .bs-page-inner--tight {
-  padding: 0 56px;
+  padding: 0;
 }
 
 /* ── Ticker marquee (always dark) ── */
@@ -131,7 +134,9 @@ body:not(.light-mode) .bs-shell {
 .bs-ticker-inner {
   display: flex;
   gap: 40px;
-  padding: 8px 32px;
+  /* No horizontal inset: the tape aligns to the same shell edges as the bands
+     below it (it previously ran 24px wider per side than the sections). */
+  padding: 8px 0;
   white-space: nowrap;
   animation: bs-marquee 60s linear infinite;
 }
@@ -1182,10 +1187,10 @@ body.light-mode .bs-band + .bs-band {
 
 @media (max-width: 1279px) {
   .bs-page-inner {
-    padding: 40px 40px;
+    padding: 40px 0;
   }
   .bs-page-inner--tight {
-    padding: 0 40px;
+    padding: 0;
   }
   .bs-hero-row {
     gap: 40px;
@@ -1197,10 +1202,10 @@ body.light-mode .bs-band + .bs-band {
 
 @media (max-width: 959px) {
   .bs-page-inner {
-    padding: 32px 24px;
+    padding: 32px 0;
   }
   .bs-page-inner--tight {
-    padding: 0 24px;
+    padding: 0;
   }
   .bs-hero-row {
     grid-template-columns: 1fr;
@@ -1265,10 +1270,10 @@ body.light-mode .bs-band + .bs-band {
 
 @media (max-width: 639px) {
   .bs-page-inner {
-    padding: 24px 16px;
+    padding: 24px 0;
   }
   .bs-page-inner--tight {
-    padding: 0 16px;
+    padding: 0;
   }
   .bs-event-grid {
     grid-template-columns: 1fr;
