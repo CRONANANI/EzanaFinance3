@@ -17,9 +17,7 @@ const sourceSerif = Source_Serif_4({
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://ezana.world';
 
 function ogImageFor(article) {
-  return article?.heroImage?.src
-    ? `${SITE_URL}${article.heroImage.src}`
-    : `${SITE_URL}/ezana-logo.png`;
+  return article?.heroImage?.src ? `${SITE_URL}${article.heroImage.src}` : `${SITE_URL}/logo.png`;
 }
 
 export async function generateMetadata({ params }) {
@@ -94,7 +92,7 @@ export default async function EzanaEchoArticlePage({ params }) {
     publisher: {
       '@type': 'Organization',
       name: 'Ezana',
-      logo: { '@type': 'ImageObject', url: `${SITE_URL}/ezana-logo.png` },
+      logo: { '@type': 'ImageObject', url: `${SITE_URL}/logo.png` },
     },
     mainEntityOfPage: { '@type': 'WebPage', '@id': canonical },
   };

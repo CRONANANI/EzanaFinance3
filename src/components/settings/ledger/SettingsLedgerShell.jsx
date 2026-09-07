@@ -82,7 +82,14 @@ export function SettingsLedgerShell({
   // Organization admin tab.
   const orgWorkspaceItems = [
     ...(isOrgUser
-      ? [{ key: 'my-role', icon: BadgeCheck, label: 'My role & access', sub: 'Role, team & access' }]
+      ? [
+          {
+            key: 'my-role',
+            icon: BadgeCheck,
+            label: 'My role & access',
+            sub: 'Role, team & access',
+          },
+        ]
       : []),
     ...(orgTabAllowed
       ? [{ key: 'organization', icon: Users, label: 'Organization', sub: 'Members & permissions' }]
@@ -94,7 +101,8 @@ export function SettingsLedgerShell({
     items: [
       ...g.items.filter(
         (it) =>
-          (!it.adminOnly || partnersTabAllowed) && !(hideForOrgNonExec && hideForOrgNonExec.has(it.key)),
+          (!it.adminOnly || partnersTabAllowed) &&
+          !(hideForOrgNonExec && hideForOrgNonExec.has(it.key)),
       ),
       ...(g.label === 'Workspace' ? orgWorkspaceItems : []),
     ],
@@ -106,7 +114,7 @@ export function SettingsLedgerShell({
         <aside className="sl-rail">
           <div className="sl-rail-top">
             <div className="sl-brand">
-              <img src="/ezana-nav-logo.png" alt="" className="sl-brand-mark" />
+              <img src="/logo-tight.png" alt="" className="sl-brand-mark" />
               <span className="sl-brand-wm">Ezana</span>
               <span className="sl-brand-chip">SETTINGS</span>
             </div>

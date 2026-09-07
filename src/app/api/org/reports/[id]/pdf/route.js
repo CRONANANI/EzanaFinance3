@@ -52,7 +52,7 @@ export const GET = withApiGuard(
         return '';
       }
     })();
-    const logo = `${origin}/ezana-logo.png`;
+    const logo = `${origin}/logo.png`;
     const genDate = new Date(p.generatedAt || report.created_at).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',

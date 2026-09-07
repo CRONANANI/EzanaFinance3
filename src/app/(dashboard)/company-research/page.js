@@ -378,7 +378,7 @@ function CompanyResearchPageInner() {
           {model.flagship ? (
             <div className="grpv-brand-logo">
               <EzanaNavLogo
-                width={22}
+                width={17}
                 height={19}
                 className="grpv-logo-img nav-logo-img nav-logo-img--wing"
               />

@@ -9,7 +9,7 @@ import { CountryFlag, inferCountry } from './brokerage-country-flags';
 import { ProviderMark } from './provider-brand-marks';
 import './add-portfolio-modal.css';
 
-const EZANA_LOGO = '/ezana-nav-logo.png';
+const EZANA_LOGO = '/logo-tight.png';
 const PLAID_LINK_SCRIPT = 'https://cdn.plaid.com/link/v2/stable/link-initialize.js';
 
 function InstitutionLogo({ inst, size = 56 }) {

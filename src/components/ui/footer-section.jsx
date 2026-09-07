@@ -14,7 +14,7 @@ export function FooterSection({ onContactClick }) {
           <div className="landing-footer-brand">
             <Link href="/" className="landing-footer-brand-logo">
               <span className="landing-footer-wordmark">Ezana</span>
-              <EzanaNavLogo width={40} height={34} priority={false} />
+              <EzanaNavLogo width={30} height={34} priority={false} />
             </Link>
             <h3>Stay connected</h3>
             <p>Join our newsletter for product updates, market insights, and platform news.</p>

@@ -78,7 +78,7 @@ export default function PartnerLoginPage() {
         <div className="auth-card partner-auth-card">
           <div className="auth-logo-wrap">
             <Image
-              src="/ezana-logo.svg"
+              src="/logo.png"
               alt="Ezana Finance"
               width={93}
               height={93}

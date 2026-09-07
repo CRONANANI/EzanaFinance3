@@ -37,8 +37,9 @@ export const metadata = {
   description:
     'Track congressional trades, analyze market intelligence, and manage your portfolio with institutional-grade tools.',
   // Favicon + apple-touch icon are served by Next's file conventions from
-  // src/app/icon.png and src/app/apple-icon.png (the nav-bar logo). No explicit
-  // `icons` here so those files are the single source of truth.
+  // src/app/favicon.ico, src/app/icon.png and src/app/apple-icon.png (the Walia
+  // ibex mark). No explicit `icons` here so those files are the single source
+  // of truth.
 };
 
 export default async function RootLayout({ children }) {

@@ -503,7 +503,7 @@ export default function EzanaEchoPage() {
           button. */}
       <header className="eth-masthead">
         <Link href="/" className="eth-masthead-brand" aria-label="Ezana home">
-          <EzanaNavLogo width={64} height={54} priority />
+          <EzanaNavLogo width={47} height={54} priority />
         </Link>
         {/* Centered wordmark: same serif treatment as the article nav
             (.nav-echo-wordmark supplies the typography; .eth-nav-center only

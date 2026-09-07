@@ -112,7 +112,6 @@ html.dark .settings-ledger {
 .settings-ledger .sl-brand-mark {
   height: 26px;
   width: auto;
-  transform: scaleX(-1);
 }
 .settings-ledger .sl-brand-wm {
   font-weight: 800;

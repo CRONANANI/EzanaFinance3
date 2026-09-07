@@ -2,12 +2,13 @@
 
 import Image from 'next/image';
 
-const DEFAULT_W = 60;
+const DEFAULT_W = 45;
 const DEFAULT_H = 51;
 
 /**
  * Brand mark used in the main nav, partner nav, and other surfaces that must
- * match the app header. Single source: `/ezana-nav-logo.png` (same as Navbar).
+ * match the app header. Single source: `/logo-tight.png` (the Walia ibex mark,
+ * tight-cropped; padded master lives at `/logo.png`).
  */
 export function EzanaNavLogo({
   width = DEFAULT_W,
@@ -18,7 +19,7 @@ export function EzanaNavLogo({
 }) {
   return (
     <Image
-      src="/ezana-nav-logo.png"
+      src="/logo-tight.png"
       alt="Ezana Finance"
       width={width}
       height={height}
@@ -27,7 +28,6 @@ export function EzanaNavLogo({
       style={{
         objectFit: 'contain',
         display: 'block',
-        transform: 'scaleX(-1)',
         ...style,
       }}
     />
