@@ -70,7 +70,13 @@ function buildNavGroups(isOrgUser) {
               description: 'Metrics & summary',
             },
           ]),
-      { label: 'Sonar', href: '/sonar', icon: Radar, description: 'Ping anything', accent: 'sonar' },
+      {
+        label: 'Sonar',
+        href: '/sonar',
+        icon: Radar,
+        description: 'Ping anything',
+        accent: 'sonar',
+      },
       { label: 'Watchlist', href: '/watchlist', icon: Bookmark, description: 'Symbols & alerts' },
     ],
   };
@@ -259,7 +265,7 @@ function buildNavGroups(isOrgUser) {
       { label: 'Settings', href: '/settings', icon: Settings, description: 'Preferences & plan' },
       {
         label: 'Profile & appearance',
-        href: '/user-profile-settings',
+        href: '/settings',
         icon: UserCircle,
         description: 'Your profile',
       },

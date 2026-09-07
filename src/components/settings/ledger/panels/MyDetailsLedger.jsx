@@ -2,7 +2,6 @@
 
 import { useState, useRef } from 'react';
 import dynamic from 'next/dynamic';
-import { User, Upload, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/lib/supabase-browser';
 import { useAuth } from '@/components/AuthProvider';
 import { LedgerField, LedgerSelect, LedgerRow, LedgerSaveBar } from '../primitives';
@@ -144,7 +143,7 @@ export function MyDetailsLedger({ onSave, settings, updateSetting, saving }) {
             {avatarSrc ? (
               <img src={avatarSrc} alt="" />
             ) : (
-              <User className="sl-avatar-ico" strokeWidth={1.6} />
+              <i className="bi bi-person sl-avatar-ico" aria-hidden="true" />
             )}
           </div>
           <div className="sl-photo-actions">
@@ -153,7 +152,7 @@ export function MyDetailsLedger({ onSave, settings, updateSetting, saving }) {
               className="sl-btn sl-btn-upload"
               onClick={() => fileInputRef.current?.click()}
             >
-              <Upload strokeWidth={1.8} />
+              <i className="bi bi-upload" aria-hidden="true" />
               Upload image
             </button>
             <input
@@ -246,7 +245,7 @@ export function MyDetailsLedger({ onSave, settings, updateSetting, saving }) {
 
       <div className="sl-danger">
         <div className="sl-danger-head">
-          <AlertTriangle strokeWidth={1.9} />
+          <i className="bi bi-exclamation-triangle" aria-hidden="true" />
           Danger zone
         </div>
         <div className="sl-danger-row">

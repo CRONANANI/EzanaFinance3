@@ -22,7 +22,7 @@ function passwordStrength(pwd) {
 }
 
 function formatLastActive(iso) {
-  if (!iso) return '—';
+  if (!iso) return '·';
   const diffMs = Date.now() - new Date(iso).getTime();
   const diffMin = Math.floor(diffMs / 60000);
   if (diffMin < 1) return 'Just now';
@@ -340,7 +340,7 @@ export function FamilyPanel({ onSave }) {
         setMessage({
           kind: 'success',
           text: data.switchedToFamily
-            ? `Invite sent. You're now on the Family plan — your subscription will update on your next billing cycle.`
+            ? `Invite sent. You're now on the Family plan; your subscription will update on your next billing cycle.`
             : `Invite sent to ${inviteEmail}.`,
         });
         setInviteEmail('');
@@ -1025,7 +1025,7 @@ export function ApiPanel({ onSave }) {
 
         {newKey && (
           <div className="settings-alert settings-alert--success">
-            <strong>Save this key — it will not be shown again:</strong>
+            <strong>Save this key, it will not be shown again:</strong>
             <code
               style={{
                 display: 'block',

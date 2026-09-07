@@ -1,6 +1,5 @@
 'use client';
 
-import { ChevronDown } from 'lucide-react';
 import { useId } from 'react';
 import { DateSelector } from '@/components/ui/DateSelector';
 
@@ -61,7 +60,7 @@ export function LedgerSelect({ label, full, children, ...select }) {
         <select id={id} className="sl-input sl-select" {...select}>
           {children}
         </select>
-        <ChevronDown className="sl-sel-chev" />
+        <i className="bi bi-chevron-down sl-sel-chev" aria-hidden="true" />
       </div>
     </div>
   );
@@ -76,7 +75,7 @@ export function LedgerButton({
 }) {
   return (
     <As className={`sl-btn sl-btn-${variant}`} {...rest}>
-      {Icon ? <Icon strokeWidth={1.8} /> : null}
+      {Icon ? <i className={`bi ${Icon}`} aria-hidden="true" /> : null}
       {children}
     </As>
   );
@@ -116,7 +115,7 @@ export function LedgerSegmented({ value, onChange, options }) {
           className={`sl-seg-btn ${value === o.value ? 'is-active' : ''}`}
           onClick={() => onChange(o.value)}
         >
-          {o.icon ? <o.icon strokeWidth={1.8} /> : null}
+          {o.icon ? <i className={`bi ${o.icon}`} aria-hidden="true" /> : null}
           {o.label}
         </button>
       ))}

@@ -134,24 +134,25 @@ export function DataRequestPanel() {
       <div className="settings-panel-header">
         <h2 className="settings-panel-title">Privacy &amp; personal data</h2>
         <p className="settings-panel-desc">
-          Submit a request to access, correct, delete, or otherwise manage personal information we store in
-          connection with your Ezana Finance account. Available for all subscribers, partners, and
-          organization members.
+          Submit a request to access, correct, delete, or otherwise manage personal information we
+          store in connection with your Ezana Finance account. Available for all subscribers,
+          partners, and organization members.
         </p>
       </div>
 
       <div className="settings-section">
         <h3 className="settings-section-title">Mock Portfolio Archives</h3>
         <p className="settings-section-desc">
-          When you reset your mock portfolio, you can save a CSV copy before resetting. CSV files are downloaded
-          directly to your device. You can also export your current portfolio at any time using the button below.
+          When you reset your mock portfolio, you can save a CSV copy before resetting. CSV files
+          are downloaded directly to your device. You can also export your current portfolio at any
+          time using the button below.
         </p>
         <button
           type="button"
           className="settings-btn-secondary"
           onClick={() => {
             alert(
-              'Export feature coming soon — use the Reset Portfolio button on the Mock Trading page to save a CSV before resetting.',
+              'Export feature coming soon: use the Reset Portfolio button on the Mock Trading page to save a CSV before resetting.',
             );
           }}
         >
@@ -174,7 +175,11 @@ export function DataRequestPanel() {
           <h3 className="settings-section-title">
             <i className="bi bi-file-earmark-text" /> What would you like to request?
           </h3>
-          <div className="settings-data-request-options" role="radiogroup" aria-label="Request type">
+          <div
+            className="settings-data-request-options"
+            role="radiogroup"
+            aria-label="Request type"
+          >
             {REQUEST_OPTIONS.map((opt) => (
               <label
                 key={opt.value}
@@ -211,12 +216,18 @@ export function DataRequestPanel() {
           </div>
 
           {error ? (
-            <p className="settings-data-request-alert settings-data-request-alert--error" role="alert">
+            <p
+              className="settings-data-request-alert settings-data-request-alert--error"
+              role="alert"
+            >
               {error}
             </p>
           ) : null}
           {message ? (
-            <p className="settings-data-request-alert settings-data-request-alert--ok" role="status">
+            <p
+              className="settings-data-request-alert settings-data-request-alert--ok"
+              role="status"
+            >
               <i className="bi bi-check-circle-fill" /> {message}
             </p>
           ) : null}
@@ -244,9 +255,12 @@ export function DataRequestPanel() {
                 <li key={row.id} className="settings-data-request-list-item">
                   <div className="settings-data-request-list-main">
                     <span className="settings-data-request-list-type">
-                      {REQUEST_OPTIONS.find((o) => o.value === row.request_type)?.label || row.request_type}
+                      {REQUEST_OPTIONS.find((o) => o.value === row.request_type)?.label ||
+                        row.request_type}
                     </span>
-                    <span className={`settings-data-request-status settings-data-request-status--${row.status}`}>
+                    <span
+                      className={`settings-data-request-status settings-data-request-status--${row.status}`}
+                    >
                       {statusLabel(row.status)}
                     </span>
                   </div>
@@ -267,10 +281,18 @@ export function DataRequestPanel() {
           )}
         </div>
 
-        <p className="settings-data-request-footnote" style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginTop: '1.5rem', lineHeight: 1.5 }}>
-          We may need to verify your identity before fulfilling certain requests. Some legal obligations may
-          require us to retain certain records even after a deletion request. You will be contacted at your
-          account email if we need more information.
+        <p
+          className="settings-data-request-footnote"
+          style={{
+            fontSize: '0.75rem',
+            color: 'rgba(255,255,255,0.4)',
+            marginTop: '1.5rem',
+            lineHeight: 1.5,
+          }}
+        >
+          We may need to verify your identity before fulfilling certain requests. Some legal
+          obligations may require us to retain certain records even after a deletion request. You
+          will be contacted at your account email if we need more information.
         </p>
       </div>
     </div>

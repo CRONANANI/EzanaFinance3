@@ -1,6 +1,5 @@
 'use client';
 
-import { Monitor, Moon, Sun } from 'lucide-react';
 import { useTheme } from '@/components/ThemeProvider';
 import { LedgerRow, LedgerSelect, LedgerSegmented, LedgerSaveBar } from '../primitives';
 
@@ -36,9 +35,9 @@ export function AppearanceLedger({ settings, updateSetting, onSave, saving }) {
           value={displayTheme}
           onChange={handleThemeChange}
           options={[
-            { value: 'light', label: 'Light', icon: Sun },
-            { value: 'dark', label: 'Dark', icon: Moon },
-            { value: 'system', label: 'System', icon: Monitor },
+            { value: 'light', label: 'Light', icon: 'bi-sun' },
+            { value: 'dark', label: 'Dark', icon: 'bi-moon' },
+            { value: 'system', label: 'System', icon: 'bi-display' },
           ]}
         />
       </LedgerRow>

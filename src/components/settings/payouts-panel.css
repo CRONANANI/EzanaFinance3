@@ -1,0 +1,147 @@
+/* Partner payouts panel. Scoped ppo- prefix. Tokens only. */
+
+.ppo-skeleton {
+  min-height: 480px;
+  width: 100%;
+}
+
+.ppo-error {
+  color: var(--negative);
+  font-size: 0.85rem;
+  margin: 0 0 0.75rem;
+}
+
+.ppo-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.ppo-stat {
+  background: var(--surface-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.ppo-stat-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+}
+
+.ppo-stat-value {
+  font-family: var(--font-mono, monospace);
+  font-variant-numeric: tabular-nums;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.ppo-stat-text {
+  font-size: 0.9rem;
+}
+
+.ppo-account-card {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  background: var(--surface-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+}
+
+.ppo-account-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-card-hover);
+  font-size: 1.1rem;
+}
+
+.ppo-account-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex: 1;
+  min-width: 0;
+}
+.ppo-account-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.ppo-account-meta {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.ppo-account-status {
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+.ppo-status-active {
+  color: var(--emerald);
+}
+.ppo-status-pending_verification {
+  color: var(--amber);
+}
+
+.ppo-connect-copy {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0 0 0.75rem;
+}
+
+.ppo-th-amt,
+.ppo-td-amt {
+  text-align: right;
+}
+.ppo-td-amt {
+  font-family: var(--font-mono, monospace);
+  font-variant-numeric: tabular-nums;
+}
+
+.ppo-badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  text-transform: capitalize;
+  border: 1px solid var(--border-primary);
+  color: var(--text-secondary);
+}
+.ppo-badge-paid {
+  color: var(--emerald);
+  border-color: currentColor;
+}
+.ppo-badge-failed {
+  color: var(--negative);
+  border-color: currentColor;
+}
+.ppo-badge-processing,
+.ppo-badge-pending {
+  color: var(--amber);
+  border-color: currentColor;
+}
+
+.ppo-empty {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 640px) {
+  .ppo-stats {
+    grid-template-columns: 1fr;
+  }
+  .ppo-account-card {
+    flex-wrap: wrap;
+  }
+}

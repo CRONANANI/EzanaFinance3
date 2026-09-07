@@ -89,7 +89,7 @@ export function OrgSettingsPanel() {
       <div className="settings-panel-header">
         <h2 className="settings-panel-title">Organization Management</h2>
         <p className="settings-panel-desc">
-          {orgName} — manage member roles, sub-roles, teams, and access. Changes are saved
+          {orgName}: manage member roles, sub-roles, teams, and access. Changes are saved
           immediately.
         </p>
       </div>
@@ -105,7 +105,7 @@ export function OrgSettingsPanel() {
           <>
             {!isExecutive && (
               <p style={{ color: '#fbbf24', fontSize: '0.8rem', marginBottom: '0.75rem' }}>
-                Read-only — executive role required to edit members.
+                Read-only (executive role required to edit members).
               </p>
             )}
 
@@ -182,7 +182,9 @@ export function OrgSettingsPanel() {
                           {msg?.err && (
                             <>
                               <br />
-                              <span style={{ color: '#f87171', fontSize: '0.6rem', fontWeight: 400 }}>
+                              <span
+                                style={{ color: '#f87171', fontSize: '0.6rem', fontWeight: 400 }}
+                              >
                                 {msg.err}
                               </span>
                             </>
@@ -225,7 +227,7 @@ export function OrgSettingsPanel() {
                               value={m.sub_role || ''}
                               onChange={(e) => patchMember(m.id, { sub_role: e.target.value })}
                             >
-                              <option value="">—</option>
+                              <option value="">·</option>
                               {subRoleOptions(m.role).map((sr) => (
                                 <option key={sr} value={sr}>
                                   {sr}
@@ -234,7 +236,7 @@ export function OrgSettingsPanel() {
                             </select>
                           ) : (
                             <span style={{ color: '#9ca3af', fontSize: '0.75rem' }}>
-                              {m.sub_role || '—'}
+                              {m.sub_role || '·'}
                             </span>
                           )}
                         </td>
@@ -244,9 +246,11 @@ export function OrgSettingsPanel() {
                               style={ctl}
                               disabled={busy}
                               value={m.team_id || ''}
-                              onChange={(e) => patchMember(m.id, { team_id: e.target.value || null })}
+                              onChange={(e) =>
+                                patchMember(m.id, { team_id: e.target.value || null })
+                              }
                             >
-                              <option value="">— No team</option>
+                              <option value="">No team</option>
                               {teams.map((t) => (
                                 <option key={t.id} value={t.id}>
                                   {t.name}
@@ -255,7 +259,7 @@ export function OrgSettingsPanel() {
                             </select>
                           ) : (
                             <span style={{ color: '#9ca3af', fontSize: '0.75rem' }}>
-                              {teams.find((t) => t.id === m.team_id)?.name || '—'}
+                              {teams.find((t) => t.id === m.team_id)?.name || '·'}
                             </span>
                           )}
                         </td>
@@ -272,7 +276,9 @@ export function OrgSettingsPanel() {
                                 padding: '2px 8px',
                                 borderRadius: 999,
                                 border: '1px solid transparent',
-                                background: m.is_active ? 'rgba(16,185,129,0.12)' : 'rgba(107,114,128,0.15)',
+                                background: m.is_active
+                                  ? 'rgba(16,185,129,0.12)'
+                                  : 'rgba(107,114,128,0.15)',
                                 color: m.is_active ? '#10b981' : '#9ca3af',
                                 opacity: busy ? 0.6 : 1,
                               }}
@@ -280,7 +286,12 @@ export function OrgSettingsPanel() {
                               {m.is_active ? 'ACTIVE' : 'INACTIVE'}
                             </button>
                           ) : (
-                            <span style={{ color: m.is_active ? '#10b981' : '#9ca3af', fontSize: '0.7rem' }}>
+                            <span
+                              style={{
+                                color: m.is_active ? '#10b981' : '#9ca3af',
+                                fontSize: '0.7rem',
+                              }}
+                            >
                               {m.is_active ? 'Active' : 'Inactive'}
                             </span>
                           )}

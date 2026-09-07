@@ -93,7 +93,7 @@ export function PersonalizationPanel() {
       </h3>
       <p className="settings-toggle-desc" style={{ marginBottom: '0.75rem' }}>
         We tailor which market signals reach your bell and how Ezana Echo is ranked, using the
-        interests below — inferred from what you read, save, and explore. Turn this off to receive
+        interests below, inferred from what you read, save, and explore. Turn this off to receive
         only severity-based alerts with no tailoring.
       </p>
 
@@ -104,7 +104,7 @@ export function PersonalizationPanel() {
         <div className="settings-toggle-info">
           <span className="settings-toggle-label">Personalized relevance</span>
           <span className="settings-toggle-desc">
-            {enabled ? 'On — signals ranked to your interests.' : 'Off — no personalization.'}
+            {enabled ? 'On: signals ranked to your interests.' : 'Off: no personalization.'}
           </span>
         </div>
         <button
@@ -119,15 +119,12 @@ export function PersonalizationPanel() {
 
       {enabled && (
         <div style={{ marginTop: '1rem' }}>
-          <div
-            className="settings-toggle-desc"
-            style={{ marginBottom: '0.5rem', fontWeight: 600 }}
-          >
+          <div className="settings-toggle-desc" style={{ marginBottom: '0.5rem', fontWeight: 600 }}>
             What we think you&rsquo;re interested in
           </div>
           {dims.length === 0 ? (
             <p className="settings-toggle-desc">
-              Nothing yet — read a few Ezana Echo articles and this fills in.
+              Nothing yet: read a few Ezana Echo articles and this fills in.
             </p>
           ) : (
             dims.map((d) => (

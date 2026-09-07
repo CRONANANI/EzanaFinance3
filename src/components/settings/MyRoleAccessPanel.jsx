@@ -35,15 +35,8 @@ function RoleBadge({ role }) {
 }
 
 export function MyRoleAccessPanel() {
-  const {
-    isOrgUser,
-    orgRole,
-    orgData,
-    permissions,
-    isExecutive,
-    isPortfolioManager,
-    isAnalyst,
-  } = useOrg();
+  const { isOrgUser, orgRole, orgData, permissions, isExecutive, isPortfolioManager, isAnalyst } =
+    useOrg();
 
   const member = orgData?.member || null;
   const isAdvisor = isExecutive && member?.sub_role === 'Faculty Advisor';
@@ -64,7 +57,10 @@ export function MyRoleAccessPanel() {
         label: 'Manage team tasks & assignments',
         on: grant('manage_team_tasks') || grant('manage_tasks'),
       },
-      { label: 'Mentor / oversee junior analysts', on: grant('mentor_juniors') || grant('manage_analysts') },
+      {
+        label: 'Mentor / oversee junior analysts',
+        on: grant('mentor_juniors') || grant('manage_analysts'),
+      },
       { label: 'Award recognition', on: isPortfolioManager || isExecutive },
       {
         label: 'Run investment-committee meetings',
@@ -120,12 +116,12 @@ export function MyRoleAccessPanel() {
             marginTop: '0.5rem',
           }}
         >
-          <Field label="Member">{member?.display_name || '—'}</Field>
+          <Field label="Member">{member?.display_name || '·'}</Field>
           <Field label="Role">
             <RoleBadge role={orgRole} />
           </Field>
-          <Field label="Sub-role">{member?.sub_role || '—'}</Field>
-          <Field label="Team">{teamName || (isExecutive ? 'All teams' : '—')}</Field>
+          <Field label="Sub-role">{member?.sub_role || '·'}</Field>
+          <Field label="Team">{teamName || (isExecutive ? 'All teams' : '·')}</Field>
         </div>
         {isAdvisor && (
           <p
@@ -150,11 +146,25 @@ export function MyRoleAccessPanel() {
       {/* Permissions transparency */}
       <div className="settings-section">
         <div className="settings-section-title">What you can do</div>
-        <ul style={{ listStyle: 'none', padding: 0, margin: '0.5rem 0 0', display: 'grid', gap: '0.4rem' }}>
+        <ul
+          style={{
+            listStyle: 'none',
+            padding: 0,
+            margin: '0.5rem 0 0',
+            display: 'grid',
+            gap: '0.4rem',
+          }}
+        >
           {can.map((a) => (
             <li
               key={a.label}
-              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#e2e8f0' }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                fontSize: '0.85rem',
+                color: '#e2e8f0',
+              }}
             >
               <i className="bi bi-check-circle-fill" style={{ color: '#10b981' }} />
               {a.label}
@@ -166,11 +176,25 @@ export function MyRoleAccessPanel() {
       {cant.length > 0 && (
         <div className="settings-section">
           <div className="settings-section-title">Not available at your level</div>
-          <ul style={{ listStyle: 'none', padding: 0, margin: '0.5rem 0 0', display: 'grid', gap: '0.4rem' }}>
+          <ul
+            style={{
+              listStyle: 'none',
+              padding: 0,
+              margin: '0.5rem 0 0',
+              display: 'grid',
+              gap: '0.4rem',
+            }}
+          >
             {cant.map((a) => (
               <li
                 key={a.label}
-                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#6b7280' }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  fontSize: '0.85rem',
+                  color: '#6b7280',
+                }}
               >
                 <i className="bi bi-dash-circle" style={{ color: '#4b5563' }} />
                 {a.label}

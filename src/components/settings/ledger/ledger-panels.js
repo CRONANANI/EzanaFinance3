@@ -5,6 +5,7 @@ import { NotificationsWithOrg } from '@/components/settings/org/NotificationsWit
 import { DataRequestPanel } from '@/components/settings/DataRequestPanel';
 import { PlatformChangelogPanel } from '@/components/settings/PlatformChangelogPanel';
 import { PartnerManagementPanel } from '@/components/settings/PartnerManagementPanel';
+import { PayoutsPanel } from '@/components/settings/PayoutsPanel';
 import { MyDetailsLedger } from './panels/MyDetailsLedger';
 import { AppearanceLedger } from './panels/AppearanceLedger';
 import { wrapLegacyPanel } from './legacy-bridge';
@@ -31,87 +32,101 @@ const ApiPanel = dynLedgerPanel('ApiPanel');
 
 export const LEDGER_PAGE_META = {
   'my-details': {
-    eyebrow: '01 — Account',
+    eyebrow: 'Account',
     title: 'My details',
     helper:
       'Update your personal information and contact details. Changes sync across every device on your account.',
   },
   appearance: {
-    eyebrow: '02 — Account',
+    eyebrow: 'Account',
     title: 'Appearance',
     helper: 'Theme, language, and regional formatting.',
   },
   profile: {
-    eyebrow: '03 — Account',
+    eyebrow: 'Account',
     title: 'Profile',
     helper: 'Your public profile, social links, and trading defaults.',
   },
   password: {
-    eyebrow: '04 — Account',
+    eyebrow: 'Account',
     title: 'Password & security',
     helper: 'Manage credentials, two-factor authentication, and active sessions.',
   },
   family: {
-    eyebrow: '05 — Workspace',
+    eyebrow: 'Workspace',
     title: 'Family',
     helper: 'Share your Ezana plan with family members.',
   },
   plan: {
-    eyebrow: '06 — Workspace',
+    eyebrow: 'Workspace',
     title: 'Plan',
     helper: 'Your subscription, usage, and available upgrades.',
   },
   billing: {
-    eyebrow: '07 — Workspace',
+    eyebrow: 'Workspace',
     title: 'Billing',
     helper: 'Payment methods, billing address, and invoice history.',
   },
   partners: {
-    eyebrow: '08 — Workspace',
+    eyebrow: 'Workspace',
     title: 'Partners',
     helper: 'Manage partner accounts and roles.',
   },
   email: {
-    eyebrow: '09 — Preferences',
+    eyebrow: 'Preferences',
     title: 'Email',
     helper: 'Transactional notices and marketing updates.',
   },
   notifications: {
-    eyebrow: '10 — Preferences',
+    eyebrow: 'Preferences',
     title: 'Notifications',
     helper: 'Desktop, email, and in-app alerts.',
   },
   integrations: {
-    eyebrow: '11 — Preferences',
+    eyebrow: 'Preferences',
     title: 'Integrations',
     helper: 'Connected services and brokerages.',
   },
   api: {
-    eyebrow: '12 — Developer',
+    eyebrow: 'Developer',
     title: 'API',
     helper: 'API keys, usage limits, and webhooks.',
   },
   'privacy-data': {
-    eyebrow: '13 — Developer',
+    eyebrow: 'Developer',
     title: 'Privacy & data',
     helper: 'Export your data and submit data subject requests.',
   },
   'platform-changelog': {
-    eyebrow: '14 — Developer',
+    eyebrow: 'Developer',
     title: 'Platform changelog',
     helper: 'Recent updates, improvements, and fixes.',
   },
   organization: {
-    eyebrow: '— Workspace',
+    eyebrow: 'Workspace',
     title: 'Organization',
     helper: 'Members, invites, teams, fund configuration, cohorts, and branding.',
   },
   'my-role': {
-    eyebrow: '— Organization',
+    eyebrow: 'Organization',
     title: 'My role & access',
     helper: 'Your role, team, and exactly what your council seat lets you do.',
   },
+  payouts: {
+    eyebrow: 'Partner',
+    title: 'Payouts',
+    helper: 'Your payout account, schedule, and history.',
+  },
 };
+
+/* Eyebrow ordinal derived from the live visible nav order (see
+   getVisibleNavKeys in SettingsLedgerShell) so numbering always matches what
+   the rail actually shows for the current role. */
+export function eyebrowFor(activeTab, visibleKeys, groupLabel) {
+  const i = visibleKeys.indexOf(activeTab);
+  const num = i >= 0 ? String(i + 1).padStart(2, '0') : '';
+  return num ? `${num} · ${groupLabel}` : groupLabel;
+}
 
 export const LEDGER_PANEL_MAP = {
   'my-details': MyDetailsLedger,
@@ -130,4 +145,5 @@ export const LEDGER_PANEL_MAP = {
   partners: wrapLegacyPanel(PartnerManagementPanel),
   organization: wrapLegacyPanel(OrgAdminPanel),
   'my-role': wrapLegacyPanel(MyRoleAccessPanel),
+  payouts: wrapLegacyPanel(PayoutsPanel),
 };

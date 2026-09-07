@@ -1,76 +1,59 @@
 'use client';
 
 import Link from 'next/link';
-import {
-  User,
-  Palette,
-  Contact,
-  Lock,
-  Users,
-  Gem,
-  CreditCard,
-  ShieldCheck,
-  Mail,
-  Bell,
-  Plug,
-  Code,
-  Database,
-  Clock,
-  ArrowLeft,
-  BadgeCheck,
-} from 'lucide-react';
 
 const NAV_GROUPS = [
   {
     label: 'Account',
     items: [
-      { key: 'my-details', icon: User, label: 'My details', sub: 'Identity & contact' },
-      { key: 'appearance', icon: Palette, label: 'Appearance', sub: 'Theme & language' },
-      { key: 'profile', icon: Contact, label: 'Profile', sub: 'Public bio & links' },
-      { key: 'password', icon: Lock, label: 'Password', sub: 'Security & 2FA' },
+      { key: 'my-details', icon: 'bi-person', label: 'My details', sub: 'Identity & contact' },
+      { key: 'appearance', icon: 'bi-palette', label: 'Appearance', sub: 'Theme & language' },
+      { key: 'profile', icon: 'bi-card-heading', label: 'Profile', sub: 'Public bio & links' },
+      { key: 'password', icon: 'bi-shield-lock', label: 'Password', sub: 'Security & 2FA' },
     ],
   },
   {
     label: 'Workspace',
     items: [
-      { key: 'family', icon: Users, label: 'Family', sub: 'Members & sharing' },
-      { key: 'plan', icon: Gem, label: 'Plan', sub: 'Subscription' },
-      { key: 'billing', icon: CreditCard, label: 'Billing', sub: 'Methods & history' },
-      { key: 'partners', icon: ShieldCheck, label: 'Partners', sub: 'Admin', adminOnly: true },
+      { key: 'family', icon: 'bi-people', label: 'Family', sub: 'Members & sharing' },
+      { key: 'plan', icon: 'bi-gem', label: 'Plan', sub: 'Subscription' },
+      { key: 'billing', icon: 'bi-credit-card', label: 'Billing', sub: 'Methods & history' },
+      {
+        key: 'partners',
+        icon: 'bi-shield-check',
+        label: 'Partners',
+        sub: 'Admin',
+        adminOnly: true,
+      },
     ],
   },
   {
     label: 'Preferences',
     items: [
-      { key: 'email', icon: Mail, label: 'Email', sub: 'Transactional & marketing' },
-      { key: 'notifications', icon: Bell, label: 'Notifications', sub: 'Push & in-app' },
-      { key: 'integrations', icon: Plug, label: 'Integrations', sub: 'Connected services' },
+      { key: 'email', icon: 'bi-envelope', label: 'Email', sub: 'Transactional & marketing' },
+      { key: 'notifications', icon: 'bi-bell', label: 'Notifications', sub: 'Push & in-app' },
+      { key: 'integrations', icon: 'bi-plug', label: 'Integrations', sub: 'Connected services' },
     ],
   },
   {
     label: 'Developer',
     items: [
-      { key: 'api', icon: Code, label: 'API', sub: 'Keys & usage' },
-      { key: 'privacy-data', icon: Database, label: 'Privacy & data', sub: 'Export & GDPR' },
-      { key: 'platform-changelog', icon: Clock, label: 'Platform changelog', sub: 'Updates' },
+      { key: 'api', icon: 'bi-code-slash', label: 'API', sub: 'Keys & usage' },
+      { key: 'privacy-data', icon: 'bi-database', label: 'Privacy & data', sub: 'Export & GDPR' },
+      {
+        key: 'platform-changelog',
+        icon: 'bi-clock-history',
+        label: 'Platform changelog',
+        sub: 'Updates',
+      },
     ],
   },
 ];
 
-export function SettingsLedgerShell({
-  activeKey,
-  onSelect,
-  partnersTabAllowed,
-  orgTabAllowed,
-  isOrgUser,
-  pageTitle,
-  pageEyebrow,
-  pageHelper,
-  saveStatus,
-  backLabel = 'Dashboard',
-  backHref = '/home',
-  children,
-}) {
+/* Single source for the visible nav: the shell renders exactly what this
+   returns, and SettingsLedger derives eyebrow ordinals from the same list, so
+   the two can never drift. */
+export function buildNavGroups({ partnersTabAllowed, orgTabAllowed, isOrgUser, isPartner }) {
   // orgTabAllowed === (org user AND executive). Org members below executive
   // don't own the subscription, so the consumer billing/plan/family/api tabs
   // are hidden for them.
@@ -85,18 +68,36 @@ export function SettingsLedgerShell({
       ? [
           {
             key: 'my-role',
-            icon: BadgeCheck,
+            icon: 'bi-person-badge',
             label: 'My role & access',
             sub: 'Role, team & access',
           },
         ]
       : []),
     ...(orgTabAllowed
-      ? [{ key: 'organization', icon: Users, label: 'Organization', sub: 'Members & permissions' }]
+      ? [
+          {
+            key: 'organization',
+            icon: 'bi-people',
+            label: 'Organization',
+            sub: 'Members & permissions',
+          },
+        ]
       : []),
   ];
 
-  const groups = NAV_GROUPS.map((g) => ({
+  const partnerGroup = isPartner
+    ? [
+        {
+          label: 'Partner',
+          items: [
+            { key: 'payouts', icon: 'bi-bank', label: 'Payouts', sub: 'Bank account & history' },
+          ],
+        },
+      ]
+    : [];
+
+  return NAV_GROUPS.map((g) => ({
     ...g,
     items: [
       ...g.items.filter(
@@ -106,7 +107,33 @@ export function SettingsLedgerShell({
       ),
       ...(g.label === 'Workspace' ? orgWorkspaceItems : []),
     ],
-  })).filter((g) => g.items.length > 0);
+  }))
+    .flatMap((g) => (g.label === 'Workspace' ? [g, ...partnerGroup] : [g]))
+    .filter((g) => g.items.length > 0);
+}
+
+export function getVisibleNavKeys({ partnersTabAllowed, orgTabAllowed, isOrgUser, isPartner }) {
+  return buildNavGroups({ partnersTabAllowed, orgTabAllowed, isOrgUser, isPartner }).flatMap((g) =>
+    g.items.map((it) => it.key),
+  );
+}
+
+export function SettingsLedgerShell({
+  activeKey,
+  onSelect,
+  partnersTabAllowed,
+  orgTabAllowed,
+  isOrgUser,
+  isPartner,
+  pageTitle,
+  pageEyebrow,
+  pageHelper,
+  saveStatus,
+  backLabel = 'Dashboard',
+  backHref = '/home',
+  children,
+}) {
+  const groups = buildNavGroups({ partnersTabAllowed, orgTabAllowed, isOrgUser, isPartner });
 
   return (
     <div className="settings-ledger">
@@ -127,7 +154,6 @@ export function SettingsLedgerShell({
               <div key={g.label} className="sl-nav-group">
                 <div className="sl-nav-glabel">{g.label}</div>
                 {g.items.map((it) => {
-                  const Icon = it.icon;
                   const active = activeKey === it.key;
                   return (
                     <button
@@ -136,7 +162,7 @@ export function SettingsLedgerShell({
                       className={`sl-nav-item ${active ? 'is-active' : ''}`}
                       onClick={() => onSelect(it.key)}
                     >
-                      <Icon className="sl-nav-ico" strokeWidth={1.8} />
+                      <i className={`bi ${it.icon} sl-nav-ico`} aria-hidden="true" />
                       <span className="sl-nav-txt">
                         <span className="sl-nav-lab">{it.label}</span>
                         <span className="sl-nav-sub">{it.sub}</span>
@@ -152,7 +178,7 @@ export function SettingsLedgerShell({
         <div className="sl-main">
           <div className="sl-topbar">
             <Link href={backHref} className="sl-crumb">
-              <ArrowLeft className="sl-crumb-ico" strokeWidth={1.8} />
+              <i className="bi bi-arrow-left sl-crumb-ico" aria-hidden="true" />
               <span>{backLabel}</span>
               <span className="sl-crumb-sep">/</span>
               <span>Settings</span>

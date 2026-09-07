@@ -632,7 +632,7 @@ export function ProfilePanel({ onSave, settings, updateSetting, saveSettings, sa
             </select>
             <span className="settings-field-hint">
               Current level: {band} (score {score}/100). Tips show spotlights, explainers, and
-              educational cards — not investment advice.
+              educational cards, not investment advice.
             </span>
           </div>
         </div>
@@ -818,9 +818,60 @@ function passwordStrength(pwd) {
   return { score, label: labels[score], pct: pcts[score] };
 }
 
-export function PasswordPanel({ onSave, settings, updateSetting }) {
+export function PasswordPanel({ settings, updateSetting }) {
+  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [pwBusy, setPwBusy] = useState(false);
+  const [pwError, setPwError] = useState('');
+  const [pwSuccess, setPwSuccess] = useState('');
   const strength = passwordStrength(newPassword);
+
+  const handleChangePassword = async () => {
+    setPwError('');
+    setPwSuccess('');
+    if (!newPassword || newPassword.length < 8) {
+      setPwError('Password must be at least 8 characters.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPwError('Passwords do not match.');
+      return;
+    }
+    setPwBusy(true);
+    try {
+      // Reauthenticate with the current password before updating.
+      const {
+        data: { user: u },
+      } = await supabase.auth.getUser();
+      if (!u?.email) {
+        setPwError('Could not verify your session. Sign in again and retry.');
+        return;
+      }
+      const { error: reauthErr } = await supabase.auth.signInWithPassword({
+        email: u.email,
+        password: currentPassword,
+      });
+      if (reauthErr) {
+        setPwError('Current password is incorrect.');
+        return;
+      }
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) {
+        setPwError(error.message);
+        return;
+      }
+      setPwSuccess('Password updated.');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch {
+      setPwError('Failed to update password. Try again.');
+    } finally {
+      setPwBusy(false);
+    }
+  };
+
   return (
     <div className="settings-panel">
       <div className="settings-panel-header">
@@ -835,7 +886,14 @@ export function PasswordPanel({ onSave, settings, updateSetting }) {
         <div className="settings-row single">
           <div className="settings-field">
             <label className="settings-label">Current password</label>
-            <input type="password" className="settings-input" placeholder="••••••••" />
+            <input
+              type="password"
+              className="settings-input"
+              placeholder="••••••••"
+              autoComplete="current-password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+            />
           </div>
         </div>
         <div className="settings-row">
@@ -845,6 +903,7 @@ export function PasswordPanel({ onSave, settings, updateSetting }) {
               type="password"
               className="settings-input"
               placeholder="••••••••"
+              autoComplete="new-password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
             />
@@ -856,7 +915,11 @@ export function PasswordPanel({ onSave, settings, updateSetting }) {
                     style={{
                       width: `${strength.pct}%`,
                       background:
-                        strength.pct < 40 ? '#ef4444' : strength.pct < 70 ? '#f59e0b' : '#10b981',
+                        strength.pct < 40
+                          ? 'var(--negative)'
+                          : strength.pct < 70
+                            ? 'var(--amber)'
+                            : 'var(--emerald)',
                     }}
                   />
                 </div>
@@ -866,8 +929,35 @@ export function PasswordPanel({ onSave, settings, updateSetting }) {
           </div>
           <div className="settings-field">
             <label className="settings-label">Confirm new password</label>
-            <input type="password" className="settings-input" placeholder="••••••••" />
+            <input
+              type="password"
+              className="settings-input"
+              placeholder="••••••••"
+              autoComplete="new-password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
           </div>
+        </div>
+        {pwError ? (
+          <p className="settings-field-error" role="alert">
+            {pwError}
+          </p>
+        ) : null}
+        {pwSuccess ? (
+          <p className="settings-toggle-desc" role="status" style={{ color: 'var(--emerald)' }}>
+            {pwSuccess}
+          </p>
+        ) : null}
+        <div className="settings-btn-row">
+          <button
+            type="button"
+            className="settings-btn-primary"
+            onClick={handleChangePassword}
+            disabled={pwBusy}
+          >
+            {pwBusy ? 'Updating…' : 'Update password'}
+          </button>
         </div>
         <MfaSetupPanel />
         <div className="settings-toggle-row">
@@ -912,11 +1002,6 @@ export function PasswordPanel({ onSave, settings, updateSetting }) {
             </tr>
           </tbody>
         </table>
-        <div className="settings-btn-row">
-          <button type="button" className="settings-btn-primary" onClick={onSave}>
-            Update password
-          </button>
-        </div>
       </div>
     </div>
   );
@@ -1089,80 +1174,183 @@ export function PlanPanel({ onSave }) {
   );
 }
 
-export function BillingPanel({ onSave }) {
+const CARD_BRAND_LABELS = {
+  visa: 'Visa',
+  mastercard: 'Mastercard',
+  amex: 'American Express',
+  discover: 'Discover',
+  diners: 'Diners Club',
+  jcb: 'JCB',
+  unionpay: 'UnionPay',
+};
+
+function fmtInvoiceDate(ms) {
+  return new Date(ms).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+
+function fmtInvoiceAmount(cents, currency) {
+  return (cents / 100).toLocaleString('en-US', {
+    style: 'currency',
+    currency: (currency || 'usd').toUpperCase(),
+  });
+}
+
+export function BillingPanel() {
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const [isCustomer, setIsCustomer] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState(null);
+  const [invoices, setInvoices] = useState([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        const token = session?.access_token;
+        if (!token) {
+          if (!cancelled) setLoading(false);
+          return;
+        }
+        const res = await fetch('/api/stripe/billing-summary', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (cancelled) return;
+        if (!res.ok) {
+          setLoadError(data.error || 'Failed to load billing details.');
+        } else {
+          setIsCustomer(Boolean(data.customer));
+          setPaymentMethod(data.paymentMethod || null);
+          setInvoices(data.invoices || []);
+        }
+      } catch {
+        if (!cancelled) setLoadError('Failed to load billing details.');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <div className="settings-panel">
       <div className="settings-panel-header">
         <h2 className="settings-panel-title">Billing</h2>
-        <p className="settings-panel-desc">Payment methods and billing history.</p>
+        <p className="settings-panel-desc">
+          Your payment method and invoice history. Payment details and billing address are managed
+          securely through the Stripe portal.
+        </p>
       </div>
       <div className="settings-section">
-        <h3 className="settings-section-title">
-          <i className="bi bi-credit-card" />
-          Payment method
-        </h3>
-        <div className="settings-info-card">
-          <strong>•••• •••• •••• 4242</strong> — Expires 12/26
-        </div>
-        <div
-          className="settings-btn-row"
-          style={{ flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}
-        >
-          <ManageBillingButton className="settings-btn-primary" label="Update payment method" />
-        </div>
-        <button type="button" className="settings-btn-secondary">
-          Add payment method
-        </button>
-        <h3 className="settings-section-title">
-          <i className="bi bi-geo-alt" />
-          Billing address
-        </h3>
-        <div className="settings-row single">
-          <div className="settings-field">
-            <label className="settings-label">Address</label>
-            <input type="text" className="settings-input" placeholder="123 Main St" />
-          </div>
-        </div>
-        <div className="settings-row">
-          <div className="settings-field">
-            <label className="settings-label">City</label>
-            <input type="text" className="settings-input" placeholder="New York" />
-          </div>
-          <div className="settings-field">
-            <label className="settings-label">ZIP</label>
-            <input type="text" className="settings-input" placeholder="10001" />
-          </div>
-        </div>
-        <h3 className="settings-section-title">
-          <i className="bi bi-receipt" />
-          Billing history
-        </h3>
-        <table className="settings-table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Description</th>
-              <th>Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Mar 1, 2025</td>
-              <td>Pro subscription</td>
-              <td>$19.00</td>
-            </tr>
-            <tr>
-              <td>Feb 1, 2025</td>
-              <td>Pro subscription</td>
-              <td>$19.00</td>
-            </tr>
-          </tbody>
-        </table>
-        <div className="settings-btn-row">
-          <button type="button" className="settings-btn-primary" onClick={onSave}>
-            Save changes
-          </button>
-        </div>
+        {loading ? (
+          <div aria-hidden style={{ minHeight: 320, width: '100%' }} />
+        ) : loadError ? (
+          <p className="settings-field-error" role="alert">
+            {loadError}
+          </p>
+        ) : !isCustomer ? (
+          <>
+            <div className="settings-info-card">
+              No billing account yet. Subscribe to a plan and your payment method and invoices
+              appear here.
+            </div>
+            <div className="settings-btn-row">
+              <Link
+                href="/subscribe"
+                className="settings-btn-primary"
+                style={{
+                  textAlign: 'center',
+                  textDecoration: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                View plans
+              </Link>
+            </div>
+          </>
+        ) : (
+          <>
+            <h3 className="settings-section-title">
+              <i className="bi bi-credit-card" />
+              Payment method
+            </h3>
+            {paymentMethod ? (
+              <div className="settings-info-card">
+                <strong>
+                  {CARD_BRAND_LABELS[paymentMethod.brand] || paymentMethod.brand} ••••{' '}
+                  {paymentMethod.last4}
+                </strong>{' '}
+                · Expires {String(paymentMethod.expMonth).padStart(2, '0')}/
+                {String(paymentMethod.expYear).slice(-2)}
+              </div>
+            ) : (
+              <div className="settings-info-card">
+                No default payment method on file. Add one in the Stripe portal.
+              </div>
+            )}
+            <div
+              className="settings-btn-row"
+              style={{ flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}
+            >
+              <ManageBillingButton className="settings-btn-primary" label="Manage billing" />
+            </div>
+            <h3 className="settings-section-title">
+              <i className="bi bi-receipt" />
+              Billing history
+            </h3>
+            {invoices.length === 0 ? (
+              <p className="settings-toggle-desc">No invoices yet.</p>
+            ) : (
+              <table className="settings-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th style={{ textAlign: 'right' }}>Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {invoices.map((inv) => (
+                    <tr key={inv.id}>
+                      <td>{fmtInvoiceDate(inv.date)}</td>
+                      <td>
+                        {inv.hostedUrl ? (
+                          <a
+                            href={inv.hostedUrl}
+                            target="_blank"
+                            rel="noopener"
+                            className="settings-invoice-link"
+                          >
+                            {inv.description}
+                          </a>
+                        ) : (
+                          inv.description
+                        )}
+                      </td>
+                      <td style={{ textTransform: 'capitalize' }}>{inv.status}</td>
+                      <td className="settings-amount-mono">
+                        {fmtInvoiceAmount(inv.amountCents, inv.currency)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </>
+        )}
       </div>
     </div>
   );
@@ -1302,7 +1490,7 @@ export function NotificationsPanel({ onSave, settings, updateSetting }) {
       <div className="settings-panel-header">
         <h2 className="settings-panel-title">Notifications</h2>
         <p className="settings-panel-desc">
-          Manage how you hear from Ezana Finance. Desktop push can only be enabled here — we never
+          Manage how you hear from Ezana Finance. Desktop push can only be enabled here: we never
           ask on sign-up or login.
         </p>
       </div>
@@ -1316,7 +1504,7 @@ export function NotificationsPanel({ onSave, settings, updateSetting }) {
             <div className="settings-toggle-info">
               <span className="settings-toggle-label">Desktop notifications</span>
               <span className="settings-toggle-desc">
-                Receive push notifications in your browser for alerts and updates — even when this
+                Receive push notifications in your browser for alerts and updates, even when this
                 site is in the background. The browser will ask for permission only when you turn
                 this on.
               </span>

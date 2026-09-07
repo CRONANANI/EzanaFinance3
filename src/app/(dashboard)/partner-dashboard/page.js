@@ -40,9 +40,30 @@ const COPIER_METRICS = {
 };
 
 const STRATEGIES = [
-  { name: 'Growth Alpha', copiers: 142, aum: 542000, returnPct: 34.2, returnMo: 4.8, status: 'active' },
-  { name: 'Dividend Machine', copiers: 67, aum: 248000, returnPct: 18.7, returnMo: 2.1, status: 'active' },
-  { name: 'Swing Trader', copiers: 25, aum: 105680, returnPct: 52.3, returnMo: 8.4, status: 'active' },
+  {
+    name: 'Growth Alpha',
+    copiers: 142,
+    aum: 542000,
+    returnPct: 34.2,
+    returnMo: 4.8,
+    status: 'active',
+  },
+  {
+    name: 'Dividend Machine',
+    copiers: 67,
+    aum: 248000,
+    returnPct: 18.7,
+    returnMo: 2.1,
+    status: 'active',
+  },
+  {
+    name: 'Swing Trader',
+    copiers: 25,
+    aum: 105680,
+    returnPct: 52.3,
+    returnMo: 8.4,
+    status: 'active',
+  },
 ];
 
 const PAYOUT_HISTORY = [
@@ -71,18 +92,67 @@ const MARKET_PULSE = [
 ];
 
 const ACTIVITY_TIMELINE = [
-  { icon: 'bi-lightning-charge', text: 'New trade executed: BUY NVDA', time: '2 hours ago', color: '#10b981' },
-  { icon: 'bi-person-plus', text: '12 new copiers joined your Growth Alpha strategy', time: '5 hours ago', color: '#d4a853' },
-  { icon: 'bi-newspaper', text: 'Your article "AI Stocks 2026" received 340 reads', time: '1 day ago', color: '#3b82f6' },
-  { icon: 'bi-cash-stack', text: 'Commission payout of $1,240 processed', time: '2 days ago', color: '#10b981' },
-  { icon: 'bi-mortarboard', text: '8 new students enrolled in your Options course', time: '3 days ago', color: '#a78bfa' },
+  {
+    icon: 'bi-lightning-charge',
+    text: 'New trade executed: BUY NVDA',
+    time: '2 hours ago',
+    color: '#10b981',
+  },
+  {
+    icon: 'bi-person-plus',
+    text: '12 new copiers joined your Growth Alpha strategy',
+    time: '5 hours ago',
+    color: '#d4a853',
+  },
+  {
+    icon: 'bi-newspaper',
+    text: 'Your article "AI Stocks 2026" received 340 reads',
+    time: '1 day ago',
+    color: '#3b82f6',
+  },
+  {
+    icon: 'bi-cash-stack',
+    text: 'Commission payout of $1,240 processed',
+    time: '2 days ago',
+    color: '#10b981',
+  },
+  {
+    icon: 'bi-mortarboard',
+    text: '8 new students enrolled in your Options course',
+    time: '3 days ago',
+    color: '#a78bfa',
+  },
 ];
 
 const TOP_CONTENT = [
-  { type: 'Article', title: 'AI Stocks to Watch in 2026', metric: '2,340 reads', icon: 'bi-newspaper', change: '+45%' },
-  { type: 'Course', title: 'Options Trading Fundamentals', metric: '156 enrolled', icon: 'bi-mortarboard', change: '+12%' },
-  { type: 'Article', title: 'Why the Fed Will Cut Rates', metric: '1,890 reads', icon: 'bi-newspaper', change: '+32%' },
-  { type: 'Strategy', title: 'Growth Alpha', metric: '234 copiers', icon: 'bi-lightning-charge', change: '+8.7%' },
+  {
+    type: 'Article',
+    title: 'AI Stocks to Watch in 2026',
+    metric: '2,340 reads',
+    icon: 'bi-newspaper',
+    change: '+45%',
+  },
+  {
+    type: 'Course',
+    title: 'Options Trading Fundamentals',
+    metric: '156 enrolled',
+    icon: 'bi-mortarboard',
+    change: '+12%',
+  },
+  {
+    type: 'Article',
+    title: 'Why the Fed Will Cut Rates',
+    metric: '1,890 reads',
+    icon: 'bi-newspaper',
+    change: '+32%',
+  },
+  {
+    type: 'Strategy',
+    title: 'Growth Alpha',
+    metric: '234 copiers',
+    icon: 'bi-lightning-charge',
+    change: '+8.7%',
+  },
 ];
 
 export default function PartnerDashboardPage() {
@@ -95,7 +165,14 @@ export default function PartnerDashboardPage() {
         <h1 className="ptr-page-title">Partner Dashboard</h1>
         <div className="ptr-tf-group">
           {['1W', '1M', '3M', '6M', '1Y', 'ALL'].map((tf) => (
-            <button key={tf} type="button" className={`ptr-tf-btn ${timeframe === tf ? 'active' : ''}`} onClick={() => setTimeframe(tf)}>{tf}</button>
+            <button
+              key={tf}
+              type="button"
+              className={`ptr-tf-btn ${timeframe === tf ? 'active' : ''}`}
+              onClick={() => setTimeframe(tf)}
+            >
+              {tf}
+            </button>
           ))}
         </div>
       </div>
@@ -104,28 +181,44 @@ export default function PartnerDashboardPage() {
         <div className="ptr-stat-card ptr-stat-gold">
           <i className="bi bi-cash-coin" />
           <div className="ptr-stat-info">
-            <span className="ptr-stat-value">$<AnimatedCounter value={EARNINGS_DATA.totalEarnings} decimals={0} /></span>
+            <span className="ptr-stat-value">
+              $<AnimatedCounter value={EARNINGS_DATA.totalEarnings} decimals={0} />
+            </span>
             <span className="ptr-stat-label">Total Earnings</span>
           </div>
         </div>
         <div className="ptr-stat-card">
           <i className="bi bi-graph-up-arrow" />
           <div className="ptr-stat-info">
-            <span className="ptr-stat-value">$<AnimatedCounter value={EARNINGS_DATA.thisMonth} decimals={0} /></span>
-            <span className="ptr-stat-label">This Month <span className="ptr-stat-change positive">+{EARNINGS_DATA.monthlyChange}%</span></span>
+            <span className="ptr-stat-value">
+              $<AnimatedCounter value={EARNINGS_DATA.thisMonth} decimals={0} />
+            </span>
+            <span className="ptr-stat-label">
+              This Month{' '}
+              <span className="ptr-stat-change positive">+{EARNINGS_DATA.monthlyChange}%</span>
+            </span>
           </div>
         </div>
         <div className="ptr-stat-card">
           <i className="bi bi-people-fill" />
           <div className="ptr-stat-info">
-            <span className="ptr-stat-value"><AnimatedCounter value={COPIER_METRICS.totalCopiers} /></span>
-            <span className="ptr-stat-label">Total Copiers <span className="ptr-stat-change positive">+{COPIER_METRICS.newThisWeek} this week</span></span>
+            <span className="ptr-stat-value">
+              <AnimatedCounter value={COPIER_METRICS.totalCopiers} />
+            </span>
+            <span className="ptr-stat-label">
+              Total Copiers{' '}
+              <span className="ptr-stat-change positive">
+                +{COPIER_METRICS.newThisWeek} this week
+              </span>
+            </span>
           </div>
         </div>
         <div className="ptr-stat-card">
           <i className="bi bi-wallet2" />
           <div className="ptr-stat-info">
-            <span className="ptr-stat-value">$<AnimatedCounter value={COPIER_METRICS.totalAUM} decimals={0} /></span>
+            <span className="ptr-stat-value">
+              $<AnimatedCounter value={COPIER_METRICS.totalAUM} decimals={0} />
+            </span>
             <span className="ptr-stat-label">Assets Under Management</span>
           </div>
         </div>
@@ -142,7 +235,9 @@ export default function PartnerDashboardPage() {
               <div key={i} className="ptr-market-item">
                 <span className="ptr-market-name">{item.name}</span>
                 <span className="ptr-market-value">{item.value}</span>
-                <span className={`ptr-market-change ${item.up ? 'positive' : 'negative'}`}>{item.change}</span>
+                <span className={`ptr-market-change ${item.up ? 'positive' : 'negative'}`}>
+                  {item.change}
+                </span>
               </div>
             ))}
           </div>
@@ -153,7 +248,14 @@ export default function PartnerDashboardPage() {
             <h3>Audience Growth</h3>
             <div className="ptr-tf-group">
               {['1W', '1M', '3M', '6M'].map((tf) => (
-                <button key={tf} type="button" className={`ptr-tf-btn ${audienceTf === tf ? 'active' : ''}`} onClick={() => setAudienceTf(tf)}>{tf}</button>
+                <button
+                  key={tf}
+                  type="button"
+                  className={`ptr-tf-btn ${audienceTf === tf ? 'active' : ''}`}
+                  onClick={() => setAudienceTf(tf)}
+                >
+                  {tf}
+                </button>
               ))}
             </div>
           </div>
@@ -186,14 +288,18 @@ export default function PartnerDashboardPage() {
         <div className="ptr-card ptr-strategies-card">
           <div className="ptr-card-header">
             <h3>Your Strategies</h3>
-            <button type="button" className="ptr-btn-sm"><i className="bi bi-plus-lg" /> New Strategy</button>
+            <button type="button" className="ptr-btn-sm">
+              <i className="bi bi-plus-lg" /> New Strategy
+            </button>
           </div>
           <div className="ptr-strategy-list">
             {STRATEGIES.map((s) => (
               <div key={s.name} className="ptr-strategy-item">
                 <div className="ptr-strategy-left">
                   <span className="ptr-strategy-name">{s.name}</span>
-                  <span className="ptr-strategy-meta">{s.copiers} copiers · ${(s.aum / 1000).toFixed(0)}K AUM</span>
+                  <span className="ptr-strategy-meta">
+                    {s.copiers} copiers · ${(s.aum / 1000).toFixed(0)}K AUM
+                  </span>
                 </div>
                 <div className="ptr-strategy-right">
                   <div className="ptr-strategy-return">
@@ -215,7 +321,10 @@ export default function PartnerDashboardPage() {
             {TOP_CONTENT.map((item, i) => (
               <div key={i} className="ptr-top-content-row">
                 <div className="ptr-top-content-icon">
-                  <i className={`bi ${item.icon}`} style={{ color: '#d4a853', fontSize: '0.875rem' }} />
+                  <i
+                    className={`bi ${item.icon}`}
+                    style={{ color: '#d4a853', fontSize: '0.875rem' }}
+                  />
                 </div>
                 <div style={{ flex: 1 }}>
                   <span className="ptr-top-content-type">{item.type}</span>
@@ -261,7 +370,9 @@ export default function PartnerDashboardPage() {
                 <div className="ptr-copier-rank">{i + 1}</div>
                 <div className="ptr-copier-info">
                   <span className="ptr-copier-name">{c.name}</span>
-                  <span className="ptr-copier-meta">Since {c.since} · ${c.copyAmount.toLocaleString()}</span>
+                  <span className="ptr-copier-meta">
+                    Since {c.since} · ${c.copyAmount.toLocaleString()}
+                  </span>
                 </div>
                 <div className="ptr-copier-pnl">
                   <span className="positive">+${c.pnl.toLocaleString()}</span>
@@ -297,7 +408,11 @@ export default function PartnerDashboardPage() {
           </div>
           <div className="ptr-payout-next">
             <i className="bi bi-clock" />
-            <span>Next payout: <strong>${EARNINGS_DATA.pendingPayout.toLocaleString()}</strong> on {EARNINGS_DATA.nextPayoutDate} — <NextPayoutCountdown dateStr={EARNINGS_DATA.nextPayoutDate} /></span>
+            <span>
+              Next payout: <strong>${EARNINGS_DATA.pendingPayout.toLocaleString()}</strong> on{' '}
+              {EARNINGS_DATA.nextPayoutDate} ·{' '}
+              <NextPayoutCountdown dateStr={EARNINGS_DATA.nextPayoutDate} />
+            </span>
           </div>
         </div>
 
@@ -306,14 +421,23 @@ export default function PartnerDashboardPage() {
             <h3>Payout History</h3>
           </div>
           <table className="ptr-table">
-            <thead><tr><th>Date</th><th>Amount</th><th>Method</th><th>Status</th></tr></thead>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Method</th>
+                <th>Status</th>
+              </tr>
+            </thead>
             <tbody>
               {PAYOUT_HISTORY.map((p) => (
                 <tr key={p.date}>
                   <td>{p.date}</td>
                   <td className="ptr-table-amount">${p.amount.toLocaleString()}</td>
                   <td>{p.method}</td>
-                  <td><span className="ptr-status-badge green">{p.status}</span></td>
+                  <td>
+                    <span className="ptr-status-badge green">{p.status}</span>
+                  </td>
                 </tr>
               ))}
             </tbody>

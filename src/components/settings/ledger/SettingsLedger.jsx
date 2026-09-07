@@ -1,7 +1,7 @@
 'use client';
 
-import { SettingsLedgerShell } from './SettingsLedgerShell';
-import { LEDGER_PANEL_MAP, LEDGER_PAGE_META } from './ledger-panels';
+import { SettingsLedgerShell, getVisibleNavKeys } from './SettingsLedgerShell';
+import { LEDGER_PANEL_MAP, LEDGER_PAGE_META, eyebrowFor } from './ledger-panels';
 import '@/app/settings/settings-ledger.css';
 
 export function SettingsLedger({
@@ -12,6 +12,7 @@ export function SettingsLedger({
   partnersTabAllowed,
   orgTabAllowed,
   isOrgUser,
+  isPartner,
   backLabel,
   backHref,
   error,
@@ -20,10 +21,16 @@ export function SettingsLedger({
   hideGlobalSave,
 }) {
   const meta = LEDGER_PAGE_META[activeTab] || {
-    eyebrow: '— Settings',
+    eyebrow: 'Settings',
     title: activeTab,
     helper: '',
   };
+  const visibleKeys = getVisibleNavKeys({
+    partnersTabAllowed,
+    orgTabAllowed,
+    isOrgUser,
+    isPartner,
+  });
   const Panel = LEDGER_PANEL_MAP[activeTab];
 
   return (
@@ -33,8 +40,9 @@ export function SettingsLedger({
       partnersTabAllowed={partnersTabAllowed}
       orgTabAllowed={orgTabAllowed}
       isOrgUser={isOrgUser}
+      isPartner={isPartner}
       pageTitle={meta.title}
-      pageEyebrow={meta.eyebrow}
+      pageEyebrow={eyebrowFor(activeTab, visibleKeys, meta.eyebrow)}
       pageHelper={meta.helper}
       saveStatus={saveStatus}
       backLabel={backLabel}

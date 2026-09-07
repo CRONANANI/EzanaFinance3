@@ -12,6 +12,7 @@ import { MyRoleAccessPanel } from '@/components/settings/MyRoleAccessPanel';
 import { DataRequestPanel } from '@/components/settings/DataRequestPanel';
 import { PlatformChangelogPanel } from '@/components/settings/PlatformChangelogPanel';
 import { PartnerManagementPanel } from '@/components/settings/PartnerManagementPanel';
+import { PayoutsPanel } from '@/components/settings/PayoutsPanel';
 import { usePartner } from '@/contexts/PartnerContext';
 import { useUserSettings } from '@/contexts/SettingsContext';
 import { useOrg } from '@/contexts/OrgContext';
@@ -86,6 +87,7 @@ const PANEL_MAP = {
   organization: OrgSettingsPanel,
   'my-role': MyRoleAccessPanel,
   'privacy-data': DataRequestPanel,
+  payouts: PayoutsPanel,
 };
 
 function SettingsInner() {
@@ -211,6 +213,23 @@ function SettingsInner() {
     const withPartners = base.flatMap((tab) =>
       tab.key === 'integrations' ? [tab, ...partnersTab] : [tab],
     );
+    // Verified partners get the Payouts tab alongside consumer Billing
+    // (partners can still hold their own subscription).
+    const withPayouts = isPartner
+      ? withPartners.flatMap((tab) =>
+          tab.key === 'billing'
+            ? [
+                tab,
+                {
+                  key: 'payouts',
+                  label: 'Payouts',
+                  icon: 'bi-bank',
+                  desc: 'Payout account & history',
+                },
+              ]
+            : [tab],
+        )
+      : withPartners;
     const orgExtras = [];
     if (isOrgUser) {
       orgExtras.push({
@@ -228,8 +247,8 @@ function SettingsInner() {
         desc: 'Manage members & permissions',
       });
     }
-    return [...withPartners, ...orgExtras];
-  }, [isOrgUser, orgRole, isExecutive, partnersTabAllowed]);
+    return [...withPayouts, ...orgExtras];
+  }, [isOrgUser, orgRole, isExecutive, partnersTabAllowed, isPartner]);
 
   useEffect(() => {
     if (!tabs.some((t) => t.key === activeTab)) {
@@ -248,9 +267,7 @@ function SettingsInner() {
   const handleTabChange = (key) => {
     setActiveTab(key);
     setMobileNavOpen(false);
-    if (USE_LEDGER) {
-      router.push(`/settings?tab=${key}`, { scroll: false });
-    }
+    router.push(`/settings?tab=${key}`, { scroll: false });
   };
 
   const handleSave = async () => {
@@ -278,7 +295,8 @@ function SettingsInner() {
   }
 
   if (USE_LEDGER) {
-    const ledgerSavePanels = new Set(['my-details', 'appearance']);
+    // Panels with their own save/action flows: hide the ledger's global save bar.
+    const ledgerSavePanels = new Set(['my-details', 'appearance', 'billing', 'payouts']);
     return (
       <SettingsLedger
         panelProps={panelProps}
@@ -291,6 +309,7 @@ function SettingsInner() {
         partnersTabAllowed={partnersTabAllowed}
         orgTabAllowed={isOrgUser && orgRole === 'executive'}
         isOrgUser={isOrgUser}
+        isPartner={isPartner}
         backLabel={backLabel}
         backHref={backPath}
         error={error}
@@ -353,7 +372,7 @@ function SettingsInner() {
               <button
                 key={tab.key}
                 className={`settings-nav-item ${activeTab === tab.key ? 'active' : ''}`}
-                onClick={() => setActiveTab(tab.key)}
+                onClick={() => handleTabChange(tab.key)}
                 type="button"
                 style={{ animationDelay: `${i * 30}ms` }}
               >
@@ -399,21 +418,20 @@ function SettingsInner() {
           gap: '0.75rem',
           padding: '1rem 1.25rem',
           marginTop: '1rem',
-          background:
-            'linear-gradient(180deg, transparent 0%, rgba(15,20,25,0.95) 20%, #0f1419 100%)',
-          borderTop: '1px solid rgba(255,255,255,0.06)',
+          background: 'linear-gradient(180deg, transparent 0%, var(--app-bg) 25%)',
+          borderTop: '1px solid var(--border-primary)',
         }}
       >
         <div style={{ minHeight: '1.25rem' }}>
           {error ? (
-            <p style={{ color: '#f87171', fontSize: '0.85rem', margin: 0 }}>{error}</p>
+            <p style={{ color: 'var(--negative)', fontSize: '0.85rem', margin: 0 }}>{error}</p>
           ) : saved ? (
             <p className="settings-saved-ok" style={{ fontSize: '0.85rem', margin: 0 }}>
               <i className="bi bi-check-circle-fill" style={{ marginRight: '0.35rem' }} />
               Settings saved
             </p>
           ) : (
-            <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.8rem', margin: 0 }}>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', margin: 0 }}>
               Changes apply after you save
             </p>
           )}

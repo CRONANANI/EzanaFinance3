@@ -45,7 +45,7 @@
  *   • leaderboard             → Relative-performance ranking
  *   • empire-ranking          → 18-dimension global power index + Big Cycle
  *                               chart; GDELT ISR events; Polymarket overlay
- *   • user-profile-settings   → Settings: My Details, Appearance, Plan,
+ *   • settings                → Settings: My Details, Appearance, Plan,
  *                               Billing, Notifications, Integrations, API,
  *                               Security, Delete Account
  *   • partner-home / partner-dashboard / partner-community / partner-learning

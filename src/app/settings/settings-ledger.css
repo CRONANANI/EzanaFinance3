@@ -189,8 +189,9 @@ html.dark .settings-ledger {
   background: var(--line-soft);
 }
 .settings-ledger .sl-nav-ico {
-  width: 17px;
-  height: 17px;
+  width: 1.25rem;
+  font-size: 1rem;
+  text-align: center;
   color: var(--muted);
   flex-shrink: 0;
 }
@@ -256,8 +257,7 @@ html.dark .settings-ledger {
   text-decoration: none;
 }
 .settings-ledger .sl-crumb-ico {
-  width: 15px;
-  height: 15px;
+  font-size: 0.9rem;
 }
 .settings-ledger .sl-crumb-sep {
   color: var(--faint);
@@ -434,8 +434,8 @@ html.dark .settings-ledger {
   right: 12px;
   top: 50%;
   transform: translateY(-50%);
-  width: 15px;
-  height: 15px;
+  font-size: 0.9rem;
+  line-height: 1;
   color: var(--muted);
   pointer-events: none;
 }
@@ -464,8 +464,8 @@ html.dark .settings-ledger {
   object-fit: cover;
 }
 .settings-ledger .sl-avatar-ico {
-  width: 30px;
-  height: 30px;
+  font-size: 1.875rem;
+  line-height: 1;
   color: var(--em);
 }
 .settings-ledger .sl-photo-actions {
@@ -498,6 +498,10 @@ html.dark .settings-ledger {
 .settings-ledger .sl-btn svg {
   width: 15px;
   height: 15px;
+}
+.settings-ledger .sl-btn .bi {
+  font-size: 0.9rem;
+  line-height: 1;
 }
 .settings-ledger .sl-btn-pri {
   background: var(--em);
@@ -579,6 +583,10 @@ html.dark .settings-ledger {
 .settings-ledger .sl-danger-head svg {
   width: 16px;
   height: 16px;
+}
+.settings-ledger .sl-danger-head .bi {
+  font-size: 1rem;
+  line-height: 1;
 }
 .settings-ledger .sl-danger-row {
   display: flex;
@@ -733,6 +741,10 @@ html.dark .settings-ledger .sl-toggle {
 .settings-ledger .sl-seg-btn svg {
   width: 14px;
   height: 14px;
+}
+.settings-ledger .sl-seg-btn .bi {
+  font-size: 0.875rem;
+  line-height: 1;
 }
 .settings-ledger .sl-seg-btn.is-active {
   background: var(--em-tint);
