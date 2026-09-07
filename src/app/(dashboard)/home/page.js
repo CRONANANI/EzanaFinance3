@@ -153,7 +153,6 @@ function portfolioSeriesRange(tf) {
   return tf;
 }
 
-
 /* ═══ HELPERS ═══ */
 const fmtMoney = (n) =>
   '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -417,7 +416,7 @@ export default function HomePage() {
       const d = parseDay(ev);
       if (!d || d.getMonth() !== m || d.getFullYear() !== y) return;
       const day = d.getDate();
-      (dayToCategories[day] ??= []);
+      dayToCategories[day] ??= [];
       const cat = ev.category || ev.type;
       if (cat && !dayToCategories[day].includes(cat)) dayToCategories[day].push(cat);
     });
@@ -1637,10 +1636,32 @@ export default function HomePage() {
             <div className="bs-pos-l">
               <div className="bs-sub-head">
                 <h3 className="bs-sub-title">Holdings</h3>
-                <span className="bs-sub-meta">
+                <span className="bs-sub-meta bs-sub-meta--paged">
                   {normalizedHoldings.length === 0
                     ? 'No positions'
                     : `Page ${holdingsPage + 1} of ${holdingsPageCount} · ${normalizedHoldings.length} total`}
+                  {holdingsPageCount > 1 && (
+                    <span className="bs-holdings-pager">
+                      <button
+                        type="button"
+                        className="bs-holdings-pager-btn"
+                        disabled={holdingsPage === 0}
+                        onClick={() => setHoldingsPage((p) => p - 1)}
+                        aria-label="Previous holdings page"
+                      >
+                        ← Prev
+                      </button>
+                      <button
+                        type="button"
+                        className="bs-holdings-pager-btn"
+                        disabled={holdingsPage >= holdingsPageCount - 1}
+                        onClick={() => setHoldingsPage((p) => p + 1)}
+                        aria-label="Next holdings page"
+                      >
+                        Next →
+                      </button>
+                    </span>
+                  )}
                 </span>
               </div>
               {pagedHoldings.length === 0 ? (
@@ -1700,27 +1721,6 @@ export default function HomePage() {
                     })}
                   </tbody>
                 </table>
-              )}
-              {holdingsPageCount > 1 && (
-                <div className="bs-pagination">
-                  <button
-                    type="button"
-                    disabled={holdingsPage === 0}
-                    onClick={() => setHoldingsPage((p) => p - 1)}
-                  >
-                    ← Prev
-                  </button>
-                  <span>
-                    {holdingsPage + 1} / {holdingsPageCount}
-                  </span>
-                  <button
-                    type="button"
-                    disabled={holdingsPage >= holdingsPageCount - 1}
-                    onClick={() => setHoldingsPage((p) => p + 1)}
-                  >
-                    Next →
-                  </button>
-                </div>
               )}
             </div>
             <div className="bs-pos-r">
@@ -1979,7 +1979,9 @@ export default function HomePage() {
                         <div
                           key={ev.id}
                           className="bs-event-item"
-                          style={{ borderLeft: `2px solid ${ev.color || eventCategoryColor(ev.category)}` }}
+                          style={{
+                            borderLeft: `2px solid ${ev.color || eventCategoryColor(ev.category)}`,
+                          }}
                           title={ev.subtitle || ev.title}
                         >
                           <div
