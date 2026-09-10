@@ -1,6 +1,18 @@
 # Architecture Audit — Ezana Finance
 
-**Last updated:** May 13 2026
+> **September 10 2026 update.** The numbers and gaps below were captured in May 2026;
+> the repo has since grown (480 API route files, 140 pages, 35 Vercel crons) and the
+> headline gap in §3 is now **closed**: the five overlapping Supabase auth/data-access
+> patterns were consolidated onto the single `@/lib/supabase` facade
+> (`requireUser` / `getUserClient` / `getAdminClient` / `getAuthUser` / `getAuthContext` /
+> `isServerSupabaseConfigured`). The legacy modules `supabase-server.js`,
+> `supabase-service-role.js`, `auth-helpers.js`, and the `supabaseAdmin` export from
+> `plaid.js` have been **deleted**, and the `no-restricted-imports` ESLint rule is an
+> **error**, so the legacy patterns cannot return. CI now also runs the node:test unit
+> suites (`npm test`, 7 suites) and a production build with stubbed env. Historical
+> counts below are kept for the record.
+
+**Last updated:** May 13 2026 (audit body) · Sep 10 2026 (status header)
 **Audit scope:** entire `cronanani` Next.js application + supporting tooling
 **Stack reality (corrected from earlier docs):** Next.js 14 App Router + React 18 + Supabase (Postgres + Auth + RLS) + Vercel — **not** FastAPI + vanilla JS.
 
@@ -64,7 +76,7 @@ This document is an honest senior-engineer-level read of the code as it stands t
 
 ---
 
-## 3. Auth + data access — the fragmentation is real
+## 3. Auth + data access — the fragmentation is real _(RESOLVED Sep 2026 — see header note)_
 
 `src/app/api/**/route.js` currently uses **five overlapping Supabase patterns**:
 

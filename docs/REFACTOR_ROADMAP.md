@@ -59,7 +59,14 @@ These are listed for honest accounting; do **not** re-do them.
 
 ---
 
-## Phase 2 — Auth + data-access consolidation
+## Phase 2 — Auth + data-access consolidation ✅ DONE (Sep 10 2026)
+
+> **Status:** Complete. All API routes and lib modules now import from the
+> `@/lib/supabase` facade; the legacy modules (`supabase-server.js`,
+> `supabase-service-role.js`, `auth-helpers.js`) and plaid.js's `supabaseAdmin`
+> export are deleted; the `no-restricted-imports` lint rule is an **error**.
+> CI additionally runs the node:test unit suites and a stub-env production
+> build (the "build job" deferred from Phase 1).
 
 **Goal:** every API route uses exactly one user-client pattern (`requireUser`) and exactly one admin pattern (`getAdminClient`). Legacy facades become thin re-exports that emit deprecation warnings, then disappear.
 
