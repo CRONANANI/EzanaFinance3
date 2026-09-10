@@ -1,0 +1,55 @@
+name: Claude PR Review
+
+# Forge Lite item 6 — the entire "agent fleet": one reviewer with read +
+# comment permissions only. It must not push, approve, or merge (and its
+# permissions below make that impossible).
+#
+# Requires the ANTHROPIC_API_KEY repository secret; until that secret is
+# added the job skips cleanly rather than failing every PR.
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+
+jobs:
+  review:
+    name: Review with Claude
+    if: ${{ !github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: write # comments only — no code writes possible with contents:read
+      issues: write
+    steps:
+      - name: Check for API key
+        id: key
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -n "$ANTHROPIC_API_KEY" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "ANTHROPIC_API_KEY secret not set — skipping Claude review."
+          fi
+
+      - name: Checkout
+        if: steps.key.outputs.present == 'true'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Claude review
+        if: steps.key.outputs.present == 'true'
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Review this pull request against the repository's standing rules in
+            CLAUDE.md and docs/ENGINEERING.md (layer boundaries, the single
+            '@/lib/supabase' data-access surface, the security trust model,
+            tested financial math). Focus on correctness and rule violations,
+            not style — Prettier and ESLint handle style. Post findings as PR
+            comments. Do not attempt to push, approve, or merge.
+          claude_args: '--allowedTools "Read,Grep,Glob,Bash(git diff:*),Bash(git log:*)"'
