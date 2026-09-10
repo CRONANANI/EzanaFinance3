@@ -582,13 +582,13 @@ export function Navbar() {
                       return (
                         <div key={col.id} className="nav-datasets-col">
                           <p className="nav-datasets-col-head">
+                            {col.heading}
                             <ColIcon
                               size={14}
                               aria-hidden
                               className="nav-datasets-col-icon"
                               style={{ color: col.color }}
                             />
-                            {col.heading}
                           </p>
                           {col.items.map((item) =>
                             item.live ? (

@@ -2393,6 +2393,9 @@ html:has(.landing-page) .navbar .logo,
   align-items: center;
   gap: 0.35rem;
   margin: 0 0 0.35rem;
+  /* Match .nav-datasets-item's 0.5rem horizontal padding so the header
+     text left-aligns with the item labels in its column. */
+  padding-left: 0.5rem;
   font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.06em;
