@@ -2,6 +2,7 @@
  * /api/partner/badges
  * GET — get all badge definitions + partner's earned badges grouped by category
  */
+import { getAdminClient } from '@/lib/supabase';
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 

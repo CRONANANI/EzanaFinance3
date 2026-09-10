@@ -145,3 +145,34 @@ export function sanitizeObject(value, maxFieldLength = 5000) {
   }
   return value;
 }
+
+/**
+ * Accept only absolute http(s) URLs for user-submitted link fields; anything
+ * else (javascript:, data:, vbscript:, protocol-relative, garbage) becomes
+ * null so it can never land in an href. Trims and caps length.
+ *
+ * @param {unknown} input
+ * @param {number} [maxLength=2000]
+ * @returns {string|null}
+ */
+export function httpUrlOrNull(input, maxLength = 2000) {
+  if (typeof input !== 'string') return null;
+  const s = input.trim().slice(0, maxLength);
+  return /^https?:\/\//i.test(s) ? s : null;
+}
+
+/**
+ * Validate a post-auth redirect target as an INTERNAL path. Rejects
+ * protocol-relative ("//evil.com") and backslash ("/\evil.com") forms that
+ * pass a naive startsWith('/') check but navigate off-site.
+ *
+ * @param {unknown} path
+ * @param {string} [fallback='/home']
+ * @returns {string}
+ */
+export function safeInternalPath(path, fallback = '/home') {
+  if (typeof path !== 'string') return fallback;
+  if (!path.startsWith('/')) return fallback;
+  if (path.startsWith('//') || path.startsWith('/\\')) return fallback;
+  return path;
+}

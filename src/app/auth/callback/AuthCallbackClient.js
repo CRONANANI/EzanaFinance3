@@ -5,6 +5,7 @@
  * Unverified email → /auth/verify-email; else redirect param or /home.
  */
 import { useEffect, useState } from 'react';
+import { safeInternalPath } from '@/lib/sanitize';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase-browser';
 import { isActivePartner } from '@/lib/partner-access';
@@ -83,7 +84,7 @@ async function routeAfterSession(supabase, router, type, redirectParam) {
     return;
   }
 
-  const dest = redirectParam.startsWith('/') ? redirectParam : '/home';
+  const dest = safeInternalPath(redirectParam);
   router.replace(dest);
 }
 

@@ -25,12 +25,12 @@ function percentileOf(value, population) {
    (pending where no inputs), resolved-thesis receipts (ΔRating from real tx),
    calibration series, badges & awards. All from real rows — honest-empty. */
 export const GET = withApiGuard(
-  async (_request, { params }) => {
+  async (_request, _user, context) => {
     const supabase = getUserClient();
     const viewer = await getCurrentOrgMember(supabase);
     if (!viewer) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
 
-    const { memberId } = await params;
+    const { memberId } = context?.params ?? {};
     const orgId = viewer.org_id;
 
     const { data: target } = await supabase

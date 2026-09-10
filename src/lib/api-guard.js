@@ -72,7 +72,10 @@ export function withApiGuard(handler, options = {}) {
       }
 
       if (requiredRole && user) {
-        const role = user.user_metadata?.role || user.user_metadata?.partner_role;
+        // SECURITY: only app_metadata is trusted — user_metadata is writable
+        // by the user themselves via supabase.auth.updateUser(), so reading a
+        // role from it would be a self-service privilege escalation.
+        const role = user.app_metadata?.role || user.app_metadata?.partner_role;
         if (role !== requiredRole && role !== 'admin') {
           return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }

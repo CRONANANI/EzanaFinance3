@@ -102,7 +102,9 @@ export default async function EzanaEchoArticlePage({ params }) {
       {/* Server-rendered structured data so crawlers see it in the initial HTML. */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        // Escape "<" so a title/excerpt containing "</script>" cannot break
+        // out of the JSON-LD block and inject markup (< stays valid JSON).
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}
       />
       <EchoArticleClient
         article={article}

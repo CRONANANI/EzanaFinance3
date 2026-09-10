@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { safeInternalPath } from '@/lib/sanitize';
 import { Eye, EyeOff, ArrowRight, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
@@ -25,7 +26,7 @@ const SignInCard = ({ variant = 'user', redirectTo, oauthErrorMessage }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const destination = redirectTo || '/home';
+  const destination = safeInternalPath(redirectTo);
 
   useEffect(() => {
     if (oauthErrorMessage) {

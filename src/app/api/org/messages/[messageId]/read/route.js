@@ -7,6 +7,7 @@ export const dynamic = 'force-dynamic';
 export const PATCH = withApiGuard(
   async (request, user, context) => {
     const params = context?.params ?? {};
+    const supabase = getUserClient();
     const { data: member } = await supabase
       .from('org_members')
       .select('id')

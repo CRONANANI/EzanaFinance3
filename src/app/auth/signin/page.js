@@ -1,4 +1,5 @@
 import SignInCard from '@/components/auth/SignInCard';
+import { safeInternalPath } from '@/lib/sanitize';
 
 export const metadata = {
   title: 'Sign In | Ezana Finance',
@@ -8,8 +9,8 @@ export const metadata = {
 
 export default function SignInPage({ searchParams }) {
   const redirectTo =
-    typeof searchParams?.redirect === 'string' && searchParams.redirect.startsWith('/')
-      ? searchParams.redirect
+    safeInternalPath(searchParams?.redirect, '') !== ''
+      ? safeInternalPath(searchParams?.redirect)
       : '/home';
   const oauthErrorMessage =
     typeof searchParams?.error === 'string' ? searchParams.error : undefined;

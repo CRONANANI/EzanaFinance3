@@ -1,4 +1,5 @@
 import MfaChallengeCard from '@/components/auth/MfaChallengeCard';
+import { safeInternalPath } from '@/lib/sanitize';
 
 export const metadata = {
   title: "Verify it's you | Ezana Finance",
@@ -7,8 +8,8 @@ export const metadata = {
 
 export default function MfaPage({ searchParams }) {
   const redirectTo =
-    typeof searchParams?.redirect === 'string' && searchParams.redirect.startsWith('/')
-      ? searchParams.redirect
+    safeInternalPath(searchParams?.redirect, '') !== ''
+      ? safeInternalPath(searchParams?.redirect)
       : '/home';
 
   return (

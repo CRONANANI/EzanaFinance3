@@ -17,10 +17,18 @@ function rows(assignments) {
   }));
 }
 
+/* Neutralize spreadsheet formula injection: a cell starting with = + - @
+   (or a tab/CR) would execute as a formula when the CSV is opened in Excel/
+   Sheets. Prefix a ' so it renders as text. */
+function csvSafe(v) {
+  const s = String(v ?? '');
+  return /^[=+\-@\t\r]/.test(s) ? `'${s}` : s;
+}
+
 function toCsv(data) {
   if (!data.length) return '';
   const headers = Object.keys(data[0]);
-  const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+  const esc = (v) => `"${csvSafe(v).replace(/"/g, '""')}"`;
   return [headers.join(','), ...data.map((r) => headers.map((h) => esc(r[h])).join(','))].join(
     '\n',
   );
@@ -58,8 +66,16 @@ export function AssignmentExport({ assignments }) {
     const headers = data.length ? Object.keys(data[0]) : [];
     const win = window.open('', '_blank');
     if (!win) return;
+    /* Escape user-authored values (assignment titles, member names) before
+       writing them into the popup document — it shares our origin, so raw
+       markup here is stored XSS. Mirrors ResearchLibrary's esc(). */
+    const esc = (s) =>
+      String(s ?? '').replace(
+        /[&<>"']/g,
+        (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c],
+      );
     const body = data
-      .map((r) => `<tr>${headers.map((h) => `<td>${String(r[h] ?? '')}</td>`).join('')}</tr>`)
+      .map((r) => `<tr>${headers.map((h) => `<td>${esc(r[h])}</td>`).join('')}</tr>`)
       .join('');
     win.document.write(
       `<!doctype html><title>Assignment log</title>` +
@@ -67,7 +83,7 @@ export function AssignmentExport({ assignments }) {
         `table{border-collapse:collapse;width:100%;font-size:12px}` +
         `th,td{border:1px solid #ccc;padding:6px 8px;text-align:left}th{background:#f3f4f6}</style>` +
         `<h1>Assignment log — ${new Date().toLocaleDateString('en-US')}</h1>` +
-        `<table><thead><tr>${headers.map((h) => `<th>${h}</th>`).join('')}</tr></thead><tbody>${body}</tbody></table>`,
+        `<table><thead><tr>${headers.map((h) => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${body}</tbody></table>`,
     );
     win.document.close();
     win.focus();

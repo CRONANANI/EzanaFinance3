@@ -4,12 +4,11 @@
 
 import { ApiCache } from '@/lib/api-cache';
 
-// Read the key at REQUEST time (not from the frozen API_CONFIG snapshot) and
-// accept either env var name. API_CONFIG.fmp.key only reads NEXT_PUBLIC_FMP_API_KEY
-// and is frozen at module load, so a server-only FMP_API_KEY — or a key set or
-// rotated after cold start — never reached this service. That silently broke
-// every FmpAPI-backed surface (market-data hooks, company search, the org
-// pitch-hindsight engine) while route-level getFmpKey() callers kept working.
+// Read the key at REQUEST time (not from a module-load snapshot, which broke
+// keys set or rotated after cold start) and accept either env var name:
+// FMP_API_KEY preferred; NEXT_PUBLIC_FMP_API_KEY is a legacy fallback for
+// older deploys and should not be set on new ones — provider keys must stay
+// server-only.
 function fmpKey() {
   return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
 }
@@ -59,11 +58,21 @@ const TTL = {
 
 export const FmpAPI = {
   async getCompanyProfile(symbol) {
-    const data = await fetchJson('/stable/profile', { symbol }, `fmp:profile:${symbol}`, TTL.PROFILE);
+    const data = await fetchJson(
+      '/stable/profile',
+      { symbol },
+      `fmp:profile:${symbol}`,
+      TTL.PROFILE,
+    );
     return Array.isArray(data) && data.length ? data[0] : data;
   },
   async getStockPeers(symbol) {
-    const data = await fetchJson('/stable/stock-peers', { symbol }, `fmp:peers:${symbol}`, TTL.PEERS);
+    const data = await fetchJson(
+      '/stable/stock-peers',
+      { symbol },
+      `fmp:peers:${symbol}`,
+      TTL.PEERS,
+    );
     // Stable returns a flat array of peer companies; v4 wrapped them in
     // [{ peersList: [...] }]. Handle both and return an array of symbols.
     if (!Array.isArray(data) || data.length === 0) return [];
@@ -76,7 +85,12 @@ export const FmpAPI = {
   },
   async getBatchQuote(symbols) {
     const list = Array.isArray(symbols) ? symbols.join(',') : symbols;
-    const data = await fetchJson('/stable/batch-quote', { symbols: list }, `fmp:batchquote:${list}`, TTL.QUOTE);
+    const data = await fetchJson(
+      '/stable/batch-quote',
+      { symbols: list },
+      `fmp:batchquote:${list}`,
+      TTL.QUOTE,
+    );
     return Array.isArray(data) ? data : [];
   },
   async getIncomeStatement(symbol, period = 'annual', limit = 5) {
@@ -129,7 +143,12 @@ export const FmpAPI = {
     return Array.isArray(data) && data.length ? data[0] : data;
   },
   async getRating(symbol) {
-    const data = await fetchJson('/stable/ratings-snapshot', { symbol }, `fmp:rating:${symbol}`, TTL.ANALYST);
+    const data = await fetchJson(
+      '/stable/ratings-snapshot',
+      { symbol },
+      `fmp:rating:${symbol}`,
+      TTL.ANALYST,
+    );
     return Array.isArray(data) && data.length ? data[0] : null;
   },
   async getGainers() {

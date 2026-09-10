@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { httpUrlOrNull } from '@/lib/sanitize';
 import { withApiGuard } from '@/lib/api-guard';
 import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
@@ -150,8 +151,8 @@ export const POST = withApiGuard(
         program: body?.program ? String(body.program).slice(0, 160) : null,
         year: body?.year ? String(body.year).slice(0, 40) : null,
         source: body?.source ? String(body.source).slice(0, 80) : null,
-        resume_url: body?.resume_url || null,
-        sample_pitch_url: body?.sample_pitch_url || null,
+        resume_url: httpUrlOrNull(body?.resume_url),
+        sample_pitch_url: httpUrlOrNull(body?.sample_pitch_url),
         responses: body?.responses && typeof body.responses === 'object' ? body.responses : {},
         stage,
       })

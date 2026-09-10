@@ -1,6 +1,7 @@
 /**
  * Shared Plaid item sync — used by POST /api/plaid/sync and /api/plaid/webhook.
  */
+import { getAdminClient } from '@/lib/supabase';
 import { plaidClient } from '@/lib/plaid';
 import {
   upsertPlaidAccount,

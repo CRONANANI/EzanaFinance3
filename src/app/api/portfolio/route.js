@@ -11,6 +11,7 @@
  * the request via getAuthUser. This ensures that each user only ever
  * sees their own portfolio data regardless of RLS configuration.
  */
+import { getAdminClient } from '@/lib/supabase';
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 

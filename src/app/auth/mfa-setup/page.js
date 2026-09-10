@@ -1,4 +1,5 @@
 import MfaSetupGateCard from '@/components/auth/MfaSetupGateCard';
+import { safeInternalPath } from '@/lib/sanitize';
 
 export const metadata = {
   title: 'Set up two-factor authentication | Ezana Finance',
@@ -7,8 +8,8 @@ export const metadata = {
 
 export default function MfaSetupPage({ searchParams }) {
   const redirectTo =
-    typeof searchParams?.redirect === 'string' && searchParams.redirect.startsWith('/')
-      ? searchParams.redirect
+    safeInternalPath(searchParams?.redirect, '') !== ''
+      ? safeInternalPath(searchParams?.redirect)
       : '/home';
 
   return (

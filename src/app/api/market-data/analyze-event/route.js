@@ -23,15 +23,32 @@ async function tryFetchArticle(url) {
     return null;
   }
   try {
-    const res = await fetch(url, {
-      method: 'GET',
-      redirect: 'follow',
-      // Set a UA so wire services / paywalls don't immediately 403 us
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; EzanaFinance/1.0)' },
-      // Prevent Next.js from caching the article fetch
-      cache: 'no-store',
-    });
-    if (!res.ok) return null;
+    // Follow redirects MANUALLY so every hop is re-checked by the SSRF
+    // guard — with redirect:'follow' only the first URL is validated and a
+    // public host can 302 into the metadata service / private ranges.
+    let res = null;
+    let currentUrl = url;
+    for (let hop = 0; hop < 3; hop += 1) {
+      res = await fetch(currentUrl, {
+        method: 'GET',
+        redirect: 'manual',
+        // Set a UA so wire services / paywalls don't immediately 403 us
+        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; EzanaFinance/1.0)' },
+        // Prevent Next.js from caching the article fetch
+        cache: 'no-store',
+      });
+      if (res.status < 300 || res.status >= 400) break;
+      const location = res.headers.get('location');
+      if (!location) return null;
+      currentUrl = new URL(location, currentUrl).toString();
+      try {
+        await assertPublicHttpUrl(currentUrl);
+      } catch {
+        return null;
+      }
+      res = null;
+    }
+    if (!res || !res.ok) return null;
     const html = await res.text();
     // Strip scripts/styles, then collapse all HTML tags. Crude but adequate
     // for feeding the LLM — we're not trying to render it, just give it text.

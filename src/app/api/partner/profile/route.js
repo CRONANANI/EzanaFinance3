@@ -3,6 +3,7 @@
  * GET — get partner profile (username, avatar, display_name)
  * PATCH — update username and/or avatar
  */
+import { getAdminClient } from '@/lib/supabase';
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 

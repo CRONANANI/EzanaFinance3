@@ -30,6 +30,7 @@ async function assertCanAccessPrefs(supabase, callerUserId, targetMemberId) {
 /** GET /api/org/notification-prefs?member_id=X */
 export const GET = withApiGuard(
   async (request, user) => {
+    const supabase = getUserClient();
     const { searchParams } = new URL(request.url);
     const memberId = searchParams.get('member_id');
     if (!memberId) return NextResponse.json({ prefs: {} });
@@ -54,6 +55,7 @@ export const GET = withApiGuard(
 /** POST — upsert a single toggle */
 export const POST = withApiGuard(
   async (request, user) => {
+    const supabase = getUserClient();
     const body = await request.json();
     const {
       target_member_id: targetMemberId,

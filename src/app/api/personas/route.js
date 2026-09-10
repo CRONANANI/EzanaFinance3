@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { getServerSupabase } from '@/lib/supabase/server';
+import { isAdminUser } from '@/lib/admin-helpers';
 
 export const dynamic = 'force-dynamic';
 
@@ -50,6 +51,11 @@ export const GET = withApiGuard(
 export const POST = withApiGuard(
   async (request, user) => {
     try {
+      // Personas are GLOBAL content (system prompts fed to the AI analyzer
+      // for every user), so mutation is admin-only.
+      if (!isAdminUser(user)) {
+        return NextResponse.json({ error: 'Forbidden — admin access required' }, { status: 403 });
+      }
       const supabase = getServerSupabase();
       const body = await request.json();
 

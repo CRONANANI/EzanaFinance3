@@ -5,7 +5,10 @@
 
 function csvCell(v) {
   if (v == null) return '';
-  const s = String(v);
+  let s = String(v);
+  // Neutralize spreadsheet formula injection (= + - @ or tab/CR prefixes
+  // execute as formulas in Excel/Sheets).
+  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
   return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 

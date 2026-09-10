@@ -11,11 +11,11 @@ reference.
 Three product surfaces answer natural-language questions grounded in Ezana's
 own data instead of the model's parametric memory:
 
-| Surface | Route | Corpora | Audience |
-|---|---|---|---|
-| Research Copilot | `POST /api/research/copilot` | all five | authenticated users |
-| Sonar | `POST /api/sonar/query` | entitlement-gated subset | plan/partner-gated |
-| Help Center Ask | `POST /api/help-center/ask` | `help_center_articles` | public |
+| Surface          | Route                        | Corpora                  | Audience            |
+| ---------------- | ---------------------------- | ------------------------ | ------------------- |
+| Research Copilot | `POST /api/research/copilot` | all five                 | authenticated users |
+| Sonar            | `POST /api/sonar/query`      | entitlement-gated subset | plan/partner-gated  |
+| Help Center Ask  | `POST /api/help-center/ask`  | `help_center_articles`   | public              |
 
 All three follow the same contract: **retrieve grounded sources first, then
 synthesize a cited answer — and when nothing is retrieved, return an honest
@@ -37,7 +37,7 @@ Supabase project: `jhdzpadfzrhiekcfgtai`.
 Sonar. Pipeline:
 
 1. **Query rewrite** (flag-gated, §3 P4) — normalize an ambiguous query before
-   retrieval. Rewrite `corpusHints` are a *soft* ranking bonus only; they never
+   retrieval. Rewrite `corpusHints` are a _soft_ ranking bonus only; they never
    widen `allowCorpora`, so Sonar's entitlement gate stays authoritative.
 2. **Shared context, built once** — embed the (possibly rewritten) query via the
    **read-through cache** (`embedViaSupabaseCached`, §3 P5) and extract entities.
@@ -55,7 +55,7 @@ Sonar. Pipeline:
    failure it returns the input order (`reranked:false`) — bit-for-bit the
    unranked path.
 6. **Per-corpus cap** — guarantees a visible corpus mix (no single corpus
-   dominates). Runs *after* rerank so the mix guarantee always holds.
+   dominates). Runs _after_ rerank so the mix guarantee always holds.
 7. **Context budget** — trim lowest-ranked items until under the char cap so the
    synthesis prompt stays bounded.
 
@@ -67,15 +67,15 @@ similarity, meta).
 
 Each module implements `{ corpus, kind, scope, retrieve }`:
 
-| Corpus | Label | Kind | Scope |
-|---|---|---|---|
-| `echo` | Ezana Echo | semantic (hybrid) | public |
-| `markets` | Prediction markets | semantic | public |
-| `research_notes` | Research notes | semantic | org |
-| `congress` | Congressional trades | structured | public |
-| `contracts` | Government contracts | structured | public |
+| Corpus           | Label                | Kind              | Scope  |
+| ---------------- | -------------------- | ----------------- | ------ |
+| `echo`           | Ezana Echo           | semantic (hybrid) | public |
+| `markets`        | Prediction markets   | semantic          | public |
+| `research_notes` | Research notes       | semantic          | org    |
+| `congress`       | Congressional trades | structured        | public |
+| `contracts`      | Government contracts | structured        | public |
 
-Org-scoped retrievers enforce org-scoping/RLS *inside* the retriever; the
+Org-scoped retrievers enforce org-scoping/RLS _inside_ the retriever; the
 orchestrator only gates whether they run at all.
 
 ---
@@ -155,13 +155,13 @@ optimizer: any failure/timeout returns the input order.
 
 ## §4 Configuration & flags
 
-| Env var | Effect | Default |
-|---|---|---|
-| `RAG_RERANK` | `=1` enables LLM reranking (needs `ANTHROPIC_API_KEY`) | off |
-| `RAG_REWRITE` | `=1` enables query rewrite (needs `ANTHROPIC_API_KEY`) | off |
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL (embeds + DB) | required |
-| `SUPABASE_SERVICE_ROLE_KEY` | service-role key (embed edge fn + admin reads) | required |
-| `ANTHROPIC_API_KEY` | synthesis, rerank, rewrite | required for LLM steps |
+| Env var                     | Effect                                                 | Default                |
+| --------------------------- | ------------------------------------------------------ | ---------------------- |
+| `RAG_RERANK`                | `=1` enables LLM reranking (needs `ANTHROPIC_API_KEY`) | off                    |
+| `RAG_REWRITE`               | `=1` enables query rewrite (needs `ANTHROPIC_API_KEY`) | off                    |
+| `NEXT_PUBLIC_SUPABASE_URL`  | Supabase project URL (embeds + DB)                     | required               |
+| `SUPABASE_SERVICE_ROLE_KEY` | service-role key (embed edge fn + admin reads)         | required               |
+| `ANTHROPIC_API_KEY`         | synthesis, rerank, rewrite                             | required for LLM steps |
 
 Both LLM flags are pure optimizers: disabled or failing, the pipeline runs the
 deterministic baseline path unchanged. This keeps existing callers unaffected and

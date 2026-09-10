@@ -6,6 +6,7 @@
  * DELETE /api/partner/payout-account   -> soft-remove active account
  * Partners only (403 otherwise).
  */
+import { getAdminClient } from '@/lib/supabase';
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { plaidClient } from '@/lib/plaid';

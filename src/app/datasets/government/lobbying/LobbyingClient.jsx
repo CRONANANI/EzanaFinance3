@@ -242,7 +242,12 @@ export default function LobbyingClient() {
           'uuid',
           'url',
         ];
-        const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+        const esc = (v) => {
+          let s = String(v ?? '');
+          // Neutralize spreadsheet formula injection.
+          if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
+          return `"${s.replace(/"/g, '""')}"`;
+        };
         const lines = [cols.join(',')];
         for (const f of rows) {
           lines.push(

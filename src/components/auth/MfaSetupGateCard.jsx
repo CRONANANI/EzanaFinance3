@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { safeInternalPath } from '@/lib/sanitize';
 import { supabase } from '@/lib/supabase-browser';
 
 /**
@@ -17,7 +18,7 @@ export default function MfaSetupGateCard({ redirectTo = '/home' }) {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const dest = redirectTo && redirectTo.startsWith('/') ? redirectTo : '/home';
+  const dest = safeInternalPath(redirectTo);
 
   const startEnroll = useCallback(async () => {
     setError(null);

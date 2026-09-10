@@ -7,6 +7,7 @@
  * 3. Complete OAuth registration (MSA, security questionnaire) for Production — Schwab can take ~6 weeks.
  * 4. OAuth can be tested in Sandbox first using Sandbox OAuth institutions.
  */
+import { getAdminClient } from '@/lib/supabase';
 import { NextResponse } from 'next/server';
 
 import { syncPlaidItem } from '@/lib/plaid-sync';

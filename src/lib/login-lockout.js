@@ -57,18 +57,14 @@ export async function recordLoginAttempt(email, ip, success) {
   const remaining = Math.max(0, MAX_FAILED_ATTEMPTS - failedCount);
 
   if (failedCount >= MAX_FAILED_ATTEMPTS) {
-    const userId = await findUserIdByEmail(admin, email);
-    if (userId) {
-      await admin
-        .from('profiles')
-        .update({
-          is_disabled: true,
-          disabled_reason: 'Too many failed login attempts',
-          disabled_at: new Date().toISOString(),
-        })
-        .eq('id', userId);
-    }
-
+    // SECURITY: do NOT auto-disable the account here. Attempts are reported
+    // by the (unauthenticated) client via /api/auth/record-attempt, so the
+    // counts are spoofable — flipping profiles.is_disabled from this signal
+    // let anyone permanently lock an arbitrary victim out by email
+    // (lockout DoS). Brute-force protection remains: Supabase Auth's own
+    // credential rate limits + the per-IP limits on the auth endpoints.
+    // A hard lockout may return once sign-in is proxied server-side so
+    // failures can be counted from a trusted path.
     await logSecurityEvent('account_locked_brute_force', {
       ip,
       details: {

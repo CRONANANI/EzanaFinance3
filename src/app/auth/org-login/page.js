@@ -1,4 +1,5 @@
 import OrgSignInCard from '@/components/auth/OrgSignInCard';
+import { safeInternalPath } from '@/lib/sanitize';
 
 export const metadata = {
   title: 'Organizational Login | Ezana Finance',
@@ -7,8 +8,8 @@ export const metadata = {
 
 export default function OrgLoginPage({ searchParams }) {
   const redirectTo =
-    typeof searchParams?.redirect === 'string' && searchParams.redirect.startsWith('/')
-      ? searchParams.redirect
+    safeInternalPath(searchParams?.redirect, '') !== ''
+      ? safeInternalPath(searchParams?.redirect)
       : '/org-team-hub';
 
   return (

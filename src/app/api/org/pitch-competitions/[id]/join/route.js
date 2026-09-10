@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { httpUrlOrNull } from '@/lib/sanitize';
 import { withApiGuard } from '@/lib/api-guard';
 import { getUserClient, getAdminClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
@@ -36,7 +37,8 @@ export const POST = withApiGuard(
     if (comp.host_org_id === member.org_id) return bad('Your org hosts this competition.', 400);
     if (!['open', 'draft'].includes(comp.status) && comp.status !== 'in_progress') {
       // Registration is only meaningful before/at the open phase.
-      if (comp.status === 'complete' || comp.status === 'archived') return bad('Registration is closed.', 400);
+      if (comp.status === 'complete' || comp.status === 'archived')
+        return bad('Registration is closed.', 400);
     }
 
     const config = await loadConfig(admin, comp.id);
@@ -52,7 +54,10 @@ export const POST = withApiGuard(
 
     // Current counts (privileged read — the joiner can't see these under RLS yet).
     const [{ count: teamCount }, { count: orgTeamCount }] = await Promise.all([
-      admin.from('pitch_teams').select('id', { count: 'exact', head: true }).eq('competition_id', comp.id),
+      admin
+        .from('pitch_teams')
+        .select('id', { count: 'exact', head: true })
+        .eq('competition_id', comp.id),
       admin
         .from('pitch_teams')
         .select('id', { count: 'exact', head: true })
@@ -94,7 +99,8 @@ export const POST = withApiGuard(
         .eq('competition_id', comp.id)
         .eq('org_id', member.org_id)
         .eq('status', 'pending');
-      if (pendingCount) return bad('Your org already has a pending request for this competition.', 409);
+      if (pendingCount)
+        return bad('Your org already has a pending request for this competition.', 409);
 
       const row = {
         competition_id: comp.id,
@@ -104,13 +110,19 @@ export const POST = withApiGuard(
         contact_email: body?.contact_email || null,
       };
       if (config.admission_mode === 'application') {
-        if (config.application_requires_deck && !body?.application_deck_url) return bad('A pitch deck link is required to apply.');
-        if (config.application_requires_thesis && !String(body?.application_thesis || '').trim()) return bad('A written thesis is required to apply.');
-        row.application_deck_url = body?.application_deck_url || null;
+        if (config.application_requires_deck && !httpUrlOrNull(body?.application_deck_url))
+          return bad('A pitch deck link is required to apply (must be an http(s) URL).');
+        if (config.application_requires_thesis && !String(body?.application_thesis || '').trim())
+          return bad('A written thesis is required to apply.');
+        row.application_deck_url = httpUrlOrNull(body?.application_deck_url);
         row.application_thesis = body?.application_thesis || null;
         row.application_note = body?.application_note || null;
       }
-      const { data, error } = await admin.from('pitch_join_requests').insert(row).select('id, status').single();
+      const { data, error } = await admin
+        .from('pitch_join_requests')
+        .insert(row)
+        .select('id, status')
+        .single();
       if (error) return bad(error.message, 500);
       return NextResponse.json({ request: data, mode: config.admission_mode }, { status: 201 });
     }

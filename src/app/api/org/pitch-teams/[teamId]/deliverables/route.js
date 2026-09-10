@@ -34,8 +34,21 @@ export const GET = withApiGuard(
     if (!member) return bad('Not an org member', 403);
 
     const admin = getAdminClient();
-    const { team, notFound } = await resolveTeam(admin, teamId, member);
+    const { team, notFound, isTeamOrg } = await resolveTeam(admin, teamId, member);
     if (notFound) return bad('Team not found', 404);
+    // Ownership gate (mirrors POST, plus the host-org read the RLS policies
+    // allow): the service-role team row must not leak to unrelated orgs via
+    // guessed UUIDs.
+    if (!isTeamOrg) {
+      const { data: comp } = await admin
+        .from('pitch_competitions')
+        .select('host_org_id')
+        .eq('id', team.competition_id)
+        .maybeSingle();
+      if (!comp || comp.host_org_id !== member.org_id) {
+        return bad('Team not found', 404);
+      }
+    }
 
     const [config, deliverables] = await Promise.all([
       loadConfig(supabase, team.competition_id),
@@ -100,7 +113,11 @@ export const POST = withApiGuard(
     // admin here — after confirming caller ownership above.
     const deliverables = await loadDeliverables(admin, team.id);
     let submitted = false;
-    if (deliverablesComplete(config, deliverables) && team.status !== 'withdrawn' && team.status !== 'submitted') {
+    if (
+      deliverablesComplete(config, deliverables) &&
+      team.status !== 'withdrawn' &&
+      team.status !== 'submitted'
+    ) {
       await admin.from('pitch_teams').update({ status: 'submitted' }).eq('id', team.id);
       submitted = true;
     }

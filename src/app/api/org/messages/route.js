@@ -6,7 +6,7 @@ import { getMemberPermissions } from '@/lib/org-permissions-config';
 
 export const dynamic = 'force-dynamic';
 
-async function getCurrentMember(supabase) {
+async function getCurrentMember(supabase, user) {
   const { data } = await supabase
     .from('org_members')
     .select('*')
@@ -20,7 +20,7 @@ async function getCurrentMember(supabase) {
 export const GET = withApiGuard(
   async (request, user) => {
     const supabase = getUserClient();
-    const member = await getCurrentMember(supabase);
+    const member = await getCurrentMember(supabase, user);
     if (!member) return NextResponse.json({ messages: [] });
 
     const { searchParams } = new URL(request.url);
@@ -50,7 +50,7 @@ export const GET = withApiGuard(
 export const POST = withApiGuard(
   async (request, user) => {
     const supabase = getUserClient();
-    const member = await getCurrentMember(supabase);
+    const member = await getCurrentMember(supabase, user);
     if (!member) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { data: permRows } = await supabase

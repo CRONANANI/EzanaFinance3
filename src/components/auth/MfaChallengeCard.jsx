@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { safeInternalPath } from '@/lib/sanitize';
 import { supabase } from '@/lib/supabase-browser';
 
 /**
@@ -15,7 +16,7 @@ export default function MfaChallengeCard({ redirectTo = '/home' }) {
   const [loading, setLoading] = useState(false);
   const [ready, setReady] = useState(false);
 
-  const dest = redirectTo && redirectTo.startsWith('/') ? redirectTo : '/home';
+  const dest = safeInternalPath(redirectTo);
 
   useEffect(() => {
     let cancelled = false;

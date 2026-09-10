@@ -248,7 +248,9 @@ export default function PoliticalTradesClient({ devSampleTrades = null }) {
     } else {
       const cols = Object.keys(rows[0] || { ticker: '' });
       const esc = (v) => {
-        const s = String(v ?? '');
+        let s = String(v ?? '');
+        // Neutralize spreadsheet formula injection.
+        if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
         return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
       };
       const csv = [cols.join(','), ...rows.map((r) => cols.map((c) => esc(r[c])).join(','))].join(

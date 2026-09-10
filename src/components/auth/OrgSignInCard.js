@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { safeInternalPath } from '@/lib/sanitize';
 import { Eye, EyeOff, ArrowRight, GraduationCap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
@@ -108,7 +109,7 @@ const OrgSignInCard = ({ redirectTo = '/org-team-hub' }) => {
         return;
       }
 
-      router.push(redirectTo);
+      router.push(safeInternalPath(redirectTo, '/org-team-hub'));
     } catch (err) {
       setError('An unexpected error occurred. Please try again.');
     } finally {

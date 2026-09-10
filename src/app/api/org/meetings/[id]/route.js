@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { httpUrlOrNull } from '@/lib/sanitize';
 import { withApiGuard } from '@/lib/api-guard';
 import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
@@ -210,9 +211,13 @@ export const PATCH = withApiGuard(
       update.ended_at = new Date().toISOString();
       update.closed_at = new Date().toISOString();
     } else if (action === 'set_recording') {
-      const url = (body?.recording_url || '').trim();
-      if (!url) return NextResponse.json({ error: 'recording_url required' }, { status: 400 });
-      update.recording_url = url.slice(0, 2000);
+      const url = httpUrlOrNull(body?.recording_url);
+      if (!url)
+        return NextResponse.json(
+          { error: 'recording_url must be an http(s) URL' },
+          { status: 400 },
+        );
+      update.recording_url = url;
       update.recording_source = RECORDING_SOURCES.includes(body?.recording_source)
         ? body.recording_source
         : 'upload';

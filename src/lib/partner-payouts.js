@@ -1,3 +1,4 @@
+import { getAdminClient } from '@/lib/supabase';
 /**
  * Shared guard for partner payout API routes: the caller must be an active
  * partner (same source of truth as PartnerContext and /api/partner/profile,

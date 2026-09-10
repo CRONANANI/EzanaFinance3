@@ -29,7 +29,7 @@ async function verifyParticipant(conversationId, userId) {
 export const GET = withApiGuard(
   async (request, user, context) => {
     try {
-      const { conversationId } = params;
+      const { conversationId } = context?.params ?? {};
       if (!conversationId) {
         return NextResponse.json({ error: 'conversationId required' }, { status: 400 });
       }
@@ -99,7 +99,7 @@ export const GET = withApiGuard(
 export const PATCH = withApiGuard(
   async (request, user, context) => {
     try {
-      const { conversationId } = params;
+      const { conversationId } = context?.params ?? {};
       if (!conversationId) {
         return NextResponse.json({ error: 'conversationId required' }, { status: 400 });
       }

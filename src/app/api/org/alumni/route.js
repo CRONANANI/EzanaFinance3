@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { httpUrlOrNull } from '@/lib/sanitize';
 import { withApiGuard } from '@/lib/api-guard';
 import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
@@ -133,8 +134,7 @@ export const PATCH = withApiGuard(
         : null;
     if ('role_title' in body)
       editable.role_title = body.role_title ? String(body.role_title).slice(0, 160) : null;
-    if ('linkedin_url' in body)
-      editable.linkedin_url = body.linkedin_url ? String(body.linkedin_url).slice(0, 400) : null;
+    if ('linkedin_url' in body) editable.linkedin_url = httpUrlOrNull(body.linkedin_url, 400);
     if ('placed_within_6mo' in body) editable.placed_within_6mo = !!body.placed_within_6mo;
     if ('grad_term' in body)
       editable.grad_term = body.grad_term ? String(body.grad_term).slice(0, 40) : null;

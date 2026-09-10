@@ -2,6 +2,7 @@
  * GET /api/partner/payouts -> { payouts: [...], pendingCents, lifetimeCents }
  * Partners only (403 otherwise).
  */
+import { getAdminClient } from '@/lib/supabase';
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 

@@ -107,15 +107,25 @@ export function mapVideoRow(r) {
   };
 }
 
+/** Max age (seconds) accepted for a signed webhook timestamp (replay guard). */
+const MUX_WEBHOOK_MAX_SKEW_SECONDS = 300;
+
 /** Verify a Mux webhook signature (Mux-Signature: t=...,v1=...). */
 export function verifyMuxSignature(rawBody, signatureHeader) {
-  if (!MUX_WEBHOOK_SECRET) return true; // no secret set — accept (dev/setup)
+  // SECURITY: fail CLOSED when the secret is not configured. Accepting
+  // unsigned payloads would let anyone rewrite course_videos rows via the
+  // service-role client. Set MUX_WEBHOOK_SECRET before enabling the webhook.
+  if (!MUX_WEBHOOK_SECRET) return false;
   if (!signatureHeader) return false;
   try {
     const parts = Object.fromEntries(
       signatureHeader.split(',').map((kv) => kv.split('=').map((s) => s.trim())),
     );
     if (!parts.t || !parts.v1) return false;
+    const ts = Number(parts.t);
+    if (!Number.isFinite(ts) || Math.abs(Date.now() / 1000 - ts) > MUX_WEBHOOK_MAX_SKEW_SECONDS) {
+      return false; // stale or clock-skewed — reject replays
+    }
     const expected = crypto
       .createHmac('sha256', MUX_WEBHOOK_SECRET)
       .update(`${parts.t}.${rawBody}`)

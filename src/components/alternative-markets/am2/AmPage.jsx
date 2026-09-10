@@ -122,9 +122,16 @@ export function AmPage() {
       '7d_pct': r.chg7d,
       mcap: r.mcap,
     }));
+    // Quote + escape every cell (asset names can contain commas) and
+    // neutralize spreadsheet formula injection.
+    const esc = (v) => {
+      let s = String(v ?? '');
+      if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
     const csv = [
       Object.keys(rows[0] || {}).join(','),
-      ...rows.map((r) => Object.values(r).join(',')),
+      ...rows.map((r) => Object.values(r).map(esc).join(',')),
     ].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
