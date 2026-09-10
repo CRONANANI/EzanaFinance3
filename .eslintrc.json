@@ -41,5 +41,81 @@
         ]
       }
     ]
-  }
+  },
+  "overrides": [
+    {
+      "files": ["src/components/**", "src/hooks/**", "src/contexts/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "paths": [
+              {
+                "name": "@/lib/supabase",
+                "message": "Presentation layer must not touch the server DB surface. Client code uses '@/lib/supabase-browser' (auth/realtime) or fetches an /api/* route."
+              },
+              {
+                "name": "stripe",
+                "message": "Server-only Stripe SDK. Client code uses '@stripe/stripe-js' / '@stripe/react-stripe-js' or an /api/stripe/* route."
+              },
+              {
+                "name": "plaid",
+                "message": "Server-only Plaid SDK. Client code uses 'react-plaid-link' + /api/plaid/* routes."
+              },
+              {
+                "name": "resend",
+                "message": "Server-only email SDK. Send email via an /api/* route."
+              },
+              {
+                "name": "@anthropic-ai/sdk",
+                "message": "Server-only AI SDK (holds ANTHROPIC_API_KEY). Call an /api/* route instead."
+              },
+              {
+                "name": "@google-cloud/bigquery",
+                "message": "Server-only. Query BigQuery-backed data via an /api/* route."
+              },
+              {
+                "name": "@/lib/plaid",
+                "message": "Server-only Plaid client wrapper. Client code uses 'react-plaid-link' + /api/plaid/* routes."
+              },
+              {
+                "name": "@/lib/snaptrade",
+                "message": "Server-only SnapTrade client. Use the /api/snaptrade/* routes."
+              },
+              {
+                "name": "@/lib/mux",
+                "message": "Server-only Mux helper. Use the /api/mux/* routes."
+              },
+              {
+                "name": "@/lib/api-guard",
+                "message": "withApiGuard is a route-handler wrapper — it has no meaning in client code."
+              },
+              {
+                "name": "@/lib/services/fmp",
+                "message": "Holds the server-only FMP key. Client code fetches /api/fmp/* or /api/market-data/* (services/finnhub is the client-safe proxy pattern to copy)."
+              },
+              {
+                "name": "@/lib/services/stripe",
+                "message": "Server-only Stripe service. Use /api/stripe/* routes."
+              },
+              {
+                "name": "@/lib/services/resend",
+                "message": "Server-only email service. Send via an /api/* route."
+              },
+              {
+                "name": "@/lib/services/massive-news",
+                "message": "Server-only news provider client. Fetch via the /api/news/* routes."
+              }
+            ],
+            "patterns": [
+              {
+                "group": ["@/lib/supabase/*"],
+                "message": "Presentation layer must not touch the server DB surface. Client code uses '@/lib/supabase-browser' or fetches an /api/* route."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
 }
