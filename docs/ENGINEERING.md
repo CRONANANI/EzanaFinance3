@@ -50,10 +50,25 @@ The standing rules for working in this repository. Practical companion to
 ## Quality gates (all must pass before push — CI re-runs them)
 
 ```bash
-npm run lint     # ESLint, 0 errors
-npm test         # all node:test suites
-npm run build    # production build (stub env is fine — see ci.yml)
+npm run lint       # ESLint, 0 errors (includes the layer-boundary bans below)
+npm run lint:arch  # dependency-cruiser: no cycles; presentation never reaches the server DB surface
+npm test           # all node:test suites
+npm run build      # production build (stub env is fine — see ci.yml)
+npm run lint:dead  # knip dead-code inventory — NON-blocking, review output only
 ```
+
+## How regressions are caught (the guardrail inventory)
+
+| Regression class                                                                                                                    | Caught by                                                                                                                                                  |
+| ----------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Legacy Supabase import patterns returning                                                                                           | `no-restricted-imports` (**error**) in `.eslintrc.json`                                                                                                    |
+| Presentation layer touching server infra (server Supabase surface, stripe/plaid/resend/anthropic SDKs, key-holding service clients) | `.eslintrc.json` override on `src/{components,hooks,contexts}` (**error**) + `dependency-cruiser` transitive-reachability rule (`npm run lint:arch`)       |
+| Dependency cycles                                                                                                                   | `dependency-cruiser` `no-circular` (**error**)                                                                                                             |
+| Broken build / failing unit suites                                                                                                  | CI `build` job + `npm test` (8 node:test suites)                                                                                                           |
+| Known-vulnerable dependencies                                                                                                       | `security-audit.yml` (npm audit, justified-allowlist critical gate) + Dependabot weekly PRs (`.github/dependabot.yml` — humans merge, nothing auto-merges) |
+| Injection/dataflow bug patterns                                                                                                     | CodeQL default suite (`.github/workflows/codeql.yml`, PRs + weekly)                                                                                        |
+| Design-token / a11y / CSS-var drift                                                                                                 | `lint:ds`, `lint:a11y`, `lint:css`                                                                                                                         |
+| Dead code accumulating                                                                                                              | `knip` (`lint:dead`) — non-blocking inventory, false positives expected                                                                                    |
 
 ## Database changes
 

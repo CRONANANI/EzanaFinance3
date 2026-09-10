@@ -1,5 +1,13 @@
 # Project guidance for Claude Code
 
+## Read first
+
+- **`docs/ENGINEERING.md`** — the standing engineering rules (layer boundaries,
+  the single `@/lib/supabase` data-access surface, trust model, quality gates).
+  **`docs/CTO_ONBOARDING.md`** — repo map and where every domain lives. Load
+  both as context before non-trivial changes; the lint/depcruise gates enforce
+  the boundaries they describe.
+
 ## Git workflow
 
 - **Always commit and push directly to the `main` branch.** This is the user's
