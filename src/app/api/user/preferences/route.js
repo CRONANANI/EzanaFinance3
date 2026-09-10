@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
@@ -52,7 +52,7 @@ export const PATCH = withApiGuard(
 
       let supabase;
       try {
-        supabase = createServerSupabase();
+        supabase = getUserClient();
       } catch {
         return NextResponse.json({ ok: true, scope: 'cookie-only' });
       }

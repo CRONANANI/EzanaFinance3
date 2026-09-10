@@ -9,7 +9,7 @@
  * (org-pitch-state-machine.js) stays authoritative for transitions.
  */
 
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 import { hasPitchPermission } from '@/lib/org-pitches';
 import { ACTIVE_STAGES, designStageLabel, nextForwardGate } from '@/lib/org-pitch-state-machine';
@@ -22,7 +22,7 @@ const AGING_DAYS = 30;
 
 // ── Context ────────────────────────────────────────────────────────────────
 export async function getPitchContext() {
-  const supabase = createServerSupabase();
+  const supabase = getUserClient();
   const member = await getCurrentOrgMember(supabase);
   const viewer = member
     ? {

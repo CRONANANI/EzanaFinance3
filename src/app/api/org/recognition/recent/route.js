@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 
 export const dynamic = 'force-dynamic';
@@ -9,7 +9,7 @@ export const runtime = 'nodejs';
 /* GET /api/org/recognition/recent — fund-wide "Recently earned" badge feed. */
 export const GET = withApiGuard(
   async (request) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
 

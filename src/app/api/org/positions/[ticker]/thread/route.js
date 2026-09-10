@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 
 export const dynamic = 'force-dynamic';
@@ -13,7 +13,7 @@ async function resolveParams(context) {
 /* GET /api/org/positions/:ticker/thread — all comments for the ticker. */
 export const GET = withApiGuard(
   async (request, user, context) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     const { ticker } = await resolveParams(context);
@@ -44,7 +44,11 @@ export const GET = withApiGuard(
     return NextResponse.json({
       ticker: sym,
       comments,
-      members: (members || []).map((m) => ({ user_id: m.user_id, display_name: m.display_name, role: m.role })),
+      members: (members || []).map((m) => ({
+        user_id: m.user_id,
+        display_name: m.display_name,
+        role: m.role,
+      })),
       viewer: { userId: member.user_id },
     });
   },
@@ -54,7 +58,7 @@ export const GET = withApiGuard(
 /* POST /api/org/positions/:ticker/thread — add a comment/reply; resolve @mentions. */
 export const POST = withApiGuard(
   async (request, user, context) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     const { ticker } = await resolveParams(context);
@@ -91,9 +95,7 @@ export const POST = withApiGuard(
       .eq('org_id', member.org_id)
       .eq('is_active', true);
 
-    const mentioned = new Set(
-      Array.isArray(body?.mention_user_ids) ? body.mention_user_ids : [],
-    );
+    const mentioned = new Set(Array.isArray(body?.mention_user_ids) ? body.mention_user_ids : []);
     const lower = text.toLowerCase();
     for (const m of members || []) {
       const name = (m.display_name || '').toLowerCase();

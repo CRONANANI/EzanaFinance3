@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
 
 export const dynamic = 'force-dynamic';
@@ -27,7 +27,7 @@ const sign = (n) => (n == null ? '' : Number(n) >= 0 ? 'pos' : 'neg');
    browser print dialog (Save as PDF) — no server-side PDF engine dependency. */
 export const GET = withApiGuard(
   async (request, user, context) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     if (!assertOrgRole(member, MANAGER_ROLES)) {

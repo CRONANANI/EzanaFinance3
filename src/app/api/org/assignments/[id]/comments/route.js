@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 
 export const dynamic = 'force-dynamic';
@@ -9,7 +9,7 @@ export const runtime = 'nodejs';
 /* GET /api/org/assignments/[id]/comments — the review thread (RLS-scoped). */
 export const GET = withApiGuard(
   async (_request, _user, context) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     const { id } = await context.params;
@@ -46,7 +46,7 @@ export const GET = withApiGuard(
    can see the assignment (assignee or manager per RLS) may comment. */
 export const POST = withApiGuard(
   async (request, _user, context) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     const { id } = await context.params;

@@ -1,4 +1,4 @@
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 import { CohortManager } from '@/components/org/academic2/CohortManager';
 
@@ -31,7 +31,7 @@ async function loadCohorts(supabase, member) {
 }
 
 export default async function CohortsPage() {
-  const supabase = createServerSupabase();
+  const supabase = getUserClient();
   const member = await getCurrentOrgMember(supabase);
   const initialData = member ? await loadCohorts(supabase, member) : null;
 

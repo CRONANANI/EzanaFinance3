@@ -1,10 +1,7 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
-import {
-  createServerSupabaseClient,
-  isServerSupabaseConfigured,
-} from '@/lib/supabase-service-role';
+import { getUserClient, getAdminClient, isServerSupabaseConfigured } from '@/lib/supabase';
+
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
 
 export const dynamic = 'force-dynamic';
@@ -21,7 +18,7 @@ const slugify = (s) =>
 /* GET /api/org/teams — teams + per-team headcount + sector coverage (any member). */
 export const GET = withApiGuard(
   async () => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     const orgId = member.org_id;
@@ -52,7 +49,7 @@ export const GET = withApiGuard(
 );
 
 async function requireManager() {
-  const supabase = createServerSupabase();
+  const supabase = getUserClient();
   const member = await getCurrentOrgMember(supabase);
   if (!member) return { error: NextResponse.json({ error: 'Not an org member' }, { status: 403 }) };
   if (!assertOrgRole(member, MANAGER_ROLES)) {
@@ -61,7 +58,7 @@ async function requireManager() {
   if (!isServerSupabaseConfigured()) {
     return { error: NextResponse.json({ error: 'Server not configured' }, { status: 503 }) };
   }
-  return { member, service: createServerSupabaseClient() };
+  return { member, service: getAdminClient() };
 }
 
 /* POST — create a team (manager). */
@@ -80,7 +77,12 @@ export const POST = withApiGuard(
 
     const { data, error } = await service
       .from('org_teams')
-      .insert({ org_id: member.org_id, name, slug: slugify(name), description: body?.description || null })
+      .insert({
+        org_id: member.org_id,
+        name,
+        slug: slugify(name),
+        description: body?.description || null,
+      })
       .select('id, name, slug, description')
       .single();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });

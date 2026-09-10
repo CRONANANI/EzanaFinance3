@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
 import { loadFundAnalytics } from '@/lib/org-fund-analytics';
 
@@ -11,7 +11,7 @@ export const runtime = 'nodejs';
    Any active member reads. Optionally caches a daily snapshot for managers. */
 export const GET = withApiGuard(
   async (request) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     const orgId = member.org_id;

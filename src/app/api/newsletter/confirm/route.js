@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabaseClient } from '@/lib/supabase-service-role';
+import { getAdminClient } from '@/lib/supabase';
 import { NEWSLETTER_SITE_URL } from '@/lib/newsletter/config';
 
 export const dynamic = 'force-dynamic';
@@ -18,7 +18,7 @@ export const GET = withApiGuard(
     const to = (path) => NextResponse.redirect(`${NEWSLETTER_SITE_URL}${path}`);
     if (!token) return to('/newsletter/confirmed?status=invalid');
 
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
     const { data: row } = await supabase
       .from('marketing_subscribers')
       .select('id, status, confirm_sent_at')

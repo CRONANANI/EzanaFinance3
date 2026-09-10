@@ -15,7 +15,7 @@
  */
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { getAuthContext } from '@/lib/auth-helpers';
+import { getAuthContext } from '@/lib/supabase';
 import { dbErrorResponse, exceptionResponse, validationResponse } from '@/lib/api-errors';
 import { computeNextPosition, POSITION_STEP } from '@/lib/watchlists/position';
 

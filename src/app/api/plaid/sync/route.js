@@ -5,8 +5,8 @@
  */
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { supabaseAdmin } from '@/lib/plaid';
-import { getAuthUser } from '@/lib/auth-helpers';
+
+import { getAuthUser, getAdminClient } from '@/lib/supabase';
 import { syncPlaidItem } from '@/lib/plaid-sync';
 import { decryptToken } from '@/lib/crypto/token-cipher';
 
@@ -15,7 +15,7 @@ export const dynamic = 'force-dynamic';
 export const POST = withApiGuard(
   async (request, user) => {
     try {
-      const { data: items } = await supabaseAdmin
+      const { data: items } = await getAdminClient()
         .from('plaid_items')
         .select('id, item_id, access_token, institution_id, institution_name')
         .eq('user_id', user.id)

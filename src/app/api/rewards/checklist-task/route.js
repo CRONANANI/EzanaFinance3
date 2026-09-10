@@ -1,6 +1,6 @@
 ﻿import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabaseClient } from '@/lib/supabase-service-role';
+import { getAdminClient } from '@/lib/supabase';
 import { awardXP } from '@/lib/rewards';
 
 export const dynamic = 'force-dynamic';
@@ -15,7 +15,7 @@ export const POST = withApiGuard(
         return NextResponse.json({ error: 'taskId required' }, { status: 400 });
       }
 
-      const admin = createServerSupabaseClient();
+      const admin = getAdminClient();
       const reason = `Checklist task: ${taskId}`;
 
       const { data: existing } = await admin

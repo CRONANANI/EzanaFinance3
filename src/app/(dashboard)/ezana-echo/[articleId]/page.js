@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { Source_Serif_4 } from 'next/font/google';
 import { getArticleBySlug, getRelatedAndMore, bumpArticleView } from '@/lib/echo-data';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { isAdminUser } from '@/lib/admin-helpers';
 import { isArticleArchived } from '@/lib/echo-article-status';
 import EchoArticleClient from './EchoArticleClient';
@@ -54,7 +54,7 @@ export default async function EzanaEchoArticlePage({ params }) {
 
   // Resolve the viewer once — used for the archived-article gate and for
   // personalized "more" ranking (PERSONALIZATION_V2).
-  const supabase = createServerSupabase();
+  const supabase = getUserClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

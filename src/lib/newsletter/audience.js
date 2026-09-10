@@ -1,4 +1,4 @@
-import { createServerSupabaseClient } from '@/lib/supabase-service-role';
+import { getAdminClient } from '@/lib/supabase';
 import {
   NEWSLETTER_MAILING_ADDRESS,
   listUnsubscribeHeader,
@@ -15,7 +15,7 @@ import {
  * @returns {Promise<Array<{ id: string, email: string, full_name: string|null, unsubscribe_token: string }>>}
  */
 export async function getConfirmedSubscribers() {
-  const supabase = createServerSupabaseClient();
+  const supabase = getAdminClient();
   const { data, error } = await supabase
     .from('marketing_subscribers')
     .select('id, email, full_name, unsubscribe_token')

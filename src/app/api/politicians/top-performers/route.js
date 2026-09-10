@@ -13,10 +13,7 @@
 
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import {
-  createServerSupabaseClient,
-  isServerSupabaseConfigured,
-} from '@/lib/supabase-service-role';
+import { getAdminClient, isServerSupabaseConfigured } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -57,7 +54,7 @@ async function handleGet(request) {
     return NextResponse.json({ error: 'chamber must be "senate" or "house"' }, { status: 400 });
   }
 
-  const supabase = createServerSupabaseClient();
+  const supabase = getAdminClient();
 
   if (yearParam === 'all') {
     let q = supabase

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { isAdminUser } from '@/lib/admin-helpers';
 import { runRedditPosterAgent } from '@/lib/agents/reddit-poster-agent';
 
@@ -19,7 +19,7 @@ export const maxDuration = 300;
 export async function POST(request) {
   let user;
   try {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const { data } = await supabase.auth.getUser();
     user = data?.user;
   } catch {

@@ -1,4 +1,4 @@
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
 import { MeetingMode } from '@/components/org/social2/MeetingMode';
 
@@ -82,7 +82,7 @@ async function loadMeetings(supabase, member) {
 }
 
 export default async function MeetingsPage() {
-  const supabase = createServerSupabase();
+  const supabase = getUserClient();
   const member = await getCurrentOrgMember(supabase);
   const initialData = member ? await loadMeetings(supabase, member) : null;
 

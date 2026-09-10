@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabaseClient } from '@/lib/supabase-service-role';
+import { getAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
 export const GET = withApiGuard(
   async (request, user) => {
     try {
-      const supabase = createServerSupabaseClient();
+      const supabase = getAdminClient();
 
       const { data: holdings, error: holdingsError } = await supabase
         .from('plaid_holdings')

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 import { getArchivedPitches, getArchiveAnalytics } from '@/lib/org-pitches';
 
@@ -24,7 +24,7 @@ export const GET = withApiGuard(
       since = month < 6 ? new Date(year, 0, 1) : new Date(year, 6, 1);
     }
 
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) {
       return NextResponse.json({

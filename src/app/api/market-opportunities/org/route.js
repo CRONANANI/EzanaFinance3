@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -148,7 +148,7 @@ function mapFmpArticle(e) {
 
 export const GET = withApiGuard(
   async (request, user) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
 
     let role = 'analyst';
     let riskCategory = 'Moderate';

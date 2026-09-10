@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
 
 export const dynamic = 'force-dynamic';
@@ -19,7 +19,7 @@ const num = (v) => (v == null ? null : Number(v));
    org_pitch_hindsight for the period. Manager-only. Idempotent per period. */
 export const POST = withApiGuard(
   async (request) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     if (!assertOrgRole(member, MANAGER_ROLES)) {

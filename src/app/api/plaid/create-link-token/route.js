@@ -13,7 +13,7 @@ import {
   PLAID_REDIRECT_URI,
   PLAID_WEBHOOK_URL,
 } from '@/lib/plaid';
-import { getAuthUser } from '@/lib/auth-helpers';
+import { getAuthUser } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 

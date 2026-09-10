@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { getAuthUser } from '@/lib/auth-helpers';
-import { supabaseAdmin } from '@/lib/plaid';
+import { getAuthUser, getAdminClient } from '@/lib/supabase';
+
 import { replayTradesToValueSeries, clipPointsToRange } from '@/lib/portfolio-trade-replay';
 import { fetchBatchedHistoricalPrices } from '@/lib/fmp-historical-batched';
 
@@ -26,7 +26,7 @@ export const GET = withApiGuard(
       const requestedRange = request.nextUrl.searchParams.get('range');
       const range = RANGES.has(requestedRange) ? requestedRange : 'ALL';
 
-      const { data: tradesRaw, error: tradesError } = await supabaseAdmin
+      const { data: tradesRaw, error: tradesError } = await getAdminClient()
         .from('mock_trades')
         .select('ticker, quantity, price, trade_type, total_amount, created_at')
         .eq('user_id', user.id)
@@ -38,7 +38,7 @@ export const GET = withApiGuard(
 
       const trades = Array.isArray(tradesRaw) ? tradesRaw : [];
 
-      const { data: portfolioRow } = await supabaseAdmin
+      const { data: portfolioRow } = await getAdminClient()
         .from('mock_portfolios')
         .select('portfolio, updated_at')
         .eq('user_id', user.id)

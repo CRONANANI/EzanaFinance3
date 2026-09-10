@@ -1,10 +1,7 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
-import {
-  createServerSupabaseClient,
-  isServerSupabaseConfigured,
-} from '@/lib/supabase-service-role';
+import { getUserClient, getAdminClient, isServerSupabaseConfigured } from '@/lib/supabase';
+
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
 import { getGovernance } from '@/lib/org-governance';
 import { logOrgAction } from '@/lib/org-audit';
@@ -18,7 +15,7 @@ const EXPORT_SCOPES = ['exec_advisor', 'exec_pm_advisor'];
    what each member is allowed to see). */
 export const GET = withApiGuard(
   async () => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     const governance = await getGovernance(supabase, member.org_id);
@@ -37,7 +34,7 @@ export const GET = withApiGuard(
 /* PATCH /api/org/governance — update flags (executive / faculty advisor). */
 export const PATCH = withApiGuard(
   async (request) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     if (!assertOrgRole(member, ['executive'])) {
@@ -67,7 +64,7 @@ export const PATCH = withApiGuard(
     if (!isServerSupabaseConfigured()) {
       return NextResponse.json({ error: 'Server not configured' }, { status: 503 });
     }
-    const service = createServerSupabaseClient();
+    const service = getAdminClient();
     const { data, error } = await service
       .from('org_governance_settings')
       .upsert(update, { onConflict: 'org_id' })

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 import { BOARD_STAGES } from '../ats-helpers';
 
@@ -15,7 +15,7 @@ const RANK = { applied: 0, screened: 1, interview: 2, pitch: 3, offer: 4, accept
    only as "applied", which is the honest floor). */
 export const GET = withApiGuard(
   async (request) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
 

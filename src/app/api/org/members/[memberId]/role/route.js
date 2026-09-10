@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
-import { createServerSupabaseClient, isServerSupabaseConfigured } from '@/lib/supabase-service-role';
+import { getUserClient, getAdminClient, isServerSupabaseConfigured } from '@/lib/supabase';
+
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 import {
   tierOf,
@@ -26,7 +26,7 @@ async function resolveParams(context) {
    coarse RLS policy — authorization happens here, in code, every time. */
 export const PATCH = withApiGuard(
   async (request, user, context) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const editor = await getCurrentOrgMember(supabase);
     if (!editor) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
 
@@ -59,7 +59,10 @@ export const PATCH = withApiGuard(
 
     if (!canEditMember(editorRow, target, membersById)) {
       return NextResponse.json(
-        { error: 'You can only change roles for members below you in your reporting line or on your desk' },
+        {
+          error:
+            'You can only change roles for members below you in your reporting line or on your desk',
+        },
         { status: 403 },
       );
     }
@@ -78,9 +81,12 @@ export const PATCH = withApiGuard(
     }
 
     if (!isServerSupabaseConfigured()) {
-      return NextResponse.json({ error: 'Server is not configured for role management' }, { status: 503 });
+      return NextResponse.json(
+        { error: 'Server is not configured for role management' },
+        { status: 503 },
+      );
     }
-    const service = createServerSupabaseClient();
+    const service = getAdminClient();
 
     // Keep custom titles ("Head of Research"); refresh default ones.
     const update = { tier: newTier, role: newRole };

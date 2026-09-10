@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
+import { getAdminClient } from '@/lib/supabase';
 import { withApiGuard } from '@/lib/api-guard';
-import { supabaseAdmin } from '@/lib/plaid';
+
 import { fetchLastNTranscripts, fetchEarningsHistory } from '@/lib/earnings/fmp-client';
 import { analyzeTranscript, synthesize } from '@/lib/earnings/analyze';
 
@@ -112,7 +113,7 @@ async function getOrComputeAnalysis(t, symbolUpper) {
 
   if (hasSupabase()) {
     try {
-      const { data: cached, error: cacheErr } = await supabaseAdmin
+      const { data: cached, error: cacheErr } = await getAdminClient()
         .from('earnings_transcript_analysis')
         .select('*')
         .eq('symbol', sym)
@@ -159,7 +160,7 @@ async function getOrComputeAnalysis(t, symbolUpper) {
 
   if (hasSupabase()) {
     try {
-      const { error: trErr } = await supabaseAdmin.from('earnings_transcripts').upsert(
+      const { error: trErr } = await getAdminClient().from('earnings_transcripts').upsert(
         {
           symbol: sym,
           year,
@@ -179,7 +180,7 @@ async function getOrComputeAnalysis(t, symbolUpper) {
 
   if (hasSupabase()) {
     try {
-      const { error: anErr } = await supabaseAdmin.from('earnings_transcript_analysis').upsert(
+      const { error: anErr } = await getAdminClient().from('earnings_transcript_analysis').upsert(
         {
           symbol: sym,
           year,
@@ -227,7 +228,7 @@ async function getOrComputeAnalysis(t, symbolUpper) {
 async function persistSynthesis(symbol, year, quarter, synthesis) {
   if (!hasSupabase()) return;
   try {
-    const { error } = await supabaseAdmin
+    const { error } = await getAdminClient()
       .from('earnings_transcript_analysis')
       .update({
         directional_tilt: synthesis.tilt,

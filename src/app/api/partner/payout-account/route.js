@@ -8,7 +8,7 @@
  */
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { plaidClient, supabaseAdmin } from '@/lib/plaid';
+import { plaidClient } from '@/lib/plaid';
 import { encryptToken } from '@/lib/crypto/token-cipher';
 import { isActivePartner } from '@/lib/partner-payouts';
 
@@ -29,7 +29,7 @@ export const GET = withApiGuard(
     if (!(await isActivePartner(user.id))) {
       return NextResponse.json({ error: 'Partner access required' }, { status: 403 });
     }
-    const { data } = await supabaseAdmin
+    const { data } = await getAdminClient()
       .from('partner_payout_accounts')
       .select(PUBLIC_FIELDS)
       .eq('user_id', user.id)
@@ -121,13 +121,13 @@ export const POST = withApiGuard(
       }
 
       // Retire any existing active account, then insert.
-      await supabaseAdmin
+      await getAdminClient()
         .from('partner_payout_accounts')
         .update({ status: 'removed', updated_at: new Date().toISOString() })
         .eq('user_id', user.id)
         .eq('status', 'active');
 
-      const { data, error } = await supabaseAdmin
+      const { data, error } = await getAdminClient()
         .from('partner_payout_accounts')
         .insert(record)
         .select(PUBLIC_FIELDS)
@@ -148,7 +148,7 @@ export const DELETE = withApiGuard(
     if (!(await isActivePartner(user.id))) {
       return NextResponse.json({ error: 'Partner access required' }, { status: 403 });
     }
-    const { error } = await supabaseAdmin
+    const { error } = await getAdminClient()
       .from('partner_payout_accounts')
       .update({ status: 'removed', updated_at: new Date().toISOString() })
       .eq('user_id', user.id)

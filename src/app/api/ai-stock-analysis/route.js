@@ -3,7 +3,7 @@ import { withApiGuard } from '@/lib/api-guard';
 import Anthropic from '@anthropic-ai/sdk';
 import { getModelConfig } from '@/lib/ai/analysis-prompts';
 import { fetchMarketData, formatMarketDataForPrompt } from '@/lib/ai/market-data';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { sanitizeAIOutput } from '@/lib/sanitize';
 
 export const dynamic = 'force-dynamic';

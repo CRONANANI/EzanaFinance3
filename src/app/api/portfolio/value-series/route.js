@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { getAuthUser } from '@/lib/auth-helpers';
-import { supabaseAdmin } from '@/lib/plaid';
+import { getAuthUser, getAdminClient } from '@/lib/supabase';
+
 import { buildSyntheticValuePoints } from '@/lib/portfolio-value-series-synth';
 import { HERO_DATA } from '@/lib/dashboard-hero-data';
 
@@ -45,7 +45,7 @@ export const GET = withApiGuard(
         return t.toISOString().slice(0, 10);
       })();
 
-      const { data: balanceRows } = await supabaseAdmin
+      const { data: balanceRows } = await getAdminClient()
         .from('portfolio_balance_snapshots')
         .select('snapshot_date, total_value')
         .eq('user_id', user.id)
@@ -68,7 +68,7 @@ export const GET = withApiGuard(
         }
       }
 
-      const { data: rows, error: dbError } = await supabaseAdmin
+      const { data: rows, error: dbError } = await getAdminClient()
         .from('portfolio_daily_returns')
         .select('date, total_value, cum_return_pct')
         .eq('user_id', user.id)
@@ -160,7 +160,7 @@ export const GET = withApiGuard(
  */
 async function getPortfolioEndValue(userId) {
   const today = new Date().toISOString().slice(0, 10);
-  const { data: balanceToday } = await supabaseAdmin
+  const { data: balanceToday } = await getAdminClient()
     .from('portfolio_balance_snapshots')
     .select('total_value')
     .eq('user_id', userId)
@@ -170,7 +170,7 @@ async function getPortfolioEndValue(userId) {
     if (sum > 0) return sum;
   }
 
-  const { data: snapAccounts } = await supabaseAdmin
+  const { data: snapAccounts } = await getAdminClient()
     .from('snaptrade_accounts')
     .select('balance_total')
     .eq('user_id', userId);
@@ -179,7 +179,7 @@ async function getPortfolioEndValue(userId) {
     if (sum > 0) return sum;
   }
 
-  const { data: holdings, error: hErr } = await supabaseAdmin
+  const { data: holdings, error: hErr } = await getAdminClient()
     .from('plaid_holdings')
     .select('value, institution_value')
     .eq('user_id', userId);
@@ -190,7 +190,7 @@ async function getPortfolioEndValue(userId) {
     }, 0);
   }
 
-  const { data: row } = await supabaseAdmin
+  const { data: row } = await getAdminClient()
     .from('mock_portfolios')
     .select('portfolio')
     .eq('user_id', userId)

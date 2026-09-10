@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { checkRateLimit } from './persistent-rate-limit';
-import { getAuthUser } from './auth-helpers';
+import { getAuthUser } from './supabase';
 import { logger } from './logger';
 import { logSecurityEvent } from './security-audit';
 

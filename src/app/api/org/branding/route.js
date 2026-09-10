@@ -1,10 +1,7 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
-import {
-  createServerSupabaseClient,
-  isServerSupabaseConfigured,
-} from '@/lib/supabase-service-role';
+import { getUserClient, getAdminClient, isServerSupabaseConfigured } from '@/lib/supabase';
+
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
 import { logOrgAction } from '@/lib/org-audit';
 
@@ -14,7 +11,7 @@ export const runtime = 'nodejs';
 /* GET /api/org/branding — logo + accent (any active member reads). */
 export const GET = withApiGuard(
   async () => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
 
@@ -47,7 +44,7 @@ export const GET = withApiGuard(
    URL for the logo (Supabase storage upload can be wired later). */
 export const PATCH = withApiGuard(
   async (request) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     if (!assertOrgRole(member, ['executive'])) {
@@ -71,7 +68,7 @@ export const PATCH = withApiGuard(
     if (!isServerSupabaseConfigured()) {
       return NextResponse.json({ error: 'Server not configured' }, { status: 503 });
     }
-    const service = createServerSupabaseClient();
+    const service = getAdminClient();
 
     if ('logo_url' in body) {
       const { error } = await service
@@ -84,7 +81,11 @@ export const PATCH = withApiGuard(
       const { error } = await service
         .from('org_fund_config')
         .upsert(
-          { org_id: member.org_id, accent_color: body.accent_color || null, updated_at: new Date().toISOString() },
+          {
+            org_id: member.org_id,
+            accent_color: body.accent_color || null,
+            updated_at: new Date().toISOString(),
+          },
           { onConflict: 'org_id' },
         );
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });

@@ -247,7 +247,8 @@ export const GET = withApiGuard(
 
       let massiveCacheEvents = [];
       try {
-        const { supabaseAdmin: admin } = await import('@/lib/plaid');
+        const { getAdminClient } = await import('@/lib/supabase');
+        const admin = getAdminClient();
         const { data } = await admin
           .from('news_articles_cache')
           .select('*')

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
 
 export const dynamic = 'force-dynamic';
@@ -16,7 +16,7 @@ async function resolveParams(context) {
 /* GET /api/org/meetings/:id/deliverables — deliverables discussed (any member). */
 export const GET = withApiGuard(
   async (request, user, context) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     const { id } = await resolveParams(context);
@@ -36,7 +36,7 @@ export const GET = withApiGuard(
    discussed. Body: { kind, label, note_id? }. */
 export const POST = withApiGuard(
   async (request, user, context) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     if (!assertOrgRole(member, MANAGER_ROLES)) {
@@ -83,7 +83,7 @@ export const POST = withApiGuard(
 /* DELETE /api/org/meetings/:id/deliverables?deliverable_id=… — managers remove. */
 export const DELETE = withApiGuard(
   async (request, user, context) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     if (!assertOrgRole(member, MANAGER_ROLES)) {

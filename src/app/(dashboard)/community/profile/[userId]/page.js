@@ -1,8 +1,8 @@
 import { redirect } from 'next/navigation';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 
 export default async function OldCommunityProfileRedirect({ params }) {
-  const supabase = createServerSupabase();
+  const supabase = getUserClient();
   const { data: profile } = await supabase
     .from('profiles')
     .select('username')

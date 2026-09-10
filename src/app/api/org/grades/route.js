@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
 import { getGovernance } from '@/lib/org-governance';
 
@@ -14,7 +14,7 @@ const WORK_TYPES = ['pitch', 'research_note', 'coverage', 'participation', 'over
    (non-executives) see no grades until an advisor re-enables visibility. */
 export const GET = withApiGuard(
   async () => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
 
@@ -71,7 +71,7 @@ export const GET = withApiGuard(
 /* POST /api/org/grades — create a grade (executive / faculty advisor only). */
 export const POST = withApiGuard(
   async (request) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     if (!assertOrgRole(member, ['executive'])) {
@@ -87,7 +87,10 @@ export const POST = withApiGuard(
     const studentId = body?.student_id;
     const workType = body?.work_type;
     if (!studentId || !WORK_TYPES.includes(workType)) {
-      return NextResponse.json({ error: 'student_id and a valid work_type required' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'student_id and a valid work_type required' },
+        { status: 400 },
+      );
     }
 
     // Student must be a member of the org.
@@ -125,7 +128,7 @@ export const POST = withApiGuard(
 /* PATCH /api/org/grades — update a grade (executive / advisor only). */
 export const PATCH = withApiGuard(
   async (request) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     if (!assertOrgRole(member, ['executive'])) {
@@ -142,9 +145,11 @@ export const PATCH = withApiGuard(
 
     const update = { updated_at: new Date().toISOString(), graded_by: member.user_id };
     if ('score' in body) update.score = body.score != null ? Number(body.score) : null;
-    if ('max_score' in body) update.max_score = body.max_score != null ? Number(body.max_score) : 100;
+    if ('max_score' in body)
+      update.max_score = body.max_score != null ? Number(body.max_score) : 100;
     if ('letter' in body) update.letter = body.letter || null;
-    if ('feedback' in body) update.feedback = body.feedback ? String(body.feedback).slice(0, 4000) : null;
+    if ('feedback' in body)
+      update.feedback = body.feedback ? String(body.feedback).slice(0, 4000) : null;
     if ('rubric' in body) update.rubric = body.rubric || null;
 
     const { data, error } = await supabase

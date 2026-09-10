@@ -1,10 +1,7 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
-import {
-  createServerSupabaseClient,
-  isServerSupabaseConfigured,
-} from '@/lib/supabase-service-role';
+import { getUserClient, getAdminClient, isServerSupabaseConfigured } from '@/lib/supabase';
+
 import { getMemberPermissions } from '@/lib/org-permissions-config';
 
 export const dynamic = 'force-dynamic';
@@ -22,7 +19,7 @@ async function getCurrentMember(supabase) {
 /** GET /api/org/messages?filter=inbox|sent|unread&limit=50 */
 export const GET = withApiGuard(
   async (request, user) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentMember(supabase);
     if (!member) return NextResponse.json({ messages: [] });
 
@@ -52,7 +49,7 @@ export const GET = withApiGuard(
 /** POST /api/org/messages */
 export const POST = withApiGuard(
   async (request, user) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentMember(supabase);
     if (!member) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -124,7 +121,7 @@ export const POST = withApiGuard(
 
     if (isServerSupabaseConfigured()) {
       try {
-        const admin = createServerSupabaseClient();
+        const admin = getAdminClient();
         const { data: recipRow } = await admin
           .from('org_members')
           .select('user_id')

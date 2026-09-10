@@ -53,8 +53,8 @@ export function withAuth(handler, options = {}) {
     }
 
     try {
-      const { createServerSupabase } = await import('@/lib/supabase-server');
-      const supabase = createServerSupabase();
+      const { getUserClient } = await import('@/lib/supabase');
+      const supabase = getUserClient();
       const {
         data: { user },
       } = await supabase.auth.getUser();

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
 import { loadIpsViolations } from './_loader';
 
@@ -14,7 +14,7 @@ const MANAGER_ROLES = ['executive', 'portfolio_manager'];
    same payload for first paint without a client round-trip. */
 export const GET = withApiGuard(
   async (request) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
 
@@ -31,7 +31,7 @@ export const GET = withApiGuard(
 /* PATCH /api/org/ips/violations — resolve a violation (manager only). */
 export const PATCH = withApiGuard(
   async (request) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     if (!assertOrgRole(member, MANAGER_ROLES)) {

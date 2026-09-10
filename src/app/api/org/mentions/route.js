@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 
 export const dynamic = 'force-dynamic';
@@ -9,7 +9,7 @@ export const runtime = 'nodejs';
 /* GET /api/org/mentions?all=1 — caller's mentions (unseen by default). */
 export const GET = withApiGuard(
   async (request, user) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ mentions: [], unseen: 0 });
 
@@ -50,7 +50,7 @@ export const GET = withApiGuard(
 /* PATCH /api/org/mentions { ids?: [] } — mark mentions seen (all unseen if no ids). */
 export const PATCH = withApiGuard(
   async (request, user) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
 
     let body = {};
     try {

@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
+import { getAdminClient } from '@/lib/supabase';
 import { withApiGuard } from '@/lib/api-guard';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { alpaca } from '@/lib/alpaca';
-import { supabaseAdmin } from '@/lib/plaid';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,14 +32,14 @@ export const GET = withApiGuard(
         },
       );
       let account = null;
-      const { data: br } = await supabaseAdmin
+      const { data: br } = await getAdminClient()
         .from('brokerage_accounts')
         .select('alpaca_account_id')
         .eq('user_id', user.id)
         .maybeSingle();
       if (br) account = br;
       if (!account) {
-        const { data: leg } = await supabaseAdmin
+        const { data: leg } = await getAdminClient()
           .from('alpaca_accounts')
           .select('alpaca_account_id')
           .eq('user_id', user.id)

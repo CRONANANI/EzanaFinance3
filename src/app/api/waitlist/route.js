@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabaseClient } from '@/lib/supabase-service-role';
+import { getAdminClient } from '@/lib/supabase';
 import { Resend } from 'resend';
 
 export const dynamic = 'force-dynamic';
@@ -23,7 +23,7 @@ export const POST = withApiGuard(
       const normalizedEmail = email.toLowerCase().trim();
 
       // Initialize Supabase client
-      const supabase = createServerSupabaseClient();
+      const supabase = getAdminClient();
 
       // Check if email already exists
       const { data: existingUser } = await supabase

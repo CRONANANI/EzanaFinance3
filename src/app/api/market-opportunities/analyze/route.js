@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -255,7 +255,7 @@ function buildKpis(tickerStats, event) {
 
 export const POST = withApiGuard(
   async (request, user) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
 
     let riskProfile = 'Moderate';
     if (user) {

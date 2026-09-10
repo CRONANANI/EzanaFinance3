@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
+import { getAdminClient } from '@/lib/supabase';
 import { withApiGuard } from '@/lib/api-guard';
-import { supabaseAdmin } from '@/lib/plaid';
+
 import { getSeedIsrEvents } from '@/lib/isr/seed-events';
 
 export const dynamic = 'force-dynamic';
@@ -74,7 +75,7 @@ export const GET = withApiGuard(
               ? new Date(Date.now() - 7 * 86400000)
               : new Date(Date.now() - 24 * 3600000);
 
-      let q = supabaseAdmin
+      let q = getAdminClient()
         .from('news_articles_cache')
         .select('*')
         .gte('published_utc', since.toISOString())

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabaseClient } from '@/lib/supabase-service-role';
+import { getAdminClient } from '@/lib/supabase';
 import { NEWSLETTER_SITE_URL } from '@/lib/newsletter/config';
 
 export const dynamic = 'force-dynamic';
@@ -14,7 +14,7 @@ export const runtime = 'nodejs';
  */
 async function unsubscribe(token, reason) {
   if (!token) return false;
-  const supabase = createServerSupabaseClient();
+  const supabase = getAdminClient();
   const { data: row } = await supabase
     .from('marketing_subscribers')
     .select('id, status')

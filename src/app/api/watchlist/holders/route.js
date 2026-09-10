@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabase } from '@/lib/supabase-server';
-import { supabaseAdmin } from '@/lib/plaid';
+import { getUserClient, getAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -10,7 +9,7 @@ export const runtime = 'nodejs';
  */
 export async function GET(request) {
   try {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -22,7 +21,7 @@ export async function GET(request) {
 
     if (!ticker) return NextResponse.json({ error: 'ticker required' }, { status: 400 });
 
-    const { data: demoPositions } = await supabaseAdmin
+    const { data: demoPositions } = await getAdminClient()
       .from('demo_investor_positions')
       .select('user_id, shares, avg_cost, portfolio_pct, days_held, note')
       .eq('ticker', ticker.toUpperCase());
@@ -30,7 +29,7 @@ export async function GET(request) {
     const demoUserIds = (demoPositions || []).map((p) => p.user_id);
     let demoProfiles = [];
     if (demoUserIds.length > 0) {
-      const { data } = await supabaseAdmin
+      const { data } = await getAdminClient()
         .from('profiles')
         .select('id, username, full_name, is_partner')
         .in('id', demoUserIds);
@@ -65,7 +64,7 @@ export async function GET(request) {
 
     let realHolders = [];
     try {
-      const { data: realPositions } = await supabaseAdmin
+      const { data: realPositions } = await getAdminClient()
         .from('positions')
         .select('user_id, quantity, avg_cost')
         .eq('symbol', ticker.toUpperCase())
@@ -74,7 +73,7 @@ export async function GET(request) {
 
       const realUserIds = (realPositions || []).map((p) => p.user_id);
       if (realUserIds.length > 0) {
-        const { data: profilesData } = await supabaseAdmin
+        const { data: profilesData } = await getAdminClient()
           .from('profiles')
           .select('id, username, full_name, is_partner, is_demo')
           .in('id', realUserIds)
@@ -113,7 +112,7 @@ export async function GET(request) {
     if (realHolders.length > 0) {
       try {
         const realUserIdsForNotes = realHolders.map((h) => h.userId);
-        const { data: realNotes } = await supabaseAdmin
+        const { data: realNotes } = await getAdminClient()
           .from('profile_trade_notes')
           .select('user_id, body')
           .eq('ticker', ticker.toUpperCase())

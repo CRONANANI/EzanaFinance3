@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { randomBytes } from 'crypto';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabaseClient } from '@/lib/supabase-service-role';
+import { getAdminClient } from '@/lib/supabase';
 import { resend } from '@/lib/services/resend';
 import {
   NEWSLETTER_CONSENT_TEXT,
@@ -48,7 +48,7 @@ export const POST = withApiGuard(
     }
 
     const normalizedEmail = email.toLowerCase().trim();
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
 
     const forwardedFor = request.headers.get('x-forwarded-for');
     const ip = forwardedFor ? forwardedFor.split(',')[0].trim() : 'unknown';

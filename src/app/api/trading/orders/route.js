@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
+import { getAdminClient } from '@/lib/supabase';
 import { withApiGuard } from '@/lib/api-guard';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { alpaca } from '@/lib/alpaca';
-import { supabaseAdmin } from '@/lib/plaid';
+
 import { awardXP } from '@/lib/rewards';
 
 export const dynamic = 'force-dynamic';
@@ -36,14 +37,14 @@ export const POST = withApiGuard(
         },
       );
       let account = null;
-      const { data: br } = await supabaseAdmin
+      const { data: br } = await getAdminClient()
         .from('brokerage_accounts')
         .select('alpaca_account_id, account_status')
         .eq('user_id', user.id)
         .maybeSingle();
       if (br) account = br;
       if (!account) {
-        const { data: leg } = await supabaseAdmin
+        const { data: leg } = await getAdminClient()
           .from('alpaca_accounts')
           .select('alpaca_account_id, account_status')
           .eq('user_id', user.id)
@@ -75,16 +76,18 @@ export const POST = withApiGuard(
         orderBody,
       );
 
-      await supabaseAdmin.from('trade_history').insert({
-        user_id: user.id,
-        alpaca_order_id: order.id,
-        symbol: order.symbol,
-        side: order.side,
-        qty: order.qty != null ? String(order.qty) : null,
-        notional: order.notional != null ? String(order.notional) : null,
-        order_type: order.type,
-        status: order.status,
-      });
+      await getAdminClient()
+        .from('trade_history')
+        .insert({
+          user_id: user.id,
+          alpaca_order_id: order.id,
+          symbol: order.symbol,
+          side: order.side,
+          qty: order.qty != null ? String(order.qty) : null,
+          notional: order.notional != null ? String(order.notional) : null,
+          order_type: order.type,
+          status: order.status,
+        });
 
       try {
         await awardXP(user.id, 30, 'Placed a trade', 'trading');

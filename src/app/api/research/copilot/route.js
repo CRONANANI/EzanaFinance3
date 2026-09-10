@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabase } from '@/lib/supabase-server';
+
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
-import { getAdminClient } from '@/lib/supabase';
+import { getAdminClient, getUserClient } from '@/lib/supabase';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 import { orchestrate } from '@/lib/research-copilot/orchestrate';
 import { CORPUS_LABELS } from '@/lib/research-copilot/retrievers';
@@ -96,7 +96,7 @@ export async function POST(request) {
 
   // Auth required. Org membership is optional (public corpora still answer);
   // research notes only join in when the user is an active org member.
-  const supabase = createServerSupabase();
+  const supabase = getUserClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -105,14 +105,19 @@ export async function POST(request) {
   const member = await getCurrentOrgMember(supabase).catch(() => null);
 
   const body = await request.json().catch(() => ({}));
-  const query = String(body?.query || '').trim().slice(0, 800);
+  const query = String(body?.query || '')
+    .trim()
+    .slice(0, 800);
   if (!query) return NextResponse.json({ error: 'A question is required.' }, { status: 400 });
 
-  const { items, corporaSearched, corporaUsed, rerankUsed, rewriteUsed } = await orchestrate(query, {
-    admin: getAdminClient(),
-    supabaseUser: supabase,
-    member,
-  });
+  const { items, corporaSearched, corporaUsed, rerankUsed, rewriteUsed } = await orchestrate(
+    query,
+    {
+      admin: getAdminClient(),
+      supabaseUser: supabase,
+      member,
+    },
+  );
 
   // Honest empty-state — never fabricate an answer with no retrieved sources.
   // Log the query as a content gap (fire-and-forget; never blocks).

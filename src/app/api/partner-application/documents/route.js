@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
+import { getAdminClient } from '@/lib/supabase';
 import { withApiGuard, safeErrorResponse } from '@/lib/api-guard';
-import { supabaseAdmin } from '@/lib/plaid';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,7 +43,7 @@ export const POST = withApiGuard(
 
       if (!token) return NextResponse.json({ error: 'Token required' }, { status: 400 });
 
-      const { data: app } = await supabaseAdmin
+      const { data: app } = await getAdminClient()
         .from('partner_applications')
         .select('*')
         .eq('verification_token', token)
@@ -59,8 +59,8 @@ export const POST = withApiGuard(
         const check = validateUpload(idDocument, 'ID document');
         if (check.error) return NextResponse.json({ error: check.error }, { status: 400 });
         const idPath = `partner-applications/${app.id}/id-document.${check.ext}`;
-        const { error: idErr } = await supabaseAdmin.storage
-          .from('documents')
+        const { error: idErr } = await getAdminClient()
+          .storage.from('documents')
           .upload(idPath, idDocument, { upsert: true, contentType: idDocument.type || undefined });
         if (!idErr) updates.id_document_url = idPath;
       }
@@ -69,8 +69,8 @@ export const POST = withApiGuard(
         const check = validateUpload(financialDocument, 'Financial document');
         if (check.error) return NextResponse.json({ error: check.error }, { status: 400 });
         const finPath = `partner-applications/${app.id}/financial-document.${check.ext}`;
-        const { error: finErr } = await supabaseAdmin.storage
-          .from('documents')
+        const { error: finErr } = await getAdminClient()
+          .storage.from('documents')
           .upload(finPath, financialDocument, {
             upsert: true,
             contentType: financialDocument.type || undefined,
@@ -90,7 +90,7 @@ export const POST = withApiGuard(
       updates.application_status = 'under_review';
       updates.updated_at = new Date().toISOString();
 
-      await supabaseAdmin.from('partner_applications').update(updates).eq('id', app.id);
+      await getAdminClient().from('partner_applications').update(updates).eq('id', app.id);
 
       return NextResponse.json({
         success: true,

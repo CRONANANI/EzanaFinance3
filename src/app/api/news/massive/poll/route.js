@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
+import { getAdminClient } from '@/lib/supabase';
 import { withApiGuard } from '@/lib/api-guard';
-import { supabaseAdmin } from '@/lib/plaid';
+
 import { REGIONS, fetchMassiveNews, normalizeArticle } from '@/lib/services/massive-news';
 
 export const dynamic = 'force-dynamic';
@@ -20,7 +21,7 @@ const POLL_INTERVAL_SECONDS = 60;
 export const GET = withApiGuard(
   async (request, user) => {
     try {
-      const { data: state, error: stateErr } = await supabaseAdmin
+      const { data: state, error: stateErr } = await getAdminClient()
         .from('news_poll_state')
         .select('*')
         .eq('id', 1)
@@ -59,7 +60,7 @@ export const GET = withApiGuard(
           .map((a) => normalizeArticle(a, region));
 
         if (normalized.length > 0) {
-          const { data: upserted, error: upsertErr } = await supabaseAdmin
+          const { data: upserted, error: upsertErr } = await getAdminClient()
             .from('news_articles_cache')
             .upsert(normalized, { onConflict: 'id', ignoreDuplicates: true })
             .select('id');
@@ -78,7 +79,7 @@ export const GET = withApiGuard(
         state.last_reset_date != null ? String(state.last_reset_date).slice(0, 10) : '';
       const isNewDay = lastDateStr !== todayStr;
 
-      await supabaseAdmin
+      await getAdminClient()
         .from('news_poll_state')
         .update({
           last_fetched_at: now.toISOString(),
@@ -109,7 +110,7 @@ export const GET = withApiGuard(
 );
 
 async function loadRecentCache(limit) {
-  const { data } = await supabaseAdmin
+  const { data } = await getAdminClient()
     .from('news_articles_cache')
     .select('*')
     .order('published_utc', { ascending: false })

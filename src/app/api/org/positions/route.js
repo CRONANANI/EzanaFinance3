@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import {
-  createServerSupabaseClient,
-  isServerSupabaseConfigured,
-} from '@/lib/supabase-service-role';
+import { getAdminClient, isServerSupabaseConfigured } from '@/lib/supabase';
 import {
   getOrgMemberByUserId,
   canManagePositionsServer,
@@ -22,7 +19,7 @@ export const GET = withApiGuard(
     if (!isServerSupabaseConfigured()) {
       return NextResponse.json({ error: 'Server not configured' }, { status: 503 });
     }
-    const admin = createServerSupabaseClient();
+    const admin = getAdminClient();
     const member = await getOrgMemberByUserId(admin, user.id);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
 
@@ -56,7 +53,7 @@ export const POST = withApiGuard(
     if (!isServerSupabaseConfigured()) {
       return NextResponse.json({ error: 'Server not configured' }, { status: 503 });
     }
-    const admin = createServerSupabaseClient();
+    const admin = getAdminClient();
     const member = await getOrgMemberByUserId(admin, user.id);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     if (!(await canManagePositionsServer(admin, member))) {
@@ -71,7 +68,9 @@ export const POST = withApiGuard(
     }
 
     const { team_id, ticker, name, shares, avg_cost, sector, notes } = body || {};
-    const sym = String(ticker || '').toUpperCase().trim();
+    const sym = String(ticker || '')
+      .toUpperCase()
+      .trim();
     const sharesNum = Number(shares);
     const costNum = Number(avg_cost);
 
@@ -79,7 +78,10 @@ export const POST = withApiGuard(
       return NextResponse.json({ error: 'A valid ticker is required' }, { status: 400 });
     }
     if (!Number.isFinite(sharesNum) || sharesNum <= 0) {
-      return NextResponse.json({ error: 'Shares must be a number greater than 0' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Shares must be a number greater than 0' },
+        { status: 400 },
+      );
     }
     if (!Number.isFinite(costNum) || costNum < 0) {
       return NextResponse.json({ error: 'Average cost must be 0 or greater' }, { status: 400 });
@@ -122,7 +124,7 @@ export const DELETE = withApiGuard(
     if (!isServerSupabaseConfigured()) {
       return NextResponse.json({ error: 'Server not configured' }, { status: 503 });
     }
-    const admin = createServerSupabaseClient();
+    const admin = getAdminClient();
     const member = await getOrgMemberByUserId(admin, user.id);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     if (!(await canManagePositionsServer(admin, member))) {
@@ -142,10 +144,7 @@ export const DELETE = withApiGuard(
       return NextResponse.json({ error: 'not found' }, { status: 404 });
     }
 
-    const { error } = await admin
-      .from('org_positions')
-      .update({ is_active: false })
-      .eq('id', id);
+    const { error } = await admin.from('org_positions').update({ is_active: false }).eq('id', id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ ok: true });
   },

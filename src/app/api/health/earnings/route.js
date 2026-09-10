@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
+import { getAdminClient } from '@/lib/supabase';
 import { withApiGuard } from '@/lib/api-guard';
 import { requireAdminAccess } from '@/lib/admin-auth';
-import { supabaseAdmin } from '@/lib/plaid';
 
 export const dynamic = 'force-dynamic';
 
@@ -75,7 +75,7 @@ export const GET = withApiGuard(
 
     if (urlOk && keyOk) {
       try {
-        const { count, error } = await supabaseAdmin
+        const { count, error } = await getAdminClient()
           .from('earnings_transcripts')
           .select('*', { count: 'exact', head: true });
         if (!error) {
@@ -87,7 +87,7 @@ export const GET = withApiGuard(
       }
 
       try {
-        const { count, error } = await supabaseAdmin
+        const { count, error } = await getAdminClient()
           .from('earnings_transcript_analysis')
           .select('*', { count: 'exact', head: true });
         if (!error) {

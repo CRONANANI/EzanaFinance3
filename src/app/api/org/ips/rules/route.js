@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
 import { loadIpsRules, RULE_TYPES } from './_loader';
 
@@ -12,7 +12,7 @@ export const runtime = 'nodejs';
    same payload for first paint without a client round-trip. */
 export const GET = withApiGuard(
   async () => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
 
@@ -26,7 +26,7 @@ export const GET = withApiGuard(
 /* POST /api/org/ips/rules — create or toggle a rule (executive only). */
 export const POST = withApiGuard(
   async (request) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     if (!assertOrgRole(member, ['executive'])) {
@@ -82,7 +82,7 @@ export const POST = withApiGuard(
 /* DELETE /api/org/ips/rules?id= — remove a rule (executive only). */
 export const DELETE = withApiGuard(
   async (request) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     if (!assertOrgRole(member, ['executive'])) {

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { isAdminUser } from '@/lib/admin-helpers';
 import { getArchivedArticleIds } from '@/lib/echo-article-status';
 import { getArticleBySlug } from '@/lib/echo-data';

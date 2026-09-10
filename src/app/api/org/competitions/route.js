@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
 import { getOrgPositionBook, bookTotals } from '@/lib/org-position-book';
 
@@ -12,7 +12,7 @@ const MANAGER_ROLES = ['executive', 'portfolio_manager'];
 /* GET /api/org/competitions — inter-university competitions + this org's entries. */
 export const GET = withApiGuard(
   async () => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
 
@@ -47,7 +47,7 @@ export const GET = withApiGuard(
 /* POST /api/org/competitions — enter a competition (manager only). */
 export const POST = withApiGuard(
   async (request) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     if (!assertOrgRole(member, MANAGER_ROLES)) {
@@ -61,7 +61,8 @@ export const POST = withApiGuard(
       return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
     }
     const competitionId = body?.competition_id;
-    if (!competitionId) return NextResponse.json({ error: 'competition_id required' }, { status: 400 });
+    if (!competitionId)
+      return NextResponse.json({ error: 'competition_id required' }, { status: 400 });
 
     const { data: comp } = await supabase
       .from('competitions')

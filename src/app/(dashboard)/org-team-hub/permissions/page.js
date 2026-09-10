@@ -1,4 +1,4 @@
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 import { loadPermissionsMatrix } from '@/lib/org-permissions-server';
 import { TeamPermissionsClient } from '@/components/org/permissions/TeamPermissionsClient';
@@ -6,7 +6,7 @@ import { TeamPermissionsClient } from '@/components/org/permissions/TeamPermissi
 export const dynamic = 'force-dynamic';
 
 export default async function TeamPermissionsPage() {
-  const supabase = createServerSupabase();
+  const supabase = getUserClient();
   const member = await getCurrentOrgMember(supabase);
   let initialData = null;
   if (member) {

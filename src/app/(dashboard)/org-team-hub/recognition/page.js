@@ -1,4 +1,4 @@
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
 import { RecognitionWall } from '@/components/org/social2/RecognitionWall';
 
@@ -46,7 +46,7 @@ async function loadRecognition(supabase, member) {
 }
 
 export default async function RecognitionPage() {
-  const supabase = createServerSupabase();
+  const supabase = getUserClient();
   const member = await getCurrentOrgMember(supabase);
   const initialData = member ? await loadRecognition(supabase, member) : null;
 

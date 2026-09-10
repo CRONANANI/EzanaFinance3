@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 import { getOrgPositionBook } from '@/lib/org-position-book';
 
@@ -15,7 +15,7 @@ const num = (v) => (v == null ? null : Number(v));
    Returns { passed, blocked, violations: [{ rule_id, rule_type, severity, detail }] }. */
 export const POST = withApiGuard(
   async (request) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
 
@@ -45,7 +45,8 @@ export const POST = withApiGuard(
     const totalValue = positions.reduce((s, p) => s + (Number(p.current_value) || 0), 0);
     const sectorValue = {};
     for (const p of positions) {
-      if (p.sector) sectorValue[p.sector] = (sectorValue[p.sector] || 0) + (Number(p.current_value) || 0);
+      if (p.sector)
+        sectorValue[p.sector] = (sectorValue[p.sector] || 0) + (Number(p.current_value) || 0);
     }
     const alreadyHeld = positions.some((p) => (p.ticker_symbol || '').toUpperCase() === ticker);
     const positionCount = positions.length;
@@ -61,37 +62,54 @@ export const POST = withApiGuard(
         switch (rule.rule_type) {
           case 'max_position_pct':
             if (p != null && totalValue > 0) {
-              const top = maxOf(positions.map((x) => ((Number(x.current_value) || 0) / totalValue) * 100));
+              const top = maxOf(
+                positions.map((x) => ((Number(x.current_value) || 0) / totalValue) * 100),
+              );
               detail = `Largest position ${top.toFixed(1)}% of ${p}% limit.`;
-              if (top > p) { status = 'bad'; detail = `Largest position ${top.toFixed(1)}% exceeds ${p}% limit.`; }
-              else if (top > p * 0.9) status = 'warn';
+              if (top > p) {
+                status = 'bad';
+                detail = `Largest position ${top.toFixed(1)}% exceeds ${p}% limit.`;
+              } else if (top > p * 0.9) status = 'warn';
             }
             break;
           case 'max_sector_pct':
             if (p != null && totalValue > 0) {
               const top = maxOf(Object.values(sectorValue).map((val) => (val / totalValue) * 100));
               detail = `Largest sector ${top.toFixed(1)}% of ${p}% cap.`;
-              if (top > p) { status = 'bad'; detail = `A sector is ${top.toFixed(1)}%, over the ${p}% cap.`; }
-              else if (top > p * 0.9) status = 'warn';
+              if (top > p) {
+                status = 'bad';
+                detail = `A sector is ${top.toFixed(1)}%, over the ${p}% cap.`;
+              } else if (top > p * 0.9) status = 'warn';
             }
             break;
           case 'max_positions':
-            if (v.max != null && positionCount > Number(v.max)) { status = 'bad'; detail = `${positionCount} positions exceed the ${v.max} max.`; }
-            else detail = `${positionCount} of ${v.max ?? '—'} positions.`;
+            if (v.max != null && positionCount > Number(v.max)) {
+              status = 'bad';
+              detail = `${positionCount} positions exceed the ${v.max} max.`;
+            } else detail = `${positionCount} of ${v.max ?? '—'} positions.`;
             break;
           case 'min_positions':
-            if (v.min != null && positionCount < Number(v.min)) { status = 'bad'; detail = `${positionCount} positions below the ${v.min} minimum.`; }
-            else detail = `${positionCount} positions (min ${v.min ?? '—'}).`;
+            if (v.min != null && positionCount < Number(v.min)) {
+              status = 'bad';
+              detail = `${positionCount} positions below the ${v.min} minimum.`;
+            } else detail = `${positionCount} positions (min ${v.min ?? '—'}).`;
             break;
           case 'prohibited_ticker':
-            if (v.ticker && positions.some((x) => (x.ticker_symbol || '').toUpperCase() === String(v.ticker).toUpperCase())) {
+            if (
+              v.ticker &&
+              positions.some(
+                (x) => (x.ticker_symbol || '').toUpperCase() === String(v.ticker).toUpperCase(),
+              )
+            ) {
               status = 'bad';
               detail = `Currently holding prohibited ${v.ticker}.`;
             } else detail = `${v.ticker || '—'} not held.`;
             break;
           case 'prohibited_sector':
-            if (v.sector && positions.some((x) => x.sector === v.sector)) { status = 'bad'; detail = `Holding in prohibited ${v.sector}.`; }
-            else detail = `No ${v.sector || '—'} exposure.`;
+            if (v.sector && positions.some((x) => x.sector === v.sector)) {
+              status = 'bad';
+              detail = `Holding in prohibited ${v.sector}.`;
+            } else detail = `No ${v.sector || '—'} exposure.`;
             break;
           default:
             detail = 'Enforced at trade time.';

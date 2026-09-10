@@ -8,8 +8,8 @@
  */
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { supabaseAdmin } from '@/lib/plaid';
-import { getAuthUser } from '@/lib/auth-helpers';
+
+import { getAuthUser, getAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,7 +17,7 @@ export const GET = withApiGuard(
   async (request, user) => {
     try {
       // Fetch all user's connected institutions
-      const { data: items } = await supabaseAdmin
+      const { data: items } = await getAdminClient()
         .from('plaid_items')
         .select('id, item_id, institution_name, institution_logo, status, created_at')
         .eq('user_id', user.id)
@@ -25,14 +25,14 @@ export const GET = withApiGuard(
         .order('created_at', { ascending: false });
 
       // Fetch all accounts
-      const { data: accounts } = await supabaseAdmin
+      const { data: accounts } = await getAdminClient()
         .from('plaid_accounts')
         .select('*')
         .eq('user_id', user.id)
         .order('balance_current', { ascending: false });
 
       // Fetch all holdings (support both schemas: value/cost_basis or institution_value/cost_basis)
-      const { data: holdings } = await supabaseAdmin
+      const { data: holdings } = await getAdminClient()
         .from('plaid_holdings')
         .select('*')
         .eq('user_id', user.id)

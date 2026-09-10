@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
+import { getAdminClient } from '@/lib/supabase';
 import { withApiGuard } from '@/lib/api-guard';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { alpaca } from '@/lib/alpaca';
-import { supabaseAdmin } from '@/lib/plaid';
+
 import { awardELO } from '@/lib/elo';
 
 export const dynamic = 'force-dynamic';
@@ -34,7 +35,7 @@ export const POST = withApiGuard(
           },
         },
       );
-      const { data: profile } = await supabaseAdmin
+      const { data: profile } = await getAdminClient()
         .from('profiles')
         .select('checklist_completed')
         .eq('id', user.id)
@@ -44,7 +45,7 @@ export const POST = withApiGuard(
         return NextResponse.json({ error: 'Complete all checklist tasks first' }, { status: 403 });
       }
 
-      const { data: existing } = await supabaseAdmin
+      const { data: existing } = await getAdminClient()
         .from('brokerage_accounts')
         .select('id')
         .eq('user_id', user.id)
@@ -116,16 +117,18 @@ export const POST = withApiGuard(
       const status = alpacaAccount.status || 'SUBMITTED';
       const approved = status === 'APPROVED' || status === 'ACTIVE';
 
-      const { error: insertErr } = await supabaseAdmin.from('brokerage_accounts').insert({
-        user_id: user.id,
-        alpaca_account_id: alpacaAccount.id,
-        alpaca_account_number: alpacaAccount.account_number ?? null,
-        account_status: status,
-        kyc_status: approved ? 'APPROVED' : 'SUBMITTED',
-        application_submitted_at: new Date().toISOString(),
-        approved_at: approved ? new Date().toISOString() : null,
-        updated_at: new Date().toISOString(),
-      });
+      const { error: insertErr } = await getAdminClient()
+        .from('brokerage_accounts')
+        .insert({
+          user_id: user.id,
+          alpaca_account_id: alpacaAccount.id,
+          alpaca_account_number: alpacaAccount.account_number ?? null,
+          account_status: status,
+          kyc_status: approved ? 'APPROVED' : 'SUBMITTED',
+          application_submitted_at: new Date().toISOString(),
+          approved_at: approved ? new Date().toISOString() : null,
+          updated_at: new Date().toISOString(),
+        });
 
       if (insertErr) {
         console.error('brokerage_accounts insert:', insertErr);
@@ -133,7 +136,7 @@ export const POST = withApiGuard(
       }
 
       try {
-        const { data: existing } = await supabaseAdmin
+        const { data: existing } = await getAdminClient()
           .from('elo_transactions')
           .select('id')
           .eq('user_id', user.id)

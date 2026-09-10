@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { getAuthUser } from '@/lib/auth-helpers';
-import { supabaseAdmin } from '@/lib/plaid';
+import { getAuthUser, getAdminClient } from '@/lib/supabase';
+
 import { fetchAV, getAlphaVantageApiKey, fetchAllBulkQuotesAlpha } from '@/lib/alpha-vantage';
 
 export const dynamic = 'force-dynamic';
@@ -156,7 +156,7 @@ export const GET = withApiGuard(
       const startDate = period === '7D' ? startOfWeekNy() : getStartDate(period);
 
       // Read portfolio
-      const { data: mockRow } = await supabaseAdmin
+      const { data: mockRow } = await getAdminClient()
         .from('mock_portfolios')
         .select('portfolio')
         .eq('user_id', user.id)
@@ -167,7 +167,7 @@ export const GET = withApiGuard(
       const cash = Number(portfolio?.cash ?? 0) || 0;
 
       // Earliest buy per ticker from mock_trades (for positions missing openedAt)
-      const { data: trades } = await supabaseAdmin
+      const { data: trades } = await getAdminClient()
         .from('mock_trades')
         .select('ticker, trade_type, created_at')
         .eq('user_id', user.id)

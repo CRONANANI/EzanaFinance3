@@ -1,4 +1,4 @@
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 import { loadIpsRules } from '@/app/api/org/ips/rules/_loader';
 import { loadIpsViolations } from '@/app/api/org/ips/violations/_loader';
@@ -13,7 +13,7 @@ export const dynamic = 'force-dynamic';
    client-side in ComplianceClient, which keeps its own mount fetch as the
    fallback when initialData is null (non-member / load failure). */
 export default async function CompliancePage() {
-  const supabase = createServerSupabase();
+  const supabase = getUserClient();
   const member = await getCurrentOrgMember(supabase);
 
   let initialData = null;

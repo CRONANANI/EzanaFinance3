@@ -6,14 +6,13 @@
  * transactions, computed totals, top/worst performers, and asset
  * allocation) from the Plaid tables.
  *
- * Uses the service-role supabaseAdmin client for queries but filters
+ * Uses the service-role getAdminClient() client for queries but filters
  * every user-scoped query by the authenticated user's ID resolved from
  * the request via getAuthUser. This ensures that each user only ever
  * sees their own portfolio data regardless of RLS configuration.
  */
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { supabaseAdmin } from '@/lib/plaid';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,7 +23,7 @@ export const GET = withApiGuard(
       console.log('[portfolio] Fetching portfolio for user:', userId);
 
       // Fetch accounts — filtered by authenticated user
-      const { data: accounts, error: accountsError } = await supabaseAdmin
+      const { data: accounts, error: accountsError } = await getAdminClient()
         .from('plaid_accounts')
         .select('*')
         .eq('user_id', userId);
@@ -38,7 +37,7 @@ export const GET = withApiGuard(
       }
 
       // Fetch holdings — filtered by authenticated user
-      const { data: holdings, error: holdingsError } = await supabaseAdmin
+      const { data: holdings, error: holdingsError } = await getAdminClient()
         .from('plaid_holdings')
         .select('*')
         .eq('user_id', userId);
@@ -55,7 +54,7 @@ export const GET = withApiGuard(
       // in the current schema (not user-scoped). Sync writes security metadata
       // directly onto plaid_holdings rows, so this query is effectively legacy.
       // Left unchanged for now to avoid changing behavior beyond the auth fix.
-      const { data: securities, error: securitiesError } = await supabaseAdmin
+      const { data: securities, error: securitiesError } = await getAdminClient()
         .from('plaid_securities')
         .select('*');
 
@@ -64,7 +63,7 @@ export const GET = withApiGuard(
       }
 
       // Fetch transactions — filtered by authenticated user
-      const { data: transactions, error: transactionsError } = await supabaseAdmin
+      const { data: transactions, error: transactionsError } = await getAdminClient()
         .from('plaid_transactions')
         .select('*')
         .eq('user_id', userId)

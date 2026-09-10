@@ -1,4 +1,4 @@
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 import { loadResearchBootstrap } from '@/app/api/org/research-notes/_shared';
 import { ResearchLibrary } from '@/components/org/social2/ResearchLibrary';
@@ -14,7 +14,7 @@ export const dynamic = 'force-dynamic';
  * from that fetch) is preserved unchanged.
  */
 export default async function ResearchLibraryPage() {
-  const supabase = createServerSupabase();
+  const supabase = getUserClient();
   const member = await getCurrentOrgMember(supabase);
 
   let initialData = null;

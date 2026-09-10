@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
 import { MANAGER_ROLES } from '../../_shared';
 
@@ -12,7 +12,7 @@ export const runtime = 'nodejs';
    assignment to 'submitted'. Version history powers the review modal. */
 export const POST = withApiGuard(
   async (request, _user, context) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     const { id } = await context.params;

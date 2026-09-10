@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 import { getPitchById } from '@/lib/org-pitches';
 
@@ -15,7 +15,7 @@ export const POST = withApiGuard(
       return NextResponse.json({ error: 'Provide 2–5 pitch_ids' }, { status: 400 });
     }
 
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ pitches: [] });
 

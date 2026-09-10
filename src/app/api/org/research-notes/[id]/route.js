@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
 import { embedViaSupabase, supaEmbedConfigured } from '@/lib/embeddings-gte';
 import { MANAGER_ROLES, buildEmbedText, sanitizeDocType, attachAuthors } from '../_shared';
@@ -14,7 +14,7 @@ async function resolveParams(context) {
 
 export const GET = withApiGuard(
   async (request, user, context) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     const { id } = await resolveParams(context);
@@ -57,7 +57,7 @@ export const GET = withApiGuard(
 
 export const PATCH = withApiGuard(
   async (request, user, context) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     const { id } = await resolveParams(context);
@@ -163,7 +163,7 @@ export const PATCH = withApiGuard(
 
 export const DELETE = withApiGuard(
   async (request, user, context) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     const { id } = await resolveParams(context);

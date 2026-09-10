@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getMemberPermissions } from '@/lib/org-permissions-config';
 import {
   getCurrentOrgMember,
@@ -35,7 +35,7 @@ const FLAG_SELECT = `
 /** GET /api/org-trading/flags?asRaiser&asRecipient&status&limit */
 export const GET = withApiGuard(
   async (request, user) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ flags: [] });
 
@@ -77,7 +77,7 @@ export const GET = withApiGuard(
 /** POST /api/org-trading/flags */
 export const POST = withApiGuard(
   async (request, user) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -180,7 +180,10 @@ export const POST = withApiGuard(
 
     if (!primaryRecipientId) {
       return NextResponse.json(
-        { error: 'No active members are available to receive this flag. Add members to your organization first.' },
+        {
+          error:
+            'No active members are available to receive this flag. Add members to your organization first.',
+        },
         { status: 400 },
       );
     }

@@ -8,8 +8,8 @@
  */
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { getAuthContext } from '@/lib/auth-helpers';
-import { getAdminClient } from '@/lib/supabase';
+
+import { getAdminClient, getAuthContext } from '@/lib/supabase';
 import { dbErrorResponse, exceptionResponse, validationResponse } from '@/lib/api-errors';
 
 export const dynamic = 'force-dynamic';

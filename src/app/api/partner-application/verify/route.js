@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
+import { getAdminClient } from '@/lib/supabase';
 import { withApiGuard } from '@/lib/api-guard';
-import { supabaseAdmin } from '@/lib/plaid';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,7 +12,7 @@ export const GET = withApiGuard(
 
       if (!token) return NextResponse.json({ error: 'Token required' }, { status: 400 });
 
-      const { data: app } = await supabaseAdmin
+      const { data: app } = await getAdminClient()
         .from('partner_applications')
         .select('*')
         .eq('verification_token', token)
@@ -27,7 +27,7 @@ export const GET = withApiGuard(
       }
 
       if (!app.email_verified) {
-        await supabaseAdmin
+        await getAdminClient()
           .from('partner_applications')
           .update({
             email_verified: true,

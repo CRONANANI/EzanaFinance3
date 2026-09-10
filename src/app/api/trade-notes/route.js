@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { sanitizeInput } from '@/lib/sanitize';
 
 export const dynamic = 'force-dynamic';
@@ -12,7 +12,7 @@ export const runtime = 'nodejs';
 export const GET = withApiGuard(
   async (request, user) => {
     try {
-      const supabase = createServerSupabase();
+      const supabase = getUserClient();
       const { searchParams } = new URL(request.url);
       const userId = searchParams.get('userId');
       const ticker = searchParams.get('ticker');
@@ -50,7 +50,7 @@ export const GET = withApiGuard(
 export const POST = withApiGuard(
   async (request, user) => {
     try {
-      const supabase = createServerSupabase();
+      const supabase = getUserClient();
       const body = await request.json();
       const ticker = (body?.ticker || '').toUpperCase().trim();
       const noteBody = sanitizeInput(body?.body || '', 1000);
@@ -86,7 +86,7 @@ export const POST = withApiGuard(
 export const DELETE = withApiGuard(
   async (request, user) => {
     try {
-      const supabase = createServerSupabase();
+      const supabase = getUserClient();
       const { searchParams } = new URL(request.url);
       const ticker = searchParams.get('ticker');
       if (!ticker) return NextResponse.json({ error: 'ticker required' }, { status: 400 });

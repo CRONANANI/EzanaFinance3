@@ -1,10 +1,7 @@
 import { NextResponse } from 'next/server';
 import Papa from 'papaparse';
 import { withApiGuard } from '@/lib/api-guard';
-import {
-  createServerSupabaseClient,
-  isServerSupabaseConfigured,
-} from '@/lib/supabase-service-role';
+import { getAdminClient, isServerSupabaseConfigured } from '@/lib/supabase';
 import {
   getOrgMemberByUserId,
   canManagePositionsServer,
@@ -28,7 +25,7 @@ export const POST = withApiGuard(
     if (!isServerSupabaseConfigured()) {
       return NextResponse.json({ error: 'Server not configured' }, { status: 503 });
     }
-    const admin = createServerSupabaseClient();
+    const admin = getAdminClient();
     const member = await getOrgMemberByUserId(admin, user.id);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     if (!(await canManagePositionsServer(admin, member))) {
@@ -98,7 +95,9 @@ export const POST = withApiGuard(
     const errors = [];
     parsed.data.forEach((r, i) => {
       const lineNo = i + 2; // +1 for the header row, +1 for 1-based line numbers
-      const sym = String(r.ticker || '').toUpperCase().trim();
+      const sym = String(r.ticker || '')
+        .toUpperCase()
+        .trim();
       const shares = Number(r.shares);
       const avg_cost = Number(r.avg_cost);
 
@@ -107,11 +106,17 @@ export const POST = withApiGuard(
         return;
       }
       if (!Number.isFinite(shares) || shares <= 0) {
-        errors.push({ row: lineNo, reason: `Shares must be a number > 0 (got "${r.shares ?? ''}")` });
+        errors.push({
+          row: lineNo,
+          reason: `Shares must be a number > 0 (got "${r.shares ?? ''}")`,
+        });
         return;
       }
       if (!Number.isFinite(avg_cost) || avg_cost < 0) {
-        errors.push({ row: lineNo, reason: `avg_cost must be a number >= 0 (got "${r.avg_cost ?? ''}")` });
+        errors.push({
+          row: lineNo,
+          reason: `avg_cost must be a number >= 0 (got "${r.avg_cost ?? ''}")`,
+        });
         return;
       }
 

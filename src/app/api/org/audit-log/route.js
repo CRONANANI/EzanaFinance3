@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
 
 export const dynamic = 'force-dynamic';
@@ -10,7 +10,7 @@ export const runtime = 'nodejs';
    Optional filters: ?action=&limit=&offset=. */
 export const GET = withApiGuard(
   async (request) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     if (!assertOrgRole(member, ['executive'])) {
@@ -19,7 +19,10 @@ export const GET = withApiGuard(
 
     const { searchParams } = new URL(request.url);
     const action = searchParams.get('action');
-    const limit = Math.min(200, Math.max(1, Number.parseInt(searchParams.get('limit') || '50', 10)));
+    const limit = Math.min(
+      200,
+      Math.max(1, Number.parseInt(searchParams.get('limit') || '50', 10)),
+    );
     const offset = Math.max(0, Number.parseInt(searchParams.get('offset') || '0', 10));
 
     let query = supabase

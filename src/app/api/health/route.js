@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
+import { getAdminClient } from '@/lib/supabase';
 import { withApiGuard } from '@/lib/api-guard';
 import { requireAdminAccess } from '@/lib/admin-auth';
-import { supabaseAdmin } from '@/lib/plaid';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,7 +13,7 @@ export const GET = withApiGuard(
     const checks = { status: 'ok', timestamp: new Date().toISOString(), services: {} };
 
     try {
-      const { data, error } = await supabaseAdmin.from('partners').select('id').limit(1);
+      const { data, error } = await getAdminClient().from('partners').select('id').limit(1);
       checks.services.database = error ? 'unhealthy' : 'healthy';
     } catch {
       checks.services.database = 'unhealthy';

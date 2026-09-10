@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 
 export const dynamic = 'force-dynamic';
@@ -14,7 +14,7 @@ export const runtime = 'nodejs';
  */
 export const GET = withApiGuard(
   async () => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     const orgId = member.org_id;
@@ -35,15 +35,54 @@ export const GET = withApiGuard(
     ]);
 
     const steps = [
-      { key: 'positions', label: 'Add or import positions', count: positions, done: positions >= 1, href: '/org-trading', manager_only: true },
-      { key: 'teams', label: 'Create sector teams', count: teams, done: teams >= 1, href: '/settings', manager_only: true },
-      { key: 'members', label: 'Invite members', count: members, done: members >= 2, href: '/settings', manager_only: false },
-      { key: 'coverage', label: 'Assign sector coverage', count: coverage, done: coverage >= 1, href: '/org-team-hub/org-chart', manager_only: false },
-      { key: 'ips', label: 'Set IPS rules', count: ips, done: ips >= 1, href: '/org-team-hub/compliance', manager_only: true },
+      {
+        key: 'positions',
+        label: 'Add or import positions',
+        count: positions,
+        done: positions >= 1,
+        href: '/org-trading',
+        manager_only: true,
+      },
+      {
+        key: 'teams',
+        label: 'Create sector teams',
+        count: teams,
+        done: teams >= 1,
+        href: '/settings',
+        manager_only: true,
+      },
+      {
+        key: 'members',
+        label: 'Invite members',
+        count: members,
+        done: members >= 2,
+        href: '/settings',
+        manager_only: false,
+      },
+      {
+        key: 'coverage',
+        label: 'Assign sector coverage',
+        count: coverage,
+        done: coverage >= 1,
+        href: '/org-team-hub/org-chart',
+        manager_only: false,
+      },
+      {
+        key: 'ips',
+        label: 'Set IPS rules',
+        count: ips,
+        done: ips >= 1,
+        href: '/org-team-hub/compliance',
+        manager_only: true,
+      },
     ];
     const doneCount = steps.filter((s) => s.done).length;
 
-    return NextResponse.json({ steps, complete: doneCount === steps.length, done_count: doneCount });
+    return NextResponse.json({
+      steps,
+      complete: doneCount === steps.length,
+      done_count: doneCount,
+    });
   },
   { requireAuth: true },
 );

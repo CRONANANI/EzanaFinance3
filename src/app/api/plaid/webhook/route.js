@@ -8,7 +8,7 @@
  * 4. OAuth can be tested in Sandbox first using Sandbox OAuth institutions.
  */
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/plaid';
+
 import { syncPlaidItem } from '@/lib/plaid-sync';
 import { verifyPlaidWebhook } from '@/lib/plaid-webhook-verify';
 import { decryptToken } from '@/lib/crypto/token-cipher';
@@ -46,7 +46,7 @@ export async function POST(request) {
       return NextResponse.json({ received: true });
     }
 
-    const { data: item } = await supabaseAdmin
+    const { data: item } = await getAdminClient()
       .from('plaid_items')
       .select('id, user_id, access_token, institution_id, institution_name, status')
       .eq('item_id', itemId)
@@ -56,7 +56,7 @@ export async function POST(request) {
       return NextResponse.json({ received: true });
     }
 
-    await supabaseAdmin
+    await getAdminClient()
       .from('plaid_items')
       .update({
         last_webhook_code: webhookCode || null,
@@ -94,7 +94,7 @@ export async function POST(request) {
 
     if (loginRequired) {
       const status = webhookCode === 'USER_PERMISSION_REVOKED' ? 'revoked' : 'login_required';
-      await supabaseAdmin
+      await getAdminClient()
         .from('plaid_items')
         .update({
           status,

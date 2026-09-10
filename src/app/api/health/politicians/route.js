@@ -7,10 +7,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import {
-  createServerSupabaseClient,
-  isServerSupabaseConfigured,
-} from '@/lib/supabase-service-role';
+import { getAdminClient, isServerSupabaseConfigured } from '@/lib/supabase';
 import { requireAdminAccess } from '@/lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
@@ -45,7 +42,7 @@ export async function GET(request) {
     );
   }
 
-  const supabase = createServerSupabaseClient();
+  const supabase = getAdminClient();
 
   try {
     const [

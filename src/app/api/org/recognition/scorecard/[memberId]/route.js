@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
-import { getAdminClient } from '@/lib/supabase';
+
+import { getAdminClient, getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 import {
   mapMemberToWeightRole,
@@ -26,7 +26,7 @@ function percentileOf(value, population) {
    calibration series, badges & awards. All from real rows — honest-empty. */
 export const GET = withApiGuard(
   async (_request, { params }) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const viewer = await getCurrentOrgMember(supabase);
     if (!viewer) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
 

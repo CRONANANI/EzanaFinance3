@@ -1,7 +1,7 @@
 /**
  * Shared Plaid item sync — used by POST /api/plaid/sync and /api/plaid/webhook.
  */
-import { plaidClient, supabaseAdmin } from '@/lib/plaid';
+import { plaidClient } from '@/lib/plaid';
 import {
   upsertPlaidAccount,
   upsertPlaidPositions,
@@ -89,9 +89,9 @@ export async function syncPlaidItem({
   };
 
   if (plaidItemDbId) {
-    await supabaseAdmin.from('plaid_items').update(updatePayload).eq('id', plaidItemDbId);
+    await getAdminClient().from('plaid_items').update(updatePayload).eq('id', plaidItemDbId);
   } else if (plaidItemId) {
-    await supabaseAdmin.from('plaid_items').update(updatePayload).eq('item_id', plaidItemId);
+    await getAdminClient().from('plaid_items').update(updatePayload).eq('item_id', plaidItemId);
   }
 
   return { syncedAccounts };

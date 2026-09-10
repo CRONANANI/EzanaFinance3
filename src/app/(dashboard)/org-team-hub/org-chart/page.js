@@ -1,5 +1,5 @@
 import { OrgFinalClient } from './OrgFinalClient';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 import { loadChart } from '@/app/api/org/chart/_loader';
 import { loadTeamHubSummary } from '@/app/api/org/team-hub/summary/_loader';
@@ -18,7 +18,7 @@ export const metadata = {
    modal — stays client-side. OrgFinalClient keeps its own mount fetch as the
    fallback when initialData is null (non-member / SSR unavailable). */
 export default async function OrgChartPage() {
-  const supabase = createServerSupabase();
+  const supabase = getUserClient();
   const member = await getCurrentOrgMember(supabase);
 
   let initialData = null;

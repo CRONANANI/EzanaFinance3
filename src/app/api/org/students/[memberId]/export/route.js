@@ -1,10 +1,7 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
-import {
-  createServerSupabaseClient,
-  isServerSupabaseConfigured,
-} from '@/lib/supabase-service-role';
+import { getUserClient, getAdminClient, isServerSupabaseConfigured } from '@/lib/supabase';
+
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
 import { logOrgAction } from '@/lib/org-audit';
 
@@ -19,7 +16,7 @@ async function resolveParams(context) {
    (grades, pitches, assignments) for advisor/executive export. Audit-logged. */
 export const GET = withApiGuard(
   async (request, user, context) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     if (!assertOrgRole(member, ['executive'])) {
@@ -69,7 +66,7 @@ export const GET = withApiGuard(
 
     // Audit the export (best-effort; never blocks the download).
     if (isServerSupabaseConfigured()) {
-      await logOrgAction(createServerSupabaseClient(), {
+      await logOrgAction(getAdminClient(), {
         orgId: member.org_id,
         actorId: member.user_id,
         action: 'student_data_exported',

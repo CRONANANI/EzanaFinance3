@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 
 export const dynamic = 'force-dynamic';
@@ -21,7 +21,7 @@ function summarize(rows, userId) {
 /* GET /api/org/reactions?target_type=&target_id= → counts + viewer's reactions */
 export const GET = withApiGuard(
   async (request) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
 
@@ -48,7 +48,7 @@ export const GET = withApiGuard(
 /* POST /api/org/reactions { target_type, target_id, emoji } → toggle */
 export const POST = withApiGuard(
   async (request) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
 
@@ -60,7 +60,10 @@ export const POST = withApiGuard(
     }
     const { target_type: targetType, target_id: targetId, emoji } = body || {};
     if (!TARGET_TYPES.includes(targetType) || !targetId || !emoji) {
-      return NextResponse.json({ error: 'target_type, target_id, emoji required' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'target_type, target_id, emoji required' },
+        { status: 400 },
+      );
     }
 
     // Toggle: remove if the same reaction already exists, otherwise add it.

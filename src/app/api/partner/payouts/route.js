@@ -4,7 +4,7 @@
  */
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { supabaseAdmin } from '@/lib/plaid';
+
 import { isActivePartner } from '@/lib/partner-payouts';
 
 export const dynamic = 'force-dynamic';
@@ -15,7 +15,7 @@ export const GET = withApiGuard(
       return NextResponse.json({ error: 'Partner access required' }, { status: 403 });
     }
 
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getAdminClient()
       .from('partner_payouts')
       .select(
         'id, amount_cents, currency, period_start, period_end, status, paid_at, memo, created_at',

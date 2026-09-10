@@ -8,12 +8,11 @@ import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import {
   plaidClient,
-  supabaseAdmin,
   PLAID_COUNTRY_CODES,
   PLAID_REDIRECT_URI,
   PLAID_WEBHOOK_URL,
 } from '@/lib/plaid';
-import { getAuthUser } from '@/lib/auth-helpers';
+import { getAuthUser, getAdminClient } from '@/lib/supabase';
 import { decryptToken } from '@/lib/crypto/token-cipher';
 
 export const dynamic = 'force-dynamic';
@@ -33,7 +32,7 @@ export const POST = withApiGuard(
         return NextResponse.json({ error: 'item_id is required' }, { status: 400 });
       }
 
-      const { data: item, error: itemError } = await supabaseAdmin
+      const { data: item, error: itemError } = await getAdminClient()
         .from('plaid_items')
         .select('access_token')
         .eq('user_id', user.id)

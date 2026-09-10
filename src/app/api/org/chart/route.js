@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
 import { loadChart } from './_loader';
 
@@ -30,7 +30,7 @@ const MANAGER_ROLES = ['executive', 'portfolio_manager'];
    seed the same payload for first paint without a client round-trip. */
 export const GET = withApiGuard(
   async () => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) {
       return NextResponse.json({ error: 'Not an active organization member' }, { status: 403 });
@@ -48,7 +48,7 @@ export const GET = withApiGuard(
 /* ── PATCH: update a member's chart fields + sector coverage (manager only) ─ */
 export const PATCH = withApiGuard(
   async (request) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) {
       return NextResponse.json({ error: 'Not an active organization member' }, { status: 403 });

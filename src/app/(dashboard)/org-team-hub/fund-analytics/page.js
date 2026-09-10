@@ -1,5 +1,5 @@
 import { FundDashboard } from '@/components/org/analytics2/FundDashboard';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 import { loadFundAnalytics } from '@/lib/org-fund-analytics';
 
@@ -9,7 +9,7 @@ export default async function FundAnalyticsPage() {
   // Server-render the default-period analytics payload so first paint has data
   // (no post-hydration fetch waterfall). The client keeps its own fetch as the
   // fallback + period-change refetch path — see FundDashboard.
-  const supabase = createServerSupabase();
+  const supabase = getUserClient();
   const member = await getCurrentOrgMember(supabase);
   let initialData = null;
   if (member) {

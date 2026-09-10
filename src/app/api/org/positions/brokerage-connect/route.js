@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import {
-  createServerSupabaseClient,
-  isServerSupabaseConfigured,
-} from '@/lib/supabase-service-role';
+import { getAdminClient, isServerSupabaseConfigured } from '@/lib/supabase';
 import {
   getOrgMemberByUserId,
   canManagePositionsServer,
@@ -22,7 +19,7 @@ export const POST = withApiGuard(
     if (!isServerSupabaseConfigured()) {
       return NextResponse.json({ error: 'Server not configured' }, { status: 503 });
     }
-    const admin = createServerSupabaseClient();
+    const admin = getAdminClient();
     const member = await getOrgMemberByUserId(admin, user.id);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     if (!(await canManagePositionsServer(admin, member))) {
@@ -54,9 +51,7 @@ export const POST = withApiGuard(
       .maybeSingle();
     if (!account) return NextResponse.json({ error: 'account not found' }, { status: 404 });
 
-    const source = BROKERAGE_SOURCES.has(account.source_provider)
-      ? account.source_provider
-      : null;
+    const source = BROKERAGE_SOURCES.has(account.source_provider) ? account.source_provider : null;
     if (!source) {
       return NextResponse.json(
         { error: `Unsupported brokerage source: ${account.source_provider}` },
@@ -83,7 +78,9 @@ export const POST = withApiGuard(
       .map((p) => {
         const shares = Number(p.quantity);
         const avgCost = Number(p.avg_cost ?? p.price ?? 0);
-        const ticker = String(p.ticker || '').toUpperCase().trim();
+        const ticker = String(p.ticker || '')
+          .toUpperCase()
+          .trim();
         return {
           org_id: member.org_id,
           team_id: team.teamId,
@@ -105,10 +102,7 @@ export const POST = withApiGuard(
       return NextResponse.json({ inserted: 0, source, message: 'No importable positions found' });
     }
 
-    const { data, error: insErr } = await admin
-      .from('org_positions')
-      .insert(rows)
-      .select('id');
+    const { data, error: insErr } = await admin.from('org_positions').insert(rows).select('id');
     if (insErr) return NextResponse.json({ error: insErr.message }, { status: 500 });
 
     return NextResponse.json({ inserted: data.length, source });

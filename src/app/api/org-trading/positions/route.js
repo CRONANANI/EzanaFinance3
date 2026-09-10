@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getMemberPermissions } from '@/lib/org-permissions-config';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 import { getOrgPositionBook } from '@/lib/org-position-book';
@@ -20,7 +20,7 @@ export const runtime = 'nodejs';
  */
 export const GET = withApiGuard(
   async () => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) {
       return NextResponse.json({ positions: [], can_flag_positions: false });

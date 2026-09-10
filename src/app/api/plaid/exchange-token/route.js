@@ -4,8 +4,8 @@
  */
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { plaidClient, supabaseAdmin } from '@/lib/plaid';
-import { getAuthUser } from '@/lib/auth-helpers';
+import { plaidClient } from '@/lib/plaid';
+import { getAuthUser, getAdminClient } from '@/lib/supabase';
 import {
   upsertPlaidAccount,
   upsertPlaidPositions,
@@ -43,7 +43,7 @@ export const POST = withApiGuard(
         }
       }
 
-      const { data: itemRow, error: itemError } = await supabaseAdmin
+      const { data: itemRow, error: itemError } = await getAdminClient()
         .from('plaid_items')
         .upsert(
           {
@@ -148,12 +148,12 @@ export const POST = withApiGuard(
       } catch (err) {
         if (err.code === 'cross_provider_conflict') {
           if (writtenUnifiedAccountIds.length > 0) {
-            await supabaseAdmin
+            await getAdminClient()
               .from('unified_accounts')
               .delete()
               .in('id', writtenUnifiedAccountIds);
           }
-          await supabaseAdmin.from('plaid_items').delete().eq('item_id', item_id);
+          await getAdminClient().from('plaid_items').delete().eq('item_id', item_id);
           try {
             await plaidClient.itemRemove({ access_token });
           } catch {
@@ -172,39 +172,43 @@ export const POST = withApiGuard(
       }
 
       for (const a of accounts) {
-        await supabaseAdmin.from('plaid_accounts').upsert(
-          {
-            user_id: user.id,
-            plaid_item_id: itemRow.id,
-            account_id: a.account_id,
-            name: a.name,
-            type: a.type,
-            subtype: a.subtype,
-            mask: a.mask,
-            balance_current: a.balances?.current,
-            balance_available: a.balances?.available,
-            currency: a.balances?.iso_currency_code || 'USD',
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: 'account_id' },
-        );
+        await getAdminClient()
+          .from('plaid_accounts')
+          .upsert(
+            {
+              user_id: user.id,
+              plaid_item_id: itemRow.id,
+              account_id: a.account_id,
+              name: a.name,
+              type: a.type,
+              subtype: a.subtype,
+              mask: a.mask,
+              balance_current: a.balances?.current,
+              balance_available: a.balances?.available,
+              currency: a.balances?.iso_currency_code || 'USD',
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: 'account_id' },
+          );
       }
       for (const h of holdings) {
         const sec = securitiesByID[h.security_id];
         if (!sec) continue;
-        await supabaseAdmin.from('plaid_holdings').upsert({
-          user_id: user.id,
-          account_id: h.account_id,
-          security_id: h.security_id,
-          ticker: sec.ticker_symbol || sec.symbol,
-          name: sec.name,
-          type: sec.type,
-          quantity: h.quantity,
-          price: h.institution_price,
-          value: h.institution_value,
-          cost_basis: h.cost_basis,
-          synced_at: new Date().toISOString(),
-        });
+        await getAdminClient()
+          .from('plaid_holdings')
+          .upsert({
+            user_id: user.id,
+            account_id: h.account_id,
+            security_id: h.security_id,
+            ticker: sec.ticker_symbol || sec.symbol,
+            name: sec.name,
+            type: sec.type,
+            quantity: h.quantity,
+            price: h.institution_price,
+            value: h.institution_value,
+            cost_basis: h.cost_basis,
+            synced_at: new Date().toISOString(),
+          });
       }
 
       return NextResponse.json({

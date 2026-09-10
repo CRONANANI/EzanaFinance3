@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 import { RESPONSE_STATUSES } from '@/lib/org-flag-taxonomy';
 
@@ -28,7 +28,7 @@ const FLAG_DETAIL_SELECT = `
 export const GET = withApiGuard(
   async (request, user, context) => {
     const params = context?.params ?? {};
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -66,7 +66,7 @@ export const GET = withApiGuard(
 export const PATCH = withApiGuard(
   async (request, user, context) => {
     const params = context?.params ?? {};
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 

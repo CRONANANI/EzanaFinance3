@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import {
-  createServerSupabaseClient,
-  isServerSupabaseConfigured,
-} from '@/lib/supabase-service-role';
+import { getAdminClient, isServerSupabaseConfigured } from '@/lib/supabase';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
@@ -69,7 +66,7 @@ export const POST = withApiGuard(
     }
 
     try {
-      const supabase = createServerSupabaseClient();
+      const supabase = getAdminClient();
       const { error } = await supabase.from('api_access_requests').insert({
         name,
         email,

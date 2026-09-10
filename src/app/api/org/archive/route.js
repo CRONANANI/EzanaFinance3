@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 import { getArchivedPitches, viewerFromMember } from '@/lib/org-pitches';
 
@@ -9,7 +9,7 @@ export const runtime = 'nodejs';
 
 export const GET = withApiGuard(
   async (request, user) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ pitches: [], total: 0, showing: 0 });
     const viewer = viewerFromMember(member);

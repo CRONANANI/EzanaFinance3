@@ -1,10 +1,7 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
-import {
-  createServerSupabaseClient,
-  isServerSupabaseConfigured,
-} from '@/lib/supabase-service-role';
+import { getUserClient, getAdminClient, isServerSupabaseConfigured } from '@/lib/supabase';
+
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 import { logOrgAction } from '@/lib/org-audit';
 import {
@@ -19,7 +16,7 @@ export const runtime = 'nodejs';
 /* GET /api/org/permissions — the viewer, their direct reports, and each
    report's effective + overridable permissions. */
 export const GET = withApiGuard(async () => {
-  const supabase = createServerSupabase();
+  const supabase = getUserClient();
   const viewer = await getCurrentOrgMember(supabase);
   if (!viewer) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
 
@@ -30,7 +27,7 @@ export const GET = withApiGuard(async () => {
 /* POST /api/org/permissions — grant or revoke ONE permission on ONE direct
    report. Body: { memberId, permissionKey, action: 'grant' | 'revoke' }. */
 export const POST = withApiGuard(async (request) => {
-  const supabase = createServerSupabase();
+  const supabase = getUserClient();
   const viewer = await getCurrentOrgMember(supabase);
   if (!viewer) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
 
@@ -82,7 +79,7 @@ export const POST = withApiGuard(async (request) => {
   // Audit the change (best-effort; never blocks the write). org_audit_log has no
   // client-insert RLS policy, so this goes through the service-role client.
   if (isServerSupabaseConfigured()) {
-    await logOrgAction(createServerSupabaseClient(), {
+    await logOrgAction(getAdminClient(), {
       orgId: viewer.org_id,
       actorId: viewer.user_id,
       action: `permission_${action}`,

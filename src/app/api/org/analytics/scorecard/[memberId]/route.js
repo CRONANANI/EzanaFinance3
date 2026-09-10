@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 import { analystScorecard } from '@/lib/org-attribution';
 import { getGovernance } from '@/lib/org-governance';
@@ -16,7 +16,7 @@ async function resolveParams(context) {
    Own = always; PM = own team; executive/advisor = anyone. 403 otherwise. */
 export const GET = withApiGuard(
   async (request, user, context) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     const { memberId } = await resolveParams(context);
@@ -43,10 +43,7 @@ export const GET = withApiGuard(
       if (gov.students_see_peer_scorecards) allowed = true;
     }
     if (!allowed) {
-      return NextResponse.json(
-        { error: 'You can only view your own scorecard.' },
-        { status: 403 },
-      );
+      return NextResponse.json({ error: 'You can only view your own scorecard.' }, { status: 403 });
     }
 
     const scorecard = await analystScorecard(supabase, member.org_id, memberId);

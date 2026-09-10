@@ -1,10 +1,7 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
-import {
-  createServerSupabaseClient,
-  isServerSupabaseConfigured,
-} from '@/lib/supabase-service-role';
+import { getUserClient, getAdminClient, isServerSupabaseConfigured } from '@/lib/supabase';
+
 import { getCurrentOrgMember, assertOrgRole } from '@/lib/org-trading-server';
 import { logOrgAction } from '@/lib/org-audit';
 
@@ -16,7 +13,7 @@ const ROLES = ['executive', 'portfolio_manager', 'analyst'];
 /* GET /api/org/invites — pending invites for the caller's org (executive only). */
 export const GET = withApiGuard(
   async () => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     if (!assertOrgRole(member, ['executive'])) {
@@ -31,7 +28,9 @@ export const GET = withApiGuard(
 
     const { data, error } = await supabase
       .from('org_invites')
-      .select('id, email, role, sub_role, team_id, cohort_id, token, status, created_at, expires_at')
+      .select(
+        'id, email, role, sub_role, team_id, cohort_id, token, status, created_at, expires_at',
+      )
       .eq('org_id', member.org_id)
       .order('created_at', { ascending: false })
       .limit(200);
@@ -46,7 +45,7 @@ export const GET = withApiGuard(
    email-domain. Returns a copyable invite link (no transactional email wired). */
 export const POST = withApiGuard(
   async (request) => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
     if (!assertOrgRole(member, ['executive'])) {
@@ -59,7 +58,9 @@ export const POST = withApiGuard(
     } catch {
       return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
     }
-    const email = String(body?.email || '').trim().toLowerCase();
+    const email = String(body?.email || '')
+      .trim()
+      .toLowerCase();
     if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
       return NextResponse.json({ error: 'A valid email is required' }, { status: 400 });
     }
@@ -72,16 +73,13 @@ export const POST = withApiGuard(
       .maybeSingle();
     const domain = (org?.email_domain || '').toLowerCase();
     if (domain && !email.endsWith(`@${domain}`)) {
-      return NextResponse.json(
-        { error: `Email must end in @${domain}` },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: `Email must end in @${domain}` }, { status: 400 });
     }
 
     if (!isServerSupabaseConfigured()) {
       return NextResponse.json({ error: 'Server not configured for invites' }, { status: 503 });
     }
-    const service = createServerSupabaseClient();
+    const service = getAdminClient();
     const { data: invite, error } = await service
       .from('org_invites')
       .insert({
@@ -94,7 +92,9 @@ export const POST = withApiGuard(
         status: 'pending',
         invited_by: member.user_id,
       })
-      .select('id, email, role, sub_role, team_id, cohort_id, token, status, created_at, expires_at')
+      .select(
+        'id, email, role, sub_role, team_id, cohort_id, token, status, created_at, expires_at',
+      )
       .single();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 

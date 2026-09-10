@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
+import { getAdminClient } from '@/lib/supabase';
 import { withApiGuard } from '@/lib/api-guard';
-import { supabaseAdmin } from '@/lib/plaid';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -162,7 +162,7 @@ export const GET = withApiGuard(
       const normalized = feed.filter((a) => a.url && a.title).map(normalizeAvArticle);
 
       if (normalized.length > 0) {
-        const { error: upsertErr } = await supabaseAdmin
+        const { error: upsertErr } = await getAdminClient()
           .from('news_articles_cache')
           .upsert(normalized, { onConflict: 'id', ignoreDuplicates: true });
 

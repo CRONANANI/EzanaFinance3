@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
 import { getOrgPositionBook } from '@/lib/org-position-book';
 
@@ -10,7 +10,7 @@ export const runtime = 'nodejs';
 /* GET /api/org/digest — "This Week in the Fund": last-7-day activity for the org. */
 export const GET = withApiGuard(
   async () => {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const member = await getCurrentOrgMember(supabase);
     if (!member) return NextResponse.json({ error: 'Not an org member' }, { status: 403 });
 
@@ -29,7 +29,12 @@ export const GET = withApiGuard(
       .filter((p) => p.created_at && p.created_at >= since)
       .sort((a, b) => (b.created_at > a.created_at ? 1 : -1))
       .slice(0, 8)
-      .map((p) => ({ id: p.id, ticker: p.ticker, company_name: p.company_name, created_at: p.created_at }));
+      .map((p) => ({
+        id: p.id,
+        ticker: p.ticker,
+        company_name: p.company_name,
+        created_at: p.created_at,
+      }));
 
     // Votes cast this week (join via pitch_id).
     let votes = [];
@@ -107,7 +112,10 @@ export const GET = withApiGuard(
       .eq('org_id', orgId);
     const nameByUser = new Map((members || []).map((m) => [m.user_id, m.display_name]));
 
-    const notes = (noteRows || []).map((n) => ({ ...n, author_name: nameByUser.get(n.author_id) || 'Member' }));
+    const notes = (noteRows || []).map((n) => ({
+      ...n,
+      author_name: nameByUser.get(n.author_id) || 'Member',
+    }));
     const recognitions = (recRows || []).map((r) => ({
       ...r,
       recipient_name: nameByUser.get(r.recipient_id) || 'Member',

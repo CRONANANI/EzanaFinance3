@@ -1,48 +1,79 @@
 import { NextResponse } from 'next/server';
+import { getAdminClient } from '@/lib/supabase';
 import { withApiGuard } from '@/lib/api-guard';
 import { sanitizeObject } from '@/lib/sanitize';
-import { supabaseAdmin } from '@/lib/plaid';
+
 import crypto from 'crypto';
 import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
-
 async function handlePost(request) {
   const rawBody = await request.json();
   const body = sanitizeObject(rawBody);
-    const {
-      fullName, email, phone, country, city,
-      partnerType, yearsExperience, currentRole, companyName, linkedinUrl, websiteUrl,
-      aum, tradingStyle, marketsTraded, certifications,
-      whyPartner, contentPlan, referralSource,
-    } = body;
+  const {
+    fullName,
+    email,
+    phone,
+    country,
+    city,
+    partnerType,
+    yearsExperience,
+    currentRole,
+    companyName,
+    linkedinUrl,
+    websiteUrl,
+    aum,
+    tradingStyle,
+    marketsTraded,
+    certifications,
+    whyPartner,
+    contentPlan,
+    referralSource,
+  } = body;
 
-    if (!fullName || !email || !partnerType) {
-      return NextResponse.json({ error: 'Full name, email, and partner type are required' }, { status: 400 });
+  if (!fullName || !email || !partnerType) {
+    return NextResponse.json(
+      { error: 'Full name, email, and partner type are required' },
+      { status: 400 },
+    );
+  }
+
+  const { data: existing } = await getAdminClient()
+    .from('partner_applications')
+    .select('id, application_status')
+    .eq('email', email.toLowerCase().trim())
+    .maybeSingle();
+
+  if (existing) {
+    if (existing.application_status === 'approved') {
+      return NextResponse.json(
+        { error: 'This email already has an approved partner account.' },
+        { status: 409 },
+      );
     }
-
-    const { data: existing } = await supabaseAdmin
-      .from('partner_applications')
-      .select('id, application_status')
-      .eq('email', email.toLowerCase().trim())
-      .maybeSingle();
-
-    if (existing) {
-      if (existing.application_status === 'approved') {
-        return NextResponse.json({ error: 'This email already has an approved partner account.' }, { status: 409 });
-      }
-      if (['pending_verification', 'pending_documents', 'under_review'].includes(existing.application_status)) {
-        return NextResponse.json({ error: 'An application for this email is already in progress. Check your email for next steps.' }, { status: 409 });
-      }
+    if (
+      ['pending_verification', 'pending_documents', 'under_review'].includes(
+        existing.application_status,
+      )
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            'An application for this email is already in progress. Check your email for next steps.',
+        },
+        { status: 409 },
+      );
     }
+  }
 
-    const verificationToken = crypto.randomBytes(32).toString('hex');
-    const tokenExpires = new Date(Date.now() + 72 * 60 * 60 * 1000);
+  const verificationToken = crypto.randomBytes(32).toString('hex');
+  const tokenExpires = new Date(Date.now() + 72 * 60 * 60 * 1000);
 
-    const { data: app, error: insertErr } = await supabaseAdmin
-      .from('partner_applications')
-      .upsert({
+  const { data: app, error: insertErr } = await getAdminClient()
+    .from('partner_applications')
+    .upsert(
+      {
         full_name: fullName.trim(),
         email: email.toLowerCase().trim(),
         phone: phone || null,
@@ -65,9 +96,11 @@ async function handlePost(request) {
         verification_token_expires: tokenExpires.toISOString(),
         application_status: 'pending_verification',
         updated_at: new Date().toISOString(),
-      }, { onConflict: 'email' })
-      .select('id')
-      .single();
+      },
+      { onConflict: 'email' },
+    )
+    .select('id')
+    .single();
 
   if (insertErr) {
     logger.error('Partner Application insert error', { error: insertErr.message });
