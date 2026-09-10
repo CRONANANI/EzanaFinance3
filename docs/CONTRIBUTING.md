@@ -7,8 +7,8 @@ Short and practical. Read this before opening your first PR.
 ## 1. Quick start
 
 ```bash
-git clone https://github.com/CRONANANI/cronanani.git
-cd cronanani
+git clone https://github.com/CRONANANI/EzanaFinance3.git
+cd EzanaFinance3
 npm install            # also runs `npm run prepare`, which wires husky
 cp .env.example .env.local   # fill in keys (see docs/VERCEL_DEPLOY.md)
 npm run dev

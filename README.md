@@ -84,6 +84,9 @@ that is not `CRONANANI/EzanaFinance3`.
 
 ## Documentation
 
+- `docs/CTO_ONBOARDING.md` — **start here**: 30-minute orientation for senior engineers
+- `docs/ENGINEERING.md` — the standing engineering rules (architecture, conventions, gates)
+- `docs/decisions/` — architecture decision records (ADRs)
 - `docs/ARCHITECTURE.md` — layer map, inventory, honest gap analysis
 - `docs/REFACTOR_ROADMAP.md` — phased refactor plan + status
 - `docs/CONTRIBUTING.md` — commit/lint/build workflow
