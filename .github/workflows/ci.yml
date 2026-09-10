@@ -56,19 +56,49 @@ jobs:
         # fallbacks paint the wrong colour in a broken scope — the "lighter
         # slab in dark mode" bug class. Hard-fails so a new one can't land.
         run: npm run lint:css
-  # See note below about why a `build` job is intentionally absent.
 
-  # NOTE: a `build` job that runs `next build` is intentionally NOT added in
-  # this Phase 1 PR. Several integration libs (Resend, Plaid) construct
-  # clients eagerly at module load with `process.env.X` as a required arg,
-  # which crashes Next.js's page-data collection unless every API key is
-  # present. Wiring stub values for ~10 integrations in CI is a band-aid
-  # that masks the underlying eager-init bug.
-  #
-  # The proper fix lands in Phase 4 of REFACTOR_ROADMAP.md (strict typed
-  # env + lazy client factories). Once those land, this CI workflow gets
-  # a `build` job that uses three stub Supabase env vars and runs
-  # `npm run build` to catch real bundle-time regressions.
-  #
-  # In the meantime, Vercel preview deploys catch build regressions on
-  # every PR — they run the actual production build with real env vars.
+      - name: Unit tests (node:test suites)
+        # Business-logic unit tests: whale score, house disclosures,
+        # competition onboarding, judge scoring, recruiting consent,
+        # council ELO, profile financial metrics.
+        run: npm test
+
+  build:
+    name: Production build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Stub environment
+        # next build needs every integration env var present because a few
+        # libs construct clients eagerly at module load. Generate stub values
+        # for everything declared in .env.example (kept automatically in
+        # sync); the handful of keys that are shape-validated get plausible
+        # shapes. No real secrets exist in CI — Vercel builds with real env.
+        run: |
+          node -e "
+            const fs = require('fs');
+            const stub = {
+              NEXT_PUBLIC_SUPABASE_URL: 'https://stub.supabase.co',
+              SUPABASE_SERVICE_ROLE_KEY: 'stub-service-role-key',
+              NEXT_PUBLIC_SUPABASE_ANON_KEY: 'stub-anon-key',
+              STRIPE_SECRET_KEY: 'sk_test_stub',
+              RESEND_API_KEY: 're_stub',
+            };
+            const names = [...fs.readFileSync('.env.example', 'utf8').matchAll(/^([A-Z0-9_]+)=/gm)].map((m) => m[1]);
+            fs.writeFileSync('.env.local', [...new Set(names)].map((n) => n + '=' + (stub[n] || 'stub')).join('\n') + '\n');
+          "
+
+      - name: Build
+        run: npm run build
