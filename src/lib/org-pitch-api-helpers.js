@@ -11,7 +11,7 @@
 
 import { getUserClient } from '@/lib/supabase';
 import { getCurrentOrgMember } from '@/lib/org-trading-server';
-import { hasPitchPermission } from '@/lib/org-pitches';
+import { hasPitchPermission } from '@/lib/org-pitch-permissions';
 import { ACTIVE_STAGES, designStageLabel, nextForwardGate } from '@/lib/org-pitch-state-machine';
 import { FmpAPI } from '@/lib/services/fmp';
 

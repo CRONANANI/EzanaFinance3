@@ -13,16 +13,10 @@ import {
   fetchPitchDetail,
 } from '@/lib/org-pitch-api-helpers';
 
-export const PITCH_PERMISSIONS = {
-  'pitch.submit': ['analyst', 'portfolio_manager', 'executive'],
-  'pitch.approve_research': ['portfolio_manager', 'executive'],
-  'pitch.review_pm': ['portfolio_manager', 'executive'],
-  'pitch.schedule_committee': ['executive'],
-  'pitch.vote': ['executive', 'portfolio_manager'],
-  'pitch.final_decision': ['executive'],
-  'pitch.assign_monitor': ['portfolio_manager', 'executive'],
-  'pitch.withdraw': ['analyst'],
-};
+// Permission map + check live in the leaf module org-pitch-permissions.js
+// (breaks the cycle with org-pitch-api-helpers); re-exported here so existing
+// consumers keep importing them from '@/lib/org-pitches'.
+export { PITCH_PERMISSIONS, hasPitchPermission } from '@/lib/org-pitch-permissions';
 
 // Kanban column definitions (moved out of the mock module — a live constant the
 // board uses to bucket the 7 active stages into visual columns).
@@ -34,13 +28,6 @@ export const PIPELINE_COLUMNS = [
   { id: 'voting', label: 'Voting', stages: ['committee_vote'] },
   { id: 'decided', label: 'Decided', stages: ['decision'] },
 ];
-
-export function hasPitchPermission(member, key) {
-  if (!member) return false;
-  const roles = PITCH_PERMISSIONS[key];
-  if (!roles) return false;
-  return roles.includes(member.role);
-}
 
 /** Build the lightweight viewer used for archive scoping from an org member. */
 export function viewerFromMember(member) {
