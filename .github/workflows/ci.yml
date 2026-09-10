@@ -57,10 +57,23 @@ jobs:
         # slab in dark mode" bug class. Hard-fails so a new one can't land.
         run: npm run lint:css
 
+      - name: Architecture rules (dependency-cruiser)
+        # No dependency cycles; presentation layer (components/hooks/contexts)
+        # must not reach the server Supabase surface, even transitively.
+        # Orphan detection under src/lib is warn-only.
+        run: npm run lint:arch
+
+      - name: Dead-code inventory (knip)
+        # Non-blocking by design: dead-code detection has false positives
+        # (dynamic imports, string-referenced modules) and must never block
+        # a feature PR. Treat the output as an inventory to review.
+        run: npm run lint:dead
+        continue-on-error: true
+
       - name: Unit tests (node:test suites)
         # Business-logic unit tests: whale score, house disclosures,
         # competition onboarding, judge scoring, recruiting consent,
-        # council ELO, profile financial metrics.
+        # council ELO, profile financial metrics, security guards.
         run: npm test
 
   build:

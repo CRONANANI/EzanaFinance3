@@ -1,0 +1,50 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "paths": {
+    "@/*": ["src/*"]
+  },
+  "entry": [
+    "src/app/**/{page,layout,template,loading,error,not-found,route,default}.{js,jsx}",
+    "src/app/**/{sitemap,robots,manifest,icon,apple-icon,opengraph-image}.{js,jsx}",
+    "src/middleware.js",
+    "src/instrumentation.js",
+    "instrumentation.js",
+    "next.config.js",
+    "tailwind.config.js",
+    "postcss.config.js",
+    "sentry.client.config.js",
+    "sentry.edge.config.js",
+    "sentry.server.config.js",
+    "scripts/**/*.{js,mjs}"
+  ],
+  "project": ["src/**/*.{js,jsx}", "scripts/**/*.{js,mjs}"],
+  "ignore": [
+    "app-legacy/**",
+    "public/**",
+    "docs/**",
+    "src/lib/utils.d.ts",
+    "src/hooks/useCardConfig.d.ts"
+  ],
+  "ignoreDependencies": [
+    "@tailwindcss/typography",
+    "tailwindcss-animate",
+    "autoprefixer",
+    "postcss-import",
+    "sharp",
+    "eslint-config-next",
+    "eslint-config-prettier",
+    "husky",
+    "lint-staged",
+    "dotenv"
+  ],
+  "rules": {
+    "files": "warn",
+    "exports": "warn",
+    "types": "warn",
+    "duplicates": "warn",
+    "dependencies": "warn",
+    "unlisted": "warn",
+    "binaries": "off",
+    "unresolved": "off"
+  }
+}
