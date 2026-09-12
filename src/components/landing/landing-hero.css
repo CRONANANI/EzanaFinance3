@@ -177,6 +177,10 @@
   letter-spacing: -0.02em;
   color: var(--text-primary);
   margin: 0 0 26px;
+  /* Large glyphs carry more side bearing than the 16-19px body text below;
+     a hair of negative indent puts the headline's optical left edge on the
+     same line as .lp-lead / .lp-sub. */
+  text-indent: -0.02em;
 }
 .lp-line {
   display: block;
@@ -190,6 +194,12 @@
   position: relative;
   color: var(--emerald);
   padding: 0 2px;
+}
+/* Lines that OPEN with a marked word ("knowledge compounds",
+   "into opportunity") must share the same left edge as unmarked lines and
+   the body copy — pull the mark's own 2px left padding back out. */
+.lp-line > .lp-mark:first-child {
+  margin-left: -2px;
 }
 
 .lp-lead {
