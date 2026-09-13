@@ -37,14 +37,10 @@ import {
   OTHER_LABEL,
   MAX_SLOTS,
 } from '@/lib/gov-agency-palette';
+// Seed queries live in a pure module so the ezanaql check script can validate
+// them against the catalog (catalog fields only — never raw DB columns).
+import { SEED_QUERY, seedFromFilters } from './ezanaql-seed';
 import './gov-contracts.css';
-
-const SEED_QUERY = `FROM gov.contracts
-WHERE fiscal_year = 2008 AND awarding_agency = "Department of Defense"
-SELECT recipient, awarding_agency, SUM(award_amount) AS total
-GROUP BY recipient, awarding_agency
-ORDER BY total DESC
-LIMIT 10;`;
 
 /* ── formatting ── */
 function fmtUSD(v) {
@@ -2340,19 +2336,6 @@ function DossierOverlay({ recipient: r, series, subs, capitolStrength, colorOf, 
 }
 
 /* ────────────────────────── EzanaQL builder ────────────────────────── */
-function seedFromFilters({ agencies = [], fiscalYear }) {
-  const conds = [];
-  if (fiscalYear !== 'all') conds.push(`fiscal_year = ${fiscalYear}`);
-  if (agencies.length === 1) conds.push(`awarding_agency = "${agencies[0]}"`);
-  else if (agencies.length > 1)
-    conds.push(`awarding_agency IN (${agencies.map((a) => `"${a}"`).join(', ')})`);
-  const where = conds.length ? `\nWHERE ${conds.join(' AND ')}` : '';
-  return `FROM gov.contracts${where}
-SELECT recipient, awarding_agency, SUM(award_amount) AS total
-GROUP BY recipient, awarding_agency
-ORDER BY total DESC
-LIMIT 10;`;
-}
 
 function EzanaQLBuilder({ activeFilters, seedPrompt = '', onClose }) {
   const [prompt, setPrompt] = useState(seedPrompt);

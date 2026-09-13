@@ -12,29 +12,12 @@ import { NextResponse } from 'next/server';
 import { requireUser } from '@/lib/supabase';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 import { catalogSchemaForPrompt, validateEzanaQL } from '@/lib/ezanaql';
+// Pure module so the ezanaql check script can validate the examples.
+import { FEW_SHOT } from './few-shots';
 
 export const dynamic = 'force-dynamic';
 
 const ANTHROPIC_MODEL = 'claude-sonnet-4-5';
-
-const FEW_SHOT = `Example 1
-User: Top 10 defense contractors this fiscal year by total award value, with year-over-year change.
-EzanaQL:
-FROM gov.contracts
-WHERE awarding_agency = "DoD" AND fiscal_year = 2026
-SELECT recipient, SUM(award_value) AS total, YOY(award_value) AS yoy_change
-GROUP BY recipient
-ORDER BY total DESC
-LIMIT 10;
-
-Example 2
-User: Every NASA award over 50 million dollars, newest first.
-EzanaQL:
-FROM gov.contracts
-WHERE awarding_agency = "NASA" AND award_value >= 50M
-SELECT recipient, award_value, action_date
-ORDER BY action_date DESC
-LIMIT 100;`;
 
 function buildSystemPrompt(scope) {
   return `You translate a plain-English report request into a single EzanaQL query.
