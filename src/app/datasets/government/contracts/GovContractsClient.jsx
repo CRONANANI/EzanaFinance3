@@ -23,6 +23,8 @@ import {
   Star,
   Loader2,
 } from 'lucide-react';
+import { useAuth } from '@/components/AuthProvider';
+import { DATASET_TAXONOMY } from '@/lib/datasets/taxonomy';
 import CategoryBar from '@/components/datasets/CategoryBar';
 import DatasetTicker from '@/components/datasets/DatasetTicker';
 import ContractsExplorer from './ContractsExplorer';
@@ -1499,11 +1501,23 @@ function shortFY(label) {
 }
 
 function DrillModal({ recipient: r, allRecipients = [], onSelect, onClose, colorOf }) {
+  const [dossierOpen, setDossierOpen] = useState(false);
   useEffect(() => {
-    const onEsc = (e) => e.key === 'Escape' && onClose();
+    // Escape layering: when the dossier overlay is up, ITS handler consumes
+    // Escape (closing the dossier); a second press then reaches this one.
+    const onEsc = (e) => {
+      if (e.key === 'Escape' && !dossierOpen) onClose();
+    };
     document.addEventListener('keydown', onEsc);
     return () => document.removeEventListener('keydown', onEsc);
-  }, [onClose]);
+  }, [onClose, dossierOpen]);
+
+  // Selecting a similar recipient closes the dossier (if open) and swaps the
+  // modal to that recipient in place.
+  const pickRecipient = (x) => {
+    setDossierOpen(false);
+    onSelect?.(x);
+  };
 
   const initials = initialsOf(r.name);
 
@@ -1533,6 +1547,12 @@ function DrillModal({ recipient: r, allRecipients = [], onSelect, onClose, color
     .filter((x) => x.name !== r.name && x.agency === r.agency)
     .sort((a, b) => b.total - a.total)
     .slice(0, 5);
+
+  // Dossier linkage: Capitol Watch arc strength = this recipient's share of
+  // the largest loaded recipient total, clamped to a visible minimum. The
+  // other six datasets have no data loaded on this page and stay dormant.
+  const maxTotal = Math.max(...allRecipients.map((x) => x.total || 0), r.total || 0, 1);
+  const capitolStrength = Math.min(1, Math.max(0.15, (r.total || 0) / maxTotal));
 
   return (
     <div className="gcx-modal-backdrop" onClick={onClose}>
@@ -1570,6 +1590,38 @@ function DrillModal({ recipient: r, allRecipients = [], onSelect, onClose, color
               <div className="gcx-rail-note">PRIVATE / Not publicly traded</div>
             )}
           </div>
+
+          <div className="gcx-modal-section gcx-sim-section">
+            <div className="gcx-modal-h">
+              Similar contract recipients <span className="gcx-sim-qual">· {r.agency}</span>
+            </div>
+            {related.length ? (
+              <div className="gcx-sim-list">
+                {related.map((x) => (
+                  <button
+                    key={x.name}
+                    type="button"
+                    className="gcx-sim-row"
+                    onClick={() => pickRecipient(x)}
+                    aria-label={`View ${x.name}`}
+                  >
+                    <span
+                      className="gcx-badge gcx-sim-badge"
+                      style={{ background: colorOf(x.agency) }}
+                    >
+                      {initialsOf(x.name)}
+                    </span>
+                    <span className="gcx-sim-name">{x.name}</span>
+                    <span className="gcx-mono gcx-sim-total">{fmtUSD(x.total)}</span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="gcx-rail-note">
+                No other recipients for this agency in the loaded slice.
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="gcx-modal-right">
@@ -1588,46 +1640,29 @@ function DrillModal({ recipient: r, allRecipients = [], onSelect, onClose, color
           </div>
           <AgencyBreakdown awards={r.awards} colorOf={colorOf} />
 
-          <div className="gcx-modal-h" style={{ marginTop: 18 }}>
-            Similar contract recipients <span className="gcx-sim-qual">· {r.agency}</span>
-          </div>
-          {related.length ? (
-            <div className="gcx-sim-list">
-              {related.map((x) => (
-                <button
-                  key={x.name}
-                  type="button"
-                  className="gcx-sim-row"
-                  onClick={() => onSelect?.(x)}
-                  aria-label={`View ${x.name}`}
-                >
-                  <span
-                    className="gcx-badge gcx-sim-badge"
-                    style={{ background: colorOf(x.agency) }}
-                  >
-                    {initialsOf(x.name)}
-                  </span>
-                  <span className="gcx-sim-name">{x.name}</span>
-                  <span className="gcx-mono gcx-sim-total">{fmtUSD(x.total)}</span>
-                </button>
-              ))}
-            </div>
-          ) : (
-            <div className="gcx-rail-note">
-              No other recipients for this agency in the loaded slice.
-            </div>
-          )}
-
           <div className="gcx-modal-actions">
-            <button type="button" className="gcx-btn gcx-btn-primary">
-              <Star size={14} /> Add to watchlist
-            </button>
-            <button type="button" className="gcx-btn gcx-btn-outline">
+            <WatchlistCta recipient={r} />
+            <button
+              type="button"
+              className="gcx-btn gcx-btn-outline"
+              onClick={() => setDossierOpen(true)}
+            >
               Full dossier <ArrowUpRight size={14} />
             </button>
           </div>
         </div>
       </div>
+
+      {dossierOpen && (
+        <DossierOverlay
+          recipient={r}
+          series={series}
+          subs={{ coverageSub, agencySub, yoySub }}
+          capitolStrength={capitolStrength}
+          colorOf={colorOf}
+          onClose={() => setDossierOpen(false)}
+        />
+      )}
     </div>
   );
 }
@@ -1644,15 +1679,16 @@ function MiniStat({ label, value, sub }) {
 /* 1Y candles for the modal's Related-security sparkline. Degrades gracefully:
    the modal never blocks on it — loading shows a shimmer, error/empty falls
    back to the "Price not available" note. */
-function useTickerCandles(ticker) {
+function useTickerCandles(ticker, range = '1Y') {
   const [state, setState] = useState({ status: 'loading', candles: [] });
   useEffect(() => {
     if (!ticker) return undefined;
     const ctrl = new AbortController();
     setState({ status: 'loading', candles: [] });
-    fetch(`/api/market-data/stock-candles?symbol=${encodeURIComponent(ticker)}&range=1Y`, {
-      signal: ctrl.signal,
-    })
+    fetch(
+      `/api/market-data/stock-candles?symbol=${encodeURIComponent(ticker)}&range=${encodeURIComponent(range)}`,
+      { signal: ctrl.signal },
+    )
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`HTTP ${res.status}`))))
       .then((data) => {
         const candles = Array.isArray(data?.candles) ? data.candles : [];
@@ -1662,7 +1698,7 @@ function useTickerCandles(ticker) {
         if (err?.name !== 'AbortError') setState({ status: 'error', candles: [] });
       });
     return () => ctrl.abort();
-  }, [ticker]);
+  }, [ticker, range]);
   return state;
 }
 
@@ -1822,6 +1858,484 @@ function AreaChart({ series, color }) {
         </g>
       ))}
     </svg>
+  );
+}
+
+/* ── Auth-aware "Add to watchlist" (public marketing page) ───────────────── */
+function WatchlistCta({ recipient: r }) {
+  const { isAuthenticated } = useAuth() || {};
+  const [promptOpen, setPromptOpen] = useState(false);
+  const [addState, setAddState] = useState('idle'); // idle | adding | added | error
+  const wrapRef = useRef(null);
+
+  // Dismiss the auth prompt on click-outside WITHOUT closing the drill modal.
+  useEffect(() => {
+    if (!promptOpen) return undefined;
+    const onDoc = (e) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) setPromptOpen(false);
+    };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, [promptOpen]);
+
+  const returnTo = encodeURIComponent('/datasets/government/contracts');
+
+  const addToWatchlist = async () => {
+    if (!r.ticker || addState === 'adding' || addState === 'added') return;
+    setAddState('adding');
+    try {
+      // Default list first (GET ensures one exists), then add the ticker.
+      const listsRes = await fetch('/api/watchlists');
+      if (!listsRes.ok) throw new Error(`HTTP ${listsRes.status}`);
+      const { watchlists } = await listsRes.json();
+      const listId = watchlists?.[0]?.id;
+      if (!listId) throw new Error('no list');
+      const addRes = await fetch(`/api/watchlists/${listId}/items`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'stock', ticker: r.ticker, name: r.name }),
+      });
+      if (!addRes.ok && addRes.status !== 409) throw new Error(`HTTP ${addRes.status}`);
+      setAddState('added');
+    } catch {
+      setAddState('error');
+    }
+  };
+
+  if (isAuthenticated) {
+    const label =
+      addState === 'adding'
+        ? 'Adding…'
+        : addState === 'added'
+          ? 'In watchlist'
+          : addState === 'error'
+            ? 'Retry add'
+            : 'Add to watchlist';
+    return (
+      <button
+        type="button"
+        className="gcx-btn gcx-btn-primary"
+        onClick={addToWatchlist}
+        disabled={!r.ticker || addState === 'adding' || addState === 'added'}
+        title={r.ticker ? undefined : 'No listed ticker for this recipient'}
+      >
+        <Star size={14} /> {label}
+      </button>
+    );
+  }
+
+  return (
+    <div className="gcx-auth-wrap" ref={wrapRef}>
+      <button
+        type="button"
+        className="gcx-btn gcx-btn-primary"
+        onClick={() => setPromptOpen((v) => !v)}
+        aria-expanded={promptOpen}
+      >
+        <Star size={14} /> Add to watchlist
+      </button>
+      {promptOpen && (
+        <div className="gcx-auth-pop" role="dialog" aria-label="Sign up or log in">
+          <button
+            type="button"
+            className="gcx-auth-pop-x"
+            onClick={() => setPromptOpen(false)}
+            aria-label="Dismiss"
+          >
+            <X size={14} />
+          </button>
+          <div className="gcx-auth-pop-title">Track {r.name} in your watchlist</div>
+          <div className="gcx-auth-pop-sub">Free to start · No brokerage required</div>
+          <div className="gcx-auth-pop-actions">
+            <a className="gcx-btn gcx-btn-primary" href={`/auth/signup?redirect=${returnTo}`}>
+              Sign up
+            </a>
+            {/* /auth/signin is the working login form that honors ?redirect=
+                (validated by safeInternalPath); /auth/login is a chooser page
+                that drops query params. */}
+            <a className="gcx-btn gcx-btn-outline" href={`/auth/signin?redirect=${returnTo}`}>
+              Log in
+            </a>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Full Dossier overlay (80% viewport) ─────────────────────────────────── */
+
+function useCompanyMetrics(ticker) {
+  const [state, setState] = useState({ status: 'loading', metrics: null });
+  useEffect(() => {
+    if (!ticker) return undefined;
+    const ctrl = new AbortController();
+    setState({ status: 'loading', metrics: null });
+    fetch(`/api/market-data/company-metrics?symbol=${encodeURIComponent(ticker)}`, {
+      signal: ctrl.signal,
+    })
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`HTTP ${res.status}`))))
+      .then((data) =>
+        setState(
+          data?.metrics
+            ? { status: 'ready', metrics: data.metrics }
+            : { status: 'error', metrics: null },
+        ),
+      )
+      .catch((err) => {
+        if (err?.name !== 'AbortError') setState({ status: 'error', metrics: null });
+      });
+    return () => ctrl.abort();
+  }, [ticker]);
+  return state;
+}
+
+const DOSSIER_RANGES = ['1Y', '3Y', '5Y'];
+
+function DossierChart({ ticker }) {
+  const [range, setRange] = useState('1Y');
+  const { status, candles } = useTickerCandles(ticker, range);
+
+  let body;
+  if (status === 'loading') {
+    body = <div className="gcx-skel gcx-skel-lg" aria-hidden="true" />;
+  } else if (status === 'ready') {
+    body = <DossierPriceChart ticker={ticker} candles={candles} range={range} />;
+  } else {
+    body = <div className="gcx-rail-note">Price not available for {ticker}.</div>;
+  }
+
+  return (
+    <section className="gcx-dossier-block">
+      <div className="gcx-dossier-block-head">
+        <span className="gcx-dossier-label">Price history</span>
+        <div className="gcx-range-toggle" role="tablist" aria-label="Chart range">
+          {DOSSIER_RANGES.map((rg) => (
+            <button
+              key={rg}
+              type="button"
+              role="tab"
+              aria-selected={range === rg}
+              className={`gcx-range-btn gcx-mono${range === rg ? ' is-active' : ''}`}
+              onClick={() => setRange(rg)}
+            >
+              {rg}
+            </button>
+          ))}
+        </div>
+      </div>
+      {body}
+    </section>
+  );
+}
+
+function DossierPriceChart({ ticker, candles, range }) {
+  const W = 920;
+  const H = 260;
+  const P = { t: 14, r: 14, b: 34, l: 14 };
+  const iw = W - P.l - P.r;
+  const ih = H - P.t - P.b;
+  const closes = candles.map((c) => c.close);
+  const min = Math.min(...closes);
+  const max = Math.max(...closes);
+  const span = max - min || 1;
+  const step = candles.length > 1 ? iw / (candles.length - 1) : 0;
+  const pts = candles.map((c, i) => ({
+    x: P.l + i * step,
+    y: P.t + ih - ((c.close - min) / span) * ih,
+  }));
+  const line = pts.map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(' ');
+  const first = candles[0];
+  const last = candles[candles.length - 1];
+  const up = last.close >= first.close;
+  const stroke = up ? 'var(--emerald)' : 'var(--negative)';
+
+  // ≤6 ticks, always first and last — same convention as the modal AreaChart.
+  const MAX_TICKS = 6;
+  const tickIdx =
+    candles.length <= MAX_TICKS
+      ? candles.map((_, i) => i)
+      : Array.from({ length: MAX_TICKS }, (_, k) =>
+          Math.round((k * (candles.length - 1)) / (MAX_TICKS - 1)),
+        );
+
+  return (
+    <svg
+      viewBox={`0 0 ${W} ${H}`}
+      className="gcx-area gcx-dossier-price"
+      role="img"
+      aria-label={`${ticker} price, ${range}`}
+    >
+      {[0.25, 0.5, 0.75].map((g) => (
+        <line
+          key={g}
+          x1={P.l}
+          x2={W - P.r}
+          y1={P.t + ih * g}
+          y2={P.t + ih * g}
+          className="gcx-grid"
+        />
+      ))}
+      <line x1={P.l} x2={W - P.r} y1={P.t + ih} y2={P.t + ih} className="gcx-axis" />
+      <path d={line} fill="none" stroke={stroke} strokeWidth={1.8} />
+      {tickIdx.map((i, k) => (
+        <g key={candles[i].t ?? i}>
+          <line x1={pts[i].x} x2={pts[i].x} y1={P.t + ih} y2={P.t + ih + 4} className="gcx-axis" />
+          <text
+            x={pts[i].x}
+            y={H - 10}
+            className="gcx-area-x"
+            style={
+              k === 0
+                ? { textAnchor: 'start' }
+                : k === tickIdx.length - 1
+                  ? { textAnchor: 'end' }
+                  : undefined
+            }
+          >
+            {candles[i].label}
+          </text>
+        </g>
+      ))}
+    </svg>
+  );
+}
+
+const METRIC_DEFS = [
+  { key: 'marketCap', label: 'Market cap', kind: 'usd' },
+  { key: 'peRatioTTM', label: 'P/E (TTM)', kind: 'x' },
+  { key: 'psRatioTTM', label: 'P/S (TTM)', kind: 'x' },
+  { key: 'pbRatioTTM', label: 'P/B (TTM)', kind: 'x' },
+  { key: 'debtToEquityTTM', label: 'Debt / equity', kind: 'x' },
+  { key: 'currentRatioTTM', label: 'Current ratio', kind: 'x' },
+  { key: 'grossProfitMarginTTM', label: 'Gross margin', kind: 'pct' },
+  { key: 'netProfitMarginTTM', label: 'Net margin', kind: 'pct' },
+  { key: 'returnOnEquityTTM', label: 'Return on equity', kind: 'pct' },
+  { key: 'dividendYieldTTM', label: 'Dividend yield', kind: 'pct' },
+];
+
+function fmtMetric(v, kind) {
+  if (v == null || !Number.isFinite(Number(v))) return null;
+  const n = Number(v);
+  if (kind === 'usd') return fmtUSD(n);
+  if (kind === 'pct') return `${(n * 100).toFixed(1)}%`;
+  return `${n.toFixed(2)}×`;
+}
+
+function DossierMetrics({ ticker }) {
+  const { status, metrics } = useCompanyMetrics(ticker);
+  return (
+    <section className="gcx-dossier-block">
+      <div className="gcx-dossier-label">Key indicators &amp; financial ratios</div>
+      {status === 'loading' ? (
+        <div className="gcx-dossier-metrics">
+          {METRIC_DEFS.map((m) => (
+            <div key={m.key} className="gcx-skel gcx-skel-card" aria-hidden="true" />
+          ))}
+        </div>
+      ) : status === 'ready' ? (
+        <div className="gcx-dossier-metrics">
+          {METRIC_DEFS.map((m) => {
+            const formatted = fmtMetric(metrics[m.key], m.kind);
+            return (
+              <MiniStat
+                key={m.key}
+                label={m.label}
+                value={formatted ?? '—'}
+                sub={formatted ? 'TTM · FMP' : 'Not available'}
+              />
+            );
+          })}
+        </div>
+      ) : (
+        <div className="gcx-rail-note">Financial metrics not available for {ticker}.</div>
+      )}
+    </section>
+  );
+}
+
+/* Adapted from the datasets-overview signal map (hub-and-spoke, one node per
+   dimension): the hub is this company; each spoke lights up only where this
+   page actually loaded data for that dataset. Arcs take { key, strength|null }
+   so more datasets can light up later without touching the rendering. */
+function PlatformLinkage({ name, links }) {
+  const W = 920;
+  const H = 300;
+  const CX = W / 2;
+  const CY = H / 2;
+  const R = 118;
+  const nodes = links.map((l, i) => {
+    const angle = -90 + (360 / links.length) * i;
+    const a = (angle * Math.PI) / 180;
+    return { ...l, x: CX + R * Math.cos(a), y: CY + R * Math.sin(a), angle };
+  });
+  return (
+    <svg
+      viewBox={`0 0 ${W} ${H}`}
+      className="gcx-linkage"
+      role="img"
+      aria-label={`${name} signal linkage across Ezana's seven datasets`}
+    >
+      {nodes.map((n) => (
+        <line
+          key={`sp-${n.key}`}
+          x1={n.x}
+          y1={n.y}
+          x2={CX}
+          y2={CY}
+          className={n.strength != null ? 'gcx-link-spoke is-live' : 'gcx-link-spoke'}
+          style={
+            n.strength != null
+              ? { stroke: n.color, strokeWidth: 1.5 + 2.5 * n.strength, opacity: 0.9 }
+              : undefined
+          }
+        />
+      ))}
+      <circle className="gcx-link-hub" cx={CX} cy={CY} r={26} />
+      <text className="gcx-link-hub-t" x={CX} y={CY + 4}>
+        {initialsOf(name)}
+      </text>
+      {nodes.map((n) => {
+        const cosA = Math.cos((n.angle * Math.PI) / 180);
+        const anchor = cosA < -0.34 ? 'end' : cosA > 0.34 ? 'start' : 'middle';
+        const lx = anchor === 'start' ? n.x + 14 : anchor === 'end' ? n.x - 14 : n.x;
+        const ly = anchor === 'middle' ? (n.y < CY ? n.y - 14 : n.y + 20) : n.y + 4;
+        return (
+          <g key={n.key}>
+            <circle
+              cx={n.x}
+              cy={n.y}
+              r={n.strength != null ? 7 : 5}
+              style={{ fill: n.color, opacity: n.strength != null ? 1 : 0.35 }}
+            />
+            <text
+              x={lx}
+              y={ly}
+              className={`gcx-link-label${n.strength != null ? ' is-live' : ''}`}
+              style={{ textAnchor: anchor }}
+            >
+              {n.label}
+            </text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+function DossierOverlay({ recipient: r, series, subs, capitolStrength, colorOf, onClose }) {
+  useEffect(() => {
+    const onEsc = (e) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', onEsc);
+    return () => document.removeEventListener('keydown', onEsc);
+  }, [onClose]);
+
+  // Header price chip reuses the 1Y candles (null-safe — header just omits it).
+  const { status: pxStatus, candles } = useTickerCandles(r.ticker || null, '1Y');
+  const first = candles[0];
+  const last = candles[candles.length - 1];
+  const pxUp = first && last ? last.close >= first.close : true;
+  const pxChange =
+    first && last && first.close ? ((last.close - first.close) / first.close) * 100 : null;
+
+  const links = DATASET_TAXONOMY.map((d) => ({
+    key: d.id,
+    label: d.label,
+    color: d.color,
+    strength: d.id === 'capitol' ? capitolStrength : null,
+  }));
+
+  return (
+    <div className="gcx-dossier-backdrop" onClick={onClose}>
+      <div
+        className="gcx-dossier"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label={`${r.name} full dossier`}
+      >
+        <header className="gcx-dossier-head">
+          <div className="gcx-badge" style={{ background: colorOf(r.agency), marginBottom: 0 }}>
+            {initialsOf(r.name)}
+          </div>
+          <div className="gcx-dossier-id">
+            <h2 className="gcx-dossier-name">{r.name}</h2>
+            <div className="gcx-dossier-sub">
+              {r.agency} · {r.ticker || 'Private'}
+            </div>
+          </div>
+          {r.ticker && pxStatus === 'ready' && last && (
+            <div className="gcx-dossier-px gcx-mono">
+              ${Number(last.close).toFixed(2)}{' '}
+              <span className={pxUp ? 'gcx-spark-up' : 'gcx-spark-down'}>
+                {pxChange >= 0 ? '+' : ''}
+                {pxChange?.toFixed(1)}% 1Y
+              </span>
+            </div>
+          )}
+          <button
+            type="button"
+            className="gcx-modal-x"
+            onClick={onClose}
+            aria-label="Close dossier"
+          >
+            <X size={18} />
+          </button>
+        </header>
+
+        {r.ticker ? (
+          <>
+            <DossierChart ticker={r.ticker} />
+            <DossierMetrics ticker={r.ticker} />
+          </>
+        ) : (
+          <section className="gcx-dossier-block">
+            <div className="gcx-dossier-private gcx-mono">PRIVATE / Not publicly traded</div>
+          </section>
+        )}
+
+        <section className="gcx-dossier-block">
+          <div className="gcx-dossier-label">Government contracts</div>
+          <div className="gcx-dossier-contracts">
+            <div>
+              <div className="gcx-modal-grid">
+                <MiniStat label="Total awarded" value={fmtUSD(r.total)} sub={subs.coverageSub} />
+                <MiniStat label="Awards" value={fmtInt(r.count)} sub={subs.agencySub} />
+                <MiniStat label="Avg contract" value={fmtUSD(r.avg)} sub="per award, all years" />
+                <MiniStat
+                  label="YoY"
+                  value={series.length >= 2 ? yoy(series) : '—'}
+                  sub={subs.yoySub}
+                />
+              </div>
+              <AgencyBreakdown awards={r.awards} colorOf={colorOf} />
+            </div>
+            <div>
+              {series.length ? (
+                <AreaChart series={series} color={colorOf(r.agency)} />
+              ) : (
+                <div className="gcx-empty">
+                  No dated awards for this recipient in the loaded slice.
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+
+        <section className="gcx-dossier-block">
+          <div className="gcx-dossier-label">Across the Ezana platform</div>
+          <PlatformLinkage name={r.name} links={links} />
+          <div className="gcx-rail-note gcx-linkage-caption">
+            Signal strength shown for datasets loaded on this page. Others activate as data ships.
+          </div>
+        </section>
+      </div>
+    </div>
   );
 }
 

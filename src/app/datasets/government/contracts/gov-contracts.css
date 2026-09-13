@@ -1952,3 +1952,247 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Similar-recipients section rhythm in the left column ── */
+.gcx-sim-section {
+  margin-top: 18px;
+  margin-bottom: 0;
+}
+
+/* ── Auth-aware watchlist CTA ── */
+.gcx-auth-wrap {
+  position: relative;
+}
+.gcx-auth-pop {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 0;
+  width: 300px;
+  padding: 14px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg, 0 20px 60px rgba(15, 23, 42, 0.2));
+  z-index: 5;
+  animation: gcx-fade 0.2s ease;
+}
+.gcx-auth-pop-x {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  padding: 4px;
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  cursor: pointer;
+}
+.gcx-auth-pop-x:hover {
+  color: var(--text-primary);
+}
+.gcx-auth-pop-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  padding-right: 18px;
+}
+.gcx-auth-pop-sub {
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--text-faint);
+}
+.gcx-auth-pop-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+.gcx-auth-pop-actions .gcx-btn {
+  text-decoration: none;
+}
+
+/* ── Full dossier overlay ── */
+.gcx-dossier-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-overlay);
+  backdrop-filter: blur(3px);
+  z-index: 101; /* one layer above .gcx-modal-backdrop (100) */
+  animation: gcx-fade 0.2s ease;
+}
+.gcx-dossier {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(80vw, 1280px);
+  height: min(80vh, 860px);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 16px;
+  overflow-y: auto;
+  z-index: 102;
+  padding: 24px 28px 28px;
+  animation: gcx-dossier-in 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+@keyframes gcx-dossier-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.gcx-dossier-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-primary);
+  margin-bottom: 18px;
+}
+.gcx-dossier-id {
+  flex: 1;
+  min-width: 0;
+}
+.gcx-dossier-name {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gcx-dossier-sub {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.gcx-dossier-px {
+  font-size: 14px;
+  color: var(--text-primary);
+  white-space: nowrap;
+  margin-right: 8px;
+}
+.gcx-dossier-block {
+  margin-bottom: 22px;
+}
+.gcx-dossier-block-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.gcx-dossier-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+.gcx-dossier-block-head .gcx-dossier-label {
+  margin-bottom: 0;
+}
+.gcx-range-toggle {
+  display: flex;
+  gap: 4px;
+}
+.gcx-range-btn {
+  padding: 4px 10px;
+  font-size: 11px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.gcx-range-btn.is-active {
+  color: var(--emerald);
+  border-color: var(--emerald);
+}
+.gcx-range-btn:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 1px;
+}
+.gcx-skel-lg {
+  height: 200px;
+}
+.gcx-skel-card {
+  height: 72px;
+}
+.gcx-dossier-metrics {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+}
+.gcx-dossier-private {
+  padding: 26px;
+  text-align: center;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  color: var(--text-faint);
+  background: var(--bg-primary);
+  border: 1px dashed var(--border-primary);
+  border-radius: 12px;
+}
+.gcx-dossier-contracts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+  align-items: start;
+}
+.gcx-linkage {
+  width: 100%;
+  height: auto;
+}
+.gcx-link-spoke {
+  stroke: var(--border-primary);
+  stroke-width: 1;
+  opacity: 0.6;
+}
+.gcx-link-hub {
+  fill: var(--bg-primary);
+  stroke: var(--border-primary);
+}
+.gcx-link-hub-t {
+  font-size: 13px;
+  font-weight: 700;
+  fill: var(--text-primary);
+  text-anchor: middle;
+  font-family: var(--font-mono, monospace);
+}
+.gcx-link-label {
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  fill: var(--text-faint);
+}
+.gcx-link-label.is-live {
+  fill: var(--text-primary);
+  font-weight: 600;
+}
+.gcx-linkage-caption {
+  margin-top: 6px;
+  text-align: center;
+}
+
+@media (max-width: 1100px) {
+  .gcx-dossier-metrics {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .gcx-dossier-contracts {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 900px) {
+  .gcx-dossier {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+  }
+  .gcx-dossier-metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
