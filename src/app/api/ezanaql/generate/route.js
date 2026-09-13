@@ -17,7 +17,11 @@ import { FEW_SHOT } from './few-shots';
 
 export const dynamic = 'force-dynamic';
 
-const ANTHROPIC_MODEL = 'claude-sonnet-4-5';
+// Claude Haiku 4.5: NL→DSL against a tight grammar + few-shots is a
+// small-model task — near-Sonnet quality at a fraction of the cost.
+// Dated string pinned deliberately; override via env to bump models
+// without a deploy.
+const ANTHROPIC_MODEL = process.env.EZANAQL_MODEL || 'claude-haiku-4-5-20251001';
 
 function buildSystemPrompt(scope) {
   return `You translate a plain-English report request into a single EzanaQL query.
@@ -82,23 +86,44 @@ export async function POST(request) {
       body: JSON.stringify({
         model: ANTHROPIC_MODEL,
         max_tokens: 400,
+        temperature: 0,
         system: buildSystemPrompt(scope),
         messages: [{ role: 'user', content: prompt }],
       }),
     });
     if (!resp.ok) {
-      return NextResponse.json(
-        { ok: false, error: 'The report-generation model is unavailable.' },
-        { status: 502 },
-      );
+      const errBody = await resp.text().catch(() => '');
+      // Server-side only — Vercel function logs. Never returned to the client:
+      // provider error bodies can reference account/billing details.
+      console.error('[ezanaql:generate] anthropic_error', {
+        status: resp.status,
+        model: ANTHROPIC_MODEL,
+        body: errBody.slice(0, 500),
+      });
+      const msg =
+        resp.status === 429
+          ? 'The report model is busy — try again in a moment.'
+          : resp.status === 401
+            ? 'The report-generation model is misconfigured. (Server logs have details.)'
+            : 'The report-generation model is unavailable. (Server logs have details.)';
+      return NextResponse.json({ ok: false, error: msg }, { status: 502 });
     }
     const data = await resp.json();
+    // 3. Credit spend per generation, visible in Vercel logs.
+    console.log('[ezanaql:generate] ok', {
+      model: ANTHROPIC_MODEL,
+      input_tokens: data?.usage?.input_tokens,
+      output_tokens: data?.usage?.output_tokens,
+    });
     query = (data?.content?.[0]?.text || '')
       .trim()
       .replace(/^```[a-z]*\n?/i, '')
       .replace(/```$/i, '')
       .trim();
-  } catch {
+  } catch (err) {
+    // Network-level failure (DNS, TLS, abort) — distinguishable in logs from
+    // provider rejections, which log anthropic_error above.
+    console.error('[ezanaql:generate] fetch_failed', err?.message);
     return NextResponse.json(
       { ok: false, error: 'The report-generation model is unavailable.' },
       { status: 502 },
