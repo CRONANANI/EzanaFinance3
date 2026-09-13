@@ -18,7 +18,7 @@ const SORTS = [
   { key: 'recipient', label: 'Recipient' },
 ];
 
-export default function ContractsExplorer({ coverage = null }) {
+export default function ContractsExplorer({ coverage = null, onOpenQuickView }) {
   const fyList = useMemo(() => {
     if (coverage && Array.isArray(coverage.fiscalYears) && coverage.fiscalYears.length) {
       return [...coverage.fiscalYears].sort((a, b) => b - a);
@@ -114,14 +114,19 @@ export default function ContractsExplorer({ coverage = null }) {
       <div className="gcx-exp-head">
         <h2 className="gcx-hero-title">Explore all awards</h2>
         <span className="gcx-list-count">
-          {total.toLocaleString()} matching{coverage?.total ? ` of ${coverage.total.toLocaleString()}` : ''}
+          {total.toLocaleString()} matching
+          {coverage?.total ? ` of ${coverage.total.toLocaleString()}` : ''}
         </span>
       </div>
 
       <div className="gcx-exp-filters">
         <label className="gcx-exp-field">
           <span>Fiscal year</span>
-          <select value={fiscalYear} onChange={(e) => setFiscalYear(e.target.value)} className="gcx-exp-select">
+          <select
+            value={fiscalYear}
+            onChange={(e) => setFiscalYear(e.target.value)}
+            className="gcx-exp-select"
+          >
             <option value="all">All years</option>
             {fyList.map((y) => (
               <option key={y} value={y}>
@@ -166,7 +171,11 @@ export default function ContractsExplorer({ coverage = null }) {
           <thead>
             <tr>
               <th>
-                <button type="button" className="gcx-exp-sort" onClick={() => toggleSort('recipient')}>
+                <button
+                  type="button"
+                  className="gcx-exp-sort"
+                  onClick={() => toggleSort('recipient')}
+                >
                   Recipient {sort === 'recipient' ? (order === 'desc' ? '▾' : '▴') : ''}
                 </button>
               </th>
@@ -206,7 +215,16 @@ export default function ContractsExplorer({ coverage = null }) {
               </tr>
             ) : (
               rows.map((r) => (
-                <tr key={r.id}>
+                <tr
+                  key={r.id}
+                  className="gcx-exp-row"
+                  onClick={() => onOpenQuickView?.(r.recipient)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') onOpenQuickView?.(r.recipient);
+                  }}
+                  tabIndex={0}
+                  role="button"
+                >
                   <td className="gcx-exp-recipient">{r.recipient}</td>
                   <td>{r.agency}</td>
                   <td className="gcx-mono">{r.ticker}</td>

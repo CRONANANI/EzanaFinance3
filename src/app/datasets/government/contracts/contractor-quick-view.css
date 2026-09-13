@@ -1,0 +1,436 @@
+/* Contractor Quick-View popup (cqv-). Tokens only; the amber rank accent and
+   the dialog ink are the sole component-scoped literals, mirroring the
+   .gcx-page pinning pattern at the top of gov-contracts.css. */
+
+.cqv-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: rgba(0, 0, 0, 0.6);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+body.light-mode .cqv-scrim {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.cqv-root {
+  --cqv-amber: #f59e0b;
+  --cqv-ink: #05221a;
+  width: min(920px, 92vw);
+  max-height: 92vh;
+  overflow-y: auto;
+  background: var(--bg-primary);
+  border: 1px solid var(--emerald-border);
+  border-radius: 16px;
+  box-shadow:
+    0 32px 60px rgba(0, 0, 0, 0.55),
+    0 0 20px rgba(16, 185, 129, 0.06);
+  color: var(--text-primary);
+  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  animation: cqv-in 160ms ease-out;
+}
+body.light-mode .cqv-root {
+  --cqv-amber: #b45309;
+  box-shadow:
+    0 24px 48px rgba(10, 20, 16, 0.14),
+    0 2px 8px rgba(10, 20, 16, 0.06);
+}
+@keyframes cqv-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+.cqv-root:focus {
+  outline: none;
+}
+
+.cqv-mono {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── header ── */
+.cqv-head {
+  display: flex;
+  gap: 14px;
+  padding: 24px;
+  align-items: flex-start;
+  border-bottom: 1px solid var(--border-primary);
+}
+.cqv-monogram {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  background: var(--emerald);
+  color: var(--cqv-ink);
+  font-weight: 700;
+  font-size: 16px;
+  display: grid;
+  place-items: center;
+}
+.cqv-title-wrap {
+  flex: 1;
+  min-width: 0;
+}
+.cqv-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.cqv-name {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  margin: 0;
+}
+.cqv-chip {
+  font-size: 11px;
+  border: 1px solid var(--emerald-border);
+  border-radius: 4px;
+  padding: 2px 7px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.cqv-chip-rank {
+  color: var(--cqv-amber);
+  border-color: color-mix(in srgb, var(--cqv-amber) 35%, transparent);
+}
+.cqv-meta {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.cqv-close {
+  flex: 0 0 auto;
+  background: none;
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  font-size: 14px;
+}
+.cqv-close:hover {
+  background: var(--emerald-bg-subtle);
+  border-color: var(--emerald-border);
+  color: var(--text-primary);
+}
+
+/* ── stats strip ── */
+.cqv-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-bottom: 1px solid var(--border-primary);
+}
+.cqv-stat {
+  padding: 16px 24px;
+}
+.cqv-stat + .cqv-stat {
+  border-left: 1px solid var(--border-primary);
+}
+.cqv-stat-label {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.cqv-stat-value {
+  font-size: 24px;
+  font-weight: 600;
+  margin-top: 4px;
+}
+.cqv-stat-value.cqv-neg {
+  color: var(--danger);
+}
+.cqv-stat-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ── body ── */
+.cqv-body {
+  display: flex;
+  border-bottom: 1px solid var(--border-primary);
+}
+.cqv-left {
+  flex: 1.45;
+  padding: 20px 24px;
+  min-width: 0;
+}
+.cqv-right {
+  flex: 1;
+  padding: 20px 24px;
+  border-left: 1px solid var(--border-primary);
+  min-width: 0;
+}
+
+.cqv-sec-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.cqv-sec-gap {
+  margin-top: 18px;
+}
+.cqv-eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+.cqv-peak {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--emerald-text);
+}
+
+.cqv-chart {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.cqv-grid {
+  stroke: var(--border-primary);
+  stroke-width: 1;
+}
+.cqv-axis {
+  fill: var(--text-muted);
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 10px;
+}
+
+/* agency breakdown: name / bar / value / pct */
+.cqv-agencies {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cqv-agency-row {
+  display: grid;
+  grid-template-columns: 170px 1fr 72px 44px;
+  align-items: center;
+  gap: 10px;
+}
+.cqv-agency-name {
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cqv-agency-track {
+  display: block;
+  height: 6px;
+}
+.cqv-agency-bar {
+  display: block;
+  height: 6px;
+  min-width: 3px;
+  border-radius: 3px;
+  background: var(--emerald);
+}
+.cqv-agency-val {
+  font-size: 11px;
+  text-align: right;
+}
+.cqv-agency-pct {
+  font-size: 11px;
+  text-align: right;
+  color: var(--text-muted);
+}
+.cqv-agencies-more {
+  margin: 12px 0 0;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* market card */
+.cqv-market-card {
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+.cqv-quote-y1 {
+  font-size: 12px;
+  color: var(--emerald-text);
+  font-weight: 600;
+}
+.cqv-quote-price {
+  font-size: 20px;
+  font-weight: 600;
+}
+.cqv-quote-change {
+  font-size: 11px;
+  color: var(--emerald-text);
+  margin: 2px 0 8px;
+}
+.cqv-spark {
+  width: 150px;
+  height: 44px;
+  display: block;
+}
+.cqv-market-divider {
+  height: 1px;
+  background: var(--border-primary);
+  margin: 12px 0;
+}
+.cqv-market-note {
+  margin: 0;
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* peer rows */
+.cqv-peers {
+  display: flex;
+  flex-direction: column;
+}
+.cqv-peer-row {
+  display: grid;
+  grid-template-columns: 34px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 6px;
+  background: none;
+  border: 0;
+  border-radius: 8px;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text-primary);
+  font-family: inherit;
+}
+.cqv-peer-row:hover {
+  background: var(--emerald-bg-subtle);
+}
+.cqv-peer-ticker {
+  font-size: 11px;
+  color: var(--emerald-text);
+  font-weight: 600;
+}
+.cqv-peer-name {
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cqv-peer-val {
+  font-size: 11px;
+  text-align: right;
+}
+
+/* ── footer ── */
+.cqv-foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px;
+}
+.cqv-signal {
+  flex: 1;
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+.cqv-signal-tag {
+  color: var(--emerald-text);
+  font-weight: 600;
+}
+.cqv-btn-outline {
+  background: none;
+  border: 1px solid var(--emerald-border);
+  border-radius: 8px;
+  color: var(--emerald-text);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 18px;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.cqv-btn-outline:hover {
+  background: var(--emerald-bg-subtle);
+}
+.cqv-btn-primary {
+  background: var(--btn-primary-bg);
+  color: var(--cqv-ink);
+  border: 0;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 18px;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.cqv-btn-primary:hover {
+  background: var(--btn-primary-bg-hover);
+}
+.cqv-btn-primary.cqv-on {
+  background: var(--emerald-bg-hover);
+  border: 1px solid var(--emerald-border);
+  color: var(--emerald-text);
+  padding: 9px 17px; /* keep height once the 1px border appears */
+}
+
+/* Explorer rows that open this popup (wiring lives in ContractsExplorer). */
+.gcx-exp-row {
+  cursor: pointer;
+}
+.gcx-exp-row:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: -2px;
+}
+
+/* ── responsive ── */
+@media (max-width: 720px) {
+  .cqv-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .cqv-stat:nth-child(3) {
+    border-left: 0;
+  }
+  .cqv-stat:nth-child(n + 3) {
+    border-top: 1px solid var(--border-primary);
+  }
+  .cqv-body {
+    flex-direction: column;
+  }
+  .cqv-right {
+    border-left: 0;
+    border-top: 1px solid var(--border-primary);
+  }
+  .cqv-agency-row {
+    grid-template-columns: 110px 1fr 64px 40px;
+  }
+  .cqv-foot {
+    flex-wrap: wrap;
+  }
+  .cqv-signal {
+    flex: 1 1 100%;
+  }
+  .cqv-btn-outline,
+  .cqv-btn-primary {
+    flex: 1 1 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cqv-root {
+    animation: none;
+  }
+}

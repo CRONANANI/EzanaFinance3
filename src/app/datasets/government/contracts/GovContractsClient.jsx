@@ -28,6 +28,7 @@ import { DATASET_TAXONOMY } from '@/lib/datasets/taxonomy';
 import CategoryBar from '@/components/datasets/CategoryBar';
 import DatasetTicker from '@/components/datasets/DatasetTicker';
 import ContractsExplorer from './ContractsExplorer';
+import ContractorQuickView from './ContractorQuickView';
 // Positional palette: raw awarding_agency strings are the source of truth (no
 // regex bucketing); colors bind to spend-rank slots (top 10) + Other.
 import {
@@ -122,6 +123,7 @@ export default function GovContractsClient({
   const [heroView, setHeroView] = useState('treemap');
   const [selected, setSelected] = useState(null);
   const [selectedAward, setSelectedAward] = useState(null); // ticker → award detail modal
+  const [quickViewRecipient, setQuickViewRecipient] = useState(null); // explorer row → contractor quick-view
   const [queryOpen, setQueryOpen] = useState(false);
   const [querySeed, setQuerySeed] = useState(''); // text handed off from the teaser
 
@@ -545,7 +547,7 @@ export default function GovContractsClient({
 
           {/* Full-table, server-paginated explorer (all 15 FYs, real filters) —
               scales past the overview slice above via /api/datasets/contracts. */}
-          <ContractsExplorer coverage={coverage} />
+          <ContractsExplorer coverage={coverage} onOpenQuickView={setQuickViewRecipient} />
         </main>
       </div>
 
@@ -561,6 +563,13 @@ export default function GovContractsClient({
 
       {selectedAward && (
         <AwardDetailModal award={selectedAward} onClose={() => setSelectedAward(null)} />
+      )}
+
+      {quickViewRecipient && (
+        <ContractorQuickView
+          recipient={quickViewRecipient}
+          onClose={() => setQuickViewRecipient(null)}
+        />
       )}
     </div>
   );
