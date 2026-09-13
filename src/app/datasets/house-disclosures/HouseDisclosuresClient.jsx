@@ -13,7 +13,20 @@ import './house-disclosures.css';
 function fmtFiled(ymd) {
   const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(ymd || ''));
   if (!m) return '—';
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
   return `${months[Number(m[2]) - 1]} ${Number(m[3])}, ${m[1]}`;
 }
 /** Midpoint → subtle sort-aid estimate. NEVER shown as an exact amount. */
@@ -56,7 +69,9 @@ function TradesModal({ filing, isLive, onClose }) {
     setState('loading');
     (async () => {
       try {
-        const res = await fetch(`/api/house-disclosures/trades?doc_id=${encodeURIComponent(filing.doc_id)}`);
+        const res = await fetch(
+          `/api/house-disclosures/trades?doc_id=${encodeURIComponent(filing.doc_id)}`,
+        );
         const json = await res.json().catch(() => ({}));
         if (!alive) return;
         if (!res.ok) {
@@ -76,11 +91,17 @@ function TradesModal({ filing, isLive, onClose }) {
 
   return (
     <div className="hdx-modal-backdrop" onClick={onClose}>
-      <div className="hdx-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+      <div
+        className="hdx-modal"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+      >
         <div className="hdx-modal-head">
           <div>
             <div className="hdx-modal-eyebrow">
-              <span className="hdx-type hdx-type--ptr">PTR</span> · filed {fmtFiled(filing.filing_date)}
+              <span className="hdx-type hdx-type--ptr">PTR</span> · filed{' '}
+              {fmtFiled(filing.filing_date)}
             </div>
             <h2 className="hdx-modal-title">{fullName(filing)}</h2>
             <p className="hdx-modal-sub">{district(filing)}</p>
@@ -91,9 +112,10 @@ function TradesModal({ filing, isLive, onClose }) {
         </div>
 
         <p className="hdx-bracket-note">
-          Amounts are disclosed as ranges under the STOCK Act — the bracket is the reported figure. The
-          <span className="hdx-muted"> ~est.</span> value is a midpoint used only for sorting, never an
-          exact amount.
+          Amounts are disclosed as ranges under the STOCK Act — the bracket is the reported figure.
+          The
+          <span className="hdx-muted"> ~est.</span> value is a midpoint used only for sorting, never
+          an exact amount.
         </p>
 
         {state === 'loading' && (
@@ -101,7 +123,9 @@ function TradesModal({ filing, isLive, onClose }) {
             <Loader2 size={16} className="hdx-spin" aria-hidden="true" /> Loading trades…
           </div>
         )}
-        {state === 'error' && <div className="hdx-empty">Trade detail is unavailable right now.</div>}
+        {state === 'error' && (
+          <div className="hdx-empty">Trade detail is unavailable right now.</div>
+        )}
         {state === 'ready' &&
           (trades.length ? (
             <div className="mkt-ds-table-wrap">
@@ -119,17 +143,25 @@ function TradesModal({ filing, isLive, onClose }) {
                   {trades.map((t, i) => (
                     <tr key={`${t.ticker || t.asset_name}-${i}`}>
                       <td className="mkt-ds-entity">{t.asset_name}</td>
-                      <td>{t.ticker ? <Ticker symbol={t.ticker} /> : <span className="hdx-muted">—</span>}</td>
+                      <td>
+                        {t.ticker ? (
+                          <Ticker symbol={t.ticker} />
+                        ) : (
+                          <span className="hdx-muted">—</span>
+                        )}
+                      </td>
                       <td>
                         <span className={`hdx-tx hdx-tx--${TX_TONE[t.tx_type] || 'ind'}`}>
                           {TX_LABEL[t.tx_type] || t.tx_type || '—'}
                         </span>
                       </td>
-                      <td className="gcx-mono hdx-mono">{fmtFiled(t.tx_date)}</td>
+                      <td className="hdx-mono">{fmtFiled(t.tx_date)}</td>
                       <td>
-                        <span className="hdx-bracket">{t.amount_bracket_label || '—'}</span>
+                        <span className="hdx-bracket hdx-mono">
+                          {t.amount_bracket_label || '—'}
+                        </span>
                         {t.amount_midpoint ? (
-                          <span className="hdx-est gcx-mono"> {fmtEst(t.amount_midpoint)}</span>
+                          <span className="hdx-est hdx-mono"> {fmtEst(t.amount_midpoint)}</span>
                         ) : null}
                       </td>
                     </tr>
@@ -147,7 +179,8 @@ function TradesModal({ filing, isLive, onClose }) {
         <div className="hdx-modal-foot">
           {filing.pdf_url ? (
             <a className="hdx-link" href={filing.pdf_url} target="_blank" rel="noopener noreferrer">
-              View source PDF on disclosures-clerk.house.gov <ExternalLink size={12} aria-hidden="true" />
+              View source PDF on disclosures-clerk.house.gov{' '}
+              <ExternalLink size={12} aria-hidden="true" />
             </a>
           ) : (
             <span className="hdx-muted">Source PDF link appears for live filings.</span>
@@ -225,16 +258,16 @@ export function HouseDisclosuresClient({ filings }) {
           <p className="mkt-eyebrow">CAPITOL WATCH · HOUSE CLERK</p>
           <h1 className="mkt-h1">House financial disclosures</h1>
           <p className="mkt-lead">
-            Every financial-disclosure filing from the U.S. House Clerk — periodic transaction reports
-            (the trades), annual reports, candidate filings and more. Filter to trade reports and open
-            one to see its parsed transactions, each linking to the source PDF.
+            Every financial-disclosure filing from the U.S. House Clerk — periodic transaction
+            reports (the trades), annual reports, candidate filings and more. Filter to trade
+            reports and open one to see its parsed transactions, each linking to the source PDF.
           </p>
         </div>
 
         {!isLive && (
           <div className="hdx-sample-note">
-            Sample data — not live. The filing index appears here after the next House Clerk sync; the
-            trade tables inside each PTR are parsed from the source PDFs (Phase 2).
+            Sample data — not live. The filing index appears here after the next House Clerk sync;
+            the trade tables inside each PTR are parsed from the source PDFs (Phase 2).
           </div>
         )}
 
@@ -276,10 +309,15 @@ export function HouseDisclosuresClient({ filings }) {
               ))}
             </select>
           </label>
-          <span className="hdx-count gcx-mono">{view.length} filings</span>
+          <span className="hdx-count hdx-mono">{view.length} filings</span>
         </div>
 
-        <div className="mkt-ds-table-wrap" role="region" aria-label="House disclosure filings" tabIndex={0}>
+        <div
+          className="mkt-ds-table-wrap"
+          role="region"
+          aria-label="House disclosure filings"
+          tabIndex={0}
+        >
           <table className="mkt-ds-table hdx-table">
             <thead>
               <tr>
@@ -327,8 +365,8 @@ export function HouseDisclosuresClient({ filings }) {
                           {r.filing_type_label || r.filing_type}
                         </span>
                       </td>
-                      <td className="gcx-mono hdx-mono">{district(r)}</td>
-                      <td className="gcx-mono hdx-mono">{fmtFiled(r.filing_date)}</td>
+                      <td className="hdx-mono">{district(r)}</td>
+                      <td className="hdx-mono">{fmtFiled(r.filing_date)}</td>
                       <td className="hdx-link-cell">
                         {r.is_ptr && r.pdf_url ? (
                           <a
@@ -355,16 +393,17 @@ export function HouseDisclosuresClient({ filings }) {
           <h2 className="mkt-section-title">How we source it</h2>
           <div className="hdx-source">
             <p>
-              This is the House Clerk&apos;s <strong>filing index</strong> — the yearly bulk file listing
-              every disclosure filing by member, type, district and date. The index itself contains no
-              transactions; trade-level detail (asset, ticker, amount) is parsed from each Periodic
-              Transaction Report&apos;s source PDF and shown when you open a PTR.
+              This is the House Clerk&apos;s <strong>filing index</strong> — the yearly bulk file
+              listing every disclosure filing by member, type, district and date. The index itself
+              contains no transactions; trade-level detail (asset, ticker, amount) is parsed from
+              each Periodic Transaction Report&apos;s source PDF and shown when you open a PTR.
             </p>
             <p>
-              Members disclose trades within the STOCK Act&apos;s 30–45 day window, so a filing lags the
-              trade it reports — a feature of the law, not Ezana processing. Amounts are disclosed as
-              ranges; we show the filed bracket and never a single exact figure. Trade parsing currently
-              covers electronically-filed PTRs; older scanned filings await an OCR pass.
+              Members disclose trades within the STOCK Act&apos;s 30–45 day window, so a filing lags
+              the trade it reports — a feature of the law, not Ezana processing. Amounts are
+              disclosed as ranges; we show the filed bracket and never a single exact figure. Trade
+              parsing currently covers electronically-filed PTRs; older scanned filings await an OCR
+              pass.
             </p>
           </div>
         </section>

@@ -7,6 +7,9 @@
   color: var(--text-faint);
 }
 .hdx-mono {
+  /* Branding guide: JetBrains Mono for ALL numerals — the class previously
+     only set tabular figures, leaving amounts/dates in the sans face. */
+  font-family: var(--font-mono, monospace);
   font-variant-numeric: tabular-nums;
 }
 .hdx-spin {
@@ -204,7 +207,10 @@
 }
 .hdx-modal-eyebrow {
   font-size: 12px;
-  color: var(--text-secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
   display: flex;
   align-items: center;
   gap: 6px;
@@ -212,13 +218,15 @@
 .hdx-modal-title {
   margin: 4px 0 2px;
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   color: var(--text-primary);
 }
 .hdx-modal-sub {
   margin: 0;
-  font-size: 13px;
-  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
 }
 .hdx-modal-x {
   border: none;

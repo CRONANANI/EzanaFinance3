@@ -53,6 +53,9 @@
   white-space: nowrap;
 }
 .secf-mono {
+  /* Branding guide: JetBrains Mono for ALL numerals — the class previously
+     only set tabular figures, leaving values/dates in the sans face. */
+  font-family: var(--font-mono, monospace);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -171,13 +174,17 @@
   margin-bottom: 1rem;
 }
 .secf-modal-eyebrow {
-  font-size: 0.72rem;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   color: var(--text-muted);
   margin-bottom: 4px;
 }
 .secf-modal-title {
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   color: var(--text-primary);
   margin: 0;
   overflow-wrap: anywhere;
@@ -204,20 +211,20 @@
   gap: 14px;
 }
 .secf-fact-k {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: var(--text-faint);
+  color: var(--text-muted);
 }
 .secf-fact-v {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-primary);
   margin-top: 2px;
   overflow-wrap: anywhere;
 }
-.secf-fact-v.gcx-mono {
+.secf-fact-v.secf-mono {
   font-variant-numeric: tabular-nums;
 }
 @media (max-width: 640px) {

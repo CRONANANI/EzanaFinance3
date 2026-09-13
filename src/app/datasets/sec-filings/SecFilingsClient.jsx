@@ -24,7 +24,20 @@ const EMPTY_COPY = {
 function fmtFiled(iso) {
   const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso || ''));
   if (!m) return '—';
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
   return `${months[Number(m[2]) - 1]} ${Number(m[3])}, ${m[1]}`;
 }
 function fmtUSD(v) {
@@ -68,8 +81,10 @@ function LiveFeed({ rows, family, onOpen }) {
               <td>
                 <span className="secf-form">{r.form_type}</span>
               </td>
-              <td>{r.ticker ? <Ticker symbol={r.ticker} /> : <span className="secf-muted">—</span>}</td>
-              <td className="gcx-mono secf-mono">{fmtFiled(r.filed_at)}</td>
+              <td>
+                {r.ticker ? <Ticker symbol={r.ticker} /> : <span className="secf-muted">—</span>}
+              </td>
+              <td className="secf-mono">{fmtFiled(r.filed_at)}</td>
               <td className="secf-link-cell">
                 {r.primary_doc_url ? (
                   <a
@@ -139,11 +154,17 @@ function SecDetailModal({ filing, onClose }) {
 
   return (
     <div className="secf-modal-backdrop" onClick={onClose}>
-      <div className="secf-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+      <div
+        className="secf-modal"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+      >
         <div className="secf-modal-head">
           <div>
             <div className="secf-modal-eyebrow">
-              <span className="secf-form">{filing.form_type}</span> · filed {fmtFiled(filing.filed_at)}
+              <span className="secf-form">{filing.form_type}</span> · filed{' '}
+              {fmtFiled(filing.filed_at)}
             </div>
             <h2 className="secf-modal-title">{filing.filer_name}</h2>
           </div>
@@ -159,8 +180,9 @@ function SecDetailModal({ filing, onClose }) {
         )}
         {state === 'error' && <div className="secf-empty">Detail is unavailable right now.</div>}
 
-        {state === 'ready' && is13F && (
-          sorted.length ? (
+        {state === 'ready' &&
+          is13F &&
+          (sorted.length ? (
             <div className="mkt-ds-table-wrap">
               <table className="mkt-ds-table secf-table">
                 <thead>
@@ -182,10 +204,14 @@ function SecDetailModal({ filing, onClose }) {
                     <tr key={`${h.cusip || h.name_of_issuer}-${i}`}>
                       <td className="mkt-ds-entity">{h.name_of_issuer}</td>
                       <td>
-                        {h.ticker ? <Ticker symbol={h.ticker} /> : <span className="secf-muted">—</span>}
+                        {h.ticker ? (
+                          <Ticker symbol={h.ticker} />
+                        ) : (
+                          <span className="secf-muted">—</span>
+                        )}
                       </td>
-                      <td className="gcx-mono secf-mono">{fmtUSD(h.value_usd)}</td>
-                      <td className="gcx-mono secf-mono" style={{ textAlign: 'right' }}>
+                      <td className="secf-mono">{fmtUSD(h.value_usd)}</td>
+                      <td className="secf-mono" style={{ textAlign: 'right' }}>
                         {fmtInt(h.shares)}
                         {h.put_call ? ` (${h.put_call})` : ''}
                       </td>
@@ -198,11 +224,11 @@ function SecDetailModal({ filing, onClose }) {
             <div className="secf-empty">
               Holdings not parsed yet — the positions table appears after the next holdings sync.
             </div>
-          )
-        )}
+          ))}
 
-        {state === 'ready' && !is13F && (
-          position ? (
+        {state === 'ready' &&
+          !is13F &&
+          (position ? (
             <div className="secf-position">
               <div className="secf-fact">
                 <div className="secf-fact-k">Subject</div>
@@ -210,21 +236,21 @@ function SecDetailModal({ filing, onClose }) {
               </div>
               <div className="secf-fact">
                 <div className="secf-fact-k">Percent of class</div>
-                <div className="secf-fact-v gcx-mono">
+                <div className="secf-fact-v secf-mono">
                   {position.percent_of_class != null ? `${position.percent_of_class}%` : '—'}
                 </div>
               </div>
               <div className="secf-fact">
                 <div className="secf-fact-k">Shares</div>
-                <div className="secf-fact-v gcx-mono">{fmtInt(position.shares)}</div>
+                <div className="secf-fact-v secf-mono">{fmtInt(position.shares)}</div>
               </div>
             </div>
           ) : (
             <div className="secf-empty">
-              Stake not parsed yet — subject and percent-of-class appear after the next holdings sync.
+              Stake not parsed yet — subject and percent-of-class appear after the next holdings
+              sync.
             </div>
-          )
-        )}
+          ))}
 
         <div className="secf-modal-foot">
           {filing.primary_doc_url ? (
@@ -278,13 +304,13 @@ function InsiderSample({ rows }) {
                 <td>
                   <TxnBadge type={r.transaction} />
                 </td>
-                <td className="gcx-mono secf-mono" style={{ textAlign: 'right' }}>
+                <td className="secf-mono" style={{ textAlign: 'right' }}>
                   {r.shares}
                 </td>
-                <td className="gcx-mono secf-mono" style={{ textAlign: 'right' }}>
+                <td className="secf-mono" style={{ textAlign: 'right' }}>
                   {r.value}
                 </td>
-                <td className="gcx-mono secf-mono">{fmtFiled(r.date)}</td>
+                <td className="secf-mono">{fmtFiled(r.date)}</td>
               </tr>
             ))}
           </tbody>
@@ -369,8 +395,8 @@ export function SecFilingsClient({ feeds, insiderSample = [] }) {
           <p>
             Read directly from SEC EDGAR&apos;s free public services (efts full-text search and the
             submissions API), synced into Ezana on a schedule. Filings are shown as filed; the
-            standard SEC disclosure lag between a transaction and its filing is inherent to the data,
-            not Ezana processing.
+            standard SEC disclosure lag between a transaction and its filing is inherent to the
+            data, not Ezana processing.
           </p>
         </section>
       </main>

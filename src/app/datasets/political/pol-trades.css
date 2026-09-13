@@ -660,13 +660,15 @@
   margin-bottom: 10px;
 }
 .ptx-modal-name {
-  font-size: 17px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   color: var(--text-primary);
   margin: 0 0 3px;
 }
 .ptx-modal-sub {
   font-size: 12px;
+  font-weight: 500;
   color: var(--text-muted);
   margin: 0 0 16px;
 }
@@ -684,13 +686,16 @@
   padding: 9px 11px;
 }
 .ptx-ministat-label {
-  font-size: 10.5px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   color: var(--text-muted);
   margin-bottom: 3px;
 }
 .ptx-ministat-value {
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
   color: var(--text-primary);
 }
 .ptx-modal-section {
@@ -699,8 +704,10 @@
 }
 .ptx-modal-h {
   font-size: 12px;
-  font-weight: 700;
-  color: var(--text-secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
   margin-bottom: 8px;
 }
 .ptx-mosttraded {
