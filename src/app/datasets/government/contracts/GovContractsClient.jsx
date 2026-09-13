@@ -552,7 +552,13 @@ export default function GovContractsClient({
       </div>
 
       {selected && (
-        <DrillModal recipient={selected} onClose={() => setSelected(null)} colorOf={colorOf} />
+        <DrillModal
+          recipient={selected}
+          allRecipients={filtered}
+          onSelect={setSelected}
+          onClose={() => setSelected(null)}
+          colorOf={colorOf}
+        />
       )}
 
       {selectedAward && (
@@ -1476,19 +1482,30 @@ function ContractorList({ recipients, onPick, colorOf }) {
 }
 
 /* ────────────────────────── Drill-down modal ────────────────────────── */
-function DrillModal({ recipient: r, onClose, colorOf }) {
+/* Initials badge text — shared by the modal header and the similar-recipients
+   rows so both render a name the same way. */
+function initialsOf(name) {
+  return name
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join('')
+    .toUpperCase();
+}
+
+/* "FY2008" → "FY'08" — the axis and captions share this two-digit style. */
+function shortFY(label) {
+  return label.replace(/^FY20/, "FY'").replace(/^FY19/, "FY'");
+}
+
+function DrillModal({ recipient: r, allRecipients = [], onSelect, onClose, colorOf }) {
   useEffect(() => {
     const onEsc = (e) => e.key === 'Escape' && onClose();
     document.addEventListener('keydown', onEsc);
     return () => document.removeEventListener('keydown', onEsc);
   }, [onClose]);
 
-  const initials = r.name
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((w) => w[0])
-    .join('')
-    .toUpperCase();
+  const initials = initialsOf(r.name);
 
   // Award value over time: derived from THIS recipient's real awards, by year.
   const byYear = {};
@@ -1496,6 +1513,26 @@ function DrillModal({ recipient: r, onClose, colorOf }) {
   const series = Object.entries(byYear)
     .map(([y, v]) => ({ label: `FY${y}`, value: v }))
     .sort((a, b) => a.label.localeCompare(b.label));
+
+  // Stat sub-captions — every one computed from the loaded slice, never invented.
+  const coverageSub = series.length
+    ? series.length === 1
+      ? shortFY(series[0].label)
+      : `${shortFY(series[0].label)} – ${shortFY(series[series.length - 1].label)}`
+    : null;
+  const agencyCount = new Set(r.awards.map((a) => a.agency)).size;
+  const agencySub = `across ${agencyCount} agenc${agencyCount === 1 ? 'y' : 'ies'}`;
+  const yoySub =
+    series.length >= 2
+      ? `${shortFY(series[series.length - 2].label)} vs ${shortFY(series[series.length - 1].label)}`
+      : null;
+
+  // Other recipients receiving similar contracts: same primary agency, from
+  // the currently loaded slice, ranked by total.
+  const related = allRecipients
+    .filter((x) => x.name !== r.name && x.agency === r.agency)
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 5);
 
   return (
     <div className="gcx-modal-backdrop" onClick={onClose}>
@@ -1514,10 +1551,10 @@ function DrillModal({ recipient: r, onClose, colorOf }) {
             {r.agency} · {r.ticker || 'HQ not available'}
           </p>
           <div className="gcx-modal-grid">
-            <MiniStat label="Total awarded" value={fmtUSD(r.total)} />
-            <MiniStat label="Awards" value={fmtInt(r.count)} />
-            <MiniStat label="Avg contract" value={fmtUSD(r.avg)} />
-            <MiniStat label="YoY" value={series.length >= 2 ? yoy(series) : '—'} />
+            <MiniStat label="Total awarded" value={fmtUSD(r.total)} sub={coverageSub} />
+            <MiniStat label="Awards" value={fmtInt(r.count)} sub={agencySub} />
+            <MiniStat label="Avg contract" value={fmtUSD(r.avg)} sub="per award, all years" />
+            <MiniStat label="YoY" value={series.length >= 2 ? yoy(series) : '—'} sub={yoySub} />
           </div>
 
           <div className="gcx-modal-section">
@@ -1528,10 +1565,7 @@ function DrillModal({ recipient: r, onClose, colorOf }) {
           <div className="gcx-modal-section">
             <div className="gcx-modal-h">Related security</div>
             {r.ticker ? (
-              <div className="gcx-related">
-                <span className="gcx-mono gcx-related-tk">{r.ticker}</span>
-                <span className="gcx-related-note">Price not available on this page</span>
-              </div>
+              <RelatedSecurity ticker={r.ticker} />
             ) : (
               <div className="gcx-rail-note">PRIVATE / Not publicly traded</div>
             )}
@@ -1554,6 +1588,36 @@ function DrillModal({ recipient: r, onClose, colorOf }) {
           </div>
           <AgencyBreakdown awards={r.awards} colorOf={colorOf} />
 
+          <div className="gcx-modal-h" style={{ marginTop: 18 }}>
+            Similar contract recipients <span className="gcx-sim-qual">· {r.agency}</span>
+          </div>
+          {related.length ? (
+            <div className="gcx-sim-list">
+              {related.map((x) => (
+                <button
+                  key={x.name}
+                  type="button"
+                  className="gcx-sim-row"
+                  onClick={() => onSelect?.(x)}
+                  aria-label={`View ${x.name}`}
+                >
+                  <span
+                    className="gcx-badge gcx-sim-badge"
+                    style={{ background: colorOf(x.agency) }}
+                  >
+                    {initialsOf(x.name)}
+                  </span>
+                  <span className="gcx-sim-name">{x.name}</span>
+                  <span className="gcx-mono gcx-sim-total">{fmtUSD(x.total)}</span>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="gcx-rail-note">
+              No other recipients for this agency in the loaded slice.
+            </div>
+          )}
+
           <div className="gcx-modal-actions">
             <button type="button" className="gcx-btn gcx-btn-primary">
               <Star size={14} /> Add to watchlist
@@ -1567,11 +1631,102 @@ function DrillModal({ recipient: r, onClose, colorOf }) {
     </div>
   );
 }
-function MiniStat({ label, value }) {
+function MiniStat({ label, value, sub }) {
   return (
     <div className="gcx-ministat">
       <div className="gcx-ministat-label">{label}</div>
       <div className="gcx-ministat-value gcx-mono">{value}</div>
+      {sub ? <div className="gcx-ministat-sub">{sub}</div> : null}
+    </div>
+  );
+}
+
+/* 1Y candles for the modal's Related-security sparkline. Degrades gracefully:
+   the modal never blocks on it — loading shows a shimmer, error/empty falls
+   back to the "Price not available" note. */
+function useTickerCandles(ticker) {
+  const [state, setState] = useState({ status: 'loading', candles: [] });
+  useEffect(() => {
+    if (!ticker) return undefined;
+    const ctrl = new AbortController();
+    setState({ status: 'loading', candles: [] });
+    fetch(`/api/market-data/stock-candles?symbol=${encodeURIComponent(ticker)}&range=1Y`, {
+      signal: ctrl.signal,
+    })
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`HTTP ${res.status}`))))
+      .then((data) => {
+        const candles = Array.isArray(data?.candles) ? data.candles : [];
+        setState({ status: candles.length >= 2 ? 'ready' : 'error', candles });
+      })
+      .catch((err) => {
+        if (err?.name !== 'AbortError') setState({ status: 'error', candles: [] });
+      });
+    return () => ctrl.abort();
+  }, [ticker]);
+  return state;
+}
+
+function RelatedSecurity({ ticker }) {
+  const { status, candles } = useTickerCandles(ticker);
+  return (
+    <div className="gcx-related gcx-related-stack">
+      <span className="gcx-mono gcx-related-tk">{ticker}</span>
+      {status === 'loading' && <div className="gcx-skel" aria-hidden="true" />}
+      {status === 'ready' && <PriceSparkline ticker={ticker} candles={candles} />}
+      {status === 'error' && (
+        <span className="gcx-related-note">Price not available on this page</span>
+      )}
+    </div>
+  );
+}
+
+function PriceSparkline({ ticker, candles }) {
+  const W = 460;
+  const H = 90;
+  const P = { t: 8, r: 12, b: 20, l: 12 };
+  const iw = W - P.l - P.r;
+  const ih = H - P.t - P.b;
+  const closes = candles.map((c) => c.close);
+  const min = Math.min(...closes);
+  const max = Math.max(...closes);
+  const span = max - min || 1;
+  const step = candles.length > 1 ? iw / (candles.length - 1) : 0;
+  const pts = candles.map((c, i) => ({
+    x: P.l + i * step,
+    y: P.t + ih - ((c.close - min) / span) * ih,
+  }));
+  const line = pts.map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(' ');
+  const first = candles[0];
+  const last = candles[candles.length - 1];
+  const changePct = first.close ? ((last.close - first.close) / first.close) * 100 : 0;
+  const up = last.close >= first.close;
+  const stroke = up ? 'var(--emerald)' : 'var(--negative)';
+  return (
+    <div className="gcx-spark-wrap">
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        className="gcx-area"
+        role="img"
+        aria-label={`${ticker} price, past year`}
+      >
+        <line x1={P.l} x2={W - P.r} y1={P.t + ih} y2={P.t + ih} className="gcx-axis" />
+        <path d={line} fill="none" stroke={stroke} strokeWidth={1.6} />
+        <text x={P.l} y={H - 6} className="gcx-area-x" style={{ textAnchor: 'start' }}>
+          {first.label}
+        </text>
+        <text x={W - P.r} y={H - 6} className="gcx-area-x" style={{ textAnchor: 'end' }}>
+          {last.label}
+        </text>
+      </svg>
+      <div className="gcx-spark-meta gcx-mono">
+        {/* Exact price, not fmtUSD — that helper compacts ≥$1K to "$1K" scale,
+            which is right for award totals and wrong for a share price. */}
+        ${Number(last.close).toFixed(2)}{' '}
+        <span className={up ? 'gcx-spark-up' : 'gcx-spark-down'}>
+          {changePct >= 0 ? '+' : ''}
+          {changePct.toFixed(1)}% 1Y
+        </span>
+      </div>
     </div>
   );
 }
@@ -1584,8 +1739,8 @@ function yoy(series) {
 }
 function AreaChart({ series, color }) {
   const W = 460;
-  const H = 150;
-  const P = { t: 12, r: 12, b: 22, l: 12 };
+  const H = 170;
+  const P = { t: 12, r: 12, b: 34, l: 12 }; // deeper bottom band for the axis
   const iw = W - P.l - P.r;
   const ih = H - P.t - P.b;
   const max = Math.max(...series.map((s) => s.value), 1);
@@ -1597,6 +1752,17 @@ function AreaChart({ series, color }) {
   }));
   const line = pts.map((p, i) => `${i ? 'L' : 'M'}${p.x},${p.y}`).join(' ');
   const area = `${line} L${pts[pts.length - 1].x},${P.t + ih} L${pts[0].x},${P.t + ih} Z`;
+
+  // ── Tick thinning: at most 6 ticks — always first and last, the rest
+  // evenly spaced across the index range so labels never collide.
+  const MAX_TICKS = 6;
+  const tickIdx =
+    pts.length <= MAX_TICKS
+      ? pts.map((_, i) => i)
+      : Array.from({ length: MAX_TICKS }, (_, k) =>
+          Math.round((k * (pts.length - 1)) / (MAX_TICKS - 1)),
+        );
+
   return (
     <svg
       viewBox={`0 0 ${W} ${H}`}
@@ -1620,13 +1786,38 @@ function AreaChart({ series, color }) {
           className="gcx-grid"
         />
       ))}
+      {/* Axis baseline separates plot from labels */}
+      <line x1={P.l} x2={W - P.r} y1={P.t + ih} y2={P.t + ih} className="gcx-axis" />
       <path d={area} fill="url(#gcx-grad)" />
       <path d={line} fill="none" stroke={color} strokeWidth={1.8} />
       {pts.map((p) => (
-        <g key={p.label}>
-          <circle cx={p.x} cy={p.y} r={3.2} fill={color} stroke="#fff" strokeWidth={1.5} />
-          <text x={p.x} y={H - 6} className="gcx-area-x">
-            {p.label}
+        <circle
+          key={p.label}
+          cx={p.x}
+          cy={p.y}
+          r={3.2}
+          fill={color}
+          stroke="#fff"
+          strokeWidth={1.5}
+        />
+      ))}
+      {tickIdx.map((i, k) => (
+        <g key={pts[i].label}>
+          <line x1={pts[i].x} x2={pts[i].x} y1={P.t + ih} y2={P.t + ih + 4} className="gcx-axis" />
+          <text
+            x={pts[i].x}
+            y={H - 10}
+            className="gcx-area-x"
+            /* Edge-clamp so the first/last labels never clip outside the viewBox. */
+            style={
+              k === 0
+                ? { textAnchor: 'start' }
+                : k === tickIdx.length - 1
+                  ? { textAnchor: 'end' }
+                  : undefined
+            }
+          >
+            {shortFY(pts[i].label)}
           </text>
         </g>
       ))}

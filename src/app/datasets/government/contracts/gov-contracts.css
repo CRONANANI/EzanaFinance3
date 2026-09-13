@@ -1015,6 +1015,12 @@
   font-weight: 700;
   color: var(--text-primary);
 }
+.gcx-ministat-sub {
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--text-faint);
+  letter-spacing: 0.01em;
+}
 .gcx-modal-section {
   margin-bottom: 16px;
 }
@@ -1032,6 +1038,108 @@
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-md, 8px);
   padding: 10px 12px;
+}
+/* Stacked variant: ticker chip on top, sparkline/skeleton/note below. */
+.gcx-related-stack {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+.gcx-related-stack .gcx-related-tk {
+  align-self: flex-start;
+}
+.gcx-skel {
+  height: 54px;
+  border-radius: var(--radius-md, 8px);
+  background: linear-gradient(
+    90deg,
+    var(--bg-secondary) 25%,
+    var(--bg-tertiary, var(--border-primary)) 50%,
+    var(--bg-secondary) 75%
+  );
+  background-size: 200% 100%;
+  animation: gcx-skel-shimmer 1.2s ease-in-out infinite;
+}
+@keyframes gcx-skel-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gcx-skel {
+    animation: none;
+  }
+}
+.gcx-spark-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.gcx-spark-meta {
+  font-size: 12px;
+  color: var(--text-primary);
+  text-align: right;
+}
+.gcx-spark-up {
+  color: var(--emerald);
+}
+.gcx-spark-down {
+  color: var(--negative);
+}
+/* ── Similar contract recipients ── */
+.gcx-sim-qual {
+  font-weight: 500;
+  color: var(--text-faint);
+}
+.gcx-sim-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.gcx-sim-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md, 8px);
+  cursor: pointer;
+  text-align: left;
+  color: var(--text-primary);
+  font: inherit;
+}
+.gcx-sim-row:hover {
+  border-color: var(--border-secondary, var(--border-primary));
+  background: var(--bg-secondary);
+}
+.gcx-sim-row:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 1px;
+}
+.gcx-sim-badge {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  font-size: 11px;
+  margin-bottom: 0;
+  flex: 0 0 auto;
+}
+.gcx-sim-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+}
+.gcx-sim-total {
+  font-size: 12px;
+  color: var(--text-secondary);
 }
 .gcx-related-tk {
   font-size: 14px;
@@ -1069,10 +1177,15 @@
   stroke-width: 1;
 }
 .gcx-area-x {
-  font-size: 8px;
+  font-size: 10px;
+  letter-spacing: 0.02em;
   fill: var(--text-faint);
   text-anchor: middle;
   font-family: var(--font-mono, monospace);
+}
+.gcx-axis {
+  stroke: var(--border-primary);
+  stroke-width: 1;
 }
 
 /* ── EzanaQL builder ── */
