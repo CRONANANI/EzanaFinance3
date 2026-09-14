@@ -41,9 +41,12 @@
 }
 .cfr-eyebrow {
   margin: 0 0 8px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--ds-type-eyebrow-size);
+  font-weight: var(--ds-type-eyebrow-weight);
+  letter-spacing: var(--ds-type-eyebrow-tracking);
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
   color: var(--text-faint);
 }
 .cfr-title {

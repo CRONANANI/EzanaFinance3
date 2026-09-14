@@ -72,7 +72,7 @@
   gap: 8px;
   padding: 11px 20px;
   border-right: 1px solid var(--border-primary);
-  font-size: 12px;
+  font-size: var(--ds-type-fine-size);
 }
 .dsx-ttag {
   font-weight: 700;
@@ -95,9 +95,12 @@
   margin: 6px 0 20px;
 }
 .dsx-eyebrow {
-  font-family: var(--font-mono, monospace);
-  font-size: 10.5px;
-  letter-spacing: 0.22em;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--ds-type-eyebrow-size);
+  font-weight: var(--ds-type-eyebrow-weight);
+  letter-spacing: var(--ds-type-eyebrow-tracking);
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
   color: var(--text-faint);
   margin: 0 0 8px;
 }
@@ -110,11 +113,11 @@
 }
 .dsx-sub {
   /* S3: body copy, raised to the 14px floor. */
-  font-size: 0.875rem;
+  font-size: var(--ds-type-body-size);
+  line-height: var(--ds-type-body-lh);
   color: var(--text-muted);
   margin: 0 auto;
   max-width: 620px;
-  line-height: 1.55;
 }
 
 /* ── interactive category legend ── */
@@ -139,8 +142,8 @@
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-pill, 9999px);
   padding: 6px 13px;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--ds-type-fine-size);
+  font-weight: var(--ds-type-strong);
   color: var(--text-secondary);
   cursor: pointer;
   /* 44px touch minimum (was 34). */
@@ -263,10 +266,12 @@
   fill: var(--text-primary);
 }
 .dsx-corner {
-  font-family: var(--font-mono, monospace);
-  font-size: 9.5px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--ds-type-eyebrow-size);
+  font-weight: var(--ds-type-eyebrow-weight);
+  letter-spacing: var(--ds-type-eyebrow-tracking);
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
 }
 .dsx-hub-ring {
   fill: none;
@@ -314,6 +319,7 @@
   pointer-events: none;
 }
 .dsx-hub-t2 {
+  font-variant-numeric: tabular-nums;
   font-family: var(--font-mono, monospace);
   font-size: 7.5px;
   letter-spacing: 0.1em;
@@ -340,11 +346,12 @@
   align-items: center;
   gap: 6px;
   align-self: flex-start;
-  font-family: var(--font-mono, monospace);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--ds-type-eyebrow-size);
+  font-weight: var(--ds-type-eyebrow-weight);
+  letter-spacing: var(--ds-type-eyebrow-tracking);
   text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
   padding: 4px 10px;
   border-radius: var(--radius-pill, 9999px);
   color: var(--emerald);
@@ -352,17 +359,19 @@
   border: 1px solid var(--emerald-border);
 }
 .dsx-panel-title {
-  font-size: 16px;
-  font-weight: 700;
+  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-size: var(--ds-type-headline-size);
+  font-weight: var(--ds-type-headline-weight);
+  letter-spacing: var(--ds-type-headline-tracking);
+  line-height: var(--ds-type-headline-lh);
   color: var(--text-primary);
   margin: 0;
-  letter-spacing: -0.01em;
 }
 .dsx-panel-blurb {
   /* S3: body copy, raised to the 14px floor. */
-  font-size: 0.875rem;
+  font-size: var(--ds-type-body-size);
+  line-height: var(--ds-type-body-lh);
   color: var(--text-muted);
-  line-height: 1.55;
   margin: 0;
 }
 .dsx-stats {
@@ -370,7 +379,8 @@
   flex-wrap: wrap;
   gap: 6px 14px;
   font-family: var(--font-mono, monospace);
-  font-size: 11.5px;
+  font-size: var(--ds-type-source-size);
+  font-variant-numeric: tabular-nums;
   color: var(--text-secondary);
   padding: 10px 0;
   border-top: 1px solid var(--border-primary);
@@ -380,19 +390,21 @@
   color: var(--text-primary);
 }
 .dsx-section-h {
-  font-family: var(--font-mono, monospace);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--ds-type-eyebrow-size);
+  font-weight: var(--ds-type-eyebrow-weight);
+  letter-spacing: var(--ds-type-eyebrow-tracking);
   text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
   color: var(--text-faint);
   margin: 2px 0 2px;
 }
 .dsx-source {
   font-family: var(--font-mono, monospace);
-  font-size: 11px;
+  font-size: var(--ds-type-disclaimer-size);
+  line-height: var(--ds-type-disclaimer-lh);
+  font-variant-numeric: tabular-nums;
   color: var(--text-muted);
-  line-height: 1.5;
 }
 .dsx-source b {
   color: var(--text-faint);
@@ -427,13 +439,13 @@
   flex-shrink: 0;
 }
 .dsx-row-name {
-  font-size: 12.5px;
-  font-weight: 700;
+  font-size: var(--ds-type-sub-size);
+  font-weight: var(--ds-type-strong);
   color: var(--text-primary);
 }
 .dsx-row-exp {
   display: block;
-  font-size: 11.5px;
+  font-size: var(--ds-type-source-size);
   color: var(--text-muted);
   line-height: 1.45;
   margin-top: 1px;
@@ -449,8 +461,8 @@
   padding: 10px 12px;
   text-align: left;
   cursor: pointer;
-  font-size: 12.5px;
-  font-weight: 600;
+  font-size: var(--ds-type-sub-size);
+  font-weight: var(--ds-type-strong);
   color: var(--text-secondary);
   transition:
     border-color 0.12s ease,
@@ -497,11 +509,12 @@
   margin-left: auto;
   flex-shrink: 0;
   align-self: center;
-  font-family: var(--font-mono, monospace);
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--ds-type-eyebrow-size);
+  font-weight: var(--ds-type-eyebrow-weight);
+  letter-spacing: var(--ds-type-eyebrow-tracking);
   text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
   color: var(--text-faint);
   background: var(--bg-tertiary);
   border: 1px solid var(--border-primary);
@@ -516,15 +529,19 @@
   flex-wrap: wrap;
   gap: 6px;
   margin-top: 4px;
-  font-family: var(--font-mono, monospace);
-  font-size: 10.5px;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--ds-type-source-size);
+  line-height: var(--ds-type-source-lh);
+  font-variant-numeric: tabular-nums;
   color: var(--text-faint);
 }
 .dsx-ds-srctag {
-  font-size: 8.5px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--ds-type-eyebrow-size);
+  font-weight: var(--ds-type-eyebrow-weight);
+  letter-spacing: var(--ds-type-eyebrow-tracking);
   text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
   border-radius: var(--radius-pill, 9999px);
   padding: 1px 6px;
 }
@@ -561,15 +578,15 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  font-size: 12px;
-  font-weight: 700;
+  font-size: var(--ds-type-fine-size);
+  font-weight: var(--ds-type-strong);
   color: var(--text-primary);
 }
 .dsx-move-text {
   margin: 0;
-  font-size: 12.5px;
+  font-size: var(--ds-type-sub-size);
+  line-height: var(--ds-type-sub-lh);
   color: var(--text-muted);
-  line-height: 1.5;
 }
 
 /* multi-select header chips */
@@ -582,8 +599,8 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 11.5px;
-  font-weight: 600;
+  font-size: var(--ds-type-source-size);
+  font-weight: var(--ds-type-strong);
   color: var(--text-primary);
   background: var(--bg-tertiary);
   border: 1px solid var(--border-primary);
@@ -600,9 +617,9 @@
   gap: 7px;
 }
 .dsx-patterns li {
-  font-size: 12.5px;
+  font-size: var(--ds-type-sub-size);
+  line-height: var(--ds-type-sub-lh);
   color: var(--text-secondary);
-  line-height: 1.5;
 }
 
 /* clear-selection button pinned over the map */
@@ -615,8 +632,9 @@
   align-items: center;
   gap: 5px;
   font-family: var(--font-mono, monospace);
-  font-size: 11px;
-  font-weight: 700;
+  font-size: var(--ds-type-disclaimer-size);
+  font-weight: var(--ds-type-strong);
+  font-variant-numeric: tabular-nums;
   color: var(--text-secondary);
   background: var(--bg-primary);
   border: 1px solid var(--border-primary);
@@ -660,15 +678,15 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
-  font-weight: 700;
+  font-size: var(--ds-type-figure-size);
+  font-weight: var(--ds-type-strong);
   color: var(--text-primary);
 }
 .dsx-catcard-scope {
   /* S3: body copy, raised to the 14px floor. */
-  font-size: 0.875rem;
+  font-size: var(--ds-type-body-size);
+  line-height: var(--ds-type-body-lh);
   color: var(--text-muted);
-  line-height: 1.5;
   margin: 0;
   flex: 1;
 }
@@ -677,8 +695,9 @@
   align-items: center;
   gap: 5px;
   font-family: var(--font-mono, monospace);
-  font-size: 12px;
-  font-weight: 700;
+  font-size: var(--ds-type-fine-size);
+  font-weight: var(--ds-type-strong);
+  font-variant-numeric: tabular-nums;
   color: var(--emerald);
   margin-top: 2px;
 }
@@ -759,18 +778,21 @@
   background: var(--bg-tertiary);
 }
 .dsx-modal-tag {
-  font-family: var(--font-mono, monospace);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--ds-type-eyebrow-size);
+  font-weight: var(--ds-type-eyebrow-weight);
+  letter-spacing: var(--ds-type-eyebrow-tracking);
   text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
   color: var(--purple);
 }
 .dsx-modal-q {
-  font-size: 16px;
-  font-weight: 700;
+  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-size: var(--ds-type-headline-size);
+  font-weight: var(--ds-type-headline-weight);
+  letter-spacing: var(--ds-type-headline-tracking);
+  line-height: var(--ds-type-headline-lh);
   color: var(--text-primary);
-  line-height: 1.35;
   margin: 8px 40px 10px 0;
 }
 .dsx-modal-meta {
@@ -778,7 +800,8 @@
   flex-wrap: wrap;
   gap: 4px 14px;
   font-family: var(--font-mono, monospace);
-  font-size: 11.5px;
+  font-size: var(--ds-type-source-size);
+  font-variant-numeric: tabular-nums;
   color: var(--text-muted);
   padding-bottom: 14px;
   border-bottom: 1px solid var(--border-primary);
@@ -787,11 +810,12 @@
   color: var(--text-primary);
 }
 .dsx-modal-h {
-  font-family: var(--font-mono, monospace);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--ds-type-eyebrow-size);
+  font-weight: var(--ds-type-eyebrow-weight);
+  letter-spacing: var(--ds-type-eyebrow-tracking);
   text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
   color: var(--text-faint);
   margin: 16px 0 10px;
 }
@@ -806,14 +830,15 @@
   margin-bottom: 5px;
 }
 .dsx-outcome-name {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--ds-type-body-size);
+  font-weight: var(--ds-type-strong);
   color: var(--text-primary);
 }
 .dsx-outcome-val {
   font-family: var(--font-mono, monospace);
-  font-size: 12.5px;
-  font-weight: 700;
+  font-size: var(--ds-type-sub-size);
+  font-weight: var(--ds-type-strong);
+  font-variant-numeric: tabular-nums;
   color: var(--emerald);
 }
 .dsx-outcome-bar {
@@ -834,23 +859,24 @@
   gap: 6px;
   margin-top: 8px;
   font-family: var(--font-mono, monospace);
-  font-size: 12px;
-  font-weight: 700;
+  font-size: var(--ds-type-fine-size);
+  font-weight: var(--ds-type-strong);
+  font-variant-numeric: tabular-nums;
   color: var(--emerald);
   text-decoration: none;
 }
 .dsx-modal-note {
   margin: 14px 0 0;
-  font-size: 10.5px;
+  font-size: var(--ds-type-disclaimer-size);
+  line-height: var(--ds-type-disclaimer-lh);
   font-style: italic;
   color: var(--text-faint);
-  line-height: 1.45;
 }
 .dsx-modal-state {
   padding: 28px 8px;
   text-align: center;
   color: var(--text-faint);
-  font-size: 13px;
+  font-size: var(--ds-type-body-size);
 }
 /* loading skeleton */
 .dsx-skel {

@@ -28,7 +28,7 @@
   color: var(--text-primary);
 }
 .pcf-source {
-  font-size: 0.72rem;
+  font-size: var(--ds-type-disclaimer-size);
   color: var(--text-faint);
 }
 .pcf-mono {
@@ -51,10 +51,12 @@
   padding: 14px 16px;
 }
 .pcf-stat-label {
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--ds-type-eyebrow-size);
+  font-weight: var(--ds-type-eyebrow-weight);
+  letter-spacing: var(--ds-type-eyebrow-tracking);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
   color: var(--text-faint);
 }
 .pcf-stat-value {
@@ -68,7 +70,7 @@
 }
 .pcf-stat-sub {
   margin-top: 4px;
-  font-size: 0.72rem;
+  font-size: var(--ds-type-disclaimer-size);
   color: var(--text-muted);
 }
 
@@ -99,12 +101,14 @@
 .pcf-card-title {
   margin: 0;
   font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
-  font-size: 0.98rem;
-  font-weight: 700;
+  font-size: var(--ds-type-headline-size);
+  font-weight: var(--ds-type-headline-weight);
+  letter-spacing: var(--ds-type-headline-tracking);
+  line-height: var(--ds-type-headline-lh);
   color: var(--text-primary);
 }
 .pcf-card-note {
-  font-size: 0.72rem;
+  font-size: var(--ds-type-disclaimer-size);
   color: var(--text-faint);
 }
 .pcf-controls {
@@ -124,8 +128,8 @@
   background: transparent;
   color: var(--text-muted);
   font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
-  font-size: 0.76rem;
-  font-weight: 600;
+  font-size: var(--ds-type-fine-size);
+  font-weight: var(--ds-type-strong);
   padding: 5px 11px;
   cursor: pointer;
   transition:
@@ -152,15 +156,16 @@
 .pcf-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.85rem;
+  font-size: var(--ds-type-body-size);
 }
 .pcf-table th {
   text-align: left;
-  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
-  font-size: 0.68rem;
-  font-weight: 700;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--ds-type-eyebrow-size);
+  font-weight: var(--ds-type-eyebrow-weight);
+  letter-spacing: var(--ds-type-eyebrow-tracking);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-variant-numeric: tabular-nums;
   color: var(--text-faint);
   padding: 8px 10px;
   border-bottom: 1px solid var(--border-primary);
@@ -201,8 +206,9 @@
   background: var(--emerald-bg, rgba(16, 185, 129, 0.08));
   color: var(--emerald, #10b981);
   font-family: var(--font-mono, monospace);
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-size: var(--ds-type-disclaimer-size);
+  font-weight: var(--ds-type-strong);
+  font-variant-numeric: tabular-nums;
 }
 .pcf-member {
   display: inline-flex;
@@ -211,11 +217,11 @@
   min-width: 0;
 }
 .pcf-member-name {
-  font-weight: 600;
+  font-weight: var(--ds-type-strong);
   white-space: nowrap;
 }
 .pcf-member-sub {
-  font-size: 0.72rem;
+  font-size: var(--ds-type-disclaimer-size);
   color: var(--text-faint);
 }
 .pcf-badge {
@@ -227,8 +233,8 @@
   padding: 0 5px;
   border-radius: 5px;
   color: #fff;
-  font-size: 0.66rem;
-  font-weight: 700;
+  font-size: var(--ds-type-disclaimer-size);
+  font-weight: var(--ds-type-strong);
 }
 .pcf-muted {
   color: var(--text-faint);
@@ -258,7 +264,7 @@
   background: var(--warning, #d97706);
 }
 .pcf-mix-legend {
-  font-size: 0.68rem;
+  font-size: var(--ds-type-disclaimer-size);
   color: var(--text-faint);
   white-space: nowrap;
 }
@@ -282,7 +288,7 @@
   padding: 22px 10px;
   text-align: center;
   color: var(--text-faint);
-  font-size: 0.85rem;
+  font-size: var(--ds-type-body-size);
 }
 
 /* ── Modal campaign-finance block ── */
@@ -296,11 +302,12 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
-  font-size: 0.78rem;
-  font-weight: 700;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--ds-type-eyebrow-size);
+  font-weight: var(--ds-type-eyebrow-weight);
+  letter-spacing: var(--ds-type-eyebrow-tracking);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
   color: var(--text-faint);
   margin-bottom: 10px;
 }
@@ -316,17 +323,20 @@
   padding: 9px 11px;
 }
 .pcf-modal-stat-label {
-  font-size: 0.64rem;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--ds-type-eyebrow-size);
+  font-weight: var(--ds-type-eyebrow-weight);
+  letter-spacing: var(--ds-type-eyebrow-tracking);
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  font-variant-numeric: tabular-nums;
   color: var(--text-faint);
 }
 .pcf-modal-stat-value {
   margin-top: 3px;
   font-family: var(--font-mono, monospace);
-  font-weight: 600;
+  font-size: var(--ds-type-figure-size);
+  font-weight: var(--ds-type-strong);
   font-variant-numeric: tabular-nums;
-  font-size: 0.95rem;
   color: var(--text-primary);
 }
 .pcf-modal-list {
@@ -340,7 +350,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  font-size: 0.8rem;
+  font-size: var(--ds-type-sub-size);
 }
 .pcf-modal-list-row span:first-child {
   color: var(--text-muted);
@@ -349,13 +359,13 @@
   white-space: nowrap;
 }
 .pcf-modal-sub {
-  font-size: 0.72rem;
+  font-size: var(--ds-type-disclaimer-size);
   color: var(--text-faint);
   margin: 4px 0 0;
 }
 .pcf-modal-foot {
   margin-top: 10px;
-  font-size: 0.68rem;
+  font-size: var(--ds-type-disclaimer-size);
   color: var(--text-faint);
 }
 
@@ -414,8 +424,10 @@
 }
 .pcf-cfm-name {
   font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
-  font-size: 1.15rem;
-  font-weight: 800;
+  font-size: var(--ds-type-headline-size);
+  font-weight: var(--ds-type-headline-weight);
+  letter-spacing: var(--ds-type-headline-tracking);
+  line-height: var(--ds-type-headline-lh);
   color: var(--text-primary);
 }
 .pcf-cfm-sub {
@@ -423,6 +435,6 @@
   align-items: center;
   gap: 6px;
   margin-top: 3px;
-  font-size: 0.8rem;
+  font-size: var(--ds-type-sub-size);
   color: var(--text-muted);
 }

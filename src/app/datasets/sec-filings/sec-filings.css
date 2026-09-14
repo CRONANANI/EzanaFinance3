@@ -42,6 +42,7 @@
   vertical-align: middle;
 }
 .secf-form {
+  font-variant-numeric: tabular-nums;
   font-family: var(--font-mono, monospace);
   font-size: 0.72rem;
   font-weight: 700;
@@ -55,7 +56,7 @@
 .secf-mono {
   /* Branding guide: JetBrains Mono for ALL numerals — the class previously
      only set tabular figures, leaving values/dates in the sans face. */
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -70,8 +71,8 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.78rem;
-  font-weight: 600;
+  font-size: var(--ds-type-sub-size);
+  font-weight: var(--ds-type-strong);
   color: var(--emerald-text, var(--emerald));
   text-decoration: none;
 }
@@ -81,10 +82,12 @@
 
 .secf-sample-note {
   display: inline-block;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--ds-type-eyebrow-size);
+  font-weight: var(--ds-type-eyebrow-weight);
+  letter-spacing: var(--ds-type-eyebrow-tracking);
   text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
   color: var(--warning);
   background: color-mix(in srgb, var(--warning) 12%, transparent);
   border: 1px solid color-mix(in srgb, var(--warning) 30%, transparent);
@@ -103,16 +106,18 @@
 
 .secf-source {
   margin-top: 2rem;
-  font-size: 0.85rem;
-  line-height: 1.6;
+  font-size: var(--ds-type-body-size);
+  line-height: var(--ds-type-body-lh);
   color: var(--text-muted);
   max-width: 65ch;
 }
 .secf-source-h {
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--ds-type-eyebrow-size);
+  font-weight: var(--ds-type-eyebrow-weight);
+  letter-spacing: var(--ds-type-eyebrow-tracking);
   text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
   color: var(--text-secondary);
   margin: 0 0 0.4rem;
 }
@@ -124,7 +129,7 @@
   padding: 0;
   font: inherit;
   color: var(--emerald-text, var(--emerald));
-  font-weight: 600;
+  font-weight: var(--ds-type-strong);
   cursor: pointer;
   text-align: left;
 }
@@ -174,17 +179,21 @@
   margin-bottom: 1rem;
 }
 .secf-modal-eyebrow {
-  font-size: 12px;
-  font-weight: 500;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--ds-type-eyebrow-size);
+  font-weight: var(--ds-type-eyebrow-weight);
+  letter-spacing: var(--ds-type-eyebrow-tracking);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-variant-numeric: tabular-nums;
   color: var(--text-muted);
   margin-bottom: 4px;
 }
 .secf-modal-title {
-  font-size: 20px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-size: var(--ds-type-headline-size);
+  font-weight: var(--ds-type-headline-weight);
+  letter-spacing: var(--ds-type-headline-tracking);
+  line-height: var(--ds-type-headline-lh);
   color: var(--text-primary);
   margin: 0;
   overflow-wrap: anywhere;
@@ -211,15 +220,17 @@
   gap: 14px;
 }
 .secf-fact-k {
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.05em;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--ds-type-eyebrow-size);
+  font-weight: var(--ds-type-eyebrow-weight);
+  letter-spacing: var(--ds-type-eyebrow-tracking);
   text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
   color: var(--text-muted);
 }
 .secf-fact-v {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--ds-type-figure-size);
+  font-weight: var(--ds-type-strong);
   color: var(--text-primary);
   margin-top: 2px;
   overflow-wrap: anywhere;

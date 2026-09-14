@@ -5,6 +5,7 @@ import { MarketingPageShell } from '@/components/marketing/MarketingPageShell';
 import { DatasetsSubnav } from '@/components/marketing/DatasetsSubnav';
 import { DatasetComingSoon } from '@/components/marketing/DatasetComingSoon';
 import '../marketing-explore.css';
+import './dataset-type.css';
 
 // Datasets taken offline pending completion — the taxonomy marks them
 // live:false (so nav renders them "Soon"); this gate stops direct-URL access.

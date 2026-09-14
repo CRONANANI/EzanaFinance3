@@ -56,7 +56,6 @@
 
 .lbx-mono {
   font-family: var(--font-mono, 'JetBrains Mono', monospace);
-  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
@@ -90,13 +89,15 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.78rem;
+  font-size: var(--ds-type-fine-size);
 }
 .lbx-ttag {
-  font-family: var(--font-mono, monospace);
-  font-weight: 700;
-  font-size: 0.625rem;
-  letter-spacing: 0.06em;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--ds-type-eyebrow-size);
+  font-weight: var(--ds-type-eyebrow-weight);
+  letter-spacing: var(--ds-type-eyebrow-tracking);
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
   color: var(--emerald);
 }
 .lbx-tclient {
@@ -120,10 +121,12 @@
 }
 .lbx-eyebrow {
   margin: 0 0 8px;
-  font-family: var(--font-mono, monospace);
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--ds-type-eyebrow-size);
+  font-weight: var(--ds-type-eyebrow-weight);
+  letter-spacing: var(--ds-type-eyebrow-tracking);
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
   color: var(--text-faint);
 }
 .lbx-title {
@@ -135,7 +138,7 @@
 .lbx-sub {
   margin: 0;
   color: var(--text-muted);
-  font-size: 0.9rem;
+  font-size: var(--ds-type-body-size);
 }
 
 /* ── body ── */
@@ -171,8 +174,8 @@
   border-bottom: 2px solid var(--emerald);
   border-radius: 7px;
   font-family: var(--font-sans, sans-serif);
-  font-size: 0.78rem;
-  font-weight: 600;
+  font-size: var(--ds-type-fine-size);
+  font-weight: var(--ds-type-strong);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -192,25 +195,26 @@
   justify-content: center;
   gap: 6px;
   margin-top: 4px;
-  font-size: 0.66rem;
+  font-size: var(--ds-type-disclaimer-size);
   color: var(--text-faint);
 }
 .lbx-export-fmts button {
   border: none;
   background: none;
   color: var(--emerald);
-  font-size: 0.66rem;
-  font-weight: 600;
+  font-size: var(--ds-type-disclaimer-size);
+  font-weight: var(--ds-type-strong);
   cursor: pointer;
 }
 
 /* rail groups + pills */
 .lbx-rg-title {
-  font-family: var(--font-mono, monospace);
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.07em;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--ds-type-eyebrow-size);
+  font-weight: var(--ds-type-eyebrow-weight);
+  letter-spacing: var(--ds-type-eyebrow-tracking);
   text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
   color: var(--emerald);
   margin-bottom: 7px;
 }
@@ -230,8 +234,8 @@
   background: transparent;
   color: var(--text-muted);
   font-family: var(--font-sans, sans-serif);
-  font-size: 0.76rem;
-  font-weight: 600;
+  font-size: var(--ds-type-fine-size);
+  font-weight: var(--ds-type-strong);
   text-align: left;
   cursor: pointer;
   white-space: nowrap;
@@ -246,10 +250,12 @@
 }
 .lbx-pill-tag {
   margin-left: auto;
-  font-family: var(--font-mono, monospace);
-  font-size: 0.625rem;
-  font-weight: 700;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--ds-type-eyebrow-size);
+  font-weight: var(--ds-type-eyebrow-weight);
+  letter-spacing: var(--ds-type-eyebrow-tracking);
   text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
   color: var(--emerald);
 }
 .lbx-dot {
@@ -272,13 +278,15 @@
 }
 .lbx-slider-val {
   margin-top: 4px;
-  font-size: 0.74rem;
+  font-size: var(--ds-type-fine-size);
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-variant-numeric: tabular-nums;
   color: var(--text-muted);
 }
 .lbx-rail-note {
-  font-size: 0.66rem;
+  font-size: var(--ds-type-disclaimer-size);
+  line-height: var(--ds-type-disclaimer-lh);
   color: var(--text-faint);
-  line-height: 1.5;
 }
 
 /* ── stat cards ── */
@@ -298,10 +306,12 @@
   background: rgba(245, 158, 11, 0.05);
 }
 .lbx-stat-label {
-  font-size: 0.7rem;
-  font-weight: 600;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--ds-type-eyebrow-size);
+  font-weight: var(--ds-type-eyebrow-weight);
+  letter-spacing: var(--ds-type-eyebrow-tracking);
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  font-variant-numeric: tabular-nums;
   color: var(--text-faint);
 }
 .lbx-stat-value {
@@ -319,7 +329,7 @@
 }
 .lbx-stat-sub {
   margin-top: 4px;
-  font-size: 0.7rem;
+  font-size: var(--ds-type-disclaimer-size);
   color: var(--text-muted);
 }
 
@@ -347,20 +357,24 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 1rem;
-  font-weight: 700;
+  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-size: var(--ds-type-headline-size);
+  font-weight: var(--ds-type-headline-weight);
+  letter-spacing: var(--ds-type-headline-tracking);
+  line-height: var(--ds-type-headline-lh);
 }
 .lbx-partial-chip {
+  font-variant-numeric: tabular-nums;
   font-family: var(--font-mono, monospace);
-  font-size: 0.6rem;
-  font-weight: 700;
+  font-size: var(--ds-type-eyebrow-size);
+  font-weight: var(--ds-type-strong);
   color: var(--warning);
   background: rgba(245, 158, 11, 0.12);
   border-radius: 999px;
   padding: 2px 8px;
 }
 .lbx-card-note {
-  font-size: 0.72rem;
+  font-size: var(--ds-type-disclaimer-size);
   color: var(--text-faint);
 }
 .lbx-controls {
@@ -380,8 +394,8 @@
   background: transparent;
   color: var(--text-muted);
   font-family: var(--font-sans, sans-serif);
-  font-size: 0.74rem;
-  font-weight: 600;
+  font-size: var(--ds-type-fine-size);
+  font-weight: var(--ds-type-strong);
   padding: 5px 11px;
   cursor: pointer;
 }
@@ -415,13 +429,15 @@
   background: var(--surface-card-hover);
 }
 .lbx-lb-rank {
-  font-size: 0.72rem;
+  font-size: var(--ds-type-disclaimer-size);
+  font-weight: var(--ds-type-strong);
+  font-variant-numeric: tabular-nums;
   color: var(--text-faint);
   text-align: right;
 }
 .lbx-lb-name {
-  font-size: 0.8rem;
-  font-weight: 600;
+  font-size: var(--ds-type-sub-size);
+  font-weight: var(--ds-type-strong);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -446,7 +462,9 @@
   background: var(--emerald);
 }
 .lbx-lb-val {
-  font-size: 0.78rem;
+  font-size: var(--ds-type-fine-size);
+  font-weight: var(--ds-type-strong);
+  font-variant-numeric: tabular-nums;
   color: var(--text-primary);
   min-width: 62px;
   text-align: right;
@@ -489,15 +507,15 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 0.68rem;
+  font-size: var(--ds-type-disclaimer-size);
   color: var(--text-muted);
 }
 .lbx-info {
   display: flex;
   gap: 6px;
   margin: 12px 0 0;
-  font-size: 0.7rem;
-  line-height: 1.5;
+  font-size: var(--ds-type-disclaimer-size);
+  line-height: var(--ds-type-disclaimer-lh);
   color: var(--text-faint);
 }
 .lbx-info svg {
@@ -521,6 +539,7 @@
   flex: 0 0 auto;
 }
 .lbx-donut-num {
+  font-variant-numeric: tabular-nums;
   font-family: var(--font-mono, monospace);
   font-weight: 700;
   font-size: 17px;
@@ -529,8 +548,11 @@
 .lbx-donut-lbl {
   font-size: 8px;
   fill: var(--text-faint);
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-weight: var(--ds-type-eyebrow-weight);
+  letter-spacing: var(--ds-type-eyebrow-tracking);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
 }
 .lbx-iss-stroke-defense {
   stroke: var(--lbx-iss-defense);
@@ -585,7 +607,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.78rem;
+  font-size: var(--ds-type-fine-size);
 }
 .lbx-mix-name {
   flex: 1;
@@ -595,7 +617,9 @@
   color: var(--text-primary);
 }
 .lbx-mix-pct {
-  font-size: 0.76rem;
+  font-size: var(--ds-type-fine-size);
+  font-weight: var(--ds-type-strong);
+  font-variant-numeric: tabular-nums;
   color: var(--text-muted);
 }
 
@@ -608,15 +632,16 @@
 .lbx-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.83rem;
+  font-size: var(--ds-type-body-size);
 }
 .lbx-table th {
   text-align: left;
-  font-family: var(--font-sans, sans-serif);
-  font-size: 0.66rem;
-  font-weight: 700;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--ds-type-eyebrow-size);
+  font-weight: var(--ds-type-eyebrow-weight);
+  letter-spacing: var(--ds-type-eyebrow-tracking);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-variant-numeric: tabular-nums;
   color: var(--text-faint);
   background: var(--bg-tertiary);
   padding: 8px 10px;
@@ -641,7 +666,7 @@
   background: var(--surface-card-hover);
 }
 .lbx-strong {
-  font-weight: 600;
+  font-weight: var(--ds-type-strong);
 }
 .lbx-muted {
   color: var(--text-faint);
@@ -653,7 +678,7 @@
   white-space: nowrap;
 }
 .lbx-noamount {
-  font-size: 0.74rem;
+  font-size: var(--ds-type-fine-size);
   color: var(--text-faint);
   font-style: italic;
 }
@@ -669,7 +694,7 @@
   border-radius: 999px;
   background: var(--surface-card-hover);
   border: 1px solid var(--border-primary);
-  font-size: 0.68rem;
+  font-size: var(--ds-type-disclaimer-size);
   color: var(--text-muted);
   white-space: nowrap;
   max-width: 160px;
@@ -689,11 +714,11 @@
   padding: 22px 10px;
   text-align: center;
   color: var(--text-faint);
-  font-size: 0.85rem;
+  font-size: var(--ds-type-body-size);
 }
 .lbx-note {
   margin: 10px 0 0;
-  font-size: 0.68rem;
+  font-size: var(--ds-type-disclaimer-size);
   color: var(--text-faint);
 }
 .lbx-revolve {
@@ -701,10 +726,12 @@
   align-items: center;
   gap: 3px;
   margin-left: 8px;
-  font-size: 0.64rem;
-  font-weight: 700;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--ds-type-eyebrow-size);
+  font-weight: var(--ds-type-eyebrow-weight);
+  letter-spacing: var(--ds-type-eyebrow-tracking);
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  font-variant-numeric: tabular-nums;
   color: var(--warning);
   background: rgba(245, 158, 11, 0.1);
   border-radius: 999px;
@@ -725,8 +752,8 @@
   border-radius: 7px;
   background: var(--surface-card);
   color: var(--text-primary);
-  font-size: 0.78rem;
-  font-weight: 600;
+  font-size: var(--ds-type-fine-size);
+  font-weight: var(--ds-type-strong);
   cursor: pointer;
 }
 .lbx-pager-btn:disabled {
@@ -734,7 +761,8 @@
   cursor: not-allowed;
 }
 .lbx-pager-info {
-  font-size: 0.78rem;
+  font-size: var(--ds-type-fine-size);
+  font-variant-numeric: tabular-nums;
   color: var(--text-muted);
 }
 
@@ -796,8 +824,8 @@
 }
 .lbx-modal-qchip {
   display: inline-block;
-  font-size: 0.62rem;
-  font-weight: 700;
+  font-size: var(--ds-type-eyebrow-size);
+  font-weight: var(--ds-type-strong);
   color: var(--emerald);
   background: var(--emerald-bg);
   border-radius: 999px;
@@ -805,13 +833,15 @@
 }
 .lbx-modal-client {
   margin: 8px 0 2px;
-  font-size: 1.2rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-size: var(--ds-type-headline-size);
+  font-weight: var(--ds-type-headline-weight);
+  letter-spacing: var(--ds-type-headline-tracking);
+  line-height: var(--ds-type-headline-lh);
 }
 .lbx-modal-via {
   margin: 0 0 14px;
-  font-size: 0.82rem;
+  font-size: var(--ds-type-body-size);
   color: var(--text-muted);
 }
 .lbx-modal-2x2 {
@@ -826,21 +856,26 @@
   gap: 2px;
 }
 .lbx-modal-k {
-  font-size: 0.62rem;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--ds-type-eyebrow-size);
+  font-weight: var(--ds-type-eyebrow-weight);
+  letter-spacing: var(--ds-type-eyebrow-tracking);
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  font-variant-numeric: tabular-nums;
   color: var(--text-faint);
 }
 .lbx-modal-v {
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: var(--ds-type-figure-size);
+  font-weight: var(--ds-type-strong);
   color: var(--text-primary);
 }
 .lbx-modal-sec {
-  font-size: 0.68rem;
-  font-weight: 700;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--ds-type-eyebrow-size);
+  font-weight: var(--ds-type-eyebrow-weight);
+  letter-spacing: var(--ds-type-eyebrow-tracking);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
   color: var(--text-faint);
   margin-bottom: 8px;
 }
@@ -853,7 +888,7 @@
   gap: 5px;
 }
 .lbx-modal-lobs li {
-  font-size: 0.82rem;
+  font-size: var(--ds-type-body-size);
   color: var(--text-primary);
   display: flex;
   align-items: center;
@@ -865,8 +900,8 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  font-size: 0.8rem;
-  font-weight: 600;
+  font-size: var(--ds-type-sub-size);
+  font-weight: var(--ds-type-strong);
   text-decoration: none;
   border-radius: 8px;
   cursor: pointer;
@@ -879,15 +914,15 @@
   border: none;
 }
 .lbx-modal-muted {
-  font-size: 0.8rem;
+  font-size: var(--ds-type-sub-size);
   color: var(--text-faint);
   margin: 0;
 }
 .lbx-modal-desc {
   margin-top: 10px;
-  font-size: 0.78rem;
+  font-size: var(--ds-type-fine-size);
+  line-height: var(--ds-type-fine-lh);
   color: var(--text-muted);
-  line-height: 1.5;
 }
 .lbx-modal-desc p {
   margin: 0 0 6px;
@@ -913,7 +948,7 @@
 .lbx-modal-foot {
   padding: 10px 22px;
   border-top: 1px solid var(--border-primary);
-  font-size: 0.68rem;
+  font-size: var(--ds-type-disclaimer-size);
   color: var(--text-faint);
 }
 .lbx-modal-foot span {
@@ -927,7 +962,9 @@
   display: inline-block;
   padding: 1px 7px;
   border-radius: 5px;
-  font-size: 0.72rem;
+  font-size: var(--ds-type-disclaimer-size);
+  font-weight: var(--ds-type-strong);
+  font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;
   color: var(--lbx-gold);
   background: var(--lbx-gold-bg);
@@ -937,12 +974,15 @@
   display: inline-flex;
   align-items: baseline;
   gap: 6px;
-  font-size: 0.8rem;
+  font-size: var(--ds-type-sub-size);
+  font-weight: var(--ds-type-strong);
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 .lbx-chg {
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-size: var(--ds-type-disclaimer-size);
+  font-weight: var(--ds-type-strong);
+  font-variant-numeric: tabular-nums;
 }
 .lbx-chg.up {
   color: var(--emerald);
@@ -971,8 +1011,11 @@
   border-bottom: 1px solid var(--border-primary);
 }
 .lbx-cc-name {
-  font-size: 1.15rem;
-  font-weight: 700;
+  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-size: var(--ds-type-headline-size);
+  font-weight: var(--ds-type-headline-weight);
+  letter-spacing: var(--ds-type-headline-tracking);
+  line-height: var(--ds-type-headline-lh);
   margin: 0 0 6px;
   color: var(--text-primary);
 }
@@ -982,9 +1025,12 @@
   gap: 8px;
 }
 .lbx-cc-exch {
-  font-size: 0.68rem;
-  letter-spacing: 0.04em;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--ds-type-eyebrow-size);
+  font-weight: var(--ds-type-eyebrow-weight);
+  letter-spacing: var(--ds-type-eyebrow-tracking);
   text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
   color: var(--text-faint);
 }
 .lbx-cc-quote {
@@ -995,6 +1041,8 @@
   text-align: right;
 }
 .lbx-cc-price {
+  font-weight: var(--ds-type-strong);
+  font-variant-numeric: tabular-nums;
   font-size: 1.2rem;
   color: var(--text-primary);
 }
@@ -1026,17 +1074,22 @@
 }
 .lbx-cc-chart-label {
   flex: none;
-  font-size: 0.68rem;
-  letter-spacing: 0.03em;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--ds-type-eyebrow-size);
+  font-weight: var(--ds-type-eyebrow-weight);
+  letter-spacing: var(--ds-type-eyebrow-tracking);
   text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
   color: var(--text-faint);
 }
 .lbx-cc-sec {
   padding: 14px 22px 8px;
-  font-size: 0.7rem;
-  letter-spacing: 0.05em;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--ds-type-eyebrow-size);
+  font-weight: var(--ds-type-eyebrow-weight);
+  letter-spacing: var(--ds-type-eyebrow-tracking);
   text-transform: uppercase;
-  font-weight: 700;
+  font-variant-numeric: tabular-nums;
   color: var(--emerald-hover);
 }
 .lbx-cc-filings {
@@ -1068,16 +1121,18 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  font-size: 0.8rem;
+  font-size: var(--ds-type-sub-size);
   min-width: 0;
 }
 .lbx-cc-freg {
-  font-weight: 600;
+  font-weight: var(--ds-type-strong);
 }
 .lbx-cc-fmeta .lbx-muted {
-  font-size: 0.72rem;
+  font-size: var(--ds-type-disclaimer-size);
 }
 .lbx-cc-famt {
+  font-weight: var(--ds-type-strong);
+  font-variant-numeric: tabular-nums;
   flex: none;
   color: var(--text-primary);
 }

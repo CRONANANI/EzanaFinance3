@@ -73,22 +73,27 @@
   outline-offset: -2px;
 }
 .dsx-tlead {
-  font-size: 10px;
-  color: var(--text-muted);
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--ds-type-eyebrow-size);
+  font-weight: var(--ds-type-eyebrow-weight);
+  letter-spacing: var(--ds-type-eyebrow-tracking);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
 }
 .dsx-tmain {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--ds-type-body-size);
+  font-weight: var(--ds-type-strong);
   color: var(--text-secondary);
 }
 .dsx-tval {
-  font-size: 12px;
-  font-weight: 700;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--ds-type-figure-size);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--ds-type-code-weight);
   color: var(--text-primary);
 }
 .dsx-mono {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
   font-variant-numeric: tabular-nums;
 }

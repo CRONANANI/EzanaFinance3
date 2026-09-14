@@ -20,8 +20,8 @@
   border: none;
   cursor: pointer;
   font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--ds-type-body-size);
+  font-weight: var(--ds-type-strong);
   color: var(--text-muted);
   padding: 7px 11px;
   border-radius: var(--radius-md, 8px);
@@ -61,7 +61,7 @@
   gap: 10px;
   padding: 8px 10px;
   font-family: var(--font-sans, sans-serif);
-  font-size: 12.5px;
+  font-size: var(--ds-type-sub-size);
   /* Item text takes its parent category's color (the same color as the category
      dot), passed in from cat.color as --dscat-item-color. */
   color: var(--dscat-item-color, var(--text-secondary));
@@ -83,16 +83,17 @@
   /* Active row: its category color, bolded — not a hardcoded emerald that would
      be wrong for non-emerald categories. */
   color: var(--dscat-item-color, var(--emerald));
-  font-weight: 600;
+  font-weight: var(--ds-type-strong);
 }
 /* roadmap (live:false) dataset — muted "Soon" pill, never shown as live */
 .dscat-soon {
   flex-shrink: 0;
-  font-family: var(--font-mono, monospace);
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--ds-type-eyebrow-size);
+  font-weight: var(--ds-type-eyebrow-weight);
+  letter-spacing: var(--ds-type-eyebrow-tracking);
   text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
   color: var(--text-faint);
   background: var(--bg-tertiary);
   border: 1px solid var(--border-primary);
