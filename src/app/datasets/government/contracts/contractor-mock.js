@@ -85,6 +85,8 @@ const LMT = {
     price: '$472.10',
     change: '+$3.82 today',
     y1: '+18.4%',
+    changeNeg: false,
+    y1Neg: false,
     series: seededSeries({ seed: 1.7, n: 40, base: 430, amp: 18, drift: 1.1 }),
   },
   marketNote: 'Govt revenue share ~96% · directly exposed to this data',
@@ -448,6 +450,185 @@ function generateFallback(slug, rawName) {
     awardsAllLink: `View all ${fmtInt(awardCount)} ›`,
     sources: SOURCES_LINE,
   };
+}
+
+/* ── the DoD primes the peer rows link to ─────────────────────────────────
+   A peer row advertises a ticker and a lifetime total, so clicking it must
+   not resolve to the private-company fallback: the swapped-in payload would
+   contradict the row that opened it. Each prime carries only the few facts
+   the row already shows (ticker, lifetime obligations, rank) plus sector and
+   headquarters; every other field is produced by the same deterministic
+   machinery every other recipient goes through. */
+
+const PRIME_AGENCY_POOL = [
+  'Dept. of Defense',
+  'NASA',
+  'Dept. of Energy',
+  'Dept. of Homeland Security',
+  'Dept. of Transportation',
+  'Dept. of Commerce',
+  'Dept. of Justice',
+  'GSA',
+];
+const PRIME_AGENCY_SHARES = [0.962, 0.021, 0.008, 0.004, 0.0025, 0.0012, 0.0008, 0.0005];
+
+const PRIME_FACTS = [
+  {
+    t: 'BA',
+    name: 'The Boeing Company',
+    monogram: 'BA',
+    totalB: 411.4,
+    rank: 2,
+    hq: 'Arlington, VA',
+    priceBase: 205,
+    govtShare: '~41%',
+  },
+  {
+    t: 'RTX',
+    name: 'RTX Corporation',
+    monogram: 'RT',
+    totalB: 281.4,
+    rank: 3,
+    hq: 'Arlington, VA',
+    priceBase: 148,
+    govtShare: '~65%',
+  },
+  {
+    t: 'NOC',
+    name: 'Northrop Grumman',
+    monogram: 'NG',
+    totalB: 181.9,
+    rank: 4,
+    hq: 'Falls Church, VA',
+    priceBase: 512,
+    govtShare: '~86%',
+  },
+  {
+    t: 'GD',
+    name: 'General Dynamics',
+    monogram: 'GD',
+    totalB: 134.0,
+    rank: 5,
+    hq: 'Reston, VA',
+    priceBase: 318,
+    govtShare: '~68%',
+  },
+];
+
+function buildPrime(f) {
+  const slug = slugify(f.name);
+  const base = generateFallback(slug, f.name);
+  const h = hashSlug(slug);
+  const seed = (h % 628) / 100;
+
+  // Quote: price, day move and 1Y change are READ OFF the sparkline series, so
+  // the numbers and the line the user sees can never disagree.
+  const series = seededSeries({
+    seed,
+    n: 40,
+    base: f.priceBase,
+    amp: f.priceBase * 0.06,
+    drift: f.priceBase * 0.0022,
+  });
+  const last = series[series.length - 1];
+  const prev = series[series.length - 2];
+  const y1 = ((last - series[0]) / series[0]) * 100;
+  const day = last - prev;
+
+  // Obligations spread across FY '08 to FY '26 summing near the lifetime total.
+  const annual = (f.totalB / 19) * 0.82;
+  const obligations = seededSeries({
+    seed,
+    n: 19,
+    base: annual,
+    amp: annual * 0.5,
+    drift: annual * 0.03,
+  });
+  const peakIndex = obligations.indexOf(Math.max(...obligations));
+  const latest = obligations[obligations.length - 1];
+
+  const awards = 90000 + (h % 520) * 1000;
+  const avg = fmtMoney((f.totalB * 1e9) / awards / 1e9);
+
+  const agencies = PRIME_AGENCY_SHARES.map((share, i) => ({
+    name:
+      i === 0
+        ? PRIME_AGENCY_POOL[0]
+        : PRIME_AGENCY_POOL[1 + ((h + i) % (PRIME_AGENCY_POOL.length - 1))],
+    value: fmtMoney(f.totalB * share),
+    pct: share >= 0.001 ? `${(share * 100).toFixed(1)}%` : '<0.1%',
+    w: share / PRIME_AGENCY_SHARES[0],
+  }));
+  const tailB = PRIME_AGENCY_SHARES.slice(4).reduce((a, s) => a + s, 0) * f.totalB;
+
+  const yoy =
+    ((latest - obligations[obligations.length - 2]) / obligations[obligations.length - 2]) * 100;
+  const yoyNeg = yoy < 0;
+  const yoyStr = `${yoyNeg ? '−' : '+'}${Math.abs(yoy).toFixed(1)}%`;
+
+  return {
+    ...base,
+    name: f.name,
+    monogram: f.monogram,
+    ticker: f.t,
+    exchange: 'NYSE',
+    isPublic: true,
+    rankChip: `#${f.rank} DOD RECIPIENT`,
+    meta: `Department of Defense (primary) · Aerospace & Defense · ${f.hq}`,
+    heroMeta: `Aerospace & Defense · ${f.hq} · prime contractor · profile from award records`,
+    lifetime: fmtMoney(f.totalB),
+    rankLine: { rank: `#${f.rank}`, rest: 'of 12,400 DoD primes' },
+    stats: [
+      { label: 'Total awarded', value: fmtMoney(f.totalB), sub: "FY '08 through FY '26" },
+      { label: 'Awards', value: fmtInt(awards), sub: 'individual award actions' },
+      { label: 'Avg contract', value: avg, sub: 'per award, all years' },
+      { label: 'YoY obligations', value: yoyStr, sub: "FY '26 vs FY '25", neg: yoyNeg },
+    ],
+    obligations,
+    peakIndex,
+    peakCallout: `${fyLabel(peakIndex).toUpperCase()} PEAK ${fmtMoney(obligations[peakIndex])}`,
+    agencies,
+    agenciesMore: `+ 4 more agencies · ${fmtMoney(tailB)} combined`,
+    quote: {
+      price: `$${last.toFixed(2)}`,
+      change: `${day >= 0 ? '+' : '−'}$${Math.abs(day).toFixed(2)} today`,
+      y1: `${y1 >= 0 ? '+' : '−'}${Math.abs(y1).toFixed(1)}%`,
+      changeNeg: day < 0,
+      y1Neg: y1 < 0,
+      series,
+    },
+    marketNote: `Govt revenue share ${f.govtShare} · directly exposed to this data`,
+    marketStats: [
+      { label: 'MKT CAP', value: fmtMoney((f.priceBase * (180 + (h % 420))) / 1000) },
+      { label: 'P/E FWD', value: `${(12 + (h % 130) / 10).toFixed(1)}×` },
+      { label: 'DIV YIELD', value: `${(0.8 + (h % 26) / 10).toFixed(1)}%` },
+      { label: 'BACKLOG', value: fmtMoney(f.totalB * (0.2 + (h % 30) / 100)) },
+    ],
+    kpis: base.kpis.map((k, i) =>
+      i === 0
+        ? { ...k, value: fmtMoney(latest), sub: `${yoyStr} YoY`, tone: yoyNeg ? 'neg' : 'pos' }
+        : i === 2
+          ? { ...k, value: avg, sub: 'per award, all years' }
+          : k,
+    ),
+    signal: yoyNeg
+      ? `Signal: obligations easing off the ${fyLabel(peakIndex)} peak. Watch Q1 sustainment renewals.`
+      : "Signal: obligations building versus FY '25. Watch new award flow into Q1.",
+    awardsAllLink: `View all ${fmtInt(awards)} ›`,
+  };
+}
+
+// Peer list for each prime: the other primes plus Lockheed, so the popup can
+// be walked in any direction without dead-ending.
+const PRIME_ROWS = [
+  { t: LMT.ticker, name: LMT.name, v: LMT.lifetime },
+  ...PRIME_FACTS.map((f) => ({ t: f.t, name: f.name, v: fmtMoney(f.totalB) })),
+];
+
+for (const f of PRIME_FACTS) {
+  const prime = buildPrime(f);
+  prime.peers = PRIME_ROWS.filter((r) => r.t !== f.t).slice(0, 4);
+  REGISTRY[prime.slug] = prime;
 }
 
 export function getContractor(slugOrName) {

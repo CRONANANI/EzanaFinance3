@@ -219,10 +219,26 @@ export default function ContractorQuickView({ recipient, onClose }) {
               <div className="cqv-market-card">
                 <div className="cqv-sec-head">
                   <span className="cqv-eyebrow cqv-mono">{company.ticker} · 1Y</span>
-                  <span className="cqv-quote-y1 cqv-mono">{company.quote.y1}</span>
+                  <span
+                    className={
+                      company.quote.y1Neg
+                        ? 'cqv-quote-y1 cqv-mono cqv-neg'
+                        : 'cqv-quote-y1 cqv-mono'
+                    }
+                  >
+                    {company.quote.y1}
+                  </span>
                 </div>
                 <div className="cqv-quote-price cqv-mono">{company.quote.price}</div>
-                <div className="cqv-quote-change cqv-mono">{company.quote.change}</div>
+                <div
+                  className={
+                    company.quote.changeNeg
+                      ? 'cqv-quote-change cqv-mono cqv-neg'
+                      : 'cqv-quote-change cqv-mono'
+                  }
+                >
+                  {company.quote.change}
+                </div>
                 <Sparkline series={company.quote.series} />
                 <div className="cqv-market-divider" />
                 <p className="cqv-market-note">{company.marketNote}</p>

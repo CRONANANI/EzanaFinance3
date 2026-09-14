@@ -29,6 +29,14 @@ function DossierAreaChart({ series, peakIndex, firstFy }) {
   const peakX = x(peakIndex);
   const peakY = y(series[peakIndex]);
   const peakLabel = `${fyLabel(peakIndex, firstFy)} · $${series[peakIndex].toFixed(1)}B`;
+  // Gridlines snap to round $B values so the axis reads as designed ($25B,
+  // not $25.4B); each line is drawn at its own value, and ticks that fall
+  // outside the plotted range are dropped.
+  const span = max - min;
+  const step = span >= 30 ? 5 : span >= 10 ? 2 : 1;
+  const ticks = [
+    ...new Set([0.75, 0.5, 0.25].map((f) => Math.round((min + (1 - f) * span) / step) * step)),
+  ].filter((v) => v > min && v < max);
   return (
     <svg
       className="cds-chart"
@@ -42,18 +50,14 @@ function DossierAreaChart({ series, peakIndex, firstFy }) {
           <stop offset="1" stopColor="var(--emerald)" stopOpacity="0" />
         </linearGradient>
       </defs>
-      {[0.75, 0.5, 0.25].map((f) => {
-        const gy = PAD.t + f * (H - PAD.t - PAD.b);
-        const val = min + (1 - f) * (max - min);
-        return (
-          <g key={f}>
-            <line className="cds-grid" x1={PAD.l} x2={W - PAD.r} y1={gy} y2={gy} />
-            <text className="cds-axis" x={PAD.l - 8} y={gy + 3} textAnchor="end">
-              ${Math.round(val)}B
-            </text>
-          </g>
-        );
-      })}
+      {ticks.map((v) => (
+        <g key={v}>
+          <line className="cds-grid" x1={PAD.l} x2={W - PAD.r} y1={y(v)} y2={y(v)} />
+          <text className="cds-axis" x={PAD.l - 8} y={y(v) + 3} textAnchor="end">
+            ${v}B
+          </text>
+        </g>
+      ))}
       <polygon points={area} fill="url(#cds-fill)" />
       <polyline
         points={pts}
@@ -266,7 +270,8 @@ export default function ContractorDossierClient({ slug }) {
             <span className="cds-eyebrow cds-mono">MARKET CONTEXT</span>
             {c.isPublic && c.quote && (
               <span className="cds-mkt-quote cds-mono">
-                {c.ticker} {c.quote.price} · <span className="cds-pos">{c.quote.y1} 1Y</span>
+                {c.ticker} {c.quote.price} ·{' '}
+                <span className={c.quote.y1Neg ? 'cds-neg' : 'cds-pos'}>{c.quote.y1} 1Y</span>
               </span>
             )}
           </div>

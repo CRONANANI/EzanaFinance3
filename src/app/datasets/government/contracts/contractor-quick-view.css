@@ -281,6 +281,10 @@ body.light-mode .cqv-root {
   height: 44px;
   display: block;
 }
+.cqv-quote-y1.cqv-neg,
+.cqv-quote-change.cqv-neg {
+  color: var(--danger);
+}
 .cqv-market-divider {
   height: 1px;
   background: var(--border-primary);
