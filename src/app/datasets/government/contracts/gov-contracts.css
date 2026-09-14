@@ -1901,17 +1901,64 @@
   }
 }
 
-/* ── Award detail modal: facts grid + labeled AI analysis ────────────── */
-.gcx-award-modal .gcx-modal-left {
-  overflow-y: auto;
+.gcx-spin {
+  animation: gcx-exp-spin 0.8s linear infinite;
 }
-.gcx-facts {
+
+/* ── Award detail modal: split ledger ──────────────────────────────────────
+   Own namespace (gcx-award-*) with its own root. The .gcx-modal / -left /
+   -right / -x family is SHARED with DrillModal and the dossier overlay, so
+   this modal deliberately borrows nothing from it except .gcx-modal-backdrop
+   and .gcx-spin. Metrics come from the dataset type scale in
+   src/app/datasets/dataset-type.css; the button ink is the only literal. */
+.gcx-award-modal-root {
+  --gcx-award-ink: #04231a;
+  position: relative;
+  width: 100%;
+  max-width: 960px;
+  max-height: 88vh;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px 16px;
-  margin: 14px 0 4px;
+  grid-template-columns: 530px 1fr;
+  background: var(--bg-primary);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg, 0 20px 60px rgba(15, 23, 42, 0.2));
+  overflow: hidden;
+  animation: gcx-award-in 0.22s ease-out;
 }
-.gcx-fact-k {
+@keyframes gcx-award-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.gcx-award-x {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.gcx-award-x:hover {
+  background: var(--emerald-bg-subtle);
+  color: var(--text-primary);
+}
+
+/* ── left column: the ledger ── */
+.gcx-award-ledger {
+  padding: 26px 28px 20px;
+  overflow-y: auto;
+  min-width: 0;
+}
+.gcx-award-eyebrow {
   font-family: var(--font-mono, 'JetBrains Mono', monospace);
   font-size: var(--ds-type-eyebrow-size);
   font-weight: var(--ds-type-eyebrow-weight);
@@ -1920,38 +1967,150 @@
   font-variant-numeric: tabular-nums;
   color: var(--text-muted);
 }
-.gcx-fact-v {
-  font-size: var(--ds-type-figure-size);
-  font-weight: var(--ds-type-strong);
+.gcx-award-name {
+  margin: 8px 0 0;
+  font-size: var(--ds-type-headline-size);
+  font-weight: var(--ds-type-headline-weight);
+  line-height: var(--ds-type-headline-lh);
+  letter-spacing: var(--ds-type-headline-tracking);
   color: var(--text-primary);
-  margin-top: 2px;
   overflow-wrap: anywhere;
 }
-.gcx-fact-v.gcx-mono {
-  font-variant-numeric: tabular-nums;
-}
-.gcx-award-desc {
-  font-size: var(--ds-type-body-size);
-  line-height: var(--ds-type-body-lh);
+.gcx-award-agency {
+  margin: 6px 0 0;
+  font-size: var(--ds-type-sub-size);
   font-weight: 400;
+  line-height: var(--ds-type-sub-lh);
+  color: var(--text-secondary);
+}
+
+/* hero band */
+.gcx-award-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 18px;
+  padding: 14px 0;
+  border-top: 1px solid var(--border-primary);
+  border-bottom: 1px solid var(--border-primary);
+}
+.gcx-award-amount {
+  display: block;
+  margin-top: 4px;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--ds-type-hero-size);
+  font-weight: var(--ds-type-hero-weight);
+  letter-spacing: var(--ds-type-hero-tracking);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+/* Both spellings render; CSS picks one, so there is no resize observer and no
+   hydration mismatch. */
+.gcx-award-amount--short {
+  display: none;
+}
+.gcx-award-when {
+  text-align: right;
+  flex: 0 0 auto;
+}
+.gcx-award-date {
+  display: block;
+  margin-top: 4px;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--ds-type-figure-size);
+  font-weight: var(--ds-type-code-weight);
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+
+/* spec rows */
+.gcx-award-row {
+  display: grid;
+  grid-template-columns: 118px 1fr;
+  align-items: baseline;
+  column-gap: 16px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--border-primary);
+}
+.gcx-award-row-v {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.gcx-award-code {
+  display: block;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--ds-type-code-size);
+  font-weight: var(--ds-type-code-weight);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+.gcx-award-code--plain {
+  font-weight: 400;
+}
+.gcx-award-codelabel {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--ds-type-fine-size);
+  font-weight: 400;
+  line-height: var(--ds-type-fine-lh);
+  color: var(--text-secondary);
+}
+.gcx-award-value {
+  font-size: var(--ds-type-sub-size);
+  font-weight: 400;
+  color: var(--text-primary);
+}
+.gcx-award-none {
+  font-size: var(--ds-type-sub-size);
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+/* description: rendered as a quoted record, not as editorial copy */
+.gcx-award-desc-block {
+  padding-top: 14px;
+}
+.gcx-award-desc-text {
+  margin: 6px 0 0;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--ds-type-source-size);
+  font-weight: 400;
+  line-height: var(--ds-type-source-lh);
   color: var(--text-secondary);
   overflow-wrap: anywhere;
 }
-
-/* Analysis zone — visually separated from the computed facts by a distinct,
-   emerald-tinted surface + divider, so generated commentary is never mistaken
-   for reported fact. */
-.gcx-ai {
-  border-top: 1px solid var(--border-primary);
-  margin-top: 4px;
-  padding: 14px;
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--emerald) 6%, transparent);
+.gcx-award-desc-none {
+  margin: 6px 0 0;
+  font-size: var(--ds-type-sub-size);
+  color: var(--text-muted);
 }
-.gcx-ai-badge {
+
+/* ── right column: the analysis ──
+   The inner scroller is pinned to the column, so the analysis contributes no
+   intrinsic height and the grid row is sized by the ledger alone. That is what
+   keeps the modal exactly the same height in all three states: a tall "ready"
+   payload scrolls inside the column instead of growing the dialog when the
+   fetch resolves. The mobile single-column layout reverts it to static flow. */
+.gcx-award-analysis {
+  position: relative;
+  border-left: 1px solid var(--border-primary);
+  min-width: 0;
+  min-height: 320px;
+}
+.gcx-award-analysis-inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 26px 28px 20px;
+  overflow-y: auto;
+}
+.gcx-award-badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   font-family: var(--font-mono, 'JetBrains Mono', monospace);
   font-size: var(--ds-type-badge-size);
   font-weight: var(--ds-type-badge-weight);
@@ -1959,63 +2118,301 @@
   text-transform: uppercase;
   color: var(--emerald);
 }
-.gcx-ai-disclaimer {
-  margin: 6px 0 12px;
+body.light-mode .gcx-award-badge {
+  color: var(--emerald-dark);
+}
+.gcx-award-disclaimer {
+  margin: 8px 0 0;
   font-size: var(--ds-type-disclaimer-size);
+  font-weight: 400;
   line-height: var(--ds-type-disclaimer-lh);
   color: var(--text-muted);
 }
-.gcx-ai-loading {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: var(--ds-type-sub-size);
-  color: var(--text-muted);
+/* Present in all three states, so the column never reflows between them. */
+.gcx-award-rule {
+  margin-top: 14px;
+  border-top: 1px solid var(--border-primary);
 }
-.gcx-ai-error {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: var(--ds-type-sub-size);
-  color: var(--text-secondary);
-}
-.gcx-ai-summary {
-  font-size: var(--ds-type-body-size);
-  line-height: var(--ds-type-body-lh);
-  color: var(--text-primary);
-  margin: 0 0 12px;
-}
-.gcx-ai-sector-list {
-  list-style: none;
-  margin: 6px 0 12px;
-  padding: 0;
+.gcx-award-state {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  min-height: 0;
 }
-.gcx-ai-sector-list li {
-  font-size: var(--ds-type-sub-size);
-  line-height: var(--ds-type-sub-lh);
-  color: var(--text-secondary);
+
+/* ready */
+.gcx-award-summary {
+  margin: 14px 0 0;
+  font-size: var(--ds-type-body-size);
+  font-weight: 400;
+  line-height: var(--ds-type-body-lh);
+  color: var(--text-primary);
 }
-.gcx-ai-sector-name {
+.gcx-award-sectors-h {
+  margin-top: 18px;
+}
+.gcx-award-sector {
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border-primary);
+}
+.gcx-award-sector:last-child {
+  border-bottom: 0;
+}
+.gcx-award-sector-name {
+  display: block;
+  font-size: var(--ds-type-body-size);
   font-weight: var(--ds-type-strong);
   color: var(--text-primary);
 }
-.gcx-ai-uncertainty {
+.gcx-award-sector-why {
+  display: block;
+  margin-top: 2px;
   font-size: var(--ds-type-fine-size);
-  line-height: var(--ds-type-fine-lh);
-  color: var(--text-muted);
-  font-style: italic;
-  margin: 0;
+  font-weight: 400;
+  line-height: var(--ds-type-sub-lh);
+  color: var(--text-secondary);
 }
-.gcx-spin {
-  animation: gcx-exp-spin 0.8s linear infinite;
+.gcx-award-uncertainty {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-primary);
+}
+.gcx-award-uncertainty-note {
+  margin: 6px 0 0;
+  font-size: var(--ds-type-fine-size);
+  font-weight: 400;
+  line-height: var(--ds-type-disclaimer-lh);
+  color: var(--text-secondary);
 }
 
-@media (max-width: 640px) {
-  .gcx-facts {
+/* loading */
+.gcx-award-loading {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px 12px;
+}
+.gcx-award-spark {
+  color: var(--emerald);
+  animation: gcx-award-pulse 1.6s ease-in-out infinite;
+}
+body.light-mode .gcx-award-spark {
+  color: var(--emerald-dark);
+}
+@keyframes gcx-award-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+.gcx-award-loading-note {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--ds-type-disclaimer-size);
+  font-weight: var(--ds-type-eyebrow-weight);
+  letter-spacing: var(--ds-type-badge-tracking);
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  text-align: center;
+}
+.gcx-award-bars {
+  width: 100%;
+  max-width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+.gcx-award-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--emerald) 12%, transparent);
+  animation: gcx-award-pulse 1.6s ease-in-out infinite;
+}
+.gcx-award-bar:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.gcx-award-bar:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* error */
+.gcx-award-error {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px 12px;
+  color: var(--text-muted);
+}
+.gcx-award-error-t {
+  margin: 10px 0 0;
+  font-size: var(--ds-type-body-size);
+  font-weight: var(--ds-type-strong);
+  color: var(--text-primary);
+}
+.gcx-award-error-s {
+  margin: 4px 0 0;
+  max-width: 250px;
+  font-size: var(--ds-type-fine-size);
+  font-weight: 400;
+  line-height: var(--ds-type-fine-lh);
+  color: var(--text-secondary);
+}
+.gcx-award-retry {
+  margin-top: 14px;
+}
+
+/* ── footer ── */
+.gcx-award-foot {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 28px;
+  border-top: 1px solid var(--border-primary);
+}
+.gcx-award-src {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--ds-type-sub-size);
+  font-weight: var(--ds-type-strong);
+  color: var(--emerald);
+  text-decoration: none;
+}
+body.light-mode .gcx-award-src {
+  color: var(--emerald-dark);
+}
+.gcx-award-src:hover {
+  text-decoration: underline;
+}
+.gcx-award-acts {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.gcx-award-ghost,
+.gcx-award-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: var(--ds-type-sub-size);
+  font-weight: var(--ds-type-strong);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.gcx-award-ghost {
+  background: transparent;
+  border: 1px solid var(--emerald-border);
+  color: var(--text-primary);
+  padding: 8px 14px;
+}
+.gcx-award-ghost:hover {
+  background: var(--emerald-bg-subtle);
+  border-color: color-mix(in srgb, var(--emerald) 40%, transparent);
+}
+.gcx-award-ghost.is-on {
+  color: var(--emerald);
+}
+body.light-mode .gcx-award-ghost.is-on {
+  color: var(--emerald-dark);
+}
+.gcx-award-primary {
+  background: var(--emerald);
+  border: 1px solid var(--emerald);
+  color: var(--gcx-award-ink);
+  padding: 8px 16px;
+}
+.gcx-award-primary:hover {
+  background: var(--emerald-hover);
+  border-color: var(--emerald-hover);
+}
+
+/* ── mobile ── */
+@media (max-width: 720px) {
+  .gcx-award-modal-root {
     grid-template-columns: 1fr;
+    max-height: 92vh;
+  }
+  .gcx-award-ledger {
+    padding: 22px 20px 16px;
+  }
+  .gcx-award-analysis {
+    border-left: 0;
+    border-top: 1px solid var(--border-primary);
+    min-height: 0;
+  }
+  .gcx-award-analysis-inner {
+    position: static;
+    padding: 22px 20px 16px;
+  }
+  .gcx-award-amount {
+    font-size: var(--ds-type-hero-size-mobile);
+  }
+  .gcx-award-amount--full {
+    display: none;
+  }
+  .gcx-award-amount--short {
+    display: block;
+  }
+  .gcx-award-row {
+    grid-template-columns: 1fr;
+    row-gap: 3px;
+  }
+  /* NAICS and PSC read "code · label" inline and wrap on a narrow screen. */
+  .gcx-award-code,
+  .gcx-award-codelabel {
+    display: inline;
+  }
+  .gcx-award-codelabel::before {
+    content: ' · ';
+  }
+  .gcx-award-foot {
+    flex-wrap: wrap;
+    padding: 14px 20px;
+  }
+  .gcx-award-acts {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .gcx-award-primary {
+    order: -1;
+    width: 100%;
+    justify-content: center;
+    min-height: 44px;
+  }
+  .gcx-award-ghost {
+    flex: 1 1 0;
+    justify-content: center;
+    min-height: 44px;
+  }
+  .gcx-award-src {
+    flex: 1 1 0;
+    justify-content: center;
+    min-height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gcx-award-modal-root,
+  .gcx-award-spark,
+  .gcx-award-bar {
+    animation: none;
+  }
+  .gcx-award-spark {
+    opacity: 0.9;
   }
 }
 
