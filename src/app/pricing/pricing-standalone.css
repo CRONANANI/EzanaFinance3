@@ -25,7 +25,7 @@
 
 /* ── Hero ───────────────────────────────────────────────────────────────── */
 .pricing-hero {
-  max-width: 760px;
+  max-width: 980px;
   margin: 0 auto;
   padding: 5rem 2rem 2.5rem;
   text-align: center;
@@ -54,6 +54,14 @@
   margin: 0 0 1rem;
   color: var(--text-primary);
   overflow: visible;
+  text-wrap: balance;
+}
+/* The headline is one line by design on a wide viewport; below this it wraps,
+   and text-wrap: balance keeps the two lines even. */
+@media (min-width: 1100px) {
+  .pricing-h1 {
+    white-space: nowrap;
+  }
 }
 @media (max-width: 600px) {
   .pricing-h1 {
@@ -234,7 +242,7 @@
 .plan-tagline {
   font-size: 0.875rem;
   line-height: 1.45;
-  min-height: 2.5rem;
+  min-height: calc(0.875rem * 1.45 * 3); /* reserve 3 lines so all CTAs share a baseline */
   margin: 0 0 1rem;
   color: var(--text-muted);
   text-align: center;
@@ -960,6 +968,9 @@ body:not(.light-mode) .pricing-page--standalone .pricing-h1 {
 @media (max-width: 768px) {
   .pricing-cards-grid--five {
     grid-template-columns: 1fr;
+  }
+  .plan-tagline {
+    min-height: 0; /* single-column stack, no cross-card alignment needed */
   }
 }
 
