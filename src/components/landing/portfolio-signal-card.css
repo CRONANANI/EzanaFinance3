@@ -163,13 +163,6 @@
   font-weight: 600;
   color: var(--text-secondary);
 }
-.psc-sig-analyze {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--emerald);
-}
 .psc-sig-json {
   margin: 0;
   font-family: var(--font-mono);
@@ -220,10 +213,5 @@
 @media (max-width: 1023px) {
   .psc-card {
     max-width: 100%;
-  }
-  /* Mobile mono floor: annotations never render below 10px. The Analyze
-     affordance is always visible (no hover gate), so touch users see it. */
-  .psc-sig-analyze {
-    font-size: 0.625rem;
   }
 }

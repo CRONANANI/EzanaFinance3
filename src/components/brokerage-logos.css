@@ -124,8 +124,8 @@
   justify-content: center;
   gap: 4px;
   padding: 8px 10px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-secondary);
+  background: transparent;
+  border: 1px solid transparent; /* keep the 1px so tile size and marquee math don't shift */
   border-radius: 13px;
   transition:
     border-color 0.2s ease,
@@ -133,8 +133,11 @@
 }
 
 .bl-logo-item:hover {
-  border-color: var(--emerald-border);
-  background: var(--bg-tertiary);
+  border-color: transparent;
+  background: var(
+    --emerald-bg-subtle,
+    rgba(16, 185, 129, 0.04)
+  ); /* whisper of hover feedback, no outline */
 }
 
 .bl-logo-slot {
@@ -168,8 +171,8 @@
 }
 
 body.light-mode .bl-logo-item {
-  background: var(--surface-card);
-  border-color: var(--border-primary);
+  background: transparent;
+  border-color: transparent;
 }
 
 body.light-mode .bl-heading {

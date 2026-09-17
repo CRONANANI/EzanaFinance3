@@ -170,7 +170,6 @@ export function PortfolioSignalCard({ activeLabel = null, activeColor = 'var(--e
           <div className="psc-signal" key={s.name}>
             <div className="psc-sig-head">
               <span className="psc-sig-name">{s.name}</span>
-              <span className="psc-sig-analyze">Analyze</span>
             </div>
             <pre className="psc-sig-json">
               {s.json.map((seg, i) =>

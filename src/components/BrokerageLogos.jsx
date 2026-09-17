@@ -75,9 +75,9 @@ export function BrokerageLogos() {
 
   return (
     <section className="bl-section" aria-labelledby="bl-heading">
-      <p className="bl-eyebrow lf-mono">Connect your accounts</p>
+      <p className="bl-eyebrow lf-mono">Integrations</p>
       <h2 id="bl-heading" className="bl-heading">
-        Connect your brokerage account
+        Every account, one command center
       </h2>
       <p className="bl-subheading">
         Securely link 1,000+ brokerages and crypto exchanges. Read holdings or place trades from
