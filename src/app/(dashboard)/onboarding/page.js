@@ -85,22 +85,59 @@ export default function OnboardingPage() {
   }, [router]);
 
   const handleComplete = async () => {
-    if (userId) {
-      await supabase
-        .from('profiles')
-        .update({
-          onboarding_completed: true,
-          // Set the questionnaire flag too: this is the flag the access gate
-          // (DashboardTrialShell + this page's own guard) checks. Marking
-          // onboarding complete without it left users — notably org members
-          // routed through OrgQuestionnaire — stuck in a redirect loop back to
-          // /onboarding, so their dashboard/org pages never loaded.
-          investor_questionnaire_completed: true,
-          onboarding_step: 99,
-          has_seen_tutorial: false,
-        })
-        .eq('id', userId);
+    // Completion flags are written by POST /api/onboarding/complete (server
+    // client, immune to the browser auth-lock hangs documented in
+    // supabase-browser.js). The old implementation awaited an unbounded
+    // browser-client update here, so a wedged lock made "Continue to Ezana"
+    // do nothing at all.
+    let ok = false;
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 6000);
+      const res = await fetch('/api/onboarding/complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+        signal: controller.signal,
+        keepalive: true,
+      });
+      clearTimeout(timer);
+      ok = res.ok;
+      if (!res.ok) {
+        console.error('[onboarding] complete API returned', res.status);
+      }
+    } catch (err) {
+      console.error('[onboarding] complete API failed:', err);
     }
+
+    // Fallback: one browser-client attempt, hard-capped at 4s so a wedged
+    // auth lock can never trap the user on this screen. Both completion flags
+    // are set here as well as in the route: marking onboarding complete
+    // without investor_questionnaire_completed left users (notably org members
+    // routed through OrgQuestionnaire) in a redirect loop back to /onboarding.
+    // If both writes fail the middleware bounces back to /onboarding, where the
+    // resume path re-finalizes; that is strictly better than a frozen button.
+    if (!ok && userId) {
+      try {
+        await Promise.race([
+          supabase
+            .from('profiles')
+            .update({
+              onboarding_completed: true,
+              investor_questionnaire_completed: true,
+              onboarding_step: 99,
+              has_seen_tutorial: false,
+            })
+            .eq('id', userId),
+          new Promise((resolve) => {
+            setTimeout(resolve, 4000);
+          }),
+        ]);
+      } catch (err) {
+        console.error('[onboarding] fallback update failed:', err);
+      }
+    }
+
     router.replace(isPartner ? '/partner-home' : '/home');
   };
 

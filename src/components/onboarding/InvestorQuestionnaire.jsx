@@ -157,20 +157,33 @@ export function InvestorQuestionnaire({ userId, onComplete }) {
     async (finalAnswers) => {
       if (!userId) return;
       const profile = computeProfile(finalAnswers);
-      try {
-        const { error } = await supabase
-          .from('profiles')
-          .update({
-            investor_questionnaire: finalAnswers,
-            investor_questionnaire_completed: true,
-            investor_profile: profile,
-          })
-          .eq('id', userId);
-        if (error) console.error('[InvestorQuestionnaire]', error);
-      } catch (e) {
-        console.error('[InvestorQuestionnaire]', e);
-      }
+
+      // Show the results screen IMMEDIATELY. The write below must never gate
+      // the UI: the browser Supabase client has a documented history of
+      // Web-Locks hangs (see supabase-browser.js), and awaiting it before
+      // setDone left users frozen on question 7 with no feedback. The server
+      // route persists answers + flags; if it fails, handleComplete retries
+      // when the user clicks Continue, and the middleware/resume path covers
+      // the rest.
       setDone(true);
+
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 6000);
+        const res = await fetch('/api/onboarding/complete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ answers: finalAnswers, profile }),
+          signal: controller.signal,
+          keepalive: true,
+        });
+        clearTimeout(timer);
+        if (!res.ok) {
+          console.error('[InvestorQuestionnaire] complete API returned', res.status);
+        }
+      } catch (e) {
+        console.error('[InvestorQuestionnaire] complete API failed:', e);
+      }
     },
     [userId],
   );
