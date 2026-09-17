@@ -1,0 +1,597 @@
+/* ══════════════════════════════════════════════════════════════════════
+   Social investing / live ELO section ("The Ledger + Tape", concept 4a).
+   Companion to SocialLedgerSection.jsx. All color / space / radius values
+   resolve from theme tokens (theme-variables.css). Scoped prefix: `sled-`.
+
+   Motion: feed rows + chart draw share a 14s master loop (percent-timed
+   keyframes); the tape scrolls at 30s linear; LIVE dots pulse at 2s.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.sled-section {
+  width: 100%;
+  background: var(--bg-primary);
+  font-family: var(--font-sans);
+  padding-top: 96px;
+}
+
+/* ── 1. Copy block ── */
+.sled-copy {
+  max-width: 620px;
+  margin: 0 auto 56px;
+  padding: 0 40px;
+  text-align: center;
+}
+.sled-eyebrow {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--emerald);
+}
+.sled-heading {
+  margin: 16px 0 0;
+  font-size: clamp(1.75rem, 3.4vw, 2.625rem); /* 42px design size at desktop */
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--text-primary);
+}
+.sled-sub {
+  margin: 18px 0 0;
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  color: var(--text-muted);
+}
+
+/* ── 2. Two-column ledger ── */
+.sled-ledger {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 80px;
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  gap: 56px;
+  align-items: start;
+}
+
+/* Left: event feed — borderless rows */
+.sled-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.sled-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 8px;
+}
+.sled-row--wash {
+  background: var(--emerald-bg-subtle, rgba(16, 185, 129, 0.05));
+  border-radius: var(--radius-md);
+}
+/* 14s master loop: rows land ~1.1s apart, hold, fade together at the end. */
+.sled-row:nth-child(1) {
+  animation: sledF1 14s ease-out infinite;
+}
+.sled-row:nth-child(2) {
+  animation: sledF2 14s ease-out infinite;
+}
+.sled-row:nth-child(3) {
+  animation: sledF3 14s ease-out infinite;
+}
+.sled-row:nth-child(4) {
+  animation: sledF4 14s ease-out infinite;
+}
+.sled-row:nth-child(5) {
+  animation: sledF5 14s ease-out infinite;
+}
+@keyframes sledF1 {
+  0%,
+  2% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  6%,
+  94% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes sledF2 {
+  0%,
+  10% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  14%,
+  94% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes sledF3 {
+  0%,
+  18% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  22%,
+  94% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes sledF4 {
+  0%,
+  26% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  30%,
+  94% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes sledF5 {
+  0%,
+  34% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  38%,
+  94% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.sled-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+}
+/* Ink on an emerald fill: no token covers it, and the four sibling landing
+   sheets that need white on emerald all spell it out the same way. */
+.sled-avatar--check {
+  background: var(--emerald);
+  color: #ffffff;
+}
+.sled-delta {
+  width: 30px;
+  flex: none;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--emerald);
+}
+.sled-row-body {
+  font-size: 0.84375rem; /* 13.5px */
+  line-height: 1.45;
+  color: var(--text-secondary);
+  min-width: 0;
+}
+.sled-row-body strong {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.sled-num {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.sled-time {
+  margin-left: auto;
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+/* Right: flat chart — no card, no border, no shadow */
+.sled-chart {
+  min-width: 0; /* the 1fr track must be allowed to shrink below its content */
+}
+.sled-chart-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.sled-chart-label {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.sled-chart-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.sled-pill {
+  appearance: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 9999px;
+  padding: 5px 14px;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+.sled-pill:hover {
+  background: var(--emerald-bg-subtle, rgba(16, 185, 129, 0.05));
+  color: var(--text-secondary);
+}
+.sled-pill.is-active {
+  font-weight: 600;
+  color: var(--emerald);
+  background: var(--emerald-bg);
+  border-color: var(--emerald-border);
+}
+.sled-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--emerald);
+}
+.sled-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--emerald);
+  animation: sledPulse 2s ease-in-out infinite;
+}
+@keyframes sledPulse {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+  }
+  50% {
+    opacity: 0.7;
+    box-shadow: 0 0 0 5px rgba(16, 185, 129, 0);
+  }
+}
+
+.sled-rating {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.sled-rating-value {
+  font-family: var(--font-mono);
+  font-size: 2.75rem; /* 44px */
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+.sled-rating-delta {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--emerald);
+}
+.sled-rating-vs {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+.sled-svg {
+  width: 100%;
+  display: block;
+}
+.sled-grid {
+  stroke: var(--border-secondary);
+  stroke-width: 1;
+}
+.sled-line {
+  fill: none;
+  stroke-dasharray: 700;
+  animation: sledDraw 14s ease-out infinite;
+}
+.sled-line--you {
+  stroke: var(--emerald);
+  stroke-width: 2.5;
+}
+.sled-line--a {
+  stroke: var(--text-faint);
+  stroke-width: 1.75;
+}
+.sled-line--b {
+  stroke: var(--text-ghost);
+  stroke-width: 1.75;
+}
+@keyframes sledDraw {
+  from {
+    stroke-dashoffset: 600;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.sled-marker {
+  fill: var(--bg-primary);
+  stroke: var(--emerald);
+  stroke-width: 2;
+}
+.sled-end--you {
+  fill: var(--emerald);
+}
+.sled-end--a {
+  fill: var(--text-faint);
+}
+.sled-end--b {
+  fill: var(--text-ghost);
+}
+
+.sled-axis {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+/* ── 3. Season standings band ── */
+.sled-band {
+  margin-top: 64px;
+  border-top: 1px solid var(--border-secondary);
+  background: var(--bg-primary);
+  overflow: hidden;
+}
+.sled-band-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 40px 64px 0;
+}
+.sled-band-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+.sled-eyebrow--left {
+  text-align: left;
+}
+
+.sled-tiles {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+.sled-tile {
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+.sled-tile--top {
+  background: var(--bg-secondary);
+}
+.sled-tile--you {
+  border-color: rgba(
+    16,
+    185,
+    129,
+    0.35
+  ); /* stronger alpha than --emerald-border, per design; matches .plan-card--highlight precedent */
+  background: var(--emerald-bg-subtle, rgba(16, 185, 129, 0.05));
+}
+.sled-tile-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.sled-tile-rank {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-faint);
+}
+.sled-tile--you .sled-tile-rank {
+  color: var(--emerald);
+  font-weight: 700;
+}
+.sled-tile-delta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+}
+.sled-tile-delta--flat {
+  color: var(--text-faint);
+  font-weight: 400;
+}
+.sled-tile-delta--up {
+  color: var(--emerald);
+}
+.sled-tile-delta--down {
+  color: var(--negative);
+}
+.sled-tile-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--emerald);
+  background: var(--emerald-bg);
+  border: 1px solid var(--emerald-border);
+  border-radius: 9999px;
+  padding: 2px 8px;
+}
+.sled-tile-name {
+  margin: 14px 0 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.sled-tile--you .sled-tile-name {
+  font-weight: 700;
+}
+.sled-tile-handle {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.sled-tile-elo {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+.sled-tile--you .sled-tile-elo {
+  color: var(--emerald);
+}
+
+/* Event tape */
+.sled-tape {
+  margin-top: 28px;
+  border-top: 1px solid var(--border-secondary);
+  overflow: hidden;
+  padding: 14px 0;
+}
+.sled-tape-track {
+  display: flex;
+  width: max-content;
+  white-space: nowrap;
+  animation: sledTape 30s linear infinite;
+}
+/* Spacing lives on the item, not as a flex gap on the track: 10 items carry
+   10 margins, so the two duplicated halves are exactly equal and the -50%
+   translate lands on the duplicate with no seam. A gap would give 9 gaps for
+   10 items and the loop would jump by half a gap each cycle. */
+.sled-tape-item {
+  margin-right: 48px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.sled-tape-delta {
+  color: var(--emerald);
+  font-weight: 600;
+}
+@keyframes sledTape {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* ── Reduced motion: everything off, fully-rendered static state ── */
+@media (prefers-reduced-motion: reduce) {
+  .sled-row,
+  .sled-line,
+  .sled-live-dot,
+  .sled-tape-track {
+    animation: none;
+  }
+  .sled-line {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+  .sled-ledger {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding: 0 40px;
+  }
+  /* Chart first (the payoff), feed beneath trimmed to three rows. */
+  .sled-chart {
+    order: 1;
+  }
+  .sled-feed {
+    order: 2;
+  }
+  .sled-row:nth-child(n + 4) {
+    display: none;
+  }
+  .sled-chart-controls {
+    flex-wrap: wrap;
+  }
+  .sled-band-inner {
+    padding: 32px 40px 0;
+  }
+}
+@media (max-width: 768px) {
+  .sled-section {
+    padding-top: 64px;
+  }
+  .sled-copy {
+    padding: 0 1.25rem;
+    margin-bottom: 40px;
+  }
+  .sled-ledger {
+    padding: 0 1.25rem;
+  }
+  /* The rating row is three mono runs on one line; let it wrap rather than
+     push the page sideways on a narrow phone. */
+  .sled-rating {
+    flex-wrap: wrap;
+    gap: 8px 12px;
+  }
+  .sled-rating-vs {
+    margin-left: 0;
+  }
+  .sled-tiles {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .sled-band-inner {
+    padding: 28px 1.25rem 0;
+  }
+}
+@media (max-width: 480px) {
+  .sled-tiles {
+    grid-template-columns: 1fr;
+  }
+}

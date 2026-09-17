@@ -29,6 +29,13 @@ const ResourcesSection = dynamic(
     })),
   { loading: sectionFallback('600px') },
 );
+const SocialLedgerSection = dynamic(
+  () =>
+    import('@/components/landing/SocialLedgerSection').then((m) => ({
+      default: m.SocialLedgerSection,
+    })),
+  { loading: sectionFallback('900px') },
+);
 const DimensionScrollSection = dynamic(
   () =>
     import('@/components/landing/DimensionScrollSection').then((m) => ({
@@ -93,8 +100,12 @@ export default function HomePage() {
         </div>
       </LandingErrorBoundary>
 
-      {/* NEW — pinned seven-dimensions walkthrough, between the Getting-started
-          block (tail of FeaturesSection) and the Data & Resources radar. */}
+      <LandingErrorBoundary name="SocialLedgerSection">
+        <SocialLedgerSection />
+      </LandingErrorBoundary>
+
+      {/* Pinned seven-dimensions walkthrough, between the Social Ledger section
+          and the Data & Resources radar. */}
       <LandingErrorBoundary name="DimensionScrollSection">
         <DimensionScrollSection />
       </LandingErrorBoundary>
