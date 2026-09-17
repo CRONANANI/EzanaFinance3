@@ -44,7 +44,7 @@ const FEATURE_CARDS = [
   },
 ];
 
-export function FeaturesSection() {
+export function WhyEzanaSection() {
   // One timer drives all six visuals: a single `tick` incremented every 2000ms.
   // Each visual derives its frame from `tick`. Respect prefers-reduced-motion —
   // render the resting frame (tick stays 0) and never start the interval.
@@ -105,7 +105,20 @@ export function FeaturesSection() {
             </div>
           ))}
         </div>
+      </div>
+    </section>
+  );
+}
 
+// Split out of the old combined FeaturesSection so the landing page can place
+// the four-step walkthrough near the top and the six-card grid much further
+// down. Purely static: no timer and no observer, because nothing here animates.
+// Keeps the `features-section` class so the landing background lock and the
+// light-mode rules in globals.css apply to both halves with no CSS change.
+export function GettingStartedSection() {
+  return (
+    <section className="features-section features-section--getting-started" id="getting-started">
+      <div className="features-container">
         <div className="how-it-works">
           <p className="section-eyebrow lf-mono">Getting started</p>
           <h2 className="how-title">From accounts to action in four steps</h2>

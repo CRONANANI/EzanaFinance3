@@ -1,17 +1,17 @@
 /* ══════════════════════════════════════════════════════════════════════
-   Social investing / live ELO section ("The Ledger + Tape", concept 4a).
+   Social investing / live ELO section ("The Ledger", concept 4a).
    Companion to SocialLedgerSection.jsx. All color / space / radius values
    resolve from theme tokens (theme-variables.css). Scoped prefix: `sled-`.
 
-   Motion: feed rows + chart draw share a 14s master loop (percent-timed
-   keyframes); the tape scrolls at 30s linear; LIVE dots pulse at 2s.
+   Motion: the eight feed rows run on a 14s master loop (percent-timed
+   keyframes); LIVE dots pulse at 2s. The chart is recharts and animates
+   itself.
    ══════════════════════════════════════════════════════════════════════ */
 
 .sled-section {
   width: 100%;
   background: var(--bg-primary);
   font-family: var(--font-sans);
-  padding-top: 96px;
 }
 
 /* ── 1. Copy block ── */
@@ -53,13 +53,18 @@
   display: grid;
   grid-template-columns: 420px 1fr;
   gap: 56px;
-  align-items: start;
+  align-items: stretch;
 }
 
-/* Left: event feed — borderless rows */
+/* Left: event feed, borderless rows. The column is stretched to the chart
+   column's height and distributes its eight rows across it, so the first row
+   tops out level with the "Your rating" label and the last sits on the X axis
+   at every desktop width. */
 .sled-feed {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
   gap: 4px;
 }
 .sled-row {
@@ -72,7 +77,10 @@
   background: var(--emerald-bg-subtle, rgba(16, 185, 129, 0.05));
   border-radius: var(--radius-md);
 }
-/* 14s master loop: rows land ~1.1s apart, hold, fade together at the end. */
+/* 14s master loop: rows land ~1.1s apart, hold, fade together at the end.
+   Rows 1 to 5 step 8 percentage points apart; rows 6 to 8 step 5, which keeps
+   the whole feed on screen by ~54% of the loop instead of running past the
+   fade. */
 .sled-row:nth-child(1) {
   animation: sledF1 14s ease-out infinite;
 }
@@ -87,6 +95,15 @@
 }
 .sled-row:nth-child(5) {
   animation: sledF5 14s ease-out infinite;
+}
+.sled-row:nth-child(6) {
+  animation: sledF6 14s ease-out infinite;
+}
+.sled-row:nth-child(7) {
+  animation: sledF7 14s ease-out infinite;
+}
+.sled-row:nth-child(8) {
+  animation: sledF8 14s ease-out infinite;
 }
 @keyframes sledF1 {
   0%,
@@ -155,6 +172,51 @@
     transform: translateY(-8px);
   }
   38%,
+  94% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes sledF6 {
+  0%,
+  40% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  44%,
+  94% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes sledF7 {
+  0%,
+  45% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  49%,
+  94% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes sledF8 {
+  0%,
+  50% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  54%,
   94% {
     opacity: 1;
     transform: translateY(0);
@@ -322,63 +384,25 @@
   color: var(--text-faint);
 }
 
-.sled-svg {
+.sled-chart-wide {
   width: 100%;
-  display: block;
 }
-.sled-grid {
-  stroke: var(--border-secondary);
-  stroke-width: 1;
-}
-.sled-line {
-  fill: none;
-  stroke-dasharray: 700;
-  animation: sledDraw 14s ease-out infinite;
-}
-.sled-line--you {
-  stroke: var(--emerald);
-  stroke-width: 2.5;
-}
-.sled-line--a {
-  stroke: var(--text-faint);
-  stroke-width: 1.75;
-}
-.sled-line--b {
-  stroke: var(--text-ghost);
-  stroke-width: 1.75;
-}
-@keyframes sledDraw {
-  from {
-    stroke-dashoffset: 600;
-  }
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-.sled-marker {
-  fill: var(--bg-primary);
-  stroke: var(--emerald);
-  stroke-width: 2;
-}
-.sled-end--you {
-  fill: var(--emerald);
-}
-.sled-end--a {
-  fill: var(--text-faint);
-}
-.sled-end--b {
-  fill: var(--text-ghost);
-}
-
-.sled-axis {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 10px;
+.sled-chart-tooltip {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
   font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: var(--text-faint);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+.sled-chart-tooltip-date {
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.sled-chart-tooltip-val {
+  font-weight: 600;
+  line-height: 1.5;
 }
 
 /* ── 3. Season standings band ── */
@@ -391,7 +415,7 @@
 .sled-band-inner {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 40px 64px 0;
+  padding: 40px 64px 48px;
 }
 .sled-band-head {
   display: flex;
@@ -408,10 +432,15 @@
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
 }
+/* One compact row: rank, name, delta or badge, rating. Roughly a third of the
+   height of the old stacked card. */
 .sled-tile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-lg);
-  padding: 20px;
 }
 .sled-tile--top {
   background: var(--bg-secondary);
@@ -424,11 +453,6 @@
     0.35
   ); /* stronger alpha than --emerald-border, per design; matches .plan-card--highlight precedent */
   background: var(--emerald-bg-subtle, rgba(16, 185, 129, 0.05));
-}
-.sled-tile-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
 }
 .sled-tile-rank {
   font-family: var(--font-mono);
@@ -465,7 +489,11 @@
   padding: 2px 8px;
 }
 .sled-tile-name {
-  margin: 14px 0 4px;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-size: 14px;
   font-weight: 600;
   color: var(--text-primary);
@@ -480,8 +508,9 @@
   color: var(--text-muted);
 }
 .sled-tile-elo {
+  margin-left: auto;
   font-family: var(--font-mono);
-  font-size: 28px;
+  font-size: 1rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--text-primary);
@@ -490,52 +519,11 @@
   color: var(--emerald);
 }
 
-/* Event tape */
-.sled-tape {
-  margin-top: 28px;
-  border-top: 1px solid var(--border-secondary);
-  overflow: hidden;
-  padding: 14px 0;
-}
-.sled-tape-track {
-  display: flex;
-  width: max-content;
-  white-space: nowrap;
-  animation: sledTape 30s linear infinite;
-}
-/* Spacing lives on the item, not as a flex gap on the track: 10 items carry
-   10 margins, so the two duplicated halves are exactly equal and the -50%
-   translate lands on the duplicate with no seam. A gap would give 9 gaps for
-   10 items and the loop would jump by half a gap each cycle. */
-.sled-tape-item {
-  margin-right: 48px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--text-muted);
-}
-.sled-tape-delta {
-  color: var(--emerald);
-  font-weight: 600;
-}
-@keyframes sledTape {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
-
 /* ── Reduced motion: everything off, fully-rendered static state ── */
 @media (prefers-reduced-motion: reduce) {
   .sled-row,
-  .sled-line,
-  .sled-live-dot,
-  .sled-tape-track {
+  .sled-live-dot {
     animation: none;
-  }
-  .sled-line {
-    stroke-dashoffset: 0;
   }
 }
 
@@ -560,13 +548,10 @@
     flex-wrap: wrap;
   }
   .sled-band-inner {
-    padding: 32px 40px 0;
+    padding: 32px 40px 40px;
   }
 }
 @media (max-width: 768px) {
-  .sled-section {
-    padding-top: 64px;
-  }
   .sled-copy {
     padding: 0 1.25rem;
     margin-bottom: 40px;
@@ -587,7 +572,7 @@
     grid-template-columns: repeat(2, 1fr);
   }
   .sled-band-inner {
-    padding: 28px 1.25rem 0;
+    padding: 28px 1.25rem 32px;
   }
 }
 @media (max-width: 480px) {

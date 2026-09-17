@@ -2684,6 +2684,39 @@ html:has(.landing-page) .navbar.navbar-sticky,
 }
 
 /* ════════════════════════════════════════════════════════════
+   LANDING VERTICAL RHYTHM: one shared gap between every section
+   ════════════════════════════════════════════════════════════
+   Each top-level landing section carries half a gap on both sides, so every
+   section boundary adds up to exactly one gap and no boundary is special.
+   This block is the single owner of those sections' vertical padding: the
+   per-section sheets now set horizontal padding only.
+
+   Specificity note: mobile-responsive.css and responsive-system.css are
+   @imported at the top of this file, so their tier rules (0,2,0, same as the
+   selectors below) resolve earlier in the cascade. Setting padding-top and
+   padding-bottom here overrides their vertical values per property while
+   leaving the horizontal values in those tiers untouched, which is what the
+   small-viewport gutters depend on. */
+.landing-page {
+  --landing-gap: 96px;
+}
+
+.landing-page .bl-section,
+.landing-page .features-section,
+.landing-page .sled-section,
+.landing-page .dimension-scroll-section,
+.landing-page .resources-section {
+  padding-top: calc(var(--landing-gap) / 2);
+  padding-bottom: calc(var(--landing-gap) / 2);
+}
+
+@media (max-width: 768px) {
+  .landing-page {
+    --landing-gap: 48px;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
    HERO TEXT STACKING — Above lightning (27)
    ════════════════════════════════════════════════════════════ */
 

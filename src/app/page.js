@@ -15,12 +15,19 @@ const sectionFallback = (minHeight) =>
 
 // Below-the-fold sections code-split into their own chunks and hydrate after
 // the hero. Kept SSR (ssr: true) so their content still renders for SEO.
-const FeaturesSection = dynamic(
+const WhyEzanaSection = dynamic(
   () =>
     import('@/components/landing/FeaturesSection').then((m) => ({
-      default: m.FeaturesSection,
+      default: m.WhyEzanaSection,
     })),
   { loading: sectionFallback('520px') },
+);
+const GettingStartedSection = dynamic(
+  () =>
+    import('@/components/landing/FeaturesSection').then((m) => ({
+      default: m.GettingStartedSection,
+    })),
+  { loading: sectionFallback('420px') },
 );
 const ResourcesSection = dynamic(
   () =>
@@ -90,14 +97,8 @@ export default function HomePage() {
         <LandingHero />
       </main>
 
-      <LandingErrorBoundary name="BrokerageLogos">
-        <BrokerageLogos />
-      </LandingErrorBoundary>
-
-      <LandingErrorBoundary name="FeaturesSection">
-        <div id="features-section-container">
-          <FeaturesSection />
-        </div>
+      <LandingErrorBoundary name="GettingStartedSection">
+        <GettingStartedSection />
       </LandingErrorBoundary>
 
       <LandingErrorBoundary name="SocialLedgerSection">
@@ -105,13 +106,25 @@ export default function HomePage() {
       </LandingErrorBoundary>
 
       {/* Pinned seven-dimensions walkthrough, between the Social Ledger section
-          and the Data & Resources radar. */}
+          and the Why Ezana Finance grid. */}
       <LandingErrorBoundary name="DimensionScrollSection">
         <DimensionScrollSection />
       </LandingErrorBoundary>
 
+      <LandingErrorBoundary name="WhyEzanaSection">
+        <div id="features-section-container">
+          <WhyEzanaSection />
+        </div>
+      </LandingErrorBoundary>
+
       <LandingErrorBoundary name="ResourcesSection">
         <ResourcesSection />
+      </LandingErrorBoundary>
+
+      {/* The handoff's order did not place the Integrations band; it sits here,
+          between Data & Resources and the FAQ, as one self-contained block. */}
+      <LandingErrorBoundary name="BrokerageLogos">
+        <BrokerageLogos />
       </LandingErrorBoundary>
 
       <LandingErrorBoundary name="Faq1">

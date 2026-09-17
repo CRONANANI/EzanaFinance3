@@ -1,141 +1,62 @@
 /**
  * SocialLedgerSection — "Social investing / live ELO" landing section
- * (design concept 4a, "The Ledger + Tape").
+ * (design concept 4a, "The Ledger").
  *
  * Three stacked pieces: centered copy → two-column ledger (event feed +
- * flat rating chart with cohort filters) → full-width Season Standings
- * band with an ELO event tape. All motion is CSS: feed rows and chart
- * draw share a 14s master loop, the tape scrolls at 30s, LIVE dots pulse
- * at 2s. prefers-reduced-motion shows the fully-rendered static state.
- * Data is static marketing content — no fetching.
+ * rating chart with cohort filters) → full-width Season Standings band.
+ * The chart is a recharts AreaChart built to the same spec as the "Lately
+ * on Ezana" chart on the home page. Feed rows run on a 14s CSS master loop
+ * and LIVE dots pulse at 2s; prefers-reduced-motion shows the fully-rendered
+ * static state. Data is static marketing content, with no fetching.
  */
 
 'use client';
 
 import { useState } from 'react';
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+} from 'recharts';
 import './social-ledger.css';
 
-// Chart geometry (viewBox 0 0 560 200). Your emerald line is constant
-// across cohorts; the two grey comparison series swap per cohort.
-const YOUR_LINE = [
-  [0, 160],
-  [80, 152],
-  [160, 158],
-  [240, 140],
-  [320, 128],
-  [400, 116],
-  [480, 84],
-  [560, 58],
-];
-const EVENT_MARKERS = [
-  [320, 128],
-  [480, 84],
-];
+// Eight weekly rating points. Your line is constant across cohorts and ends on
+// the 1498 the header reads; the two grey comparison series swap per cohort.
+const WEEKS = ['W01', 'W02', 'W03', 'W04', 'W05', 'W06', 'W07', 'W08'];
+const YOU_SERIES = [1408, 1416, 1410, 1428, 1440, 1452, 1484, 1498];
 
 const COHORTS = {
   friends: {
     label: 'Friends',
     caption: 'vs. 3 friends',
-    lines: [
-      {
-        id: 'a',
-        cls: 'sled-line--a',
-        points: [
-          [0, 72],
-          [80, 66],
-          [160, 70],
-          [240, 60],
-          [320, 58],
-          [400, 52],
-          [480, 46],
-          [560, 44],
-        ],
-      },
-      {
-        id: 'b',
-        cls: 'sled-line--b',
-        points: [
-          [0, 148],
-          [80, 140],
-          [160, 144],
-          [240, 132],
-          [320, 120],
-          [400, 124],
-          [480, 112],
-          [560, 102],
-        ],
-      },
-    ],
+    a: [1496, 1502, 1498, 1508, 1510, 1516, 1522, 1524],
+    b: [1420, 1428, 1424, 1436, 1448, 1444, 1456, 1466],
   },
   whales: {
     label: 'Whales',
     caption: 'vs. 13F whales',
-    lines: [
-      {
-        id: 'a',
-        cls: 'sled-line--a',
-        points: [
-          [0, 60],
-          [80, 64],
-          [160, 58],
-          [240, 66],
-          [320, 54],
-          [400, 50],
-          [480, 52],
-          [560, 40],
-        ],
-      },
-      {
-        id: 'b',
-        cls: 'sled-line--b',
-        points: [
-          [0, 120],
-          [80, 118],
-          [160, 124],
-          [240, 110],
-          [320, 114],
-          [400, 104],
-          [480, 96],
-          [560, 90],
-        ],
-      },
-    ],
+    a: [1508, 1504, 1510, 1502, 1514, 1518, 1516, 1528],
+    b: [1448, 1450, 1444, 1458, 1454, 1464, 1472, 1478],
   },
   politicians: {
     label: 'Politicians',
     caption: 'vs. Congress',
-    lines: [
-      {
-        id: 'a',
-        cls: 'sled-line--a',
-        points: [
-          [0, 96],
-          [80, 90],
-          [160, 98],
-          [240, 86],
-          [320, 92],
-          [400, 78],
-          [480, 72],
-          [560, 66],
-        ],
-      },
-      {
-        id: 'b',
-        cls: 'sled-line--b',
-        points: [
-          [0, 140],
-          [80, 146],
-          [160, 136],
-          [240, 142],
-          [320, 130],
-          [400, 134],
-          [480, 122],
-          [560, 118],
-        ],
-      },
-    ],
+    a: [1472, 1478, 1470, 1482, 1476, 1490, 1496, 1502],
+    b: [1428, 1422, 1432, 1426, 1438, 1434, 1446, 1450],
   },
 };
+
+const buildChartData = (cohort) =>
+  WEEKS.map((wk, i) => ({
+    wk,
+    you: YOU_SERIES[i],
+    a: COHORTS[cohort].a[i],
+    b: COHORTS[cohort].b[i],
+  }));
 
 const STANDINGS = [
   { rank: '01', name: 'Daniel R.', elo: '1512', delta: '—', deltaKind: 'flat', variant: 'top' },
@@ -152,21 +73,9 @@ const STANDINGS = [
   { rank: '04', name: 'Priya S.', elo: '1441', delta: '-5', deltaKind: 'down' },
 ];
 
-const TAPE = [
-  { delta: '+24 ELO', text: 'Won ‘Q3 Momentum Sprint’' },
-  { delta: '+5 ELO', text: '7-day login streak' },
-  { delta: '+12 ELO', text: 'Top 10% weekly P&L' },
-  { delta: '+8 ELO', text: 'Research post upvoted' },
-  { text: 'Maya K. joined your rankings' },
-];
-
-const toPoints = (pts) => pts.map((p) => p.join(',')).join(' ');
-const lastPoint = (pts) => pts[pts.length - 1];
-
 export function SocialLedgerSection() {
   const [cohort, setCohort] = useState('friends');
   const active = COHORTS[cohort];
-  const youEnd = lastPoint(YOUR_LINE);
 
   return (
     <section className="sled-section" aria-labelledby="sled-heading">
@@ -184,7 +93,8 @@ export function SocialLedgerSection() {
 
       {/* ── 2. Two-column ledger ── */}
       <div className="sled-ledger">
-        {/* Left: event feed. Rows enter one by one on the 14s master loop. */}
+        {/* Left: event feed. Rows enter one by one on the 14s master loop and
+            distribute across the chart column's full height. */}
         <div className="sled-feed">
           <div className="sled-row">
             <span className="sled-avatar">M</span>
@@ -222,9 +132,30 @@ export function SocialLedgerSection() {
             </span>
             <span className="sled-time">MON</span>
           </div>
+          <div className="sled-row">
+            <span className="sled-delta">+5</span>
+            <span className="sled-row-body">
+              7-day login streak · <span className="sled-num">1498 → 1503</span>
+            </span>
+            <span className="sled-time">TUE</span>
+          </div>
+          <div className="sled-row">
+            <span className="sled-delta">+8</span>
+            <span className="sled-row-body">
+              Research post upvoted · <span className="sled-num">consensus signal</span>
+            </span>
+            <span className="sled-time">WED</span>
+          </div>
+          <div className="sled-row sled-row--wash">
+            <span className="sled-avatar">P</span>
+            <span className="sled-row-body">
+              <strong>Priya S.</strong> challenged you to &lsquo;Season 4 Sprint&rsquo;
+            </span>
+            <span className="sled-time">NOW</span>
+          </div>
         </div>
 
-        {/* Right: flat rating chart. No card, no border — sits on the page. */}
+        {/* Right: rating chart. No card and no border; it sits on the page. */}
         <div className="sled-chart">
           <div className="sled-chart-head">
             <span className="sled-chart-label">Your rating · @axum</span>
@@ -253,47 +184,85 @@ export function SocialLedgerSection() {
             <span className="sled-rating-vs">{active.caption}</span>
           </div>
 
-          {/* key={cohort} remounts the SVG so the draw animation restarts on
-              cohort switch — the "quick redraw" from the design spec. */}
-          <svg key={cohort} className="sled-svg" viewBox="0 0 560 200" aria-hidden>
-            <defs>
-              <linearGradient id="sledFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="var(--emerald)" stopOpacity="0.14" />
-                <stop offset="100%" stopColor="var(--emerald)" stopOpacity="0" />
-              </linearGradient>
-            </defs>
-            <line className="sled-grid" x1="0" y1="50" x2="560" y2="50" />
-            <line className="sled-grid" x1="0" y1="100" x2="560" y2="100" />
-            <line className="sled-grid" x1="0" y1="150" x2="560" y2="150" />
-            <path
-              d={`M${toPoints(YOUR_LINE).replace(/ /g, ' L')} L560,200 0,200 Z`}
-              fill="url(#sledFill)"
-            />
-            {active.lines.map((l) => (
-              <polyline key={l.id} className={`sled-line ${l.cls}`} points={toPoints(l.points)} />
-            ))}
-            <polyline className="sled-line sled-line--you" points={toPoints(YOUR_LINE)} />
-            {EVENT_MARKERS.map(([x, y]) => (
-              <circle key={x} className="sled-marker" cx={x} cy={y} r="4" />
-            ))}
-            <circle className="sled-end sled-end--you" cx={youEnd[0]} cy={youEnd[1]} r="5" />
-            {active.lines.map((l) => {
-              const [x, y] = lastPoint(l.points);
-              return (
-                <circle
-                  key={`end-${l.id}`}
-                  className={`sled-end sled-end--${l.id}`}
-                  cx={x}
-                  cy={y}
-                  r="4"
+          {/* key={cohort} remounts the chart so the 400ms draw restarts on
+              cohort switch, the same behavior the old SVG had. */}
+          <div className="sled-chart-wide">
+            <ResponsiveContainer width="100%" height={260}>
+              <AreaChart key={cohort} data={buildChartData(cohort)}>
+                <defs>
+                  <linearGradient id="sledFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--emerald)" stopOpacity={0.25} />
+                    <stop offset="100%" stopColor="var(--emerald)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="var(--border-secondary)"
+                  vertical={false}
                 />
-              );
-            })}
-          </svg>
-
-          <div className="sled-axis">
-            <span>Season 4 · Week 01</span>
-            <span>Today</span>
+                <XAxis
+                  dataKey="wk"
+                  tick={{ fill: 'var(--text-muted)', fontSize: 11 }}
+                  axisLine={{ stroke: 'var(--border-primary)' }}
+                  tickLine={false}
+                  interval="preserveStartEnd"
+                />
+                <YAxis
+                  tick={{ fill: 'var(--text-muted)', fontSize: 11 }}
+                  axisLine={false}
+                  tickLine={false}
+                  width={44}
+                  domain={['dataMin - 16', 'dataMax + 16']}
+                />
+                <Tooltip
+                  content={({ active: isActive, payload }) => {
+                    if (!isActive || !payload?.length) return null;
+                    return (
+                      <div className="sled-chart-tooltip">
+                        <div className="sled-chart-tooltip-date">{payload[0].payload.wk}</div>
+                        {payload.map((entry) => (
+                          <div
+                            key={entry.dataKey}
+                            className="sled-chart-tooltip-val"
+                            style={{ color: entry.stroke }}
+                          >
+                            {entry.name}: {entry.value}
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="you"
+                  name="You"
+                  stroke="var(--emerald)"
+                  strokeWidth={2}
+                  fill="url(#sledFill)"
+                  isAnimationActive
+                  animationDuration={400}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="a"
+                  name="Leader"
+                  stroke="var(--text-faint)"
+                  strokeWidth={1.5}
+                  fill="transparent"
+                  isAnimationActive={false}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="b"
+                  name="Median"
+                  stroke="var(--text-ghost)"
+                  strokeWidth={1.5}
+                  fill="transparent"
+                  isAnimationActive={false}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
           </div>
         </div>
       </div>
@@ -321,38 +290,20 @@ export function SocialLedgerSection() {
                   .filter(Boolean)
                   .join(' ')}
               >
-                <div className="sled-tile-head">
-                  <span className="sled-tile-rank">{p.rank}</span>
-                  {p.badge ? (
-                    <span className="sled-tile-badge">{p.badge}</span>
-                  ) : (
-                    <span className={`sled-tile-delta sled-tile-delta--${p.deltaKind}`}>
-                      {p.delta}
-                    </span>
-                  )}
-                </div>
-                <div className="sled-tile-name">
+                <span className="sled-tile-rank">{p.rank}</span>
+                <span className="sled-tile-name">
                   {p.name}
                   {p.handle ? <span className="sled-tile-handle"> {p.handle}</span> : null}
-                </div>
-                <div className="sled-tile-elo">{p.elo}</div>
+                </span>
+                {p.badge ? (
+                  <span className="sled-tile-badge">{p.badge}</span>
+                ) : (
+                  <span className={`sled-tile-delta sled-tile-delta--${p.deltaKind}`}>
+                    {p.delta}
+                  </span>
+                )}
+                <span className="sled-tile-elo">{p.elo}</span>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Event tape — duplicated once; translateX(0 → -50%) at 30s linear.
-            The spacing is a per-item margin rather than a flex gap: with a gap
-            the track holds 9 gaps for 10 items, so half its width is not a
-            whole number of items and the loop seams. A margin on every item
-            makes the two halves identical, so -50% lands exactly on the
-            duplicate and the tape is genuinely seamless. */}
-        <div className="sled-tape" aria-hidden>
-          <div className="sled-tape-track">
-            {[...TAPE, ...TAPE].map((e, i) => (
-              <span className="sled-tape-item" key={i}>
-                {e.delta ? <span className="sled-tape-delta">{e.delta}</span> : null} {e.text}
-              </span>
             ))}
           </div>
         </div>
