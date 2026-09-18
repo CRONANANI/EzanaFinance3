@@ -101,6 +101,10 @@ export default function HomePage() {
         <GettingStartedSection />
       </LandingErrorBoundary>
 
+      <LandingErrorBoundary name="BrokerageLogos">
+        <BrokerageLogos />
+      </LandingErrorBoundary>
+
       <LandingErrorBoundary name="SocialLedgerSection">
         <SocialLedgerSection />
       </LandingErrorBoundary>
@@ -119,12 +123,6 @@ export default function HomePage() {
 
       <LandingErrorBoundary name="ResourcesSection">
         <ResourcesSection />
-      </LandingErrorBoundary>
-
-      {/* The handoff's order did not place the Integrations band; it sits here,
-          between Data & Resources and the FAQ, as one self-contained block. */}
-      <LandingErrorBoundary name="BrokerageLogos">
-        <BrokerageLogos />
       </LandingErrorBoundary>
 
       <LandingErrorBoundary name="Faq1">
