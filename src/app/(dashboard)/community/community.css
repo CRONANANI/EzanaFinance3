@@ -10,15 +10,15 @@
   --bg-tertiary: #0a0e13; /* was #161b22 — match page (unified dark surface) */
   --bg-overlay: rgba(0, 0, 0, 0.6);
   --surface-card: transparent; /* was #0d1117 — card = page colour, defined by its border */
-  --surface-card-hover: rgba(16, 185, 129, 0.04);
+  --surface-card-hover: var(--emerald-bg-subtle);
   --surface-input: transparent;
-  --surface-input-focus: rgba(16, 185, 129, 0.06);
+  --surface-input-focus: color-mix(in srgb, var(--emerald) 6%, transparent);
   --surface-elevated: #0a0e13;
-  --border-primary: rgba(16, 185, 129, 0.08);
+  --border-primary: var(--emerald-bg);
   --border-secondary: rgba(255, 255, 255, 0.06);
-  --border-hover: rgba(16, 185, 129, 0.2);
-  --border-focus: rgba(16, 185, 129, 0.4);
-  --border-input: rgba(16, 185, 129, 0.1);
+  --border-hover: color-mix(in srgb, var(--emerald) 20%, transparent);
+  --border-focus: color-mix(in srgb, var(--emerald) 40%, transparent);
+  --border-input: color-mix(in srgb, var(--emerald) 10%, transparent);
   --text-primary: #f0f6fc;
   --text-secondary: #e2e8f0;
   --text-muted: #8b949e;
@@ -30,38 +30,38 @@
   --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
 
   /* Brand */
-  --emerald: #10b981;
-  --emerald-hover: #059669;
-  --emerald-dark: #047857;
-  --emerald-bg: rgba(16, 185, 129, 0.08);
-  --emerald-bg-hover: rgba(16, 185, 129, 0.12);
-  --emerald-bg-subtle: rgba(16, 185, 129, 0.04);
-  --emerald-border: rgba(16, 185, 129, 0.15);
-  --emerald-glow: rgba(16, 185, 129, 0.25);
+  --emerald: var(--emerald);
+  --emerald-hover: var(--emerald-hover);
+  --emerald-dark: var(--emerald-dark);
+  --emerald-bg: var(--emerald-bg);
+  --emerald-bg-hover: var(--emerald-bg-hover);
+  --emerald-bg-subtle: var(--emerald-bg-subtle);
+  --emerald-border: var(--emerald-border);
+  --emerald-glow: var(--emerald-glow);
 
-  --gold: #d4a853;
+  --gold: var(--gold);
   --gold-bg: rgba(212, 168, 83, 0.1);
   --gold-border: rgba(212, 168, 83, 0.2);
 
   /* Semantic */
-  --positive: #10b981;
-  --positive-bg: rgba(16, 185, 129, 0.12);
-  --negative: #ef4444;
+  --positive: var(--emerald);
+  --positive-bg: var(--emerald-bg-hover);
+  --negative: var(--negative);
   --negative-bg: rgba(239, 68, 68, 0.1);
-  --warning: #fbbf24;
+  --warning: var(--warning);
   --warning-bg: rgba(251, 191, 36, 0.12);
-  --info: #3b82f6;
+  --info: var(--blue);
   --info-bg: rgba(59, 130, 246, 0.12);
-  --amber: #f59e0b;
+  --amber: var(--amber);
   --cyan: #06b6d4;
   --purple: #a78bfa;
 
   --line-soft: rgba(255, 255, 255, 0.045);
-  --emerald-ink: #34d399;
+  --emerald-ink: var(--positive-bright);
   --ledger-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -14px rgba(0, 0, 0, 0.6);
   --tier-novice: var(--text-faint);
   --tier-apprentice: #64748b;
-  --tier-journeyman: #3b82f6;
+  --tier-journeyman: var(--blue);
   --tier-master: #8b5cf6;
   --tier-oracle: var(--gold);
 
@@ -76,7 +76,7 @@
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
   --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.45);
-  --shadow-glow: 0 0 20px rgba(16, 185, 129, 0.15);
+  --shadow-glow: 0 0 20px var(--emerald-border);
 
   font-family: var(--font-sans);
   color: var(--text-primary);
@@ -208,7 +208,7 @@ html.light-mode .ezana-theme {
   align-items: center;
   gap: 6px;
   padding: 8px 14px;
-  border-radius: 9px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-secondary);
   background: var(--surface-card);
   font-size: 12.5px;
@@ -228,7 +228,7 @@ html.light-mode .ezana-theme {
 .ezana-theme .spine {
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   box-shadow: var(--ledger-shadow);
   overflow: hidden;
   margin-bottom: 14px;
@@ -334,7 +334,7 @@ html.light-mode .ezana-theme {
   gap: 6px;
   padding: 6px 10px;
   border: 1px solid var(--border-secondary);
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   background: var(--bg-tertiary);
   cursor: pointer;
   font-size: 12px;
@@ -375,7 +375,7 @@ html.light-mode .ezana-theme {
 }
 .ezana-theme .lpill {
   padding: 6px 12px;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   border: 1px solid transparent;
   background: transparent;
   font-size: 12px;
@@ -423,7 +423,7 @@ html.light-mode .ezana-theme .lpill.on {
 .ezana-theme .sel {
   background: var(--surface-input);
   border: 1px solid var(--border-input);
-  border-radius: 9px;
+  border-radius: var(--radius-md);
   color: var(--text-primary);
   font-size: 12px;
   font-weight: 500;
@@ -453,7 +453,7 @@ html.light-mode .ezana-theme .lpill.on {
 .ezana-theme .ledger-card {
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   box-shadow: var(--ledger-shadow);
   padding: 16px 18px;
   margin-bottom: 0;
@@ -486,7 +486,7 @@ html.light-mode .ezana-theme .lpill.on {
   padding: 12px;
   background: var(--bg-tertiary);
   border: 1px solid var(--border-secondary);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   cursor: pointer;
   text-align: left;
   transition:
@@ -533,7 +533,7 @@ html.light-mode .ezana-theme .lpill.on {
 }
 
 .ezana-theme .ledger-post {
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
 }
 .ezana-theme .post-ts {
   margin-left: auto;
@@ -595,7 +595,7 @@ html.light-mode .ezana-theme .lpill.on {
 }
 .ezana-theme .eng .stake {
   padding: 6px 12px;
-  border-radius: 9px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--emerald-border);
   background: var(--emerald-bg);
   color: var(--emerald-ink);
@@ -618,21 +618,21 @@ html.light-mode .ezana-theme .lpill.on {
   padding: 12px;
   background: var(--bg-tertiary);
   border: 1px solid var(--border-secondary);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
 }
 
 .ezana-theme .briefing-strip {
   padding: 16px 18px;
   margin-bottom: 0;
   border: 1px solid var(--emerald-border);
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   background: linear-gradient(135deg, var(--emerald-bg), transparent 70%);
   box-shadow: var(--ledger-shadow);
 }
 .ezana-theme .briefing-icon {
   width: 40px;
   height: 40px;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   background: var(--emerald-bg);
   border: 1px solid var(--emerald-border);
   display: flex;
@@ -716,7 +716,7 @@ html.light-mode .ezana-theme .lpill.on {
 }
 .ez-pill--pos {
   background: var(--positive-bg);
-  border-color: rgba(16, 185, 129, 0.2);
+  border-color: color-mix(in srgb, var(--emerald) 20%, transparent);
   color: var(--positive);
   font-family: var(--font-mono);
 }
@@ -1005,7 +1005,7 @@ html.light-mode .ezana-theme .lpill.on {
 .evo-lens-bar select {
   background: var(--bg-tertiary);
   border: 1px solid var(--border-input);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   color: var(--text-primary);
   padding: 4px 8px;
   font-size: 12px;

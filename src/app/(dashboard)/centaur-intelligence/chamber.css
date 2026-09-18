@@ -26,7 +26,7 @@
 
 .cc-chamber-toolbar-left .bi-shield-lock {
   font-size: 1.25rem;
-  color: #d4af37;
+  color: var(--gold-champagne);
 }
 
 .cc-chamber-title {
@@ -57,7 +57,7 @@
 }
 
 .cc-quorum-label strong {
-  color: #d4af37;
+  color: var(--gold-champagne);
   font-weight: 700;
 }
 
@@ -74,7 +74,7 @@
 }
 
 .cc-quorum-dot.is-lit {
-  background: linear-gradient(135deg, #d4af37, #f59e0b);
+  background: linear-gradient(135deg, var(--gold-champagne), var(--amber));
   box-shadow: 0 0 6px rgba(212, 175, 55, 0.45);
 }
 
@@ -127,7 +127,7 @@
 
 .cc-chair--selected circle:nth-of-type(2),
 .cc-chair--selected ellipse {
-  stroke: rgba(16, 185, 129, 0.65);
+  stroke: color-mix(in srgb, var(--emerald) 65%, transparent);
 }
 
 .cc-modal-root {
@@ -155,7 +155,7 @@
   max-width: 440px;
   max-height: 90vh;
   overflow: auto;
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   border: 1px solid rgba(212, 175, 55, 0.2);
   background: linear-gradient(180deg, #0f172a, #0a0f1a);
   padding: 1.25rem 1.35rem;
@@ -191,7 +191,7 @@
   margin: 0.25rem 0 0;
   font-size: 0.72rem;
   font-weight: 600;
-  color: #d4af37;
+  color: var(--gold-champagne);
 }
 
 .cc-modal-close {
@@ -233,7 +233,7 @@
 .cc-modal-stats > div {
   background: rgba(30, 41, 59, 0.6);
   border: 1px solid rgba(212, 175, 55, 0.1);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   padding: 0.5rem 0.45rem;
   text-align: center;
 }
@@ -267,7 +267,7 @@
   flex: 1;
   min-width: 120px;
   padding: 0.65rem 0.75rem;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   font-size: 0.72rem;
   font-weight: 700;
   cursor: pointer;
@@ -281,7 +281,7 @@
 }
 
 .cc-modal-btn--primary {
-  background: linear-gradient(135deg, #d4af37, #b8860b);
+  background: linear-gradient(135deg, var(--gold-champagne), #b8860b);
   color: #0f172a;
 }
 

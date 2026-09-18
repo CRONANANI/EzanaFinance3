@@ -383,7 +383,7 @@
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
   padding: 3px 7px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   text-transform: uppercase;
 }
 .am2-chip--gold {
@@ -412,7 +412,7 @@
 .am2-ticker-tile {
   width: 30px;
   height: 30px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: var(--bg-tertiary);
   border: 1px solid var(--border-primary);
   display: inline-flex;
@@ -830,7 +830,7 @@
   font-weight: 600;
   background: var(--bg-tertiary);
   border: 1px solid var(--border-primary);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   padding: 4px 6px;
   text-align: center;
   color: var(--text-muted);
@@ -1060,7 +1060,7 @@
 
 .am2-skel {
   background: var(--bg-tertiary);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   animation: am2-shimmer 1.5s ease-in-out infinite;
 }
 

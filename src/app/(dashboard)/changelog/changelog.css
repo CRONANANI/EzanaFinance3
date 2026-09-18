@@ -33,10 +33,10 @@
   font-family: var(--font-mono);
   font-size: 0.65rem;
   font-weight: 700;
-  color: #10b981;
-  background: rgba(16, 185, 129, 0.08);
-  border: 1px solid rgba(16, 185, 129, 0.2);
-  border-radius: 10px;
+  color: var(--emerald);
+  background: var(--emerald-bg);
+  border: 1px solid color-mix(in srgb, var(--emerald) 20%, transparent);
+  border-radius: var(--radius-lg);
   padding: 0.2rem 0.6rem;
   font-variant-numeric: tabular-nums;
 }
@@ -74,9 +74,9 @@
 }
 
 .cl-filter-pill.is-active {
-  border-color: #10b981;
-  color: #10b981;
-  background: rgba(16, 185, 129, 0.08);
+  border-color: var(--emerald);
+  color: var(--emerald);
+  background: var(--emerald-bg);
 }
 
 /* ── Loading / Error / Empty ── */
@@ -96,10 +96,10 @@
 
 .cl-retry {
   padding: 0.3rem 0.8rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   border: 1px solid rgba(239, 68, 68, 0.3);
   background: transparent;
-  color: #ef4444;
+  color: var(--negative);
   font-size: 0.7rem;
   cursor: pointer;
 }
@@ -118,7 +118,7 @@
   top: 0;
   bottom: 0;
   width: 2px;
-  background: linear-gradient(180deg, #10b981, rgba(16, 185, 129, 0.15));
+  background: linear-gradient(180deg, var(--emerald), var(--emerald-border));
   border-radius: 1px;
 }
 
@@ -141,7 +141,7 @@
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #10b981;
+  background: var(--emerald);
   border: 3px solid var(--bg-primary);
   z-index: 2;
 }
@@ -174,7 +174,7 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  border: 2px solid #3b82f6;
+  border: 2px solid var(--blue);
   background: var(--bg-primary);
   z-index: 2;
 }
@@ -182,13 +182,13 @@
 .cl-entry-content {
   background: var(--surface-card);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: 0.5rem 0.65rem;
   transition: border-color 0.15s;
 }
 
 .cl-entry-content:hover {
-  border-color: rgba(16, 185, 129, 0.15);
+  border-color: var(--emerald-border);
 }
 
 .cl-entry.is-pinned .cl-entry-content {
@@ -210,7 +210,7 @@
   align-items: center;
   gap: 0.15rem;
   padding: 0.1rem 0.4rem;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   border: 1px solid;
   font-size: 0.4375rem;
   font-weight: 700;
@@ -224,7 +224,7 @@
   gap: 0.2rem;
   font-size: 0.5rem;
   font-weight: 700;
-  color: #d4af37;
+  color: var(--gold-champagne);
 }
 
 .cl-entry-ago {
@@ -256,7 +256,7 @@
 .cl-entry-expand {
   background: none;
   border: none;
-  color: #10b981;
+  color: var(--emerald);
   font-size: 0.5625rem;
   font-weight: 600;
   cursor: pointer;

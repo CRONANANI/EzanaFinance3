@@ -14,8 +14,8 @@
   --dash-body-muted: #8b949e;
   --dash-label-size: 0.5rem;
   --dash-label-color: #4b5563;
-  --dash-positive: #10b981;
-  --dash-negative: #ef4444;
+  --dash-positive: var(--emerald);
+  --dash-negative: var(--negative);
   --dash-card-bg: var(--surface-card);
   --dash-card-border: var(--border-primary);
   --dash-card-radius: 16px;
@@ -29,12 +29,12 @@
     box-shadow 0.15s ease;
 }
 .dashboard-page .dash-surface-card:hover {
-  border-color: rgba(16, 185, 129, 0.15);
+  border-color: var(--emerald-border);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 .dashboard-page .dash-card-header {
   padding: 0.875rem 1.25rem;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+  border-bottom: 1px solid color-mix(in srgb, var(--emerald) 6%, transparent);
   font-size: var(--dash-section-header-size);
   font-weight: var(--dash-section-header-weight);
   color: var(--foreground);
@@ -78,7 +78,7 @@
 .dashboard-page .dash-skeleton {
   display: block;
   height: 0.75rem;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background: linear-gradient(
     90deg,
     rgba(148, 163, 184, 0.12) 25%,

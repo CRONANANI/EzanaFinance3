@@ -40,7 +40,7 @@ body.light-mode .ci-page .er-card-body {
   white-space: nowrap;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #d4af37;
+  color: var(--gold-champagne);
   text-decoration: none;
   display: flex;
   align-items: center;
@@ -257,7 +257,7 @@ body.light-mode .sentinel-card .er-card-body {
   justify-content: center;
   font-size: 0.85rem;
   font-weight: 700;
-  color: #d4af37;
+  color: var(--gold-champagne);
   flex-shrink: 0;
 }
 
@@ -308,10 +308,10 @@ body.light-mode .ci-dalio-name {
 
 .chat-bubble-user {
   align-self: flex-end;
-  background: rgba(16, 185, 129, 0.08);
-  border-left: 3px solid #10b981;
+  background: var(--emerald-bg);
+  border-left: 3px solid var(--emerald);
   padding: 0.75rem 1rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 
 .chat-bubble-user p {
@@ -321,9 +321,9 @@ body.light-mode .ci-dalio-name {
 .chat-bubble-assistant {
   align-self: flex-start;
   background: rgba(212, 175, 55, 0.08);
-  border-left: 3px solid #d4af37;
+  border-left: 3px solid var(--gold-champagne);
   padding: 0.75rem 1rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 
 .chat-bubble-assistant p {
@@ -422,7 +422,7 @@ button:active:not(:disabled) {
   flex-direction: column;
   background: linear-gradient(165deg, #0d0f14 0%, #0a0c10 100%);
   border: 1px solid rgba(212, 175, 55, 0.45);
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   box-shadow:
     0 24px 80px rgba(0, 0, 0, 0.65),
     0 0 0 1px rgba(212, 175, 55, 0.08) inset;
@@ -448,7 +448,7 @@ button:active:not(:disabled) {
 
 .sentinel-modal-title {
   font-family: 'Cinzel', 'Playfair Display', serif;
-  color: #d4af37;
+  color: var(--gold-champagne);
   font-size: 1.35rem;
   font-weight: 700;
   margin: 0;
@@ -468,7 +468,7 @@ button:active:not(:disabled) {
   color: #d1d5db;
   width: 36px;
   height: 36px;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   font-size: 1.35rem;
   line-height: 1;
   cursor: pointer;
@@ -528,14 +528,14 @@ button:active:not(:disabled) {
   font-size: 0.92rem;
   letter-spacing: 0.02em;
   text-transform: none;
-  color: #d4af37 !important;
+  color: var(--gold-champagne) !important;
   font-weight: 700;
   margin: 0 0 0.4rem 0;
   padding: 0;
 }
 
 .sentinel-report-section-title--gold {
-  color: #d4af37 !important;
+  color: var(--gold-champagne) !important;
 }
 
 .sentinel-report-health-value {
@@ -599,7 +599,7 @@ button:active:not(:disabled) {
 .sentinel-chart-card {
   margin-bottom: 1rem;
   padding: 0.75rem;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   border: 1px solid rgba(212, 175, 55, 0.15);
   background: rgba(15, 18, 24, 0.9);
 }
@@ -632,7 +632,7 @@ button:active:not(:disabled) {
 
 .sentinel-kpi {
   padding: 0.65rem 0.5rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid rgba(212, 175, 55, 0.12);
   background: rgba(10, 12, 16, 0.95);
   text-align: center;
@@ -650,7 +650,7 @@ button:active:not(:disabled) {
 .sentinel-kpi-val {
   font-size: 0.85rem;
   font-weight: 700;
-  color: #d4af37;
+  color: var(--gold-champagne);
 }
 
 /* —— News section inside sentinel report modal —— */

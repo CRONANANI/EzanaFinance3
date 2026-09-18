@@ -152,7 +152,7 @@
 }
 
 .m-panel {
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   border: 1px solid var(--border-primary);
   background: var(--surface-card);
   overflow: hidden;
@@ -238,7 +238,7 @@ body.light-mode .m-panel {
   color: var(--text-muted);
   background: var(--surface-card-hover);
   border: 1px solid var(--border-primary);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   padding: 0.125rem 0.375rem;
   line-height: 1;
   pointer-events: none;
@@ -507,7 +507,7 @@ body.light-mode .m-panel {
   height: 18px;
   padding: 0 5px;
   border-radius: 999px;
-  background: #ef4444;
+  background: var(--negative);
   color: #fff;
   font-size: 0.625rem;
   font-weight: 700;
@@ -537,7 +537,7 @@ body.light-mode .m-panel {
 }
 .m-skeleton-row {
   height: 54px;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   background: var(--surface-card-hover);
   animation: m-pulse 1.6s ease-in-out infinite;
 }
@@ -580,7 +580,7 @@ body.light-mode .m-panel {
   height: 34px;
   width: 34px;
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: transparent;
   color: var(--text-secondary);
   display: inline-flex;
@@ -755,7 +755,7 @@ body.light-mode .m-panel {
 .m-bubble {
   position: relative;
   padding: 0.55rem 0.8rem 0.4rem;
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   font-size: 0.8125rem;
   line-height: 1.45;
   word-wrap: break-word;
@@ -806,7 +806,7 @@ body.light-mode .m-bubble--self {
   padding: 0.5rem 0.8rem;
   background: var(--surface-card-hover);
   border: 1px solid var(--border-secondary);
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   border-bottom-left-radius: 4px;
   color: var(--text-muted);
 }
@@ -867,7 +867,7 @@ body.light-mode .m-bubble--self {
   background: var(--negative-bg);
   border: 1px solid var(--negative-border);
   padding: 0.4rem 0.6rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   margin: 0 0 0.5rem;
 }
 
@@ -1024,7 +1024,7 @@ body.light-mode .m-bubble--self {
   max-height: 80vh;
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
@@ -1079,7 +1079,7 @@ body.light-mode .m-dialog {
   align-items: center;
   gap: 0.75rem;
   padding: 0.55rem 0.6rem;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   border: 0;
   background: transparent;
   color: var(--text-primary);
@@ -1125,7 +1125,7 @@ body.light-mode .m-dialog {
 .m-thread__skeleton-bubble {
   height: 44px;
   width: 60%;
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   background: var(--surface-card-hover);
   animation: m-pulse 1.6s ease-in-out infinite;
 }
@@ -1153,9 +1153,9 @@ body.light-mode .m-dialog {
 
 /* ─── Search highlight ─── */
 .m-search-mark {
-  background: rgba(16, 185, 129, 0.25);
+  background: var(--emerald-glow);
   color: inherit;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   padding: 0 1px;
   font-weight: 600;
 }
@@ -1167,7 +1167,7 @@ body.light-mode .m-search-mark {
 
 /* ─── Matched message bubble ─── */
 .m-bubble--matched {
-  outline: 2px solid rgba(16, 185, 129, 0.4);
+  outline: 2px solid color-mix(in srgb, var(--emerald) 40%, transparent);
   outline-offset: 2px;
 }
 
@@ -1183,8 +1183,8 @@ body.light-mode .m-bubble--matched {
   transform: translateY(-50%);
   width: 12px;
   height: 12px;
-  border: 2px solid rgba(16, 185, 129, 0.2);
-  border-top-color: #10b981;
+  border: 2px solid color-mix(in srgb, var(--emerald) 20%, transparent);
+  border-top-color: var(--emerald);
   border-radius: 50%;
   animation: m-spin 0.8s linear infinite;
 }

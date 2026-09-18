@@ -138,7 +138,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0 0.875rem;
-  border-right: 1px solid rgba(16, 185, 129, 0.06);
+  border-right: 1px solid color-mix(in srgb, var(--emerald) 6%, transparent);
   height: 100%;
   flex-shrink: 0;
   white-space: nowrap;
@@ -183,7 +183,7 @@
   box-shadow: 0 0 8px var(--primary);
 }
 .t-status-dot.closed {
-  background: #ef4444;
+  background: var(--negative);
 }
 
 @keyframes t-pulse-dot {
@@ -224,7 +224,7 @@
 }
 
 .t-panel:hover {
-  border-color: rgba(16, 185, 129, 0.2);
+  border-color: color-mix(in srgb, var(--emerald) 20%, transparent);
   box-shadow: var(--shadow-md);
 }
 
@@ -296,7 +296,7 @@
 .t-holdings-table td {
   text-align: right;
   padding: 0.5rem 0.75rem;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.05);
+  border-bottom: 1px solid color-mix(in srgb, var(--emerald) 5%, transparent);
   white-space: nowrap;
   font-feature-settings: 'tnum' 1;
 }
@@ -319,7 +319,7 @@
   min-height: 0;
   padding: 0.75rem;
   background: var(--muted);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   margin: 0 0.75rem;
 }
 
@@ -456,18 +456,18 @@
 
 .t-sug-icon.warn {
   background: rgba(251, 191, 36, 0.15);
-  color: #fbbf24;
+  color: var(--warning);
 }
 .t-sug-icon.danger {
   background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
+  color: var(--negative);
 }
 .t-sug-icon.info {
   background: rgba(59, 130, 246, 0.15);
-  color: #3b82f6;
+  color: var(--blue);
 }
 .t-sug-icon.ok {
-  background: rgba(16, 185, 129, 0.15);
+  background: var(--emerald-border);
   color: var(--primary);
 }
 
@@ -516,7 +516,7 @@
 .t-donut-color {
   width: 10px;
   height: 10px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
 }
 
@@ -538,7 +538,7 @@
 
 .t-heatmap-cell {
   aspect-ratio: 1;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -562,13 +562,13 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.4rem 0.75rem;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.05);
+  border-bottom: 1px solid color-mix(in srgb, var(--emerald) 5%, transparent);
   font-size: var(--font-xs, 0.75rem);
   transition: background 0.15s ease;
 }
 
 .t-mover-row:hover {
-  background: rgba(16, 185, 129, 0.05);
+  background: color-mix(in srgb, var(--emerald) 5%, transparent);
 }
 
 .t-mover-ticker {
@@ -731,13 +731,13 @@
   color: var(--primary);
 }
 .t-red {
-  color: #ef4444;
+  color: var(--negative);
 }
 .t-blue {
-  color: #3b82f6;
+  color: var(--blue);
 }
 .t-yellow {
-  color: #fbbf24;
+  color: var(--warning);
 }
 .t-dim {
   color: var(--text-secondary);
@@ -837,7 +837,7 @@ body.light-mode .t-risk-metric {
 .t-home-skel-card {
   background: var(--surface-card);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   padding: 1.25rem;
   min-height: 180px;
 }
@@ -854,7 +854,7 @@ body.light-mode .t-home-skel-card {
 
 .t-home-skel-bar {
   height: 12px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   background: linear-gradient(
     90deg,
     rgba(120, 120, 120, 0.06) 0%,
@@ -907,7 +907,7 @@ body.light-mode .t-home-skel-bar {
 /* Spec alias: t-skel-* (shared shimmer with t-home-skel-*) */
 .t-skel-bar {
   height: 14px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   background: linear-gradient(
     90deg,
     rgba(120, 120, 120, 0.06) 0%,
@@ -929,7 +929,7 @@ body.light-mode .t-home-skel-bar {
 .t-skel-card {
   background: var(--surface-card);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
 }
 
 body.light-mode .t-skel-bar {

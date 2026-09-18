@@ -12,16 +12,16 @@
   gap: 0.75rem;
   padding: 0.875rem 1rem;
   margin-bottom: 1.5rem;
-  border-radius: 12px;
-  border: 1px solid rgba(16, 185, 129, 0.2);
-  background: rgba(16, 185, 129, 0.06);
+  border-radius: var(--radius-lg);
+  border: 1px solid color-mix(in srgb, var(--emerald) 20%, transparent);
+  background: color-mix(in srgb, var(--emerald) 6%, transparent);
   color: #9ca3af;
   font-size: 0.8125rem;
   line-height: 1.45;
 }
 
 .pricing-free-banner i {
-  color: #10b981;
+  color: var(--emerald);
   flex-shrink: 0;
   margin-top: 0.1rem;
   font-size: 1rem;
@@ -57,7 +57,7 @@ body.light-mode .pricing-free-banner {
 }
 
 .pricing-auth-hint a {
-  color: #10b981;
+  color: var(--emerald);
   text-decoration: none;
   font-weight: 600;
 }
@@ -70,9 +70,9 @@ body.light-mode .pricing-free-banner {
   display: inline-flex;
   gap: 0.25rem;
   padding: 0.25rem;
-  background: rgba(16, 185, 129, 0.06);
-  border: 1px solid rgba(16, 185, 129, 0.12);
-  border-radius: 10px;
+  background: color-mix(in srgb, var(--emerald) 6%, transparent);
+  border: 1px solid var(--emerald-bg-hover);
+  border-radius: var(--radius-lg);
 }
 
 .pricing-toggle button {
@@ -81,7 +81,7 @@ body.light-mode .pricing-free-banner {
   font-weight: 700;
   padding: 0.5rem 1rem;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: transparent;
   color: #8b949e;
   cursor: pointer;
@@ -89,14 +89,14 @@ body.light-mode .pricing-free-banner {
 }
 
 .pricing-toggle button.active {
-  background: linear-gradient(135deg, #10b981, #059669);
+  background: linear-gradient(135deg, var(--emerald), var(--emerald-hover));
   color: #fff;
 }
 
 .pricing-save {
   font-size: 0.5625rem;
   font-weight: 700;
-  color: #10b981;
+  color: var(--emerald);
   margin-left: 0.25rem;
 }
 
@@ -110,7 +110,7 @@ body.light-mode .pricing-free-banner {
   position: relative;
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   padding: 1.25rem;
   display: flex;
   flex-direction: column;
@@ -120,12 +120,12 @@ body.light-mode .pricing-free-banner {
 }
 
 .pricing-card:hover {
-  border-color: rgba(16, 185, 129, 0.15);
+  border-color: var(--emerald-border);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
 .pricing-card.popular {
-  border-color: rgba(16, 185, 129, 0.25);
+  border-color: var(--emerald-glow);
 }
 
 .pricing-card.professional {
@@ -133,7 +133,7 @@ body.light-mode .pricing-free-banner {
 }
 
 .pricing-card.professional h3 {
-  background: linear-gradient(135deg, #d4a853, #f0d78c);
+  background: linear-gradient(135deg, var(--gold), #f0d78c);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -141,18 +141,18 @@ body.light-mode .pricing-free-banner {
 
 .pricing-annual {
   font-size: 0.6875rem;
-  color: #10b981;
+  color: var(--emerald);
   margin: 0 0 0.75rem;
   font-weight: 600;
 }
 
 .pricing-partner-note {
   font-size: 0.5625rem;
-  color: #d4a853;
+  color: var(--gold);
   background: rgba(212, 168, 83, 0.06);
   border: 1px solid rgba(212, 168, 83, 0.15);
   padding: 0.25rem 0.625rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   margin-bottom: 0.75rem;
   text-align: center;
 }
@@ -173,8 +173,8 @@ body.light-mode .pricing-card.professional h3 {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   padding: 0.25rem 0.5rem;
-  border-radius: 6px;
-  background: linear-gradient(135deg, #10b981, #059669);
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--emerald), var(--emerald-hover));
   color: #fff;
 }
 
@@ -225,7 +225,7 @@ body.light-mode .pricing-card.professional h3 {
 }
 
 .pricing-card li i {
-  color: #10b981;
+  color: var(--emerald);
   flex-shrink: 0;
   margin-top: 0.1rem;
 }
@@ -234,7 +234,7 @@ body.light-mode .pricing-card.professional h3 {
   font-family: inherit;
   font-weight: 700;
   padding: 0.5rem 1.25rem;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   cursor: pointer;
   transition: all 0.15s;
   border: none;
@@ -242,7 +242,7 @@ body.light-mode .pricing-card.professional h3 {
 }
 
 .pricing-btn.primary {
-  background: linear-gradient(135deg, #10b981, #059669);
+  background: linear-gradient(135deg, var(--emerald), var(--emerald-hover));
   color: #fff;
 }
 
@@ -253,7 +253,7 @@ body.light-mode .pricing-card.professional h3 {
 
 .pricing-btn.secondary {
   background: transparent;
-  border: 1px solid rgba(16, 185, 129, 0.15);
+  border: 1px solid var(--emerald-border);
   color: #8b949e;
 }
 
