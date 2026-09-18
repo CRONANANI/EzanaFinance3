@@ -1,7 +1,7 @@
 /* Profile page Stripe-leaning redesign — global page styles + responsive */
 
 .profile-stripe-wrap {
-  font-family: var(--font-sans, 'Inter', -apple-system, sans-serif);
+  font-family: var(--font-sans);
   background: transparent;
   min-height: 100vh;
   color: var(--text-primary);

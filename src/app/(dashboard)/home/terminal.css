@@ -6,7 +6,7 @@
 .ezana-terminal {
   background: var(--app-bg);
   min-height: calc(100vh - 64px);
-  font-family: var(--font-sans, 'Plus Jakarta Sans', -apple-system, sans-serif);
+  font-family: var(--font-sans);
   font-size: var(--font-sm, 0.875rem);
   color: var(--foreground);
   display: flex;

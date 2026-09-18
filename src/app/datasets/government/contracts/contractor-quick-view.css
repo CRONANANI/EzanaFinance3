@@ -28,7 +28,7 @@ body.light-mode .cqv-scrim {
     0 32px 60px rgba(0, 0, 0, 0.55),
     0 0 20px rgba(16, 185, 129, 0.06);
   color: var(--text-primary);
-  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-family: var(--font-sans);
   animation: cqv-in 160ms ease-out;
 }
 body.light-mode .cqv-root {
@@ -48,7 +48,7 @@ body.light-mode .cqv-root {
 }
 
 .cqv-mono {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 
@@ -207,7 +207,7 @@ body.light-mode .cqv-root {
 }
 .cqv-axis {
   fill: var(--text-muted);
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: 10px;
 }
 

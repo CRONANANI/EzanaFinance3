@@ -18,7 +18,7 @@ body.light-mode .perf-axis-tick {
   border-radius: 6px;
   padding: 0.5rem 0.75rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-size: 11px;
 }
 
@@ -84,7 +84,7 @@ body.light-mode .perf-axis-tick {
   color: var(--text-muted);
   cursor: pointer;
   transition: all 150ms ease;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
 }
 
 .perf-range-pill:hover {

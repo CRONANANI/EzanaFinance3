@@ -9,7 +9,7 @@
 .hdx-mono {
   /* Branding guide: JetBrains Mono for ALL numerals — the class previously
      only set tabular figures, leaving amounts/dates in the sans face. */
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 .hdx-spin {
@@ -100,7 +100,7 @@
   min-width: 200px;
 }
 .hdx-control-label {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-eyebrow-tracking);
@@ -209,7 +209,7 @@
   margin-bottom: 12px;
 }
 .hdx-modal-eyebrow {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-eyebrow-tracking);
@@ -222,7 +222,7 @@
 }
 .hdx-modal-title {
   margin: 4px 0 2px;
-  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-family: var(--font-sans);
   font-size: var(--ds-type-headline-size);
   font-weight: var(--ds-type-headline-weight);
   letter-spacing: var(--ds-type-headline-tracking);

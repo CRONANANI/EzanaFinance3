@@ -4,11 +4,11 @@
    =========================================================================== */
 
 .ac3-root {
-  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-family: var(--font-sans);
   color: var(--text-primary);
 }
 .ac3-num {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 
@@ -21,7 +21,7 @@
   margin-bottom: 1.25rem;
 }
 .ac3-eyebrow {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.16em;
@@ -184,13 +184,13 @@
   background: var(--emerald-bg-subtle, rgba(16, 185, 129, 0.06));
 }
 .ac3-rank {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-weight: 700;
   color: var(--text-primary);
 }
 .ac3-grade-input {
   width: 64px;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-size: 0.8rem;
   padding: 0.3rem 0.4rem;
   border-radius: 6px;

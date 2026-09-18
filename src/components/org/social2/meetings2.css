@@ -5,11 +5,11 @@
    =========================================================================== */
 
 .mt2-root {
-  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-family: var(--font-sans);
   color: var(--text-primary);
 }
 .mt2-num {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 
@@ -23,7 +23,7 @@
   margin-bottom: 1.25rem;
 }
 .mt2-eyebrow {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.16em;
@@ -573,7 +573,7 @@
   margin-bottom: 0.45rem;
 }
 .mt2-agenda-n {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 0.72rem;
   font-weight: 700;
@@ -830,7 +830,7 @@
   font-weight: 600;
 }
 .mt2-tier__score {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   color: var(--text-muted);
 }

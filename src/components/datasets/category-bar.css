@@ -19,7 +19,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-family: var(--font-sans);
   font-size: var(--ds-type-body-size);
   font-weight: var(--ds-type-strong);
   color: var(--text-muted);
@@ -60,7 +60,7 @@
   justify-content: space-between;
   gap: 10px;
   padding: 8px 10px;
-  font-family: var(--font-sans, sans-serif);
+  font-family: var(--font-sans);
   font-size: var(--ds-type-sub-size);
   /* Item text takes its parent category's color (the same color as the category
      dot), passed in from cat.color as --dscat-item-color. */
@@ -88,7 +88,7 @@
 /* roadmap (live:false) dataset — muted "Soon" pill, never shown as live */
 .dscat-soon {
   flex-shrink: 0;
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-eyebrow-tracking);

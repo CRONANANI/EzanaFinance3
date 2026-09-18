@@ -108,7 +108,7 @@
 .tpm-wallet {
   display: inline-block;
   font-size: 0.6875rem;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   color: var(--text-faint);
   background: var(--bg-tertiary);
   padding: 0.15rem 0.45rem;

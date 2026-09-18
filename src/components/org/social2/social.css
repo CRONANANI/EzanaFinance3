@@ -4,11 +4,11 @@
    =========================================================================== */
 
 .sc2-root {
-  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-family: var(--font-sans);
   color: var(--text-primary);
 }
 .sc2-num {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 
@@ -22,7 +22,7 @@
   margin-bottom: 1.25rem;
 }
 .sc2-eyebrow {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.16em;
@@ -197,7 +197,7 @@
   color: var(--text-body, var(--text-secondary));
 }
 .sc2-tag--ticker {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   color: var(--emerald-text, #10b981);
   border-color: var(--emerald-border, rgba(16, 185, 129, 0.35));
 }
@@ -245,7 +245,7 @@
   color: var(--emerald-text, #10b981);
 }
 .sc2-reaction-count {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 .sc2-reaction-add {
@@ -539,7 +539,7 @@
   line-height: 1.4;
 }
 .sc2-recog-period {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-size: 0.64rem;
   color: var(--text-faint);
 }
@@ -616,7 +616,7 @@
 .sc2-minute-meta {
   font-size: 0.64rem;
   color: var(--text-faint);
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
 }
 
 /* ── States ─────────────────────────────────────────────────────────────── */

@@ -11,12 +11,12 @@
   justify-content: center;
   z-index: 1001;
   padding: 16px;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: var(--font-sans);
 }
 
 .apm-org-card {
   background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-primary);
   border-radius: 12px;
   width: min(640px, 100%);
   max-height: 90vh;
@@ -31,7 +31,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 18px 22px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-primary);
 }
 .apm-org-header h2 {
   font-size: 17px;
@@ -81,7 +81,7 @@
 }
 .apm-org-mode-tile {
   background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-primary);
   border-radius: 10px;
   padding: 18px 14px;
   text-align: center;
@@ -138,19 +138,19 @@
 
 .apm-org-input {
   background: var(--bg-primary);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-primary);
   border-radius: 6px;
   padding: 9px 11px;
   font-size: 13px;
   color: var(--text-primary);
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: var(--font-sans);
 }
 .apm-org-input:focus {
   outline: none;
   border-color: var(--accent-emerald, #10b981);
 }
 .apm-org-mono {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 
@@ -181,7 +181,7 @@
 .apm-org-btn-ghost {
   background: transparent;
   color: var(--text-muted);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-primary);
 }
 .apm-org-btn-ghost:hover {
   color: var(--accent-emerald, #10b981);
@@ -198,7 +198,7 @@
   line-height: 1.5;
 }
 .apm-org-csv-help code {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   background: var(--bg-tertiary);
   padding: 1px 5px;
   border-radius: 3px;
@@ -206,7 +206,7 @@
   font-size: 11px;
 }
 .apm-org-file-zone {
-  border: 1px dashed var(--border-color);
+  border: 1px dashed var(--border-primary);
   border-radius: 8px;
   padding: 18px;
   text-align: center;
@@ -215,7 +215,7 @@
   margin-top: 8px;
   font-size: 12px;
   color: var(--accent-emerald, #10b981);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
 }
 
 .apm-org-rowerrors {
@@ -249,7 +249,7 @@
   gap: 12px;
   padding: 12px 14px;
   background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-primary);
   border-radius: 8px;
   cursor: pointer;
 }
@@ -269,7 +269,7 @@
   gap: 8px;
 }
 .apm-org-account-provider {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 0.08em;

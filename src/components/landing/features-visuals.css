@@ -38,7 +38,7 @@
    old 6.5px in-SVG captions (which rendered ~8 blurry device px at fractional
    scale). Identical on all six cards; token-driven so it adapts to light/dark. */
 .feature-viz-caption {
-  font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+  font-family: var(--font-mono);
   font-size: 10px;
   font-weight: 500;
   letter-spacing: 0.08em;
@@ -56,7 +56,7 @@
 
 /* All viz labels/numbers in JetBrains Mono via the app token (never hardcoded). */
 .feature-viz text {
-  font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.01em;
   text-rendering: geometricPrecision;

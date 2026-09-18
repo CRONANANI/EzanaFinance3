@@ -27,7 +27,7 @@
   border-radius: 14px;
   box-shadow: 0 10px 30px -10px rgba(13, 24, 33, 0.18);
   padding: 10px 20px;
-  font-family: var(--font-sans, 'Plus Jakarta Sans', system-ui, sans-serif);
+  font-family: var(--font-sans);
 
   /* Outer box renders glass but does not capture clicks; children do. */
   pointer-events: none;

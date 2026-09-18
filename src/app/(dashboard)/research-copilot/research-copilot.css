@@ -42,7 +42,9 @@
   font-size: 0.95rem;
   line-height: 1.5;
   outline: none;
-  transition: border-color 0.16s ease, box-shadow 0.16s ease;
+  transition:
+    border-color 0.16s ease,
+    box-shadow 0.16s ease;
 }
 .rc-input:focus {
   border-color: var(--emerald);
@@ -92,7 +94,9 @@
   padding: 6px 12px;
   font-size: 0.8rem;
   cursor: pointer;
-  transition: border-color 0.15s ease, color 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
 }
 .rc-example:hover {
   border-color: var(--border-hover);
@@ -188,7 +192,9 @@
   margin-bottom: 6px;
   text-decoration: none;
   color: var(--text-primary);
-  transition: border-color 0.15s ease, background 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
 }
 .rc-source:hover {
   border-color: var(--border-hover);

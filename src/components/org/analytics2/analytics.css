@@ -4,11 +4,11 @@
    =========================================================================== */
 
 .an4-root {
-  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-family: var(--font-sans);
   color: var(--text-primary);
 }
 .an4-num {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 
@@ -21,7 +21,7 @@
   margin-bottom: 1.25rem;
 }
 .an4-eyebrow {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.16em;
@@ -63,7 +63,7 @@
   color: var(--text-muted);
 }
 .an4-stat-val {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-weight: 700;
   font-size: 1.5rem;
@@ -171,7 +171,7 @@
   margin-bottom: 1.25rem;
 }
 .an4-big {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-weight: 700;
   font-size: 2rem;
@@ -404,7 +404,7 @@
   color: var(--text-muted);
 }
 .fa-slm-cell .v {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-weight: 700;
   font-size: 0.9rem;
@@ -442,7 +442,7 @@
   color: var(--text-muted);
 }
 .fa-stat .v {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-weight: 700;
   font-size: 1.05rem;
@@ -527,7 +527,7 @@
   width: 20px;
   height: 20px;
   border-radius: 9999px;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-size: 0.66rem;
   font-weight: 700;
   background: var(--surface-input);
@@ -557,7 +557,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-size: 0.6rem;
   font-weight: 700;
   background: var(--emerald-bg, rgba(16, 185, 129, 0.14));
@@ -579,7 +579,7 @@
   gap: 3px;
 }
 .fa-contrib .amt {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-weight: 700;
   color: var(--text-primary);
@@ -618,7 +618,7 @@
   cursor: default;
 }
 .fa-cd .tk {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-weight: 700;
   color: var(--text-primary);
   font-size: 0.8rem;
@@ -628,7 +628,7 @@
   color: var(--text-muted);
 }
 .fa-cd .amt {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-weight: 700;
   /* Match the Analyst Leaderboard's number size (.an4-table = 0.8rem); Top
@@ -672,12 +672,12 @@
 .fa-cbanner .bd {
   font-size: 0.68rem;
   color: var(--text-muted);
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 .fa-cbanner .bpill {
   margin-left: auto;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-weight: 700;
   font-size: 0.9rem;
@@ -764,7 +764,7 @@
 }
 .fa-svt .wt {
   text-align: right;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 0.7rem;
   font-weight: 700;
@@ -809,7 +809,7 @@
 .fa-fstage .cv {
   width: 42px;
   text-align: right;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 0.66rem;
   color: var(--text-muted);
@@ -828,7 +828,7 @@
   border-top: none;
 }
 .fa-gap .gt {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-weight: 700;
   color: var(--text-primary);
   font-size: 0.78rem;

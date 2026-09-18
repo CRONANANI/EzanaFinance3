@@ -45,7 +45,7 @@
   /* Progress card */
   --bs-elo-track-bg: rgba(0, 0, 0, 0.08);
 
-  font-family: var(--font-sans, 'Plus Jakarta Sans', system-ui, sans-serif);
+  font-family: var(--font-sans);
   background: var(--bs-bg-light);
   color: var(--bs-text-dark);
   letter-spacing: -0.008em;
@@ -329,7 +329,7 @@ body:not(.light-mode) .bs-shell {
   font-weight: 700;
   letter-spacing: -0.02em;
   margin-top: 4px;
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   color: var(--bs-text-dark);
   line-height: 1.05;

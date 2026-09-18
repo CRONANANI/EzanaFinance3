@@ -319,7 +319,7 @@
 /* Retail stat-tile contract: mono tabular value over a mono small-caps
    kicker label. */
 .pcx-stat-value {
-  font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 26px;
   font-weight: 700;
@@ -447,7 +447,7 @@
   margin-top: 6px;
 }
 .pcx-input--num {
-  font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   width: 74px;
 }
@@ -949,7 +949,7 @@
   background: color-mix(in srgb, var(--org-primary, var(--emerald)) 7%, transparent);
 }
 .pcx-standing-rank {
-  font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-weight: 700;
   font-size: 16px;
@@ -962,7 +962,7 @@
   margin-right: auto;
 }
 .pcx-standing-total {
-  font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-weight: 700;
   color: var(--text-primary);
@@ -980,14 +980,14 @@
   gap: 10px;
 }
 .pcx-result-rank {
-  font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 22px;
   font-weight: 700;
   color: var(--org-ink, var(--emerald));
 }
 .pcx-result-total {
-  font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 22px;
   font-weight: 700;
@@ -1032,7 +1032,7 @@
   background: var(--org-primary, var(--emerald));
 }
 .pcx-bd-val {
-  font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 12.5px;
   color: var(--text-secondary);

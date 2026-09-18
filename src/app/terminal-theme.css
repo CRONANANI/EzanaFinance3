@@ -6,29 +6,34 @@
 
 /* Base typography — Plus Jakarta Sans (matches terminal) */
 body {
-  font-family: var(--font-sans, 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif);
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   letter-spacing: -0.01em;
 }
 
 /* All headings */
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-sans, 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif);
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-sans);
   letter-spacing: -0.02em;
   font-weight: 700;
 }
 
 /* Numeric values — use mono font for clean alignment */
-[class*="value"]:not([class*="label"]),
-[class*="price"],
-[class*="amount"],
-[class*="pct"],
-[class*="stat-value"],
-[class*="stat-mini-value"],
-[class*="hero-stat-value"],
-[class*="account-value"],
-[class*="analytics-big"],
+[class*='value']:not([class*='label']),
+[class*='price'],
+[class*='amount'],
+[class*='pct'],
+[class*='stat-value'],
+[class*='stat-mini-value'],
+[class*='hero-stat-value'],
+[class*='account-value'],
+[class*='analytics-big'],
 .db-donut-value,
 .t-pv-amount,
 .t-perf-stat-value,
@@ -39,7 +44,7 @@ h1, h2, h3, h4, h5, h6 {
 .t-mover-change,
 .lc-progress-pct,
 .lc-stat-value {
-  font-family: var(--font-mono, 'JetBrains Mono', 'Fira Code', monospace);
+  font-family: var(--font-mono);
   font-feature-settings: 'tnum' 1;
 }
 
@@ -48,18 +53,22 @@ h1, h2, h3, h4, h5, h6 {
 .negative,
 .t-green,
 .t-red {
-  font-family: var(--font-mono, 'JetBrains Mono', 'Fira Code', monospace);
+  font-family: var(--font-mono);
   font-feature-settings: 'tnum' 1;
 }
 
-.positive { color: #10b981 !important; }
-.negative { color: #ef4444 !important; }
+.positive {
+  color: #10b981 !important;
+}
+.negative {
+  color: #ef4444 !important;
+}
 
 /* Section titles — consistent across all pages */
-[class*="section-title"],
-[class*="card-header"] h3,
-[class*="form-header"] h2,
-[class*="page-title"],
+[class*='section-title'],
+[class*='card-header'] h3,
+[class*='form-header'] h2,
+[class*='page-title'],
 .t-panel-title {
   font-size: 0.9375rem;
   font-weight: 800;
@@ -67,8 +76,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* Small uppercase labels — consistent everywhere */
-[class*="stat-label"],
-[class*="field"] label,
+[class*='stat-label'],
+[class*='field'] label,
 .t-pv-label,
 .t-perf-stat-label,
 .t-risk-metric-label,
@@ -93,8 +102,8 @@ table th,
 }
 
 /* Component cards — match terminal panel style */
-[class*="-card"]:not(a):not(button):not([class*="course-card"]),
-[class*="form-card"],
+[class*='-card']:not(a):not(button):not([class*='course-card']),
+[class*='form-card'],
 .t-panel {
   border-radius: 14px;
 }
@@ -118,9 +127,9 @@ table td,
 /* Buttons — consistent weight */
 button,
 a.btn,
-[class*="btn-primary"],
-[class*="btn-secondary"] {
-  font-family: var(--font-sans, 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif);
+[class*='btn-primary'],
+[class*='btn-secondary'] {
+  font-family: var(--font-sans);
   font-weight: 700;
   letter-spacing: 0;
 }
@@ -129,20 +138,20 @@ a.btn,
 input,
 textarea,
 select {
-  font-family: var(--font-sans, 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif);
+  font-family: var(--font-sans);
 }
 
 /* Code blocks and data displays */
 pre,
 code,
-[class*="code"],
+[class*='code'],
 .formula-code code {
-  font-family: var(--font-mono, 'JetBrains Mono', 'Fira Code', monospace);
+  font-family: var(--font-mono);
 }
 
 /* Light mode adjustments */
-body.light-mode [class*="stat-label"],
-body.light-mode [class*="field"] label,
+body.light-mode [class*='stat-label'],
+body.light-mode [class*='field'] label,
 body.light-mode table th,
 body.light-mode .table th,
 body.light-mode .lc-table th {

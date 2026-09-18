@@ -348,7 +348,7 @@
 
 /* ── Analysis Content Formatting ── */
 .ai-analysis-content {
-  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-family: var(--font-sans);
   line-height: 1.7;
   color: var(--foreground);
 }

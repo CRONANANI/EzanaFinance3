@@ -239,7 +239,7 @@ body.light-mode .shm-range-group {
 }
 .shm-error-detail {
   margin-top: 0.2rem;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: var(--font-mono);
   font-size: 0.68rem;
   color: rgba(254, 202, 202, 0.7);
   word-break: break-word;

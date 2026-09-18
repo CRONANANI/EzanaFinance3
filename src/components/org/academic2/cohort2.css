@@ -8,10 +8,10 @@
 .c2-root {
   --c2-radius: 12px;
   color: var(--text-secondary);
-  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-family: var(--font-sans);
 }
 .c2-num {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 
@@ -162,7 +162,7 @@
   color: var(--emerald-text);
   border-radius: 999px;
   padding: 0.05rem 0.45rem;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 .c2-tab--active .c2-tab-count {
@@ -189,7 +189,7 @@
   font-size: 1.55rem;
   font-weight: 700;
   color: var(--text-primary);
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   line-height: 1.1;
 }
@@ -233,7 +233,7 @@
   color: var(--text-secondary);
 }
 .c2-col-count {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   color: var(--text-muted);
 }
@@ -277,7 +277,7 @@
   align-items: center;
   gap: 0.2rem;
   color: var(--gold-text);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 0.8rem;
   font-weight: 700;
@@ -296,7 +296,7 @@
 .c2-progress-mini {
   font-size: 0.72rem;
   color: var(--info);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 .c2-avatar {
@@ -424,7 +424,7 @@
 .c2-mcard-stats b {
   display: block;
   color: var(--text-primary);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 0.95rem;
 }
@@ -579,7 +579,7 @@
   background: var(--surface-card);
   color: var(--text-muted);
   cursor: pointer;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
 }
 .c2-scorebtn.is-on {
   background: var(--gold-bg);
@@ -624,7 +624,7 @@
 .c2-funnel-val {
   width: 84px;
   text-align: right;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 0.8rem;
   color: var(--text-muted);
@@ -662,7 +662,7 @@
   font-size: 1.6rem;
   font-weight: 700;
   color: var(--gold-text);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 .c2-banner-grid {
@@ -680,7 +680,7 @@
 .c2-dest b {
   font-size: 1.25rem;
   color: var(--text-primary);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 .c2-dest span {

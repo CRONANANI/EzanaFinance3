@@ -1286,7 +1286,7 @@ body.light-mode .itc-earn-row {
   color: #10b981;
   font-size: 0.72rem;
   font-weight: 700;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   padding: 0.25rem 0.55rem;
   cursor: pointer;
   outline: none;
@@ -1541,7 +1541,7 @@ body.light-mode .itc-13f-filed {
   background: rgba(16, 185, 129, 0.08);
   color: #10b981;
   cursor: pointer;
-  font-family: var(--font-sans, inherit);
+  font-family: var(--font-sans);
 }
 .itc-top-perf-retry:hover {
   background: rgba(16, 185, 129, 0.15);

@@ -21,8 +21,14 @@
   animation: pageIn 0.25s ease-out;
 }
 @keyframes pageIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ── Focus Visible (Accessibility) ── */
@@ -49,14 +55,16 @@ button:active:not(:disabled) {
 .ptr-card,
 .trd-form-card,
 .ezana-echo-card {
-  transition: box-shadow 0.2s, transform 0.2s;
+  transition:
+    box-shadow 0.2s,
+    transform 0.2s;
 }
 .component-card:hover,
 .db-card:hover,
 .ptr-card:hover,
 .trd-form-card:hover,
 .ezana-echo-card:hover {
-  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
   transform: translateY(-2px);
 }
 
@@ -69,7 +77,7 @@ button:active:not(:disabled) {
 
 /* ── Skip to content — visually hidden until focused ── */
 .skip-to-content,
-a[href="#main-content"].skip-to-content {
+a[href='#main-content'].skip-to-content {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -83,7 +91,7 @@ a[href="#main-content"].skip-to-content {
   z-index: 99999;
 }
 .skip-to-content:focus,
-a[href="#main-content"].skip-to-content:focus {
+a[href='#main-content'].skip-to-content:focus {
   position: fixed;
   top: 0;
   left: 0;

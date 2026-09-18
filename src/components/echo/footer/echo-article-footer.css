@@ -9,7 +9,7 @@
   max-width: 860px;
   margin: 32px auto 40px; /* was 48px auto 64px */
   padding: 0 56px;
-  font-family: var(--font-sans, system-ui, -apple-system, 'Segoe UI', sans-serif);
+  font-family: var(--font-sans);
   color: var(--text-primary);
 }
 
@@ -545,7 +545,7 @@ body.light-mode .echo-slider-cast-btn:hover {
 }
 
 .echo-footer-discuss-link {
-  font-family: var(--font-sans, system-ui, sans-serif);
+  font-family: var(--font-sans);
   font-style: normal;
   color: var(--echo-accent);
   font-weight: 600;

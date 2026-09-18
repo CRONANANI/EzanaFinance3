@@ -34,13 +34,7 @@
   max-width: 1100px;
   margin: 0 auto;
   /* Fade edges */
-  mask-image: linear-gradient(
-    to right,
-    transparent 0%,
-    black 10%,
-    black 90%,
-    transparent 100%
-  );
+  mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
   -webkit-mask-image: linear-gradient(
     to right,
     transparent 0%,
@@ -64,8 +58,12 @@
 }
 
 @keyframes tlScroll {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
 }
 
 /* ── Individual logo ── */
@@ -113,15 +111,30 @@
 
 /* ── Mobile ── */
 @media (max-width: 768px) {
-  .tl-section { padding: 3rem 1rem; }
-  .tl-heading { font-size: 1.25rem; }
-  .tl-carousel-track { gap: 2.5rem; }
-  .tl-logo-item { min-width: 120px; padding: 0.5rem 1rem; height: 72px; }
-  .tl-logo-img { max-height: 52px; max-width: 180px; }
+  .tl-section {
+    padding: 3rem 1rem;
+  }
+  .tl-heading {
+    font-size: 1.25rem;
+  }
+  .tl-carousel-track {
+    gap: 2.5rem;
+  }
+  .tl-logo-item {
+    min-width: 120px;
+    padding: 0.5rem 1rem;
+    height: 72px;
+  }
+  .tl-logo-img {
+    max-height: 52px;
+    max-width: 180px;
+  }
 }
 
 /* ── Light mode ── */
-body.light-mode .tl-heading { color: #111827; }
+body.light-mode .tl-heading {
+  color: #111827;
+}
 body.light-mode .tl-logo-img {
   opacity: 0.4;
   filter: grayscale(100%) brightness(0.4);

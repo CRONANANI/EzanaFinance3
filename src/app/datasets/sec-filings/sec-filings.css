@@ -43,7 +43,7 @@
 }
 .secf-form {
   font-variant-numeric: tabular-nums;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.02em;
@@ -56,7 +56,7 @@
 .secf-mono {
   /* Branding guide: JetBrains Mono for ALL numerals — the class previously
      only set tabular figures, leaving values/dates in the sans face. */
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -82,7 +82,7 @@
 
 .secf-sample-note {
   display: inline-block;
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-eyebrow-tracking);
@@ -112,7 +112,7 @@
   max-width: 65ch;
 }
 .secf-source-h {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-eyebrow-tracking);
@@ -179,7 +179,7 @@
   margin-bottom: 1rem;
 }
 .secf-modal-eyebrow {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-eyebrow-tracking);
@@ -189,7 +189,7 @@
   margin-bottom: 4px;
 }
 .secf-modal-title {
-  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-family: var(--font-sans);
   font-size: var(--ds-type-headline-size);
   font-weight: var(--ds-type-headline-weight);
   letter-spacing: var(--ds-type-headline-tracking);
@@ -220,7 +220,7 @@
   gap: 14px;
 }
 .secf-fact-k {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-eyebrow-tracking);

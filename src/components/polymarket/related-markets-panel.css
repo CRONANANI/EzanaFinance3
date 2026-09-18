@@ -10,7 +10,7 @@
   border-radius: 12px;
   padding: 1.25rem;
   color: #e2e8f0;
-  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-family: var(--font-sans);
 }
 
 .pm-related--modal {

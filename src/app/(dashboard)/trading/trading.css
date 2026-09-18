@@ -682,10 +682,9 @@ select.trd-input {
 }
 .trd-position-row {
   display: grid;
-  grid-template-columns: minmax(120px, 1fr) minmax(80px, 1fr) minmax(90px, 1fr) minmax(
-      80px,
-      1fr
-    ) 28px;
+  grid-template-columns:
+    minmax(120px, 1fr) minmax(80px, 1fr) minmax(90px, 1fr) minmax(80px, 1fr)
+    28px;
   align-items: center;
   gap: 0.5rem;
   padding: 0.875rem 1rem;

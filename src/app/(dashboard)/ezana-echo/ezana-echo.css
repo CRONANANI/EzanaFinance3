@@ -1406,7 +1406,7 @@ body.light-mode .echo-article-page .echo-article-stats i {
   font-weight: 600;
   color: #10b981;
   cursor: pointer;
-  font-family: var(--font-sans, system-ui, sans-serif);
+  font-family: var(--font-sans);
   text-decoration: underline;
   text-underline-offset: 0.15em;
 }
@@ -1872,39 +1872,39 @@ body.light-mode .echo-article-page .echo-stat-value {
 .echo-article-page .echo-chart-tick {
   font-size: 11px;
   fill: #9ca3af;
-  font-family: var(--font-sans, sans-serif);
+  font-family: var(--font-sans);
 }
 
 .echo-article-page .echo-chart-series-label {
   font-size: 12px;
   font-weight: 600;
-  font-family: var(--font-sans, sans-serif);
+  font-family: var(--font-sans);
 }
 
 .echo-article-page .echo-chart-series-value {
   font-size: 11px;
   fill: #6b7280;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
 }
 
 .echo-article-page .echo-chart-annotation-label {
   font-size: 11px;
   fill: #9ca3af;
   font-weight: 600;
-  font-family: var(--font-sans, sans-serif);
+  font-family: var(--font-sans);
 }
 
 .echo-article-page .echo-chart-bar-label {
   font-size: 12px;
   fill: #f0f6fc;
-  font-family: var(--font-sans, sans-serif);
+  font-family: var(--font-sans);
 }
 
 .echo-article-page .echo-chart-bar-value {
   font-size: 12px;
   fill: #f0f6fc;
   font-weight: 600;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
 }
 
 body.light-mode .echo-article-page .echo-chart {
@@ -3042,7 +3042,7 @@ body.light-mode .echo-admin-bar {
   border-color: rgba(245, 158, 11, 0.5);
 }
 .echo-admin-bar-count {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 0.7rem;
   opacity: 0.85;
 }

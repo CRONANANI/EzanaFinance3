@@ -116,7 +116,7 @@
 }
 
 .ot-team-card-aum {
-  font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 1.25rem;
   font-weight: 700;
@@ -124,7 +124,7 @@
 }
 
 .ot-team-card-change {
-  font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
 }
@@ -149,7 +149,7 @@
 .ot-team-positions-table th {
   text-align: left;
   color: var(--text-muted);
-  font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+  font-family: var(--font-mono);
   font-weight: var(--type-kicker-weight, 700);
   text-transform: uppercase;
   font-size: 0.625rem;
@@ -593,7 +593,7 @@
   padding: 8px 14px;
   font-size: 12px;
   font-weight: 600;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: var(--font-sans);
   cursor: pointer;
   transition: opacity 120ms;
 }
@@ -625,12 +625,12 @@
   --ctd-card: var(--surface-card);
   --ctd-border: var(--border-primary);
   color: var(--text-primary);
-  font-family: var(--font-sans, 'Plus Jakarta Sans', system-ui, sans-serif);
+  font-family: var(--font-sans);
 }
 
 /* Mono tabular numerics for values, tickers, counts, and percentages. */
 .ctd-num {
-  font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 
@@ -918,7 +918,7 @@ html.light-mode .ctd-kpi {
     0 1px 3px rgba(0, 0, 0, 0.05);
 }
 .ctd-kpi-value {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 1.5rem;
   font-weight: 700;
@@ -1123,7 +1123,7 @@ html.light-mode .ctd-kpi {
    every figure via .ot-num. Dark modal floats on the Council desk.
    ═══════════════════════════════════════════════════════════════════ */
 .ot-num {
-  font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
 }

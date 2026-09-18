@@ -16,7 +16,7 @@
   --ea-surface: #ffffff;
   --ea-code-tint: rgba(0, 0, 0, 0.04);
   --ea-nav: 88px;
-  font-family: var(--font-sans, 'Plus Jakarta Sans', system-ui, sans-serif);
+  font-family: var(--font-sans);
   color: var(--ea-ink);
   background: #ffffff;
   min-height: 100vh;
@@ -25,7 +25,7 @@
 .ea-mono,
 .ea-page code,
 .ea-page pre {
-  font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 
@@ -52,7 +52,7 @@
   border: 1px solid rgba(16, 185, 129, 0.35);
   background: #ffffff;
   color: var(--ea-emerald-text);
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 0.6875rem;
   font-weight: 600;
@@ -144,7 +144,7 @@
 }
 .ea-sidenav-head {
   margin: 0 0 0.6rem;
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: 0.6875rem;
   font-weight: 600;
   letter-spacing: 0.14em;
@@ -197,7 +197,7 @@
   color: var(--ea-muted);
 }
 .ea-sidenav-card-link {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--ea-emerald-text);
@@ -250,7 +250,7 @@
 }
 /* Inline code — near-white neutral chip (no colour wash), emerald text. */
 .ea-section code {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 0.85em;
   padding: 0.1rem 0.35rem;
@@ -322,7 +322,7 @@
 }
 .ea-tier-price {
   margin: 0.35rem 0 0.75rem;
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 1.35rem;
   font-weight: 700;
@@ -363,7 +363,7 @@
 }
 .ea-soon {
   flex-shrink: 0;
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: 0.625rem;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -391,7 +391,7 @@
   align-items: center;
   gap: 0.45rem;
   padding: 0.55rem 1rem;
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 0.72rem;
   font-weight: 600;
@@ -413,7 +413,7 @@
   padding: 0;
   background: none;
   color: var(--ea-ink);
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 0.8125rem;
   line-height: 1.65;
@@ -450,7 +450,7 @@
   color: var(--ea-emerald-text);
 }
 .ea-ep-base {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 0.75rem !important;
   color: var(--ea-muted) !important;
@@ -497,7 +497,7 @@
 }
 .ea-method {
   flex-shrink: 0;
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 0.6875rem;
   font-weight: 700;
@@ -541,7 +541,7 @@
 }
 .ea-changelog-date {
   flex-shrink: 0;
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   font-weight: 600;
@@ -573,7 +573,7 @@
   border: 1px solid rgba(16, 185, 129, 0.4);
   color: var(--ea-emerald-text);
   background: #ffffff;
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 0.8125rem;
   font-weight: 700;
@@ -619,7 +619,7 @@
   border-bottom: none;
 }
 .ea-table thead th {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -635,7 +635,7 @@
   font-weight: 600;
 }
 .ea-table td.ea-mono {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   color: var(--ea-ink);
 }
@@ -671,7 +671,7 @@
 }
 .ea-faq-item summary::after {
   content: '+';
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   color: var(--ea-emerald-text);
   font-size: 1.1rem;
   line-height: 1;
@@ -715,7 +715,7 @@
   border-radius: 9999px;
   background: var(--ea-emerald-text);
   color: #ffffff;
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 0.8125rem;
   font-weight: 700;
@@ -771,7 +771,7 @@
   gap: 0.5rem;
 }
 .ea-viz-cap {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 0.625rem;
   letter-spacing: 0.06em;
@@ -809,7 +809,7 @@
   align-items: center;
   gap: 0.6rem;
   flex-wrap: wrap;
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 0.72rem;
 }
@@ -905,7 +905,7 @@
   border-radius: 9px;
 }
 .ea-cov-name {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: 0.6rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -1093,7 +1093,7 @@
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.28);
   overflow: hidden;
   animation: ea-pop 0.2s ease;
-  font-family: var(--font-sans, 'Plus Jakarta Sans', system-ui, sans-serif);
+  font-family: var(--font-sans);
 }
 @keyframes ea-fade {
   from {

@@ -59,7 +59,7 @@ body.light-mode.dashboard-page {
   color: var(--dash-label-color);
 }
 .dashboard-page .dash-mono-value {
-  font-family: var(--font-mono, ui-monospace, monospace);
+  font-family: var(--font-mono);
   font-weight: 800;
 }
 .dashboard-page .dash-link {

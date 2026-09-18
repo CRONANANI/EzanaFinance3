@@ -53,7 +53,7 @@
 
 /* ── delta cell ── */
 .wm-delta {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-sub-size);
   font-variant-numeric: tabular-nums;
   font-weight: var(--ds-type-strong);
@@ -92,7 +92,7 @@
 .wm-score-num {
   min-width: 22px;
   text-align: right;
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-sub-size);
   font-variant-numeric: tabular-nums;
   font-weight: var(--ds-type-strong);
@@ -122,7 +122,7 @@
   gap: 5px;
 }
 .wm-control-label {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-eyebrow-tracking);
@@ -176,7 +176,7 @@
   gap: 8px;
 }
 .wm-hl-score {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 18px;
   font-weight: 700;
@@ -234,7 +234,7 @@
   color: var(--text-primary);
 }
 .wm-factor-weight {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-figure-size);
   font-variant-numeric: tabular-nums;
   font-weight: var(--ds-type-strong);

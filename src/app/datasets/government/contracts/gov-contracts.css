@@ -21,7 +21,7 @@
   padding: 0 32px 64px;
   background: var(--bg-primary);
   color: var(--text-primary);
-  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-family: var(--font-sans);
   /* Pin the design tokens to their exact Option-1b values so accents resolve to
      the BRIGHT emerald (#10b981) at rest — some ancestor theme scopes redefine
      --emerald to the darker #059669, which is the design's HOVER colour only.
@@ -38,7 +38,7 @@
   --pink: #ec4899;
 }
 .gcx-mono {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 
@@ -122,7 +122,7 @@
   margin-bottom: 16px; /* was 22px — no longer carries body copy */
 }
 .gcx-eyebrow {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-eyebrow-tracking);
@@ -150,7 +150,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-family: var(--font-sans, sans-serif);
+  font-family: var(--font-sans);
   font-size: var(--ds-type-body-size);
   font-weight: var(--ds-type-strong);
   border-radius: var(--radius-md, 8px);
@@ -217,7 +217,7 @@
   border: none;
   border-bottom: 2px solid var(--emerald);
   border-radius: 6px;
-  font-family: var(--font-sans, sans-serif);
+  font-family: var(--font-sans);
   font-size: var(--ds-type-sub-size);
   font-weight: var(--ds-type-strong);
   cursor: pointer;
@@ -246,7 +246,7 @@
   margin-bottom: 7px; /* was 10px */
 }
 .gcx-fg-title {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-eyebrow-tracking);
@@ -560,7 +560,7 @@
   min-height: 52px; /* was 96px — the real driver of the change */
 }
 .gcx-metric-label {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-eyebrow-tracking);
@@ -569,7 +569,7 @@
   color: var(--text-muted);
 }
 .gcx-metric-value {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 16px;
   font-weight: 700;
@@ -590,7 +590,7 @@
   overflow-wrap: anywhere;
 }
 .gcx-metric-meta {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-variant-numeric: tabular-nums;
   color: var(--text-faint);
@@ -714,7 +714,7 @@
   margin-bottom: 14px;
 }
 .gcx-hero-title {
-  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-family: var(--font-sans);
   font-size: var(--ds-type-headline-size);
   font-weight: var(--ds-type-headline-weight);
   letter-spacing: var(--ds-type-headline-tracking);
@@ -776,7 +776,7 @@
   fill-opacity: 0.85;
 }
 .gcx-tl-tag {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-eyebrow-tracking);
@@ -793,7 +793,7 @@
   font-size: var(--ds-type-disclaimer-size);
   font-variant-numeric: tabular-nums;
   fill: var(--text-secondary);
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
 }
 .gcx-tl-sm {
   font-size: var(--ds-type-eyebrow-size);
@@ -826,7 +826,7 @@
   font-weight: 700;
   fill: var(--text-primary);
   text-anchor: middle;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
 }
 .gcx-donut-c2 {
   font-size: 8px;
@@ -896,7 +896,7 @@
   color: var(--emerald);
   font-size: var(--ds-type-fine-size);
   font-weight: var(--ds-type-strong);
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 .gcx-row-main {
@@ -932,7 +932,7 @@
 .gcx-row-val {
   font-size: var(--ds-type-sub-size);
   font-weight: var(--ds-type-strong);
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   color: var(--text-primary);
   text-align: right;
@@ -1010,7 +1010,7 @@
   margin-bottom: 12px;
 }
 .gcx-modal-name {
-  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-family: var(--font-sans);
   font-size: var(--ds-type-headline-size);
   font-weight: var(--ds-type-headline-weight);
   letter-spacing: var(--ds-type-headline-tracking);
@@ -1037,7 +1037,7 @@
   padding: 9px 11px;
 }
 .gcx-ministat-label {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-eyebrow-tracking);
@@ -1049,7 +1049,7 @@
 .gcx-ministat-value {
   font-size: var(--ds-type-figure-size);
   font-weight: var(--ds-type-strong);
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   color: var(--text-primary);
 }
@@ -1063,7 +1063,7 @@
   margin-bottom: 16px;
 }
 .gcx-modal-h {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-eyebrow-tracking);
@@ -1184,14 +1184,14 @@
 .gcx-sim-total {
   font-size: var(--ds-type-figure-size);
   font-weight: var(--ds-type-strong);
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   color: var(--text-primary);
 }
 .gcx-related-tk {
   font-size: var(--ds-type-figure-size);
   font-weight: var(--ds-type-strong);
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   color: var(--text-primary);
 }
@@ -1231,7 +1231,7 @@
   letter-spacing: 0.02em;
   fill: var(--text-faint);
   text-anchor: middle;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
 }
 .gcx-axis {
   stroke: var(--border-primary);
@@ -1261,7 +1261,7 @@
   margin-bottom: 14px;
 }
 .gcx-ql-title {
-  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-family: var(--font-sans);
   font-size: var(--ds-type-headline-size);
   font-weight: var(--ds-type-headline-weight);
   letter-spacing: var(--ds-type-headline-tracking);
@@ -1269,7 +1269,7 @@
   color: var(--text-primary);
 }
 .gcx-ql-beta {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-eyebrow-tracking);
@@ -1693,7 +1693,7 @@
 }
 .gcx-exp-table th {
   color: var(--text-faint);
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-eyebrow-tracking);
@@ -1877,7 +1877,7 @@
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-code-size);
   font-variant-numeric: tabular-nums;
   color: var(--emerald);
@@ -1959,7 +1959,7 @@
   min-width: 0;
 }
 .gcx-award-eyebrow {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-eyebrow-tracking);
@@ -1998,7 +1998,7 @@
 .gcx-award-amount {
   display: block;
   margin-top: 4px;
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-hero-size);
   font-weight: var(--ds-type-hero-weight);
   letter-spacing: var(--ds-type-hero-tracking);
@@ -2017,7 +2017,7 @@
 .gcx-award-date {
   display: block;
   margin-top: 4px;
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-figure-size);
   font-weight: var(--ds-type-code-weight);
   text-transform: uppercase;
@@ -2040,7 +2040,7 @@
 }
 .gcx-award-code {
   display: block;
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-code-size);
   font-weight: var(--ds-type-code-weight);
   font-variant-numeric: tabular-nums;
@@ -2074,7 +2074,7 @@
 }
 .gcx-award-desc-text {
   margin: 6px 0 0;
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-source-size);
   font-weight: 400;
   line-height: var(--ds-type-source-lh);
@@ -2111,7 +2111,7 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-badge-size);
   font-weight: var(--ds-type-badge-weight);
   letter-spacing: var(--ds-type-badge-tracking);
@@ -2212,7 +2212,7 @@ body.light-mode .gcx-award-spark {
   }
 }
 .gcx-award-loading-note {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-disclaimer-size);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-badge-tracking);
@@ -2454,7 +2454,7 @@ body.light-mode .gcx-award-ghost.is-on {
   color: var(--text-primary);
 }
 .gcx-auth-pop-title {
-  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-family: var(--font-sans);
   font-size: var(--ds-type-headline-size);
   font-weight: var(--ds-type-headline-weight);
   letter-spacing: var(--ds-type-headline-tracking);
@@ -2524,7 +2524,7 @@ body.light-mode .gcx-award-ghost.is-on {
 }
 .gcx-dossier-name {
   margin: 0;
-  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-family: var(--font-sans);
   font-size: var(--ds-type-headline-size);
   font-weight: var(--ds-type-headline-weight);
   letter-spacing: var(--ds-type-headline-tracking);
@@ -2543,7 +2543,7 @@ body.light-mode .gcx-award-ghost.is-on {
 .gcx-dossier-px {
   font-size: var(--ds-type-figure-size);
   font-weight: var(--ds-type-strong);
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   color: var(--text-primary);
   white-space: nowrap;
@@ -2560,7 +2560,7 @@ body.light-mode .gcx-award-ghost.is-on {
 }
 .gcx-dossier-label {
   display: block;
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-eyebrow-tracking);
@@ -2640,7 +2640,7 @@ body.light-mode .gcx-award-ghost.is-on {
   font-variant-numeric: tabular-nums;
   fill: var(--text-primary);
   text-anchor: middle;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
 }
 .gcx-link-label {
   font-size: var(--ds-type-disclaimer-size);

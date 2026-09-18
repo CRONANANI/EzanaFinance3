@@ -193,6 +193,39 @@
   --weight-medium: 600;
   --weight-regular: 500;
 
+  /* ── Platform type ramp (v2) ─────────────────────────────────────────────
+     One role per text element, app-wide. Colours still route through the
+     theme tokens; these are metrics only. The 9.5px --type-kicker above
+     remains the broadsheet-only editorial variant. */
+  --type-eyebrow-size: 0.6875rem; /* 11px, mono, uppercase */
+  --type-eyebrow-tracking: 0.08em;
+  --type-eyebrow-weight: 600;
+  --type-eyebrow-tracking-marketing: 0.2em; /* landing + Echo covers only */
+  --type-page-title-size: 1.875rem;
+  --type-page-title-weight: 700;
+  --type-page-title-tracking: -0.02em;
+  --type-section-size: 1.25rem;
+  --type-section-weight: 600;
+  --type-section-tracking: -0.02em;
+  --type-card-title-size: 1rem;
+  --type-card-title-weight: 600;
+  --type-card-title-tracking: -0.01em;
+  --type-body-size: 0.875rem;
+  --type-caption-size: 0.75rem;
+  --type-caption-weight: 500;
+  --type-micro-size: 0.6875rem;
+  --type-value-lg-size: 1.5rem;
+  --type-value-lg-weight: 700;
+  --type-value-sm-size: 0.875rem;
+  --type-value-sm-weight: 600;
+
+  /* The one colour in this block. It names the brighter green that ~55 rules
+     already hardcode as #34d399 for chart lines and positive accents, so
+     adopting it is a rename and nothing repaints. It is deliberately NOT
+     overridden in the light scopes: that would change what those rules render
+     today. Revisit as a real semantic pair if light mode ever needs its own. */
+  --positive-bright: #34d399;
+
   /* Native form control chrome (dropdowns, date inputs, scrollbars) */
   color-scheme: dark;
 

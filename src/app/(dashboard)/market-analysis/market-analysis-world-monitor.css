@@ -42,7 +42,7 @@
   padding: 0.375rem 1.25rem;
   font-size: 0.625rem;
   font-weight: 800;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #6b7280;
@@ -69,7 +69,7 @@
   text-decoration: none;
   display: inline-flex;
   align-items: center;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   font-size: 0.625rem;
@@ -86,7 +86,7 @@
 .ma-power-map-data-link {
   font-size: 0.65rem;
   font-weight: 700;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   letter-spacing: 0.04em;
   color: #c4b5fd;
   text-decoration: none;
@@ -160,7 +160,7 @@
   font-size: 13px;
   font-weight: 600;
   margin: 0 0 4px;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
 }
 
 .ma-power-map-country-tooltip p {
@@ -289,7 +289,7 @@
   border-top: 1px solid rgba(16, 185, 129, 0.08);
   font-size: 0.5rem;
   font-weight: 600;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: #4b5563;
@@ -408,7 +408,7 @@
   padding: 0.375rem 0.75rem;
   font-size: 0.5625rem;
   font-weight: 700;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   letter-spacing: 0.06em;
   color: #8b949e;
   background: transparent;
@@ -452,7 +452,7 @@
   padding: 0.375rem 0.75rem;
   font-size: 0.5625rem;
   font-weight: 700;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   letter-spacing: 0.06em;
   color: #8b949e;
   background: rgba(10, 14, 19, 0.7);
@@ -512,7 +512,7 @@
   padding: 0.375rem 0.75rem;
   font-size: 0.625rem;
   font-weight: 700;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   color: #10b981;
   top: auto;
   bottom: 100px;
@@ -528,7 +528,7 @@
   border-bottom: 1px solid rgba(16, 185, 129, 0.08);
   font-size: 0.6875rem;
   font-weight: 800;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   color: #f0f6fc;
   letter-spacing: 0.06em;
 }
@@ -572,7 +572,7 @@
   padding: 0.25rem 0.625rem;
   font-size: 0.5rem;
   font-weight: 700;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   letter-spacing: 0.08em;
   color: #4b5563;
   background: transparent;
@@ -627,7 +627,7 @@
 .ma-panel-item-name {
   font-size: 0.6875rem;
   font-weight: 700;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   color: #f0f6fc;
   display: block;
 }
@@ -635,7 +635,7 @@
 .ma-panel-item-region {
   font-size: 0.5rem;
   color: #4b5563;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
 }
 
 .ma-panel-item-data {
@@ -645,7 +645,7 @@
 .ma-panel-item-price {
   font-size: 0.6875rem;
   font-weight: 700;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   color: #f0f6fc;
   display: block;
 }
@@ -653,7 +653,7 @@
 .ma-panel-item-change {
   font-size: 0.5625rem;
   font-weight: 700;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
 }
 
 .ma-panel-item-change.positive {
@@ -666,7 +666,7 @@
 .ma-panel-item-status {
   font-size: 0.4375rem;
   font-weight: 700;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   color: #4b5563;
   letter-spacing: 0.04em;
   white-space: nowrap;
@@ -679,7 +679,7 @@
 .ma-panel-item-detail p {
   font-size: 0.625rem;
   color: #8b949e;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   line-height: 1.6;
   margin: 0;
 }
@@ -698,7 +698,7 @@
 .ma-filter-section h4 {
   font-size: 0.5rem;
   font-weight: 800;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   color: #10b981;
   letter-spacing: 0.1em;
   margin: 0 0 0.625rem;
@@ -709,7 +709,7 @@
   align-items: center;
   gap: 0.5rem;
   font-size: 0.625rem;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   color: #8b949e;
   padding: 0.3rem 0;
   cursor: pointer;
@@ -731,7 +731,7 @@
   padding: 0.5rem;
   font-size: 0.5625rem;
   font-weight: 700;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   letter-spacing: 0.06em;
   border-radius: 6px;
   cursor: pointer;
@@ -758,7 +758,7 @@
   border-radius: 6px;
   color: #f0f6fc;
   font-size: 0.625rem;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   margin-top: 0.25rem;
 }
 
@@ -784,7 +784,7 @@
   padding: 0 0.75rem;
   font-size: 0.5rem;
   font-weight: 800;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   color: #ef4444;
   letter-spacing: 0.1em;
   white-space: nowrap;
@@ -841,7 +841,7 @@
 .ma-ticker-symbol {
   font-size: 0.5rem;
   font-weight: 800;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   color: #6b7280;
   letter-spacing: 0.04em;
 }
@@ -849,7 +849,7 @@
 .ma-ticker-value {
   font-size: 0.5rem;
   font-weight: 700;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
 }
 
 .ma-ticker-value.up {
@@ -1060,7 +1060,7 @@ body.light-mode .ma-ticker-sep {
 .ma-chain-title {
   font-size: 0.6875rem;
   font-weight: 800;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   color: #f0f6fc;
   padding: 0.15rem 0.5rem;
   background: rgba(16, 185, 129, 0.08);
@@ -1071,14 +1071,14 @@ body.light-mode .ma-ticker-sep {
 
 .ma-chain-region {
   font-size: 0.5625rem;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   color: #6b7280;
 }
 
 .ma-chain-severity {
   font-size: 0.4375rem;
   font-weight: 800;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   padding: 0.1rem 0.375rem;
   border-radius: 3px;
   letter-spacing: 0.06em;
@@ -1099,7 +1099,7 @@ body.light-mode .ma-ticker-sep {
 
 .ma-chain-ago {
   font-size: 0.5rem;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   color: #4b5563;
   margin-left: auto;
 }
@@ -1107,14 +1107,14 @@ body.light-mode .ma-ticker-sep {
 .ma-chain-time {
   font-size: 0.5625rem;
   font-weight: 700;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   color: #10b981;
   margin-bottom: 0.375rem;
 }
 
 .ma-chain-body {
   font-size: 0.6875rem;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   color: #8b949e;
   line-height: 1.7;
   margin: 0;
@@ -1158,14 +1158,14 @@ body.light-mode .ma-ticker-sep {
 .ma-city-panel-name {
   font-size: 1rem;
   font-weight: 800;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   color: #f0f6fc;
   margin: 0 0 0.25rem;
 }
 
 .ma-city-panel-meta {
   font-size: 0.5625rem;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   color: #4b5563;
 }
 
@@ -1201,7 +1201,7 @@ body.light-mode .ma-ticker-sep {
   padding: 0.5rem 1rem 0.25rem;
   font-size: 0.5rem;
   font-weight: 800;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   color: #6b7280;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -1215,7 +1215,7 @@ body.light-mode .ma-ticker-sep {
   padding: 0.5rem 1rem 0.375rem;
   font-size: 0.5625rem;
   font-weight: 700;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   color: #10b981;
 }
 
@@ -1244,7 +1244,7 @@ body.light-mode .ma-ticker-sep {
   gap: 0.375rem;
   font-size: 0.625rem;
   font-weight: 700;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   color: #10b981;
   text-decoration: none;
 }
@@ -1257,7 +1257,7 @@ body.light-mode .ma-ticker-sep {
   margin-top: 0.375rem;
   font-size: 0.5625rem;
   color: #4b5563;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   margin: 0;
 }
 
@@ -1290,7 +1290,7 @@ body.light-mode .ma-ticker-sep {
   display: inline-block;
   font-size: 0.4375rem;
   font-weight: 700;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   color: #10b981;
   background: rgba(16, 185, 129, 0.1);
   padding: 0.125rem 0.375rem;
@@ -1300,7 +1300,7 @@ body.light-mode .ma-ticker-sep {
 .ma-city-news-time {
   font-size: 0.5rem;
   color: #4b5563;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
 }
 
 .ma-city-news-title {
@@ -1316,7 +1316,7 @@ body.light-mode .ma-ticker-sep {
   margin-top: 0.25rem;
   font-size: 0.5rem;
   color: #10b981;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
 }
 
 /* ????????? NEW: Sector bars for Sectors tab ????????? */
@@ -1395,7 +1395,7 @@ body.light-mode .ma-ticker-sep {
   font-weight: 600;
   font-size: 0.9rem;
   text-decoration: none;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
 }
 
 .ma-city-source-link:hover {
@@ -1413,7 +1413,7 @@ body.light-mode .ma-ticker-sep {
   padding: 0.625rem 1rem;
   font-size: 0.5rem;
   font-weight: 800;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   color: #10b981;
   letter-spacing: 0.1em;
   border-bottom: 1px solid rgba(16, 185, 129, 0.06);
@@ -1446,7 +1446,7 @@ body.light-mode .ma-ticker-sep {
 .ma-city-news-badge {
   font-size: 0.4375rem;
   font-weight: 800;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   padding: 0.125rem 0.375rem;
   border-radius: 3px;
   border: 1px solid;
@@ -1455,14 +1455,14 @@ body.light-mode .ma-ticker-sep {
 
 .ma-city-news-time {
   font-size: 0.5rem;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   color: #4b5563;
 }
 
 .ma-city-news-title {
   font-size: 0.6875rem;
   font-weight: 700;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   color: #e2e8f0;
   line-height: 1.5;
   margin: 0 0 0.375rem;
@@ -1471,7 +1471,7 @@ body.light-mode .ma-ticker-sep {
 .ma-city-news-source {
   font-size: 0.5rem;
   font-weight: 600;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   color: #10b981;
 }
 
@@ -1597,7 +1597,7 @@ body.light-mode .ma-ticker-sep {
 }
 
 .gpm-arrow-label {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-size: 0.5rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -2534,7 +2534,7 @@ body.light-mode .sentinel-related-markets-toggle:hover {
   padding: 0.375rem 0.75rem 0.125rem;
   font-size: 0.4375rem;
   font-weight: 700;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   letter-spacing: 0.1em;
   color: #4b5563;
   text-transform: uppercase;
@@ -2610,7 +2610,7 @@ body.light-mode .sentinel-related-markets-toggle:hover {
   padding: 0.3rem 0.625rem;
   font-size: 0.5rem;
   font-weight: 600;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   letter-spacing: 0.04em;
   color: #6b7280;
   background: transparent;

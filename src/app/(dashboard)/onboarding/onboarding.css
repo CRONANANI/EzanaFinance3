@@ -657,14 +657,7 @@ body.light-mode .onboarding-org-role-badge {
   align-items: center;
   justify-content: center;
   background: #ffffff;
-  font-family: var(
-    --font-sans,
-    'Plus Jakarta Sans',
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    sans-serif
-  );
+  font-family: var(--font-sans);
   padding: 20px;
 }
 
@@ -676,14 +669,7 @@ body.light-mode .onboarding-org-role-badge {
   border: 1px solid #e5e7eb;
   padding: 36px 32px;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-  font-family: var(
-    --font-sans,
-    'Plus Jakarta Sans',
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    sans-serif
-  );
+  font-family: var(--font-sans);
 }
 
 .iq-header {

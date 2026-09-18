@@ -135,7 +135,9 @@
   border-radius: var(--radius-lg, 12px);
   background: var(--bg-secondary);
   text-decoration: none;
-  transition: border-color 0.15s, transform 0.12s;
+  transition:
+    border-color 0.15s,
+    transform 0.12s;
 }
 .jx-team:hover {
   border-color: var(--org-primary, var(--emerald));

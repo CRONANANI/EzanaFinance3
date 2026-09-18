@@ -159,7 +159,7 @@ body.dark-mode .dcf-toolbar-section-label,
   align-items: center;
   gap: 0.3rem;
   padding: 0.3rem 0.55rem;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 0.65rem;
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
@@ -343,7 +343,7 @@ body.dark-mode .dcf-slider::-webkit-slider-thumb,
 .dcf-slider-bounds {
   display: flex;
   justify-content: space-between;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 0.65rem;
   color: var(--text-faint);
 }
@@ -643,7 +643,7 @@ body.dark-mode .dcf-chart-area,
   background: #f3f4f6;
   padding: 0.4rem 0.6rem;
   border-radius: 4px;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 0.75rem;
   color: #111827;
   width: fit-content;
@@ -696,7 +696,7 @@ body.dark-mode .dcf-delta-axis-label,
   font-size: 0.875rem;
   color: #1f2937;
   text-align: right;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
 }
 body.dark-mode .dcf-delta-row-label,
 .dark .dcf-delta-row-label {
@@ -983,7 +983,7 @@ body.light-mode .dcf-mode-btn.is-active {
   gap: 0.4rem;
   font-size: 0.7rem;
   color: var(--text-secondary);
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
 }
 
 .rdcf-fixed-list > span:not(:nth-child(even)) {
@@ -1164,7 +1164,7 @@ body.light-mode .dcf-mode-btn.is-active {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 0.6875rem;
 }
 

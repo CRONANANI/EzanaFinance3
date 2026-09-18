@@ -48,7 +48,9 @@
   border-radius: 10px;
   background: var(--comm-sc-accent-glow);
   border: 1px solid var(--comm-sc-accent-border);
-  transition: border-color 0.15s ease, background 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
 }
 
 .comm-social-connect .comm-social-connect__row:hover {
@@ -99,7 +101,9 @@
   border: 1px solid var(--comm-sc-accent-border);
   background: var(--comm-sc-accent-dim);
   color: var(--comm-sc-accent);
-  transition: background 0.15s ease, transform 0.12s ease;
+  transition:
+    background 0.15s ease,
+    transform 0.12s ease;
 }
 
 .comm-social-connect .comm-social-connect__action:hover:not(:disabled) {
@@ -108,7 +112,8 @@
   border-color: var(--comm-sc-accent);
 }
 
-.comm-social-connect.comm-social-connect--partner .comm-social-connect__action:hover:not(:disabled) {
+.comm-social-connect.comm-social-connect--partner
+  .comm-social-connect__action:hover:not(:disabled) {
   color: #0a0e13;
 }
 
@@ -153,6 +158,8 @@ body.light-mode .comm-social-connect .comm-social-connect__action:hover:not(:dis
   color: #fff;
 }
 
-body.light-mode .comm-social-connect.comm-social-connect--partner .comm-social-connect__action:hover:not(:disabled) {
+body.light-mode
+  .comm-social-connect.comm-social-connect--partner
+  .comm-social-connect__action:hover:not(:disabled) {
   color: #0f172a;
 }

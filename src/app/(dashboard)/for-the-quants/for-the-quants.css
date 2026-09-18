@@ -1288,7 +1288,7 @@ body.light-mode .ftq-expl-ticker {
   color: #10b981;
   font-size: 0.7rem;
   font-weight: 800;
-  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-family: var(--font-mono);
   letter-spacing: 0.05em;
   cursor: pointer;
   transition: all 0.15s ease;

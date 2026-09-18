@@ -262,7 +262,7 @@
   padding: 0.05rem 0.25rem;
   border-radius: 3px;
   font-size: 0.625rem;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   color: #10b981;
 }
 

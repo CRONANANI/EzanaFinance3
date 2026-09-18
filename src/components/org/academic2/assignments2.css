@@ -6,7 +6,7 @@
    =========================================================================== */
 
 .asg2-root {
-  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-family: var(--font-sans);
   color: var(--text-primary);
 
   /* Type accent tokens (one source of truth for chips + calendar events). */
@@ -19,7 +19,7 @@
   --tc-other: var(--text-muted);
 }
 .asg2-num {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 
@@ -33,7 +33,7 @@
   margin-bottom: 1.1rem;
 }
 .asg2-eyebrow {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.16em;
@@ -177,7 +177,7 @@ html.light-mode .asg2-metric {
   margin: 0 0 0.15rem;
 }
 .asg2-metric-value {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 1.05rem;
   font-weight: 700;
@@ -193,7 +193,7 @@ html.light-mode .asg2-metric {
   margin-top: 0.35rem;
 }
 .asg2-delta {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-weight: 700;
 }
@@ -259,7 +259,7 @@ html.light-mode .asg2-metric {
   gap: 4px;
 }
 .asg2-cal-dow {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.05em;
@@ -286,7 +286,7 @@ html.light-mode .asg2-metric {
   box-shadow: inset 0 0 0 1px var(--emerald);
 }
 .asg2-cal-daynum {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 0.7rem;
   font-weight: 700;
@@ -324,7 +324,7 @@ html.light-mode .asg2-metric {
   border-left-color: var(--negative);
 }
 .asg2-event-more {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-size: 0.62rem;
   font-weight: 700;
   color: var(--text-muted);
@@ -392,7 +392,7 @@ html.light-mode .asg2-metric {
   color: var(--emerald-text, var(--emerald));
 }
 .asg2-tab-count {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 0.66rem;
   padding: 0 0.3rem;
@@ -609,7 +609,7 @@ html.light-mode .asg2-metric {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-size: 0.58rem;
   font-weight: 700;
   color: var(--text-primary);
@@ -1039,7 +1039,7 @@ html.light-mode .asg2-metric {
   color: var(--text-secondary);
 }
 .asg2-version-badge {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-weight: 700;
   color: var(--text-primary);
 }
@@ -1072,7 +1072,7 @@ html.light-mode .asg2-metric {
   color: var(--text-primary);
 }
 .asg2-comment-time {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-size: 0.65rem;
   color: var(--text-muted);
 }
@@ -1119,7 +1119,7 @@ html.light-mode .asg2-metric {
   white-space: nowrap;
 }
 .asg2-attach-size {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-size: 0.66rem;
   color: var(--text-muted);
   margin-left: auto;
@@ -1181,7 +1181,7 @@ html.light-mode .asg2-metric {
 .asg2-rubric-score {
   width: 70px;
   text-align: right;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
 }
 
 /* Export menu */

@@ -73,7 +73,7 @@
   outline-offset: -2px;
 }
 .dsx-tlead {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-eyebrow-tracking);
@@ -87,13 +87,13 @@
   color: var(--text-secondary);
 }
 .dsx-tval {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-figure-size);
   font-variant-numeric: tabular-nums;
   font-weight: var(--ds-type-code-weight);
   color: var(--text-primary);
 }
 .dsx-mono {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }

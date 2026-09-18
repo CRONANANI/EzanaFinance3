@@ -21,7 +21,7 @@
 }
 .pcf-title {
   margin: 0;
-  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-family: var(--font-sans);
   font-size: 1.25rem;
   font-weight: 700;
   letter-spacing: -0.01em;
@@ -32,7 +32,7 @@
   color: var(--text-faint);
 }
 .pcf-mono {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
@@ -51,7 +51,7 @@
   padding: 14px 16px;
 }
 .pcf-stat-label {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-eyebrow-tracking);
@@ -61,7 +61,7 @@
 }
 .pcf-stat-value {
   margin-top: 6px;
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   font-size: 1.4rem;
@@ -100,7 +100,7 @@
 }
 .pcf-card-title {
   margin: 0;
-  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-family: var(--font-sans);
   font-size: var(--ds-type-headline-size);
   font-weight: var(--ds-type-headline-weight);
   letter-spacing: var(--ds-type-headline-tracking);
@@ -127,7 +127,7 @@
   border: none;
   background: transparent;
   color: var(--text-muted);
-  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-family: var(--font-sans);
   font-size: var(--ds-type-fine-size);
   font-weight: var(--ds-type-strong);
   padding: 5px 11px;
@@ -160,7 +160,7 @@
 }
 .pcf-table th {
   text-align: left;
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-eyebrow-tracking);
@@ -205,7 +205,7 @@
   border-radius: 999px;
   background: var(--emerald-bg, rgba(16, 185, 129, 0.08));
   color: var(--emerald, #10b981);
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-disclaimer-size);
   font-weight: var(--ds-type-strong);
   font-variant-numeric: tabular-nums;
@@ -302,7 +302,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-eyebrow-tracking);
@@ -323,7 +323,7 @@
   padding: 9px 11px;
 }
 .pcf-modal-stat-label {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-eyebrow-tracking);
@@ -333,7 +333,7 @@
 }
 .pcf-modal-stat-value {
   margin-top: 3px;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-figure-size);
   font-weight: var(--ds-type-strong);
   font-variant-numeric: tabular-nums;
@@ -423,7 +423,7 @@
   margin-bottom: 6px;
 }
 .pcf-cfm-name {
-  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-family: var(--font-sans);
   font-size: var(--ds-type-headline-size);
   font-weight: var(--ds-type-headline-weight);
   letter-spacing: var(--ds-type-headline-tracking);

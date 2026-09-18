@@ -10,7 +10,7 @@
   padding: 0 32px 48px;
   background: var(--bg-primary);
   color: var(--text-primary);
-  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-family: var(--font-sans);
   animation: cds-in 240ms ease-out;
 }
 body.light-mode .cds-page {
@@ -23,7 +23,7 @@ body.light-mode .cds-page {
 }
 
 .cds-mono {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 
@@ -191,7 +191,7 @@ body.light-mode .cds-page {
 }
 .cds-axis {
   fill: var(--text-muted);
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: 10px;
 }
 .cds-peak-note {

@@ -36,7 +36,7 @@
 }
 
 .ppo-stat-value {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 1.1rem;
   color: var(--text-primary);
@@ -105,7 +105,7 @@
   text-align: right;
 }
 .ppo-td-amt {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 

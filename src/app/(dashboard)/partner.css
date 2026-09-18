@@ -937,12 +937,12 @@ body.light-mode .ptr-hero-avatar-initials {
   font-size: 0.875rem;
   font-weight: 800;
   color: #f0f6fc;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
 }
 .ptr-market-change {
   font-size: 0.5625rem;
   font-weight: 700;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
 }
 .ptr-market-change.positive {
   color: #10b981;

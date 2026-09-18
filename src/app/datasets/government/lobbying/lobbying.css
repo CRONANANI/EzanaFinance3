@@ -24,7 +24,7 @@
   padding: 0 32px 64px;
   background: var(--bg-primary);
   color: var(--text-primary);
-  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-family: var(--font-sans);
   --emerald: #10b981;
   --emerald-hover: #059669;
   --emerald-bg: rgba(16, 185, 129, 0.08);
@@ -55,7 +55,7 @@
 }
 
 .lbx-mono {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 
@@ -92,7 +92,7 @@
   font-size: var(--ds-type-fine-size);
 }
 .lbx-ttag {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-eyebrow-tracking);
@@ -121,7 +121,7 @@
 }
 .lbx-eyebrow {
   margin: 0 0 8px;
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-eyebrow-tracking);
@@ -173,7 +173,7 @@
   border: none;
   border-bottom: 2px solid var(--emerald);
   border-radius: 7px;
-  font-family: var(--font-sans, sans-serif);
+  font-family: var(--font-sans);
   font-size: var(--ds-type-fine-size);
   font-weight: var(--ds-type-strong);
   cursor: pointer;
@@ -209,7 +209,7 @@
 
 /* rail groups + pills */
 .lbx-rg-title {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-eyebrow-tracking);
@@ -233,7 +233,7 @@
   border-radius: 7px;
   background: transparent;
   color: var(--text-muted);
-  font-family: var(--font-sans, sans-serif);
+  font-family: var(--font-sans);
   font-size: var(--ds-type-fine-size);
   font-weight: var(--ds-type-strong);
   text-align: left;
@@ -250,7 +250,7 @@
 }
 .lbx-pill-tag {
   margin-left: auto;
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-eyebrow-tracking);
@@ -279,7 +279,7 @@
 .lbx-slider-val {
   margin-top: 4px;
   font-size: var(--ds-type-fine-size);
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   color: var(--text-muted);
 }
@@ -306,7 +306,7 @@
   background: rgba(245, 158, 11, 0.05);
 }
 .lbx-stat-label {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-eyebrow-tracking);
@@ -316,7 +316,7 @@
 }
 .lbx-stat-value {
   margin-top: 6px;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   font-size: 1.35rem;
@@ -357,7 +357,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-family: var(--font-sans);
   font-size: var(--ds-type-headline-size);
   font-weight: var(--ds-type-headline-weight);
   letter-spacing: var(--ds-type-headline-tracking);
@@ -365,7 +365,7 @@
 }
 .lbx-partial-chip {
   font-variant-numeric: tabular-nums;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-weight: var(--ds-type-strong);
   color: var(--warning);
@@ -393,7 +393,7 @@
   border: none;
   background: transparent;
   color: var(--text-muted);
-  font-family: var(--font-sans, sans-serif);
+  font-family: var(--font-sans);
   font-size: var(--ds-type-fine-size);
   font-weight: var(--ds-type-strong);
   padding: 5px 11px;
@@ -540,7 +540,7 @@
 }
 .lbx-donut-num {
   font-variant-numeric: tabular-nums;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   font-weight: 700;
   font-size: 17px;
   fill: var(--text-primary);
@@ -548,7 +548,7 @@
 .lbx-donut-lbl {
   font-size: 8px;
   fill: var(--text-faint);
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-eyebrow-tracking);
   text-transform: uppercase;
@@ -636,7 +636,7 @@
 }
 .lbx-table th {
   text-align: left;
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-eyebrow-tracking);
@@ -726,7 +726,7 @@
   align-items: center;
   gap: 3px;
   margin-left: 8px;
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-eyebrow-tracking);
@@ -833,7 +833,7 @@
 }
 .lbx-modal-client {
   margin: 8px 0 2px;
-  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-family: var(--font-sans);
   font-size: var(--ds-type-headline-size);
   font-weight: var(--ds-type-headline-weight);
   letter-spacing: var(--ds-type-headline-tracking);
@@ -856,7 +856,7 @@
   gap: 2px;
 }
 .lbx-modal-k {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-eyebrow-tracking);
@@ -870,7 +870,7 @@
   color: var(--text-primary);
 }
 .lbx-modal-sec {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-eyebrow-tracking);
@@ -1011,7 +1011,7 @@
   border-bottom: 1px solid var(--border-primary);
 }
 .lbx-cc-name {
-  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-family: var(--font-sans);
   font-size: var(--ds-type-headline-size);
   font-weight: var(--ds-type-headline-weight);
   letter-spacing: var(--ds-type-headline-tracking);
@@ -1025,7 +1025,7 @@
   gap: 8px;
 }
 .lbx-cc-exch {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-eyebrow-tracking);
@@ -1074,7 +1074,7 @@
 }
 .lbx-cc-chart-label {
   flex: none;
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-eyebrow-tracking);
@@ -1084,7 +1084,7 @@
 }
 .lbx-cc-sec {
   padding: 14px 22px 8px;
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-eyebrow-tracking);

@@ -1,7 +1,7 @@
 /* ELO Leaderboard Redesign v2 ("Sweet Spot") — global page styles */
 
 .elo-page-wrap {
-  font-family: var(--font-sans, 'Inter', system-ui, sans-serif);
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   color: #0a0a0a;
 }
