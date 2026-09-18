@@ -975,7 +975,7 @@ body.light-mode .ma-view-btn {
 }
 
 body.light-mode .ma-view-btn.active {
-  color: #059669;
+  color: var(--emerald);
   background: rgba(16, 185, 129, 0.12);
 }
 
@@ -1006,7 +1006,7 @@ body.light-mode .world-map-controls button {
 }
 
 body.light-mode .world-map-controls button:hover {
-  color: #059669;
+  color: var(--emerald);
 }
 
 /* ═══ Responsive ═══ */

@@ -586,7 +586,7 @@
 .ftq-vol-bar {
   flex: 1;
   background: rgba(212, 175, 55, 0.35);
-  border-radius: 3px 3px 0 0;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
   min-height: 4px;
 }
 

@@ -563,7 +563,7 @@ body.light-mode .bm-ev-item--clickable:hover {
 }
 
 body.light-mode .bm-ev-sport-tab.on {
-  background: #d4af37;
+  background: var(--gold-champagne);
   color: #111;
-  border-color: #d4af37;
+  border-color: var(--gold-champagne);
 }

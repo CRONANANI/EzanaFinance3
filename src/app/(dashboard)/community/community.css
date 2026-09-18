@@ -110,7 +110,7 @@ html.light-mode .ezana-theme {
   --shadow-lg: 0 8px 24px rgba(15, 23, 42, 0.08);
 
   --line-soft: rgba(13, 24, 33, 0.05);
-  --emerald-ink: #047857;
+  --emerald-ink: var(--emerald-hover);
   --ledger-shadow: 0 1px 2px rgba(13, 24, 33, 0.05), 0 8px 24px -14px rgba(13, 24, 33, 0.14);
 }
 

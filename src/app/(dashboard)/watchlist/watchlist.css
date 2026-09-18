@@ -1472,13 +1472,13 @@ body.light-mode .wl-class-menu-item {
 }
 
 body.light-mode .wl-class-menu-item.is-active {
-  color: #059669;
+  color: var(--emerald);
   background: rgba(5, 150, 105, 0.1);
 }
 
 body.light-mode .wl-class-menu-item.is-active i,
 body.light-mode .wl-class-menu-check {
-  color: #059669 !important;
+  color: var(--emerald) !important;
 }
 
 /* Empty state when an asset class has no items (shouldn't happen with seed data, but handles it gracefully) */
@@ -1522,12 +1522,12 @@ body.light-mode .wl-strip-badge.bond {
 
 body.light-mode .wl-strip-badge.comm {
   background: rgba(245, 158, 11, 0.08);
-  color: #d97706;
+  color: var(--warning);
 }
 
 body.light-mode .wl-strip-badge.crypto {
   background: rgba(247, 147, 26, 0.08);
-  color: #d97706;
+  color: var(--warning);
 }
 
 /* Mobile — switcher stacks above the strip on narrow viewports */

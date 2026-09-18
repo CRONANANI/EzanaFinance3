@@ -1019,7 +1019,7 @@ body.light-mode .hts-weekly-lines a {
   color: #10b981;
 }
 body.light-mode .hts-weekly-lines a:hover {
-  color: #059669;
+  color: var(--emerald);
 }
 
 body.light-mode .hts-capitol-name {
@@ -1058,11 +1058,11 @@ body.light-mode .hts-pulse-stock {
 }
 
 body.light-mode .hts-pulse-change.positive {
-  color: #059669;
+  color: var(--emerald);
 }
 
 body.light-mode .hts-pulse-change.negative {
-  color: #dc2626;
+  color: var(--negative);
 }
 
 body.light-mode .hts-week-date-range {
@@ -1097,7 +1097,7 @@ body.light-mode .hts-week-compare {
 }
 
 body.light-mode .hts-activity-label {
-  color: #059669;
+  color: var(--emerald);
 }
 
 body.light-mode .hts-week-position-ticker {
@@ -1114,7 +1114,7 @@ body.light-mode .hts-chain-body {
 }
 
 body.light-mode .hts-chain-time {
-  color: #059669;
+  color: var(--emerald);
 }
 
 body.light-mode .hts-chain-dot {
@@ -1124,7 +1124,7 @@ body.light-mode .hts-chain-dot {
 
 body.light-mode .hts-chain-congress {
   background: rgba(16, 185, 129, 0.12);
-  color: #047857;
+  color: var(--emerald-hover);
 }
 
 body.light-mode .hts-events-footer {
@@ -1724,7 +1724,7 @@ body.light-mode .hts-events-filter-chip {
 }
 body.light-mode .hts-events-filter-chip.is-active {
   background: rgba(16, 185, 129, 0.15);
-  color: #047857;
+  color: var(--emerald-hover);
 }
 
 /* Partial-failure / rate-limit warning strip */

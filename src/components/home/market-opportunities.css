@@ -211,7 +211,7 @@
 /* ── Light mode ── */
 body.light-mode .mkt-opps-card {
   background: #ffffff;
-  border-color: #d4af37;
+  border-color: var(--gold-champagne);
 }
 
 body.light-mode .mkt-opps-header {

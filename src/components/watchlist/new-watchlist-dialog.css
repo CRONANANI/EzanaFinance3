@@ -571,7 +571,7 @@ body.light-mode .nwd-footer {
   }
   .nwd-dialog {
     max-height: 92vh;
-    border-radius: 14px 14px 0 0;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   }
   .nwd-header {
     padding: 1rem 1rem 0.75rem;

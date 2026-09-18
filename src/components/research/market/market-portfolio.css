@@ -470,16 +470,16 @@ body.light-mode .shm-summary-name {
   color: #111827;
 }
 body.light-mode .shm-summary-name--up {
-  color: #059669;
+  color: var(--emerald);
 }
 body.light-mode .shm-summary-name--down {
-  color: #dc2626;
+  color: var(--negative);
 }
 body.light-mode .shm-summary-value--up {
-  color: #059669;
+  color: var(--emerald);
 }
 body.light-mode .shm-summary-value--down {
-  color: #dc2626;
+  color: var(--negative);
 }
 
 /* Stress Test card -------------------------------------------------------- */
@@ -1140,13 +1140,13 @@ body.light-mode .stc-tab-btn.is-active {
 .sbar-fill.is-pos {
   left: 50%;
   background: var(--emerald);
-  border-radius: 0 3px 3px 0;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }
 
 .sbar-fill.is-neg {
   right: 50%;
   background: var(--negative);
-  border-radius: 3px 0 0 3px;
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
 }
 
 .shm-sector-pct {

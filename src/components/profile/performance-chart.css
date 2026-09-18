@@ -131,5 +131,5 @@ body.light-mode .pc-tooltip {
   text-align: center;
 }
 body:not(.light-mode) .pc-warn {
-  color: #f59e0b;
+  color: var(--amber);
 }

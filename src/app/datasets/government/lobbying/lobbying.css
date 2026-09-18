@@ -808,7 +808,7 @@
   background: var(--lbx-inset);
   padding: 22px;
   border-right: 1px solid var(--border-primary);
-  border-radius: 16px 0 0 16px;
+  border-radius: var(--radius-xl) 0 0 var(--radius-xl);
 }
 .lbx-modal-right {
   position: relative;
@@ -1185,7 +1185,7 @@
     grid-template-columns: 1fr;
   }
   .lbx-modal-left {
-    border-radius: 16px 16px 0 0;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
     border-right: none;
     border-bottom: 1px solid var(--border-primary);
   }

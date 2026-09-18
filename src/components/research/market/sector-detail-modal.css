@@ -133,7 +133,7 @@ body.light-mode .sdm-header {
 body.light-mode .sdm-range-pill {
   background: rgba(5, 150, 105, 0.1);
   border-color: rgba(5, 150, 105, 0.3);
-  color: #047857;
+  color: var(--emerald-hover);
 }
 
 body.light-mode .sdm-title {

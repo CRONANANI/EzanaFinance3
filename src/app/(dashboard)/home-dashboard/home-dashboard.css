@@ -1219,7 +1219,7 @@ body.light-mode .db-greeting {
   color: #0f172a;
 }
 body.light-mode .db-greeting-highlight {
-  color: #059669;
+  color: var(--emerald);
 }
 
 /* ── Shared card shell ── */
@@ -1241,7 +1241,7 @@ body.light-mode .db-icon-btn {
   border-color: rgba(0, 0, 0, 0.08);
 }
 body.light-mode .db-icon-btn:hover {
-  color: #059669;
+  color: var(--emerald);
   border-color: rgba(5, 150, 105, 0.3);
 }
 
@@ -1257,9 +1257,9 @@ body.light-mode .db-tf-btn-sm:hover {
 }
 body.light-mode .db-tf-btn.active,
 body.light-mode .db-tf-btn-sm.active {
-  background: #059669;
+  background: var(--emerald);
   color: #fff;
-  border-color: #059669;
+  border-color: var(--emerald);
 }
 
 /* ── Hero card (portfolio value) ── */
@@ -1275,16 +1275,16 @@ body.light-mode .db-hero-stat-value {
   color: #0f172a;
 }
 body.light-mode .db-hero-label i {
-  color: #059669;
+  color: var(--emerald);
 }
 body.light-mode .db-hero-stat-label i {
-  color: #059669;
+  color: var(--emerald);
 }
 body.light-mode .db-hero-change.positive {
-  color: #059669;
+  color: var(--emerald);
 }
 body.light-mode .db-hero-change.negative {
-  color: #dc2626;
+  color: var(--negative);
 }
 body.light-mode .db-hero-stats {
   border-top-color: rgba(0, 0, 0, 0.06);
@@ -1295,13 +1295,13 @@ body.light-mode .db-holding-value {
   color: #0f172a;
 }
 body.light-mode .db-holding-change.positive {
-  color: #059669;
+  color: var(--emerald);
 }
 body.light-mode .db-holding-change.negative {
-  color: #dc2626;
+  color: var(--negative);
 }
 body.light-mode .db-holding-view-details {
-  color: #059669;
+  color: var(--emerald);
 }
 body.light-mode .db-holdings-nav-btn {
   background: rgba(0, 0, 0, 0.03);
@@ -1310,7 +1310,7 @@ body.light-mode .db-holdings-nav-btn {
 }
 body.light-mode .db-holdings-nav-btn:hover {
   background: rgba(5, 150, 105, 0.08);
-  color: #059669;
+  color: var(--emerald);
 }
 
 /* ── Watchlist ── */
@@ -1321,10 +1321,10 @@ body.light-mode .db-watchlist-price {
   color: #0f172a;
 }
 body.light-mode .db-watchlist-change.positive {
-  color: #059669;
+  color: var(--emerald);
 }
 body.light-mode .db-watchlist-change.negative {
-  color: #dc2626;
+  color: var(--negative);
 }
 body.light-mode .db-watchlist-item {
   border-bottom-color: rgba(0, 0, 0, 0.04);
@@ -1334,7 +1334,7 @@ body.light-mode .db-watchlist-item:hover {
 }
 body.light-mode .db-watchlist-avatar {
   background: rgba(5, 150, 105, 0.08);
-  color: #059669;
+  color: var(--emerald);
 }
 
 /* ── Profits card (donut) ── */
@@ -1389,7 +1389,7 @@ body.light-mode .db-sector-item--clickable.is-expanded {
 }
 body.light-mode .db-sector-drawer {
   background: rgba(5, 150, 105, 0.04);
-  border-left-color: #059669;
+  border-left-color: var(--emerald);
 }
 body.light-mode .db-sector-drawer-empty {
   color: #94a3b8;
@@ -1416,7 +1416,7 @@ body.light-mode .db-sector-pie-tooltip {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 body.light-mode .db-sector-pie-tooltip-value {
-  color: #059669;
+  color: var(--emerald);
 }
 body.light-mode .db-sector-pie-tooltip-pct {
   color: #64748b;
@@ -1473,7 +1473,7 @@ body.light-mode .db-profits-empty {
 /* ── Holdings badge (worst performer) ── */
 body.light-mode .db-holding-worst-badge {
   background: rgba(220, 38, 38, 0.06);
-  color: #dc2626;
+  color: var(--negative);
   border-color: rgba(220, 38, 38, 0.15);
 }
 
@@ -1488,18 +1488,18 @@ body.light-mode .db-hero-card-header h3 {
   color: #0f172a;
 }
 body.light-mode .db-hero-card-title-link {
-  color: #059669;
+  color: var(--emerald);
 }
 body.light-mode .db-hero-card-title-icon {
-  color: #059669;
+  color: var(--emerald);
 }
 
 /* ── Positive/negative semantic colors (light mode uses deeper shades for contrast) ── */
 body.light-mode .positive {
-  color: #059669;
+  color: var(--emerald);
 }
 body.light-mode .negative {
-  color: #dc2626;
+  color: var(--negative);
 }
 
 /* ── Hero timeframe pill ── */
@@ -1509,9 +1509,9 @@ body.light-mode .db-hero-tf-pill {
   border-color: rgba(0, 0, 0, 0.08);
 }
 body.light-mode .db-hero-tf-pill.active {
-  background: #059669;
+  background: var(--emerald);
   color: #fff;
-  border-color: #059669;
+  border-color: var(--emerald);
 }
 
 /* ── Sector Distribution drawer (click-to-expand) ── */
@@ -1530,7 +1530,7 @@ body.light-mode .db-hero-tf-pill.active {
   padding: 0.5rem 0.75rem;
   background: color-mix(in srgb, var(--emerald) 3%, transparent);
   border-left: 2px solid var(--emerald);
-  border-radius: 0 6px 6px 0;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
@@ -2193,7 +2193,7 @@ body.light-mode .market-pulse-sector-row:hover {
   gap: 0.2rem;
   background: color-mix(in srgb, var(--emerald) 3%, transparent);
   border-left: 2px solid var(--emerald-glow);
-  border-radius: 0 4px 4px 0;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
   animation: db-sector-holdings-slide-in 200ms ease-out;
 }
 

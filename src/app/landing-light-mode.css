@@ -145,7 +145,7 @@ body.light-mode .landing-page .word-animate:hover {
   body.light-mode:has(.landing-page) .navbar .mobile-hamburger {
     min-width: 48px;
     min-height: 48px;
-    color: var(--emerald-text, #059669) !important;
+    color: var(--emerald-text, var(--emerald)) !important;
   }
 
   body.light-mode:has(.landing-page) .navbar .mobile-hamburger i {
@@ -258,7 +258,7 @@ body.light-mode .landing-page .feature-card-link:hover {
 }
 
 body.light-mode .landing-page .feature-title {
-  background: linear-gradient(135deg, #0f172a 0%, #059669 100%);
+  background: linear-gradient(135deg, #0f172a 0%, var(--emerald) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

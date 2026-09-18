@@ -382,7 +382,7 @@ body.nav-mobile-open {
   body.light-mode .mobile-nav-link:hover,
   body.light-mode .mobile-nav-link:active {
     background: rgba(16, 185, 129, 0.06);
-    color: #059669;
+    color: var(--emerald);
   }
 
   body.light-mode .mobile-nav-link i:first-child {
@@ -390,12 +390,12 @@ body.nav-mobile-open {
   }
 
   body.light-mode .mobile-nav-partner {
-    color: #059669;
+    color: var(--emerald);
     border-color: rgba(5, 150, 105, 0.25);
   }
 
   body.light-mode .mobile-nav-brand {
-    color: #059669;
+    color: var(--emerald);
   }
 
   body.light-mode .mobile-nav-tagline {

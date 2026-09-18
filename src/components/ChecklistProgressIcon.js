@@ -220,7 +220,7 @@ export function ChecklistProgressIcon() {
           trigger styles to this block. */}
       <style>{`
         .cl2-mono {
-          font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+          font-family: var(--font-mono);
           font-variant-numeric: tabular-nums;
         }
 
@@ -240,7 +240,7 @@ export function ChecklistProgressIcon() {
           box-shadow: var(--shadow-lg, 0 16px 48px rgba(0,0,0,0.16));
           z-index: 50;
           overflow: visible;
-          font-family: var(--font-sans, 'Plus Jakarta Sans', system-ui, sans-serif);
+          font-family: var(--font-sans);
           animation: cl2-in 0.2s ease;
         }
         @keyframes cl2-in {
@@ -370,7 +370,7 @@ export function ChecklistProgressIcon() {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          font-family: var(--font-mono, 'JetBrains Mono', monospace);
+          font-family: var(--font-mono);
           font-size: 11px;
           font-weight: 700;
           flex-shrink: 0;

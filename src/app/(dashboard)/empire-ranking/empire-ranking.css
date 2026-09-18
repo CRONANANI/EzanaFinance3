@@ -14,7 +14,7 @@
   --er-text-muted: #9ca3af; /* secondary labels, axis ticks, subtitle */
   --er-text-faint: #cbd5e1; /* legend, small captions on chart */
   --er-text-label: #9ca3af; /* uppercase labels (cycle stats, controls) */
-  --er-accent: #d4af37; /* gold accent */
+  --er-accent: var(--gold-champagne); /* gold accent */
   --er-accent-soft: #e6c35a;
   --er-surface: rgba(212, 175, 55, 0.02);
   --er-surface-inset: rgba(0, 0, 0, 0.2);
@@ -860,7 +860,7 @@ body.light-mode .er-multiselect-menu {
   color: var(--negative);
 }
 body.light-mode .er-delta--up {
-  color: #047857;
+  color: var(--emerald-hover);
 }
 body.light-mode .er-delta--down {
   color: #b91c1c;

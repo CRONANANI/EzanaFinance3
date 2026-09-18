@@ -197,7 +197,7 @@
   transform: translateY(-50%);
   width: 3px;
   height: 24px;
-  border-radius: 0 3px 3px 0;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
   background: var(--emerald);
   box-shadow: 0 0 8px color-mix(in srgb, var(--emerald) 40%, transparent);
 }
@@ -399,11 +399,11 @@
   background: rgba(212, 168, 83, 0.04);
   border: 1px solid rgba(212, 168, 83, 0.1);
   border-right: none;
-  border-radius: 10px 0 0 10px;
+  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
 }
 
 .settings-input-row .settings-input {
-  border-radius: 0 10px 10px 0;
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
 }
 
 .settings-field-hint {
@@ -1325,7 +1325,7 @@ body.light-mode .settings-nav-item.active .settings-nav-label {
    Dark mode hover lightens text (white-on-dark); light mode hover should
    DARKEN text + add emerald tint to signal interactivity. */
 body.light-mode .settings-nav-item:hover .settings-nav-label {
-  color: #047857;
+  color: var(--emerald-hover);
 }
 
 /* Description text under labels — also bumped from #4b5563 for readability */
@@ -1756,7 +1756,7 @@ body.light-mode .settings-delete-modal__input {
 }
 
 body.light-mode .settings-delete-modal__input:focus {
-  border-color: #dc2626;
+  border-color: var(--negative);
 }
 
 .settings-delete-modal__error {

@@ -141,7 +141,7 @@ body.light-mode .beta-lock-meta p {
   color: #475569;
 }
 body.light-mode .beta-lock-meta strong {
-  color: #059669;
+  color: var(--emerald);
 }
 
 .beta-lock-actions {

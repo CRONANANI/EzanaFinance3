@@ -512,7 +512,7 @@
 }
 
 body.light-mode .nn-friend-accept {
-  color: #059669;
+  color: var(--emerald);
   border-color: rgba(16, 185, 129, 0.35);
 }
 body.light-mode .nn-friend-decline {
@@ -737,7 +737,7 @@ body.light-mode .nn-bell-btn {
 }
 body.light-mode .nn-bell-btn:hover,
 body.light-mode .nn-bell-btn.nn-bell-active {
-  color: #059669;
+  color: var(--emerald);
   background: rgba(16, 185, 129, 0.06);
 }
 body.light-mode .nn-badge {
@@ -771,7 +771,7 @@ body.light-mode .nn-filter:hover {
   color: #111827;
 }
 body.light-mode .nn-filter-active {
-  color: #059669;
+  color: var(--emerald);
 }
 
 @media (max-width: 768px) {
@@ -785,7 +785,7 @@ body.light-mode .nn-filter-active {
     color: #111827;
   }
   body.light-mode .nn-mobile-header-icon {
-    color: #059669;
+    color: var(--emerald);
   }
 }
 

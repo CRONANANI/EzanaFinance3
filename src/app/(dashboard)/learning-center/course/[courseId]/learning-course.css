@@ -272,7 +272,7 @@ body.light-mode .lc3-meta {
   color: #4b5563;
 }
 body.light-mode .lc3-pct {
-  color: #047857;
+  color: var(--emerald-hover);
 }
 
 /* Section headings + body prose (this is the main reading bug) */
@@ -321,7 +321,7 @@ body.light-mode .lc3-btn:disabled {
 
 /* "Course completed" pass banner */
 body.light-mode .lc3-passed {
-  color: #047857;
+  color: var(--emerald-hover);
 }
 
 /* ──────────── QUIZ ──────────── */
@@ -341,7 +341,7 @@ body.light-mode .lc3-opt:hover {
   border-color: #10b981;
 }
 body.light-mode .lc3-opt.sel {
-  color: #065f46;
+  color: var(--emerald-dark);
   background: rgba(16, 185, 129, 0.1);
   border-color: rgba(16, 185, 129, 0.55);
 }
@@ -351,7 +351,7 @@ body.light-mode .lc3-quiz-actions {
   color: #4b5563;
 }
 body.light-mode .lc3-link {
-  color: #047857;
+  color: var(--emerald-hover);
 }
 
 /* Results — pass / fail messages and explanations */
@@ -359,7 +359,7 @@ body.light-mode .lc3-results {
   color: #1f2937;
 }
 body.light-mode .lc3-pass {
-  color: #047857;
+  color: var(--emerald-hover);
 }
 body.light-mode .lc3-fail {
   color: #b91c1c;
@@ -397,7 +397,7 @@ body.light-mode .lc3-fail {
 }
 body.light-mode .lc3-results-badge.pass {
   background: rgba(16, 185, 129, 0.14);
-  color: #047857;
+  color: var(--emerald-hover);
 }
 body.light-mode .lc3-results-badge.fail {
   background: rgba(245, 158, 11, 0.16);
@@ -493,7 +493,7 @@ body.light-mode .lc3-review-your {
   color: #b91c1c;
 }
 body.light-mode .lc3-review-correct {
-  color: #047857;
+  color: var(--emerald-hover);
 }
 body.light-mode .lc3-review-explanation {
   color: #4b5563;
@@ -626,7 +626,7 @@ body.light-mode .lc-edit-hero {
 }
 
 body.light-mode .lc-edit-bookmark-btn {
-  color: var(--emerald, #059669);
+  color: var(--emerald, var(--emerald));
 }
 .lc-edit-level {
   font-weight: 700;
@@ -1208,7 +1208,7 @@ body.light-mode .lc-edit-keyterms {
   border-left: 3px solid var(--amber, var(--amber));
   padding: 14px 18px;
   margin: 24px 0;
-  border-radius: 0 8px 8px 0;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
 }
 .lc-edit-callout i {
   color: var(--amber, var(--amber));

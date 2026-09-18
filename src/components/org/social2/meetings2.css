@@ -355,7 +355,7 @@
 .mt2-spark__bar {
   flex: 1;
   min-width: 4px;
-  border-radius: 3px 3px 0 0;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
   background: var(--emerald-bg, var(--emerald-glow));
 }
 .mt2-spark__bar.is-latest {

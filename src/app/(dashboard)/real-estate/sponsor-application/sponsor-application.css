@@ -373,8 +373,8 @@ body.light-mode .sa-option {
   color: #4b5563;
 }
 body.light-mode .sa-option.selected {
-  border-color: #d4af37;
-  color: #d4af37;
+  border-color: var(--gold-champagne);
+  color: var(--gold-champagne);
   background: rgba(212, 175, 55, 0.06);
 }
 body.light-mode .sa-hero-title {

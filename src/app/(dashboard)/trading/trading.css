@@ -320,10 +320,10 @@ select.trd-input {
   color: #6b7280;
 }
 .trd-side-btn:first-child {
-  border-radius: 10px 0 0 10px;
+  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
 }
 .trd-side-btn:last-child {
-  border-radius: 0 10px 10px 0;
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
 }
 .trd-side-btn.buy.active {
   background: color-mix(in srgb, var(--emerald) 10%, transparent);
@@ -1524,7 +1524,7 @@ body.light-mode .trd-dash-h2 {
   color: #111827;
 }
 body.light-mode .trd-req-label--done {
-  color: #059669;
+  color: var(--emerald);
 }
 body.light-mode .trd-feature-icon-wrap {
   background: rgba(16, 185, 129, 0.08);

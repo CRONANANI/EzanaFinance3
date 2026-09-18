@@ -174,7 +174,7 @@ body:not(.light-mode) .apm-broker-tile {
 
 body:not(.light-mode) .apm-broker-tag {
   background: rgba(16, 185, 129, 0.18);
-  color: #34d399;
+  color: var(--positive-bright);
 }
 
 body:not(.light-mode) .apm-broker-logo-img {

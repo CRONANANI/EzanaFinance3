@@ -57,6 +57,16 @@ jobs:
         # slab in dark mode" bug class. Hard-fails so a new one can't land.
         run: npm run lint:css
 
+      - name: Branding guard
+        # Keeps the v2 branding contract from drifting: no raw brand hex in
+        # CSS, no references to tokens that do not exist (--border-color,
+        # --text-tertiary, --mono, --sans), no raw JetBrains/Jakarta font
+        # stacks, recharts axis ticks pinned at 11px, and border-radius in the
+        # 2-18px band snapped to the --radius-* scale. Sanctioned exceptions
+        # and the pending hand-review list are documented at the top of the
+        # script.
+        run: npm run lint:branding
+
       - name: Architecture rules (dependency-cruiser)
         # No dependency cycles; presentation layer (components/hooks/contexts)
         # must not reach the server Supabase surface, even transitively.

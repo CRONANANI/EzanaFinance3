@@ -1252,7 +1252,7 @@ body.light-mode .itc-filter-tag {
 body.light-mode .itc-stat-icon {
   background: rgba(16, 185, 129, 0.08);
   border-color: rgba(16, 185, 129, 0.15);
-  color: #059669;
+  color: var(--emerald);
 }
 
 body.light-mode .itc-new-card {

@@ -315,11 +315,11 @@ body.light-mode .re-filter-pill {
 }
 body.light-mode .re-filter-pill:hover {
   border-color: rgba(212, 175, 55, 0.3);
-  color: #d4af37;
+  color: var(--gold-champagne);
 }
 body.light-mode .re-filter-pill.active {
-  border-color: #d4af37;
-  color: #d4af37;
+  border-color: var(--gold-champagne);
+  color: var(--gold-champagne);
   background: rgba(212, 175, 55, 0.06);
 }
 

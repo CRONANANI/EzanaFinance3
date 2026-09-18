@@ -615,9 +615,9 @@
  * ==========================================================================*/
 .ctd-root {
   /* Sector accents → theme tokens (no raw hex in JSX; slate has no token). */
-  --ctd-sec-t1: var(--info, #3b82f6);
+  --ctd-sec-t1: var(--info, var(--blue));
   --ctd-sec-t2: var(--pink, #ec4899);
-  --ctd-sec-t3: var(--warning, #f59e0b);
+  --ctd-sec-t3: var(--warning, var(--amber));
   --ctd-sec-t4: var(--cyan, #06b6d4);
   --ctd-sec-t5: var(--indigo, #6366f1);
   --ctd-sec-t6: #64748b;

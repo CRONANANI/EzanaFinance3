@@ -1517,7 +1517,7 @@ html body.sonar-hero-active .main-nav:not(.partner-nav) {
 .snr-qbar i {
   width: 100%;
   max-width: 26px;
-  border-radius: 3px 3px 0 0;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
   background: color-mix(in srgb, var(--echo-chart-purple, var(--purple)) 55%, transparent);
 }
 .snr-qbar em {

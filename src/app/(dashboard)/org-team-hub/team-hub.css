@@ -1065,7 +1065,7 @@
     margin: 0.2rem 0 0.35rem 0.5rem;
     padding-left: 0.5rem;
     border-left: 2px solid var(--emerald-border);
-    border-radius: 0 8px 8px 0;
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
     box-shadow: none;
     min-width: 0;
     opacity: 1;
@@ -1314,7 +1314,7 @@ body.light-mode .th-file-icon {
 }
 
 body.light-mode .th-file-icon.pdf {
-  color: #dc2626;
+  color: var(--negative);
   background: rgba(220, 38, 38, 0.06);
 }
 body.light-mode .th-file-icon.pptx {
@@ -1344,7 +1344,7 @@ body.light-mode .th-badge {
 
 body.light-mode .th-badge.completed {
   background: rgba(16, 185, 129, 0.1);
-  color: #059669;
+  color: var(--emerald);
 }
 
 body.light-mode .th-badge.in-progress {
@@ -1410,7 +1410,7 @@ body.light-mode .th-ranking-rank {
 }
 
 body.light-mode .th-ranking-roi.positive {
-  color: #059669;
+  color: var(--emerald);
 }
 
 body.light-mode .th-ranking-tickers {

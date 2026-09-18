@@ -193,12 +193,12 @@ body.light-mode .animated-nav-link {
 
 body.light-mode .animated-nav-link:hover,
 body.light-mode .animated-nav-link.hovered {
-  color: #059669;
+  color: var(--emerald);
   background: rgba(16, 185, 129, 0.05);
 }
 
 body.light-mode .animated-nav-link.active {
-  color: #059669;
+  color: var(--emerald);
 }
 
 body.light-mode .animated-nav-dropdown {

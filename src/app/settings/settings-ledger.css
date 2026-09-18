@@ -24,14 +24,14 @@ html.light-mode .settings-ledger {
   --field: #ffffff;
   --field-line: rgba(13, 24, 33, 0.14);
   --field-fill: #f6f8f8;
-  --em: #059669;
-  --em-ink: #047857;
+  --em: var(--emerald);
+  --em-ink: var(--emerald-hover);
   --em-tint: rgba(5, 150, 105, 0.08);
   --em-line: rgba(5, 150, 105, 0.28);
-  --red: #dc2626;
+  --red: var(--negative);
   --red-tint: rgba(220, 38, 38, 0.06);
   --red-line: rgba(220, 38, 38, 0.28);
-  --amber: #d97706;
+  --amber: var(--warning);
   --shadow: 0 1px 2px rgba(13, 24, 33, 0.05), 0 1px 3px rgba(13, 24, 33, 0.04);
   --ring: 0 0 0 3px rgba(5, 150, 105, 0.16);
 }

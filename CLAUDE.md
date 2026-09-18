@@ -69,3 +69,19 @@
 - `CRONANANI/cronanani` is this repo's **former name** — GitHub redirects it to `EzanaFinance3` (it is the same repo, not a separate mirror). Always use the canonical `EzanaFinance3` URL; never rely on the old name, and never treat anything else as source of truth.
 - A husky `pre-push` hook (`.husky/pre-push`) enforces this: pushes to any remote whose URL is not `EzanaFinance3` are blocked. If a push is blocked, the fix is `git remote set-url origin https://github.com/CRONANANI/EzanaFinance3.git` — not bypassing the hook. `ALLOW_MIRROR_PUSH=1` remains as an explicit escape hatch.
 - After every push, sanity check: the commit SHA at the top of `git log origin/main` should appear in the next Vercel deployment's "Cloning …" log line.
+
+## Branding contract
+
+- Typography, colour and radius run off the tokens in `src/app/theme-variables.css`:
+  the `--type-*` ramp (eyebrow, page title, section, card title, body, caption,
+  micro, value-lg, value-sm), the brand colours, and `--radius-sm/md/lg/xl`.
+  Charts read their presentation props from `CHART` in `src/lib/chart-theme.js`.
+- `npm run lint:branding` (`scripts/check-branding.mjs`, wired into CI) enforces
+  it: no raw brand hex in CSS, no `var(--border-color|--text-tertiary|--mono|--sans)`
+  (none of those tokens exist), no raw JetBrains/Jakarta font stacks, recharts
+  axis ticks pinned at 11px, and `border-radius` in the 2 to 18px band on the
+  token scale. Sanctioned exceptions (Echo's `--echo-*` system, the broadsheet
+  `--bs-*` palette, device chrome, standalone document generators) and the
+  pending hand-review list are documented at the top of the script.
+- `EZANA_BRANDING_GUIDE.md` is the prose companion to the above. It is not
+  currently checked into this repo.

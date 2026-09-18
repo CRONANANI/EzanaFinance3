@@ -179,7 +179,7 @@ body.light-mode .ptr-tf-btn.active {
 
 /* ── BUTTONS ── */
 body.light-mode .ptr-btn-primary {
-  background: linear-gradient(135deg, #b8922f, #92731d);
+  background: linear-gradient(135deg, var(--gold), #92731d);
   color: #fff;
 }
 body.light-mode .ptr-btn-sm {
@@ -277,11 +277,11 @@ body.light-mode .ptr-table td {
   border-bottom-color: rgba(0, 0, 0, 0.03);
 }
 body.light-mode .ptr-table-amount {
-  color: #059669;
+  color: var(--emerald);
 }
 body.light-mode .ptr-status-badge.green {
   background: rgba(5, 150, 105, 0.12);
-  color: #059669;
+  color: var(--emerald);
 }
 
 /* ── COMPOSE ── */
@@ -385,10 +385,10 @@ body.light-mode .ptr-analytics-bar-track {
   background: rgba(0, 0, 0, 0.04);
 }
 body.light-mode .ptr-analytics-bar-fill {
-  background: linear-gradient(90deg, #b8922f, #92731d);
+  background: linear-gradient(90deg, var(--gold), #92731d);
 }
 body.light-mode .ptr-analytics-bar-fill.blue {
-  background: linear-gradient(90deg, #3b82f6, #2563eb);
+  background: linear-gradient(90deg, var(--blue), #2563eb);
 }
 body.light-mode .ptr-analytics-bar-val {
   color: #0f172a;
@@ -422,7 +422,7 @@ body.light-mode .ptr-draft-progress-bar {
   background: rgba(0, 0, 0, 0.04);
 }
 body.light-mode .ptr-draft-progress-fill {
-  background: linear-gradient(90deg, #b8922f, #92731d);
+  background: linear-gradient(90deg, var(--gold), #92731d);
 }
 body.light-mode .ptr-draft-progress-pct {
   color: #92731d;
@@ -443,7 +443,7 @@ body.light-mode .ptr-review-course {
   color: #94a3b8;
 }
 body.light-mode .ptr-review-rating {
-  color: #b8922f;
+  color: var(--gold);
 }
 body.light-mode .ptr-review-text {
   color: #64748b;
@@ -454,7 +454,7 @@ body.light-mode .ptr-review-time {
 
 /* ── CARD BADGE ── */
 body.light-mode .ptr-card-badge {
-  color: #059669;
+  color: var(--emerald);
   background: rgba(5, 150, 105, 0.12);
 }
 
@@ -467,5 +467,5 @@ body.light-mode .ptr-page {
 body.light-mode .ptr-strategy-return-total.positive,
 body.light-mode .ptr-copier-pnl .positive,
 body.light-mode .ptr-stat-change.positive {
-  color: #059669;
+  color: var(--emerald);
 }

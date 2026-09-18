@@ -2385,7 +2385,7 @@ body.light-mode .ma-ticker-sep {
 }
 
 body.light-mode .sentinel-related-markets-toggle {
-  color: #059669;
+  color: var(--emerald);
   background: rgba(16, 185, 129, 0.06);
   border-color: rgba(5, 150, 105, 0.2);
 }
