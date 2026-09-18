@@ -21,7 +21,7 @@
   width: 24px;
   height: 24px;
   border: 2px solid rgba(255, 255, 255, 0.1);
-  border-top-color: #10b981;
+  border-top-color: var(--emerald);
   border-radius: 50%;
   animation: elo-spin 800ms linear infinite;
 }
@@ -32,7 +32,7 @@
     transform: scale(1);
   }
   30% {
-    color: var(--emerald, #10b981);
+    color: var(--emerald, var(--emerald));
     transform: scale(1.06);
   }
   100% {
@@ -161,7 +161,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.4rem 0.5rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   background: var(--bg-tertiary);
 }
 
@@ -210,11 +210,11 @@
 }
 
 .elo-widget-recent-delta.is-up {
-  color: #10b981;
+  color: var(--emerald);
 }
 
 .elo-widget-recent-delta.is-down {
-  color: #ef4444;
+  color: var(--negative);
 }
 
 body.light-mode .elo-widget-title-row h3 {

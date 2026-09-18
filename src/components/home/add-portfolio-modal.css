@@ -12,7 +12,7 @@
 .apm-card {
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   box-shadow: var(--shadow-lg, 0 24px 60px rgba(0, 0, 0, 0.35));
   position: relative;
 }
@@ -83,7 +83,7 @@ body:not(.light-mode) .apm-card {
   min-height: 124px;
   padding: 14px 12px 12px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   background: var(--background);
   cursor: pointer;
   transition:
@@ -142,9 +142,9 @@ body:not(.light-mode) .apm-card {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   padding: 2px 6px;
-  border-radius: 4px;
-  background: rgba(16, 185, 129, 0.12);
-  color: #047857;
+  border-radius: var(--radius-sm);
+  background: var(--emerald-bg-hover);
+  color: var(--emerald-dark);
 }
 
 .apm-broker-tag--readonly {
@@ -257,7 +257,7 @@ body:not(.light-mode) .apm-broker-name {
   align-items: flex-start;
   padding: 16px;
   border: 1px solid var(--border-primary);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   margin-bottom: 12px;
 }
 
@@ -268,7 +268,7 @@ body:not(.light-mode) .apm-broker-name {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   background: var(--surface-card-hover);
   color: var(--text-secondary);
   font-size: 18px;
@@ -288,7 +288,7 @@ body:not(.light-mode) .apm-broker-name {
 }
 
 .apm-disc-error {
-  color: var(--negative, #ef4444);
+  color: var(--negative, var(--negative));
   font-size: 13px;
   margin: 4px 0;
 }
@@ -362,7 +362,7 @@ body:not(.light-mode) .apm-broker-name {
   margin: 0 20px 1rem;
   background: var(--surface-input);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   color: inherit;
   font-size: 0.875rem;
   font-family: var(--font-sans);
@@ -374,9 +374,9 @@ body:not(.light-mode) .apm-broker-name {
 }
 
 .apm-broker-tag--multi {
-  background: rgba(16, 185, 129, 0.12);
+  background: var(--emerald-bg-hover);
   color: var(--emerald);
-  border: 1px solid rgba(16, 185, 129, 0.28);
+  border: 1px solid color-mix(in srgb, var(--emerald) 28%, transparent);
 }
 
 .apm-card--choice {
@@ -401,7 +401,7 @@ body:not(.light-mode) .apm-broker-name {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   background: var(--bg-tertiary);
   overflow: hidden;
 }
@@ -446,7 +446,7 @@ body:not(.light-mode) .apm-broker-name {
   margin: 0 0 12px;
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   color: inherit;
   text-align: left;
   cursor: pointer;
@@ -454,8 +454,8 @@ body:not(.light-mode) .apm-broker-name {
 }
 
 .apm-provider-btn:hover {
-  background: rgba(16, 185, 129, 0.04);
-  border-color: rgba(16, 185, 129, 0.35);
+  background: var(--emerald-bg-subtle);
+  border-color: color-mix(in srgb, var(--emerald) 35%, transparent);
   transform: translateY(-1px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
 }
@@ -496,8 +496,8 @@ body:not(.light-mode) .apm-broker-name {
   font-weight: 700;
   text-transform: uppercase;
   color: var(--emerald);
-  background: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(16, 185, 129, 0.28);
+  background: var(--emerald-bg-hover);
+  border: 1px solid color-mix(in srgb, var(--emerald) 28%, transparent);
   border-radius: 999px;
   letter-spacing: 0.05em;
 }
