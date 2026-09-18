@@ -113,7 +113,7 @@ body.light-mode .landing-footer {
   width: 44px;
   height: 44px;
   border: none;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -192,7 +192,7 @@ body.light-mode .landing-footer {
   align-items: center;
   justify-content: center;
   border: 1px solid var(--border-secondary);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   color: var(--text-body);
   text-decoration: none;
   transition:

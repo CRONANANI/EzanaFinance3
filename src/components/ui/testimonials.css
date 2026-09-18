@@ -87,14 +87,14 @@
   flex-shrink: 0;
   width: 320px;
   background: linear-gradient(180deg, rgba(22, 27, 34, 0.9) 0%, rgba(13, 17, 23, 0.95) 100%);
-  border: 1px solid rgba(16, 185, 129, 0.1);
-  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--emerald) 10%, transparent);
+  border-radius: var(--radius-lg);
   padding: 1.25rem;
   transition: all 0.3s ease;
 }
 
 .testimonial-card:hover {
-  border-color: rgba(16, 185, 129, 0.25);
+  border-color: var(--emerald-glow);
   transform: translateY(-2px);
 }
 
@@ -120,7 +120,7 @@
   height: 40px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid rgba(16, 185, 129, 0.2);
+  border: 2px solid color-mix(in srgb, var(--emerald) 20%, transparent);
 }
 
 .author-info {
@@ -151,14 +151,14 @@
 }
 
 .social-link:hover {
-  color: #10b981;
+  color: var(--emerald);
 }
 
 /* Below hero specific styles */
 .testimonials-below-hero {
   background: transparent;
-  border-top: 1px solid rgba(16, 185, 129, 0.05);
-  border-bottom: 1px solid rgba(16, 185, 129, 0.05);
+  border-top: 1px solid color-mix(in srgb, var(--emerald) 5%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--emerald) 5%, transparent);
 }
 
 .testimonials-below-hero .testimonials-title {

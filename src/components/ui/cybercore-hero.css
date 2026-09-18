@@ -7,11 +7,11 @@
 /* ── CSS Variables ── */
 .aurora-scene {
   --aurora-bg: var(--nav-bg-solid);
-  --aurora-primary: #10b981;
-  --aurora-primary-light: #34d399;
-  --aurora-mid: #059669;
+  --aurora-primary: var(--emerald);
+  --aurora-primary-light: var(--positive-bright);
+  --aurora-mid: var(--emerald-hover);
   --aurora-accent: #6ee7b7;
-  --aurora-glow-1: rgba(16, 185, 129, 0.75);
+  --aurora-glow-1: color-mix(in srgb, var(--emerald) 75%, transparent);
   --aurora-glow-2: rgba(5, 150, 105, 0.55);
 }
 
@@ -24,7 +24,11 @@
   overflow: hidden;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 120% 80% at 50% 100%, rgba(16, 185, 129, 0.05) 0%, transparent 55%),
+    radial-gradient(
+      ellipse 120% 80% at 50% 100%,
+      color-mix(in srgb, var(--emerald) 5%, transparent) 0%,
+      transparent 55%
+    ),
     var(--aurora-bg);
   perspective: 700px;
   perspective-origin: 50% 40%;
@@ -44,10 +48,14 @@
   transform-origin: 50% 100%;
   /* Double grid lines: major + minor */
   background-image:
-    linear-gradient(90deg, rgba(16, 185, 129, 0.1) 1px, transparent 1px),
-    linear-gradient(0deg, rgba(16, 185, 129, 0.1) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(16, 185, 129, 0.05) 1px, transparent 1px),
-    linear-gradient(0deg, rgba(16, 185, 129, 0.05) 1px, transparent 1px);
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--emerald) 10%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(0deg, color-mix(in srgb, var(--emerald) 10%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--emerald) 5%, transparent) 1px, transparent 1px),
+    linear-gradient(0deg, color-mix(in srgb, var(--emerald) 5%, transparent) 1px, transparent 1px);
   background-size:
     56px 56px,
     56px 56px,
@@ -80,7 +88,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(16, 185, 129, 0.12) 0%, transparent 40%);
+  background: linear-gradient(to top, var(--emerald-bg-hover) 0%, transparent 40%);
   animation: aurora-floorGlow 7s ease-in-out infinite;
 }
 
@@ -93,7 +101,7 @@
   height: 35%;
   background: radial-gradient(
     ellipse 80% 60% at 50% 100%,
-    rgba(16, 185, 129, 0.12) 0%,
+    var(--emerald-bg-hover) 0%,
     rgba(5, 150, 105, 0.04) 50%,
     transparent 80%
   );
@@ -112,7 +120,7 @@
   height: 65%;
   background: radial-gradient(
     ellipse 55% 100% at 50% 100%,
-    rgba(16, 185, 129, 0.18) 0%,
+    color-mix(in srgb, var(--emerald) 18%, transparent) 0%,
     rgba(5, 150, 105, 0.06) 45%,
     transparent 72%
   );
@@ -143,14 +151,14 @@
   background: linear-gradient(
     to top,
     transparent 0%,
-    rgba(16, 185, 129, 0.03) 15%,
+    color-mix(in srgb, var(--emerald) 3%, transparent) 15%,
     rgba(52, 211, 153, 0.5) 45%,
-    rgba(16, 185, 129, 0.3) 70%,
+    color-mix(in srgb, var(--emerald) 30%, transparent) 70%,
     transparent 100%
   );
   box-shadow:
     0 0 12px rgba(52, 211, 153, 0.3),
-    0 0 24px rgba(16, 185, 129, 0.12);
+    0 0 24px var(--emerald-bg-hover);
 }
 
 .aurora-light-beam--secondary {
