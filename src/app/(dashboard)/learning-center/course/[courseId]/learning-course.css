@@ -4,7 +4,7 @@
   gap: 0.35rem;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #10b981;
+  color: var(--emerald);
   text-decoration: none;
   margin-bottom: 1rem;
 }
@@ -34,15 +34,15 @@
 }
 
 .lc3-pct {
-  color: #10b981;
+  color: var(--emerald);
   font-family: var(--font-mono);
   font-weight: 700;
 }
 
 .lc3-bar {
   height: 8px;
-  border-radius: 4px;
-  background: rgba(16, 185, 129, 0.12);
+  border-radius: var(--radius-sm);
+  background: var(--emerald-bg-hover);
   overflow: hidden;
   margin-bottom: 1.25rem;
   max-width: 400px;
@@ -50,8 +50,8 @@
 
 .lc3-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #10b981, #059669);
-  border-radius: 4px;
+  background: linear-gradient(90deg, var(--emerald), var(--emerald-hover));
+  border-radius: var(--radius-sm);
 }
 
 .lc3-article {
@@ -80,9 +80,9 @@
 .lc3-callout {
   margin-top: 0.75rem;
   padding: 0.75rem 1rem;
-  border-radius: 10px;
-  background: rgba(16, 185, 129, 0.08);
-  border: 1px solid rgba(16, 185, 129, 0.15);
+  border-radius: var(--radius-lg);
+  background: var(--emerald-bg);
+  border: 1px solid var(--emerald-border);
   font-size: 0.8125rem;
   color: #9ca3af;
 }
@@ -100,7 +100,7 @@
   gap: 1rem;
   margin-top: 1.5rem;
   padding-top: 1rem;
-  border-top: 1px solid rgba(16, 185, 129, 0.1);
+  border-top: 1px solid color-mix(in srgb, var(--emerald) 10%, transparent);
 }
 
 .lc3-check {
@@ -119,10 +119,10 @@
   padding: 0.5rem 1rem;
   font-size: 0.8125rem;
   font-weight: 600;
-  border-radius: 10px;
-  border: 1px solid rgba(16, 185, 129, 0.25);
-  background: rgba(16, 185, 129, 0.08);
-  color: #10b981;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--emerald-glow);
+  background: var(--emerald-bg);
+  color: var(--emerald);
   cursor: pointer;
   font-family: inherit;
   text-decoration: none;
@@ -134,14 +134,14 @@
 }
 
 .lc3-btn-primary {
-  background: linear-gradient(135deg, #10b981, #059669);
+  background: linear-gradient(135deg, var(--emerald), var(--emerald-hover));
   color: #fff;
   border-color: transparent;
 }
 
 .lc3-passed {
   margin-top: 1rem;
-  color: #10b981;
+  color: var(--emerald);
   font-weight: 600;
 }
 
@@ -168,16 +168,16 @@
   align-items: flex-start;
   gap: 0.5rem;
   padding: 0.65rem 0.85rem;
-  border-radius: 10px;
-  border: 1px solid rgba(16, 185, 129, 0.12);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--emerald-bg-hover);
   cursor: pointer;
   font-size: 0.8125rem;
   color: #d1d5db;
 }
 
 .lc3-opt.sel {
-  border-color: rgba(16, 185, 129, 0.45);
-  background: rgba(16, 185, 129, 0.08);
+  border-color: color-mix(in srgb, var(--emerald) 45%, transparent);
+  background: var(--emerald-bg);
 }
 
 .lc3-quiz-actions {
@@ -199,7 +199,7 @@
 }
 
 .lc3-pass {
-  color: #10b981;
+  color: var(--emerald);
   font-weight: 700;
 }
 
@@ -222,7 +222,7 @@
 
 .lc3-review li {
   padding: 0.35rem 0;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+  border-bottom: 1px solid color-mix(in srgb, var(--emerald) 6%, transparent);
 }
 
 .lc3-review li.ok {
@@ -242,9 +242,9 @@
 
 .lc3-banner {
   padding: 0.75rem 1rem;
-  border-radius: 10px;
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--emerald) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--emerald) 20%, transparent);
   margin-bottom: 1rem;
   font-size: 0.875rem;
   color: #d1fae5;
@@ -386,13 +386,13 @@ body.light-mode .lc3-fail {
   line-height: 1;
 }
 .lc3-results-badge.pass {
-  background: rgba(16, 185, 129, 0.12);
-  color: #10b981;
-  border: 1px solid rgba(16, 185, 129, 0.25);
+  background: var(--emerald-bg-hover);
+  color: var(--emerald);
+  border: 1px solid var(--emerald-glow);
 }
 .lc3-results-badge.fail {
   background: rgba(245, 158, 11, 0.12);
-  color: #f59e0b;
+  color: var(--amber);
   border: 1px solid rgba(245, 158, 11, 0.25);
 }
 body.light-mode .lc3-results-badge.pass {
@@ -408,8 +408,8 @@ body.light-mode .lc3-results-badge.fail {
 .lc3-review-block {
   margin-top: 1.25rem;
   padding: 1rem 1.25rem;
-  border: 1px solid rgba(16, 185, 129, 0.08);
-  border-radius: 12px;
+  border: 1px solid var(--emerald-bg);
+  border-radius: var(--radius-lg);
   background: var(--surface-card);
 }
 .lc3-review-title {
@@ -422,7 +422,7 @@ body.light-mode .lc3-results-badge.fail {
 }
 .lc3-review li {
   padding: 0.75rem 0;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+  border-bottom: 1px solid color-mix(in srgb, var(--emerald) 6%, transparent);
 }
 .lc3-review li:last-child {
   border-bottom: none;
@@ -446,12 +446,12 @@ body.light-mode .lc3-results-badge.fail {
   margin-top: 1px;
 }
 .lc3-review li.ok .lc3-review-mark {
-  background: rgba(16, 185, 129, 0.15);
-  color: #10b981;
+  background: var(--emerald-border);
+  color: var(--emerald);
 }
 .lc3-review li.bad .lc3-review-mark {
   background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
+  color: var(--negative);
 }
 .lc3-review-text {
   flex: 1;
@@ -470,7 +470,7 @@ body.light-mode .lc3-results-badge.fail {
   color: var(--text-primary);
 }
 .lc3-review-correct {
-  color: #10b981;
+  color: var(--emerald);
 }
 .lc3-review-correct span {
   color: var(--text-primary);
@@ -612,10 +612,10 @@ body.light-mode .lc-edit-hero {
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  border-radius: 8px;
-  border: 1px solid var(--emerald-border, rgba(16, 185, 129, 0.25));
-  background: var(--emerald-bg, rgba(16, 185, 129, 0.08));
-  color: var(--emerald-text, var(--emerald, #10b981));
+  border-radius: var(--radius-md);
+  border: 1px solid var(--emerald-border, var(--emerald-glow));
+  background: var(--emerald-bg, var(--emerald-bg));
+  color: var(--emerald-text, var(--emerald, var(--emerald)));
   font-size: 0.75rem;
   font-weight: 700;
   cursor: pointer;
@@ -641,7 +641,7 @@ body.light-mode .lc-edit-bookmark-btn {
 }
 .lc-edit-level--gold,
 .lc-edit-level--advanced {
-  color: var(--gold, #d4a853);
+  color: var(--gold, var(--gold));
 }
 .lc-edit-level--platinum,
 .lc-edit-level--expert {
@@ -702,7 +702,7 @@ body.light-mode .lc-edit-stepper-progress {
 .lc-edit-step.is-active .lc-edit-step-node {
   border-color: var(--emerald);
   color: var(--emerald);
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+  box-shadow: 0 0 0 3px var(--emerald-border);
 }
 .lc-edit-step.is-done .lc-edit-step-node {
   background: #ffffff;
@@ -724,7 +724,7 @@ body.light-mode .lc-edit-step.is-done .lc-edit-step-node {
   background: var(--bg-tertiary);
   color: var(--text-primary);
   padding: 3px 7px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border-primary);
   font-size: 10.5px;
   font-weight: 500;
@@ -751,14 +751,14 @@ body.light-mode .lc-edit-step.is-done .lc-edit-step-node {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: rgba(16, 185, 129, 0.12);
+  background: var(--emerald-bg-hover);
   color: var(--emerald);
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   padding: 4px 10px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   transition: all 0.25s ease;
 }
 .lc-edit-eyebrow-pill.is-complete {
@@ -836,9 +836,9 @@ body.light-mode .lc-edit-step.is-done .lc-edit-step-node {
 
 .lc-edit-chart,
 .lc-edit-tickerchart {
-  background: rgba(16, 185, 129, 0.04);
+  background: var(--emerald-bg-subtle);
   border: 1px solid var(--border-primary);
-  border-radius: 18px;
+  border-radius: var(--radius-xl);
   padding: 28px;
   margin: 36px -24px;
 }
@@ -881,14 +881,14 @@ body.light-mode .lc-edit-tickerchart {
   color: var(--text-muted);
   background: var(--bg-primary);
   border: 1px solid var(--border-primary);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: 6px 10px;
   white-space: nowrap;
 }
 .lc-edit-chart-canvas {
   background: var(--bg-primary);
   border: 1px solid var(--border-primary);
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   padding: 12px 12px 4px;
 }
 .lc-edit-tickerchart-canvas .stock-price-chart--compact {
@@ -914,9 +914,9 @@ body.light-mode .lc-edit-tickerchart {
 }
 
 .lc-edit-timeline {
-  background: rgba(16, 185, 129, 0.04);
+  background: var(--emerald-bg-subtle);
   border: 1px solid var(--border-primary);
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   padding: 20px 22px;
 }
 .lc-edit-timeline--inline {
@@ -1009,7 +1009,7 @@ body.light-mode .lc-edit-tickerchart {
 .lc-edit-ticker {
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   padding: 18px 18px 16px;
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
 }
@@ -1028,7 +1028,7 @@ body.light-mode .lc-edit-tickerchart {
 .lc-edit-ticker-badge {
   width: 34px;
   height: 34px;
-  border-radius: 9px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1052,7 +1052,7 @@ body.light-mode .lc-edit-tickerchart {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   padding: 3px 7px;
   white-space: nowrap;
 }
@@ -1095,9 +1095,9 @@ body.light-mode .lc-edit-tickerchart {
 }
 
 .lc-edit-keyterms {
-  background: rgba(16, 185, 129, 0.06);
-  border: 1px solid rgba(16, 185, 129, 0.18);
-  border-radius: 16px;
+  background: color-mix(in srgb, var(--emerald) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--emerald) 18%, transparent);
+  border-radius: var(--radius-xl);
   padding: 22px 24px;
   margin-top: 36px;
 }
@@ -1137,7 +1137,7 @@ body.light-mode .lc-edit-keyterms {
 .lc-edit-keyterm {
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   padding: 14px;
   transition:
     transform 0.15s ease,
@@ -1149,7 +1149,7 @@ body.light-mode .lc-edit-keyterms {
 .lc-edit-keyterm:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 16px -8px rgba(0, 0, 0, 0.15);
-  border-color: var(--emerald-border, rgba(16, 185, 129, 0.3));
+  border-color: var(--emerald-border, color-mix(in srgb, var(--emerald) 30%, transparent));
   z-index: 2;
 }
 .lc-edit-keyterm-swatch {
@@ -1158,13 +1158,13 @@ body.light-mode .lc-edit-keyterms {
   justify-content: center;
   width: 24px;
   height: 24px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   margin-bottom: 10px;
 }
 .lc-edit-keyterm-swatch > span {
   width: 8px;
   height: 8px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
 }
 .lc-edit-keyterm-name {
   font-size: 13px;
@@ -1190,9 +1190,9 @@ body.light-mode .lc-edit-keyterms {
 .lc-edit-keyterms-legacy {
   font-size: 13px;
   color: var(--text-secondary);
-  background: rgba(16, 185, 129, 0.04);
+  background: var(--emerald-bg-subtle);
   border: 1px solid var(--border-primary);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: 12px 16px;
   margin: 24px 0;
 }
@@ -1205,13 +1205,13 @@ body.light-mode .lc-edit-keyterms {
   display: flex;
   gap: 12px;
   background: rgba(245, 158, 11, 0.06);
-  border-left: 3px solid var(--amber, #f59e0b);
+  border-left: 3px solid var(--amber, var(--amber));
   padding: 14px 18px;
   margin: 24px 0;
   border-radius: 0 8px 8px 0;
 }
 .lc-edit-callout i {
-  color: var(--amber, #f59e0b);
+  color: var(--amber, var(--amber));
   font-size: 18px;
   flex-shrink: 0;
 }
@@ -1271,11 +1271,11 @@ body.light-mode .lc-edit-keyterms {
   background: var(--emerald);
   color: white;
   font-size: 14px;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   padding: 12px 20px;
   box-shadow:
     0 1px 0 var(--emerald-hover),
-    0 8px 20px -8px rgba(16, 185, 129, 0.5);
+    0 8px 20px -8px color-mix(in srgb, var(--emerald) 50%, transparent);
 }
 .lc-edit-btn-primary:hover {
   background: var(--emerald-hover);
@@ -1285,7 +1285,7 @@ body.light-mode .lc-edit-keyterms {
   border: 1px solid var(--border-primary);
   color: var(--text-muted);
   font-size: 13px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: 10px 14px;
 }
 .lc-edit-btn-secondary:hover:not(:disabled) {
@@ -1371,9 +1371,9 @@ body.light-mode .lc-edit-keyterms {
    ═══════════════════════════════════════════════════════════════ */
 
 .lc-edit-finstmt {
-  background: rgba(16, 185, 129, 0.04);
+  background: var(--emerald-bg-subtle);
   border: 1px solid var(--border-primary);
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   padding: 20px;
   margin: 28px -24px;
 }
@@ -1445,14 +1445,14 @@ body.light-mode .lc-edit-finstmt {
 }
 .lc-edit-finstmt-table tr.is-subtotal td {
   font-weight: 600;
-  background: rgba(16, 185, 129, 0.03);
+  background: color-mix(in srgb, var(--emerald) 3%, transparent);
 }
 .lc-edit-finstmt-table tr.is-total td {
   font-family: var(--font-mono);
   font-weight: 700;
   border-top: 2px solid var(--emerald);
   border-bottom: 2px solid var(--emerald);
-  background: rgba(16, 185, 129, 0.06);
+  background: color-mix(in srgb, var(--emerald) 6%, transparent);
 }
 .lc-edit-finstmt-section td {
   font-size: 10.5px;

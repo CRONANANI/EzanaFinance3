@@ -43,7 +43,7 @@
 .lc-header-tile {
   width: 54px;
   height: 54px;
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   background: linear-gradient(135deg, var(--emerald-soft), transparent 80%);
   border: 1px solid var(--emerald-border);
   display: grid;
@@ -73,9 +73,13 @@
 
 .lc-elo-hero {
   padding: 24px 26px;
-  border-radius: 18px;
+  border-radius: var(--radius-xl);
   background:
-    radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.18) 0%, transparent 50%),
+    radial-gradient(
+      circle at 80% 20%,
+      color-mix(in srgb, var(--emerald) 18%, transparent) 0%,
+      transparent 50%
+    ),
     linear-gradient(180deg, var(--surface), var(--surface-2));
   border: 1px solid var(--emerald-border);
   position: relative;
@@ -87,7 +91,11 @@
   right: -30px;
   width: 240px;
   height: 240px;
-  background: conic-gradient(from 0deg, rgba(16, 185, 129, 0.18), transparent 70%);
+  background: conic-gradient(
+    from 0deg,
+    color-mix(in srgb, var(--emerald) 18%, transparent),
+    transparent 70%
+  );
   filter: blur(20px);
   pointer-events: none;
 }
@@ -120,7 +128,7 @@
   font-size: 14px;
   font-weight: 700;
   padding: 4px 10px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   background: var(--emerald-soft);
   border: 1px solid var(--emerald-border);
   color: var(--emerald);
@@ -137,7 +145,7 @@
 .lc-streak-badge {
   width: 110px;
   height: 110px;
-  border-radius: 18px;
+  border-radius: var(--radius-xl);
   background: linear-gradient(180deg, rgba(245, 158, 11, 0.18), rgba(245, 158, 11, 0.02));
   border: 1px solid rgba(245, 158, 11, 0.4);
   display: flex;
@@ -182,7 +190,7 @@
 .lc-elo-ladder {
   position: relative;
   height: 36px;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   background: var(--surface-2);
   border: 1px solid var(--border);
   overflow: visible;
@@ -215,8 +223,8 @@
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(16, 185, 129, 0.12) 80%,
-    rgba(16, 185, 129, 0.28)
+    var(--emerald-bg-hover) 80%,
+    color-mix(in srgb, var(--emerald) 28%, transparent)
   );
   transition: width 0.6s ease;
 }
@@ -237,7 +245,7 @@
   background: var(--emerald);
   color: #001512;
   padding: 3px 9px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 10px;
@@ -312,7 +320,7 @@
 
 .lc-daily-quest {
   padding: 24px 26px;
-  border-radius: 18px;
+  border-radius: var(--radius-xl);
   background: linear-gradient(180deg, var(--surface), var(--surface-2));
   border: 1px solid var(--border);
 }
@@ -327,7 +335,7 @@
   padding: 14px;
   background: var(--emerald-soft);
   border: 1px solid var(--emerald-border);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
 }
 .lc-dq-primary-row1 {
   display: flex;
@@ -355,7 +363,7 @@
   gap: 6px;
   margin-top: 12px;
   padding: 10px 14px;
-  border-radius: 9px;
+  border-radius: var(--radius-md);
   background: var(--emerald);
   color: #001512;
   font-size: 13px;
@@ -381,7 +389,7 @@
   gap: 10px;
   align-items: center;
   padding: 10px 12px;
-  border-radius: 9px;
+  border-radius: var(--radius-md);
   background: var(--surface);
   border: 1px solid var(--border);
 }
@@ -395,7 +403,7 @@
 .lc-dq-bonus-icon {
   width: 24px;
   height: 24px;
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   background: var(--surface-2);
   color: var(--fg-muted);
   display: grid;
@@ -453,7 +461,7 @@
 
 .lc-tower {
   padding: 14px;
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   background: var(--surface);
   border: 1px solid var(--border);
   position: relative;
@@ -494,7 +502,7 @@
   color: var(--fg-muted);
   background: var(--surface-2);
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   opacity: 0;
   transition: opacity 0.15s;
   cursor: pointer;
@@ -524,7 +532,7 @@
 }
 .lc-tower-tier {
   height: 22px;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   background: var(--surface-2);
   border: 1px solid var(--border);
   position: relative;
@@ -572,7 +580,7 @@
 
 .lc-active-path {
   padding: 22px 26px;
-  border-radius: 18px;
+  border-radius: var(--radius-xl);
   background: var(--surface);
   border: 1px solid var(--border);
   margin-bottom: 18px;
@@ -600,7 +608,7 @@
 .lc-ap-tier-tabs {
   display: flex;
   padding: 4px;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   background: var(--surface-2);
   border: 1px solid var(--border);
   gap: 2px;
@@ -608,7 +616,7 @@
 }
 .lc-tier-tab {
   padding: 7px 14px;
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   font-size: 11.5px;
   font-weight: 700;
   background: transparent;
@@ -688,7 +696,7 @@
   background: var(--emerald);
   border: 2px solid #001512;
   color: #001512;
-  box-shadow: 0 0 18px rgba(16, 185, 129, 0.5);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--emerald) 50%, transparent);
 }
 .lc-path-node--locked {
   background: var(--surface-2);
@@ -762,7 +770,7 @@
   background: var(--emerald);
   color: #001512;
   padding: 2px 7px;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -799,7 +807,7 @@
 
 .lc-btn {
   padding: 11px 20px;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   font-weight: 700;
   font-size: 13px;
   display: inline-flex;
@@ -826,7 +834,7 @@
 .lc-leaderboard,
 .lc-bookmarks {
   padding: 22px 26px;
-  border-radius: 18px;
+  border-radius: var(--radius-xl);
   background: var(--surface);
   border: 1px solid var(--border);
 }
@@ -906,7 +914,7 @@
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border);
   background: var(--surface-2);
 }
@@ -950,7 +958,7 @@
   align-items: center;
   gap: 10px;
   padding: 12px;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border);
   background: var(--surface-2);
   text-decoration: none;
@@ -963,7 +971,7 @@
 .lc-bookmark-remove {
   width: 24px;
   height: 24px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border);
   background: transparent;
   color: var(--fg-muted);
@@ -994,7 +1002,7 @@
 }
 
 .lc-org-card {
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
 }
 
 /* ─────────────────────────────────────────────────────────────────

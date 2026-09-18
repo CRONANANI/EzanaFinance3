@@ -34,7 +34,7 @@
 .ftq-stat-card {
   background: rgba(212, 175, 55, 0.02);
   border: 1px solid rgba(212, 175, 55, 0.08);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   padding: 0.35rem 0.75rem;
   min-height: unset;
 }
@@ -73,7 +73,7 @@
 }
 
 .ftq-stat-sub.positive {
-  color: #10b981;
+  color: var(--emerald);
 }
 
 /* Row 2 */
@@ -141,7 +141,7 @@
   color: #8b949e;
   background: rgba(212, 175, 55, 0.06);
   border: 1px solid rgba(212, 175, 55, 0.12);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   font-family: inherit;
   transition:
@@ -157,12 +157,12 @@
 .ftq-tab.active {
   background: rgba(212, 175, 55, 0.15);
   border-color: rgba(212, 175, 55, 0.35);
-  color: #d4af37;
+  color: var(--gold-champagne);
 }
 
 .ftq-strategy-list {
   border: 1px solid rgba(212, 175, 55, 0.08);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
   background: rgba(0, 0, 0, 0.15);
 }
@@ -205,17 +205,17 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
   padding: 0.2rem 0.5rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 .ftq-status.active {
-  background: rgba(16, 185, 129, 0.15);
-  color: #34d399;
+  background: var(--emerald-border);
+  color: var(--positive-bright);
 }
 
 .ftq-status.paused {
   background: rgba(251, 191, 36, 0.12);
-  color: #fbbf24;
+  color: var(--warning);
 }
 
 .ftq-status.draft {
@@ -233,10 +233,10 @@
   padding: 0.35rem 0.75rem;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #d4af37;
+  color: var(--gold-champagne);
   background: transparent;
   border: 1px solid rgba(212, 175, 55, 0.25);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   font-family: inherit;
   transition:
@@ -256,9 +256,9 @@
   font-size: 0.875rem;
   font-weight: 700;
   color: #fff;
-  background: #d4af37;
+  background: var(--gold-champagne);
   border: none;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   cursor: pointer;
   font-family: inherit;
   transition: filter 0.15s;
@@ -300,13 +300,13 @@
 }
 
 .ftq-bt-value.positive {
-  color: #10b981;
+  color: var(--emerald);
 }
 
 .ftq-mini-chart-wrap {
   min-height: 72px;
   margin: 0.75rem 0;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: rgba(212, 175, 55, 0.04);
   border: 1px solid rgba(212, 175, 55, 0.08);
   overflow: hidden;
@@ -332,7 +332,7 @@
 .ftq-select {
   font-size: 0.75rem;
   padding: 0.35rem 0.65rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: rgba(212, 175, 55, 0.06);
   border: 1px solid rgba(212, 175, 55, 0.15);
   color: #e2e8f0;
@@ -370,7 +370,7 @@
 
 .ftq-lb-ret {
   font-weight: 700;
-  color: #d4af37;
+  color: var(--gold-champagne);
   font-feature-settings: 'tnum' 1;
 }
 
@@ -401,7 +401,7 @@
   padding: 0;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #d4af37;
+  color: var(--gold-champagne);
   background: none;
   border: none;
   cursor: pointer;
@@ -419,7 +419,7 @@
   margin-top: 1rem;
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #d4af37;
+  color: var(--gold-champagne);
   text-decoration: none;
 }
 
@@ -430,7 +430,7 @@
 /* Risk */
 .ftq-risk-bar {
   height: 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background: rgba(212, 175, 55, 0.1);
   overflow: hidden;
   margin: 0.35rem 0 0.75rem;
@@ -438,8 +438,8 @@
 
 .ftq-risk-bar-fill {
   height: 100%;
-  border-radius: 4px;
-  background: linear-gradient(90deg, #d4af37, #b8962e);
+  border-radius: var(--radius-sm);
+  background: linear-gradient(90deg, var(--gold-champagne), #b8962e);
 }
 
 .ftq-sector-row {
@@ -466,7 +466,7 @@
 
 .ftq-sector-bar {
   height: 6px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   background: rgba(212, 175, 55, 0.1);
   overflow: hidden;
 }
@@ -474,7 +474,7 @@
 .ftq-sector-bar-fill {
   height: 100%;
   background: rgba(212, 175, 55, 0.45);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
 }
 
 /* Polymarket */
@@ -490,7 +490,7 @@
   min-width: 160px;
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   background: rgba(0, 0, 0, 0.15);
   border: 1px solid rgba(212, 175, 55, 0.12);
   color: #f0f6fc;
@@ -503,7 +503,7 @@
 
 .ftq-betting-list {
   border: 1px solid rgba(212, 175, 55, 0.08);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
   background: rgba(0, 0, 0, 0.12);
 }
@@ -532,7 +532,7 @@
 
 .ftq-bt-side {
   font-size: 0.8125rem;
-  color: #d4af37;
+  color: var(--gold-champagne);
   font-weight: 600;
 }
 
@@ -545,7 +545,7 @@
 /* Betting analytics */
 .ftq-smart-bar {
   height: 10px;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   background: rgba(239, 68, 68, 0.08);
   overflow: hidden;
   margin: 0.5rem 0 0.25rem;
@@ -554,8 +554,8 @@
 
 .ftq-smart-fill {
   height: 100%;
-  background: linear-gradient(90deg, #d4af37, #b8962e);
-  border-radius: 5px;
+  background: linear-gradient(90deg, var(--gold-champagne), #b8962e);
+  border-radius: var(--radius-sm);
 }
 
 .ftq-pos-row {
@@ -606,7 +606,7 @@
 
 .ftq-ind-card {
   padding: 0.85rem 1rem;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   border: 1px solid rgba(212, 175, 55, 0.1);
   background: rgba(0, 0, 0, 0.12);
 }
@@ -683,7 +683,7 @@ body.light-mode .ftq-pm-input {
   padding: 0.5rem 0.75rem;
   background: var(--surface-input);
   border: 1px solid rgba(99, 102, 241, 0.2);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   color: #f0f6fc;
   font-size: 0.875rem;
   font-weight: 600;
@@ -709,7 +709,7 @@ body.light-mode .ftq-pm-input {
   padding: 0.5rem 0.6rem;
   background: rgba(99, 102, 241, 0.04);
   border: 1px solid rgba(99, 102, 241, 0.12);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 .ftq-vb-keyword {
@@ -723,7 +723,7 @@ body.light-mode .ftq-pm-input {
   padding: 0.3rem 0.5rem;
   background: var(--surface-input);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   color: #d1d5db;
   font-size: 0.7rem;
 }
@@ -752,7 +752,7 @@ body.light-mode .ftq-pm-input {
   padding: 0.2rem 0.4rem;
   background: var(--surface-input);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   color: #f0f6fc;
   font-size: 0.7rem;
 }
@@ -766,7 +766,7 @@ body.light-mode .ftq-pm-input {
   font-size: 0.8rem;
 }
 .ftq-vb-remove:hover {
-  color: #ef4444;
+  color: var(--negative);
 }
 
 .ftq-vb-add {
@@ -781,7 +781,7 @@ body.light-mode .ftq-pm-input {
 
 .ftq-vb-action-btn {
   padding: 0.4rem 0.75rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   border: 1px solid rgba(99, 102, 241, 0.2);
   background: transparent;
   color: #c9d1d9;
@@ -824,9 +824,9 @@ body.light-mode .ftq-pm-input {
 
 .ftq-vb-summary {
   padding: 0.6rem 0.75rem;
-  background: rgba(16, 185, 129, 0.04);
-  border: 1px solid rgba(16, 185, 129, 0.15);
-  border-radius: 6px;
+  background: var(--emerald-bg-subtle);
+  border: 1px solid var(--emerald-border);
+  border-radius: var(--radius-md);
   margin-top: 0.5rem;
 }
 
@@ -835,7 +835,7 @@ body.light-mode .ftq-pm-input {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #10b981;
+  color: var(--emerald);
   margin-bottom: 0.25rem;
 }
 
@@ -853,7 +853,7 @@ body.light-mode .ftq-pm-input {
 }
 
 .ftq-btn-primary--accent {
-  background: linear-gradient(135deg, #10b981, #059669);
+  background: linear-gradient(135deg, var(--emerald), var(--emerald-hover));
 }
 
 /* ── Templates ── */
@@ -870,7 +870,7 @@ body.light-mode .ftq-pm-input {
   padding: 0.75rem;
   background: rgba(99, 102, 241, 0.04);
   border: 1px solid rgba(99, 102, 241, 0.12);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   transition: border-color 0.15s;
 }
 .ftq-template-card:hover {
@@ -880,7 +880,7 @@ body.light-mode .ftq-pm-input {
 .ftq-template-icon {
   width: 36px;
   height: 36px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: rgba(99, 102, 241, 0.12);
   display: flex;
   align-items: center;
@@ -918,7 +918,7 @@ body.light-mode .ftq-pm-input {
   font-weight: 600;
 }
 .ftq-template-ret {
-  color: #10b981;
+  color: var(--emerald);
   font-weight: 700;
 }
 .ftq-template-sharpe {
@@ -941,7 +941,7 @@ body.light-mode .ftq-pm-input {
   display: inline-block;
   margin-left: 0.4rem;
   padding: 1px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background: rgba(99, 102, 241, 0.12);
   color: #818cf8;
   font-size: 0.55rem;
@@ -966,14 +966,14 @@ body.light-mode .ftq-pm-input {
   padding: 0.6rem;
   background: var(--bg-tertiary);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   align-items: flex-start;
 }
 
 .ftq-ds-icon-wrap {
   width: 32px;
   height: 32px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: rgba(99, 102, 241, 0.1);
   display: flex;
   align-items: center;
@@ -1015,7 +1015,7 @@ body.light-mode .ftq-pm-input {
   font-size: 0.5rem;
   font-weight: 600;
   padding: 1px 5px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   border: 1px solid rgba(99, 102, 241, 0.2);
   white-space: nowrap;
 }
@@ -1075,7 +1075,7 @@ body.light-mode .ftq-pm-input {
   grid-template-columns: 1fr 1fr 1fr;
   gap: 0.5rem;
   padding: 0.3rem 0.5rem;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 .ftq-cmp-header-row {
@@ -1107,7 +1107,7 @@ body.light-mode .ftq-pm-input {
 .ftq-expl-header {
   font-size: 0.7rem;
   font-weight: 700;
-  color: #f59e0b;
+  color: var(--amber);
   display: flex;
   align-items: center;
   gap: 0.3rem;
@@ -1121,7 +1121,7 @@ body.light-mode .ftq-pm-input {
 .ftq-expl-trade {
   margin-bottom: 0.4rem;
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   overflow: hidden;
 }
 
@@ -1146,15 +1146,15 @@ body.light-mode .ftq-pm-input {
   font-weight: 700;
   font-size: 0.6rem;
   padding: 1px 5px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
 }
 .ftq-expl-action.buy {
-  background: rgba(16, 185, 129, 0.15);
-  color: #10b981;
+  background: var(--emerald-border);
+  color: var(--emerald);
 }
 .ftq-expl-action.sell {
   background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
+  color: var(--negative);
 }
 
 .ftq-expl-ticker {
@@ -1176,10 +1176,10 @@ body.light-mode .ftq-pm-input {
   font-size: 0.7rem;
 }
 .ftq-expl-pnl.positive {
-  color: #10b981;
+  color: var(--emerald);
 }
 .ftq-expl-pnl.negative {
-  color: #ef4444;
+  color: var(--negative);
 }
 .ftq-expl-pnl.open {
   color: #6366f1;
@@ -1203,7 +1203,7 @@ body.light-mode .ftq-pm-input {
 }
 
 .ftq-expl-check {
-  color: #10b981;
+  color: var(--emerald);
   font-size: 0.7rem;
   margin-top: 1px;
 }
@@ -1221,9 +1221,9 @@ body.light-mode .ftq-pm-input {
 .ftq-expl-outcome {
   margin-top: 0.5rem;
   padding: 0.35rem 0.5rem;
-  background: rgba(16, 185, 129, 0.06);
-  border-left: 3px solid #10b981;
-  border-radius: 3px;
+  background: color-mix(in srgb, var(--emerald) 6%, transparent);
+  border-left: 3px solid var(--emerald);
+  border-radius: var(--radius-sm);
   font-size: 0.65rem;
   color: #c9d1d9;
 }
@@ -1288,10 +1288,10 @@ body.light-mode .ftq-expl-ticker {
   justify-content: center;
   min-width: 3rem;
   padding: 0.25rem 0.5rem;
-  border-radius: 6px;
-  border: 1px solid rgba(16, 185, 129, 0.35);
-  background: rgba(16, 185, 129, 0.08);
-  color: #10b981;
+  border-radius: var(--radius-md);
+  border: 1px solid color-mix(in srgb, var(--emerald) 35%, transparent);
+  background: var(--emerald-bg);
+  color: var(--emerald);
   font-size: 0.7rem;
   font-weight: 700;
   font-family: var(--font-mono);
@@ -1304,8 +1304,8 @@ body.light-mode .ftq-expl-ticker {
 }
 
 .ftq-vb-logic-toggle:hover {
-  background: rgba(16, 185, 129, 0.18);
-  border-color: rgba(16, 185, 129, 0.55);
+  background: color-mix(in srgb, var(--emerald) 18%, transparent);
+  border-color: color-mix(in srgb, var(--emerald) 55%, transparent);
   transform: scale(1.05);
 }
 

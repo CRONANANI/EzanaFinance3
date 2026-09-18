@@ -26,7 +26,7 @@
   left: 40px;
   right: 40px;
   height: 2px;
-  background: rgba(16, 185, 129, 0.1);
+  background: color-mix(in srgb, var(--emerald) 10%, transparent);
   z-index: 0;
 }
 
@@ -58,16 +58,16 @@
 }
 
 .onboarding-step.completed .onboarding-step-number {
-  background: #10b981;
-  border-color: #10b981;
+  background: var(--emerald);
+  border-color: var(--emerald);
   color: #fff;
 }
 
 .onboarding-step.active .onboarding-step-number {
   background: transparent;
-  border-color: #10b981;
-  color: #10b981;
-  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.12);
+  border-color: var(--emerald);
+  color: var(--emerald);
+  box-shadow: 0 0 0 4px var(--emerald-bg-hover);
 }
 
 .onboarding-step-label {
@@ -81,7 +81,7 @@
 
 .onboarding-step.completed .onboarding-step-label,
 .onboarding-step.active .onboarding-step-label {
-  color: #10b981;
+  color: var(--emerald);
 }
 
 /* ─── Body (animated panel area) ─── */
@@ -110,8 +110,8 @@
   margin-bottom: 1.5rem;
   background: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: 8px;
-  color: #ef4444;
+  border-radius: var(--radius-md);
+  color: var(--negative);
   font-size: 0.875rem;
 }
 
@@ -125,7 +125,7 @@
   align-items: center;
   gap: 1rem;
   padding: 1.25rem;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   border: 1px solid rgba(99, 102, 241, 0.2);
   background: rgba(99, 102, 241, 0.05);
   margin-bottom: 1.5rem;
@@ -167,8 +167,8 @@
 
 .onboarding-chip {
   padding: 0.5rem 1rem;
-  background: rgba(16, 185, 129, 0.06);
-  border: 1px solid rgba(16, 185, 129, 0.15);
+  background: color-mix(in srgb, var(--emerald) 6%, transparent);
+  border: 1px solid var(--emerald-border);
   border-radius: 20px;
   color: #d1d5db;
   font-size: 0.8125rem;
@@ -180,13 +180,13 @@
 }
 
 .onboarding-chip:hover {
-  border-color: rgba(16, 185, 129, 0.35);
-  background: rgba(16, 185, 129, 0.1);
+  border-color: color-mix(in srgb, var(--emerald) 35%, transparent);
+  background: color-mix(in srgb, var(--emerald) 10%, transparent);
 }
 
 .onboarding-chip.selected {
-  background: #10b981;
-  border-color: #10b981;
+  background: var(--emerald);
+  border-color: var(--emerald);
   color: #fff;
   font-weight: 600;
 }
@@ -204,23 +204,23 @@
   align-items: center;
   text-align: center;
   padding: 1.25rem 0.75rem;
-  background: rgba(16, 185, 129, 0.04);
-  border: 2px solid rgba(16, 185, 129, 0.12);
-  border-radius: 12px;
+  background: var(--emerald-bg-subtle);
+  border: 2px solid var(--emerald-bg-hover);
+  border-radius: var(--radius-lg);
   cursor: pointer;
   transition: all 0.2s ease;
   font-family: inherit;
 }
 
 .onboarding-risk-card:hover {
-  border-color: rgba(16, 185, 129, 0.3);
-  background: rgba(16, 185, 129, 0.08);
+  border-color: color-mix(in srgb, var(--emerald) 30%, transparent);
+  background: var(--emerald-bg);
 }
 
 .onboarding-risk-card.selected {
-  border-color: #10b981;
-  background: rgba(16, 185, 129, 0.12);
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  border-color: var(--emerald);
+  background: var(--emerald-bg-hover);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--emerald) 10%, transparent);
 }
 
 .onboarding-risk-card-label {
@@ -232,7 +232,7 @@
 }
 
 .onboarding-risk-card.selected .onboarding-risk-card-label {
-  color: #10b981;
+  color: var(--emerald);
 }
 
 .onboarding-risk-card-desc {
@@ -254,7 +254,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.75rem 0;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+  border-bottom: 1px solid color-mix(in srgb, var(--emerald) 6%, transparent);
 }
 
 .onboarding-toggle-row:last-child {
@@ -284,7 +284,7 @@
   appearance: none;
   width: 44px;
   height: 24px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   background: rgba(107, 114, 128, 0.2);
   border: 1px solid rgba(107, 114, 128, 0.3);
   cursor: pointer;
@@ -306,8 +306,8 @@
 }
 
 .onboarding-toggle:checked {
-  background: #10b981;
-  border-color: #10b981;
+  background: var(--emerald);
+  border-color: var(--emerald);
 }
 
 .onboarding-toggle:checked::before {
@@ -324,9 +324,9 @@
 .onboarding-billing-toggle-btn {
   flex: 1;
   padding: 0.875rem 1rem;
-  background: rgba(16, 185, 129, 0.06);
-  border: 1px solid rgba(16, 185, 129, 0.12);
-  border-radius: 12px;
+  background: color-mix(in srgb, var(--emerald) 6%, transparent);
+  border: 1px solid var(--emerald-bg-hover);
+  border-radius: var(--radius-lg);
   color: #6b7280;
   font-size: 0.9375rem;
   font-weight: 600;
@@ -336,12 +336,12 @@
 }
 
 .onboarding-billing-toggle-btn:hover {
-  border-color: rgba(16, 185, 129, 0.25);
+  border-color: var(--emerald-glow);
 }
 
 .onboarding-billing-toggle-btn.active {
-  background: #10b981;
-  border-color: #10b981;
+  background: var(--emerald);
+  border-color: var(--emerald);
   color: #fff;
 }
 
@@ -350,7 +350,7 @@
   margin-left: 0.5rem;
   font-size: 0.75rem;
   font-weight: 700;
-  color: #fbbf24;
+  color: var(--warning);
 }
 
 /* ─── Plans Grid ─── */
@@ -365,29 +365,29 @@
   display: flex;
   flex-direction: column;
   padding: 1.5rem;
-  background: rgba(16, 185, 129, 0.04);
-  border: 2px solid rgba(16, 185, 129, 0.12);
-  border-radius: 12px;
+  background: var(--emerald-bg-subtle);
+  border: 2px solid var(--emerald-bg-hover);
+  border-radius: var(--radius-lg);
   transition: all 0.3s ease;
   position: relative;
 }
 
 .onboarding-plan-card:hover {
-  border-color: rgba(16, 185, 129, 0.25);
-  background: rgba(16, 185, 129, 0.08);
+  border-color: var(--emerald-glow);
+  background: var(--emerald-bg);
 }
 
 .onboarding-plan-card.popular {
-  border-color: #10b981;
-  background: rgba(16, 185, 129, 0.1);
+  border-color: var(--emerald);
+  background: color-mix(in srgb, var(--emerald) 10%, transparent);
   transform: scale(1.02);
 }
 
 .onboarding-plan-card.selected {
-  border-color: #10b981;
+  border-color: var(--emerald);
   box-shadow:
-    inset 0 0 0 1px #10b981,
-    0 0 0 3px rgba(16, 185, 129, 0.1);
+    inset 0 0 0 1px var(--emerald),
+    0 0 0 3px color-mix(in srgb, var(--emerald) 10%, transparent);
 }
 
 .onboarding-plan-header {
@@ -405,13 +405,13 @@
 .onboarding-plan-badge {
   display: inline-block;
   padding: 0.25rem 0.75rem;
-  background: rgba(16, 185, 129, 0.2);
-  color: #10b981;
+  background: color-mix(in srgb, var(--emerald) 20%, transparent);
+  color: var(--emerald);
   font-size: 0.6875rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 .onboarding-plan-pricing {
@@ -453,7 +453,7 @@
 }
 
 .onboarding-plan-features i {
-  color: #10b981;
+  color: var(--emerald);
   font-size: 1rem;
   flex-shrink: 0;
 }
@@ -463,7 +463,7 @@
   background: var(--primary);
   color: var(--primary-foreground);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 0.9375rem;
   font-weight: 600;
   cursor: pointer;
@@ -473,7 +473,7 @@
 
 .onboarding-plan-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--emerald) 20%, transparent);
 }
 
 .onboarding-plan-button:disabled {
@@ -484,16 +484,16 @@
 /* ─── Trial Info ─── */
 .onboarding-trial-info {
   padding: 1.5rem;
-  background: rgba(16, 185, 129, 0.08);
-  border: 1px solid rgba(16, 185, 129, 0.12);
-  border-radius: 12px;
+  background: var(--emerald-bg);
+  border: 1px solid var(--emerald-bg-hover);
+  border-radius: var(--radius-lg);
   text-align: center;
 }
 
 .onboarding-trial-header {
   font-size: 0.75rem;
   font-weight: 700;
-  color: #10b981;
+  color: var(--emerald);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 0.5rem;
@@ -517,7 +517,7 @@
   gap: 1rem;
   justify-content: space-between;
   padding-top: 2rem;
-  border-top: 1px solid rgba(16, 185, 129, 0.08);
+  border-top: 1px solid var(--emerald-bg);
 }
 
 .onboarding-btn-primary,
@@ -525,7 +525,7 @@
   flex: 1;
   padding: 0.875rem 1.5rem;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 0.9375rem;
   font-weight: 600;
   cursor: pointer;
@@ -534,23 +534,23 @@
 }
 
 .onboarding-btn-primary {
-  background: #10b981;
+  background: var(--emerald);
   color: #fff;
 }
 
 .onboarding-btn-primary:hover:not(:disabled) {
-  background: #059669;
+  background: var(--emerald-hover);
   transform: translateY(-2px);
 }
 
 .onboarding-btn-secondary {
-  background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  background: color-mix(in srgb, var(--emerald) 10%, transparent);
+  color: var(--emerald);
+  border: 1px solid color-mix(in srgb, var(--emerald) 20%, transparent);
 }
 
 .onboarding-btn-secondary:hover:not(:disabled) {
-  background: rgba(16, 185, 129, 0.15);
+  background: var(--emerald-border);
 }
 
 .onboarding-btn-primary:disabled,
@@ -693,7 +693,7 @@ body.light-mode .onboarding-org-role-badge {
 .iq-logo {
   font-size: 18px;
   font-weight: 700;
-  color: #059669;
+  color: var(--emerald-hover);
   letter-spacing: 3px;
 }
 .iq-logo-sub {
@@ -714,15 +714,15 @@ body.light-mode .onboarding-org-role-badge {
   width: 100%;
   height: 3px;
   background: #e5e7eb;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   margin-bottom: 28px;
   overflow: hidden;
 }
 
 .iq-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #10b981, #059669);
-  border-radius: 2px;
+  background: linear-gradient(90deg, var(--emerald), var(--emerald-hover));
+  border-radius: var(--radius-sm);
   transition: width 0.4s ease;
 }
 
@@ -730,9 +730,9 @@ body.light-mode .onboarding-org-role-badge {
   display: inline-block;
   font-size: 11px;
   font-weight: 600;
-  color: #059669;
-  background: rgba(16, 185, 129, 0.08);
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  color: var(--emerald-hover);
+  background: var(--emerald-bg);
+  border: 1px solid color-mix(in srgb, var(--emerald) 20%, transparent);
   border-radius: 20px;
   padding: 4px 14px;
   letter-spacing: 1px;
@@ -769,7 +769,7 @@ body.light-mode .onboarding-org-role-badge {
   padding: 14px 18px;
   background: #f9fafb;
   border: 1px solid #e5e7eb;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   cursor: pointer;
   transition: all 0.2s ease;
   text-align: left;
@@ -779,14 +779,14 @@ body.light-mode .onboarding-org-role-badge {
 }
 
 .iq-option-btn:hover {
-  border-color: #10b981;
-  background: rgba(16, 185, 129, 0.04);
+  border-color: var(--emerald);
+  background: var(--emerald-bg-subtle);
 }
 
 .iq-option-btn.is-selected {
-  background: rgba(16, 185, 129, 0.06);
-  border-color: #10b981;
-  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1);
+  background: color-mix(in srgb, var(--emerald) 6%, transparent);
+  border-color: var(--emerald);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--emerald) 10%, transparent);
 }
 
 .iq-option-radio {
@@ -798,14 +798,14 @@ body.light-mode .onboarding-org-role-badge {
   justify-content: center;
   font-size: 12px;
   font-weight: 700;
-  color: #059669;
+  color: var(--emerald-hover);
   flex-shrink: 0;
   transition: all 0.2s ease;
 }
 
 .iq-option-radio.is-selected {
-  border-color: #10b981;
-  background: rgba(16, 185, 129, 0.15);
+  border-color: var(--emerald);
+  background: var(--emerald-border);
 }
 
 .iq-option-label {
@@ -818,10 +818,10 @@ body.light-mode .onboarding-org-role-badge {
   margin-top: 20px;
   width: 100%;
   padding: 14px 24px;
-  background: #10b981;
+  background: var(--emerald);
   color: #fff;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
@@ -831,7 +831,7 @@ body.light-mode .onboarding-org-role-badge {
 }
 
 .iq-confirm-btn:hover {
-  background: #059669;
+  background: var(--emerald-hover);
 }
 
 .iq-footer {
@@ -859,7 +859,7 @@ body.light-mode .onboarding-org-role-badge {
 
 .iq-saving-indicator {
   font-size: 11px;
-  color: #10b981;
+  color: var(--emerald);
   font-weight: 500;
   animation: iq-pulse 1.5s infinite;
 }
@@ -880,7 +880,7 @@ body.light-mode .onboarding-org-role-badge {
 .iq-result-level-label {
   font-size: 14px;
   font-weight: 700;
-  color: #059669;
+  color: var(--emerald-hover);
   text-align: center;
   text-transform: uppercase;
   letter-spacing: 2px;
@@ -905,7 +905,7 @@ body.light-mode .onboarding-org-role-badge {
   flex: 1;
   background: #f9fafb;
   border: 1px solid #e5e7eb;
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   padding: 18px 16px;
   display: flex;
   flex-direction: column;
@@ -926,7 +926,7 @@ body.light-mode .onboarding-org-role-badge {
   font-variant-numeric: tabular-nums;
   font-size: 20px;
   font-weight: 700;
-  color: #059669;
+  color: var(--emerald-hover);
 }
 
 .iq-result-desc {
@@ -940,10 +940,10 @@ body.light-mode .onboarding-org-role-badge {
 .iq-cta-btn {
   width: 100%;
   padding: 14px 24px;
-  background: #10b981;
+  background: var(--emerald);
   color: #fff;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
@@ -953,7 +953,7 @@ body.light-mode .onboarding-org-role-badge {
 }
 
 .iq-cta-btn:hover {
-  background: #059669;
+  background: var(--emerald-hover);
 }
 
 .iq-footnote {
@@ -966,7 +966,7 @@ body.light-mode .onboarding-org-role-badge {
 @media (max-width: 640px) {
   .iq-card {
     padding: 24px 20px;
-    border-radius: 16px;
+    border-radius: var(--radius-xl);
   }
   .iq-question {
     font-size: 17px;
@@ -1013,10 +1013,10 @@ body.light-mode .onboarding-org-role-badge {
 /* Gold / champagne accent */
 .iq-container--partner .iq-logo,
 .iq-container--partner .iq-result-level-label {
-  color: #d4a853;
+  color: var(--gold);
 }
 .iq-container--partner .iq-progress-fill {
-  background: linear-gradient(90deg, #e6c372, #d4a853);
+  background: linear-gradient(90deg, #e6c372, var(--gold));
 }
 .iq-container--partner .iq-category-pill {
   color: #b8862f;
@@ -1024,24 +1024,24 @@ body.light-mode .onboarding-org-role-badge {
   border-color: rgba(212, 168, 83, 0.3);
 }
 .iq-container--partner .iq-option-btn:hover {
-  border-color: #d4a853;
+  border-color: var(--gold);
   background: rgba(212, 168, 83, 0.06);
 }
 .iq-container--partner .iq-option-btn.is-selected {
   background: rgba(212, 168, 83, 0.1);
-  border-color: #d4a853;
+  border-color: var(--gold);
   box-shadow: 0 0 0 2px rgba(212, 168, 83, 0.18);
 }
 .iq-container--partner .iq-option-radio {
   color: #b8862f;
 }
 .iq-container--partner .iq-option-radio.is-selected {
-  border-color: #d4a853;
+  border-color: var(--gold);
   background: rgba(212, 168, 83, 0.22);
 }
 .iq-container--partner .iq-confirm-btn,
 .iq-container--partner .iq-cta-btn {
-  background: #d4a853;
+  background: var(--gold);
   color: #1a1206;
 }
 .iq-container--partner .iq-confirm-btn:hover,

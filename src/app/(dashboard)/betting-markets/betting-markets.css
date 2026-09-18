@@ -82,13 +82,13 @@ body.light-mode .bm-page {
   font-family: inherit;
 }
 .bm-lb-name:hover {
-  color: #d4af37;
+  color: var(--gold-champagne);
 }
 
 .bm-lb-pnl {
   font-family: var(--font-mono);
   font-weight: 700;
-  color: #d4af37;
+  color: var(--gold-champagne);
   font-feature-settings: 'tnum' 1;
 }
 
@@ -113,7 +113,7 @@ body.light-mode .bm-page {
   padding: 0.25rem 0.5rem;
   font-size: 0.625rem;
   font-weight: 700;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   border: 1px solid rgba(212, 175, 55, 0.12);
   background: transparent;
   color: var(--bm-muted);
@@ -122,7 +122,7 @@ body.light-mode .bm-page {
 }
 .bm-lb-tab.on {
   background: rgba(212, 175, 55, 0.12);
-  color: #d4af37;
+  color: var(--gold-champagne);
   border-color: rgba(212, 175, 55, 0.25);
 }
 
@@ -132,10 +132,10 @@ body.light-mode .bm-page {
   padding: 0.5rem;
   font-size: 0.75rem;
   font-weight: 700;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid rgba(212, 175, 55, 0.2);
   background: rgba(212, 175, 55, 0.06);
-  color: #d4af37;
+  color: var(--gold-champagne);
   cursor: pointer;
   font-family: inherit;
 }
@@ -154,7 +154,7 @@ body.light-mode .bm-page {
   padding: 0.35rem 0.75rem;
   font-size: 0.6875rem;
   font-weight: 700;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid rgba(212, 175, 55, 0.12);
   background: transparent;
   color: var(--bm-muted);
@@ -167,9 +167,9 @@ body.light-mode .bm-page {
   border-color: rgba(212, 175, 55, 0.25);
 }
 .bm-ev-sport-tab.on {
-  background: #d4af37;
+  background: var(--gold-champagne);
   color: #111;
-  border-color: #d4af37;
+  border-color: var(--gold-champagne);
 }
 
 /* EV list — clickable cards */
@@ -194,7 +194,7 @@ body.light-mode .bm-page {
   font-family: inherit;
   transition: background 0.15s;
   padding: 0.6rem 0.4rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 .bm-ev-item--clickable:last-of-type {
   border-bottom: none;
@@ -206,17 +206,17 @@ body.light-mode .bm-page {
 .bm-ev-confidence-dot {
   width: 4px;
   height: 28px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
 }
 .bm-ev-confidence-dot--high {
-  background: linear-gradient(180deg, #10b981, #059669);
+  background: linear-gradient(180deg, var(--emerald), var(--emerald-hover));
 }
 .bm-ev-confidence-dot--medium {
-  background: linear-gradient(180deg, #f59e0b, #d97706);
+  background: linear-gradient(180deg, var(--amber), #d97706);
 }
 .bm-ev-confidence-dot--low {
-  background: linear-gradient(180deg, #ef4444, #dc2626);
+  background: linear-gradient(180deg, var(--negative), #dc2626);
 }
 
 .bm-ev-item-body {
@@ -243,7 +243,7 @@ body.light-mode .bm-page {
   flex-shrink: 0;
 }
 .bm-ev-item--clickable:hover .bm-ev-arrow {
-  color: #d4af37;
+  color: var(--gold-champagne);
 }
 
 .bm-page .bm-lb-you .bm-lb-name {
@@ -275,7 +275,7 @@ body.light-mode .bm-page {
 
 .bm-mini-chart {
   height: 48px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: var(--surface-card);
   border: 1px solid rgba(212, 175, 55, 0.08);
   overflow: hidden;
@@ -290,7 +290,7 @@ body.light-mode .bm-page {
 .bm-lm-footer {
   margin-top: 0.75rem;
   font-size: 0.75rem;
-  color: #fbbf24;
+  color: var(--warning);
   font-weight: 600;
 }
 
@@ -315,8 +315,8 @@ body.light-mode .bm-lm-footer {
   max-width: 580px;
   max-height: 88vh;
   background: var(--bg-secondary);
-  border: 1.5px solid #d4af37;
-  border-radius: 16px;
+  border: 1.5px solid var(--gold-champagne);
+  border-radius: var(--radius-xl);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -347,7 +347,7 @@ body.light-mode .bm-lm-footer {
   align-items: center;
   gap: 0.25rem;
   padding: 0.25rem 0.6rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   border: 1px solid;
   font-size: 0.6rem;
   font-weight: 700;
@@ -369,10 +369,10 @@ body.light-mode .bm-lm-footer {
   display: inline-block;
   font-size: 0.55rem;
   font-weight: 700;
-  color: #d4af37;
+  color: var(--gold-champagne);
   background: rgba(212, 175, 55, 0.08);
   border: 1px solid rgba(212, 175, 55, 0.2);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   padding: 1px 8px;
   margin-top: 4px;
   text-transform: uppercase;
@@ -386,7 +386,7 @@ body.light-mode .bm-lm-footer {
   font-size: 1rem;
   cursor: pointer;
   padding: 0.3rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   flex-shrink: 0;
 }
 .bm-modal-close:hover {
@@ -410,7 +410,7 @@ body.light-mode .bm-lm-footer {
 .bm-modal-section-title {
   font-size: 0.7rem;
   font-weight: 700;
-  color: #d4af37;
+  color: var(--gold-champagne);
   margin: 0 0 0.5rem;
   display: flex;
   align-items: center;
@@ -434,7 +434,7 @@ body.light-mode .bm-lm-footer {
 
 .bm-modal-kpi {
   padding: 0.6rem 0.75rem;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   border: 1px solid rgba(212, 175, 55, 0.12);
   background: rgba(212, 175, 55, 0.03);
   display: flex;
@@ -445,7 +445,7 @@ body.light-mode .bm-lm-footer {
 .bm-modal-kpi-label {
   font-size: 0.5rem;
   font-weight: 700;
-  color: #d4af37;
+  color: var(--gold-champagne);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -460,15 +460,15 @@ body.light-mode .bm-lm-footer {
 
 .bm-modal-insight {
   padding: 0.75rem 0.85rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: var(--bg-tertiary);
-  border-left: 3px solid #d4af37;
+  border-left: 3px solid var(--gold-champagne);
 }
 
 .bm-modal-insight-label {
   font-size: 0.575rem;
   font-weight: 700;
-  color: #d4af37;
+  color: var(--gold-champagne);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   display: flex;

@@ -12,7 +12,7 @@
   margin-bottom: 1.5rem;
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
 }
 
 .ot-hero-left {
@@ -24,7 +24,7 @@
 .ot-hero-icon {
   width: 48px;
   height: 48px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   background: var(--emerald-bg);
   display: flex;
   align-items: center;
@@ -66,7 +66,7 @@
   padding: 0.5rem 1rem;
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   color: var(--text-secondary);
   font-size: 0.825rem;
   font-weight: 600;
@@ -90,7 +90,7 @@
 .ot-team-card {
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   padding: 1rem;
   transition:
     border-color 0.15s,
@@ -223,7 +223,7 @@
   align-items: center;
   gap: 0.25rem;
   padding: 1px 6px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   font-size: 0.6rem;
   font-weight: 700;
 }
@@ -252,7 +252,7 @@
 .ot-modal {
   background: var(--app-bg);
   border: 1px solid var(--emerald);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   width: 100%;
   max-width: 640px;
   max-height: 90vh;
@@ -296,7 +296,7 @@
 .ot-flag-color-btn {
   flex: 1;
   padding: 0.75rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 2px solid var(--border-primary);
   background: var(--surface-card);
   color: var(--text-secondary);
@@ -342,7 +342,7 @@
   padding: 0.6rem 0.75rem;
   background: var(--surface-input, var(--inset));
   border: 1px solid var(--border-primary);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   color: var(--text-primary);
   font-size: 0.825rem;
 }
@@ -402,7 +402,7 @@
   padding: 0.5rem 0.75rem;
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   cursor: pointer;
 }
 
@@ -427,7 +427,7 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding: 1px 6px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   background: transparent;
   border: 1px solid var(--border-secondary);
   color: var(--text-muted);
@@ -446,7 +446,7 @@
   padding: 0.6rem 1.25rem;
   background: linear-gradient(135deg, #6366f1, #4f46e5);
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   color: #fff;
   font-size: 0.825rem;
   font-weight: 700;
@@ -462,7 +462,7 @@
   padding: 0.6rem 1.25rem;
   background: transparent;
   border: 1px solid var(--border-input);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   color: var(--text-secondary);
   cursor: pointer;
 }
@@ -479,7 +479,7 @@
   padding: 1rem;
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition: border-color 0.15s;
 }
@@ -494,7 +494,7 @@
 .ot-inbox-item-flag {
   width: 8px;
   align-self: stretch;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
 }
 .ot-inbox-item-flag.green {
@@ -542,7 +542,7 @@
 .ot-flag-detail {
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   padding: 1.5rem;
 }
 
@@ -565,7 +565,7 @@
   padding: 0.75rem 1rem;
   background: var(--bg-tertiary);
   border-left: 2px solid var(--border-hover);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 .ot-flag-message-author {
@@ -590,7 +590,7 @@
   background: var(--emerald);
   color: #fff;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   padding: 8px 14px;
   font-size: 12px;
   font-weight: 600;
@@ -638,7 +638,7 @@
 .ctd-card {
   background: var(--ctd-card);
   border: 1px solid var(--ctd-border);
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   /* Dark = flat, border-defined: no shadow, so a transparent card on #0a0e13
      doesn't ring into a lighter slab. Light restores the subtle lift below. */
   box-shadow: none;
@@ -665,7 +665,7 @@ html.light-mode .ctd-card {
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--emerald-text, #34d399);
+  color: var(--emerald-text, var(--positive-bright));
 }
 .ctd-title {
   display: flex;
@@ -684,9 +684,9 @@ html.light-mode .ctd-card {
   gap: 0.35rem;
   padding: 0.2rem 0.6rem;
   border-radius: 9999px;
-  background: var(--emerald-bg, rgba(16, 185, 129, 0.08));
-  border: 1px solid var(--emerald-border, rgba(16, 185, 129, 0.2));
-  color: var(--emerald-text, #34d399);
+  background: var(--emerald-bg, var(--emerald-bg));
+  border: 1px solid var(--emerald-border, color-mix(in srgb, var(--emerald) 20%, transparent));
+  color: var(--emerald-text, var(--positive-bright));
   font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.02em;
@@ -707,7 +707,7 @@ html.light-mode .ctd-card {
   align-items: center;
   gap: 0.45rem;
   padding: 0.5rem 0.9rem;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
@@ -723,17 +723,17 @@ html.light-mode .ctd-card {
   color: var(--text-secondary);
 }
 .ctd-btn-outline:hover {
-  border-color: var(--emerald-border, rgba(16, 185, 129, 0.35));
+  border-color: var(--emerald-border, color-mix(in srgb, var(--emerald) 35%, transparent));
   color: var(--text-primary);
 }
 .ctd-btn-primary {
-  background: var(--emerald, #10b981);
-  border: 1px solid var(--emerald, #10b981);
+  background: var(--emerald, var(--emerald));
+  border: 1px solid var(--emerald, var(--emerald));
   color: #fff;
 }
 .ctd-btn-primary:hover {
-  background: var(--emerald-hover, #059669);
-  border-color: var(--emerald-hover, #059669);
+  background: var(--emerald-hover, var(--emerald-hover));
+  border-color: var(--emerald-hover, var(--emerald-hover));
 }
 .ctd-badge {
   display: inline-flex;
@@ -743,7 +743,7 @@ html.light-mode .ctd-card {
   height: 1.15rem;
   padding: 0 0.3rem;
   border-radius: 9999px;
-  background: var(--amber, #f59e0b);
+  background: var(--amber, var(--amber));
   color: #1a1200;
   font-size: 0.65rem;
   font-weight: 700;
@@ -838,14 +838,14 @@ html.light-mode .ctd-card {
 .ctd-unreal.pos,
 .ctd-roi-val.pos,
 .ctd-pl.pos {
-  color: var(--emerald, #10b981);
+  color: var(--emerald, var(--emerald));
 }
 .neg,
 .ctd-delta.neg,
 .ctd-unreal.neg,
 .ctd-roi-val.neg,
 .ctd-pl.neg {
-  color: var(--danger, #ef4444);
+  color: var(--danger, var(--negative));
 }
 
 /* Sector ROI ranking bars */
@@ -911,7 +911,7 @@ html.light-mode .ctd-card {
   text-align: center;
   gap: 0.35rem;
   border: 1px solid var(--border-primary);
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   background: var(--surface-card);
   box-shadow: none; /* dark = flat, slab-free */
   padding: 12px 20px;
@@ -975,12 +975,12 @@ html.light-mode .ctd-kpi {
     color 0.15s;
 }
 .ctd-chip:hover {
-  border-color: var(--emerald-border, rgba(16, 185, 129, 0.3));
+  border-color: var(--emerald-border, color-mix(in srgb, var(--emerald) 30%, transparent));
 }
 .ctd-chip.is-active {
-  background: var(--emerald-bg, rgba(16, 185, 129, 0.08));
-  border-color: var(--emerald-border, rgba(16, 185, 129, 0.35));
-  color: var(--emerald-text, #34d399);
+  background: var(--emerald-bg, var(--emerald-bg));
+  border-color: var(--emerald-border, color-mix(in srgb, var(--emerald) 35%, transparent));
+  color: var(--emerald-text, var(--positive-bright));
 }
 
 /* ── Positions table ── */
@@ -1047,7 +1047,7 @@ html.light-mode .ctd-kpi {
   align-items: center;
   gap: 0.3rem;
   padding: 0.28rem 0.65rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--ctd-border);
   background: transparent;
   color: var(--text-secondary);
@@ -1060,7 +1060,7 @@ html.light-mode .ctd-kpi {
     color 0.15s;
 }
 .ctd-flag-btn:hover:not(:disabled) {
-  border-color: var(--emerald-border, rgba(16, 185, 129, 0.35));
+  border-color: var(--emerald-border, color-mix(in srgb, var(--emerald) 35%, transparent));
   color: var(--text-primary);
 }
 .ctd-flag-btn:disabled {
@@ -1068,8 +1068,8 @@ html.light-mode .ctd-kpi {
   cursor: not-allowed;
 }
 .ctd-flag-btn.is-flagged {
-  background: var(--amber, #f59e0b);
-  border-color: var(--amber, #f59e0b);
+  background: var(--amber, var(--amber));
+  border-color: var(--amber, var(--amber));
   color: #1a1200;
 }
 
@@ -1146,14 +1146,14 @@ html.light-mode .ctd-kpi {
   min-width: 0;
 }
 .ot-flag-icon.green {
-  color: var(--emerald, #10b981);
+  color: var(--emerald, var(--emerald));
 }
 .ot-flag-icon.red {
-  color: var(--negative, #ef4444);
+  color: var(--negative, var(--negative));
 }
 .ot-ticker-chip {
   padding: 2px 8px;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   background: var(--bg-tertiary);
   border: 1px solid var(--border-primary);
   font-size: 0.8rem;
@@ -1176,7 +1176,7 @@ html.light-mode .ctd-kpi {
   gap: 0.5rem;
   max-width: 100%;
   padding: 0.3rem 0.5rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-primary);
   background: var(--surface-input, var(--inset));
   color: var(--text-secondary);
@@ -1205,10 +1205,10 @@ html.light-mode .ctd-kpi {
   flex-shrink: 0;
 }
 .ot-pos {
-  color: var(--positive, #10b981);
+  color: var(--positive, var(--emerald));
 }
 .ot-neg {
-  color: var(--negative, #ef4444);
+  color: var(--negative, var(--negative));
 }
 
 .ot-switcher-panel {
@@ -1220,7 +1220,7 @@ html.light-mode .ctd-kpi {
   max-width: 420px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   padding: 0.5rem;
 }
@@ -1228,7 +1228,7 @@ html.light-mode .ctd-kpi {
   width: 100%;
   padding: 0.5rem 0.6rem;
   margin-bottom: 0.4rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-primary);
   background: var(--surface-input, var(--inset));
   color: var(--text-primary);
@@ -1260,7 +1260,7 @@ html.light-mode .ctd-kpi {
   width: 100%;
   padding: 0.45rem 0.5rem;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   background: transparent;
   color: var(--text-secondary);
   font-size: 0.78rem;
@@ -1299,7 +1299,7 @@ html.light-mode .ctd-kpi {
      on it, transparent in dark / white in light like every other card). */
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   padding: 1rem;
   display: flex;
   flex-direction: column;
@@ -1307,15 +1307,15 @@ html.light-mode .ctd-kpi {
 }
 
 .ot-dossier-pl {
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: 0.75rem;
   border: 1px solid var(--border-primary);
 }
 .ot-dossier-pl.pos {
-  color: var(--positive, #10b981);
+  color: var(--positive, var(--emerald));
 }
 .ot-dossier-pl.neg {
-  color: var(--negative, #ef4444);
+  color: var(--negative, var(--negative));
 }
 .ot-dossier-pl-head {
   display: flex;
@@ -1343,7 +1343,7 @@ html.light-mode .ctd-kpi {
 .ot-dossier-stat {
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   padding: 0.5rem 0.6rem;
 }
 .ot-dossier-stat-label {
@@ -1379,19 +1379,19 @@ html.light-mode .ctd-kpi {
   align-items: flex-start;
   gap: 0.4rem;
   padding: 0.5rem 0.7rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-size: 0.72rem;
   line-height: 1.35;
 }
 .ot-banner.amber {
   background: rgba(245, 158, 11, 0.1);
   border: 1px solid rgba(245, 158, 11, 0.3);
-  color: var(--warning, #f59e0b);
+  color: var(--warning, var(--amber));
 }
 .ot-banner.red {
   background: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.3);
-  color: var(--negative, #ef4444);
+  color: var(--negative, var(--negative));
 }
 
 .ot-dossier-evidence-btn {
@@ -1400,7 +1400,7 @@ html.light-mode .ctd-kpi {
   align-items: center;
   gap: 0.35rem;
   padding: 0.4rem 0.6rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   border: 1px dashed var(--border-primary);
   background: transparent;
   color: var(--text-secondary);
@@ -1466,7 +1466,7 @@ html.light-mode .ctd-kpi {
 .ot-seg {
   flex: 1;
   padding: 0.5rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-primary);
   background: var(--surface-card);
   color: var(--text-secondary);
@@ -1480,9 +1480,9 @@ html.light-mode .ctd-kpi {
   color: var(--text-primary);
 }
 .ot-seg.high.is-selected {
-  border-color: var(--negative, #ef4444);
+  border-color: var(--negative, var(--negative));
   background: rgba(239, 68, 68, 0.16);
-  color: var(--negative, #ef4444);
+  color: var(--negative, var(--negative));
   font-weight: 700;
 }
 
@@ -1493,7 +1493,7 @@ html.light-mode .ctd-kpi {
   text-align: right;
 }
 .ot-char-hint.ok {
-  color: var(--positive, #10b981);
+  color: var(--positive, var(--emerald));
 }
 
 .ot-form-row {
@@ -1528,10 +1528,10 @@ html.light-mode .ctd-kpi {
   gap: 0.5rem;
 }
 .ot-cta-green {
-  background: linear-gradient(135deg, #10b981, #059669);
+  background: linear-gradient(135deg, var(--emerald), var(--emerald-hover));
 }
 .ot-cta-red {
-  background: linear-gradient(135deg, #ef4444, #dc2626);
+  background: linear-gradient(135deg, var(--negative), #dc2626);
 }
 
 /* ── Detail panel — the answer path ── */
@@ -1546,21 +1546,21 @@ html.light-mode .ctd-kpi {
   font-weight: 700;
   letter-spacing: 0.05em;
   padding: 2px 7px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background: var(--bg-tertiary);
   color: var(--text-muted);
   border: 1px solid var(--border-primary);
 }
 .ot-status-pill.status-open {
-  color: var(--warning, #f59e0b);
+  color: var(--warning, var(--amber));
   border-color: rgba(245, 158, 11, 0.4);
 }
 .ot-status-pill.status-accepted {
-  color: var(--positive, #10b981);
-  border-color: rgba(16, 185, 129, 0.4);
+  color: var(--positive, var(--emerald));
+  border-color: color-mix(in srgb, var(--emerald) 40%, transparent);
 }
 .ot-status-pill.status-rejected {
-  color: var(--negative, #ef4444);
+  color: var(--negative, var(--negative));
   border-color: rgba(239, 68, 68, 0.4);
 }
 /* Escalated = caution semantics: the hairline amber chip treatment. */
@@ -1614,7 +1614,7 @@ html.light-mode .ctd-kpi {
   color: var(--text-secondary);
 }
 .ot-due.urgent {
-  color: var(--warning, #f59e0b);
+  color: var(--warning, var(--amber));
 }
 
 .ot-answer-block {
@@ -1632,7 +1632,7 @@ html.light-mode .ctd-kpi {
   align-items: center;
   gap: 0.35rem;
   padding: 0.5rem 0.85rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-primary);
   background: var(--surface-card);
   color: var(--text-secondary);
@@ -1641,12 +1641,12 @@ html.light-mode .ctd-kpi {
   cursor: pointer;
 }
 .ot-answer-btn.accept {
-  border-color: rgba(16, 185, 129, 0.4);
-  color: var(--positive, #10b981);
+  border-color: color-mix(in srgb, var(--emerald) 40%, transparent);
+  color: var(--positive, var(--emerald));
 }
 .ot-answer-btn.reject {
   border-color: rgba(239, 68, 68, 0.4);
-  color: var(--negative, #ef4444);
+  color: var(--negative, var(--negative));
 }
 .ot-answer-btn.escalate {
   border-color: color-mix(in srgb, var(--warning) 40%, transparent);
@@ -1660,17 +1660,17 @@ html.light-mode .ctd-kpi {
 .ot-resolution-note {
   margin-top: 1rem;
   padding: 0.75rem 1rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   border-left: 3px solid var(--border-primary);
   background: var(--surface-card);
   font-size: 0.75rem;
   color: var(--text-secondary);
 }
 .ot-resolution-note.status-accepted {
-  border-left-color: var(--positive, #10b981);
+  border-left-color: var(--positive, var(--emerald));
 }
 .ot-resolution-note.status-rejected {
-  border-left-color: var(--negative, #ef4444);
+  border-left-color: var(--negative, var(--negative));
 }
 .ot-resolution-text {
   display: block;

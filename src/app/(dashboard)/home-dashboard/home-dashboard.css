@@ -56,7 +56,7 @@ body.light-mode .db-page {
   align-items: center;
   margin-left: 0.15rem;
   vertical-align: middle;
-  color: #10b981;
+  color: var(--emerald);
   font-size: 1.25rem;
   animation: dbWave 1.5s ease-in-out 0.5s 2;
   transform-origin: 70% 70%;
@@ -92,7 +92,7 @@ body.light-mode .db-page {
 }
 
 .db-greeting-highlight {
-  color: #10b981;
+  color: var(--emerald);
   font-weight: 700;
 }
 
@@ -108,7 +108,7 @@ body.light-mode .db-page {
 .db-card {
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   overflow: hidden;
 }
 
@@ -117,7 +117,7 @@ body.light-mode .db-page {
   align-items: center;
   justify-content: space-between;
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.05);
+  border-bottom: 1px solid color-mix(in srgb, var(--emerald) 5%, transparent);
 }
 
 .db-card-header h3 {
@@ -141,9 +141,9 @@ a.db-icon-btn {
 .db-icon-btn {
   width: 32px;
   height: 32px;
-  border-radius: 8px;
-  background: rgba(16, 185, 129, 0.06);
-  border: 1px solid rgba(16, 185, 129, 0.1);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--emerald) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--emerald) 10%, transparent);
   color: var(--db-muted);
   font-size: 0.75rem;
   cursor: pointer;
@@ -153,8 +153,8 @@ a.db-icon-btn {
   transition: all 0.15s;
 }
 .db-icon-btn:hover {
-  color: #10b981;
-  border-color: rgba(16, 185, 129, 0.3);
+  color: var(--emerald);
+  border-color: color-mix(in srgb, var(--emerald) 30%, transparent);
 }
 
 /* ══════════════════════════════
@@ -173,7 +173,7 @@ a.db-icon-btn {
   color: var(--db-muted);
   background: transparent;
   border: 1px solid var(--border-primary);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition: all 0.15s;
   font-family: inherit;
@@ -184,9 +184,9 @@ a.db-icon-btn {
 }
 .db-tf-btn.active,
 .db-tf-btn-sm.active {
-  background: #10b981;
+  background: var(--emerald);
   color: #fff;
-  border-color: #10b981;
+  border-color: var(--emerald);
 }
 
 /* ══════════════════════════════
@@ -195,7 +195,7 @@ a.db-icon-btn {
 .db-hero-card {
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 18px;
+  border-radius: var(--radius-xl);
   padding: 1.5rem;
   margin-bottom: 1.25rem;
   display: flex;
@@ -236,7 +236,7 @@ a.db-icon-btn {
 }
 .db-hero-label i {
   font-size: 0.5625rem;
-  color: #10b981;
+  color: var(--emerald);
 }
 
 .db-hero-value {
@@ -260,10 +260,10 @@ a.db-icon-btn {
   gap: 0.375rem;
 }
 .db-hero-change.positive {
-  color: #10b981;
+  color: var(--emerald);
 }
 .db-hero-change.negative {
-  color: #ef4444;
+  color: var(--negative);
 }
 .db-hero-change-amt {
   font-weight: 500;
@@ -280,7 +280,7 @@ a.db-icon-btn {
   display: flex;
   gap: 2rem;
   padding-top: 1rem;
-  border-top: 1px solid rgba(16, 185, 129, 0.06);
+  border-top: 1px solid color-mix(in srgb, var(--emerald) 6%, transparent);
 }
 
 .db-hero-stat {
@@ -298,7 +298,7 @@ a.db-icon-btn {
 }
 .db-hero-stat-label i {
   font-size: 0.5rem;
-  color: #10b981;
+  color: var(--emerald);
 }
 .db-hero-stat-value {
   font-family: var(--font-mono);
@@ -378,7 +378,7 @@ a.db-icon-btn {
 .db-holdings-nav-btn:not(:disabled) svg line,
 .db-holdings-nav-btn:not(:disabled) svg polyline,
 .db-holdings-nav-btn:not(:disabled) svg circle {
-  stroke: #10b981 !important;
+  stroke: var(--emerald) !important;
 }
 
 .db-holdings-nav-btn:not(:disabled):hover {
@@ -405,7 +405,7 @@ a.db-icon-btn {
   padding: 0.625rem 0.875rem;
   background: var(--surface-card);
   border: 1px solid var(--border-secondary);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   transition: all 0.15s;
   cursor: pointer;
   position: relative;
@@ -417,7 +417,7 @@ a.db-icon-btn {
   right: 0.65rem;
   font-size: 0.5rem;
   font-weight: 700;
-  color: #ef4444;
+  color: var(--negative);
   background: rgba(239, 68, 68, 0.08);
   border: 1px solid rgba(239, 68, 68, 0.15);
   padding: 0.15rem 0.5rem;
@@ -456,7 +456,7 @@ a.db-icon-btn {
   color: #10b981 !important;
 }
 .db-holding-per-share.negative {
-  color: #ef4444 !important;
+  color: var(--negative) !important;
 }
 
 .db-holding-info {
@@ -480,14 +480,14 @@ a.db-icon-btn {
   border-left: 3px solid transparent;
 }
 .db-holding-card-link.db-holding-positive {
-  border-left-color: #10b981;
+  border-left-color: var(--emerald);
 }
 .db-holding-card-link.db-holding-negative {
-  border-left-color: #ef4444;
+  border-left-color: var(--negative);
 }
 .db-holding-card:hover {
-  border-color: rgba(16, 185, 129, 0.2);
-  background: rgba(16, 185, 129, 0.04);
+  border-color: color-mix(in srgb, var(--emerald) 20%, transparent);
+  background: var(--emerald-bg-subtle);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 .db-holding-view-details {
@@ -496,7 +496,7 @@ a.db-icon-btn {
   right: 1rem;
   font-size: 0.6875rem;
   font-weight: 600;
-  color: #10b981;
+  color: var(--emerald);
   opacity: 0;
   transition: opacity 0.15s;
 }
@@ -522,7 +522,7 @@ a.db-icon-btn {
 .db-holding-dot {
   width: 8px;
   height: 8px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
 }
 
@@ -555,10 +555,10 @@ a.db-icon-btn {
   font-weight: 700;
 }
 .db-holding-change.positive {
-  color: #10b981;
+  color: var(--emerald);
 }
 .db-holding-change.negative {
-  color: #ef4444;
+  color: var(--negative);
 }
 
 .db-holding-qty {
@@ -579,12 +579,12 @@ a.db-icon-btn {
   align-items: center;
   justify-content: space-between;
   padding: 0.625rem 1.25rem;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.04);
+  border-bottom: 1px solid var(--emerald-bg-subtle);
   transition: background 0.1s;
   cursor: pointer;
 }
 .db-watchlist-item:hover {
-  background: rgba(16, 185, 129, 0.03);
+  background: color-mix(in srgb, var(--emerald) 3%, transparent);
 }
 .db-watchlist-item:last-child {
   border-bottom: none;
@@ -599,14 +599,14 @@ a.db-icon-btn {
 .db-watchlist-avatar {
   width: 32px;
   height: 32px;
-  border-radius: 8px;
-  background: rgba(16, 185, 129, 0.08);
+  border-radius: var(--radius-md);
+  background: var(--emerald-bg);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 0.6875rem;
   font-weight: 700;
-  color: #10b981;
+  color: var(--emerald);
 }
 
 .db-watchlist-ticker {
@@ -647,10 +647,10 @@ a.db-icon-btn {
   display: block;
 }
 .db-watchlist-change.positive {
-  color: #10b981;
+  color: var(--emerald);
 }
 .db-watchlist-change.negative {
-  color: #ef4444;
+  color: var(--negative);
 }
 
 /* ══════════════════════════════
@@ -687,7 +687,7 @@ a.db-icon-btn {
   flex-direction: column;
   gap: 0.6rem;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+  border-bottom: 1px solid color-mix(in srgb, var(--emerald) 6%, transparent);
 }
 
 /* Total P&L summary — replaces the donut center */
@@ -798,7 +798,7 @@ body.light-mode .db-profits-chart-wrap {
 .db-profits-legend-scroll .db-profits-legend-item {
   flex: 0 0 auto;
   padding: 0.45rem 0;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+  border-bottom: 1px solid color-mix(in srgb, var(--emerald) 6%, transparent);
 }
 
 .db-profits-legend-scroll .db-profits-legend-item:last-child {
@@ -826,7 +826,7 @@ body.light-mode .db-profits-legend-scroll .db-profits-legend-item {
 .db-legend-dot {
   width: 8px;
   height: 8px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
 }
 .db-legend-label {
   font-size: 0.75rem;
@@ -834,7 +834,7 @@ body.light-mode .db-profits-legend-scroll .db-profits-legend-item {
   color: var(--db-muted-soft);
 }
 .db-legend-amt {
-  color: #10b981;
+  color: var(--emerald);
   font-size: 0.75rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
@@ -870,13 +870,13 @@ body.light-mode .db-profits-legend-scroll .db-profits-legend-item {
   display: flex;
   width: 80px;
   height: 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
   gap: 1px;
 }
 .db-sector-bar-seg {
   height: 100%;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   transition: width 0.3s;
 }
 
@@ -898,7 +898,7 @@ body.light-mode .db-profits-legend-scroll .db-profits-legend-item {
   align-items: center;
   justify-content: space-between;
   padding: 0.75rem 1.25rem;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.04);
+  border-bottom: 1px solid var(--emerald-bg-subtle);
 }
 .db-sector-item:last-child {
   border-bottom: none;
@@ -913,7 +913,7 @@ body.light-mode .db-profits-legend-scroll .db-profits-legend-item {
 .db-sector-dot {
   width: 10px;
   height: 10px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
 }
 
@@ -966,7 +966,7 @@ body.light-mode .db-profits-legend-scroll .db-profits-legend-item {
   color: var(--db-muted-ink);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.05);
+  border-bottom: 1px solid color-mix(in srgb, var(--emerald) 5%, transparent);
   flex-shrink: 0;
 }
 
@@ -986,7 +986,7 @@ body.light-mode .db-profits-legend-scroll .db-profits-legend-item {
   grid-template-columns: 1fr 0.7fr 0.8fr;
   align-items: center;
   padding: 0.625rem 1.25rem;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.03);
+  border-bottom: 1px solid color-mix(in srgb, var(--emerald) 3%, transparent);
   transition: background 0.1s;
 }
 .db-tx-item:hover {
@@ -1002,14 +1002,14 @@ body.light-mode .db-profits-legend-scroll .db-profits-legend-item {
 .db-tx-avatar {
   width: 28px;
   height: 28px;
-  border-radius: 7px;
-  background: rgba(16, 185, 129, 0.08);
+  border-radius: var(--radius-md);
+  background: var(--emerald-bg);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 0.625rem;
   font-weight: 700;
-  color: #10b981;
+  color: var(--emerald);
   flex-shrink: 0;
 }
 
@@ -1032,10 +1032,10 @@ body.light-mode .db-profits-legend-scroll .db-profits-legend-item {
   font-weight: 700;
 }
 .db-tx-amount.positive {
-  color: #10b981;
+  color: var(--emerald);
 }
 .db-tx-amount.negative {
-  color: #ef4444;
+  color: var(--negative);
 }
 
 .db-tx-id {
@@ -1528,8 +1528,8 @@ body.light-mode .db-hero-tf-pill.active {
 .db-sector-drawer {
   margin: 0 0.25rem 0.5rem 1.5rem;
   padding: 0.5rem 0.75rem;
-  background: rgba(16, 185, 129, 0.03);
-  border-left: 2px solid #10b981;
+  background: color-mix(in srgb, var(--emerald) 3%, transparent);
+  border-left: 2px solid var(--emerald);
   border-radius: 0 6px 6px 0;
   display: flex;
   flex-direction: column;
@@ -1606,10 +1606,10 @@ body.light-mode .db-hero-tf-pill.active {
   font-variant-numeric: tabular-nums;
 }
 .db-sector-drawer-pnl.positive {
-  color: #10b981;
+  color: var(--emerald);
 }
 .db-sector-drawer-pnl.negative {
-  color: #ef4444;
+  color: var(--negative);
 }
 
 body.light-mode .db-sector-drawer {
@@ -1683,7 +1683,7 @@ body.light-mode .db-sector-drawer-item {
 }
 
 .db-sector-pie-wedge:focus-visible {
-  outline: 2px solid #10b981;
+  outline: 2px solid var(--emerald);
   outline-offset: 2px;
 }
 
@@ -1694,12 +1694,12 @@ body.light-mode .db-sector-drawer-item {
   background: var(--bg-secondary);
   color: #f0f6fc;
   padding: 0.5rem 0.75rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 0.75rem;
   white-space: nowrap;
   z-index: 10;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(16, 185, 129, 0.25);
+  border: 1px solid var(--emerald-glow);
   animation: db-tooltip-in 100ms ease;
 }
 
@@ -1732,7 +1732,7 @@ body.light-mode .db-sector-drawer-item {
   font-family: var(--font-mono);
   font-size: 0.875rem;
   font-weight: 700;
-  color: #10b981;
+  color: var(--emerald);
   font-variant-numeric: tabular-nums;
 }
 
@@ -1773,19 +1773,19 @@ body.light-mode .db-sector-pie-tooltip-pct {
   align-items: center;
   gap: 0.5rem;
   padding: 0.25rem 0.5rem;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-size: 0.75rem;
 }
 
 .db-sector-legend-item:hover {
-  background: rgba(16, 185, 129, 0.04);
+  background: var(--emerald-bg-subtle);
 }
 
 .db-sector-legend-dot {
   flex-shrink: 0;
   width: 8px;
   height: 8px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
 }
 
 .db-sector-legend-name {
@@ -1851,7 +1851,7 @@ body.light-mode .db-sector-legend-pct {
 .db-skel-card {
   background: var(--surface-card);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   padding: 1.5rem;
   min-height: 200px;
 }
@@ -1866,7 +1866,7 @@ body.light-mode .db-sector-legend-pct {
 
 .db-skel-bar {
   height: 12px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   background: linear-gradient(
     90deg,
     rgba(120, 120, 120, 0.06) 0%,
@@ -1956,7 +1956,7 @@ body.light-mode .db-hero-change.is-muted {
     padding: 0.15rem 0.5rem;
     font-size: 0.5625rem;
     line-height: 1.2;
-    border-radius: 5px;
+    border-radius: var(--radius-sm);
     border-width: 1px;
     min-height: 0;
   }
@@ -1992,22 +1992,22 @@ body.light-mode .db-hero-change.is-muted {
   .db-holdings-nav-btn {
     width: 28px;
     height: 28px;
-    background: rgba(16, 185, 129, 0.1);
-    border: 1px solid rgba(16, 185, 129, 0.25);
+    background: color-mix(in srgb, var(--emerald) 10%, transparent);
+    border: 1px solid var(--emerald-glow);
     border-radius: 50%;
     flex-shrink: 0;
   }
 
   .db-holdings-nav-btn:not(:disabled):hover,
   .db-holdings-nav-btn:not(:disabled):active {
-    background: rgba(16, 185, 129, 0.18);
-    border-color: rgba(16, 185, 129, 0.4);
+    background: color-mix(in srgb, var(--emerald) 18%, transparent);
+    border-color: color-mix(in srgb, var(--emerald) 40%, transparent);
     transform: scale(1.06);
   }
 
   .db-holdings-nav-btn:disabled {
-    background: rgba(16, 185, 129, 0.04);
-    border-color: rgba(16, 185, 129, 0.1);
+    background: var(--emerald-bg-subtle);
+    border-color: color-mix(in srgb, var(--emerald) 10%, transparent);
   }
 
   .db-holdings-nav-btn .bi-chevron-left,
@@ -2043,7 +2043,7 @@ body.light-mode .db-hero-change.is-muted {
 .db-hero-card-header {
   margin-bottom: 1rem;
   padding-bottom: 0.75rem;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.08);
+  border-bottom: 1px solid var(--emerald-bg);
 }
 
 .db-hero-card-title-link {
@@ -2068,7 +2068,7 @@ body.light-mode .db-hero-change.is-muted {
 
 .db-hero-card-title-icon {
   font-size: 0.75rem;
-  color: #10b981;
+  color: var(--emerald);
   opacity: 0.7;
   transition:
     opacity 180ms ease,
@@ -2076,7 +2076,7 @@ body.light-mode .db-hero-change.is-muted {
 }
 
 .db-hero-card-title-link:hover .db-hero-card-title {
-  color: #10b981;
+  color: var(--emerald);
 }
 
 .db-hero-card-title-link:hover .db-hero-card-title-icon {
@@ -2102,7 +2102,7 @@ body.light-mode .db-hero-card-header {
 }
 
 .market-pulse-title-link:hover h3 {
-  color: #10b981 !important;
+  color: var(--emerald) !important;
 }
 
 .market-pulse-title-link:hover .bi-arrow-up-right {
@@ -2115,7 +2115,7 @@ body.light-mode .db-hero-card-header {
 }
 
 .market-pulse-sector-row:hover {
-  background-color: rgba(16, 185, 129, 0.08) !important;
+  background-color: var(--emerald-bg) !important;
 }
 
 body.light-mode .market-pulse-sector-row:hover {
@@ -2144,16 +2144,16 @@ body.light-mode .market-pulse-sector-row:hover {
   text-align: left;
   cursor: pointer;
   padding: 0.3rem 0.5rem;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   transition: background 120ms ease;
 }
 
 .db-sector-legend-item-btn:hover:not(:disabled) {
-  background: rgba(16, 185, 129, 0.06);
+  background: color-mix(in srgb, var(--emerald) 6%, transparent);
 }
 
 .db-sector-legend-item-btn.is-expanded {
-  background: rgba(16, 185, 129, 0.08);
+  background: var(--emerald-bg);
 }
 
 .db-sector-legend-item-btn:disabled {
@@ -2162,7 +2162,7 @@ body.light-mode .market-pulse-sector-row:hover {
 }
 
 .db-sector-legend-item-btn:focus-visible {
-  outline: 2px solid rgba(16, 185, 129, 0.5);
+  outline: 2px solid color-mix(in srgb, var(--emerald) 50%, transparent);
   outline-offset: 1px;
 }
 
@@ -2176,11 +2176,11 @@ body.light-mode .market-pulse-sector-row:hover {
 }
 
 .db-sector-legend-item-btn.is-expanded .db-sector-legend-chevron {
-  color: #10b981;
+  color: var(--emerald);
 }
 
 .db-sector-legend-item-btn:hover:not(:disabled) .db-sector-legend-chevron {
-  color: #10b981;
+  color: var(--emerald);
 }
 
 /* Holdings sublist — appears below the expanded row */
@@ -2191,8 +2191,8 @@ body.light-mode .market-pulse-sector-row:hover {
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
-  background: rgba(16, 185, 129, 0.03);
-  border-left: 2px solid rgba(16, 185, 129, 0.25);
+  background: color-mix(in srgb, var(--emerald) 3%, transparent);
+  border-left: 2px solid var(--emerald-glow);
   border-radius: 0 4px 4px 0;
   animation: db-sector-holdings-slide-in 200ms ease-out;
 }
@@ -2247,10 +2247,10 @@ body.light-mode .market-pulse-sector-row:hover {
 }
 
 .db-sector-holding-pnl.is-up {
-  color: #10b981;
+  color: var(--emerald);
 }
 .db-sector-holding-pnl.is-down {
-  color: #ef4444;
+  color: var(--negative);
 }
 
 /* Light mode */

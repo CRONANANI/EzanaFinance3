@@ -36,7 +36,7 @@
   padding: 0.7rem 0.875rem 0.6rem;
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   appearance: none;
   font: inherit;
   color: inherit;
@@ -60,16 +60,16 @@
   transition: background 0.25s;
 }
 .wl-strip-card:hover {
-  border-color: rgba(16, 185, 129, 0.25);
+  border-color: var(--emerald-glow);
   background: rgba(22, 27, 34, 0.85);
   transform: translateY(-1px);
 }
 .wl-strip-card.active {
-  border-color: rgba(16, 185, 129, 0.4);
-  background: rgba(16, 185, 129, 0.06);
+  border-color: color-mix(in srgb, var(--emerald) 40%, transparent);
+  background: color-mix(in srgb, var(--emerald) 6%, transparent);
 }
 .wl-strip-card.active::before {
-  background: #10b981;
+  background: var(--emerald);
 }
 
 /* Type-specific left-accent glow */
@@ -77,7 +77,7 @@
   border-color: rgba(59, 130, 246, 0.35);
 }
 .wl-strip-card.politician.active::before {
-  background: #3b82f6;
+  background: var(--blue);
 }
 .wl-strip-card.institution.active {
   border-color: rgba(167, 139, 250, 0.35);
@@ -96,7 +96,7 @@
 .wl-strip-badge {
   width: 28px;
   height: 28px;
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -105,9 +105,9 @@
   flex-shrink: 0;
 }
 .wl-strip-badge.idx {
-  background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
-  border: 1px solid rgba(16, 185, 129, 0.15);
+  background: color-mix(in srgb, var(--emerald) 10%, transparent);
+  color: var(--emerald);
+  border: 1px solid var(--emerald-border);
 }
 .wl-strip-badge.pol {
   border-radius: 50%;
@@ -115,10 +115,10 @@
   font-size: 0.5625rem;
 }
 .wl-strip-badge.pol.democrat {
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  background: linear-gradient(135deg, var(--blue), #2563eb);
 }
 .wl-strip-badge.pol.republican {
-  background: linear-gradient(135deg, #ef4444, #dc2626);
+  background: linear-gradient(135deg, var(--negative), #dc2626);
 }
 .wl-strip-badge.inst {
   background: rgba(167, 139, 250, 0.1);
@@ -129,7 +129,7 @@
 .wl-strip-badge.stk {
   background: var(--muted);
   color: var(--foreground);
-  border: 1px solid rgba(16, 185, 129, 0.1);
+  border: 1px solid color-mix(in srgb, var(--emerald) 10%, transparent);
   font-size: 0.5rem;
   font-weight: 700;
 }
@@ -160,10 +160,10 @@
   border-radius: 50%;
 }
 .wl-dot.democrat {
-  background: #3b82f6;
+  background: var(--blue);
 }
 .wl-dot.republican {
-  background: #ef4444;
+  background: var(--negative);
 }
 
 /* Bottom row: price + change + spark */
@@ -190,10 +190,10 @@
   display: block;
 }
 .wl-strip-chg.up {
-  color: #10b981;
+  color: var(--emerald);
 }
 .wl-strip-chg.dn {
-  color: #ef4444;
+  color: var(--negative);
 }
 
 .wl-strip-ytd-label {
@@ -236,8 +236,8 @@
   font-weight: 700;
   letter-spacing: 0.03em;
   padding: 1px 5px;
-  border-radius: 3px;
-  background: rgba(16, 185, 129, 0.06);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--emerald) 6%, transparent);
   color: var(--muted-foreground);
   white-space: nowrap;
 }
@@ -286,7 +286,7 @@
   font-size: 0.5rem;
   font-weight: 700;
   padding: 1px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   margin-left: 0.3rem;
@@ -301,7 +301,7 @@
 }
 .wl-bc-link {
   font-size: 0.625rem;
-  color: #10b981;
+  color: var(--emerald);
   font-weight: 600;
   margin-left: auto;
   display: flex;
@@ -311,7 +311,7 @@
   transition: color 0.2s;
 }
 .wl-bc-link:hover {
-  color: #34d399;
+  color: var(--positive-bright);
 }
 
 /* Price row */
@@ -342,7 +342,7 @@
   line-height: 1.25;
 }
 .wl-ticker-strong {
-  color: #10b981;
+  color: var(--emerald);
   font-weight: 700;
   letter-spacing: 0.02em;
 }
@@ -396,7 +396,7 @@
 
 .wl-holder-chip--partner {
   box-shadow:
-    0 0 0 2px #d4af37,
+    0 0 0 2px var(--gold-champagne),
     0 0 8px rgba(212, 175, 55, 0.35),
     0 2px 6px rgba(0, 0, 0, 0.35),
     inset 0 1px 1px rgba(255, 255, 255, 0.08);
@@ -404,7 +404,7 @@
 
 .wl-holder-chip--partner:hover {
   box-shadow:
-    0 0 0 2px #d4af37,
+    0 0 0 2px var(--gold-champagne),
     0 0 14px rgba(212, 175, 55, 0.55),
     0 4px 10px rgba(0, 0, 0, 0.4),
     inset 0 1px 1px rgba(255, 255, 255, 0.08);
@@ -434,7 +434,7 @@
 }
 .wl-holder-chip:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25);
+  box-shadow: 0 4px 10px var(--emerald-glow);
 }
 .wl-price-alert-btn {
   align-self: flex-end;
@@ -461,7 +461,7 @@
   vertical-align: middle;
 }
 .wl-bond-etf-note:hover {
-  color: var(--brand-accent, #10b981);
+  color: var(--brand-accent, var(--emerald));
 }
 .wl-price-meta {
   font-size: 0.75rem;
@@ -477,10 +477,10 @@
   font-feature-settings: 'tnum' 1;
 }
 .wl-big-chg.up {
-  color: #10b981;
+  color: var(--emerald);
 }
 .wl-big-chg.dn {
-  color: #ef4444;
+  color: var(--negative);
 }
 
 /* Time range buttons */
@@ -495,28 +495,28 @@
   color: var(--muted-foreground);
   background: transparent;
   border: 1px solid transparent;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition: all 0.2s;
 }
 .wl-tr:hover {
   color: var(--foreground);
-  background: rgba(16, 185, 129, 0.06);
+  background: color-mix(in srgb, var(--emerald) 6%, transparent);
 }
 .wl-tr.on {
-  color: #10b981;
-  background: rgba(16, 185, 129, 0.15);
-  border-color: rgba(16, 185, 129, 0.3);
+  color: var(--emerald);
+  background: var(--emerald-border);
+  border-color: color-mix(in srgb, var(--emerald) 30%, transparent);
 }
 
 /* Chart box */
 .wl-chart-box {
   position: relative;
   height: 300px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   overflow: hidden;
   background: var(--muted);
-  border: 1px solid rgba(16, 185, 129, 0.05);
+  border: 1px solid color-mix(in srgb, var(--emerald) 5%, transparent);
 }
 
 /* Top assets section */
@@ -537,9 +537,9 @@
   font-size: 0.6875rem;
   font-weight: 600;
   padding: 0.3rem 0.7rem;
-  border-radius: 6px;
-  background: rgba(16, 185, 129, 0.06);
-  border: 1px solid rgba(16, 185, 129, 0.12);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--emerald) 6%, transparent);
+  border: 1px solid var(--emerald-bg-hover);
   color: var(--foreground);
   display: flex;
   align-items: center;
@@ -549,14 +549,14 @@
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: #10b981;
+  background: var(--emerald);
 }
 
 /* Comparison table */
 .wl-cmp {
   margin-top: 0.5rem;
-  border: 1px solid rgba(16, 185, 129, 0.06);
-  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--emerald) 6%, transparent);
+  border-radius: var(--radius-md);
   overflow: hidden;
 }
 .wl-cmp-hdr,
@@ -569,8 +569,8 @@
   text-align: left;
 }
 .wl-cmp-hdr {
-  background: rgba(16, 185, 129, 0.03);
-  border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+  background: color-mix(in srgb, var(--emerald) 3%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--emerald) 6%, transparent);
 }
 .wl-cmp-hdr span {
   font-size: 0.5625rem;
@@ -583,14 +583,14 @@
   border: none;
   background: transparent;
   cursor: pointer;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.03);
+  border-bottom: 1px solid color-mix(in srgb, var(--emerald) 3%, transparent);
   transition: background 0.15s;
 }
 .wl-cmp-row:last-child {
   border-bottom: none;
 }
 .wl-cmp-row:hover {
-  background: rgba(16, 185, 129, 0.04);
+  background: var(--emerald-bg-subtle);
 }
 .wl-cmp-name {
   font-size: 0.75rem;
@@ -609,23 +609,23 @@
   font-feature-settings: 'tnum' 1;
 }
 .wl-cmp-chg.up {
-  color: #10b981;
+  color: var(--emerald);
 }
 .wl-cmp-chg.dn {
-  color: #ef4444;
+  color: var(--negative);
 }
 .wl-cmp-type {
   font-size: 0.5rem;
   font-weight: 700;
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   display: inline-block;
 }
 .wl-cmp-type.index {
-  background: rgba(16, 185, 129, 0.08);
-  color: #10b981;
+  background: var(--emerald-bg);
+  color: var(--emerald);
 }
 .wl-cmp-type.politician {
   background: rgba(59, 130, 246, 0.1);
@@ -676,9 +676,9 @@
   font-weight: 700;
   line-height: 1;
   color: #ffffff;
-  background: #10b981;
+  background: var(--emerald);
   border: 1px solid transparent;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   white-space: nowrap;
   transition:
@@ -686,22 +686,22 @@
     transform 0.15s ease;
 }
 .wl-new-list-btn:hover {
-  background: #059669;
+  background: var(--emerald-hover);
 }
 .wl-new-list-btn:active {
   transform: translateY(1px);
 }
 .wl-new-list-btn:focus-visible {
-  outline: 2px solid rgba(16, 185, 129, 0.55);
+  outline: 2px solid color-mix(in srgb, var(--emerald) 55%, transparent);
   outline-offset: 2px;
 }
 .wl-side-cnt {
   font-size: 0.625rem;
   font-weight: 700;
-  color: #10b981;
-  background: rgba(16, 185, 129, 0.08);
+  color: var(--emerald);
+  background: var(--emerald-bg);
   padding: 0.15rem 0.5rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   min-width: 20px;
   text-align: center;
   flex-shrink: 0;
@@ -725,8 +725,8 @@
   padding: 0.5rem 0.75rem 0.5rem 2rem;
   font-size: 0.75rem;
   background: var(--muted);
-  border: 1px solid rgba(16, 185, 129, 0.1);
-  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--emerald) 10%, transparent);
+  border-radius: var(--radius-md);
   color: var(--foreground);
   outline: none;
   transition: border-color 0.2s;
@@ -735,7 +735,7 @@
   color: var(--muted-foreground);
 }
 .wl-side-search input:focus {
-  border-color: rgba(16, 185, 129, 0.4);
+  border-color: color-mix(in srgb, var(--emerald) 40%, transparent);
 }
 
 /* Filter tabs */
@@ -751,7 +751,7 @@
   color: var(--muted-foreground);
   background: transparent;
   border: 1px solid transparent;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition: all 0.2s;
   text-transform: uppercase;
@@ -759,12 +759,12 @@
 }
 .wl-st:hover {
   color: var(--foreground);
-  background: rgba(16, 185, 129, 0.04);
+  background: var(--emerald-bg-subtle);
 }
 .wl-st.on {
-  color: #10b981;
-  background: rgba(16, 185, 129, 0.12);
-  border-color: rgba(16, 185, 129, 0.25);
+  color: var(--emerald);
+  background: var(--emerald-bg-hover);
+  border-color: var(--emerald-glow);
 }
 
 /* Items list */
@@ -790,7 +790,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.5rem 0.6rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition: all 0.2s;
   border: 1px solid transparent;
@@ -799,11 +799,11 @@
   background: transparent;
 }
 .wl-si:hover {
-  background: rgba(16, 185, 129, 0.04);
+  background: var(--emerald-bg-subtle);
 }
 .wl-si.act {
-  background: rgba(16, 185, 129, 0.07);
-  border-color: rgba(16, 185, 129, 0.25);
+  background: color-mix(in srgb, var(--emerald) 7%, transparent);
+  border-color: var(--emerald-glow);
 }
 
 .wl-si-left {
@@ -819,8 +819,8 @@
   color: var(--foreground);
   background: var(--muted);
   padding: 0.25rem 0.35rem;
-  border-radius: 5px;
-  border: 1px solid rgba(16, 185, 129, 0.1);
+  border-radius: var(--radius-sm);
+  border: 1px solid color-mix(in srgb, var(--emerald) 10%, transparent);
   min-width: 36px;
   text-align: center;
   flex-shrink: 0;
@@ -838,15 +838,15 @@
   color: #fff;
 }
 .wl-si-av.democrat {
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  background: linear-gradient(135deg, var(--blue), #2563eb);
 }
 .wl-si-av.republican {
-  background: linear-gradient(135deg, #ef4444, #dc2626);
+  background: linear-gradient(135deg, var(--negative), #dc2626);
 }
 .wl-si-inst {
   width: 30px;
   height: 30px;
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   flex-shrink: 0;
   background: rgba(167, 139, 250, 0.1);
   border: 1px solid rgba(167, 139, 250, 0.18);
@@ -899,10 +899,10 @@
   font-feature-settings: 'tnum' 1;
 }
 .wl-si-chg.up {
-  color: #10b981;
+  color: var(--emerald);
 }
 .wl-si-chg.dn {
-  color: #ef4444;
+  color: var(--negative);
 }
 
 /* Add button */
@@ -912,10 +912,10 @@
   justify-content: center;
   gap: 0.4rem;
   padding: 0.55rem;
-  background: rgba(16, 185, 129, 0.06);
-  border: 1px dashed rgba(16, 185, 129, 0.3);
-  border-radius: 8px;
-  color: #10b981;
+  background: color-mix(in srgb, var(--emerald) 6%, transparent);
+  border: 1px dashed color-mix(in srgb, var(--emerald) 30%, transparent);
+  border-radius: var(--radius-md);
+  color: var(--emerald);
   font-size: 0.75rem;
   font-weight: 700;
   cursor: pointer;
@@ -923,8 +923,8 @@
   flex-shrink: 0;
 }
 .wl-add:hover {
-  background: rgba(16, 185, 129, 0.14);
-  border-color: rgba(16, 185, 129, 0.5);
+  background: color-mix(in srgb, var(--emerald) 14%, transparent);
+  border-color: color-mix(in srgb, var(--emerald) 50%, transparent);
 }
 
 /* ═══ RESPONSIVE ═══ */
@@ -1015,7 +1015,7 @@ body.light-mode .wl-side-search input {
 }
 .wl-comp-table {
   border: 1px solid var(--border-primary);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   overflow: hidden;
 }
 .wl-comp-head,
@@ -1028,15 +1028,15 @@ body.light-mode .wl-side-search input {
   font-size: 0.625rem;
 }
 .wl-comp-head {
-  background: rgba(16, 185, 129, 0.04);
-  border-bottom: 1px solid rgba(16, 185, 129, 0.08);
+  background: var(--emerald-bg-subtle);
+  border-bottom: 1px solid var(--emerald-bg);
   font-weight: 700;
   color: var(--muted-foreground);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 .wl-comp-row {
-  border-bottom: 1px solid rgba(16, 185, 129, 0.04);
+  border-bottom: 1px solid var(--emerald-bg-subtle);
   color: var(--foreground);
 }
 .wl-comp-row:last-child {
@@ -1044,15 +1044,15 @@ body.light-mode .wl-side-search input {
 }
 .wl-comp-tk {
   font-weight: 700;
-  color: #10b981;
+  color: var(--emerald);
   font-family: var(--font-mono);
 }
 .wl-comp-chg.up {
-  color: #10b981;
+  color: var(--emerald);
   font-weight: 700;
 }
 .wl-comp-chg.dn {
-  color: #ef4444;
+  color: var(--negative);
   font-weight: 700;
 }
 
@@ -1072,15 +1072,15 @@ body.light-mode .wl-side-search input {
   font-weight: 700;
   color: var(--foreground);
   background: var(--muted);
-  border: 1px solid rgba(16, 185, 129, 0.12);
-  border-radius: 8px;
+  border: 1px solid var(--emerald-bg-hover);
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition:
     border-color 0.2s,
     background 0.2s;
 }
 .wl-wl-trigger:hover {
-  border-color: rgba(16, 185, 129, 0.35);
+  border-color: color-mix(in srgb, var(--emerald) 35%, transparent);
 }
 .wl-wl-trigger svg {
   transition: transform 0.2s ease;
@@ -1094,8 +1094,8 @@ body.light-mode .wl-side-search input {
   right: 0;
   top: calc(100% + 4px);
   z-index: 40;
-  border-radius: 8px;
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: var(--radius-md);
+  border: 1px solid color-mix(in srgb, var(--emerald) 20%, transparent);
   /* `--bg-secondary` resolves to #0d1117 in dark mode, #ffffff in light mode.
      The previous `--card` token was never declared, so the dropdown was
      painting at 98% opacity in both themes — text was hard to read because
@@ -1116,7 +1116,7 @@ body.light-mode .wl-side-search input {
   color: var(--text-secondary);
   background: transparent;
   border: none;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+  border-bottom: 1px solid color-mix(in srgb, var(--emerald) 6%, transparent);
   cursor: pointer;
   transition: background 0.15s;
 }
@@ -1124,11 +1124,11 @@ body.light-mode .wl-side-search input {
   border-bottom: none;
 }
 .wl-wl-opt:hover {
-  background: rgba(16, 185, 129, 0.06);
+  background: color-mix(in srgb, var(--emerald) 6%, transparent);
 }
 .wl-wl-opt.on {
-  color: #10b981;
-  background: rgba(16, 185, 129, 0.08);
+  color: var(--emerald);
+  background: var(--emerald-bg);
 }
 .wl-wl-meta {
   font-size: 0.5625rem;
@@ -1175,8 +1175,8 @@ body.light-mode .wl-side-search input {
   right: 0;
   top: calc(100% + 4px);
   z-index: 50;
-  border-radius: 8px;
-  border: 1px solid rgba(16, 185, 129, 0.15);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--emerald-border);
   background: var(--card);
   max-height: 320px;
   overflow-y: auto;
@@ -1189,7 +1189,7 @@ body.light-mode .wl-side-search input {
   color: var(--muted-foreground);
 }
 .wl-search-result-block {
-  border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+  border-bottom: 1px solid color-mix(in srgb, var(--emerald) 6%, transparent);
 }
 .wl-search-result-block:last-child {
   border-bottom: none;
@@ -1215,9 +1215,9 @@ body.light-mode .wl-side-search input {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   padding: 2px 6px;
-  border-radius: 4px;
-  background: rgba(16, 185, 129, 0.12);
-  color: #10b981;
+  border-radius: var(--radius-sm);
+  background: var(--emerald-bg-hover);
+  color: var(--emerald);
 }
 .wl-search-nm {
   font-size: 0.6875rem;
@@ -1247,14 +1247,14 @@ body.light-mode .wl-side-search input {
   justify-content: center;
   border: none;
   cursor: pointer;
-  background: rgba(16, 185, 129, 0.15);
-  color: #10b981;
+  background: var(--emerald-border);
+  color: var(--emerald);
   transition:
     background 0.15s,
     transform 0.1s;
 }
 .wl-search-plus:hover {
-  background: rgba(16, 185, 129, 0.28);
+  background: color-mix(in srgb, var(--emerald) 28%, transparent);
 }
 .wl-search-plus:active {
   transform: scale(0.96);
@@ -1264,13 +1264,13 @@ body.light-mode .wl-side-search input {
   align-items: center;
   gap: 4px;
   font-size: 0.5625rem;
-  color: #10b981;
+  color: var(--emerald);
   font-weight: 700;
 }
 .wl-search-pick {
   padding: 0.4rem 0.65rem 0.65rem;
   background: rgba(17, 24, 39, 0.6);
-  border-top: 1px solid rgba(16, 185, 129, 0.08);
+  border-top: 1px solid var(--emerald-bg);
 }
 .wl-search-pick-label {
   margin: 0 0 0.35rem;
@@ -1278,7 +1278,7 @@ body.light-mode .wl-side-search input {
   color: var(--muted-foreground);
 }
 .wl-search-tk-inline {
-  color: #10b981;
+  color: var(--emerald);
   font-weight: 700;
   font-family: var(--font-mono);
 }
@@ -1292,7 +1292,7 @@ body.light-mode .wl-side-search input {
   font-weight: 600;
   padding: 0.25rem 0.5rem;
   border-radius: 999px;
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  border: 1px solid color-mix(in srgb, var(--emerald) 20%, transparent);
   background: transparent;
   color: var(--foreground);
   cursor: pointer;
@@ -1302,9 +1302,9 @@ body.light-mode .wl-side-search input {
     background 0.15s;
 }
 .wl-search-pick-btn:hover {
-  border-color: rgba(16, 185, 129, 0.45);
-  color: #10b981;
-  background: rgba(16, 185, 129, 0.08);
+  border-color: color-mix(in srgb, var(--emerald) 45%, transparent);
+  color: var(--emerald);
+  background: var(--emerald-bg);
 }
 body.light-mode .wl-si.act {
   background: rgba(16, 185, 129, 0.05);
@@ -1347,9 +1347,9 @@ body.light-mode .wl-strip-asset {
   height: 100%;
   min-height: 100%;
   padding: 0.6rem 0.9rem;
-  background: linear-gradient(135deg, #10b981, #059669);
+  background: linear-gradient(135deg, var(--emerald), var(--emerald-hover));
   color: #ffffff;
-  border: 1px solid rgba(16, 185, 129, 0.4);
+  border: 1px solid color-mix(in srgb, var(--emerald) 40%, transparent);
   border-radius: 999px;
   font-size: 0.8125rem;
   font-weight: 700;
@@ -1358,13 +1358,13 @@ body.light-mode .wl-strip-asset {
   letter-spacing: 0.01em;
   transition: all 150ms ease;
   white-space: nowrap;
-  box-shadow: 0 1px 3px rgba(16, 185, 129, 0.25);
+  box-shadow: 0 1px 3px var(--emerald-glow);
 }
 
 .wl-class-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
-  border-color: rgba(16, 185, 129, 0.6);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--emerald) 35%, transparent);
+  border-color: color-mix(in srgb, var(--emerald) 60%, transparent);
 }
 
 .wl-class-btn:active {
@@ -1392,8 +1392,8 @@ body.light-mode .wl-strip-asset {
   left: 0;
   min-width: 200px;
   background: var(--card);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--emerald) 30%, transparent);
+  border-radius: var(--radius-lg);
   box-shadow: 0 10px 32px rgba(0, 0, 0, 0.4);
   padding: 0.4rem;
   z-index: 30;
@@ -1425,7 +1425,7 @@ body.light-mode .wl-class-menu {
   padding: 0.55rem 0.75rem;
   background: transparent;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   color: var(--foreground);
   font-size: 0.8125rem;
   font-weight: 500;
@@ -1436,12 +1436,12 @@ body.light-mode .wl-class-menu {
 }
 
 .wl-class-menu-item:hover {
-  background: rgba(16, 185, 129, 0.1);
+  background: color-mix(in srgb, var(--emerald) 10%, transparent);
 }
 
 .wl-class-menu-item.is-active {
-  background: rgba(16, 185, 129, 0.14);
-  color: #10b981;
+  background: color-mix(in srgb, var(--emerald) 14%, transparent);
+  color: var(--emerald);
   font-weight: 600;
 }
 
@@ -1453,7 +1453,7 @@ body.light-mode .wl-class-menu {
 }
 
 .wl-class-menu-item.is-active i {
-  color: #10b981;
+  color: var(--emerald);
 }
 
 .wl-class-menu-item-label {
@@ -1464,7 +1464,7 @@ body.light-mode .wl-class-menu {
 .wl-class-menu-check {
   flex-shrink: 0;
   font-size: 0.8125rem !important;
-  color: #10b981 !important;
+  color: var(--emerald) !important;
 }
 
 body.light-mode .wl-class-menu-item {
@@ -1503,7 +1503,7 @@ body.light-mode .wl-class-menu-check {
 
 .wl-strip-badge.comm {
   background: rgba(245, 158, 11, 0.1);
-  color: #fbbf24;
+  color: var(--warning);
   border: 1px solid rgba(245, 158, 11, 0.18);
   font-size: 0.75rem;
 }
@@ -1580,8 +1580,8 @@ body.light-mode .wl-chart-axis-tick {
 
 .wl-chart-tooltip {
   background: var(--bg-secondary);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--emerald) 30%, transparent);
+  border-radius: var(--radius-md);
   padding: 0.45rem 0.7rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   font-size: 0.75rem;
