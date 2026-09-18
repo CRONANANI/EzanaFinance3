@@ -33,11 +33,11 @@ body.light-mode .partner-research-ribbon {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   font-size: 0.625rem;
-  color: #d4a853;
+  color: var(--gold);
   background: rgba(212, 168, 83, 0.12);
   border: 1px solid rgba(212, 168, 83, 0.25);
   padding: 0.2rem 0.5rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   flex-shrink: 0;
 }
 
@@ -69,11 +69,11 @@ body.light-mode .partner-research-ribbon-text {
   align-items: center;
   gap: 0.35rem;
   padding: 0.35rem 0.75rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-weight: 600;
   font-size: 0.75rem;
   text-decoration: none;
-  color: #d4a853;
+  color: var(--gold);
   border: 1px solid rgba(212, 168, 83, 0.35);
   background: rgba(212, 168, 83, 0.06);
   transition:

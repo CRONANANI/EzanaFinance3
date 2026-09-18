@@ -10,12 +10,12 @@
   max-height: 78vh;
   transform: translateY(-50%) translateX(20px);
   background: var(--bg-secondary);
-  border: 1px solid rgba(16, 185, 129, 0.2);
-  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--emerald) 20%, transparent);
+  border-radius: var(--radius-xl);
   padding: 1.25rem 1.25rem 1rem;
   box-shadow:
     0 20px 60px rgba(0, 0, 0, 0.5),
-    0 0 0 1px rgba(16, 185, 129, 0.05);
+    0 0 0 1px color-mix(in srgb, var(--emerald) 5%, transparent);
   z-index: 100;
   overflow-y: auto;
   opacity: 0;
@@ -90,9 +90,9 @@ body.light-mode .lc-ticker-popup {
   font-size: 0.75rem;
   font-weight: 700;
   color: var(--emerald);
-  background: rgba(16, 185, 129, 0.1);
+  background: color-mix(in srgb, var(--emerald) 10%, transparent);
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   letter-spacing: 0;
 }
 
@@ -116,16 +116,16 @@ body.light-mode .lc-ticker-popup {
   font-weight: 700;
 }
 .lc-ticker-popup-change.is-positive {
-  color: var(--positive, #10b981);
+  color: var(--positive, var(--emerald));
 }
 .lc-ticker-popup-change.is-negative {
-  color: var(--negative, #ef4444);
+  color: var(--negative, var(--negative));
 }
 
 .lc-ticker-popup-chart {
   background: var(--bg-primary);
   border: 1px solid var(--border-primary);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   padding: 8px;
   margin-bottom: 1rem;
   height: 180px;
@@ -135,7 +135,7 @@ body.light-mode .lc-ticker-popup {
 .lc-ticker-popup-meta {
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: 0.65rem 0.8rem;
   margin-bottom: 0.85rem;
 }
@@ -160,21 +160,21 @@ body.light-mode .lc-ticker-popup {
   align-items: center;
   gap: 0.6rem;
   padding: 0.65rem 0.8rem;
-  background: rgba(16, 185, 129, 0.08);
-  border: 1px solid rgba(16, 185, 129, 0.2);
-  border-radius: 10px;
+  background: var(--emerald-bg);
+  border: 1px solid color-mix(in srgb, var(--emerald) 20%, transparent);
+  border-radius: var(--radius-lg);
   text-decoration: none;
   color: var(--text-primary);
   transition: all 150ms ease;
 }
 .lc-ticker-popup-research-link:hover {
-  background: rgba(16, 185, 129, 0.12);
-  border-color: rgba(16, 185, 129, 0.35);
+  background: var(--emerald-bg-hover);
+  border-color: color-mix(in srgb, var(--emerald) 35%, transparent);
 }
 .lc-ticker-popup-research-icon {
   width: 32px;
   height: 32px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: var(--emerald);
   color: white;
   display: flex;
@@ -221,19 +221,19 @@ body.light-mode .lc-ticker-popup {
   color: var(--emerald);
   cursor: pointer;
   font-weight: 600;
-  border-bottom: 1px dotted rgba(16, 185, 129, 0.45);
+  border-bottom: 1px dotted color-mix(in srgb, var(--emerald) 45%, transparent);
   transition: all 120ms ease;
   display: inline;
 }
 .lc-ticker-inline:hover {
-  color: var(--emerald-hover, #34d399);
-  border-bottom-color: var(--emerald-hover, #34d399);
-  background: rgba(16, 185, 129, 0.06);
+  color: var(--emerald-hover, var(--positive-bright));
+  border-bottom-color: var(--emerald-hover, var(--positive-bright));
+  background: color-mix(in srgb, var(--emerald) 6%, transparent);
 }
 .lc-ticker-inline:focus-visible {
   outline: 2px solid var(--emerald);
   outline-offset: 2px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
 }
 
 @media (max-width: 768px) {

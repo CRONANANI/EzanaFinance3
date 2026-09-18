@@ -25,9 +25,9 @@
 
 /* Admin form */
 .pcl-admin-section {
-  background: rgba(16, 185, 129, 0.04);
-  border: 1px dashed rgba(16, 185, 129, 0.25);
-  border-radius: 12px;
+  background: var(--emerald-bg-subtle);
+  border: 1px dashed var(--emerald-glow);
+  border-radius: var(--radius-lg);
   padding: 1rem;
 }
 
@@ -38,17 +38,17 @@
   padding: 0.5rem 0.85rem;
   font-size: 0.8125rem;
   font-weight: 700;
-  border-radius: 8px;
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  background: rgba(16, 185, 129, 0.08);
-  color: #10b981;
+  border-radius: var(--radius-md);
+  border: 1px solid color-mix(in srgb, var(--emerald) 30%, transparent);
+  background: var(--emerald-bg);
+  color: var(--emerald);
   cursor: pointer;
   transition: all 150ms ease;
 }
 
 .pcl-admin-open-btn:hover {
-  background: rgba(16, 185, 129, 0.15);
-  border-color: rgba(16, 185, 129, 0.5);
+  background: var(--emerald-border);
+  border-color: color-mix(in srgb, var(--emerald) 50%, transparent);
 }
 
 .pcl-admin-form {
@@ -104,7 +104,7 @@
 .pcl-admin-field textarea {
   padding: 0.5rem 0.7rem;
   font-size: 0.8125rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: var(--surface-input);
   color: var(--text-primary);
@@ -115,7 +115,7 @@
 .pcl-admin-field select:focus,
 .pcl-admin-field textarea:focus {
   outline: none;
-  border-color: rgba(16, 185, 129, 0.5);
+  border-color: color-mix(in srgb, var(--emerald) 50%, transparent);
 }
 
 .pcl-admin-field textarea {
@@ -136,7 +136,7 @@
   padding: 0.5rem 0.75rem;
   background: rgba(239, 68, 68, 0.12);
   border: 1px solid rgba(239, 68, 68, 0.3);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-size: 0.75rem;
   color: #fca5a5;
 }
@@ -151,7 +151,7 @@
   padding: 0.5rem 0.95rem;
   font-size: 0.8125rem;
   font-weight: 700;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   border: 1px solid;
   transition: all 150ms ease;
@@ -168,13 +168,13 @@
 }
 
 .pcl-btn-primary {
-  background: #10b981;
-  border-color: #10b981;
+  background: var(--emerald);
+  border-color: var(--emerald);
   color: #0a0e13;
 }
 .pcl-btn-primary:hover:not(:disabled) {
-  background: #34d399;
-  border-color: #34d399;
+  background: var(--positive-bright);
+  border-color: var(--positive-bright);
 }
 .pcl-btn-primary:disabled {
   opacity: 0.5;
@@ -191,14 +191,14 @@
 .pcl-entry {
   background: var(--surface-card);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: 0.6rem 0.8rem;
 }
 
 .pcl-entry.is-pinned {
-  border-color: rgba(16, 185, 129, 0.3);
+  border-color: color-mix(in srgb, var(--emerald) 30%, transparent);
   background: var(--surface-card);
-  box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.08);
+  box-shadow: inset 0 0 0 1px var(--emerald-bg);
 }
 
 .pcl-entry-head {
@@ -229,7 +229,7 @@
 
 .pcl-entry-pinned {
   font-size: 0.75rem;
-  color: #10b981;
+  color: var(--emerald);
 }
 
 .pcl-entry-date {
@@ -258,13 +258,13 @@
   margin-bottom: 0;
 }
 .pcl-entry-paragraph code {
-  background: rgba(16, 185, 129, 0.1);
+  background: color-mix(in srgb, var(--emerald) 10%, transparent);
   padding: 0.05rem 0.25rem;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   font-size: 0.625rem;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  color: #10b981;
+  color: var(--emerald);
 }
 
 .pcl-empty {
@@ -274,11 +274,11 @@
   font-size: 0.75rem;
   background: var(--surface-card);
   border: 1px dashed rgba(255, 255, 255, 0.06);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 
 .pcl-empty-error {
-  color: #ef4444;
+  color: var(--negative);
 }
 
 /* Light mode */
@@ -326,7 +326,7 @@ body.light-mode .pcl-empty {
   gap: 0.6rem;
   padding: 0.35rem 0 0.4rem;
   margin-bottom: 0.35rem;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.12);
+  border-bottom: 1px solid var(--emerald-bg-hover);
   position: sticky;
   top: 0;
   background: var(--bg-primary);
@@ -339,7 +339,7 @@ body.light-mode .pcl-empty {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #10b981;
+  color: var(--emerald);
 }
 
 .pcl-day-count {

@@ -71,7 +71,7 @@
     height: 100dvh;
     /* Match main landing page background (see globals + app-legacy/pages/landing.css) */
     background: var(--nav-bg-solid);
-    border-left: 1px solid rgba(16, 185, 129, 0.15);
+    border-left: 1px solid var(--emerald-border);
     box-shadow: -8px 0 32px rgba(0, 0, 0, 0.5);
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
@@ -103,7 +103,7 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.875rem 1rem;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   font-size: 0.9375rem;
   font-weight: 600;
   text-decoration: none;
@@ -112,16 +112,16 @@
 }
 
 .mobile-nav-login {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, var(--emerald) 0%, var(--emerald-hover) 100%);
   color: #fff;
-  border: 1px solid rgba(16, 185, 129, 0.4);
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+  border: 1px solid color-mix(in srgb, var(--emerald) 40%, transparent);
+  box-shadow: 0 2px 8px var(--emerald-glow);
 }
 
 .mobile-nav-login:hover,
 .mobile-nav-login:active {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+  background: linear-gradient(135deg, var(--emerald-hover) 0%, var(--emerald-dark) 100%);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--emerald) 35%, transparent);
 }
 
 .mobile-nav-login i {
@@ -129,15 +129,15 @@
 }
 
 .mobile-nav-partner {
-  background: rgba(16, 185, 129, 0.08);
-  color: #10b981;
-  border: 1px solid rgba(16, 185, 129, 0.25);
+  background: var(--emerald-bg);
+  color: var(--emerald);
+  border: 1px solid var(--emerald-glow);
 }
 
 .mobile-nav-partner:hover,
 .mobile-nav-partner:active {
-  background: rgba(16, 185, 129, 0.15);
-  border-color: rgba(16, 185, 129, 0.4);
+  background: var(--emerald-border);
+  border-color: color-mix(in srgb, var(--emerald) 40%, transparent);
 }
 
 .mobile-nav-partner i {
@@ -150,8 +150,8 @@
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(16, 185, 129, 0.2) 20%,
-    rgba(16, 185, 129, 0.2) 80%,
+    color-mix(in srgb, var(--emerald) 20%, transparent) 20%,
+    color-mix(in srgb, var(--emerald) 20%, transparent) 80%,
     transparent 100%
   );
   margin: 0.5rem 1.25rem;
@@ -169,7 +169,7 @@
   align-items: center;
   gap: 0.875rem;
   padding: 0.875rem 0.75rem;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   font-size: 0.9375rem;
   font-weight: 500;
   color: #e2e8f0;
@@ -181,8 +181,8 @@
 
 .mobile-nav-link:hover,
 .mobile-nav-link:active {
-  background: rgba(16, 185, 129, 0.08);
-  color: #10b981;
+  background: var(--emerald-bg);
+  color: var(--emerald);
 }
 
 .mobile-nav-link i:first-child {
@@ -196,7 +196,7 @@
 
 .mobile-nav-link:hover i:first-child,
 .mobile-nav-link:active i:first-child {
-  color: #10b981;
+  color: var(--emerald);
 }
 
 .mobile-nav-link span {
@@ -214,7 +214,7 @@
 
 .mobile-nav-link:hover .mobile-nav-chevron,
 .mobile-nav-link:active .mobile-nav-chevron {
-  color: #10b981 !important;
+  color: var(--emerald) !important;
   transform: translateX(2px);
 }
 
@@ -270,7 +270,7 @@
   gap: 8px;
   min-height: 44px;
   padding: 6px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 14px;
   line-height: 1.35;
   color: var(--text-secondary);
@@ -329,7 +329,7 @@ body.nav-mobile-open {
 .mobile-nav-brand {
   font-size: 0.875rem;
   font-weight: 700;
-  color: #10b981;
+  color: var(--emerald);
   letter-spacing: -0.01em;
 }
 

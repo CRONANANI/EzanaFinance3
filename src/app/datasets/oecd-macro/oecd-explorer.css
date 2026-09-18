@@ -182,7 +182,7 @@
   align-items: center;
   gap: 4px;
   padding: 1px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background: repeating-linear-gradient(
     45deg,
     color-mix(in srgb, var(--amber) 13%, transparent) 0 3px,
@@ -554,7 +554,7 @@
 .oecd-rank-track {
   position: relative;
   height: 9px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--text-faint) 10%, transparent);
 }
 .oecd-rank-zero {
@@ -584,7 +584,7 @@
   position: absolute;
   top: 1px;
   bottom: 1px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--emerald) 70%, transparent);
   transition:
     width 180ms ease-out,
@@ -679,7 +679,7 @@
 .oecd-radar-chip {
   width: 10px;
   height: 10px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   display: inline-block;
   flex: 0 0 auto;
 }
@@ -978,7 +978,7 @@
 .oecd-history-chip {
   width: 8px;
   height: 8px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   border: 1px solid color-mix(in srgb, var(--text-faint) 30%, transparent);
 }
 .oecd-history-railname {
@@ -1175,7 +1175,7 @@
   display: inline-flex;
   align-items: center;
   padding: 1px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border-primary);
   background: var(--surface-card);
   color: var(--text-muted);
@@ -1256,7 +1256,7 @@
 .oecd-dimbar-track {
   position: relative;
   height: 10px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--text-faint) 10%, transparent);
 }
 .oecd-dimbar-fill {
@@ -1264,7 +1264,7 @@
   top: 1px;
   bottom: 1px;
   left: 0;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
 }
 .oecd-dimbar-fill.is-a {
   background: color-mix(in srgb, var(--gold) 70%, transparent);
@@ -1364,7 +1364,7 @@
   display: inline-flex;
   align-items: center;
   padding: 1px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border-primary);
   background: var(--surface-card);
   color: var(--text-muted);

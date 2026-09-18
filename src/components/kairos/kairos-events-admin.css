@@ -6,9 +6,9 @@
 .kea-wrap {
   margin-bottom: 0.85rem;
   padding: 0.75rem;
-  background: rgba(16, 185, 129, 0.04);
-  border: 1px dashed rgba(16, 185, 129, 0.25);
-  border-radius: 10px;
+  background: var(--emerald-bg-subtle);
+  border: 1px dashed var(--emerald-glow);
+  border-radius: var(--radius-lg);
 }
 
 .kea-toolbar {
@@ -26,7 +26,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #10b981;
+  color: var(--emerald);
 }
 
 .kea-quickactions {
@@ -36,7 +36,7 @@
   align-items: center;
   margin-top: 0.6rem;
   padding-top: 0.6rem;
-  border-top: 1px solid rgba(16, 185, 129, 0.15);
+  border-top: 1px solid var(--emerald-border);
 }
 
 .kea-quickactions-label {
@@ -76,12 +76,12 @@
 }
 
 .kea-chip-btn:hover {
-  background: rgba(16, 185, 129, 0.2);
-  color: #10b981;
+  background: color-mix(in srgb, var(--emerald) 20%, transparent);
+  color: var(--emerald);
 }
 .kea-chip-btn-danger:hover {
   background: rgba(239, 68, 68, 0.2);
-  color: #ef4444;
+  color: var(--negative);
 }
 
 .kea-quickactions-more {
@@ -144,7 +144,7 @@
 .kea-field textarea {
   padding: 0.4rem 0.6rem;
   font-size: 0.75rem;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: var(--surface-input);
   color: var(--text-primary);
@@ -167,10 +167,10 @@
 
 .kea-impact-add {
   background: transparent;
-  border: 1px solid rgba(16, 185, 129, 0.4);
-  color: #10b981;
+  border: 1px solid color-mix(in srgb, var(--emerald) 40%, transparent);
+  color: var(--emerald);
   padding: 0.2rem 0.5rem;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   font-size: 0.625rem;
   cursor: pointer;
 }
@@ -186,7 +186,7 @@
 .kea-impact-row select {
   padding: 0.3rem 0.4rem;
   font-size: 0.625rem;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: var(--surface-input);
   color: var(--text-primary);
@@ -195,7 +195,7 @@
 .kea-impact-remove {
   background: transparent;
   border: none;
-  color: #ef4444;
+  color: var(--negative);
   font-size: 0.875rem;
   cursor: pointer;
   font-weight: 700;
@@ -204,7 +204,7 @@
 .kea-error {
   padding: 0.4rem 0.6rem;
   background: rgba(239, 68, 68, 0.12);
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   color: #fca5a5;
   font-size: 0.6875rem;
 }
@@ -219,7 +219,7 @@
   padding: 0.4rem 0.85rem;
   font-size: 0.75rem;
   font-weight: 700;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   border: 1px solid;
   display: inline-flex;
@@ -240,13 +240,13 @@
   border-color: rgba(255, 255, 255, 0.25);
 }
 .kea-btn-primary {
-  background: #10b981;
-  border-color: #10b981;
+  background: var(--emerald);
+  border-color: var(--emerald);
   color: #0a0e13;
 }
 .kea-btn-primary:hover:not(:disabled) {
-  background: #34d399;
-  border-color: #34d399;
+  background: var(--positive-bright);
+  border-color: var(--positive-bright);
 }
 .kea-btn-primary:disabled {
   opacity: 0.5;

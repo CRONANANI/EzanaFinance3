@@ -25,29 +25,29 @@
   background: var(--bg-primary);
   color: var(--text-primary);
   font-family: var(--font-sans);
-  --emerald: #10b981;
-  --emerald-hover: #059669;
-  --emerald-bg: rgba(16, 185, 129, 0.08);
-  --warning: #f59e0b;
+  --emerald: var(--emerald);
+  --emerald-hover: var(--emerald-hover);
+  --emerald-bg: var(--emerald-bg);
+  --warning: var(--amber);
   --lbx-inset: #f8fafc;
   /* gold accent for public-company / ticker identity */
-  --lbx-gold: #d4a853;
+  --lbx-gold: var(--gold);
   --lbx-gold-bg: rgba(212, 168, 83, 0.12);
-  --lbx-down: #ef4444;
+  --lbx-down: var(--negative);
   /* Government-entity palette (bar segments, legend, entity chips) */
-  --lbx-ent-house: #10b981;
-  --lbx-ent-senate: #059669;
-  --lbx-ent-dod: #3b82f6;
+  --lbx-ent-house: var(--emerald);
+  --lbx-ent-senate: var(--emerald-hover);
+  --lbx-ent-dod: var(--blue);
   --lbx-ent-hhs: #a78bfa;
   --lbx-ent-epa: #06b6d4;
   --lbx-ent-doe: #f97316;
-  --lbx-ent-whitehouse: #f59e0b;
+  --lbx-ent-whitehouse: var(--amber);
   --lbx-ent-treasury: #64748b;
   --lbx-ent-other: #94a3b8;
   /* Issue-area palette (chips, donut, dots) */
-  --lbx-iss-defense: #10b981;
-  --lbx-iss-health: #3b82f6;
-  --lbx-iss-tax: #f59e0b;
+  --lbx-iss-defense: var(--emerald);
+  --lbx-iss-health: var(--blue);
+  --lbx-iss-tax: var(--amber);
   --lbx-iss-energy: #f97316;
   --lbx-iss-tech: #a78bfa;
   --lbx-iss-trade: #06b6d4;
@@ -172,7 +172,7 @@
   color: var(--emerald);
   border: none;
   border-bottom: 2px solid var(--emerald);
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   font-family: var(--font-sans);
   font-size: var(--ds-type-fine-size);
   font-weight: var(--ds-type-strong);
@@ -230,7 +230,7 @@
   width: 100%;
   padding: 5px 8px;
   border: none;
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   background: transparent;
   color: var(--text-muted);
   font-family: var(--font-sans);
@@ -298,7 +298,7 @@
 .lbx-stat {
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   padding: 13px 15px;
 }
 .lbx-stat--amber {
@@ -337,7 +337,7 @@
 .lbx-card {
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   padding: 16px 18px;
   min-width: 0;
 }
@@ -386,7 +386,7 @@
 .lbx-seg {
   display: inline-flex;
   border: 1px solid var(--border-primary);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   overflow: hidden;
 }
 .lbx-seg-btn {
@@ -423,7 +423,7 @@
   gap: 10px;
   cursor: pointer;
   padding: 2px 0;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 .lbx-lb-row:hover {
   background: var(--surface-card-hover);
@@ -445,13 +445,13 @@
 .lbx-lb-track {
   height: 16px;
   background: var(--bg-tertiary);
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
 }
 .lbx-lb-bar {
   display: flex;
   height: 100%;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
   min-width: 4px;
 }
@@ -750,7 +750,7 @@
 .lbx-pager-btn {
   padding: 6px 14px;
   border: 1px solid var(--border-primary);
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   background: var(--surface-card);
   color: var(--text-primary);
   font-size: var(--ds-type-fine-size);
@@ -786,7 +786,7 @@
   overflow-y: auto;
   background: #fff;
   border: 1px solid var(--border-primary);
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
   animation: lbx-pop 0.28s ease;
 }
@@ -904,7 +904,7 @@
   font-size: var(--ds-type-sub-size);
   font-weight: var(--ds-type-strong);
   text-decoration: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   cursor: pointer;
 }
 .lbx-modal-official {
@@ -962,7 +962,7 @@
 .lbx-tickpill {
   display: inline-block;
   padding: 1px 7px;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   font-size: var(--ds-type-disclaimer-size);
   font-weight: var(--ds-type-strong);
   font-variant-numeric: tabular-nums;
@@ -1110,7 +1110,7 @@
   gap: 12px;
   padding: 9px 10px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: none;
   text-align: left;
   cursor: pointer;

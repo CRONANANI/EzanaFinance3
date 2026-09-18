@@ -50,16 +50,16 @@ html.dark .settings-ledger {
   --field: #0e141b;
   --field-line: rgba(255, 255, 255, 0.12);
   --field-fill: #0e141b;
-  --em: #10b981;
-  --em-ink: #34d399;
-  --em-tint: rgba(16, 185, 129, 0.1);
-  --em-line: rgba(16, 185, 129, 0.3);
+  --em: var(--emerald);
+  --em-ink: var(--positive-bright);
+  --em-tint: color-mix(in srgb, var(--emerald) 10%, transparent);
+  --em-line: color-mix(in srgb, var(--emerald) 30%, transparent);
   --red: #f87171;
   --red-tint: rgba(248, 113, 113, 0.08);
   --red-line: rgba(248, 113, 113, 0.28);
-  --amber: #fbbf24;
+  --amber: var(--warning);
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3);
-  --ring: 0 0 0 3px rgba(16, 185, 129, 0.18);
+  --ring: 0 0 0 3px color-mix(in srgb, var(--emerald) 18%, transparent);
 }
 
 .settings-ledger {
@@ -130,7 +130,7 @@ html.dark .settings-ledger {
   background: var(--em-tint);
   border: 1px solid var(--em-line);
   padding: 3px 7px;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
 }
 .settings-ledger .sl-rail-title {
   font-size: 20px;
@@ -180,7 +180,7 @@ html.dark .settings-ledger {
   align-items: center;
   gap: 11px;
   padding: 8px 10px;
-  border-radius: 9px;
+  border-radius: var(--radius-md);
   background: transparent;
   border: 0;
   width: 100%;
@@ -226,7 +226,7 @@ html.dark .settings-ledger {
   top: 7px;
   bottom: 7px;
   width: 2.5px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: var(--em);
 }
 .settings-ledger .sl-nav-item.is-active .sl-nav-ico,
@@ -402,7 +402,7 @@ html.dark .settings-ledger {
   height: 42px;
   border: 1px solid var(--field-line);
   background: var(--field-fill);
-  border-radius: 9px;
+  border-radius: var(--radius-md);
   padding: 0 13px;
   color: var(--ink);
   font-family: var(--font-sans);
@@ -456,7 +456,7 @@ html.dark .settings-ledger {
 .settings-ledger .sl-avatar {
   width: 74px;
   height: 74px;
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   background: var(--em-tint);
   border: 1px solid var(--em-line);
   display: flex;
@@ -491,7 +491,7 @@ html.dark .settings-ledger {
   gap: 7px;
   height: 40px;
   padding: 0 18px;
-  border-radius: 9px;
+  border-radius: var(--radius-md);
   font-family: var(--font-sans);
   font-size: 13.5px;
   font-weight: 600;
@@ -542,7 +542,7 @@ html.dark .settings-ledger {
   height: 38px;
   border: 1px dashed var(--field-line);
   background: transparent;
-  border-radius: 9px;
+  border-radius: var(--radius-md);
   color: var(--ink2);
   font-weight: 600;
   font-size: 13px;
@@ -604,7 +604,7 @@ html.dark .settings-ledger {
   padding: 16px 18px;
   border: 1px solid var(--red-line);
   background: var(--red-tint);
-  border-radius: 11px;
+  border-radius: var(--radius-lg);
 }
 .settings-ledger .sl-danger-t {
   font-weight: 700;
@@ -625,7 +625,7 @@ html.dark .settings-ledger {
   border: 1px solid var(--red-line);
   height: 38px;
   padding: 0 16px;
-  border-radius: 9px;
+  border-radius: var(--radius-md);
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
@@ -727,7 +727,7 @@ html.dark .settings-ledger .sl-toggle {
   display: inline-flex;
   border: 1px solid var(--field-line);
   background: var(--field-fill);
-  border-radius: 9px;
+  border-radius: var(--radius-md);
   padding: 3px;
   gap: 2px;
 }
@@ -736,7 +736,7 @@ html.dark .settings-ledger .sl-toggle {
   padding: 0 14px;
   background: transparent;
   border: 0;
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 600;
@@ -771,7 +771,7 @@ html.dark .settings-ledger .sl-toggle {
   letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   padding: 3px 9px;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   border: 1px solid transparent;
 }
 .settings-ledger .sl-badge-pos {
@@ -887,7 +887,7 @@ html.dark .settings-ledger .sl-badge-info {
   height: 42px;
   border: 1px solid var(--field-line);
   background: var(--field-fill);
-  border-radius: 9px;
+  border-radius: var(--radius-md);
   color: var(--ink);
 }
 .settings-ledger .sl-legacy-panel .settings-label {
@@ -902,7 +902,7 @@ html.dark .settings-ledger .sl-badge-info {
 .settings-ledger .sl-legacy-panel .settings-btn-primary {
   background: var(--em);
   color: #fff;
-  border-radius: 9px;
+  border-radius: var(--radius-md);
 }
 .settings-ledger .sl-legacy-panel .settings-btn-row {
   display: none;

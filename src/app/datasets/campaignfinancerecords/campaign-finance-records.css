@@ -25,11 +25,11 @@
   font-family: var(--font-sans);
   /* Pin accent tokens so party/positive/negative colors resolve regardless of
      any ancestor theme scope (same approach as the sibling dataset pages). */
-  --emerald: #10b981;
-  --emerald-bg: rgba(16, 185, 129, 0.08);
-  --positive: #10b981;
-  --negative: #ef4444;
-  --info: #3b82f6;
+  --emerald: var(--emerald);
+  --emerald-bg: var(--emerald-bg);
+  --positive: var(--emerald);
+  --negative: var(--negative);
+  --info: var(--blue);
   --warning: #d97706;
   --purple: #8b5cf6;
 }

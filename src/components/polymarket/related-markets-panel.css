@@ -6,8 +6,8 @@
 
 .pm-related {
   background: var(--bg-secondary);
-  border: 1px solid rgba(16, 185, 129, 0.12);
-  border-radius: 12px;
+  border: 1px solid var(--emerald-bg-hover);
+  border-radius: var(--radius-lg);
   padding: 1.25rem;
   color: #e2e8f0;
   font-family: var(--font-sans);
@@ -29,7 +29,7 @@
   .pm-related--modal {
     inset: 50% 0 auto 0;
     transform: translateY(-50%);
-    border-radius: 16px;
+    border-radius: var(--radius-xl);
   }
 }
 
@@ -59,8 +59,8 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #10b981;
-  box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+  background: var(--emerald);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--emerald) 60%, transparent);
   animation: pm-live-pulse 2s ease-in-out infinite;
 }
 
@@ -89,7 +89,7 @@
   background: transparent;
   color: #8b949e;
   font-size: 1.5rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition: background 150ms ease;
 }
@@ -121,9 +121,9 @@
   gap: 0.75rem;
   align-items: center;
   padding: 0.75rem;
-  background: rgba(16, 185, 129, 0.03);
+  background: color-mix(in srgb, var(--emerald) 3%, transparent);
   border: 1px solid var(--border-primary);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   text-decoration: none;
   color: inherit;
   transition:
@@ -132,8 +132,8 @@
 }
 
 .pm-related__row:hover {
-  background: rgba(16, 185, 129, 0.06);
-  border-color: rgba(16, 185, 129, 0.2);
+  background: color-mix(in srgb, var(--emerald) 6%, transparent);
+  border-color: color-mix(in srgb, var(--emerald) 20%, transparent);
 }
 
 .pm-related__row-icon-cell {
@@ -145,7 +145,7 @@
 .pm-related__row-icon {
   width: 36px;
   height: 36px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   object-fit: cover;
 }
 
@@ -197,13 +197,13 @@
   flex-direction: column;
   align-items: center;
   padding: 0.25rem 0.5rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   min-width: 44px;
 }
 
 .pm-related__odds--yes {
-  background: rgba(16, 185, 129, 0.08);
-  border: 1px solid rgba(16, 185, 129, 0.15);
+  background: var(--emerald-bg);
+  border: 1px solid var(--emerald-border);
 }
 
 .pm-related__odds--no {
@@ -219,11 +219,11 @@
 }
 
 .pm-related__odds--yes .pm-related__odds-label {
-  color: #10b981;
+  color: var(--emerald);
 }
 
 .pm-related__odds--no .pm-related__odds-label {
-  color: #ef4444;
+  color: var(--negative);
 }
 
 .pm-related__odds-value {
@@ -242,7 +242,7 @@
 }
 
 .pm-related__row:hover .pm-related__row-ext {
-  color: #10b981;
+  color: var(--emerald);
 }
 
 .pm-related__skeleton {
@@ -253,12 +253,12 @@
 
 .pm-related__skeleton-row {
   height: 60px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: linear-gradient(
     90deg,
-    rgba(16, 185, 129, 0.04) 0%,
-    rgba(16, 185, 129, 0.08) 50%,
-    rgba(16, 185, 129, 0.04) 100%
+    var(--emerald-bg-subtle) 0%,
+    var(--emerald-bg) 50%,
+    var(--emerald-bg-subtle) 100%
   );
   background-size: 200% 100%;
   animation: pm-skeleton 1.5s ease-in-out infinite;
@@ -294,7 +294,7 @@
 }
 
 .pm-related__footer-link {
-  color: #10b981;
+  color: var(--emerald);
   text-decoration: none;
   font-weight: 500;
   flex-shrink: 0;

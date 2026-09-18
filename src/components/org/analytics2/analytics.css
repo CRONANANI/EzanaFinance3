@@ -27,7 +27,7 @@
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
-  color: var(--emerald-text, #10b981);
+  color: var(--emerald-text, var(--emerald));
   margin: 0 0 0.35rem;
 }
 .an4-title {
@@ -52,7 +52,7 @@
 }
 .an4-stat {
   border: 1px solid var(--border-primary);
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   background: var(--surface-card);
   padding: 0.9rem 1.1rem;
 }
@@ -73,10 +73,10 @@
   line-height: 1.1;
 }
 .an4-pos {
-  color: var(--positive, #10b981);
+  color: var(--positive, var(--emerald));
 }
 .an4-neg {
-  color: var(--negative, #ef4444);
+  color: var(--negative, var(--negative));
 }
 
 /* ── Panels ─────────────────────────────────────────────────────────────── */
@@ -87,7 +87,7 @@
 }
 .an4-panel {
   border: 1px solid var(--border-primary);
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   background: var(--surface-card);
   padding: 1rem 1.1rem;
 }
@@ -150,13 +150,13 @@
 }
 .an4-state--outperforming,
 .an4-state--win {
-  background: var(--emerald-bg, rgba(16, 185, 129, 0.14));
-  color: var(--emerald-text, #10b981);
+  background: var(--emerald-bg, color-mix(in srgb, var(--emerald) 14%, transparent));
+  color: var(--emerald-text, var(--emerald));
 }
 .an4-state--underperforming,
 .an4-state--loss {
   background: rgba(239, 68, 68, 0.12);
-  color: var(--negative, #ef4444);
+  color: var(--negative, var(--negative));
 }
 .an4-state--neutral,
 .an4-state--inline {
@@ -191,7 +191,7 @@
   font-size: 0.8rem;
   font-weight: 600;
   padding: 0.5rem 0.9rem;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border-primary);
   background: var(--surface-card);
   color: var(--text-primary);
@@ -206,13 +206,13 @@
   transform: translateY(-1px);
 }
 .an4-btn--primary {
-  background: var(--emerald, #10b981);
-  border-color: var(--emerald, #10b981);
+  background: var(--emerald, var(--emerald));
+  border-color: var(--emerald, var(--emerald));
   color: #fff;
 }
 .an4-btn--primary:hover {
-  background: var(--emerald-hover, #059669);
-  border-color: var(--emerald-hover, #059669);
+  background: var(--emerald-hover, var(--emerald-hover));
+  border-color: var(--emerald-hover, var(--emerald-hover));
 }
 .an4-btn:focus-visible {
   outline: 2px solid var(--emerald);
@@ -234,14 +234,14 @@
   gap: 0.75rem;
   padding: 0.7rem 0.85rem;
   border: 1px solid var(--border-primary);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   margin-bottom: 0.5rem;
 }
 .an4-input {
   font-family: inherit;
   font-size: 0.82rem;
   padding: 0.55rem 0.7rem;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border-input, var(--border-primary));
   background: var(--surface-input, var(--bg-secondary));
   color: var(--text-primary);
@@ -254,7 +254,7 @@
   font-size: 0.875rem;
 }
 .an4-error {
-  color: var(--negative, #ef4444);
+  color: var(--negative, var(--negative));
 }
 .an4-toolbar {
   display: flex;
@@ -318,14 +318,14 @@
   color: var(--text-primary);
 }
 .fa-seg button.is-active {
-  background: var(--emerald-bg, rgba(16, 185, 129, 0.12));
-  color: var(--emerald-text, #10b981);
+  background: var(--emerald-bg, var(--emerald-bg-hover));
+  color: var(--emerald-text, var(--emerald));
 }
 
 /* ── Card ── (matches Trading Desk `.ctd-card`) */
 .fa-card {
   border: 1px solid var(--border-primary);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: var(--surface-card);
 }
 .fa-card-pad {
@@ -354,7 +354,7 @@
   color: var(--text-muted);
 }
 .fa-card-t svg {
-  color: var(--emerald-text, #10b981);
+  color: var(--emerald-text, var(--emerald));
 }
 
 /* ── Since-last-meeting strip ── */
@@ -363,7 +363,7 @@
   align-items: stretch;
   flex-wrap: wrap;
   border: 1px solid var(--border-primary);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
   margin-bottom: 1rem;
   background: var(--surface-card);
@@ -373,11 +373,11 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.6rem 0.9rem;
-  background: var(--emerald-bg, rgba(16, 185, 129, 0.08));
+  background: var(--emerald-bg, var(--emerald-bg));
   color: var(--text-primary);
 }
 .fa-slm-lead svg {
-  color: var(--emerald-text, #10b981);
+  color: var(--emerald-text, var(--emerald));
 }
 .fa-slm-lead .t {
   font-size: 0.7rem;
@@ -412,7 +412,7 @@
   color: var(--text-primary);
 }
 .fa-amber {
-  color: var(--warning, #f59e0b);
+  color: var(--warning, var(--amber));
 }
 
 /* ── Two-column body ── */
@@ -470,7 +470,7 @@
 .fa-legend i {
   width: 14px;
   height: 3px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   display: inline-block;
 }
 .fa-empty {
@@ -537,7 +537,7 @@
 }
 .fa-rank.top1 {
   background: rgba(245, 158, 11, 0.16);
-  color: var(--warning, #f59e0b);
+  color: var(--warning, var(--amber));
 }
 .fa-rank.top2 {
   background: rgba(148, 163, 184, 0.22);
@@ -563,8 +563,8 @@
   font-variant-numeric: tabular-nums;
   font-size: 0.6rem;
   font-weight: 700;
-  background: var(--emerald-bg, rgba(16, 185, 129, 0.14));
-  color: var(--emerald-text, #10b981);
+  background: var(--emerald-bg, color-mix(in srgb, var(--emerald) 14%, transparent));
+  color: var(--emerald-text, var(--emerald));
   flex-shrink: 0;
 }
 .fa-who .nm {
@@ -647,7 +647,7 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem 0.9rem;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   border: 1px solid;
 }
 .fa-cbanner.flag {
@@ -655,18 +655,18 @@
   border-color: rgba(245, 158, 11, 0.35);
 }
 .fa-cbanner.ok {
-  background: var(--emerald-bg, rgba(16, 185, 129, 0.08));
-  border-color: var(--emerald-border, rgba(16, 185, 129, 0.25));
+  background: var(--emerald-bg, var(--emerald-bg));
+  border-color: var(--emerald-border, var(--emerald-glow));
 }
 .fa-cbanner .bi {
   display: flex;
   flex-shrink: 0;
 }
 .fa-cbanner.flag .bi {
-  color: var(--warning, #f59e0b);
+  color: var(--warning, var(--amber));
 }
 .fa-cbanner.ok .bi {
-  color: var(--emerald-text, #10b981);
+  color: var(--emerald-text, var(--emerald));
 }
 .fa-cbanner .bt {
   font-size: 0.78rem;
@@ -687,7 +687,7 @@
   font-size: 0.9rem;
 }
 .fa-cbanner.flag .bpill {
-  color: var(--warning, #f59e0b);
+  color: var(--warning, var(--amber));
 }
 
 /* ── Insight callout ── */
@@ -695,7 +695,7 @@
   display: flex;
   gap: 0.55rem;
   padding: 0.7rem 0.85rem;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border-primary);
   background: var(--surface-card);
   font-size: 0.78rem;
@@ -712,7 +712,7 @@
   color: var(--text-muted);
 }
 .fa-callout.warning svg {
-  color: var(--warning, #f59e0b);
+  color: var(--warning, var(--amber));
 }
 .fa-callout b {
   color: var(--text-primary);
@@ -764,7 +764,7 @@
   bottom: -2px;
   width: 2px;
   background: var(--text-muted);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
 }
 .fa-svt .wt {
   text-align: right;
@@ -775,7 +775,7 @@
   color: var(--text-secondary);
 }
 .fa-svt .wt.over {
-  color: var(--warning, #f59e0b);
+  color: var(--warning, var(--amber));
 }
 .fa-svt-pm {
   font-size: 0.6rem;
@@ -796,7 +796,7 @@
 .fa-fstage .bar {
   flex: 1;
   height: 26px;
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   padding: 0 0.6rem;
@@ -847,14 +847,14 @@
   font-size: 0.68rem;
   font-weight: 700;
   padding: 0.28rem 0.6rem;
-  border-radius: 7px;
-  border: 1px solid var(--emerald-border, rgba(16, 185, 129, 0.3));
-  background: var(--emerald-bg, rgba(16, 185, 129, 0.08));
-  color: var(--emerald-text, #10b981);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--emerald-border, color-mix(in srgb, var(--emerald) 30%, transparent));
+  background: var(--emerald-bg, var(--emerald-bg));
+  color: var(--emerald-text, var(--emerald));
   cursor: pointer;
 }
 .fa-assign:hover {
-  border-color: var(--emerald, #10b981);
+  border-color: var(--emerald, var(--emerald));
 }
 
 /* ── Cash tile ── */
@@ -867,7 +867,7 @@
 
 /* ── Skeleton shimmer ── */
 .fa-skel {
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: linear-gradient(
     90deg,
     var(--surface-input) 25%,

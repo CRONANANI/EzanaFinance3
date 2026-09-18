@@ -13,7 +13,7 @@
   width: 100%;
   max-width: 460px;
   padding: 2rem;
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   border: 1px solid var(--border-primary);
   background: var(--surface-card);
   box-shadow: var(--shadow-lg);
@@ -63,7 +63,7 @@
 .nl-status-reason-input {
   width: 100%;
   padding: 8px 10px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-input, var(--border-primary));
   background: var(--surface-input, var(--inset));
   color: var(--text-primary);
@@ -78,7 +78,7 @@
 .nl-status-reason-btn {
   align-self: flex-start;
   padding: 7px 14px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-primary);
   background: var(--surface-card-hover);
   color: var(--text-secondary);

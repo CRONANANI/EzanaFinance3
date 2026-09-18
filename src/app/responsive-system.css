@@ -597,7 +597,7 @@
   .hts-card,
   .centaur-card {
     border-width: 2px !important;
-    border-color: rgba(16, 185, 129, 0.3) !important;
+    border-color: color-mix(in srgb, var(--emerald) 30%, transparent) !important;
   }
 }
 

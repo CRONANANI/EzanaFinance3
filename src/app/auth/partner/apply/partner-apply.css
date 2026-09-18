@@ -36,14 +36,14 @@
   min-height: 44px;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #059669;
+  color: var(--emerald-hover);
   text-decoration: none;
   margin-bottom: 2.5rem;
   align-self: flex-start;
 }
 
 .partner-apply-back:hover {
-  color: #047857;
+  color: var(--emerald-dark);
 }
 
 .partner-apply-badge {
@@ -92,7 +92,7 @@
 .partner-apply-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   padding: 1.75rem 1.5rem;
   box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
   display: flex;
@@ -130,7 +130,7 @@
 
 .partner-apply-card i {
   font-size: 2rem;
-  color: #059669;
+  color: var(--emerald-hover);
   margin-bottom: 0.875rem;
   display: block;
   line-height: 1;
@@ -181,7 +181,7 @@
 }
 
 .partner-apply-req i {
-  color: #059669;
+  color: var(--emerald-hover);
   font-size: 1.5rem;
   margin-top: 0;
   flex-shrink: 0;
@@ -223,8 +223,8 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: rgba(16, 185, 129, 0.12);
-  color: #059669;
+  background: var(--emerald-bg-hover);
+  color: var(--emerald-hover);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -263,17 +263,17 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.875rem 2rem;
-  background: linear-gradient(135deg, #10b981, #059669);
+  background: linear-gradient(135deg, var(--emerald), var(--emerald-hover));
   color: #fff;
   font-size: 0.9375rem;
   font-weight: 700;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   text-decoration: none;
   transition: all 0.2s;
 }
 
 .partner-apply-btn:hover {
-  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.25);
+  box-shadow: 0 8px 24px var(--emerald-glow);
   transform: translateY(-1px);
 }
 
@@ -304,14 +304,14 @@
 .partner-form-progress {
   height: 3px;
   background: #e2e8f0;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   margin-bottom: 2rem;
 }
 
 .partner-form-progress-fill {
   height: 100%;
-  background: #10b981;
-  border-radius: 2px;
+  background: var(--emerald);
+  border-radius: var(--radius-sm);
   transition: width 0.3s;
 }
 
@@ -341,7 +341,7 @@
   padding: 0.625rem 0.875rem;
   background: #ffffff;
   border: 1px solid #cbd5e1;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   color: #0f172a;
   font-size: 0.8125rem;
   font-family: inherit;
@@ -358,9 +358,9 @@
 .partner-form-step input:focus,
 .partner-form-step select:focus,
 .partner-form-step textarea:focus {
-  border-color: rgba(16, 185, 129, 0.5);
+  border-color: color-mix(in srgb, var(--emerald) 50%, transparent);
   outline: none;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--emerald) 10%, transparent);
 }
 
 .partner-form-step select {
@@ -395,7 +395,7 @@
   padding: 0.75rem;
   background: #ffffff;
   border: 1px solid #cbd5e1;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   text-align: left;
   cursor: pointer;
   transition: all 0.15s;
@@ -413,8 +413,8 @@
 }
 
 .partner-form-option.active {
-  border-color: #10b981;
-  background: rgba(16, 185, 129, 0.1);
+  border-color: var(--emerald);
+  background: color-mix(in srgb, var(--emerald) 10%, transparent);
 }
 
 .partner-form-chips {
@@ -437,9 +437,9 @@
 }
 
 .partner-form-chip.active {
-  color: #047857;
-  border-color: #10b981;
-  background: rgba(16, 185, 129, 0.1);
+  color: var(--emerald-dark);
+  border-color: var(--emerald);
+  background: color-mix(in srgb, var(--emerald) 10%, transparent);
 }
 
 .partner-form-nav {
@@ -455,7 +455,7 @@
   color: #475569;
   background: #ffffff;
   border: 1px solid #cbd5e1;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   cursor: pointer;
   font-family: inherit;
 }
@@ -471,9 +471,9 @@
   font-size: 0.8125rem;
   font-weight: 700;
   color: #fff;
-  background: linear-gradient(135deg, #10b981, #059669);
+  background: linear-gradient(135deg, var(--emerald), var(--emerald-hover));
   border: none;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   cursor: pointer;
   font-family: inherit;
   display: flex;
@@ -502,7 +502,7 @@
   padding: 0.625rem 0.875rem;
   background: rgba(220, 38, 38, 0.08);
   border: 1px solid rgba(220, 38, 38, 0.25);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   color: #dc2626;
   font-size: 0.75rem;
   margin-bottom: 1rem;
@@ -511,12 +511,12 @@
 /* Links inside partner apply flow */
 .partner-apply-page a:not(.partner-apply-btn):not(.partner-apply-back),
 .partner-form-page a:not(.partner-form-next):not(.partner-form-submit) {
-  color: #059669;
+  color: var(--emerald-hover);
 }
 
 .partner-apply-page a:not(.partner-apply-btn):not(.partner-apply-back):hover,
 .partner-form-page a:not(.partner-form-next):not(.partner-form-submit):hover {
-  color: #047857;
+  color: var(--emerald-dark);
 }
 
 @media (max-width: 768px) {

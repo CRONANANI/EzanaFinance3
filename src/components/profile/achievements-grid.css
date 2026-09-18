@@ -1,5 +1,5 @@
 .ag-card {
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   border: 1px solid var(--border-primary);
   background: var(--bg-secondary);
   padding: 1rem;
@@ -26,7 +26,7 @@ body.light-mode .ag-card {
 }
 
 .ag-trophy-icon {
-  color: #f59e0b;
+  color: var(--amber);
 }
 
 .ag-title {
@@ -55,7 +55,7 @@ body.light-mode .ag-card {
 
 .ag-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+  background: linear-gradient(90deg, var(--amber), var(--warning));
   transition: width 0.45s ease;
 }
 
@@ -89,7 +89,7 @@ body.light-mode .ag-card {
   text-align: left;
   border: 1px solid var(--border-secondary);
   background: var(--surface-card);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   cursor: pointer;
   transition:
     border-color 0.15s,
@@ -102,7 +102,7 @@ body.light-mode .ag-card {
 }
 
 .ag-tile:hover {
-  border-color: var(--emerald-border, rgba(16, 185, 129, 0.35));
+  border-color: var(--emerald-border, color-mix(in srgb, var(--emerald) 35%, transparent));
   transform: translateY(-1px);
 }
 
@@ -143,7 +143,7 @@ body.light-mode .ag-card {
   color: #111;
 }
 .ag-tile-icon.tier-gold.on {
-  background: linear-gradient(135deg, #fbbf24, #d4a853);
+  background: linear-gradient(135deg, var(--warning), var(--gold));
   color: #111;
 }
 .ag-tile-icon.tier-platinum.on {
@@ -214,7 +214,7 @@ body.light-mode .ag-card {
 
 .ag-tile-bar-fill {
   height: 100%;
-  background: rgba(16, 185, 129, 0.6);
+  background: color-mix(in srgb, var(--emerald) 60%, transparent);
 }
 
 /* ── Modal ── */
@@ -245,7 +245,7 @@ body.light-mode .ag-card {
   position: relative;
   width: 100%;
   max-width: 420px;
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
@@ -305,7 +305,7 @@ body.light-mode .ag-modal {
   color: #111;
 }
 .ag-modal-icon.tier-gold.on {
-  background: linear-gradient(135deg, #fbbf24, #d4a853);
+  background: linear-gradient(135deg, var(--warning), var(--gold));
   color: #111;
 }
 .ag-modal-icon.tier-platinum.on {
@@ -330,7 +330,7 @@ body.light-mode .ag-modal {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--emerald-text, #10b981);
+  color: var(--emerald-text, var(--emerald));
 }
 
 .ag-modal-desc {
@@ -346,7 +346,7 @@ body.light-mode .ag-modal {
   padding: 0.5rem 0.75rem;
   background: var(--surface-card);
   border: 1px solid var(--border-secondary);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   text-align: left;
 }
 
@@ -358,7 +358,7 @@ body.light-mode .ag-modal {
 .ag-modal-ok {
   margin-top: 0.625rem;
   font-size: 0.8125rem;
-  color: #10b981;
+  color: var(--emerald);
   font-weight: 600;
 }
 
@@ -386,16 +386,16 @@ body.light-mode .ag-modal {
   padding: 0.35rem 0.65rem;
   font-size: 0.75rem;
   font-weight: 700;
-  color: #10b981;
+  color: var(--emerald);
   text-decoration: none;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   transition:
     background 150ms ease,
     transform 150ms ease;
 }
 
 .ag-view-all-link:hover {
-  background: rgba(16, 185, 129, 0.08);
+  background: var(--emerald-bg);
   transform: translateX(2px);
 }
 
@@ -407,7 +407,7 @@ body.light-mode .ag-footer {
 
 .ag-card.ag-card-compact {
   padding: 0.625rem 0.75rem;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
 }
 
 .ag-card-compact .ag-head {
@@ -436,7 +436,7 @@ body.light-mode .ag-footer {
 
 .ag-grid-compact .ag-tile {
   padding: 0.5rem 0.5rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 
 .ag-card-compact .ag-empty {

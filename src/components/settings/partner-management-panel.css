@@ -30,7 +30,7 @@
 }
 
 .pmp-summary-stat strong {
-  color: #d4af37;
+  color: var(--gold-champagne);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
@@ -53,7 +53,7 @@
   width: 100%;
   padding: 0.6rem 0.85rem 0.6rem 2.4rem;
   font-size: 0.875rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: var(--surface-input);
   color: var(--text-primary);
@@ -62,13 +62,13 @@
 
 .pmp-search-input:focus {
   outline: none;
-  border-color: rgba(16, 185, 129, 0.4);
+  border-color: color-mix(in srgb, var(--emerald) 40%, transparent);
 }
 
 .pmp-error {
   padding: 0.6rem 0.85rem;
   background: rgba(239, 68, 68, 0.12);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   color: #fca5a5;
   font-size: 0.8125rem;
 }
@@ -79,7 +79,7 @@
   color: var(--text-muted);
   font-size: 0.875rem;
   background: var(--surface-card);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
 }
 
 .pmp-list {
@@ -99,7 +99,7 @@
   padding: 0.75rem 1rem;
   background: var(--bg-secondary);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   transition: border-color 150ms ease;
 }
 
@@ -132,7 +132,7 @@
 
 .pmp-avatar--partner {
   box-shadow:
-    0 0 0 2px #d4af37,
+    0 0 0 2px var(--gold-champagne),
     0 0 8px rgba(212, 175, 55, 0.3);
 }
 
@@ -157,7 +157,7 @@
   padding: 0.1rem 0.45rem;
   font-size: 0.625rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #d4af37, #b8941f);
+  background: linear-gradient(135deg, var(--gold-champagne), #b8941f);
   color: #0a0e13;
   border-radius: 999px;
   text-transform: uppercase;
@@ -187,7 +187,7 @@
 }
 
 .pmp-toggle.is-on {
-  background: linear-gradient(135deg, #d4af37, #b8941f);
+  background: linear-gradient(135deg, var(--gold-champagne), #b8941f);
   border-color: #b8941f;
 }
 

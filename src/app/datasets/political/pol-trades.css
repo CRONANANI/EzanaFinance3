@@ -24,14 +24,14 @@
   font-family: var(--font-sans);
   /* Pin exact design values so accents/party colours resolve regardless of any
      ancestor theme scope (same approach as the gov-contracts page). */
-  --emerald: #10b981;
-  --emerald-hover: #059669;
-  --emerald-bg: rgba(16, 185, 129, 0.08);
-  --emerald-border: rgba(16, 185, 129, 0.15);
-  --positive: #10b981;
-  --negative: #ef4444;
+  --emerald: var(--emerald);
+  --emerald-hover: var(--emerald-hover);
+  --emerald-bg: var(--emerald-bg);
+  --emerald-border: var(--emerald-border);
+  --positive: var(--emerald);
+  --negative: var(--negative);
   --warning: #d97706;
-  --info: #3b82f6;
+  --info: var(--blue);
   --purple: #a78bfa;
 }
 .ptx-mono {
@@ -180,7 +180,7 @@
   color: var(--emerald);
   border: none;
   border-bottom: 2px solid var(--emerald);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-family: var(--font-sans);
   font-size: var(--ds-type-sub-size);
   font-weight: var(--ds-type-strong);
@@ -647,7 +647,7 @@
   max-width: 860px;
   max-height: 88vh;
   background: var(--bg-primary);
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   box-shadow: var(--shadow-lg, 0 20px 60px rgba(15, 23, 42, 0.2));
   overflow: hidden;
   animation: ptx-pop 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -964,7 +964,7 @@
 }
 .ptx-status-pos {
   color: var(--positive);
-  background: var(--emerald-bg, rgba(16, 185, 129, 0.08));
+  background: var(--emerald-bg, var(--emerald-bg));
 }
 .ptx-status-neg {
   color: var(--negative);

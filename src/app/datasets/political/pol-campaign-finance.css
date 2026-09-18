@@ -143,8 +143,8 @@
   background: var(--surface-card-hover);
 }
 .pcf-toggle-btn.is-active {
-  background: var(--emerald-bg, rgba(16, 185, 129, 0.08));
-  color: var(--emerald, #10b981);
+  background: var(--emerald-bg, var(--emerald-bg));
+  color: var(--emerald, var(--emerald));
 }
 
 /* ── Tables ── */
@@ -203,8 +203,8 @@
   height: 22px;
   padding: 0 6px;
   border-radius: 999px;
-  background: var(--emerald-bg, rgba(16, 185, 129, 0.08));
-  color: var(--emerald, #10b981);
+  background: var(--emerald-bg, var(--emerald-bg));
+  color: var(--emerald, var(--emerald));
   font-family: var(--font-mono);
   font-size: var(--ds-type-disclaimer-size);
   font-weight: var(--ds-type-strong);
@@ -231,7 +231,7 @@
   min-width: 18px;
   height: 18px;
   padding: 0 5px;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   color: #fff;
   font-size: var(--ds-type-disclaimer-size);
   font-weight: var(--ds-type-strong);
@@ -257,7 +257,7 @@
 }
 .pcf-mixbar-ind {
   height: 100%;
-  background: var(--info, #3b82f6);
+  background: var(--info, var(--blue));
 }
 .pcf-mixbar-pac {
   height: 100%;
@@ -278,10 +278,10 @@
 }
 
 .pcf-pos {
-  color: var(--positive, #10b981);
+  color: var(--positive, var(--emerald));
 }
 .pcf-neg {
-  color: var(--negative, #ef4444);
+  color: var(--negative, var(--negative));
 }
 
 .pcf-empty {

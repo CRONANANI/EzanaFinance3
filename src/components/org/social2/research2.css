@@ -57,7 +57,7 @@
   display: inline-flex;
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   padding: 3px;
   gap: 2px;
 }
@@ -71,7 +71,7 @@
   font-size: 0.82rem;
   font-weight: 600;
   padding: 7px 12px;
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   font-family: var(--font-sans);
 }
@@ -88,7 +88,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border-primary);
   background: var(--surface-card);
   color: var(--text-secondary);
@@ -140,7 +140,7 @@
   flex-wrap: wrap;
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   padding: 8px 10px;
   margin-bottom: 12px;
 }
@@ -174,7 +174,7 @@
   background: var(--emerald-bg);
   color: var(--emerald-text);
   border: 1px solid var(--emerald-border);
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   padding: 3px 6px 3px 8px;
   font-size: 0.75rem;
   font-weight: 600;
@@ -209,7 +209,7 @@
   color: var(--emerald-text);
   background: var(--emerald-bg);
   border: 1px solid var(--border-primary);
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   padding: 3px 8px;
 }
 .rl2-keyword-hint {
@@ -223,7 +223,7 @@
   text-transform: uppercase;
   color: var(--text-faint);
   border: 1px solid var(--border-primary);
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   padding: 3px 8px;
 }
 
@@ -267,7 +267,7 @@
   border: 1px solid var(--border-primary);
   background: var(--surface-card);
   color: var(--text-secondary);
-  border-radius: 9px;
+  border-radius: var(--radius-md);
   padding: 7px 11px;
   font-size: 0.8rem;
   font-weight: 600;
@@ -300,7 +300,7 @@
   overflow-y: auto;
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 11px;
+  border-radius: var(--radius-lg);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
   padding: 6px;
 }
@@ -315,7 +315,7 @@
   color: var(--text-secondary);
   font-size: 0.82rem;
   padding: 7px 9px;
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   text-align: left;
   font-family: var(--font-sans);
@@ -373,7 +373,7 @@
   gap: 8px;
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 13px;
+  border-radius: var(--radius-lg);
   padding: 14px;
   cursor: pointer;
   transition:
@@ -459,7 +459,7 @@
   letter-spacing: 0.02em;
   text-transform: uppercase;
   padding: 2px 7px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   border: 1px solid transparent;
 }
 .rl2-pill--ticker {
@@ -476,7 +476,7 @@
   color: var(--text-muted);
   background: var(--surface-card-hover);
   border: 1px solid var(--border-primary);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   padding: 1px 6px;
 }
 
@@ -556,7 +556,7 @@
   text-align: center;
   color: var(--text-muted);
   border: 1px dashed var(--border-primary);
-  border-radius: 13px;
+  border-radius: var(--radius-lg);
   background: var(--surface-card);
 }
 .rl2-state h3 {
@@ -575,7 +575,7 @@
 .rl2-skeleton {
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 13px;
+  border-radius: var(--radius-lg);
   min-height: 150px;
   position: relative;
   overflow: hidden;
@@ -620,7 +620,7 @@
   flex-direction: column;
   background: var(--app-bg);
   border: 1px solid var(--emerald);
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
   overflow: hidden;
   padding: 0;
@@ -684,7 +684,7 @@
   border: none;
   background: var(--surface-card-hover);
   color: var(--text-muted);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: 6px;
   cursor: pointer;
   display: inline-flex;
@@ -738,7 +738,7 @@
 .rl2-ai-box {
   background: var(--emerald-bg);
   border: 1px solid var(--border-primary);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   padding: 12px;
   font-size: 0.84rem;
   color: var(--text-secondary);
@@ -791,7 +791,7 @@
   width: 100%;
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 9px;
+  border-radius: var(--radius-md);
   padding: 9px 11px;
   color: var(--text-primary);
   font-size: 0.86rem;
@@ -832,7 +832,7 @@
   background: var(--warning-bg);
   border: 1px solid var(--warning-bg);
   color: var(--warning);
-  border-radius: 9px;
+  border-radius: var(--radius-md);
   padding: 9px 11px;
   font-size: 0.8rem;
   margin-bottom: 8px;
@@ -868,7 +868,7 @@
   width: min(720px, 100%);
   background: var(--app-bg);
   border: 1px solid var(--emerald);
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   padding: 22px;
 }
 .rl2-modal-title {
@@ -909,7 +909,7 @@
   right: 0;
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 9px;
+  border-radius: var(--radius-md);
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
   max-height: 200px;
   overflow-y: auto;
@@ -941,7 +941,7 @@
 .rl2-lineage-head {
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 13px;
+  border-radius: var(--radius-lg);
   padding: 18px;
   margin-bottom: 16px;
 }
@@ -981,7 +981,7 @@
   gap: 12px;
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 11px;
+  border-radius: var(--radius-lg);
   padding: 12px 14px;
   cursor: pointer;
 }
@@ -1009,7 +1009,7 @@
   justify-content: space-between;
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 11px;
+  border-radius: var(--radius-lg);
   padding: 12px 14px;
   cursor: pointer;
 }
@@ -1024,7 +1024,7 @@
   font-weight: 700;
   color: var(--warning);
   background: var(--warning-bg);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   padding: 2px 8px;
 }
 .rl2-chain {
@@ -1071,7 +1071,7 @@
   gap: 8px;
   padding: 7px 10px;
   border: 1px solid var(--border-primary);
-  border-radius: 9px;
+  border-radius: var(--radius-md);
   background: var(--surface-card);
   font-size: 0.78rem;
   color: var(--text-secondary);
@@ -1098,7 +1098,7 @@
   justify-content: center;
   width: 27px;
   height: 27px;
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-primary);
   background: transparent;
   color: var(--text-secondary);

@@ -132,7 +132,7 @@
      labels all truncate at the same x and the numbers form a straight column. */
   padding: 8px 56px 8px 10px;
   border: none;
-  border-radius: 9px;
+  border-radius: var(--radius-md);
   background: transparent;
   color: var(--text-secondary);
   font-family: var(--font-sans);
@@ -248,7 +248,7 @@
 
 /* Loading skeleton */
 .ohn-skel {
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   background: linear-gradient(
     90deg,
     var(--surface-card) 25%,

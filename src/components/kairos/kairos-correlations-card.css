@@ -19,18 +19,18 @@
   font-size: 0.875rem;
   color: var(--text-muted);
   background: var(--bg-tertiary);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 
 .kcc-state-error {
-  color: #ef4444;
+  color: var(--negative);
 }
 
 .kcc-empty {
   padding: 1.5rem;
   text-align: center;
   background: var(--bg-tertiary);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 
 body.light-mode .kcc-empty p {
@@ -49,16 +49,16 @@ body.light-mode .kcc-empty p {
 .kcc-row {
   background: var(--bg-tertiary);
   border: 1px solid rgba(255, 255, 255, 0.04);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   padding: 0.75rem 1rem;
   transition: border-color 150ms ease;
 }
 
 .kcc-row:hover {
-  border-color: rgba(16, 185, 129, 0.2);
+  border-color: color-mix(in srgb, var(--emerald) 20%, transparent);
 }
 .kcc-row.is-expanded {
-  border-color: rgba(16, 185, 129, 0.3);
+  border-color: color-mix(in srgb, var(--emerald) 30%, transparent);
 }
 
 .kcc-row-head {
@@ -150,7 +150,7 @@ body.light-mode .kcc-empty p {
 .kcc-row-detail {
   margin-top: 0.85rem;
   padding-top: 0.75rem;
-  border-top: 1px solid rgba(16, 185, 129, 0.08);
+  border-top: 1px solid var(--emerald-bg);
   animation: kcc-slide-in 200ms ease-out;
 }
 
@@ -175,7 +175,7 @@ body.light-mode .kcc-empty p {
 .kcc-detail-cell {
   background: var(--bg-tertiary);
   border: 1px solid rgba(255, 255, 255, 0.04);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: 0.65rem 0.75rem;
 }
 
@@ -207,9 +207,9 @@ body.light-mode .kcc-empty p {
   color: var(--text-secondary);
   line-height: 1.5;
   padding: 0.5rem 0.75rem;
-  background: rgba(16, 185, 129, 0.04);
-  border-radius: 6px;
-  border-left: 2px solid rgba(16, 185, 129, 0.4);
+  background: var(--emerald-bg-subtle);
+  border-radius: var(--radius-md);
+  border-left: 2px solid color-mix(in srgb, var(--emerald) 40%, transparent);
 }
 
 .kcc-disclaimer {

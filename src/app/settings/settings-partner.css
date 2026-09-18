@@ -23,21 +23,21 @@ body.partner-app .settings-nav-icon {
 
 body.partner-app .settings-nav-item.active .settings-nav-icon {
   background: rgba(212, 168, 83, 0.18);
-  color: #d4a853;
+  color: var(--gold);
   box-shadow: 0 0 12px rgba(212, 168, 83, 0.12);
 }
 
 body.partner-app .settings-nav-item:hover .settings-nav-icon {
-  color: #d4a853;
+  color: var(--gold);
 }
 
 body.partner-app .settings-nav-indicator {
-  background: #d4a853;
+  background: var(--gold);
   box-shadow: 0 0 8px rgba(212, 168, 83, 0.35);
 }
 
 body.partner-app .settings-back-btn:hover {
-  color: #d4a853;
+  color: var(--gold);
 }
 
 body.partner-app .settings-sidebar-footer {
@@ -49,7 +49,7 @@ body.partner-app .settings-switch.on {
 }
 
 body.partner-app .settings-switch.on::after {
-  background: #d4a853;
+  background: var(--gold);
   box-shadow: 0 0 8px rgba(212, 168, 83, 0.35);
 }
 
@@ -74,26 +74,26 @@ body.partner-app .settings-btn-secondary:hover {
 body.partner-app .settings-avatar {
   background: linear-gradient(135deg, rgba(212, 168, 83, 0.1), rgba(212, 168, 83, 0.12));
   border-color: rgba(212, 168, 83, 0.25);
-  color: #d4a853;
+  color: var(--gold);
 }
 
 body.partner-app .settings-badge.green {
   background: rgba(212, 168, 83, 0.12);
-  color: #d4a853;
+  color: var(--gold);
 }
 
 body.partner-app .settings-plan-price,
 body.partner-app .settings-plan-feature i {
-  color: #d4a853;
+  color: var(--gold);
 }
 
 body.partner-app .settings-api-key code,
 body.partner-app .settings-api-key-btn:hover {
-  color: #d4a853;
+  color: var(--gold);
 }
 
 body.partner-app .settings-integration-status.connected-text {
-  color: #d4a853;
+  color: var(--gold);
 }
 
 body.partner-app .settings-usage-fill {
@@ -103,20 +103,20 @@ body.partner-app .settings-usage-fill {
 body.partner-app .settings-toast {
   background: rgba(212, 168, 83, 0.12);
   border-color: rgba(212, 168, 83, 0.28);
-  color: #d4a853;
+  color: var(--gold);
 }
 
 body.partner-app .settings-push-status.is-on {
-  color: #d4a853;
+  color: var(--gold);
 }
 
 body.partner-app .settings-saved-ok {
-  color: #d4a853;
+  color: var(--gold);
 }
 
 body.partner-app .settings-mobile-trigger i:first-child,
 body.partner-app .settings-mobile-item.active i {
-  color: #d4a853;
+  color: var(--gold);
 }
 
 body.partner-app .settings-header {

@@ -28,13 +28,13 @@
   width: 100%;
   max-width: 440px;
   background: var(--bg-secondary);
-  border: 1px solid rgba(16, 185, 129, 0.2);
-  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--emerald) 20%, transparent);
+  border-radius: var(--radius-xl);
   overflow: hidden;
   box-shadow:
     0 20px 60px rgba(0, 0, 0, 0.5),
-    0 0 0 1px rgba(16, 185, 129, 0.05),
-    0 0 40px rgba(16, 185, 129, 0.04);
+    0 0 0 1px color-mix(in srgb, var(--emerald) 5%, transparent),
+    0 0 40px var(--emerald-bg-subtle);
   animation: rpm-slide-up 0.25s ease;
 }
 
@@ -63,8 +63,8 @@ body.light-mode .rpm-card,
   align-items: center;
   gap: 0.6rem;
   padding: 1rem 1.25rem;
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(16, 185, 129, 0.04));
-  border-bottom: 1px solid rgba(16, 185, 129, 0.1);
+  background: linear-gradient(135deg, var(--emerald-bg-hover), var(--emerald-bg-subtle));
+  border-bottom: 1px solid color-mix(in srgb, var(--emerald) 10%, transparent);
 }
 
 body.light-mode .rpm-header,
@@ -73,7 +73,7 @@ body.light-mode .rpm-header,
 }
 
 .rpm-header-icon {
-  color: #10b981;
+  color: var(--emerald);
   font-size: 1.1rem;
 }
 
@@ -96,11 +96,11 @@ body.light-mode .rpm-header-title,
   cursor: pointer;
   font-size: 1rem;
   padding: 0.25rem;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   transition: color 0.15s;
 }
 .rpm-close:hover {
-  color: #ef4444;
+  color: var(--negative);
 }
 
 .rpm-steps {
@@ -121,7 +121,7 @@ body.light-mode .rpm-header-title,
 }
 
 .rpm-step-dot.active {
-  background: #10b981;
+  background: var(--emerald);
   transform: scale(1.2);
 }
 
@@ -157,16 +157,16 @@ body.light-mode .rpm-desc,
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  background: rgba(16, 185, 129, 0.06);
-  border: 2px solid rgba(16, 185, 129, 0.2);
-  border-radius: 12px;
+  background: color-mix(in srgb, var(--emerald) 6%, transparent);
+  border: 2px solid color-mix(in srgb, var(--emerald) 20%, transparent);
+  border-radius: var(--radius-lg);
   padding: 0.625rem 1rem;
   margin-bottom: 0.75rem;
   transition: border-color 0.2s;
 }
 
 .rpm-amount-wrap:focus-within {
-  border-color: #10b981;
+  border-color: var(--emerald);
 }
 
 body.light-mode .rpm-amount-wrap,
@@ -178,7 +178,7 @@ body.light-mode .rpm-amount-wrap,
 .rpm-dollar-sign {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #10b981;
+  color: var(--emerald);
 }
 
 .rpm-amount-input {
@@ -210,7 +210,7 @@ body.light-mode .rpm-amount-input,
 
 .rpm-preset {
   padding: 0.3rem 0.65rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   background: rgba(107, 114, 128, 0.1);
   border: 1px solid rgba(107, 114, 128, 0.15);
   color: #9ca3af;
@@ -221,15 +221,15 @@ body.light-mode .rpm-amount-input,
 }
 
 .rpm-preset:hover {
-  background: rgba(16, 185, 129, 0.08);
-  border-color: rgba(16, 185, 129, 0.3);
-  color: #10b981;
+  background: var(--emerald-bg);
+  border-color: color-mix(in srgb, var(--emerald) 30%, transparent);
+  color: var(--emerald);
 }
 
 .rpm-preset.active {
-  background: rgba(16, 185, 129, 0.15);
-  border-color: #10b981;
-  color: #10b981;
+  background: var(--emerald-border);
+  border-color: var(--emerald);
+  color: var(--emerald);
 }
 
 body.light-mode .rpm-preset,
@@ -258,7 +258,7 @@ body.light-mode .rpm-preset:hover,
   align-items: center;
   gap: 0.4rem;
   padding: 0.55rem 1rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
@@ -267,11 +267,11 @@ body.light-mode .rpm-preset:hover,
 }
 
 .rpm-btn-primary {
-  background: #10b981;
+  background: var(--emerald);
   color: #fff;
 }
 .rpm-btn-primary:hover:not(:disabled) {
-  background: #059669;
+  background: var(--emerald-hover);
 }
 .rpm-btn-primary:disabled {
   opacity: 0.4;
@@ -280,11 +280,11 @@ body.light-mode .rpm-preset:hover,
 
 .rpm-btn-outline {
   background: transparent;
-  color: #10b981;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: var(--emerald);
+  border: 1px solid color-mix(in srgb, var(--emerald) 30%, transparent);
 }
 .rpm-btn-outline:hover:not(:disabled) {
-  background: rgba(16, 185, 129, 0.08);
+  background: var(--emerald-bg);
 }
 .rpm-btn-outline:disabled {
   opacity: 0.5;
@@ -305,7 +305,7 @@ body.light-mode .rpm-btn-ghost:hover,
 }
 
 .rpm-btn-danger {
-  background: #ef4444;
+  background: var(--negative);
   color: #fff;
 }
 .rpm-btn-danger:hover {
@@ -323,11 +323,11 @@ body.light-mode .rpm-btn-ghost:hover,
 
 .rpm-error {
   font-size: 0.75rem;
-  color: #ef4444;
+  color: var(--negative);
   margin: 0 0 0.5rem;
 }
 
 .rpm-amount-highlight {
-  color: #10b981;
+  color: var(--emerald);
   font-weight: 700;
 }

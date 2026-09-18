@@ -673,7 +673,7 @@ html:has(.privacy-policy-page) .navbar .nav-link-text {
 
 html:has(.privacy-policy-page) .navbar .nav-link:hover,
 html:has(.privacy-policy-page) .navbar .nav-link-text:hover {
-  color: #059669 !important;
+  color: var(--emerald-hover) !important;
   background: transparent !important;
   background-color: transparent !important;
   text-decoration: none !important;
@@ -694,7 +694,7 @@ html:has(.privacy-policy-page) .nav-logo-img {
 @media (max-width: 768px) {
   html:has(.privacy-policy-page) .mobile-nav-menu {
     background: linear-gradient(180deg, #ffffff 0%, #f8f9fb 100%) !important;
-    border-left-color: rgba(16, 185, 129, 0.15) !important;
+    border-left-color: var(--emerald-border) !important;
     box-shadow: -8px 0 32px rgba(0, 0, 0, 0.12) !important;
   }
 
@@ -704,8 +704,8 @@ html:has(.privacy-policy-page) .nav-logo-img {
 
   html:has(.privacy-policy-page) .mobile-nav-link:hover,
   html:has(.privacy-policy-page) .mobile-nav-link:active {
-    background: rgba(16, 185, 129, 0.06) !important;
-    color: #059669 !important;
+    background: color-mix(in srgb, var(--emerald) 6%, transparent) !important;
+    color: var(--emerald-hover) !important;
   }
 
   html:has(.privacy-policy-page) .mobile-nav-link i:first-child {
@@ -713,12 +713,12 @@ html:has(.privacy-policy-page) .nav-logo-img {
   }
 
   html:has(.privacy-policy-page) .mobile-nav-partner {
-    color: #059669 !important;
+    color: var(--emerald-hover) !important;
     border-color: rgba(5, 150, 105, 0.25) !important;
   }
 
   html:has(.privacy-policy-page) .mobile-nav-brand {
-    color: #059669 !important;
+    color: var(--emerald-hover) !important;
   }
 
   html:has(.privacy-policy-page) .mobile-nav-tagline {
@@ -729,8 +729,8 @@ html:has(.privacy-policy-page) .nav-logo-img {
     background: linear-gradient(
       90deg,
       transparent 0%,
-      rgba(16, 185, 129, 0.15) 20%,
-      rgba(16, 185, 129, 0.15) 80%,
+      var(--emerald-border) 20%,
+      var(--emerald-border) 80%,
       transparent 100%
     ) !important;
   }

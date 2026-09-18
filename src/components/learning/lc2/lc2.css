@@ -26,7 +26,7 @@
 
 .lc-card {
   background: var(--lc-panel);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   box-shadow: var(--lc-shadow-card);
   position: relative;
 }
@@ -119,7 +119,7 @@
   font-size: 13px;
   line-height: 1;
   padding: 9px 14px;
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
   border: 1px solid var(--lc-line-2);
   color: var(--lc-ink);
@@ -265,7 +265,7 @@ body.light-mode .lc-btn-primary {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   padding: 4px 8px;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
 }
 
 .lc-tier-chip--bronze {
@@ -315,7 +315,7 @@ body.light-mode .lc-btn-primary {
   top: 0;
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--lc-bronze), #fbbf24);
+  background: linear-gradient(90deg, var(--lc-bronze), var(--warning));
 }
 
 .lc-ladder-hint {
@@ -468,12 +468,16 @@ body.light-mode .lc-btn-primary {
 }
 
 .lc-dq-lesson {
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: 16px 18px;
   border: 1px solid var(--lc-accent-ring);
   background:
     radial-gradient(ellipse 100% 100% at 100% 0%, var(--lc-accent-soft-2) 0%, transparent 60%),
-    linear-gradient(180deg, var(--lc-accent-soft), rgba(16, 185, 129, 0.02));
+    linear-gradient(
+      180deg,
+      var(--lc-accent-soft),
+      color-mix(in srgb, var(--emerald) 2%, transparent)
+    );
 }
 
 .lc-dq-lesson-eyebrow {
@@ -517,7 +521,7 @@ body.light-mode .lc-btn-primary {
   width: 100%;
   margin-top: 14px;
   padding: 10px;
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   background: linear-gradient(180deg, var(--lc-accent) 0%, var(--lc-accent-deep) 100%);
   color: #062117;
   font-family: var(--font-sans);
@@ -568,7 +572,7 @@ body.light-mode .lc-dq-start-btn {
   width: 14px;
   height: 14px;
   border: 1.5px solid var(--lc-line-3);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
 }
 
@@ -658,7 +662,7 @@ body.light-mode .lc-dq-start-btn {
 .lc-sm-streak-bar {
   flex: 1;
   height: 18px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   background: var(--lc-panel-hover);
 }
 .lc-sm-streak-bar--on {
@@ -712,7 +716,7 @@ body.light-mode .lc-dq-start-btn {
 .lc-tier-legend-swatch {
   width: 8px;
   height: 8px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
 }
 
 .lc-tt-table {
@@ -778,7 +782,7 @@ body.light-mode .lc-tt-head {
   padding: 4px 7px;
   background: var(--lc-accent);
   color: #062117;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   margin-bottom: 6px;
 }
 
@@ -873,7 +877,7 @@ body.light-mode .lc-tt-head {
 }
 
 .lc-tt-tier-fill--bronze {
-  background: linear-gradient(90deg, var(--lc-bronze), #fbbf24);
+  background: linear-gradient(90deg, var(--lc-bronze), var(--warning));
 }
 .lc-tt-tier-fill--silver {
   background: var(--lc-silver);
@@ -928,7 +932,7 @@ body.light-mode .lc-tt-head {
   gap: 4px;
   padding: 3px;
   background: var(--lc-panel-hover);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--lc-line);
 }
 
@@ -937,7 +941,7 @@ body.light-mode .lc-tt-head {
   font-family: var(--font-sans);
   font-weight: 500;
   font-size: 11px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   color: var(--lc-ink-2);
   background: transparent;
   border: none;
@@ -1090,7 +1094,7 @@ body.light-mode .lc-tt-head {
 
 .lc-ap-continue {
   padding: 8px 14px;
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   font-family: var(--font-sans);
   font-weight: 600;
   font-size: 13px;
@@ -1163,7 +1167,7 @@ body.light-mode .lc-tt-head {
   padding: 16px 18px;
   background: var(--lc-bg-2);
   border: 1px dashed var(--lc-line-2);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
 }
 
 .lc-sc-peer-label {
@@ -1309,7 +1313,7 @@ body.light-mode .lc-tt-head {
 
 .lc-skeleton {
   background: var(--lc-panel-hover);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   animation: lc-shimmer 1.5s ease-in-out infinite;
 }
 

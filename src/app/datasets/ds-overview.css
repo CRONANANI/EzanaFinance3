@@ -26,16 +26,16 @@
   /* 7-dimension palette pinned so node/spoke/tag/legend colours resolve
      regardless of any ancestor theme scope (same approach as the sibling
      dataset pages). One token per orbital dimension. */
-  --emerald: #10b981; /* Capitol Watch */
-  --emerald-hover: #059669;
-  --emerald-bg: rgba(16, 185, 129, 0.08);
-  --emerald-border: rgba(16, 185, 129, 0.2);
-  --info: #3b82f6; /* Titans Shadow */
+  --emerald: var(--emerald); /* Capitol Watch */
+  --emerald-hover: var(--emerald-hover);
+  --emerald-bg: var(--emerald-bg);
+  --emerald-border: color-mix(in srgb, var(--emerald) 20%, transparent);
+  --info: var(--blue); /* Titans Shadow */
   --cyan: #06b6d4; /* Eyes Above */
   --orange: #f97316; /* Consumer Whispers */
   --pink: #ec4899; /* The Hive */
   --indigo: #6366f1; /* Global Empire Lighthouse */
-  --amber: #f59e0b; /* Regulatory Winds */
+  --amber: var(--amber); /* Regulatory Winds */
 }
 .dsx-mono {
   font-family: var(--font-mono);
@@ -548,7 +548,7 @@
 /* 🟢 free gov · 🔵 free public · 🟡 licensed · ⚪ commercial/roadmap */
 .dsx-src-gov {
   color: var(--emerald);
-  background: var(--emerald-bg, rgba(16, 185, 129, 0.1));
+  background: var(--emerald-bg, color-mix(in srgb, var(--emerald) 10%, transparent));
 }
 .dsx-src-public {
   color: var(--info);
@@ -743,7 +743,7 @@
   overflow-y: auto;
   background: var(--bg-primary);
   border: 1px solid var(--border-primary);
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   box-shadow: var(--shadow-lg, 0 20px 60px rgba(15, 23, 42, 0.2));
   padding: 22px;
   animation: dsx-pop 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -881,7 +881,7 @@
 /* loading skeleton */
 .dsx-skel {
   height: 12px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   background: var(--bg-tertiary);
   animation: dsx-shimmer 1.2s ease-in-out infinite;
   margin-bottom: 10px;

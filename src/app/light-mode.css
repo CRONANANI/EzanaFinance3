@@ -571,7 +571,7 @@ body.light-mode ::selection {
   position: relative;
   width: 32px;
   height: 32px;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   background: transparent;
   border: 1px solid var(--border-primary);
   cursor: pointer;
@@ -584,7 +584,7 @@ body.light-mode ::selection {
 }
 
 .theme-toggle-btn:hover {
-  background: var(--emerald-bg, rgba(16, 185, 129, 0.08));
+  background: var(--emerald-bg, var(--emerald-bg));
   border-color: var(--border-hover);
 }
 
@@ -610,7 +610,7 @@ body.light-mode ::selection {
   top: 0;
   left: 0;
   font-size: 1rem;
-  color: #fbbf24;
+  color: var(--warning);
   transition:
     opacity 0.3s,
     transform 0.3s;

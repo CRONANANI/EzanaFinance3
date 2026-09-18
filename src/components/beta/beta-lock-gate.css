@@ -36,12 +36,12 @@
   max-width: 520px;
   width: 100%;
   background: linear-gradient(180deg, rgba(13, 17, 23, 0.98), rgba(10, 14, 19, 0.98));
-  border: 1px solid rgba(16, 185, 129, 0.25);
-  border-radius: 16px;
+  border: 1px solid var(--emerald-glow);
+  border-radius: var(--radius-xl);
   padding: 2.25rem 2rem 1.75rem;
   box-shadow:
     0 20px 60px rgba(0, 0, 0, 0.5),
-    0 0 40px rgba(16, 185, 129, 0.08),
+    0 0 40px var(--emerald-bg),
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
   animation: betaLockSlideUp 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   text-align: center;
@@ -71,14 +71,14 @@ body.light-mode .beta-lock-modal {
   align-items: center;
   gap: 0.4rem;
   padding: 0.3rem 0.75rem;
-  background: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: var(--emerald-bg-hover);
+  border: 1px solid color-mix(in srgb, var(--emerald) 30%, transparent);
   border-radius: 999px;
   font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #10b981;
+  color: var(--emerald);
   margin-bottom: 1.25rem;
 }
 .beta-lock-badge i {
@@ -98,7 +98,7 @@ body.light-mode .beta-lock-title {
 }
 
 .beta-lock-version {
-  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  background: linear-gradient(135deg, var(--emerald) 0%, var(--positive-bright) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -117,9 +117,9 @@ body.light-mode .beta-lock-subtitle {
 }
 
 .beta-lock-meta {
-  background: rgba(16, 185, 129, 0.05);
-  border: 1px solid rgba(16, 185, 129, 0.15);
-  border-radius: 10px;
+  background: color-mix(in srgb, var(--emerald) 5%, transparent);
+  border: 1px solid var(--emerald-border);
+  border-radius: var(--radius-lg);
   padding: 0.875rem 1rem;
   margin-bottom: 1.5rem;
 }
@@ -130,7 +130,7 @@ body.light-mode .beta-lock-subtitle {
   margin: 0;
 }
 .beta-lock-meta strong {
-  color: #10b981;
+  color: var(--emerald);
   font-weight: 600;
 }
 body.light-mode .beta-lock-meta {
@@ -156,7 +156,7 @@ body.light-mode .beta-lock-meta strong {
   align-items: center;
   gap: 0.4rem;
   padding: 0.65rem 1.25rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
@@ -171,16 +171,16 @@ body.light-mode .beta-lock-meta strong {
 }
 
 .beta-lock-btn--primary {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, var(--emerald) 0%, var(--emerald-hover) 100%);
   color: #ffffff;
   box-shadow:
-    0 0 0 1px rgba(16, 185, 129, 0.4),
-    0 4px 16px rgba(16, 185, 129, 0.3);
+    0 0 0 1px color-mix(in srgb, var(--emerald) 40%, transparent),
+    0 4px 16px color-mix(in srgb, var(--emerald) 30%, transparent);
 }
 .beta-lock-btn--primary:hover {
   box-shadow:
-    0 0 0 1px rgba(16, 185, 129, 0.6),
-    0 6px 22px rgba(16, 185, 129, 0.45);
+    0 0 0 1px color-mix(in srgb, var(--emerald) 60%, transparent),
+    0 6px 22px color-mix(in srgb, var(--emerald) 45%, transparent);
 }
 
 .beta-lock-btn--secondary {

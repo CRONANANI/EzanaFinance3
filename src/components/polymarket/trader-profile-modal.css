@@ -26,7 +26,7 @@
   width: min(720px, 100%);
   background: var(--bg-secondary);
   border: 1px solid rgba(99, 102, 241, 0.25);
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   padding: 1.5rem 1.5rem 1.25rem;
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
   color: var(--text-primary);
@@ -113,7 +113,7 @@
   color: var(--text-faint);
   background: var(--bg-tertiary);
   padding: 0.15rem 0.45rem;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   word-break: break-all;
 }
 
@@ -131,7 +131,7 @@
   padding: 0.45rem 0.75rem;
   background: rgba(99, 102, 241, 0.1);
   border: 1px solid rgba(99, 102, 241, 0.3);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   color: #818cf8;
   text-decoration: none;
   font-size: 0.7rem;
@@ -192,7 +192,7 @@
 .tpm-stat {
   background: var(--surface-card);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: 0.7rem 0.85rem;
 }
 
@@ -223,10 +223,10 @@
 }
 
 .tpm-positive {
-  color: #10b981 !important;
+  color: var(--emerald) !important;
 }
 .tpm-negative {
-  color: #ef4444 !important;
+  color: var(--negative) !important;
 }
 
 .tpm-section {
@@ -259,7 +259,7 @@
   align-items: center;
   padding: 0.45rem 0.65rem;
   background: var(--surface-card);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-size: 0.75rem;
 }
 
@@ -278,19 +278,19 @@
 }
 
 .tpm-cat-dot--politics {
-  background: #3b82f6;
+  background: var(--blue);
 }
 .tpm-cat-dot--crypto {
-  background: #f59e0b;
+  background: var(--amber);
 }
 .tpm-cat-dot--economics {
-  background: #10b981;
+  background: var(--emerald);
 }
 .tpm-cat-dot--tech {
   background: #a855f7;
 }
 .tpm-cat-dot--sports {
-  background: #ef4444;
+  background: var(--negative);
 }
 .tpm-cat-dot--culture {
   background: #ec4899;
@@ -338,7 +338,7 @@
 
 .tpm-position {
   background: var(--surface-card);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   padding: 0.5rem 0.7rem;
 }
 
@@ -366,16 +366,16 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
   padding: 0.1rem 0.4rem;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
 }
 
 .tpm-yes {
-  background: rgba(16, 185, 129, 0.15);
-  color: #10b981;
+  background: var(--emerald-border);
+  color: var(--emerald);
 }
 .tpm-no {
   background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
+  color: var(--negative);
 }
 
 .tpm-pos-value {
@@ -391,7 +391,7 @@
   align-items: center;
   padding: 0.4rem 0.65rem;
   background: var(--surface-card);
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   font-size: 0.7rem;
   font-variant-numeric: tabular-nums;
 }
@@ -402,16 +402,16 @@
   text-transform: uppercase;
   text-align: center;
   padding: 0.1rem 0.3rem;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
 }
 
 .tpm-side--buy {
-  background: rgba(16, 185, 129, 0.15);
-  color: #10b981;
+  background: var(--emerald-border);
+  color: var(--emerald);
 }
 .tpm-side--sell {
   background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
+  color: var(--negative);
 }
 
 .tpm-trade-title {

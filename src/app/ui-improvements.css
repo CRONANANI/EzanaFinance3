@@ -33,9 +33,9 @@
 
 /* ── Focus Visible (Accessibility) ── */
 :focus-visible {
-  outline: 2px solid #10b981;
+  outline: 2px solid var(--emerald);
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 button:focus:not(:focus-visible),
 a:focus:not(:focus-visible),
@@ -103,10 +103,10 @@ a[href='#main-content'].skip-to-content:focus {
   clip: auto;
   clip-path: none;
   white-space: normal;
-  background: #10b981;
+  background: var(--emerald);
   color: #0a0e13;
   font-weight: 700;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   outline: 2px solid #fff;
   outline-offset: 2px;
 }

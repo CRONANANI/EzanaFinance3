@@ -12,8 +12,8 @@
   width: 100%;
   padding: 3rem 2.5rem;
   background: var(--surface-card);
-  border: 1px solid rgba(16, 185, 129, 0.15);
-  border-radius: 16px;
+  border: 1px solid var(--emerald-border);
+  border-radius: var(--radius-xl);
   text-align: center;
 }
 
@@ -35,18 +35,18 @@ body.light-mode .reactivate-card {
 }
 
 .reactivate-icon-wrap--info {
-  background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
+  background: color-mix(in srgb, var(--emerald) 10%, transparent);
+  color: var(--emerald);
 }
 
 .reactivate-icon-wrap--success {
-  background: rgba(16, 185, 129, 0.15);
-  color: #10b981;
+  background: var(--emerald-border);
+  color: var(--emerald);
 }
 
 .reactivate-icon-wrap--error {
   background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
+  color: var(--negative);
 }
 
 .reactivate-card h1 {
@@ -74,10 +74,10 @@ body.light-mode .reactivate-card p {
 .reactivate-btn {
   display: inline-block;
   padding: 0.85rem 2rem;
-  background: linear-gradient(135deg, #10b981, #059669);
+  background: linear-gradient(135deg, var(--emerald), var(--emerald-hover));
   color: #ffffff;
   border: none;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
@@ -89,7 +89,7 @@ body.light-mode .reactivate-card p {
 
 .reactivate-btn:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--emerald) 30%, transparent);
 }
 
 .reactivate-btn:disabled {
@@ -105,7 +105,7 @@ body.light-mode .reactivate-card p {
 }
 
 .reactivate-link:hover {
-  color: #10b981;
+  color: var(--emerald);
   text-decoration: underline;
 }
 
@@ -113,8 +113,8 @@ body.light-mode .reactivate-card p {
   width: 40px;
   height: 40px;
   margin: 0 auto 1.5rem;
-  border: 3px solid rgba(16, 185, 129, 0.2);
-  border-top-color: #10b981;
+  border: 3px solid color-mix(in srgb, var(--emerald) 20%, transparent);
+  border-top-color: var(--emerald);
   border-radius: 50%;
   animation: react-spin 0.8s linear infinite;
 }

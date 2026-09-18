@@ -290,7 +290,7 @@ html.light-mode .dcf-v5 {
 
 .dcf-v5-badge--good {
   background: var(--positive-bg);
-  border: 1px solid rgba(16, 185, 129, 0.25);
+  border: 1px solid var(--emerald-glow);
   color: var(--positive);
 }
 
@@ -343,10 +343,10 @@ html.light-mode .dcf-v5 {
     to right,
     rgba(239, 68, 68, 0.06) 0%,
     rgba(239, 68, 68, 0.02) 45%,
-    rgba(16, 185, 129, 0.02) 55%,
-    rgba(16, 185, 129, 0.06) 100%
+    color-mix(in srgb, var(--emerald) 2%, transparent) 55%,
+    color-mix(in srgb, var(--emerald) 6%, transparent) 100%
   );
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 .dcf-v5-peer-center {
@@ -386,7 +386,7 @@ html.light-mode .dcf-v5 {
   position: relative;
   height: 12px;
   background: var(--bg-tertiary);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
 }
 
@@ -401,7 +401,7 @@ html.light-mode .dcf-v5-peer-bar-track {
   bottom: 0;
   left: var(--left, 50%);
   width: var(--w, 0%);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   transition: width 0.3s ease;
 }
 

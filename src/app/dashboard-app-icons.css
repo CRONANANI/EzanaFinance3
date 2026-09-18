@@ -9,7 +9,7 @@
 
 .db-h3-with-bi > .bi {
   font-size: 1.1rem;
-  color: #10b981;
+  color: var(--emerald);
   flex-shrink: 0;
 }
 
@@ -18,16 +18,16 @@
   align-items: center;
   margin-left: 0.35rem;
   vertical-align: middle;
-  color: #10b981;
+  color: var(--emerald);
   font-size: 1.25rem;
 }
 
 .comm-stat-icon-wrap {
   width: 40px;
   height: 40px;
-  border-radius: 12px;
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.15);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--emerald) 10%, transparent);
+  border: 1px solid var(--emerald-border);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -36,7 +36,7 @@
 
 .comm-stat-icon-wrap .bi {
   font-size: 1.15rem;
-  color: #10b981;
+  color: var(--emerald);
 }
 
 .ftq-section-title {
@@ -48,16 +48,16 @@
 
 .ftq-section-title .bi {
   font-size: 1.05rem;
-  color: #10b981;
+  color: var(--emerald);
   flex-shrink: 0;
 }
 
 .ftq-stat-icon-inner {
   width: 44px;
   height: 44px;
-  border-radius: 12px;
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.12);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--emerald) 10%, transparent);
+  border: 1px solid var(--emerald-bg-hover);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -65,7 +65,7 @@
 
 .ftq-stat-icon-inner .bi {
   font-size: 1.3rem;
-  color: #10b981;
+  color: var(--emerald);
 }
 
 .am-section-h3 {
@@ -77,7 +77,7 @@
 
 .am-section-h3 .bi {
   font-size: 1.05rem;
-  color: #10b981;
+  color: var(--emerald);
   flex-shrink: 0;
 }
 
@@ -93,7 +93,7 @@
 
 .am-section-h4 .bi {
   font-size: 1rem;
-  color: #10b981;
+  color: var(--emerald);
 }
 
 .lc2-sec-title-with-bi {
@@ -105,5 +105,5 @@
 
 .lc2-sec-title-with-bi .bi {
   font-size: 1.05rem;
-  color: #10b981;
+  color: var(--emerald);
 }

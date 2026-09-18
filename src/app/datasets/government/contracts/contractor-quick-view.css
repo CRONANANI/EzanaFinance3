@@ -16,17 +16,17 @@ body.light-mode .cqv-scrim {
 }
 
 .cqv-root {
-  --cqv-amber: #f59e0b;
+  --cqv-amber: var(--amber);
   --cqv-ink: #05221a;
   width: min(920px, 92vw);
   max-height: 92vh;
   overflow-y: auto;
   background: var(--bg-primary);
   border: 1px solid var(--emerald-border);
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   box-shadow:
     0 32px 60px rgba(0, 0, 0, 0.55),
-    0 0 20px rgba(16, 185, 129, 0.06);
+    0 0 20px color-mix(in srgb, var(--emerald) 6%, transparent);
   color: var(--text-primary);
   font-family: var(--font-sans);
   animation: cqv-in 160ms ease-out;
@@ -64,7 +64,7 @@ body.light-mode .cqv-root {
   flex: 0 0 auto;
   width: 44px;
   height: 44px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: var(--emerald);
   color: var(--cqv-ink);
   font-weight: 700;
@@ -91,7 +91,7 @@ body.light-mode .cqv-root {
 .cqv-chip {
   font-size: 11px;
   border: 1px solid var(--emerald-border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   padding: 2px 7px;
   color: var(--text-secondary);
   white-space: nowrap;
@@ -109,7 +109,7 @@ body.light-mode .cqv-root {
   flex: 0 0 auto;
   background: none;
   border: 1px solid var(--border-primary);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   color: var(--text-secondary);
   width: 32px;
   height: 32px;
@@ -241,7 +241,7 @@ body.light-mode .cqv-root {
   display: block;
   height: 6px;
   min-width: 3px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   background: var(--emerald);
 }
 .cqv-agency-val {
@@ -264,7 +264,7 @@ body.light-mode .cqv-root {
 /* market card */
 .cqv-market-card {
   border: 1px solid var(--border-primary);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   padding: 14px 16px;
 }
 .cqv-quote-y1 {
@@ -319,7 +319,7 @@ body.light-mode .cqv-root {
   padding: 8px 6px;
   background: none;
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   text-align: left;
   cursor: pointer;
   color: var(--text-primary);
@@ -366,7 +366,7 @@ body.light-mode .cqv-root {
 .cqv-btn-outline {
   background: none;
   border: 1px solid var(--emerald-border);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   color: var(--emerald-text);
   font-size: 13px;
   font-weight: 600;
@@ -382,7 +382,7 @@ body.light-mode .cqv-root {
   background: var(--btn-primary-bg);
   color: var(--cqv-ink);
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 13px;
   font-weight: 600;
   padding: 10px 18px;

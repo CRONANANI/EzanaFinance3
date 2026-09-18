@@ -335,7 +335,7 @@
 .crx-legend-swatch {
   width: 10px;
   height: 10px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   display: inline-block;
 }
 .crx-legend-swatch--comp {

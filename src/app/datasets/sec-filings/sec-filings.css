@@ -48,7 +48,7 @@
   font-weight: 700;
   letter-spacing: 0.02em;
   padding: 2px 8px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   background: var(--bg-tertiary);
   color: var(--text-secondary);
   white-space: nowrap;
@@ -91,7 +91,7 @@
   color: var(--warning);
   background: color-mix(in srgb, var(--warning) 12%, transparent);
   border: 1px solid color-mix(in srgb, var(--warning) 30%, transparent);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: 6px 12px;
   margin-bottom: 12px;
 }
@@ -101,7 +101,7 @@
   color: var(--text-muted);
   font-size: 0.9rem;
   border: 1px dashed var(--border-primary);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
 }
 
 .secf-source {
@@ -167,7 +167,7 @@
   max-width: 640px;
   background: var(--surface-card, var(--bg-primary));
   border: 1px solid var(--border-primary);
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   box-shadow: var(--shadow-lg);
   padding: 1.25rem;
 }

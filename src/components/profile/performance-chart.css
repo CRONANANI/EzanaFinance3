@@ -1,5 +1,5 @@
 .pc-card {
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   border: 1px solid var(--border-primary);
   background: var(--bg-secondary);
   padding: 1rem 1rem 0.75rem;
@@ -37,7 +37,7 @@ body.light-mode .pc-card {
   gap: 2px;
   background: var(--surface-card);
   border: 1px solid var(--border-secondary);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: 2px;
 }
 
@@ -49,7 +49,7 @@ body.light-mode .pc-card {
   font-size: 0.6875rem;
   font-weight: 600;
   padding: 4px 9px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition:
     background 0.12s,
@@ -62,7 +62,7 @@ body.light-mode .pc-card {
 }
 
 .pc-range-btn.on {
-  background: #10b981;
+  background: var(--emerald);
   color: #fff;
 }
 
@@ -74,7 +74,7 @@ body.light-mode .pc-card {
 .pc-tooltip {
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: 0.5rem 0.625rem;
   font-size: 0.75rem;
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);

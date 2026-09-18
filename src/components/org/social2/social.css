@@ -28,7 +28,7 @@
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
-  color: var(--emerald-text, #10b981);
+  color: var(--emerald-text, var(--emerald));
   margin: 0 0 0.35rem;
 }
 .sc2-title {
@@ -53,7 +53,7 @@
   font-size: 0.8rem;
   font-weight: 600;
   padding: 0.5rem 0.9rem;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border-primary);
   background: var(--surface-card, transparent);
   color: var(--text-primary);
@@ -69,13 +69,13 @@
   transform: translateY(-1px);
 }
 .sc2-btn--primary {
-  background: var(--emerald, #10b981);
-  border-color: var(--emerald, #10b981);
+  background: var(--emerald, var(--emerald));
+  border-color: var(--emerald, var(--emerald));
   color: #fff;
 }
 .sc2-btn--primary:hover:not(:disabled) {
-  background: var(--emerald-hover, #059669);
-  border-color: var(--emerald-hover, #059669);
+  background: var(--emerald-hover, var(--emerald-hover));
+  border-color: var(--emerald-hover, var(--emerald-hover));
 }
 .sc2-btn:focus-visible {
   outline: 2px solid var(--emerald);
@@ -105,7 +105,7 @@
   font-family: inherit;
   font-size: 0.82rem;
   padding: 0.55rem 0.8rem;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border-input, var(--border-primary));
   background: var(--surface-input, var(--bg-secondary));
   color: var(--text-primary);
@@ -133,8 +133,8 @@
   color: var(--text-primary);
 }
 .sc2-pill.is-active {
-  background: var(--emerald, #10b981);
-  border-color: var(--emerald, #10b981);
+  background: var(--emerald, var(--emerald));
+  border-color: var(--emerald, var(--emerald));
   color: #04130d;
 }
 
@@ -150,11 +150,11 @@
   gap: 0.55rem;
   padding: 1rem 1.1rem;
   border: 1px solid var(--border-primary);
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   background: var(--surface-card, transparent);
 }
 .sc2-note-card.is-pinned {
-  border-color: var(--emerald-border, rgba(16, 185, 129, 0.4));
+  border-color: var(--emerald-border, color-mix(in srgb, var(--emerald) 40%, transparent));
 }
 .sc2-note-top {
   display: flex;
@@ -179,7 +179,7 @@
   line-height: 1;
 }
 .sc2-pin-star.is-on {
-  color: var(--warning, #f59e0b);
+  color: var(--warning, var(--amber));
 }
 .sc2-note-meta {
   display: flex;
@@ -192,15 +192,15 @@
 .sc2-tag {
   font-size: 0.62rem;
   padding: 0.1rem 0.45rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-secondary);
   background: var(--surface-input);
   color: var(--text-body, var(--text-secondary));
 }
 .sc2-tag--ticker {
   font-family: var(--font-mono);
-  color: var(--emerald-text, #10b981);
-  border-color: var(--emerald-border, rgba(16, 185, 129, 0.35));
+  color: var(--emerald-text, var(--emerald));
+  border-color: var(--emerald-border, color-mix(in srgb, var(--emerald) 35%, transparent));
 }
 .sc2-note-snippet {
   font-size: 0.8rem;
@@ -241,9 +241,9 @@
   line-height: 1.4;
 }
 .sc2-reaction.is-mine {
-  border-color: var(--emerald-border, rgba(16, 185, 129, 0.5));
-  background: var(--emerald-bg, rgba(16, 185, 129, 0.1));
-  color: var(--emerald-text, #10b981);
+  border-color: var(--emerald-border, color-mix(in srgb, var(--emerald) 50%, transparent));
+  background: var(--emerald-bg, color-mix(in srgb, var(--emerald) 10%, transparent));
+  color: var(--emerald-text, var(--emerald));
 }
 .sc2-reaction-count {
   font-family: var(--font-mono);
@@ -260,7 +260,7 @@
   display: flex;
   gap: 0.2rem;
   padding: 0.3rem;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border-primary);
   background: var(--bg-secondary);
   box-shadow: var(--shadow-lg, 0 8px 24px rgba(0, 0, 0, 0.3));
@@ -271,7 +271,7 @@
   font-size: 1rem;
   cursor: pointer;
   padding: 0.15rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 .sc2-emoji-menu button:hover {
   background: var(--surface-card-hover);
@@ -294,7 +294,7 @@
   max-width: 560px;
   background: var(--app-bg);
   border: 1px solid var(--emerald);
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   padding: 1.5rem;
   box-shadow: var(--shadow-xl, 0 20px 60px rgba(0, 0, 0, 0.45));
 }
@@ -324,7 +324,7 @@
   font-family: inherit;
   font-size: 0.85rem;
   padding: 0.6rem 0.7rem;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border-input, var(--border-primary));
   background: var(--surface-input, var(--bg-primary));
   color: var(--text-primary);
@@ -361,7 +361,7 @@
   max-height: 180px;
   overflow-y: auto;
   border: 1px solid var(--border-primary);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   background: var(--bg-secondary);
   box-shadow: var(--shadow-lg, 0 8px 24px rgba(0, 0, 0, 0.3));
 }
@@ -397,12 +397,12 @@
 .sc2-comment {
   padding: 0.7rem 0.85rem;
   border: 1px solid var(--border-primary);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   background: var(--surface-card, transparent);
 }
 .sc2-comment--reply {
   margin-left: 1.6rem;
-  border-left: 2px solid var(--emerald-border, rgba(16, 185, 129, 0.3));
+  border-left: 2px solid var(--emerald-border, color-mix(in srgb, var(--emerald) 30%, transparent));
 }
 .sc2-comment-head {
   display: flex;
@@ -427,7 +427,7 @@
   word-break: break-word;
 }
 .sc2-comment-body .sc2-mention {
-  color: var(--emerald-text, #10b981);
+  color: var(--emerald-text, var(--emerald));
   font-weight: 600;
 }
 .sc2-comment-actions {
@@ -446,13 +446,13 @@
   padding: 0;
 }
 .sc2-link-btn:hover {
-  color: var(--emerald-text, #10b981);
+  color: var(--emerald-text, var(--emerald));
 }
 
 /* ── Activity digest ────────────────────────────────────────────────────── */
 .sc2-digest {
   border: 1px solid var(--border-primary);
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   background: var(--surface-card, transparent);
   padding: 1.1rem 1.25rem;
 }
@@ -474,7 +474,7 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--emerald-text, #10b981);
+  color: var(--emerald-text, var(--emerald));
   margin-bottom: 0.4rem;
 }
 .sc2-digest-row {
@@ -491,10 +491,10 @@
   font-style: italic;
 }
 .sc2-pos {
-  color: var(--positive, #10b981);
+  color: var(--positive, var(--emerald));
 }
 .sc2-neg {
-  color: var(--negative, #ef4444);
+  color: var(--negative, var(--negative));
 }
 
 /* ── Recognition wall ───────────────────────────────────────────────────── */
@@ -509,7 +509,7 @@
   gap: 0.5rem;
   padding: 1.1rem;
   border: 1px solid var(--border-primary);
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   background: var(--surface-card, transparent);
   text-align: center;
   align-items: center;
@@ -520,9 +520,9 @@
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: var(--emerald-bg, rgba(16, 185, 129, 0.12));
-  border: 1px solid var(--emerald-border, rgba(16, 185, 129, 0.4));
-  color: var(--emerald-text, #10b981);
+  background: var(--emerald-bg, var(--emerald-bg-hover));
+  border: 1px solid var(--emerald-border, color-mix(in srgb, var(--emerald) 40%, transparent));
+  color: var(--emerald-text, var(--emerald));
   font-size: 1.3rem;
 }
 .sc2-recog-title {
@@ -550,7 +550,7 @@
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--emerald-text, #10b981);
+  color: var(--emerald-text, var(--emerald));
 }
 
 /* ── Meeting mode ───────────────────────────────────────────────────────── */
@@ -561,7 +561,7 @@
 }
 .sc2-panel {
   border: 1px solid var(--border-primary);
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   background: var(--surface-card, transparent);
   padding: 1rem 1.1rem;
 }
@@ -578,7 +578,7 @@
   gap: 0.75rem;
   padding: 0.6rem 0.75rem;
   border: 1px solid var(--border-primary);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   margin-bottom: 0.5rem;
 }
 .sc2-status {
@@ -590,9 +590,9 @@
   border-radius: 9999px;
 }
 .sc2-status--live {
-  background: rgba(16, 185, 129, 0.16);
-  color: var(--emerald-text, #10b981);
-  border: 1px solid var(--emerald-border, rgba(16, 185, 129, 0.4));
+  background: color-mix(in srgb, var(--emerald) 16%, transparent);
+  color: var(--emerald-text, var(--emerald));
+  border: 1px solid var(--emerald-border, color-mix(in srgb, var(--emerald) 40%, transparent));
 }
 .sc2-status--scheduled {
   background: var(--bg-tertiary);
@@ -630,7 +630,7 @@
   font-size: 0.875rem;
 }
 .sc2-error {
-  color: var(--negative, #ef4444);
+  color: var(--negative, var(--negative));
 }
 
 @media (max-width: 760px) {

@@ -242,7 +242,7 @@
   color: var(--text-secondary);
   cursor: pointer;
   padding: 4px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   flex: none;
 }
 .hdx-modal-x:hover {

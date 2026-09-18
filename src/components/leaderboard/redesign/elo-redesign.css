@@ -38,7 +38,7 @@ body:not(.light-mode) .elo-skeleton-shimmer {
 .elo-page-wrap a:focus-visible {
   outline: 2px solid #16a34a;
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 .elo-page-wrap > * + * {

@@ -10,7 +10,7 @@
 }
 
 .ai-analysis-card {
-  border: 1px solid rgba(16, 185, 129, 0.15) !important;
+  border: 1px solid var(--emerald-border) !important;
   background: var(--surface-card) !important;
   backdrop-filter: blur(12px);
   border-radius: var(--radius-md, 1rem) !important;
@@ -32,7 +32,7 @@
   align-items: center !important;
   justify-content: space-between !important;
   padding: 1rem 1.5rem !important;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.1);
+  border-bottom: 1px solid color-mix(in srgb, var(--emerald) 10%, transparent);
   flex-wrap: wrap;
   gap: 0.75rem;
   flex-shrink: 0;
@@ -47,7 +47,7 @@
 .ai-analysis-model-icon {
   width: 44px;
   height: 44px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -82,9 +82,9 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.35rem 0.75rem;
-  background: rgba(16, 185, 129, 0.06);
-  border: 1px solid rgba(16, 185, 129, 0.15);
-  border-radius: 8px;
+  background: color-mix(in srgb, var(--emerald) 6%, transparent);
+  border: 1px solid var(--emerald-border);
+  border-radius: var(--radius-md);
 }
 
 .ai-price {
@@ -105,19 +105,19 @@
 }
 
 .ai-change.positive {
-  color: #10b981;
+  color: var(--emerald);
 }
 .ai-change.negative {
-  color: #ef4444;
+  color: var(--negative);
 }
 
 .ai-analysis-rerun {
   width: 36px;
   height: 36px;
-  border-radius: 8px;
-  background: rgba(16, 185, 129, 0.08);
-  border: 1px solid rgba(16, 185, 129, 0.2);
-  color: #10b981;
+  border-radius: var(--radius-md);
+  background: var(--emerald-bg);
+  border: 1px solid color-mix(in srgb, var(--emerald) 20%, transparent);
+  color: var(--emerald);
   font-size: 1rem;
   cursor: pointer;
   display: flex;
@@ -127,8 +127,8 @@
 }
 
 .ai-analysis-rerun:hover {
-  background: rgba(16, 185, 129, 0.15);
-  border-color: rgba(16, 185, 129, 0.4);
+  background: var(--emerald-border);
+  border-color: color-mix(in srgb, var(--emerald) 40%, transparent);
 }
 
 .ai-analysis-rerun:disabled {
@@ -246,12 +246,12 @@
   height: 12px;
   background: linear-gradient(
     90deg,
-    rgba(16, 185, 129, 0.06) 25%,
-    rgba(16, 185, 129, 0.12) 50%,
-    rgba(16, 185, 129, 0.06) 75%
+    color-mix(in srgb, var(--emerald) 6%, transparent) 25%,
+    var(--emerald-bg-hover) 50%,
+    color-mix(in srgb, var(--emerald) 6%, transparent) 75%
   );
   background-size: 200% 100%;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   animation: ai-skeleton-shimmer 1.5s ease-in-out infinite;
 }
 
@@ -276,7 +276,7 @@
 
 .ai-analysis-error i {
   font-size: 2rem;
-  color: #ef4444;
+  color: var(--negative);
 }
 
 .ai-analysis-error p {
@@ -287,10 +287,10 @@
 
 .ai-retry-btn {
   padding: 0.5rem 1.25rem;
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  border-radius: 8px;
-  color: #10b981;
+  background: color-mix(in srgb, var(--emerald) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--emerald) 30%, transparent);
+  border-radius: var(--radius-md);
+  color: var(--emerald);
   font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
@@ -301,8 +301,8 @@
 }
 
 .ai-retry-btn:hover {
-  background: rgba(16, 185, 129, 0.2);
-  border-color: rgba(16, 185, 129, 0.5);
+  background: color-mix(in srgb, var(--emerald) 20%, transparent);
+  border-color: color-mix(in srgb, var(--emerald) 50%, transparent);
 }
 
 /* ── Empty ── */
@@ -333,7 +333,7 @@
   gap: 1.25rem;
   padding-bottom: 1rem;
   margin-bottom: 1.5rem;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.08);
+  border-bottom: 1px solid var(--emerald-bg);
   flex-wrap: wrap;
 }
 
@@ -346,7 +346,7 @@
 }
 
 .ai-meta-item i {
-  color: #10b981;
+  color: var(--emerald);
   font-size: 0.75rem;
 }
 
@@ -431,18 +431,18 @@
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 0.8125rem;
-  background: rgba(16, 185, 129, 0.08);
-  color: #10b981;
+  background: var(--emerald-bg);
+  color: var(--emerald);
   padding: 1px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 /* ── Tables ── */
 .ai-table-wrap {
   overflow-x: auto;
   margin: 1rem 0;
-  border: 1px solid rgba(16, 185, 129, 0.1);
-  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--emerald) 10%, transparent);
+  border-radius: var(--radius-md);
 }
 
 .ai-analysis-table {
@@ -456,17 +456,17 @@
   padding: 0.625rem 0.875rem;
   font-size: 0.6875rem;
   font-weight: 700;
-  color: #10b981;
+  color: var(--emerald);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  background: rgba(16, 185, 129, 0.04);
-  border-bottom: 1px solid rgba(16, 185, 129, 0.12);
+  background: var(--emerald-bg-subtle);
+  border-bottom: 1px solid var(--emerald-bg-hover);
   white-space: nowrap;
 }
 
 .ai-analysis-table td {
   padding: 0.5rem 0.875rem;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.04);
+  border-bottom: 1px solid var(--emerald-bg-subtle);
   color: var(--text-secondary);
   font-feature-settings: 'tnum' 1;
 }
@@ -476,7 +476,7 @@
 }
 
 .ai-analysis-table tr:hover td {
-  background: rgba(16, 185, 129, 0.03);
+  background: color-mix(in srgb, var(--emerald) 3%, transparent);
 }
 
 /* ── Spin animation ── */
@@ -513,18 +513,18 @@
 }
 
 .model-metric-card.ai-model-card:hover {
-  border-color: rgba(16, 185, 129, 0.3);
-  background: rgba(16, 185, 129, 0.04);
+  border-color: color-mix(in srgb, var(--emerald) 30%, transparent);
+  background: var(--emerald-bg-subtle);
   transform: translateY(-2px);
 }
 
 .model-metric-card.ai-model-card.active {
-  border-color: rgba(16, 185, 129, 0.5);
-  background: rgba(16, 185, 129, 0.08);
+  border-color: color-mix(in srgb, var(--emerald) 50%, transparent);
+  background: var(--emerald-bg);
 }
 
 .model-metric-card.ai-model-card.active::before {
-  background: #10b981;
+  background: var(--emerald);
 }
 
 .ai-model-badge {
@@ -533,9 +533,9 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
   padding: 1px 6px;
-  border-radius: 4px;
-  background: rgba(16, 185, 129, 0.12);
-  color: #10b981;
+  border-radius: var(--radius-sm);
+  background: var(--emerald-bg-hover);
+  color: var(--emerald);
   margin-top: 2px;
   display: inline-block;
 }

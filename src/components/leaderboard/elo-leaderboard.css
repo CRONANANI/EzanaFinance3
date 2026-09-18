@@ -51,14 +51,14 @@
 }
 
 .elo-lb-tier-pill:hover {
-  border-color: rgba(16, 185, 129, 0.4);
+  border-color: color-mix(in srgb, var(--emerald) 40%, transparent);
   color: var(--text-primary);
 }
 
 .elo-lb-tier-pill.is-active {
-  background: rgba(16, 185, 129, 0.08);
-  border-color: rgba(16, 185, 129, 0.5);
-  color: #10b981;
+  background: var(--emerald-bg);
+  border-color: color-mix(in srgb, var(--emerald) 50%, transparent);
+  color: var(--emerald);
 }
 
 .elo-lb-search {
@@ -66,7 +66,7 @@
   max-width: 100%;
   padding: 0.6rem 0.95rem;
   font-size: 0.875rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: var(--surface-input);
   color: var(--text-primary);
@@ -78,7 +78,7 @@
 
 .elo-lb-search:focus {
   outline: none;
-  border-color: var(--emerald, #10b981);
+  border-color: var(--emerald, var(--emerald));
   background: var(--surface-input);
 }
 
@@ -91,7 +91,7 @@
   overflow-x: auto;
   background: var(--bg-secondary);
   border: 1px solid rgba(255, 255, 255, 0.04);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
 }
 
 .elo-lb-loading,
@@ -138,7 +138,7 @@
 }
 
 .elo-lb-row:hover {
-  background: rgba(16, 185, 129, 0.03);
+  background: color-mix(in srgb, var(--emerald) 3%, transparent);
 }
 
 .elo-lb-row td {
@@ -195,8 +195,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgba(16, 185, 129, 0.15);
-  color: #10b981;
+  background: var(--emerald-border);
+  color: var(--emerald);
   font-weight: 700;
   font-size: 0.875rem;
 }
@@ -252,16 +252,16 @@
   padding: 0.5rem 1rem;
   font-size: 0.8125rem;
   font-weight: 600;
-  border-radius: 8px;
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  background: rgba(16, 185, 129, 0.05);
-  color: #10b981;
+  border-radius: var(--radius-md);
+  border: 1px solid color-mix(in srgb, var(--emerald) 30%, transparent);
+  background: color-mix(in srgb, var(--emerald) 5%, transparent);
+  color: var(--emerald);
   cursor: pointer;
   transition: background 100ms ease;
 }
 
 .elo-lb-page-btn:hover:not(:disabled) {
-  background: rgba(16, 185, 129, 0.15);
+  background: var(--emerald-border);
 }
 
 .elo-lb-page-btn:disabled {

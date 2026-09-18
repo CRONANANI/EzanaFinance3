@@ -12,9 +12,9 @@
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  border: 1px solid var(--emerald-border, rgba(16, 185, 129, 0.35));
-  background: var(--emerald-bg, rgba(16, 185, 129, 0.1));
-  color: var(--emerald, #10b981);
+  border: 1px solid var(--emerald-border, color-mix(in srgb, var(--emerald) 35%, transparent));
+  background: var(--emerald-bg, color-mix(in srgb, var(--emerald) 10%, transparent));
+  color: var(--emerald, var(--emerald));
   font-size: 10px;
   font-weight: 700;
   cursor: pointer;
@@ -29,10 +29,10 @@
 @keyframes beginner-metric-pulse {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.35);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--emerald) 35%, transparent);
   }
   50% {
-    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--emerald) 0%, transparent);
   }
 }
 
@@ -47,7 +47,7 @@
   z-index: 120;
   max-width: 260px;
   padding: 10px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-secondary);
   background: var(--bg-secondary);
   color: var(--text-secondary);
@@ -63,9 +63,9 @@ body.light-mode .beginner-metric-popover {
 }
 
 .beginner-edu-card {
-  border-radius: 12px;
-  border: 1px solid var(--emerald-border, rgba(16, 185, 129, 0.2));
-  background: var(--emerald-bg, rgba(16, 185, 129, 0.06));
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--emerald-border, color-mix(in srgb, var(--emerald) 20%, transparent));
+  background: var(--emerald-bg, color-mix(in srgb, var(--emerald) 6%, transparent));
   padding: 16px 18px;
   margin-bottom: 16px;
 }
@@ -75,7 +75,7 @@ body.light-mode .beginner-metric-popover {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--emerald, #10b981);
+  color: var(--emerald, var(--emerald));
   margin-bottom: 6px;
 }
 
@@ -124,7 +124,7 @@ body.light-mode .beginner-edu-card__body {
 .beginner-edu-card__link {
   font-size: 0.75rem;
   font-weight: 700;
-  color: var(--emerald, #10b981);
+  color: var(--emerald, var(--emerald));
   text-decoration: none;
 }
 
@@ -138,7 +138,7 @@ body.light-mode .beginner-edu-card__body {
 }
 
 .beginner-community-intro {
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   border: 1px solid var(--border-secondary);
   background: var(--bg-secondary);
   padding: 18px 20px;
@@ -172,9 +172,9 @@ body.light-mode .beginner-community-intro p {
 }
 
 .beginner-lc-banner {
-  border-radius: 12px;
-  border: 1px solid var(--lc-accent-ring, rgba(16, 185, 129, 0.3));
-  background: var(--lc-accent-soft, rgba(16, 185, 129, 0.1));
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--lc-accent-ring, color-mix(in srgb, var(--emerald) 30%, transparent));
+  background: var(--lc-accent-soft, color-mix(in srgb, var(--emerald) 10%, transparent));
   padding: 14px 18px;
   margin-bottom: 16px;
   display: flex;
@@ -197,15 +197,15 @@ body.light-mode .beginner-lc-banner__text {
 .beginner-lc-banner__cta {
   font-size: 0.8rem;
   font-weight: 700;
-  color: var(--lc-accent-deep, #047857);
+  color: var(--lc-accent-deep, var(--emerald-dark));
   text-decoration: none;
   white-space: nowrap;
 }
 
 .beginner-first-analysis {
-  border-radius: 12px;
-  border: 1px dashed var(--emerald-border, rgba(16, 185, 129, 0.35));
-  background: var(--emerald-bg, rgba(16, 185, 129, 0.06));
+  border-radius: var(--radius-lg);
+  border: 1px dashed var(--emerald-border, color-mix(in srgb, var(--emerald) 35%, transparent));
+  background: var(--emerald-bg, color-mix(in srgb, var(--emerald) 6%, transparent));
   padding: 20px;
   text-align: center;
   margin: 16px 0;
@@ -223,9 +223,9 @@ body.light-mode .beginner-first-analysis p {
 
 .beginner-first-analysis button {
   padding: 10px 18px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: none;
-  background: var(--emerald, #10b981);
+  background: var(--emerald, var(--emerald));
   color: #062117;
   font-weight: 700;
   font-size: 0.85rem;
@@ -236,13 +236,13 @@ body.light-mode .beginner-first-analysis p {
   display: inline-block;
   margin-left: 6px;
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-size: 0.6rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  background: rgba(16, 185, 129, 0.2);
-  color: var(--emerald, #10b981);
+  background: color-mix(in srgb, var(--emerald) 20%, transparent);
+  color: var(--emerald, var(--emerald));
   vertical-align: middle;
 }
 
@@ -250,7 +250,7 @@ body.light-mode .beginner-first-analysis p {
   display: inline-block;
   margin-left: 6px;
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-size: 0.55rem;
   font-weight: 700;
   letter-spacing: 0.03em;
@@ -288,7 +288,7 @@ body.light-mode .beginner-first-analysis p {
 
 .checklist-stage-bar {
   background: #f3f4f6;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   height: 4px;
   margin-bottom: 10px;
   overflow: hidden;
@@ -299,18 +299,18 @@ body.light-mode .beginner-first-analysis p {
 }
 
 .checklist-stage-bar-fill {
-  background: #10b981;
+  background: var(--emerald);
   height: 100%;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 .checklist-reward-badge {
   font-size: 0.65rem;
   font-weight: 700;
-  color: #10b981;
-  background: rgba(16, 185, 129, 0.12);
+  color: var(--emerald);
+  background: var(--emerald-bg-hover);
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   margin-left: auto;
   flex-shrink: 0;
 }

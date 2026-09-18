@@ -4,7 +4,7 @@
 .pec-card {
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   padding: 1.25rem;
   margin-bottom: 1rem;
   display: flex;
@@ -25,7 +25,7 @@
 .pec-skeleton-tier,
 .pec-skeleton-rating {
   background: var(--bg-tertiary);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   animation: pec-pulse 1.6s ease-in-out infinite;
 }
 .pec-skeleton-tier {
@@ -65,7 +65,7 @@
 .pec-head-link {
   font-size: 0.6875rem;
   font-weight: 700;
-  color: #10b981;
+  color: var(--emerald);
   text-decoration: none;
   display: inline-flex;
   align-items: center;
@@ -74,7 +74,7 @@
 }
 
 .pec-head-link:hover {
-  color: #34d399;
+  color: var(--positive-bright);
 }
 
 /* Rating display */
@@ -187,15 +187,15 @@
   font-size: 0.75rem;
   color: var(--text-muted);
   background: var(--bg-tertiary);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   text-align: center;
   padding: 0 1rem;
 }
 
 .pec-spark-tooltip {
   background: var(--bg-secondary);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--emerald) 30%, transparent);
+  border-radius: var(--radius-md);
   padding: 0.4rem 0.6rem;
   font-size: 0.6875rem;
 }
@@ -220,10 +220,10 @@
 }
 
 .pec-spark-tooltip-delta.is-up {
-  color: #10b981;
+  color: var(--emerald);
 }
 .pec-spark-tooltip-delta.is-down {
-  color: #ef4444;
+  color: var(--negative);
 }
 
 /* Category breakdown */
@@ -289,7 +289,7 @@
   flex-direction: column;
   gap: 0.5rem;
   padding-top: 0.5rem;
-  border-top: 1px solid rgba(16, 185, 129, 0.08);
+  border-top: 1px solid var(--emerald-bg);
 }
 
 .pec-improvements-list {
@@ -307,21 +307,21 @@
   align-items: flex-start;
   padding: 0.5rem 0.65rem;
   background: var(--bg-tertiary);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid rgba(255, 255, 255, 0.04);
   transition: all 150ms ease;
 }
 
 .pec-improvement:hover {
-  background: rgba(16, 185, 129, 0.04);
-  border-color: rgba(16, 185, 129, 0.15);
+  background: var(--emerald-bg-subtle);
+  border-color: var(--emerald-border);
 }
 
 .pec-improvement-icon {
   flex-shrink: 0;
   width: 32px;
   height: 32px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -365,7 +365,7 @@
 .pec-improvement-cta {
   font-size: 0.6875rem;
   font-weight: 700;
-  color: #10b981;
+  color: var(--emerald);
   text-decoration: none;
   display: inline-flex;
   align-items: center;
@@ -374,7 +374,7 @@
 }
 
 .pec-improvement-cta:hover {
-  color: #34d399;
+  color: var(--positive-bright);
 }
 
 /* Light mode */

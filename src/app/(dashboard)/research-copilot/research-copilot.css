@@ -33,7 +33,7 @@
   width: 100%;
   min-height: 60px;
   resize: vertical;
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   border: 1px solid var(--border-input);
   background: var(--surface-input);
   color: var(--text-primary);
@@ -62,7 +62,7 @@
   gap: 6px;
   height: 38px;
   padding: 0 16px;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--emerald-border);
   background: var(--emerald);
   color: #ffffff; /* on-emerald label — matches .hc-btn-primary convention */
@@ -128,7 +128,7 @@
 .rc-answer {
   border: 1px solid var(--border-primary);
   background: var(--surface-card);
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   padding: 22px;
   margin-bottom: 20px;
 }
@@ -187,7 +187,7 @@
   gap: 10px;
   border: 1px solid var(--border-primary);
   background: var(--surface-card);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   padding: 10px 12px;
   margin-bottom: 6px;
   text-decoration: none;
@@ -227,7 +227,7 @@
 .rc-loading {
   border: 1px solid var(--border-primary);
   background: var(--surface-card);
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   padding: 20px 22px;
   color: var(--text-secondary);
   font-size: 0.9rem;

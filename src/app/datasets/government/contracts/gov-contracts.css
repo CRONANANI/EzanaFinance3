@@ -23,17 +23,17 @@
   color: var(--text-primary);
   font-family: var(--font-sans);
   /* Pin the design tokens to their exact Option-1b values so accents resolve to
-     the BRIGHT emerald (#10b981) at rest — some ancestor theme scopes redefine
-     --emerald to the darker #059669, which is the design's HOVER colour only.
+     the BRIGHT emerald (var(--emerald)) at rest — some ancestor theme scopes redefine
+     --emerald to the darker var(--emerald-hover), which is the design's HOVER colour only.
      Also pin the agency status colours so the treemap/legend match the mockup
      regardless of which theme scope wraps the page. */
-  --emerald: #10b981;
-  --emerald-hover: #059669;
-  --emerald-bg: rgba(16, 185, 129, 0.08);
-  --emerald-border: rgba(16, 185, 129, 0.15);
-  --positive: #10b981;
-  --warning: #f59e0b;
-  --info: #3b82f6;
+  --emerald: var(--emerald);
+  --emerald-hover: var(--emerald-hover);
+  --emerald-bg: var(--emerald-bg);
+  --emerald-border: var(--emerald-border);
+  --positive: var(--emerald);
+  --warning: var(--amber);
+  --info: var(--blue);
   --purple: #a78bfa;
   --pink: #ec4899;
 }
@@ -216,7 +216,7 @@
   color: var(--emerald);
   border: none;
   border-bottom: 2px solid var(--emerald);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-family: var(--font-sans);
   font-size: var(--ds-type-sub-size);
   font-weight: var(--ds-type-strong);
@@ -690,7 +690,7 @@
 .gcx-legend-chip-dot {
   width: 9px;
   height: 9px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
 }
 .gcx-legend-name {
@@ -973,7 +973,7 @@
   max-width: 860px;
   max-height: 88vh;
   background: var(--bg-primary);
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   box-shadow: var(--shadow-lg, 0 20px 60px rgba(15, 23, 42, 0.2));
   overflow: hidden;
   animation: gcx-pop 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -1004,7 +1004,7 @@
 .gcx-badge {
   width: 46px;
   height: 46px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   color: #fff;
   font-weight: 700;
   font-size: 16px;
@@ -1171,7 +1171,7 @@
 .gcx-sim-badge {
   width: 26px;
   height: 26px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: var(--ds-type-disclaimer-size);
   margin-bottom: 0;
   flex: 0 0 auto;
@@ -1649,7 +1649,7 @@
   min-height: 44px;
   border: 1px solid var(--border-input);
   background: var(--surface-input);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   color: var(--text-primary);
   font-size: 1rem;
 }
@@ -1681,7 +1681,7 @@
   -webkit-overflow-scrolling: touch;
   max-width: 100%;
   border: 1px solid var(--border-primary);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
 }
 .gcx-exp-table {
   width: 100%;
@@ -1771,7 +1771,7 @@
   width: 32px;
   border: 1px solid var(--border-primary);
   background: var(--surface-card);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   color: var(--text-primary);
   cursor: pointer;
 }
@@ -1798,7 +1798,7 @@
   margin-bottom: 8px;
   border: 1px solid var(--border-input);
   background: var(--surface-input);
-  border-radius: 9px;
+  border-radius: var(--radius-md);
   color: var(--text-faint);
 }
 .gcx-agency-search:focus-within {
@@ -1924,7 +1924,7 @@
   display: grid;
   grid-template-columns: 530px 1fr;
   background: var(--bg-primary);
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   box-shadow: var(--shadow-lg, 0 20px 60px rgba(15, 23, 42, 0.2));
   overflow: hidden;
   animation: gcx-award-in 0.22s ease-out;
@@ -1947,7 +1947,7 @@
   place-items: center;
   background: none;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   color: var(--text-muted);
   cursor: pointer;
 }
@@ -2239,7 +2239,7 @@ body.light-mode .gcx-award-spark {
 }
 .gcx-award-bar {
   height: 6px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--emerald) 12%, transparent);
   animation: gcx-award-pulse 1.6s ease-in-out infinite;
 }
@@ -2314,7 +2314,7 @@ body.light-mode .gcx-award-src {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-family: inherit;
   font-size: var(--ds-type-sub-size);
   font-weight: var(--ds-type-strong);
@@ -2445,7 +2445,7 @@ body.light-mode .gcx-award-ghost.is-on {
   padding: 14px;
   background: var(--bg-primary);
   border: 1px solid var(--border-primary);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg, 0 20px 60px rgba(15, 23, 42, 0.2));
   z-index: 5;
   animation: gcx-fade 0.2s ease;
@@ -2505,7 +2505,7 @@ body.light-mode .gcx-award-ghost.is-on {
   height: min(80vh, 860px);
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   overflow-y: auto;
   z-index: 102;
   padding: 24px 28px 28px;
@@ -2592,7 +2592,7 @@ body.light-mode .gcx-award-ghost.is-on {
   font-size: var(--ds-type-disclaimer-size);
   background: var(--bg-primary);
   border: 1px solid var(--border-primary);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   color: var(--text-secondary);
   cursor: pointer;
 }
@@ -2624,7 +2624,7 @@ body.light-mode .gcx-award-ghost.is-on {
   color: var(--text-faint);
   background: var(--bg-primary);
   border: 1px dashed var(--border-primary);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
 }
 .gcx-dossier-contracts {
   display: grid;

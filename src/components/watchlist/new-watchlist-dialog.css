@@ -47,7 +47,7 @@
   background: var(--bg-secondary);
   color: var(--text-primary);
   border: 1px solid var(--border-primary);
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   box-shadow: var(--shadow-xl, 0 20px 60px rgba(0, 0, 0, 0.45));
   overflow: hidden;
   animation: nwdPop 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -94,7 +94,7 @@ body.light-mode .nwd-dialog {
   background: transparent;
   color: var(--text-muted);
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition: all 0.15s;
 }
@@ -160,7 +160,7 @@ body.light-mode .nwd-dialog {
 }
 
 .nwd-muted em {
-  color: var(--emerald-text, #10b981);
+  color: var(--emerald-text, var(--emerald));
   font-style: normal;
   font-weight: 600;
 }
@@ -186,7 +186,7 @@ body.light-mode .nwd-dialog {
   background: var(--surface-input);
   color: var(--text-primary);
   border: 1px solid var(--border-input);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-family: inherit;
   font-size: 0.875rem;
   outline: none;
@@ -262,7 +262,7 @@ body.light-mode .nwd-color.on {
   padding: 0.5rem 0.625rem;
   background: var(--surface-card);
   border: 1px solid var(--border-secondary);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 
 .nwd-sug-main {
@@ -321,10 +321,10 @@ body.light-mode .nwd-color.on {
 }
 
 .nwd-sug-chg.up {
-  color: var(--positive, #10b981);
+  color: var(--positive, var(--emerald));
 }
 .nwd-sug-chg.down {
-  color: var(--negative, #ef4444);
+  color: var(--negative, var(--negative));
 }
 
 .nwd-sug-add {
@@ -335,9 +335,9 @@ body.light-mode .nwd-color.on {
   font-size: 0.6875rem;
   font-weight: 600;
   color: #ffffff;
-  background: var(--emerald, #10b981);
+  background: var(--emerald, var(--emerald));
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition:
     background 0.15s,
@@ -345,13 +345,13 @@ body.light-mode .nwd-color.on {
 }
 
 .nwd-sug-add:hover:not(:disabled) {
-  background: var(--emerald-hover, #059669);
+  background: var(--emerald-hover, var(--emerald-hover));
 }
 
 .nwd-sug-add.added,
 .nwd-sug-add:disabled {
-  background: var(--emerald-bg, rgba(16, 185, 129, 0.08));
-  color: var(--emerald-text, #10b981);
+  background: var(--emerald-bg, var(--emerald-bg));
+  color: var(--emerald-text, var(--emerald));
   cursor: default;
 }
 
@@ -363,7 +363,7 @@ body.light-mode .nwd-color.on {
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.03em;
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   border: 1px solid transparent;
   white-space: nowrap;
   flex-shrink: 0;
@@ -376,9 +376,9 @@ body.light-mode .nwd-color.on {
 }
 
 .nwd-badge-nyse {
-  color: var(--emerald-text, #10b981);
-  background: var(--emerald-bg, rgba(16, 185, 129, 0.1));
-  border-color: var(--emerald-border, rgba(16, 185, 129, 0.25));
+  color: var(--emerald-text, var(--emerald));
+  background: var(--emerald-bg, color-mix(in srgb, var(--emerald) 10%, transparent));
+  border-color: var(--emerald-border, var(--emerald-glow));
 }
 
 body.light-mode .nwd-badge-nasdaq {
@@ -390,7 +390,7 @@ body.light-mode .nwd-badge-nasdaq {
 .nwd-empty {
   padding: 0.875rem 1rem;
   border: 1px dashed var(--border-primary);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   text-align: center;
   color: var(--text-muted);
   font-size: 0.8125rem;
@@ -446,7 +446,7 @@ body.light-mode .nwd-badge-nasdaq {
 
 .nwd-chip-x:hover {
   background: var(--negative-bg, rgba(239, 68, 68, 0.12));
-  color: var(--negative, #ef4444);
+  color: var(--negative, var(--negative));
 }
 
 /* Search wrapper — CompanySearch has heavy animated borders; contain them here. */
@@ -459,7 +459,7 @@ body.light-mode .nwd-badge-nasdaq {
 }
 
 .nwd-search-wrap .relative.group {
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
 }
 
 /* Compact the CompanySearch input height inside the modal */
@@ -499,7 +499,7 @@ body.light-mode .nwd-badge-nasdaq {
 .nwd-alert input[type='checkbox'] {
   width: 14px;
   height: 14px;
-  accent-color: var(--emerald, #10b981);
+  accent-color: var(--emerald, var(--emerald));
   cursor: pointer;
 }
 
@@ -508,8 +508,8 @@ body.light-mode .nwd-badge-nasdaq {
   padding: 0.625rem 0.75rem;
   background: var(--negative-bg, rgba(239, 68, 68, 0.08));
   border: 1px solid var(--negative-border, rgba(239, 68, 68, 0.25));
-  color: var(--negative, #ef4444);
-  border-radius: 8px;
+  color: var(--negative, var(--negative));
+  border-radius: var(--radius-md);
   font-size: 0.8125rem;
 }
 
@@ -529,7 +529,7 @@ body.light-mode .nwd-footer {
 
 .nwd-btn {
   padding: 0.55rem 1rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 0.8125rem;
   font-weight: 600;
   border: 1px solid transparent;
@@ -555,12 +555,12 @@ body.light-mode .nwd-footer {
 }
 
 .nwd-btn-primary {
-  background: var(--emerald, #10b981);
+  background: var(--emerald, var(--emerald));
   color: #ffffff;
 }
 
 .nwd-btn-primary:hover:not(:disabled) {
-  background: var(--emerald-hover, #059669);
+  background: var(--emerald-hover, var(--emerald-hover));
 }
 
 /* Mobile */
@@ -621,12 +621,12 @@ body.light-mode .nwd-footer {
 }
 .nwd-kind-chip:hover {
   color: var(--text-primary);
-  border-color: rgba(16, 185, 129, 0.5);
+  border-color: color-mix(in srgb, var(--emerald) 50%, transparent);
 }
 .nwd-kind-chip.is-active {
-  background: rgba(16, 185, 129, 0.12);
-  border-color: rgba(16, 185, 129, 0.5);
-  color: var(--emerald, #10b981);
+  background: var(--emerald-bg-hover);
+  border-color: color-mix(in srgb, var(--emerald) 50%, transparent);
+  color: var(--emerald, var(--emerald));
 }
 
 .nwd-quickpicks {
@@ -655,8 +655,8 @@ body.light-mode .nwd-footer {
 }
 .nwd-quickpick:hover:not(:disabled) {
   color: var(--text-primary);
-  border-color: rgba(16, 185, 129, 0.55);
-  background: rgba(16, 185, 129, 0.06);
+  border-color: color-mix(in srgb, var(--emerald) 55%, transparent);
+  background: color-mix(in srgb, var(--emerald) 6%, transparent);
 }
 .nwd-quickpick.added,
 .nwd-quickpick:disabled {

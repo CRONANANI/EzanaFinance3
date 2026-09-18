@@ -2,7 +2,7 @@
 .dcf-interactive-root {
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   /* visible so chip popovers can extend over the chart (overflow: hidden clipped them) */
   overflow: visible;
   max-height: min(90vh, 900px);
@@ -47,7 +47,7 @@
   cursor: pointer;
   user-select: none;
   padding: 0.35rem 0.65rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   border: 1px solid transparent;
   transition: border-color 150ms ease;
 }
@@ -67,14 +67,14 @@
   background: var(--accent);
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-weight: 600;
   cursor: pointer;
   transition: background 150ms ease;
 }
 
 .dcf-recalc-btn--inline:hover:not(:disabled) {
-  background: #059669;
+  background: var(--emerald-hover);
 }
 
 .dcf-recalc-btn--inline:disabled {
@@ -86,7 +86,7 @@
 .dcf-close-btn {
   background: transparent;
   border: 1px solid var(--border-primary);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   padding: 0.4rem 0.75rem;
   font-size: 0.8125rem;
   color: var(--text-secondary);
@@ -164,7 +164,7 @@ body.dark-mode .dcf-toolbar-section-label,
   font-size: 0.65rem;
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   color: var(--text-primary);
   cursor: pointer;
   transition: all 150ms ease;
@@ -174,13 +174,13 @@ body.dark-mode .dcf-toolbar-section-label,
 
 .dcf-chip:hover {
   border-color: var(--accent);
-  background: rgba(16, 185, 129, 0.04);
+  background: var(--emerald-bg-subtle);
 }
 
 .dcf-chip--active {
   border-color: var(--accent);
-  background: rgba(16, 185, 129, 0.08);
-  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.12);
+  background: var(--emerald-bg);
+  box-shadow: 0 0 0 2px var(--emerald-bg-hover);
 }
 
 body.dark-mode .dcf-chip,
@@ -192,12 +192,12 @@ body.dark-mode .dcf-chip,
 
 body.dark-mode .dcf-chip:hover,
 .dark .dcf-chip:hover {
-  background: rgba(16, 185, 129, 0.08);
+  background: var(--emerald-bg);
 }
 
 body.dark-mode .dcf-chip--active,
 .dark .dcf-chip--active {
-  background: rgba(16, 185, 129, 0.16);
+  background: color-mix(in srgb, var(--emerald) 16%, transparent);
 }
 
 .dcf-chip-label {
@@ -246,7 +246,7 @@ body.dark-mode .dcf-chip-value,
   padding: 0.85rem 1rem;
   background: var(--bg-secondary);
   border: 1px solid var(--accent);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   box-shadow: 0 10px 32px rgba(0, 0, 0, 0.12);
   animation: dcf-popover-in 150ms ease;
 }
@@ -265,7 +265,7 @@ body.dark-mode .dcf-chip-value,
 body.dark-mode .dcf-chip-popover,
 .dark .dcf-chip-popover {
   background: var(--bg-secondary);
-  border-color: rgba(16, 185, 129, 0.5);
+  border-color: color-mix(in srgb, var(--emerald) 50%, transparent);
   box-shadow: 0 10px 32px rgba(0, 0, 0, 0.4);
 }
 
@@ -293,13 +293,13 @@ body.dark-mode .dcf-chip-popover-title,
   color: var(--text-faint);
   cursor: pointer;
   padding: 0.2rem;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   transition: all 150ms ease;
 }
 
 .dcf-info-icon:hover {
   color: var(--accent);
-  background: rgba(16, 185, 129, 0.08);
+  background: var(--emerald-bg);
 }
 
 .dcf-slider-wrap {
@@ -312,8 +312,8 @@ body.dark-mode .dcf-chip-popover-title,
   width: 100%;
   height: 6px;
   appearance: none;
-  background: rgba(16, 185, 129, 0.15);
-  border-radius: 3px;
+  background: var(--emerald-border);
+  border-radius: var(--radius-sm);
   outline: none;
   cursor: pointer;
   margin: 0.25rem 0;
@@ -467,13 +467,13 @@ body.dark-mode .dcf-chart-area,
   align-items: center;
   gap: 0.5rem;
   padding: 0.4rem 0.75rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-size: 0.8125rem;
   font-weight: 600;
 }
 .dcf-chart-verdict.undervalued {
-  background: rgba(16, 185, 129, 0.1);
-  color: #059669;
+  background: color-mix(in srgb, var(--emerald) 10%, transparent);
+  color: var(--emerald-hover);
 }
 .dcf-chart-verdict.overvalued {
   background: rgba(239, 68, 68, 0.1);
@@ -507,7 +507,7 @@ body.dark-mode .dcf-chart-area,
 .dcf-chart-bar-track {
   height: 28px;
   background: var(--code-bg);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   overflow: hidden;
   position: relative;
 }
@@ -515,7 +515,7 @@ body.dark-mode .dcf-chart-area,
 .dcf-chart-bar-fill {
   height: 100%;
   transition: width 0.4s ease;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 .dcf-chart-bar-live {
@@ -523,11 +523,11 @@ body.dark-mode .dcf-chart-area,
 }
 
 .dcf-chart-bar-fair-up {
-  background: linear-gradient(90deg, #10b981, #34d399);
+  background: linear-gradient(90deg, var(--emerald), var(--positive-bright));
 }
 
 .dcf-chart-bar-fair-down {
-  background: linear-gradient(90deg, #ef4444, #f87171);
+  background: linear-gradient(90deg, var(--negative), #f87171);
 }
 
 .dcf-chart-bar-value {
@@ -542,7 +542,7 @@ body.dark-mode .dcf-chart-area,
 .dcf-chart-footer {
   padding: 0.65rem 0.85rem;
   background: var(--code-bg);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-primary);
   margin-bottom: 0;
 }
@@ -581,7 +581,7 @@ body.dark-mode .dcf-chart-area,
 
 .dcf-modal-card {
   background: #ffffff;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   max-width: 480px;
   width: 90%;
   max-height: 80vh;
@@ -610,7 +610,7 @@ body.dark-mode .dcf-chart-area,
   color: #6b7280;
   cursor: pointer;
   padding: 0.4rem;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   line-height: 1;
 }
 .dcf-modal-close:hover {
@@ -649,7 +649,7 @@ body.dark-mode .dcf-chart-area,
   display: inline-block;
   background: #f3f4f6;
   padding: 0.4rem 0.6rem;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
@@ -720,7 +720,7 @@ body.dark-mode .dcf-delta-row-label,
   position: relative;
   height: 24px;
   background: rgba(100, 116, 139, 0.08);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 body.dark-mode .dcf-delta-row-track,
 .dark .dcf-delta-row-track {
@@ -746,7 +746,7 @@ body.dark-mode .dcf-delta-row-track,
   position: absolute;
   top: 2px;
   bottom: 2px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   transition:
     width 0.4s ease,
     left 0.4s ease;
@@ -795,7 +795,7 @@ body.dark-mode .dcf-delta-row-track,
   font-size: 0.75rem;
   color: #94a3b8;
   background: rgba(100, 116, 139, 0.06);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   margin-top: 0.5rem;
 }
 
@@ -819,7 +819,7 @@ body.dark-mode .dcf-delta-row-track,
   padding: 0.3rem 0.75rem;
   background: var(--bg-tertiary);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   color: var(--text-muted);
   font-family: inherit;
   font-size: 0.75rem;
@@ -889,7 +889,7 @@ body.light-mode .dcf-mode-btn.is-active {
 .rdcf-icon {
   width: 44px;
   height: 44px;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   background: rgba(59, 130, 246, 0.12);
   color: #60a5fa;
   display: flex;
@@ -927,7 +927,7 @@ body.light-mode .dcf-mode-btn.is-active {
   padding: 0.75rem 0.9rem;
   background: rgba(0, 0, 0, 0.02);
   border: 1px solid rgba(0, 0, 0, 0.06);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
 }
 
 .rdcf-input-card--solve {
@@ -977,7 +977,7 @@ body.light-mode .dcf-mode-btn.is-active {
   padding: 0.5rem 0.75rem;
   background: rgba(245, 158, 11, 0.04);
   border: 1px solid rgba(245, 158, 11, 0.15);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   margin-bottom: 1rem;
 }
 
@@ -1015,7 +1015,7 @@ body.light-mode .dcf-mode-btn.is-active {
   padding: 0.65rem 1rem;
   background: linear-gradient(135deg, #2563eb, #1d4ed8);
   border: 1px solid #1d4ed8;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   color: #ffffff;
   font-size: 0.875rem;
   font-weight: 700;
@@ -1053,7 +1053,7 @@ body.light-mode .dcf-mode-btn.is-active {
   padding: 0.6rem 0.85rem;
   background: rgba(239, 68, 68, 0.08);
   border: 1px solid rgba(239, 68, 68, 0.25);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   color: #dc2626;
   font-size: 0.8125rem;
   margin-bottom: 1rem;
@@ -1069,7 +1069,7 @@ body.light-mode .dcf-mode-btn.is-active {
 /* Verdict block */
 .rdcf-verdict {
   padding: 0.85rem 1rem;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   border: 1px solid;
 }
 
@@ -1095,11 +1095,11 @@ body.light-mode .dcf-mode-btn.is-active {
 }
 
 .rdcf-verdict--bull {
-  background: rgba(16, 185, 129, 0.06);
-  border-color: rgba(16, 185, 129, 0.25);
+  background: color-mix(in srgb, var(--emerald) 6%, transparent);
+  border-color: var(--emerald-glow);
 }
 .rdcf-verdict--bull .rdcf-verdict-label {
-  color: #059669;
+  color: var(--emerald-hover);
 }
 
 .rdcf-verdict--bear {
@@ -1122,7 +1122,7 @@ body.light-mode .dcf-mode-btn.is-active {
 .rdcf-comparison {
   background: rgba(0, 0, 0, 0.02);
   border: 1px solid rgba(0, 0, 0, 0.05);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   overflow: hidden;
 }
 
@@ -1158,7 +1158,7 @@ body.light-mode .dcf-mode-btn.is-active {
   color: #dc2626;
 }
 .rdcf-comparison-value.rdcf-down {
-  color: #059669;
+  color: var(--emerald-hover);
 }
 
 /* Convergence history */
@@ -1190,7 +1190,7 @@ body.light-mode .dcf-mode-btn.is-active {
   gap: 0.5rem;
   padding: 0.25rem 0.5rem;
   background: rgba(0, 0, 0, 0.02);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 .rdcf-history-i {

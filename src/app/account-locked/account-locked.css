@@ -23,7 +23,7 @@
 .acl-card {
   background: var(--surface-card);
   border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   padding: 2.5rem 2rem;
   max-width: 480px;
   width: 100%;
@@ -45,7 +45,7 @@
   width: 32px;
   height: 32px;
   border: 2px solid rgba(255, 255, 255, 0.1);
-  border-top-color: #10b981;
+  border-top-color: var(--emerald);
   border-radius: 50%;
   margin: 0 auto;
   animation: acl-spin 800ms linear infinite;
@@ -71,7 +71,7 @@
 
 .acl-icon {
   font-size: 1.75rem;
-  color: #ef4444;
+  color: var(--negative);
 }
 
 .acl-title {
@@ -92,7 +92,7 @@
 .acl-reason {
   background: rgba(239, 68, 68, 0.05);
   border: 1px solid rgba(239, 68, 68, 0.18);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   padding: 0.875rem 1rem;
   margin-bottom: 1.25rem;
   text-align: left;
@@ -104,7 +104,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #ef4444;
+  color: var(--negative);
   margin-bottom: 0.35rem;
 }
 
@@ -118,7 +118,7 @@
 .acl-meta {
   background: var(--bg-tertiary);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   padding: 0.875rem 1rem;
   margin-bottom: 1.5rem;
   display: flex;
@@ -157,7 +157,7 @@
   justify-content: center;
   gap: 0.5rem;
   padding: 0.75rem 1.25rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 0.875rem;
   font-weight: 600;
   text-decoration: none;
@@ -175,12 +175,12 @@
 }
 
 .acl-btn-primary {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, var(--emerald) 0%, var(--emerald-hover) 100%);
   color: #ffffff;
 }
 
 .acl-btn-primary:hover {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  background: linear-gradient(135deg, var(--emerald-hover) 0%, var(--emerald-dark) 100%);
 }
 
 .acl-btn-secondary {

@@ -63,7 +63,7 @@
   align-items: center;
   min-height: 44px;
   padding: 0.5rem 1.125rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: var(--emerald);
   color: #04130d;
   font-size: 0.875rem;
@@ -139,7 +139,7 @@
 .mkt-card {
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   padding: 1.5rem;
   box-shadow: var(--ledger-shadow);
 }
@@ -210,8 +210,8 @@ body.light-mode .mkt-card {
   text-align: center;
   padding: 1.25rem 1rem;
   border: 1px solid var(--border-secondary);
-  border-radius: 12px;
-  background: rgba(16, 185, 129, 0.04);
+  border-radius: var(--radius-lg);
+  background: var(--emerald-bg-subtle);
 }
 
 .mkt-step-num {
@@ -246,9 +246,9 @@ body.light-mode .mkt-card {
 
 .mkt-note {
   padding: 1rem 1.25rem;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border-secondary);
-  background: rgba(16, 185, 129, 0.05);
+  background: color-mix(in srgb, var(--emerald) 5%, transparent);
   margin-bottom: 2.5rem;
 }
 
@@ -311,7 +311,7 @@ body.light-mode .mkt-card {
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: var(--emerald);
   color: #04130d;
   font-size: 0.9375rem;
@@ -432,7 +432,7 @@ body.light-mode .mkt-card {
   gap: 0.5rem;
   padding: 0 0.75rem;
   border: 1px solid var(--border-input);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   background: var(--surface-input);
   color: var(--text-muted);
   transition:
@@ -521,7 +521,7 @@ body.light-mode .mkt-card {
 /* Opt-in clickable recipient row → opens the shared detail popup. */
 .mkt-ds-leader-row--clickable {
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   margin: 0 -0.5rem;
   padding-left: 0.5rem;
   padding-right: 0.5rem;
@@ -607,7 +607,7 @@ body.light-mode .mkt-card {
   -webkit-overflow-scrolling: touch;
   max-width: 100%;
   border: 1px solid var(--border-primary);
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   background: var(--surface-card);
   box-shadow: var(--shadow-md);
 }
@@ -804,7 +804,7 @@ body.light-mode .mkt-ds-table-wrap {
   max-width: 640px;
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   box-shadow: var(--shadow-xl);
   padding: 1.75rem;
   font-family: var(--font-sans);
@@ -973,7 +973,7 @@ body.light-mode .mkt-ds-table-wrap {
   text-align: left;
   cursor: pointer;
   font-family: inherit;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   transition: background 0.15s ease;
 }
 .mkt-award-mod--btn:hover:not(:disabled),
