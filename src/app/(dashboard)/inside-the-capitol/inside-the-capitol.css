@@ -1209,14 +1209,14 @@ body.light-mode .itc-perf-tooltip {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 body.light-mode .itc-perf-tip-name {
-  color: #10b981;
+  color: var(--emerald);
 }
 body.light-mode .itc-pw {
   border-color: rgba(0, 0, 0, 0.08);
 }
 body.light-mode .itc-pw.on {
-  background: #10b981;
-  border-color: #10b981;
+  background: var(--emerald);
+  border-color: var(--emerald);
   color: #fff;
 }
 body.light-mode .itc-chip,
@@ -1225,16 +1225,16 @@ body.light-mode .itc-sf {
 }
 body.light-mode .itc-chip.on,
 body.light-mode .itc-sf.on {
-  background: #10b981;
-  border-color: #10b981;
+  background: var(--emerald);
+  border-color: var(--emerald);
   color: #fff;
 }
 body.light-mode .itc-pol-tab {
   border-color: rgba(0, 0, 0, 0.08);
 }
 body.light-mode .itc-pol-tab.on {
-  background: #10b981;
-  border-color: #10b981;
+  background: var(--emerald);
+  border-color: var(--emerald);
 }
 body.light-mode .itc-pol-tab.on .itc-pol-tab-name {
   color: #fff;

@@ -306,7 +306,11 @@ body.light-mode .cl-entry-dot {
   background: #ffffff;
 }
 body.light-mode .cl-timeline::before {
-  background: linear-gradient(180deg, #10b981, rgba(16, 185, 129, 0.1));
+  background: linear-gradient(
+    180deg,
+    var(--emerald),
+    color-mix(in srgb, var(--emerald) 10%, transparent)
+  );
 }
 body.light-mode .cl-filters {
   border-bottom-color: #e5e7eb;

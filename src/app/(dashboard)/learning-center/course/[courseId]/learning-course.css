@@ -338,7 +338,7 @@ body.light-mode .lc3-opt {
 }
 body.light-mode .lc3-opt:hover {
   background: #f9fafb;
-  border-color: #10b981;
+  border-color: var(--emerald);
 }
 body.light-mode .lc3-opt.sel {
   color: var(--emerald-dark);

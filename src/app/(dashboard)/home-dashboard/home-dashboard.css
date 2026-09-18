@@ -453,7 +453,7 @@ a.db-icon-btn {
    the card reads consistently. These !important the color to beat the
    existing light-mode override that pins per-share to var(--db-muted). */
 .db-holding-per-share.positive {
-  color: #10b981 !important;
+  color: var(--emerald) !important;
 }
 .db-holding-per-share.negative {
   color: var(--negative) !important;

@@ -647,8 +647,8 @@ body.light-mode .hts-week-index-legend-btn {
 }
 
 body.light-mode .hts-week-index-legend-btn.is-active {
-  background: rgba(16, 185, 129, 0.12);
-  border-color: #10b981;
+  background: var(--emerald-bg-hover);
+  border-color: var(--emerald);
   color: #111827;
 }
 
@@ -1016,7 +1016,7 @@ body.light-mode .hts-event-line strong {
 }
 
 body.light-mode .hts-weekly-lines a {
-  color: #10b981;
+  color: var(--emerald);
 }
 body.light-mode .hts-weekly-lines a:hover {
   color: var(--emerald);
@@ -1054,7 +1054,7 @@ body.light-mode .hts-mover-row {
 }
 
 body.light-mode .hts-pulse-stock {
-  color: #10b981;
+  color: var(--emerald);
 }
 
 body.light-mode .hts-pulse-change.positive {

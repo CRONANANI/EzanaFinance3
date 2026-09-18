@@ -582,7 +582,7 @@ body.light-mode .onboarding-chip {
 }
 
 body.light-mode .onboarding-chip.selected {
-  background: #10b981;
+  background: var(--emerald);
   color: #fff;
 }
 

@@ -48,36 +48,19 @@ const EXEMPT = [
 ];
 
 // ── Pending hand review (brand-hex only) ─────────────────────────────────
-// 29 rules across these files still hardcode a brand hex INSIDE a light-mode
-// override, where the raw value is the dark-palette colour rather than the
-// light one. The v2 command is explicit that these go file by file and that
-// the fix is usually deleting the rule so the token flips by itself, which is
-// a judgement per rule rather than a codemod. They are exempted from the
-// brand-hex rule only, so every other rule still applies to these files and
-// no NEW hex can be added to the rest of the tree.
+// One rule left, and it is a design call rather than a mechanical fix:
+// landing-light-mode.css paints the landing hero's tagline with a
+// white-to-#10b981 gradient inside body.light-mode, but the panel behind it is
+// the deliberately dark hero ([data-hero-dark]). var(--emerald) resolves to the
+// light palette's #059669 there, which would dull the gradient against a dark
+// backdrop, so swapping it is not the obvious correction the other 28 were.
+// The hero is also on the branding command's hard exclusion list.
 //
-// Delete entries from this list as the hand pass lands. When it is empty,
-// delete the list.
-const PENDING_BRAND_HEX = [
-  'src/app/(dashboard)/changelog/changelog.css',
-  'src/app/(dashboard)/home-dashboard/home-dashboard.css',
-  'src/app/(dashboard)/inside-the-capitol/inside-the-capitol.css',
-  'src/app/(dashboard)/learning-center/course/[courseId]/learning-course.css',
-  'src/app/(dashboard)/onboarding/onboarding.css',
-  'src/app/(dashboard)/org-trading/org-trading.css',
-  'src/app/(dashboard)/pricing/pricing.css',
-  'src/app/(dashboard)/trading/trading.css',
-  'src/app/landing-light-mode.css',
-  'src/app/mobile-responsive.css',
-  'src/app/partner-light-mode.css',
-  'src/app/settings/settings-partner.css',
-  'src/app/settings/settings.css',
-  'src/app/subscribe/subscribe.css',
-  'src/components/home/home-terminal-summary.css',
-  'src/components/leaderboard/redesign/elo-redesign.css',
-  'src/components/research/market/market-portfolio.css',
-  'src/components/trading/reset-portfolio-modal.css',
-].map((p) => p.split('/').join(path.sep));
+// Exempts the brand-hex rule only; every other rule still applies to the file.
+// When this is resolved, delete the list and the check that reads it.
+const PENDING_BRAND_HEX = ['src/app/landing-light-mode.css'].map((p) =>
+  p.split('/').join(path.sep),
+);
 
 const BRAND_HEX = /#(?:10b981|059669|047857|34d399|ef4444|d4a853|d4af37|f59e0b|fbbf24|3b82f6)\b/gi;
 const DEAD_TOKENS = /var\(\s*--(?:border-color|text-tertiary|mono|sans)\s*\)/g;

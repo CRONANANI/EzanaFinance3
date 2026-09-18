@@ -241,8 +241,8 @@ body.light-mode .rpm-preset,
 
 body.light-mode .rpm-preset:hover,
 .light .rpm-preset:hover {
-  background: rgba(16, 185, 129, 0.06);
-  border-color: #10b981;
+  background: color-mix(in srgb, var(--emerald) 6%, transparent);
+  border-color: var(--emerald);
   color: var(--emerald);
 }
 

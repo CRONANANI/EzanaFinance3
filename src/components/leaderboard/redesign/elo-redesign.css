@@ -18,7 +18,7 @@ html:not(.light-mode) .elo-page-wrap a:focus-visible,
 body:not(.light-mode) .elo-page-wrap button:focus-visible,
 body:not(.light-mode) .elo-page-wrap input:focus-visible,
 body:not(.light-mode) .elo-page-wrap a:focus-visible {
-  outline-color: #10b981;
+  outline-color: var(--emerald);
 }
 
 html:not(.light-mode) .elo-skeleton-shimmer,

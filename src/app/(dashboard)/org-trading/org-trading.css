@@ -621,7 +621,7 @@
   --ctd-sec-t4: var(--cyan, #06b6d4);
   --ctd-sec-t5: var(--indigo, #6366f1);
   --ctd-sec-t6: #64748b;
-  --ctd-sec-t7: var(--emerald, #10b981);
+  --ctd-sec-t7: var(--emerald);
 
   --ctd-card: var(--surface-card);
   --ctd-border: var(--border-primary);

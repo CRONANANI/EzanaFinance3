@@ -387,9 +387,9 @@ body.light-mode .mobile-auth-drawer a .text-muted-foreground {
 body.light-mode .mobile-auth-drawer a.text-primary,
 body.light-mode .mobile-auth-drawer a[class*='border-primary'],
 body.light-mode .mobile-auth-drawer a[class*='bg-primary'] {
-  color: #10b981 !important;
-  background-color: rgba(16, 185, 129, 0.15) !important;
-  border-left-color: #10b981 !important;
+  color: var(--emerald) !important;
+  background-color: color-mix(in srgb, var(--emerald) 15%, transparent) !important;
+  border-left-color: var(--emerald) !important;
 }
 
 body.light-mode .mobile-auth-drawer a:hover {
@@ -402,7 +402,7 @@ body.light-mode .mobile-auth-drawer a svg {
 
 body.light-mode .mobile-auth-drawer a.text-primary svg,
 body.light-mode .mobile-auth-drawer a[class*='text-primary'] svg {
-  color: #10b981 !important;
+  color: var(--emerald) !important;
 }
 
 body.light-mode .mobile-auth-drawer a svg:last-child {

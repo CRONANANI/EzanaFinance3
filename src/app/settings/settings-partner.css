@@ -1,7 +1,7 @@
 /* Partner hub on /settings — gold accents (align with partner dark / partner-light-mode.css) */
 
 body.partner-app .settings-header-back:hover {
-  color: #d4a853;
+  color: var(--gold);
 }
 
 body.partner-app .settings-sidebar,

@@ -106,7 +106,7 @@ body.light-mode .cpr-view-toggle-btn:hover {
 }
 
 body.light-mode .cpr-view-toggle-btn.is-active {
-  background: #10b981;
+  background: var(--emerald);
   color: #ffffff;
 }
 

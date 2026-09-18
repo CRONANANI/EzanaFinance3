@@ -1513,7 +1513,7 @@ body.light-mode .trd-search-symbol {
 }
 
 body.light-mode .trd-hero-title {
-  color: #10b981;
+  color: var(--emerald);
 }
 body.light-mode .trd-feature-h3,
 body.light-mode .trd-requirements-title,

@@ -1342,10 +1342,10 @@ body.light-mode .settings-nav-icon {
   color: #6b7280;
 }
 body.light-mode .settings-nav-item:hover .settings-nav-icon {
-  color: #10b981;
+  color: var(--emerald);
 }
 body.light-mode .settings-nav-item.active .settings-nav-icon {
-  color: #10b981;
+  color: var(--emerald);
 }
 
 body.light-mode .settings-input {

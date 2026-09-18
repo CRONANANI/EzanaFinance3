@@ -162,7 +162,7 @@ body.light-mode .ptr-tab.active {
   border-color: rgba(184, 146, 47, 0.2);
 }
 body.light-mode .ptr-tab-badge {
-  background: #ef4444;
+  background: var(--negative);
   color: #fff;
 }
 
