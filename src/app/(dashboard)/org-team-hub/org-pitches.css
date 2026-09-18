@@ -55,7 +55,7 @@
   align-items: center;
   gap: 0.4rem;
   padding: 0.5rem 0.9rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 0.78rem;
   font-weight: 600;
   text-decoration: none;
@@ -94,7 +94,7 @@
 .op-filters select,
 .op-search {
   padding: 0.45rem 0.75rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: var(--surface-input);
   color: #f0f6fc;
@@ -126,7 +126,7 @@
   min-width: 140px;
   background: var(--surface-card);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   display: flex;
   flex-direction: column;
   max-height: 70vh;
@@ -157,7 +157,7 @@
 .op-card {
   display: block;
   padding: 0.55rem 0.6rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
   text-decoration: none;
@@ -200,7 +200,7 @@
 
 .op-archive-card {
   padding: 1rem 1.1rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-primary);
   background: var(--surface-card);
   text-decoration: none;
@@ -232,23 +232,23 @@
   font-size: 0.65rem;
   font-weight: 700;
   padding: 0.2rem 0.5rem;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   text-transform: uppercase;
 }
 
 .op-decision--accepted {
-  background: rgba(16, 185, 129, 0.15);
-  color: #10b981;
+  background: var(--emerald-border);
+  color: var(--emerald);
 }
 
 .op-decision--rejected {
   background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
+  color: var(--negative);
 }
 
 .op-decision--watchlist {
   background: rgba(245, 158, 11, 0.15);
-  color: #f59e0b;
+  color: var(--amber);
 }
 
 .op-decision--deferred {
@@ -271,11 +271,11 @@
 }
 
 .op-hindsight--pos {
-  color: #10b981;
+  color: var(--emerald);
 }
 
 .op-hindsight--neg {
-  color: #ef4444;
+  color: var(--negative);
 }
 
 .op-archive-actions {
@@ -289,10 +289,10 @@
 /* Detail */
 .op-detail-banner {
   padding: 0.6rem 1rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: rgba(245, 158, 11, 0.1);
   border: 1px solid rgba(245, 158, 11, 0.25);
-  color: #fbbf24;
+  color: var(--warning);
   font-size: 0.75rem;
   font-weight: 600;
 }
@@ -377,7 +377,7 @@
 .op-modal {
   background: var(--app-bg);
   border: 1px solid var(--emerald);
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   max-width: 560px;
   width: 100%;
   max-height: 90vh;
@@ -416,7 +416,7 @@
 .op-step {
   color: #6b7280;
   padding: 0.2rem 0.5rem;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 .op-step.active {
@@ -425,7 +425,7 @@
 }
 
 .op-step.done {
-  color: #10b981;
+  color: var(--emerald);
 }
 
 .op-form label {
@@ -442,7 +442,7 @@
   width: 100%;
   margin-top: 0.25rem;
   padding: 0.5rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: var(--surface-input);
   color: #f0f6fc;
@@ -457,7 +457,7 @@
 
 .op-search-dropdown {
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   margin-bottom: 0.75rem;
   overflow: hidden;
 }
@@ -481,7 +481,7 @@
 .op-priors-box {
   background: rgba(245, 158, 11, 0.08);
   border: 1px solid rgba(245, 158, 11, 0.25);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: 0.75rem;
   margin-bottom: 1rem;
   font-size: 0.78rem;
@@ -512,7 +512,7 @@
 }
 
 .op-error {
-  color: #ef4444;
+  color: var(--negative);
   font-size: 0.78rem;
 }
 
@@ -526,7 +526,7 @@
 .op-stage-actions {
   padding: 1rem;
   border: 1px solid var(--emerald-border);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   margin-bottom: 1rem;
   background: var(--emerald-bg);
 }
@@ -556,7 +556,7 @@
   flex: 1;
   min-width: 200px;
   padding: 0.5rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: var(--surface-input);
   color: #f0f6fc;
@@ -571,7 +571,7 @@
 .op-fmp-card {
   padding: 0.75rem;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   background: var(--surface-card);
 }
 
@@ -610,7 +610,7 @@
   margin-bottom: 0.75rem;
   padding: 0.65rem;
   background: var(--bg-tertiary);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 
 .op-vote-form {
@@ -630,7 +630,7 @@
 .op-compare-col {
   padding: 1rem;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
 }
 
 .op-analytics-strip {
@@ -639,7 +639,7 @@
   gap: 1rem;
   padding: 0.75rem 1rem;
   background: var(--emerald-bg);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 0.75rem;
   color: #9ca3af;
   margin-bottom: 1rem;
@@ -648,7 +648,7 @@
 .op-report-body {
   padding: 1.5rem;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
 }
 
 @media print {

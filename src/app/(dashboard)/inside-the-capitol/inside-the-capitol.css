@@ -24,27 +24,27 @@
   padding: 1rem 1.25rem;
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   transition:
     border-color 0.2s,
     box-shadow 0.2s;
 }
 .itc-stat:hover {
-  border-color: rgba(16, 185, 129, 0.2);
+  border-color: color-mix(in srgb, var(--emerald) 20%, transparent);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 .itc-stat-icon {
   width: 42px;
   height: 42px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.125rem;
   flex-shrink: 0;
-  background: rgba(16, 185, 129, 0.06);
-  border: 1px solid rgba(16, 185, 129, 0.1);
-  color: #10b981;
+  background: color-mix(in srgb, var(--emerald) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--emerald) 10%, transparent);
+  color: var(--emerald);
 }
 .itc-stat-val {
   font-size: 1.25rem;
@@ -68,7 +68,7 @@
   margin-top: 2px;
 }
 .itc-stat-chg.positive {
-  color: #10b981;
+  color: var(--emerald);
 }
 .itc-stat-chg.neutral {
   color: #6b7280;
@@ -126,7 +126,7 @@
 .itc-new-card {
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   padding: 1.25rem 1.25rem 1.5rem;
   box-sizing: border-box;
   height: 100%;
@@ -160,7 +160,7 @@
   gap: 0.75rem;
   align-items: flex-start;
   padding-bottom: 0.85rem;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+  border-bottom: 1px solid color-mix(in srgb, var(--emerald) 6%, transparent);
 }
 .itc-unusual-row:last-child {
   padding-bottom: 0;
@@ -178,7 +178,7 @@
   display: inline-block;
 }
 .itc-unusual-name:hover {
-  color: #10b981;
+  color: var(--emerald);
 }
 .itc-unusual-meta,
 .itc-unusual-stocks {
@@ -189,7 +189,7 @@
 }
 .itc-unusual-tk {
   font-weight: 700;
-  color: #10b981;
+  color: var(--emerald);
   text-decoration: none;
 }
 .itc-unusual-tk:hover {
@@ -198,7 +198,7 @@
 
 .itc-bipart-row {
   padding-bottom: 0.85rem;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+  border-bottom: 1px solid color-mix(in srgb, var(--emerald) 6%, transparent);
 }
 .itc-bipart-row:last-child {
   padding-bottom: 0;
@@ -210,7 +210,7 @@
   margin-bottom: 0.35rem;
 }
 .itc-bipart-tk {
-  color: #10b981;
+  color: var(--emerald);
   text-decoration: none;
 }
 .itc-bipart-tk:hover {
@@ -234,7 +234,7 @@
   color: #60a5fa;
 }
 .itc-bipart-party.rep {
-  color: #ef4444;
+  color: var(--negative);
 }
 .itc-bip-dot {
   display: inline-block;
@@ -245,10 +245,10 @@
   vertical-align: middle;
 }
 .itc-bip-dot.dem {
-  background: #3b82f6;
+  background: var(--blue);
 }
 .itc-bip-dot.rep {
-  background: #ef4444;
+  background: var(--negative);
 }
 .itc-bipart-total {
   font-family: var(--font-mono);
@@ -258,7 +258,7 @@
 
 .itc-earn-row {
   padding-bottom: 0.85rem;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+  border-bottom: 1px solid color-mix(in srgb, var(--emerald) 6%, transparent);
 }
 .itc-earn-row:last-child {
   padding-bottom: 0;
@@ -270,7 +270,7 @@
   margin-bottom: 0.35rem;
 }
 .itc-earn-tk {
-  color: #10b981;
+  color: var(--emerald);
   text-decoration: none;
 }
 .itc-earn-tk:hover {
@@ -292,12 +292,12 @@
   text-decoration: none;
 }
 .itc-earn-line a:hover {
-  color: #10b981;
+  color: var(--emerald);
 }
 .itc-earn-warn {
   font-size: 0.625rem;
   font-weight: 600;
-  color: #fbbf24;
+  color: var(--warning);
   margin: 0;
   display: flex;
   align-items: flex-start;
@@ -312,14 +312,14 @@
 .itc-card {
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   transition: border-color 0.2s;
 }
 .itc-card:hover {
-  border-color: rgba(16, 185, 129, 0.15);
+  border-color: var(--emerald-border);
 }
 
 /* header */
@@ -328,7 +328,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.05);
+  border-bottom: 1px solid color-mix(in srgb, var(--emerald) 5%, transparent);
   flex-shrink: 0;
 }
 .itc-hdr-left {
@@ -357,7 +357,7 @@
   transition: color 0.2s;
 }
 .itc-va:hover {
-  color: #10b981;
+  color: var(--emerald);
 }
 
 /* filter chips (match .db-tf-btn) */
@@ -372,7 +372,7 @@
   color: #6b7280;
   background: transparent;
   border: 1px solid var(--border-primary);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition: all 0.15s;
   display: inline-flex;
@@ -382,12 +382,12 @@
 }
 .itc-chip:hover {
   color: #e2e8f0;
-  border-color: rgba(16, 185, 129, 0.2);
+  border-color: color-mix(in srgb, var(--emerald) 20%, transparent);
 }
 .itc-chip.on {
   color: #fff;
-  background: #10b981;
-  border-color: #10b981;
+  background: var(--emerald);
+  border-color: var(--emerald);
 }
 .itc-chip i {
   font-size: 0.5rem;
@@ -408,7 +408,7 @@
   color: #6b7280;
   background: transparent;
   border: 1px solid var(--border-primary);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition: all 0.15s;
   font-family: inherit;
@@ -418,8 +418,8 @@
 }
 .itc-sf.on {
   color: #fff;
-  background: #10b981;
-  border-color: #10b981;
+  background: var(--emerald);
+  border-color: var(--emerald);
 }
 a.itc-sf {
   text-decoration: none;
@@ -448,7 +448,7 @@ a.itc-sf {
   color: #6b7280;
   background: transparent;
   border: 1px solid var(--border-primary);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   text-decoration: none;
   margin-left: 0.5rem;
   transition: all 0.15s;
@@ -456,7 +456,7 @@ a.itc-sf {
 }
 .itc-filter-clear:hover {
   color: #e2e8f0;
-  border-color: rgba(16, 185, 129, 0.2);
+  border-color: color-mix(in srgb, var(--emerald) 20%, transparent);
 }
 .itc-filter-tag {
   text-transform: capitalize;
@@ -496,7 +496,7 @@ a.itc-sf {
   align-items: center;
   gap: 1rem;
   padding: 0.625rem 1.25rem;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.03);
+  border-bottom: 1px solid color-mix(in srgb, var(--emerald) 3%, transparent);
   transition: background 0.1s;
 }
 .itc-tr:last-child {
@@ -514,10 +514,10 @@ a.itc-sf {
   display: block;
 }
 .itc-tr-type.buy {
-  color: #10b981;
+  color: var(--emerald);
 }
 .itc-tr-type.sell {
-  color: #ef4444;
+  color: var(--negative);
 }
 .itc-tr-date {
   font-size: 0.65rem;
@@ -541,7 +541,7 @@ a.itc-sf {
   cursor: pointer;
 }
 .itc-tr-co-exch:hover {
-  color: #10b981;
+  color: var(--emerald);
   text-decoration: underline;
 }
 
@@ -557,7 +557,7 @@ a.itc-sf {
   transition: color 0.2s;
 }
 .itc-tr-mem:hover .itc-tr-mem-name {
-  color: #10b981;
+  color: var(--emerald);
 }
 .itc-tr-mem-meta {
   font-size: 0.65rem;
@@ -575,10 +575,10 @@ a.itc-sf {
   display: inline-block;
 }
 .itc-dot.democrat {
-  background: #3b82f6;
+  background: var(--blue);
 }
 .itc-dot.republican {
-  background: #ef4444;
+  background: var(--negative);
 }
 .itc-dot.unknown {
   background: #6b7280;
@@ -595,7 +595,7 @@ a.itc-sf {
   font-feature-settings: 'tnum' 1;
 }
 .itc-tr-flag i {
-  color: #fbbf24;
+  color: var(--warning);
   font-size: 0.7rem;
   margin-left: 0.35rem;
 }
@@ -606,7 +606,7 @@ a.itc-sf {
   align-items: flex-start;
   gap: 0.8rem;
   padding: 0.65rem 1.25rem;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.05);
+  border-bottom: 1px solid color-mix(in srgb, var(--emerald) 5%, transparent);
   transition: background 0.15s;
   cursor: pointer;
 }
@@ -614,14 +614,14 @@ a.itc-sf {
   border-bottom: none;
 }
 .itc-ins:hover {
-  background: rgba(16, 185, 129, 0.04);
+  background: var(--emerald-bg-subtle);
 }
 .itc-ins-img {
   width: 52px;
   height: 52px;
-  border-radius: 10px;
-  background: rgba(16, 185, 129, 0.06);
-  border: 1px solid rgba(16, 185, 129, 0.1);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--emerald) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--emerald) 10%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -642,25 +642,25 @@ a.itc-sf {
   font-size: 0.55rem;
   font-weight: 700;
   padding: 1px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 .itc-ins-cat.defense {
   background: rgba(239, 68, 68, 0.12);
-  color: #ef4444;
+  color: var(--negative);
 }
 .itc-ins-cat.consumer {
   background: rgba(251, 191, 36, 0.12);
-  color: #fbbf24;
+  color: var(--warning);
 }
 .itc-ins-cat.tech {
   background: rgba(167, 139, 250, 0.12);
   color: #a78bfa;
 }
 .itc-ins-cat.healthcare {
-  background: rgba(16, 185, 129, 0.12);
-  color: #10b981;
+  background: var(--emerald-bg-hover);
+  color: var(--emerald);
 }
 .itc-ins-cat.energy {
   background: rgba(249, 115, 22, 0.12);
@@ -695,7 +695,7 @@ a.itc-sf {
   padding: 0.3rem 0.625rem;
   background: transparent;
   border: 1px solid var(--border-primary);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition: all 0.15s;
   flex-shrink: 0;
@@ -703,12 +703,12 @@ a.itc-sf {
 }
 .itc-pol-tab:hover {
   color: #e2e8f0;
-  border-color: rgba(16, 185, 129, 0.2);
+  border-color: color-mix(in srgb, var(--emerald) 20%, transparent);
 }
 .itc-pol-tab.on {
   color: #fff;
-  background: #10b981;
-  border-color: #10b981;
+  background: var(--emerald);
+  border-color: var(--emerald);
 }
 .itc-pol-tab-name {
   font-size: 0.6875rem;
@@ -732,10 +732,10 @@ a.itc-sf {
   flex-shrink: 0;
 }
 .itc-avatar-sm.democrat {
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  background: linear-gradient(135deg, var(--blue), #2563eb);
 }
 .itc-avatar-sm.republican {
-  background: linear-gradient(135deg, #ef4444, #dc2626);
+  background: linear-gradient(135deg, var(--negative), #dc2626);
 }
 .itc-avatar-lg {
   width: 48px;
@@ -755,13 +755,13 @@ a.itc-sf {
 }
 .itc-avatar-lg:hover {
   transform: scale(1.08);
-  box-shadow: 0 0 16px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--emerald) 30%, transparent);
 }
 .itc-avatar-lg.democrat {
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  background: linear-gradient(135deg, var(--blue), #2563eb);
 }
 .itc-avatar-lg.republican {
-  background: linear-gradient(135deg, #ef4444, #dc2626);
+  background: linear-gradient(135deg, var(--negative), #dc2626);
 }
 
 .itc-pol-detail {
@@ -782,7 +782,7 @@ a.itc-sf {
   transition: color 0.2s;
 }
 .itc-pol-name:hover {
-  color: #10b981;
+  color: var(--emerald);
 }
 .itc-pol-meta {
   font-size: 0.6875rem;
@@ -802,8 +802,8 @@ a.itc-sf {
   text-align: center;
   padding: 0.45rem;
   background: var(--surface-card);
-  border-radius: 8px;
-  border: 1px solid rgba(16, 185, 129, 0.06);
+  border-radius: var(--radius-md);
+  border: 1px solid color-mix(in srgb, var(--emerald) 6%, transparent);
 }
 .itc-pol-num-v {
   font-size: 0.95rem;
@@ -823,8 +823,8 @@ a.itc-sf {
   position: relative;
   height: 72px;
   background: var(--surface-card);
-  border-radius: 10px;
-  border: 1px solid rgba(16, 185, 129, 0.06);
+  border-radius: var(--radius-lg);
+  border: 1px solid color-mix(in srgb, var(--emerald) 6%, transparent);
   overflow: hidden;
 }
 .itc-pol-chart-lbl {
@@ -849,14 +849,14 @@ a.itc-sf {
   display: flex;
   gap: 0.75rem;
   padding: 0.75rem 1.25rem;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.05);
+  border-bottom: 1px solid color-mix(in srgb, var(--emerald) 5%, transparent);
   transition: background 0.15s;
 }
 .itc-bz:last-child {
   border-bottom: none;
 }
 .itc-bz:hover {
-  background: rgba(16, 185, 129, 0.04);
+  background: var(--emerald-bg-subtle);
 }
 .itc-bz-left {
   display: flex;
@@ -890,16 +890,16 @@ a.itc-sf {
   font-size: 0.6rem;
   font-weight: 700;
   padding: 2px 7px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-feature-settings: 'tnum' 1;
 }
 .itc-bz-tk.bullish {
-  background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
+  background: color-mix(in srgb, var(--emerald) 10%, transparent);
+  color: var(--emerald);
 }
 .itc-bz-tk.bearish {
   background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
+  color: var(--negative);
 }
 .itc-bz-tk.neutral {
   background: rgba(107, 114, 128, 0.12);
@@ -910,7 +910,7 @@ a.itc-sf {
 .itc-sec {
   margin-bottom: 0.75rem;
   padding-bottom: 0.75rem;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.04);
+  border-bottom: 1px solid var(--emerald-bg-subtle);
 }
 .itc-sec:last-child {
   margin-bottom: 0;
@@ -935,20 +935,20 @@ a.itc-sf {
 .itc-sec-bar {
   display: flex;
   height: 18px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
   gap: 1px;
 }
 .itc-sec-buy {
-  background: rgba(16, 185, 129, 0.35);
+  background: color-mix(in srgb, var(--emerald) 35%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 0.5625rem;
   font-weight: 700;
-  color: #10b981;
+  color: var(--emerald);
   transition: width 0.5s;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   min-width: 0;
 }
 .itc-sec-sell {
@@ -958,9 +958,9 @@ a.itc-sf {
   justify-content: center;
   font-size: 0.5625rem;
   font-weight: 700;
-  color: #ef4444;
+  color: var(--negative);
   transition: width 0.5s;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   min-width: 0;
 }
 
@@ -970,14 +970,14 @@ a.itc-sf {
   align-items: center;
   justify-content: space-between;
   padding: 0.65rem 1.25rem;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.05);
+  border-bottom: 1px solid color-mix(in srgb, var(--emerald) 5%, transparent);
   transition: background 0.15s;
 }
 .itc-fil:last-child {
   border-bottom: none;
 }
 .itc-fil:hover {
-  background: rgba(16, 185, 129, 0.04);
+  background: var(--emerald-bg-subtle);
 }
 .itc-fil-left {
   display: flex;
@@ -992,8 +992,8 @@ a.itc-sf {
   flex-shrink: 0;
 }
 .itc-fil-dot.new {
-  background: #10b981;
-  box-shadow: 0 0 6px rgba(16, 185, 129, 0.5);
+  background: var(--emerald);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--emerald) 50%, transparent);
 }
 .itc-fil-name {
   font-size: 0.8rem;
@@ -1004,7 +1004,7 @@ a.itc-sf {
   transition: color 0.2s;
 }
 .itc-fil-name:hover {
-  color: #10b981;
+  color: var(--emerald);
 }
 .itc-fil-meta {
   font-size: 0.6rem;
@@ -1018,10 +1018,10 @@ a.itc-sf {
 .itc-fil-tk {
   font-size: 0.6rem;
   font-weight: 700;
-  color: #10b981;
-  background: rgba(16, 185, 129, 0.08);
+  color: var(--emerald);
+  background: var(--emerald-bg);
   padding: 2px 7px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 /* ── Performance Chart — timeframe pills match .db-tf-btn / .db-tf-btn-sm */
@@ -1039,7 +1039,7 @@ a.itc-sf {
   color: #6b7280;
   background: transparent;
   border: 1px solid var(--border-primary);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition: all 0.15s;
   font-family: inherit;
@@ -1050,8 +1050,8 @@ a.itc-sf {
 }
 .itc-pw.on {
   color: #fff;
-  background: #10b981;
-  border-color: #10b981;
+  background: var(--emerald);
+  border-color: var(--emerald);
 }
 
 .itc-perf-chart-wrap {
@@ -1072,8 +1072,8 @@ a.itc-sf {
   width: 240px;
   padding: 12px;
   background: rgba(17, 24, 39, 0.95);
-  border: 1px solid rgba(16, 185, 129, 0.2);
-  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--emerald) 20%, transparent);
+  border-radius: var(--radius-lg);
   backdrop-filter: blur(16px);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   pointer-events: none;
@@ -1087,7 +1087,7 @@ a.itc-sf {
 .itc-perf-tip-name {
   font-size: 0.8rem;
   font-weight: 700;
-  color: #10b981;
+  color: var(--emerald);
 }
 .itc-perf-tip-meta {
   font-size: 0.6rem;
@@ -1104,10 +1104,10 @@ a.itc-sf {
   font-feature-settings: 'tnum' 1;
 }
 .itc-perf-tip-return.pos {
-  color: #10b981;
+  color: var(--emerald);
 }
 .itc-perf-tip-return.neg {
-  color: #ef4444;
+  color: var(--negative);
 }
 .itc-perf-tip-hold {
   display: flex;
@@ -1125,16 +1125,16 @@ a.itc-sf {
 .itc-perf-tip-tk {
   font-size: 0.6rem;
   font-weight: 700;
-  color: #10b981;
-  background: rgba(16, 185, 129, 0.08);
+  color: var(--emerald);
+  background: var(--emerald-bg);
   padding: 1px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 .itc-perf-tip-rank {
   font-size: 0.6rem;
   font-weight: 600;
   color: #9ca3af;
-  border-top: 1px solid rgba(16, 185, 129, 0.1);
+  border-top: 1px solid color-mix(in srgb, var(--emerald) 10%, transparent);
   padding-top: 0.35rem;
   margin-top: 0.1rem;
 }
@@ -1281,10 +1281,10 @@ body.light-mode .itc-earn-row {
 
 /* Year picker — Sector Activity on the Year */
 .itc-year-select {
-  background: rgba(16, 185, 129, 0.05);
-  border: 1px solid rgba(16, 185, 129, 0.2);
-  border-radius: 6px;
-  color: #10b981;
+  background: color-mix(in srgb, var(--emerald) 5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--emerald) 20%, transparent);
+  border-radius: var(--radius-md);
+  color: var(--emerald);
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   font-family: var(--font-mono);
@@ -1299,12 +1299,12 @@ body.light-mode .itc-earn-row {
     border-color 0.12s;
 }
 .itc-year-select:hover {
-  background: rgba(16, 185, 129, 0.08);
-  border-color: rgba(16, 185, 129, 0.35);
+  background: var(--emerald-bg);
+  border-color: color-mix(in srgb, var(--emerald) 35%, transparent);
 }
 .itc-year-select:focus {
-  border-color: #10b981;
-  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.18);
+  border-color: var(--emerald);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--emerald) 18%, transparent);
 }
 .itc-year-select option {
   background: var(--bg-secondary);
@@ -1367,7 +1367,7 @@ body.light-mode .itc-year-select option {
 }
 
 .itc-13f-ticker {
-  color: #10b981;
+  color: var(--emerald);
   font-weight: 700;
 }
 
@@ -1451,18 +1451,18 @@ body.light-mode .itc-13f-filed {
   color: #8b949e;
 }
 .itc-top-perf-year {
-  background: rgba(16, 185, 129, 0.06);
-  border: 1px solid rgba(16, 185, 129, 0.18);
+  background: color-mix(in srgb, var(--emerald) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--emerald) 18%, transparent);
   color: #f0f6fc;
   font-size: 0.75rem;
   font-weight: 600;
   padding: 4px 8px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   font-family: inherit;
 }
 .itc-top-perf-year:focus {
-  outline: 2px solid rgba(16, 185, 129, 0.35);
+  outline: 2px solid color-mix(in srgb, var(--emerald) 35%, transparent);
   outline-offset: 1px;
 }
 .itc-top-perf-info-btn {
@@ -1471,7 +1471,7 @@ body.light-mode .itc-13f-filed {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   border: 1px solid rgba(139, 148, 158, 0.18);
   background: transparent;
   color: #8b949e;
@@ -1484,17 +1484,17 @@ body.light-mode .itc-13f-filed {
 }
 .itc-top-perf-info-btn:hover,
 .itc-top-perf-info-btn[aria-pressed='true'] {
-  color: #10b981;
-  border-color: rgba(16, 185, 129, 0.35);
-  background: rgba(16, 185, 129, 0.08);
+  color: var(--emerald);
+  border-color: color-mix(in srgb, var(--emerald) 35%, transparent);
+  background: var(--emerald-bg);
 }
 .itc-top-perf-method {
   font-size: 0.72rem;
   line-height: 1.55;
   color: #8b949e;
-  background: rgba(16, 185, 129, 0.04);
-  border: 1px solid rgba(16, 185, 129, 0.12);
-  border-radius: 10px;
+  background: var(--emerald-bg-subtle);
+  border: 1px solid var(--emerald-bg-hover);
+  border-radius: var(--radius-lg);
   padding: 0.65rem 0.85rem;
 }
 .itc-top-perf-method strong {
@@ -1503,7 +1503,7 @@ body.light-mode .itc-13f-filed {
 }
 .itc-top-perf-method em {
   font-style: italic;
-  color: #10b981;
+  color: var(--emerald);
 }
 
 .itc-top-perf-state {
@@ -1539,15 +1539,15 @@ body.light-mode .itc-13f-filed {
   font-size: 0.75rem;
   font-weight: 600;
   padding: 0.35rem 0.9rem;
-  border-radius: 6px;
-  border: 1px solid rgba(16, 185, 129, 0.35);
-  background: rgba(16, 185, 129, 0.08);
-  color: #10b981;
+  border-radius: var(--radius-md);
+  border: 1px solid color-mix(in srgb, var(--emerald) 35%, transparent);
+  background: var(--emerald-bg);
+  color: var(--emerald);
   cursor: pointer;
   font-family: var(--font-sans);
 }
 .itc-top-perf-retry:hover {
-  background: rgba(16, 185, 129, 0.15);
+  background: var(--emerald-border);
 }
 body.light-mode .itc-top-perf-state--error p:first-child {
   color: #b91c1c;
@@ -1614,7 +1614,7 @@ body.light-mode .itc-top-perf-err-detail {
   text-overflow: ellipsis;
 }
 a.itc-top-perf-name:hover {
-  color: #10b981;
+  color: var(--emerald);
 }
 .itc-top-perf-meta {
   font-size: 0.68rem;
@@ -1635,10 +1635,10 @@ a.itc-top-perf-name:hover {
   line-height: 1.15;
 }
 .itc-top-perf-pnl.pos {
-  color: #10b981;
+  color: var(--emerald);
 }
 .itc-top-perf-pnl.neg {
-  color: #ef4444;
+  color: var(--negative);
 }
 .itc-top-perf-pct {
   font-family: var(--font-mono);

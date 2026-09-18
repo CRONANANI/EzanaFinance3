@@ -148,7 +148,7 @@ body.light-mode .thw-root {
   font-weight: 700;
   letter-spacing: 0.04em;
   padding: 1px 5px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background: var(--surface-card);
   color: var(--text-primary);
   border: 1px solid var(--border-secondary);
@@ -158,7 +158,7 @@ body.light-mode .thw-root {
 /* ── Card chrome ───────────────────────────────────────────────── */
 .thw-card {
   border: 1px solid var(--border-primary);
-  border-radius: 16px; /* match Trading Desk .ctd-card */
+  border-radius: var(--radius-xl); /* match Trading Desk .ctd-card */
   background: var(--surface-card);
   /* Dark = flat (no shadow slab on #0a0e13); light restores the lift below. */
   box-shadow: none;
@@ -216,7 +216,7 @@ html.light-mode .thw-card {
   gap: 11px;
   padding: 14px;
   border: 1px solid var(--border-primary);
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   background: var(--surface-card);
 }
 .thw-vp-avatar {
@@ -278,7 +278,7 @@ html.light-mode .thw-card {
   width: 100%;
   padding: 8px 10px;
   border: none;
-  border-radius: 9px;
+  border-radius: var(--radius-md);
   background: transparent;
   color: var(--text-secondary);
   font-family: var(--font-sans);
@@ -361,7 +361,7 @@ html.light-mode .thw-card {
   padding: 0 12px;
   height: 40px;
   border: 1px solid var(--border-input);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   background: var(--surface-card);
   color: var(--text-faint);
   cursor: text;
@@ -392,7 +392,7 @@ html.light-mode .thw-card {
   font-variant-numeric: tabular-nums;
   font-size: 10px;
   border: 1px solid var(--border-primary);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   padding: 1px 6px;
   color: var(--text-faint);
 }
@@ -416,7 +416,7 @@ html.light-mode .thw-card {
   justify-content: center;
   width: 26px;
   height: 26px;
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-primary);
   background: var(--surface-card);
   color: var(--text-secondary);
@@ -472,7 +472,7 @@ html.light-mode .thw-card {
   padding: 7px 12px; /* was 10px 12px — trim vertical to match */
   border: 1px solid var(--border-primary);
   border-top: 2px solid var(--emerald);
-  border-radius: 10px; /* kept: 16px reads as a lozenge on a 50px strip card */
+  border-radius: var(--radius-lg); /* kept: 16px reads as a lozenge on a 50px strip card */
   background: var(--surface-card);
   box-shadow: none; /* dark = flat; light lift restored below */
   cursor: pointer;
@@ -527,7 +527,7 @@ html.light-mode .thw-cal-card {
   text-transform: uppercase;
   color: var(--text-muted);
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background: var(--surface-card);
   border: 1px solid var(--border-secondary);
   white-space: nowrap;
@@ -636,7 +636,7 @@ html.light-mode .thw-cal-card {
   padding: 9px 11px;
   border: 1px solid var(--border-primary);
   border-left: 3px solid var(--emerald);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: var(--surface-card);
   cursor: pointer;
   font-family: inherit;
@@ -807,7 +807,7 @@ html.light-mode .thw-cal-card {
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border-primary);
   background: var(--surface-card);
 }
@@ -888,7 +888,7 @@ button.thw-badge-btn:disabled {
 /* ── Fund chart (reused rendering) ──────────────────────────────── */
 .thw-chart-card {
   border: 1px solid var(--border-primary);
-  border-radius: 16px; /* match Trading Desk .ctd-card */
+  border-radius: var(--radius-xl); /* match Trading Desk .ctd-card */
   padding: 12px 16px 6px;
   background: var(--surface-card);
   box-shadow: none; /* dark = flat; light lift restored below */
@@ -926,7 +926,7 @@ html.light-mode .thw-chart-card {
   font-variant-numeric: tabular-nums;
   font-size: 10.5px;
   padding: 5px 11px;
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   background: transparent;
   color: var(--text-muted);
   border: 1px solid var(--border-primary);
@@ -986,7 +986,7 @@ body.light-mode .thw-range.active {
   flex-direction: column;
   gap: 1px;
   padding: 4px 9px;
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   /* Popover: keep a SOLID fill (not the transparent card token) so the tooltip
      stays readable floating over the chart. */
   background: var(--app-bg);
@@ -1035,7 +1035,7 @@ body.light-mode .thw-range.active {
 /* ── Loading skeleton ───────────────────────────────────────────── */
 .thw-skel {
   background: var(--surface-card-hover);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   animation: thw-pulse 1.3s ease-in-out infinite;
 }
 @keyframes thw-pulse {
@@ -1269,7 +1269,7 @@ html.light-mode .thw-cal-card {
   gap: 0.25rem;
   padding: 3px 9px;
   border: 1px solid var(--emerald-border);
-  border-radius: 7px;
+  border-radius: var(--radius-md);
 }
 .thw-setup-cta:hover {
   background: var(--emerald-bg);

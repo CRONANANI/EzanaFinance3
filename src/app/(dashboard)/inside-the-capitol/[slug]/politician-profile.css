@@ -22,7 +22,7 @@
   gap: 0.5rem;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #10b981;
+  color: var(--emerald);
   text-decoration: none;
   margin-bottom: 0;
   transition: opacity 0.2s;
@@ -60,23 +60,23 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.625rem 1.25rem;
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  border-radius: 10px;
-  color: #10b981;
+  background: color-mix(in srgb, var(--emerald) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--emerald) 30%, transparent);
+  border-radius: var(--radius-lg);
+  color: var(--emerald);
   font-weight: 600;
   text-decoration: none;
   transition: all 0.2s;
 }
 .pp-back-btn:hover {
-  background: rgba(16, 185, 129, 0.2);
+  background: color-mix(in srgb, var(--emerald) 20%, transparent);
 }
 
 .pp-loading-spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid rgba(16, 185, 129, 0.2);
-  border-top-color: #10b981;
+  border: 3px solid color-mix(in srgb, var(--emerald) 20%, transparent);
+  border-top-color: var(--emerald);
   border-radius: 50%;
   animation: pp-spin 0.8s linear infinite;
   margin-bottom: 1rem;
@@ -139,7 +139,7 @@
 .pp-avatar-xl {
   width: 96px;
   height: 96px;
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -150,10 +150,10 @@
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 .pp-avatar-xl.democrat {
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  background: linear-gradient(135deg, var(--blue), #1d4ed8);
 }
 .pp-avatar-xl.republican {
-  background: linear-gradient(135deg, #ef4444, #b91c1c);
+  background: linear-gradient(135deg, var(--negative), #b91c1c);
 }
 .pp-avatar-xl.unknown {
   background: linear-gradient(135deg, #64748b, #475569);
@@ -185,7 +185,7 @@
 }
 .pp-party-badge {
   padding: 0.25rem 0.75rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-size: 0.6875rem;
   font-weight: 700;
   display: inline-block;
@@ -193,12 +193,12 @@
 }
 .pp-party-badge.democrat {
   background: rgba(59, 130, 246, 0.15);
-  color: #3b82f6;
+  color: var(--blue);
   border: 1px solid rgba(59, 130, 246, 0.3);
 }
 .pp-party-badge.republican {
   background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
+  color: var(--negative);
   border: 1px solid rgba(239, 68, 68, 0.3);
 }
 .pp-party-badge.unknown {
@@ -208,12 +208,12 @@
 }
 .pp-state-badge {
   padding: 0.25rem 0.75rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-size: 0.6875rem;
   font-weight: 600;
   background: var(--muted);
   color: var(--foreground);
-  border: 1px solid rgba(16, 185, 129, 0.08);
+  border: 1px solid var(--emerald-bg);
   display: inline-block;
   transition: all 0.15s;
 }
@@ -239,7 +239,7 @@
   letter-spacing: 0.06em;
   margin: 0 0 0.75rem;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.08);
+  border-bottom: 1px solid var(--emerald-bg);
 }
 
 .pp-info-row {
@@ -260,7 +260,7 @@
 }
 .pp-info-link {
   font-size: 0.7rem;
-  color: #10b981;
+  color: var(--emerald);
   text-decoration: none;
   text-align: right;
   max-width: 160px;
@@ -274,11 +274,11 @@
   font-size: 0.75rem;
   font-weight: 700;
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 .pp-timeliness.good {
-  background: rgba(16, 185, 129, 0.12);
-  color: #10b981;
+  background: var(--emerald-bg-hover);
+  color: var(--emerald);
 }
 .pp-timeliness.late {
   background: rgba(239, 68, 68, 0.12);
@@ -299,8 +299,8 @@
 /* ═══ Portfolio Overview Card ═══ */
 .po-card {
   background: var(--surface-card);
-  border: 1px solid rgba(16, 185, 129, 0.08);
-  border-radius: 16px;
+  border: 1px solid var(--emerald-bg);
+  border-radius: var(--radius-xl);
   margin-bottom: 0;
 }
 
@@ -324,8 +324,8 @@
   font-weight: 600;
   color: #4b5563;
   background: transparent;
-  border: 1px solid rgba(16, 185, 129, 0.08);
-  border-radius: 6px;
+  border: 1px solid var(--emerald-bg);
+  border-radius: var(--radius-md);
   padding: 0.25rem 0.75rem;
   cursor: pointer;
   font-family: inherit;
@@ -333,8 +333,8 @@
 }
 
 .po-summary-btn:hover {
-  color: #10b981;
-  border-color: rgba(16, 185, 129, 0.2);
+  color: var(--emerald);
+  border-color: color-mix(in srgb, var(--emerald) 20%, transparent);
 }
 
 /* Primary stat — big total value */
@@ -343,7 +343,7 @@
   justify-content: space-between;
   align-items: flex-end;
   padding: 0 1.25rem 1rem;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+  border-bottom: 1px solid color-mix(in srgb, var(--emerald) 6%, transparent);
 }
 
 .po-primary-label {
@@ -374,17 +374,17 @@
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   padding: 0.25rem 0.625rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 .po-primary-change.negative {
-  color: #ef4444;
+  color: var(--negative);
   background: rgba(239, 68, 68, 0.08);
 }
 
 .po-primary-change.positive {
-  color: #10b981;
-  background: rgba(16, 185, 129, 0.08);
+  color: var(--emerald);
+  background: var(--emerald-bg);
 }
 
 .po-primary-change i {
@@ -397,12 +397,12 @@
 .po-secondary-row {
   display: grid;
   grid-template-columns: 1.2fr 0.8fr 0.8fr;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+  border-bottom: 1px solid color-mix(in srgb, var(--emerald) 6%, transparent);
 }
 
 .po-secondary-item {
   padding: 0.875rem 1.25rem;
-  border-right: 1px solid rgba(16, 185, 129, 0.04);
+  border-right: 1px solid var(--emerald-bg-subtle);
 }
 
 .po-secondary-item:last-child {
@@ -430,10 +430,10 @@
 }
 
 .po-secondary-value.negative {
-  color: #ef4444;
+  color: var(--negative);
 }
 .po-secondary-value.positive {
-  color: #10b981;
+  color: var(--emerald);
 }
 
 .po-secondary-sub {
@@ -444,16 +444,16 @@
 /* Industry allocation bar */
 .po-secondary-bar {
   height: 3px;
-  background: rgba(16, 185, 129, 0.08);
-  border-radius: 2px;
+  background: var(--emerald-bg);
+  border-radius: var(--radius-sm);
   margin: 0.375rem 0 0.25rem;
   overflow: hidden;
 }
 
 .po-secondary-bar-fill {
   height: 100%;
-  background: #10b981;
-  border-radius: 2px;
+  background: var(--emerald);
+  border-radius: var(--radius-sm);
 }
 
 /* Similar Traders — label left, large chips right, horizontal row */
@@ -463,7 +463,7 @@
   justify-content: space-between;
   gap: 1rem;
   padding: 0.875rem 1.25rem 1rem;
-  border-top: 1px solid rgba(16, 185, 129, 0.06);
+  border-top: 1px solid color-mix(in srgb, var(--emerald) 6%, transparent);
 }
 
 .po-traders-label {
@@ -496,14 +496,14 @@
   gap: 0.375rem;
   text-decoration: none;
   padding: 0.5rem 0.75rem;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   transition: background 0.15s;
   min-width: 4.5rem;
   flex: 0 0 auto;
 }
 
 .po-trader:hover {
-  background: rgba(16, 185, 129, 0.06);
+  background: color-mix(in srgb, var(--emerald) 6%, transparent);
 }
 
 .po-trader-avatar {
@@ -520,12 +520,12 @@
 
 .po-trader-avatar.democrat {
   background: rgba(59, 130, 246, 0.14);
-  color: #3b82f6;
+  color: var(--blue);
 }
 
 .po-trader-avatar.republican {
   background: rgba(239, 68, 68, 0.14);
-  color: #ef4444;
+  color: var(--negative);
 }
 
 .po-trader-avatar.unknown {
@@ -550,8 +550,8 @@
 .po-trader-pct {
   font-size: 0.6875rem;
   font-weight: 700;
-  color: #10b981;
-  background: rgba(16, 185, 129, 0.12);
+  color: var(--emerald);
+  background: var(--emerald-bg-hover);
   padding: 0.2rem 0.5rem;
   border-radius: 100px;
   font-family: var(--font-mono);
@@ -565,7 +565,7 @@
   }
   .po-secondary-item {
     border-right: none;
-    border-bottom: 1px solid rgba(16, 185, 129, 0.04);
+    border-bottom: 1px solid var(--emerald-bg-subtle);
   }
   .po-secondary-item:last-child {
     border-bottom: none;
@@ -630,24 +630,24 @@
   color: var(--muted-foreground);
   background: transparent;
   border: 1px solid transparent;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition: all 0.2s;
 }
 .pp-tr-btn:hover {
   color: var(--foreground);
-  background: rgba(16, 185, 129, 0.06);
+  background: color-mix(in srgb, var(--emerald) 6%, transparent);
 }
 .pp-tr-btn.on {
-  color: #10b981;
-  background: rgba(16, 185, 129, 0.15);
-  border-color: rgba(16, 185, 129, 0.3);
+  color: var(--emerald);
+  background: var(--emerald-border);
+  border-color: color-mix(in srgb, var(--emerald) 30%, transparent);
 }
 .pp-perf-svg {
   width: 100%;
   height: 180px;
   display: block;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 
 .perf-chart-xaxis {
@@ -713,7 +713,7 @@
 .pp-donut-color {
   width: 8px;
   height: 8px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
 }
 .pp-donut-tk {
@@ -724,7 +724,7 @@
   transition: color 0.15s;
 }
 .pp-donut-tk:hover {
-  color: #10b981;
+  color: var(--emerald);
 }
 .pp-donut-pct {
   color: var(--muted-foreground);
@@ -742,7 +742,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.4rem 0;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.05);
+  border-bottom: 1px solid color-mix(in srgb, var(--emerald) 5%, transparent);
 }
 .pp-holding-row:last-child {
   border-bottom: none;
@@ -756,7 +756,7 @@
   transition: color 0.15s;
 }
 .pp-hold-tk:hover {
-  color: #10b981;
+  color: var(--emerald);
 }
 .pp-hold-name {
   font-size: 0.6875rem;
@@ -765,7 +765,7 @@
   transition: color 0.15s;
 }
 .pp-hold-name:hover {
-  color: #10b981;
+  color: var(--emerald);
 }
 .pp-hold-val {
   font-size: 0.75rem;
@@ -780,10 +780,10 @@
   font-feature-settings: 'tnum' 1;
 }
 .pp-hold-chg.up {
-  color: #10b981;
+  color: var(--emerald);
 }
 .pp-hold-chg.down {
-  color: #ef4444;
+  color: var(--negative);
 }
 
 /* Trades table */
@@ -795,7 +795,7 @@
   display: grid;
   grid-template-columns: 1.2fr 0.8fr 0.6fr 1fr;
   padding: 0.35rem 0;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.1);
+  border-bottom: 1px solid color-mix(in srgb, var(--emerald) 10%, transparent);
 }
 .pp-trades-hdr span {
   font-size: 0.6rem;
@@ -808,12 +808,12 @@
   display: grid;
   grid-template-columns: 1.2fr 0.8fr 0.6fr 1fr;
   padding: 0.5rem 0;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.04);
+  border-bottom: 1px solid var(--emerald-bg-subtle);
   align-items: center;
   transition: background 0.15s;
 }
 .pp-trade-row:hover {
-  background: rgba(16, 185, 129, 0.03);
+  background: color-mix(in srgb, var(--emerald) 3%, transparent);
 }
 .pp-trade-date {
   font-size: 0.75rem;
@@ -833,10 +833,10 @@
   border-radius: 50%;
 }
 .pp-trade-dot.buy {
-  background: #10b981;
+  background: var(--emerald);
 }
 .pp-trade-dot.sell {
-  background: #ef4444;
+  background: var(--negative);
 }
 .pp-trade-type {
   font-size: 0.7rem;
@@ -844,10 +844,10 @@
   letter-spacing: 0.04em;
 }
 .pp-trade-type.buy {
-  color: #10b981;
+  color: var(--emerald);
 }
 .pp-trade-type.sell {
-  color: #ef4444;
+  color: var(--negative);
 }
 .pp-trade-amt {
   font-size: 0.75rem;

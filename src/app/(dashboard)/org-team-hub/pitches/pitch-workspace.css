@@ -25,7 +25,7 @@
 .pw-stat {
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   padding: 0.7rem 0.85rem;
   display: flex;
   flex-direction: column;
@@ -60,7 +60,7 @@
   display: inline-flex;
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   padding: 2px;
   gap: 2px;
 }
@@ -74,7 +74,7 @@
   color: var(--text-muted);
   background: transparent;
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   cursor: pointer;
 }
 .pw-toggle button:hover {
@@ -99,7 +99,7 @@
 .pw-filters input {
   background: var(--surface-input);
   border: 1px solid var(--border-input);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   color: var(--text-secondary);
   font-size: 0.75rem;
   padding: 0.35rem 0.5rem;
@@ -195,7 +195,7 @@
 }
 .pw-col-empty {
   border: 1px dashed var(--border-primary);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   padding: 0.6rem;
   font-size: 0.68rem;
   color: var(--text-ghost);
@@ -207,7 +207,7 @@
   display: block;
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: 0.55rem 0.6rem;
   text-decoration: none;
   color: inherit;
@@ -315,7 +315,7 @@
   color: var(--pink);
   background: var(--pink-soft, rgba(236, 72, 153, 0.12));
   padding: 0.15rem 0.4rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 /* ── Archive lane ────────────────────────────────────────────────────────── */
@@ -384,7 +384,7 @@
 .pw-archive-link:focus-visible {
   outline: 2px solid var(--border-focus);
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 .pw-archive-row {
   display: grid;
@@ -395,7 +395,7 @@
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
   border-left: 3px solid var(--text-ghost);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   padding: 0.55rem 0.65rem;
   text-decoration: none;
   color: inherit;
@@ -424,7 +424,7 @@
 .pw-table-wrap {
   overflow-x: auto;
   border: 1px solid var(--border-primary);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
 }
 .pw-table {
   width: 100%;
@@ -488,7 +488,7 @@
 .pw-ic-card {
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   padding: 0.85rem;
   display: flex;
   flex-direction: column;
@@ -523,7 +523,7 @@
   flex: 1;
   text-align: center;
   padding: 0.4rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: var(--bg-tertiary);
 }
 .pw-tally-cell .n {
@@ -557,7 +557,7 @@
 .pw-quorum-bar {
   flex: 1;
   height: 6px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   background: var(--bg-tertiary);
   overflow: hidden;
 }
@@ -577,7 +577,7 @@
   align-items: center;
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   padding: 0.75rem;
 }
 .pw-meeting-form label {
@@ -592,7 +592,7 @@
 .pw-meeting-form select {
   background: var(--surface-input);
   border: 1px solid var(--border-input);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   color: var(--text-secondary);
   font-size: 0.75rem;
   padding: 0.35rem 0.5rem;
@@ -606,7 +606,7 @@
   padding: 0.45rem 0.8rem;
   font-size: 0.76rem;
   font-weight: 600;
-  border-radius: 9px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--emerald-border);
   background: var(--emerald-bg);
   color: var(--emerald-text);
@@ -626,7 +626,7 @@
 }
 .pw-empty {
   border: 1px dashed var(--border-primary);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   padding: 2.5rem 1rem;
   text-align: center;
   color: var(--text-muted);
@@ -637,7 +637,7 @@
 }
 .pw-skeleton {
   height: 90px;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   background: linear-gradient(90deg, var(--surface-card), var(--bg-tertiary), var(--surface-card));
   background-size: 200% 100%;
   animation: pw-shimmer 1.4s ease-in-out infinite;
@@ -669,7 +669,7 @@
 /* ── Gate Panel — the advancement checklist. Tokens only; mono numerics. ── */
 .pgate {
   border: 1px solid var(--border-primary);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   background: var(--surface-card, transparent);
   padding: 0.85rem 1rem;
   margin: 0.75rem 0 1rem;
@@ -710,18 +710,18 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.4rem 0.5rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   background: var(--surface-card, transparent);
   border: 1px solid var(--border-primary);
 }
 .pgate-ic.pass {
-  color: var(--positive, #10b981);
+  color: var(--positive, var(--emerald));
 }
 .pgate-ic.partial {
-  color: var(--warning, #f59e0b);
+  color: var(--warning, var(--amber));
 }
 .pgate-ic.fail {
-  color: var(--negative, #ef4444);
+  color: var(--negative, var(--negative));
 }
 .pgate-row-label {
   font-size: 0.8rem;
@@ -742,16 +742,16 @@
   font-size: 0.7rem;
   font-weight: 600;
   padding: 2px 8px;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border-hover);
   background: transparent;
-  color: var(--emerald, #10b981);
+  color: var(--emerald, var(--emerald));
   cursor: pointer;
 }
 .pgate-error {
   margin-top: 0.6rem;
   font-size: 0.72rem;
-  color: var(--negative, #ef4444);
+  color: var(--negative, var(--negative));
 }
 .pgate-foot {
   display: flex;
@@ -766,9 +766,9 @@
   align-items: center;
   gap: 0.4rem;
   padding: 0.5rem 1rem;
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   border: none;
-  background: var(--emerald, #10b981);
+  background: var(--emerald, var(--emerald));
   color: #04140d;
   font-size: 0.8rem;
   font-weight: 700;
@@ -785,10 +785,10 @@
   align-items: center;
   gap: 0.35rem;
   padding: 0.5rem 0.75rem;
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   border: 1px solid rgba(245, 158, 11, 0.4);
   background: transparent;
-  color: var(--warning, #f59e0b);
+  color: var(--warning, var(--amber));
   font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
@@ -806,7 +806,7 @@
   width: 100%;
   min-height: 60px;
   padding: 0.5rem 0.6rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-input);
   background: var(--inset);
   color: var(--text-primary);
@@ -821,7 +821,7 @@
 }
 .pgate-override-cancel {
   padding: 0.5rem 1rem;
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-primary);
   background: transparent;
   color: var(--text-secondary);
@@ -837,7 +837,7 @@
   flex-direction: column;
   gap: 0.75rem;
   padding: 0.9rem 1rem;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border-primary);
   background: var(--surface-card);
 }
@@ -871,7 +871,7 @@
 }
 .pmodel-error {
   font-size: 0.75rem;
-  color: var(--warning, #f59e0b);
+  color: var(--warning, var(--amber));
   margin: 0;
 }
 .pmodel-list {
@@ -887,12 +887,12 @@
   flex-direction: column;
   gap: 0.5rem;
   padding: 0.6rem 0.7rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-secondary);
   background: var(--inset);
 }
 .pmodel-row--complete {
-  border-color: var(--emerald-border, rgba(16, 185, 129, 0.35));
+  border-color: var(--emerald-border, color-mix(in srgb, var(--emerald) 35%, transparent));
 }
 .pmodel-row-main {
   display: flex;
@@ -905,10 +905,10 @@
   align-items: center;
 }
 .pmodel-ic-pass {
-  color: var(--emerald-text, #34d399);
+  color: var(--emerald-text, var(--positive-bright));
 }
 .pmodel-ic-partial {
-  color: var(--warning, #f59e0b);
+  color: var(--warning, var(--amber));
 }
 .pmodel-ic-fail {
   color: var(--text-faint);
@@ -931,10 +931,10 @@
   color: var(--text-muted);
 }
 .pmodel-state--complete {
-  color: var(--emerald-text, #34d399);
+  color: var(--emerald-text, var(--positive-bright));
 }
 .pmodel-state--pending {
-  color: var(--warning, #f59e0b);
+  color: var(--warning, var(--amber));
 }
 .pmodel-row-actions {
   display: flex;
@@ -952,7 +952,7 @@
   text-decoration: none;
 }
 .pmodel-file:hover {
-  color: var(--emerald-text, #34d399);
+  color: var(--emerald-text, var(--positive-bright));
   text-decoration: underline;
 }
 .pmodel-file-text {
@@ -972,7 +972,7 @@
   flex: 1 1 auto;
   min-width: 0;
   padding: 0.4rem 0.55rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-input);
   background: var(--surface-input);
   color: var(--text-primary);
@@ -982,7 +982,7 @@
 }
 .pmodel-input:focus {
   outline: none;
-  border-color: var(--border-focus, var(--emerald, #10b981));
+  border-color: var(--border-focus, var(--emerald, var(--emerald)));
 }
 .pmodel-input:disabled {
   opacity: 0.6;
@@ -992,7 +992,7 @@
   align-items: center;
   gap: 0.3rem;
   padding: 0.4rem 0.7rem;
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   font-family: var(--font-sans);
   font-size: 0.72rem;
   font-weight: 600;
@@ -1013,12 +1013,12 @@
   color: var(--text-primary);
 }
 .pmodel-btn--review {
-  border: 1px solid var(--emerald-border, rgba(16, 185, 129, 0.35));
-  background: var(--emerald-bg, rgba(16, 185, 129, 0.12));
-  color: var(--emerald-text, #34d399);
+  border: 1px solid var(--emerald-border, color-mix(in srgb, var(--emerald) 35%, transparent));
+  background: var(--emerald-bg, var(--emerald-bg-hover));
+  color: var(--emerald-text, var(--positive-bright));
 }
 .pmodel-btn--review:not(:disabled):hover {
-  background: var(--emerald-bg-hover, rgba(16, 185, 129, 0.2));
+  background: var(--emerald-bg-hover, color-mix(in srgb, var(--emerald) 20%, transparent));
 }
 
 /* ============================================================
@@ -1032,7 +1032,7 @@
   gap: 0.75rem;
   padding: 1rem;
   border: 1px solid var(--border-primary);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   background: var(--surface-card);
   font-family: var(--font-sans);
 }
@@ -1082,7 +1082,7 @@
 .pxdesk-empty {
   padding: 0.85rem;
   border: 1px dashed var(--border-primary);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: var(--inset);
   color: var(--text-muted);
   font-size: 0.8rem;
@@ -1103,7 +1103,7 @@
   gap: 0.6rem;
   padding: 0.6rem 0.7rem;
   border: 1px solid var(--border-primary);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: var(--inset);
 }
 .pxdesk-row-ic {
@@ -1142,7 +1142,7 @@
   gap: 0.35rem;
   margin: 0.35rem 0 0;
   padding: 0.4rem 0.5rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--danger-border);
   background: var(--danger-bg);
   color: var(--text-secondary);
@@ -1179,7 +1179,7 @@
 
 .pxdesk-error {
   padding: 0.5rem 0.65rem;
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--danger-border);
   background: var(--danger-bg);
   color: var(--danger);
@@ -1210,7 +1210,7 @@
   align-items: center;
   gap: 0.35rem;
   padding: 0.5rem 0.9rem;
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-primary);
   background: transparent;
   color: var(--text-secondary);
@@ -1258,7 +1258,7 @@
   width: 100%;
   min-height: 64px;
   padding: 0.5rem 0.6rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-input);
   background: var(--inset);
   color: var(--text-primary);
@@ -1308,7 +1308,7 @@
   gap: 0.75rem;
   padding: 0.9rem 1rem;
   border: 1px solid var(--border-primary);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   background: var(--surface);
 }
 .psignoff--loading,
@@ -1340,7 +1340,7 @@
   color: var(--text-secondary);
 }
 .psignoff-title svg {
-  color: var(--emerald, #10b981);
+  color: var(--emerald, var(--emerald));
 }
 .psignoff-progress-wrap {
   display: flex;
@@ -1367,11 +1367,11 @@
   display: block;
   height: 100%;
   border-radius: 999px;
-  background: var(--warning, #d4a853);
+  background: var(--warning, var(--gold));
   transition: width 0.25s ease;
 }
 .psignoff-bar-fill.done {
-  background: var(--emerald, #10b981);
+  background: var(--emerald, var(--emerald));
 }
 
 /* ── In-desk hint ──────────────────────────────────────────────────────── */
@@ -1384,10 +1384,10 @@
   margin: 0;
 }
 .psignoff-hint-ok {
-  color: var(--emerald, #10b981);
+  color: var(--emerald, var(--emerald));
 }
 .psignoff-hint-warn {
-  color: var(--warning, #d4a853);
+  color: var(--warning, var(--gold));
 }
 
 /* ── Member rows ───────────────────────────────────────────────────────── */
@@ -1410,7 +1410,7 @@
   justify-content: space-between;
   gap: 0.75rem;
   padding: 0.5rem 0.6rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-input);
   background: var(--inset);
 }
@@ -1429,7 +1429,7 @@
   color: var(--text-primary);
 }
 .psignoff-you {
-  color: var(--emerald, #10b981);
+  color: var(--emerald, var(--emerald));
   font-weight: 600;
 }
 .psignoff-meta {
@@ -1448,8 +1448,8 @@
   letter-spacing: 0.03em;
 }
 .psignoff-tag.in {
-  color: var(--emerald, #10b981);
-  background: var(--emerald-soft, rgba(16, 185, 129, 0.12));
+  color: var(--emerald, var(--emerald));
+  background: var(--emerald-soft, var(--emerald-bg-hover));
 }
 .psignoff-tag.out {
   color: var(--text-muted);
@@ -1467,7 +1467,7 @@
   align-items: center;
   gap: 0.25rem;
   padding: 0.2rem 0.45rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-size: 0.68rem;
   font-weight: 500;
   border: 1px solid var(--border-input);
@@ -1475,9 +1475,9 @@
   background: var(--inset);
 }
 .psignoff-scope.approve {
-  color: var(--emerald, #10b981);
-  border-color: var(--emerald, #10b981);
-  background: var(--emerald-soft, rgba(16, 185, 129, 0.1));
+  color: var(--emerald, var(--emerald));
+  border-color: var(--emerald, var(--emerald));
+  background: var(--emerald-soft, color-mix(in srgb, var(--emerald) 10%, transparent));
 }
 .psignoff-scope.changes {
   color: var(--danger, #f85149);
@@ -1504,7 +1504,7 @@
   width: 100%;
   min-height: 46px;
   padding: 0.5rem 0.6rem;
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-input);
   background: var(--inset);
   color: var(--text-primary);
@@ -1513,7 +1513,7 @@
   resize: vertical;
 }
 .psignoff-comment:focus-visible {
-  outline: 2px solid var(--emerald, #10b981);
+  outline: 2px solid var(--emerald, var(--emerald));
   outline-offset: 1px;
 }
 .psignoff-btns {
@@ -1526,7 +1526,7 @@
   align-items: center;
   gap: 0.35rem;
   padding: 0.45rem 0.8rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
@@ -1545,15 +1545,15 @@
   cursor: not-allowed;
 }
 .psignoff-btn:focus-visible {
-  outline: 2px solid var(--emerald, #10b981);
+  outline: 2px solid var(--emerald, var(--emerald));
   outline-offset: 1px;
 }
 .psignoff-btn.approve {
-  color: var(--emerald, #10b981);
-  border-color: var(--emerald, #10b981);
+  color: var(--emerald, var(--emerald));
+  border-color: var(--emerald, var(--emerald));
 }
 .psignoff-btn.approve:hover:not(:disabled) {
-  background: var(--emerald-soft, rgba(16, 185, 129, 0.12));
+  background: var(--emerald-soft, var(--emerald-bg-hover));
 }
 .psignoff-btn.changes {
   color: var(--danger, #f85149);
@@ -1600,7 +1600,7 @@
   gap: 0.75rem;
   background: var(--surface-card);
   border: 1px solid var(--border-primary);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   padding: 0.9rem 1rem;
   font-family: var(--font-sans);
   color: var(--text-primary);
@@ -1675,18 +1675,18 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
   padding: 0.15rem 0.5rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-primary);
 }
 .pdmeet-decision--advance {
-  color: var(--emerald, #10b981);
-  border-color: color-mix(in srgb, var(--emerald, #10b981) 45%, transparent);
-  background: color-mix(in srgb, var(--emerald, #10b981) 12%, transparent);
+  color: var(--emerald, var(--emerald));
+  border-color: color-mix(in srgb, var(--emerald, var(--emerald)) 45%, transparent);
+  background: color-mix(in srgb, var(--emerald, var(--emerald)) 12%, transparent);
 }
 .pdmeet-decision--more_work {
-  color: var(--warning, #d4a853);
-  border-color: color-mix(in srgb, var(--warning, #d4a853) 45%, transparent);
-  background: color-mix(in srgb, var(--warning, #d4a853) 12%, transparent);
+  color: var(--warning, var(--gold));
+  border-color: color-mix(in srgb, var(--warning, var(--gold)) 45%, transparent);
+  background: color-mix(in srgb, var(--warning, var(--gold)) 12%, transparent);
 }
 .pdmeet-decision--kill {
   color: var(--danger, #f85149);
@@ -1783,7 +1783,7 @@
 .pdmeet-input {
   width: 100%;
   padding: 0.5rem 0.6rem;
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-input, var(--border-primary));
   background: var(--inset);
   color: var(--text-primary);
@@ -1792,7 +1792,7 @@
   resize: vertical;
 }
 .pdmeet-input:focus-visible {
-  outline: 2px solid var(--emerald, #10b981);
+  outline: 2px solid var(--emerald, var(--emerald));
   outline-offset: 1px;
   border-color: transparent;
 }
@@ -1808,7 +1808,7 @@
   overflow-y: auto;
   list-style: none;
   border: 1px solid var(--border-input, var(--border-primary));
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   background: var(--inset);
 }
 .pdmeet-pick {
@@ -1818,7 +1818,7 @@
   font-size: 0.8rem;
   color: var(--text-primary);
   padding: 0.25rem 0.35rem;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
 }
 .pdmeet-pick:hover {
@@ -1847,9 +1847,9 @@
   align-items: center;
   gap: 0.35rem;
   padding: 0.5rem 0.9rem;
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   border: 1px solid transparent;
-  background: var(--emerald, #10b981);
+  background: var(--emerald, var(--emerald));
   color: #05130d;
   font-size: 0.8rem;
   font-weight: 600;
@@ -1861,7 +1861,7 @@
 }
 .pdmeet-cancel {
   padding: 0.5rem 0.9rem;
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-primary);
   background: transparent;
   color: var(--text-secondary);
@@ -1903,7 +1903,7 @@
 /* Quorum */
 .pvote-quorum {
   border: 1px solid var(--border-primary);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   background: var(--surface-card, transparent);
   padding: 0.85rem 1rem;
 }
@@ -1928,11 +1928,11 @@
   border-radius: 999px;
 }
 .pvote-quorum-state.is-met {
-  color: var(--emerald-text, #10b981);
-  background: var(--emerald-bg, rgba(16, 185, 129, 0.12));
+  color: var(--emerald-text, var(--emerald));
+  background: var(--emerald-bg, var(--emerald-bg-hover));
 }
 .pvote-quorum-state.is-short {
-  color: var(--warning, #f59e0b);
+  color: var(--warning, var(--amber));
   background: rgba(245, 158, 11, 0.12);
 }
 .pvote-quorum-count {
@@ -1967,11 +1967,11 @@
   display: block;
   height: 100%;
   border-radius: 999px;
-  background: var(--warning, #f59e0b);
+  background: var(--warning, var(--amber));
   transition: width 0.3s ease;
 }
 .pvote-quorum-fill.is-met {
-  background: var(--emerald, #10b981);
+  background: var(--emerald, var(--emerald));
 }
 .pvote-quorum-note {
   margin: 0.5rem 0 0;
@@ -1982,7 +1982,7 @@
 /* Recusal */
 .pvote-recusal {
   border: 1px solid var(--border-primary);
-  border-radius: 9px;
+  border-radius: var(--radius-md);
   padding: 0.6rem 0.8rem;
   background: var(--inset);
 }
@@ -1992,7 +1992,7 @@
   gap: 0.35rem;
   font-size: 0.72rem;
   font-weight: 600;
-  color: var(--warning, #f59e0b);
+  color: var(--warning, var(--amber));
   margin-bottom: 0.4rem;
 }
 .pvote-recusal-list {
@@ -2027,7 +2027,7 @@
 /* Ballot list */
 .pvote-empty {
   border: 1px dashed var(--border-primary);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   padding: 1.75rem 1rem;
   text-align: center;
   color: var(--text-muted);
@@ -2055,7 +2055,7 @@
 }
 .pvote-row {
   border: 1px solid var(--border-primary);
-  border-radius: 9px;
+  border-radius: var(--radius-md);
   padding: 0.6rem 0.75rem;
   background: var(--surface-card, transparent);
 }
@@ -2091,11 +2091,11 @@
   border-radius: 999px;
 }
 .pvote-badge.buy {
-  color: var(--emerald-text, #10b981);
-  background: var(--emerald-bg, rgba(16, 185, 129, 0.12));
+  color: var(--emerald-text, var(--emerald));
+  background: var(--emerald-bg, var(--emerald-bg-hover));
 }
 .pvote-badge.pass {
-  color: var(--negative, #ef4444);
+  color: var(--negative, var(--negative));
   background: rgba(239, 68, 68, 0.12);
 }
 .pvote-badge.abstain,
@@ -2104,7 +2104,7 @@
   background: var(--bg-tertiary);
 }
 .pvote-badge.recused {
-  color: var(--warning, #f59e0b);
+  color: var(--warning, var(--amber));
   background: rgba(245, 158, 11, 0.12);
 }
 .pvote-rationale {
@@ -2133,7 +2133,7 @@
   justify-content: center;
   gap: 0.4rem;
   padding: 0.6rem 0.75rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-primary);
   background: var(--surface-card, transparent);
   color: var(--text-secondary);
@@ -2152,14 +2152,14 @@
   outline-offset: 1px;
 }
 .pvote-choice.buy.is-active {
-  border-color: var(--emerald, #10b981);
-  background: var(--emerald-bg, rgba(16, 185, 129, 0.14));
-  color: var(--emerald-text, #10b981);
+  border-color: var(--emerald, var(--emerald));
+  background: var(--emerald-bg, color-mix(in srgb, var(--emerald) 14%, transparent));
+  color: var(--emerald-text, var(--emerald));
 }
 .pvote-choice.pass.is-active {
-  border-color: var(--negative, #ef4444);
+  border-color: var(--negative, var(--negative));
   background: rgba(239, 68, 68, 0.14);
-  color: var(--negative, #ef4444);
+  color: var(--negative, var(--negative));
 }
 .pvote-choice.abstain.is-active {
   border-color: var(--text-muted);
@@ -2174,7 +2174,7 @@
   margin-bottom: 0.35rem;
 }
 .pvote-req {
-  color: var(--warning, #f59e0b);
+  color: var(--warning, var(--amber));
   font-weight: 700;
   font-size: 0.66rem;
   text-transform: uppercase;
@@ -2184,7 +2184,7 @@
   width: 100%;
   min-height: 72px;
   padding: 0.55rem 0.65rem;
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-input);
   background: var(--inset);
   color: var(--text-primary);
@@ -2199,7 +2199,7 @@
 .pvote-error {
   margin-top: 0.5rem;
   font-size: 0.74rem;
-  color: var(--negative, #ef4444);
+  color: var(--negative, var(--negative));
 }
 .pvote-cast-actions {
   display: flex;
@@ -2211,9 +2211,9 @@
   align-items: center;
   gap: 0.4rem;
   padding: 0.55rem 1.1rem;
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   border: none;
-  background: var(--emerald, #10b981);
+  background: var(--emerald, var(--emerald));
   color: #04140d;
   font-size: 0.82rem;
   font-weight: 700;
@@ -2235,7 +2235,7 @@
   color: var(--text-muted);
 }
 .pvote-voted-note {
-  color: var(--emerald-text, #10b981);
+  color: var(--emerald-text, var(--emerald));
 }
 
 /* ============================================================
@@ -2266,7 +2266,7 @@
 }
 .pperf-block {
   border: 1px solid var(--border-primary);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   background: var(--surface-card, transparent);
   padding: 0.85rem 1rem;
 }
@@ -2292,12 +2292,12 @@
   border-radius: 999px;
 }
 .pperf-flag.bad {
-  color: var(--negative, #ef4444);
+  color: var(--negative, var(--negative));
   background: rgba(239, 68, 68, 0.12);
   border: 1px solid rgba(239, 68, 68, 0.3);
 }
 .pperf-flag.warn {
-  color: var(--warning, #f59e0b);
+  color: var(--warning, var(--amber));
   background: rgba(245, 158, 11, 0.12);
   border: 1px solid rgba(245, 158, 11, 0.3);
 }
@@ -2342,7 +2342,7 @@
   gap: 0.35rem;
   font-size: 0.78rem;
   padding: 0.3rem 0.6rem;
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   background: var(--bg-tertiary);
 }
 .pperf-stat-label {
@@ -2356,24 +2356,24 @@
   font-weight: 700;
 }
 .pperf-stat.pos {
-  color: var(--emerald-text, #10b981);
+  color: var(--emerald-text, var(--emerald));
 }
 .pperf-stat.neg {
-  color: var(--negative, #ef4444);
+  color: var(--negative, var(--negative));
 }
 
 /* Falsification (§5.3) */
 .pperf-fals {
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   padding: 0.9rem 1rem;
   border: 1px solid var(--border-primary);
 }
 .pperf-fals.is-intact {
-  border-left: 3px solid var(--emerald, #10b981);
-  background: var(--emerald-bg, rgba(16, 185, 129, 0.06));
+  border-left: 3px solid var(--emerald, var(--emerald));
+  background: var(--emerald-bg, color-mix(in srgb, var(--emerald) 6%, transparent));
 }
 .pperf-fals.is-tripped {
-  border-left: 3px solid var(--negative, #ef4444);
+  border-left: 3px solid var(--negative, var(--negative));
   background: rgba(239, 68, 68, 0.07);
 }
 .pperf-fals-head {
@@ -2402,11 +2402,11 @@
   border-radius: 999px;
 }
 .pperf-fals-state.intact {
-  color: var(--emerald-text, #10b981);
-  background: var(--emerald-bg, rgba(16, 185, 129, 0.14));
+  color: var(--emerald-text, var(--emerald));
+  background: var(--emerald-bg, color-mix(in srgb, var(--emerald) 14%, transparent));
 }
 .pperf-fals-state.tripped {
-  color: var(--negative, #ef4444);
+  color: var(--negative, var(--negative));
   background: rgba(239, 68, 68, 0.14);
 }
 .pperf-fals-text {
@@ -2431,7 +2431,7 @@ blockquote.pperf-fals-text {
   color: var(--text-secondary);
 }
 .pperf-review.overdue {
-  color: var(--warning, #f59e0b);
+  color: var(--warning, var(--amber));
   font-weight: 600;
 }
 .pperf-review .pperf-num,
@@ -2465,10 +2465,10 @@ blockquote.pperf-fals-text {
   margin-top: 0.4rem;
 }
 .pperf-dot.catalyst {
-  background: var(--emerald, #10b981);
+  background: var(--emerald, var(--emerald));
 }
 .pperf-dot.risk {
-  background: var(--warning, #f59e0b);
+  background: var(--warning, var(--amber));
 }
 
 @media (max-width: 640px) {

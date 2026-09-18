@@ -134,7 +134,7 @@ body.light-mode .ox-root {
   max-width: 100%;
   margin: 26px auto 0;
   border: 1px solid var(--ox-line-2);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
   flex-wrap: wrap;
 }
@@ -276,7 +276,7 @@ body.light-mode .ox-root {
 .ox-av.an {
   background: var(--emerald-bg);
   color: var(--emerald);
-  border: 1.5px solid rgba(16, 185, 129, 0.4);
+  border: 1.5px solid color-mix(in srgb, var(--emerald) 40%, transparent);
 }
 
 /* ── I · Chain of command (band chart) ─────────────────────── */
@@ -310,7 +310,7 @@ body.light-mode .ox-root {
   gap: 9px;
   padding: 8px 11px;
   border: 1px solid var(--ox-line-2);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   background: var(--ox-card);
   width: 100%;
   min-width: 0;
@@ -366,7 +366,7 @@ body.light-mode .ox-root {
 }
 .ox2-deskcard {
   border: 1px solid var(--ox-line-2);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   background: var(--ox-card);
   padding: 10px 11px;
   transition:
@@ -420,7 +420,7 @@ body.light-mode .ox-root {
   color: var(--ox-faint);
   border: 1px solid var(--ox-line-2);
   padding: 1px 5px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   margin-left: auto;
   margin-right: 6px;
 }
@@ -546,7 +546,7 @@ body.light-mode .ox-root {
 }
 .oxr-seg {
   border: 1px solid var(--ox-line-2);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   background: var(--ox-seg);
   overflow: hidden;
 }
@@ -563,7 +563,7 @@ body.light-mode .ox-root {
 .oxr-seg-rail {
   width: 3px;
   height: 26px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
 }
 .oxr-seg-rail.exec {
@@ -698,7 +698,7 @@ body.light-mode .ox-root {
 .oxr-tier.editable {
   cursor: pointer;
   border: 1px solid var(--ox-line-2);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   padding: 3px 7px;
 }
 .oxr-tier.editable:hover {
@@ -728,7 +728,7 @@ body.light-mode .ox-root {
   padding: 8px;
   background: var(--ox-card);
   border: 1px solid var(--ox-line-hover);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
 }
 .oxr-rolepop-head {
@@ -744,7 +744,7 @@ body.light-mode .ox-root {
   width: 100%;
   padding: 7px 8px;
   border: 1px solid transparent;
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   background: none;
   cursor: pointer;
   text-align: left;
@@ -784,7 +784,7 @@ body.light-mode .ox-root {
 .oxr-rolebtn {
   height: 28px;
   padding: 0 12px;
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   border: none;
   cursor: pointer;
   font-size: 12px;
@@ -817,7 +817,7 @@ body.light-mode .ox-root {
 /* ── skeleton ──────────────────────────────────────────────── */
 .ox-skel {
   background: var(--ox-card-hover);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   animation: ox-pulse 1.3s ease-in-out infinite;
 }
 @keyframes ox-pulse {
@@ -959,7 +959,7 @@ body.light-mode .ox-root {
   font-weight: 700;
   letter-spacing: 0.1em;
   padding: 1px 5px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background: var(--emerald-bg);
   color: var(--emerald);
   flex-shrink: 0;
@@ -978,7 +978,7 @@ body.light-mode .ox-root {
 .ic-mode .ox2-lead.ic {
   outline: 1px solid var(--emerald);
   outline-offset: 3px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 /* ── Vacant seat card (shared) ─────────────────────────────── */
@@ -988,7 +988,7 @@ body.light-mode .ox-root {
   gap: 9px;
   padding: 8px 11px;
   border: 1px dashed var(--ox-line-hover);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   background: transparent;
   width: 100%;
   min-width: 0;
@@ -1053,7 +1053,7 @@ body.light-mode .ox-root {
 .oxc-col {
   flex: 0 0 216px;
   border: 1px solid var(--ox-line-2);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   background: var(--ox-seg);
   overflow: hidden;
 }
@@ -1106,7 +1106,7 @@ body.light-mode .ox-root {
   padding: 10px;
 }
 .oxc-col-body .ox-node {
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 
 /* ── Radial layout ─────────────────────────────────────────── */
@@ -1144,7 +1144,7 @@ body.light-mode .ox-root {
   width: 128px;
   padding: 9px 10px;
   border: 1px solid var(--ox-line-2);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   background: var(--ox-card);
   cursor: pointer;
   text-align: center;
