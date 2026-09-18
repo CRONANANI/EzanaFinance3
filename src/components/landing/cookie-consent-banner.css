@@ -24,7 +24,7 @@
 
   color: var(--foreground);
   border: 1px solid rgba(13, 24, 33, 0.08);
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   box-shadow: 0 10px 30px -10px rgba(13, 24, 33, 0.18);
   padding: 10px 20px;
   font-family: var(--font-sans);
@@ -138,7 +138,7 @@ body:not(.light-mode) .cookie-banner-body {
   color: rgba(240, 246, 252, 0.72);
 }
 .cookie-banner-link {
-  color: var(--emerald, #059669);
+  color: var(--emerald, var(--emerald-hover));
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -189,13 +189,13 @@ body:not(.light-mode) .cookie-banner-btn--ghost:hover {
   border-color: rgba(255, 255, 255, 0.28);
 }
 .cookie-banner-btn--primary {
-  background: var(--emerald, #059669);
+  background: var(--emerald, var(--emerald-hover));
   color: #ffffff;
-  border-color: var(--emerald, #059669);
+  border-color: var(--emerald, var(--emerald-hover));
 }
 .cookie-banner-btn--primary:hover {
-  background: var(--emerald-dark, #047857);
-  border-color: var(--emerald-dark, #047857);
+  background: var(--emerald-dark, var(--emerald-dark));
+  border-color: var(--emerald-dark, var(--emerald-dark));
 }
 
 /* ── Customize-view categories ───────────────────────────── */
@@ -229,7 +229,7 @@ body:not(.light-mode) .cookie-banner-cat-row strong {
 }
 .cookie-banner-cat-row input[type='checkbox'] {
   margin-top: 3px;
-  accent-color: var(--emerald, #059669);
+  accent-color: var(--emerald, var(--emerald-hover));
   flex-shrink: 0;
 }
 

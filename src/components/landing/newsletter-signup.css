@@ -31,7 +31,7 @@
   width: 100%;
   min-height: 44px;
   padding: 10px 12px 10px 30px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-input);
   background: var(--surface-input);
   color: var(--text-primary);
@@ -54,7 +54,7 @@
   min-height: 44px;
   gap: 6px;
   padding: 9px 16px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--emerald);
   background: var(--emerald);
   color: #ffffff;

@@ -179,7 +179,7 @@
 .hdm-pill {
   width: 10px;
   height: 5px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   background: var(--bg-tertiary);
   border: 1px solid var(--border-secondary);
 }
@@ -250,10 +250,10 @@
 /* The ELO progress track is the card's headline bar, so it runs thicker. */
 .hdm-bar-track--elo {
   height: 6px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
 }
 .hdm-bar-track--elo .hdm-bar-fill {
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
 }
 .hdm-barval {
   color: var(--text-secondary);
@@ -281,7 +281,7 @@
    so they still read against the matching background, in both themes. */
 .hdm-card {
   background: var(--bg-primary);
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   padding: 4px 6px 5px;
   min-width: 0;
   flex: none;
@@ -372,10 +372,10 @@
 }
 .hdm-bar-track--earned {
   height: 4px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
 }
 .hdm-bar-track--earned .hdm-bar-fill {
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
 }
 
 /* Rotating achievement strip: one row visible, replaced on each tick.
@@ -412,7 +412,7 @@
   flex: none;
   width: 9px;
   height: 9px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   display: inline-flex;
   align-items: center;
   justify-content: center;
