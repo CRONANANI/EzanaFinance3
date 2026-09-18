@@ -11,6 +11,7 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from 'recharts';
+import { CHART } from '@/lib/chart-theme';
 import { LATEST_BACKTESTS, LATEST_BACKTEST_BENCHMARK } from '@/lib/for-the-quants-mock-data';
 import { BacktestExplainer } from '@/components/quants/BacktestExplainer';
 import { DateSelector } from '@/components/ui/DateSelector';
@@ -165,7 +166,7 @@ export function BacktestResultsCard() {
               type="checkbox"
               checked={showDrawdown}
               onChange={(e) => setShowDrawdown(e.target.checked)}
-              style={{ accentColor: '#ef4444' }}
+              style={{ accentColor: 'var(--negative)' }}
             />
             Drawdown
           </label>
@@ -200,7 +201,7 @@ export function BacktestResultsCard() {
                   fontFamily: 'monospace',
                   color:
                     m.tone === 'positive'
-                      ? '#10b981'
+                      ? 'var(--emerald)'
                       : m.tone === 'negative'
                         ? '#f87171'
                         : '#d1d5db',
@@ -219,26 +220,30 @@ export function BacktestResultsCard() {
                 <linearGradient id="btGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop
                     offset="0%"
-                    stopColor={isPositive ? '#10b981' : '#ef4444'}
+                    stopColor={isPositive ? 'var(--emerald)' : 'var(--negative)'}
                     stopOpacity={0.2}
                   />
                   <stop
                     offset="100%"
-                    stopColor={isPositive ? '#10b981' : '#ef4444'}
+                    stopColor={isPositive ? 'var(--emerald)' : 'var(--negative)'}
                     stopOpacity={0}
                   />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 4" stroke="rgba(255,255,255,0.04)" />
+              <CartesianGrid
+                strokeDasharray={CHART.gridDash}
+                stroke={CHART.gridStroke}
+                vertical={false}
+              />
               <XAxis
                 dataKey="day"
-                tick={{ fill: '#6b7280', fontSize: 8 }}
+                tick={CHART.tick}
                 axisLine={false}
                 tickLine={false}
                 interval={Math.floor(chartData.length / 6)}
               />
               <YAxis
-                tick={{ fill: '#6b7280', fontSize: 8 }}
+                tick={CHART.tick}
                 axisLine={false}
                 tickLine={false}
                 width={36}
@@ -261,7 +266,7 @@ export function BacktestResultsCard() {
               <Area
                 type="monotone"
                 dataKey="strategy"
-                stroke={isPositive ? '#10b981' : '#ef4444'}
+                stroke={isPositive ? 'var(--emerald)' : 'var(--negative)'}
                 strokeWidth={1.5}
                 fill="url(#btGrad)"
                 dot={false}
@@ -289,13 +294,13 @@ export function BacktestResultsCard() {
               <AreaChart data={chartData} margin={{ top: 2, right: 4, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="ddGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#ef4444" stopOpacity={0.3} />
-                    <stop offset="100%" stopColor="#ef4444" stopOpacity={0} />
+                    <stop offset="0%" stopColor={CHART.negativeStroke} stopOpacity={0.3} />
+                    <stop offset="100%" stopColor={CHART.negativeStroke} stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <XAxis dataKey="day" hide />
                 <YAxis
-                  tick={{ fill: '#6b7280', fontSize: 7 }}
+                  tick={CHART.tick}
                   axisLine={false}
                   tickLine={false}
                   width={36}
@@ -315,7 +320,7 @@ export function BacktestResultsCard() {
                 <Area
                   type="monotone"
                   dataKey="drawdown"
-                  stroke="#ef4444"
+                  stroke={CHART.negativeStroke}
                   strokeWidth={1}
                   fill="url(#ddGrad)"
                   dot={false}

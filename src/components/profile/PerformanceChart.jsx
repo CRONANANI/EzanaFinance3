@@ -11,6 +11,7 @@ import {
   Legend,
   CartesianGrid,
 } from 'recharts';
+import { CHART } from '@/lib/chart-theme';
 import { DateSelector } from '@/components/ui/DateSelector';
 import './performance-chart.css';
 
@@ -127,13 +128,13 @@ export function PerformanceChart({ userSeriesFull = null, userSeries = null }) {
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={merged} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <CartesianGrid
-              strokeDasharray="3 3"
-              stroke="var(--chart-grid, rgba(107,114,128,0.18))"
+              strokeDasharray={CHART.gridDash}
+              stroke={CHART.gridStroke}
               vertical={false}
             />
             <XAxis
               dataKey="date"
-              tick={{ fontSize: 10, fill: 'var(--text-muted, #8b949e)' }}
+              tick={CHART.tick}
               tickLine={false}
               axisLine={false}
               interval="preserveStartEnd"
@@ -141,7 +142,7 @@ export function PerformanceChart({ userSeriesFull = null, userSeries = null }) {
             />
             <YAxis
               tickFormatter={(v) => `${Number(v).toFixed(0)}%`}
-              tick={{ fontSize: 10, fill: 'var(--text-muted, #8b949e)' }}
+              tick={CHART.tick}
               tickLine={false}
               axisLine={false}
               width={40}
@@ -155,7 +156,7 @@ export function PerformanceChart({ userSeriesFull = null, userSeries = null }) {
               type="monotone"
               dataKey="user"
               name="You"
-              stroke="#10b981"
+              stroke={CHART.primaryStroke}
               strokeWidth={2.5}
               dot={false}
               connectNulls

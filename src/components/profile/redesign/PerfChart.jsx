@@ -11,6 +11,7 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from 'recharts';
+import { CHART } from '@/lib/chart-theme';
 import { NumberText } from './NumberText';
 import { page, brand, shape, density, type as typeTokens } from './profile-design-tokens';
 import { DateSelector } from '@/components/ui/DateSelector';
@@ -67,7 +68,7 @@ export function PerfChart({ performance, range, onRangeChange, isLive = false, s
   const lastTop25 = top25.length > 0 ? top25[top25.length - 1] : 0;
 
   const youUp = lastYou >= 0;
-  const youColor = youUp ? '#10b981' : '#ef4444';
+  const youColor = youUp ? 'var(--emerald)' : 'var(--negative)';
   const youGradientId = youUp ? 'perf-grad-up' : 'perf-grad-down';
 
   const badgeLabel = isLive ? 'LIVE' : sourceLabel || 'PAPER';
@@ -137,33 +138,25 @@ export function PerfChart({ performance, range, onRangeChange, isLive = false, s
             <AreaChart data={chartData} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="perf-grad-up" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#10b981" stopOpacity={0.4} />
-                  <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
+                  <stop offset="0%" stopColor={CHART.primaryStroke} stopOpacity={0.4} />
+                  <stop offset="100%" stopColor={CHART.primaryStroke} stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="perf-grad-down" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#ef4444" stopOpacity={0.4} />
-                  <stop offset="100%" stopColor="#ef4444" stopOpacity={0} />
+                  <stop offset="0%" stopColor={CHART.negativeStroke} stopOpacity={0.4} />
+                  <stop offset="100%" stopColor={CHART.negativeStroke} stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid stroke="rgba(255,255,255,0.04)" vertical={false} />
+              <CartesianGrid stroke={CHART.gridStroke} vertical={false} />
               <XAxis
                 dataKey="label"
-                tick={{
-                  className: 'perf-axis-tick',
-                  fontSize: 10,
-                  fontFamily: 'var(--font-mono, monospace)',
-                }}
+                tick={CHART.tick}
                 axisLine={false}
                 tickLine={false}
                 interval="preserveStartEnd"
                 minTickGap={50}
               />
               <YAxis
-                tick={{
-                  className: 'perf-axis-tick',
-                  fontSize: 10,
-                  fontFamily: 'var(--font-mono, monospace)',
-                }}
+                tick={CHART.tick}
                 axisLine={false}
                 tickLine={false}
                 width={44}

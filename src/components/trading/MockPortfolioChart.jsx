@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from 'recharts';
+import { CHART } from '@/lib/chart-theme';
 import { DateSelector } from '@/components/ui/DateSelector';
 import './mock-portfolio-chart.css';
 
@@ -113,7 +114,7 @@ export default function MockPortfolioChart() {
   }, [chartData]);
 
   const isEmpty = !loading && chartData.length === 0;
-  const lineColor = stats?.isPositive === false ? '#ef4444' : '#10b981';
+  const lineColor = stats?.isPositive === false ? 'var(--negative)' : 'var(--emerald)';
   const gradientId = stats?.isPositive === false ? 'mpc-gradient-down' : 'mpc-gradient-up';
 
   return (
@@ -174,33 +175,25 @@ export default function MockPortfolioChart() {
               <AreaChart data={chartData} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="mpc-gradient-up" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#10b981" stopOpacity={0.4} />
-                    <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
+                    <stop offset="0%" stopColor={CHART.primaryStroke} stopOpacity={0.4} />
+                    <stop offset="100%" stopColor={CHART.primaryStroke} stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="mpc-gradient-down" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#ef4444" stopOpacity={0.4} />
-                    <stop offset="100%" stopColor="#ef4444" stopOpacity={0} />
+                    <stop offset="0%" stopColor={CHART.negativeStroke} stopOpacity={0.4} />
+                    <stop offset="100%" stopColor={CHART.negativeStroke} stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid stroke="rgba(255,255,255,0.04)" vertical={false} />
+                <CartesianGrid stroke={CHART.gridStroke} vertical={false} />
                 <XAxis
                   dataKey="label"
-                  tick={{
-                    className: 'mpc-axis-tick',
-                    fontSize: 10,
-                    fontFamily: 'var(--font-mono, monospace)',
-                  }}
+                  tick={CHART.tick}
                   axisLine={false}
                   tickLine={false}
                   interval="preserveStartEnd"
                   minTickGap={50}
                 />
                 <YAxis
-                  tick={{
-                    className: 'mpc-axis-tick',
-                    fontSize: 10,
-                    fontFamily: 'var(--font-mono, monospace)',
-                  }}
+                  tick={CHART.tick}
                   axisLine={false}
                   tickLine={false}
                   width={50}

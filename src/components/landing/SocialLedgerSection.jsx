@@ -22,6 +22,7 @@ import {
   YAxis,
   Tooltip,
 } from 'recharts';
+import { CHART } from '@/lib/chart-theme';
 import './social-ledger.css';
 
 // Eight weekly rating points. Your line is constant across cohorts and ends on
@@ -196,19 +197,19 @@ export function SocialLedgerSection() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid
-                  strokeDasharray="3 3"
-                  stroke="var(--border-secondary)"
+                  strokeDasharray={CHART.gridDash}
+                  stroke={CHART.gridStroke}
                   vertical={false}
                 />
                 <XAxis
                   dataKey="wk"
-                  tick={{ fill: 'var(--text-muted)', fontSize: 11 }}
+                  tick={CHART.tick}
                   axisLine={{ stroke: 'var(--border-primary)' }}
                   tickLine={false}
                   interval="preserveStartEnd"
                 />
                 <YAxis
-                  tick={{ fill: 'var(--text-muted)', fontSize: 11 }}
+                  tick={CHART.tick}
                   axisLine={false}
                   tickLine={false}
                   width={44}
@@ -241,7 +242,7 @@ export function SocialLedgerSection() {
                   strokeWidth={2}
                   fill="url(#sledFill)"
                   isAnimationActive
-                  animationDuration={400}
+                  animationDuration={CHART.animationDuration}
                 />
                 <Area
                   type="monotone"

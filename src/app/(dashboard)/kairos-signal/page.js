@@ -20,6 +20,7 @@ import {
   PolarAngleAxis,
   PolarRadiusAxis,
 } from 'recharts';
+import { CHART } from '@/lib/chart-theme';
 
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -185,20 +186,24 @@ function TemperatureAnomalyCard({ weatherData, region }) {
           <ComposedChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="tempGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#ef4444" stopOpacity={0.3} />
-                <stop offset="100%" stopColor="#ef4444" stopOpacity={0} />
+                <stop offset="0%" stopColor={CHART.negativeStroke} stopOpacity={0.3} />
+                <stop offset="100%" stopColor={CHART.negativeStroke} stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+            <CartesianGrid
+              strokeDasharray={CHART.gridDash}
+              stroke={CHART.gridStroke}
+              vertical={false}
+            />
             <XAxis
               dataKey="date"
-              tick={{ fill: '#6b7280', fontSize: 9 }}
+              tick={CHART.tick}
               axisLine={false}
               tickLine={false}
               interval="preserveStartEnd"
             />
             <YAxis
-              tick={{ fill: '#6b7280', fontSize: 9 }}
+              tick={CHART.tick}
               axisLine={false}
               tickLine={false}
               tickFormatter={(v) => `${v}°`}
@@ -208,7 +213,7 @@ function TemperatureAnomalyCard({ weatherData, region }) {
             <Area
               type="monotone"
               dataKey="high"
-              stroke="#ef4444"
+              stroke={CHART.negativeStroke}
               fill="url(#tempGrad)"
               strokeWidth={1.5}
               dot={false}
@@ -226,7 +231,7 @@ function TemperatureAnomalyCard({ weatherData, region }) {
             <Line
               type="monotone"
               dataKey="avg"
-              stroke="#d4af37"
+              stroke={CHART.goldStroke}
               strokeWidth={2}
               dot={false}
               name="Avg"
@@ -275,16 +280,20 @@ function PrecipitationCard({ weatherData, region }) {
       <div className="kairos-chart-wrap">
         <ResponsiveContainer width="100%" height={200}>
           <ComposedChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+            <CartesianGrid
+              strokeDasharray={CHART.gridDash}
+              stroke={CHART.gridStroke}
+              vertical={false}
+            />
             <XAxis
               dataKey="date"
-              tick={{ fill: '#6b7280', fontSize: 9 }}
+              tick={CHART.tick}
               axisLine={false}
               tickLine={false}
               interval="preserveStartEnd"
             />
             <YAxis
-              tick={{ fill: '#6b7280', fontSize: 9 }}
+              tick={CHART.tick}
               axisLine={false}
               tickLine={false}
               tickFormatter={(v) => `${v}`}
@@ -300,7 +309,7 @@ function PrecipitationCard({ weatherData, region }) {
             <Line
               type="monotone"
               dataKey="waterBalance"
-              stroke="#10b981"
+              stroke={CHART.primaryStroke}
               strokeWidth={1.5}
               dot={false}
               name="Water balance"
@@ -352,29 +361,28 @@ function GrowingDegreeDaysCard({ weatherData }) {
           <AreaChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="gddGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#10b981" stopOpacity={0.25} />
-                <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
+                <stop offset="0%" stopColor={CHART.primaryStroke} stopOpacity={0.25} />
+                <stop offset="100%" stopColor={CHART.primaryStroke} stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+            <CartesianGrid
+              strokeDasharray={CHART.gridDash}
+              stroke={CHART.gridStroke}
+              vertical={false}
+            />
             <XAxis
               dataKey="date"
-              tick={{ fill: '#6b7280', fontSize: 9 }}
+              tick={CHART.tick}
               axisLine={false}
               tickLine={false}
               interval="preserveStartEnd"
             />
-            <YAxis
-              tick={{ fill: '#6b7280', fontSize: 9 }}
-              axisLine={false}
-              tickLine={false}
-              width={40}
-            />
+            <YAxis tick={CHART.tick} axisLine={false} tickLine={false} width={40} />
             <Tooltip contentStyle={chartTooltipStyle} />
             <Area
               type="monotone"
               dataKey="cumulative"
-              stroke="#10b981"
+              stroke={CHART.primaryStroke}
               fill="url(#gddGrad)"
               strokeWidth={2}
               dot={false}
@@ -382,13 +390,13 @@ function GrowingDegreeDaysCard({ weatherData }) {
             />
             <ReferenceLine
               y={630}
-              stroke="#d4af37"
+              stroke={CHART.goldStroke}
               strokeDasharray="4 4"
               strokeWidth={1.5}
               label={{
                 value: '🌽 Pollination (~630 GDD)',
                 position: 'right',
-                fill: '#d4af37',
+                fill: 'var(--gold-champagne)',
                 fontSize: 9,
                 fontWeight: 600,
               }}
@@ -431,25 +439,23 @@ function WindSolarCard({ weatherData }) {
       <div className="kairos-chart-wrap">
         <ResponsiveContainer width="100%" height={180}>
           <LineChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+            <CartesianGrid
+              strokeDasharray={CHART.gridDash}
+              stroke={CHART.gridStroke}
+              vertical={false}
+            />
             <XAxis
               dataKey="date"
-              tick={{ fill: '#6b7280', fontSize: 9 }}
+              tick={CHART.tick}
               axisLine={false}
               tickLine={false}
               interval="preserveStartEnd"
             />
-            <YAxis
-              yAxisId="wind"
-              tick={{ fill: '#6b7280', fontSize: 9 }}
-              axisLine={false}
-              tickLine={false}
-              width={32}
-            />
+            <YAxis yAxisId="wind" tick={CHART.tick} axisLine={false} tickLine={false} width={32} />
             <YAxis
               yAxisId="solar"
               orientation="right"
-              tick={{ fill: '#6b7280', fontSize: 9 }}
+              tick={CHART.tick}
               axisLine={false}
               tickLine={false}
               width={36}
@@ -974,7 +980,7 @@ function CommoditySensitivityCard() {
   };
 
   const SEVERITY_COLORS = {
-    critical: '#ef4444',
+    critical: 'var(--negative)',
     high: '#f59e0b',
     medium: '#3b82f6',
     low: '#6b7280',
@@ -1089,7 +1095,7 @@ function CommoditySensitivityCard() {
                         x={x}
                         y={y}
                         textAnchor="middle"
-                        fill={isActive ? '#d4af37' : '#9ca3af'}
+                        fill={isActive ? 'var(--gold-champagne)' : '#9ca3af'}
                         fontSize={isActive ? 11 : 10}
                         fontWeight={isActive ? 700 : 400}
                         style={{ cursor: 'pointer' }}
@@ -1105,7 +1111,7 @@ function CommoditySensitivityCard() {
                 <PolarRadiusAxis tick={false} axisLine={false} domain={[0, 100]} />
                 <Radar
                   dataKey="v"
-                  stroke="#d4af37"
+                  stroke={CHART.goldStroke}
                   fill="rgba(212,175,55,0.2)"
                   strokeWidth={2}
                   name="Sensitivity"
@@ -1117,7 +1123,7 @@ function CommoditySensitivityCard() {
                         cx={dotCx}
                         cy={dotCy}
                         r={isActive ? 6 : 3}
-                        fill={isActive ? '#d4af37' : '#d4af37'}
+                        fill={isActive ? 'var(--gold-champagne)' : 'var(--gold-champagne)'}
                         stroke={isActive ? '#fff' : 'none'}
                         strokeWidth={isActive ? 2 : 0}
                         style={{ cursor: 'pointer', transition: 'r 0.2s' }}
@@ -1148,7 +1154,7 @@ function CommoditySensitivityCard() {
                 style={{
                   fontSize: '0.6rem',
                   fontWeight: 700,
-                  color: '#d4af37',
+                  color: 'var(--gold-champagne)',
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
                   marginBottom: '0.5rem',
@@ -1264,7 +1270,7 @@ function CommoditySensitivityCard() {
                   style={{
                     fontSize: '0.6rem',
                     fontWeight: 700,
-                    color: '#d4af37',
+                    color: 'var(--gold-champagne)',
                     textTransform: 'uppercase',
                     letterSpacing: '0.05em',
                     display: 'flex',
@@ -1307,13 +1313,15 @@ function CommoditySensitivityCard() {
                   style={{
                     fontSize: '0.85rem',
                     fontWeight: 800,
-                    color: '#d4af37',
+                    color: 'var(--gold-champagne)',
                     fontVariantNumeric: 'tabular-nums',
                   }}
                 >
                   {currentImpact.score}
                 </span>
-                <span style={{ fontSize: '0.5rem', color: '#d4af37', fontWeight: 600 }}>
+                <span
+                  style={{ fontSize: '0.5rem', color: 'var(--gold-champagne)', fontWeight: 600 }}
+                >
                   /100 SENSITIVITY
                 </span>
               </div>
@@ -1570,12 +1578,16 @@ function WeatherMarketImpactCard({ weatherData, region }) {
     return rows;
   }, [weatherData, region]);
 
-  const directionColor = { bullish: '#10b981', bearish: '#ef4444', neutral: '#6b7280' };
+  const directionColor = {
+    bullish: 'var(--emerald)',
+    bearish: 'var(--negative)',
+    neutral: '#6b7280',
+  };
   const magnitudeColor = {
-    Critical: '#ef4444',
+    Critical: 'var(--negative)',
     High: '#f97316',
     Medium: '#f59e0b',
-    Low: '#10b981',
+    Low: 'var(--emerald)',
   };
 
   return (
@@ -1743,7 +1755,7 @@ function BehaviouralSignalsCard() {
       label: 'Weather Trader Sentiment',
       value: 67,
       level: 'Greed',
-      color: '#10b981',
+      color: 'var(--emerald)',
       note: 'Speculators net-long agricultural commodities',
     },
     {
@@ -1756,7 +1768,11 @@ function BehaviouralSignalsCard() {
   ];
 
   const activePatterns = SEASONAL_PATTERNS.filter((p) => p.months.includes(month));
-  const directionColor = { bullish: '#10b981', bearish: '#ef4444', neutral: '#6b7280' };
+  const directionColor = {
+    bullish: 'var(--emerald)',
+    bearish: 'var(--negative)',
+    neutral: '#6b7280',
+  };
 
   return (
     <KairosCard icon="bi-people" title="Behavioural signals & seasonal patterns">
@@ -1857,11 +1873,17 @@ function BehaviouralSignalsCard() {
                         width: `${p.reliability}%`,
                         height: '100%',
                         borderRadius: 2,
-                        background: '#d4af37',
+                        background: 'var(--gold-champagne)',
                       }}
                     />
                   </div>
-                  <span style={{ fontSize: '0.5625rem', color: '#d4af37', fontWeight: 700 }}>
+                  <span
+                    style={{
+                      fontSize: '0.5625rem',
+                      color: 'var(--gold-champagne)',
+                      fontWeight: 700,
+                    }}
+                  >
                     {p.reliability}% historical reliability
                   </span>
                 </div>
@@ -1951,12 +1973,12 @@ function ForecastOutlookCard({ weatherData, region }) {
 
       if (totPrecp > 40) {
         outlook = 'Bearish for supply';
-        color = '#ef4444';
+        color = 'var(--negative)';
         icon = '🌧️';
         note = `Heavy rain (${totPrecp.toFixed(0)}mm) — logistics and harvest disruption risk.`;
       } else if (totPrecp < 2 && avgTemp > 30) {
         outlook = 'Bullish for prices';
-        color = '#10b981';
+        color = 'var(--emerald)';
         icon = '☀️';
         note = `Dry + hot — drought stress risk for ${region.commodity}.`;
       } else if (peakWind > 65) {
@@ -2117,7 +2139,7 @@ function SignalDashboardCard({ weatherData, region, owmCurrent }) {
 
   const overallSeverity = signals.length ? Math.max(...signals.map((s) => s.severity)) : 0;
   const severityLabels = ['Normal', 'Watch', 'Warning', 'Alert'];
-  const severityColors = ['#10b981', '#f59e0b', '#f97316', '#ef4444'];
+  const severityColors = ['var(--emerald)', '#f59e0b', '#f97316', 'var(--negative)'];
 
   // Real-time conditions sourced from OpenWeather One Call. Open-Meteo
   // doesn't expose pressure / UV index / wind gust on the free plan, so this
@@ -2184,7 +2206,7 @@ function SignalDashboardCard({ weatherData, region, owmCurrent }) {
                 className={`bi ${item.icon}`}
                 style={{
                   fontSize: '0.7rem',
-                  color: '#d4af37',
+                  color: 'var(--gold-champagne)',
                   display: 'block',
                   marginBottom: '0.15rem',
                 }}
@@ -2325,7 +2347,7 @@ export default function KairosSignalPage() {
                 style={{
                   fontSize: '0.5rem',
                   fontWeight: 700,
-                  color: '#d4af37',
+                  color: 'var(--gold-champagne)',
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
                   marginBottom: '0.2rem',

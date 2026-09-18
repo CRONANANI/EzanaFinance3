@@ -10,9 +10,9 @@ const TIER_DISPLAY = {
   novice: { label: 'Novice', color: '#94a3b8', range: [0, 999] },
   apprentice: { label: 'Apprentice', color: '#60a5fa', range: [1000, 2499] },
   strategist: { label: 'Strategist', color: '#a78bfa', range: [2500, 4999] },
-  tactician: { label: 'Tactician', color: '#10b981', range: [5000, 6999] },
+  tactician: { label: 'Tactician', color: 'var(--emerald)', range: [5000, 6999] },
   master: { label: 'Master', color: '#f59e0b', range: [7000, 8499] },
-  grandmaster: { label: 'Grandmaster', color: '#D4AF37', range: [8500, 10000] },
+  grandmaster: { label: 'Grandmaster', color: 'var(--gold-champagne)', range: [8500, 10000] },
 };
 
 const NEXT_TIER = {
@@ -26,10 +26,10 @@ const NEXT_TIER = {
 
 const CATEGORY_LABELS = {
   learning: { label: 'Learning', icon: 'bi-book', color: '#60a5fa' },
-  activity: { label: 'Activity', icon: 'bi-lightning', color: '#10b981' },
+  activity: { label: 'Activity', icon: 'bi-lightning', color: 'var(--emerald)' },
   portfolio: { label: 'Portfolio', icon: 'bi-graph-up', color: '#a78bfa' },
   social: { label: 'Social', icon: 'bi-people', color: '#f59e0b' },
-  competition: { label: 'Competition', icon: 'bi-trophy', color: '#D4AF37' },
+  competition: { label: 'Competition', icon: 'bi-trophy', color: 'var(--gold-champagne)' },
   decay: { label: 'Decay', icon: 'bi-hourglass', color: '#6b7280' },
   admin: { label: 'Admin', icon: 'bi-tools', color: '#94a3b8' },
 };

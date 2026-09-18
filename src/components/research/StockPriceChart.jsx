@@ -12,6 +12,7 @@ import {
   ReferenceLine,
   ReferenceArea,
 } from 'recharts';
+import { CHART } from '@/lib/chart-theme';
 import { DateSelector } from '@/components/ui/DateSelector';
 
 const RANGES = ['1D', '1W', '1M', '3M', '6M', '1Y', '3Y', '5Y', '10Y', 'ALL'];
@@ -50,10 +51,10 @@ function CustomTooltip({ active, payload, label }) {
       </p>
       {d.high != null && d.low != null && (
         <>
-          <p style={{ color: '#10b981', margin: '2px 0 0', fontSize: '0.65rem' }}>
+          <p style={{ color: 'var(--emerald)', margin: '2px 0 0', fontSize: '0.65rem' }}>
             H: ${Number(d.high).toFixed(2)}
           </p>
-          <p style={{ color: '#ef4444', margin: 0, fontSize: '0.65rem' }}>
+          <p style={{ color: 'var(--negative)', margin: 0, fontSize: '0.65rem' }}>
             L: ${Number(d.low).toFixed(2)}
           </p>
         </>
@@ -221,7 +222,7 @@ export default function StockPriceChart({
   const isPositive = refPrice != null && firstPrice != null ? refPrice >= firstPrice : true;
   const pctChange =
     firstPrice && refPrice ? (((refPrice - firstPrice) / firstPrice) * 100).toFixed(2) : null;
-  const lineColour = isPositive ? '#10b981' : '#ef4444';
+  const lineColour = isPositive ? 'var(--emerald)' : 'var(--negative)';
   const gradientId = `grad-${symbol?.replace(/[^a-zA-Z0-9]/g, '')}`;
   const minPrice = candles.length ? Math.min(...candles.map((c) => (c.low ?? c.price) * 0.998)) : 0;
   const maxPrice = candles.length
@@ -273,7 +274,7 @@ export default function StockPriceChart({
               style={{
                 fontSize: '0.75rem',
                 fontWeight: 600,
-                color: isPositive ? '#10b981' : '#ef4444',
+                color: isPositive ? 'var(--emerald)' : 'var(--negative)',
                 background: isPositive ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
                 padding: '2px 7px',
                 borderRadius: '4px',
@@ -320,7 +321,7 @@ export default function StockPriceChart({
               <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" opacity="0.25" />
               <path
                 d="M12 2a10 10 0 0 1 10 10"
-                stroke="#10b981"
+                stroke={CHART.primaryStroke}
                 strokeWidth="2"
                 strokeLinecap="round"
               />
@@ -339,7 +340,9 @@ export default function StockPriceChart({
               justifyContent: 'center',
               flexDirection: 'column',
               gap: '6px',
-              color: error.includes('Rate limit') ? 'var(--muted-foreground, #6b7280)' : '#ef4444',
+              color: error.includes('Rate limit')
+                ? 'var(--muted-foreground, #6b7280)'
+                : 'var(--negative)',
               fontSize: '0.75rem',
               textAlign: 'center',
               padding: '1rem',
@@ -413,19 +416,13 @@ export default function StockPriceChart({
                   </linearGradient>
                 </defs>
                 <CartesianGrid
-                  strokeDasharray="2 4"
-                  stroke="rgba(128,128,128,0.12)"
+                  strokeDasharray={CHART.gridDash}
+                  stroke={CHART.gridStroke}
                   vertical={false}
                 />
                 <XAxis
                   dataKey="label"
-                  tick={{
-                    /* fill via .spc-axis-tick in globals.css (--foreground isn’t in theme; inline SVG
-                     fill with theme vars fails; stylesheet rules resolve var() on SVG <text>). */
-                    className: 'spc-axis-tick',
-                    fontSize: 10,
-                    fontFamily: 'var(--font-mono, monospace)',
-                  }}
+                  tick={CHART.tick}
                   axisLine={false}
                   tickLine={false}
                   interval="preserveStartEnd"
@@ -433,11 +430,7 @@ export default function StockPriceChart({
                 />
                 <YAxis
                   domain={[minPrice, maxPrice]}
-                  tick={{
-                    className: 'spc-axis-tick',
-                    fontSize: 10,
-                    fontFamily: 'var(--font-mono, monospace)',
-                  }}
+                  tick={CHART.tick}
                   axisLine={false}
                   tickLine={false}
                   width={40}
@@ -519,7 +512,7 @@ export default function StockPriceChart({
                       fontSize: '0.95rem',
                       fontWeight: 800,
                       fontFamily: 'var(--font-mono, monospace)',
-                      color: activePct >= 0 ? '#10b981' : '#ef4444',
+                      color: activePct >= 0 ? 'var(--emerald)' : 'var(--negative)',
                     }}
                   >
                     {activeDollar >= 0 ? '+' : ''}
@@ -530,13 +523,16 @@ export default function StockPriceChart({
                       fontSize: '0.8rem',
                       fontWeight: 700,
                       fontFamily: 'var(--font-mono, monospace)',
-                      color: activePct >= 0 ? '#10b981' : '#ef4444',
+                      color: activePct >= 0 ? 'var(--emerald)' : 'var(--negative)',
                     }}
                   >
                     ({Math.abs(activePct).toFixed(2)}%)
                   </span>
                   <span
-                    style={{ fontSize: '0.85rem', color: activePct >= 0 ? '#10b981' : '#ef4444' }}
+                    style={{
+                      fontSize: '0.85rem',
+                      color: activePct >= 0 ? 'var(--emerald)' : 'var(--negative)',
+                    }}
                   >
                     {activePct >= 0 ? '↑' : '↓'}
                   </span>
@@ -578,7 +574,7 @@ export default function StockPriceChart({
                       fontSize: '1.05rem',
                       fontWeight: 800,
                       fontFamily: 'var(--font-mono, monospace)',
-                      color: measurement.pct >= 0 ? '#10b981' : '#ef4444',
+                      color: measurement.pct >= 0 ? 'var(--emerald)' : 'var(--negative)',
                     }}
                   >
                     {measurement.dollarChange >= 0 ? '+' : ''}
@@ -589,7 +585,7 @@ export default function StockPriceChart({
                       fontSize: '0.85rem',
                       fontWeight: 700,
                       fontFamily: 'var(--font-mono, monospace)',
-                      color: measurement.pct >= 0 ? '#10b981' : '#ef4444',
+                      color: measurement.pct >= 0 ? 'var(--emerald)' : 'var(--negative)',
                     }}
                   >
                     ({Math.abs(measurement.pct).toFixed(2)}%)
@@ -597,7 +593,7 @@ export default function StockPriceChart({
                   <span
                     style={{
                       fontSize: '0.95rem',
-                      color: measurement.pct >= 0 ? '#10b981' : '#ef4444',
+                      color: measurement.pct >= 0 ? 'var(--emerald)' : 'var(--negative)',
                     }}
                   >
                     {measurement.pct >= 0 ? '↑' : '↓'}

@@ -19,15 +19,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-} from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { CHART } from '@/lib/chart-theme';
 
 const CURRENT_YEAR = new Date().getFullYear();
 const YEAR_OPTIONS = (() => {
@@ -38,7 +31,7 @@ const YEAR_OPTIONS = (() => {
 })();
 
 const PARTY_COLORS = {
-  R: '#ef4444',
+  R: 'var(--negative)',
   D: '#3b82f6',
   I: '#a855f7',
 };
@@ -114,12 +107,9 @@ export function TopPerformingPoliticiansCard({ onOpenPolitician }) {
         chamber: p.chamber,
         trades: p.num_trades,
         biggestWinner: p.biggest_winner_symbol,
-        returnPct:
-          p.estimated_return_pct != null
-            ? Number(p.estimated_return_pct)
-            : null,
+        returnPct: p.estimated_return_pct != null ? Number(p.estimated_return_pct) : null,
       })),
-    [performers]
+    [performers],
   );
 
   const yearLabel = year === 'all' ? 'All-time (2016–present)' : year;
@@ -130,9 +120,7 @@ export function TopPerformingPoliticiansCard({ onOpenPolitician }) {
       <header className="itc-top-perf-hdr">
         <div className="itc-top-perf-hdr-main">
           <h3 className="itc-top-perf-title">Top Performing Politicians</h3>
-          <p className="itc-top-perf-sub">
-            Estimated return on disclosed trades · {yearLabel}
-          </p>
+          <p className="itc-top-perf-sub">Estimated return on disclosed trades · {yearLabel}</p>
         </div>
 
         <div className="itc-top-perf-controls">
@@ -165,14 +153,12 @@ export function TopPerformingPoliticiansCard({ onOpenPolitician }) {
 
       {showMethodology && (
         <div className="itc-top-perf-method" role="note">
-          <strong>How this is calculated:</strong> We estimate position size
-          using the midpoint of each disclosed amount range, pull entry/exit
-          prices from historical market data, and match buys to sells where
-          possible within the same calendar year. Unmatched buys are priced
-          to year-end. These are <em>estimates</em> — congressional
-          disclosures report amounts only as ranges and don&apos;t include
-          cost-basis tracking, so actual returns may differ. This metric
-          reflects disclosed trades only, not total portfolio return.
+          <strong>How this is calculated:</strong> We estimate position size using the midpoint of
+          each disclosed amount range, pull entry/exit prices from historical market data, and match
+          buys to sells where possible within the same calendar year. Unmatched buys are priced to
+          year-end. These are <em>estimates</em> — congressional disclosures report amounts only as
+          ranges and don&apos;t include cost-basis tracking, so actual returns may differ. This
+          metric reflects disclosed trades only, not total portfolio return.
         </div>
       )}
 
@@ -212,7 +198,7 @@ export function TopPerformingPoliticiansCard({ onOpenPolitician }) {
               >
                 <XAxis
                   type="number"
-                  tick={{ fontSize: 9, fill: 'var(--text-secondary, #8b949e)' }}
+                  tick={CHART.tick}
                   tickFormatter={(v) => formatCurrency(v)}
                   domain={[0, maxPnl > 0 ? 'auto' : 1]}
                   axisLine={false}
@@ -222,7 +208,7 @@ export function TopPerformingPoliticiansCard({ onOpenPolitician }) {
                 <YAxis
                   type="category"
                   dataKey="name"
-                  tick={{ fontSize: 10, fill: 'var(--text-primary, #f0f6fc)' }}
+                  tick={CHART.tick}
                   width={72}
                   axisLine={false}
                   tickLine={false}
@@ -237,18 +223,14 @@ export function TopPerformingPoliticiansCard({ onOpenPolitician }) {
                     color: '#f0f6fc',
                   }}
                   formatter={(v) => [formatCurrency(v), 'Estimated P&L']}
-                  labelFormatter={(label, payload) =>
-                    payload?.[0]?.payload?.fullName ?? label
-                  }
+                  labelFormatter={(label, payload) => payload?.[0]?.payload?.fullName ?? label}
                 />
                 <Bar dataKey="pnl" radius={[0, 4, 4, 0]}>
                   {chartData.map((entry, i) => (
                     <Cell
                       key={i}
                       fill={
-                        entry.pnl < 0
-                          ? '#6b7280'
-                          : PARTY_COLORS[entry.party] || '#10b981'
+                        entry.pnl < 0 ? '#6b7280' : PARTY_COLORS[entry.party] || 'var(--emerald)'
                       }
                     />
                   ))}
@@ -262,7 +244,14 @@ export function TopPerformingPoliticiansCard({ onOpenPolitician }) {
               const pol = performers[i];
               const slug = slugify(pol?.politician_name);
               const pnlClass = p.pnl >= 0 ? 'pos' : 'neg';
-              const partyLabel = p.party === 'D' ? 'Democrat' : p.party === 'R' ? 'Republican' : p.party === 'I' ? 'Independent' : null;
+              const partyLabel =
+                p.party === 'D'
+                  ? 'Democrat'
+                  : p.party === 'R'
+                    ? 'Republican'
+                    : p.party === 'I'
+                      ? 'Independent'
+                      : null;
 
               return (
                 <li key={pol?.politician_id ?? p.fullName} className="itc-top-perf-row">
@@ -286,10 +275,12 @@ export function TopPerformingPoliticiansCard({ onOpenPolitician }) {
                     </span>
                   </div>
                   <div className={`itc-top-perf-pnl ${pnlClass}`}>
-                    {p.pnl >= 0 ? '+' : ''}{formatCurrency(p.pnl)}
+                    {p.pnl >= 0 ? '+' : ''}
+                    {formatCurrency(p.pnl)}
                     {Number.isFinite(p.returnPct) && (
                       <span className="itc-top-perf-pct">
-                        {p.returnPct >= 0 ? '+' : ''}{p.returnPct.toFixed(1)}%
+                        {p.returnPct >= 0 ? '+' : ''}
+                        {p.returnPct.toFixed(1)}%
                       </span>
                     )}
                   </div>
@@ -301,8 +292,8 @@ export function TopPerformingPoliticiansCard({ onOpenPolitician }) {
       )}
 
       <footer className="itc-top-perf-foot">
-        Source: FMP congressional disclosures · Historical prices via FMP ·
-        Methodology: estimated P&amp;L on disclosed trades only.
+        Source: FMP congressional disclosures · Historical prices via FMP · Methodology: estimated
+        P&amp;L on disclosed trades only.
       </footer>
     </section>
   );

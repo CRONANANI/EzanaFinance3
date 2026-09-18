@@ -13,6 +13,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { CHART } from '@/lib/chart-theme';
 
 const TABS = [
   { key: 'market', label: 'Market Performance' },
@@ -51,8 +52,8 @@ const PORTFOLIO_KEY = 'portfolio';
 const CHART_KEYS = [...MARKET_KEYS, PORTFOLIO_KEY];
 
 const SERIES_COLORS = {
-  spx: '#ef4444',
-  ixic: '#10b981',
+  spx: 'var(--negative)',
+  ixic: 'var(--emerald)',
   rut: '#8b5cf6',
   dji: '#f59e0b',
   vix: '#f43f5e',
@@ -324,11 +325,11 @@ function MarketPerformanceTab({
     if (correlation == null) return 'var(--home-muted)';
     const abs = Math.abs(correlation);
     if (correlation > 0) {
-      if (abs >= 0.5) return '#10b981';
-      if (abs >= 0.2) return '#34d399';
+      if (abs >= 0.5) return 'var(--emerald)';
+      if (abs >= 0.2) return 'var(--positive-bright)';
       return 'var(--home-muted-soft)';
     }
-    if (abs >= 0.5) return '#ef4444';
+    if (abs >= 0.5) return 'var(--negative)';
     if (abs >= 0.2) return '#fca5a5';
     return 'var(--home-muted-soft)';
   }, [correlation]);
@@ -366,7 +367,7 @@ function MarketPerformanceTab({
       {failed && !loading && (
         <p
           className="hts-week-loading"
-          style={{ textAlign: 'center', margin: '0.5rem 0', color: '#ef4444' }}
+          style={{ textAlign: 'center', margin: '0.5rem 0', color: 'var(--negative)' }}
         >
           {indexPayload?.error === 'no_key'
             ? 'Could not load index data. Add ALPHA_VANTAGE_API_KEY for multi-period charts, or FMP_API_KEY for weekly data.'
@@ -386,9 +387,9 @@ function MarketPerformanceTab({
                 margin={{ top: 2, right: 12, left: compact ? -4 : 4, bottom: chartOnly ? 4 : 8 }}
               >
                 <CartesianGrid
-                  stroke="rgba(255,255,255,0.04)"
+                  stroke={CHART.gridStroke}
                   vertical={false}
-                  strokeDasharray="2 4"
+                  strokeDasharray={CHART.gridDash}
                 />
                 <XAxis
                   dataKey="day"
@@ -397,7 +398,7 @@ function MarketPerformanceTab({
                     left: chartData.length <= 1 ? 100 : 12,
                     right: chartData.length <= 1 ? 100 : 8,
                   }}
-                  tick={{ fill: 'var(--home-muted)', fontSize: 9 }}
+                  tick={CHART.tick}
                   axisLine={false}
                   tickLine={false}
                 />
@@ -405,7 +406,7 @@ function MarketPerformanceTab({
                   domain={yDomain}
                   ticks={yTicks}
                   tickFormatter={(v) => `${v > 0 ? '+' : ''}${v.toFixed(2)}%`}
-                  tick={{ fill: 'var(--home-muted)', fontSize: 9 }}
+                  tick={CHART.tick}
                   axisLine={false}
                   tickLine={false}
                   width={compact ? 38 : 44}
@@ -564,7 +565,7 @@ function PlatformActivityTab() {
       sub: '72% buying activity this month',
       score: '72%',
       pct: 72,
-      color: '#10b981',
+      color: 'var(--emerald)',
     },
     {
       title: 'Engaged in 3 community posts',
@@ -688,7 +689,8 @@ function PlatformActivityTab() {
             color: 'var(--home-row-text)',
           }}
         >
-          You&apos;re more active than <strong style={{ color: '#10b981' }}>60%</strong> of users
+          You&apos;re more active than <strong style={{ color: 'var(--emerald)' }}>60%</strong> of
+          users
         </p>
         <div
           style={{
@@ -709,9 +711,9 @@ function PlatformActivityTab() {
           />
         </div>
         <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--home-muted-soft)' }}>
-          <i className="bi bi-bar-chart-line" style={{ marginRight: 6, color: '#10b981' }} />
-          Ranked <strong style={{ color: '#10b981', fontWeight: 600 }}>#8</strong> amongst friends{' '}
-          <span style={{ color: '#10b981' }}>(up 2 spots from last month)</span>
+          <i className="bi bi-bar-chart-line" style={{ marginRight: 6, color: 'var(--emerald)' }} />
+          Ranked <strong style={{ color: 'var(--emerald)', fontWeight: 600 }}>#8</strong> amongst
+          friends <span style={{ color: 'var(--emerald)' }}>(up 2 spots from last month)</span>
         </p>
       </div>
     </div>
@@ -818,7 +820,7 @@ export function LatelyOnEzana({ compact = false, marketChartOnly = false }) {
               borderRadius: 5,
               border: `1px solid ${showPortfolio ? 'rgba(16,185,129,0.4)' : 'var(--border-primary, rgba(128,128,128,0.2))'}`,
               background: showPortfolio ? 'rgba(16,185,129,0.1)' : 'transparent',
-              color: showPortfolio ? '#10b981' : 'var(--text-muted, #8b949e)',
+              color: showPortfolio ? 'var(--emerald)' : 'var(--text-muted, #8b949e)',
               fontSize: '0.55rem',
               fontWeight: 600,
               cursor: 'pointer',

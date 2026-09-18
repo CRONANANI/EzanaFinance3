@@ -40,6 +40,7 @@ import {
   ReferenceLine,
   Cell,
 } from 'recharts';
+import { CHART } from '@/lib/chart-theme';
 
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -560,8 +561,8 @@ function Card({ icon, title, subtitle, children, wide, actions, className = '', 
 }
 
 function trajectoryIcon(t) {
-  if (t === 'up') return { icon: 'bi-arrow-up-right', color: '#10b981' };
-  if (t === 'down') return { icon: 'bi-arrow-down-right', color: '#ef4444' };
+  if (t === 'up') return { icon: 'bi-arrow-up-right', color: 'var(--emerald)' };
+  if (t === 'down') return { icon: 'bi-arrow-down-right', color: 'var(--negative)' };
   return { icon: 'bi-dash-lg', color: '#9ca3af' };
 }
 
@@ -638,11 +639,16 @@ function PowerRankingsCard({ empireData }) {
               layout="vertical"
               margin={{ top: 8, right: 24, left: 8, bottom: 8 }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke={tokens.grid} horizontal={false} />
+              <CartesianGrid
+                strokeDasharray={CHART.gridDash}
+                stroke={tokens.grid}
+                horizontal={false}
+                vertical={false}
+              />
               <XAxis
                 type="number"
                 domain={[0, 1]}
-                tick={{ fill: tokens.axisTick, fontSize: 10 }}
+                tick={CHART.tick}
                 axisLine={false}
                 tickLine={false}
               />
@@ -662,7 +668,15 @@ function PowerRankingsCard({ empireData }) {
                 {data.map((entry, i) => (
                   <Cell
                     key={entry.rank}
-                    fill={i === 0 ? '#d4af37' : i < 3 ? '#10b981' : i < 6 ? '#6366f1' : '#6b7280'}
+                    fill={
+                      i === 0
+                        ? 'var(--gold-champagne)'
+                        : i < 3
+                          ? 'var(--emerald)'
+                          : i < 6
+                            ? '#6366f1'
+                            : '#6b7280'
+                    }
                   />
                 ))}
               </Bar>
@@ -792,19 +806,19 @@ function PowerDimensionRadar({ empireData }) {
         <ResponsiveContainer width="100%" height="100%" minWidth={0}>
           <RadarChart data={data} cx="50%" cy="50%" outerRadius="75%">
             <PolarGrid stroke="rgba(212,175,55,0.22)" />
-            <PolarAngleAxis dataKey="dimension" tick={{ fill: tokens.axisTick, fontSize: 9 }} />
+            <PolarAngleAxis dataKey="dimension" tick={CHART.tick} />
             <PolarRadiusAxis tick={false} axisLine={false} domain={[0, 6]} />
             <Radar
               name={cfg.countryA}
               dataKey={cfg.countryA}
-              stroke="#d4af37"
+              stroke={CHART.goldStroke}
               fill="rgba(212,175,55,0.18)"
               strokeWidth={2}
             />
             <Radar
               name={cfg.countryB}
               dataKey={cfg.countryB}
-              stroke="#10b981"
+              stroke={CHART.primaryStroke}
               fill="rgba(16,185,129,0.18)"
               strokeWidth={2}
             />
@@ -1040,16 +1054,20 @@ function BigCycleCard({ empireData }) {
           >
             <ResponsiveContainer width="100%" height="100%" minWidth={0}>
               <LineChart data={allModeData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke={tokens.grid} />
+                <CartesianGrid
+                  strokeDasharray={CHART.gridDash}
+                  stroke={tokens.grid}
+                  vertical={false}
+                />
                 <XAxis
                   dataKey="year"
-                  tick={{ fill: tokens.axisTick, fontSize: 10 }}
+                  tick={CHART.tick}
                   axisLine={false}
                   tickLine={false}
                   interval={Math.max(0, Math.floor(allModeData.length / 12))}
                 />
                 <YAxis
-                  tick={{ fill: tokens.axisTick, fontSize: 10 }}
+                  tick={CHART.tick}
                   axisLine={false}
                   tickLine={false}
                   domain={[0, 100]}
@@ -1074,7 +1092,7 @@ function BigCycleCard({ empireData }) {
                 />
                 <ReferenceLine
                   x={2025}
-                  stroke="#d4af37"
+                  stroke={CHART.goldStroke}
                   strokeDasharray="4 2"
                   label={{
                     value: 'Now',
@@ -1163,31 +1181,30 @@ function BigCycleCard({ empireData }) {
               <AreaChart data={singleData} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
                 <defs>
                   <linearGradient id="cycleGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#ef4444" stopOpacity={0.3} />
-                    <stop offset="100%" stopColor="#ef4444" stopOpacity={0} />
+                    <stop offset="0%" stopColor={CHART.negativeStroke} stopOpacity={0.3} />
+                    <stop offset="100%" stopColor={CHART.negativeStroke} stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke={tokens.grid} />
+                <CartesianGrid
+                  strokeDasharray={CHART.gridDash}
+                  stroke={tokens.grid}
+                  vertical={false}
+                />
                 <XAxis
                   dataKey="year"
-                  tick={{ fill: tokens.axisTick, fontSize: 10 }}
+                  tick={CHART.tick}
                   axisLine={false}
                   tickLine={false}
                   interval={Math.max(0, Math.floor(singleData.length / 12))}
                 />
-                <YAxis
-                  tick={{ fill: tokens.axisTick, fontSize: 10 }}
-                  axisLine={false}
-                  tickLine={false}
-                  domain={[0, 100]}
-                />
+                <YAxis tick={CHART.tick} axisLine={false} tickLine={false} domain={[0, 100]} />
                 <Tooltip
                   contentStyle={tokens.tooltipStyle}
                   formatter={(v) => [`${v}`, 'Power Index']}
                 />
                 <ReferenceLine
                   x={2025}
-                  stroke="#d4af37"
+                  stroke={CHART.goldStroke}
                   strokeDasharray="4 2"
                   label={{
                     value: 'Now',
@@ -1199,7 +1216,7 @@ function BigCycleCard({ empireData }) {
                 <Area
                   type="monotone"
                   dataKey="value"
-                  stroke="#ef4444"
+                  stroke={CHART.negativeStroke}
                   fill="url(#cycleGradient)"
                   strokeWidth={2.5}
                 />
@@ -1231,10 +1248,10 @@ function BigCycleCard({ empireData }) {
 }
 
 const DEBT_COUNTRY_OPTIONS = [
-  { value: 'USA', label: '🇺🇸 USA', color: '#d4af37' },
-  { value: 'CHN', label: '🇨🇳 China', color: '#ef4444' },
+  { value: 'USA', label: '🇺🇸 USA', color: 'var(--gold-champagne)' },
+  { value: 'CHN', label: '🇨🇳 China', color: 'var(--negative)' },
   { value: 'JPN', label: '🇯🇵 Japan', color: '#8b5cf6' },
-  { value: 'DEU', label: '🇩🇪 Germany', color: '#10b981' },
+  { value: 'DEU', label: '🇩🇪 Germany', color: 'var(--emerald)' },
   { value: 'GBR', label: '🇬🇧 UK', color: '#3b82f6' },
   { value: 'EUR', label: '🇪🇺 Eurozone', color: '#f59e0b' },
 ];
@@ -1301,15 +1318,14 @@ function DebtCycleCard() {
         <div style={{ height: 260 }}>
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke={tokens.grid} />
-              <XAxis
-                dataKey="year"
-                tick={{ fill: tokens.axisTick, fontSize: 10 }}
-                axisLine={false}
-                tickLine={false}
+              <CartesianGrid
+                strokeDasharray={CHART.gridDash}
+                stroke={tokens.grid}
+                vertical={false}
               />
+              <XAxis dataKey="year" tick={CHART.tick} axisLine={false} tickLine={false} />
               <YAxis
-                tick={{ fill: tokens.axisTick, fontSize: 10 }}
+                tick={CHART.tick}
                 axisLine={false}
                 tickLine={false}
                 tickFormatter={(v) => `${v}%`}
@@ -1399,26 +1415,19 @@ function MilitaryCard() {
       <div style={{ height: 260 }}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke={tokens.grid} />
-            <XAxis
-              dataKey="country"
-              tick={{ fill: tokens.axisTickEmphasis, fontSize: 10 }}
-              axisLine={false}
-              tickLine={false}
-            />
-            <YAxis
-              tick={{ fill: tokens.axisTick, fontSize: 10 }}
-              axisLine={false}
-              tickLine={false}
-              tickFormatter={format}
-            />
+            <CartesianGrid strokeDasharray={CHART.gridDash} stroke={tokens.grid} vertical={false} />
+            <XAxis dataKey="country" tick={CHART.tick} axisLine={false} tickLine={false} />
+            <YAxis tick={CHART.tick} axisLine={false} tickLine={false} tickFormatter={format} />
             <Tooltip
               contentStyle={tokens.tooltipStyle}
               formatter={(v) => [format(v), metricLabel]}
             />
             <Bar dataKey={cfg.metric} radius={[4, 4, 0, 0]}>
               {data.map((row, i) => (
-                <Cell key={row.country} fill={i === 0 ? '#d4af37' : '#ef4444'} />
+                <Cell
+                  key={row.country}
+                  fill={i === 0 ? 'var(--gold-champagne)' : 'var(--negative)'}
+                />
               ))}
             </Bar>
           </BarChart>
@@ -1491,15 +1500,10 @@ function ReserveCurrencyCard() {
             margin={{ top: 8, right: 8, left: -8, bottom: 0 }}
             stackOffset={cfg.display === 'stacked' ? 'expand' : 'none'}
           >
-            <CartesianGrid strokeDasharray="3 3" stroke={tokens.grid} />
-            <XAxis
-              dataKey="year"
-              tick={{ fill: tokens.axisTick, fontSize: 10 }}
-              axisLine={false}
-              tickLine={false}
-            />
+            <CartesianGrid strokeDasharray={CHART.gridDash} stroke={tokens.grid} vertical={false} />
+            <XAxis dataKey="year" tick={CHART.tick} axisLine={false} tickLine={false} />
             <YAxis
-              tick={{ fill: tokens.axisTick, fontSize: 10 }}
+              tick={CHART.tick}
               axisLine={false}
               tickLine={false}
               tickFormatter={
@@ -1514,7 +1518,7 @@ function ReserveCurrencyCard() {
               type="monotone"
               dataKey="USD"
               stackId={cfg.display === 'stacked' ? '1' : undefined}
-              stroke="#d4af37"
+              stroke={CHART.goldStroke}
               fill="rgba(212,175,55,0.7)"
             />
             <Area
@@ -1535,14 +1539,14 @@ function ReserveCurrencyCard() {
               type="monotone"
               dataKey="CNY"
               stackId={cfg.display === 'stacked' ? '1' : undefined}
-              stroke="#ef4444"
+              stroke={CHART.negativeStroke}
               fill="rgba(239,68,68,0.7)"
             />
             <Area
               type="monotone"
               dataKey="GBP"
               stackId={cfg.display === 'stacked' ? '1' : undefined}
-              stroke="#10b981"
+              stroke={CHART.primaryStroke}
               fill="rgba(16,185,129,0.7)"
             />
           </AreaChart>

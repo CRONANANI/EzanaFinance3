@@ -21,6 +21,7 @@ import {
   LineChart,
   ReferenceLine,
 } from 'recharts';
+import { CHART } from '@/lib/chart-theme';
 import { ModelVariableStrip } from '@/components/research/models/ModelVariableStrip';
 
 export function EarningsAnalysisCard({ symbol, onClose }) {
@@ -213,8 +214,8 @@ export function EarningsAnalysisCard({ symbol, onClose }) {
         <div className="h-52">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={trendData} margin={{ top: 4, right: 8, bottom: 4, left: 0 }}>
-              <XAxis dataKey="period" tick={{ fontSize: 9 }} />
-              <YAxis domain={[0, 100]} tick={{ fontSize: 9 }} width={36} />
+              <XAxis dataKey="period" tick={CHART.tick} />
+              <YAxis domain={[0, 100]} tick={CHART.tick} width={36} />
               <ReferenceLine y={50} stroke="hsl(var(--border))" strokeDasharray="3 3" />
               <Tooltip
                 contentStyle={{

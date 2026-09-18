@@ -26,6 +26,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { CHART } from '@/lib/chart-theme';
 import { DateSelector } from '@/components/ui/DateSelector';
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -531,7 +532,12 @@ function Spark({ seed, up, w = 64, h = 22 }) {
   const d = pts.map((y, i) => `${(i / (pts.length - 1)) * w},${h - (y / 100) * h}`).join(' ');
   return (
     <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="wl-spark">
-      <polyline points={d} fill="none" stroke={up ? '#10b981' : '#ef4444'} strokeWidth="1.5" />
+      <polyline
+        points={d}
+        fill="none"
+        stroke={up ? 'var(--emerald)' : 'var(--negative)'}
+        strokeWidth="1.5"
+      />
     </svg>
   );
 }
@@ -546,7 +552,12 @@ function SparkPortfolio({ seed, returnYtd, w = 64, h = 22 }) {
     .join(' ');
   return (
     <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="wl-spark">
-      <polyline points={d} fill="none" stroke={up ? '#10b981' : '#ef4444'} strokeWidth="1.5" />
+      <polyline
+        points={d}
+        fill="none"
+        stroke={up ? 'var(--emerald)' : 'var(--negative)'}
+        strokeWidth="1.5"
+      />
     </svg>
   );
 }
@@ -577,7 +588,12 @@ function Chart({ item, timeRange }) {
 
   const { data, lineColour, gradientId, startValue } = useMemo(() => {
     if (!item) {
-      return { data: [], lineColour: '#10b981', gradientId: 'wl-cg-empty', startValue: null };
+      return {
+        data: [],
+        lineColour: 'var(--emerald)',
+        gradientId: 'wl-cg-empty',
+        startValue: null,
+      };
     }
     if (isPortfolio) {
       const ytd = item.returnYtd ?? 0;
@@ -589,7 +605,7 @@ function Chart({ item, timeRange }) {
       }));
       return {
         data: arr,
-        lineColour: end >= 0 ? '#10b981' : '#ef4444',
+        lineColour: end >= 0 ? 'var(--emerald)' : 'var(--negative)',
         gradientId: `wl-cg-${seed}-pf`,
         startValue: pts[0],
       };
@@ -602,7 +618,7 @@ function Chart({ item, timeRange }) {
     }));
     return {
       data: arr,
-      lineColour: up ? '#10b981' : '#ef4444',
+      lineColour: up ? 'var(--emerald)' : 'var(--negative)',
       gradientId: `wl-cg-${seed}`,
       startValue: pts[0],
     };
@@ -623,14 +639,14 @@ function Chart({ item, timeRange }) {
               <stop offset="100%" stopColor={lineColour} stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="2 4" stroke="rgba(128,128,128,0.12)" vertical={false} />
+          <CartesianGrid
+            strokeDasharray={CHART.gridDash}
+            stroke={CHART.gridStroke}
+            vertical={false}
+          />
           <XAxis
             dataKey="label"
-            tick={{
-              className: 'wl-chart-axis-tick',
-              fontSize: 10,
-              fontFamily: 'var(--font-mono, monospace)',
-            }}
+            tick={CHART.tick}
             axisLine={false}
             tickLine={false}
             interval="preserveStartEnd"
@@ -638,11 +654,7 @@ function Chart({ item, timeRange }) {
           />
           <YAxis
             domain={['auto', 'auto']}
-            tick={{
-              className: 'wl-chart-axis-tick',
-              fontSize: 10,
-              fontFamily: 'var(--font-mono, monospace)',
-            }}
+            tick={CHART.tick}
             axisLine={false}
             tickLine={false}
             width={40}

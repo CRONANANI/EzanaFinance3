@@ -14,6 +14,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { CHART } from '@/lib/chart-theme';
 import { TickerPerformanceChart } from '@/components/home/TickerPerformanceChart';
 import { AddPortfolioModal } from '@/components/home/AddPortfolioModal';
 import { DateSelector } from '@/components/ui/DateSelector';
@@ -32,7 +33,7 @@ const HOLDINGS_PAGE_SIZE = 9;
 
 const SECTOR_COLORS = {
   Technology: '#3b82f6',
-  Healthcare: '#10b981',
+  Healthcare: 'var(--emerald)',
   Finance: '#a78bfa',
   Financials: '#a78bfa',
   'Financial Services': '#a78bfa',
@@ -108,7 +109,7 @@ const TICKER_ITEMS = [
    /api/market-data/upcoming-events feed so dots, chips and event accents
    stay consistent. */
 const EVENT_CATEGORY_META = {
-  earnings: { label: 'Earnings', color: '#10b981' },
+  earnings: { label: 'Earnings', color: 'var(--emerald)' },
   dividends: { label: 'Dividends', color: '#22c55e' },
   ipos: { label: 'IPOs', color: '#a855f7' },
   economic: { label: 'Economic', color: '#6366f1' },
@@ -139,7 +140,7 @@ const SCHEDULE_FILTERS = [
 
 /* Default calendar legend shown before any events load / when none are in window. */
 const DEFAULT_CAL_LEGEND = [
-  { key: 'earnings', label: 'Earnings', color: '#10b981' },
+  { key: 'earnings', label: 'Earnings', color: 'var(--emerald)' },
   { key: 'dividends', label: 'Dividends', color: '#22c55e' },
   { key: 'ipos', label: 'IPOs', color: '#a855f7' },
   { key: 'economic', label: 'Economic', color: '#6366f1' },
@@ -1510,7 +1511,7 @@ export default function HomePage() {
                       </linearGradient>
                     </defs>
                     <CartesianGrid
-                      strokeDasharray="3 3"
+                      strokeDasharray={CHART.gridDash}
                       stroke="var(--bs-border-subtle)"
                       vertical={false}
                     />
@@ -1562,7 +1563,7 @@ export default function HomePage() {
                       strokeWidth={2}
                       fill="url(#portfolioFill)"
                       isAnimationActive
-                      animationDuration={400}
+                      animationDuration={CHART.animationDuration}
                     />
                     {Array.from(activeIndices).map((label) => {
                       const apiKey = INDEX_API_KEYS[label];
@@ -1766,7 +1767,11 @@ export default function HomePage() {
                       const mag = typeof r.pnl === 'number' ? Math.abs(r.pnl) : r.weightPct || 0;
                       const positive = typeof r.pnl === 'number' ? r.pnl >= 0 : true;
                       const barColor =
-                        typeof r.pnl === 'number' ? (positive ? '#34d399' : '#f87171') : r.color;
+                        typeof r.pnl === 'number'
+                          ? positive
+                            ? 'var(--positive-bright)'
+                            : '#f87171'
+                          : r.color;
                       return (
                         <div key={r.symbol} className="bs-profits-bar-row">
                           <span className="bs-profits-sym">{r.symbol}</span>

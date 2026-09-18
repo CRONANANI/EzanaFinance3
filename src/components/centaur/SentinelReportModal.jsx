@@ -11,9 +11,10 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { CHART } from '@/lib/chart-theme';
 import { parseSentinelReportText, cleanSentinelField } from '@/lib/sentinel-report';
 
-const GOLD = '#D4AF37';
+const GOLD = 'var(--gold-champagne)';
 const GOLD_DIM = 'rgba(212, 175, 55, 0.35)';
 
 /** Demo series for visual polish when report is plain text */
@@ -38,7 +39,10 @@ function SectionBody({ text }) {
   if (!cleaned.trim()) {
     return <p className="sentinel-report-section-body sentinel-report-section-body--empty">—</p>;
   }
-  const lines = cleaned.split('\n').map((l) => l.trim()).filter(Boolean);
+  const lines = cleaned
+    .split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean);
   return (
     <div className="sentinel-report-section-body">
       {lines.map((line, i) => (
@@ -81,7 +85,12 @@ export function SentinelReportModal({ open, onClose, report }) {
             </h2>
             {dateLabel && <p className="sentinel-modal-date">{dateLabel}</p>}
           </div>
-          <button type="button" className="sentinel-modal-close" onClick={onClose} aria-label="Close">
+          <button
+            type="button"
+            className="sentinel-modal-close"
+            onClick={onClose}
+            aria-label="Close"
+          >
             ×
           </button>
         </header>
@@ -89,33 +98,49 @@ export function SentinelReportModal({ open, onClose, report }) {
         <div className="sentinel-modal-grid">
           <section className="sentinel-modal-main">
             <div className="sentinel-report-section">
-              <h3 className="sentinel-report-section-title sentinel-report-section-title--gold">Portfolio Health</h3>
-              <p className="sentinel-report-health-value">{cleanSentinelField(parsed.portfolioHealth || 'Strong')}</p>
+              <h3 className="sentinel-report-section-title sentinel-report-section-title--gold">
+                Portfolio Health
+              </h3>
+              <p className="sentinel-report-health-value">
+                {cleanSentinelField(parsed.portfolioHealth || 'Strong')}
+              </p>
             </div>
 
             <div className="sentinel-report-section">
-              <h3 className="sentinel-report-section-title sentinel-report-section-title--gold">Key Insights</h3>
+              <h3 className="sentinel-report-section-title sentinel-report-section-title--gold">
+                Key Insights
+              </h3>
               <SectionBody text={parsed.keyInsights} />
             </div>
 
             <div className="sentinel-report-section">
-              <h3 className="sentinel-report-section-title sentinel-report-section-title--gold">Top Performers</h3>
+              <h3 className="sentinel-report-section-title sentinel-report-section-title--gold">
+                Top Performers
+              </h3>
               <SectionBody text={parsed.topPerformers} />
             </div>
 
             <div className="sentinel-report-section">
-              <h3 className="sentinel-report-section-title sentinel-report-section-title--gold">Events to Monitor</h3>
+              <h3 className="sentinel-report-section-title sentinel-report-section-title--gold">
+                Events to Monitor
+              </h3>
               <SectionBody text={parsed.events} />
             </div>
 
             <div className="sentinel-report-section">
-              <h3 className="sentinel-report-section-title sentinel-report-section-title--gold">Recommendations</h3>
+              <h3 className="sentinel-report-section-title sentinel-report-section-title--gold">
+                Recommendations
+              </h3>
               <SectionBody text={parsed.recommendations} />
             </div>
 
             <div className="sentinel-report-section">
-              <h3 className="sentinel-report-section-title sentinel-report-section-title--gold">Disclaimer</h3>
-              <p className="sentinel-report-disclaimer-block">{cleanSentinelField(parsed.disclaimer)}</p>
+              <h3 className="sentinel-report-section-title sentinel-report-section-title--gold">
+                Disclaimer
+              </h3>
+              <p className="sentinel-report-disclaimer-block">
+                {cleanSentinelField(parsed.disclaimer)}
+              </p>
             </div>
           </section>
 
@@ -131,8 +156,12 @@ export function SentinelReportModal({ open, onClose, report }) {
                         <stop offset="100%" stopColor={GOLD} stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(212,175,55,0.12)" />
-                    <XAxis dataKey="w" tick={{ fill: '#9ca3af', fontSize: 10 }} axisLine={false} />
+                    <CartesianGrid
+                      strokeDasharray={CHART.gridDash}
+                      stroke={CHART.gridStroke}
+                      vertical={false}
+                    />
+                    <XAxis dataKey="w" tick={CHART.tick} axisLine={false} />
                     <YAxis hide domain={['dataMin - 2', 'dataMax + 2']} />
                     <Tooltip
                       contentStyle={{
@@ -143,7 +172,13 @@ export function SentinelReportModal({ open, onClose, report }) {
                       }}
                       labelStyle={{ color: GOLD }}
                     />
-                    <Area type="monotone" dataKey="v" stroke={GOLD} fill="url(#sentinelArea)" strokeWidth={2} />
+                    <Area
+                      type="monotone"
+                      dataKey="v"
+                      stroke={GOLD}
+                      fill="url(#sentinelArea)"
+                      strokeWidth={2}
+                    />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
@@ -153,10 +188,19 @@ export function SentinelReportModal({ open, onClose, report }) {
               <div className="sentinel-chart-title">Strategic allocation</div>
               <div className="sentinel-chart-h sentinel-chart-h--bar">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={DEMO_ALLOC} layout="vertical" margin={{ top: 4, right: 16, left: 4, bottom: 4 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(212,175,55,0.08)" horizontal={false} />
-                    <XAxis type="number" domain={[0, 100]} tick={{ fill: '#9ca3af', fontSize: 10 }} />
-                    <YAxis type="category" dataKey="name" width={72} tick={{ fill: '#d1d5db', fontSize: 11 }} />
+                  <BarChart
+                    data={DEMO_ALLOC}
+                    layout="vertical"
+                    margin={{ top: 4, right: 16, left: 4, bottom: 4 }}
+                  >
+                    <CartesianGrid
+                      strokeDasharray={CHART.gridDash}
+                      stroke={CHART.gridStroke}
+                      horizontal={false}
+                      vertical={false}
+                    />
+                    <XAxis type="number" domain={[0, 100]} tick={CHART.tick} />
+                    <YAxis type="category" dataKey="name" width={72} tick={CHART.tick} />
                     <Tooltip
                       cursor={{ fill: 'rgba(212,175,55,0.06)' }}
                       contentStyle={{
@@ -188,11 +232,25 @@ export function SentinelReportModal({ open, onClose, report }) {
             </div>
 
             <div className="sentinel-news-section">
-              <div className="sentinel-chart-title" style={{ marginBottom: '0.75rem' }}>Market news</div>
+              <div className="sentinel-chart-title" style={{ marginBottom: '0.75rem' }}>
+                Market news
+              </div>
               {[
-                { title: 'Fed signals patience on rate cuts amid sticky inflation', source: 'Reuters', ago: '2h ago' },
-                { title: 'NVDA hits new high on AI datacenter demand', source: 'Bloomberg', ago: '4h ago' },
-                { title: 'Senate committee advances new crypto regulation bill', source: 'WSJ', ago: '1d ago' },
+                {
+                  title: 'Fed signals patience on rate cuts amid sticky inflation',
+                  source: 'Reuters',
+                  ago: '2h ago',
+                },
+                {
+                  title: 'NVDA hits new high on AI datacenter demand',
+                  source: 'Bloomberg',
+                  ago: '4h ago',
+                },
+                {
+                  title: 'Senate committee advances new crypto regulation bill',
+                  source: 'WSJ',
+                  ago: '1d ago',
+                },
               ].map((article, idx) => (
                 <div
                   key={idx}
@@ -220,7 +278,6 @@ export function SentinelReportModal({ open, onClose, report }) {
             </div>
           </aside>
         </div>
-
       </div>
     </div>
   );

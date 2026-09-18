@@ -9,6 +9,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { CHART } from '@/lib/chart-theme';
 
 /**
  * GradientAreaChart — thin wrapper around Recharts that encodes the shared
@@ -38,7 +39,7 @@ export function GradientAreaChart({
   data,
   dataKey,
   xKey = 'date',
-  lineColor = '#10b981',
+  lineColor = 'var(--emerald)',
   height = 280,
   showGrid = true,
   showAxis = true,
@@ -60,19 +61,24 @@ export function GradientAreaChart({
         </defs>
 
         {showGrid && (
-          <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-axis, #4b5563)" opacity={0.4} />
+          <CartesianGrid
+            strokeDasharray={CHART.gridDash}
+            stroke={CHART.gridStroke}
+            opacity={0.4}
+            vertical={false}
+          />
         )}
 
         {showAxis && (
           <>
             <XAxis
               dataKey={xKey}
-              tick={{ fontSize: 10, fill: 'var(--text-muted, #8b949e)' }}
+              tick={CHART.tick}
               tickLine={false}
               axisLine={{ stroke: 'var(--chart-axis, #4b5563)' }}
             />
             <YAxis
-              tick={{ fontSize: 10, fill: 'var(--text-muted, #8b949e)' }}
+              tick={CHART.tick}
               tickLine={false}
               axisLine={{ stroke: 'var(--chart-axis, #4b5563)' }}
               width={48}

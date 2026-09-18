@@ -11,6 +11,7 @@ import {
   CartesianGrid,
   ReferenceLine,
 } from 'recharts';
+import { CHART } from '@/lib/chart-theme';
 import { COMPARISON_STRATEGIES } from '@/lib/for-the-quants-mock-data';
 import { DateSelector } from '@/components/ui/DateSelector';
 
@@ -151,15 +152,14 @@ export function StrategyComparisonCard() {
         <div style={{ height: 180, marginTop: '0.5rem' }}>
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData} margin={{ top: 4, right: 8, bottom: 4, left: 0 }}>
-              <CartesianGrid strokeDasharray="3 4" stroke="rgba(255,255,255,0.04)" />
-              <XAxis
-                dataKey="label"
-                tick={{ fill: '#6b7280', fontSize: 8 }}
-                axisLine={false}
-                tickLine={false}
+              <CartesianGrid
+                strokeDasharray={CHART.gridDash}
+                stroke={CHART.gridStroke}
+                vertical={false}
               />
+              <XAxis dataKey="label" tick={CHART.tick} axisLine={false} tickLine={false} />
               <YAxis
-                tick={{ fill: '#6b7280', fontSize: 8 }}
+                tick={CHART.tick}
                 axisLine={false}
                 tickLine={false}
                 width={36}

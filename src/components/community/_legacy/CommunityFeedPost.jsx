@@ -13,11 +13,12 @@ import {
   ReferenceDot,
   ReferenceLine,
 } from 'recharts';
+import { CHART } from '@/lib/chart-theme';
 import { supabase } from '@/lib/supabase-browser';
 import { formatRelativeTime, getInitials, normalizeTickerEmbed } from '@/lib/community-utils';
 import { useAuth } from '@/components/AuthProvider';
 
-const EMBED_CHART_COLORS = ['#10b981', '#6366f1', '#f59e0b'];
+const EMBED_CHART_COLORS = ['var(--emerald)', '#6366f1', '#f59e0b'];
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -537,7 +538,7 @@ export function CommunityFeedPost({
                         >
                           <XAxis
                             dataKey="t"
-                            tick={{ fill: '#6b7280', fontSize: 9 }}
+                            tick={CHART.tick}
                             tickLine={false}
                             axisLine={false}
                             interval="preserveStartEnd"
@@ -545,7 +546,7 @@ export function CommunityFeedPost({
                           />
                           <YAxis
                             domain={[minP - pad, maxP + pad]}
-                            tick={{ fill: '#6b7280', fontSize: 9 }}
+                            tick={CHART.tick}
                             tickLine={false}
                             axisLine={false}
                             width={40}
