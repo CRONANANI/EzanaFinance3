@@ -11,7 +11,7 @@
 
 .elo-lb-title {
   font-size: 1.625rem;
-  font-weight: 800;
+  font-weight: 700;
   margin: 0 0 0.35rem;
   color: var(--text-primary);
 }
@@ -162,7 +162,7 @@
   height: 28px;
   border-radius: 50%;
   font-size: 0.75rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #0a0e13;
 }
 .elo-lb-medal-1 {
@@ -228,7 +228,7 @@
 
 .elo-lb-rating {
   text-align: center;
-  font-weight: 800;
+  font-weight: 700;
   font-size: 0.9375rem;
   font-variant-numeric: tabular-nums;
 }

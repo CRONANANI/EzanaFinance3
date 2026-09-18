@@ -80,7 +80,7 @@
 }
 .trd-form-header h2 {
   font-size: 1.25rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #f0f6fc;
   margin: 0 0 0.25rem;
 }
@@ -128,7 +128,7 @@
   align-items: center;
   justify-content: center;
   font-size: 0.5625rem;
-  font-weight: 800;
+  font-weight: 700;
 }
 .trd-step.active .trd-step-dot {
   background: #10b981;
@@ -205,7 +205,7 @@ select.trd-input {
 .trd-amount-input {
   padding-left: 1.75rem !important;
   font-size: 1.25rem !important;
-  font-weight: 800 !important;
+  font-weight: 700 !important;
 }
 
 .trd-quick-amounts {
@@ -392,7 +392,7 @@ select.trd-input {
 }
 .trd-search-symbol {
   font-size: 0.875rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #f0f6fc;
   min-width: 60px;
 }
@@ -434,7 +434,7 @@ select.trd-input {
 }
 .trd-selected-symbol {
   font-size: 1rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #10b981;
 }
 .trd-selected-name {
@@ -579,7 +579,7 @@ select.trd-input {
 }
 .trd-account-value {
   font-size: 1.25rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #f0f6fc;
 }
 
@@ -607,7 +607,7 @@ select.trd-input {
 }
 .trd-donut-value {
   font-size: 1.25rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #f0f6fc;
 }
 .trd-donut-label {
@@ -699,7 +699,7 @@ select.trd-input {
 }
 .trd-position-symbol {
   font-size: 0.9375rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #f0f6fc;
   display: block;
 }
@@ -802,7 +802,7 @@ select.trd-input {
 }
 .trd-order-side {
   font-size: 0.5rem;
-  font-weight: 800;
+  font-weight: 700;
   padding: 2px 6px;
   border-radius: 4px;
   text-transform: uppercase;
@@ -818,7 +818,7 @@ select.trd-input {
 }
 .trd-order-symbol {
   font-size: 0.875rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #f0f6fc;
 }
 .trd-order-detail {
@@ -990,7 +990,7 @@ select.trd-input {
 }
 .trd-confirm-modal h3 {
   font-size: 1.125rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #f0f6fc;
   margin: 0 0 1rem;
 }
@@ -1123,7 +1123,7 @@ body.light-mode .trd-search-symbol {
 .trd-hero-title {
   color: #10b981;
   font-size: 2.5rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.02em;
   margin: 0 0 1rem;
 }
@@ -1203,7 +1203,7 @@ body.light-mode .trd-search-symbol {
 .trd-feature-h3 {
   color: #f0f6fc;
   font-size: 0.9375rem;
-  font-weight: 800;
+  font-weight: 700;
   margin: 0 0 0.5rem;
 }
 .trd-feature-p {
@@ -1243,7 +1243,7 @@ body.light-mode .trd-search-symbol {
 .trd-requirements-title {
   color: #f0f6fc;
   font-size: 0.9375rem;
-  font-weight: 800;
+  font-weight: 700;
   margin: 0 0 1rem;
 }
 .trd-req-cols {
@@ -1271,7 +1271,7 @@ body.light-mode .trd-search-symbol {
   align-items: center;
   justify-content: center;
   font-size: 0.75rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #6b7280;
   flex-shrink: 0;
 }
@@ -1408,7 +1408,7 @@ body.light-mode .trd-search-symbol {
 .trd-pending-title {
   color: #f0f6fc;
   font-size: 1.25rem;
-  font-weight: 800;
+  font-weight: 700;
   margin: 0 0 0.75rem;
 }
 .trd-pending-text {
@@ -1432,7 +1432,7 @@ body.light-mode .trd-search-symbol {
 .trd-dash-title {
   color: #f0f6fc;
   font-size: 1.75rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.02em;
   margin: 0 0 0.5rem;
 }
@@ -1452,7 +1452,7 @@ body.light-mode .trd-search-symbol {
 }
 .trd-dash-h2 {
   font-size: 0.9375rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #f0f6fc;
   margin: 0 0 1rem;
 }
@@ -1473,7 +1473,7 @@ body.light-mode .trd-search-symbol {
 .trd-dash-metric-val {
   display: block;
   font-size: 1.125rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #f0f6fc;
 }
 .trd-dash-pos-hint {

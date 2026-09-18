@@ -21,7 +21,7 @@
 
 .lc3-title {
   font-size: clamp(1.25rem, 2.5vw, 1.75rem);
-  font-weight: 800;
+  font-weight: 700;
   color: #f0f6fc;
   margin: 0 0 0.5rem;
   line-height: 1.2;
@@ -64,7 +64,7 @@
 
 .lc3-h2 {
   font-size: 1rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #f0f6fc;
   margin: 0 0 0.75rem;
 }
@@ -1031,7 +1031,7 @@ body.light-mode .lc-edit-tickerchart {
   justify-content: center;
   font-family: var(--font-mono);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.02em;
 }
 .lc-edit-ticker-name {

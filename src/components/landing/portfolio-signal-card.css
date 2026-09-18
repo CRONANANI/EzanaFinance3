@@ -53,8 +53,9 @@
   border: 1px solid var(--emerald-border);
   color: var(--emerald);
   font-family: var(--font-mono);
-  font-size: 0.625rem;
-  letter-spacing: 0.05em;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking-marketing);
   text-transform: uppercase;
 }
 
@@ -196,8 +197,9 @@
   padding-top: 0.75rem;
   border-top: 1px solid var(--border-secondary);
   font-family: var(--font-mono);
-  font-size: 0.625rem;
-  letter-spacing: 0.05em;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking-marketing);
   text-transform: uppercase;
 }
 .psc-foot-label {

@@ -73,10 +73,10 @@ html.dark .settings-ledger {
 /* Base typography utilities */
 .settings-ledger .eyebrow {
   font-family: var(--font-mono);
-  font-size: 10.5px;
-  letter-spacing: 0.18em;
+  font-size: var(--type-eyebrow-size);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
-  font-weight: 600;
+  font-weight: var(--type-eyebrow-weight);
   color: var(--muted);
 }
 .settings-ledger .num {
@@ -114,7 +114,7 @@ html.dark .settings-ledger {
   width: auto;
 }
 .settings-ledger .sl-brand-wm {
-  font-weight: 800;
+  font-weight: 700;
   font-size: 15px;
   letter-spacing: -0.01em;
   color: var(--ink);
@@ -132,7 +132,7 @@ html.dark .settings-ledger {
 }
 .settings-ledger .sl-rail-title {
   font-size: 20px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--ink);
 }
@@ -155,8 +155,9 @@ html.dark .settings-ledger {
 }
 .settings-ledger .sl-nav-glabel {
   font-family: var(--font-mono);
-  font-size: 9.5px;
-  letter-spacing: 0.2em;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--faint);
   padding: 0 10px 8px;
@@ -305,7 +306,7 @@ html.dark .settings-ledger {
 }
 .settings-ledger .sl-h1 {
   font-size: 30px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.025em;
   color: var(--ink);
   margin: 10px 0 0;
@@ -382,10 +383,10 @@ html.dark .settings-ledger {
 }
 .settings-ledger .sl-flabel {
   font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.12em;
+  font-size: var(--type-eyebrow-size);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
-  font-weight: 600;
+  font-weight: var(--type-eyebrow-weight);
   color: var(--muted);
   margin-bottom: 7px;
 }
@@ -757,9 +758,9 @@ html.dark .settings-ledger .sl-toggle {
   align-items: center;
   gap: 5px;
   font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   padding: 3px 9px;
   border-radius: 5px;
@@ -824,9 +825,9 @@ html.dark .settings-ledger .sl-badge-info {
 }
 .settings-ledger .sl-dtable th {
   font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--faint);
   text-align: left;
@@ -882,8 +883,9 @@ html.dark .settings-ledger .sl-badge-info {
 }
 .settings-ledger .sl-legacy-panel .settings-label {
   font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.12em;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--muted);
 }

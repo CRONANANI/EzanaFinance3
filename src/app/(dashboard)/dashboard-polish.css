@@ -2,11 +2,14 @@
  * Dashboard-wide UI tokens â€” cards, typography rhythm, loading/empty helpers.
  */
 .dashboard-page {
-  --dash-page-title-size: 1.5rem;
-  --dash-page-title-weight: 900;
-  --dash-page-title-color: #f0f6fc;
+  /* Alias layer: these local names now resolve to the platform ramp so the
+     dashboard cannot drift from it. Slated for deletion once every consumer
+     reads the --type-* tokens directly. */
+  --dash-page-title-size: var(--type-page-title-size);
+  --dash-page-title-weight: var(--type-page-title-weight);
+  --dash-page-title-color: var(--text-primary);
   --dash-section-header-size: 0.9375rem;
-  --dash-section-header-weight: 800;
+  --dash-section-header-weight: var(--type-card-title-weight);
   --dash-body-size: 0.8125rem;
   --dash-body-muted: #8b949e;
   --dash-label-size: 0.5rem;
@@ -16,9 +19,6 @@
   --dash-card-bg: var(--surface-card);
   --dash-card-border: var(--border-primary);
   --dash-card-radius: 16px;
-}
-body.light-mode.dashboard-page {
-  --dash-page-title-color: #0f172a;
 }
 .dashboard-page .dash-surface-card {
   background: var(--dash-card-bg);
@@ -60,7 +60,7 @@ body.light-mode.dashboard-page {
 }
 .dashboard-page .dash-mono-value {
   font-family: var(--font-mono);
-  font-weight: 800;
+  font-weight: 700;
 }
 .dashboard-page .dash-link {
   color: var(--dash-positive);

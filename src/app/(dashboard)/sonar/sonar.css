@@ -102,8 +102,9 @@
 }
 .sonar-eyebrow {
   font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.16em;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--emerald);
 }
@@ -111,7 +112,7 @@
   margin: 14px 0 0;
   font-size: 40px;
   line-height: 1.05;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.03em;
   color: var(--text-primary);
 }
@@ -254,8 +255,9 @@
 }
 .sonar-recent-title {
   font-family: var(--font-mono);
-  font-size: 10.5px;
-  letter-spacing: 0.12em;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
 }
@@ -265,8 +267,9 @@
   padding: 0;
   cursor: pointer;
   font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.1em;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--emerald);
 }
@@ -321,10 +324,10 @@
   padding: 2px 8px;
   border-radius: 9999px;
   font-family: var(--font-mono);
-  font-size: 9.5px;
-  letter-spacing: 0.06em;
+  font-size: var(--type-eyebrow-size);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
-  font-weight: 600;
+  font-weight: var(--type-eyebrow-weight);
 }
 .sonar-badge--person,
 .sonar-badge--ticker {
@@ -433,9 +436,9 @@
 }
 .sonar-live-label {
   font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  font-weight: 700;
+  font-size: var(--type-eyebrow-size);
+  letter-spacing: var(--type-eyebrow-tracking);
+  font-weight: var(--type-eyebrow-weight);
   text-transform: uppercase;
   color: var(--text-primary);
 }
@@ -481,8 +484,9 @@
 }
 .sonar-manifest-title {
   font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.14em;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
   margin-bottom: 9px;
@@ -525,8 +529,9 @@
 }
 .sonar-web-sources-label {
   font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.1em;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
 }
@@ -588,10 +593,10 @@
 }
 .sonar-mod-title {
   font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.12em;
+  font-size: var(--type-eyebrow-size);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
-  font-weight: 700;
+  font-weight: var(--type-eyebrow-weight);
   color: var(--text-primary);
 }
 .sonar-mod-source {
@@ -1251,8 +1256,9 @@ html body.sonar-hero-active .main-nav:not(.partner-nav) {
 }
 .snr-annot-kind {
   font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.12em;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
 }
 .snr-annot-kind--award {
@@ -1391,8 +1397,9 @@ html body.sonar-hero-active .main-nav:not(.partner-nav) {
 .snr-dial-label {
   position: relative;
   font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.14em;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--emerald);
 }
@@ -1412,8 +1419,9 @@ html body.sonar-hero-active .main-nav:not(.partner-nav) {
 }
 .snr-gov-kicker {
   font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.08em;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   text-align: center;
   color: var(--text-faint);
@@ -1454,8 +1462,9 @@ html body.sonar-hero-active .main-nav:not(.partner-nav) {
 .snr-gov-subtitle {
   display: block;
   font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.14em;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--text-faint);
   margin-bottom: 8px;

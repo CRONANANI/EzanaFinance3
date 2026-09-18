@@ -101,7 +101,7 @@
   align-items: center;
   justify-content: center;
   font-size: 0.625rem;
-  font-weight: 800;
+  font-weight: 700;
   flex-shrink: 0;
 }
 .wl-strip-badge.idx {
@@ -131,7 +131,7 @@
   color: var(--foreground);
   border: 1px solid rgba(16, 185, 129, 0.1);
   font-size: 0.5rem;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .wl-strip-info {
@@ -175,7 +175,7 @@
 }
 .wl-strip-price {
   font-size: 0.9375rem;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--foreground);
   font-feature-settings: 'tnum' 1;
   letter-spacing: -0.02em;
@@ -341,7 +341,7 @@
 }
 .wl-ticker-strong {
   color: #10b981;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.02em;
 }
 .wl-ticker-sep {
@@ -416,7 +416,7 @@
   align-items: center;
   justify-content: center;
   font-size: 0.55rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #fff;
   text-decoration: none;
   background: linear-gradient(135deg, #1a1a2e, #2a2a3e);
@@ -442,7 +442,7 @@
 
 .wl-big-price {
   font-size: 2.125rem;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--foreground);
   font-feature-settings: 'tnum' 1;
   letter-spacing: -0.03em;
@@ -655,7 +655,7 @@
 }
 .wl-side-hdr h3 {
   font-size: 0.875rem;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--foreground);
   margin: 0;
 }
@@ -811,7 +811,7 @@
 
 .wl-si-tk {
   font-size: 0.5625rem;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--foreground);
   background: var(--muted);
   padding: 0.25rem 0.35rem;
@@ -830,7 +830,7 @@
   align-items: center;
   justify-content: center;
   font-size: 0.5rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #fff;
 }
 .wl-si-av.democrat {
@@ -1032,7 +1032,7 @@ body.light-mode .wl-side-search input {
   border-bottom: none;
 }
 .wl-comp-tk {
-  font-weight: 800;
+  font-weight: 700;
   color: #10b981;
   font-family: var(--font-mono);
 }
@@ -1200,7 +1200,7 @@ body.light-mode .wl-side-search input {
 .wl-search-tk {
   flex-shrink: 0;
   font-size: 0.5625rem;
-  font-weight: 800;
+  font-weight: 700;
   font-family: var(--font-mono);
   padding: 2px 6px;
   border-radius: 4px;
@@ -1267,7 +1267,7 @@ body.light-mode .wl-side-search input {
 }
 .wl-search-tk-inline {
   color: #10b981;
-  font-weight: 800;
+  font-weight: 700;
   font-family: var(--font-mono);
 }
 .wl-search-pick-btns {
@@ -1582,7 +1582,7 @@ body.light-mode .wl-chart-axis-tick {
 }
 
 .wl-chart-tooltip-value {
-  font-weight: 800;
+  font-weight: 700;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
 }

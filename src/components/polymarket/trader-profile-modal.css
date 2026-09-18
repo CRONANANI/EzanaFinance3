@@ -100,7 +100,7 @@
 .tpm-name {
   margin: 0 0 0.2rem;
   font-size: 1.125rem;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.01em;
 }
@@ -197,7 +197,7 @@
 
 .tpm-stat-label {
   font-size: 0.625rem;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text-faint);
@@ -206,7 +206,7 @@
 
 .tpm-stat-value {
   font-size: 1rem;
-  font-weight: 800;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
   color: var(--text-primary);
@@ -238,7 +238,7 @@
 .tpm-section-title {
   margin: 0 0 0.7rem;
   font-size: 0.7rem;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text-faint);
@@ -358,7 +358,7 @@
 }
 
 .tpm-pos-side {
-  font-weight: 800;
+  font-weight: 700;
   font-size: 0.6rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -394,7 +394,7 @@
 
 .tpm-trade-side {
   font-size: 0.6rem;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
   text-align: center;
   padding: 0.1rem 0.3rem;

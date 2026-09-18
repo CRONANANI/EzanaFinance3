@@ -162,9 +162,9 @@ html.light-mode .ezana-theme {
 /* ===== COMMUNITY LEDGER ===== */
 .ezana-theme .eyebrow {
   font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.18em;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--emerald-ink);
 }
@@ -186,7 +186,7 @@ html.light-mode .ezana-theme {
 .ezana-theme .phead h1 {
   margin: 4px 0 0;
   font-size: 30px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.03em;
   color: var(--text-primary);
 }
@@ -245,9 +245,9 @@ html.light-mode .ezana-theme {
 }
 .ezana-theme .dial-label {
   font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
   margin-bottom: 8px;
@@ -255,7 +255,7 @@ html.light-mode .ezana-theme {
 .ezana-theme .dial-value {
   font-family: var(--font-mono);
   font-size: 26px;
-  font-weight: 800;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
   margin-top: 6px;
 }
@@ -280,9 +280,9 @@ html.light-mode .ezana-theme {
   align-items: center;
   gap: 6px;
   font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
   margin-bottom: 8px;
@@ -315,9 +315,9 @@ html.light-mode .ezana-theme {
 }
 .ezana-theme .sectorstrip-label {
   font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
   margin-right: 4px;
@@ -398,9 +398,9 @@ html.light-mode .ezana-theme .lpill.on {
 }
 .ezana-theme .lens-ctrl label {
   font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
 }
 .ezana-theme .lens-ctrl .ez-mono {
@@ -462,9 +462,9 @@ html.light-mode .ezana-theme .lpill.on {
   gap: 10px;
   margin-bottom: 12px;
   font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
 }
@@ -538,9 +538,9 @@ html.light-mode .ezana-theme .lpill.on {
 }
 .ezana-theme .conv-label {
   font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
   margin-bottom: 4px;
@@ -548,7 +548,7 @@ html.light-mode .ezana-theme .lpill.on {
 .ezana-theme .conv-pct {
   font-family: var(--font-mono);
   font-size: 28px;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--emerald-ink);
   line-height: 1.1;
 }

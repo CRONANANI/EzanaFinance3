@@ -40,10 +40,10 @@
 
 .ma-view-btn {
   padding: 0.375rem 1.25rem;
-  font-size: 0.625rem;
-  font-weight: 800;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
   font-family: var(--font-mono);
-  letter-spacing: 0.1em;
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: #6b7280;
   background: rgba(10, 14, 19, 0.8);
@@ -70,10 +70,10 @@
   display: inline-flex;
   align-items: center;
   font-family: var(--font-mono);
-  letter-spacing: 0.1em;
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
-  font-size: 0.625rem;
-  font-weight: 800;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
   padding: 0.375rem 1.25rem;
 }
 
@@ -133,7 +133,7 @@
   background: rgba(212, 175, 55, 0.28);
   color: #fff8e1;
   font-size: 0.55rem;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1;
   display: inline-flex;
   align-items: center;
@@ -287,10 +287,10 @@
   gap: 0.35rem 0.65rem;
   padding: 0.5rem 0.75rem;
   border-top: 1px solid rgba(16, 185, 129, 0.08);
-  font-size: 0.5rem;
-  font-weight: 600;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
   font-family: var(--font-mono);
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: #4b5563;
 }
@@ -406,10 +406,10 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.375rem 0.75rem;
-  font-size: 0.5625rem;
-  font-weight: 700;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
   font-family: var(--font-mono);
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-eyebrow-tracking);
   color: #8b949e;
   background: transparent;
   border: 1px solid transparent;
@@ -450,10 +450,10 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.375rem 0.75rem;
-  font-size: 0.5625rem;
-  font-weight: 700;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
   font-family: var(--font-mono);
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-eyebrow-tracking);
   color: #8b949e;
   background: rgba(10, 14, 19, 0.7);
   backdrop-filter: blur(8px);
@@ -527,7 +527,7 @@
   padding: 0.625rem 0.875rem;
   border-bottom: 1px solid rgba(16, 185, 129, 0.08);
   font-size: 0.6875rem;
-  font-weight: 800;
+  font-weight: 700;
   font-family: var(--font-mono);
   color: #f0f6fc;
   letter-spacing: 0.06em;
@@ -697,7 +697,7 @@
 
 .ma-filter-section h4 {
   font-size: 0.5rem;
-  font-weight: 800;
+  font-weight: 700;
   font-family: var(--font-mono);
   color: #10b981;
   letter-spacing: 0.1em;
@@ -729,10 +729,10 @@
 .ma-filter-close {
   flex: 1;
   padding: 0.5rem;
-  font-size: 0.5625rem;
-  font-weight: 700;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
   font-family: var(--font-mono);
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-eyebrow-tracking);
   border-radius: 6px;
   cursor: pointer;
   text-transform: uppercase;
@@ -783,7 +783,7 @@
   gap: 0.375rem;
   padding: 0 0.75rem;
   font-size: 0.5rem;
-  font-weight: 800;
+  font-weight: 700;
   font-family: var(--font-mono);
   color: #ef4444;
   letter-spacing: 0.1em;
@@ -840,7 +840,7 @@
 
 .ma-ticker-symbol {
   font-size: 0.5rem;
-  font-weight: 800;
+  font-weight: 700;
   font-family: var(--font-mono);
   color: #6b7280;
   letter-spacing: 0.04em;
@@ -1059,7 +1059,7 @@ body.light-mode .ma-ticker-sep {
 
 .ma-chain-title {
   font-size: 0.6875rem;
-  font-weight: 800;
+  font-weight: 700;
   font-family: var(--font-mono);
   color: #f0f6fc;
   padding: 0.15rem 0.5rem;
@@ -1077,7 +1077,7 @@ body.light-mode .ma-ticker-sep {
 
 .ma-chain-severity {
   font-size: 0.4375rem;
-  font-weight: 800;
+  font-weight: 700;
   font-family: var(--font-mono);
   padding: 0.1rem 0.375rem;
   border-radius: 3px;
@@ -1157,7 +1157,7 @@ body.light-mode .ma-ticker-sep {
 
 .ma-city-panel-name {
   font-size: 1rem;
-  font-weight: 800;
+  font-weight: 700;
   font-family: var(--font-mono);
   color: #f0f6fc;
   margin: 0 0 0.25rem;
@@ -1199,11 +1199,11 @@ body.light-mode .ma-ticker-sep {
 
 .ma-city-panel-section-label {
   padding: 0.5rem 1rem 0.25rem;
-  font-size: 0.5rem;
-  font-weight: 800;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
   font-family: var(--font-mono);
   color: #6b7280;
-  letter-spacing: 0.12em;
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
 }
 
@@ -1412,7 +1412,7 @@ body.light-mode .ma-ticker-sep {
 .ma-city-panel-count {
   padding: 0.625rem 1rem;
   font-size: 0.5rem;
-  font-weight: 800;
+  font-weight: 700;
   font-family: var(--font-mono);
   color: #10b981;
   letter-spacing: 0.1em;
@@ -1445,7 +1445,7 @@ body.light-mode .ma-ticker-sep {
 
 .ma-city-news-badge {
   font-size: 0.4375rem;
-  font-weight: 800;
+  font-weight: 700;
   font-family: var(--font-mono);
   padding: 0.125rem 0.375rem;
   border-radius: 3px;
@@ -1598,9 +1598,9 @@ body.light-mode .ma-ticker-sep {
 
 .gpm-arrow-label {
   font-family: var(--font-mono);
-  font-size: 0.5rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: #d4af37;
   opacity: 0.75;
@@ -2438,7 +2438,7 @@ body.light-mode .sentinel-related-markets-toggle:hover {
 
 .ma-rotate-prompt__title {
   font-size: 1.5rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #f0f6fc;
   margin: 0;
   letter-spacing: -0.02em;
@@ -2532,10 +2532,10 @@ body.light-mode .sentinel-related-markets-toggle:hover {
 
 .ma-sidebar-section-label {
   padding: 0.375rem 0.75rem 0.125rem;
-  font-size: 0.4375rem;
-  font-weight: 700;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
   font-family: var(--font-mono);
-  letter-spacing: 0.1em;
+  letter-spacing: var(--type-eyebrow-tracking);
   color: #4b5563;
   text-transform: uppercase;
 }
@@ -2577,7 +2577,7 @@ body.light-mode .sentinel-related-markets-toggle:hover {
   background: rgba(16, 185, 129, 0.2);
   color: #10b981;
   font-size: 0.5rem;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1;
   display: inline-flex;
   align-items: center;
@@ -2608,10 +2608,10 @@ body.light-mode .sentinel-related-markets-toggle:hover {
   align-items: center;
   gap: 0.4rem;
   padding: 0.3rem 0.625rem;
-  font-size: 0.5rem;
-  font-weight: 600;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
   font-family: var(--font-mono);
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-eyebrow-tracking);
   color: #6b7280;
   background: transparent;
   border: none;

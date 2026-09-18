@@ -56,7 +56,7 @@
 .pec-card-title {
   margin: 0;
   font-size: 0.8125rem;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text-muted);
@@ -92,7 +92,7 @@
 
 .pec-rating-value {
   font-size: 2.25rem;
-  font-weight: 800;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.03em;
   line-height: 1;
@@ -163,7 +163,7 @@
 .pec-section-title {
   margin: 0;
   font-size: 0.6875rem;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text-muted);
@@ -204,7 +204,7 @@
 }
 
 .pec-spark-tooltip-rating {
-  font-weight: 800;
+  font-weight: 700;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
 }
@@ -272,7 +272,7 @@
 }
 
 .pec-breakdown-value {
-  font-weight: 800;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
   text-align: right;
 }
@@ -345,7 +345,7 @@
 
 .pec-improvement-points {
   font-size: 0.6875rem;
-  font-weight: 800;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 

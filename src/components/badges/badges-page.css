@@ -38,7 +38,7 @@
 .bp-title {
   margin: 0 0 0.15rem;
   font-size: 1.5rem;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.02em;
 }
@@ -227,7 +227,7 @@
 
 .bp-tile-cat {
   font-size: 0.5625rem;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--text-muted);
@@ -390,13 +390,13 @@
 .bp-modal-title {
   margin: 0 0 0.3rem;
   font-size: 1.25rem;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--text-primary);
 }
 
 .bp-modal-cat {
   font-size: 0.625rem;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: #10b981;

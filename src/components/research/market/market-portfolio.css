@@ -18,19 +18,19 @@
 }
 
 .cpr-page-eyebrow {
-  font-size: 0.625rem;
+  font-size: var(--type-eyebrow-size);
   font-family: var(--font-mono);
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-weight: 700;
+  letter-spacing: var(--type-eyebrow-tracking);
+  font-weight: var(--type-eyebrow-weight);
   color: var(--emerald);
 }
 
 .cpr-page-title {
   margin: 0;
-  font-size: 1.875rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  font-size: var(--type-page-title-size);
+  font-weight: var(--type-page-title-weight);
+  letter-spacing: var(--type-page-title-tracking);
   color: var(--text-primary);
   line-height: 1.15;
 }
@@ -368,7 +368,7 @@ body.light-mode .shm-tile--clickable.shm-tile--clickable:hover {
 
 .shm-tile-value {
   font-size: 1.125rem;
-  font-weight: 800;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--home-heading);
   line-height: 1;
@@ -570,7 +570,7 @@ body.light-mode .stc-input {
   min-width: 48px;
   text-align: right;
   font-size: 0.8125rem;
-  font-weight: 800;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 
@@ -581,7 +581,7 @@ body.light-mode .stc-input {
   border: 1px solid #10b981;
   background: #10b981;
   color: #0b1220;
-  font-weight: 800;
+  font-weight: 700;
   font-size: 0.8125rem;
   border-radius: 8px;
   cursor: pointer;
@@ -625,7 +625,7 @@ body.light-mode .stc-input {
 
 .stc-result-value {
   font-size: 1.25rem;
-  font-weight: 800;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 
@@ -691,7 +691,7 @@ body.light-mode .stc-breakdown-sym {
   align-items: center;
   gap: 0.4rem;
   font-size: 0.8125rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #f59e0b;
 }
 
@@ -732,7 +732,7 @@ body.light-mode .stc-aw-row {
 }
 
 .stc-aw-row-value {
-  font-weight: 800;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--home-heading);
 }
@@ -746,7 +746,7 @@ body.light-mode .stc-aw-row-value {
   padding: 0.35rem 0.8rem;
   border-radius: 7px;
   font-size: 0.75rem;
-  font-weight: 800;
+  font-weight: 700;
   background: transparent;
   color: #f59e0b;
   border: 1px solid rgba(245, 158, 11, 0.5);
@@ -892,7 +892,7 @@ body.light-mode .mpv-textarea {
 
 .mc-lock-title {
   font-size: 0.875rem;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--home-heading);
 }
 
@@ -912,7 +912,7 @@ body.light-mode .mc-lock-title {
   appearance: none;
   padding: 0.4rem 0.9rem;
   font-size: 0.75rem;
-  font-weight: 800;
+  font-weight: 700;
   border-radius: 8px;
   border: 1px solid rgba(245, 158, 11, 0.4);
   background: rgba(245, 158, 11, 0.15);
@@ -961,9 +961,9 @@ body.light-mode .mc-lock-title {
 
 .reg-label {
   font-family: var(--font-mono);
-  font-size: 0.59375rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--text-faint);
 }
@@ -1217,7 +1217,7 @@ body.light-mode .stc-tab-btn.is-active {
 
 .stc-slider-readout {
   color: var(--emerald);
-  font-weight: 800;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 
@@ -1226,7 +1226,7 @@ body.light-mode .stc-tab-btn.is-active {
   border: 1px solid var(--emerald);
   color: #04130d;
   border-radius: 10px;
-  font-weight: 800;
+  font-weight: 700;
   transition: filter 0.15s ease;
 }
 

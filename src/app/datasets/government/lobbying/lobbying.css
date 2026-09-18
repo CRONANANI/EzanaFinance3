@@ -546,11 +546,11 @@
   fill: var(--text-primary);
 }
 .lbx-donut-lbl {
-  font-size: 8px;
+  font-size: var(--type-eyebrow-size);
   fill: var(--text-faint);
   font-family: var(--font-mono);
-  font-weight: var(--ds-type-eyebrow-weight);
-  letter-spacing: var(--ds-type-eyebrow-tracking);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   font-variant-numeric: tabular-nums;
 }

@@ -11,7 +11,7 @@
 
 .am-page .am-title-block h1 {
   font-size: 1.75rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #f0f6fc;
   margin: 0;
   letter-spacing: -0.02em;
@@ -97,7 +97,7 @@
 
 .am-page .am-stat-price {
   font-size: 1.2rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #f0f6fc;
   font-feature-settings: 'tnum' 1;
 }
@@ -303,7 +303,7 @@
   align-items: center;
   gap: 0.35rem;
   font-size: 0.75rem;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: #10b981;
@@ -369,7 +369,7 @@
 }
 
 .am-page .am-mover-sym {
-  font-weight: 800;
+  font-weight: 700;
   color: #f0f6fc;
   min-width: 0;
 }
@@ -516,7 +516,7 @@
 
 .am-page .am-onchain-title {
   font-size: 0.8125rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #f0f6fc;
   margin: 0 0 0.5rem;
 }

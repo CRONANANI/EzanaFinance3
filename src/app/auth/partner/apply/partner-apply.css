@@ -49,7 +49,7 @@
 .partner-apply-badge {
   /* Was 8px. Uppercase tracked eyebrow, held at the 11px annotation floor. */
   font-size: 0.6875rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #a16207;
   background: rgba(212, 168, 83, 0.12);
   padding: 0.25rem 0.75rem;
@@ -67,7 +67,7 @@
 
 .partner-apply-hero h1 {
   font-size: 2.25rem;
-  font-weight: 900;
+  font-weight: 700;
   color: #0f172a;
   line-height: 1.15;
   letter-spacing: -0.03em;
@@ -138,7 +138,7 @@
 
 .partner-apply-card h3 {
   font-size: 0.9375rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #0f172a;
   margin: 0 0 0.5rem;
 }
@@ -157,7 +157,7 @@
 
 .partner-apply-section h2 {
   font-size: 1.375rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #0f172a;
   margin: 0 0 1.5rem;
   text-align: center;
@@ -229,7 +229,7 @@
   align-items: center;
   justify-content: center;
   font-size: 0.875rem;
-  font-weight: 800;
+  font-weight: 700;
   margin: 0 auto 0.75rem;
 }
 
@@ -264,7 +264,7 @@
   background: linear-gradient(135deg, #10b981, #059669);
   color: #fff;
   font-size: 0.9375rem;
-  font-weight: 800;
+  font-weight: 700;
   border-radius: 12px;
   text-decoration: none;
   transition: all 0.2s;
@@ -284,7 +284,7 @@
 
 .partner-form-container h1 {
   font-size: 1.5rem;
-  font-weight: 900;
+  font-weight: 700;
   color: #0f172a;
   margin: 0 0 0.25rem;
 }
@@ -315,7 +315,7 @@
 
 .partner-form-step h2 {
   font-size: 1.125rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #0f172a;
   margin: 0 0 1.5rem;
 }

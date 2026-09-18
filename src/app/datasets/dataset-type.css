@@ -4,52 +4,62 @@
    Metrics only: every colour still routes through --text-* / --emerald-*, so
    light mode needs no override here.
 
-   NOTE: intentionally does NOT touch --type-kicker-* / --type-label-* in
-   theme-variables.css. Those are the broadsheet/org scale and are a different
-   size and tracking on purpose. */
+   As of the v2 branding pass this file is an ALIAS LAYER over the platform
+   --type-* ramp rather than a scale of its own. It still does not touch
+   --type-kicker-* / --type-label-*: those stay the broadsheet/org editorial
+   scale, a different size and tracking on purpose. */
 
 :root {
-  /* Mono eyebrows: small uppercase labels above a value or section. */
-  --ds-type-eyebrow-size: 10px;
-  --ds-type-eyebrow-weight: 500;
-  --ds-type-eyebrow-tracking: 0.12em;
+  /* Alias layer (v2). Every role below now resolves to the platform --type-*
+     ramp in theme-variables.css, so the dataset pages cannot hold their own
+     scale. Consumers are untouched on purpose; this layer is slated for
+     deletion once they read the ramp directly.
 
-  /* AI badge eyebrow: slightly larger and heavier than a plain eyebrow. */
-  --ds-type-badge-size: 10.5px;
-  --ds-type-badge-weight: 600;
-  --ds-type-badge-tracking: 0.1em;
+     Roles the ramp does not name (line heights, the mobile hero size, the
+     hero's tracking) keep their literal values, which is why they are still
+     spelled out. */
+
+  /* Mono eyebrows: small uppercase labels above a value or section. */
+  --ds-type-eyebrow-size: var(--type-eyebrow-size);
+  --ds-type-eyebrow-weight: var(--type-eyebrow-weight);
+  --ds-type-eyebrow-tracking: var(--type-eyebrow-tracking);
+
+  /* AI badge eyebrow: an eyebrow variant, so it shares the eyebrow role. */
+  --ds-type-badge-size: var(--type-eyebrow-size);
+  --ds-type-badge-weight: var(--type-eyebrow-weight);
+  --ds-type-badge-tracking: var(--type-eyebrow-tracking);
 
   /* Headline: card and modal titles. */
-  --ds-type-headline-size: 18px;
-  --ds-type-headline-weight: 700;
-  --ds-type-headline-tracking: -0.025em;
+  --ds-type-headline-size: var(--type-card-title-size);
+  --ds-type-headline-weight: var(--type-card-title-weight);
+  --ds-type-headline-tracking: var(--type-card-title-tracking);
   --ds-type-headline-lh: 1.25;
 
   /* Hero numeral: the one big figure in a card or modal. */
-  --ds-type-hero-size: 30px;
-  --ds-type-hero-weight: 500;
+  --ds-type-hero-size: var(--type-value-lg-size);
+  --ds-type-hero-weight: var(--type-value-lg-weight);
   --ds-type-hero-tracking: -0.02em;
-  --ds-type-hero-size-mobile: 32px;
+  --ds-type-hero-size-mobile: var(--type-value-lg-size);
 
   /* Body copy and supporting text. */
-  --ds-type-body-size: 13px;
+  --ds-type-body-size: var(--type-body-size);
   --ds-type-body-lh: 1.65;
-  --ds-type-sub-size: 12.5px;
+  --ds-type-sub-size: var(--type-caption-size);
   --ds-type-sub-lh: 1.5;
-  --ds-type-fine-size: 12px;
+  --ds-type-fine-size: var(--type-caption-size);
   --ds-type-fine-lh: 1.45;
-  --ds-type-disclaimer-size: 11px;
+  --ds-type-disclaimer-size: var(--type-micro-size);
   --ds-type-disclaimer-lh: 1.55;
 
   /* Data values. */
-  --ds-type-code-size: 13px; /* PIID, NAICS, PSC and similar codes */
-  --ds-type-code-weight: 500;
-  --ds-type-figure-size: 14px; /* dates and secondary mono figures */
-  --ds-type-source-size: 11.5px; /* verbatim all-caps source text */
+  --ds-type-code-size: var(--type-body-size); /* PIID, NAICS, PSC and similar */
+  --ds-type-code-weight: var(--type-caption-weight);
+  --ds-type-figure-size: var(--type-body-size); /* dates, secondary figures */
+  --ds-type-source-size: var(--type-micro-size); /* verbatim all-caps source */
   --ds-type-source-lh: 1.65;
 
   /* Emphasis weights within the dataset scale. */
-  --ds-type-strong: 600; /* sector names, button and link labels */
+  --ds-type-strong: var(--weight-medium); /* sector names, button and link labels */
 }
 
 /* ── Semantic helpers (opt-in, for new dataset surfaces) ── */

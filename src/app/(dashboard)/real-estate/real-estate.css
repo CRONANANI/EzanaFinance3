@@ -17,7 +17,7 @@
 
 .re-hero-title {
   font-size: 1.75rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #f0f6fc;
   margin: 0 0 0.3rem;
 }
@@ -50,7 +50,7 @@
 
 .re-kpi-value {
   font-size: 1rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #d4af37;
   line-height: 1.2;
 }
@@ -197,7 +197,7 @@
 
 .re-card-stat-value {
   font-size: 0.75rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #d4af37;
 }
 

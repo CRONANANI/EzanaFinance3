@@ -150,10 +150,10 @@
   text-align: left;
   color: var(--text-muted);
   font-family: var(--font-mono);
-  font-weight: var(--type-kicker-weight, 700);
+  font-weight: var(--type-eyebrow-weight);
   text-transform: uppercase;
-  font-size: 0.625rem;
-  letter-spacing: 0.08em;
+  font-size: var(--type-eyebrow-size);
+  letter-spacing: var(--type-eyebrow-tracking);
   padding: 0.4rem 0.5rem;
   border-bottom: 1px solid var(--border-secondary);
 }
@@ -673,7 +673,7 @@ html.light-mode .ctd-card {
   gap: 0.6rem;
   margin: 0.35rem 0 0.25rem;
   font-size: 1.6rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--text-primary);
 }
@@ -745,7 +745,7 @@ html.light-mode .ctd-card {
   background: var(--amber, #f59e0b);
   color: #1a1200;
   font-size: 0.65rem;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 /* ── Focal hero card ── */
@@ -802,7 +802,7 @@ html.light-mode .ctd-card {
 }
 .ctd-donut-total {
   font-size: 1.35rem;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--text-primary);
 }
 .ctd-donut-label {
@@ -821,7 +821,7 @@ html.light-mode .ctd-card {
 .ctd-delta,
 .ctd-unreal {
   font-size: 1.15rem;
-  font-weight: 800;
+  font-weight: 700;
 }
 .ctd-delta b {
   font-size: 0.8rem;
@@ -1476,7 +1476,7 @@ html.light-mode .ctd-kpi {
   border-color: var(--negative, #ef4444);
   background: rgba(239, 68, 68, 0.16);
   color: var(--negative, #ef4444);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .ot-char-hint {

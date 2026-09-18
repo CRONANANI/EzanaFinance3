@@ -35,7 +35,7 @@
 .crx-title {
   margin: 0;
   font-size: 32px;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--text-primary);
 }
 .crx-sub {
@@ -94,7 +94,7 @@
   color: var(--text-faint);
 }
 .crx-strong {
-  font-weight: 800;
+  font-weight: 700;
   color: var(--text-primary);
 }
 .crx-council {
@@ -151,7 +151,7 @@
 }
 .crx-bigrating-num {
   font-size: 40px;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
 }
@@ -180,7 +180,7 @@
 }
 .crx-split-val {
   font-size: 28px;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--text-primary);
 }
 .crx-split-note {

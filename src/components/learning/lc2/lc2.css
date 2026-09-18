@@ -683,9 +683,9 @@ body.light-mode .lc-dq-start-btn {
 
 .lc-section-title {
   font-family: var(--font-sans);
-  font-weight: 600;
-  font-size: 18px;
-  letter-spacing: -0.014em;
+  font-weight: var(--type-section-weight);
+  font-size: var(--type-section-size);
+  letter-spacing: var(--type-section-tracking);
   color: var(--lc-ink);
   margin: 4px 0 0;
 }
@@ -1244,9 +1244,10 @@ body.light-mode .lc-tt-head {
 
 .lc-un-track {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
   color: var(--lc-ink-3);
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   margin-top: 5px;
 }

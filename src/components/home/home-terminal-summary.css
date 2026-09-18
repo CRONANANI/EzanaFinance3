@@ -77,7 +77,7 @@ body.light-mode .home-terminal-body {
 /* —— Large stat: match .db-holding-value / .db-hero-stat-value —— */
 .hts-stat-lg {
   font-size: 1.25rem;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--home-heading);
   letter-spacing: -0.03em;
   line-height: 1.1;
@@ -217,7 +217,7 @@ body.light-mode .home-terminal-body {
 
 .hts-streak-num {
   font-size: 1.25rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #f0f6fc;
   letter-spacing: -0.03em;
 }
@@ -291,7 +291,7 @@ body.light-mode .home-terminal-body {
 
 .hts-accent-stat {
   color: #10b981;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 /* —— Congressional tracker —— */
@@ -420,7 +420,7 @@ body.light-mode .home-terminal-body {
 /* —— Activity score —— */
 .hts-activity-score {
   font-size: 1.25rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #10b981;
   text-align: center;
   margin: 0.25rem 0;
@@ -1141,7 +1141,7 @@ body.light-mode .hts-week-standing-row {
 }
 .hts-week-position-ticker {
   font-size: 0.75rem;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--home-heading);
 }
 .hts-week-position-value {
@@ -1213,7 +1213,7 @@ body.light-mode .hts-week-standing-row {
 }
 .hts-chain-title {
   font-size: 0.6875rem;
-  font-weight: 800;
+  font-weight: 700;
   font-family: var(--font-mono);
   color: var(--home-heading);
   padding: 0.1rem 0.4rem;
@@ -1224,7 +1224,7 @@ body.light-mode .hts-week-standing-row {
 }
 .hts-chain-severity {
   font-size: 0.4375rem;
-  font-weight: 800;
+  font-weight: 700;
   font-family: var(--font-mono);
   padding: 0.1rem 0.35rem;
   border-radius: 3px;
@@ -1435,7 +1435,7 @@ body.light-mode .home-top-movers-card .hts-mover-row:hover {
 /* Portfolio snapshot numerics — mirror /home-dashboard hero specs; scoped to home terminal only */
 .home-terminal-body .home-num-hero {
   font-size: 2.5rem;
-  font-weight: 900;
+  font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1.1;
   color: var(--home-heading);
@@ -1476,7 +1476,7 @@ body.light-mode .home-top-movers-card .hts-mover-row:hover {
 
 .home-portfolio-gain-value {
   font-size: 1.25rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1.1;
   color: var(--home-heading);
@@ -1974,7 +1974,7 @@ body.light-mode .hts-events-warn {
 }
 
 .hts-week-corr-value {
-  font-weight: 800;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
   font-size: 0.8125rem;
   letter-spacing: -0.02em;
@@ -2138,7 +2138,7 @@ body.light-mode .hts-week-legend-item.is-off .hts-week-legend-label {
 
 .streak-card__count-value {
   font-size: 32px;
-  font-weight: 800;
+  font-weight: 700;
   color: #10b981;
   line-height: 1;
   font-variant-numeric: tabular-nums;

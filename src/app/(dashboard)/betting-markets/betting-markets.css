@@ -64,7 +64,7 @@ body.light-mode .bm-page {
 
 .bm-lb-rank {
   width: 1.5rem;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--bm-subtle);
   flex-shrink: 0;
 }
@@ -86,7 +86,7 @@ body.light-mode .bm-page {
 }
 
 .bm-lb-pnl {
-  font-weight: 800;
+  font-weight: 700;
   color: #d4af37;
   font-feature-settings: 'tnum' 1;
 }
@@ -451,7 +451,7 @@ body.light-mode .bm-lm-footer {
 
 .bm-modal-kpi-value {
   font-size: 0.95rem;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--bm-heading);
   font-variant-numeric: tabular-nums;
 }

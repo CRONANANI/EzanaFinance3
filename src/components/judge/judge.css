@@ -60,7 +60,7 @@
 .jx-title {
   margin: 10px 0 2px;
   font-size: 24px;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--text-primary);
   line-height: 1.15;
 }
@@ -199,7 +199,7 @@
 }
 .jx-total-num {
   font-size: 26px;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--org-ink, var(--emerald));
   font-variant-numeric: tabular-nums;
 }

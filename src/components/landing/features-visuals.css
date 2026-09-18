@@ -39,9 +39,9 @@
    scale). Identical on all six cards; token-driven so it adapts to light/dark. */
 .feature-viz-caption {
   font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.08em;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking-marketing);
   text-transform: uppercase;
   color: var(--text-muted);
   text-align: center;

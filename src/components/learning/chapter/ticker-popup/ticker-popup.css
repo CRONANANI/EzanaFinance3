@@ -61,7 +61,7 @@ body.light-mode .lc-ticker-popup {
 
 .lc-ticker-popup-eyebrow {
   font-size: 0.625rem;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--emerald);
@@ -78,7 +78,7 @@ body.light-mode .lc-ticker-popup {
 .lc-ticker-popup-title {
   margin: 0;
   font-size: 1.1rem;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.01em;
   line-height: 1.25;
@@ -184,7 +184,7 @@ body.light-mode .lc-ticker-popup {
 }
 .lc-ticker-popup-research-eyebrow {
   font-size: 0.6rem;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--emerald);

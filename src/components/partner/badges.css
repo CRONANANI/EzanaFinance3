@@ -32,7 +32,7 @@
   background: rgba(212, 168, 83, 0.08);
   border-color: rgba(212, 168, 83, 0.2) !important;
   font-size: 0.5rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #d4a853;
 }
 
@@ -70,7 +70,7 @@
 
 .badges-modal-header h2 {
   font-size: 1.25rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #f0f6fc;
   margin: 0 0 0.25rem;
 }
@@ -226,7 +226,7 @@
 
 .badge-card-tier {
   font-size: 0.5rem;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   margin-bottom: 0.25rem;

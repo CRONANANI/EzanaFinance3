@@ -12,7 +12,7 @@
 .pcl-title {
   margin: 0 0 0.2rem;
   font-size: 1.125rem;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.02em;
 }
@@ -220,7 +220,7 @@
   display: inline-block;
   padding: 0.2rem 0.6rem;
   font-size: 0.6875rem;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   border: 1px solid;
@@ -241,7 +241,7 @@
 .pcl-entry-title {
   margin: 0 0 0.4rem;
   font-size: 1rem;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--text-primary);
 }
 
@@ -335,7 +335,7 @@ body.light-mode .pcl-empty {
 .pcl-day-range {
   margin: 0;
   font-size: 0.625rem;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: #10b981;

@@ -89,23 +89,25 @@ body.light-mode .thw-root {
 /* ── Shared primitives ─────────────────────────────────────────── */
 .thw-eyebrow {
   font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.16em;
+  font-size: var(--type-eyebrow-size);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
-  font-weight: 700;
+  font-weight: var(--type-eyebrow-weight);
   color: var(--text-faint);
 }
 .thw-section-meta {
-  font-size: 10.5px;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
   color: var(--text-faint);
   font-family: var(--font-mono);
-  letter-spacing: 0.08em;
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
 }
 .thw-col-label {
   font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.16em;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--text-faint);
   margin-bottom: 8px;
@@ -233,10 +235,10 @@ html.light-mode .thw-card {
 }
 .thw-vp-eyebrow {
   font-family: var(--font-mono);
-  font-size: 8.5px;
-  letter-spacing: 0.14em;
+  font-size: var(--type-eyebrow-size);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
-  font-weight: 700;
+  font-weight: var(--type-eyebrow-weight);
   color: var(--emerald);
 }
 .thw-vp-name {
@@ -255,10 +257,10 @@ html.light-mode .thw-card {
 }
 .thw-nav-label {
   font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.16em;
+  font-size: var(--type-eyebrow-size);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
-  font-weight: 700;
+  font-weight: var(--type-eyebrow-weight);
   color: var(--text-ghost);
   padding: 0 10px 6px;
 }
@@ -510,9 +512,9 @@ html.light-mode .thw-cal-card {
   align-self: flex-start;
   max-width: 100%;
   font-family: var(--font-mono);
-  font-size: 8.5px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
   padding: 2px 6px;
@@ -548,8 +550,9 @@ html.light-mode .thw-cal-card {
 .thw-fund-label {
   display: block;
   font-family: var(--font-mono);
-  font-size: 9.5px;
-  letter-spacing: 0.14em;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--text-faint);
 }
@@ -830,9 +833,9 @@ html.light-mode .thw-cal-card {
   display: inline-flex;
   align-items: center;
   font-family: var(--font-mono);
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   padding: 2px 7px;
   border-radius: 999px;
@@ -896,8 +899,9 @@ html.light-mode .thw-chart-card {
 }
 .thw-chart-label {
   font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.08em;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--text-faint);
 }
@@ -1145,10 +1149,10 @@ html.light-mode .thw-cal-card {
 .thw-health-pill {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.62rem;
-  font-weight: 700;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-eyebrow-tracking);
   padding: 2px 8px;
   border-radius: 999px;
 }

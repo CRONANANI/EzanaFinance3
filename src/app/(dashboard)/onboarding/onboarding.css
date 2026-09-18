@@ -418,7 +418,7 @@
 
 .onboarding-price {
   font-size: 1.875rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #f0f6fc;
 }
 
@@ -686,7 +686,7 @@ body.light-mode .onboarding-org-role-badge {
 }
 .iq-logo {
   font-size: 18px;
-  font-weight: 800;
+  font-weight: 700;
   color: #059669;
   letter-spacing: 3px;
 }

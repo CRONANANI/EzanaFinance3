@@ -53,7 +53,7 @@
 }
 .lc-greeting {
   font-size: 36px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.025em;
   margin: 4px 0 0;
   color: var(--fg);
@@ -100,7 +100,7 @@
 .lc-elo-big {
   font-family: var(--font-mono);
   font-size: 64px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.04em;
   line-height: 1;
   background: linear-gradient(180deg, var(--emerald), var(--emerald-hover));
@@ -151,7 +151,7 @@
 .lc-streak-num {
   font-family: var(--font-mono);
   font-size: 24px;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--amber);
   line-height: 1;
 }
@@ -237,7 +237,7 @@
   border-radius: 6px;
   font-family: var(--font-mono);
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 700;
   white-space: nowrap;
 }
 .lc-elo-friend {
@@ -252,7 +252,7 @@
   display: grid;
   place-items: center;
   font-size: 9px;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--fg);
   cursor: pointer;
   transition: transform 0.15s;
@@ -296,7 +296,7 @@
 }
 .lc-hero-stat-value {
   font-size: 22px;
-  font-weight: 800;
+  font-weight: 700;
   font-family: var(--font-mono);
   color: var(--fg);
 }
@@ -424,8 +424,9 @@
   gap: 12px;
 }
 .lc-section-title {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: var(--type-section-size);
+  font-weight: var(--type-section-weight);
+  letter-spacing: var(--type-section-tracking);
   color: var(--fg);
   margin: 4px 0 0;
 }
@@ -477,7 +478,7 @@
   background: var(--track-color, var(--emerald));
   color: #001512;
   font-size: 9px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.1em;
 }
 .lc-tower-set-main {
@@ -559,7 +560,7 @@
 }
 .lc-tower-footer-pct {
   font-size: 18px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .lc-active-path {
@@ -583,8 +584,9 @@
   align-items: center;
 }
 .lc-ap-title {
-  font-size: 20px;
-  font-weight: 800;
+  font-size: var(--type-section-size);
+  font-weight: var(--type-section-weight);
+  letter-spacing: var(--type-section-tracking);
   margin: 2px 0 0;
   color: var(--fg);
 }
@@ -755,7 +757,7 @@
   padding: 2px 7px;
   border-radius: 5px;
   font-size: 9px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.06em;
 }
 
@@ -844,7 +846,7 @@
   display: grid;
   place-items: center;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   position: relative;
   background: var(--surface-2);
   color: var(--fg);
@@ -881,7 +883,7 @@
 }
 .lc-podium-elo {
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--emerald);
 }
 
@@ -912,7 +914,7 @@
   display: grid;
   place-items: center;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
 }
 .lc-leaderboard-you-pill {
   margin-left: 8px;

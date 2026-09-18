@@ -191,11 +191,6 @@ body.light-mode .ptr-btn-sm:hover {
   background: rgba(184, 146, 47, 0.1);
 }
 
-/* ── PAGE HEADER ── */
-body.light-mode .ptr-page-title {
-  color: #0f172a;
-}
-
 /* ── ACTIVITY ── */
 body.light-mode .ptr-activity-item {
   border-bottom-color: rgba(0, 0, 0, 0.04);

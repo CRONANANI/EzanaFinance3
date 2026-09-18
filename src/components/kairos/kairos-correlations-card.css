@@ -102,7 +102,7 @@ body.light-mode .kcc-empty p {
 
 .kcc-r-display {
   font-size: 1.25rem;
-  font-weight: 800;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
 }
@@ -190,7 +190,7 @@ body.light-mode .kcc-empty p {
 
 .kcc-detail-value {
   font-size: 1.25rem;
-  font-weight: 800;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
   line-height: 1;
 }

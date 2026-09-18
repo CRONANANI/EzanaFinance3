@@ -313,7 +313,7 @@
 .dsx-hub-t1 {
   font-family: var(--font-sans);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   fill: var(--text-primary);
   text-anchor: middle;
   pointer-events: none;

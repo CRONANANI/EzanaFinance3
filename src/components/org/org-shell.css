@@ -93,10 +93,10 @@
 /* ROLE — now second, beneath the name. */
 .ohn-vp-eyebrow {
   font-family: var(--font-mono);
-  font-size: 8.5px;
-  letter-spacing: 0.14em;
+  font-size: var(--type-eyebrow-size);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
-  font-weight: 700;
+  font-weight: var(--type-eyebrow-weight);
   color: var(--emerald);
   line-height: 1.3;
   white-space: nowrap;
@@ -112,10 +112,10 @@
 }
 .ohn-nav-label {
   font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.16em;
+  font-size: var(--type-eyebrow-size);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
-  font-weight: 700;
+  font-weight: var(--type-eyebrow-weight);
   color: var(--text-ghost);
   padding: 0 10px 6px;
 }

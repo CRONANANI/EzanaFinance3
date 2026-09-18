@@ -144,7 +144,7 @@
   align-items: center;
   justify-content: center;
   font-size: 2rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #fff;
   margin-bottom: 1rem;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
@@ -161,7 +161,7 @@
 
 .pp-name {
   font-size: 1.25rem;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--foreground);
   margin-bottom: 0.5rem;
 }
@@ -314,7 +314,7 @@
 
 .po-header h3 {
   font-size: 0.9375rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #f0f6fc;
   margin: 0;
 }
@@ -358,7 +358,7 @@
 
 .po-primary-value {
   font-size: 1.75rem;
-  font-weight: 900;
+  font-weight: 700;
   color: #f0f6fc;
   font-family: var(--font-mono);
   letter-spacing: -0.02em;
@@ -417,7 +417,7 @@
 
 .po-secondary-value {
   font-size: 1rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #f0f6fc;
   display: block;
   margin-bottom: 0.25rem;
@@ -508,7 +508,7 @@
   align-items: center;
   justify-content: center;
   font-size: 0.7rem;
-  font-weight: 800;
+  font-weight: 700;
   flex-shrink: 0;
 }
 
@@ -543,7 +543,7 @@
 
 .po-trader-pct {
   font-size: 0.6875rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #10b981;
   background: rgba(16, 185, 129, 0.12);
   padding: 0.2rem 0.5rem;
@@ -831,7 +831,7 @@
 }
 .pp-trade-type {
   font-size: 0.7rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.04em;
 }
 .pp-trade-type.buy {

@@ -40,7 +40,7 @@
 
 .pricing-h1 {
   font-size: clamp(2rem, 4.5vw, 3.25rem); /* handoff: ~52px display H1 */
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.12;
   letter-spacing: -0.035em;
   margin: 0 0 1rem;
@@ -115,13 +115,13 @@
 }
 .save-pill {
   font-family: var(--font-mono);
-  font-size: 0.625rem;
-  font-weight: 700;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
   padding: 2px 6px;
   border-radius: 9999px;
   background: var(--emerald-bg, rgba(16, 185, 129, 0.15));
   color: var(--emerald-text, #059669);
-  letter-spacing: 0.06em;
+  letter-spacing: var(--type-eyebrow-tracking-marketing);
   text-transform: uppercase;
   font-variant-numeric: tabular-nums;
 }
@@ -442,7 +442,7 @@
   margin: 0 0 1.75rem;
   text-align: center;
   font-size: clamp(1.5rem, 2.5vw, 1.875rem);
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.01em;
   color: var(--text-primary);
 }
@@ -687,7 +687,7 @@
 .pricing-bottom-cta-card h2 {
   margin: 0 0 0.75rem;
   font-size: clamp(1.75rem, 3vw, 2.25rem);
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--text-primary);
 }
@@ -795,7 +795,7 @@
 }
 .pricing-partner-name {
   font-size: 1.5rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.02em;
   margin: 0 0 0.25rem; /* was 0 0 0.4rem (Fix 2) */
   color: var(--text-primary);

@@ -16,7 +16,7 @@
   background: var(--emerald-bg, rgba(16, 185, 129, 0.1));
   color: var(--emerald, #10b981);
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 700;
   cursor: pointer;
   padding: 0;
   line-height: 1;
@@ -238,7 +238,7 @@ body.light-mode .beginner-first-analysis p {
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 0.6rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   background: rgba(16, 185, 129, 0.2);
@@ -306,7 +306,7 @@ body.light-mode .beginner-first-analysis p {
 
 .checklist-reward-badge {
   font-size: 0.65rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #10b981;
   background: rgba(16, 185, 129, 0.12);
   padding: 2px 6px;

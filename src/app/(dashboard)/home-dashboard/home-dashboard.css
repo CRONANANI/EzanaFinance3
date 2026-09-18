@@ -45,7 +45,7 @@ body.light-mode .db-page {
 
 .db-greeting {
   font-size: 1.75rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #f0f6fc;
   margin: 0;
   letter-spacing: -0.02em;
@@ -93,7 +93,7 @@ body.light-mode .db-page {
 
 .db-greeting-highlight {
   color: #10b981;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .db-greeting-date {
@@ -122,7 +122,7 @@ body.light-mode .db-page {
 
 .db-card-header h3 {
   font-size: 0.9375rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #f0f6fc;
   margin: 0;
 }
@@ -241,7 +241,7 @@ a.db-icon-btn {
 
 .db-hero-value {
   font-size: 2.5rem;
-  font-weight: 900;
+  font-weight: 700;
   color: #f0f6fc;
   letter-spacing: -0.03em;
   line-height: 1.1;
@@ -298,7 +298,7 @@ a.db-icon-btn {
 }
 .db-hero-stat-value {
   font-size: 1.25rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #f0f6fc;
 }
 
@@ -528,7 +528,7 @@ a.db-icon-btn {
 
 .db-holding-value {
   font-size: 1rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #f0f6fc;
   margin-bottom: 0.2rem;
   line-height: 1.2;
@@ -593,7 +593,7 @@ a.db-icon-btn {
   align-items: center;
   justify-content: center;
   font-size: 0.6875rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #10b981;
 }
 
@@ -683,7 +683,7 @@ a.db-icon-btn {
 
 .db-profits-summary-value {
   font-size: 1.25rem;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
@@ -712,7 +712,7 @@ a.db-icon-btn {
 }
 
 .db-profits-bar-symbol {
-  font-weight: 800;
+  font-weight: 700;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
 }
@@ -984,7 +984,7 @@ body.light-mode .db-profits-legend-scroll .db-profits-legend-item {
   align-items: center;
   justify-content: center;
   font-size: 0.625rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #10b981;
   flex-shrink: 0;
 }
@@ -2179,7 +2179,7 @@ body.light-mode .market-pulse-sector-row:hover {
 }
 
 .db-sector-holding-symbol {
-  font-weight: 800;
+  font-weight: 700;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
 }

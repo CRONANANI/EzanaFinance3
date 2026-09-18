@@ -355,7 +355,7 @@
 
 .ai-h1 {
   font-size: 1.375rem;
-  font-weight: 800;
+  font-weight: 700;
   margin: 2rem 0 0.75rem;
   letter-spacing: -0.02em;
 }
@@ -415,7 +415,7 @@
 }
 
 .ai-num {
-  font-weight: 800;
+  font-weight: 700;
   font-size: 0.875rem;
   min-width: 20px;
   font-feature-settings: 'tnum' 1;
@@ -522,7 +522,7 @@
 
 .ai-model-badge {
   font-size: 0.5rem;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   padding: 1px 6px;

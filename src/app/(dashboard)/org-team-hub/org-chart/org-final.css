@@ -107,8 +107,9 @@ body.light-mode .ox-root {
 }
 .ox-eyebrow {
   font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.16em;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--ox-faint);
 }
@@ -144,8 +145,9 @@ body.light-mode .ox-root {
 }
 .ox-stat-label {
   font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.14em;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--ox-faint);
 }
@@ -210,8 +212,9 @@ body.light-mode .ox-root {
 .ox-sec-meta {
   margin-left: auto;
   font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.13em;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--ox-faint);
 }
@@ -381,8 +384,9 @@ body.light-mode .ox-root {
 }
 .ox-teamtag > span:first-child {
   font-family: var(--font-mono);
-  font-size: 8.5px;
-  letter-spacing: 0.1em;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--ox-faint);
   white-space: nowrap;
@@ -569,8 +573,9 @@ body.light-mode .ox-root {
 }
 .oxr-seg-sub {
   font-family: var(--font-mono);
-  font-size: 9.5px;
-  letter-spacing: 0.1em;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--ox-faint);
   margin-top: 2px;
@@ -994,8 +999,9 @@ body.light-mode .ox-root {
 }
 .ox-vacant-rl {
   font-family: var(--font-mono);
-  font-size: 8px;
-  letter-spacing: 0.14em;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--ox-ghost);
   margin-top: 1px;
@@ -1045,9 +1051,9 @@ body.light-mode .ox-root {
 }
 .oxc-col-tag {
   font-family: var(--font-mono);
-  font-size: 9.5px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--ox-muted);
   white-space: nowrap;
@@ -1163,8 +1169,9 @@ body.light-mode .ox-root {
 }
 .oxrad-desk-tag {
   font-family: var(--font-mono);
-  font-size: 8px;
-  letter-spacing: 0.1em;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--ox-faint);
   white-space: nowrap;

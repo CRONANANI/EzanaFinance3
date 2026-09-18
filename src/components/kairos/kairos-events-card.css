@@ -138,7 +138,7 @@
 
 .kev-row-scenario {
   font-size: 0.625rem;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text-muted);
@@ -165,7 +165,7 @@
   display: inline-block;
   padding: 0.15rem 0.5rem;
   font-size: 0.625rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   border-radius: 999px;
@@ -230,7 +230,7 @@
 .kev-detail-section h4 {
   margin: 0 0 0.4rem;
   font-size: 0.625rem;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text-muted);

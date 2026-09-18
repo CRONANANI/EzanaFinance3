@@ -39,7 +39,7 @@ body.light-mode .pricing-free-banner {
 
 .pricing-header h1 {
   font-size: 1.5rem;
-  font-weight: 900;
+  font-weight: 700;
   color: var(--foreground);
   margin: 0 0 0.5rem;
 }
@@ -169,7 +169,7 @@ body.light-mode .pricing-card.professional h3 {
   top: -0.5rem;
   right: 1rem;
   font-size: 0.5rem;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   padding: 0.25rem 0.5rem;
@@ -180,14 +180,14 @@ body.light-mode .pricing-card.professional h3 {
 
 .pricing-card h3 {
   font-size: 0.9375rem;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--foreground);
   margin: 0 0 0.5rem;
 }
 
 .pricing-price {
   font-size: 1.75rem;
-  font-weight: 900;
+  font-weight: 700;
   font-family: var(--font-mono);
   color: var(--foreground);
   margin-bottom: 0.25rem;

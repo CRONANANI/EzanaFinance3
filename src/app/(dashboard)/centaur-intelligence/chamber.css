@@ -32,7 +32,7 @@
 .cc-chamber-title {
   margin: 0;
   font-size: 1rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #f8fafc;
   letter-spacing: 0.02em;
 }
@@ -58,7 +58,7 @@
 
 .cc-quorum-label strong {
   color: #d4af37;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .cc-quorum-dots {
@@ -177,7 +177,7 @@
 .cc-modal-title {
   margin: 0;
   font-size: 1.15rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #f8fafc;
 }
 

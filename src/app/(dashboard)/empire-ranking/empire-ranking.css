@@ -113,7 +113,7 @@ body.light-mode .er-page {
 
 .er-hero h1 {
   font-size: 1.45rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #d4af37;
   margin: 0 0 0.35rem;
   letter-spacing: -0.01em;
@@ -139,7 +139,7 @@ body.light-mode .er-page {
   top: 1rem;
   right: 1.5rem;
   font-size: 0.6rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.08em;
   padding: 0.35rem 0.7rem;
   border-radius: 6px;
@@ -208,10 +208,10 @@ body.light-mode .er-page {
 }
 
 .er-layers-from-map-tag {
-  font-size: 0.65rem;
-  font-weight: 700;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
   font-family: var(--font-mono);
-  letter-spacing: 0.04em;
+  letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   padding: 0.25rem 0.5rem;
   border-radius: 999px;
@@ -270,7 +270,7 @@ body.light-mode .er-pill-toggle--active {
 
 .er-analytics-badge {
   font-size: 0.6rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.06em;
   padding: 0.3rem 0.55rem;
   border-radius: 6px;
@@ -420,7 +420,7 @@ body.light-mode .er-select {
 
 .er-cycle-stat-value {
   font-size: 1.1rem;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--er-text-primary);
 }
 
@@ -618,7 +618,7 @@ body.light-mode .er-big-cycle-legend__item--pinned {
 .er-scorecard-rank {
   margin-left: auto;
   font-size: 0.62rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #d4af37;
   background: rgba(212, 175, 55, 0.1);
   padding: 2px 6px;
@@ -634,7 +634,7 @@ body.light-mode .er-big-cycle-legend__item--pinned {
 
 .er-scorecard-score {
   font-size: 1.4rem;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--er-accent);
   font-feature-settings: 'tnum' 1;
 }
@@ -841,7 +841,7 @@ body.light-mode .er-multiselect-menu {
 
 .er-slider-value {
   color: var(--er-accent);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 /* Delta (±) color tokens — safe on both dark card and white card. */
