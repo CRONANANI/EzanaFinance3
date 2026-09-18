@@ -22,6 +22,7 @@
 }
 .an4-eyebrow {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -528,6 +529,7 @@
   height: 20px;
   border-radius: 9999px;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.66rem;
   font-weight: 700;
   background: var(--surface-input);
@@ -558,6 +560,7 @@
   align-items: center;
   justify-content: center;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.6rem;
   font-weight: 700;
   background: var(--emerald-bg, rgba(16, 185, 129, 0.14));
@@ -619,6 +622,7 @@
 }
 .fa-cd .tk {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-weight: 700;
   color: var(--text-primary);
   font-size: 0.8rem;
@@ -829,6 +833,7 @@
 }
 .fa-gap .gt {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-weight: 700;
   color: var(--text-primary);
   font-size: 0.78rem;

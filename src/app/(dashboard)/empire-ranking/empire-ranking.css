@@ -211,6 +211,7 @@ body.light-mode .er-page {
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
   padding: 0.25rem 0.5rem;
@@ -419,6 +420,8 @@ body.light-mode .er-select {
 }
 
 .er-cycle-stat-value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 1.1rem;
   font-weight: 700;
   color: var(--er-text-primary);
@@ -613,6 +616,7 @@ body.light-mode .er-big-cycle-legend__item--pinned {
   font-size: 0.62rem;
   color: var(--er-text-muted);
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }
 
 .er-scorecard-rank {
@@ -633,8 +637,10 @@ body.light-mode .er-big-cycle-legend__item--pinned {
 }
 
 .er-scorecard-score {
-  font-size: 1.4rem;
-  font-weight: 700;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--type-value-lg-size);
+  font-weight: var(--type-value-lg-weight);
   color: var(--er-accent);
   font-feature-settings: 'tnum' 1;
 }
@@ -831,6 +837,7 @@ body.light-mode .er-multiselect-menu {
 
 .er-slider-end,
 .er-slider-value {
+  font-family: var(--font-mono);
   font-size: 0.62rem;
   font-weight: 600;
   color: var(--er-text-muted);
@@ -841,6 +848,7 @@ body.light-mode .er-multiselect-menu {
 
 .er-slider-value {
   color: var(--er-accent);
+  font-family: var(--font-mono);
   font-weight: 700;
 }
 

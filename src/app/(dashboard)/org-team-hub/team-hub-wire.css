@@ -89,6 +89,7 @@ body.light-mode .thw-root {
 /* ── Shared primitives ─────────────────────────────────────────── */
 .thw-eyebrow {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
@@ -100,11 +101,13 @@ body.light-mode .thw-root {
   font-weight: var(--type-eyebrow-weight);
   color: var(--text-faint);
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
 }
 .thw-col-label {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -140,6 +143,7 @@ body.light-mode .thw-root {
 }
 .thw-tkr {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 9.5px;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -224,6 +228,7 @@ html.light-mode .thw-card {
   align-items: center;
   justify-content: center;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 12px;
   font-weight: 700;
   color: var(--emerald);
@@ -235,6 +240,7 @@ html.light-mode .thw-card {
 }
 .thw-vp-eyebrow {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
@@ -257,6 +263,7 @@ html.light-mode .thw-card {
 }
 .thw-nav-label {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
@@ -382,6 +389,7 @@ html.light-mode .thw-card {
 .thw-kbd {
   flex-shrink: 0;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 10px;
   border: 1px solid var(--border-primary);
   border-radius: 4px;
@@ -512,6 +520,7 @@ html.light-mode .thw-cal-card {
   align-self: flex-start;
   max-width: 100%;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -550,6 +559,7 @@ html.light-mode .thw-cal-card {
 .thw-fund-label {
   display: block;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -560,8 +570,8 @@ html.light-mode .thw-cal-card {
   display: block;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 44px;
-  font-weight: 600;
+  font-size: var(--type-value-lg-size);
+  font-weight: var(--type-value-lg-weight);
   letter-spacing: -0.02em;
   color: var(--text-primary);
   line-height: 1.02;
@@ -833,6 +843,7 @@ html.light-mode .thw-cal-card {
   display: inline-flex;
   align-items: center;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -899,6 +910,7 @@ html.light-mode .thw-chart-card {
 }
 .thw-chart-label {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -993,6 +1005,7 @@ body.light-mode .thw-range.active {
 }
 .thw-chart-tip-date {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 9px;
   letter-spacing: 0.04em;
   color: var(--text-faint);
@@ -1099,7 +1112,10 @@ body.light-mode .thw-range.active {
 }
 @media (max-width: 620px) {
   .thw-fund-value {
-    font-size: 36px;
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--type-value-lg-size);
+    font-weight: var(--type-value-lg-weight);
   }
   .thw-header {
     align-items: flex-start;
@@ -1237,6 +1253,8 @@ html.light-mode .thw-cal-card {
   text-decoration: line-through;
 }
 .thw-setup-count {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.72rem;
   color: var(--text-faint);
   margin-left: auto;

@@ -199,6 +199,7 @@
 }
 .apm-org-csv-help code {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   background: var(--bg-tertiary);
   padding: 1px 5px;
   border-radius: 3px;
@@ -216,6 +217,7 @@
   font-size: 12px;
   color: var(--accent-emerald, #10b981);
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }
 
 .apm-org-rowerrors {
@@ -270,6 +272,7 @@
 }
 .apm-org-account-provider {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   text-transform: uppercase;
@@ -285,6 +288,8 @@
   margin-top: 2px;
 }
 .apm-org-account-balance {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 13px;
   font-weight: 600;
   color: var(--text-primary);

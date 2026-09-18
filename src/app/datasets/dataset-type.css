@@ -76,6 +76,7 @@
 
 .ds-badge-label {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--ds-type-badge-size);
   font-weight: var(--ds-type-badge-weight);
   letter-spacing: var(--ds-type-badge-tracking);
@@ -132,6 +133,7 @@ body.light-mode .ds-badge-label {
 /* Verbatim agency prose, rendered as a quoted record rather than editorial. */
 .ds-source-text {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--ds-type-source-size);
   font-weight: 400;
   line-height: var(--ds-type-source-lh);
@@ -158,6 +160,8 @@ body.light-mode .ds-badge-label {
 
 @media (max-width: 640px) {
   .ds-hero-num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
     font-size: var(--ds-type-hero-size-mobile);
   }
 }

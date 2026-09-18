@@ -150,6 +150,7 @@
   text-align: left;
   color: var(--text-muted);
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-weight: var(--type-eyebrow-weight);
   text-transform: uppercase;
   font-size: var(--type-eyebrow-size);
@@ -801,6 +802,8 @@ html.light-mode .ctd-card {
   gap: 2px;
 }
 .ctd-donut-total {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 1.35rem;
   font-weight: 700;
   color: var(--text-primary);
@@ -824,6 +827,8 @@ html.light-mode .ctd-card {
   font-weight: 700;
 }
 .ctd-delta b {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.8rem;
   font-weight: 700;
   opacity: 0.85;
@@ -920,8 +925,8 @@ html.light-mode .ctd-kpi {
 .ctd-kpi-value {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: var(--type-value-lg-size);
+  font-weight: var(--type-value-lg-weight);
   line-height: 1;
   color: var(--text-primary);
 }
@@ -1349,6 +1354,8 @@ html.light-mode .ctd-kpi {
   color: var(--text-muted);
 }
 .ot-dossier-stat-value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.95rem;
   font-weight: 700;
   color: var(--text-primary);

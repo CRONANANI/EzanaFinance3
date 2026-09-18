@@ -438,6 +438,7 @@
 }
 .gcx-chip-count {
   color: var(--text-faint);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-disclaimer-size);
   font-variant-numeric: tabular-nums;
 }
@@ -515,6 +516,7 @@
   overflow-wrap: anywhere;
 }
 .gcx-arow-count {
+  font-family: var(--font-mono);
   font-size: var(--ds-type-eyebrow-size);
   font-variant-numeric: tabular-nums;
   color: var(--text-faint);
@@ -697,6 +699,7 @@
   color: var(--text-secondary);
 }
 .gcx-legend-pct {
+  font-family: var(--font-mono);
   font-size: var(--ds-type-disclaimer-size);
   font-weight: var(--ds-type-strong);
   font-variant-numeric: tabular-nums;
@@ -869,6 +872,7 @@
   margin-bottom: 8px;
 }
 .gcx-list-count {
+  font-family: var(--font-mono);
   font-size: var(--ds-type-source-size);
   font-variant-numeric: tabular-nums;
   color: var(--text-faint);
@@ -2058,6 +2062,8 @@
   color: var(--text-secondary);
 }
 .gcx-award-value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--ds-type-sub-size);
   font-weight: 400;
   color: var(--text-primary);
@@ -2075,6 +2081,7 @@
 .gcx-award-desc-text {
   margin: 6px 0 0;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--ds-type-source-size);
   font-weight: 400;
   line-height: var(--ds-type-source-lh);
@@ -2112,6 +2119,7 @@
   align-items: center;
   gap: 7px;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--ds-type-badge-size);
   font-weight: var(--ds-type-badge-weight);
   letter-spacing: var(--ds-type-badge-tracking);
@@ -2213,6 +2221,7 @@ body.light-mode .gcx-award-spark {
 }
 .gcx-award-loading-note {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--ds-type-disclaimer-size);
   font-weight: var(--ds-type-eyebrow-weight);
   letter-spacing: var(--ds-type-badge-tracking);
@@ -2358,6 +2367,8 @@ body.light-mode .gcx-award-ghost.is-on {
     padding: 22px 20px 16px;
   }
   .gcx-award-amount {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
     font-size: var(--ds-type-hero-size-mobile);
   }
   .gcx-award-amount--full {

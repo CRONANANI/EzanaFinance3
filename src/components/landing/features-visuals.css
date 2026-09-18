@@ -39,6 +39,7 @@
    scale). Identical on all six cards; token-driven so it adapts to light/dark. */
 .feature-viz-caption {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking-marketing);
@@ -68,6 +69,7 @@
 }
 .feature-viz .fv-num {
   fill: var(--text-secondary);
+  font-family: var(--font-mono);
   font-weight: 600;
 }
 .feature-viz .fv-em {

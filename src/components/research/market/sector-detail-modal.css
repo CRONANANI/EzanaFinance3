@@ -104,6 +104,7 @@ body.light-mode .sdm-header {
 }
 
 .sdm-heading-change {
+  font-family: var(--font-mono);
   font-size: 0.9375rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
@@ -303,6 +304,8 @@ body.light-mode .sdm-performer-symbol {
 }
 
 .sdm-performer-price {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--text-primary);
@@ -313,6 +316,8 @@ body.light-mode .sdm-performer-price {
 }
 
 .sdm-performer-change {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   font-weight: 700;
 }

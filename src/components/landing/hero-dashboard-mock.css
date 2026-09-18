@@ -58,6 +58,8 @@
   flex: none;
 }
 .hdm-sec-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 7px;
   font-weight: 700;
   color: var(--emerald);
@@ -200,6 +202,8 @@
 }
 /* The ELO card's kicker reads one step up from the board's block titles. */
 .hdm-block-title--elo {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 6.5px;
   color: var(--text-muted);
 }

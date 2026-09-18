@@ -35,8 +35,9 @@ body.light-mode .mg-card {
 }
 
 .mg-value {
-  font-size: 1.375rem;
-  font-weight: 700;
+  font-family: var(--font-mono);
+  font-size: var(--type-value-lg-size);
+  font-weight: var(--type-value-lg-weight);
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
   line-height: 1.1;
@@ -54,6 +55,7 @@ body.light-mode .mg-card {
   display: inline-flex;
   align-items: center;
   gap: 3px;
+  font-family: var(--font-mono);
   font-weight: 600;
 }
 
@@ -112,6 +114,8 @@ body.light-mode .mg-card {
 }
 
 .mg-grid-compact .mg-value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 1.0625rem;
   line-height: 1.05;
 }

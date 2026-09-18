@@ -35,14 +35,16 @@
 }
 
 .mpc-stat-value {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-family: var(--font-mono);
+  font-size: var(--type-value-lg-size);
+  font-weight: var(--type-value-lg-weight);
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
 }
 
 .mpc-stat-change {
+  font-family: var(--font-mono);
   font-size: 0.8125rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
@@ -114,6 +116,7 @@ body.light-mode .mpc-axis-tick {
 }
 
 .mpc-tooltip-value {
+  font-family: var(--font-mono);
   font-size: 0.875rem;
   font-weight: 700;
   color: var(--text-primary);

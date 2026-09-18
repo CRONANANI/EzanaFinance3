@@ -102,6 +102,7 @@
 }
 .sonar-eyebrow {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -255,6 +256,7 @@
 }
 .sonar-recent-title {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -267,6 +269,7 @@
   padding: 0;
   cursor: pointer;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -324,6 +327,7 @@
   padding: 2px 8px;
   border-radius: 9999px;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
@@ -346,6 +350,7 @@
 .sonar-quota {
   text-align: center;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 11px;
   letter-spacing: 0.03em;
   color: var(--text-muted);
@@ -373,6 +378,7 @@
 }
 .sonar-sticky-label {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 12px;
   letter-spacing: 0.16em;
   font-weight: 700;
@@ -436,6 +442,7 @@
 }
 .sonar-live-label {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   letter-spacing: var(--type-eyebrow-tracking);
   font-weight: var(--type-eyebrow-weight);
@@ -445,6 +452,7 @@
 .sonar-answer-meta {
   margin-left: auto;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 10.5px;
   color: var(--text-muted);
 }
@@ -465,6 +473,7 @@
 }
 .sonar-cite {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.62em;
   font-weight: 600;
   vertical-align: super;
@@ -484,6 +493,7 @@
 }
 .sonar-manifest-title {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -529,6 +539,7 @@
 }
 .sonar-web-sources-label {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -593,6 +604,7 @@
 }
 .sonar-mod-title {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
@@ -601,6 +613,7 @@
 }
 .sonar-mod-source {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 10px;
   color: var(--text-muted);
 }
@@ -615,6 +628,7 @@
 .sonar-mod-marker {
   flex-shrink: 0;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 11px;
   font-weight: 700;
   color: var(--emerald);
@@ -634,6 +648,7 @@ a.sonar-mod-rowtitle:hover {
   flex-wrap: wrap;
   gap: 10px;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 10.5px;
   color: var(--text-muted);
 }
@@ -676,6 +691,7 @@ a.sonar-mod-rowtitle:hover {
 }
 .sonar-metric-ticker {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-weight: 700;
   font-size: 13px;
   color: var(--text-primary);
@@ -695,16 +711,19 @@ a.sonar-mod-rowtitle:hover {
 .sonar-metric-price {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-weight: 700;
-  font-size: 24px;
+  font-weight: var(--type-value-lg-weight);
+  font-size: var(--type-value-lg-size);
   color: var(--text-primary);
   margin-top: 4px;
 }
 .sonar-metric--sec .sonar-metric-price {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 19px;
 }
 .sonar-metric-label {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 11px;
   color: var(--text-muted);
   margin-top: 2px;
@@ -763,6 +782,7 @@ a.sonar-mod-rowtitle:hover {
   display: block;
   margin-top: 3px;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 10px;
   color: var(--text-muted);
 }
@@ -1120,6 +1140,7 @@ html body.sonar-hero-active .main-nav:not(.partner-nav) {
 .snr-stat-src {
   grid-column: 1;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 9.5px;
   letter-spacing: 0.06em;
   color: var(--text-faint);
@@ -1256,6 +1277,7 @@ html body.sonar-hero-active .main-nav:not(.partner-nav) {
 }
 .snr-annot-kind {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -1294,6 +1316,7 @@ html body.sonar-hero-active .main-nav:not(.partner-nav) {
   border: 1px solid transparent;
   background: transparent;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 11px;
   color: var(--text-muted);
   cursor: pointer;
@@ -1315,6 +1338,7 @@ html body.sonar-hero-active .main-nav:not(.partner-nav) {
   align-items: center;
   gap: 6px;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 10px;
   color: var(--text-faint);
 }
@@ -1389,14 +1413,17 @@ html body.sonar-hero-active .main-nav:not(.partner-nav) {
 }
 .snr-dial-num {
   position: relative;
-  font-size: 34px;
-  font-weight: 700;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--type-value-lg-size);
+  font-weight: var(--type-value-lg-weight);
   line-height: 1;
   color: var(--text-primary);
 }
 .snr-dial-label {
   position: relative;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -1419,6 +1446,7 @@ html body.sonar-hero-active .main-nav:not(.partner-nav) {
 }
 .snr-gov-kicker {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -1462,6 +1490,7 @@ html body.sonar-hero-active .main-nav:not(.partner-nav) {
 .snr-gov-subtitle {
   display: block;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -1493,6 +1522,7 @@ html body.sonar-hero-active .main-nav:not(.partner-nav) {
 }
 .snr-qbar em {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-style: normal;
   font-size: 8.5px;
   color: var(--text-faint);

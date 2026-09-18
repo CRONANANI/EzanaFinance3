@@ -87,6 +87,7 @@
 }
 .crx-num {
   text-align: right;
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 .crx-rank {
@@ -150,8 +151,9 @@
   text-align: right;
 }
 .crx-bigrating-num {
-  font-size: 40px;
-  font-weight: 700;
+  font-family: var(--font-mono);
+  font-size: var(--type-value-lg-size);
+  font-weight: var(--type-value-lg-weight);
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
 }

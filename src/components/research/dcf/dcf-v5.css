@@ -369,6 +369,7 @@ html.light-mode .dcf-v5 {
 
 .dcf-v5-peer-ticker {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--text-secondary);

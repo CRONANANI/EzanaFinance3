@@ -23,6 +23,7 @@
 }
 .sc2-eyebrow {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -540,6 +541,7 @@
 }
 .sc2-recog-period {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.64rem;
   color: var(--text-faint);
 }
@@ -617,6 +619,7 @@
   font-size: 0.64rem;
   color: var(--text-faint);
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }
 
 /* ── States ─────────────────────────────────────────────────────────────── */

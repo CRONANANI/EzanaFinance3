@@ -234,6 +234,7 @@ body.light-mode .m-panel {
   transform: translateY(-50%);
   font-size: 0.625rem;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   color: var(--text-muted);
   background: var(--surface-card-hover);
   border: 1px solid var(--border-primary);

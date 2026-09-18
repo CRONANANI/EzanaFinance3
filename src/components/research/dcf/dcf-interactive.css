@@ -160,6 +160,7 @@ body.dark-mode .dcf-toolbar-section-label,
   gap: 0.3rem;
   padding: 0.3rem 0.55rem;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.65rem;
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
@@ -210,6 +211,7 @@ body.dark-mode .dcf-chip-label,
 }
 
 .dcf-chip-value {
+  font-family: var(--font-mono);
   font-weight: 700;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
@@ -230,6 +232,8 @@ body.dark-mode .dcf-chip-value,
 }
 
 .dcf-chip-value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.65rem;
 }
 
@@ -344,6 +348,7 @@ body.dark-mode .dcf-slider::-webkit-slider-thumb,
   display: flex;
   justify-content: space-between;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.65rem;
   color: var(--text-faint);
 }
@@ -476,6 +481,7 @@ body.dark-mode .dcf-chart-area,
 }
 
 .dcf-chart-delta {
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 
@@ -525,6 +531,7 @@ body.dark-mode .dcf-chart-area,
 }
 
 .dcf-chart-bar-value {
+  font-family: var(--font-mono);
   font-size: 0.9375rem;
   font-weight: 700;
   color: var(--text-primary);
@@ -644,6 +651,7 @@ body.dark-mode .dcf-chart-area,
   padding: 0.4rem 0.6rem;
   border-radius: 4px;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   color: #111827;
   width: fit-content;
@@ -697,6 +705,7 @@ body.dark-mode .dcf-delta-axis-label,
   color: #1f2937;
   text-align: right;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }
 body.dark-mode .dcf-delta-row-label,
 .dark .dcf-delta-row-label {
@@ -745,6 +754,7 @@ body.dark-mode .dcf-delta-row-track,
 }
 
 .dcf-delta-row-value {
+  font-family: var(--font-mono);
   font-size: 0.875rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
@@ -752,6 +762,8 @@ body.dark-mode .dcf-delta-row-track,
 }
 
 .dcf-delta-row.primary .dcf-delta-row-value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 1rem;
 }
 
@@ -933,8 +945,9 @@ body.light-mode .dcf-mode-btn.is-active {
 }
 
 .rdcf-input-value {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-family: var(--font-mono);
+  font-size: var(--type-value-lg-size);
+  font-weight: var(--type-value-lg-weight);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
   color: var(--text-primary);
@@ -984,6 +997,7 @@ body.light-mode .dcf-mode-btn.is-active {
   font-size: 0.7rem;
   color: var(--text-secondary);
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }
 
 .rdcf-fixed-list > span:not(:nth-child(even)) {
@@ -1134,6 +1148,7 @@ body.light-mode .dcf-mode-btn.is-active {
 }
 
 .rdcf-comparison-value {
+  font-family: var(--font-mono);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--text-primary);
@@ -1165,6 +1180,7 @@ body.light-mode .dcf-mode-btn.is-active {
   flex-direction: column;
   gap: 0.25rem;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.6875rem;
 }
 
@@ -1259,6 +1275,7 @@ body:not(.light-mode) .dcf-chart-verdict {
 }
 
 body:not(.light-mode) .dcf-chart-delta {
+  font-family: var(--font-mono);
   font-weight: 700;
 }
 
@@ -1268,6 +1285,7 @@ body:not(.light-mode) .dcf-delta-row-label {
 
 body:not(.light-mode) .dcf-delta-row-pct {
   color: #f0f6fc;
+  font-family: var(--font-mono);
   font-weight: 700;
 }
 

@@ -256,6 +256,8 @@
 }
 
 .nn-filter-count {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.5625rem;
   font-weight: 700;
   background: rgba(239, 68, 68, 0.15);
@@ -613,6 +615,8 @@ body.light-mode .nn-friend-decline {
   }
 
   .nn-mobile-unread-count {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
     font-size: 0.625rem;
     font-weight: 700;
     background: rgba(239, 68, 68, 0.15);
@@ -869,6 +873,7 @@ body .nn-dropdown.nnx-panel {
 .nnx-h-title {
   margin: 0;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -970,6 +975,7 @@ body .nn-dropdown.nnx-panel {
 }
 .nnx-group {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -1026,6 +1032,7 @@ body .nn-dropdown.nnx-panel {
 }
 .nnx-cat {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -1082,6 +1089,7 @@ body .nn-dropdown.nnx-panel {
   border: 1px solid color-mix(in srgb, currentColor 40%, transparent);
   background: transparent;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.6rem;
   font-weight: 700;
   letter-spacing: 0.04em;

@@ -192,6 +192,8 @@ body.light-mode .home-terminal-body {
 
 .hts-ticker-pct {
   margin-left: auto;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.625rem;
   font-weight: 700;
 }
@@ -216,6 +218,8 @@ body.light-mode .home-terminal-body {
 }
 
 .hts-streak-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 1.25rem;
   font-weight: 700;
   color: #f0f6fc;
@@ -356,6 +360,8 @@ body.light-mode .home-terminal-body {
 }
 
 .hts-sector-pct {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.625rem;
   font-weight: 700;
   text-align: right;
@@ -396,10 +402,12 @@ body.light-mode .home-terminal-body {
 }
 .hts-pulse-change.positive {
   color: #10b981;
+  font-family: var(--font-mono);
   font-weight: 700;
 }
 .hts-pulse-change.negative {
   color: #ef4444;
+  font-family: var(--font-mono);
   font-weight: 700;
 }
 
@@ -419,6 +427,8 @@ body.light-mode .home-terminal-body {
 
 /* —— Activity score —— */
 .hts-activity-score {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 1.25rem;
   font-weight: 700;
   color: #10b981;
@@ -929,6 +939,8 @@ body.light-mode .hts-week-index-legend-btn.is-active {
 }
 
 .hts-week-sentiment-pct {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.6875rem;
   font-weight: 700;
   color: #10b981;
@@ -1145,10 +1157,14 @@ body.light-mode .hts-week-standing-row {
   color: var(--home-heading);
 }
 .hts-week-position-value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.6875rem;
   color: var(--home-muted-soft);
 }
 .hts-week-position-change {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.6875rem;
   font-weight: 700;
 }
@@ -1215,6 +1231,7 @@ body.light-mode .hts-week-standing-row {
   font-size: 0.6875rem;
   font-weight: 700;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   color: var(--home-heading);
   padding: 0.1rem 0.4rem;
   background: rgba(16, 185, 129, 0.08);
@@ -1226,6 +1243,7 @@ body.light-mode .hts-week-standing-row {
   font-size: 0.4375rem;
   font-weight: 700;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   padding: 0.1rem 0.35rem;
   border-radius: 3px;
   letter-spacing: 0.06em;
@@ -1245,6 +1263,7 @@ body.light-mode .hts-week-standing-row {
 .hts-chain-ago {
   font-size: 0.5rem;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   color: var(--home-muted-ink);
   margin-left: auto;
 }
@@ -1252,12 +1271,14 @@ body.light-mode .hts-week-standing-row {
   font-size: 0.5625rem;
   font-weight: 700;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   color: #10b981;
   margin-bottom: 0.2rem;
 }
 .hts-chain-body {
   font-size: 0.6875rem;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   color: var(--home-muted-soft);
   line-height: 1.6;
   margin: 0;
@@ -1445,6 +1466,7 @@ body.light-mode .home-top-movers-card .hts-mover-row:hover {
 }
 
 .home-terminal-body .home-num-change {
+  font-family: var(--font-mono);
   font-size: 0.75rem;
   font-weight: 700;
   margin: 0 0 1rem;
@@ -1475,6 +1497,7 @@ body.light-mode .home-top-movers-card .hts-mover-row:hover {
 }
 
 .home-portfolio-gain-value {
+  font-family: var(--font-mono);
   font-size: 1.25rem;
   font-weight: 700;
   letter-spacing: -0.03em;
@@ -1601,6 +1624,8 @@ body.light-mode .home-top-movers-card .hts-mover-row:hover {
 }
 
 .hts-events-cal-day-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.58rem;
   line-height: 1;
   color: var(--home-muted);
@@ -1759,6 +1784,8 @@ body.light-mode .hts-events-warn {
   border-radius: 999px;
   background: rgba(16, 185, 129, 0.1);
   color: #10b981;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.55rem;
   font-weight: 700;
   letter-spacing: 0;
@@ -1974,6 +2001,7 @@ body.light-mode .hts-events-warn {
 }
 
 .hts-week-corr-value {
+  font-family: var(--font-mono);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   font-size: 0.8125rem;
@@ -2137,8 +2165,9 @@ body.light-mode .hts-week-legend-item.is-off .hts-week-legend-label {
 }
 
 .streak-card__count-value {
-  font-size: 32px;
-  font-weight: 700;
+  font-family: var(--font-mono);
+  font-size: var(--type-value-lg-size);
+  font-weight: var(--type-value-lg-weight);
   color: #10b981;
   line-height: 1;
   font-variant-numeric: tabular-nums;
@@ -2230,7 +2259,10 @@ body.light-mode .streak-card__footer {
   }
 
   .streak-card__count-value {
-    font-size: 28px;
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--type-value-lg-size);
+    font-weight: var(--type-value-lg-weight);
   }
 
   .streak-card__bars {

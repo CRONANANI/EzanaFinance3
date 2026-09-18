@@ -35,6 +35,7 @@
 
 .lc3-pct {
   color: #10b981;
+  font-family: var(--font-mono);
   font-weight: 700;
 }
 
@@ -690,6 +691,7 @@ body.light-mode .lc-edit-stepper-progress {
   align-items: center;
   justify-content: center;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 9px;
   font-weight: 700;
   color: var(--text-muted);
@@ -964,6 +966,7 @@ body.light-mode .lc-edit-tickerchart {
 }
 .lc-edit-timeline-year {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 14px;
   font-weight: 700;
   color: var(--emerald);
@@ -1030,6 +1033,7 @@ body.light-mode .lc-edit-tickerchart {
   align-items: center;
   justify-content: center;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 12px;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -1073,6 +1077,7 @@ body.light-mode .lc-edit-tickerchart {
 }
 .lc-edit-ticker-stat-value {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 13px;
   font-weight: 700;
   color: var(--text-primary);
@@ -1443,6 +1448,7 @@ body.light-mode .lc-edit-finstmt {
   background: rgba(16, 185, 129, 0.03);
 }
 .lc-edit-finstmt-table tr.is-total td {
+  font-family: var(--font-mono);
   font-weight: 700;
   border-top: 2px solid var(--emerald);
   border-bottom: 2px solid var(--emerald);
@@ -1458,6 +1464,8 @@ body.light-mode .lc-edit-finstmt {
   background: transparent;
 }
 .lc-edit-finstmt-delta {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 12px;
 }
 .lc-edit-finstmt-pos {

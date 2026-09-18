@@ -73,6 +73,7 @@ html.dark .settings-ledger {
 /* Base typography utilities */
 .settings-ledger .eyebrow {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
@@ -122,6 +123,7 @@ html.dark .settings-ledger {
 .settings-ledger .sl-brand-chip {
   margin-left: auto;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 9.5px;
   letter-spacing: 0.12em;
   color: var(--em-ink);
@@ -155,6 +157,7 @@ html.dark .settings-ledger {
 }
 .settings-ledger .sl-nav-glabel {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -273,6 +276,7 @@ html.dark .settings-ledger {
   align-items: center;
   gap: 10px;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 11px;
   color: var(--muted);
   letter-spacing: 0.04em;
@@ -349,6 +353,7 @@ html.dark .settings-ledger {
 }
 .settings-ledger .sl-srow-idx {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 11px;
   color: var(--em-ink);
   font-weight: 600;
@@ -383,6 +388,7 @@ html.dark .settings-ledger {
 }
 .settings-ledger .sl-flabel {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   letter-spacing: var(--type-eyebrow-tracking);
   text-transform: uppercase;
@@ -559,6 +565,7 @@ html.dark .settings-ledger {
 }
 .settings-ledger .sl-savebar-note {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 11px;
   color: var(--faint);
   margin-left: auto;
@@ -758,6 +765,7 @@ html.dark .settings-ledger .sl-toggle {
   align-items: center;
   gap: 5px;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -825,6 +833,7 @@ html.dark .settings-ledger .sl-badge-info {
 }
 .settings-ledger .sl-dtable th {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -883,6 +892,7 @@ html.dark .settings-ledger .sl-badge-info {
 }
 .settings-ledger .sl-legacy-panel .settings-label {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);

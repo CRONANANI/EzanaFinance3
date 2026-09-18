@@ -186,8 +186,8 @@
   flex-direction: column;
 }
 .c2-stat-value {
-  font-size: 1.55rem;
-  font-weight: 700;
+  font-size: var(--type-value-lg-size);
+  font-weight: var(--type-value-lg-weight);
   color: var(--text-primary);
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;

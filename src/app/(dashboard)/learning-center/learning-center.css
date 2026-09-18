@@ -99,6 +99,7 @@
 }
 .lc-elo-big {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 64px;
   font-weight: 700;
   letter-spacing: -0.04em;
@@ -115,6 +116,7 @@
 }
 .lc-elo-delta-pill {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 14px;
   font-weight: 700;
   padding: 4px 10px;
@@ -150,8 +152,9 @@
 }
 .lc-streak-num {
   font-family: var(--font-mono);
-  font-size: 24px;
-  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-size: var(--type-value-lg-size);
+  font-weight: var(--type-value-lg-weight);
   color: var(--amber);
   line-height: 1;
 }
@@ -236,6 +239,7 @@
   padding: 3px 9px;
   border-radius: 6px;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 10px;
   font-weight: 700;
   white-space: nowrap;
@@ -295,9 +299,10 @@
   color: var(--fg-muted);
 }
 .lc-hero-stat-value {
-  font-size: 22px;
-  font-weight: 700;
+  font-size: var(--type-value-lg-size);
+  font-weight: var(--type-value-lg-weight);
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   color: var(--fg);
 }
 .lc-hero-stat-sub {
@@ -559,6 +564,8 @@
   gap: 8px;
 }
 .lc-tower-footer-pct {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 18px;
   font-weight: 700;
 }
@@ -882,6 +889,8 @@
   color: var(--fg);
 }
 .lc-podium-elo {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 11px;
   font-weight: 700;
   color: var(--emerald);

@@ -138,6 +138,8 @@ body.light-mode .cds-page {
   color: var(--text-muted);
 }
 .cds-kpi-value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 18px;
   font-weight: 600;
   margin-top: 4px;
@@ -192,6 +194,7 @@ body.light-mode .cds-page {
 .cds-axis {
   fill: var(--text-muted);
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 10px;
 }
 .cds-peak-note {
@@ -280,6 +283,8 @@ body.light-mode .cds-page {
   text-align: right;
 }
 .cds-agency-pct {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 11px;
   text-align: right;
   color: var(--text-muted);
@@ -305,6 +310,8 @@ body.light-mode .cds-page {
   margin-top: 14px;
 }
 .cds-mkt-stat-value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 14px;
   font-weight: 600;
   margin-top: 3px;
@@ -461,6 +468,8 @@ a.cds-plat-row:hover {
   background: var(--emerald);
 }
 .cds-plat-score {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 11px;
   text-align: right;
 }
@@ -523,6 +532,8 @@ a.cds-plat-row:hover {
   color: var(--text-muted);
 }
 .cds-award-amount {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 12px;
   font-weight: 600;
 }

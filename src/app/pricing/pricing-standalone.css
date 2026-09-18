@@ -296,6 +296,7 @@
    `.plan-price` flex container). */
 .plan-price-currency {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 1.35rem;
   font-weight: 700;
   line-height: 1;
@@ -304,8 +305,8 @@
 }
 .plan-price-amount {
   font-family: var(--font-mono);
-  font-size: 2.25rem;
-  font-weight: 700;
+  font-size: var(--type-value-lg-size);
+  font-weight: var(--type-value-lg-weight);
   line-height: 1;
   letter-spacing: -0.02em;
   color: var(--text-primary);
@@ -818,7 +819,8 @@
 /* Fix 4 — partner "Free" price: smaller + Ezana green (scoped to the partner
    card so the plan pills' large mono price is untouched). */
 .pricing-partner-price .plan-price-amount {
-  font-family: var(--font-sans);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 1.35rem; /* down from 2.25rem */
   color: var(--emerald, #10b981);
 }
@@ -867,7 +869,8 @@
   align-items: center;
   gap: 0.4rem;
   /* brand guide: sans for text (these read as labels, not tabular figures) (Fix 3) */
-  font-family: var(--font-sans);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 1.15rem;
   font-weight: 700;
   color: var(--text-primary);

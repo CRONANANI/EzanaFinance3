@@ -37,6 +37,8 @@ body.light-mode .ag-card {
 }
 
 .ag-count {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.6875rem;
   color: var(--text-muted);
   font-weight: 600;
@@ -417,6 +419,8 @@ body.light-mode .ag-footer {
 }
 
 .ag-card-compact .ag-count {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.625rem;
 }
 

@@ -1409,6 +1409,7 @@ body::-webkit-scrollbar {
   margin: 0 0 0.75rem;
   text-align: center;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking-marketing);
@@ -2421,6 +2422,7 @@ html:has(.landing-page) .navbar .logo,
 .nav-datasets-soon {
   flex-shrink: 0;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);

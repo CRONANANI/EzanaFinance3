@@ -91,6 +91,7 @@
 .mkt-eyebrow {
   margin: 0 0 0.75rem;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking-marketing);
@@ -224,6 +225,7 @@ body.light-mode .mkt-card {
   background: var(--emerald-bg);
   color: var(--emerald-text);
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.8125rem;
   font-weight: 700;
 }
@@ -272,8 +274,8 @@ body.light-mode .mkt-card {
 .mkt-stat-value {
   display: block;
   font-family: var(--font-mono);
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: var(--type-value-lg-size);
+  font-weight: var(--type-value-lg-weight);
   font-variant-numeric: tabular-nums;
   color: var(--text-primary);
 }
@@ -282,6 +284,7 @@ body.light-mode .mkt-card {
   display: block;
   margin-top: 0.25rem;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking-marketing);
@@ -470,6 +473,7 @@ body.light-mode .mkt-card {
 }
 .mkt-ds-badge-new {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking-marketing);
@@ -559,10 +563,13 @@ body.light-mode .mkt-card {
 }
 .mkt-ds-leader-meta {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   color: var(--text-faint);
 }
 .mkt-ds-leader-value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.9375rem;
 }
 
@@ -570,6 +577,7 @@ body.light-mode .mkt-card {
 .mkt-ds-sample-note {
   margin: 0 0 0.875rem;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   color: var(--text-faint);
 }
@@ -660,6 +668,7 @@ body.light-mode .mkt-ds-table-wrap {
 }
 .mkt-ds-ticker {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-weight: 700;
   font-size: 0.875rem;
   letter-spacing: 0.02em;
@@ -681,6 +690,7 @@ body.light-mode .mkt-ds-table-wrap {
   align-items: center;
   justify-content: center;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -730,6 +740,7 @@ body.light-mode .mkt-ds-table-wrap {
 }
 .mkt-ds-pol-meta {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   color: var(--text-faint);
 }
@@ -830,6 +841,7 @@ body.light-mode .mkt-ds-table-wrap {
 .mkt-award-eyebrow {
   margin: 0 0 0.35rem;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking-marketing);
@@ -896,6 +908,8 @@ body.light-mode .mkt-ds-table-wrap {
 }
 .mkt-award-fact-value {
   margin: 0;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.875rem;
   color: var(--text-primary);
   overflow-wrap: anywhere;
@@ -936,6 +950,7 @@ body.light-mode .mkt-ds-table-wrap {
 }
 .mkt-award-mod-num {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.6875rem;
   color: var(--text-faint);
 }

@@ -136,6 +136,7 @@
   background: transparent;
   color: var(--text-primary);
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.78rem;
   font-weight: 500;
   transition:
@@ -195,6 +196,7 @@
   border-radius: 6px;
   background: var(--bg-tertiary);
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.72rem;
   color: var(--text-secondary);
   text-align: center;

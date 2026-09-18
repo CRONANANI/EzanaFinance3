@@ -617,6 +617,7 @@
   color: var(--text-primary);
 }
 .lbx-mix-pct {
+  font-family: var(--font-mono);
   font-size: var(--ds-type-fine-size);
   font-weight: var(--ds-type-strong);
   font-variant-numeric: tabular-nums;
@@ -974,6 +975,7 @@
   display: inline-flex;
   align-items: baseline;
   gap: 6px;
+  font-family: var(--font-mono);
   font-size: var(--ds-type-sub-size);
   font-weight: var(--ds-type-strong);
   font-variant-numeric: tabular-nums;
@@ -1041,6 +1043,7 @@
   text-align: right;
 }
 .lbx-cc-price {
+  font-family: var(--font-mono);
   font-weight: var(--ds-type-strong);
   font-variant-numeric: tabular-nums;
   font-size: 1.2rem;

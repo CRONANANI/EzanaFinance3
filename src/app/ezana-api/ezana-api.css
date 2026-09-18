@@ -145,6 +145,7 @@
 .ea-sidenav-head {
   margin: 0 0 0.6rem;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -198,6 +199,7 @@
 }
 .ea-sidenav-card-link {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--ea-emerald-text);
@@ -364,6 +366,7 @@
 .ea-soon {
   flex-shrink: 0;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -620,6 +623,7 @@
 }
 .ea-table thead th {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -672,6 +676,7 @@
 .ea-faq-item summary::after {
   content: '+';
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   color: var(--ea-emerald-text);
   font-size: 1.1rem;
   line-height: 1;
@@ -907,6 +912,7 @@
 }
 .ea-cov-name {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);

@@ -212,6 +212,8 @@ body:not(.light-mode) .bs-shell {
   gap: 18px;
 }
 .bs-band-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 11px;
   color: var(--bs-text-label-caps);
   letter-spacing: 0.18em;
@@ -858,6 +860,8 @@ body:not(.light-mode) .bs-shell {
   text-transform: uppercase;
 }
 .bs-event-day-count {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 11px;
   color: var(--bs-text-label);
   letter-spacing: 0.04em;
@@ -1268,6 +1272,8 @@ body.light-mode .bs-band + .bs-band {
     font-size: 28px;
   }
   .bs-hero-num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
     font-size: 32px;
   }
   .bs-index-strip {
@@ -1547,6 +1553,7 @@ body.light-mode .bs-band + .bs-band {
   border-radius: 4px;
   vertical-align: middle;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }
 
 .bs-ticker-link {
@@ -1591,6 +1598,7 @@ body.light-mode .bs-band + .bs-band {
 }
 .bs-ticker-modal-sym {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-weight: 700;
   font-size: 20px;
   color: var(--bs-text-dark);

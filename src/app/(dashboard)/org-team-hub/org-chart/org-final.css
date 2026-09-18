@@ -74,6 +74,7 @@ body.light-mode .ox-root {
   padding: 11px 36px;
   border-bottom: 1px solid var(--ox-line);
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 11px;
   overflow: hidden;
   gap: 18px;
@@ -107,6 +108,7 @@ body.light-mode .ox-root {
 }
 .ox-eyebrow {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -145,6 +147,7 @@ body.light-mode .ox-root {
 }
 .ox-stat-label {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -152,6 +155,7 @@ body.light-mode .ox-root {
   color: var(--ox-faint);
 }
 .ox-stat-value {
+  font-family: var(--font-mono);
   font-size: 17px;
   font-weight: 700;
   color: var(--ox-text);
@@ -198,6 +202,7 @@ body.light-mode .ox-root {
 }
 .ox-roman {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 11px;
   color: var(--ox-ghost);
   letter-spacing: 0.1em;
@@ -212,6 +217,7 @@ body.light-mode .ox-root {
 .ox-sec-meta {
   margin-left: auto;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -384,6 +390,7 @@ body.light-mode .ox-root {
 }
 .ox-teamtag > span:first-child {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -395,6 +402,7 @@ body.light-mode .ox-root {
 }
 .ox-teamtag b {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 9.5px;
   font-weight: 600;
   color: var(--emerald);
@@ -405,6 +413,7 @@ body.light-mode .ox-root {
 }
 .ox2-execchip {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 8px;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -483,6 +492,7 @@ body.light-mode .ox-root {
 .ox2-member-sr {
   margin-left: auto;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 7.5px;
   font-weight: 600;
   letter-spacing: 0.1em;
@@ -573,6 +583,7 @@ body.light-mode .ox-root {
 }
 .oxr-seg-sub {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -592,6 +603,7 @@ body.light-mode .ox-root {
 }
 .oxr-seg-roi {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 13px;
   font-weight: 600;
   color: var(--emerald);
@@ -601,6 +613,7 @@ body.light-mode .ox-root {
 }
 .oxr-seg-count {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 10px;
   letter-spacing: 0.1em;
   color: var(--ox-faint);
@@ -675,6 +688,7 @@ body.light-mode .ox-root {
   gap: 6px;
   justify-self: end;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.1em;
@@ -756,6 +770,7 @@ body.light-mode .ox-root {
 .oxr-roleopt-now {
   margin-left: auto;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 8px;
   letter-spacing: 0.1em;
   color: var(--ox-ghost);
@@ -926,6 +941,7 @@ body.light-mode .ox-root {
 }
 .ox-committee-count {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 10px;
   font-weight: 700;
   padding: 1px 6px;
@@ -938,6 +954,7 @@ body.light-mode .ox-root {
 .ox-node-ic {
   margin-left: auto;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 8px;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -999,6 +1016,7 @@ body.light-mode .ox-root {
 }
 .ox-vacant-rl {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -1051,6 +1069,7 @@ body.light-mode .ox-root {
 }
 .oxc-col-tag {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -1075,6 +1094,7 @@ body.light-mode .ox-root {
 .oxc-col-count {
   margin-left: auto;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 10px;
   color: var(--ox-faint);
   flex-shrink: 0;
@@ -1169,6 +1189,7 @@ body.light-mode .ox-root {
 }
 .oxrad-desk-tag {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);

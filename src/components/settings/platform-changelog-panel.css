@@ -263,6 +263,7 @@
   border-radius: 3px;
   font-size: 0.625rem;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   color: #10b981;
 }
 
@@ -342,6 +343,7 @@ body.light-mode .pcl-empty {
 }
 
 .pcl-day-count {
+  font-family: var(--font-mono);
   font-size: 0.5625rem;
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;

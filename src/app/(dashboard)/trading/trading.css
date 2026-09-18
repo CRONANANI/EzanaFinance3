@@ -578,6 +578,8 @@ select.trd-input {
   margin-bottom: 0.25rem;
 }
 .trd-account-value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 1.25rem;
   font-weight: 700;
   color: #f0f6fc;
@@ -606,6 +608,8 @@ select.trd-input {
   justify-content: center;
 }
 .trd-donut-value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 1.25rem;
   font-weight: 700;
   color: #f0f6fc;
@@ -634,6 +638,7 @@ select.trd-input {
 }
 .trd-legend-pct {
   margin-left: auto;
+  font-family: var(--font-mono);
   font-weight: 600;
   color: #e2e8f0;
 }
@@ -704,6 +709,8 @@ select.trd-input {
   display: block;
 }
 .trd-position-qty {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.625rem;
   color: #6b7280;
 }
@@ -711,12 +718,16 @@ select.trd-input {
   min-width: 0;
 }
 .trd-position-value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.875rem;
   font-weight: 700;
   color: #e2e8f0;
   display: block;
 }
 .trd-position-price {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.5625rem;
   color: #4b5563;
 }
@@ -1270,6 +1281,8 @@ body.light-mode .trd-search-symbol {
   display: flex;
   align-items: center;
   justify-content: center;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   font-weight: 700;
   color: #6b7280;

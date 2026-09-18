@@ -486,6 +486,7 @@ body.light-mode .mkt-opps-footer {
 }
 
 .mkt-modal-kpi-value {
+  font-family: var(--font-mono);
   font-size: 0.95rem;
   font-weight: 700;
   color: var(--home-heading);
@@ -532,6 +533,8 @@ body.light-mode .mkt-opps-footer {
   display: flex;
   align-items: center;
   justify-content: center;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.6rem;
   font-weight: 700;
   flex-shrink: 0;

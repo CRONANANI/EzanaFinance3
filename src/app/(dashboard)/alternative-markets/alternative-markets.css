@@ -96,6 +96,8 @@
 }
 
 .am-page .am-stat-price {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 1.2rem;
   font-weight: 700;
   color: #f0f6fc;
@@ -225,6 +227,7 @@
 
 .am-page .am-td-num {
   color: #d1d5db;
+  font-family: var(--font-mono);
   font-feature-settings: 'tnum' 1;
   font-variant-numeric: tabular-nums;
   text-align: right;
@@ -383,6 +386,7 @@
 
 .am-page .am-mover-price {
   text-align: right;
+  font-family: var(--font-mono);
   font-weight: 600;
   color: #d1d5db;
   font-variant-numeric: tabular-nums;
@@ -449,6 +453,8 @@
 }
 
 .am-page .am-sentiment-count {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   color: #6b7280;
   margin: 0 0 0.5rem;
@@ -491,6 +497,7 @@
 .am-page .am-sent-pct {
   width: 2.5rem;
   text-align: right;
+  font-family: var(--font-mono);
   font-weight: 700;
   font-feature-settings: 'tnum' 1;
 }

@@ -149,6 +149,7 @@
 .wm-count {
   margin-left: auto;
   align-self: center;
+  font-family: var(--font-mono);
   font-size: var(--ds-type-fine-size);
   font-variant-numeric: tabular-nums;
   color: var(--text-secondary);

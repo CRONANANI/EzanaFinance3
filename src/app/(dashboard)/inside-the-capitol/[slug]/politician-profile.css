@@ -357,10 +357,11 @@
 }
 
 .po-primary-value {
-  font-size: 1.75rem;
-  font-weight: 700;
+  font-size: var(--type-value-lg-size);
+  font-weight: var(--type-value-lg-weight);
   color: #f0f6fc;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
 }
 
@@ -371,6 +372,7 @@
   font-size: 0.75rem;
   font-weight: 700;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   padding: 0.25rem 0.625rem;
   border-radius: 6px;
 }
@@ -386,6 +388,8 @@
 }
 
 .po-primary-change i {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 1rem;
 }
 
@@ -416,6 +420,8 @@
 }
 
 .po-secondary-value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 1rem;
   font-weight: 700;
   color: #f0f6fc;
@@ -549,6 +555,7 @@
   padding: 0.2rem 0.5rem;
   border-radius: 100px;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }
 
 /* ═══ Portfolio Overview responsive ═══ */
@@ -651,6 +658,7 @@
 .perf-chart-xlabel {
   font-size: 0.5rem;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   color: #4b5563;
   font-weight: 600;
 }
@@ -720,6 +728,7 @@
 }
 .pp-donut-pct {
   color: var(--muted-foreground);
+  font-family: var(--font-mono);
   font-feature-settings: 'tnum' 1;
 }
 

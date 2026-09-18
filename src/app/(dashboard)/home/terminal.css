@@ -106,6 +106,8 @@
 }
 
 .t-pv-amount {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-weight: 700;
   font-size: var(--font-base, 1rem);
   color: var(--foreground);
@@ -114,6 +116,8 @@
 }
 
 .t-pv-change {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--font-xs, 0.75rem);
   font-weight: 600;
   font-feature-settings: 'tnum' 1;
@@ -369,6 +373,8 @@
 }
 
 .t-perf-stat-value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--font-sm, 0.875rem);
   font-weight: 700;
   margin-top: 2px;
@@ -401,6 +407,8 @@
 }
 
 .t-risk-metric-value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--font-lg, 1.125rem);
   font-weight: 700;
   color: var(--foreground);
@@ -514,6 +522,7 @@
 
 .t-donut-pct {
   color: var(--foreground);
+  font-family: var(--font-mono);
   font-weight: 600;
   min-width: 36px;
   text-align: right;
@@ -573,10 +582,12 @@
   color: var(--text-secondary);
   min-width: 60px;
   text-align: right;
+  font-family: var(--font-mono);
   font-feature-settings: 'tnum' 1;
 }
 
 .t-mover-change {
+  font-family: var(--font-mono);
   font-weight: 600;
   min-width: 55px;
   text-align: right;

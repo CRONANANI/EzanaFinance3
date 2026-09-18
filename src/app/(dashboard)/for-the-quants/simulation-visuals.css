@@ -80,6 +80,7 @@
 /* LIVE pill + pulsing dot */
 .ftq-sim-live {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.65rem;
   letter-spacing: 0.08em;
 }

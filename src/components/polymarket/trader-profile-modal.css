@@ -109,6 +109,7 @@
   display: inline-block;
   font-size: 0.6875rem;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   color: var(--text-faint);
   background: var(--bg-tertiary);
   padding: 0.15rem 0.45rem;
@@ -205,6 +206,7 @@
 }
 
 .tpm-stat-value {
+  font-family: var(--font-mono);
   font-size: 1rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
@@ -307,6 +309,7 @@
 }
 
 .tpm-cat-count {
+  font-family: var(--font-mono);
   font-size: 0.65rem;
   color: var(--text-faint);
   font-variant-numeric: tabular-nums;
@@ -377,6 +380,7 @@
 
 .tpm-pos-value {
   color: var(--text-secondary);
+  font-family: var(--font-mono);
   font-weight: 700;
 }
 

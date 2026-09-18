@@ -250,6 +250,8 @@
 .cc-modal-stat-value {
   display: block;
   margin-top: 0.2rem;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.68rem;
   font-weight: 700;
   color: #e2e8f0;

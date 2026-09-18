@@ -814,13 +814,17 @@ body.light-mode .settings-danger-card .settings-danger-text p {
 }
 
 .settings-plan-price {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--type-value-lg-size);
+  font-weight: var(--type-value-lg-weight);
   color: #10b981;
   margin-bottom: 0.5rem;
 }
 
 .settings-plan-price span {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   font-weight: 500;
   color: #6b7280;
@@ -855,6 +859,7 @@ body.light-mode .settings-danger-card .settings-danger-text p {
 .settings-api-key code {
   flex: 1;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.8125rem;
   color: #10b981;
   letter-spacing: 0.02em;
@@ -1707,6 +1712,7 @@ body.light-mode .settings-delete-modal__highlight {
   padding: 0.1rem 0.4rem;
   border-radius: 4px;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.8rem;
 }
 
@@ -1728,6 +1734,7 @@ body.light-mode .settings-delete-modal__confirm-label code {
   color: #f0f6fc;
   font-size: 0.9rem;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   margin-bottom: 1rem;
   outline: none;
   transition: border-color 150ms;
@@ -1787,6 +1794,7 @@ body.light-mode .settings-delete-modal__input:focus {
 
 .settings-mfa-secret {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.85rem;
   word-break: break-all;
 }
@@ -1910,6 +1918,7 @@ body.light-mode .settings-delete-modal__input:focus {
 }
 .settings-api-method {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.6875rem;
   font-weight: 700;
   padding: 2px 6px;

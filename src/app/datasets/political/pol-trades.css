@@ -239,6 +239,7 @@
 }
 .ptx-chip-count {
   color: var(--text-faint);
+  font-family: var(--font-mono);
   font-size: var(--ds-type-disclaimer-size);
   font-variant-numeric: tabular-nums;
 }
@@ -530,6 +531,7 @@
   margin-bottom: 8px;
 }
 .ptx-table-count {
+  font-family: var(--font-mono);
   font-size: var(--ds-type-source-size);
   font-variant-numeric: tabular-nums;
   color: var(--text-faint);

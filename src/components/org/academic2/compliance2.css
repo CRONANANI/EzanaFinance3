@@ -23,6 +23,8 @@
   font-weight: 700;
 }
 .cmp2-breach-chip .cmp2-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 1.05rem;
   font-weight: 700;
 }
@@ -48,6 +50,7 @@
   margin-left: 0.45rem;
   border-radius: 9999px;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.66rem;
   font-weight: 700;
   background: var(--surface-card);
@@ -354,6 +357,7 @@
 }
 .cmp2-flag code {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.72rem;
   padding: 0.05rem 0.3rem;
   border-radius: 5px;
@@ -389,6 +393,7 @@
 }
 .cmp2-action-tag {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.72rem;
   font-weight: 700;
   color: var(--emerald-text, #10b981);

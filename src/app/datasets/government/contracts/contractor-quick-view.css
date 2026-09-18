@@ -143,8 +143,10 @@ body.light-mode .cqv-root {
   color: var(--text-muted);
 }
 .cqv-stat-value {
-  font-size: 24px;
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--type-value-lg-size);
+  font-weight: var(--type-value-lg-weight);
   margin-top: 4px;
 }
 .cqv-stat-value.cqv-neg {
@@ -208,6 +210,7 @@ body.light-mode .cqv-root {
 .cqv-axis {
   fill: var(--text-muted);
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 10px;
 }
 
@@ -246,6 +249,8 @@ body.light-mode .cqv-root {
   text-align: right;
 }
 .cqv-agency-pct {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 11px;
   text-align: right;
   color: var(--text-muted);
@@ -268,10 +273,14 @@ body.light-mode .cqv-root {
   font-weight: 600;
 }
 .cqv-quote-price {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 20px;
   font-weight: 600;
 }
 .cqv-quote-change {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 11px;
   color: var(--emerald-text);
   margin: 2px 0 8px;

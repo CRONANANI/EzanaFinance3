@@ -62,9 +62,9 @@
 .pcf-stat-value {
   margin-top: 6px;
   font-family: var(--font-mono);
-  font-weight: 600;
+  font-weight: var(--type-value-lg-weight);
   font-variant-numeric: tabular-nums;
-  font-size: 1.4rem;
+  font-size: var(--type-value-lg-size);
   color: var(--text-primary);
   line-height: 1.1;
 }

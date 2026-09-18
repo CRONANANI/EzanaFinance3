@@ -56,6 +56,7 @@
 
 .lc-card-eyebrow {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-weight: 500;
   font-size: 11px;
   color: var(--lc-ink-3);
@@ -224,8 +225,8 @@ body.light-mode .lc-btn-primary {
 
 .lc-hero-number {
   font-family: var(--font-mono);
-  font-weight: 500;
-  font-size: 64px;
+  font-weight: var(--type-value-lg-weight);
+  font-size: var(--type-value-lg-size);
   line-height: 1;
   letter-spacing: -0.045em;
   color: var(--lc-ink);
@@ -346,6 +347,7 @@ body.light-mode .lc-btn-primary {
   left: 50%;
   transform: translateX(-50%);
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-weight: 600;
   font-size: 11px;
   color: var(--lc-accent);
@@ -424,8 +426,8 @@ body.light-mode .lc-btn-primary {
 
 .lc-stat-value {
   font-family: var(--font-mono);
-  font-weight: 500;
-  font-size: 24px;
+  font-weight: var(--type-value-lg-weight);
+  font-size: var(--type-value-lg-size);
   line-height: 1;
   color: var(--lc-ink);
   letter-spacing: -0.02em;
@@ -434,6 +436,7 @@ body.light-mode .lc-btn-primary {
 
 .lc-stat-value-sub {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-weight: 500;
   font-size: 16px;
   color: var(--lc-ink-3);
@@ -1244,6 +1247,7 @@ body.light-mode .lc-tt-head {
 
 .lc-un-track {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   color: var(--lc-ink-3);

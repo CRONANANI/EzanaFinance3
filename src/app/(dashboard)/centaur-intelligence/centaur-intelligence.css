@@ -540,6 +540,8 @@ button:active:not(:disabled) {
 
 .sentinel-report-health-value {
   margin: 0.65rem 0 0 0;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.9rem;
   font-weight: 700;
   line-height: 1.5;

@@ -227,6 +227,7 @@
 }
 
 .pm-related__odds-value {
+  font-family: var(--font-mono);
   font-size: 0.875rem;
   font-weight: 700;
   color: #f0f6fc;

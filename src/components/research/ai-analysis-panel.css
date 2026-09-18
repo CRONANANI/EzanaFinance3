@@ -88,6 +88,8 @@
 }
 
 .ai-price {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.875rem;
   font-weight: 700;
   color: var(--foreground);
@@ -95,6 +97,8 @@
 }
 
 .ai-change {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   font-weight: 700;
   font-feature-settings: 'tnum' 1;
@@ -415,6 +419,8 @@
 }
 
 .ai-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-weight: 700;
   font-size: 0.875rem;
   min-width: 20px;
@@ -423,6 +429,7 @@
 
 .ai-inline-code {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.8125rem;
   background: rgba(16, 185, 129, 0.08);
   color: #10b981;

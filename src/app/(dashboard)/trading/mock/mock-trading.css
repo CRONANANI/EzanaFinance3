@@ -97,6 +97,7 @@
 }
 
 .mock-stat-value {
+  font-family: var(--font-mono);
   font-size: 1.25rem;
   font-weight: 700;
   color: var(--foreground);
@@ -277,12 +278,15 @@
   text-align: right;
 }
 .mock-asset-price {
+  font-family: var(--font-mono);
   font-size: 1.125rem;
   font-weight: 700;
   color: var(--foreground);
   font-variant-numeric: tabular-nums;
 }
 .mock-asset-change {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.6875rem;
   font-weight: 600;
   padding: 1px 6px;
@@ -622,10 +626,12 @@
 
 .mock-pnl.positive {
   color: #10b981;
+  font-family: var(--font-mono);
   font-weight: 700;
 }
 .mock-pnl.negative {
   color: #ef4444;
+  font-family: var(--font-mono);
   font-weight: 700;
 }
 
@@ -701,6 +707,7 @@
 }
 
 .mock-activity-amount {
+  font-family: var(--font-mono);
   font-size: 0.8125rem;
   font-weight: 700;
   color: var(--foreground);

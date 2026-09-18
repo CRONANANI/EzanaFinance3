@@ -86,6 +86,7 @@ body.light-mode .lc-ticker-popup {
 }
 .lc-ticker-popup-symbol {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   font-weight: 700;
   color: var(--emerald);
@@ -103,12 +104,14 @@ body.light-mode .lc-ticker-popup {
 }
 .lc-ticker-popup-price {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 1.25rem;
   font-weight: 700;
   color: var(--text-primary);
 }
 .lc-ticker-popup-change {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.8125rem;
   font-weight: 700;
 }
@@ -148,6 +151,7 @@ body.light-mode .lc-ticker-popup {
 }
 .lc-ticker-popup-meta-value {
   color: var(--text-primary);
+  font-family: var(--font-mono);
   font-weight: 600;
 }
 

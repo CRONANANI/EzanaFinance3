@@ -162,6 +162,7 @@ html.light-mode .ezana-theme {
 /* ===== COMMUNITY LEDGER ===== */
 .ezana-theme .eyebrow {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -245,6 +246,7 @@ html.light-mode .ezana-theme {
 }
 .ezana-theme .dial-label {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -254,8 +256,8 @@ html.light-mode .ezana-theme {
 }
 .ezana-theme .dial-value {
   font-family: var(--font-mono);
-  font-size: 26px;
-  font-weight: 700;
+  font-size: var(--type-value-lg-size);
+  font-weight: var(--type-value-lg-weight);
   font-variant-numeric: tabular-nums;
   margin-top: 6px;
 }
@@ -280,6 +282,7 @@ html.light-mode .ezana-theme {
   align-items: center;
   gap: 6px;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -289,12 +292,14 @@ html.light-mode .ezana-theme {
 }
 .ezana-theme .pstat-value {
   font-family: var(--font-mono);
-  font-size: 22px;
-  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-size: var(--type-value-lg-size);
+  font-weight: var(--type-value-lg-weight);
   color: var(--text-primary);
 }
 .ezana-theme .pstat-delta {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 11px;
   margin-top: 4px;
 }
@@ -315,6 +320,7 @@ html.light-mode .ezana-theme {
 }
 .ezana-theme .sectorstrip-label {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -347,6 +353,7 @@ html.light-mode .ezana-theme {
 }
 .ezana-theme .spill-pct {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 11px;
   font-weight: 700;
 }
@@ -398,6 +405,7 @@ html.light-mode .ezana-theme .lpill.on {
 }
 .ezana-theme .lens-ctrl label {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -462,6 +470,7 @@ html.light-mode .ezana-theme .lpill.on {
   gap: 10px;
   margin-bottom: 12px;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -493,6 +502,7 @@ html.light-mode .ezana-theme .lpill.on {
 }
 .ezana-theme .ctile-ticker {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 14px;
   font-weight: 700;
   color: var(--text-primary);
@@ -518,6 +528,7 @@ html.light-mode .ezana-theme .lpill.on {
   justify-content: space-between;
   margin-top: 6px;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 10px;
 }
 
@@ -527,6 +538,7 @@ html.light-mode .ezana-theme .lpill.on {
 .ezana-theme .post-ts {
   margin-left: auto;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 11px;
   color: var(--text-faint);
   flex-shrink: 0;
@@ -538,6 +550,7 @@ html.light-mode .ezana-theme .lpill.on {
 }
 .ezana-theme .conv-label {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -547,8 +560,9 @@ html.light-mode .ezana-theme .lpill.on {
 }
 .ezana-theme .conv-pct {
   font-family: var(--font-mono);
-  font-size: 28px;
-  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-size: var(--type-value-lg-size);
+  font-weight: var(--type-value-lg-weight);
   color: var(--emerald-ink);
   line-height: 1.1;
 }
@@ -566,6 +580,7 @@ html.light-mode .ezana-theme .lpill.on {
 }
 .ezana-theme .conv-hint {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 10px;
   color: var(--text-faint);
 }

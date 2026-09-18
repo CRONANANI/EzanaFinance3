@@ -49,6 +49,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.875rem;
   font-weight: 700;
   color: #6b7280;
@@ -417,8 +419,10 @@
 }
 
 .onboarding-price {
-  font-size: 1.875rem;
-  font-weight: 700;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--type-value-lg-size);
+  font-weight: var(--type-value-lg-weight);
   color: #f0f6fc;
 }
 
@@ -614,6 +618,8 @@ body.light-mode .onboarding-org-role-badge {
   .onboarding-step-number {
     width: 36px;
     height: 36px;
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
     font-size: 0.75rem;
   }
 
@@ -916,6 +922,8 @@ body.light-mode .onboarding-org-role-badge {
 }
 
 .iq-result-value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 20px;
   font-weight: 700;
   color: #059669;

@@ -474,6 +474,8 @@ body.light-mode .mobile-auth-drawer .mobile-drawer-logout:hover {
   }
 
   .stat-value {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
     font-size: 1.25rem;
   }
 
@@ -1393,6 +1395,8 @@ body.light-mode .mobile-auth-drawer .mobile-drawer-logout:hover {
   }
 
   .transaction-amount .amount {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
     font-size: 0.875rem;
   }
 }

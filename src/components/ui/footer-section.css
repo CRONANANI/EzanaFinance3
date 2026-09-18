@@ -140,6 +140,7 @@ body.light-mode .landing-footer {
 .landing-footer-col h4 {
   margin: 0 0 1rem;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking-marketing);

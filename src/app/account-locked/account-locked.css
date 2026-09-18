@@ -141,7 +141,7 @@
 .acl-meta-value {
   color: #f0f6fc;
   font-weight: 600;
-  font-family: var(--font-geist-mono, ui-monospace, monospace);
+  font-family: var(--font-mono);
 }
 
 .acl-actions {

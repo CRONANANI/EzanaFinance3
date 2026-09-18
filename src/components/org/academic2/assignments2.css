@@ -34,6 +34,7 @@
 }
 .asg2-eyebrow {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -260,6 +261,7 @@ html.light-mode .asg2-metric {
 }
 .asg2-cal-dow {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--type-eyebrow-size);
   font-weight: var(--type-eyebrow-weight);
   letter-spacing: var(--type-eyebrow-tracking);
@@ -325,6 +327,7 @@ html.light-mode .asg2-metric {
 }
 .asg2-event-more {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.62rem;
   font-weight: 700;
   color: var(--text-muted);
@@ -610,6 +613,7 @@ html.light-mode .asg2-metric {
   align-items: center;
   justify-content: center;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.58rem;
   font-weight: 700;
   color: var(--text-primary);
@@ -1073,6 +1077,7 @@ html.light-mode .asg2-metric {
 }
 .asg2-comment-time {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.65rem;
   color: var(--text-muted);
 }
@@ -1120,6 +1125,7 @@ html.light-mode .asg2-metric {
 }
 .asg2-attach-size {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.66rem;
   color: var(--text-muted);
   margin-left: auto;

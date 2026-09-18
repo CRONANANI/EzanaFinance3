@@ -237,6 +237,8 @@
   margin-bottom: 14px;
 }
 .rl2-results-count {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.05em;

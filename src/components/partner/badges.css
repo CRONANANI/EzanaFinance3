@@ -124,6 +124,8 @@
 }
 
 .badges-progress-pct {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.6875rem;
   font-weight: 700;
   color: #d4a853;
@@ -310,6 +312,8 @@ body.light-mode .badges-tab.active {
 
 .partner-badges-count {
   color: #888;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   margin: 0 0 8px;
   text-transform: uppercase;
