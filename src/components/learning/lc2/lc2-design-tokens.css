@@ -1,82 +1,61 @@
-/* Learning Center "Stripe × Bloomberg" — scoped CSS variables */
+/* ══════════════════════════════════════════════════════════════════════
+   Learning Center hub, lc3 redesign.
 
-.lc-page {
-  /* The page canvas is the app canvas: --app-bg is what the top nav and every
-     other logged-in page paint, so the Learning Center stops being the one
-     surface with its own near-black. Only the canvas moves; --lc-bg-2,
-     --lc-panel and the rest keep their own values so cards still contrast. */
-  --lc-bg: var(--app-bg);
-  --lc-bg-2: #0e1421;
-  --lc-panel: #131a28;
-  --lc-panel-hover: #1a2334;
-  --lc-panel-hi: #212c40;
+   The hub now speaks the same design language as the regular-user home
+   page: one uniform canvas, full-width bands separated by hairline rules,
+   editorial tables, no boxed cards and no shadows. This file mirrors the
+   scoped token block in home/broadsheet.css (`.bs-shell`) in structure and
+   values, which is the one sanctioned place for raw hex: these are local
+   design constants for a single surface, not app tokens.
 
-  --lc-line: rgba(255, 255, 255, 0.06);
-  --lc-line-2: rgba(255, 255, 255, 0.1);
-  --lc-line-3: rgba(255, 255, 255, 0.14);
+   Physical filename kept as lc2-design-tokens.css so the import in lc2.css
+   does not churn; the vocabulary inside is `lc3-`.
+   ══════════════════════════════════════════════════════════════════════ */
 
-  --lc-ink: #f5f7fa;
-  --lc-ink-2: #aeb7c5;
-  --lc-ink-3: #6b7588;
-  --lc-ink-4: #4a5468;
+.lc3-shell {
+  /* The canvas is the app canvas, so the hub and the top nav are the same
+     colour in both themes. Everything else below is a local constant. */
+  --lc3-bg: var(--app-bg);
+  --lc3-text-dark: #0b0d10;
+  --lc3-text-body: #374151;
+  --lc3-text-label: #6b7280;
+  --lc3-border-rule: rgba(0, 0, 0, 0.1);
+  --lc3-border-subtle: rgba(0, 0, 0, 0.06);
+  --lc3-border-dotted: rgba(0, 0, 0, 0.1);
+  --lc3-hover-bg: rgba(0, 0, 0, 0.02);
+  --lc3-card-bg: #f9fafb;
+  --lc3-green: #059669;
+  --lc3-red: #dc2626;
+  --lc3-chart-grid: rgba(0, 0, 0, 0.08);
+  --lc3-track-bg: rgba(0, 0, 0, 0.08);
+  --lc3-seg-bg: rgba(0, 0, 0, 0.08);
+  --lc3-seg-btn-text: #6b7280;
+  --lc3-seg-active-bg: #0f172a;
+  --lc3-seg-active-text: #ffffff;
 
-  --lc-bronze: var(--amber);
-  --lc-bronze-bg: rgba(245, 158, 11, 0.12);
-  --lc-silver: #94a3b8;
-  --lc-silver-bg: rgba(148, 163, 184, 0.14);
-  --lc-gold: #facc15;
-  --lc-gold-bg: rgba(250, 204, 21, 0.12);
-  --lc-plat: #c4cad4;
-  --lc-plat-bg: rgba(196, 202, 212, 0.1);
-
-  --lc-indigo: #818cf8;
-  --lc-indigo-bg: rgba(129, 140, 248, 0.12);
-
-  --lc-accent: var(--emerald);
-  --lc-accent-soft: color-mix(in srgb, var(--emerald) 10%, transparent);
-  --lc-accent-soft-2: color-mix(in srgb, var(--emerald) 18%, transparent);
-  --lc-accent-ring: color-mix(in srgb, var(--emerald) 30%, transparent);
-  --lc-accent-deep: var(--emerald-dark);
-
-  --lc-shadow-card:
-    inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.06),
-    0 1px 2px rgba(0, 0, 0, 0.2), 0 8px 24px -8px rgba(0, 0, 0, 0.4);
-  --lc-shadow-primary:
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    0 2px 8px color-mix(in srgb, var(--emerald) 20%, transparent);
-  --lc-shadow-marker:
-    0 0 0 4px var(--lc-bg), 0 0 0 5px color-mix(in srgb, var(--emerald) 30%, transparent),
-    0 4px 12px color-mix(in srgb, var(--emerald) 40%, transparent);
+  font-family: var(--font-sans);
+  background: var(--lc3-bg);
+  color: var(--lc3-text-dark);
+  letter-spacing: -0.008em;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
 }
 
-body.light-mode .lc-page {
-  /* Same token in light mode. --app-bg is declared as a literal in the light
-     scope (see the note in theme-variables.css), so this resolves to #ffffff
-     rather than falling back to the dark value. */
-  --lc-bg: var(--app-bg);
-  --lc-bg-2: #f5f5f5;
-  --lc-panel: #ffffff;
-  --lc-panel-hover: #f7f7f8;
-  --lc-panel-hi: #f0f0f2;
-
-  --lc-line: rgba(15, 23, 42, 0.08);
-  --lc-line-2: rgba(15, 23, 42, 0.12);
-  --lc-line-3: rgba(15, 23, 42, 0.16);
-
-  --lc-ink: #0a0a0a;
-  --lc-ink-2: #525252;
-  --lc-ink-3: #737373;
-  --lc-ink-4: #6b7280;
-
-  /* Tier label/legend colors — dark-tuned metallics wash out on white */
-  --lc-bronze: #b45309;
-  --lc-silver: #475569;
-  --lc-gold: #a16207;
-  --lc-plat: #475569;
-
-  --lc-shadow-card:
-    inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 0 0 1px rgba(15, 23, 42, 0.06),
-    0 1px 2px rgba(15, 23, 42, 0.04);
-  --lc-shadow-marker:
-    0 0 0 4px var(--lc-bg), 0 0 0 5px rgba(16, 185, 129, 0.3), 0 4px 12px rgba(16, 185, 129, 0.2);
+body:not(.light-mode) .lc3-shell {
+  --lc3-text-dark: #f0f6fc;
+  --lc3-text-body: #e2e8f0;
+  --lc3-text-label: #8b949e;
+  --lc3-border-rule: rgba(255, 255, 255, 0.06);
+  --lc3-border-subtle: rgba(255, 255, 255, 0.04);
+  --lc3-border-dotted: rgba(255, 255, 255, 0.06);
+  --lc3-hover-bg: rgba(255, 255, 255, 0.03);
+  --lc3-card-bg: rgba(255, 255, 255, 0.03);
+  --lc3-green: #34d399;
+  --lc3-red: #f87171;
+  --lc3-chart-grid: rgba(255, 255, 255, 0.04);
+  --lc3-track-bg: rgba(255, 255, 255, 0.06);
+  --lc3-seg-bg: rgba(255, 255, 255, 0.06);
+  --lc3-seg-btn-text: #8b949e;
+  --lc3-seg-active-bg: #34d399;
+  --lc3-seg-active-text: #0b0d10;
 }

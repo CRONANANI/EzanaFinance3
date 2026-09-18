@@ -16,6 +16,8 @@ import { useLearningCenterData } from '../redesign/useLearningCenterData';
 
 import { LcGreeting } from './LcGreeting';
 import { LcEloHero } from './LcEloHero';
+import { LcEloChart } from './LcEloSparkline';
+import { LcEloLadder } from './LcEloLadder';
 import { LcDailyQuest } from './LcDailyQuest';
 import { LcSessionMetrics } from './LcSessionMetrics';
 import { LcTrackTowers } from './LcTrackTowers';
@@ -46,12 +48,11 @@ function computeNextBadgeRemaining(trackId, progressById) {
 
 function LcLoading() {
   return (
-    <div className="lc-page">
-      <div className="lc-page-content">
-        <div className="lc-skeleton" style={{ height: 80 }} />
-        <div className="lc-skeleton" style={{ height: 480 }} />
-        <div className="lc-skeleton" style={{ height: 360 }} />
-        <div className="lc-skeleton" style={{ height: 420 }} />
+    <div className="lc3-shell dashboard-page-inset db-page">
+      <div className="lc3-band">
+        <div className="lc3-skeleton" style={{ height: 120 }} />
+        <div className="lc3-skeleton" style={{ height: 260 }} />
+        <div className="lc3-skeleton" style={{ height: 220 }} />
       </div>
     </div>
   );
@@ -59,14 +60,10 @@ function LcLoading() {
 
 function LcError({ error }) {
   return (
-    <div className="lc-page">
-      <div className="lc-page-content" style={{ textAlign: 'center', padding: '80px 28px' }}>
-        <h2 style={{ color: 'var(--lc-ink)', fontSize: 20, fontWeight: 600 }}>
-          Couldn&apos;t load Learning Center
-        </h2>
-        <p style={{ color: 'var(--lc-ink-2)', fontSize: 14, marginTop: 8 }}>
-          {error || 'Try refreshing the page.'}
-        </p>
+    <div className="lc3-shell dashboard-page-inset db-page">
+      <div className="lc3-band" style={{ textAlign: 'center', padding: '80px 0' }}>
+        <h2 className="lc3-sec-title">Couldn&apos;t load Learning Center</h2>
+        <p className="lc3-empty">{error || 'Try refreshing the page.'}</p>
       </div>
     </div>
   );
@@ -171,7 +168,7 @@ export function LcPage() {
   const nextTierMap = { basic: 'Silver', intermediate: 'Gold', advanced: 'Platinum', expert: null };
   const nextTierLabel = nextTierMap[selectedLevel];
 
-  const subline = `${stats.coursesToNext} courses from ${nextTierLabel || 'Platinum'} tier in ${heroData.trackLabel}. You're outpacing your network this week — keep it going.`;
+  const subline = `${stats.coursesToNext} courses from ${nextTierLabel || 'Platinum'} tier in ${heroData.trackLabel}. You're outpacing your network this week, so keep it going.`;
 
   const handleResume = () => {
     const courseId =
@@ -182,23 +179,45 @@ export function LcPage() {
     if (courseId) router.push(`/learning-center/course/${courseId}`);
   };
 
+  /* The mapper hands back a bare array of ratings; recharts wants rows. The
+     labels are relative session markers, which is what the history is. */
+  const ratingSeries = (heroData.eloHistory || []).map((rating, i, arr) => ({
+    label: i === arr.length - 1 ? 'Now' : `-${arr.length - 1 - i}`,
+    rating,
+  }));
+
   const handleLessonClick = (id) => router.push(`/learning-center/course/${id}`);
+  const scrollBehavior =
+    typeof window !== 'undefined' &&
+    window.matchMedia &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      ? 'auto'
+      : 'smooth';
+
   const handleScrollToBookmarks = () =>
-    document.getElementById('lc-bookmarks')?.scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('lc-bookmarks')?.scrollIntoView({ behavior: scrollBehavior });
 
   return (
-    <div className="lc-page">
-      <div className="lc-page-content">
-        <LcGreeting
-          firstName={firstName}
-          subline={subline}
-          onResume={handleResume}
-          onSavedClick={handleScrollToBookmarks}
-        />
+    <div className="lc3-shell dashboard-page-inset db-page">
+      {/* Band 1, hero: greeting and track progress on the left, the ELO
+          figure and stat strip on the right. */}
+      <div className="lc3-band">
+        <div className="lc3-hero">
+          <LcGreeting
+            firstName={firstName}
+            subline={subline}
+            onResume={handleResume}
+            onSavedClick={handleScrollToBookmarks}
+            trackLabel={heroData.trackLabel}
+            completed={stats.coursesDone}
+            total={stats.coursesTotal}
+          />
+          <LcEloHero {...heroData} stats={stats} />
+        </div>
+      </div>
 
-        <InvestingBasicsCard />
-
-        {beginner?.band === 'beginner' && (
+      {beginner?.band === 'beginner' && (
+        <div className="lc3-band">
           <div className="beginner-lc-banner">
             <p className="beginner-lc-banner__text">
               Recommended for you: start with <strong>Stocks &amp; Investing · Bronze</strong>
@@ -207,10 +226,21 @@ export function LcPage() {
               Start first lesson →
             </Link>
           </div>
-        )}
+          <InvestingBasicsCard />
+        </div>
+      )}
 
-        <div className="lc-row-1">
-          <LcEloHero {...heroData} stats={stats} />
+      {/* Band 2, rating history, tier ladder, and the two daily sub-columns. */}
+      <div className="lc3-band">
+        <div className="lc3-sec-head">
+          <h2 className="lc3-sec-title">Rating history</h2>
+          <span className="lc3-sec-meta">Learning ELO</span>
+        </div>
+        <div className="lc3-chart-row">
+          <LcEloChart data={ratingSeries} />
+          <LcEloLadder rating={heroData.elo} />
+        </div>
+        <div className="lc3-subs">
           <LcDailyQuest
             primary={dailyQuest.primary}
             bonus={dailyQuest.bonus}
@@ -219,9 +249,17 @@ export function LcPage() {
           />
           <LcSessionMetrics streak={sessionMetrics.streak} rows={sessionMetrics.rows} />
         </div>
+      </div>
 
-        {isOrgUser && <LcOrgAssigned />}
+      {/* Band 3, org assignments, org users only. */}
+      {isOrgUser && (
+        <div className="lc3-band">
+          <LcOrgAssigned />
+        </div>
+      )}
 
+      {/* Band 4, the track table. */}
+      <div className="lc3-band">
         <LcTrackTowers
           tracks={data.courses.tracks || []}
           mainTrack={data.mainTrack}
@@ -231,61 +269,65 @@ export function LcPage() {
             setTimeout(() => {
               document
                 .getElementById('lc-active-path')
-                ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                ?.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
             }, 50);
           }}
           onSetMainTrack={setMainTrack}
         />
+      </div>
 
-        <div id="lc-active-path">
-          <LcActivePath
-            selectedTrack={effectiveTrack}
-            selectedLevel={selectedLevel}
-            onSelectLevel={setSelectedLevel}
-            courses={pathCourses}
-            levelCounts={levelCounts}
-            completedCount={completedInLevel}
-            totalCount={totalInLevel}
-            totalMinutes={totalMinutes}
-            nextTierLabel={nextTierLabel}
-            tierComplete={tierComplete}
-            onContinue={() => {
-              const next = { basic: 'intermediate', intermediate: 'advanced', advanced: 'expert' }[
-                selectedLevel
-              ];
-              if (next) setSelectedLevel(next);
-            }}
-            onLessonClick={handleLessonClick}
-          />
-        </div>
+      {/* Band 5, the active path. */}
+      <div className="lc3-band" id="lc-active-path">
+        <LcActivePath
+          selectedTrack={effectiveTrack}
+          selectedLevel={selectedLevel}
+          onSelectLevel={setSelectedLevel}
+          courses={pathCourses}
+          levelCounts={levelCounts}
+          completedCount={completedInLevel}
+          totalCount={totalInLevel}
+          totalMinutes={totalMinutes}
+          nextTierLabel={nextTierLabel}
+          tierComplete={tierComplete}
+          onContinue={() => {
+            const next = { basic: 'intermediate', intermediate: 'advanced', advanced: 'expert' }[
+              selectedLevel
+            ];
+            if (next) setSelectedLevel(next);
+          }}
+          onLessonClick={handleLessonClick}
+        />
+      </div>
 
-        <div className="lc-row-3" id="lc-bookmarks">
+      {/* Band 6, saved and up next. */}
+      <div className="lc3-band" id="lc-bookmarks">
+        <div className="lc3-subs" style={{ marginTop: 0 }}>
           <LcSavedCourses count={data.bookmarks.length} />
           <LcUpNext lessons={upNextLessons} onLessonClick={handleLessonClick} />
         </div>
-
-        <BeginnerSpotlight
-          pageKey="learning-center"
-          steps={[
-            {
-              targetSelector: '[data-task-target="learning-module-card"]',
-              message: 'Your active path — click the next lesson to continue your track.',
-              position: 'bottom',
-            },
-            {
-              targetSelector: '.lc-track-towers',
-              message: 'Track Towers shows progress across every learning track by tier.',
-              position: 'top',
-            },
-          ]}
-        />
       </div>
+
+      <BeginnerSpotlight
+        pageKey="learning-center"
+        steps={[
+          {
+            targetSelector: '[data-task-target="learning-module-card"]',
+            message: 'Your active path. Click the next lesson to continue your track.',
+            position: 'bottom',
+          },
+          {
+            targetSelector: '.lc-track-towers',
+            message: 'Your tracks shows progress across every learning track by tier.',
+            position: 'top',
+          },
+        ]}
+      />
     </div>
   );
 }
 
 function formatResetsIn(iso) {
-  if (!iso) return '—';
+  if (!iso) return 'unknown';
   const ms = new Date(iso).getTime() - Date.now();
   if (ms <= 0) return 'soon';
   const h = Math.floor(ms / 3600000);

@@ -2,37 +2,42 @@
 
 const PEER_DEFAULTS = ['Risk vs Reward', 'Options 101', 'Macro Basics'];
 
+/**
+ * Saved courses as a movers-style sub-column: group head with the count as
+ * uppercase meta, then dotted rows for what peers are saving.
+ */
 export function LcSavedCourses({ count = 0, peerSaved, onChipClick }) {
   const peers = peerSaved && peerSaved.length > 0 ? peerSaved : PEER_DEFAULTS;
 
   return (
-    <div className="lc-card lc-sc">
-      <div className="lc-sc-head">
-        <span className="lc-card-title">Saved courses</span>
-        <span className="lc-sc-count-pill">{count} saved</span>
+    <div>
+      <div className="lc3-sub-head">
+        <h3 className="lc3-sub-title">Saved courses</h3>
+        <span className="lc3-sec-meta">{count} saved</span>
       </div>
-      <div className="lc-sc-big">{count}</div>
-      <p className="lc-sc-empty">
-        Bookmark courses from your active path or recommendations to come back to them later.
-      </p>
-      <div className="lc-sc-peer">
-        <div className="lc-sc-peer-label">
-          <span className="lc-sc-peer-dot" />
-          Your peers are saving
-        </div>
-        <div className="lc-sc-peer-chips">
-          {peers.map((p) => (
-            <button
-              key={p}
-              type="button"
-              className="lc-sc-peer-chip"
-              onClick={() => onChipClick?.(p)}
-            >
-              {p}
-            </button>
-          ))}
-        </div>
+
+      {count === 0 && (
+        <p className="lc3-empty">
+          Bookmark courses from your active path to come back to them later.
+        </p>
+      )}
+
+      <div className="lc3-item">
+        <span className="lc3-item-name lc3-dim">Your peers are saving</span>
       </div>
+      {peers.map((p) => (
+        <button
+          type="button"
+          className="lc3-item lc3-item--click"
+          key={p}
+          onClick={() => onChipClick?.(p)}
+        >
+          <span className="lc3-item-name">{p}</span>
+          <span className="lc3-item-v lc3-dim">
+            <i className="bi bi-bookmark" aria-hidden />
+          </span>
+        </button>
+      ))}
     </div>
   );
 }

@@ -1,49 +1,39 @@
 'use client';
 
-const LEVEL_CLASS = {
-  basic: 'lc-un-level-pill--bronze',
-  intermediate: 'lc-un-level-pill--silver',
-  advanced: 'lc-un-level-pill--gold',
-  expert: 'lc-un-level-pill--platinum',
-  Bronze: 'lc-un-level-pill--bronze',
-  Silver: 'lc-un-level-pill--silver',
-  Gold: 'lc-un-level-pill--gold',
-  Platinum: 'lc-un-level-pill--platinum',
-  Intermediate: 'lc-un-level-pill--intermediate',
-};
-
+/**
+ * Recommended up next as a movers-style sub-column: numbered mono index,
+ * title and track, mono duration and ELO on the right.
+ */
 export function LcUpNext({ lessons = [], onLessonClick }) {
   return (
-    <div className="lc-card">
-      <div className="lc-card-head">
-        <span className="lc-card-title">Recommended up next</span>
-        <span className="lc-card-eyebrow">curated for you</span>
+    <div>
+      <div className="lc3-sub-head">
+        <h3 className="lc3-sub-title">Recommended up next</h3>
+        <span className="lc3-sec-meta">Curated for you</span>
       </div>
-      <div>
-        {lessons.map((l, i) => (
-          <div
-            key={l.id}
-            className="lc-un-row"
-            role="button"
-            tabIndex={0}
-            onClick={() => onLessonClick?.(l.id)}
-            onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onLessonClick?.(l.id)}
-          >
-            <span className="lc-un-idx">{String(i + 1).padStart(2, '0')}</span>
-            <div>
-              <div className="lc-un-name">{l.name}</div>
-              <div className="lc-un-track">{l.track}</div>
-            </div>
-            <span className="lc-un-min">{l.minutes} MIN</span>
-            <span
-              className={`lc-un-level-pill ${LEVEL_CLASS[l.level] || 'lc-un-level-pill--bronze'}`}
-            >
-              {l.level}
+
+      {lessons.length === 0 && <p className="lc3-empty">Nothing queued right now.</p>}
+
+      {lessons.map((l, i) => (
+        <button
+          type="button"
+          className="lc3-item lc3-item--click"
+          key={l.id}
+          onClick={() => onLessonClick?.(l.id)}
+        >
+          <span>
+            <span className="lc3-item-name">
+              <span className="lc3-mono lc3-dim">{String(i + 1).padStart(2, '0')}</span> {l.name}
             </span>
-            <span className="lc-un-elo">+{l.elo} ELO</span>
-          </div>
-        ))}
-      </div>
+            <span className="lc3-item-meta">
+              {l.track} · {l.level}
+            </span>
+          </span>
+          <span className="lc3-item-v">
+            {l.minutes}m <span className="lc3-green">+{l.elo}</span>
+          </span>
+        </button>
+      ))}
     </div>
   );
 }

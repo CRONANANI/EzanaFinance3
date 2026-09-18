@@ -1,68 +1,85 @@
 'use client';
 
-export function LcEloSparkline({ data, width = 600, height = 120 }) {
-  const safe = data && data.length >= 2 ? data : [0, 0];
-  const min = Math.min(...safe);
-  const max = Math.max(...safe);
-  const range = max - min || 1;
-  const stepX = width / (safe.length - 1);
+import { useEffect, useState } from 'react';
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+} from 'recharts';
 
-  const points = safe.map((v, i) => {
-    const x = i * stepX;
-    const y = height - ((v - min) / range) * height * 0.85 - height * 0.075;
-    return [x, y];
-  });
-
-  const linePath = points
-    .map(([x, y], i) => `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`)
-    .join(' ');
-  const areaPath = `${linePath} L ${width} ${height} L 0 ${height} Z`;
-  const [endX, endY] = points[points.length - 1];
-
+/**
+ * Learning ELO chart. Replaces the hand-drawn sparkline with the same
+ * recharts recipe the home page uses for the portfolio chart, so the two
+ * surfaces read as one system.
+ *
+ * Filename kept as LcEloSparkline.jsx to avoid churn in the import graph;
+ * the export is LcEloChart because that is what it now is.
+ */
+function Lc3ChartTooltip({ active, payload }) {
+  if (!active || !payload?.length) return null;
+  const p = payload[0].payload;
   return (
-    <svg
-      width="100%"
-      height={height}
-      viewBox={`0 0 ${width} ${height}`}
-      preserveAspectRatio="none"
-      role="img"
-      aria-label={`ELO trend: ${safe[0]} to ${safe[safe.length - 1]}`}
-    >
-      <defs>
-        <linearGradient id="lc-sparkline-area" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="var(--lc-accent)" stopOpacity="0.30" />
-          <stop offset="100%" stopColor="var(--lc-accent)" stopOpacity="0" />
-        </linearGradient>
-        <linearGradient id="lc-sparkline-line" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="var(--lc-accent-deep)" />
-          <stop offset="100%" stopColor="var(--lc-accent)" />
-        </linearGradient>
-      </defs>
-
-      {[0.25, 0.5, 0.75].map((y, i) => (
-        <line
-          key={i}
-          x1="0"
-          y1={height * y}
-          x2={width}
-          y2={height * y}
-          stroke="var(--lc-line)"
-          strokeWidth="1"
-        />
-      ))}
-
-      <path d={areaPath} fill="url(#lc-sparkline-area)" />
-      <path
-        d={linePath}
-        fill="none"
-        stroke="url(#lc-sparkline-line)"
-        strokeWidth="2"
-        strokeLinejoin="round"
-        strokeLinecap="round"
-      />
-
-      <circle cx={endX} cy={endY} r="5" fill="var(--lc-accent)" opacity="0.25" />
-      <circle cx={endX} cy={endY} r="3" fill="var(--lc-accent)" />
-    </svg>
+    <div className="lc3-chart-tip">
+      <div className="lc3-chart-tip-l">{p.label}</div>
+      <div className="lc3-chart-tip-v">{p.rating} ELO</div>
+    </div>
   );
 }
+
+export function LcEloChart({ data }) {
+  const [reduced, setReduced] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    setReduced(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }, []);
+
+  const series = Array.isArray(data) && data.length >= 2 ? data : [];
+  if (series.length === 0) {
+    return <p className="lc3-empty">Not enough rating history to chart yet.</p>;
+  }
+
+  return (
+    <ResponsiveContainer width="100%" height={200}>
+      <AreaChart data={series}>
+        <defs>
+          <linearGradient id="lc3EloFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--lc3-green)" stopOpacity={0.25} />
+            <stop offset="100%" stopColor="var(--lc3-green)" stopOpacity={0} />
+          </linearGradient>
+        </defs>
+        <CartesianGrid strokeDasharray="3 3" stroke="var(--lc3-chart-grid)" vertical={false} />
+        <XAxis
+          dataKey="label"
+          tick={{ fill: 'var(--lc3-text-label)', fontSize: 11 }}
+          axisLine={{ stroke: 'var(--lc3-border-rule)' }}
+          tickLine={false}
+          interval="preserveStartEnd"
+        />
+        <YAxis
+          tick={{ fill: 'var(--lc3-text-label)', fontSize: 11 }}
+          axisLine={false}
+          tickLine={false}
+          width={44}
+          domain={['dataMin - 15', 'dataMax + 15']}
+        />
+        <Tooltip content={<Lc3ChartTooltip />} />
+        <Area
+          type="monotone"
+          dataKey="rating"
+          stroke="var(--lc3-green)"
+          strokeWidth={2}
+          fill="url(#lc3EloFill)"
+          isAnimationActive={!reduced}
+          animationDuration={400}
+        />
+      </AreaChart>
+    </ResponsiveContainer>
+  );
+}
+
+export default LcEloChart;

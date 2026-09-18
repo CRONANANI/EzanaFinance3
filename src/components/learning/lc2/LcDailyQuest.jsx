@@ -1,47 +1,52 @@
 'use client';
 
+/**
+ * Daily quest as a sub-column under the chart: group head plus dotted item
+ * rows, with the quest progress shown on the thin track rail.
+ */
 export function LcDailyQuest({ primary, bonus = [], resetsInLabel, onStart }) {
+  const done = bonus.filter((b) => b.done).length;
+  const pct = bonus.length > 0 ? Math.round((done / bonus.length) * 100) : 0;
+
   return (
-    <div className="lc-card">
-      <div className="lc-card-head">
-        <span className="lc-card-title">Daily quest</span>
-        <span className="lc-card-eyebrow">resets in {resetsInLabel}</span>
+    <div>
+      <div className="lc3-sub-head">
+        <h3 className="lc3-sub-title">Daily quest</h3>
+        <span className="lc3-sec-meta">Resets in {resetsInLabel}</span>
       </div>
-      <div className="lc-dq-body">
-        <h3 className="lc-dq-title">Earn bonus ELO today</h3>
 
-        {primary && (
-          <div className="lc-dq-lesson">
-            <p className="lc-dq-lesson-eyebrow">Pick up where you left off</p>
-            <p className="lc-dq-lesson-name">{primary.name}</p>
-            <p className="lc-dq-lesson-meta">
-              {primary.track}
-              <span className="lc-dq-lesson-meta-dot" />
-              {primary.level}
-              <span className="lc-dq-lesson-meta-dot" />
-              {primary.durationMinutes} min
-            </p>
-            <button type="button" className="lc-dq-start-btn" onClick={onStart}>
-              Start lesson →
-            </button>
-          </div>
-        )}
+      {primary && (
+        <button type="button" className="lc3-item lc3-item--click" onClick={onStart}>
+          <span>
+            <span className="lc3-item-name">{primary.name}</span>
+            <span className="lc3-item-meta">
+              {primary.track} · {primary.level} · {primary.durationMinutes} min
+            </span>
+          </span>
+          <span className="lc3-item-v lc3-green">Start</span>
+        </button>
+      )}
 
-        {bonus.length > 0 && (
-          <div>
-            <div className="lc-dq-bonus-head">Bonus quests</div>
-            {bonus.map((b) => (
-              <div className="lc-dq-bonus-row" key={b.id}>
-                <div className="lc-dq-checkbox-row">
-                  <span className="lc-dq-checkbox" />
-                  <span className="lc-dq-bonus-text">{b.text}</span>
-                </div>
-                <span className="lc-elo-pill">+{b.elo} ELO</span>
-              </div>
-            ))}
+      {bonus.map((b) => (
+        <div className="lc3-item" key={b.id}>
+          <span className="lc3-item-name">{b.text}</span>
+          <span className="lc3-item-v lc3-green">+{b.elo} ELO</span>
+        </div>
+      ))}
+
+      {bonus.length > 0 && (
+        <div className="lc3-quest-bar">
+          <div className="lc3-hero-progress-head">
+            <span className="lc3-label">Bonus complete</span>
+            <span className="lc3-item-v">
+              {done}/{bonus.length}
+            </span>
           </div>
-        )}
-      </div>
+          <div className="lc3-track">
+            <div className="lc3-track-fill" style={{ width: `${pct}%` }} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

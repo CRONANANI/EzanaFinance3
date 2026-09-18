@@ -32,6 +32,9 @@ const EXEMPT = [
   /[\\/]ezana-echo[\\/]/,
   /[\\/]components[\\/]echo[\\/]/,
   /broadsheet\.css$/,
+  // The Learning Center hub's scoped shell, which mirrors .bs-shell above:
+  // local design constants for one surface, not app tokens.
+  /lc2-design-tokens\.css$/,
   /dataset-type\.css$/,
   /dimension-scroll\.css$/,
   /hero-device-showcase\.css$/,
