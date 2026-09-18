@@ -36,7 +36,7 @@ export function BrokerageTradeInfo() {
             SnapTrade and Plaid are our trusted data partners. Only select brokerages allow users to
             place trades from Ezana.
           </span>{' '}
-          <a href="/help-center/user/article/supported-brokerages" className="bl-info-link">
+          <a href="/help-center/user/article/brokerage-access-levels" className="bl-info-link">
             See which ones →
           </a>
         </Popover.Content>

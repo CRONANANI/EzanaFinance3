@@ -67,6 +67,14 @@ jobs:
         # script.
         run: npm run lint:branding
 
+      - name: Help center link integrity
+        # Every /help-center href inside an article body must resolve to a real
+        # slug in the audience it names, every category entry must have a body
+        # and vice versa, and prose anchors must carry no inline style (link
+        # colour comes from .hc-prose a). Also reports articles with fewer than
+        # two inline links.
+        run: npm run check:help-links
+
       - name: Architecture rules (dependency-cruiser)
         # No dependency cycles; presentation layer (components/hooks/contexts)
         # must not reach the server Supabase surface, even transitively.

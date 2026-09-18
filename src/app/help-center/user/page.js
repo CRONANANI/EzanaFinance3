@@ -24,6 +24,16 @@ import '../help-center.css';
 
 const BASE = '/help-center/user';
 
+/* Hand-picked entry points, shown above the category grid. */
+const POPULAR = [
+  'connecting-your-brokerage',
+  'brokerage-access-levels',
+  'paper-trading',
+  'plans-overview',
+  'two-factor-auth',
+  'supported-brokerages',
+];
+
 const ICON_MAP = {
   BookOpen,
   Activity,
@@ -116,6 +126,24 @@ export default function UserHelpCenterPage() {
           <HelpSearchAsk audience="user" value={searchQuery} onChange={setSearchQuery} />
         </div>
       </section>
+
+      {!searchQuery.trim() && (
+        <section className="mx-auto max-w-6xl px-4 pt-12">
+          <h2 className="hc-title mb-5 text-lg font-semibold">Popular articles</h2>
+          <div className="hc-popular">
+            {POPULAR.map((slug) => {
+              const a = USER_ARTICLES[slug];
+              if (!a) return null;
+              return (
+                <Link key={slug} href={`${BASE}/article/${slug}`} className="hc-popular-card">
+                  <i className="bi bi-file-earmark-text" aria-hidden />
+                  {a.title}
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       <section className="mx-auto max-w-6xl px-4 py-16">
         <h2 className="hc-title mb-10 text-2xl font-semibold">

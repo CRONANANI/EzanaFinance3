@@ -346,3 +346,363 @@
 .hc-link-muted:hover {
   color: var(--emerald-text);
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   Help Center v2 — topic tree, on-this-page rail, callouts, pager,
+   capability tables. Tokens only; `hc-` prefix throughout.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── Inline documentation links: always emerald, Shopify-style dense linking ── */
+.hc-prose a {
+  color: var(--emerald-text);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--emerald) 35%, transparent);
+  text-underline-offset: 2px;
+  transition:
+    color 0.18s ease,
+    text-decoration-color 0.18s ease;
+}
+.hc-prose a:hover {
+  color: var(--emerald-hover);
+  text-decoration-color: var(--emerald-hover);
+}
+
+/* ── Callouts (Note / Tip / Caution), usable inside content strings ── */
+.hc-callout {
+  border: 1px solid var(--border-primary);
+  border-left: 3px solid var(--emerald);
+  border-radius: var(--radius-md);
+  background: var(--emerald-bg-subtle);
+  padding: 0.875rem 1.125rem;
+  font-size: 0.9375rem;
+}
+.hc-callout strong:first-child {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--text-primary);
+}
+.hc-callout--tip {
+  border-left-color: var(--blue);
+  background: color-mix(in srgb, var(--blue) 5%, transparent);
+}
+.hc-callout--caution {
+  border-left-color: var(--warning);
+  background: color-mix(in srgb, var(--warning) 6%, transparent);
+}
+
+/* ── Three-column article shell ── */
+.hc-article-grid {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr) 200px;
+  gap: 40px;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+  align-items: start;
+}
+.hc-article-main {
+  min-width: 0;
+}
+/* Anchor jumps land below the sticky app chrome. */
+.hc-page {
+  scroll-behavior: smooth;
+}
+.hc-prose h2,
+.hc-prose h3 {
+  scroll-margin-top: 110px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hc-page {
+    scroll-behavior: auto;
+  }
+}
+
+/* ── Topic tree ── */
+.hc-sidenav {
+  position: sticky;
+  top: 96px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  padding-right: 8px;
+}
+.hc-sidenav-group + .hc-sidenav-group {
+  margin-top: 4px;
+}
+.hc-sidenav-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.hc-sidenav-cat {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+.hc-sidenav-cat:hover,
+.hc-sidenav-cat.is-active {
+  color: var(--emerald-text);
+}
+.hc-sidenav-toggle {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--text-faint);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+.hc-sidenav-toggle:hover,
+.hc-sidenav-toggle:focus-visible {
+  color: var(--emerald-text);
+  outline: none;
+}
+.hc-sidenav-list {
+  list-style: none;
+  margin: 2px 0 8px;
+  padding: 0 0 0 2px;
+  border-left: 1px solid var(--border-secondary);
+}
+.hc-sidenav-link {
+  display: block;
+  padding: 5px 0 5px 10px;
+  margin-left: -1px;
+  border-left: 2px solid transparent;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--text-muted);
+  text-decoration: none;
+}
+.hc-sidenav-link:hover {
+  color: var(--emerald-text);
+}
+.hc-sidenav-link.is-active {
+  color: var(--emerald-text);
+  border-left-color: var(--emerald);
+  font-weight: 600;
+}
+
+/* ── On this page ── */
+.hc-toc {
+  position: sticky;
+  top: 96px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+}
+.hc-toc-label {
+  margin: 0 0 10px;
+  font-family: var(--font-mono);
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.hc-toc ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.hc-toc a {
+  display: block;
+  padding: 4px 0;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--text-muted);
+  text-decoration: none;
+}
+.hc-toc a:hover,
+.hc-toc a.is-active {
+  color: var(--emerald-text);
+}
+.hc-toc-sub a {
+  padding-left: 12px;
+}
+
+/* ── Article meta row ── */
+.hc-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 1.75rem;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.75rem;
+  color: var(--text-faint);
+}
+
+/* ── Previous / next pager ── */
+.hc-pager {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 2.5rem;
+}
+.hc-pager-card {
+  display: block;
+  padding: 14px 16px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  transition: border-color 0.18s ease;
+}
+.hc-pager-card:hover {
+  border-color: var(--emerald-border);
+}
+.hc-pager-card--next {
+  text-align: right;
+  grid-column: 2;
+}
+.hc-pager-eyebrow {
+  display: block;
+  margin-bottom: 4px;
+  font-family: var(--font-mono);
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.hc-pager-title {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.35;
+}
+.hc-pager-card:hover .hc-pager-title {
+  color: var(--emerald-text);
+}
+
+/* ── Popular articles block on the hubs ── */
+.hc-popular {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.hc-popular-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: border-color 0.18s ease;
+}
+.hc-popular-card:hover {
+  border-color: var(--emerald-border);
+  color: var(--emerald-text);
+}
+.hc-popular-card i {
+  flex: none;
+  color: var(--text-faint);
+}
+.hc-popular-card:hover i {
+  color: var(--emerald);
+}
+
+/* ── Brokerage capability tables ── */
+.hc-broker-tables h3 {
+  margin: 1.75rem 0 0.75rem;
+  font-size: var(--type-card-title-size);
+  font-weight: var(--type-card-title-weight);
+  letter-spacing: var(--type-card-title-tracking);
+  color: var(--text-primary);
+}
+.hc-broker-scroll {
+  overflow-x: auto;
+}
+.hc-broker-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+.hc-broker-table th {
+  padding: 8px 10px;
+  text-align: left;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-primary);
+}
+.hc-broker-table td {
+  padding: 9px 10px;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-secondary);
+}
+.hc-cap-yes {
+  color: var(--emerald);
+}
+.hc-cap-no {
+  color: var(--text-ghost);
+}
+.hc-cap-live,
+.hc-cap-maint {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  letter-spacing: var(--type-eyebrow-tracking);
+  text-transform: uppercase;
+}
+.hc-cap-live {
+  color: var(--emerald);
+  background: var(--emerald-bg);
+  border: 1px solid var(--emerald-border);
+}
+.hc-cap-maint {
+  color: var(--warning);
+  background: color-mix(in srgb, var(--warning) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--warning) 30%, transparent);
+}
+
+/* ── Responsive: drop the rails rather than squeezing the prose ── */
+@media (max-width: 1279px) {
+  .hc-article-grid {
+    grid-template-columns: 240px minmax(0, 1fr);
+  }
+  .hc-toc {
+    display: none;
+  }
+}
+@media (max-width: 1023px) {
+  .hc-article-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  .hc-sidenav {
+    display: none;
+  }
+  .hc-popular {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 640px) {
+  .hc-pager {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .hc-pager-card--next {
+    grid-column: 1;
+    text-align: left;
+  }
+  .hc-popular {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

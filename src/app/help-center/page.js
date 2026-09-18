@@ -40,7 +40,9 @@ export default function HelpCenterChoicePage() {
               <p className="hc-subtitle mb-4 text-center text-sm">
                 API access, program resources, affiliate tools, and partner dashboard help
               </p>
-              <span className="hc-accent mt-auto text-sm font-medium">Enter Partner Help Center</span>
+              <span className="hc-accent mt-auto text-sm font-medium">
+                Enter Partner Help Center
+              </span>
             </Link>
           </div>
         </div>
