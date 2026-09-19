@@ -1,0 +1,1518 @@
+/* ============================================================================
+   Sonar landing band — section-scoped tokens and the one master timeline.
+   ----------------------------------------------------------------------------
+   Follows the .bs-shell scoped-token precedent (src/app/(dashboard)/home/
+   broadsheet.css): the band inverts the palette, so it declares its own custom
+   properties on its root and every child reads them. Nothing leaks to the page.
+
+   The band is MODE STABLE. These values are identical in light and dark shells
+   because the band supplies its own ground; the canvas above and below it still
+   uses the global theme.
+
+   Contrast is measured against the LIGHTEST gradient stop, #047857, not the
+   average, because that stop is the worst case:
+     #ffffff  on #047857 .......... 5.02:1  body and headline, passes AA
+     #a7f3d0  on #047857 .......... 3.95:1  links and 15px+ semibold only
+     #6ee7b7  on #047857 .......... 3.35:1  AA large only: mono labels >= 10px
+                                            at >= 0.14em tracking, and non-text
+                                            marks. Never reading copy.
+     #04261c  on #10b981 .......... 10.1:1  dark ink inside emerald fills
+   Rule of thumb: white for anything you read, mint for anything you scan, dark
+   ink only ever on an emerald fill.
+
+   The 11px compliance footnote is set at rgba(255,255,255,.80) (4.02:1) rather
+   than the .58 in the tokens file, so the legally required line passes AA
+   instead of needing a sign-off. 05-ACCEPTANCE.md names this as the fix.
+
+   Motion contract: ONE master duration. Every sequenced element shares
+   var(--snr-cycle) and is keyed by percentage of that single loop. The caret is
+   the one permitted exception. See sonar-handoff/02-TIMELINE.json.
+   ========================================================================== */
+
+.snr-band {
+  /* ---- ground ---- */
+  --snr-band-bg: linear-gradient(115deg, #032a21 0%, #064e3b 40%, #065f46 70%, #047857 100%);
+  --snr-grid: rgba(255, 255, 255, 0.16);
+
+  /* ---- ink ---- */
+  --snr-text: #ffffff;
+  --snr-text-muted: rgba(255, 255, 255, 0.8);
+  --snr-text-faint: rgba(255, 255, 255, 0.58);
+  --snr-ink: #04261c;
+
+  /* ---- accent ---- */
+  --snr-emerald: #10b981;
+  --snr-mint: #6ee7b7;
+  --snr-mint-soft: #a7f3d0;
+
+  /* ---- structure ---- */
+  --snr-hair: rgba(167, 243, 208, 0.24);
+  --snr-hair-strong: rgba(110, 231, 183, 0.34);
+  --snr-divider: rgba(110, 231, 183, 0.18);
+  --snr-panel: rgba(3, 18, 14, 0.5);
+  --snr-panel-solid: rgba(4, 20, 15, 0.72);
+  --snr-field: rgba(3, 18, 14, 0.62);
+  --snr-row: rgba(0, 0, 0, 0.22);
+
+  /* ---- elevation ---- */
+  --snr-glow: 0 0 24px rgba(16, 185, 129, 0.14);
+  --snr-lift: 0 24px 60px rgba(0, 0, 0, 0.45);
+
+  /* ---- radar ---- */
+  --snr-ring: rgba(255, 255, 255, 0.13);
+  --snr-ring-key: rgba(167, 243, 208, 0.26);
+  --snr-node-dim: 0.26;
+  --snr-sweep-dim: 0.3;
+
+  /* ---- radii ---- */
+  --snr-r-chip: 4px;
+  --snr-r-row: 10px;
+  --snr-r-panel: 16px;
+  --snr-r-pill: 9999px;
+
+  /* ---- type ---- */
+  --snr-font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --snr-font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --snr-track-eyebrow: 0.36em;
+  --snr-track-label: 0.16em;
+  --snr-track-head: -0.032em;
+
+  /* ---- motion ---- */
+  --snr-cycle: 15s;
+  --snr-blink: 1.06s;
+
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  padding-left: 80px;
+  padding-right: 80px;
+  background: var(--snr-band-bg);
+  color: var(--snr-text);
+  font-family: var(--snr-font-sans);
+}
+
+/* Vertical rhythm is owned by the shared --landing-gap rule in globals.css,
+   which lists .snr-band alongside every other landing section. This sheet sets
+   horizontal padding only, per the convention documented there. */
+
+/* The one duration. Percentages of it are the contract. */
+.snr-band [class*='snr-anim-'] {
+  animation-duration: var(--snr-cycle);
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+/* Viewport gating: the observer adds .snr-paused when the band leaves view.
+   Play-state, never unmount, so scrolling back does not restart mid-sequence. */
+.snr-band.snr-paused *,
+.snr-band.snr-paused {
+  animation-play-state: paused;
+}
+
+/* Reduced motion. Every base style below is authored as the composed END frame,
+   so killing animation lands on the finished composition with no second
+   stylesheet. See 02-TIMELINE.json -> reducedMotion. */
+@media (prefers-reduced-motion: reduce) {
+  .snr-band * {
+    animation: none !important;
+  }
+}
+
+.snr-band .snr-num,
+.snr-band .snr-query,
+.snr-band .snr-meta {
+  font-family: var(--snr-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── dot grid ────────────────────────────────────────────────────────────── */
+.snr-grid-layer {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(var(--snr-grid) 1px, transparent 1px);
+  background-size: 26px 26px;
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+.snr-inner {
+  position: relative;
+  max-width: 1440px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+/* ── top block ───────────────────────────────────────────────────────────── */
+.snr-head {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.snr-eyebrow-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.snr-beacon {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--snr-r-pill);
+  background: var(--snr-mint);
+  flex-shrink: 0;
+  animation: snrBeacon 2.2s ease-in-out infinite;
+}
+
+.snr-eyebrow {
+  font-family: var(--snr-font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: var(--snr-track-eyebrow);
+  text-transform: uppercase;
+  color: var(--snr-mint);
+}
+
+.snr-rule {
+  flex-grow: 1;
+  height: 1px;
+  background: var(--snr-hair);
+}
+
+.snr-kicker {
+  font-family: var(--snr-font-mono);
+  font-size: 10px;
+  letter-spacing: var(--snr-track-label);
+  color: var(--snr-text-muted);
+}
+
+.snr-headline {
+  margin: 0;
+  font-size: 52px;
+  line-height: 1.02;
+  letter-spacing: var(--snr-track-head);
+  font-weight: 800;
+  color: var(--snr-text);
+  white-space: nowrap;
+}
+
+.snr-subhead {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--snr-text-muted);
+  max-width: 980px;
+}
+
+/* ── three columns ───────────────────────────────────────────────────────── */
+.snr-cols {
+  flex-grow: 1;
+  display: flex;
+  align-items: stretch;
+  gap: 32px;
+}
+
+.snr-col-left {
+  width: 570px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.snr-col-radar {
+  width: 470px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.snr-col-dossier {
+  width: 336px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  padding: 18px;
+  border-radius: var(--snr-r-panel);
+  background: var(--snr-panel-solid);
+  border: 1px solid rgba(110, 231, 183, 0.3);
+  box-shadow: var(--snr-lift);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+}
+
+/* ── ping bar ────────────────────────────────────────────────────────────── */
+.snr-pingbar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 60px;
+  box-sizing: border-box;
+  padding: 0 8px 0 18px;
+  border-radius: var(--snr-r-pill);
+  background: var(--snr-field);
+  border: 1px solid var(--snr-hair-strong);
+  box-shadow: var(--snr-glow);
+}
+
+.snr-pingbar-icon {
+  color: var(--snr-mint);
+  font-size: 17px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.snr-label-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* The real control. The animated demo below is a decorative placeholder that
+   clears the moment the field is focused or typed into. */
+.snr-input {
+  flex-grow: 1;
+  min-width: 0;
+  height: 44px;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--snr-font-mono);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  color: var(--snr-text);
+}
+
+.snr-demo {
+  position: absolute;
+  left: 45px;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+}
+
+.snr-input:focus ~ .snr-demo,
+.snr-input:not(:placeholder-shown) ~ .snr-demo {
+  opacity: 0;
+}
+
+/* Base = end frame: fully typed. Requires a monospace face for ch to equal
+   exactly one glyph. */
+.snr-query {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  width: 15ch;
+  font-size: 15px;
+  letter-spacing: 0;
+  color: var(--snr-text);
+}
+
+.snr-caret {
+  width: 2px;
+  height: 19px;
+  background: var(--snr-emerald);
+  flex-shrink: 0;
+  margin-left: 1px;
+}
+
+/* The only element allowed its own duration. A caret blinking on the master
+   loop reads as broken. */
+.snr-anim-caret {
+  animation: snrCaret var(--snr-blink) steps(1, end) infinite;
+}
+
+.snr-ping-btn {
+  height: 44px;
+  padding: 0 24px;
+  border: none;
+  border-radius: var(--snr-r-pill);
+  background: var(--snr-emerald);
+  color: var(--snr-ink);
+  font-family: var(--snr-font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.snr-cursor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 18px;
+  height: 18px;
+  opacity: 0;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
+}
+
+/* ── synthesis panel ─────────────────────────────────────────────────────── */
+.snr-synth {
+  flex-grow: 1;
+  box-sizing: border-box;
+  padding: 18px;
+  border-radius: var(--snr-r-panel);
+  background: var(--snr-panel);
+  border: 1px solid var(--snr-ring-key);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: relative;
+}
+
+.snr-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.snr-beacon-sm {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--snr-r-pill);
+  background: var(--snr-emerald);
+  flex-shrink: 0;
+  animation: snrBeacon 2.2s ease-in-out infinite;
+}
+
+.snr-panel-title {
+  font-family: var(--snr-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: var(--snr-mint);
+}
+
+.snr-rule-soft {
+  flex-grow: 1;
+  height: 1px;
+  background: rgba(167, 243, 208, 0.2);
+}
+
+/* Three absolutely stacked spans in one slot. Base opacity: READY 0,
+   SWEEPING 0, CITED 1, so reduced motion shows the finished state. */
+.snr-status {
+  position: relative;
+  display: block;
+  width: 132px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.snr-status span {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  font-family: var(--snr-font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  white-space: nowrap;
+}
+
+.snr-state-ready {
+  color: rgba(255, 255, 255, 0.55);
+  opacity: 0;
+}
+.snr-state-sweep {
+  color: var(--snr-mint-soft);
+  opacity: 0;
+}
+.snr-state-done {
+  color: var(--snr-mint);
+  opacity: 1;
+}
+
+.snr-synth-body {
+  position: relative;
+  flex-grow: 1;
+}
+
+/* Base opacity 0 so reduced motion hides the empty state and shows the filled
+   content instead of stacking them. */
+.snr-empty {
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: 0;
+  font-family: var(--snr-font-mono);
+  font-size: 12.5px;
+  line-height: 2.05;
+  color: rgba(255, 255, 255, 0.45);
+  opacity: 0;
+}
+
+.snr-line {
+  margin: 0;
+  font-family: var(--snr-font-mono);
+  font-size: 12.5px;
+  line-height: 2.05;
+  color: rgba(255, 255, 255, 0.86);
+  width: fit-content;
+  max-width: 100%;
+  clip-path: inset(0 0 0 0);
+}
+
+.snr-line-lead {
+  font-weight: 700;
+  color: var(--snr-text);
+}
+
+.snr-cite {
+  color: var(--snr-mint);
+}
+
+.snr-divider-line {
+  height: 1px;
+  background: var(--snr-divider);
+}
+
+.snr-foot {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* Raised from the .58 token to .80 so the legally required line passes AA. */
+.snr-footnote {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--snr-text-muted);
+  flex-grow: 1;
+}
+
+.snr-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 44px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--snr-mint-soft);
+  flex-shrink: 0;
+}
+
+.snr-cta:hover {
+  color: var(--snr-text);
+}
+
+.snr-band a:focus-visible,
+.snr-band button:focus-visible,
+.snr-band input:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+  border-radius: var(--snr-r-chip);
+}
+
+/* ── dossier ─────────────────────────────────────────────────────────────── */
+.snr-dossier-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.snr-dossier-title {
+  font-family: var(--snr-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: var(--snr-mint);
+}
+
+.snr-dossier-body {
+  position: relative;
+  flex-grow: 1;
+}
+
+.snr-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.snr-row {
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border-radius: var(--snr-r-row);
+  background: var(--snr-row);
+  border: 1px solid rgba(167, 243, 208, 0.22);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.snr-row-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.snr-tag {
+  font-family: var(--snr-font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--snr-ink);
+  background: var(--snr-mint);
+  border-radius: var(--snr-r-chip);
+  padding: 2px 6px;
+}
+
+.snr-src {
+  font-family: var(--snr-font-mono);
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.snr-row-line {
+  font-size: 12.5px;
+  line-height: 1.35;
+  color: var(--snr-text);
+}
+
+.snr-row-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.snr-row-footer .snr-meta:first-child {
+  color: var(--snr-mint-soft);
+}
+
+.snr-meta {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* ══ the one master timeline ══════════════════════════════════════════════ */
+
+@keyframes snrBeacon {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes snrCaret {
+  0%,
+  48% {
+    opacity: 1;
+  }
+  49%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* 1. query types itself in, then backspaces at 96-100% */
+@keyframes snrQuery {
+  0% {
+    width: 0ch;
+  }
+  4% {
+    width: 0ch;
+    animation-timing-function: steps(15, end);
+  }
+  16% {
+    width: 15ch;
+  }
+  96% {
+    width: 15ch;
+    animation-timing-function: steps(15, end);
+  }
+  100% {
+    width: 0ch;
+  }
+}
+.snr-anim-query {
+  animation-name: snrQuery;
+}
+
+/* 2. pointer travels to the button and presses it */
+@keyframes snrCursor {
+  0%,
+  10% {
+    opacity: 0;
+    transform: translate(150px, 48px) scale(1);
+  }
+  12% {
+    opacity: 0.95;
+    transform: translate(150px, 48px) scale(1);
+  }
+  18% {
+    opacity: 0.95;
+    transform: translate(516px, 34px) scale(1);
+  }
+  20% {
+    opacity: 0.95;
+    transform: translate(516px, 34px) scale(0.82);
+  }
+  22% {
+    opacity: 0.95;
+    transform: translate(516px, 34px) scale(1);
+  }
+  27%,
+  100% {
+    opacity: 0;
+    transform: translate(516px, 34px) scale(1);
+  }
+}
+.snr-anim-cursor {
+  animation-name: snrCursor;
+  animation-timing-function: ease-in-out;
+}
+
+@keyframes snrPress {
+  0%,
+  20% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(167, 243, 208, 0);
+  }
+  21% {
+    transform: scale(0.93);
+    box-shadow: 0 0 0 5px rgba(167, 243, 208, 0.3);
+  }
+  24% {
+    transform: scale(1);
+    box-shadow: 0 0 0 18px rgba(167, 243, 208, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(167, 243, 208, 0);
+  }
+}
+.snr-anim-press {
+  animation-name: snrPress;
+}
+
+/* 6. empty states and status pills */
+@keyframes snrIdleOut {
+  0%,
+  20% {
+    opacity: 1;
+  }
+  23%,
+  100% {
+    opacity: 0;
+  }
+}
+.snr-anim-idle {
+  animation-name: snrIdleOut;
+}
+
+@keyframes snrStateReady {
+  0%,
+  19% {
+    opacity: 1;
+  }
+  21% {
+    opacity: 0;
+  }
+  94% {
+    opacity: 0;
+  }
+  98%,
+  100% {
+    opacity: 1;
+  }
+}
+.snr-anim-ready {
+  animation-name: snrStateReady;
+}
+
+@keyframes snrStateSweep {
+  0%,
+  20% {
+    opacity: 0;
+  }
+  22% {
+    opacity: 1;
+  }
+  54% {
+    opacity: 1;
+  }
+  57%,
+  100% {
+    opacity: 0;
+  }
+}
+.snr-anim-sweepstate {
+  animation-name: snrStateSweep;
+}
+
+@keyframes snrStateDone {
+  0%,
+  55% {
+    opacity: 0;
+  }
+  58% {
+    opacity: 1;
+  }
+  94% {
+    opacity: 1;
+  }
+  97%,
+  100% {
+    opacity: 0;
+  }
+}
+.snr-anim-done {
+  animation-name: snrStateDone;
+}
+
+/* 4. synthesis types out line by line. clip-path is length independent, so the
+   copy can change without recomputing ch counts. */
+@keyframes snrSyn1 {
+  0% {
+    clip-path: inset(0 100% 0 0);
+  }
+  24% {
+    clip-path: inset(0 100% 0 0);
+    animation-timing-function: steps(42, end);
+  }
+  30% {
+    clip-path: inset(0 0 0 0);
+  }
+  94% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+  98%,
+  100% {
+    clip-path: inset(0 0 0 0);
+    opacity: 0;
+  }
+}
+@keyframes snrSyn2 {
+  0% {
+    clip-path: inset(0 100% 0 0);
+  }
+  30% {
+    clip-path: inset(0 100% 0 0);
+    animation-timing-function: steps(42, end);
+  }
+  36% {
+    clip-path: inset(0 0 0 0);
+  }
+  94% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+  98%,
+  100% {
+    clip-path: inset(0 0 0 0);
+    opacity: 0;
+  }
+}
+@keyframes snrSyn3 {
+  0% {
+    clip-path: inset(0 100% 0 0);
+  }
+  36% {
+    clip-path: inset(0 100% 0 0);
+    animation-timing-function: steps(42, end);
+  }
+  42% {
+    clip-path: inset(0 0 0 0);
+  }
+  94% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+  98%,
+  100% {
+    clip-path: inset(0 0 0 0);
+    opacity: 0;
+  }
+}
+@keyframes snrSyn4 {
+  0% {
+    clip-path: inset(0 100% 0 0);
+  }
+  42% {
+    clip-path: inset(0 100% 0 0);
+    animation-timing-function: steps(42, end);
+  }
+  48% {
+    clip-path: inset(0 0 0 0);
+  }
+  94% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+  98%,
+  100% {
+    clip-path: inset(0 0 0 0);
+    opacity: 0;
+  }
+}
+@keyframes snrSyn5 {
+  0% {
+    clip-path: inset(0 100% 0 0);
+  }
+  48% {
+    clip-path: inset(0 100% 0 0);
+    animation-timing-function: steps(42, end);
+  }
+  54% {
+    clip-path: inset(0 0 0 0);
+  }
+  94% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+  98%,
+  100% {
+    clip-path: inset(0 0 0 0);
+    opacity: 0;
+  }
+}
+.snr-anim-syn1 {
+  animation-name: snrSyn1;
+}
+.snr-anim-syn2 {
+  animation-name: snrSyn2;
+}
+.snr-anim-syn3 {
+  animation-name: snrSyn3;
+}
+.snr-anim-syn4 {
+  animation-name: snrSyn4;
+}
+.snr-anim-syn5 {
+  animation-name: snrSyn5;
+}
+
+/* 5. dossier rows land one per dataset return, then the footer */
+@keyframes snrRow0 {
+  0%,
+  22.5% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  24.5% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  94% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  98%,
+  100% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes snrRow1 {
+  0%,
+  25.6% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  27.6% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  94% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  98%,
+  100% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes snrRow2 {
+  0%,
+  28.8% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  30.8% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  94% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  98%,
+  100% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes snrRow3 {
+  0%,
+  31.9% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  33.9% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  94% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  98%,
+  100% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes snrRow4 {
+  0%,
+  35% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  37% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  94% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  98%,
+  100% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes snrRow5 {
+  0%,
+  38.1% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  40.1% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  94% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  98%,
+  100% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+.snr-anim-row0 {
+  animation-name: snrRow0;
+}
+.snr-anim-row1 {
+  animation-name: snrRow1;
+}
+.snr-anim-row2 {
+  animation-name: snrRow2;
+}
+.snr-anim-row3 {
+  animation-name: snrRow3;
+}
+.snr-anim-row4 {
+  animation-name: snrRow4;
+}
+.snr-anim-row5 {
+  animation-name: snrRow5;
+}
+
+/* ── responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 1280px) {
+  .snr-band {
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+
+  /* Below lg: one column. Radar drops above the panels and scales fluidly. */
+  .snr-cols {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 24px;
+  }
+
+  .snr-col-left,
+  .snr-col-radar,
+  .snr-col-dossier {
+    width: 100%;
+  }
+
+  .snr-col-radar {
+    order: -1;
+  }
+
+  .snr-headline {
+    font-size: 40px;
+    white-space: normal;
+  }
+}
+
+@media (max-width: 768px) {
+  .snr-band {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  /* Below md: the dossier is hidden and the synthesis panel carries the story. */
+  .snr-col-dossier {
+    display: none;
+  }
+
+  .snr-headline {
+    font-size: 30px;
+  }
+
+  .snr-kicker {
+    display: none;
+  }
+
+  .snr-foot {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .snr-line,
+  .snr-empty {
+    font-size: 11.5px;
+    line-height: 1.9;
+  }
+}
+
+@media (max-width: 420px) {
+  .snr-headline {
+    font-size: 26px;
+  }
+
+  .snr-pingbar {
+    padding-left: 14px;
+  }
+
+  .snr-demo {
+    left: 40px;
+  }
+}
+
+/* ══ radar ════════════════════════════════════════════════════════════════
+   Geometry and structure derive from PersonalizationRadar (concentric rings,
+   ang(i) radial node distribution, the anchor-by-side label rule, the hub).
+   Motion is CSS rather than framer-motion because 02-TIMELINE.json is built on
+   one shared animation-duration, animation-play-state gating, and the
+   reduced-motion "animation: none" composed frame, none of which a JS motion
+   library can express. 01-BRIEF.md section 7 forbids it outright.
+   ====================================================================== */
+
+.snr-radar {
+  width: 100%;
+  max-width: 470px;
+  height: auto;
+}
+
+/* 3. radar wakes on the press and sweeps three turns.
+   1104 = 24 + 3 x 360, so the loop boundary is seamless: the wedge ends at the
+   same visual angle it started. The still-until-clicked read comes from holding
+   rotate(24deg) through 21% at 0.3 opacity. */
+@keyframes snrSweepGo {
+  0% {
+    transform: rotate(24deg);
+    opacity: 0.3;
+  }
+  21% {
+    transform: rotate(24deg);
+    opacity: 0.3;
+  }
+  23% {
+    opacity: 1;
+  }
+  94% {
+    opacity: 1;
+  }
+  96% {
+    transform: rotate(1104deg);
+  }
+  98%,
+  100% {
+    transform: rotate(1104deg);
+    opacity: 0.3;
+  }
+}
+
+.snr-sweep {
+  transform-box: view-box;
+  transform-origin: 280px 240px;
+  transform: rotate(24deg);
+}
+
+.snr-anim-sweep {
+  animation-name: snrSweepGo;
+}
+
+@keyframes snrWave {
+  0%,
+  21% {
+    transform: scale(0.08);
+    opacity: 0;
+  }
+  22% {
+    opacity: 0.5;
+  }
+  38% {
+    transform: scale(1);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+/* animation-fill-mode both is required on the delayed transients. Without it
+   the wave shows its base state during the delay. These start and end at
+   opacity 0, so their phase offset against the master loop is never visible. */
+.snr-wave {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+}
+
+.snr-anim-wave {
+  animation-name: snrWave;
+  animation-fill-mode: both;
+}
+
+@keyframes snrHalo {
+  0%,
+  21% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  22% {
+    opacity: 0.85;
+  }
+  26% {
+    transform: scale(2.7);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(2.7);
+    opacity: 0;
+  }
+}
+
+.snr-halo {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+}
+
+.snr-anim-halo {
+  animation-name: snrHalo;
+  animation-fill-mode: both;
+}
+
+@keyframes snrCore {
+  0%,
+  20% {
+    transform: scale(1);
+    opacity: 0.45;
+  }
+  22% {
+    transform: scale(1.8);
+    opacity: 1;
+  }
+  26% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  94% {
+    opacity: 1;
+  }
+  98%,
+  100% {
+    transform: scale(1);
+    opacity: 0.45;
+  }
+}
+
+.snr-core {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 1;
+}
+
+.snr-anim-core {
+  animation-name: snrCore;
+}
+
+/* Node k dims until (21 + 3.125k)%, reaches full at (22 + 3.125k)%, holds to
+   94%, dims by 98%. 3.125% of 15s is 469ms, one eighth of one 3.75s turn, so
+   each node lights exactly as the wedge passes over it. Base opacity is 1 so
+   reduced motion shows all eight lit. */
+.snr-node {
+  opacity: 1;
+}
+
+@keyframes snrLit0 {
+  0%,
+  21% {
+    opacity: 0.26;
+  }
+  22% {
+    opacity: 1;
+  }
+  94% {
+    opacity: 1;
+  }
+  98%,
+  100% {
+    opacity: 0.26;
+  }
+}
+@keyframes snrLit1 {
+  0%,
+  24.1% {
+    opacity: 0.26;
+  }
+  25.1% {
+    opacity: 1;
+  }
+  94% {
+    opacity: 1;
+  }
+  98%,
+  100% {
+    opacity: 0.26;
+  }
+}
+@keyframes snrLit2 {
+  0%,
+  27.3% {
+    opacity: 0.26;
+  }
+  28.3% {
+    opacity: 1;
+  }
+  94% {
+    opacity: 1;
+  }
+  98%,
+  100% {
+    opacity: 0.26;
+  }
+}
+@keyframes snrLit3 {
+  0%,
+  30.4% {
+    opacity: 0.26;
+  }
+  31.4% {
+    opacity: 1;
+  }
+  94% {
+    opacity: 1;
+  }
+  98%,
+  100% {
+    opacity: 0.26;
+  }
+}
+@keyframes snrLit4 {
+  0%,
+  33.5% {
+    opacity: 0.26;
+  }
+  34.5% {
+    opacity: 1;
+  }
+  94% {
+    opacity: 1;
+  }
+  98%,
+  100% {
+    opacity: 0.26;
+  }
+}
+@keyframes snrLit5 {
+  0%,
+  36.6% {
+    opacity: 0.26;
+  }
+  37.6% {
+    opacity: 1;
+  }
+  94% {
+    opacity: 1;
+  }
+  98%,
+  100% {
+    opacity: 0.26;
+  }
+}
+@keyframes snrLit6 {
+  0%,
+  39.8% {
+    opacity: 0.26;
+  }
+  40.8% {
+    opacity: 1;
+  }
+  94% {
+    opacity: 1;
+  }
+  98%,
+  100% {
+    opacity: 0.26;
+  }
+}
+@keyframes snrLit7 {
+  0%,
+  42.9% {
+    opacity: 0.26;
+  }
+  43.9% {
+    opacity: 1;
+  }
+  94% {
+    opacity: 1;
+  }
+  98%,
+  100% {
+    opacity: 0.26;
+  }
+}
+
+.snr-anim-lit0 {
+  animation-name: snrLit0;
+}
+.snr-anim-lit1 {
+  animation-name: snrLit1;
+}
+.snr-anim-lit2 {
+  animation-name: snrLit2;
+}
+.snr-anim-lit3 {
+  animation-name: snrLit3;
+}
+.snr-anim-lit4 {
+  animation-name: snrLit4;
+}
+.snr-anim-lit5 {
+  animation-name: snrLit5;
+}
+.snr-anim-lit6 {
+  animation-name: snrLit6;
+}
+.snr-anim-lit7 {
+  animation-name: snrLit7;
+}
+
+@keyframes snrRoute {
+  0%,
+  21% {
+    stroke-dashoffset: 320;
+    opacity: 0;
+  }
+  23% {
+    opacity: 0.55;
+  }
+  46% {
+    stroke-dashoffset: 0;
+    opacity: 0.55;
+  }
+  94% {
+    stroke-dashoffset: 0;
+    opacity: 0.55;
+  }
+  98%,
+  100% {
+    stroke-dashoffset: 320;
+    opacity: 0;
+  }
+}
+
+.snr-route {
+  stroke-dashoffset: 0;
+}
+
+.snr-anim-route {
+  animation-name: snrRoute;
+  animation-fill-mode: both;
+}
+
+/* ── mode stability ──────────────────────────────────────────────────────────
+   The band supplies its own emerald ground, so it must read identically in the
+   light and dark shells. The legacy light-mode sheet
+   (app-legacy/assets/css/light-mode-fixes.css) forces `body.light-mode h1..h5`
+   to #111827 and `body.light-mode p` to #374151, both with !important, which
+   would paint the headline and every paragraph in this band near-black on green.
+
+   Specificity note: those selectors are (0,1,2) — one class, two elements — so a
+   two-class selector here is (0,2,0) and wins among !important declarations
+   without needing to be more forceful than the rule it is undoing. Scoped to
+   .snr-band, so nothing outside the band is affected. */
+.snr-band .snr-headline,
+.snr-band .snr-row-line {
+  color: var(--snr-text) !important;
+}
+
+.snr-band .snr-subhead,
+.snr-band .snr-footnote {
+  color: var(--snr-text-muted) !important;
+}
+
+.snr-band .snr-line {
+  color: rgba(255, 255, 255, 0.86) !important;
+}
+
+.snr-band .snr-line-lead {
+  color: var(--snr-text) !important;
+}
+
+.snr-band .snr-empty {
+  color: rgba(255, 255, 255, 0.45) !important;
+}
+
+.snr-band .snr-cite {
+  color: var(--snr-mint) !important;
+}
+
+.snr-band .snr-cta {
+  color: var(--snr-mint-soft) !important;
+}
+
+.snr-band .snr-cta:hover {
+  color: var(--snr-text) !important;
+}

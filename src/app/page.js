@@ -29,12 +29,12 @@ const GettingStartedSection = dynamic(
     })),
   { loading: sectionFallback('420px') },
 );
-const ResourcesSection = dynamic(
+const SonarSection = dynamic(
   () =>
-    import('@/components/landing/ResourcesSection').then((m) => ({
-      default: m.ResourcesSection,
+    import('@/components/landing/SonarSection').then((m) => ({
+      default: m.SonarSection,
     })),
-  { loading: sectionFallback('600px') },
+  { loading: sectionFallback('700px') },
 );
 const SocialLedgerSection = dynamic(
   () =>
@@ -101,16 +101,22 @@ export default function HomePage() {
         <GettingStartedSection />
       </LandingErrorBoundary>
 
-      <LandingErrorBoundary name="BrokerageLogos">
-        <BrokerageLogos />
-      </LandingErrorBoundary>
-
       <LandingErrorBoundary name="SocialLedgerSection">
         <SocialLedgerSection />
       </LandingErrorBoundary>
 
-      {/* Pinned seven-dimensions walkthrough, between the Social Ledger section
-          and the Why Ezana Finance grid. */}
+      <LandingErrorBoundary name="BrokerageLogos">
+        <BrokerageLogos />
+      </LandingErrorBoundary>
+
+      {/* Sonar band, directly below Integrations: the emerald signal band that
+          shows a ping sweeping eight datasets into a cited briefing. */}
+      <LandingErrorBoundary name="SonarSection">
+        <SonarSection />
+      </LandingErrorBoundary>
+
+      {/* Pinned seven-dimensions walkthrough, between the Sonar band and the
+          Why Ezana Finance grid. */}
       <LandingErrorBoundary name="DimensionScrollSection">
         <DimensionScrollSection />
       </LandingErrorBoundary>
@@ -119,10 +125,6 @@ export default function HomePage() {
         <div id="features-section-container">
           <WhyEzanaSection />
         </div>
-      </LandingErrorBoundary>
-
-      <LandingErrorBoundary name="ResourcesSection">
-        <ResourcesSection />
       </LandingErrorBoundary>
 
       <LandingErrorBoundary name="Faq1">

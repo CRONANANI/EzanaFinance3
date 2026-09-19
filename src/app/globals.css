@@ -945,18 +945,16 @@ body:not(.light-mode) .checklist-trigger-btn:focus-visible {
     background-color: var(--nav-bg-solid);
     scroll-behavior: smooth;
   }
-  /* Anchor jumps (#features/#resources/#faq from the sticky top nav) must land
+  /* Anchor jumps (#features/#faq from the sticky top nav) must land
      BELOW the fixed navbar (~80px), not underneath it. Applied to the in-page
      section targets so the heading isn't clipped by the nav on scroll. */
   #features,
-  #resources,
   #faq,
   #heroSection {
     scroll-margin-top: 80px;
   }
   @media (max-width: 768px) {
     #features,
-    #resources,
     #faq,
     #heroSection {
       scroll-margin-top: 72px;
@@ -2715,6 +2713,7 @@ html:has(.landing-page) .navbar.navbar-sticky,
 .landing-page .features-section,
 .landing-page .sled-section,
 .landing-page .dimension-scroll-section,
+.landing-page .snr-band,
 .landing-page .resources-section {
   padding-top: calc(var(--landing-gap) / 2);
   padding-bottom: calc(var(--landing-gap) / 2);

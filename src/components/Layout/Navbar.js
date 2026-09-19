@@ -541,11 +541,6 @@ export function Navbar() {
               </a>
             </li>
             <li className="nav-item">
-              <a href="/#resources" className="nav-link">
-                Resources
-              </a>
-            </li>
-            <li className="nav-item">
               <a href="/pricing" className="nav-link">
                 Pricing
               </a>
@@ -696,15 +691,6 @@ export function Navbar() {
                   >
                     <i className="bi bi-grid" />
                     <span>Features</span>
-                    <i className="bi bi-chevron-right mobile-nav-chevron" />
-                  </a>
-                  <a
-                    href="/#resources"
-                    className="mobile-nav-link"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <i className="bi bi-database" />
-                    <span>Resources</span>
                     <i className="bi bi-chevron-right mobile-nav-chevron" />
                   </a>
                   <a

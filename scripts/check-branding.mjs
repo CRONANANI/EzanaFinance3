@@ -35,6 +35,11 @@ const EXEMPT = [
   // The Learning Center hub's scoped shell, which mirrors .bs-shell above:
   // local design constants for one surface, not app tokens.
   /lc2-design-tokens\.css$/,
+  // The Sonar landing band, same precedent again: the band inverts the palette
+  // and supplies its own ground, so it declares a private --snr-* system on its
+  // root. The two brand hexes here are the gradient's lightest stop and the
+  // emerald fill, which the band's contrast table is measured against.
+  /sonar-band\.css$/,
   /dataset-type\.css$/,
   /dimension-scroll\.css$/,
   /hero-device-showcase\.css$/,
