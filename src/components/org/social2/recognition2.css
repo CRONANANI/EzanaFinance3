@@ -141,8 +141,8 @@
   flex: 0 0 auto;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.82rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: var(--text-primary);
 }
 .rec2-delta-pos {
@@ -311,8 +311,8 @@
 .rec2-stat-value {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.95rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: var(--text-primary);
 }
 
@@ -413,8 +413,8 @@
 .rec2-cat-score {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.78rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: var(--text-primary);
 }
 .rec2-cat-pending {
@@ -589,7 +589,7 @@
 .rec2-weight-total {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.72rem;
+  font-size: var(--type-value-sm-size);
   color: var(--text-muted);
   margin-top: 0.4rem;
 }

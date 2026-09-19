@@ -370,8 +370,8 @@ body.light-mode .shm-tile--clickable.shm-tile--clickable:hover {
 
 .shm-tile-value {
   font-family: var(--font-mono);
-  font-size: 1.125rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   font-variant-numeric: tabular-nums;
   color: var(--home-heading);
   line-height: 1;
@@ -629,8 +629,8 @@ body.light-mode .stc-input {
 
 .stc-result-value {
   font-family: var(--font-mono);
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   font-variant-numeric: tabular-nums;
 }
 
@@ -981,8 +981,8 @@ body.light-mode .mc-lock-title {
 
 .reg-value {
   font-family: var(--font-mono);
-  font-size: 0.8125rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   font-variant-numeric: tabular-nums;
   color: var(--text-primary);
 }
@@ -1151,8 +1151,8 @@ body.light-mode .stc-tab-btn.is-active {
 
 .shm-sector-pct {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   font-variant-numeric: tabular-nums;
   text-align: right;
 }

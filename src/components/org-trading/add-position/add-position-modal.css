@@ -290,8 +290,8 @@
 .apm-org-account-balance {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: var(--text-primary);
 }
 

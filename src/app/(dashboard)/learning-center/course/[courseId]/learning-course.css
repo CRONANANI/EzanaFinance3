@@ -1078,8 +1078,8 @@ body.light-mode .lc-edit-tickerchart {
 .lc-edit-ticker-stat-value {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 13px;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: var(--text-primary);
 }
 .lc-edit-ticker-stat-divider {
@@ -1466,7 +1466,7 @@ body.light-mode .lc-edit-finstmt {
 .lc-edit-finstmt-delta {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 12px;
+  font-size: var(--type-value-sm-size);
 }
 .lc-edit-finstmt-pos {
   color: var(--positive);

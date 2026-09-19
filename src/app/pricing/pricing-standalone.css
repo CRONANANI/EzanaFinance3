@@ -821,7 +821,7 @@
 .pricing-partner-price .plan-price-amount {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 1.35rem; /* down from 2.25rem */
+  font-size: var(--type-value-sm-size); /* down from 2.25rem */
   color: var(--emerald, var(--emerald));
 }
 .pricing-partner-price .plan-price-interval {
@@ -871,8 +871,8 @@
   /* brand guide: sans for text (these read as labels, not tabular figures) (Fix 3) */
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 1.15rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: var(--text-primary);
 }
 .pricing-partner-rate-label {

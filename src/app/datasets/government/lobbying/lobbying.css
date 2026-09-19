@@ -317,9 +317,9 @@
 .lbx-stat-value {
   margin-top: 6px;
   font-family: var(--font-mono);
-  font-weight: 600;
+  font-weight: var(--type-value-sm-weight);
   font-variant-numeric: tabular-nums;
-  font-size: 1.35rem;
+  font-size: var(--type-value-sm-size);
   line-height: 1.15;
   color: var(--text-primary);
   overflow-wrap: anywhere;
@@ -541,8 +541,8 @@
 .lbx-donut-num {
   font-variant-numeric: tabular-nums;
   font-family: var(--font-mono);
-  font-weight: 700;
-  font-size: 17px;
+  font-weight: var(--type-value-sm-weight);
+  font-size: var(--type-value-sm-size);
   fill: var(--text-primary);
 }
 .lbx-donut-lbl {
@@ -1044,9 +1044,9 @@
 }
 .lbx-cc-price {
   font-family: var(--font-mono);
-  font-weight: var(--ds-type-strong);
+  font-weight: var(--type-value-sm-weight);
   font-variant-numeric: tabular-nums;
-  font-size: 1.2rem;
+  font-size: var(--type-value-sm-size);
   color: var(--text-primary);
 }
 .lbx-cc-chart {

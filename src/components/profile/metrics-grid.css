@@ -116,7 +116,7 @@ body.light-mode .mg-card {
 .mg-grid-compact .mg-value {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 1.0625rem;
+  font-size: var(--type-value-sm-size);
   line-height: 1.05;
 }
 

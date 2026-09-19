@@ -519,7 +519,7 @@
 .op-char-count {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.65rem;
+  font-size: var(--type-value-sm-size);
   color: #6b7280;
 }
 

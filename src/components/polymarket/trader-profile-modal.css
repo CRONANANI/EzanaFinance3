@@ -207,8 +207,8 @@
 
 .tpm-stat-value {
   font-family: var(--font-mono);
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
   color: var(--text-primary);
@@ -310,7 +310,7 @@
 
 .tpm-cat-count {
   font-family: var(--font-mono);
-  font-size: 0.65rem;
+  font-size: var(--type-value-sm-size);
   color: var(--text-faint);
   font-variant-numeric: tabular-nums;
 }

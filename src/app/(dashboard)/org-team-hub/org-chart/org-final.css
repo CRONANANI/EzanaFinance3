@@ -156,8 +156,8 @@ body.light-mode .ox-root {
 }
 .ox-stat-value {
   font-family: var(--font-mono);
-  font-size: 17px;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: var(--ox-text);
   margin-top: 6px;
   font-variant-numeric: tabular-nums;
@@ -614,7 +614,7 @@ body.light-mode .ox-root {
 .oxr-seg-count {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 10px;
+  font-size: var(--type-value-sm-size);
   letter-spacing: 0.1em;
   color: var(--ox-faint);
 }
@@ -942,8 +942,8 @@ body.light-mode .ox-root {
 .ox-committee-count {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 10px;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   padding: 1px 6px;
   border-radius: 999px;
   background: var(--emerald-bg);
@@ -1095,7 +1095,7 @@ body.light-mode .ox-root {
   margin-left: auto;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 10px;
+  font-size: var(--type-value-sm-size);
   color: var(--ox-faint);
   flex-shrink: 0;
 }

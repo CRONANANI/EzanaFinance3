@@ -179,8 +179,8 @@
 .wm-hl-score {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 18px;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: var(--info);
 }
 .wm-hl-filer {

@@ -452,8 +452,8 @@ body.light-mode .bm-lm-footer {
 
 .bm-modal-kpi-value {
   font-family: var(--font-mono);
-  font-size: 0.95rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: var(--bm-heading);
   font-variant-numeric: tabular-nums;
 }

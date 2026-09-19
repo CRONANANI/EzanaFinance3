@@ -194,8 +194,8 @@ body.light-mode .home-terminal-body {
   margin-left: auto;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.625rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
 }
 .hts-ticker-pct.positive {
   color: var(--emerald);
@@ -220,8 +220,8 @@ body.light-mode .home-terminal-body {
 .hts-streak-num {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: #f0f6fc;
   letter-spacing: -0.03em;
 }
@@ -362,8 +362,8 @@ body.light-mode .home-terminal-body {
 .hts-sector-pct {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.625rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   text-align: right;
 }
 .hts-sector-pct.positive {
@@ -429,8 +429,8 @@ body.light-mode .home-terminal-body {
 .hts-activity-score {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: var(--emerald);
   text-align: center;
   margin: 0.25rem 0;
@@ -941,8 +941,8 @@ body.light-mode .hts-week-index-legend-btn.is-active {
 .hts-week-sentiment-pct {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.6875rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: var(--emerald);
   white-space: nowrap;
 }
@@ -1159,14 +1159,14 @@ body.light-mode .hts-week-standing-row {
 .hts-week-position-value {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.6875rem;
+  font-size: var(--type-value-sm-size);
   color: var(--home-muted-soft);
 }
 .hts-week-position-change {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.6875rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
 }
 .hts-week-position-change.positive {
   color: var(--emerald);
@@ -1467,8 +1467,8 @@ body.light-mode .home-top-movers-card .hts-mover-row:hover {
 
 .home-terminal-body .home-num-change {
   font-family: var(--font-mono);
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   margin: 0 0 1rem;
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum' 1;
@@ -1498,8 +1498,8 @@ body.light-mode .home-top-movers-card .hts-mover-row:hover {
 
 .home-portfolio-gain-value {
   font-family: var(--font-mono);
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   letter-spacing: -0.03em;
   line-height: 1.1;
   color: var(--home-heading);
@@ -1626,7 +1626,7 @@ body.light-mode .home-top-movers-card .hts-mover-row:hover {
 .hts-events-cal-day-num {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.58rem;
+  font-size: var(--type-value-sm-size);
   line-height: 1;
   color: var(--home-muted);
 }
@@ -1786,8 +1786,8 @@ body.light-mode .hts-events-warn {
   color: var(--emerald);
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.55rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   letter-spacing: 0;
 }
 
@@ -2002,9 +2002,9 @@ body.light-mode .hts-events-warn {
 
 .hts-week-corr-value {
   font-family: var(--font-mono);
-  font-weight: 700;
+  font-weight: var(--type-value-sm-weight);
   font-variant-numeric: tabular-nums;
-  font-size: 0.8125rem;
+  font-size: var(--type-value-sm-size);
   letter-spacing: -0.02em;
 }
 

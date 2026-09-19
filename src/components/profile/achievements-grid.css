@@ -39,9 +39,9 @@ body.light-mode .ag-card {
 .ag-count {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.6875rem;
+  font-size: var(--type-value-sm-size);
   color: var(--text-muted);
-  font-weight: 600;
+  font-weight: var(--type-value-sm-weight);
 }
 
 .ag-progress {
@@ -421,7 +421,7 @@ body.light-mode .ag-footer {
 .ag-card-compact .ag-count {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.625rem;
+  font-size: var(--type-value-sm-size);
 }
 
 .ag-card-compact .ag-progress {

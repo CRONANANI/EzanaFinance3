@@ -369,8 +369,8 @@
   display: flex;
   align-items: center;
   gap: 0.125rem;
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   padding: 0.25rem 0.625rem;
@@ -390,7 +390,7 @@
 .po-primary-change i {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 1rem;
+  font-size: var(--type-value-sm-size);
 }
 
 /* Secondary stats row */
@@ -422,8 +422,8 @@
 .po-secondary-value {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: #f0f6fc;
   display: block;
   margin-bottom: 0.25rem;
@@ -548,8 +548,8 @@
 }
 
 .po-trader-pct {
-  font-size: 0.6875rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: var(--emerald);
   background: var(--emerald-bg-hover);
   padding: 0.2rem 0.5rem;

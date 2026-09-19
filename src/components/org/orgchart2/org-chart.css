@@ -57,8 +57,8 @@
 .oc2-term-stat-value {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 1.35rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: var(--text-primary);
   line-height: 1;
 }

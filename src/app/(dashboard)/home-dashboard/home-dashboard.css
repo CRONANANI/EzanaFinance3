@@ -252,8 +252,8 @@ a.db-icon-btn {
 .db-hero-change {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   margin-top: 0.25rem;
   display: inline-flex;
   align-items: center;
@@ -303,8 +303,8 @@ a.db-icon-btn {
 .db-hero-stat-value {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: #f0f6fc;
 }
 
@@ -535,8 +535,8 @@ a.db-icon-btn {
 .db-holding-value {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: #f0f6fc;
   margin-bottom: 0.2rem;
   line-height: 1.2;
@@ -551,8 +551,8 @@ a.db-icon-btn {
 .db-holding-change {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.625rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
 }
 .db-holding-change.positive {
   color: var(--emerald);
@@ -564,9 +564,9 @@ a.db-icon-btn {
 .db-holding-qty {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.5625rem;
+  font-size: var(--type-value-sm-size);
   color: var(--db-muted-ink);
-  font-weight: 600;
+  font-weight: var(--type-value-sm-weight);
 }
 
 /* ── Watchlist ── */
@@ -633,8 +633,8 @@ a.db-icon-btn {
 .db-watchlist-price {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.8125rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: #e2e8f0;
   display: block;
 }
@@ -642,8 +642,8 @@ a.db-icon-btn {
 .db-watchlist-change {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.625rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   display: block;
 }
 .db-watchlist-change.positive {
@@ -699,8 +699,8 @@ a.db-icon-btn {
 
 .db-profits-summary-value {
   font-family: var(--font-mono);
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
@@ -844,8 +844,8 @@ body.light-mode .db-profits-legend-scroll .db-profits-legend-item {
 .db-legend-pct {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: #e2e8f0;
 }
 
@@ -936,7 +936,7 @@ body.light-mode .db-profits-legend-scroll .db-profits-legend-item {
 .db-sector-pct {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.5625rem;
+  font-size: var(--type-value-sm-size);
   color: var(--db-muted);
   display: block;
 }
@@ -944,8 +944,8 @@ body.light-mode .db-profits-legend-scroll .db-profits-legend-item {
 .db-sector-value {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.8125rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: #f0f6fc;
 }
 
@@ -1028,8 +1028,8 @@ body.light-mode .db-profits-legend-scroll .db-profits-legend-item {
 .db-tx-amount {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
 }
 .db-tx-amount.positive {
   color: var(--emerald);
@@ -1582,7 +1582,7 @@ body.light-mode .db-hero-tf-pill.active {
 .db-sector-drawer-shares {
   color: #6b7280;
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--type-value-sm-size);
   font-variant-numeric: tabular-nums;
 }
 
@@ -1595,14 +1595,14 @@ body.light-mode .db-hero-tf-pill.active {
 .db-sector-drawer-value {
   color: #f0f6fc;
   font-family: var(--font-mono);
-  font-size: 0.8rem;
-  font-weight: 600;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   font-variant-numeric: tabular-nums;
 }
 .db-sector-drawer-pnl {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  font-weight: 600;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   font-variant-numeric: tabular-nums;
 }
 .db-sector-drawer-pnl.positive {
@@ -1631,8 +1631,8 @@ body.light-mode .db-sector-drawer-item {
 .db-sector-card .db-sector-total {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.625rem;
-  font-weight: 600;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--db-muted);
@@ -1739,7 +1739,7 @@ body.light-mode .db-sector-drawer-item {
 .db-sector-pie-tooltip-pct {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.6875rem;
+  font-size: var(--type-value-sm-size);
   color: #9ca3af;
   margin-top: 0.1rem;
 }
@@ -2227,7 +2227,7 @@ body.light-mode .market-pulse-sector-row:hover {
   color: var(--text-muted);
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.625rem;
+  font-size: var(--type-value-sm-size);
 }
 
 .db-sector-holding-value {

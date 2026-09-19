@@ -573,8 +573,8 @@
 .gcx-metric-value {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 16px;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   letter-spacing: -0.02em;
   line-height: 1.1;
   color: var(--text-primary);

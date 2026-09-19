@@ -140,8 +140,8 @@ body.light-mode .cds-page {
 .cds-kpi-value {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 18px;
-  font-weight: 600;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   margin-top: 4px;
 }
 .cds-kpi-sub {
@@ -285,7 +285,7 @@ body.light-mode .cds-page {
 .cds-agency-pct {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 11px;
+  font-size: var(--type-value-sm-size);
   text-align: right;
   color: var(--text-muted);
 }
@@ -470,7 +470,7 @@ a.cds-plat-row:hover {
 .cds-plat-score {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 11px;
+  font-size: var(--type-value-sm-size);
   text-align: right;
 }
 .cds-footnote {
@@ -534,8 +534,8 @@ a.cds-plat-row:hover {
 .cds-award-amount {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
 }
 
 /* ── 8 · footer ── */

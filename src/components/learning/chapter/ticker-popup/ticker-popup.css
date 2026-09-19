@@ -105,15 +105,15 @@ body.light-mode .lc-ticker-popup {
 .lc-ticker-popup-price {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: var(--text-primary);
 }
 .lc-ticker-popup-change {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.8125rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
 }
 .lc-ticker-popup-change.is-positive {
   color: var(--positive, var(--emerald));

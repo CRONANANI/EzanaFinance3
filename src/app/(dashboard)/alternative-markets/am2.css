@@ -319,8 +319,8 @@
 
 .am2-pct {
   font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   display: inline-flex;
   align-items: center;
   gap: 3px;
@@ -359,8 +359,8 @@
   padding: 3px 8px;
   border-radius: 999px;
   font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 600;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   font-variant-numeric: tabular-nums;
 }
 .am2-badge-pct--up {
@@ -611,8 +611,8 @@
 
 .am2-table-num {
   font-family: var(--font-mono);
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
 }
@@ -705,8 +705,8 @@
 
 .am2-mover-price {
   font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: var(--text-primary);
   text-align: right;
   font-variant-numeric: tabular-nums;
@@ -739,7 +739,7 @@
   gap: 8px;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 12px;
+  font-size: var(--type-value-sm-size);
   color: var(--text-faint);
 }
 
@@ -944,8 +944,8 @@
 
 .am2-onchain-value {
   font-family: var(--font-mono);
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
 }

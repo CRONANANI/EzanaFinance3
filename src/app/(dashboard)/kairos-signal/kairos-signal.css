@@ -230,8 +230,8 @@
 .kairos-mini-stat-value {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.9rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: #e2e8f0;
 }
 
@@ -246,8 +246,8 @@
 .kairos-mini-stat-value small {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.65rem;
-  font-weight: 500;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: #6b7280;
 }
 

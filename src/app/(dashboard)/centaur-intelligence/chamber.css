@@ -252,8 +252,8 @@
   margin-top: 0.2rem;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.68rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: #e2e8f0;
 }
 

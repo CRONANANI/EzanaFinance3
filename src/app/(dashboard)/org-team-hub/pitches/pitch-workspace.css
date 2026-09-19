@@ -40,8 +40,8 @@
 .pw-stat-value {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: var(--text-primary);
 }
 .pw-stat-value.is-amber {
@@ -184,7 +184,7 @@
   margin-left: auto;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.7rem;
+  font-size: var(--type-value-sm-size);
   color: var(--text-faint);
 }
 .pw-col-body {
@@ -687,8 +687,8 @@
 .pgate-count {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: var(--text-primary);
 }
 .pgate-count-label {
@@ -861,7 +861,7 @@
 .pmodel-count {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.75rem;
+  font-size: var(--type-value-sm-size);
   color: var(--text-secondary);
 }
 .pmodel-empty-note {
@@ -1279,7 +1279,7 @@
 .pxdesk-object-count {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.72rem;
+  font-size: var(--type-value-sm-size);
   color: var(--text-faint);
 }
 .pxdesk-object-actions {
@@ -1351,8 +1351,8 @@
 .psignoff-count {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.82rem;
-  font-weight: 600;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: var(--text-primary);
   white-space: nowrap;
 }
@@ -1737,7 +1737,7 @@
   margin: 0;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.82rem;
+  font-size: var(--type-value-sm-size);
   line-height: 1.45;
   color: var(--text-primary);
   white-space: pre-wrap;
@@ -1944,8 +1944,8 @@
 .pvote-quorum-count .pvote-num {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 1.35rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: var(--text-primary);
 }
 .pvote-quorum-sep,

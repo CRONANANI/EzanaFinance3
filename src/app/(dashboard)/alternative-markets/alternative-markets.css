@@ -98,8 +98,8 @@
 .am-page .am-stat-price {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 1.2rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: #f0f6fc;
   font-feature-settings: 'tnum' 1;
 }
@@ -455,7 +455,7 @@
 .am-page .am-sentiment-count {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.75rem;
+  font-size: var(--type-value-sm-size);
   color: #6b7280;
   margin: 0 0 0.5rem;
 }

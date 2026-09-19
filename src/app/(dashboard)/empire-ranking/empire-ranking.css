@@ -422,8 +422,8 @@ body.light-mode .er-select {
 .er-cycle-stat-value {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: var(--er-text-primary);
 }
 
@@ -838,8 +838,8 @@ body.light-mode .er-multiselect-menu {
 .er-slider-end,
 .er-slider-value {
   font-family: var(--font-mono);
-  font-size: 0.62rem;
-  font-weight: 600;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: var(--er-text-muted);
   font-variant-numeric: tabular-nums;
   min-width: 2.5rem;

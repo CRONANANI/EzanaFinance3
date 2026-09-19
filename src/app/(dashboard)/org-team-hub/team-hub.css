@@ -72,8 +72,8 @@
 .th-hero-stat-value {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: #f0f6fc;
 }
 
@@ -668,8 +668,8 @@
 .th-stat-value {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 1.15rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: #f0f6fc;
 }
 
@@ -758,7 +758,7 @@
 .th-ranking-value {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.65rem;
+  font-size: var(--type-value-sm-size);
   color: #6b7280;
   margin-bottom: 0.35rem;
 }

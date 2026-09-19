@@ -580,8 +580,8 @@ select.trd-input {
 .trd-account-value {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: #f0f6fc;
 }
 
@@ -610,8 +610,8 @@ select.trd-input {
 .trd-donut-value {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: #f0f6fc;
 }
 .trd-donut-label {
@@ -711,7 +711,7 @@ select.trd-input {
 .trd-position-qty {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.625rem;
+  font-size: var(--type-value-sm-size);
   color: #6b7280;
 }
 .trd-position-mid {
@@ -728,7 +728,7 @@ select.trd-input {
 .trd-position-price {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.5625rem;
+  font-size: var(--type-value-sm-size);
   color: #4b5563;
 }
 .trd-position-right {
@@ -1283,8 +1283,8 @@ body.light-mode .trd-search-symbol {
   justify-content: center;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: #6b7280;
   flex-shrink: 0;
 }

@@ -157,7 +157,7 @@
   border-bottom-color: var(--emerald);
 }
 .c2-tab-count {
-  font-size: 0.72rem;
+  font-size: var(--type-value-sm-size);
   background: var(--emerald-bg);
   color: var(--emerald-text);
   border-radius: 999px;

@@ -25,8 +25,8 @@
 .cmp2-breach-chip .cmp2-num {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 1.05rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
 }
 .cmp2-breach-chip--hard {
   border-color: var(--danger-border, rgba(239, 68, 68, 0.4));

@@ -344,7 +344,7 @@ body.light-mode .pcl-empty {
 
 .pcl-day-count {
   font-family: var(--font-mono);
-  font-size: 0.5625rem;
+  font-size: var(--type-value-sm-size);
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
 }

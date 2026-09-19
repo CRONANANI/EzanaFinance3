@@ -101,8 +101,8 @@
 
 .pec-peak-value {
   font-family: var(--font-mono);
-  font-size: 1.125rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
   line-height: 1;
@@ -215,8 +215,8 @@
 .pec-spark-tooltip-delta {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-weight: 700;
-  font-size: 0.625rem;
+  font-weight: var(--type-value-sm-weight);
+  font-size: var(--type-value-sm-size);
 }
 
 .pec-spark-tooltip-delta.is-up {

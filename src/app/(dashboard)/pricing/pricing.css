@@ -197,8 +197,8 @@ body.light-mode .pricing-card.professional h3 {
 .pricing-price span {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: #6b7280;
 }
 

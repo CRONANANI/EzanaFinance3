@@ -189,8 +189,8 @@
 
 .hp-stat-value {
   font-family: var(--font-mono);
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;

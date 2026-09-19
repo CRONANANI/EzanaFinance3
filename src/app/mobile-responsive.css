@@ -476,7 +476,7 @@ body.light-mode .mobile-auth-drawer .mobile-drawer-logout:hover {
   .stat-value {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
-    font-size: 1.25rem;
+    font-size: var(--type-value-sm-size);
   }
 
   .stat-label {

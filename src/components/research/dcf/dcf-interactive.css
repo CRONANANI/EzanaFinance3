@@ -234,7 +234,7 @@ body.dark-mode .dcf-chip-value,
 .dcf-chip-value {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.65rem;
+  font-size: var(--type-value-sm-size);
 }
 
 .dcf-chip-popover {
@@ -532,8 +532,8 @@ body.dark-mode .dcf-chart-area,
 
 .dcf-chart-bar-value {
   font-family: var(--font-mono);
-  font-size: 0.9375rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
   text-align: right;
@@ -764,7 +764,7 @@ body.dark-mode .dcf-delta-row-track,
 .dcf-delta-row.primary .dcf-delta-row-value {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 1rem;
+  font-size: var(--type-value-sm-size);
 }
 
 .dcf-delta-divider {

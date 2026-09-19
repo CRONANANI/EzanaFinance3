@@ -118,15 +118,15 @@
 .ot-team-card-aum {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: var(--text-primary);
 }
 
 .ot-team-card-change {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.75rem;
+  font-size: var(--type-value-sm-size);
 }
 
 .ot-team-card-change.positive {
@@ -804,8 +804,8 @@ html.light-mode .ctd-card {
 .ctd-donut-total {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 1.35rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: var(--text-primary);
 }
 .ctd-donut-label {
@@ -829,8 +829,8 @@ html.light-mode .ctd-card {
 .ctd-delta b {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.8rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   opacity: 0.85;
 }
 .pos,
@@ -1356,8 +1356,8 @@ html.light-mode .ctd-kpi {
 .ot-dossier-stat-value {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.95rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: var(--text-primary);
 }
 

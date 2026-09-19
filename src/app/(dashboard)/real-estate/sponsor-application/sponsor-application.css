@@ -109,8 +109,8 @@
   justify-content: center;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.5rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   background: var(--bg-tertiary);
 }
 
@@ -322,8 +322,8 @@
 .sa-review-value {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.7rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: #f0f6fc;
   margin-top: 0.1rem;
 }

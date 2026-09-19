@@ -542,8 +542,8 @@ button:active:not(:disabled) {
   margin: 0.65rem 0 0 0;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.9rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   line-height: 1.5;
   color: #ffffff !important;
   opacity: 1;

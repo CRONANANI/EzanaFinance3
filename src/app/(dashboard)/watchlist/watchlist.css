@@ -176,8 +176,8 @@
 .wl-strip-price {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.9375rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: var(--foreground);
   font-feature-settings: 'tnum' 1;
   letter-spacing: -0.02em;
@@ -887,8 +887,8 @@
 .wl-si-price {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.6875rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: var(--foreground);
   font-feature-settings: 'tnum' 1;
   display: block;
@@ -973,7 +973,7 @@
   .wl-strip-price {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
-    font-size: 0.8125rem;
+    font-size: var(--type-value-sm-size);
   }
   .wl-strip-assets {
     display: none;

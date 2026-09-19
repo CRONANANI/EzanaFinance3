@@ -167,7 +167,7 @@ body:not(.light-mode) .cr-model-premium-star {
 }
 
 .cr-news-chain-count {
-  font-size: 0.5625rem;
+  font-size: var(--type-value-sm-size);
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   color: #6b7280;

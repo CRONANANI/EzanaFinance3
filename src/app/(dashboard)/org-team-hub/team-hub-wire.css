@@ -1255,7 +1255,7 @@ html.light-mode .thw-cal-card {
 .thw-setup-count {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.72rem;
+  font-size: var(--type-value-sm-size);
   color: var(--text-faint);
   margin-left: auto;
 }

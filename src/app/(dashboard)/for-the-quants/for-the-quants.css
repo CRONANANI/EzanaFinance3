@@ -59,8 +59,8 @@
 .ftq-stat-value {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.85rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: #f0f6fc;
   font-feature-settings: 'tnum' 1;
   line-height: 1.1;
@@ -1172,8 +1172,8 @@ body.light-mode .ftq-pm-input {
   margin-left: auto;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-weight: 700;
-  font-size: 0.7rem;
+  font-weight: var(--type-value-sm-weight);
+  font-size: var(--type-value-sm-size);
 }
 .ftq-expl-pnl.positive {
   color: var(--emerald);

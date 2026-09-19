@@ -14,6 +14,9 @@ import '../../../help-center.css';
 
 const BASE = '/help-center/user';
 const PROSE_ID = 'hc-article-body';
+/* Sanitized form of the placeholder the content module emits; DOMPurify keeps
+   the div and its id, so a plain string split is enough. */
+const LIVE_TABLE_MARKER = '<div id="hc-live-tables"></div>';
 
 /* ~200 words per minute, floored at 1, computed from the stripped body. */
 function readTime(html) {
@@ -115,15 +118,28 @@ export default function UserHelpArticlePage() {
             {article.updated ? <span>Updated {article.updated}</span> : null}
           </p>
 
-          <div
-            id={PROSE_ID}
-            className="hc-prose max-w-none"
-            dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content) }}
-          />
-
-          {/* The live capability tables belong to this one article; the static
-              fallback inside the component covers the API being unavailable. */}
-          {slug === 'brokerage-access-levels' && <BrokerageAccessTable />}
+          {/* One article hosts a live React table mid-prose. Splitting the
+              sanitized HTML on its marker puts the tables under the heading
+              that announces them instead of after the whole article. Both
+              halves stay inside #hc-article-body so the table of contents
+              still sees every heading. The static fallback inside the
+              component covers the API being unavailable. */}
+          <div id={PROSE_ID} className="hc-prose max-w-none">
+            {(() => {
+              const html = sanitizeHtml(article.content);
+              const [before, after] = html.split(LIVE_TABLE_MARKER);
+              if (after === undefined) {
+                return <div dangerouslySetInnerHTML={{ __html: html }} />;
+              }
+              return (
+                <>
+                  <div dangerouslySetInnerHTML={{ __html: before }} />
+                  <BrokerageAccessTable />
+                  <div dangerouslySetInnerHTML={{ __html: after }} />
+                </>
+              );
+            })()}
+          </div>
 
           {relatedArticles.length > 0 && (
             <section className="hc-card mt-12 p-5">

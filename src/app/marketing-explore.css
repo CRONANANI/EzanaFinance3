@@ -226,8 +226,8 @@ body.light-mode .mkt-card {
   color: var(--emerald-text);
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.8125rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
 }
 
 .mkt-step h3 {
@@ -570,7 +570,7 @@ body.light-mode .mkt-card {
 .mkt-ds-leader-value {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.9375rem;
+  font-size: var(--type-value-sm-size);
 }
 
 /* honest sample label above the table */
@@ -951,7 +951,7 @@ body.light-mode .mkt-ds-table-wrap {
 .mkt-award-mod-num {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.6875rem;
+  font-size: var(--type-value-sm-size);
   color: var(--text-faint);
 }
 .mkt-award-mod-type {

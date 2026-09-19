@@ -719,7 +719,7 @@ a.sonar-mod-rowtitle:hover {
 .sonar-metric--sec .sonar-metric-price {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 19px;
+  font-size: var(--type-value-sm-size);
 }
 .sonar-metric-label {
   font-family: var(--font-mono);

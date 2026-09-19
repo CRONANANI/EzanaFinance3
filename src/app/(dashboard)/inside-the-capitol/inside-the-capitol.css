@@ -1375,8 +1375,8 @@ body.light-mode .itc-year-select option {
 .itc-13f-value {
   color: #f0f6fc;
   font-family: var(--font-mono);
-  font-size: 0.82rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   font-variant-numeric: tabular-nums;
 }
 
@@ -1643,8 +1643,8 @@ a.itc-top-perf-name:hover {
 .itc-top-perf-pct {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.65rem;
-  font-weight: 600;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: #8b949e;
   margin-top: 2px;
 }

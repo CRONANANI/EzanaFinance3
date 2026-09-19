@@ -439,8 +439,8 @@ body.sidebar-open .ma-fullscreen {
 }
 
 .ma-panel-item-price {
-  font-size: 0.6875rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   color: #f0f6fc;
@@ -448,8 +448,8 @@ body.sidebar-open .ma-fullscreen {
 }
 
 .ma-panel-item-change {
-  font-size: 0.5625rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
@@ -786,8 +786,8 @@ body.sidebar-open .ma-fullscreen {
 }
 
 .ma-ticker-price {
-  font-size: 0.5rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }

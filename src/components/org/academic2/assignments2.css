@@ -180,8 +180,8 @@ html.light-mode .asg2-metric {
 .asg2-metric-value {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 1.05rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   line-height: 1;
   color: var(--text-primary);
 }
@@ -397,7 +397,7 @@ html.light-mode .asg2-metric {
 .asg2-tab-count {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.66rem;
+  font-size: var(--type-value-sm-size);
   padding: 0 0.3rem;
   border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--text-muted) 18%, transparent);

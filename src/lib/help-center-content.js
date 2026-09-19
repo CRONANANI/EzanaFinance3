@@ -393,6 +393,10 @@ export const USER_ARTICLES = {
       '<div class="hc-callout"><strong>Note</strong>Read-only means exactly that: Ezana can see positions and history to power your dashboards, and can never move money, place orders, or change anything at your brokerage.</div>',
       '<h2>Current capabilities by brokerage</h2>',
       '<p>The tables below are generated live from our integration layer, so they always reflect current coverage. A brokerage listed under read &amp; write still requires you to authorize trading when you connect it; connecting without trading authorization keeps it read-only.</p>',
+      /* The live BrokerageAccessTable is rendered at this marker by
+         user/article/[slug]/page.js, so the tables sit under the heading that
+         announces them rather than after the article. */
+      '<div id="hc-live-tables"></div>',
       '<h2>Switching a read-only connection to read &amp; write</h2>',
       '<p>If your brokerage supports trading but you connected it read-only, open <a href="/help-center/user/article/managing-brokerage-connections">Settings &rarr; Integrations</a>, choose the connection, and reconnect with trading enabled. Your brokerage will ask you to re-authorize; nothing changes until you approve it there.</p>',
       '<div class="hc-callout hc-callout--caution"><strong>Caution</strong>A brokerage in maintenance mode may pause data refreshes or trading temporarily. Your money and positions at the brokerage are unaffected; only the connection to Ezana is paused.</div>',

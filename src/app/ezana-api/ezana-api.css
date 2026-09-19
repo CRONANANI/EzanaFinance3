@@ -326,8 +326,8 @@
   margin: 0.35rem 0 0.75rem;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 1.35rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
   color: var(--ea-emerald-text);
 }
 .ea-tier-feats {
@@ -578,8 +578,8 @@
   background: #ffffff;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.8125rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
 }
 .ea-qs-step > div {
   min-width: 0;
@@ -722,8 +722,8 @@
   color: #ffffff;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.8125rem;
-  font-weight: 700;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
 }
 .ea-step h3 {
   margin: 0.25rem 0 0.3rem;

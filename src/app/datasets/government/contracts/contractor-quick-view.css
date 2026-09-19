@@ -251,7 +251,7 @@ body.light-mode .cqv-root {
 .cqv-agency-pct {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 11px;
+  font-size: var(--type-value-sm-size);
   text-align: right;
   color: var(--text-muted);
 }
@@ -275,13 +275,13 @@ body.light-mode .cqv-root {
 .cqv-quote-price {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 20px;
-  font-weight: 600;
+  font-size: var(--type-value-sm-size);
+  font-weight: var(--type-value-sm-weight);
 }
 .cqv-quote-change {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 11px;
+  font-size: var(--type-value-sm-size);
   color: var(--emerald-text);
   margin: 2px 0 8px;
 }

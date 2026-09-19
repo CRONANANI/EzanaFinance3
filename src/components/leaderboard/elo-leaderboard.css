@@ -229,8 +229,8 @@
 .elo-lb-rating {
   text-align: center;
   font-family: var(--font-mono);
-  font-weight: 700;
-  font-size: 0.9375rem;
+  font-weight: var(--type-value-sm-weight);
+  font-size: var(--type-value-sm-size);
   font-variant-numeric: tabular-nums;
 }
 

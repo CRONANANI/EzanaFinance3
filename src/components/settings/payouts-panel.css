@@ -38,7 +38,7 @@
 .ppo-stat-value {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 1.1rem;
+  font-size: var(--type-value-sm-size);
   color: var(--text-primary);
 }
 
