@@ -113,6 +113,27 @@ body .dashboard-main-content {
   min-height: 100vh;
 }
 
+/* ── Outer gutters = same token ──
+   .dashboard-main is centered at --app-shell-max, so on wide viewports the
+   area beside it is html/body. Paint both through the same token,
+   deterministically via the layout's class tag (no :has() dependency), so
+   the canvas is seamless edge to edge on every authed route in all three
+   experiences, both modes. Market analysis stays dark because its body
+   class redefines --app-bg for that route.
+
+   The !important and the child combinator are both load-bearing, not habit:
+   app-legacy/assets/css/light-mode-fixes.css line 51 sets
+   `body.light-mode { background-color: #f8f9fb !important }`, and the course
+   route imports that sheet. That is the grey the gutters were showing. It has
+   the same (0,1,1) specificity as a bare `body.app-authed`, so an unweighted
+   rule would lose or win only by bundle order; `html.app-authed > body` is
+   (0,2,2) and settles it regardless of order. Scoped to authed routes only,
+   so legacy pages outside this segment keep their own canvas. */
+html.app-authed,
+html.app-authed > body.app-authed {
+  background-color: var(--app-bg) !important;
+}
+
 /* Belt-and-suspenders: paint the body too so any gap behind the
    wrapper (e.g. during route transitions) shows the right color. */
 body:has(.dashboard-main) {

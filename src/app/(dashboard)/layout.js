@@ -98,10 +98,20 @@ export default function DashboardLayout({ children }) {
       body.classList.remove('route-echo-article');
     }
 
+    /* Unconditional tag for the whole authed segment, on BOTH html and body.
+       .dashboard-main is centered at --app-shell-max, so on a viewport wider
+       than that the gutters beside it are html/body, not the shell. Painting
+       them from a real class rather than a :has() selector makes the canvas
+       deterministic edge to edge (see layout.css). */
+    body.classList.add('app-authed');
+    document.documentElement.classList.add('app-authed');
+
     return () => {
       body.classList.remove('route-regular-dashboard');
       body.classList.remove('route-market-analysis');
       body.classList.remove('route-echo-article');
+      body.classList.remove('app-authed');
+      document.documentElement.classList.remove('app-authed');
     };
   }, [isPartnerExperience, isMarketAnalysisFullscreen, isEchoArticle]);
 

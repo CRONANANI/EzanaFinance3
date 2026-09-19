@@ -20,27 +20,26 @@ export function isCourseFullyCompleted(row) {
 }
 
 /**
- * @param {Record<string, any>} progressById map course_id -> progress row
+ * Course access policy: every course is open to every user.
+ *
+ * The previous sequential gate (predecessor must be fully completed) locked
+ * users out of the catalog and produced the bare "This course is locked."
+ * page. Ordering still drives recommendations (next-up, resume) but never
+ * blocks access. The signature is kept so the three consumers (course GET
+ * route, progress POST route, hub state mapping) need no changes: the route
+ * now always returns unlocked: true, quiz submissions are accepted for any
+ * course, and the hub never assigns the 'locked' state.
+ *
+ * @param {object} course
+ * @param {Record<string, any>} _progressById map course_id -> progress row
  */
-export function canAccessCourse(course, progressById) {
-  const ordered = getOrderedCoursesForTrack(course.track);
-  const idx = ordered.findIndex((c) => c.id === course.id);
-  if (idx <= 0) return { ok: true };
-
-  const prev = ordered[idx - 1];
-  const prevDone = isCourseFullyCompleted(progressById[prev.id]);
-  if (!prevDone) {
-    return {
-      ok: false,
-      reason: 'Complete the previous course in this learning path first.',
-    };
-  }
+export function canAccessCourse(course, _progressById) {
   return { ok: true };
 }
 
 export function countCompletedInLevel(track, level, progressById) {
   return ALL_COURSES.filter((c) => c.track === track && c.level === level).filter((c) =>
-    isCourseFullyCompleted(progressById[c.id])
+    isCourseFullyCompleted(progressById[c.id]),
   ).length;
 }
 
