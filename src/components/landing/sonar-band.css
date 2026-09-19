@@ -83,6 +83,9 @@
 
   position: relative;
   width: 100%;
+  /* Load bearing: this is what slices the dossier card where it hangs past
+     the right edge of the page. Removing it un-pokes the design and adds a
+     horizontal scrollbar. */
   overflow: hidden;
   padding-left: 80px;
   padding-right: 80px;
@@ -246,7 +249,7 @@
 }
 
 .snr-col-left {
-  width: 520px;
+  width: 470px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -258,7 +261,9 @@
      leave, instead of the three widths having to sum to 1440 exactly. */
   width: auto;
   flex: 1 1 0;
-  min-width: 360px;
+  /* The orbital needs real room: below this the seven axis labels start to
+     collide with each other. */
+  min-width: 420px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -268,15 +273,42 @@
   width: 420px;
   flex-shrink: 0;
   box-sizing: border-box;
-  padding: 18px;
-  border-radius: var(--snr-r-panel);
+  /* Asymmetric: the extra right padding covers the 46px that hangs off-screen
+     plus 18px of clearance, so header and row text stop short of the clip line
+     instead of sitting exactly on it. Measured: content ends 18px inside the
+     viewport edge at 1440, 1600 and 2200. */
+  padding: 18px 64px 18px 20px;
+  border-radius: var(--snr-r-panel) 0 0 var(--snr-r-panel);
   background: var(--snr-panel-solid);
   border: 1px solid rgba(110, 231, 183, 0.3);
-  box-shadow: var(--snr-lift);
+  border-right: 0;
+  box-shadow:
+    -18px 0 44px rgba(2, 24, 18, 0.45),
+    var(--snr-lift);
   display: flex;
   flex-direction: column;
   gap: 12px;
   position: relative;
+  /* Poke past the page edge: cancel the band's 80px right padding, hang 46px
+     off-screen, and on viewports wider than the 1600px shell (1440 inner plus
+     2x80 padding) also swallow the centering gap between .snr-inner and the
+     band edge. 100vw includes the scrollbar gutter on some platforms; the
+     46px overhang absorbs that slack by design. */
+  margin-right: calc(-46px - 80px - max(0px, (100vw - 1600px) / 2));
+}
+
+/* Accent lip on the exposed edge so the card reads as an object entering the
+   frame rather than a clipped rectangle. */
+.snr-col-dossier::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 14px;
+  bottom: 14px;
+  width: 3px;
+  border-radius: 3px;
+  background: var(--snr-emerald);
+  opacity: 0.85;
 }
 
 /* ── ping bar ────────────────────────────────────────────────────────────── */
@@ -518,8 +550,9 @@
 
 .snr-foot {
   display: flex;
-  align-items: center;
-  gap: 14px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
 }
 
 /* Raised from the .58 token to .80 so the legally required line passes AA. */
@@ -528,7 +561,9 @@
   font-size: 11px;
   line-height: 1.5;
   color: var(--snr-text-muted);
-  flex-grow: 1;
+  /* The compliance line must read as one sentence on one line. About 70
+     characters at 11px, which fits the 470px column with room. */
+  white-space: nowrap;
 }
 
 .snr-cta {
@@ -1104,12 +1139,27 @@
     width: 100%;
   }
 
-  /* Undo the flex sizing from the three-column layout: min-width 360px would
+  /* Undo the flex sizing from the three-column layout: min-width 420px would
      overflow a narrow viewport once the columns stack. */
   .snr-col-radar {
     order: -1;
     flex: 0 0 auto;
     min-width: 0;
+  }
+
+  /* The poke is a three-column effect. Once everything stacks, the dossier
+     goes back in flow with a full border and radius: a card hanging off the
+     edge of a single-column stack just reads as broken. */
+  .snr-col-dossier {
+    margin-right: 0;
+    padding: 18px;
+    border-radius: var(--snr-r-panel);
+    border-right: 1px solid rgba(110, 231, 183, 0.3);
+    box-shadow: var(--snr-lift);
+  }
+
+  .snr-col-dossier::before {
+    display: none;
   }
 
   .snr-headline {
@@ -1146,10 +1196,10 @@
     display: none;
   }
 
-  .snr-foot {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
+  /* The compliance line is allowed to wrap only once the column is narrow
+     enough that one line would clip. */
+  .snr-footnote {
+    white-space: normal;
   }
 
   .snr-line,
@@ -1692,86 +1742,84 @@
   white-space: nowrap;
 }
 
-/* ── restored sonar rings centre piece ───────────────────────────────────── */
-/* Recipe carried over from the retired /sonar hero backdrop (.sonar-rings):
-   thin repeating radial ring lines over a soft radial glow, faded out by a
-   radial mask. Rescoped from a fixed full-viewport layer to a square that
-   fills the band's centre column. */
+/* ── orbital centre piece (PersonalizationRadar, scoped adaptation) ─────────
+   The component itself is untouched. These overrides re-ink it for the dark
+   band and rescale its SVG text for the roughly half-size render: the radar
+   was drawn for a light 1100px surface (viewBox 1120x760), and in the centre
+   column it lands around 480 to 560px wide. */
 
-.snr-rings-wrap {
-  position: relative;
+.snr-orbital {
   width: 100%;
-  max-width: 420px;
-  aspect-ratio: 1;
+  max-width: 560px;
   margin: 0 auto;
 }
 
-.snr-rings {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    repeating-radial-gradient(
-      circle at 50% 50%,
-      transparent 0 30px,
-      rgba(110, 231, 183, 0.28) 30px 31.5px,
-      transparent 31.5px 60px
-    ),
-    radial-gradient(
-      circle at 50% 50%,
-      rgba(110, 231, 183, 0.22) 0%,
-      rgba(110, 231, 183, 0.12) 26%,
-      rgba(110, 231, 183, 0.05) 46%,
-      transparent 64%
-    );
-  -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 0 52%, transparent 72%);
-  mask-image: radial-gradient(circle at 50% 50%, #000 0 52%, transparent 72%);
+/* Axis labels: the component sets 13.5px against var(--text-primary), tuned
+   for the light landing surface at full size. At half scale on the dark band
+   they would render near 6px and near black. */
+.snr-orbital .radar-ax-name {
+  font-size: 26px;
+  fill: var(--snr-text);
 }
 
-/* Expanding ping. Base style is the END frame (opacity 0, settled scale), so
-   reduced motion resolves to the composed frame when the sheet kills
-   animation, leaving the rings and hub visible and no pulse. */
-.snr-rings-pulse {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 60%;
-  height: 60%;
-  transform: translate(-50%, -50%) scale(1);
-  border-radius: 50%;
-  border: 1.5px solid rgba(110, 231, 183, 0.4);
-  opacity: 0;
-  pointer-events: none;
+.snr-orbital .radar-ax-name:hover,
+.snr-orbital .radar-ax-name--active {
+  fill: var(--snr-mint);
 }
 
-/* A quarter of the master cycle, so four pings land per loop and the piece
-   cannot drift against the rest of the choreography. */
-.snr-anim-ringpulse {
-  animation: snr-ringpulse calc(var(--snr-cycle) / 4) ease-out infinite;
+.snr-orbital .radar-hub-label {
+  font-size: 30px;
 }
 
-@keyframes snr-ringpulse {
+/* Grid rings, spokes and crosshair: the component strokes these with
+   var(--border-primary), which disappears against the emerald band. */
+.snr-orbital .radar-grid {
+  stroke: rgba(110, 231, 183, 0.28);
+}
+
+/* The desktop legend reads as clutter at this size, and its copy ("Your
+   weighting, learned as you engage") describes personalization, which is not
+   what this band is about.
+
+   Risk note: the legend row carries no dedicated class, so this targets the
+   Tailwind utilities on it. That is acceptable only because
+   PersonalizationRadar is frozen by convention: if it is ever edited, check
+   this selector still matches. It is scoped to .snr-orbital, so a miss hides
+   nothing elsewhere. */
+.snr-orbital .flex.justify-center.gap-5.mb-4 {
+  display: none;
+}
+
+/* ── click-triggered row pop ───────────────────────────────────────────────
+   Rows spring in from the page edge, matching the dossier's poke direction.
+   The snr-anim- prefix keeps the class inside the pause rule and the
+   reduced-motion kill automatically.
+
+   Specificity: the shared `.snr-band [class*='snr-anim-']` rule near the top
+   binds every timeline class to 15s linear infinite, and it would swallow
+   this 0.55s one-shot. Matching its (0,2,0) specificity and sitting later in
+   the sheet is what wins, without an !important. */
+.snr-band .snr-anim-rowpop {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+  animation-name: snrRowPop;
+  animation-duration: 0.55s;
+  animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation-iteration-count: 1;
+  animation-fill-mode: both;
+}
+
+@keyframes snrRowPop {
   0% {
-    transform: translate(-50%, -50%) scale(0.25);
-    opacity: 0.9;
+    opacity: 0;
+    transform: translateX(56px) scale(0.92);
   }
   70% {
-    opacity: 0.25;
+    opacity: 1;
+    transform: translateX(-4px) scale(1.02);
   }
   100% {
-    transform: translate(-50%, -50%) scale(1.05);
-    opacity: 0;
+    opacity: 1;
+    transform: translateX(0) scale(1);
   }
-}
-
-.snr-rings-hub {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 12px;
-  height: 12px;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  background: var(--snr-mint);
-  box-shadow: 0 0 18px rgba(110, 231, 183, 0.7);
 }

@@ -6,8 +6,9 @@
  * which is why this is a choreographed loop rather than a screenshot.
  *
  * Structure: an eyebrow row and headline block over three columns. The ping
- * bar and live synthesis panel sit on the left, the sonar rings (SonarRings)
- * in the centre, the sourced-matches dossier on the right.
+ * bar and live synthesis panel sit on the left, the original orbital radar
+ * (SonarOrbital, wrapping PersonalizationRadar unchanged) in the centre, and
+ * the sourced-matches dossier on the right, poking in from the page edge.
  *
  * Motion is one 15s CSS master timeline in sonar-band.css. Every sequenced
  * element shares var(--snr-cycle) and is keyed by percentage of it, so the radar
@@ -39,7 +40,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { SonarRings } from './SonarRings';
+import { SonarOrbital } from './SonarOrbital';
 import './sonar-band.css';
 
 /* Three short Lockheed Martin paragraphs. Link segments render as buttons
@@ -123,6 +124,11 @@ export function SonarSection() {
   /* Starts as the deterministic fallback so the server render and the first
      client render agree; real rows arrive after hydration. */
   const [rows, setRows] = useState(ROWS);
+  /* Bumped on an empty-query Ping press. Keying the row container by it
+     remounts the list, which is what restarts the CSS pop animation without
+     juggling classes. 0 means untouched, so the first paint and the 15s
+     master loop are exactly as before. */
+  const [pingPulse, setPingPulse] = useState(0);
 
   /* Viewport gating. Pausing rather than unmounting: unmounting restarts the
      loop mid-sequence on scroll back, which reads as broken. */
@@ -168,6 +174,15 @@ export function SonarSection() {
     return () => document.removeEventListener('keydown', onKey);
   }, [gateOpen]);
 
+  /* A real query still submits and navigates to /sonar. An empty press is the
+     demo trigger instead of a pointless empty search. */
+  function onPingSubmit(e) {
+    const q = e.currentTarget.elements?.q?.value?.trim();
+    if (q) return;
+    e.preventDefault();
+    setPingPulse((n) => n + 1);
+  }
+
   return (
     <section ref={bandRef} className={`snr-band${inView ? '' : ' snr-paused'}`}>
       <div className="snr-grid-layer" aria-hidden="true" />
@@ -190,7 +205,13 @@ export function SonarSection() {
 
         <div className="snr-cols">
           <div className="snr-col-left">
-            <form className="snr-pingbar" action="/sonar" method="get" role="search">
+            <form
+              className="snr-pingbar"
+              action="/sonar"
+              method="get"
+              role="search"
+              onSubmit={onPingSubmit}
+            >
               <i className="bi bi-search snr-pingbar-icon" aria-hidden="true" />
               <label className="snr-label-sr" htmlFor="snr-ping-input">
                 Ping a company, ticker, politician or bill
@@ -302,7 +323,7 @@ export function SonarSection() {
           </div>
 
           <div className="snr-col-radar">
-            <SonarRings />
+            <SonarOrbital />
           </div>
 
           <div className="snr-col-dossier" aria-hidden="true">
@@ -319,9 +340,13 @@ export function SonarSection() {
                 The dossier fills as each dataset returns.
               </p>
 
-              <div className="snr-rows">
-                {rows.map((r) => (
-                  <div key={`${r.tag}-${r.cls}`} className={`snr-row ${r.cls}`}>
+              <div className="snr-rows" key={pingPulse}>
+                {rows.map((r, i) => (
+                  <div
+                    key={`${r.tag}-${r.cls}`}
+                    className={`snr-row ${pingPulse === 0 ? r.cls : 'snr-anim-rowpop'}`}
+                    style={pingPulse === 0 ? undefined : { animationDelay: `${i * 0.12}s` }}
+                  >
                     <div className="snr-row-top">
                       <span className="snr-tag">{r.tag}</span>
                       <span className="snr-rule" />
@@ -333,7 +358,10 @@ export function SonarSection() {
               </div>
             </div>
 
-            <div className="snr-row-footer snr-anim-row5">
+            <div
+              className={`snr-row-footer ${pingPulse === 0 ? 'snr-anim-row5' : 'snr-anim-rowpop'}`}
+              style={pingPulse === 0 ? undefined : { animationDelay: `${rows.length * 0.12}s` }}
+            >
               <span className="snr-meta">13F, LOBBYING, WEB</span>
               <span className="snr-rule-soft" />
               <span className="snr-meta">3 MORE</span>
