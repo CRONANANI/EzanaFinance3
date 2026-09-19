@@ -1,0 +1,49 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Instrument universe.
+#
+# PROVENANCE WARNING — READ BEFORE USING THESE FOR A REPRODUCTION RUN.
+#
+# The HARLF paper states a universe of 14 global equity and commodity
+# instruments but the exact ticker list has NOT been transcribed from the PDF
+# into this file yet: every host serving the paper (arxiv.org, its HTML and PDF
+# mirrors, and the aggregator pages) is blocked by the network egress proxy in
+# the environment where this scaffold was written, so the list could not be
+# read first-hand.
+#
+# The list below is therefore a STRUCTURAL PLACEHOLDER chosen to have the right
+# shape (14 liquid, long-history global equity and commodity instruments, all
+# trading well before the 2003 train start so no survivorship gap opens). It is
+# NOT the paper's universe and must not be described as such. Any run made with
+# it is an Ezana run on an Ezana universe, not a HARLF reproduction.
+#
+# To make this a reproduction: open the paper, replace `tickers` with its
+# universe, and set `provenance: paper` plus the table or section number.
+# README.md's reproduction table stays marked BLOCKED until that happens.
+# ─────────────────────────────────────────────────────────────────────────────
+
+provenance: UNVERIFIED_PLACEHOLDER
+paper_reference: 'Coriat & Benhamou, arXiv:2507.18560, universe of 14 global equity and commodity instruments'
+count: 14
+
+tickers:
+  # Global equity index exposure
+  - SPY # US large cap
+  - QQQ # US large cap growth
+  - IWM # US small cap
+  - EFA # developed ex-US
+  - EEM # emerging markets
+  - VGK # Europe
+  - EWJ # Japan
+  # Rates and credit
+  - TLT # US long treasuries
+  - IEF # US intermediate treasuries
+  - LQD # investment grade credit
+  # Commodities
+  - GLD # gold
+  - SLV # silver
+  - USO # crude oil
+  - DBA # agriculture
+
+benchmarks:
+  market: SPY # the paper compares against the S&P 500
+  equal_weight: true # equal-weight over `tickers` is the second benchmark

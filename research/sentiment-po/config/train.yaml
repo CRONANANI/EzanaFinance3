@@ -1,0 +1,79 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Training and backtest configuration.
+#
+# Everything that could vary between runs lives here so a run is reproducible
+# from (config, seed) alone. See the PROVENANCE notes: values marked
+# UNVERIFIED could not be read from the paper (see config/instruments.yaml for
+# why) and are structural defaults, not the paper's settings.
+# ─────────────────────────────────────────────────────────────────────────────
+
+seed: 20260919 # seeds numpy, torch and the env together
+
+windows:
+  # PROVENANCE: the test window 2018-2024 is stated consistently across every
+  # secondary source. The train START is NOT settled: the task brief says 2003,
+  # the paper's own abstract as quoted by secondary sources says 2000. Resolve
+  # against the PDF before claiming a reproduction. 2003 is used here because
+  # it is the brief's figure and it keeps every placeholder instrument alive
+  # across the whole window.
+  train_start: '2003-01-01' # UNVERIFIED: 2000 vs 2003, see note above
+  train_end: '2017-12-31'
+  test_start: '2018-01-01'
+  test_end: '2024-12-31'
+
+portfolio:
+  rebalance: monthly
+  long_only: true # weights on the simplex
+  max_leverage: 1.0 # no leverage: weights sum to 1
+  transaction_cost_bps: 10 # UNVERIFIED: not read from the paper
+  max_weight_per_asset: 1.0 # no explicit cap stated
+
+features:
+  # UNVERIFIED: the paper's exact indicator set was not readable. These are the
+  # conventional monthly indicators a portfolio-allocation DRL agent is given;
+  # replace with the paper's set before claiming reproduction.
+  quant:
+    - ret_1m
+    - ret_3m
+    - ret_6m
+    - ret_12m
+    - vol_3m
+    - vol_12m
+    - drawdown_12m
+    - rsi_14
+    - ma_ratio_3_12
+  lookback_months: 12
+
+sentiment:
+  # finbert_news = FinBERT over a public news corpus (the paper's approach).
+  # ezana        = Ezana's own dataset signals (the differentiated variant).
+  # blend        = both, concatenated.
+  source: finbert_news
+  model: ProsusAI/finbert
+  # UNVERIFIED: the paper's per-ticker monthly aggregation was not readable.
+  # mean_score = mean over the month of (P(positive) - P(negative)) per article.
+  aggregation: mean_score
+  neutral_fill: 0.0 # months with no articles score neutral
+
+agents:
+  base:
+    algos: [PPO, SAC, DDPG, TD3]
+    total_timesteps: 200000
+    smoke_timesteps: 512 # --smoke override, CPU minutes not hours
+  meta:
+    hidden: [64, 64]
+    epochs: 200
+    smoke_epochs: 3
+    lr: 0.0003
+  super:
+    hidden: [64]
+    epochs: 200
+    smoke_epochs: 3
+    lr: 0.0003
+
+backtest:
+  walk_forward: false # single train/test split, as the paper describes
+  benchmarks: [equal_weight, SPY]
+
+report:
+  outdir: runs
