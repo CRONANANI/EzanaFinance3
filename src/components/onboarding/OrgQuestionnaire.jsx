@@ -364,7 +364,7 @@ const PROFILE_CONFIGS = {
   Expert: { label: 'Expert', desc: 'Seasoned market veteran.' },
 };
 
-export function OrgQuestionnaire({ userId, role, onComplete }) {
+export function OrgQuestionnaire({ userId, role, onComplete, completeError = null }) {
   const normalizedRole = role === 'executive' || role === 'portfolio_manager' ? role : 'analyst';
   const questions = useMemo(() => getQuestionsForRole(normalizedRole), [normalizedRole]);
 
@@ -576,6 +576,20 @@ export function OrgQuestionnaire({ userId, role, onComplete }) {
           <button type="button" className="iq-cta-btn" onClick={() => onCompleteRef.current?.()}>
             Continue to Ezana →
           </button>
+          {completeError ? (
+            <p
+              role="alert"
+              style={{
+                margin: '0.75rem 0 0',
+                color: 'var(--negative)',
+                fontSize: 'var(--type-caption-size)',
+                fontWeight: 'var(--type-caption-weight)',
+                lineHeight: 1.5,
+              }}
+            >
+              {completeError}
+            </p>
+          ) : null}
           <p className="iq-footnote">Update your profile anytime in Settings.</p>
         </div>
       </div>

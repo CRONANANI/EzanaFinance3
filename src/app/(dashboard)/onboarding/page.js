@@ -14,6 +14,7 @@ export default function OnboardingPage() {
   const [orgRole, setOrgRole] = useState(null); /* null = regular user, string = org role */
   const [isPartner, setIsPartner] = useState(false);
   const [checking, setChecking] = useState(true);
+  const [completeError, setCompleteError] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -85,27 +86,36 @@ export default function OnboardingPage() {
   }, [router]);
 
   const handleComplete = async () => {
-    // Completion flags are written by POST /api/onboarding/complete (server
+    // Completion flags are written by POST /api/onboarding/complete (service-role
     // client, immune to the browser auth-lock hangs documented in
-    // supabase-browser.js). The old implementation awaited an unbounded
-    // browser-client update here, so a wedged lock made "Continue to Ezana"
-    // do nothing at all.
+    // supabase-browser.js). v2: navigation is gated on VERIFIED persistence —
+    // routing to /home on an unpersisted flag only feeds the middleware bounce
+    // loop, which is exactly how users got stuck after question 7.
+    setCompleteError(null);
+
     let ok = false;
     try {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), 6000);
+      // Send BOTH cookie credentials and the bearer token so the route
+      // authenticates even if one auth path is stale.
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const headers = { 'Content-Type': 'application/json' };
+      if (session?.access_token) headers.Authorization = `Bearer ${session.access_token}`;
       const res = await fetch('/api/onboarding/complete', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
+        credentials: 'include',
         body: JSON.stringify({}),
         signal: controller.signal,
         keepalive: true,
       });
       clearTimeout(timer);
-      ok = res.ok;
-      if (!res.ok) {
-        console.error('[onboarding] complete API returned', res.status);
-      }
+      const data = await res.json().catch(() => null);
+      ok = res.ok && data?.completed === true;
+      if (!ok) console.error('[onboarding] complete API:', res.status, data);
     } catch (err) {
       console.error('[onboarding] complete API failed:', err);
     }
@@ -115,8 +125,8 @@ export default function OnboardingPage() {
     // are set here as well as in the route: marking onboarding complete
     // without investor_questionnaire_completed left users (notably org members
     // routed through OrgQuestionnaire) in a redirect loop back to /onboarding.
-    // If both writes fail the middleware bounces back to /onboarding, where the
-    // resume path re-finalizes; that is strictly better than a frozen button.
+    // The race resolves on timeout without telling us whether the write
+    // landed, so a verification read decides, not the absence of a throw.
     if (!ok && userId) {
       try {
         await Promise.race([
@@ -136,9 +146,31 @@ export default function OnboardingPage() {
       } catch (err) {
         console.error('[onboarding] fallback update failed:', err);
       }
+
+      try {
+        const { data: check } = await Promise.race([
+          supabase
+            .from('profiles')
+            .select('investor_questionnaire_completed')
+            .eq('id', userId)
+            .maybeSingle(),
+          new Promise((resolve) => {
+            setTimeout(() => resolve({ data: null }), 3000);
+          }),
+        ]);
+        ok = check?.investor_questionnaire_completed === true;
+      } catch {
+        /* stays not-ok */
+      }
     }
 
-    router.replace(isPartner ? '/partner-home' : '/home');
+    if (ok) {
+      router.replace(isPartner ? '/partner-home' : '/home');
+    } else {
+      setCompleteError(
+        'We could not save your completion. Check your connection and press Continue again; if it keeps failing, contact support@ezana.world.',
+      );
+    }
   };
 
   if (checking) {
@@ -162,14 +194,33 @@ export default function OnboardingPage() {
   /* Partners get the partner onboarding questionnaire (investing interests +
      content direction — no overlap with the partner application). */
   if (isPartner) {
-    return <PartnerQuestionnaire userId={userId} onComplete={handleComplete} />;
+    return (
+      <PartnerQuestionnaire
+        userId={userId}
+        onComplete={handleComplete}
+        completeError={completeError}
+      />
+    );
   }
 
   /* Org users get role-specific questionnaire */
   if (orgRole) {
-    return <OrgQuestionnaire userId={userId} role={orgRole} onComplete={handleComplete} />;
+    return (
+      <OrgQuestionnaire
+        userId={userId}
+        role={orgRole}
+        onComplete={handleComplete}
+        completeError={completeError}
+      />
+    );
   }
 
   /* Regular users get the standard investor questionnaire */
-  return <InvestorQuestionnaire userId={userId} onComplete={handleComplete} />;
+  return (
+    <InvestorQuestionnaire
+      userId={userId}
+      onComplete={handleComplete}
+      completeError={completeError}
+    />
+  );
 }

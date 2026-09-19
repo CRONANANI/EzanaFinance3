@@ -84,7 +84,7 @@ const QUESTIONS = [
   },
 ];
 
-export function PartnerQuestionnaire({ userId, onComplete }) {
+export function PartnerQuestionnaire({ userId, onComplete, completeError = null }) {
   const onCompleteRef = useRef(onComplete);
   useEffect(() => {
     onCompleteRef.current = onComplete;
@@ -246,6 +246,20 @@ export function PartnerQuestionnaire({ userId, onComplete }) {
           <button type="button" className="iq-cta-btn" onClick={() => onCompleteRef.current?.()}>
             Continue to your partner hub
           </button>
+          {completeError ? (
+            <p
+              role="alert"
+              style={{
+                margin: '0.75rem 0 0',
+                color: 'var(--negative)',
+                fontSize: 'var(--type-caption-size)',
+                fontWeight: 'var(--type-caption-weight)',
+                lineHeight: 1.5,
+              }}
+            >
+              {completeError}
+            </p>
+          ) : null}
           <p className="iq-footnote">You can update these preferences anytime in Settings.</p>
         </div>
       </div>

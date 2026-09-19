@@ -141,7 +141,7 @@ const PROFILE_CONFIGS = {
   },
 };
 
-export function InvestorQuestionnaire({ userId, onComplete }) {
+export function InvestorQuestionnaire({ userId, onComplete, completeError = null }) {
   const onCompleteRef = useRef(onComplete);
   useEffect(() => {
     onCompleteRef.current = onComplete;
@@ -170,16 +170,25 @@ export function InvestorQuestionnaire({ userId, onComplete }) {
       try {
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), 6000);
+        // Bearer token alongside cookie credentials: the route authenticates
+        // on either path, so a stale one no longer drops the answers.
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        const headers = { 'Content-Type': 'application/json' };
+        if (session?.access_token) headers.Authorization = `Bearer ${session.access_token}`;
         const res = await fetch('/api/onboarding/complete', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
+          credentials: 'include',
           body: JSON.stringify({ answers: finalAnswers, profile }),
           signal: controller.signal,
           keepalive: true,
         });
         clearTimeout(timer);
-        if (!res.ok) {
-          console.error('[InvestorQuestionnaire] complete API returned', res.status);
+        const data = await res.json().catch(() => null);
+        if (!res.ok || data?.completed !== true) {
+          console.error('[InvestorQuestionnaire] complete API:', res.status, data);
         }
       } catch (e) {
         console.error('[InvestorQuestionnaire] complete API failed:', e);
@@ -325,6 +334,20 @@ export function InvestorQuestionnaire({ userId, onComplete }) {
           <button type="button" className="iq-cta-btn" onClick={() => onCompleteRef.current?.()}>
             Continue to Ezana
           </button>
+          {completeError ? (
+            <p
+              role="alert"
+              style={{
+                margin: '0.75rem 0 0',
+                color: 'var(--negative)',
+                fontSize: 'var(--type-caption-size)',
+                fontWeight: 'var(--type-caption-weight)',
+                lineHeight: 1.5,
+              }}
+            >
+              {completeError}
+            </p>
+          ) : null}
           <p className="iq-footnote">
             Your profile shapes what you see. Update it anytime in Settings.
           </p>
