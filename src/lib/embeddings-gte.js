@@ -32,6 +32,11 @@ export async function embedViaSupabase(input) {
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
       body: JSON.stringify({ input: text }),
       cache: 'no-store',
+      // A cold or hung edge function must degrade retrieval, not eat the
+      // caller's whole request budget. The catch below already turns any
+      // throw into the same null a non-2xx returns, so a timeout lands in
+      // the existing failure mode and the return shape is unchanged.
+      signal: AbortSignal.timeout(8_000),
     });
     if (!res.ok) return null;
     const json = await res.json();

@@ -109,7 +109,12 @@ function classifyProviderError(id, status, detail) {
   return attach(new ProviderUnavailableError(`${id} ${status}${label}: ${trimDetail(detail)}`));
 }
 
-function callAnthropic(body, apiKey) {
+/**
+ * Every hop is bounded. Without a signal a hung provider holds the whole
+ * request until the platform kills the function, which is what let a single
+ * slow call consume the route's entire 60s budget.
+ */
+function callAnthropic(body, apiKey, timeoutMs) {
   return fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -118,8 +123,14 @@ function callAnthropic(body, apiKey) {
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify(body),
+    signal: AbortSignal.timeout(timeoutMs),
   });
 }
+
+/* AbortSignal.timeout rejects with TimeoutError; an explicit abort gives
+   AbortError. Both mean "this hop is done", so both become the typed
+   availability failure the fallback chain already understands. */
+const isAbort = (e) => e?.name === 'TimeoutError' || e?.name === 'AbortError';
 
 /**
  * Parse Anthropic Messages content blocks. With web search the response interleaves
@@ -183,21 +194,41 @@ async function anthropicSynthesize({ system, user, maxTokens, model, fallbackMod
       ...baseBody,
       tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: maxUses }],
     };
-    res = await callAnthropic(withTool, apiKey);
+    try {
+      res = await callAnthropic(withTool, apiKey, 38_000);
+    } catch (e) {
+      if (isAbort(e)) throw new ProviderUnavailableError('anthropic: timed out');
+      throw e;
+    }
     if (res.status === 400) {
       const detail = await readBody(res);
       console.warn('[sonar] web_search 400 — retrying without tool', { model, detail });
-      res = await callAnthropic(baseBody, apiKey);
+      try {
+        res = await callAnthropic(baseBody, apiKey, 20_000);
+      } catch (e) {
+        if (isAbort(e)) throw new ProviderUnavailableError('anthropic: timed out');
+        throw e;
+      }
     }
   } else {
-    res = await callAnthropic(baseBody, apiKey);
+    try {
+      res = await callAnthropic(baseBody, apiKey, 25_000);
+    } catch (e) {
+      if (isAbort(e)) throw new ProviderUnavailableError('anthropic: timed out');
+      throw e;
+    }
   }
 
   // A deep-tier model the account can't access 400s — retry once on the safe Haiku.
   if (res.status === 400 && model !== safeFallback) {
     const detail = await readBody(res);
     console.warn('[sonar] model 400 — retrying on Haiku', { model, detail });
-    res = await callAnthropic({ ...baseBody, model: safeFallback }, apiKey);
+    try {
+      res = await callAnthropic({ ...baseBody, model: safeFallback }, apiKey, 20_000);
+    } catch (e) {
+      if (isAbort(e)) throw new ProviderUnavailableError('anthropic: timed out');
+      throw e;
+    }
   }
 
   if (!res.ok) {
@@ -232,18 +263,27 @@ function openaiCompatSynthesize({ id, baseURL, apiKey, model }) {
   return async ({ system, user, maxTokens }) => {
     const key = apiKey();
     if (!key) throw new ProviderUnavailableError(`${id}: no API key`);
-    const res = await fetch(`${baseURL}/chat/completions`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
-      body: JSON.stringify({
-        model: model(),
-        max_tokens: maxTokens,
-        messages: [
-          { role: 'system', content: system },
-          { role: 'user', content: user },
-        ],
-      }),
-    });
+    // Kimi and DeepSeek are tried SEQUENTIALLY, so an unbounded wait on one
+    // stacks onto the next. 12s each keeps the pair inside the chain deadline.
+    let res;
+    try {
+      res = await fetch(`${baseURL}/chat/completions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+        body: JSON.stringify({
+          model: model(),
+          max_tokens: maxTokens,
+          messages: [
+            { role: 'system', content: system },
+            { role: 'user', content: user },
+          ],
+        }),
+        signal: AbortSignal.timeout(12_000),
+      });
+    } catch (e) {
+      if (isAbort(e)) throw new ProviderUnavailableError(`${id}: timed out`);
+      throw e;
+    }
     if (!res.ok) {
       const detail = await readBody(res);
       throw classifyProviderError(id, res.status, detail);
@@ -312,6 +352,11 @@ export async function synthesizeWithFallback(args) {
   });
   const active = PROVIDERS.filter((p) => p.enabled());
   const providerErrors = [];
+  /* Whole-chain deadline. Per-call timeouts bound each hop, but a chain of
+     bounded hops can still overrun: 38s Anthropic + 12s Kimi + 12s DeepSeek
+     exceeds the route's 60s budget. 50s leaves headroom for retrieval and
+     response serialization; 8s is the minimum worth starting a provider with. */
+  const deadline = Date.now() + 50_000;
   if (!active.length) {
     console.error(
       '[sonar] no LLM provider configured (ANTHROPIC_API_KEY missing and no fallback enabled)',
@@ -321,13 +366,29 @@ export async function synthesizeWithFallback(args) {
 
   let lastErr;
   for (const provider of active) {
+    if (Date.now() > deadline - 8_000) {
+      providerErrors.push({
+        provider: provider.id,
+        status: null,
+        type: 'deadline',
+        message: 'skipped, chain deadline reached',
+      });
+      console.warn('[sonar] chain deadline reached, skipping provider', {
+        provider: provider.id,
+      });
+      continue;
+    }
+    const startedAt = Date.now();
     try {
       const out = await provider.call(args);
       if (out?.answer) {
         // Surface which provider answered — so chronic failover to a fallback (a
         // signal Anthropic billing/limits need attention) stays visible, not masked.
         if (provider.id !== active[0].id) {
-          console.warn('[sonar] answered by fallback provider', { provider: provider.id });
+          console.warn('[sonar] answered by fallback provider', {
+            provider: provider.id,
+            elapsedMs: Date.now() - startedAt,
+          });
         }
         return { ...out, provider: provider.id };
       }
@@ -338,7 +399,10 @@ export async function synthesizeWithFallback(args) {
         type: 'empty',
         message: 'empty reply',
       });
-      console.warn('[sonar] provider returned empty, trying next', { provider: provider.id });
+      console.warn('[sonar] provider returned empty, trying next', {
+        provider: provider.id,
+        elapsedMs: Date.now() - startedAt,
+      });
     } catch (err) {
       lastErr = err;
       providerErrors.push({
@@ -346,6 +410,7 @@ export async function synthesizeWithFallback(args) {
         status: err?.status ?? null,
         type: err?.errorType || err?.name || 'error',
         message: err?.errorMessage || err?.message || String(err),
+        elapsedMs: Date.now() - startedAt,
       });
       if (err instanceof ProviderBadRequestError) {
         // A 4xx config error (malformed request, bad/revoked key, unknown model)

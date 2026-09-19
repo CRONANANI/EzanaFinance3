@@ -135,16 +135,21 @@ export default function SonarPage() {
     setResult(null);
     setPhase('searching');
     const t0 = Date.now();
-    // Takeover safety valve: if nothing lands within 30s, drop to the normal
-    // error state so the user is never trapped on the loader. The id guard
-    // also discards a response that straggles in after the timeout fired.
     const pingId = ++pingIdRef.current;
+    // Takeover safety valve: track the server budget (maxDuration = 60 on the
+    // route) instead of undercutting it. A real briefing with live web search
+    // takes 20 to 45s; the old 30s valve was abandoning pings the server
+    // completed and billed. 55s = server budget minus network headroom. The
+    // controller actually cancels the request instead of letting a response
+    // straggle in after the UI gave up.
+    const controller = new AbortController();
     const timeout = setTimeout(() => {
       if (pingIdRef.current !== pingId) return;
       pingIdRef.current += 1; // invalidate the in-flight response
+      controller.abort();
       setError('The ping timed out. Try again.');
       setPhase('error');
-    }, 30_000);
+    }, 55_000);
     const stillCurrent = () => pingIdRef.current === pingId;
     try {
       const token = await getAccessToken();
@@ -163,6 +168,7 @@ export default function SonarPage() {
         },
         credentials: 'include',
         body: JSON.stringify({ query, ...(priorEntity ? { context: priorEntity } : {}) }),
+        signal: controller.signal,
       });
       const data = await res.json().catch(() => null);
       if (!stillCurrent()) return;
@@ -184,11 +190,15 @@ export default function SonarPage() {
       if (data.quotaExceeded) setPhase('complete');
       else if (data.briefing) setPhase('streaming');
       else setPhase('complete');
-    } catch {
+    } catch (e) {
       if (!stillCurrent()) return;
       clearTimeout(timeout);
-      setError('That ping did not land. Try again in a moment.');
-      setPhase('error');
+      // When the failure IS the valve firing, the timeout handler has already
+      // set the message; overwriting it would hide why the ping stopped.
+      if (e?.name !== 'AbortError') {
+        setError('That ping did not land. Try again in a moment.');
+        setPhase('error');
+      }
     }
   }
 
