@@ -8,7 +8,10 @@
   right: 0;
   bottom: 0;
   overflow: hidden;
-  background: #070a0e;
+  /* Full-route canvas below the nav. --app-bg is redefined to the dark value
+     for body.route-market-analysis, so the token keeps the route dark-locked
+     while matching the nav exactly. */
+  background: var(--app-bg);
   z-index: 1;
 }
 

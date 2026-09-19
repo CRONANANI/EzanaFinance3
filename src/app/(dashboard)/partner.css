@@ -18,6 +18,15 @@
 .partner-nav {
   border-bottom: 1px solid rgba(212, 168, 83, 0.12);
 }
+/* Canvas equals nav on the partner surface too. The partner nav is held out of
+   the shared nav rule in (dashboard)/layout.css, so without this it let the
+   body show through and produced a seam on scroll. Fill only; the gold border
+   and accents above and below are unchanged. */
+body .main-nav.partner-nav {
+  background: var(--app-bg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
 .partner-nav .nav-link.active {
   color: var(--gold);
 }

@@ -8,7 +8,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f8fafb;
+  background: var(--app-bg);
   padding: 2rem;
 }
 
@@ -233,7 +233,7 @@
 }
 
 body.light-mode .auth-page {
-  background: #f8f9fb;
+  background: var(--app-bg);
 }
 body.light-mode .auth-card {
   background: #fff;

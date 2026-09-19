@@ -12,7 +12,7 @@ html.light-mode .settings-ledger {
     var(--font-sans, 'Plus Jakarta Sans'), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --mono: var(--font-mono, 'JetBrains Mono'), ui-monospace, monospace;
 
-  --page: #f5f7f6;
+  --page: var(--app-bg);
   --panel: #ffffff;
   --rail: #ffffff;
   --ink: #0b1220;
@@ -38,7 +38,7 @@ html.light-mode .settings-ledger {
 
 /* Dark tokens — codebase uses `html.dark` (set by ThemeProvider). */
 html.dark .settings-ledger {
-  --page: #070a0e;
+  --page: var(--app-bg);
   --panel: #0b1015;
   --rail: #0a0e13;
   --ink: #eef4f9;

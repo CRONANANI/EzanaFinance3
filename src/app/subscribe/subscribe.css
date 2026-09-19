@@ -3,12 +3,12 @@
 .subscribe-checkout-page {
   min-height: 100vh;
   padding: 2rem 1.25rem 3rem;
-  background: #0a0f0f;
+  background: var(--app-bg);
   color: #e5e7eb;
 }
 
 body.light-mode .subscribe-checkout-page {
-  background: #f8f9fb;
+  background: var(--app-bg);
   color: #111827;
 }
 

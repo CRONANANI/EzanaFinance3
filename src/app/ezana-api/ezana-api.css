@@ -18,7 +18,7 @@
   --ea-nav: 88px;
   font-family: var(--font-sans);
   color: var(--ea-ink);
-  background: #ffffff;
+  background: var(--app-bg);
   min-height: 100vh;
 }
 /* Mono utility — numbers/paths/counts always tabular. */

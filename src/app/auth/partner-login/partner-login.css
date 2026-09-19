@@ -92,7 +92,7 @@
 
 /* Partner login page shell — light surface aligned with other auth routes */
 .partner-auth-page.auth-page {
-  background: #ffffff;
+  background: var(--app-bg);
 }
 
 .partner-auth-page .auth-subtitle {

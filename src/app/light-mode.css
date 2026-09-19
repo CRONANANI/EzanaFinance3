@@ -179,10 +179,6 @@ body.light-mode .db-tf-btn-sm.active {
 /* ══════════════════════════════
    SETTINGS
    ══════════════════════════════ */
-body.light-mode .settings-page {
-  background: var(--bg-primary);
-}
-
 body.light-mode .settings-sidebar {
   border-right-color: var(--border-primary);
 }

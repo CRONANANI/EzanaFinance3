@@ -1286,7 +1286,7 @@ body.light-mode .settings-push-card--muted {
    LIGHT MODE
    ══════════════════════════════ */
 body.light-mode .settings-page {
-  background: #f8f9fb;
+  background: var(--app-bg);
 }
 
 body.light-mode .settings-header {

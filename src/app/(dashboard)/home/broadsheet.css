@@ -52,9 +52,10 @@
   -webkit-font-smoothing: antialiased;
 }
 
-/* ── Dark mode overrides — uniform #0b0d10 (matches index strip) ── */
+/* ── Dark mode overrides — the canvas is the app canvas, so the broadsheet
+   and the top nav are one colour. Ink values below stay literal. ── */
 body:not(.light-mode) .bs-shell {
-  --bs-bg-light: #0b0d10;
+  --bs-bg-light: var(--app-bg);
   --bs-text-dark: #f0f6fc;
   --bs-text-body: #e2e8f0;
   --bs-text-label: #6b7280;
@@ -66,7 +67,7 @@ body:not(.light-mode) .bs-shell {
   --bs-green: #34d399;
   --bs-red: #f87171;
 
-  --bs-bg-cream: #0b0d10;
+  --bs-bg-cream: var(--app-bg);
   --bs-cream-border: rgba(255, 255, 255, 0.06);
   --bs-cream-card-bg: rgba(255, 255, 255, 0.03);
   --bs-cream-event-hover: rgba(255, 255, 255, 0.08);
@@ -75,7 +76,7 @@ body:not(.light-mode) .bs-shell {
   --bs-cream-today-bg: #34d399;
   --bs-cream-today-text: #0b0d10;
 
-  --bs-bg-dark: #0b0d10;
+  --bs-bg-dark: var(--app-bg);
   --bs-dark-text: #e2e8f0;
   --bs-dark-label: #8b949e;
   --bs-dark-border: rgba(255, 255, 255, 0.06);
@@ -93,7 +94,7 @@ body:not(.light-mode) .bs-shell {
 
   --bs-elo-track-bg: rgba(255, 255, 255, 0.06);
 
-  background: #0b0d10;
+  background: var(--app-bg);
   color: #f0f6fc;
 }
 

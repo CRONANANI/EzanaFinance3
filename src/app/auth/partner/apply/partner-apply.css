@@ -3,7 +3,7 @@
 .partner-apply-page,
 .partner-form-page {
   min-height: 100vh;
-  background: #f8fafb;
+  background: var(--app-bg);
   color: #0f172a;
   padding: 2rem;
 }

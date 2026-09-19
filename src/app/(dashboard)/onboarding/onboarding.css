@@ -662,7 +662,7 @@ body.light-mode .onboarding-org-role-badge {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #ffffff;
+  background: var(--app-bg);
   font-family: var(--font-sans);
   padding: 20px;
 }

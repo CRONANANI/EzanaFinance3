@@ -6,7 +6,7 @@
 
 /* ── NAVBAR ── */
 body.light-mode .partner-nav {
-  background: #fff;
+  background: var(--app-bg);
   border-bottom-color: rgba(146, 115, 29, 0.2);
 }
 body.light-mode .partner-nav .nav-link {
@@ -460,7 +460,7 @@ body.light-mode .ptr-card-badge {
 
 /* ── PAGE ── */
 body.light-mode .ptr-page {
-  background: #f8fafb;
+  background: var(--app-bg);
 }
 
 /* P&L positive stays green (universal profit indicator) */
