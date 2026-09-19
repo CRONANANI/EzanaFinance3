@@ -1,5 +1,5 @@
 /* ============================================================================
-   Sonar landing band — section-scoped tokens and the one master timeline.
+   Sonar landing band: section-scoped tokens and the one master timeline.
    ----------------------------------------------------------------------------
    Follows the .bs-shell scoped-token precedent (src/app/(dashboard)/home/
    broadsheet.css): the band inverts the palette, so it declares its own custom
@@ -86,14 +86,43 @@
   overflow: hidden;
   padding-left: 80px;
   padding-right: 80px;
+  /* Vertical padding is owned here rather than by the shared --landing-gap
+     rule in globals.css, which the band has been removed from. The edge fades
+     below are 140px tall, and the shared 48px would put the headline inside
+     the gradient. The fades are what now carry the transition into the page,
+     so the band no longer needs the hard gap its neighbours use. */
+  padding-top: 150px;
+  padding-bottom: 150px;
   background: var(--snr-band-bg);
   color: var(--snr-text);
   font-family: var(--snr-font-sans);
 }
 
-/* Vertical rhythm is owned by the shared --landing-gap rule in globals.css,
-   which lists .snr-band alongside every other landing section. This sheet sets
-   horizontal padding only, per the convention documented there. */
+/* Edge fades: the band dissolves into the page above and below it instead of
+   ending in a hard line. --bg-primary is white in the light shell and near
+   black in the dark one, so each fade resolves to whatever the page actually
+   is. The pseudo-elements sit above the background and the grid layer but
+   below .snr-inner, which is raised to z-index 2. */
+.snr-band::before,
+.snr-band::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 140px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.snr-band::before {
+  top: 0;
+  background: linear-gradient(to bottom, var(--bg-primary), transparent);
+}
+
+.snr-band::after {
+  bottom: 0;
+  background: linear-gradient(to top, var(--bg-primary), transparent);
+}
 
 /* The one duration. Percentages of it are the contract. */
 .snr-band [class*='snr-anim-'] {
@@ -129,6 +158,7 @@
 .snr-grid-layer {
   position: absolute;
   inset: 0;
+  z-index: 0;
   background-image: radial-gradient(var(--snr-grid) 1px, transparent 1px);
   background-size: 26px 26px;
   opacity: 0.2;
@@ -137,6 +167,7 @@
 
 .snr-inner {
   position: relative;
+  z-index: 2;
   max-width: 1440px;
   margin: 0 auto;
   display: flex;
@@ -215,7 +246,7 @@
 }
 
 .snr-col-left {
-  width: 570px;
+  width: 520px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -223,15 +254,18 @@
 }
 
 .snr-col-radar {
-  width: 470px;
-  flex-shrink: 0;
+  /* Flexes now so the centre piece absorbs whatever the two fixed columns
+     leave, instead of the three widths having to sum to 1440 exactly. */
+  width: auto;
+  flex: 1 1 0;
+  min-width: 360px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .snr-col-dossier {
-  width: 336px;
+  width: 420px;
   flex-shrink: 0;
   box-sizing: border-box;
   padding: 18px;
@@ -1070,8 +1104,12 @@
     width: 100%;
   }
 
+  /* Undo the flex sizing from the three-column layout: min-width 360px would
+     overflow a narrow viewport once the columns stack. */
   .snr-col-radar {
     order: -1;
+    flex: 0 0 auto;
+    min-width: 0;
   }
 
   .snr-headline {
@@ -1084,6 +1122,15 @@
   .snr-band {
     padding-left: 24px;
     padding-right: 24px;
+    /* Shorter fades on a phone, and matching padding so the head copy still
+       clears them. */
+    padding-top: 110px;
+    padding-bottom: 110px;
+  }
+
+  .snr-band::before,
+  .snr-band::after {
+    height: 96px;
   }
 
   /* Below md: the dossier is hidden and the synthesis panel carries the story. */
@@ -1479,7 +1526,7 @@
    to #111827 and `body.light-mode p` to #374151, both with !important, which
    would paint the headline and every paragraph in this band near-black on green.
 
-   Specificity note: those selectors are (0,1,2) — one class, two elements — so a
+   Specificity note: those selectors are (0,1,2), one class and two elements, so a
    two-class selector here is (0,2,0) and wins among !important declarations
    without needing to be more forceful than the rule it is undoing. Scoped to
    .snr-band, so nothing outside the band is affected. */
@@ -1515,4 +1562,216 @@
 
 .snr-band .snr-cta:hover {
   color: var(--snr-text) !important;
+}
+
+/* ── synthesis paragraphs and the auth gate ──────────────────────────────── */
+
+.snr-para {
+  margin: 0 0 10px;
+  font-size: 13.5px;
+  line-height: 1.62;
+  color: var(--snr-text);
+}
+
+/* The legacy light-mode sheet forces p to near-black with !important; the band
+   supplies its own ground, so it has to win that. Same two-class trick as the
+   mode-stability block above. */
+.snr-band .snr-para {
+  color: var(--snr-text) !important;
+}
+
+/* Inline gated links: styled as links, actually buttons. They open the auth
+   gate rather than navigating, because the tools they name live behind login. */
+.snr-link {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--snr-mint);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--snr-mint) 45%, transparent);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.snr-band .snr-link {
+  color: var(--snr-mint) !important;
+}
+
+.snr-link:hover {
+  text-decoration-color: var(--snr-mint);
+}
+
+/* Auth gate popover, anchored to the synthesis panel. */
+.snr-gate {
+  position: absolute;
+  inset: auto 14px 14px 14px;
+  z-index: 5;
+  padding: 16px 18px;
+  border-radius: var(--snr-r-panel);
+  background: var(--snr-panel-solid);
+  border: 1px solid rgba(110, 231, 183, 0.35);
+  box-shadow: var(--snr-lift);
+}
+
+.snr-gate-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  appearance: none;
+  background: none;
+  border: 0;
+  color: var(--snr-text-muted);
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  padding: 4px;
+}
+
+.snr-gate-title {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--snr-text);
+}
+
+.snr-gate-sub {
+  margin: 0 0 12px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--snr-text-muted);
+}
+
+.snr-band .snr-gate-title {
+  color: var(--snr-text) !important;
+}
+
+.snr-band .snr-gate-sub {
+  color: var(--snr-text-muted) !important;
+}
+
+.snr-gate-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.snr-gate-btn {
+  flex: 1;
+  text-align: center;
+  padding: 9px 0;
+  border-radius: var(--snr-r-pill);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.snr-gate-btn-solid {
+  background: var(--snr-emerald);
+  color: var(--snr-ink);
+}
+
+.snr-band .snr-gate-btn-solid {
+  color: var(--snr-ink) !important;
+}
+
+.snr-gate-btn-ghost {
+  color: var(--snr-mint);
+  border: 1px solid rgba(110, 231, 183, 0.4);
+}
+
+.snr-band .snr-gate-btn-ghost {
+  color: var(--snr-mint) !important;
+}
+
+/* Dossier lines come from live data now, so they can be any length. */
+.snr-row-line {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── restored sonar rings centre piece ───────────────────────────────────── */
+/* Recipe carried over from the retired /sonar hero backdrop (.sonar-rings):
+   thin repeating radial ring lines over a soft radial glow, faded out by a
+   radial mask. Rescoped from a fixed full-viewport layer to a square that
+   fills the band's centre column. */
+
+.snr-rings-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  aspect-ratio: 1;
+  margin: 0 auto;
+}
+
+.snr-rings {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-radial-gradient(
+      circle at 50% 50%,
+      transparent 0 30px,
+      rgba(110, 231, 183, 0.28) 30px 31.5px,
+      transparent 31.5px 60px
+    ),
+    radial-gradient(
+      circle at 50% 50%,
+      rgba(110, 231, 183, 0.22) 0%,
+      rgba(110, 231, 183, 0.12) 26%,
+      rgba(110, 231, 183, 0.05) 46%,
+      transparent 64%
+    );
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 0 52%, transparent 72%);
+  mask-image: radial-gradient(circle at 50% 50%, #000 0 52%, transparent 72%);
+}
+
+/* Expanding ping. Base style is the END frame (opacity 0, settled scale), so
+   reduced motion resolves to the composed frame when the sheet kills
+   animation, leaving the rings and hub visible and no pulse. */
+.snr-rings-pulse {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 60%;
+  height: 60%;
+  transform: translate(-50%, -50%) scale(1);
+  border-radius: 50%;
+  border: 1.5px solid rgba(110, 231, 183, 0.4);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* A quarter of the master cycle, so four pings land per loop and the piece
+   cannot drift against the rest of the choreography. */
+.snr-anim-ringpulse {
+  animation: snr-ringpulse calc(var(--snr-cycle) / 4) ease-out infinite;
+}
+
+@keyframes snr-ringpulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0.25);
+    opacity: 0.9;
+  }
+  70% {
+    opacity: 0.25;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.05);
+    opacity: 0;
+  }
+}
+
+.snr-rings-hub {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: var(--snr-mint);
+  box-shadow: 0 0 18px rgba(110, 231, 183, 0.7);
 }

@@ -1,52 +1,98 @@
 /**
- * SonarSection — the Sonar landing band.
+ * SonarSection: the Sonar landing band.
  *
  * Makes the Sonar mechanic legible in three seconds: a ping goes out, eight
  * datasets light up, a cited briefing comes back. The animation is the argument,
  * which is why this is a choreographed loop rather than a screenshot.
  *
- * Structure: an eyebrow row and headline block over three columns — the ping bar
- * and live synthesis panel on the left, the radar (SonarRadar) in the centre, the
- * sourced-matches dossier on the right.
+ * Structure: an eyebrow row and headline block over three columns. The ping
+ * bar and live synthesis panel sit on the left, the sonar rings (SonarRings)
+ * in the centre, the sourced-matches dossier on the right.
  *
  * Motion is one 15s CSS master timeline in sonar-band.css. Every sequenced
  * element shares var(--snr-cycle) and is keyed by percentage of it, so the radar
  * and the text cannot drift apart over time. Nothing is pseudo-random, so SSR and
  * client markup are identical. Every element's base style is the composed END
  * frame, which means prefers-reduced-motion resolves the whole band to the
- * finished composition just by killing animation — no second stylesheet, nothing
+ * finished composition just by killing animation, with no second stylesheet and nothing
  * left blank. The loop ticks only while the band is in view, via the same
  * IntersectionObserver pattern as the other landing sections, toggling
  * animation-play-state rather than unmounting.
  *
- * The ping bar is a real form that routes to /sonar. The typed query, the
- * pointer and the two panels are decorative narration layered over it: they are
- * aria-hidden, and the subhead carries the same information for assistive tech.
- * No Sonar API is called from the landing page.
+ * The ping bar is a real form that routes to /sonar. The typed query and the
+ * pointer are decorative narration layered over it. The synthesis panel is NOT
+ * decorative any more: it holds real prose with real interactive links, so it
+ * is exposed to assistive tech and only the status pills stay aria-hidden. The
+ * dossier column remains narration.
  *
- * Bracketed placeholders are deliberate, per 01-BRIEF.md section 6. They stay
- * bracketed until an approved cached fixture replaces all of them at once; no
- * figure is invented to fill one.
+ * The synthesis links do not navigate. The tools they name live behind login,
+ * so clicking one opens an auth gate offering log in or sign up rather than
+ * dropping a signed-out visitor onto a gated route.
+ *
+ * The dossier renders deterministic bracketed placeholders on the server and
+ * swaps in real public-record rows from /api/landing/sonar-fixture after
+ * hydration. SSR and first client render are therefore byte identical, and a
+ * failed fetch simply leaves the placeholders in place. No figure is ever
+ * invented to fill a bracket.
  */
 
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { SonarRadar } from './SonarRadar';
+import { SonarRings } from './SonarRings';
 import './sonar-band.css';
 
+/* Three short Lockheed Martin paragraphs. Link segments render as buttons
+   styled as links: clicking one opens the auth gate instead of navigating.
+   Figure-light on purpose, so nothing here can go stale or be a number nobody
+   sourced. The snr-anim-syn1/3/5 classes are the existing timeline keys,
+   reused rather than renumbered. */
 const SYNTHESIS = [
-  { cls: 'snr-anim-syn1', lead: true, text: '[ONE SENTENCE HEADLINE READ]', cite: null },
-  { cls: 'snr-anim-syn2', text: 'Contract awards in the last [N] days. ', cite: '[S3]' },
-  { cls: 'snr-anim-syn3', text: 'House and Senate trades in the same window. ', cite: '[S2]' },
-  { cls: 'snr-anim-syn4', text: 'Lobbying filings name the same budget line. ', cite: '[S7]' },
+  {
+    cls: 'snr-anim-syn1',
+    lead: true,
+    segments: [
+      {
+        t: 'Lockheed Martin (LMT) is the largest U.S. defense prime, anchored by the F-35 program across Aeronautics, with Missiles and Fire Control, Rotary and Mission Systems, and Space rounding out the book. See the ',
+      },
+      { t: 'company screener', link: true },
+      { t: ' and ' },
+      { t: 'segment revenue chart', link: true },
+      { t: '.' },
+    ],
+    cite: '[S1]',
+  },
+  {
+    cls: 'snr-anim-syn3',
+    segments: [
+      {
+        t: 'The vast majority of its revenue comes from U.S. government contracts, so award flow is the leading signal. Track it in the ',
+      },
+      { t: 'contract award tracker', link: true },
+      { t: ' and the ' },
+      { t: 'USAspending awards feed', link: true },
+      { t: '.' },
+    ],
+    cite: '[S3]',
+  },
   {
     cls: 'snr-anim-syn5',
-    text: 'Echo coverage cross checked on the live web. ',
-    cite: '[S1] [S8]',
+    segments: [
+      {
+        t: 'Cross-signals: congressional trading disclosures periodically report LMT positions, SEC filings land on EDGAR, and defense budget questions trade on prediction markets. Open the ',
+      },
+      { t: 'congressional trades chart', link: true },
+      { t: ', ' },
+      { t: 'EDGAR filing stream', link: true },
+      { t: ', or ' },
+      { t: 'Echo coverage', link: true },
+      { t: '.' },
+    ],
+    cite: '[S2] [S7]',
   },
 ];
-
+/* Deterministic SSR fallback for the dossier. Replaced after hydration when
+   /api/landing/sonar-fixture returns enough real rows. */
 const ROWS = [
   { cls: 'snr-anim-row0', tag: 'ECHO', source: 'Echo editorial', line: '[MATCH TITLE]' },
   {
@@ -73,6 +119,10 @@ const ROWS = [
 export function SonarSection() {
   const bandRef = useRef(null);
   const [inView, setInView] = useState(true);
+  const [gateOpen, setGateOpen] = useState(false);
+  /* Starts as the deterministic fallback so the server render and the first
+     client render agree; real rows arrive after hydration. */
+  const [rows, setRows] = useState(ROWS);
 
   /* Viewport gating. Pausing rather than unmounting: unmounting restarts the
      loop mid-sequence on scroll back, which reads as broken. */
@@ -89,6 +139,34 @@ export function SonarSection() {
     io.observe(el);
     return () => io.disconnect();
   }, []);
+
+  /* Real dossier rows, fetched after hydration so SSR markup stays byte
+     identical. A failure leaves the bracketed placeholders alone. The
+     threshold of 3 keeps the card from rendering a half-populated state. */
+  useEffect(() => {
+    let alive = true;
+    fetch('/api/landing/sonar-fixture')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (alive && Array.isArray(data?.rows) && data.rows.length >= 3) {
+          setRows(data.rows.map((r, i) => ({ ...r, cls: `snr-anim-row${i}` })));
+        }
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  /* Escape closes the gate, as a dialog should. */
+  useEffect(() => {
+    if (!gateOpen) return undefined;
+    const onKey = (e) => {
+      if (e.key === 'Escape') setGateOpen(false);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [gateOpen]);
 
   return (
     <section ref={bandRef} className={`snr-band${inView ? '' : ' snr-paused'}`}>
@@ -148,28 +226,66 @@ export function SonarSection() {
             </form>
 
             <div className="snr-synth">
-              <div className="snr-panel-head" aria-hidden="true">
-                <span className="snr-beacon-sm" />
+              <div className="snr-panel-head">
+                <span className="snr-beacon-sm" aria-hidden="true" />
                 <span className="snr-panel-title">LIVE SYNTHESIS</span>
-                <span className="snr-rule-soft" />
-                <span className="snr-status">
+                <span className="snr-rule-soft" aria-hidden="true" />
+                <span className="snr-status" aria-hidden="true">
                   <span className="snr-state-ready snr-anim-ready">READY</span>
                   <span className="snr-state-sweep snr-anim-sweepstate">SWEEPING 8 DATASETS</span>
                   <span className="snr-state-done snr-anim-done">8 CLAIMS CITED</span>
                 </span>
               </div>
 
-              <div className="snr-synth-body" aria-hidden="true">
-                <p className="snr-empty snr-anim-idle">
+              <div className="snr-synth-body">
+                <p className="snr-empty snr-anim-idle" aria-hidden="true">
                   Awaiting ping. Nothing is synthesized until you ask.
                 </p>
-                {SYNTHESIS.map((l) => (
-                  <p key={l.cls} className={`snr-line${l.lead ? ' snr-line-lead' : ''} ${l.cls}`}>
-                    {l.text}
-                    {l.cite ? <span className="snr-cite">{l.cite}</span> : null}
+                {SYNTHESIS.map((p) => (
+                  <p key={p.cls} className={`snr-para${p.lead ? ' snr-line-lead' : ''} ${p.cls}`}>
+                    {p.segments.map((seg, i) =>
+                      seg.link ? (
+                        <button
+                          key={`${p.cls}-${i}`}
+                          type="button"
+                          className="snr-link"
+                          onClick={() => setGateOpen(true)}
+                        >
+                          {seg.t}
+                        </button>
+                      ) : (
+                        <span key={`${p.cls}-${i}`}>{seg.t}</span>
+                      ),
+                    )}
+                    {p.cite ? <span className="snr-cite"> {p.cite}</span> : null}
                   </p>
                 ))}
               </div>
+
+              {gateOpen ? (
+                <div className="snr-gate" role="dialog" aria-label="Sign in to open this tool">
+                  <button
+                    type="button"
+                    className="snr-gate-close"
+                    aria-label="Close"
+                    onClick={() => setGateOpen(false)}
+                  >
+                    <i className="bi bi-x-lg" aria-hidden="true" />
+                  </button>
+                  <p className="snr-gate-title">This tool lives inside Ezana.</p>
+                  <p className="snr-gate-sub">
+                    Log in or create a free account to open charts, filings, and trackers.
+                  </p>
+                  <div className="snr-gate-actions">
+                    <a className="snr-gate-btn snr-gate-btn-ghost" href="/signin?next=/sonar">
+                      Log in
+                    </a>
+                    <a className="snr-gate-btn snr-gate-btn-solid" href="/signup?next=/sonar">
+                      Sign up free
+                    </a>
+                  </div>
+                </div>
+              ) : null}
 
               <div className="snr-divider-line" aria-hidden="true" />
 
@@ -186,7 +302,7 @@ export function SonarSection() {
           </div>
 
           <div className="snr-col-radar">
-            <SonarRadar />
+            <SonarRings />
           </div>
 
           <div className="snr-col-dossier" aria-hidden="true">
@@ -204,8 +320,8 @@ export function SonarSection() {
               </p>
 
               <div className="snr-rows">
-                {ROWS.map((r) => (
-                  <div key={r.tag} className={`snr-row ${r.cls}`}>
+                {rows.map((r) => (
+                  <div key={`${r.tag}-${r.cls}`} className={`snr-row ${r.cls}`}>
                     <div className="snr-row-top">
                       <span className="snr-tag">{r.tag}</span>
                       <span className="snr-rule" />
