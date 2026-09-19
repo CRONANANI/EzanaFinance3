@@ -1754,19 +1754,8 @@
   margin: 0 auto;
 }
 
-/* Axis labels: the component sets 13.5px against var(--text-primary), tuned
-   for the light landing surface at full size. At half scale on the dark band
-   they would render near 6px and near black. */
-.snr-orbital .radar-ax-name {
-  font-size: 26px;
-  fill: var(--snr-text);
-}
-
-.snr-orbital .radar-ax-name:hover,
-.snr-orbital .radar-ax-name--active {
-  fill: var(--snr-mint);
-}
-
+/* The hub label is the only text left on the ring, and it is still drawn at
+   the component's full-size scale. */
 .snr-orbital .radar-hub-label {
   font-size: 30px;
 }
@@ -1777,17 +1766,24 @@
   stroke: rgba(110, 231, 183, 0.28);
 }
 
-/* The desktop legend reads as clutter at this size, and its copy ("Your
-   weighting, learned as you engage") describes personalization, which is not
-   what this band is about.
+/* Axis icons on the orbital map: dimension-inked at rest, brightening on
+   hover or pin. Opacity only; position stays static so nothing fights the
+   blip RAF loop that drives the dots. */
+.snr-orbital .radar-dim-icon {
+  opacity: 0.85;
+  transition: opacity 0.15s ease;
+}
 
-   Risk note: the legend row carries no dedicated class, so this targets the
-   Tailwind utilities on it. That is acceptable only because
-   PersonalizationRadar is frozen by convention: if it is ever edited, check
-   this selector still matches. It is scoped to .snr-orbital, so a miss hides
-   nothing elsewhere. */
-.snr-orbital .flex.justify-center.gap-5.mb-4 {
-  display: none;
+.snr-orbital .radar-dim-icon:hover,
+.snr-orbital .radar-dim-icon:focus-visible,
+.snr-orbital .radar-dim-icon--active {
+  opacity: 1;
+}
+
+.snr-orbital .radar-dim-icon:focus-visible {
+  outline: 2px solid var(--snr-mint);
+  outline-offset: 3px;
+  border-radius: 6px;
 }
 
 /* ── click-triggered row pop ───────────────────────────────────────────────
