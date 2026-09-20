@@ -154,18 +154,19 @@ export default function SonarPage() {
     try {
       const token = await getAccessToken();
       if (!stillCurrent()) return;
-      if (!token) {
-        clearTimeout(timeout);
-        setError('Sign in to use Sonar.');
-        setPhase('error');
-        return;
-      }
+      /* A missing bearer token is NOT proof of being signed out. It comes from
+         supabase.auth.getSession() on the browser client, which this repo
+         documents as prone to Web Locks stalls (see supabase-browser.js), and a
+         transient null was walling genuinely signed-in visitors with
+         "Sign in to use Sonar" before any request went out. The route accepts
+         bearer OR cookie, and credentials are already included, so the request
+         goes regardless and the SERVER decides: a real 401 below is the only
+         thing that shows the sign-in message. */
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers.Authorization = `Bearer ${token}`;
       const res = await fetch('/api/sonar/query', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        headers,
         credentials: 'include',
         body: JSON.stringify({ query, ...(priorEntity ? { context: priorEntity } : {}) }),
         signal: controller.signal,
@@ -174,6 +175,11 @@ export default function SonarPage() {
       if (!stillCurrent()) return;
       clearTimeout(timeout);
       setElapsedSec(((Date.now() - t0) / 1000).toFixed(1));
+      if (res.status === 401) {
+        setError('Sign in to use Sonar.');
+        setPhase('error');
+        return;
+      }
       if (res.status === 429) {
         setError('That ping did not land. Try again in a moment.');
         setPhase('error');

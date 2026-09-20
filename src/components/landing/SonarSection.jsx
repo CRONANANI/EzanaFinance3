@@ -121,6 +121,15 @@ export function SonarSection() {
   const bandRef = useRef(null);
   const [inView, setInView] = useState(true);
   const [gateOpen, setGateOpen] = useState(false);
+  /* Live guest Sonar. null until the first real ping answers; after that the
+     band is a live surface for the rest of the visit and the demo timeline
+     stays paused. */
+  const [live, setLive] = useState(null);
+  const [pinging, setPinging] = useState(false);
+  const [pingError, setPingError] = useState(null);
+  /* The gate serves two paths with different copy: an exhausted quota, and a
+     visitor clicking a tool link. Default is the tool-link wording. */
+  const [gateCopy, setGateCopy] = useState(null);
   /* Starts as the deterministic fallback so the server render and the first
      client render agree; real rows arrive after hydration. */
   const [rows, setRows] = useState(ROWS);
@@ -174,17 +183,65 @@ export function SonarSection() {
     return () => document.removeEventListener('keydown', onKey);
   }, [gateOpen]);
 
-  /* A real query still submits and navigates to /sonar. An empty press is the
-     demo trigger instead of a pointless empty search. */
-  function onPingSubmit(e) {
-    const q = e.currentTarget.elements?.q?.value?.trim();
-    if (q) return;
+  function openGate(copy) {
+    setGateCopy(copy || null);
+    setGateOpen(true);
+  }
+
+  /* Guest Sonar runs inline now. The form keeps action="/sonar" so a no-JS
+     visitor still reaches the app, but with JS on every submit is intercepted:
+     an empty press replays the demo pop, a real query pings for real. */
+  async function onPingSubmit(e) {
     e.preventDefault();
-    setPingPulse((n) => n + 1);
+    const q = e.currentTarget.elements?.q?.value?.trim();
+    if (!q) {
+      setPingPulse((n) => n + 1);
+      return;
+    }
+    if (pinging) return;
+    setPinging(true);
+    setPingError(null);
+    try {
+      const res = await fetch('/api/sonar/landing-query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: q }),
+      });
+      const data = await res.json().catch(() => null);
+      if (data?.gate) {
+        openGate({
+          title: 'You have used your 5 free pings.',
+          sub: 'Create a free account to keep pinging across every Ezana dataset.',
+        });
+        setLive((l) => (l ? { ...l, remaining: 0 } : l));
+      } else if (res.ok && data?.answer) {
+        setLive({ answer: data.answer, sources: data.sources || [], remaining: data.remaining });
+        setPingPulse((n) => n + 1);
+      } else if (res.ok) {
+        /* The ping worked; the datasets just had nothing on this subject. That
+           is a finding, not a failure, and telling the visitor to try again
+           would be telling them to retry something a retry cannot fix. The
+           quota was still spent, so the remaining count is carried through. */
+        setPingError(
+          typeof data?.remaining === 'number'
+            ? `No dataset coverage for that ping yet. ${data.remaining} free pings left.`
+            : 'No dataset coverage for that ping yet.',
+        );
+      } else {
+        setPingError(data?.error || 'That ping did not land. Try again.');
+      }
+    } catch {
+      setPingError('That ping did not land. Try again.');
+    } finally {
+      setPinging(false);
+    }
   }
 
   return (
-    <section ref={bandRef} className={`snr-band${inView ? '' : ' snr-paused'}`}>
+    <section
+      ref={bandRef}
+      className={`snr-band${inView ? '' : ' snr-paused'}${live ? ' snr-live' : ''}`}
+    >
       <div className="snr-grid-layer" aria-hidden="true" />
 
       <div className="snr-inner">
@@ -230,8 +287,15 @@ export function SonarSection() {
                 <span className="snr-query snr-anim-query">Lockheed Martin</span>
                 <span className="snr-caret snr-anim-caret" />
               </span>
-              <button type="submit" className="snr-ping-btn snr-anim-press">
-                Ping
+              <button type="submit" className="snr-ping-btn snr-anim-press" disabled={pinging}>
+                {pinging ? (
+                  <>
+                    <span className="snr-beacon-sm snr-ping-dot" aria-hidden="true" />
+                    Pinging
+                  </>
+                ) : (
+                  'Ping'
+                )}
               </button>
               <svg
                 className="snr-cursor snr-anim-cursor"
@@ -262,25 +326,52 @@ export function SonarSection() {
                 <p className="snr-empty snr-anim-idle" aria-hidden="true">
                   Awaiting ping. Nothing is synthesized until you ask.
                 </p>
-                {SYNTHESIS.map((p) => (
-                  <p key={p.cls} className={`snr-para${p.lead ? ' snr-line-lead' : ''} ${p.cls}`}>
-                    {p.segments.map((seg, i) =>
-                      seg.link ? (
-                        <button
-                          key={`${p.cls}-${i}`}
-                          type="button"
-                          className="snr-link"
-                          onClick={() => setGateOpen(true)}
+                {live
+                  ? live.answer
+                      .split(/\n\s*\n/)
+                      .slice(0, 3)
+                      .map((para, i) => (
+                        <p
+                          key={`live-${i}`}
+                          className={`snr-para${i === 0 ? ' snr-line-lead' : ''} snr-anim-rowpop`}
+                          style={{ animationDelay: `${i * 0.1}s` }}
                         >
-                          {seg.t}
-                        </button>
-                      ) : (
-                        <span key={`${p.cls}-${i}`}>{seg.t}</span>
-                      ),
-                    )}
-                    {p.cite ? <span className="snr-cite"> {p.cite}</span> : null}
+                          {para}
+                        </p>
+                      ))
+                  : SYNTHESIS.map((p) => (
+                      <p
+                        key={p.cls}
+                        className={`snr-para${p.lead ? ' snr-line-lead' : ''} ${p.cls}`}
+                      >
+                        {p.segments.map((seg, i) =>
+                          seg.link ? (
+                            <button
+                              key={`${p.cls}-${i}`}
+                              type="button"
+                              className="snr-link"
+                              onClick={() => openGate()}
+                            >
+                              {seg.t}
+                            </button>
+                          ) : (
+                            <span key={`${p.cls}-${i}`}>{seg.t}</span>
+                          ),
+                        )}
+                        {p.cite ? <span className="snr-cite"> {p.cite}</span> : null}
+                      </p>
+                    ))}
+                {live ? (
+                  <p className="snr-para">
+                    <button type="button" className="snr-link" onClick={() => openGate()}>
+                      Open the full dossier in Sonar
+                    </button>
+                    {typeof live.remaining === 'number' ? (
+                      <span className="snr-cite"> {live.remaining} free pings left</span>
+                    ) : null}
                   </p>
-                ))}
+                ) : null}
+                {pingError ? <p className="snr-para snr-cite">{pingError}</p> : null}
               </div>
 
               {gateOpen ? (
@@ -293,9 +384,12 @@ export function SonarSection() {
                   >
                     <i className="bi bi-x-lg" aria-hidden="true" />
                   </button>
-                  <p className="snr-gate-title">This tool lives inside Ezana.</p>
+                  <p className="snr-gate-title">
+                    {gateCopy?.title || 'This tool lives inside Ezana.'}
+                  </p>
                   <p className="snr-gate-sub">
-                    Log in or create a free account to open charts, filings, and trackers.
+                    {gateCopy?.sub ||
+                      'Log in or create a free account to open charts, filings, and trackers.'}
                   </p>
                   <div className="snr-gate-actions">
                     <a className="snr-gate-btn snr-gate-btn-ghost" href="/signin?next=/sonar">
@@ -341,10 +435,21 @@ export function SonarSection() {
               </p>
 
               <div className="snr-rows" key={pingPulse}>
-                {rows.map((r, i) => (
+                {(live && live.sources.length
+                  ? live.sources.slice(0, 5).map((sc, i) => ({
+                      tag: sc.label.toUpperCase().slice(0, 12),
+                      source: sc.used ? 'matched' : 'searched',
+                      line: sc.label,
+                      used: sc.used,
+                      cls: `snr-anim-row${i}`,
+                    }))
+                  : rows
+                ).map((r, i) => (
                   <div
                     key={`${r.tag}-${r.cls}`}
-                    className={`snr-row ${pingPulse === 0 ? r.cls : 'snr-anim-rowpop'}`}
+                    className={`snr-row${r.used === false ? ' snr-row--dry' : ''} ${
+                      pingPulse === 0 ? r.cls : 'snr-anim-rowpop'
+                    }`}
                     style={pingPulse === 0 ? undefined : { animationDelay: `${i * 0.12}s` }}
                   >
                     <div className="snr-row-top">

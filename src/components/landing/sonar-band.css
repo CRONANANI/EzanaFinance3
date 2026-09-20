@@ -135,10 +135,22 @@
 }
 
 /* Viewport gating: the observer adds .snr-paused when the band leaves view.
-   Play-state, never unmount, so scrolling back does not restart mid-sequence. */
+   Play-state, never unmount, so scrolling back does not restart mid-sequence.
+
+   .snr-live rides the same mechanism rather than adding a second one: once a
+   guest ping answers, the demo choreography has nothing left to demonstrate,
+   so it freezes where it stands for the rest of the visit. */
 .snr-band.snr-paused *,
-.snr-band.snr-paused {
+.snr-band.snr-paused,
+.snr-band.snr-live *,
+.snr-band.snr-live {
   animation-play-state: paused;
+}
+
+/* The pop-in for live answers and freshly matched rows is the one animation
+   that must still run in live mode; it is a one-shot, not part of the loop. */
+.snr-band.snr-live .snr-anim-rowpop {
+  animation-play-state: running;
 }
 
 /* Reduced motion. Every base style below is authored as the composed END frame,
@@ -1819,4 +1831,26 @@
     opacity: 1;
     transform: translateX(0) scale(1);
   }
+}
+
+/* ── guest live mode ─────────────────────────────────────────────────────── */
+
+/* Datasets that were searched but returned no match. Dimmed rather than
+   hidden: "we looked here and found nothing" is itself a finding, and hiding
+   them would overstate coverage. */
+.snr-row--dry {
+  opacity: 0.55;
+}
+
+/* Working state on the Ping button. Reuses the existing beacon keyframes
+   rather than introducing another animation name. */
+.snr-ping-dot {
+  display: inline-block;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.snr-ping-btn[disabled] {
+  cursor: wait;
+  opacity: 0.85;
 }
