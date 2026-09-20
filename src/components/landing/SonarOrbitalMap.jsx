@@ -55,13 +55,10 @@ const DIMENSION_ICON = {
   regulatory: ScrollText,
 };
 
-// Carries the taxonomy colour through so each axis icon is inked with its own
-// dimension token, the way the Datasets menu colours its headings.
 const DIMS = DATASET_TAXONOMY.map((d) => ({
   id: d.id,
   nm: d.label,
   w: DIM_WEIGHT[d.id] ?? 0.5,
-  color: d.color,
 }));
 const N = DIMS.length;
 
@@ -486,10 +483,11 @@ export default function SonarOrbitalMap({ sourceDetails }) {
               </text>
 
               {/* Dimension icons (interactive). The title labels are gone; each
-                  axis now shows its Datasets-menu icon, inked with that
-                  dimension's taxonomy colour, carrying the same hover and pin
-                  behavior the labels had. The popup carries the full name, and
-                  aria-label keeps it for assistive tech. */}
+                  axis shows its Datasets-menu icon, all white on the band. Ink
+                  lives in sonar-band.css rather than here: Lucide strokes with
+                  currentColor, so the class owns the colour and the hover and
+                  pin states stay opacity-only. Nothing names the dimension on
+                  the ring now, so the popup and aria-label carry the name. */}
               {DIMS.map((d, i) => {
                 const pos = labelPos(i);
                 const Icon = DIMENSION_ICON[d.id];
@@ -532,15 +530,7 @@ export default function SonarOrbitalMap({ sourceDetails }) {
                       fillOpacity="0"
                       style={{ pointerEvents: 'all' }}
                     />
-                    <Icon
-                      x={0}
-                      y={0}
-                      width={S}
-                      height={S}
-                      color={d.color || 'var(--emerald)'}
-                      strokeWidth={1.75}
-                      aria-hidden
-                    />
+                    <Icon x={0} y={0} width={S} height={S} strokeWidth={1.75} aria-hidden />
                   </g>
                 );
               })}

@@ -1770,6 +1770,7 @@
    hover or pin. Opacity only; position stays static so nothing fights the
    blip RAF loop that drives the dots. */
 .snr-orbital .radar-dim-icon {
+  color: var(--snr-text); /* white on the band; icons stroke with currentColor */
   opacity: 0.85;
   transition: opacity 0.15s ease;
 }
