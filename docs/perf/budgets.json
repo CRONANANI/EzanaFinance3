@@ -3,6 +3,9 @@
   "_generatedAt": "2026-09-20T01:45:42.363Z",
   "_headroom": 1.05,
   "_sharedKb": 246,
+  "_notes": {
+    "/auth/verify-email/page": "Raised from 318 to 361 kB deliberately: the 6-digit code row is now the animated OtpInput, which pulls framer-motion onto this route. Paid once per account on a screen whose only job is that input, and the animation is the feature. Not a licence to grow further."
+  },
   "routes": {
     "/_not-found/page": 259,
     "/(dashboard)/alternative-markets/layout": 259,
@@ -137,7 +140,7 @@
     "/auth/signin/backtest/page": 367,
     "/auth/signin/page": 365,
     "/auth/signup/page": 364,
-    "/auth/verify-email/page": 318,
+    "/auth/verify-email/page": 361,
     "/brokerages-integrations/page": 264,
     "/competitions/[slug]/page": 262,
     "/datasets/activist/loading": 265,

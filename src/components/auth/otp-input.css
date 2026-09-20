@@ -1,0 +1,160 @@
+/* OtpInput, component-scoped. Prefix otp-, tokens only. The cell pixel sizes
+   MUST stay in sync with the SIZES map in OtpInput.jsx (success-ring viewBox). */
+
+.otp-root {
+  position: relative;
+  display: inline-flex;
+}
+
+.otp-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.otp-row--sm {
+  gap: 6px;
+}
+.otp-row--md {
+  gap: 8px;
+}
+.otp-row--lg {
+  gap: 10px;
+}
+
+.otp-cell {
+  position: relative;
+}
+.otp-cell--sm {
+  width: 40px;
+  height: 40px;
+}
+.otp-cell--md {
+  width: 48px;
+  height: 48px;
+}
+.otp-cell--lg {
+  width: 56px;
+  height: 56px;
+}
+
+/* The real input: transparent text, the animated .otp-char layer paints the
+   digit. Caret hidden; the shared springing .otp-caret replaces it. */
+.otp-slot {
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  background: var(--surface-card);
+  border: 1px solid var(--border-primary);
+  color: transparent;
+  caret-color: transparent;
+  outline: none;
+  transition:
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.otp-cell--sm .otp-slot {
+  border-radius: 8px;
+  font-size: 16px;
+}
+.otp-cell--md .otp-slot {
+  border-radius: 12px;
+  font-size: 18px;
+}
+.otp-cell--lg .otp-slot {
+  border-radius: 16px;
+  font-size: 20px;
+}
+
+.otp-slot::selection {
+  background: transparent;
+}
+.otp-slot:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.otp-slot:focus-visible {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--emerald) 50%, transparent);
+}
+/* Success draws its own SVG ring, so no box-shadow ring in that state. */
+.otp-root[data-status='success'] .otp-slot:focus-visible {
+  box-shadow: none;
+}
+.otp-slot--error {
+  border-color: var(--danger-border);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--danger) 70%, transparent);
+  transition-delay: 0.15s; /* ring lands after the shake starts, as upstream */
+}
+
+.otp-ring {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.otp-char-layer {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.otp-char {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.otp-cell--sm .otp-char {
+  font-size: 16px;
+}
+.otp-cell--md .otp-char {
+  font-size: 18px;
+}
+.otp-cell--lg .otp-char {
+  font-size: 20px;
+}
+
+.otp-caret {
+  pointer-events: none;
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 2px;
+  border-radius: 999px;
+  background: var(--text-primary);
+}
+.otp-caret--sm {
+  height: 20px;
+}
+.otp-caret--md {
+  height: 24px;
+}
+.otp-caret--lg {
+  height: 28px;
+}
+
+/* ── light-surface modifier ──────────────────────────────────────────────
+   The surface/text tokens above follow the active theme, which is right
+   everywhere the surface behind the component follows it too. The verify-email
+   card does not: it is a hardcoded white card in both themes, so under the dark
+   palette --text-primary resolves to near-white and the digits disappear into
+   it. This modifier pins only the three NEUTRAL values to the light palette, so
+   a component placed on a theme-independent light surface stays legible. The
+   brand colors (emerald success and focus, danger error) are untouched and stay
+   on their tokens in both themes. */
+.otp-root--on-light .otp-slot {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.12);
+}
+.otp-root--on-light .otp-char {
+  color: #0f172a;
+}
+.otp-root--on-light .otp-caret {
+  background: #0f172a;
+}

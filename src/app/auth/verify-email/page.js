@@ -1,18 +1,19 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase-browser';
+import { OtpInput } from '@/components/auth/OtpInput';
 
 export default function VerifyEmailPage() {
-  const [code, setCode] = useState(['', '', '', '', '', '']);
+  const [code, setCode] = useState('');
+  const [otpStatus, setOtpStatus] = useState('idle');
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [maskedEmail, setMaskedEmail] = useState('');
   const [cooldown, setCooldown] = useState(0);
-  const inputRefs = useRef([]);
   const router = useRouter();
 
   const redirectIfAlreadyVerified = useCallback(async () => {
@@ -73,40 +74,6 @@ export default function VerifyEmailPage() {
     }
   }, [cooldown]);
 
-  const handleChange = (index, value) => {
-    if (value && !/^\d$/.test(value)) return;
-
-    const newCode = [...code];
-    newCode[index] = value;
-    setCode(newCode);
-    setError('');
-
-    if (value && index < 5) {
-      inputRefs.current[index + 1]?.focus();
-    }
-
-    if (value && index === 5 && newCode.every((d) => d !== '')) {
-      verifyCode(newCode.join(''));
-    }
-  };
-
-  const handleKeyDown = (index, e) => {
-    if (e.key === 'Backspace' && !code[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const handlePaste = (e) => {
-    e.preventDefault();
-    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
-    if (pasted.length === 6) {
-      const newCode = pasted.split('');
-      setCode(newCode);
-      inputRefs.current[5]?.focus();
-      verifyCode(pasted);
-    }
-  };
-
   const verifyCode = async (codeString) => {
     if (codeString.length !== 6) return;
     setLoading(true);
@@ -120,15 +87,22 @@ export default function VerifyEmailPage() {
       const data = await res.json();
 
       if (data.success) {
+        setOtpStatus('success');
         setSuccess('Email verified!');
+        /* 1s before redirect: the staggered ring draw (0.15s + 6 * 0.05s +
+           0.45s) completes inside it. */
         setTimeout(() => router.replace('/home'), 1000);
       } else {
+        setOtpStatus('error');
         setError(data.error);
-        setCode(['', '', '', '', '', '']);
-        inputRefs.current[0]?.focus();
+        /* Shake first, then clear: matches upstream's error feel. Status
+           resets to idle on the next keystroke via onChange. */
+        setTimeout(() => setCode(''), 350);
       }
     } catch {
+      setOtpStatus('error');
       setError('Verification failed. Please try again.');
+      setTimeout(() => setCode(''), 350);
     } finally {
       setLoading(false);
     }
@@ -198,56 +172,35 @@ export default function VerifyEmailPage() {
           </div>
         )}
 
-        <div
-          style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '2rem' }}
-        >
-          {code.map((digit, i) => (
-            <input
-              key={i}
-              ref={(el) => {
-                inputRefs.current[i] = el;
-              }}
-              type="text"
-              inputMode="numeric"
-              maxLength={1}
-              value={digit}
-              onChange={(e) => handleChange(i, e.target.value)}
-              onKeyDown={(e) => handleKeyDown(i, e)}
-              onPaste={i === 0 ? handlePaste : undefined}
-              disabled={loading}
-              style={{
-                width: '48px',
-                height: '56px',
-                textAlign: 'center',
-                fontSize: '1.5rem',
-                fontWeight: 'bold',
-                background: '#ffffff',
-                border: '2px solid #cbd5e1',
-                borderRadius: '10px',
-                color: '#0f172a',
-                outline: 'none',
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = '#10b981';
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = '#cbd5e1';
-              }}
-            />
-          ))}
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
+          <OtpInput
+            length={6}
+            size="lg"
+            className="otp-root--on-light"
+            value={code}
+            onChange={(v) => {
+              setCode(v);
+              if (otpStatus !== 'idle') setOtpStatus('idle');
+              if (error) setError('');
+            }}
+            onComplete={verifyCode}
+            status={otpStatus}
+            disabled={loading || otpStatus === 'success'}
+            autoFocus
+          />
         </div>
 
         <button
           type="button"
-          onClick={() => verifyCode(code.join(''))}
-          disabled={loading || code.some((d) => d === '')}
+          onClick={() => verifyCode(code)}
+          disabled={loading || code.length !== 6}
           style={{
             width: '100%',
             padding: '14px',
             borderRadius: '10px',
             border: 'none',
-            background: code.every((d) => d !== '') ? '#10b981' : '#e2e8f0',
-            color: code.every((d) => d !== '') ? '#ffffff' : '#64748b',
+            background: code.length === 6 ? '#10b981' : '#e2e8f0',
+            color: code.length === 6 ? '#ffffff' : '#64748b',
             fontSize: '1rem',
             fontWeight: '600',
             cursor: 'pointer',
